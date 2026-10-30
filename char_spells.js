@@ -3910,10 +3910,17 @@
           if (sourceFilter.dataset.mode !== 'spell') {
             sourceFilter.dataset.mode = 'spell';
             sourceFilter.innerHTML = `
-              <option value="auto">🎯 Auto (Match Target)</option>
-              <option value="arcane">⚡ Arcane (Spontaneous / Prepared)</option>
-              <option value="divine">🔮 Divine</option>
-              <option value="all">🌐 All (Unfiltered)</option>
+              <option value="auto">🎯 Auto (Match Character Class)</option>
+              <option value="cleric">✝️ Cleric Spells</option>
+              <option value="druid">🌿 Druid Spells</option>
+              <option value="paladin">🛡️ Paladin Spells</option>
+              <option value="ranger">🏹 Ranger Spells</option>
+              <option value="domain">⚜️ Cleric Domains</option>
+              <option value="divine">🔮 All Divine Classes</option>
+              <option value="sor_wiz">⚡ Sorcerer / Wizard</option>
+              <option value="bard">🎵 Bard Spells</option>
+              <option value="arcane">✨ All Arcane Classes</option>
+              <option value="all">🌐 All Spells (Unfiltered)</option>
             `;
             sourceFilter.value = 'auto';
           }
@@ -4004,6 +4011,7 @@
 
     function getSpellTraditionAndLevels(item) {
       const divineLvls = [];
+      const domainLvls = [];
       const arcanePrepLvls = [];
       const arcaneSpontLvls = [];
       const psionicLvls = [];
@@ -4014,6 +4022,14 @@
       const domMap = (item && item.learnedAt && item.learnedAt.domain && typeof item.learnedAt.domain === 'object')
         ? item.learnedAt.domain
         : {};
+
+      let clericLvl = (clsMap.Cleric !== undefined && !isNaN(Number(clsMap.Cleric))) ? Number(clsMap.Cleric) : null;
+      let druidLvl = (clsMap.Druid !== undefined && !isNaN(Number(clsMap.Druid))) ? Number(clsMap.Druid) : null;
+      let paladinLvl = (clsMap.Paladin !== undefined && !isNaN(Number(clsMap.Paladin))) ? Number(clsMap.Paladin) : null;
+      let rangerLvl = (clsMap.Ranger !== undefined && !isNaN(Number(clsMap.Ranger))) ? Number(clsMap.Ranger) : null;
+      let wizardLvl = (clsMap.Wizard !== undefined && !isNaN(Number(clsMap.Wizard))) ? Number(clsMap.Wizard) : null;
+      let sorcererLvl = (clsMap.Sorcerer !== undefined && !isNaN(Number(clsMap.Sorcerer))) ? Number(clsMap.Sorcerer) : null;
+      let bardLvl = (clsMap.Bard !== undefined && !isNaN(Number(clsMap.Bard))) ? Number(clsMap.Bard) : null;
 
       const divinePriority = ['Cleric', 'Druid', 'Paladin', 'Ranger', 'Blackguard', 'Healer', 'Adept', 'Shugenja', 'Spirit Shaman', 'Favored Soul', 'Archivist'];
       divinePriority.forEach(k => {
@@ -4027,10 +4043,17 @@
         if (isNaN(val)) return;
         if (['cleric', 'druid', 'paladin', 'ranger', 'blackguard', 'healer', 'adept', 'shugenja', 'spirit shaman', 'favored soul', 'archivist'].some(d => low.includes(d))) {
           if (!divineLvls.includes(val)) divineLvls.push(val);
+          if (low.includes('cleric') && clericLvl === null) clericLvl = val;
+          if (low.includes('druid') && druidLvl === null) druidLvl = val;
+          if (low.includes('paladin') && paladinLvl === null) paladinLvl = val;
+          if (low.includes('ranger') && rangerLvl === null) rangerLvl = val;
         } else if (['wizard', 'wu jen', 'wu-jen', 'artificer', 'assassin'].some(a => low.includes(a))) {
           arcanePrepLvls.push(val);
+          if (low.includes('wizard') && wizardLvl === null) wizardLvl = val;
         } else if (['sorcerer', 'bard', 'warmage', 'beguiler', 'duskblade', 'dread necromancer', 'warlock', 'hexblade', 'spellthief'].some(a => low.includes(a))) {
           arcaneSpontLvls.push(val);
+          if (low.includes('sorcerer') && sorcererLvl === null) sorcererLvl = val;
+          if (low.includes('bard') && bardLvl === null) bardLvl = val;
         } else if (['psion', 'wilder', 'psychic warrior', 'nomad', 'shaper', 'seer', 'telepath', 'egoist', 'kineticist'].some(p => low.includes(p))) {
           psionicLvls.push(val);
         }
@@ -4038,28 +4061,54 @@
 
       Object.values(domMap).forEach(v => {
         const num = Number(v);
-        if (!isNaN(num)) divineLvls.push(num);
+        if (!isNaN(num)) domainLvls.push(num);
       });
 
+      const hasExplicitLearnedAt = Object.keys(clsMap).length > 0 || Object.keys(domMap).length > 0;
       const tags = Array.isArray(item?.tags) ? item.tags.map(t => String(t).toLowerCase().trim()) : [];
       const extraClassText = `${item?.classes || ''} ${item?.class || ''} ${item?.sourceClass || ''} ${item?.spellClass || ''}`.toLowerCase();
 
-      const hasArcaneTag = tags.some(t => ['arcane', 'sorcerer', 'wizard', 'bard', 'wu-jen', 'beguiler', 'duskblade', 'warmage', 'warlock'].includes(t))
-        || ['arcane', 'sorcerer', 'wizard', 'bard', 'warlock', 'warmage', 'beguiler', 'duskblade'].some(k => extraClassText.includes(k));
-      const hasDivineTag = tags.some(t => ['divine', 'cleric', 'druid', 'paladin', 'ranger', 'domain', 'healer', 'archivist', 'favored soul'].includes(t))
-        || ['divine', 'cleric', 'druid', 'paladin', 'ranger', 'domain', 'healer', 'archivist', 'favored soul'].some(k => extraClassText.includes(k));
+      const hasArcaneTag = !hasExplicitLearnedAt && (
+        tags.some(t => ['arcane', 'sorcerer', 'wizard', 'bard', 'wu-jen', 'beguiler', 'duskblade', 'warmage', 'warlock'].includes(t))
+        || ['arcane', 'sorcerer', 'wizard', 'bard', 'warlock', 'warmage', 'beguiler', 'duskblade'].some(k => extraClassText.includes(k))
+      );
+      const hasDivineTag = !hasExplicitLearnedAt && (
+        tags.some(t => ['divine', 'cleric', 'druid', 'paladin', 'ranger', 'healer', 'archivist', 'favored soul'].includes(t))
+        || ['divine', 'cleric', 'druid', 'paladin', 'ranger', 'healer', 'archivist', 'favored soul'].some(k => extraClassText.includes(k))
+      );
+
+      if (!hasExplicitLearnedAt) {
+        const fallbackLvl = (item?.level !== undefined && !isNaN(Number(item.level))) ? Number(item.level) : 1;
+        if (extraClassText.includes('cleric') || tags.includes('cleric')) clericLvl = fallbackLvl;
+        if (extraClassText.includes('druid') || tags.includes('druid')) druidLvl = fallbackLvl;
+        if (extraClassText.includes('paladin') || tags.includes('paladin')) paladinLvl = fallbackLvl;
+        if (extraClassText.includes('ranger') || tags.includes('ranger')) rangerLvl = fallbackLvl;
+        if (extraClassText.includes('wizard') || tags.includes('wizard')) wizardLvl = fallbackLvl;
+        if (extraClassText.includes('sorcerer') || tags.includes('sorcerer')) sorcererLvl = fallbackLvl;
+        if (extraClassText.includes('bard') || tags.includes('bard')) bardLvl = fallbackLvl;
+      }
 
       const isArcane = arcanePrepLvls.length > 0 || arcaneSpontLvls.length > 0 || hasArcaneTag;
       const isDivine = divineLvls.length > 0 || hasDivineTag;
-      const isPsionicOnly = psionicLvls.length > 0 && !isArcane && !isDivine;
-      const hasAnyTradition = isArcane || isDivine || isPsionicOnly;
+      const isDomain = domainLvls.length > 0;
+      const isPsionicOnly = psionicLvls.length > 0 && !isArcane && !isDivine && !isDomain;
+      const hasAnyTradition = isArcane || isDivine || isDomain || isPsionicOnly;
 
       return {
         isArcane,
         isDivine,
+        isDomain,
         isPsionicOnly,
         hasAnyTradition,
+        clericLvl,
+        druidLvl,
+        paladinLvl,
+        rangerLvl,
+        wizardLvl,
+        sorcererLvl,
+        bardLvl,
         divineLvls,
+        domainLvls,
         arcanePrepLvls,
         arcaneSpontLvls,
         clsMap,
@@ -4067,53 +4116,150 @@
       };
     }
 
+    function resolveAutoSpellFilterSource(targetPool = 'spontaneous') {
+      const rawNames = [];
+      if (Array.isArray(character?.levelProgression)) {
+        character.levelProgression.filter(p => p && p.active !== false).forEach(p => {
+          if (p.className || p.class) rawNames.push(String(p.className || p.class).toLowerCase().trim());
+        });
+      }
+      if (rawNames.length === 0 && Array.isArray(character?.classProgression)) {
+        character.classProgression.forEach(cp => {
+          if (cp?.className || cp?.name) rawNames.push(String(cp.className || cp.name).toLowerCase().trim());
+        });
+      }
+      if (rawNames.length === 0 && typeof character?.classes === 'string' && character.classes) {
+        character.classes.split(/[\/,]/).forEach(s => rawNames.push(s.toLowerCase().trim()));
+      }
+      if (rawNames.length === 0 && typeof character?.class === 'string' && character.class) {
+        rawNames.push(character.class.toLowerCase().trim());
+      }
+
+      if (targetPool === 'divine') {
+        const hasCleric = rawNames.some(c => ['cleric', 'creric', 'rahip', 'priest', 'favored soul', 'radiant servant', 'hierophant', 'contemplative', 'church inquisitor', 'warpriest', 'divine oracle'].some(k => c.includes(k)));
+        const hasDruid = rawNames.some(c => ['druid', 'spirit shaman'].some(k => c.includes(k)));
+        const hasPaladin = rawNames.some(c => ['paladin', 'şövalye', 'hospitaler', 'blackguard'].some(k => c.includes(k)));
+        const hasRanger = rawNames.some(c => ['ranger', 'korucu'].some(k => c.includes(k)));
+        const matched = [
+          hasCleric ? 'cleric' : null,
+          hasDruid ? 'druid' : null,
+          hasPaladin ? 'paladin' : null,
+          hasRanger ? 'ranger' : null
+        ].filter(Boolean);
+        if (matched.length === 1) return matched[0];
+        return 'divine';
+      }
+
+      if (targetPool === 'prepared') {
+        return 'sor_wiz';
+      }
+
+      if (targetPool === 'spontaneous') {
+        const hasBard = rawNames.some(c => ['bard', 'ozan'].some(k => c.includes(k)));
+        const hasSorc = rawNames.some(c => ['sorcerer', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'spellthief'].some(k => c.includes(k)));
+        if (hasBard && !hasSorc) return 'bard';
+        return 'sor_wiz';
+      }
+
+      return 'all';
+    }
+
     function resolveSpellLevelForPool(item, targetPool = 'spontaneous', effectiveSource = 'auto') {
       if (!item) return null;
       const info = getSpellTraditionAndLevels(item);
-      const c = info.clsMap || {};
+      const src = effectiveSource === 'auto' ? resolveAutoSpellFilterSource(targetPool) : effectiveSource;
 
-      if (targetPool === 'divine' || effectiveSource === 'divine') {
-        if (c.Cleric !== undefined) return Number(c.Cleric);
-        if (c.Druid !== undefined) return Number(c.Druid);
-        if (c.Paladin !== undefined) return Number(c.Paladin);
-        if (c.Ranger !== undefined) return Number(c.Ranger);
+      if (src === 'cleric') {
+        if (info.clericLvl !== null) return info.clericLvl;
+      } else if (src === 'druid') {
+        if (info.druidLvl !== null) return info.druidLvl;
+      } else if (src === 'paladin') {
+        if (info.paladinLvl !== null) return info.paladinLvl;
+      } else if (src === 'ranger') {
+        if (info.rangerLvl !== null) return info.rangerLvl;
+      } else if (src === 'domain') {
+        if (info.domainLvls.length > 0) return info.domainLvls[0];
+      } else if (src === 'bard') {
+        if (info.bardLvl !== null) return info.bardLvl;
+      } else if (src === 'sor_wiz') {
+        if (targetPool === 'prepared' && info.wizardLvl !== null) return info.wizardLvl;
+        if (info.sorcererLvl !== null) return info.sorcererLvl;
+        if (info.wizardLvl !== null) return info.wizardLvl;
+      } else if (src === 'divine' || targetPool === 'divine') {
+        if (info.clericLvl !== null) return info.clericLvl;
+        if (info.druidLvl !== null) return info.druidLvl;
+        if (info.paladinLvl !== null) return info.paladinLvl;
+        if (info.rangerLvl !== null) return info.rangerLvl;
         if (info.divineLvls.length > 0) return info.divineLvls[0];
-      } else if (targetPool === 'prepared') {
-        if (c.Wizard !== undefined) return Number(c.Wizard);
+      } else if (src === 'arcane' || targetPool === 'prepared' || targetPool === 'spontaneous') {
+        if (targetPool === 'prepared' && info.wizardLvl !== null) return info.wizardLvl;
+        if (info.sorcererLvl !== null) return info.sorcererLvl;
+        if (info.wizardLvl !== null) return info.wizardLvl;
+        if (info.bardLvl !== null) return info.bardLvl;
         if (info.arcanePrepLvls.length > 0) return info.arcanePrepLvls[0];
         if (info.arcaneSpontLvls.length > 0) return info.arcaneSpontLvls[0];
-      } else if (targetPool === 'spontaneous') {
-        if (c.Sorcerer !== undefined) return Number(c.Sorcerer);
-        if (c.Bard !== undefined) return Number(c.Bard);
-        if (info.arcaneSpontLvls.length > 0) return info.arcaneSpontLvls[0];
-        if (info.arcanePrepLvls.length > 0) return info.arcanePrepLvls[0];
       }
 
-      if (item.level !== undefined && item.level !== null) return Number(item.level);
+      if (!info.hasAnyTradition && item.level !== undefined && item.level !== null) return Number(item.level);
+      if (src === 'all' && item.level !== undefined && item.level !== null) return Number(item.level);
       if (Array.isArray(item.tags) && item.tags.some(t => String(t).toLowerCase() === 'cantrip' || String(t).toLowerCase() === 'orison')) return 0;
       return null;
     }
 
-    // Helper: Determine if spell matches the target pool (Arcane vs Divine)
+    function formatSpellClassLevelsSummary(item) {
+      const info = getSpellTraditionAndLevels(item);
+      const parts = [];
+      if (info.wizardLvl !== null && info.sorcererLvl !== null && info.wizardLvl === info.sorcererLvl) {
+        parts.push(`Sor/Wiz ${info.wizardLvl}`);
+      } else {
+        if (info.wizardLvl !== null) parts.push(`Wiz ${info.wizardLvl}`);
+        if (info.sorcererLvl !== null) parts.push(`Sor ${info.sorcererLvl}`);
+      }
+      if (info.clericLvl !== null) parts.push(`Clr ${info.clericLvl}`);
+      if (info.druidLvl !== null) parts.push(`Drd ${info.druidLvl}`);
+      if (info.bardLvl !== null) parts.push(`Brd ${info.bardLvl}`);
+      if (info.paladinLvl !== null) parts.push(`Pal ${info.paladinLvl}`);
+      if (info.rangerLvl !== null) parts.push(`Rgr ${info.rangerLvl}`);
+      const domEntries = Object.entries(info.domMap || {});
+      if (domEntries.length > 0) {
+        const domStr = domEntries.slice(0, 2).map(([d, l]) => `${d} ${l}`).join(', ');
+        parts.push(`Domain: ${domStr}${domEntries.length > 2 ? '…' : ''}`);
+      }
+      return parts.join(' • ');
+    }
+
+    // Helper: Determine if spell matches the target pool / class filter
     function isSpellMatchingTargetSource(item, effectiveSource) {
       if (!item) return false;
-      if (effectiveSource === 'all') return true;
-
       const info = getSpellTraditionAndLevels(item);
       if (info.isPsionicOnly) return false;
+      if (effectiveSource === 'all') return true;
 
-      // If a custom spell in Master DB has no explicit class/tradition metadata, show it in both Arcane and Divine
+      // Custom spells in Master DB with no explicit class/tradition metadata match by default
       if (!info.hasAnyTradition) return true;
 
-      if (effectiveSource === 'arcane') {
-        return info.isArcane;
+      switch (effectiveSource) {
+        case 'cleric':
+          return info.clericLvl !== null;
+        case 'druid':
+          return info.druidLvl !== null;
+        case 'paladin':
+          return info.paladinLvl !== null;
+        case 'ranger':
+          return info.rangerLvl !== null;
+        case 'domain':
+          return info.isDomain;
+        case 'divine':
+          return info.isDivine;
+        case 'sor_wiz':
+          return info.wizardLvl !== null || info.sorcererLvl !== null || (!Object.keys(info.clsMap).length && info.isArcane);
+        case 'bard':
+          return info.bardLvl !== null;
+        case 'arcane':
+          return info.isArcane;
+        default:
+          return true;
       }
-
-      if (effectiveSource === 'divine') {
-        return info.isDivine;
-      }
-
-      return true;
     }
 
     function renderSpellPickerResults() {
@@ -4137,16 +4283,10 @@
       const sourceFilterSelect = document.getElementById('spell-picker-source-filter');
       const selectedSource = sourceFilterSelect ? sourceFilterSelect.value : 'auto';
 
-      // Determine effectiveSource based on target pool
+      // Determine effectiveSource based on target pool and character class
       let effectiveSource = selectedSource;
       if (selectedSource === 'auto') {
-        if (targetPool === 'divine') {
-          effectiveSource = 'divine';
-        } else if (targetPool === 'prepared' || targetPool === 'spontaneous') {
-          effectiveSource = 'arcane';
-        } else {
-          effectiveSource = 'all';
-        }
+        effectiveSource = resolveAutoSpellFilterSource(targetPool);
       }
 
       const initInfo = (type === 'Maneuver' || type === 'Stance') ? getInitiatorInfo() : null;
@@ -4155,25 +4295,31 @@
       const targetHint = document.getElementById('spell-picker-target-hint');
       if (targetHint) {
         if (type === 'Spell') {
-          let poolLabel = '\u26A1 Spontaneous Spells (Sorcerer / Arcane)';
+          let poolLabel = '\u26A1 Spontaneous Spells (Sorcerer / Bard)';
           let badgeColor = 'text-purple-300 bg-purple-950/80 border-purple-800';
           if (targetPool === 'prepared') {
-            poolLabel = '\uD83D\uDCD6 Spellbook (Wizard / Arcane)';
+            poolLabel = '\uD83D\uDCD6 Spellbook (Wizard / Prepared)';
             badgeColor = 'text-cyan-300 bg-cyan-950/80 border-cyan-800';
           } else if (targetPool === 'divine') {
             poolLabel = '\uD83D\uDD2E Divine Spells (Cleric / Druid / Divine)';
             badgeColor = 'text-amber-300 bg-amber-950/80 border-amber-800';
           }
 
-          let filterBadge = '\u26A1 Arcane Filtered';
-          let filterColor = 'text-purple-300 border-purple-700 bg-purple-950/60';
-          if (effectiveSource === 'divine') {
-            filterBadge = '\uD83D\uDD2E Divine Filtered';
-            filterColor = 'text-amber-300 border-amber-700 bg-amber-950/60';
-          } else if (effectiveSource === 'all') {
-            filterBadge = '\uD83C\uDF10 All (Unfiltered)';
-            filterColor = 'text-slate-300 border-slate-700 bg-slate-900';
-          }
+          const filterLabels = {
+            cleric: { label: '\u271D\uFE0F Cleric Spells', color: 'text-amber-300 border-amber-700 bg-amber-950/60' },
+            druid: { label: '\uD83C\uDF3F Druid Spells', color: 'text-emerald-300 border-emerald-700 bg-emerald-950/60' },
+            paladin: { label: '\uD83D\uDEE1\uFE0F Paladin Spells', color: 'text-sky-300 border-sky-700 bg-sky-950/60' },
+            ranger: { label: '\uD83C\uDFF9 Ranger Spells', color: 'text-teal-300 border-teal-700 bg-teal-950/60' },
+            domain: { label: '\u269C\uFE0F Cleric Domains', color: 'text-yellow-300 border-yellow-700 bg-yellow-950/60' },
+            divine: { label: '\uD83D\uDD2E All Divine Classes', color: 'text-amber-300 border-amber-700 bg-amber-950/60' },
+            sor_wiz: { label: '\u26A1 Sorcerer / Wizard', color: 'text-purple-300 border-purple-700 bg-purple-950/60' },
+            bard: { label: '\uD83C\uDFB5 Bard Spells', color: 'text-pink-300 border-pink-700 bg-pink-950/60' },
+            arcane: { label: '\u2728 All Arcane Classes', color: 'text-purple-300 border-purple-700 bg-purple-950/60' },
+            all: { label: '\uD83C\uDF10 All (Unfiltered)', color: 'text-slate-300 border-slate-700 bg-slate-900' }
+          };
+          const fMeta = filterLabels[effectiveSource] || filterLabels.all;
+          const filterBadge = fMeta.label;
+          const filterColor = fMeta.color;
 
           targetHint.innerHTML = `
             <div class="flex items-center gap-1.5">
@@ -4340,6 +4486,10 @@
         const schoolDisplay = (type === 'Spell'
           ? (item.school || (item.category && item.category.toLowerCase() !== 'spell' ? item.category : ''))
           : (item.discipline || item.school || '')) || item.type || '-';
+        const spellClassSummary = type === 'Spell' ? formatSpellClassLevelsSummary(item) : '';
+        const classLvlBadge = spellClassSummary
+          ? `<span class="text-[10px] text-sky-300/90 font-mono bg-slate-900/90 border border-slate-700/80 px-1.5 py-0.5 rounded">${spellClassSummary}</span>`
+          : '';
         const subTypeBadge = (type !== 'Spell' && item.subType)
           ? `<span class="badge bg-slate-800 text-cyan-300 border border-slate-700 text-[10px] font-bold">${item.subType}</span>`
           : '';
@@ -4362,6 +4512,7 @@
               </span>
               <h4 class="font-extrabold text-white text-xs">${item.name}</h4>
               <span class="text-[10px] text-slate-400">(${schoolDisplay})</span>
+              ${classLvlBadge}
               ${subTypeBadge}
               ${actionDisplay ? `<span class="text-[10px] text-amber-300">${actionDisplay}</span>` : ''}
               ${prereqBadge}
@@ -4400,7 +4551,8 @@
         const poolKey = targetPool === 'prepared' ? 'preparedSpells' : (targetPool === 'divine' ? 'divineSpells' : 'knownSpells');
         if (!Array.isArray(character.spellcasting[poolKey])) character.spellcasting[poolKey] = [];
 
-        const resolvedLvlVal = resolveSpellLevelForPool(item, targetPool, targetPool === 'divine' ? 'divine' : 'arcane');
+        const activeFilterSource = document.getElementById('spell-picker-source-filter')?.value || 'auto';
+        const resolvedLvlVal = resolveSpellLevelForPool(item, targetPool, activeFilterSource);
         const resolvedLvl = resolvedLvlVal !== null && resolvedLvlVal !== undefined ? Number(resolvedLvlVal) : 1;
 
         // Strict: Check if level has reached maximum slot/known quota

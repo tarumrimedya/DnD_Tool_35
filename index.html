@@ -6562,10 +6562,17 @@
             <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
           </div>
           <select id="spell-picker-source-filter" onchange="renderSpellPickerResults()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none" title="Spell Source Filter">
-            <option value="auto">🎯 Auto (Match Target)</option>
-            <option value="arcane">⚡ Arcane (Spontaneous / Prepared)</option>
-            <option value="divine">🔮 Divine</option>
-            <option value="all">🌐 All (Unfiltered)</option>
+            <option value="auto">🎯 Auto (Match Character Class)</option>
+            <option value="cleric">✝️ Cleric Spells</option>
+            <option value="druid">🌿 Druid Spells</option>
+            <option value="paladin">🛡️ Paladin Spells</option>
+            <option value="ranger">🏹 Ranger Spells</option>
+            <option value="domain">⚜️ Cleric Domains</option>
+            <option value="divine">🔮 All Divine Classes</option>
+            <option value="sor_wiz">⚡ Sorcerer / Wizard</option>
+            <option value="bard">🎵 Bard Spells</option>
+            <option value="arcane">✨ All Arcane Classes</option>
+            <option value="all">🌐 All Spells (Unfiltered)</option>
           </select>
           <select id="spell-picker-level-filter" onchange="renderSpellPickerResults()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none">
             <option value="all">All Levels</option>
@@ -7300,7 +7307,7 @@
 
   <script src="char_hud.js?v=20261030_0142"></script>
   <script src="char_combat.js?v=20261030_0036"></script>
-  <script src="char_spells.js?v=20261030_1145"></script>
+  <script src="char_spells.js?v=20261030_1518"></script>
   <script src="char_progression.js?v=20261030_0036"></script>
   <script src="char_inventory.js?v=20261030_0036"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
