@@ -1265,11 +1265,221 @@
       if (n === 'cure minor wounds' || n === 'inflict minor wounds' || n === 'virtue') {
         return '1';
       }
-      if (n === 'divine power' || n === 'greater heroism') {
-        return String(Math.max(1, Number(cl) || 6));
-      }
       return null;
     }
+
+    // Apply a Canonical V2 Spell Buff to `character.buffs` (Self or Target Weapon) and recalculate character stats
+    function applySpellBuffToCharacter(spellItem, cl = 1, options = {}) {
+      if (!character || !spellItem) return null;
+      const effCl = Math.max(1, Number(cl || spellItem.casterLevel || character.level) || 1);
+      const buffSpec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
+        ? RuleEngine.resolveSpellBuffSpec(spellItem, character, effCl)
+        : null;
+      if (!buffSpec || !buffSpec.isBuffSpell) return null;
+
+      if (!Array.isArray(character.buffs)) character.buffs = [];
+
+      const targetWeaponName = options.targetWeapon ? String(options.targetWeapon).trim() : null;
+      const buffObj = {
+        id: buffSpec.id || `buff_${Date.now()}`,
+        schemaVersion: 2,
+        name: buffSpec.name,
+        active: true,
+        source: 'Spell',
+        casterLevel: effCl,
+        cl: effCl,
+        duration: buffSpec.durationText,
+        modifiers: Array.isArray(buffSpec.modifiers) ? JSON.parse(JSON.stringify(buffSpec.modifiers)) : [],
+        ruleFlags: buffSpec.ruleFlags ? JSON.parse(JSON.stringify(buffSpec.ruleFlags)) : {},
+        summary: buffSpec.summaryText,
+        description: `${buffSpec.summaryText} (${buffSpec.durationText})`
+      };
+
+      if (targetWeaponName) {
+        buffObj.targetWeapon = targetWeaponName;
+        if (buffSpec.sizeModifier?.targetType === 'weapon') {
+          const wepObj = (character.weapons || []).find(w => w && w.name === targetWeaponName);
+          const oldDice = (Array.isArray(wepObj?.damageParts) && wepObj.damageParts[0]?.dice) || wepObj?.dice || '1d8';
+          const steps = buffSpec.sizeModifier.scaling?.type === 'per_caster_level'
+            ? Math.min(buffSpec.sizeModifier.scaling.maxSteps || 5, Math.floor(effCl / (buffSpec.sizeModifier.scaling.clDivisor || 4)))
+            : (buffSpec.sizeModifier.scaling?.steps || 1);
+          const newDice = (typeof RuleEngine !== 'undefined' && RuleEngine.stepDamageDice)
+            ? RuleEngine.stepDamageDice(oldDice, steps)
+            : oldDice;
+          buffObj.sizeSteps = steps;
+          buffObj.baseDice = oldDice;
+          buffObj.effectiveDice = newDice;
+          buffObj.summary = `${targetWeaponName}: ${oldDice} ➔ ${newDice} (+${steps} Size)`;
+          buffObj.description = `${targetWeaponName} damage dice increased by +${steps} size step(s) (${oldDice} ➔ ${newDice}) for ${buffSpec.durationText}.`;
+        } else {
+          buffObj.summary = `${targetWeaponName}: ${buffSpec.summaryText}`;
+          buffObj.description = `${targetWeaponName} gains ${buffSpec.summaryText} for ${buffSpec.durationText}.`;
+        }
+      } else if (buffSpec.sizeModifier?.targetType === 'creature') {
+        const steps = buffSpec.sizeModifier.scaling?.steps || 1;
+        buffObj.targetType = 'creature';
+        buffObj.sizeSteps = steps;
+      }
+
+      const existingIdx = character.buffs.findIndex(b => {
+        if (!b || !b.name) return false;
+        const sameName = b.name.toLowerCase().trim() === buffObj.name.toLowerCase().trim();
+        const sameWep = (b.targetWeapon || '') === (buffObj.targetWeapon || '');
+        return sameName && sameWep;
+      });
+
+      if (existingIdx !== -1) {
+        character.buffs[existingIdx] = buffObj;
+      } else {
+        character.buffs.push(buffObj);
+      }
+
+      // Apply flat Temp HP if part of the buff (e.g. Divine Power, Greater Heroism, Heart of Earth)
+      if (buffSpec.evaluatedTempHp > 0 && !options.skipTempHp && character.hp) {
+        const prevTemp = Math.max(0, Number(character.hp.temp) || 0);
+        character.hp.temp = Math.max(prevTemp, buffSpec.evaluatedTempHp);
+      }
+
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
+        RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
+      }
+      saveStateToStorage(true);
+      renderAll();
+
+      if (!options.silentToast) {
+        showDiceTopToast({
+          icon: '🛡️',
+          title: `${buffObj.name} ➔ ${targetWeaponName || 'Self'}`,
+          breakdown: `${buffObj.summary} • CL ${effCl} • Duration: ${buffSpec.durationText}`,
+          total: 'Buff Active'
+        });
+      }
+      return buffObj;
+    }
+    window.applySpellBuffToCharacter = applySpellBuffToCharacter;
+
+    // Handle casting of any Buff Spell (Personal auto-apply, Single/Party Self vs Ally prompt, or Weapon Target prompt)
+    function handleBuffSpellCast(spellItem, cl = 1, slotLabel = 'Spell Slot Expended', icon = '✨') {
+      if (!character || !spellItem || typeof RuleEngine === 'undefined' || !RuleEngine.resolveSpellBuffSpec) {
+        return false;
+      }
+      const effCl = Math.max(1, Number(cl || spellItem.casterLevel || character.level) || 1);
+      const buffSpec = RuleEngine.resolveSpellBuffSpec(spellItem, character, effCl);
+      if (!buffSpec || !buffSpec.isBuffSpell) return false;
+
+      // If the spell rolls dice for Temp HP (e.g. Aid 1d8+CL, False Life 1d10+CL), let the dice roller run first;
+      // applySpellTempHpToSelf will automatically apply the V2 buff modifiers when the player clicks Self!
+      const dmgExpr = resolveSpellEffectiveFormula(spellItem, effCl);
+      if (dmgExpr && /\d+d\d+/i.test(dmgExpr)) {
+        return false;
+      }
+
+      // 1. Weapon-Targeted Buff Spells (Greater Mighty Wallop, Mighty Wallop, Magic Weapon, Greater Magic Weapon, Keen Edge)
+      if (buffSpec.targetMode === 'weapon') {
+        const eligibleWeapons = (character.weapons || []).filter(w => {
+          if (!w || !w.name || w.name === '-') return false;
+          const filter = buffSpec.sizeModifier?.targetFilter;
+          if (filter?.meleeOnly) {
+            const isRanged = w.isRanged || w.grip === 'Ranged' || (Array.isArray(w.tags) && w.tags.some(t => String(t).toLowerCase() === 'ranged'));
+            if (isRanged) return false;
+          }
+          if (Array.isArray(filter?.allowedDmgTypes) && filter.allowedDmgTypes.length > 0) {
+            const pType = (Array.isArray(w.damageParts) && w.damageParts[0]?.type) || w.dmgType || '';
+            const dt = String(pType).toLowerCase();
+            const tags = (w.tags || []).map(t => String(t).toLowerCase());
+            const matchesType = filter.allowedDmgTypes.some(type => {
+              const tLower = type.toLowerCase();
+              return dt.includes(tLower) || tags.includes(tLower);
+            });
+            if (!matchesType) return false;
+          }
+          return true;
+        });
+
+        const actions = eligibleWeapons.map(wep => {
+          let btnLabel = `⚔️ ${wep.name}`;
+          if (buffSpec.sizeModifier?.targetType === 'weapon' && RuleEngine.stepDamageDice) {
+            const oldDice = (Array.isArray(wep.damageParts) && wep.damageParts[0]?.dice) || wep.dice || '1d8';
+            const steps = buffSpec.sizeModifier.scaling?.type === 'per_caster_level'
+              ? Math.min(buffSpec.sizeModifier.scaling.maxSteps || 5, Math.floor(effCl / (buffSpec.sizeModifier.scaling.clDivisor || 4)))
+              : (buffSpec.sizeModifier.scaling?.steps || 1);
+            const newDice = RuleEngine.stepDamageDice(oldDice, steps);
+            btnLabel = `⚔️ ${wep.name} (${oldDice} ➔ ${newDice})`;
+          }
+          return {
+            label: btnLabel,
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-700 hover:bg-amber-600 text-white border border-amber-400 transition shadow cursor-pointer',
+            onClick: () => applySpellBuffToCharacter(spellItem, effCl, { targetWeapon: wep.name })
+          };
+        });
+
+        actions.push({
+          label: '🤝 Ally Weapon (Slot Only)',
+          className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
+          onClick: () => {
+            showDiceTopToast({
+              icon: '🤝',
+              title: `${buffSpec.name} (Ally's Weapon)`,
+              breakdown: `Cast on ally's weapon (${buffSpec.summaryText}) • ${slotLabel}`,
+              total: '-1 Slot'
+            });
+          }
+        });
+
+        showDiceTopToast({
+          icon: '⚔️',
+          title: `${buffSpec.name} — Select Weapon`,
+          breakdown: eligibleWeapons.length > 0
+            ? `${buffSpec.summaryText} • CL ${effCl} (${buffSpec.durationText}) • ${slotLabel}`
+            : `No eligible personal weapon (${buffSpec.summaryText}) • Select Ally Weapon if casting on party member`,
+          total: 'Target?',
+          actions
+        });
+        return true;
+      }
+
+      // 2. Personal Range Buffs (Primal Senses, Primal Instinct, Divine Favor, Divine Power, Righteous Might, Shield, etc.)
+      if (buffSpec.targetMode === 'self') {
+        applySpellBuffToCharacter(spellItem, effCl, { slotLabel, icon });
+        return true;
+      }
+
+      // 3. Touch / Single-Target or Party Buffs (Bull's Strength, Shield of Faith, Barkskin, Bless, Prayer, Haste, Conviction, etc.)
+      const selfLabel = buffSpec.targetMode === 'party'
+        ? `🛡️ Self & Party (${buffSpec.summaryText})`
+        : `🛡️ Self (${buffSpec.summaryText})`;
+      const allyLabel = buffSpec.targetMode === 'party'
+        ? '🤝 Allies Only (Slot Only)'
+        : '🤝 Ally / Target (Slot Only)';
+
+      showDiceTopToast({
+        icon: icon || '✨',
+        title: `${buffSpec.name} — Select Target`,
+        breakdown: `${buffSpec.summaryText} • CL ${effCl} (${buffSpec.durationText}) • ${slotLabel}`,
+        total: 'Target?',
+        actions: [
+          {
+            label: selfLabel,
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-400 transition shadow cursor-pointer',
+            onClick: () => applySpellBuffToCharacter(spellItem, effCl, { slotLabel, icon })
+          },
+          {
+            label: allyLabel,
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
+            onClick: () => {
+              showDiceTopToast({
+                icon: '🤝',
+                title: `${buffSpec.name} ➔ Ally`,
+                breakdown: `Cast on Ally (${buffSpec.summaryText} • ${buffSpec.durationText}) • ${slotLabel}`,
+                total: '-1 Slot'
+              });
+            }
+          }
+        ]
+      });
+      return true;
+    }
+    window.handleBuffSpellCast = handleBuffSpellCast;
 
     function getClericSpontaneousSpellInfo(lvl, cl = 6, mode = 'cure') {
       const numLvl = Number(lvl);
@@ -1402,6 +1612,9 @@
         slot.used++;
         saveStateToStorage(true);
         renderAll();
+        if (handleBuffSpellCast(s, cl, `Level ${lvl} Prepared Slot Expended`, '📖')) {
+          return;
+        }
         if (dmgExpr) {
           rollSpellOrManeuverFormula(dmgExpr, `${name} (Level ${lvl} • -1 Slot)`, s);
         } else {
@@ -1984,6 +2197,9 @@
       }
       saveStateToStorage(true);
       renderAll();
+      if (handleBuffSpellCast(s, cl, `Level ${lvl} ${isDom ? 'Domain' : 'Divine'} Slot Expended`, isDom ? '⚜️' : '✨')) {
+        return;
+      }
       if (dmgExpr) {
         rollSpellOrManeuverFormula(dmgExpr, `${name} (Level ${lvl}${isDom ? ' Domain' : ''} • -1 Slot)`, s);
       } else {
@@ -4318,22 +4534,12 @@
 
       if (slot && slot.used < slot.daily) {
         slot.used++;
-
-        let buffApplied = null;
-        const cleanName = (name || '').toLowerCase().trim();
-        if (Array.isArray(character.buffs)) {
-          const match = character.buffs.find(b => {
-            const bClean = (b.name || '').toLowerCase().trim();
-            return bClean === cleanName || cleanName.includes(bClean) || bClean.includes(cleanName);
-          });
-          if (match) {
-            match.active = true;
-            buffApplied = match.name;
-          }
-        }
-
         saveStateToStorage(true);
         renderAll();
+
+        if (handleBuffSpellCast(s, cl, `Level ${lvl} Spontaneous Slot Expended`, '🔮')) {
+          return;
+        }
 
         const dbItem = typeof findMasterItem === 'function' ? findMasterItem(name) : null;
         const attackType = s.attackType || dbItem?.attackType || '';
@@ -4343,13 +4549,6 @@
           rollSpellTouchAttack(s);
         } else if (dmgExpr) {
           rollSpellOrManeuverFormula(dmgExpr, `${name} (Level ${lvl} • -1 Slot)`, s);
-        } else if (buffApplied) {
-          showDiceTopToast({
-            icon: '🔮',
-            title: name,
-            breakdown: `"${buffApplied}" activated • Level ${lvl} Slot Expended`,
-            total: `-1 Slot`,
-          });
         } else {
           showDiceTopToast({
             icon: '🔮',
@@ -4677,6 +4876,9 @@
         });
       };
       addList(Array.isArray(masterDb) ? masterDb : []);
+      if (typeof RuleEngine !== 'undefined' && Array.isArray(RuleEngine.SPLATBOOK_BUFF_SPELLS)) {
+        addList(RuleEngine.SPLATBOOK_BUFF_SPELLS);
+      }
       if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
         addList(window.SrdCompendium.getAllLoaded(['Spell', 'Maneuver', 'Stance']));
       }
@@ -5385,15 +5587,29 @@
 
         const newSpellEntry = {
           id: item.id || ('spl_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
+          schemaVersion: 2,
           name: item.name,
           level: resolvedLvl,
           school: schoolName,
           benefit: cleanBenefit,
           range: rangeText,
+          target: item.target || item.area || '',
+          duration: item.duration || '',
           action: actionText,
           damageDice: autoDice,
-          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : []
+          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
+          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+          ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {}
         };
+        if (item.sizeModifier) {
+          newSpellEntry.sizeModifier = JSON.parse(JSON.stringify(item.sizeModifier));
+        }
+        if (item.tempHpFormula) {
+          newSpellEntry.tempHpFormula = item.tempHpFormula;
+        }
+        if (item.buffTargetMode) {
+          newSpellEntry.buffTargetMode = item.buffTargetMode;
+        }
         if (isDomainAdded) {
           newSpellEntry.isDomainSpell = true;
           newSpellEntry.domainSource = matchedDomainName;

@@ -6168,12 +6168,20 @@ function renderManualStatsPanel() {
       const prevTemp = Math.max(0, Number(character.hp.temp) || 0);
       character.hp.temp = prevTemp + tempVal;
       character.hp._lastPlayerChangeTs = Date.now();
+      let extraBuffNote = '';
+      if (typeof window.applySpellBuffToCharacter === 'function' && typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec) {
+        const bSpec = RuleEngine.resolveSpellBuffSpec({ name: sourceName }, character);
+        if (bSpec && bSpec.isBuffSpell && Array.isArray(bSpec.modifiers) && bSpec.modifiers.length > 0) {
+          window.applySpellBuffToCharacter({ name: sourceName }, bSpec.casterLevel, { skipTempHp: true, silentToast: true });
+          extraBuffNote = ` • Buff Active (${bSpec.summaryText})`;
+        }
+      }
       saveStateToStorage(true);
       renderAll();
       showDiceTopToast({
         icon: '🛡️',
         title: `${sourceName} (Temp HP)`,
-        breakdown: `Temporary HP: +${character.hp.temp} Temp HP • Base HP: ${character.hp.current}/${character.hp.max}`,
+        breakdown: `Temporary HP: +${character.hp.temp} Temp HP${extraBuffNote} • Base HP: ${character.hp.current}/${character.hp.max}`,
         total: `+${tempVal} Temp`
       });
     }

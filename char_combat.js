@@ -2965,6 +2965,12 @@
       if (!spell) return;
 
       const cl = getEffectiveSpellCasterLevel(spell);
+      if (!spell.sizeModifier && typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec) {
+        const bSpec = RuleEngine.resolveSpellBuffSpec(spell, character, cl);
+        if (bSpec && bSpec.sizeModifier) {
+          spell.sizeModifier = bSpec.sizeModifier;
+        }
+      }
 
       // Check for sizeModifier targetType: weapon (e.g. Greater Mighty Wallop, Mighty Wallop)
       if (spell.sizeModifier?.targetType === 'weapon' && !targetWeaponName) {
@@ -2975,7 +2981,8 @@
             if (isRanged) return false;
           }
           if (Array.isArray(spell.sizeModifier.targetFilter?.allowedDmgTypes) && spell.sizeModifier.targetFilter.allowedDmgTypes.length > 0) {
-            const dt = (w.dmgType || '').toLowerCase();
+            const pType = (Array.isArray(w.damageParts) && w.damageParts[0]?.type) || w.dmgType || '';
+            const dt = String(pType).toLowerCase();
             const tags = (w.tags || []).map(t => String(t).toLowerCase());
             const matchesType = spell.sizeModifier.targetFilter.allowedDmgTypes.some(type => {
               const tLower = type.toLowerCase();
@@ -3388,7 +3395,7 @@
         // 1. Render in attack results card at the bottom of the Combat page
         renderSpellCastResults(spell, castData);
 
-        // 2. Toast notification
+        // 2. Toast notification & Buff Spell Target Prompt
         if (castData.isSizeModifier && castData.targetWeaponName) {
           showDiceTopToast({
             icon: '🔮',
@@ -3396,6 +3403,8 @@
             breakdown: `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} size steps). Duration: ${castData.durationText}`,
             total: castData.newDice
           });
+        } else if (!hasDamageDice && typeof window.handleBuffSpellCast === 'function' && window.handleBuffSpellCast(spell, cl, `Level ${finalLvl} ${slotSource}`, '🔮')) {
+          // Handled by Universal V2 Spell Buff Cast Flow (Self vs Ally / Weapon Target)
         } else {
           showDiceTopToast({
             icon: '🔮',
@@ -12045,8 +12054,9 @@
       });
       if (hasImprovedInit) featBonus += 4;
       const miscBonus = Number(character?.initiativeMisc) || 0;
-      const total = dexMod + featBonus + miscBonus;
-      return { total, dexMod, featBonus, miscBonus, hasImprovedInit };
+      const buffBonus = Number(character?.buffInitiativeBonus) || 0;
+      const total = dexMod + featBonus + miscBonus + buffBonus;
+      return { total, dexMod, featBonus, miscBonus, buffBonus, hasImprovedInit };
     }
 
     function rollInitiative3D() {

@@ -1,1 +1,1113 @@
-[]
+[
+  {
+    "id": "spl-primal-hunter",
+    "schemaVersion": 2,
+    "name": "Primal Hunter",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 1,
+    "learnedAt": {
+      "class": {
+        "Druid": 1,
+        "Ranger": 1,
+        "Sorcerer": 1,
+        "Wizard": 1
+      }
+    },
+    "source": "Dragon Magic p.71",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "24 hours",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "shortDescription": "+5 competence bonus on Climb, Jump, and Swim checks for 24 hours.",
+    "description": "<p>Bestial strength floods your limbs, granting you a +5 competence bonus on Climb, Jump, and Swim checks for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).</p>",
+    "modifiers": [
+      {
+        "target": "skill.climb",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.jump",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.swim",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "primalSpell": true
+    }
+  },
+  {
+    "id": "spl-primal-instinct",
+    "schemaVersion": 2,
+    "name": "Primal Instinct",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 2,
+    "learnedAt": {
+      "class": {
+        "Druid": 2,
+        "Ranger": 2,
+        "Sorcerer": 2,
+        "Wizard": 2
+      }
+    },
+    "source": "Dragon Magic p.71",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "24 hours",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "shortDescription": "+5 competence bonus on Initiative and Survival checks for 24 hours.",
+    "description": "<p>Primeval awareness sharpens your reflexes, granting you a +5 competence bonus on Initiative and Survival checks for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).</p>",
+    "modifiers": [
+      {
+        "target": "initiative",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.survival",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "primalSpell": true
+    }
+  },
+  {
+    "id": "spl-primal-senses",
+    "schemaVersion": 2,
+    "name": "Primal Senses",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 3,
+    "learnedAt": {
+      "class": {
+        "Druid": 3,
+        "Ranger": 3,
+        "Sorcerer": 3,
+        "Wizard": 3
+      }
+    },
+    "source": "Dragon Magic p.71",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "24 hours",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "shortDescription": "Low-light vision and +5 competence bonus on Listen and Spot checks for 24 hours.",
+    "description": "<p>Your senses sharpen to draconic acuity, granting you Low-Light Vision and a +5 competence bonus on Listen and Spot checks for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).</p>",
+    "modifiers": [
+      {
+        "target": "skill.listen",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.spot",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "primalSpell": true,
+      "lowLightVision": true
+    }
+  },
+  {
+    "id": "spl-primal-speed",
+    "schemaVersion": 2,
+    "name": "Primal Speed",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 4,
+    "learnedAt": {
+      "class": {
+        "Druid": 4,
+        "Ranger": 4,
+        "Sorcerer": 4,
+        "Wizard": 4
+      }
+    },
+    "source": "Dragon Magic p.71",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "24 hours",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "shortDescription": "+5 competence bonus on Reflex saves and +10 ft. enhancement bonus to speed for 24 hours.",
+    "description": "<p>Raw predatory speed courses through your body, granting you a +5 competence bonus on Reflex saves and a +10-foot enhancement bonus to all modes of movement for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).</p>",
+    "modifiers": [
+      {
+        "target": "save.ref",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "speed.land",
+        "value": 10,
+        "formula": "10",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "primalSpell": true
+    }
+  },
+  {
+    "id": "spl-mighty-wallop",
+    "schemaVersion": 2,
+    "name": "Mighty Wallop",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 1,
+    "learnedAt": {
+      "class": {
+        "Sorcerer": 1,
+        "Wizard": 1
+      }
+    },
+    "source": "Races of the Dragon p.114",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "F"
+    ],
+    "range": "Touch",
+    "target": "One bludgeoning melee weapon touched",
+    "duration": "1 min./level",
+    "save": "Will negates (harmless, object)",
+    "sr": true,
+    "buffTargetMode": "weapon",
+    "sizeModifier": {
+      "targetType": "weapon",
+      "targetFilter": {
+        "meleeOnly": true,
+        "allowedDmgTypes": [
+          "Bludgeoning"
+        ]
+      },
+      "scaling": {
+        "type": "flat",
+        "steps": 1
+      }
+    },
+    "shortDescription": "Increases a bludgeoning melee weapon’s damage by 1 effective size category.",
+    "description": "<p><i>Mighty wallop</i> increases the damage of a bludgeoning melee weapon by one effective size category without changing its dimensions or weight.</p>",
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-greater-mighty-wallop",
+    "schemaVersion": 2,
+    "name": "Greater Mighty Wallop",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 3,
+    "learnedAt": {
+      "class": {
+        "Sorcerer": 3,
+        "Wizard": 3
+      }
+    },
+    "source": "Races of the Dragon p.115",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "F"
+    ],
+    "range": "Touch",
+    "target": "One bludgeoning melee weapon touched",
+    "duration": "1 hour/level",
+    "save": "Will negates (harmless, object)",
+    "sr": true,
+    "buffTargetMode": "weapon",
+    "sizeModifier": {
+      "targetType": "weapon",
+      "targetFilter": {
+        "meleeOnly": true,
+        "allowedDmgTypes": [
+          "Bludgeoning"
+        ]
+      },
+      "scaling": {
+        "type": "per_caster_level",
+        "clDivisor": 4,
+        "maxSteps": 5
+      }
+    },
+    "shortDescription": "Increases a bludgeoning melee weapon’s damage by +1 size category per 4 caster levels (max Colossal / +5 steps).",
+    "description": "<p>This spell functions like <i>mighty wallop</i>, except that it increases the bludgeoning melee weapon’s effective damage size by one category per four caster levels (maximum +5 size categories, up to Colossal) for 1 hour/level.</p>",
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-conviction",
+    "schemaVersion": 2,
+    "name": "Conviction",
+    "type": "Spell",
+    "category": "Abjuration",
+    "level": 1,
+    "learnedAt": {
+      "class": {
+        "Cleric": 1,
+        "Paladin": 1
+      }
+    },
+    "source": "Spell Compendium p.52",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "range": "Touch",
+    "target": "Living creature touched",
+    "duration": "10 min./level",
+    "save": "Will negates (harmless)",
+    "sr": true,
+    "buffTargetMode": "single",
+    "shortDescription": "Subject gains +2 morale bonus on saving throws, +1 per 6 caster levels (max +5).",
+    "description": "<p>This spell bolsters the mental, physical, and spiritual strength of the creature touched, granting a +2 morale bonus on saving throws, plus an additional +1 for every six caster levels you have (maximum +5 morale bonus at 18th level).</p>",
+    "modifiers": [
+      {
+        "target": "save.all",
+        "value": 0,
+        "formula": "2 + min(3, floor(@cl / 6))",
+        "type": "morale",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-mass-conviction",
+    "schemaVersion": 2,
+    "name": "Conviction, Mass",
+    "type": "Spell",
+    "category": "Abjuration",
+    "level": 3,
+    "learnedAt": {
+      "class": {
+        "Cleric": 3
+      }
+    },
+    "source": "Spell Compendium p.52",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "range": "Medium",
+    "target": "Allies in a 20-ft.-radius burst",
+    "duration": "10 min./level",
+    "save": "Will negates (harmless)",
+    "sr": true,
+    "buffTargetMode": "party",
+    "shortDescription": "Allies gain +2 morale bonus on saving throws, +1 per 6 caster levels (max +5).",
+    "description": "<p>As <i>conviction</i>, except it bolsters all allies in a 20-ft.-radius burst with a +2 morale bonus on all saving throws (+1 per 6 caster levels, maximum +5).</p>",
+    "modifiers": [
+      {
+        "target": "save.all",
+        "value": 0,
+        "formula": "2 + min(3, floor(@cl / 6))",
+        "type": "morale",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-recitation",
+    "schemaVersion": 2,
+    "name": "Recitation",
+    "type": "Spell",
+    "category": "Conjuration",
+    "level": 4,
+    "learnedAt": {
+      "class": {
+        "Cleric": 4
+      }
+    },
+    "source": "Spell Compendium p.170",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "DF"
+    ],
+    "range": "60 ft.",
+    "target": "Allies within a 60-ft.-radius burst centered on you",
+    "duration": "1 round/level",
+    "save": "None",
+    "sr": true,
+    "buffTargetMode": "party",
+    "shortDescription": "Allies gain +2 luck bonus on attack rolls, AC, and saving throws (+3 if they worship your deity).",
+    "description": "<p>By reciting a sacred passage, you invoke your deity’s blessing upon yourself and your allies, granting a +2 luck bonus on attack rolls, AC, and saving throws (or +3 if they worship the same patron deity as you).</p>",
+    "modifiers": [
+      {
+        "target": "attack.all",
+        "value": 3,
+        "formula": "3",
+        "type": "luck",
+        "condition": null
+      },
+      {
+        "target": "ac.dodge",
+        "value": 3,
+        "formula": "3",
+        "type": "luck",
+        "condition": null
+      },
+      {
+        "target": "save.all",
+        "value": 3,
+        "formula": "3",
+        "type": "luck",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-righteous-wrath-of-the-faithful",
+    "schemaVersion": 2,
+    "name": "Righteous Wrath of the Faithful",
+    "type": "Spell",
+    "category": "Enchantment",
+    "level": 5,
+    "learnedAt": {
+      "class": {
+        "Cleric": 5
+      }
+    },
+    "source": "Spell Compendium p.177",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "DF"
+    ],
+    "range": "30 ft.",
+    "target": "Allies within a 30-ft.-radius burst centered on you",
+    "duration": "1 round/level",
+    "save": "None",
+    "sr": true,
+    "buffTargetMode": "party",
+    "shortDescription": "Allies gain 1 extra melee attack at highest bonus and +3 morale bonus on melee attack, melee damage, and saves.",
+    "description": "<p>Allies gain one extra melee attack at their highest base attack bonus when making a full attack, plus a +3 morale bonus on melee attack rolls, melee damage rolls, and saving throws.</p>",
+    "modifiers": [
+      {
+        "target": "attack.melee",
+        "value": 3,
+        "formula": "3",
+        "type": "morale",
+        "condition": null
+      },
+      {
+        "target": "damage.melee",
+        "value": 3,
+        "formula": "3",
+        "type": "morale",
+        "condition": null
+      },
+      {
+        "target": "save.all",
+        "value": 3,
+        "formula": "3",
+        "type": "morale",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "extraAttackFullAttack": true
+    }
+  },
+  {
+    "id": "spl-resistance-greater",
+    "schemaVersion": 2,
+    "name": "Resistance, Greater",
+    "type": "Spell",
+    "category": "Abjuration",
+    "level": 4,
+    "learnedAt": {
+      "class": {
+        "Bard": 4,
+        "Cleric": 4,
+        "Druid": 4,
+        "Sorcerer": 4,
+        "Wizard": 4
+      }
+    },
+    "source": "Spell Compendium p.174",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "M",
+      "DF"
+    ],
+    "range": "Touch",
+    "target": "Creature touched",
+    "duration": "24 hours",
+    "save": "Will negates (harmless)",
+    "sr": true,
+    "buffTargetMode": "single",
+    "shortDescription": "Subject gains +3 resistance bonus on all saving throws for 24 hours.",
+    "description": "<p>You grant the subject a +3 resistance bonus on all saving throws for 24 hours.</p>",
+    "modifiers": [
+      {
+        "target": "save.all",
+        "value": 3,
+        "formula": "3",
+        "type": "resistance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-resistance-superior",
+    "schemaVersion": 2,
+    "name": "Resistance, Superior",
+    "type": "Spell",
+    "category": "Abjuration",
+    "level": 6,
+    "learnedAt": {
+      "class": {
+        "Bard": 6,
+        "Cleric": 6,
+        "Druid": 6,
+        "Sorcerer": 6,
+        "Wizard": 6
+      }
+    },
+    "source": "Spell Compendium p.174",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "M",
+      "DF"
+    ],
+    "range": "Touch",
+    "target": "Creature touched",
+    "duration": "24 hours",
+    "save": "Will negates (harmless)",
+    "sr": true,
+    "buffTargetMode": "single",
+    "shortDescription": "Subject gains +6 resistance bonus on all saving throws for 24 hours.",
+    "description": "<p>You grant the subject a +6 resistance bonus on all saving throws for 24 hours.</p>",
+    "modifiers": [
+      {
+        "target": "save.all",
+        "value": 6,
+        "formula": "6",
+        "type": "resistance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-nerveskitter",
+    "schemaVersion": 2,
+    "name": "Nerveskitter",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 1,
+    "learnedAt": {
+      "class": {
+        "Sorcerer": 1,
+        "Wizard": 1
+      }
+    },
+    "source": "Spell Compendium p.146",
+    "actionType": "Immediate",
+    "castingTime": "1 immediate action",
+    "components": [
+      "V",
+      "S"
+    ],
+    "range": "Close",
+    "target": "One creature",
+    "duration": "1 round",
+    "save": "None",
+    "sr": true,
+    "buffTargetMode": "single",
+    "shortDescription": "Subject gains a +5 bonus on Initiative checks.",
+    "description": "<p>Cast when initiative is rolled, <i>nerveskitter</i> grants the subject a +5 untyped bonus on its Initiative check.</p>",
+    "modifiers": [
+      {
+        "target": "initiative",
+        "value": 5,
+        "formula": "5",
+        "type": "untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-divine-agility",
+    "schemaVersion": 2,
+    "name": "Divine Agility",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 5,
+    "learnedAt": {
+      "class": {
+        "Cleric": 5
+      }
+    },
+    "source": "Spell Compendium p.69",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "DF"
+    ],
+    "range": "Touch",
+    "target": "Living creature touched",
+    "duration": "1 round/level",
+    "save": "Will negates (harmless)",
+    "sr": true,
+    "buffTargetMode": "single",
+    "shortDescription": "Subject gains +10 enhancement bonus to Dexterity and the Spring Attack feat.",
+    "description": "<p>You imbue the subject with divine grace and reflexes, granting a +10 enhancement bonus to Dexterity, the benefits of the Spring Attack feat, and a base Reflex save progression equal to a Rogue of the subject’s character level.</p>",
+    "modifiers": [
+      {
+        "target": "ability.dex",
+        "value": 10,
+        "formula": "10",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-sirines-grace",
+    "schemaVersion": 2,
+    "name": "Sirine's Grace",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 4,
+    "learnedAt": {
+      "class": {
+        "Bard": 4,
+        "Druid": 4
+      }
+    },
+    "source": "Spell Compendium p.191",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "1 round/level",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "shortDescription": "+4 enhancement to CHA and DEX, +8 on Perform, and Deflection AC bonus equal to CHA modifier.",
+    "description": "<p>You gain a +4 enhancement bonus to Charisma and Dexterity, a +8 untyped bonus on Perform checks, a deflection bonus to AC equal to your Charisma modifier, and a swim speed of 60 ft.</p>",
+    "modifiers": [
+      {
+        "target": "ability.cha",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "skill.perform",
+        "value": 8,
+        "formula": "8",
+        "type": "untyped",
+        "condition": null
+      },
+      {
+        "target": "ac.deflection",
+        "value": 0,
+        "formula": "max(1, @chaMod)",
+        "type": "deflection",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-bite-of-the-werewolf",
+    "schemaVersion": 2,
+    "name": "Bite of the Werewolf",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 3,
+    "learnedAt": {
+      "class": {
+        "Druid": 3,
+        "Sorcerer": 3,
+        "Wizard": 3
+      }
+    },
+    "source": "Spell Compendium p.28",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "1 round/level",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "shortDescription": "+2 enhancement STR, +4 DEX, +4 CON, +4 natural armor, and Blind-Fight.",
+    "description": "<p>You gain a +2 enhancement bonus to Strength, +4 enhancement bonus to Dexterity, +4 enhancement bonus to Constitution, +4 enhancement bonus to natural armor, and the Blind-Fight feat.</p>",
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 2,
+        "formula": "2",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural_enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-bite-of-the-weretiger",
+    "schemaVersion": 2,
+    "name": "Bite of the Weretiger",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 5,
+    "learnedAt": {
+      "class": {
+        "Druid": 5,
+        "Sorcerer": 5,
+        "Wizard": 5
+      }
+    },
+    "source": "Spell Compendium p.28",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "1 round/level",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "shortDescription": "+12 enhancement STR, +4 DEX, +6 CON, +5 natural armor, Blind-Fight, and Power Attack.",
+    "description": "<p>You gain a +12 enhancement bonus to Strength, +4 enhancement bonus to Dexterity, +6 enhancement bonus to Constitution, +5 enhancement bonus to natural armor, and the Blind-Fight and Power Attack feats.</p>",
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 12,
+        "formula": "12",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 6,
+        "formula": "6",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 5,
+        "formula": "5",
+        "type": "natural_enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-bite-of-the-werebear",
+    "schemaVersion": 2,
+    "name": "Bite of the Werebear",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 6,
+    "learnedAt": {
+      "class": {
+        "Druid": 6,
+        "Sorcerer": 6,
+        "Wizard": 6
+      }
+    },
+    "source": "Spell Compendium p.28",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "1 round/level",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "shortDescription": "+16 enhancement STR, -2 DEX, +8 CON, +7 natural armor, Blind-Fight, and Power Attack.",
+    "description": "<p>You gain a +16 enhancement bonus to Strength, -2 penalty to Dexterity, +8 enhancement bonus to Constitution, +7 enhancement bonus to natural armor, and the Blind-Fight and Power Attack feats.</p>",
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 16,
+        "formula": "16",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": -2,
+        "formula": "-2",
+        "type": "penalty",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 8,
+        "formula": "8",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 7,
+        "formula": "7",
+        "type": "natural_enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "spl-heart-of-air",
+    "schemaVersion": 2,
+    "name": "Heart of Air",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 2,
+    "learnedAt": {
+      "class": {
+        "Druid": 2,
+        "Sorcerer": 2,
+        "Wizard": 2
+      }
+    },
+    "source": "Complete Mage p.106",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "1 hour/level",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "shortDescription": "+10 enhancement bonus on Jump checks (+10 ft. fly speed if you already have one).",
+    "description": "<p>You gain a +10 enhancement bonus on Jump checks and can expend this spell as an immediate action to gain Feather Fall for 1 round.</p>",
+    "modifiers": [
+      {
+        "target": "skill.jump",
+        "value": 10,
+        "formula": "10",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "heartSpell": true
+    }
+  },
+  {
+    "id": "spl-heart-of-water",
+    "schemaVersion": 2,
+    "name": "Heart of Water",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 3,
+    "learnedAt": {
+      "class": {
+        "Druid": 3,
+        "Sorcerer": 3,
+        "Wizard": 3
+      }
+    },
+    "source": "Complete Mage p.107",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "1 hour/level",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "shortDescription": "Swim speed, water breathing, and +5 enhancement bonus on Escape Artist checks.",
+    "description": "<p>You gain water breathing, a swim speed equal to your land speed (+8 racial bonus on Swim checks), and a +5 enhancement bonus on Escape Artist checks. You can expend this spell as a swift action to gain Freedom of Movement for 1 round/level.</p>",
+    "modifiers": [
+      {
+        "target": "skill.escape_artist",
+        "value": 5,
+        "formula": "5",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "skill.swim",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "heartSpell": true
+    }
+  },
+  {
+    "id": "spl-heart-of-earth",
+    "schemaVersion": 2,
+    "name": "Heart of Earth",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 4,
+    "learnedAt": {
+      "class": {
+        "Druid": 4,
+        "Sorcerer": 4,
+        "Wizard": 4
+      }
+    },
+    "source": "Complete Mage p.106",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "1 hour/level",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "tempHpFormula": "min(30, @cl * 2)",
+    "shortDescription": "Gain 2 temporary HP per caster level (max 30) and +8 bonus to resist Bull Rush, Overrun, and Trip.",
+    "description": "<p>You gain temporary hit points equal to twice your caster level (maximum 30) and a +8 bonus on checks to resist being bull rushed, overrun, or tripped. You can expend this spell as a swift action to gain Stoneskin (DR 10/adamantine) for 1 round/level.</p>",
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "heartSpell": true
+    }
+  },
+  {
+    "id": "spl-heart-of-fire",
+    "schemaVersion": 2,
+    "name": "Heart of Fire",
+    "type": "Spell",
+    "category": "Transmutation",
+    "level": 5,
+    "learnedAt": {
+      "class": {
+        "Druid": 5,
+        "Sorcerer": 5,
+        "Wizard": 5
+      }
+    },
+    "source": "Complete Mage p.107",
+    "actionType": "Standard",
+    "castingTime": "1 standard action",
+    "components": [
+      "V",
+      "S"
+    ],
+    "range": "Personal",
+    "target": "You",
+    "duration": "1 hour/level",
+    "save": "None",
+    "sr": false,
+    "buffTargetMode": "self",
+    "shortDescription": "+10 ft. enhancement bonus to land speed and Fire Resistance 10.",
+    "description": "<p>You gain a +10-foot enhancement bonus to your land speed and resistance to fire 10. You can expend this spell as a swift action to activate Fire Shield (warm shield) for 1 round/level.</p>",
+    "modifiers": [
+      {
+        "target": "speed.land",
+        "value": 10,
+        "formula": "10",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "heartSpell": true
+    }
+  }
+]

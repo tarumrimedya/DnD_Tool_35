@@ -281,6 +281,9 @@ const RuleEngine = {
     if (!found && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
       found = window.BUNDLED_SRD_CORE_CATALOG.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) || null;
     }
+    if (!found && Array.isArray(this.SPLATBOOK_BUFF_SPELLS)) {
+      found = this.SPLATBOOK_BUFF_SPELLS.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean))) || null;
+    }
     return found ? this.ensureV2Entry(found) : null;
   },
 
@@ -1772,6 +1775,254 @@ const RuleEngine = {
     };
   },
 
+  // Format a single V2 modifier into a human-readable D&D 3.5e label
+  formatBuffModifierLabel(mod, evalCtx = { cl: 1, level: 1, bab: 0, chaMod: 0 }) {
+    if (!mod || !mod.target) return '';
+    const rawExpr = mod.value !== undefined && mod.value !== null && mod.value !== 0 ? mod.value : (mod.formula !== undefined ? mod.formula : mod.value);
+    const val = Number(this.evaluateFormula(rawExpr, evalCtx)) || 0;
+    if (val === 0) return '';
+    const sign = val >= 0 ? `+${val}` : `${val}`;
+    const bType = mod.type && mod.type !== 'untyped' && mod.type !== 'penalty'
+      ? ` ${String(mod.type).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}`
+      : '';
+    const t = String(mod.target).toLowerCase().trim();
+    const targetLabelMap = {
+      'ability.str': 'STR', 'str': 'STR',
+      'ability.dex': 'DEX', 'dex': 'DEX',
+      'ability.con': 'CON', 'con': 'CON',
+      'ability.int': 'INT', 'int': 'INT',
+      'ability.wis': 'WIS', 'wis': 'WIS',
+      'ability.cha': 'CHA', 'cha': 'CHA',
+      'ac.armor': 'Armor AC', 'ac.shield': 'Shield AC', 'ac.natural': 'Natural Armor',
+      'ac.deflection': 'Deflection AC', 'ac.dodge': 'Dodge AC', 'ac.total': 'AC', 'ac': 'AC',
+      'save.all': 'All Saves', 'saves.all': 'All Saves',
+      'save.fort': 'Fortitude', 'save.ref': 'Reflex', 'save.will': 'Will',
+      'attack.all': 'Attack', 'attack': 'Attack', 'attack.melee': 'Melee Attack', 'attack.ranged': 'Ranged Attack',
+      'damage.weapon': 'Weapon Damage', 'damage.all': 'Damage', 'damage.melee': 'Melee Damage', 'damage.ranged': 'Ranged Damage',
+      'initiative': 'Initiative', 'init': 'Initiative',
+      'speed.land': 'ft Speed', 'speed': 'ft Speed',
+      'skill.all': 'All Skills', 'skills.all': 'All Skills'
+    };
+    let tLabel = targetLabelMap[t];
+    if (!tLabel) {
+      if (t.startsWith('skill.') || t.startsWith('skills.')) {
+        tLabel = t.replace(/^skills?\./, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      } else {
+        tLabel = t.toUpperCase();
+      }
+    }
+    return `${sign}${bType} ${tLabel}`;
+  },
+
+  // Built-in Canonical V2 Splatbook Buff Spells (Dragon Magic, Races of the Dragon, Spell Compendium, Complete Mage)
+  SPLATBOOK_BUFF_SPELLS: [
+    { id: 'spl-primal-hunter', schemaVersion: 2, name: 'Primal Hunter', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 1, learnedAt: { class: { Druid: 1, Ranger: 1, Sorcerer: 1, Wizard: 1 } }, source: 'Dragon Magic p.71', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '24 hours', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+5 competence bonus on Climb, Jump, and Swim checks for 24 hours.', description: 'Bestial strength floods your limbs, granting you a +5 competence bonus on Climb, Jump, and Swim checks for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).', modifiers: [{ target: 'skill.climb', value: 5, formula: '5', type: 'competence', condition: null }, { target: 'skill.jump', value: 5, formula: '5', type: 'competence', condition: null }, { target: 'skill.swim', value: 5, formula: '5', type: 'competence', condition: null }], damageParts: [], modes: [], ruleFlags: { primalSpell: true } },
+    { id: 'spl-primal-instinct', schemaVersion: 2, name: 'Primal Instinct', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 2, learnedAt: { class: { Druid: 2, Ranger: 2, Sorcerer: 2, Wizard: 2 } }, source: 'Dragon Magic p.71', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '24 hours', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+5 competence bonus on Initiative and Survival checks for 24 hours.', description: 'Primeval awareness sharpens your reflexes, granting you a +5 competence bonus on Initiative and Survival checks for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).', modifiers: [{ target: 'initiative', value: 5, formula: '5', type: 'competence', condition: null }, { target: 'skill.survival', value: 5, formula: '5', type: 'competence', condition: null }], damageParts: [], modes: [], ruleFlags: { primalSpell: true } },
+    { id: 'spl-primal-senses', schemaVersion: 2, name: 'Primal Senses', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 3, learnedAt: { class: { Druid: 3, Ranger: 3, Sorcerer: 3, Wizard: 3 } }, source: 'Dragon Magic p.71', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '24 hours', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: 'Low-light vision and +5 competence bonus on Listen and Spot checks for 24 hours.', description: 'Your senses sharpen to draconic acuity, granting you Low-Light Vision and a +5 competence bonus on Listen and Spot checks for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).', modifiers: [{ target: 'skill.listen', value: 5, formula: '5', type: 'competence', condition: null }, { target: 'skill.spot', value: 5, formula: '5', type: 'competence', condition: null }], damageParts: [], modes: [], ruleFlags: { primalSpell: true, lowLightVision: true } },
+    { id: 'spl-primal-speed', schemaVersion: 2, name: 'Primal Speed', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 4, learnedAt: { class: { Druid: 4, Ranger: 4, Sorcerer: 4, Wizard: 4 } }, source: 'Dragon Magic p.71', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '24 hours', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+5 competence bonus on Reflex saves and +10 ft. enhancement bonus to speed for 24 hours.', description: 'Raw predatory speed courses through your body, granting you a +5 competence bonus on Reflex saves and a +10-foot enhancement bonus to all modes of movement for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).', modifiers: [{ target: 'save.ref', value: 5, formula: '5', type: 'competence', condition: null }, { target: 'speed.land', value: 10, formula: '10', type: 'enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: { primalSpell: true } },
+    { id: 'spl-mighty-wallop', schemaVersion: 2, name: 'Mighty Wallop', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 1, learnedAt: { class: { Sorcerer: 1, Wizard: 1 } }, source: 'Races of the Dragon p.114', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'F'], range: 'Touch', target: 'One bludgeoning melee weapon touched', duration: '1 min./level', save: 'Will negates (harmless, object)', sr: true, buffTargetMode: 'weapon', sizeModifier: { targetType: 'weapon', targetFilter: { meleeOnly: true, allowedDmgTypes: ['Bludgeoning'] }, scaling: { type: 'flat', steps: 1 } }, shortDescription: 'Increases a bludgeoning melee weapon’s damage by 1 effective size category.', description: 'Mighty wallop increases the damage of a bludgeoning melee weapon by one effective size category without changing its dimensions or weight.', modifiers: [], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-greater-mighty-wallop', schemaVersion: 2, name: 'Greater Mighty Wallop', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 3, learnedAt: { class: { Sorcerer: 3, Wizard: 3 } }, source: 'Races of the Dragon p.115', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'F'], range: 'Touch', target: 'One bludgeoning melee weapon touched', duration: '1 hour/level', save: 'Will negates (harmless, object)', sr: true, buffTargetMode: 'weapon', sizeModifier: { targetType: 'weapon', targetFilter: { meleeOnly: true, allowedDmgTypes: ['Bludgeoning'] }, scaling: { type: 'per_caster_level', clDivisor: 4, maxSteps: 5 } }, shortDescription: 'Increases a bludgeoning melee weapon’s damage by +1 size category per 4 caster levels (max Colossal / +5 steps).', description: 'This spell functions like mighty wallop, except that it increases the bludgeoning melee weapon’s effective damage size by one category per four caster levels (maximum +5 size categories, up to Colossal) for 1 hour/level.', modifiers: [], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-conviction', schemaVersion: 2, name: 'Conviction', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 1, learnedAt: { class: { Cleric: 1, Paladin: 1 } }, source: 'Spell Compendium p.52', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Touch', target: 'Living creature touched', duration: '10 min./level', save: 'Will negates (harmless)', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains +2 morale bonus on saving throws, +1 per 6 caster levels (max +5).', description: 'This spell bolsters the mental, physical, and spiritual strength of the creature touched, granting a +2 morale bonus on saving throws, plus an additional +1 for every six caster levels you have (maximum +5 morale bonus at 18th level).', modifiers: [{ target: 'save.all', value: 0, formula: '2 + min(3, floor(@cl / 6))', type: 'morale', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-mass-conviction', schemaVersion: 2, name: 'Conviction, Mass', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 3, learnedAt: { class: { Cleric: 3 } }, source: 'Spell Compendium p.52', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Medium', target: 'Allies in a 20-ft.-radius burst', duration: '10 min./level', save: 'Will negates (harmless)', sr: true, buffTargetMode: 'party', shortDescription: 'Allies gain +2 morale bonus on saving throws, +1 per 6 caster levels (max +5).', description: 'As conviction, except it bolsters all allies in a 20-ft.-radius burst with a +2 morale bonus on all saving throws (+1 per 6 caster levels, maximum +5).', modifiers: [{ target: 'save.all', value: 0, formula: '2 + min(3, floor(@cl / 6))', type: 'morale', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-recitation', schemaVersion: 2, name: 'Recitation', type: 'Spell', category: 'Conjuration', school: 'Conjuration', level: 4, learnedAt: { class: { Cleric: 4 } }, source: 'Spell Compendium p.170', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'DF'], range: '60 ft.', target: 'Allies within a 60-ft.-radius burst centered on you', duration: '1 round/level', save: 'None', sr: true, buffTargetMode: 'party', shortDescription: 'Allies gain +2 luck bonus on attack rolls, AC, and saving throws (+3 if they worship your deity).', description: 'By reciting a sacred passage, you invoke your deity’s blessing upon yourself and your allies, granting a +2 luck bonus on attack rolls, AC, and saving throws (or +3 if they worship the same patron deity as you).', modifiers: [{ target: 'attack.all', value: 3, formula: '3', type: 'luck', condition: null }, { target: 'ac.dodge', value: 3, formula: '3', type: 'luck', condition: null }, { target: 'save.all', value: 3, formula: '3', type: 'luck', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-righteous-wrath-of-the-faithful', schemaVersion: 2, name: 'Righteous Wrath of the Faithful', type: 'Spell', category: 'Enchantment', school: 'Enchantment', level: 5, learnedAt: { class: { Cleric: 5 } }, source: 'Spell Compendium p.177', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'DF'], range: '30 ft.', target: 'Allies within a 30-ft.-radius burst centered on you', duration: '1 round/level', save: 'None', sr: true, buffTargetMode: 'party', shortDescription: 'Allies gain 1 extra melee attack at highest bonus and +3 morale bonus on melee attack, melee damage, and saves.', description: 'Allies gain one extra melee attack at their highest base attack bonus when making a full attack, plus a +3 morale bonus on melee attack rolls, melee damage rolls, and saving throws.', modifiers: [{ target: 'attack.melee', value: 3, formula: '3', type: 'morale', condition: null }, { target: 'damage.melee', value: 3, formula: '3', type: 'morale', condition: null }, { target: 'save.all', value: 3, formula: '3', type: 'morale', condition: null }], damageParts: [], modes: [], ruleFlags: { extraAttackFullAttack: true } },
+    { id: 'spl-resistance-greater', schemaVersion: 2, name: 'Resistance, Greater', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 4, learnedAt: { class: { Bard: 4, Cleric: 4, Druid: 4, Sorcerer: 4, Wizard: 4 } }, source: 'Spell Compendium p.174', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M', 'DF'], range: 'Touch', target: 'Creature touched', duration: '24 hours', save: 'Will negates (harmless)', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains +3 resistance bonus on all saving throws for 24 hours.', description: 'You grant the subject a +3 resistance bonus on all saving throws for 24 hours.', modifiers: [{ target: 'save.all', value: 3, formula: '3', type: 'resistance', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-resistance-superior', schemaVersion: 2, name: 'Resistance, Superior', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 6, learnedAt: { class: { Bard: 6, Cleric: 6, Druid: 6, Sorcerer: 6, Wizard: 6 } }, source: 'Spell Compendium p.174', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M', 'DF'], range: 'Touch', target: 'Creature touched', duration: '24 hours', save: 'Will negates (harmless)', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains +6 resistance bonus on all saving throws for 24 hours.', description: 'You grant the subject a +6 resistance bonus on all saving throws for 24 hours.', modifiers: [{ target: 'save.all', value: 6, formula: '6', type: 'resistance', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-nerveskitter', schemaVersion: 2, name: 'Nerveskitter', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 1, learnedAt: { class: { Sorcerer: 1, Wizard: 1 } }, source: 'Spell Compendium p.146', actionType: 'Immediate', castingTime: '1 immediate action', components: ['V', 'S'], range: 'Close', target: 'One creature', duration: '1 round', save: 'None', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains a +5 bonus on Initiative checks.', description: 'Cast when initiative is rolled, nerveskitter grants the subject a +5 untyped bonus on its Initiative check.', modifiers: [{ target: 'initiative', value: 5, formula: '5', type: 'untyped', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-divine-agility', schemaVersion: 2, name: 'Divine Agility', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 5, learnedAt: { class: { Cleric: 5 } }, source: 'Spell Compendium p.69', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'DF'], range: 'Touch', target: 'Living creature touched', duration: '1 round/level', save: 'Will negates (harmless)', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains +10 enhancement bonus to Dexterity and the Spring Attack feat.', description: 'You imbue the subject with divine grace and reflexes, granting a +10 enhancement bonus to Dexterity, the benefits of the Spring Attack feat, and a base Reflex save progression equal to a Rogue of the subject’s character level.', modifiers: [{ target: 'ability.dex', value: 10, formula: '10', type: 'enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-sirines-grace', schemaVersion: 2, name: "Sirine's Grace", type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 4, learnedAt: { class: { Bard: 4, Druid: 4 } }, source: 'Spell Compendium p.191', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Personal', target: 'You', duration: '1 round/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+4 enhancement to CHA and DEX, +8 on Perform, and Deflection AC bonus equal to CHA modifier.', description: 'You gain a +4 enhancement bonus to Charisma and Dexterity, a +8 untyped bonus on Perform checks, a deflection bonus to AC equal to your Charisma modifier, and a swim speed of 60 ft.', modifiers: [{ target: 'ability.cha', value: 4, formula: '4', type: 'enhancement', condition: null }, { target: 'ability.dex', value: 4, formula: '4', type: 'enhancement', condition: null }, { target: 'skill.perform', value: 8, formula: '8', type: 'untyped', condition: null }, { target: 'ac.deflection', value: 0, formula: 'max(1, @chaMod)', type: 'deflection', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-bite-of-the-werewolf', schemaVersion: 2, name: 'Bite of the Werewolf', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 3, learnedAt: { class: { Druid: 3, Sorcerer: 3, Wizard: 3 } }, source: 'Spell Compendium p.28', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Personal', target: 'You', duration: '1 round/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+2 enhancement STR, +4 DEX, +4 CON, +4 natural armor, and Blind-Fight.', description: 'You gain a +2 enhancement bonus to Strength, +4 enhancement bonus to Dexterity, +4 enhancement bonus to Constitution, +4 enhancement bonus to natural armor, and the Blind-Fight feat.', modifiers: [{ target: 'ability.str', value: 2, formula: '2', type: 'enhancement', condition: null }, { target: 'ability.dex', value: 4, formula: '4', type: 'enhancement', condition: null }, { target: 'ability.con', value: 4, formula: '4', type: 'enhancement', condition: null }, { target: 'ac.natural', value: 4, formula: '4', type: 'natural_enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-bite-of-the-weretiger', schemaVersion: 2, name: 'Bite of the Weretiger', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 5, learnedAt: { class: { Druid: 5, Sorcerer: 5, Wizard: 5 } }, source: 'Spell Compendium p.28', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Personal', target: 'You', duration: '1 round/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+12 enhancement STR, +4 DEX, +6 CON, +5 natural armor, Blind-Fight, and Power Attack.', description: 'You gain a +12 enhancement bonus to Strength, +4 enhancement bonus to Dexterity, +6 enhancement bonus to Constitution, +5 enhancement bonus to natural armor, and the Blind-Fight and Power Attack feats.', modifiers: [{ target: 'ability.str', value: 12, formula: '12', type: 'enhancement', condition: null }, { target: 'ability.dex', value: 4, formula: '4', type: 'enhancement', condition: null }, { target: 'ability.con', value: 6, formula: '6', type: 'enhancement', condition: null }, { target: 'ac.natural', value: 5, formula: '5', type: 'natural_enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-bite-of-the-werebear', schemaVersion: 2, name: 'Bite of the Werebear', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 6, learnedAt: { class: { Druid: 6, Sorcerer: 6, Wizard: 6 } }, source: 'Spell Compendium p.28', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Personal', target: 'You', duration: '1 round/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+16 enhancement STR, -2 DEX, +8 CON, +7 natural armor, Blind-Fight, and Power Attack.', description: 'You gain a +16 enhancement bonus to Strength, -2 penalty to Dexterity, +8 enhancement bonus to Constitution, +7 enhancement bonus to natural armor, and the Blind-Fight and Power Attack feats.', modifiers: [{ target: 'ability.str', value: 16, formula: '16', type: 'enhancement', condition: null }, { target: 'ability.dex', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'ability.con', value: 8, formula: '8', type: 'enhancement', condition: null }, { target: 'ac.natural', value: 7, formula: '7', type: 'natural_enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
+    { id: 'spl-heart-of-air', schemaVersion: 2, name: 'Heart of Air', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 2, learnedAt: { class: { Druid: 2, Sorcerer: 2, Wizard: 2 } }, source: 'Complete Mage p.106', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+10 enhancement bonus on Jump checks (+10 ft. fly speed if you already have one).', description: 'You gain a +10 enhancement bonus on Jump checks and can expend this spell as an immediate action to gain Feather Fall for 1 round.', modifiers: [{ target: 'skill.jump', value: 10, formula: '10', type: 'enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: { heartSpell: true } },
+    { id: 'spl-heart-of-water', schemaVersion: 2, name: 'Heart of Water', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 3, learnedAt: { class: { Druid: 3, Sorcerer: 3, Wizard: 3 } }, source: 'Complete Mage p.107', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: 'Swim speed, water breathing, and +5 enhancement bonus on Escape Artist checks.', description: 'You gain water breathing, a swim speed equal to your land speed (+8 racial bonus on Swim checks), and a +5 enhancement bonus on Escape Artist checks. You can expend this spell as a swift action to gain Freedom of Movement for 1 round/level.', modifiers: [{ target: 'skill.escape_artist', value: 5, formula: '5', type: 'enhancement', condition: null }, { target: 'skill.swim', value: 8, formula: '8', type: 'racial', condition: null }], damageParts: [], modes: [], ruleFlags: { heartSpell: true } },
+    { id: 'spl-heart-of-earth', schemaVersion: 2, name: 'Heart of Earth', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 4, learnedAt: { class: { Druid: 4, Sorcerer: 4, Wizard: 4 } }, source: 'Complete Mage p.106', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', tempHpFormula: 'min(30, @cl * 2)', shortDescription: 'Gain 2 temporary HP per caster level (max 30) and +8 bonus to resist Bull Rush, Overrun, and Trip.', description: 'You gain temporary hit points equal to twice your caster level (maximum 30) and a +8 bonus on checks to resist being bull rushed, overrun, or tripped. You can expend this spell as a swift action to gain Stoneskin (DR 10/adamantine) for 1 round/level.', modifiers: [], damageParts: [], modes: [], ruleFlags: { heartSpell: true } },
+    { id: 'spl-heart-of-fire', schemaVersion: 2, name: 'Heart of Fire', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 5, learnedAt: { class: { Druid: 5, Sorcerer: 5, Wizard: 5 } }, source: 'Complete Mage p.107', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+10 ft. enhancement bonus to land speed and Fire Resistance 10.', description: 'You gain a +10-foot enhancement bonus to your land speed and resistance to fire 10. You can expend this spell as a swift action to activate Fire Shield (warm shield) for 1 round/level.', modifiers: [{ target: 'speed.land', value: 10, formula: '10', type: 'enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: { heartSpell: true } }
+  ],
+
+  // Universal Canonical V2 Spell Buff Resolver (SRD + Splatbooks + Dynamic NLP Fallback)
+  resolveSpellBuffSpec(spell, character = null, customCl = null) {
+    if (!spell) return { isBuffSpell: false };
+    const charLvl = Number(character?.level) || 1;
+    const cl = Math.max(1, Number(customCl || spell.casterLevel || charLvl) || 1);
+    const chaMod = this.getAbilityMod(character?.abilities?.cha || 10);
+    const evalCtx = { cl, level: charLvl, bab: Number(character?.bab) || 0, chaMod };
+
+    // 1. Merge with Canonical Compendium / Master DB Entry if character copy lacks V2 buff fields
+    const dbEntry = this.getMasterDbEntry(spell, 'Spell') || {};
+    const rawName = String(spell.name || dbEntry.name || '').trim();
+    const cleanName = rawName.toLowerCase();
+
+    let modifiers = (Array.isArray(spell.modifiers) && spell.modifiers.length > 0)
+      ? spell.modifiers
+      : (Array.isArray(dbEntry.modifiers) && dbEntry.modifiers.length > 0 ? dbEntry.modifiers : []);
+    let sizeModifier = spell.sizeModifier || dbEntry.sizeModifier || null;
+    let tempHpFormula = spell.tempHpFormula || dbEntry.tempHpFormula || null;
+    let ruleFlags = { ...(dbEntry.ruleFlags || {}), ...(spell.ruleFlags || {}) };
+    let targetMode = spell.buffTargetMode || dbEntry.buffTargetMode || null;
+
+    // 2. Fallback Built-in Splatbook & Core Templates if Compendium is not yet loaded in memory
+    if (modifiers.length === 0 && !sizeModifier && !tempHpFormula && Object.keys(ruleFlags).length === 0) {
+      const m = (target, formula, type = 'untyped') => ({ target, value: typeof formula === 'number' ? formula : 0, formula: String(formula), type, condition: null });
+      const BUILTIN_BUFFS = {
+        "bull's strength": { targetMode: 'single', modifiers: [m('ability.str', 4, 'enhancement')] },
+        "bull's strength, mass": { targetMode: 'party', modifiers: [m('ability.str', 4, 'enhancement')] },
+        "cat's grace": { targetMode: 'single', modifiers: [m('ability.dex', 4, 'enhancement')] },
+        "cat's grace, mass": { targetMode: 'party', modifiers: [m('ability.dex', 4, 'enhancement')] },
+        "bear's endurance": { targetMode: 'single', modifiers: [m('ability.con', 4, 'enhancement')] },
+        "bear's endurance, mass": { targetMode: 'party', modifiers: [m('ability.con', 4, 'enhancement')] },
+        "fox's cunning": { targetMode: 'single', modifiers: [m('ability.int', 4, 'enhancement')] },
+        "fox's cunning, mass": { targetMode: 'party', modifiers: [m('ability.int', 4, 'enhancement')] },
+        "owl's wisdom": { targetMode: 'single', modifiers: [m('ability.wis', 4, 'enhancement')] },
+        "owl's wisdom, mass": { targetMode: 'party', modifiers: [m('ability.wis', 4, 'enhancement')] },
+        "eagle's splendor": { targetMode: 'single', modifiers: [m('ability.cha', 4, 'enhancement')] },
+        "eagle's splendor, mass": { targetMode: 'party', modifiers: [m('ability.cha', 4, 'enhancement')] },
+        "primal hunter": { targetMode: 'self', modifiers: [m('skill.climb', 5, 'competence'), m('skill.jump', 5, 'competence'), m('skill.swim', 5, 'competence')], ruleFlags: { primalSpell: true } },
+        "primal instinct": { targetMode: 'self', modifiers: [m('initiative', 5, 'competence'), m('skill.survival', 5, 'competence')], ruleFlags: { primalSpell: true } },
+        "primal senses": { targetMode: 'self', modifiers: [m('skill.listen', 5, 'competence'), m('skill.spot', 5, 'competence')], ruleFlags: { primalSpell: true, lowLightVision: true } },
+        "primal sense": { targetMode: 'self', modifiers: [m('skill.listen', 5, 'competence'), m('skill.spot', 5, 'competence')], ruleFlags: { primalSpell: true, lowLightVision: true } },
+        "primal speed": { targetMode: 'self', modifiers: [m('save.ref', 5, 'competence'), m('speed.land', 10, 'enhancement')], ruleFlags: { primalSpell: true } },
+        "mighty wallop": { targetMode: 'weapon', sizeModifier: { targetType: 'weapon', targetFilter: { meleeOnly: true, allowedDmgTypes: ['Bludgeoning'] }, scaling: { type: 'flat', steps: 1 } } },
+        "greater mighty wallop": { targetMode: 'weapon', sizeModifier: { targetType: 'weapon', targetFilter: { meleeOnly: true, allowedDmgTypes: ['Bludgeoning'] }, scaling: { type: 'per_caster_level', clDivisor: 4, maxSteps: 5 } } },
+        "mighty wallop, greater": { targetMode: 'weapon', sizeModifier: { targetType: 'weapon', targetFilter: { meleeOnly: true, allowedDmgTypes: ['Bludgeoning'] }, scaling: { type: 'per_caster_level', clDivisor: 4, maxSteps: 5 } } },
+        "shield of faith": { targetMode: 'single', modifiers: [m('ac.deflection', '2 + min(3, floor(@cl / 6))', 'deflection')] },
+        "barkskin": { targetMode: 'single', modifiers: [m('ac.natural', '2 + min(3, max(0, floor((@cl - 3) / 3)))', 'natural_enhancement')] },
+        "mage armor": { targetMode: 'single', modifiers: [m('ac.armor', 4, 'armor')] },
+        "shield": { targetMode: 'self', modifiers: [m('ac.shield', 4, 'shield')], ruleFlags: { immuneMagicMissile: true } },
+        "divine favor": { targetMode: 'self', modifiers: [m('attack.all', 'min(3, max(1, floor(@cl / 3)))', 'luck'), m('damage.weapon', 'min(3, max(1, floor(@cl / 3)))', 'luck')] },
+        "divine power": { targetMode: 'self', tempHpFormula: '@cl', modifiers: [m('ability.str', 6, 'enhancement')], ruleFlags: { babEqualsLevel: true } },
+        "righteous might": { targetMode: 'self', sizeModifier: { targetType: 'creature', scaling: { type: 'flat', steps: 1 } }, modifiers: [m('ability.str', 4, 'size'), m('ability.con', 2, 'size'), m('ac.natural', 2, 'natural_enhancement'), m('ac.total', -1, 'size'), m('attack.all', -1, 'size')] },
+        "bless": { targetMode: 'party', modifiers: [m('attack.all', 1, 'morale')] },
+        "prayer": { targetMode: 'party', modifiers: [m('attack.all', 1, 'luck'), m('damage.weapon', 1, 'luck'), m('save.all', 1, 'luck'), m('skill.all', 1, 'luck')] },
+        "conviction": { targetMode: 'single', modifiers: [m('save.all', '2 + min(3, floor(@cl / 6))', 'morale')] },
+        "conviction, mass": { targetMode: 'party', modifiers: [m('save.all', '2 + min(3, floor(@cl / 6))', 'morale')] },
+        "mass conviction": { targetMode: 'party', modifiers: [m('save.all', '2 + min(3, floor(@cl / 6))', 'morale')] },
+        "recitation": { targetMode: 'party', modifiers: [m('attack.all', 3, 'luck'), m('ac.dodge', 3, 'luck'), m('save.all', 3, 'luck')] },
+        "righteous wrath of the faithful": { targetMode: 'party', modifiers: [m('attack.melee', 3, 'morale'), m('damage.melee', 3, 'morale'), m('save.all', 3, 'morale')], ruleFlags: { extraAttackFullAttack: true } },
+        "haste": { targetMode: 'party', modifiers: [m('attack.all', 1, 'haste'), m('ac.dodge', 1, 'dodge'), m('save.ref', 1, 'dodge'), m('speed.land', 30, 'enhancement')], ruleFlags: { extraAttackFullAttack: true } },
+        "heroism": { targetMode: 'single', modifiers: [m('attack.all', 2, 'morale'), m('save.all', 2, 'morale'), m('skill.all', 2, 'morale')] },
+        "heroism, greater": { targetMode: 'single', tempHpFormula: 'min(20, @cl)', modifiers: [m('attack.all', 4, 'morale'), m('save.all', 4, 'morale'), m('skill.all', 4, 'morale')] },
+        "greater heroism": { targetMode: 'single', tempHpFormula: 'min(20, @cl)', modifiers: [m('attack.all', 4, 'morale'), m('save.all', 4, 'morale'), m('skill.all', 4, 'morale')] },
+        "good hope": { targetMode: 'party', modifiers: [m('attack.all', 2, 'morale'), m('damage.weapon', 2, 'morale'), m('save.all', 2, 'morale'), m('skill.all', 2, 'morale')] },
+        "enlarge person": { targetMode: 'single', sizeModifier: { targetType: 'creature', scaling: { type: 'flat', steps: 1 } }, modifiers: [m('ability.str', 2, 'size'), m('ability.dex', -2, 'size'), m('ac.total', -1, 'size'), m('attack.all', -1, 'size')] },
+        "reduce person": { targetMode: 'single', sizeModifier: { targetType: 'creature', scaling: { type: 'flat', steps: -1 } }, modifiers: [m('ability.dex', 2, 'size'), m('ability.str', -2, 'size'), m('ac.total', 1, 'size'), m('attack.all', 1, 'size')] },
+        "magic weapon": { targetMode: 'weapon', modifiers: [m('attack.all', 1, 'enhancement'), m('damage.weapon', 1, 'enhancement')] },
+        "magic weapon, greater": { targetMode: 'weapon', modifiers: [m('attack.all', 'min(5, max(1, floor(@cl / 4)))', 'enhancement'), m('damage.weapon', 'min(5, max(1, floor(@cl / 4)))', 'enhancement')] },
+        "greater magic weapon": { targetMode: 'weapon', modifiers: [m('attack.all', 'min(5, max(1, floor(@cl / 4)))', 'enhancement'), m('damage.weapon', 'min(5, max(1, floor(@cl / 4)))', 'enhancement')] },
+        "keen edge": { targetMode: 'weapon', modifiers: [], ruleFlags: { keen: true } },
+        "magic vestment": { targetMode: 'single', modifiers: [m('ac.armor', 'min(5, max(1, floor(@cl / 4)))', 'enhancement')] },
+        "nerveskitter": { targetMode: 'single', modifiers: [m('initiative', 5, 'untyped')] },
+        "resistance": { targetMode: 'single', modifiers: [m('save.all', 1, 'resistance')] },
+        "resistance, greater": { targetMode: 'single', modifiers: [m('save.all', 3, 'resistance')] },
+        "greater resistance": { targetMode: 'single', modifiers: [m('save.all', 3, 'resistance')] },
+        "resistance, superior": { targetMode: 'single', modifiers: [m('save.all', 6, 'resistance')] },
+        "superior resistance": { targetMode: 'single', modifiers: [m('save.all', 6, 'resistance')] },
+        "protection from evil": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')] },
+        "protection from good": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')] },
+        "protection from law": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')] },
+        "protection from chaos": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')] },
+        "heart of air": { targetMode: 'self', modifiers: [m('skill.jump', 10, 'enhancement')], ruleFlags: { heartSpell: true } },
+        "heart of water": { targetMode: 'self', modifiers: [m('skill.escape_artist', 5, 'enhancement'), m('skill.swim', 8, 'racial')], ruleFlags: { heartSpell: true } },
+        "heart of earth": { targetMode: 'self', tempHpFormula: 'min(30, @cl * 2)', modifiers: [], ruleFlags: { heartSpell: true } },
+        "heart of fire": { targetMode: 'self', modifiers: [m('speed.land', 10, 'enhancement')], ruleFlags: { heartSpell: true } }
+      };
+      const tpl = BUILTIN_BUFFS[cleanName];
+      if (tpl) {
+        modifiers = tpl.modifiers || [];
+        sizeModifier = tpl.sizeModifier || null;
+        tempHpFormula = tpl.tempHpFormula || null;
+        ruleFlags = { ...ruleFlags, ...(tpl.ruleFlags || {}) };
+        targetMode = tpl.targetMode || targetMode;
+      }
+    }
+
+    // 3. Determine Target Mode ('self', 'single', 'party', 'weapon') if not explicitly set
+    const rangeRaw = String(spell.range || dbEntry.range || '').toLowerCase();
+    const targetRaw = String(spell.target || dbEntry.target || spell.area || dbEntry.area || '').toLowerCase();
+    if (!targetMode) {
+      if (sizeModifier?.targetType === 'weapon' || targetRaw.includes('weapon')) {
+        targetMode = 'weapon';
+      } else if (rangeRaw.includes('personal') || targetRaw === 'you') {
+        targetMode = 'self';
+      } else if (targetRaw.includes('allies') || targetRaw.includes('one creature/level') || cleanName.includes('mass')) {
+        targetMode = 'party';
+      } else {
+        targetMode = 'single';
+      }
+    }
+
+    const hasBuffFlags = Boolean(
+      ruleFlags.extraAttackFullAttack ||
+      ruleFlags.babEqualsLevel ||
+      ruleFlags.keen ||
+      ruleFlags.primalSpell ||
+      ruleFlags.heartSpell ||
+      ruleFlags.concealment ||
+      ruleFlags.rangedMissChance ||
+      ruleFlags.drAdamantine ||
+      ruleFlags.immuneFear ||
+      ruleFlags.immuneDeathEffects ||
+      ruleFlags.freedomOfMovement ||
+      ruleFlags.sr
+    );
+
+    const isBuffSpell = (Array.isArray(modifiers) && modifiers.length > 0) || Boolean(sizeModifier) || Boolean(tempHpFormula) || hasBuffFlags;
+    if (!isBuffSpell) {
+      return { isBuffSpell: false };
+    }
+
+    // 4. Evaluate human-readable summary labels at current Caster Level
+    const evaluatedLabels = [];
+    modifiers.forEach(mod => {
+      const lbl = this.formatBuffModifierLabel(mod, evalCtx);
+      if (lbl) evaluatedLabels.push(lbl);
+    });
+    if (ruleFlags.babEqualsLevel) evaluatedLabels.push(`BAB = +${charLvl}`);
+    if (ruleFlags.extraAttackFullAttack) evaluatedLabels.push('+1 Extra Attack');
+    if (ruleFlags.keen) evaluatedLabels.push('Keen (2x Crit Range)');
+    if (ruleFlags.concealment) evaluatedLabels.push(`${ruleFlags.concealment}% Concealment`);
+    if (ruleFlags.drAdamantine) evaluatedLabels.push(`DR ${ruleFlags.drAdamantine}/Adamantine`);
+    if (ruleFlags.sr) evaluatedLabels.push(`SR ${ruleFlags.sr}`);
+    if (sizeModifier?.targetType === 'weapon') {
+      const steps = sizeModifier.scaling?.type === 'per_caster_level'
+        ? Math.min(sizeModifier.scaling.maxSteps || 5, Math.floor(cl / (sizeModifier.scaling.clDivisor || 4)))
+        : (sizeModifier.scaling?.steps || 1);
+      evaluatedLabels.push(`+${steps} Weapon Size Step(s)`);
+    } else if (sizeModifier?.targetType === 'creature') {
+      const steps = sizeModifier.scaling?.steps || 1;
+      evaluatedLabels.push(`${steps > 0 ? '+' : ''}${steps} Creature Size`);
+    }
+    let evaluatedTempHp = 0;
+    if (tempHpFormula && !/d\d+/i.test(String(tempHpFormula))) {
+      evaluatedTempHp = Math.max(0, Number(this.evaluateFormula(tempHpFormula, evalCtx)) || 0);
+      if (evaluatedTempHp > 0) evaluatedLabels.push(`+${evaluatedTempHp} Temp HP`);
+    }
+
+    // 5. Evaluate Duration string at Caster Level
+    const rawDur = String(spell.duration || dbEntry.duration || '1 min./level').trim();
+    let durationText = rawDur;
+    if (/1\s*min\.?\/level/i.test(rawDur)) durationText = `${cl} min`;
+    else if (/10\s*min\.?\/level/i.test(rawDur)) durationText = `${cl * 10} min`;
+    else if (/1\s*(?:hour|hr)\.?\/level/i.test(rawDur)) durationText = `${cl} hr`;
+    else if (/1\s*round\/level/i.test(rawDur)) durationText = `${cl} rounds`;
+
+    return {
+      isBuffSpell: true,
+      id: spell.id || dbEntry.id || `buff-${cleanName.replace(/[^a-z0-9]+/g, '-')}`,
+      name: rawName,
+      casterLevel: cl,
+      targetMode,
+      modifiers: JSON.parse(JSON.stringify(modifiers)),
+      sizeModifier: sizeModifier ? JSON.parse(JSON.stringify(sizeModifier)) : null,
+      tempHpFormula,
+      evaluatedTempHp,
+      ruleFlags: JSON.parse(JSON.stringify(ruleFlags)),
+      evaluatedLabels,
+      summaryText: evaluatedLabels.join(', ') || (spell.shortDescription || dbEntry.shortDescription || 'Active Spell Buff'),
+      durationText
+    };
+  },
+
   // Central Recalculation Engine for Character State (Abilities, AC, Saves, Speed, Buffs) - Canonical V2
   recalculateCharacter(character, masterDb = [], tacticalOptions = {}) {
     if (!character) return;
@@ -1784,7 +2035,8 @@ const RuleEngine = {
 
     const charLvl = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.filter(l => l.active !== false).length : 1) || 1;
     const bab = Number(character.bab) || 0;
-    const evalContext = { cl: charLvl, level: charLvl, bab };
+    const chaModForCtx = this.getAbilityMod(character.abilities?.cha || character.baseAbilities?.cha || 10);
+    const evalContext = { cl: charLvl, level: charLvl, bab, chaMod: chaModForCtx };
 
     // 1. Ensure Base Abilities
     if (!character.baseAbilities) {
@@ -1834,6 +2086,7 @@ const RuleEngine = {
       wis: [],
       cha: []
     };
+    const initBonusBuckets = [];
 
     let hasSteadfastDetermination = false;
     let minMaxDex = null;
@@ -1849,6 +2102,8 @@ const RuleEngine = {
     let conditionLoseDexToAC = false;
     let conditionEffectiveDexZero = false;
     let conditionHalfSpeed = false;
+    let activePrimalCount = 0;
+    let activeHeartCount = 0;
     const activeConditionWarnings = [];
 
     // Universal Canonical V2 Modifiers Processor
@@ -1859,7 +2114,7 @@ const RuleEngine = {
       modifiers.forEach(mod => {
         if (!mod || !mod.target) return;
         const target = String(mod.target).trim().toLowerCase();
-        const rawExpr = mod.value !== undefined && mod.value !== null ? mod.value : mod.formula;
+        const rawExpr = (mod.value !== undefined && mod.value !== null && mod.value !== 0) ? mod.value : (mod.formula !== undefined ? mod.formula : mod.value);
         const val = Number(this.evaluateFormula(rawExpr, ctx)) || 0;
         if (val === 0) return;
 
@@ -1919,6 +2174,12 @@ const RuleEngine = {
           } else {
             if (val > buffSpeedBonus) buffSpeedBonus = val;
           }
+          return;
+        }
+
+        // Initiative (`initiative`, `init`)
+        if (target === 'initiative' || target === 'init') {
+          initBonusBuckets.push({ val, type: mType, source: sourceName });
           return;
         }
 
@@ -2000,8 +2261,23 @@ const RuleEngine = {
     character.buffs.forEach(rawBuff => {
       if (!rawBuff || !rawBuff.active) return;
       const buff = this.ensureV2Entry(rawBuff);
-      const buffCl = Number(buff.casterLevel || charLvl) || charLvl;
+      const buffCl = Number(buff.casterLevel || buff.cl || charLvl) || charLvl;
       const buffCtx = { ...evalContext, cl: buffCl };
+
+      // Auto-hydrate V2 modifiers & ruleFlags from canonical spell spec if missing on a spell buff
+      if ((!Array.isArray(buff.modifiers) || buff.modifiers.length === 0) && !buff.negativeLevels && !buff.isCondition) {
+        const resolvedSpec = this.resolveSpellBuffSpec(buff, character, buffCl);
+        if (resolvedSpec && resolvedSpec.isBuffSpell) {
+          if (Array.isArray(resolvedSpec.modifiers) && resolvedSpec.modifiers.length > 0) {
+            buff.modifiers = resolvedSpec.modifiers;
+            rawBuff.modifiers = resolvedSpec.modifiers;
+          }
+          if (resolvedSpec.ruleFlags) {
+            buff.ruleFlags = { ...(buff.ruleFlags || {}), ...resolvedSpec.ruleFlags };
+            rawBuff.ruleFlags = buff.ruleFlags;
+          }
+        }
+      }
 
       if (buff.negativeLevels) {
         const negLvls = Number(buff.negativeLevels) || 0;
@@ -2014,9 +2290,19 @@ const RuleEngine = {
         }
       }
 
-      applyV2Modifiers(buff.modifiers, buff.name || 'Buff', 'buff', buffCtx);
+      // Weapon-targeted buffs (e.g. Greater Magic Weapon, Keen Edge on a specific weapon) apply in evaluateWeaponAttack
+      if (!buff.targetWeapon) {
+        applyV2Modifiers(buff.modifiers, buff.name || 'Buff', 'buff', buffCtx);
+      }
 
       const rf = buff.ruleFlags || {};
+      const bNameLower = String(buff.name || '').toLowerCase();
+      if (rf.primalSpell || /^primal (hunter|instinct|senses?|speed)$/i.test(bNameLower)) {
+        activePrimalCount++;
+      }
+      if (rf.heartSpell || /^heart of (air|water|earth|fire)$/i.test(bNameLower)) {
+        activeHeartCount++;
+      }
       if (rf.loseDexToAC) conditionLoseDexToAC = true;
       if (rf.effectiveDexZero) {
         conditionEffectiveDexZero = true;
@@ -2034,6 +2320,12 @@ const RuleEngine = {
       }
     });
     character.activeConditionWarnings = activeConditionWarnings;
+    character.primalSynergy = activePrimalCount >= 4
+      ? 'Improved Uncanny Dodge (4/4 Primal Spells)'
+      : (activePrimalCount >= 2 ? `Uncanny Dodge (${activePrimalCount}/4 Primal Spells)` : null);
+    character.heartSynergy = activeHeartCount >= 4
+      ? 'Moderate Fortification 50% (4/4 Heart Spells)'
+      : (activeHeartCount >= 2 ? `Light Fortification 25% (${activeHeartCount}/4 Heart Spells)` : null);
 
     // 3.5. Evaluate Feats, Special Abilities & DM Boons (Canonical V2)
     const allAbilitiesAndFeats = [
@@ -2200,7 +2492,11 @@ const RuleEngine = {
     const touchAC = baseAC + effectiveDeflection + sizeBonus + effectiveDex + effectiveDodge - totalPenalty;
 
     // Flat-footed AC (RAW: retain negative Dex penalty even when flat-footed; retain Dex & Dodge if Uncanny Dodge unless immobilized/helpless)
-    const hasUncannyDodge = !conditionEffectiveDexZero && (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : a.name).toLowerCase().includes('uncanny dodge'));
+    const hasUncannyDodge = !conditionEffectiveDexZero && (
+      activePrimalCount >= 2 ||
+      (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : a.name).toLowerCase().includes('uncanny dodge')) ||
+      (character.buffs || []).some(b => b && b.active && b.ruleFlags?.uncannyDodge)
+    );
     const flatDex = hasUncannyDodge ? effectiveDex : Math.min(0, fullDexMod);
     const flatDodge = hasUncannyDodge ? effectiveDodge : 0;
     const flatAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + flatDex + flatDodge - totalPenalty;
@@ -2318,6 +2614,8 @@ const RuleEngine = {
     character.effectiveSpeed = calcSpeed;
     character.effectiveArmorCategory = equippedArmorCategory;
     character.buffSkillBonus = buffSkillBonus;
+    character.buffInitiativeBonus = this.resolveBonusStacking(initBonusBuckets);
+    character.initiativeBreakdown = initBonusBuckets;
 
     // 8. Resolve Rule Flags & Action Economy
     character.ruleFlags = this.evaluateRuleFlags(character);
@@ -2361,11 +2659,19 @@ const RuleEngine = {
     // Base threat range span: 20 -> 1, 19-20 -> 2, 18-20 -> 3
     const baseSpan = Math.max(1, 21 - baseMin);
 
-    // Check Keen property
+    // Check Keen property (Weapon property or active Keen Edge buff)
     const wepName = (weapon.name || '').toLowerCase();
     const wepTags = Array.isArray(weapon.tags) ? weapon.tags.map(t => String(t).toLowerCase()) : [];
     const wepDesc = (weapon.benefit || weapon.desc || weapon.summary || '').toLowerCase();
-    const isKeen = !!weapon.isKeen || wepTags.includes('keen') || wepName.includes('keen') || wepDesc.includes('keen');
+    const hasKeenBuff = Boolean(character && Array.isArray(character.buffs) && character.buffs.some(b => {
+      if (!b || !b.active) return false;
+      const isKeenSpell = Boolean(b.ruleFlags?.keen || (b.name || '').toLowerCase().includes('keen edge'));
+      if (!isKeenSpell) return false;
+      if (!b.targetWeapon) return true;
+      const tw = String(b.targetWeapon).toLowerCase().trim();
+      return tw === wepName || wepName.includes(tw) || tw.includes(wepName);
+    }));
+    const isKeen = !!weapon.isKeen || !!weapon.ruleFlags?.keen || wepTags.includes('keen') || wepName.includes('keen') || wepDesc.includes('keen') || hasKeenBuff;
 
     // Check Improved Critical Feat
     let hasImpCrit = false;
@@ -2670,7 +2976,9 @@ const RuleEngine = {
     } = options;
 
     const charLvl = Number(character.level) || 1;
-    const bab = Number(character.bab) || 0;
+    const rawBab = Number(character.bab) || 0;
+    const hasBabEqualsLevel = Boolean(Array.isArray(character.buffs) && character.buffs.some(b => b && b.active && (b.ruleFlags?.babEqualsLevel || /^(divine power|transformation)$/i.test(String(b.name || '').trim()))));
+    const bab = hasBabEqualsLevel ? Math.max(rawBab, charLvl) : rawBab;
     const strMod = this.getAbilityMod(character.abilities?.str || 10);
     const dexMod = this.getAbilityMod(character.abilities?.dex || 10);
     const evalCtx = {
@@ -2804,10 +3112,22 @@ const RuleEngine = {
       ((t === 'rangedattack' || t === 'attack.ranged') && isRangedWep)
     );
     const isDmgTargetMatch = (t) => (
-      t === 'damage' || t === 'damage.all' ||
+      t === 'damage' || t === 'damage.all' || t === 'damage.weapon' ||
       ((t === 'meleedamage' || t === 'damage.melee') && !isRangedWep) ||
       ((t === 'rangeddamage' || t === 'damage.ranged') && isRangedWep)
     );
+    const evalModExpr = (mObj, ctxObj) => {
+      const raw = (mObj.value !== undefined && mObj.value !== null && mObj.value !== 0)
+        ? mObj.value
+        : (mObj.formula !== undefined ? mObj.formula : mObj.value);
+      return Number(this.evaluateFormula(raw, ctxObj)) || 0;
+    };
+    const isBuffMatchingWeapon = (bObj) => {
+      if (!bObj || !bObj.targetWeapon) return true;
+      const tw = String(bObj.targetWeapon).toLowerCase().trim();
+      const wn = String(weapon.name || '').toLowerCase().trim();
+      return tw === wn || wn.includes(tw) || tw.includes(wn) || (weapon.id && bObj.targetWeaponId === weapon.id);
+    };
 
     // Weapon V2 Attack Modifiers & Enhancement Bonus
     const wepMods = Array.isArray(weapon.modifiers) ? weapon.modifiers : [];
@@ -2816,7 +3136,7 @@ const RuleEngine = {
       if (!m || !m.target) return;
       const t = String(m.target).toLowerCase();
       if (isAtkTargetMatch(t)) {
-        const val = Number(this.evaluateFormula(m.value !== undefined ? m.value : m.formula, evalCtx)) || 0;
+        const val = evalModExpr(m, evalCtx);
         if (val !== 0) {
           attackBonusItems.push({ type: (m.type || 'enhancement').toLowerCase(), val, source: m.source || 'Weapon Enhancement' });
           hasExplicitWepAtkMod = true;
@@ -2852,7 +3172,7 @@ const RuleEngine = {
         m.modifiers.forEach(mod => {
           const t = String(mod.target || '').toLowerCase();
           if (isAtkTargetMatch(t)) {
-            const v = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, evalCtx)) || 0;
+            const v = evalModExpr(mod, evalCtx);
             if (v !== 0) attackBonusItems.push({ type: mod.type || 'untyped', val: v, source: m.name });
           }
         });
@@ -2866,14 +3186,15 @@ const RuleEngine = {
       character.buffs.forEach(rawBuff => {
         if (!rawBuff || !rawBuff.active) return;
         const b = this.ensureV2Entry(rawBuff);
-        const bCtx = { ...evalCtx, cl: Number(b.casterLevel || charLvl) || charLvl };
+        if (!isBuffMatchingWeapon(b)) return;
+        const bCtx = { ...evalCtx, cl: Number(b.casterLevel || b.cl || charLvl) || charLvl };
         let appliedNegLvlAtk = false;
         if (Array.isArray(b.modifiers)) {
           b.modifiers.forEach(mod => {
             if (!mod || !mod.target) return;
             const t = String(mod.target).toLowerCase();
             if (isAtkTargetMatch(t)) {
-              const val = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, bCtx)) || 0;
+              const val = evalModExpr(mod, bCtx);
               if (val !== 0) {
                 attackBonusItems.push({
                   type: mod.type || (b.isDebuff || val < 0 ? 'penalty' : 'untyped'),
@@ -2963,7 +3284,7 @@ const RuleEngine = {
       if (!m || !m.target) return;
       const t = String(m.target).toLowerCase();
       if (isDmgTargetMatch(t)) {
-        const val = Number(this.evaluateFormula(m.value !== undefined ? m.value : m.formula, evalCtx)) || 0;
+        const val = evalModExpr(m, evalCtx);
         if (val !== 0) {
           damageBonusItems.push({ type: (m.type || 'enhancement').toLowerCase(), val, source: m.source || 'Weapon Enhancement' });
           hasExplicitWepDmgMod = true;
@@ -2988,7 +3309,7 @@ const RuleEngine = {
         m.modifiers.forEach(mod => {
           const t = String(mod.target || '').toLowerCase();
           if (isDmgTargetMatch(t)) {
-            const v = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, evalCtx)) || 0;
+            const v = evalModExpr(mod, evalCtx);
             if (v !== 0) damageBonusItems.push({ type: mod.type || 'untyped', val: v, source: m.name });
           }
         });
@@ -3002,13 +3323,14 @@ const RuleEngine = {
       character.buffs.forEach(rawBuff => {
         if (!rawBuff || !rawBuff.active) return;
         const b = this.ensureV2Entry(rawBuff);
-        const bCtx = { ...evalCtx, cl: Number(b.casterLevel || charLvl) || charLvl };
+        if (!isBuffMatchingWeapon(b)) return;
+        const bCtx = { ...evalCtx, cl: Number(b.casterLevel || b.cl || charLvl) || charLvl };
         if (Array.isArray(b.modifiers)) {
           b.modifiers.forEach(mod => {
             if (!mod || !mod.target) return;
             const t = String(mod.target).toLowerCase();
             if (isDmgTargetMatch(t)) {
-              const val = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, bCtx)) || 0;
+              const val = evalModExpr(mod, bCtx);
               if (val !== 0) {
                 damageBonusItems.push({
                   type: mod.type || (b.isDebuff || val < 0 ? 'penalty' : 'untyped'),
@@ -3064,14 +3386,24 @@ const RuleEngine = {
           wepName.includes(targetWepName) ||
           targetWepName.includes(wepName)
         );
-        const isCreatureSizeBuff = (b.targetType === 'creature' || b.scope === 'creature' || (b.name && b.name.toLowerCase().includes('enlarge person'))) && b.sizeSteps;
+        const sm = b.sizeModifier || null;
+        let buffSteps = Number(b.sizeSteps) || 0;
+        if (!buffSteps && sm && sm.scaling) {
+          const bCl = Number(b.casterLevel || b.cl || charLvl) || charLvl;
+          if (sm.scaling.type === 'per_caster_level') {
+            buffSteps = Math.min(sm.scaling.maxSteps || 5, Math.floor(bCl / (sm.scaling.clDivisor || 4)));
+          } else {
+            buffSteps = Number(sm.scaling.steps) || 1;
+          }
+        }
+        const isCreatureSizeBuff = (b.targetType === 'creature' || b.scope === 'creature' || sm?.targetType === 'creature' || (b.name && /enlarge person|righteous might|expansion/i.test(b.name))) && buffSteps !== 0;
 
-        if (matchesWeapon && b.sizeSteps) {
-          effectiveSteps += Number(b.sizeSteps) || 0;
-          sizeBuffSources.push(`${b.name} (+${b.sizeSteps} basamak)`);
+        if (matchesWeapon && buffSteps !== 0) {
+          effectiveSteps += buffSteps;
+          sizeBuffSources.push(`${b.name} (${buffSteps > 0 ? '+' : ''}${buffSteps} size step${Math.abs(buffSteps) === 1 ? '' : 's'})`);
         } else if (isCreatureSizeBuff) {
-          effectiveSteps += Number(b.sizeSteps) || 0;
-          sizeBuffSources.push(`${b.name} (+${b.sizeSteps} size category)`);
+          effectiveSteps += buffSteps;
+          sizeBuffSources.push(`${b.name} (${buffSteps > 0 ? '+' : ''}${buffSteps} size category)`);
         }
       });
     }
@@ -3081,7 +3413,7 @@ const RuleEngine = {
       ? weapon.damageParts
       : (dbWeapon && Array.isArray(dbWeapon.damageParts) && dbWeapon.damageParts.length > 0
           ? dbWeapon.damageParts
-          : [{ dice: '1d8', bonus: 0, type: 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }]);
+          : [{ dice: weapon.dice || '1d8', bonus: 0, type: weapon.dmgType || weapon.type || 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' }]);
 
     const combinedRawParts = [...rawParts];
 
@@ -3322,7 +3654,8 @@ const RuleEngine = {
 
         const subTarget = rawTarget.replace(/^skills?\./, '').trim();
         const tNorm = subTarget.replace(/[^a-z0-9]/g, '');
-        const val = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, ctx)) || 0;
+        const rawExpr = (mod.value !== undefined && mod.value !== null && mod.value !== 0) ? mod.value : (mod.formula !== undefined ? mod.formula : mod.value);
+        const val = Number(this.evaluateFormula(rawExpr, ctx)) || 0;
         if (val === 0) return;
         const mType = mod.type || (val < 0 ? 'penalty' : defaultType);
 
@@ -3450,7 +3783,8 @@ const RuleEngine = {
 
         const subTarget = rawTarget.replace(/^skills?\./, '').trim();
         const tNorm = subTarget.replace(/[^a-z0-9]/g, '');
-        const val = Number(this.evaluateFormula(mod.value !== undefined ? mod.value : mod.formula, evalCtx)) || 0;
+        const rawExpr = (mod.value !== undefined && mod.value !== null && mod.value !== 0) ? mod.value : (mod.formula !== undefined ? mod.formula : mod.value);
+        const val = Number(this.evaluateFormula(rawExpr, evalCtx)) || 0;
         if (val === 0) return;
         const bType = mod.type || 'competence';
 
