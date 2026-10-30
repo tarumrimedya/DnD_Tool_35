@@ -33,7 +33,7 @@
           if (lp && lp.className) classNames.push(String(lp.className).toLowerCase().trim());
         });
       }
-      if (character?.spellcasting?.primaryClass) {
+      if (classNames.length === 0 && character?.spellcasting?.primaryClass) {
         classNames.push(String(character.spellcasting.primaryClass).toLowerCase().trim());
       }
       if (character?.isNpc && character?.spellcasting && (character.spellcasting.cl > 0 || (character.spellcasting.slots && character.spellcasting.slots.length > 0) || (character.spellcasting.knownSpells && character.spellcasting.knownSpells.length > 0) || (character.spells && character.spells.length > 0))) {
@@ -41,10 +41,12 @@
         classNames.push(prim);
       }
       
-      const hasSpontaneousSlots = Array.isArray(character?.spellcasting?.slots) && character.spellcasting.slots.some(s => (Number(s.daily) || 0) > 0);
-      const hasPreparedSlots = (Array.isArray(character?.spellcasting?.preparedSlots) && character.spellcasting.preparedSlots.some(s => (Number(s.daily) || 0) > 0))
+      const hasSpontaneousSlots = (character?.isNpc && Array.isArray(character?.spellcasting?.slots) && character.spellcasting.slots.some(s => (Number(s.daily) || 0) > 0))
+        || (Array.isArray(character?.spellcasting?.slots) && character.spellcasting.slots.some(s => (Number(s.dmBonus) || 0) > 0))
+        || (Array.isArray(character?.spellcasting?.knownSpells) && character.spellcasting.knownSpells.length > 0);
+      const hasPreparedSlots = (Array.isArray(character?.spellcasting?.preparedSlots) && character.spellcasting.preparedSlots.some(s => (Number(s.dmBonus) || 0) > 0))
         || (Array.isArray(character?.spellcasting?.preparedSpells) && character.spellcasting.preparedSpells.length > 0);
-      const hasDivineSlots = (Array.isArray(character?.spellcasting?.divineSlots) && character.spellcasting.divineSlots.some(s => (Number(s.daily) || 0) > 0))
+      const hasDivineSlots = (Array.isArray(character?.spellcasting?.divineSlots) && character.spellcasting.divineSlots.some(s => (Number(s.dmBonus) || 0) > 0))
         || (Array.isArray(character?.spellcasting?.divineSpells) && character.spellcasting.divineSpells.length > 0);
       const hasMartialSlots = (Array.isArray(character?.tomeOfBattle?.readiedManeuvers) && character.tomeOfBattle.readiedManeuvers.length > 0)
         || (Array.isArray(character?.tomeOfBattle?.maneuversKnown) && character.tomeOfBattle.maneuversKnown.length > 0)
@@ -461,8 +463,9 @@
       const intMod = character?.stats?.INT?.mod ?? Math.floor((intVal - 10) / 2);
       const clMode = character?.settings?.clMode || 'Class Level';
       const cType = character?.settings?.casterType || 'spontaneous';
+      const cTypeExplicit = character?.settings?.casterTypeExplicit === true;
       const effBoonType = resolvePreferredMagicDiscipline(character);
-      const isPrepBoon = (clMode === 'Character Level (DM Boon)' && (cType === 'prepared' || effBoonType === 'prepared'));
+      const isPrepBoon = (clMode === 'Character Level (DM Boon)' && ((cTypeExplicit && cType === 'prepared') || (!cTypeExplicit && effBoonType === 'prepared')));
       const prog = character?.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
       const wizLvls = getMagicDisciplineClassLevels(character).prepared;
@@ -484,8 +487,9 @@
       const wisMod = character?.stats?.WIS?.mod ?? Math.floor((wisVal - 10) / 2);
       const clMode = character?.settings?.clMode || 'Class Level';
       const cType = character?.settings?.casterType || 'spontaneous';
+      const cTypeExplicit = character?.settings?.casterTypeExplicit === true;
       const effBoonType = resolvePreferredMagicDiscipline(character);
-      const isDivBoon = (clMode === 'Character Level (DM Boon)' && (cType === 'divine' || effBoonType === 'divine'));
+      const isDivBoon = (clMode === 'Character Level (DM Boon)' && ((cTypeExplicit && cType === 'divine') || (!cTypeExplicit && effBoonType === 'divine')));
       const prog = character?.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
       const divLvls = getMagicDisciplineClassLevels(character).divine;
@@ -1526,7 +1530,9 @@
       const statMod = character?.stats?.[statKey]?.mod ?? Math.floor((statVal - 10) / 2);
       const clMode = character?.settings?.clMode || 'Class Level';
       const cType = character?.settings?.casterType || 'spontaneous';
-      const isSpontBoon = (clMode === 'Character Level (DM Boon)' && (cType === 'spontaneous' || cType === 'warlock')) || clMode.includes('Warlock Boon') || character?.settings?.warlockBoon === true;
+      const effBoonType = resolvePreferredMagicDiscipline(character);
+      const isWarlockBoon = clMode.includes('Warlock Boon') || character?.settings?.warlockBoon === true;
+      const isSpontBoon = isWarlockBoon || (clMode === 'Character Level (DM Boon)' && ((character?.settings?.casterTypeExplicit === true && (cType === 'spontaneous' || cType === 'warlock')) || effBoonType === 'spontaneous'));
       const prog = character?.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
       const sorcLvls = getMagicDisciplineClassLevels(character).spontaneous;
@@ -1538,15 +1544,14 @@
         const rawCl = character?.spellcasting?.caster_level ?? character?.spellcasting?.cl ?? sorcLvls;
         cl = Math.max(Number(rawCl) || 1, sorcLvls, activeLevels, 1);
       } else if (sorcLvls > 0) {
-        const rawCl = character?.spellcasting?.caster_level ?? character?.spellcasting?.cl ?? sorcLvls;
-        cl = Number(rawCl) || sorcLvls;
+        cl = sorcLvls;
       } else if (classesStatus.hasSpontaneous) {
         cl = 1;
       }
 
       const hasClass = classesStatus.hasSpontaneous || (character?.isNpc && Boolean(character?.spellcasting?.cl || character?.spellcasting?.slots?.length || character?.spellcasting?.knownSpells?.length || character?.spells?.length));
 
-      return { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass, sorcLvls };
+      return { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass, sorcLvls, isSpontBoon };
     }
 
     function getSpellDc(spellLevel) {
@@ -3385,7 +3390,17 @@
 
     function getSpellsKnownQuota(lvl) {
       const numLvl = Number(lvl) || 0;
+      const knownCount = (character?.spellcasting?.knownSpells || []).filter(s => Number(s.level || 0) === numLvl).length;
+      const { cl, hasClass, primaryClass } = getCasterInfo();
       const slot = character?.spellcasting?.slots?.find(s => Number(s.level) === numLvl);
+
+      if (!hasClass || Number(cl) <= 0) {
+        if (slot && (Number(slot.dmBonus) || 0) > 0) {
+          return Math.max(Number(slot.dmBonus) || 0, knownCount);
+        }
+        return Math.max(0, knownCount);
+      }
+
       if (slot && typeof slot.known === 'number' && slot.known > 0) {
         return slot.known;
       }
@@ -3393,7 +3408,6 @@
         return Math.max(1, Number(slot.daily) || 1);
       }
 
-      const { cl, primaryClass } = getCasterInfo();
       const casterLvl = Math.min(20, Math.max(1, Number(cl) || 1));
 
       const sorcKnownTable = [
@@ -3477,11 +3491,17 @@
       if (!character.spellcasting) character.spellcasting = {};
       if (!Array.isArray(character.spellcasting.knownSpells)) character.spellcasting.knownSpells = [];
 
-      const slotLevels = (character?.spellcasting?.slots || []).map(s => Number(s.level));
+      const { cl: spontCl, hasClass: hasSpontClass } = getCasterInfo();
+      const slotLevels = (character?.spellcasting?.slots || [])
+        .filter(s => (Number(s.daily) || 0) > 0 || (Number(s.dmBonus) || 0) > 0)
+        .map(s => Number(s.level));
       const knownLevels = spells.map(s => Number(s.level));
       const allLevelsSet = new Set([...slotLevels, ...knownLevels]);
-      if (allLevelsSet.size === 0) {
-        for (let i = 0; i <= 9; i++) allLevelsSet.add(i);
+      if (allLevelsSet.size === 0 && hasSpontClass && spontCl > 0) {
+        const maxSpontLvl = Math.min(9, Math.floor(spontCl / 2) + 1);
+        for (let i = 0; i <= maxSpontLvl; i++) {
+          if (getSpellsKnownQuota(i) > 0) allLevelsSet.add(i);
+        }
       }
       const allLevels = Array.from(allLevelsSet).sort((a, b) => a - b);
 
@@ -3581,11 +3601,14 @@
       });
 
       if (totalRendered === 0) {
+        const emptyMsg = (!hasSpontClass && spontCl <= 0)
+          ? 'No spontaneous spellcasting class levels (Sorcerer, Bard, Warlock, etc.). Select your active spellcasting discipline tab above.'
+          : 'No spells match the current filters.';
         tbody.innerHTML = `
           <tr>
             <td colspan="8" class="py-8 text-center text-slate-400">
               <div class="text-2xl mb-1">📜</div>
-              <p class="text-xs">No spells match the current filters.</p>
+              <p class="text-xs">${emptyMsg}</p>
             </td>
           </tr>
         `;
