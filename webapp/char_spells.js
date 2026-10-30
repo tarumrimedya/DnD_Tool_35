@@ -10,6 +10,44 @@
     window._spellCurrentFilterLevel = window._spellCurrentFilterLevel || 'all';
     window._currentSpellPickerType = window._currentSpellPickerType || 'Spell';
 
+    function countCharacterMartialFeats(char = character) {
+      let martialStudyCount = 0;
+      let martialStanceCount = 0;
+      if (!char) return { martialStudyCount, martialStanceCount };
+      const allFeatStrings = [];
+      if (Array.isArray(char.feats)) {
+        char.feats.forEach(f => allFeatStrings.push(typeof f === 'string' ? f : (f?.name || '')));
+      }
+      if (Array.isArray(char.levelProgression)) {
+        char.levelProgression.filter(p => p && p.active !== false).forEach(p => {
+          (p.feats || []).forEach(f => allFeatStrings.push(typeof f === 'string' ? f : (f?.name || '')));
+        });
+      }
+      const seenStudy = new Set();
+      const seenStance = new Set();
+      allFeatStrings.forEach((raw, idx) => {
+        const low = String(raw || '').toLowerCase();
+        if (low.includes('martial study')) seenStudy.add(raw + ':' + idx);
+        if (low.includes('martial stance')) seenStance.add(raw + ':' + idx);
+      });
+      // Deduplicate between top-level char.feats and levelProgression
+      const progFeats = [];
+      if (Array.isArray(char.levelProgression)) {
+        char.levelProgression.filter(p => p && p.active !== false).forEach(p => {
+          (p.feats || []).forEach(f => progFeats.push(String(typeof f === 'string' ? f : (f?.name || '')).toLowerCase()));
+        });
+      }
+      if (progFeats.length > 0) {
+        martialStudyCount = progFeats.filter(f => f.includes('martial study')).length;
+        martialStanceCount = progFeats.filter(f => f.includes('martial stance')).length;
+      } else {
+        const topFeats = (char.feats || []).map(f => String(typeof f === 'string' ? f : (f?.name || '')).toLowerCase());
+        martialStudyCount = topFeats.filter(f => f.includes('martial study')).length;
+        martialStanceCount = topFeats.filter(f => f.includes('martial stance')).length;
+      }
+      return { martialStudyCount, martialStanceCount };
+    }
+
     function checkCharacterMagicClasses() {
       const classNames = [];
       if (Array.isArray(character?.classes)) {
@@ -48,9 +86,12 @@
         || (Array.isArray(character?.spellcasting?.preparedSpells) && character.spellcasting.preparedSpells.length > 0);
       const hasDivineSlots = (Array.isArray(character?.spellcasting?.divineSlots) && character.spellcasting.divineSlots.some(s => (Number(s.dmBonus) || 0) > 0))
         || (Array.isArray(character?.spellcasting?.divineSpells) && character.spellcasting.divineSpells.length > 0);
-      const hasMartialSlots = (Array.isArray(character?.tomeOfBattle?.readiedManeuvers) && character.tomeOfBattle.readiedManeuvers.length > 0)
-        || (Array.isArray(character?.tomeOfBattle?.maneuversKnown) && character.tomeOfBattle.maneuversKnown.length > 0)
-        || ((Number(character?.tomeOfBattle?.dmReadiedBonus) || 0) > 0);
+      const { martialStudyCount, martialStanceCount } = countCharacterMartialFeats(character);
+      const hasMartialDmBonus = ((Number(character?.tomeOfBattle?.dmReadiedBonus) || 0) > 0)
+        || ((Number(character?.tomeOfBattle?.dmKnownBonus) || 0) > 0)
+        || ((Number(character?.tomeOfBattle?.dmStanceBonus) || 0) > 0);
+      const hasMartialSlots = martialStudyCount > 0 || martialStanceCount > 0 || hasMartialDmBonus
+        || (character?.isNpc && Array.isArray(character?.tomeOfBattle?.maneuversKnown) && character.tomeOfBattle.maneuversKnown.length > 0);
 
       const clMode = character?.settings?.clMode || 'Class Level';
       const isWarlockBoon = clMode.includes('Warlock Boon') || character?.settings?.warlockBoon === true;
@@ -95,7 +136,7 @@
       if (['wizard', 'artificer', 'archivist', 'wu jen', "sha'ir", 'büyücü', 'archmage', 'loremaster', 'incantatrix', 'red wizard', 'pale master', 'eldritch knight', 'arcane trickster', 'abjurant champion'].some(k => c.includes(k))) return 'prepared';
       if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'spirit shaman', 'shugenja', 'healer', 'adept', 'rahip', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
       if (['sorcerer', 'bard', 'favored soul', 'warlock', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'dragonfire adept', 'spellthief'].some(k => c.includes(k))) return 'spontaneous';
-      if (['warblade', 'swordsage', 'crusader'].some(k => c.includes(k))) return 'martial';
+      if (['warblade', 'swordsage', 'crusader', 'bloodstorm blade', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) return 'martial';
       return null;
     }
 
@@ -2138,11 +2179,12 @@
 
       activeRows.forEach(p => {
         const c = (p.className || p.class || '').toLowerCase();
-        if (c.includes('warblade') || c.includes('swordsage') || c.includes('crusader')) {
+        if (['warblade', 'swordsage', 'crusader', 'bloodstorm blade', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) {
           martialLvls++;
           if (c.includes('swordsage')) adeptClass = 'Swordsage';
-          else if (c.includes('crusader')) adeptClass = 'Crusader';
-          else adeptClass = 'Warblade';
+          else if (c.includes('crusader') || c.includes('ruby knight')) adeptClass = 'Crusader';
+          else if (c.includes('warblade')) adeptClass = 'Warblade';
+          else if (!adeptClass) adeptClass = p.className || 'Martial Adept';
         } else {
           otherLvls++;
         }
@@ -2155,11 +2197,32 @@
         else if (cStr.includes('warblade')) adeptClass = 'Warblade';
       }
 
-      if (!adeptClass && !classesStatus.hasMartial) {
+      const { martialStudyCount, martialStanceCount } = countCharacterMartialFeats(character);
+      const dmReadiedBonus = Number(character?.tomeOfBattle?.dmReadiedBonus) || 0;
+      const dmKnownBonus = Number(character?.tomeOfBattle?.dmKnownBonus) || 0;
+      const dmStanceBonus = Number(character?.tomeOfBattle?.dmStanceBonus) || 0;
+      const hasMartialFeatOrBoon = martialStudyCount > 0 || martialStanceCount > 0 || dmReadiedBonus > 0 || dmKnownBonus > 0 || dmStanceBonus > 0;
+
+      if (!adeptClass && !classesStatus.hasMartial && !hasMartialFeatOrBoon) {
+        // Clean up any orphaned maneuvers/stances on non-martial characters
+        if (!character?.isNpc && character?.tomeOfBattle) {
+          if (Array.isArray(character.tomeOfBattle.maneuversKnown) && character.tomeOfBattle.maneuversKnown.length > 0) {
+            character.tomeOfBattle.maneuversKnown = [];
+          }
+          if (Array.isArray(character.tomeOfBattle.readiedManeuvers) && character.tomeOfBattle.readiedManeuvers.length > 0) {
+            character.tomeOfBattle.readiedManeuvers = [];
+          }
+          if (Array.isArray(character.tomeOfBattle.stancesKnown) && character.tomeOfBattle.stancesKnown.length > 0) {
+            character.tomeOfBattle.stancesKnown = [];
+          }
+          if (character.activeStance) {
+            character.activeStance = '';
+          }
+        }
         return {
-          adeptClass: 'No Class',
+          adeptClass: 'No Martial Adept Class',
           martialLvls: 0,
-          otherLvls: 0,
+          otherLvls: activeRows.length,
           il: 0,
           maxManeuverLvl: 0,
           maxReadied: 0,
@@ -2170,7 +2233,7 @@
       }
 
       if (!adeptClass) {
-        adeptClass = 'Martial Adept';
+        adeptClass = (martialStudyCount > 0 || martialStanceCount > 0) ? 'Martial Study / Stance' : 'Martial Adept';
       }
 
       const computedIl = martialLvls > 0
@@ -2184,16 +2247,31 @@
 
       const maxManeuverLvl = Math.min(9, Math.max(1, Math.ceil(il / 2)));
       const readiedList = character?.tomeOfBattle?.readiedManeuvers || [];
-      const dmReadiedBonus = Number(character?.tomeOfBattle?.dmReadiedBonus) || 0;
-      const dmKnownBonus = Number(character?.tomeOfBattle?.dmKnownBonus) || 0;
-      const dmStanceBonus = Number(character?.tomeOfBattle?.dmStanceBonus) || 0;
 
-      const baseReadied = martialLvls >= 20 ? 7 : (martialLvls >= 15 ? 6 : (martialLvls >= 10 ? 5 : (martialLvls >= 4 ? 4 : 3)));
-      const maxReadied = Math.max(1, Math.max(baseReadied + dmReadiedBonus, readiedList.length));
-      const baseKnownManeuvers = Math.max(3 + Math.max(0, martialLvls - 1), 2 + maxManeuverLvl, (character?.tomeOfBattle?.maneuversKnown || []).length);
-      const maxKnownManeuvers = Math.max(1, baseKnownManeuvers + dmKnownBonus);
-      const baseKnownStances = Math.max(il >= 10 ? 3 : (il >= 4 ? 2 : 1), (character?.tomeOfBattle?.stancesKnown || []).length);
-      const maxKnownStances = Math.max(1, baseKnownStances + dmStanceBonus);
+      let baseReadied = 0;
+      let baseKnownManeuvers = 0;
+      let baseKnownStances = 0;
+
+      if (martialLvls > 0) {
+        if (adeptClass === 'Swordsage') {
+          baseKnownManeuvers = 5 + martialLvls;
+          baseReadied = martialLvls >= 20 ? 10 : (martialLvls >= 18 ? 9 : (martialLvls >= 15 ? 8 : (martialLvls >= 12 ? 7 : (martialLvls >= 8 ? 6 : (martialLvls >= 4 ? 5 : 4)))));
+          baseKnownStances = martialLvls >= 20 ? 6 : (martialLvls >= 14 ? 5 : (martialLvls >= 9 ? 4 : (martialLvls >= 5 ? 3 : (martialLvls >= 2 ? 2 : 1))));
+        } else if (adeptClass === 'Crusader') {
+          baseKnownManeuvers = 5 + Math.floor((martialLvls - 1) / 2);
+          baseReadied = martialLvls >= 20 ? 7 : (martialLvls >= 10 ? 6 : 5);
+          baseKnownStances = martialLvls >= 14 ? 4 : (martialLvls >= 8 ? 3 : (martialLvls >= 2 ? 2 : 1));
+        } else {
+          // Warblade & Default Martial Adept
+          baseKnownManeuvers = 3 + Math.floor((martialLvls - 1) / 2);
+          baseReadied = martialLvls >= 20 ? 7 : (martialLvls >= 15 ? 6 : (martialLvls >= 9 ? 5 : (martialLvls >= 4 ? 4 : 3)));
+          baseKnownStances = martialLvls >= 16 ? 4 : (martialLvls >= 10 ? 3 : (martialLvls >= 4 ? 2 : 1));
+        }
+      }
+
+      const maxKnownManeuvers = Math.max(0, baseKnownManeuvers + martialStudyCount + dmKnownBonus);
+      const maxReadied = Math.max(0, baseReadied + (martialLvls === 0 && martialStudyCount > 0 ? 1 : 0) + dmReadiedBonus);
+      const maxKnownStances = Math.max(0, baseKnownStances + martialStanceCount + dmStanceBonus);
       const classDisciplines = adeptClass === 'Crusader'
         ? ['Devoted Spirit', 'Stone Dragon', 'White Raven']
         : (adeptClass === 'Swordsage'
@@ -4297,6 +4375,7 @@
       if (!window._spellPickerTargetPool && window._currentMagicDiscipline && ['spontaneous', 'prepared', 'divine'].includes(window._currentMagicDiscipline)) {
         window._spellPickerTargetPool = window._currentMagicDiscipline;
       }
+      window._spellPickerModalMode = (initialType === 'Maneuver' || initialType === 'Stance') ? 'martial' : 'spell';
       setSpellPickerType(initialType);
       const sourceSelect = document.getElementById('spell-picker-source-filter');
       if (sourceSelect) {
@@ -4442,9 +4521,33 @@
         rawBadge.className = `text-[10px] font-semibold ${palette.rawBadge} border px-2 py-0.5 rounded-full`;
       }
 
+      const titleTextEl = document.getElementById('spell-picker-modal-title-text');
+      if (titleTextEl) {
+        if (type === 'Maneuver' || type === 'Stance') {
+          titleTextEl.textContent = 'Add Martial Maneuver or Stance';
+        } else if (palette.key === 'divine_domain') {
+          titleTextEl.textContent = 'Prepare Cleric Domain Spell';
+        } else if (palette.key === 'divine') {
+          titleTextEl.textContent = 'Prepare Divine Spell';
+        } else if (palette.key === 'prepared') {
+          titleTextEl.textContent = 'Add Prepared / Spellbook Spell';
+        } else {
+          titleTextEl.textContent = 'Add Spontaneous Spell';
+        }
+      }
+
+      const modalMode = window._spellPickerModalMode || (type === 'Spell' ? 'spell' : 'martial');
       ['Spell', 'Maneuver', 'Stance'].forEach(t => {
         const btn = document.getElementById(`spell-picker-tab-${t.toLowerCase()}`);
         if (btn) {
+          // Hide Maneuver/Stance tabs when opened for Spells, and hide Spell tab when opened for Martial
+          if (modalMode === 'spell' && t !== 'Spell') {
+            btn.style.display = 'none';
+          } else if (modalMode === 'martial' && t === 'Spell') {
+            btn.style.display = 'none';
+          } else {
+            btn.style.display = '';
+          }
           if (t === type) {
             btn.className = `px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${palette.activeTab}`;
           } else {
@@ -4945,10 +5048,13 @@
           const discLabel = selectedSource === 'class'
             ? `\uD83E\uDD4B ${initInfo.adeptClass} Disciplines`
             : (selectedSource && selectedSource !== 'all' && selectedSource !== 'auto' ? `\u2694\uFE0F ${selectedSource}` : '\u2694\uFE0F All 9 Sublime Way Disciplines');
+          const adeptSummary = initInfo.hasClass
+            ? `${initInfo.adeptClass} &bull; IL ${initInfo.il} (Max Lvl ${initInfo.maxManeuverLvl})`
+            : `🔒 No Martial Adept Class / Feat (0 Quota)`;
           targetHint.innerHTML = `
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 text-[10px]">Martial Adept:</span>
-              <span class="font-bold border px-1.5 py-0.5 rounded text-[10px] text-rose-300 bg-rose-950/80 border-rose-800">${initInfo.adeptClass} &bull; IL ${initInfo.il || 1} (Max Lvl ${initInfo.maxManeuverLvl || 1})</span>
+              <span class="font-bold border px-1.5 py-0.5 rounded text-[10px] text-rose-300 bg-rose-950/80 border-rose-800">${adeptSummary}</span>
             </div>
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 text-[10px]">Discipline:</span>
@@ -5052,6 +5158,9 @@
           : (item.level !== undefined ? item.level : null);
 
         let isLevelFull = false;
+        let isMartialLocked = false;
+        let martialLockText = '';
+        let martialLockTitle = '';
         let countText = '';
         if (type === 'Spell') {
           const numLvl = itemLvlDisplay !== null ? Number(itemLvlDisplay) : 0;
@@ -5081,6 +5190,26 @@
               countText = `${curReg}/${maxReg}`;
             }
           }
+        } else if (type === 'Maneuver' || type === 'Stance') {
+          const mLvl = Number(item.level) || 1;
+          const curKnown = type === 'Maneuver'
+            ? (character.tomeOfBattle?.maneuversKnown || []).length
+            : (character.tomeOfBattle?.stancesKnown || []).length;
+          const maxQuota = type === 'Maneuver'
+            ? (initInfo?.maxKnownManeuvers || 0)
+            : (initInfo?.maxKnownStances || 0);
+          countText = `${curKnown}/${maxQuota}`;
+          if (!initInfo || !initInfo.hasClass || maxQuota <= 0) {
+            isMartialLocked = true;
+            martialLockText = '🔒 No Martial Class';
+            martialLockTitle = `Requires a Martial Adept class (Crusader, Swordsage, Warblade) or the ${type === 'Maneuver' ? 'Martial Study' : 'Martial Stance'} feat.`;
+          } else if (mLvl > (initInfo.maxManeuverLvl || 0)) {
+            isMartialLocked = true;
+            martialLockText = `🔒 Req IL ${mLvl * 2 - 1}+`;
+            martialLockTitle = `Level ${mLvl} ${type} requires Initiator Level ${mLvl * 2 - 1}+ (current IL: ${initInfo.il}, Max Lvl: ${initInfo.maxManeuverLvl}).`;
+          } else if (curKnown >= maxQuota) {
+            isLevelFull = true;
+          }
         }
 
         let actionHtml = '';
@@ -5090,10 +5219,16 @@
               ✓ Added
             </span>
           `;
+        } else if (isMartialLocked) {
+          actionHtml = `
+            <span class="text-[11px] text-slate-400 font-bold px-2 py-1 bg-slate-900 border border-slate-700 rounded-lg inline-flex items-center gap-1 cursor-not-allowed" title="${martialLockTitle}">
+              ${martialLockText}
+            </span>
+          `;
         } else if (isLevelFull) {
           actionHtml = `
-            <span class="text-[11px] text-amber-400 font-bold px-2 py-1 bg-amber-950/60 border border-amber-800 rounded-lg inline-flex items-center gap-1" title="Level ${itemLvlDisplay} quota (${countText}) is full. Cannot add more spells.">
-              &#x1F6AB; Slot Full (${countText})
+            <span class="text-[11px] text-amber-400 font-bold px-2 py-1 bg-amber-950/60 border border-amber-800 rounded-lg inline-flex items-center gap-1" title="Quota (${countText}) is full. Cannot add more.">
+              &#x1F6AB; Full (${countText})
             </span>
           `;
         } else {
@@ -5276,9 +5411,39 @@
           total: isDomainAdded ? `${matchedDomainName} ${resolvedLvl}` : '+1 Spell'
         });
       } else if (type === 'Maneuver') {
+        const initInfo = getInitiatorInfo();
+        const mLvl = item.level !== undefined ? Number(item.level) : 1;
+        if (!initInfo || !initInfo.hasClass || (initInfo.maxKnownManeuvers || 0) <= 0) {
+          showDiceTopToast({
+            icon: '🔒',
+            title: 'Martial Adept Required',
+            breakdown: 'D&D 3.5e RAW (ToB p. 29): Requires a Martial Adept class (Crusader, Swordsage, Warblade) or the Martial Study feat to learn maneuvers.',
+            total: 'Locked'
+          });
+          return;
+        }
+        if (mLvl > (initInfo.maxManeuverLvl || 0)) {
+          showDiceTopToast({
+            icon: '🔒',
+            title: 'Initiator Level Too Low',
+            breakdown: `Level ${mLvl} maneuvers require Initiator Level ${mLvl * 2 - 1}+ (current IL: ${initInfo.il}).`,
+            total: `Max Lvl ${initInfo.maxManeuverLvl}`
+          });
+          return;
+        }
         if (!character.tomeOfBattle) character.tomeOfBattle = {};
         if (!Array.isArray(character.tomeOfBattle.maneuversKnown)) character.tomeOfBattle.maneuversKnown = [];
         if (!Array.isArray(character.tomeOfBattle.readiedManeuvers)) character.tomeOfBattle.readiedManeuvers = [];
+
+        if (character.tomeOfBattle.maneuversKnown.length >= initInfo.maxKnownManeuvers) {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'Maneuver Quota Full',
+            breakdown: `Maneuvers Known quota (${initInfo.maxKnownManeuvers}) is full!`,
+            total: `${character.tomeOfBattle.maneuversKnown.length}/${initInfo.maxKnownManeuvers}`
+          });
+          return;
+        }
 
         const exists = character.tomeOfBattle.maneuversKnown.some(m => (m.name || '').toLowerCase().trim() === name.toLowerCase().trim());
         if (exists) {
@@ -5291,7 +5456,7 @@
           id: item.id || ('tob_maneuver_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
           schemaVersion: 2,
           name: item.name,
-          level: item.level !== undefined ? Number(item.level) : 1,
+          level: mLvl,
           discipline: item.discipline || item.school || 'Iron Heart',
           subType: item.subType || 'Strike',
           action: item.action || 'Standard',
@@ -5325,8 +5490,38 @@
           total: '+1 Maneuver'
         });
       } else if (type === 'Stance') {
+        const initInfo = getInitiatorInfo();
+        const sLvl = item.level !== undefined ? Number(item.level) : 1;
+        if (!initInfo || !initInfo.hasClass || (initInfo.maxKnownStances || 0) <= 0) {
+          showDiceTopToast({
+            icon: '🔒',
+            title: 'Martial Adept Required',
+            breakdown: 'D&D 3.5e RAW (ToB p. 30): Requires a Martial Adept class (Crusader, Swordsage, Warblade) or the Martial Stance feat to learn stances.',
+            total: 'Locked'
+          });
+          return;
+        }
+        if (sLvl > (initInfo.maxManeuverLvl || 0)) {
+          showDiceTopToast({
+            icon: '🔒',
+            title: 'Initiator Level Too Low',
+            breakdown: `Level ${sLvl} stances require Initiator Level ${sLvl * 2 - 1}+ (current IL: ${initInfo.il}).`,
+            total: `Max Lvl ${initInfo.maxManeuverLvl}`
+          });
+          return;
+        }
         if (!character.tomeOfBattle) character.tomeOfBattle = {};
         if (!Array.isArray(character.tomeOfBattle.stancesKnown)) character.tomeOfBattle.stancesKnown = [];
+
+        if (character.tomeOfBattle.stancesKnown.length >= initInfo.maxKnownStances) {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'Stance Quota Full',
+            breakdown: `Stances Known quota (${initInfo.maxKnownStances}) is full!`,
+            total: `${character.tomeOfBattle.stancesKnown.length}/${initInfo.maxKnownStances}`
+          });
+          return;
+        }
 
         const exists = character.tomeOfBattle.stancesKnown.some(st => (st.name || '').toLowerCase().trim() === name.toLowerCase().trim());
         if (exists) {
