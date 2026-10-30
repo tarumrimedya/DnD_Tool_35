@@ -6221,14 +6221,22 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const chosenDomains = (typeof getCharacterClericDomains === 'function')
             ? getCharacterClericDomains(character)
             : (Array.isArray(character?.spellcasting?.domains) ? character.spellcasting.domains.filter(Boolean) : []);
+          const deityMeta = (typeof getCharacterDeityMeta === 'function') ? getCharacterDeityMeta(character) : null;
+          const favWep = (deityMeta && deityMeta.weapon && deityMeta.weapon !== '-') ? deityMeta.weapon : null;
           for (let dSlot = 0; dSlot < 2; dSlot++) {
             const domName = chosenDomains[dSlot];
             if (domName) {
               const domDef = (typeof DND35_CLERIC_DOMAINS === 'object' && DND35_CLERIC_DOMAINS[domName]) ? DND35_CLERIC_DOMAINS[domName] : null;
+              const elig = (typeof checkClericDomainEligibility === 'function') ? checkClericDomainEligibility(domName, character) : { eligible: true, reason: '' };
               const gPower = domDef ? domDef.grantedPower : 'Cleric Domain Granted Power';
-              const safeTip = `Cleric Domain (${dSlot + 1}/2): ${domName} — ${gPower} (Click to change domain)`.replace(/"/g, '&quot;');
+              const warSuffix = (domName === 'War' && favWep) ? ` [WF: ${favWep}]` : '';
+              const warnPrefix = !elig.eligible ? `⚠️ RAW Conflict: ${elig.reason} — ` : '';
+              const safeTip = `${warnPrefix}Cleric Domain (${dSlot + 1}/2): ${domName}${warSuffix} — ${gPower} (Click to change domain)`.replace(/"/g, '&quot;');
+              const badgeColorCls = elig.eligible
+                ? 'bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border-yellow-500/80'
+                : 'bg-rose-950/90 hover:bg-rose-900 text-rose-200 border-rose-500/80';
               classBonusBadgeItems.push(
-                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" title="${safeTip}" class="relative w-full min-h-6 h-auto py-0.5 inline-flex items-center justify-start gap-1.5 px-2 rounded text-[10px] font-bold bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border border-yellow-500/80 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚜️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">Domain: ${domName}</span></button>`
+                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" title="${safeTip}" class="relative w-full min-h-6 h-auto py-0.5 inline-flex items-center justify-start gap-1.5 px-2 rounded text-[10px] font-bold ${badgeColorCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${elig.eligible ? '⚜️' : '⚠️'}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">Domain: ${domName}${warSuffix}</span></button>`
               );
             } else {
               pendingClassBonusButtons.push(
@@ -7141,11 +7149,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             </div>
             <button type="button" onclick="closeClericDomainPickerModal()" class="text-slate-400 hover:text-white text-sm font-bold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer">✕</button>
           </div>
+          <div id="cleric-domain-deity-banner" class="px-3.5 py-2 bg-slate-950/90 border-b border-slate-800 text-[11px] flex flex-wrap items-center justify-between gap-2"></div>
           <div class="p-3 border-b border-slate-800 bg-slate-950/60 flex flex-wrap items-center justify-between gap-2">
             <div class="relative flex-1 min-w-[200px]">
               <input id="cleric-domain-search-input" type="text" oninput="renderClericDomainPickerList()" placeholder="Search 35 domains, granted powers, or domain spells..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white font-bold focus:border-yellow-500 focus:outline-none placeholder-slate-500">
               <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
             </div>
+            <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-300 cursor-pointer select-none bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700 hover:border-yellow-600/60" title="Allow selecting domains outside your Deity's portfolio or Alignment restrictions (House Rule / DM Override)">
+              <input id="cleric-domain-dm-override" type="checkbox" onchange="window._clericDomainDmOverride = this.checked; renderClericDomainPickerList();" class="accent-amber-500 rounded cursor-pointer">
+              <span>DM Override (Unlock All 35)</span>
+            </label>
             <div id="cleric-domain-current-summary" class="text-[11px] text-yellow-300 font-bold"></div>
           </div>
           <div id="cleric-domain-picker-list" class="p-3 overflow-y-auto space-y-2.5 flex-1 divide-y divide-slate-800/80"></div>
@@ -7164,6 +7177,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
       const searchEl = document.getElementById('cleric-domain-search-input');
       if (searchEl) searchEl.value = '';
+      const dmToggle = document.getElementById('cleric-domain-dm-override');
+      if (dmToggle) dmToggle.checked = Boolean(window._clericDomainDmOverride);
       modal.classList.remove('hidden');
       renderClericDomainPickerList();
 
@@ -7188,6 +7203,44 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         : (Array.isArray(character?.spellcasting?.domains) ? character.spellcasting.domains.filter(Boolean) : []);
       const currentSlotDomain = chosen[ctx.slotIdx] || null;
       const otherSlotDomain = chosen[ctx.slotIdx === 0 ? 1 : 0] || null;
+      const dmOverride = Boolean(window._clericDomainDmOverride);
+
+      const deityMeta = (typeof getCharacterDeityMeta === 'function')
+        ? getCharacterDeityMeta(character)
+        : { found: false, isPhilosophical: true, name: character?.deity || 'None', alignment: 'Any', weapon: '-', domains: [], icon: '🌀' };
+      const charAlign = character?.alignment || 'Unspecified';
+      const alignCompat = (typeof checkClericDeityAlignmentCompatibility === 'function')
+        ? checkClericDeityAlignmentCompatibility(charAlign, deityMeta)
+        : { compatible: true, reason: '' };
+
+      // Render Deity & Alignment Banner
+      const bannerEl = document.getElementById('cleric-domain-deity-banner');
+      if (bannerEl) {
+        const hasSpecificDeity = deityMeta.found && !deityMeta.isPhilosophical && Array.isArray(deityMeta.domains) && deityMeta.domains.length > 0;
+        const portfolioText = hasSpecificDeity
+          ? `<span class="text-yellow-300 font-bold">${deityMeta.domains.join(', ')}</span>`
+          : `<span class="text-slate-400 italic">All Alignment-Compatible Domains (Philosophical / No Deity Selected)</span>`;
+        const favWepText = (deityMeta.weapon && deityMeta.weapon !== '-')
+          ? `<span class="text-sky-300 font-mono">⚔️ Favored Weapon: ${deityMeta.weapon}</span>`
+          : '';
+        const alignWarnHtml = (!alignCompat.compatible)
+          ? `<div class="w-full mt-1 px-2.5 py-1 rounded bg-rose-950/80 border border-rose-600/70 text-rose-200 text-[10px] font-bold flex items-center justify-between gap-2">
+               <span>⚠️ ${alignCompat.reason}</span>
+               <button type="button" onclick="closeClericDomainPickerModal(); if(typeof openStatDistributionModal==='function') openStatDistributionModal();" class="underline text-rose-100 hover:text-white cursor-pointer shrink-0">Edit Alignment / Deity</button>
+             </div>`
+          : '';
+
+        bannerEl.innerHTML = `
+          <div class="flex flex-wrap items-center gap-x-3 gap-y-1">
+            <span class="text-slate-300">⚖️ <strong>Alignment:</strong> <span class="text-white font-bold">${charAlign}</span></span>
+            <span class="text-slate-300">${deityMeta.icon || '☀️'} <strong>Deity:</strong> <span class="text-amber-300 font-bold">${deityMeta.name}</span> ${deityMeta.alignment && deityMeta.alignment !== 'Any' ? `<span class="text-slate-400">(${deityMeta.alignment})</span>` : ''}</span>
+            ${favWepText}
+            <span class="text-slate-300">⚜️ <strong>Deity Portfolio:</strong> ${portfolioText}</span>
+          </div>
+          <button type="button" onclick="closeClericDomainPickerModal(); if(typeof openStatDistributionModal==='function') openStatDistributionModal();" class="text-[10px] text-amber-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-700 px-2 py-0.5 rounded cursor-pointer shrink-0">Change Deity / Alignment</button>
+          ${alignWarnHtml}
+        `;
+      }
 
       const summaryEl = document.getElementById('cleric-domain-current-summary');
       if (summaryEl) {
@@ -7207,33 +7260,68 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const gp = String(meta?.grantedPower || '').toLowerCase();
         const spList = (domainSpellsMap[domName] || []).map(s => s.name.toLowerCase()).join(' ');
         return domName.toLowerCase().includes(query) || gp.includes(query) || spList.includes(query);
+      }).map(([domName, meta]) => {
+        const elig = (typeof checkClericDomainEligibility === 'function')
+          ? checkClericDomainEligibility(domName, character)
+          : { eligible: true, alignmentBlocked: false, deityBlocked: false, inDeityPortfolio: false, reason: '' };
+        return { domName, meta, elig };
       });
 
-      listEl.innerHTML = entries.map(([domName, meta]) => {
+      // Sort: 1. Currently selected in this slot, 2. Eligible & in Deity Portfolio, 3. Eligible, 4. Restricted
+      entries.sort((a, b) => {
+        const aCur = a.domName === currentSlotDomain ? 1 : 0;
+        const bCur = b.domName === currentSlotDomain ? 1 : 0;
+        if (aCur !== bCur) return bCur - aCur;
+        const aElig = a.elig.eligible ? 1 : 0;
+        const bElig = b.elig.eligible ? 1 : 0;
+        if (aElig !== bElig) return bElig - aElig;
+        const aPort = a.elig.inDeityPortfolio ? 1 : 0;
+        const bPort = b.elig.inDeityPortfolio ? 1 : 0;
+        if (aPort !== bPort) return bPort - aPort;
+        return a.domName.localeCompare(b.domName);
+      });
+
+      listEl.innerHTML = entries.map(({ domName, meta, elig }) => {
         const isCurrent = domName === currentSlotDomain;
         const isOther = domName === otherSlotDomain;
+        const canSelect = elig.eligible || dmOverride;
         const spells = domainSpellsMap[domName] || [];
         const spellsBadges = spells.length > 0
           ? spells.map(s => `<span class="text-[10px] bg-slate-950 text-amber-200/90 border border-slate-800 px-1.5 py-0.5 rounded font-mono"><strong class="text-yellow-400">${s.level}:</strong> ${s.name}</span>`).join(' ')
           : `<span class="text-[10px] text-slate-500 italic">Loading domain spells...</span>`;
+
+        let statusBadges = '';
+        if (elig.inDeityPortfolio) {
+          statusBadges += `<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-950/90 text-yellow-300 border border-yellow-600/80 font-bold">${deityMeta.icon || '☀️'} ${deityMeta.name}'s Portfolio</span>`;
+        }
+        if (domName === 'War' && deityMeta.weapon && deityMeta.weapon !== '-') {
+          statusBadges += `<span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-950/90 text-sky-300 border border-sky-600/80 font-bold">⚔️ Grants Weapon Focus (${deityMeta.weapon})</span>`;
+        }
+        if (!elig.eligible) {
+          statusBadges += `<span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-950/90 text-rose-300 border border-rose-700/80 font-bold" title="${elig.reason}">🔒 ${elig.alignmentBlocked ? 'Alignment Restricted' : `Not in ${deityMeta.name}'s Domains`}</span>`;
+        }
 
         let btnHtml = '';
         if (isCurrent) {
           btnHtml = `<span class="text-[11px] font-bold text-emerald-300 bg-emerald-950/70 border border-emerald-600 px-2.5 py-1 rounded-lg">✓ Selected</span>`;
         } else if (isOther) {
           btnHtml = `<span class="text-[11px] font-bold text-slate-400 bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg" title="Already selected in your other Domain slot">Other Slot</span>`;
-        } else {
+        } else if (canSelect) {
           btnHtml = `<button type="button" onclick="selectClericDomain('${domName.replace(/'/g, "\\'")}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-extrabold text-xs px-3 py-1.5 rounded-lg border border-yellow-400 shadow transition cursor-pointer">⚜️ Select</button>`;
+        } else {
+          btnHtml = `<span class="text-[10px] font-bold text-slate-500 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg cursor-not-allowed" title="${elig.reason}">🔒 Locked</span>`;
         }
 
         return `
-          <div class="pt-2.5 pb-2.5 flex items-start justify-between gap-3 ${isCurrent ? 'bg-amber-950/20 px-2 rounded-lg' : ''}">
+          <div class="pt-2.5 pb-2.5 flex items-start justify-between gap-3 ${isCurrent ? 'bg-amber-950/20 px-2 rounded-lg' : (!canSelect ? 'opacity-55' : '')}">
             <div class="space-y-1.5 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-xs font-extrabold text-yellow-300 flex items-center gap-1">⚜️ ${domName} Domain</span>
                 <span class="text-[10px] text-slate-500 font-mono">PHB / SRD</span>
+                ${statusBadges}
               </div>
               <p class="text-[11px] text-slate-200"><strong class="text-amber-300">Granted Power:</strong> ${meta.grantedPower}</p>
+              ${!elig.eligible ? `<p class="text-[10px] text-rose-300/90 font-semibold">${elig.reason}</p>` : ''}
               <div class="flex flex-wrap gap-1 pt-0.5">${spellsBadges}</div>
             </div>
             <div class="shrink-0 pt-1">${btnHtml}</div>
@@ -7248,6 +7336,21 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         ? getCharacterClericDomains(character)
         : (Array.isArray(character?.spellcasting?.domains) ? character.spellcasting.domains.filter(Boolean) : []);
       const domainsCatalog = (typeof DND35_CLERIC_DOMAINS === 'object' && DND35_CLERIC_DOMAINS) ? DND35_CLERIC_DOMAINS : {};
+      const deityMeta = (typeof getCharacterDeityMeta === 'function') ? getCharacterDeityMeta(character) : null;
+      const favWeapon = (deityMeta && deityMeta.weapon && deityMeta.weapon !== '-') ? deityMeta.weapon : "Deity's Favored Weapon";
+
+      // Domain-granted bonus feats (War -> Weapon Focus & Martial Weapon Proficiency; Darkness -> Blind-Fight; Rune -> Scribe Scroll)
+      const domainGrantedFeats = [];
+      if (chosen.includes('War')) {
+        domainGrantedFeats.push(`[Domain Bonus] Martial Weapon Proficiency (${favWeapon})`);
+        domainGrantedFeats.push(`[Domain Bonus] Weapon Focus (${favWeapon})`);
+      }
+      if (chosen.includes('Darkness')) {
+        domainGrantedFeats.push(`[Domain Bonus] Blind-Fight`);
+      }
+      if (chosen.includes('Rune')) {
+        domainGrantedFeats.push(`[Domain Bonus] Scribe Scroll`);
+      }
 
       // Update specialAbilities on Cleric 1 row and character.specialAbilities
       if (Array.isArray(character.levelProgression)) {
@@ -7267,6 +7370,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         });
       }
 
+      // Sync top-level character.feats for RuleEngine (Weapon Focus / Blind-Fight / Scribe Scroll)
+      if (!Array.isArray(character.feats)) character.feats = [];
+      character.feats = character.feats.filter(f => {
+        const fName = typeof f === 'string' ? f : (f?.name || '');
+        return !fName.startsWith('[Domain Bonus]');
+      });
+      domainGrantedFeats.forEach(df => {
+        character.feats.push(df);
+      });
+
       if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
       character.specialAbilities = character.specialAbilities.filter(a => {
         const n = typeof a === 'string' ? a : (a?.name || '');
@@ -7274,12 +7387,22 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       });
       chosen.forEach(d => {
         const meta = domainsCatalog[d];
+        const benefitText = (d === 'War' && favWeapon)
+          ? `Free Martial Weapon Proficiency (${favWeapon}) and Weapon Focus (${favWeapon}).`
+          : (meta ? meta.grantedPower : `${d} Domain Granted Power`);
         character.specialAbilities.push({
           name: `⚜️ ${d} Domain (Granted Power)`,
           source: 'Cleric Domain',
-          benefit: meta ? meta.grantedPower : `${d} Domain Granted Power`
+          benefit: benefitText
         });
       });
+
+      if (typeof resolveClericEnergyPolicy === 'function' && character.spellcasting) {
+        const policy = resolveClericEnergyPolicy(character);
+        if (policy.forcedMode) {
+          character.spellcasting.clericSpontaneousMode = policy.forcedMode;
+        }
+      }
 
       if (typeof autoSyncCharacterClassSkills === 'function') {
         autoSyncCharacterClassSkills(character, false);

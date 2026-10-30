@@ -599,6 +599,115 @@
     window.getCharacterClericDomains = getCharacterClericDomains;
     window.hasClericDomainCapability = hasClericDomainCapability;
 
+    // D&D 3.5e RAW Domain Eligibility Checker (Alignment Domain Rule & Deity Portfolio Rule — PHB p. 32)
+    function checkClericDomainEligibility(domainName, char = character) {
+      const dom = String(domainName || '').trim();
+      const charAxes = (typeof parseAlignmentAxes === 'function') ? parseAlignmentAxes(char?.alignment) : null;
+      const deityMeta = (typeof getCharacterDeityMeta === 'function') ? getCharacterDeityMeta(char) : null;
+
+      // 1. Alignment Domain Rule (PHB p. 32: "A cleric can select an alignment domain only if his alignment matches that domain.")
+      const alignReqMap = {
+        Good:  { check: (a) => a.ge === 1,  label: 'Good (LG, NG, or CG)' },
+        Evil:  { check: (a) => a.ge === -1, label: 'Evil (LE, NE, or CE)' },
+        Law:   { check: (a) => a.lc === -1, label: 'Lawful (LG, LN, or LE)' },
+        Chaos: { check: (a) => a.lc === 1,  label: 'Chaotic (CG, CN, or CE)' }
+      };
+      if (alignReqMap[dom] && charAxes && !charAxes.isAny) {
+        if (!alignReqMap[dom].check(charAxes)) {
+          return {
+            eligible: false,
+            alignmentBlocked: true,
+            deityBlocked: false,
+            inDeityPortfolio: Boolean(deityMeta?.domains?.some(d => d.toLowerCase() === dom.toLowerCase())),
+            reason: `PHB p. 32 Alignment Domain Rule: The ${dom} domain requires a ${alignReqMap[dom].label} alignment (current: ${charAxes.label}).`
+          };
+        }
+      }
+
+      // 2. Deity Portfolio Rule (PHB p. 32)
+      const hasSpecificDeity = Boolean(
+        deityMeta &&
+        deityMeta.found &&
+        !deityMeta.isPhilosophical &&
+        Array.isArray(deityMeta.domains) &&
+        deityMeta.domains.length > 0 &&
+        !deityMeta.domains.some(d => d.toLowerCase() === 'universal')
+      );
+      const inPortfolio = hasSpecificDeity
+        ? deityMeta.domains.some(d => d.toLowerCase() === dom.toLowerCase())
+        : true;
+
+      if (hasSpecificDeity && !inPortfolio) {
+        return {
+          eligible: false,
+          alignmentBlocked: false,
+          deityBlocked: true,
+          inDeityPortfolio: false,
+          reason: `Not in ${deityMeta.name}'s portfolio (${deityMeta.domains.join(', ')}).`
+        };
+      }
+
+      return {
+        eligible: true,
+        alignmentBlocked: false,
+        deityBlocked: false,
+        inDeityPortfolio: hasSpecificDeity ? inPortfolio : false,
+        reason: hasSpecificDeity ? `Granted by ${deityMeta.name}` : 'Available Domain'
+      };
+    }
+
+    // D&D 3.5e RAW Cleric Positive/Negative Energy Policy (Cure vs. Inflict — PHB p. 32–33)
+    function resolveClericEnergyPolicy(char = character) {
+      const charAxes = (typeof parseAlignmentAxes === 'function') ? parseAlignmentAxes(char?.alignment) : null;
+      const deityMeta = (typeof getCharacterDeityMeta === 'function') ? getCharacterDeityMeta(char) : null;
+      const deityAxes = (deityMeta && !deityMeta.isPhilosophical && typeof parseAlignmentAxes === 'function')
+        ? parseAlignmentAxes(deityMeta.alignment)
+        : null;
+
+      if (charAxes && !charAxes.isAny) {
+        if (charAxes.ge === 1) {
+          return {
+            forcedMode: 'cure',
+            locked: true,
+            reason: `Good Cleric (${charAxes.label}) must channel Positive Energy (Cure Wounds / Turn Undead) per PHB p. 32.`
+          };
+        }
+        if (charAxes.ge === -1) {
+          return {
+            forcedMode: 'inflict',
+            locked: true,
+            reason: `Evil Cleric (${charAxes.label}) must channel Negative Energy (Inflict Wounds / Rebuke Undead) per PHB p. 32.`
+          };
+        }
+      }
+
+      if (deityAxes && !deityAxes.isAny) {
+        if (deityAxes.ge === 1) {
+          return {
+            forcedMode: 'cure',
+            locked: true,
+            reason: `Neutral Cleric of a Good deity (${deityMeta.name}: ${deityAxes.label}) must channel Positive Energy (Cure Wounds) per PHB p. 32.`
+          };
+        }
+        if (deityAxes.ge === -1) {
+          return {
+            forcedMode: 'inflict',
+            locked: true,
+            reason: `Neutral Cleric of an Evil deity (${deityMeta.name}: ${deityAxes.label}) must channel Negative Energy (Inflict Wounds) per PHB p. 32.`
+          };
+        }
+      }
+
+      return {
+        forcedMode: null,
+        locked: false,
+        reason: 'Neutral Cleric of a Neutral deity (or Philosophical Faith) may choose between Positive (Cure) and Negative (Inflict) Energy.'
+      };
+    }
+
+    window.checkClericDomainEligibility = checkClericDomainEligibility;
+    window.resolveClericEnergyPolicy = resolveClericEnergyPolicy;
+
     function calculateDivineSlots(divineLvl, wisScore, existingSlots = []) {
       const prevSlots = Array.isArray(existingSlots) ? existingSlots : [];
       if (Number(divineLvl) <= 0) return prevSlots.filter(s => (Number(s.daily) || 0) > 0);
@@ -1154,6 +1263,20 @@
 
     function toggleClericSpontaneousMode() {
       if (!character.spellcasting) character.spellcasting = {};
+      const policy = resolveClericEnergyPolicy(character);
+      if (policy.locked && policy.forcedMode) {
+        character.spellcasting.clericSpontaneousMode = policy.forcedMode;
+        saveStateToStorage(true);
+        const classesStatus = checkCharacterMagicClasses();
+        renderDivineDisciplineView(classesStatus.hasDivine);
+        showDiceTopToast({
+          icon: policy.forcedMode === 'cure' ? '💚' : '💀',
+          title: 'Energy Channel Locked by Alignment / Deity',
+          breakdown: policy.reason,
+          total: policy.forcedMode === 'cure' ? 'Cure Only' : 'Inflict Only'
+        });
+        return;
+      }
       const cur = character.spellcasting.clericSpontaneousMode || 'cure';
       const next = cur === 'cure' ? 'inflict' : 'cure';
       character.spellcasting.clericSpontaneousMode = next;
@@ -1284,6 +1407,10 @@
       }
 
       const { statKey, statVal, statMod, cl, clMode, hasClass, divLvls } = getDivineCasterInfo();
+      const energyPolicy = resolveClericEnergyPolicy(character);
+      if (energyPolicy.forcedMode && character.spellcasting.clericSpontaneousMode !== energyPolicy.forcedMode) {
+        character.spellcasting.clericSpontaneousMode = energyPolicy.forcedMode;
+      }
       const spontMode = character.spellcasting.clericSpontaneousMode || 'cure';
       if ((divLvls > 0 || hasClass) && Number(cl) > 0) {
         character.spellcasting.divineSlots = calculateDivineSlots(cl, statVal, character.spellcasting.divineSlots);
@@ -1664,9 +1791,9 @@
                 spontMode === 'cure'
                   ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80'
                   : 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-500/80'
-              } border text-xs font-bold px-2.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer" title="Cleric Spontaneous Casting Channel: Click to toggle between Cure (Positive Energy) and Inflict (Negative Energy)">
+              } border text-xs font-bold px-2.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer" title="${energyPolicy.reason}">
                 <span>${spontMode === 'cure' ? '💚' : '💀'}</span>
-                <span>Spontaneous Conversion: ${spontMode === 'cure' ? 'Cure Wounds' : 'Inflict Wounds'}</span>
+                <span>Spontaneous: ${spontMode === 'cure' ? 'Cure Wounds' : 'Inflict Wounds'}${energyPolicy.locked ? ' 🔒' : ''}</span>
               </button>
               <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold">🛡️ ASF: 0%</span>
               <button onclick="restoreAllDivineSlots()" class="bg-amber-800 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-500/50 shadow transition flex items-center gap-1 cursor-pointer">

@@ -4211,12 +4211,151 @@
       return list;
     }
 
+    // D&D 3.5e RAW Alignment & Deity Compatibility Engine (PHB p. 30 & 32)
+    function parseAlignmentAxes(alignStr) {
+      if (!alignStr) return null;
+      const raw = String(alignStr).trim();
+      if (!raw || raw === '-' || raw.toLowerCase() === 'any' || raw.toLowerCase() === 'none') {
+        return { lc: 0, ge: 0, isAny: true, label: 'Any' };
+      }
+      const low = raw.toLowerCase();
+      // Short codes
+      const codeMap = {
+        'lg': { lc: -1, ge: 1, label: 'Lawful Good' },
+        'ng': { lc: 0, ge: 1, label: 'Neutral Good' },
+        'cg': { lc: 1, ge: 1, label: 'Chaotic Good' },
+        'ln': { lc: -1, ge: 0, label: 'Lawful Neutral' },
+        'n':  { lc: 0, ge: 0, label: 'True Neutral' },
+        'tn': { lc: 0, ge: 0, label: 'True Neutral' },
+        'cn': { lc: 1, ge: 0, label: 'Chaotic Neutral' },
+        'le': { lc: -1, ge: -1, label: 'Lawful Evil' },
+        'ne': { lc: 0, ge: -1, label: 'Neutral Evil' },
+        'ce': { lc: 1, ge: -1, label: 'Chaotic Evil' }
+      };
+      if (codeMap[low]) return { ...codeMap[low], isAny: false };
+
+      let lc = 0;
+      if (low.includes('lawful') || low.includes('kurallı') || low.includes('düzenli')) lc = -1;
+      else if (low.includes('chaotic') || low.includes('kaotik')) lc = 1;
+
+      let ge = 0;
+      if (low.includes('good') || low.includes('iyi')) ge = 1;
+      else if (low.includes('evil') || low.includes('kötü')) ge = -1;
+
+      const labelMatrix = {
+        '-1,1': 'Lawful Good', '0,1': 'Neutral Good', '1,1': 'Chaotic Good',
+        '-1,0': 'Lawful Neutral', '0,0': 'True Neutral', '1,0': 'Chaotic Neutral',
+        '-1,-1': 'Lawful Evil', '0,-1': 'Neutral Evil', '1,-1': 'Chaotic Evil'
+      };
+      return {
+        lc,
+        ge,
+        isAny: false,
+        label: labelMatrix[`${lc},${ge}`] || raw
+      };
+    }
+
+    function getCharacterDeityMeta(char = character, overrideDeityName = null) {
+      const rawName = (overrideDeityName !== null ? overrideDeityName : (char?.deity || '')).trim();
+      if (!rawName || rawName === '-' || rawName.toLowerCase().includes('none') || rawName.toLowerCase().includes('philosophical')) {
+        return {
+          found: false,
+          isPhilosophical: true,
+          name: rawName || 'None / Philosophical Faith',
+          alignment: 'Any',
+          weapon: '-',
+          domains: [],
+          icon: '🌀',
+          title: 'Animism, Cosmic Forces, or Philosophical Faith'
+        };
+      }
+      const all = getAllDeitiesForSpotlight();
+      const match = all.find(d => d.name.toLowerCase() === rawName.toLowerCase());
+      if (match) {
+        const isPhil = match.name.toLowerCase().includes('none') || match.alignment === 'Any';
+        return {
+          found: true,
+          isPhilosophical: isPhil,
+          name: match.name,
+          alignment: match.alignment || 'Any',
+          weapon: match.weapon || '-',
+          domains: Array.isArray(match.domains) ? match.domains : [],
+          icon: match.icon || '☀️',
+          title: match.title || match.name
+        };
+      }
+      return {
+        found: false,
+        isPhilosophical: false,
+        name: rawName,
+        alignment: 'Any',
+        weapon: '-',
+        domains: [],
+        icon: '✨',
+        title: rawName
+      };
+    }
+
+    function checkClericDeityAlignmentCompatibility(charAlignStr, deityObj) {
+      if (!deityObj || deityObj.isPhilosophical || !deityObj.alignment || deityObj.alignment === 'Any') {
+        return { compatible: true, stepDistance: 0, reason: 'Philosophical Faith / Any Alignment allowed' };
+      }
+      const c = parseAlignmentAxes(charAlignStr);
+      const d = parseAlignmentAxes(deityObj.alignment);
+      if (!c || c.isAny || !d || d.isAny) {
+        return { compatible: true, stepDistance: 0, reason: 'Alignment unrestricted' };
+      }
+      const stepDistance = Math.abs(c.lc - d.lc) + Math.abs(c.ge - d.ge);
+
+      // PHB p. 32 Special Rule: St. Cuthbert (LN) only accepts LN or LG clerics
+      if (String(deityObj.name || '').toLowerCase().includes('cuthbert')) {
+        const ok = (c.lc === -1 && c.ge === 0) || (c.lc === -1 && c.ge === 1);
+        return {
+          compatible: ok,
+          stepDistance,
+          reason: ok
+            ? `Compatible with St. Cuthbert (Lawful Neutral or Lawful Good)`
+            : `PHB p. 32: A Cleric of St. Cuthbert (LN) may only be Lawful Neutral or Lawful Good (current: ${c.label}).`
+        };
+      }
+
+      // PHB p. 32 Special Rule: A cleric may not be True Neutral unless his deity is True Neutral
+      if (c.lc === 0 && c.ge === 0 && !(d.lc === 0 && d.ge === 0)) {
+        return {
+          compatible: false,
+          stepDistance,
+          reason: `PHB p. 32: A Cleric cannot be True Neutral unless their deity (${deityObj.name}: ${d.label}) is also True Neutral.`
+        };
+      }
+
+      if (stepDistance <= 1) {
+        return {
+          compatible: true,
+          stepDistance,
+          reason: stepDistance === 0
+            ? `Exact alignment match with ${deityObj.name} (${d.label})`
+            : `Within 1 step of ${deityObj.name} (${d.label})`
+        };
+      }
+      return {
+        compatible: false,
+        stepDistance,
+        reason: `PHB p. 32 One-Step Rule: Cleric alignment (${c.label}) is ${stepDistance} steps from ${deityObj.name} (${d.label}). Max 1 step allowed.`
+      };
+    }
+
+    window.parseAlignmentAxes = parseAlignmentAxes;
+    window.getCharacterDeityMeta = getCharacterDeityMeta;
+    window.checkClericDeityAlignmentCompatibility = checkClericDeityAlignmentCompatibility;
+
     function renderDeitySpotlightItems(filterText = '') {
       const listEl = document.getElementById('deity-spotlight-list');
       if (!listEl) return;
 
       const q = (filterText || '').toLowerCase().trim();
       const currentDeity = (document.getElementById('profile-edit-deity')?.value || character?.deity || '').toLowerCase();
+      const currentAlign = document.getElementById('profile-edit-alignment')?.value || character?.alignment || '';
+      const isClericChar = typeof hasClericDomainCapability === 'function' ? hasClericDomainCapability(character) : false;
       const allDeities = getAllDeitiesForSpotlight();
 
       const filtered = q
@@ -4269,7 +4408,18 @@
             ? 'bg-purple-900/60 border border-purple-500/80 text-white font-bold'
             : 'bg-slate-900/50 hover:bg-slate-800/80 border border-transparent hover:border-purple-500/30 text-slate-200';
 
-          const domainList = Array.isArray(d.domains) && d.domains.length ? d.domains.slice(0, 3).join(', ') : '-';
+          const domainList = Array.isArray(d.domains) && d.domains.length ? d.domains.join(', ') : '-';
+          const compat = currentAlign ? checkClericDeityAlignmentCompatibility(currentAlign, { ...d, isPhilosophical: d.alignment === 'Any' }) : null;
+          let alignCompatBadge = '';
+          if (compat && d.alignment && d.alignment !== 'Any') {
+            if (compat.compatible) {
+              alignCompatBadge = compat.stepDistance === 0
+                ? `<span class="text-[9px] px-1 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/70 font-mono shrink-0" title="${escapeDeityHtml(compat.reason)}">✓ Exact Align</span>`
+                : `<span class="text-[9px] px-1 py-0.2 rounded bg-sky-950/80 text-sky-300 border border-sky-700/70 font-mono shrink-0" title="${escapeDeityHtml(compat.reason)}">✓ 1-Step OK</span>`;
+            } else if (isClericChar) {
+              alignCompatBadge = `<span class="text-[9px] px-1 py-0.2 rounded bg-rose-950/80 text-rose-300 border border-rose-700/70 font-mono shrink-0" title="${escapeDeityHtml(compat.reason)}">⚠️ >1 Step</span>`;
+            }
+          }
 
           html += `
             <button type="button" data-deity-name="${escapeDeityHtml(d.name)}" onclick="selectDeityItem('${escapeDeityHtml(d.name).replace(/'/g, "\\'")}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
@@ -4279,6 +4429,7 @@
                   <div class="text-xs font-bold flex items-center gap-1.5">
                     <span class="truncate">${d.name}</span>
                     <span class="text-[9px] text-slate-400 font-normal truncate">(${d.title || d.name})</span>
+                    ${alignCompatBadge}
                     ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
                   </div>
                   <div class="text-[9px] text-purple-300/80 font-mono truncate">
@@ -5820,6 +5971,17 @@ function renderManualStatsPanel() {
 
       const newDeity = getVal('profile-edit-deity');
       if (newDeity !== undefined) character.deity = newDeity;
+
+      // Sync Cleric Domains, War Domain Favored Weapon, and Spontaneous Channel (Cure/Inflict) when Alignment or Deity changes
+      if (typeof syncClericDomainsToCharacterSpecialAbilities === 'function') {
+        syncClericDomainsToCharacterSpecialAbilities();
+      }
+      if (typeof resolveClericEnergyPolicy === 'function' && character.spellcasting) {
+        const policy = resolveClericEnergyPolicy(character);
+        if (policy.forcedMode) {
+          character.spellcasting.clericSpontaneousMode = policy.forcedMode;
+        }
+      }
 
       const newSize = document.getElementById('profile-edit-size')?.value;
       if (newSize) character.size = newSize;
