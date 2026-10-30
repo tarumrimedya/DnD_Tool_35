@@ -3465,7 +3465,6 @@
         return row[numLvl];
       }
 
-      const knownCount = (character?.spellcasting?.knownSpells || []).filter(s => Number(s.level || 0) === numLvl).length;
       return Math.max(0, knownCount);
     }
 
