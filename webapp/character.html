@@ -6516,7 +6516,7 @@
   <!-- MODAL: ADD SPELL / MANEUVER / STANCE PICKER -->
   <!-- ==================================================== -->
   <div id="spell-maneuver-modal" class="hidden fixed inset-0 z-[100] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto">
-    <div class="bg-dndCard border border-purple-500/80 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+    <div id="spell-picker-modal-card" class="bg-dndCard border border-purple-500/80 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
       <!-- Modal Header -->
       <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2.5">
@@ -6525,8 +6525,8 @@
           </div>
           <div>
             <h3 class="text-sm md:text-base font-extrabold text-white flex items-center gap-2">
-              <span>Add Spell, Maneuver, or Stance</span>
-              <span class="text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-full">D&D 3.5e RAW</span>
+              <span id="spell-picker-modal-title-text">Add Spell, Maneuver, or Stance</span>
+              <span id="spell-picker-raw-badge" class="text-[10px] font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/40 px-2 py-0.5 rounded-full">D&D 3.5e RAW</span>
             </h3>
             <p class="text-[10px] text-slate-400">Pick from Master DB or discover via Rule Master (AI)</p>
           </div>
@@ -6601,7 +6601,7 @@
       <div class="bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between shrink-0">
         <div class="flex items-center gap-2 text-[11px] text-slate-400">
           <span>Not found in Master DB?</span>
-          <button type="button" onclick="triggerSpellPickerAiSearch()" class="bg-purple-900/60 hover:bg-purple-700 text-purple-200 hover:text-white px-2.5 py-1 rounded-lg border border-purple-600/50 font-bold transition flex items-center gap-1 cursor-pointer">
+          <button id="spell-picker-ai-btn" type="button" onclick="triggerSpellPickerAiSearch()" class="bg-purple-900/60 hover:bg-purple-700 text-purple-200 hover:text-white px-2.5 py-1 rounded-lg border border-purple-600/50 font-bold transition flex items-center gap-1 cursor-pointer">
             <span>🧙‍♂️🤖</span>
             <span>Fetch with Rule Master AI</span>
           </button>
@@ -7308,7 +7308,7 @@
 
   <script src="char_hud.js?v=20261030_1645"></script>
   <script src="char_combat.js?v=20261030_1555"></script>
-  <script src="char_spells.js?v=20261030_1645"></script>
+  <script src="char_spells.js?v=20261030_1916"></script>
   <script src="char_progression.js?v=20261030_1645"></script>
   <script src="char_inventory.js?v=20261030_0036"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->

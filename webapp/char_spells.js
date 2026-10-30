@@ -4343,25 +4343,138 @@
       window._spellPickerIsDomainSlot = false;
     }
 
-    function setSpellPickerType(type) {
-      window._currentSpellPickerType = type;
+    function getSpellPickerCategoryPalette(type = null, targetPool = null, effectiveSource = null) {
+      const t = type || window._currentSpellPickerType || 'Spell';
+      const pool = targetPool || window._spellPickerTargetPool || 'spontaneous';
+      const src = effectiveSource || (document.getElementById('spell-picker-source-filter')?.value || 'auto');
+
+      if (t === 'Maneuver' || t === 'Stance') {
+        return {
+          key: 'martial',
+          icon: t === 'Maneuver' ? '\u2694\uFE0F' : '\uD83E\uDD4B',
+          modalBorder: 'border-rose-500/80',
+          headerIconBox: 'bg-rose-950/80 border-rose-600/50 text-rose-300',
+          rawBadge: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+          activeTab: 'bg-rose-800 text-white border-rose-500 shadow',
+          focusBorder: 'focus:border-rose-500',
+          lvlBadge: 'bg-rose-950 text-rose-300 border-rose-700',
+          addBtn: 'bg-rose-700 hover:bg-rose-600 text-white border-rose-500',
+          aiBtn: 'bg-rose-900/60 hover:bg-rose-700 text-rose-200 hover:text-white border-rose-600/50'
+        };
+      }
+
+      if (pool === 'prepared') {
+        return {
+          key: 'prepared',
+          icon: '\uD83D\uDCD6',
+          modalBorder: 'border-cyan-500/80',
+          headerIconBox: 'bg-cyan-950/80 border-cyan-600/50 text-cyan-300',
+          rawBadge: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40',
+          activeTab: 'bg-cyan-800 text-white border-cyan-500 shadow',
+          focusBorder: 'focus:border-cyan-500',
+          lvlBadge: 'bg-cyan-950 text-cyan-300 border-cyan-700',
+          addBtn: 'bg-cyan-700 hover:bg-cyan-600 text-white border-cyan-500',
+          aiBtn: 'bg-cyan-900/60 hover:bg-cyan-700 text-cyan-200 hover:text-white border-cyan-600/50'
+        };
+      }
+
+      if (pool === 'divine') {
+        const isDomain = Boolean(window._spellPickerIsDomainSlot || src === 'char_domains' || src === 'domain');
+        if (isDomain) {
+          return {
+            key: 'divine_domain',
+            icon: '\u269C\uFE0F',
+            modalBorder: 'border-yellow-500/80',
+            headerIconBox: 'bg-yellow-950/80 border-yellow-500/60 text-yellow-300',
+            rawBadge: 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40',
+            activeTab: 'bg-yellow-700 text-white border-yellow-400 shadow',
+            focusBorder: 'focus:border-yellow-500',
+            lvlBadge: 'bg-yellow-950 text-yellow-300 border-yellow-600',
+            addBtn: 'bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-extrabold border-yellow-400',
+            aiBtn: 'bg-yellow-900/60 hover:bg-yellow-700 text-yellow-200 hover:text-white border-yellow-600/50'
+          };
+        }
+        return {
+          key: 'divine',
+          icon: '\u2728',
+          modalBorder: 'border-amber-500/80',
+          headerIconBox: 'bg-amber-950/80 border-amber-600/50 text-amber-300',
+          rawBadge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+          activeTab: 'bg-amber-800 text-white border-amber-500 shadow',
+          focusBorder: 'focus:border-amber-500',
+          lvlBadge: 'bg-amber-950 text-amber-300 border-amber-700',
+          addBtn: 'bg-amber-700 hover:bg-amber-600 text-white border-amber-500',
+          aiBtn: 'bg-amber-900/60 hover:bg-amber-700 text-amber-200 hover:text-white border-amber-600/50'
+        };
+      }
+
+      return {
+        key: 'spontaneous',
+        icon: '\uD83D\uDD2E',
+        modalBorder: 'border-purple-500/80',
+        headerIconBox: 'bg-purple-950/80 border-purple-600/50 text-purple-300',
+        rawBadge: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+        activeTab: 'bg-purple-800 text-white border-purple-500 shadow',
+        focusBorder: 'focus:border-purple-500',
+        lvlBadge: 'bg-purple-950 text-purple-300 border-purple-700',
+        addBtn: 'bg-purple-700 hover:bg-purple-600 text-white border-purple-500',
+        aiBtn: 'bg-purple-900/60 hover:bg-purple-700 text-purple-200 hover:text-white border-purple-600/50'
+      };
+    }
+
+    function applySpellPickerModalTheme(palette) {
+      if (!palette) return;
+      const type = window._currentSpellPickerType || 'Spell';
+
+      const modalCard = document.getElementById('spell-picker-modal-card');
+      if (modalCard) {
+        modalCard.className = `bg-dndCard border ${palette.modalBorder} rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col`;
+      }
+
+      const headerIcon = document.getElementById('spell-picker-header-icon');
+      if (headerIcon) {
+        headerIcon.textContent = palette.icon;
+        headerIcon.className = `w-8 h-8 rounded-lg ${palette.headerIconBox} border flex items-center justify-center text-lg shadow-inner`;
+      }
+
+      const rawBadge = document.getElementById('spell-picker-raw-badge');
+      if (rawBadge) {
+        rawBadge.className = `text-[10px] font-semibold ${palette.rawBadge} border px-2 py-0.5 rounded-full`;
+      }
+
       ['Spell', 'Maneuver', 'Stance'].forEach(t => {
         const btn = document.getElementById(`spell-picker-tab-${t.toLowerCase()}`);
         if (btn) {
           if (t === type) {
-            btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer bg-purple-800 text-white border-purple-500 shadow';
+            btn.className = `px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer ${palette.activeTab}`;
           } else {
             btn.className = 'px-3 py-1.5 rounded-lg text-xs font-bold border transition cursor-pointer bg-slate-800 text-slate-300 border-slate-700 hover:text-white';
           }
         }
       });
 
-      const headerIcon = document.getElementById('spell-picker-header-icon');
-      if (headerIcon) {
-        if (type === 'Spell') headerIcon.textContent = '\uD83D\uDD2E';
-        else if (type === 'Maneuver') headerIcon.textContent = '\u2694\uFE0F';
-        else headerIcon.textContent = '\uD83E\uDD4B';
+      const spellTabBtn = document.getElementById('spell-picker-tab-spell');
+      if (spellTabBtn) {
+        spellTabBtn.innerHTML = `${type === 'Spell' ? palette.icon : '\uD83D\uDD2E'} Spell`;
       }
+
+      ['spell-picker-search', 'spell-picker-source-filter', 'spell-picker-level-filter'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.className = el.className.replace(/focus:border-[a-z]+-\d+/g, palette.focusBorder);
+        }
+      });
+
+      const aiBtn = document.getElementById('spell-picker-ai-btn');
+      if (aiBtn) {
+        aiBtn.className = `${palette.aiBtn} px-2.5 py-1 rounded-lg border font-bold transition flex items-center gap-1 cursor-pointer`;
+      }
+    }
+
+    function setSpellPickerType(type) {
+      window._currentSpellPickerType = type;
+      const palette = getSpellPickerCategoryPalette(type);
+      applySpellPickerModalTheme(palette);
 
       const sourceFilter = document.getElementById('spell-picker-source-filter');
       if (sourceFilter) {
@@ -4771,6 +4884,9 @@
         effectiveSource = resolveAutoSpellFilterSource(targetPool);
       }
 
+      const pickerPalette = getSpellPickerCategoryPalette(type, targetPool, effectiveSource);
+      applySpellPickerModalTheme(pickerPalette);
+
       const initInfo = (type === 'Maneuver' || type === 'Stance') ? getInitiatorInfo() : null;
 
       // Update target hint banner
@@ -4982,7 +5098,7 @@
           `;
         } else {
           actionHtml = `
-            <button type="button" onclick="addMasterDbItemToCharacter('${escape(item.name)}')" class="bg-purple-700 hover:bg-purple-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg border border-purple-500 shadow transition flex items-center gap-1 cursor-pointer" title="${countText ? 'Current / Max Slots: ' + countText : ''}">
+            <button type="button" onclick="addMasterDbItemToCharacter('${escape(item.name)}')" class="${pickerPalette.addBtn} font-bold text-xs px-3 py-1.5 rounded-lg border shadow transition flex items-center gap-1 cursor-pointer" title="${countText ? 'Current / Max Slots: ' + countText : ''}">
               <span>+ Add</span>
               ${countText ? `<span class="text-[10px] opacity-80 font-mono">(${countText})</span>` : ''}
             </button>
@@ -5013,7 +5129,7 @@
         card.innerHTML = `
           <div class="space-y-1 flex-1">
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="badge ${type === 'Spell' ? 'bg-purple-950 text-purple-300 border-purple-700' : 'bg-rose-950 text-rose-300 border-rose-700'} text-[10px] font-bold">
+              <span class="badge ${pickerPalette.lvlBadge} text-[10px] font-bold">
                 ${itemLvlDisplay !== null ? 'Level ' + itemLvlDisplay : 'Lvl ?'}
               </span>
               <h4 class="font-extrabold text-white text-xs">${item.name}</h4>
