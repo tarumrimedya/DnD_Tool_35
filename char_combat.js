@@ -8532,7 +8532,12 @@
 
     function toggleCombatBuffActive(idx) {
       if (!character || !Array.isArray(character.buffs) || !character.buffs[idx]) return;
-      character.buffs[idx].active = !character.buffs[idx].active;
+      const buff = character.buffs[idx];
+      if (buff.id && typeof toggleBuffActive === 'function') {
+        toggleBuffActive(buff.id);
+        return;
+      }
+      buff.active = !buff.active;
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
         RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
       }
@@ -8543,6 +8548,14 @@
 
     function removeCombatBuff(idx) {
       if (!character || !Array.isArray(character.buffs) || !character.buffs[idx]) return;
+      const buff = character.buffs[idx];
+      if (buff && buff.active !== false && character.hp && typeof getBuffGrantedTempHp === 'function') {
+        const tempHp = getBuffGrantedTempHp(buff);
+        if (tempHp > 0) {
+          character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
+          if (typeof markPlayerHpChanged === 'function') markPlayerHpChanged();
+        }
+      }
       character.buffs.splice(idx, 1);
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
         RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
@@ -8937,16 +8950,17 @@
       // 6. Populate Combat Active Spell & Tactical Buffs Strip (#cockpit-active-buffs-card)
       if (buffsCard && buffsList) {
         const allBuffs = Array.isArray(character.buffs) ? character.buffs : [];
-        if (allBuffs.length === 0) {
+        const activeBuffEntries = allBuffs
+          .map((b, idx) => ({ b, idx }))
+          .filter(entry => entry.b && entry.b.active !== false);
+
+        if (activeBuffEntries.length === 0) {
           buffsCard.classList.add('hidden');
         } else {
           buffsCard.classList.remove('hidden');
-          const activeCount = allBuffs.filter(b => b && b.active !== false).length;
-          if (buffsCount) buffsCount.textContent = `${activeCount}/${allBuffs.length}`;
+          if (buffsCount) buffsCount.textContent = `${activeBuffEntries.length}`;
 
-          buffsList.innerHTML = allBuffs.map((b, idx) => {
-            if (!b) return '';
-            const isActive = b.active !== false;
+          buffsList.innerHTML = activeBuffEntries.map(({ b, idx }) => {
             const bCl = Number(b.casterLevel || b.cl || character.level) || 1;
             const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
               ? RuleEngine.resolveSpellBuffSpec(b, character, bCl)
@@ -8961,17 +8975,17 @@
               : '';
 
             return `
-              <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg border transition ${isActive ? 'bg-slate-900/90 border-emerald-500/40' : 'bg-slate-950/50 border-slate-800 opacity-55'}">
-                <button type="button" onclick="toggleCombatBuffActive(${idx})" class="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer" title="Click to toggle buff On/Off">
-                  <span class="w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] font-black border shrink-0 ${isActive ? 'bg-emerald-600 border-emerald-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-500'}">${isActive ? '✓' : ''}</span>
+              <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg border transition bg-slate-900/90 border-emerald-500/40">
+                <button type="button" onclick="toggleCombatBuffActive(${idx})" class="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer" title="Click to toggle buff Off">
+                  <span class="w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] font-black border shrink-0 bg-emerald-600 border-emerald-400 text-white">✓</span>
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 flex-wrap">
-                      <span class="text-[11px] font-bold ${isActive ? 'text-emerald-300' : 'text-slate-400 line-through'} truncate">${b.name || 'Buff'}</span>
+                      <span class="text-[11px] font-bold text-emerald-300 truncate">${b.name || 'Buff'}</span>
                       ${wepBadge}
                       ${energyBadge}
                       ${durText ? `<span class="text-[9px] font-mono text-slate-400 bg-slate-950 px-1 py-0.2 rounded border border-slate-800">${durText}</span>` : ''}
                     </div>
-                    <div class="text-[10px] ${isActive ? 'text-amber-300/90' : 'text-slate-500'} truncate">${summaryText}</div>
+                    <div class="text-[10px] text-amber-300/90 truncate">${summaryText}</div>
                   </div>
                 </button>
                 <button type="button" onclick="removeCombatBuff(${idx})" class="text-[10px] font-bold text-slate-500 hover:text-rose-400 px-1.5 py-0.5 rounded hover:bg-rose-950/40 transition shrink-0 cursor-pointer" title="Dismiss / Remove Buff">✕</button>
