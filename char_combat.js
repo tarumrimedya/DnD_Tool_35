@@ -1862,7 +1862,9 @@
 
           let srcBadgeLabel = 'Spont.';
           let srcBadgeClass = 'bg-purple-950/80 text-purple-300 border-purple-700/60';
-          let badgeColor = 'text-purple-400';
+          let titleColorClass = isActive
+            ? 'text-purple-200 font-extrabold'
+            : 'text-purple-300 font-bold group-hover:text-purple-200';
           let activeBorder = isActive
             ? 'border-purple-500 bg-purple-950/70 shadow-md shadow-purple-950/50 ring-1 ring-purple-500/60'
             : 'border-slate-800 bg-slate-900/80 hover:border-purple-700/80';
@@ -1870,20 +1872,23 @@
           if (srcKey === 'prepared') {
             srcBadgeLabel = 'Prep.';
             srcBadgeClass = 'bg-sky-950/80 text-sky-300 border-sky-700/60';
-            badgeColor = 'text-sky-400';
+            titleColorClass = isActive
+              ? 'text-sky-200 font-extrabold'
+              : 'text-sky-300 font-bold group-hover:text-sky-200';
             activeBorder = isActive
               ? 'border-sky-500 bg-sky-950/70 shadow-md shadow-sky-950/50 ring-1 ring-sky-500/60'
               : 'border-slate-800 bg-slate-900/80 hover:border-sky-700/80';
           } else if (srcKey === 'divine') {
             srcBadgeLabel = 'Divine';
             srcBadgeClass = 'bg-amber-950/80 text-amber-300 border-amber-700/60';
-            badgeColor = 'text-amber-400';
+            titleColorClass = isActive
+              ? 'text-amber-200 font-extrabold'
+              : 'text-amber-300 font-bold group-hover:text-amber-200';
             activeBorder = isActive
               ? 'border-amber-500 bg-amber-950/70 shadow-md shadow-amber-950/50 ring-1 ring-amber-500/60'
               : 'border-slate-800 bg-slate-900/80 hover:border-amber-700/80';
           }
 
-          const activeTitleColor = isActive ? 'text-white font-extrabold' : 'text-slate-300';
           const safeName = sp.name.replace(/'/g, "\\'");
           const reorderControls = window.spellReorderModeActive ? `
             <div class="flex items-center gap-1 shrink-0" onclick="event.stopPropagation()">
@@ -1901,11 +1906,11 @@
               <div class="flex items-center justify-between w-full gap-1">
                 <div class="flex items-center gap-1 min-w-0">
                   <span class="text-[7px] font-mono font-bold px-1 py-0.2 rounded border uppercase tracking-wider shrink-0 ${srcBadgeClass}">${srcBadgeLabel}</span>
-                  <span class="text-[8px] font-mono ${badgeColor} font-bold uppercase truncate">${params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level)}</span>
+                  <span class="text-[8px] font-mono text-slate-300 font-bold uppercase truncate">${params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level)}</span>
                 </div>
-                <span class="text-[9px] text-amber-300 font-mono font-bold shrink-0 truncate">${params.dice || params.effect || ''}</span>
+                <span class="text-[9px] text-slate-200 font-mono font-bold shrink-0 truncate">${params.dice || params.effect || ''}</span>
               </div>
-              <div class="text-[11px] font-bold ${activeTitleColor} group-hover:text-white truncate my-0.5">
+              <div class="text-[11px] ${titleColorClass} truncate my-0.5">
                 ${sp.name}
               </div>
               <div class="flex items-center justify-between w-full text-[8px] text-slate-400 mt-0.5">
