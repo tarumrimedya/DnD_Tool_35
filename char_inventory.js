@@ -813,27 +813,61 @@
           }
         }
 
-        // Summary badges
+        // Summary badges (Canonical V2 modifiers, ruleFlags, summary + Legacy fields)
         const badges = [];
         if (isDebuff) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">🩸 DEBUFF</span>`);
+        if (buff.targetWeapon) badges.push(`<span class="bg-amber-950 text-amber-200 border border-amber-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">⚔️ ${buff.targetWeapon}</span>`);
+        if (buff.chosenEnergy) badges.push(`<span class="bg-orange-950 text-orange-200 border border-orange-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">🔥 ${buff.chosenEnergy}</span>`);
         if (buff.negativeLevels) badges.push(`<span class="bg-rose-950 text-rose-200 border border-rose-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.negativeLevels} Level Drain</span>`);
-        if (buff.acBonus) badges.push(`<span class="${buff.acBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-sky-950 text-sky-300 border-sky-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.acBonus > 0 ? '+' : ''}${buff.acBonus} AC (${buff.bonusType || 'Armor'})</span>`);
-        if (buff.naturalBonus) badges.push(`<span class="bg-teal-950 text-teal-300 border border-teal-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.naturalBonus} Natural AC</span>`);
-        if (buff.deflectionBonus) badges.push(`<span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.deflectionBonus} Deflection AC</span>`);
-        if (buff.dodgeBonus) badges.push(`<span class="bg-amber-950 text-amber-300 border border-amber-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dodgeBonus} Dodge AC</span>`);
-        if (buff.acPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.acPenalty} AC</span>`);
-        if (buff.strBonus) badges.push(`<span class="${buff.strBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.strBonus > 0 ? '+' : ''}${buff.strBonus} STR</span>`);
-        if (buff.dexBonus) badges.push(`<span class="${buff.dexBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.dexBonus > 0 ? '+' : ''}${buff.dexBonus} DEX</span>`);
-        if (buff.conBonus) badges.push(`<span class="${buff.conBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.conBonus > 0 ? '+' : ''}${buff.conBonus} CON</span>`);
-        if (buff.intBonus) badges.push(`<span class="${buff.intBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.intBonus > 0 ? '+' : ''}${buff.intBonus} INT</span>`);
-        if (buff.wisBonus) badges.push(`<span class="${buff.wisBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.wisBonus > 0 ? '+' : ''}${buff.wisBonus} WIS</span>`);
-        if (buff.chaBonus) badges.push(`<span class="${buff.chaBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.chaBonus > 0 ? '+' : ''}${buff.chaBonus} CHA</span>`);
-        if (buff.attBonus) badges.push(`<span class="${buff.attBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.attBonus > 0 ? '+' : ''}${buff.attBonus} Attack</span>`);
-        if (buff.dmgBonus) badges.push(`<span class="${buff.dmgBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.dmgBonus > 0 ? '+' : ''}${buff.dmgBonus} Damage</span>`);
-        if (buff.dmgDice) badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dmgDice} Damage</span>`);
-        if (buff.speedBonus) badges.push(`<span class="bg-sky-950 text-sky-300 border border-sky-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.speedBonus} ft Speed</span>`);
-        if (buff.speedPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.speedPenalty} ft Speed</span>`);
-        if (buff.hpPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.hpPenalty} HP</span>`);
+
+        // Render Canonical V2 modifiers if present
+        const hasV2Modifiers = Array.isArray(buff.modifiers) && buff.modifiers.length > 0;
+        if (hasV2Modifiers) {
+          const buffCl = Number(buff.casterLevel || buff.cl || character.level) || 6;
+          const evalCtx = { cl: buffCl, level: Number(character.level) || 6, bab: Number(character.bab) || 0 };
+          buff.modifiers.forEach(mod => {
+            if (!mod) return;
+            const lbl = (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel)
+              ? RuleEngine.formatBuffModifierLabel(mod, evalCtx)
+              : `${mod.value > 0 ? '+' : ''}${mod.value || mod.formula} ${mod.target}`;
+            if (!lbl) return;
+            const isNeg = String(lbl).trim().startsWith('-');
+            const cls = isNeg
+              ? 'bg-rose-950 text-rose-300 border-rose-800'
+              : 'bg-indigo-950 text-indigo-200 border-indigo-700/80';
+            badges.push(`<span class="${cls} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${lbl}</span>`);
+          });
+        } else {
+          if (buff.acBonus) badges.push(`<span class="${buff.acBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-sky-950 text-sky-300 border-sky-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.acBonus > 0 ? '+' : ''}${buff.acBonus} AC (${buff.bonusType || 'Armor'})</span>`);
+          if (buff.naturalBonus) badges.push(`<span class="bg-teal-950 text-teal-300 border border-teal-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.naturalBonus} Natural AC</span>`);
+          if (buff.deflectionBonus) badges.push(`<span class="bg-indigo-950 text-indigo-300 border border-indigo-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.deflectionBonus} Deflection AC</span>`);
+          if (buff.dodgeBonus) badges.push(`<span class="bg-amber-950 text-amber-300 border border-amber-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dodgeBonus} Dodge AC</span>`);
+          if (buff.acPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.acPenalty} AC</span>`);
+          if (buff.strBonus) badges.push(`<span class="${buff.strBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.strBonus > 0 ? '+' : ''}${buff.strBonus} STR</span>`);
+          if (buff.dexBonus) badges.push(`<span class="${buff.dexBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.dexBonus > 0 ? '+' : ''}${buff.dexBonus} DEX</span>`);
+          if (buff.conBonus) badges.push(`<span class="${buff.conBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.conBonus > 0 ? '+' : ''}${buff.conBonus} CON</span>`);
+          if (buff.intBonus) badges.push(`<span class="${buff.intBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.intBonus > 0 ? '+' : ''}${buff.intBonus} INT</span>`);
+          if (buff.wisBonus) badges.push(`<span class="${buff.wisBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.wisBonus > 0 ? '+' : ''}${buff.wisBonus} WIS</span>`);
+          if (buff.chaBonus) badges.push(`<span class="${buff.chaBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.chaBonus > 0 ? '+' : ''}${buff.chaBonus} CHA</span>`);
+          if (buff.attBonus) badges.push(`<span class="${buff.attBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.attBonus > 0 ? '+' : ''}${buff.attBonus} Attack</span>`);
+          if (buff.dmgBonus) badges.push(`<span class="${buff.dmgBonus < 0 ? 'bg-rose-950 text-rose-300 border-rose-800' : 'bg-purple-950 text-purple-300 border-purple-800'} border px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.dmgBonus > 0 ? '+' : ''}${buff.dmgBonus} Damage</span>`);
+          if (buff.dmgDice) badges.push(`<span class="bg-purple-950 text-purple-300 border border-purple-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.dmgDice} Damage</span>`);
+          if (buff.speedBonus) badges.push(`<span class="bg-sky-950 text-sky-300 border border-sky-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">+${buff.speedBonus} ft Speed</span>`);
+          if (buff.speedPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.speedPenalty} ft Speed</span>`);
+          if (buff.hpPenalty) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.hpPenalty} HP</span>`);
+        }
+
+        // Render V2 ruleFlags & special defense pills if not already covered
+        const rf = buff.ruleFlags || {};
+        if (rf.extraAttackFullAttack) badges.push(`<span class="bg-amber-950 text-amber-300 border border-amber-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">⚡ +1 Extra Attack</span>`);
+        if (rf.babEqualsLevel) badges.push(`<span class="bg-amber-950 text-amber-300 border border-amber-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">⚔️ BAB = Level</span>`);
+        if (rf.loseDexToAC) badges.push(`<span class="bg-rose-950 text-rose-200 border border-rose-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">⚠️ Lose DEX to AC</span>`);
+        if (rf.halfSpeed) badges.push(`<span class="bg-rose-950 text-rose-200 border border-rose-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">🥾 Half Speed</span>`);
+        if (buff.summary && badges.length <= 2) {
+          badges.push(`<span class="bg-slate-800 text-emerald-300 border border-slate-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.summary}</span>`);
+        }
+        const buffDescText = buff.notes || buff.description || rf.actionRestriction || '';
+        const buffDurDisplay = buff.durationText || buff.duration || (buff.rounds ? `${buff.rounds} Rounds` : 'Permanent');
 
         // Parent-Child Accordion for Multi-part Debuffs / Buffs
         let childrenAccordion = '';
@@ -896,22 +930,22 @@
               <!-- Sağ: Süre / Tur Sayaç Butonları + Sil -->
               <div class="flex items-center gap-2 shrink-0 ml-auto">
                 <div class="text-[10px] font-mono text-slate-400 hidden md:inline">
-                  ${buff.durationText || (buff.rounds ? `${buff.rounds} Rounds` : 'Permanent')}
+                  ${buffDurDisplay}
                 </div>
                 <div class="flex items-center gap-1">
                   ${buff.rounds !== null && buff.rounds !== undefined ? `
                     <button type="button" onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Decrease 1 Round">-</button>
                     <span class="font-mono font-bold px-1 text-xs ${buff.rounds <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-400'} min-w-[36px] text-center">${buff.rounds} Rd</span>
                     <button type="button" onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Add 1 Round">+</button>
-                  ` : `<span class="text-[10px] text-slate-500 italic px-2">Permanent</span>`}
+                  ` : `<span class="text-[10px] text-slate-500 italic px-2">${buffDurDisplay}</span>`}
                 </div>
                 <button type="button" onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-1 text-xs transition cursor-pointer" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
               </div>
             </div>
 
-            ${(buff.notes || childrenAccordion || suppressionWarning) ? `
+            ${(buffDescText || childrenAccordion || suppressionWarning) ? `
               <div class="text-[10px] text-slate-400 pl-6 space-y-1 border-t border-slate-800/40 pt-1">
-                ${buff.notes ? `<div class="text-slate-300">${buff.notes}</div>` : ''}
+                ${buffDescText ? `<div class="text-slate-300">${buffDescText}</div>` : ''}
                 ${childrenAccordion}
                 ${suppressionWarning ? `<div class="text-amber-400 bg-amber-950/30 border border-amber-800/40 rounded px-1.5 py-0.5">${suppressionWarning}</div>` : ''}
               </div>
@@ -941,7 +975,7 @@
               </div>
 
               <div class="text-[11px] text-slate-300 font-sans">
-                ${buff.notes || ''}
+                ${buffDescText}
               </div>
 
               ${childrenAccordion}
@@ -951,14 +985,14 @@
 
             <div class="flex items-center justify-between pt-2 border-t border-slate-800/80 mt-2 text-xs">
               <div class="text-[10px] font-mono text-slate-400">
-                ${buff.durationText || (buff.rounds ? `${buff.rounds} Rounds` : 'Permanent')}
+                ${buffDurDisplay}
               </div>
               <div class="flex items-center gap-1">
                 ${buff.rounds !== null && buff.rounds !== undefined ? `
                   <button onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">-</button>
                   <span class="font-mono font-bold px-1.5 ${buff.rounds <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-400'}">${buff.rounds} Rd</span>
                   <button onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">+</button>
-                ` : `<span class="text-[10px] text-slate-500 italic">Permanent</span>`}
+                ` : `<span class="text-[10px] text-slate-500 italic">${buffDurDisplay}</span>`}
               </div>
             </div>
           `;
@@ -1522,8 +1556,500 @@
 
     let currentBuffModalMode = 'buff'; // 'buff' | 'debuff'
     let currentBuffModalChildren = [];
+    let _selectedSpotlightV2Entry = null;
+    let _selectedSpotlightEnergy = 'Fire';
+    let _buffSpotlightResults = [];
+    let _buffSpotlightActiveIdx = 0;
 
-    function switchBuffModalMode(mode) {
+    const BUFF_QUICK_PICKS = [
+      { label: '⚡ Haste', query: 'Haste' },
+      { label: '🛡️ Mage Armor', query: 'Mage Armor' },
+      { label: '✨ Shield of Faith', query: 'Shield of Faith' },
+      { label: '🌲 Barkskin', query: 'Barkskin' },
+      { label: '🐂 Bull\'s Strength', query: "Bull's Strength" },
+      { label: '⚔️ Divine Power', query: 'Divine Power' },
+      { label: '👑 Righteous Might', query: 'Righteous Might' },
+      { label: '🙏 Bless', query: 'Bless' },
+      { label: '✨ Prayer', query: 'Prayer' },
+      { label: '🦁 Heroism', query: 'Heroism' },
+      { label: '🛡️ Conviction', query: 'Conviction' },
+      { label: '🔥 Resist Energy', query: 'Resist Energy' },
+      { label: '💎 Stoneskin', query: 'Stoneskin' },
+      { label: '🕊️ Freedom of Movement', query: 'Freedom of Movement' },
+      { label: '🔨 Greater Mighty Wallop', query: 'Greater Mighty Wallop' },
+      { label: '💢 Barbarian Rage', query: 'Enraged' }
+    ];
+
+    const DEBUFF_QUICK_PICKS = [
+      { label: '🤢 Sickened', query: 'Sickened' },
+      { label: '😱 Shaken', query: 'Shaken' },
+      { label: '😨 Frightened', query: 'Frightened' },
+      { label: '😫 Fatigued', query: 'Fatigued' },
+      { label: '🥵 Exhausted', query: 'Exhausted' },
+      { label: '🕸️ Entangled', query: 'Entangled' },
+      { label: '⏳ Slow', query: 'Slow' },
+      { label: '💀 Bane', query: 'Bane' },
+      { label: '🙈 Blinded', query: 'Blinded' },
+      { label: '💫 Dazzled', query: 'Dazzled' },
+      { label: '🔇 Deafened', query: 'Deafened' },
+      { label: '⚡ Stunned', query: 'Stunned' },
+      { label: '🤮 Nauseated', query: 'Nauseated' },
+      { label: '🧎 Prone', query: 'Prone' },
+      { label: '🩸 Energy Drain (-4 Lvl)', preset: 'energy_drain_4' }
+    ];
+
+    function renderBuffQuickPickChips() {
+      const container = document.getElementById('buff-quick-picks-container');
+      if (!container) return;
+      const isDebuff = currentBuffModalMode === 'debuff';
+      const list = isDebuff ? DEBUFF_QUICK_PICKS : BUFF_QUICK_PICKS;
+      const chipCls = isDebuff
+        ? 'px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-950/70 hover:bg-rose-800/80 text-rose-200 border border-rose-700/60 transition cursor-pointer'
+        : 'px-2 py-1 rounded-lg text-[10px] font-bold bg-indigo-950/70 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/60 transition cursor-pointer';
+
+      container.innerHTML = list.map((item, idx) => `
+        <button type="button" onclick="onBuffQuickPickClick(${idx})" class="${chipCls}">
+          ${item.label}
+        </button>
+      `).join('');
+    }
+
+    async function onBuffQuickPickClick(idx) {
+      const isDebuff = currentBuffModalMode === 'debuff';
+      const list = isDebuff ? DEBUFF_QUICK_PICKS : BUFF_QUICK_PICKS;
+      const picked = list[idx];
+      if (!picked) return;
+
+      if (picked.preset) {
+        const pSelect = document.getElementById('buff-preset-select');
+        if (pSelect) {
+          pSelect.value = picked.preset;
+          onBuffPresetChange();
+        }
+        return;
+      }
+
+      const candidates = await searchBuffSpotlightCandidates(picked.query, isDebuff);
+      const exact = candidates.find(c => (c.name || '').toLowerCase() === picked.query.toLowerCase()) || candidates[0];
+      if (exact) {
+        selectBuffSpotlightCandidate(exact);
+      }
+    }
+    window.onBuffQuickPickClick = onBuffQuickPickClick;
+
+    function getBuffModalCasterLevel() {
+      const clEl = document.getElementById('buff-input-cl');
+      const val = clEl ? parseInt(clEl.value, 10) : 0;
+      if (val && val > 0) return val;
+      return Math.max(1, Number(character?.level) || 6);
+    }
+
+    function onBuffCasterLevelChange() {
+      if (_selectedSpotlightV2Entry) {
+        selectBuffSpotlightCandidate(_selectedSpotlightV2Entry, { keepEnergy: true });
+      }
+    }
+    window.onBuffCasterLevelChange = onBuffCasterLevelChange;
+
+    async function searchBuffSpotlightCandidates(rawQuery, isDebuffMode = false) {
+      const q = String(rawQuery || '').trim().toLowerCase();
+      if (window.SrdCompendium && typeof window.SrdCompendium.init === 'function') {
+        try {
+          await window.SrdCompendium.init();
+          await window.SrdCompendium.ensureChunkLoaded('srd_combat_rules.json');
+          await window.SrdCompendium.ensureChunkLoaded('srd_spells.json');
+        } catch (_) {}
+      }
+
+      const cl = getBuffModalCasterLevel();
+      const results = [];
+      const seenKeys = new Set();
+
+      const addCandidate = (entry, kindLabel, scoreBoost = 0) => {
+        if (!entry || !entry.name) return;
+        const nLower = String(entry.name).toLowerCase().trim();
+        const key = `${String(entry.type || kindLabel).toLowerCase()}:${nLower}`;
+        if (seenKeys.has(key)) return;
+
+        let score = scoreBoost;
+        if (q) {
+          const hay = `${nLower} ${String(entry.category || '').toLowerCase()} ${String(entry.shortDescription || entry.benefit || entry.description || '').toLowerCase()}`;
+          if (nLower === q) score += 1000;
+          else if (nLower.startsWith(q)) score += 650 - Math.min(80, nLower.length);
+          else if (nLower.includes(q)) score += 400 - Math.min(80, nLower.indexOf(q));
+          else if (hay.includes(q)) score += 150;
+          else return;
+        } else {
+          score += 100;
+        }
+
+        seenKeys.add(key);
+        results.push({ entry, kindLabel, score });
+      };
+
+      // 1. Scan Character Custom DB (`masterDb`) & Splatbook Buff Spells
+      const customList = [
+        ...(typeof masterDb !== 'undefined' && Array.isArray(masterDb) ? masterDb : []),
+        ...(typeof RuleEngine !== 'undefined' && Array.isArray(RuleEngine.SPLATBOOK_BUFF_SPELLS) ? RuleEngine.SPLATBOOK_BUFF_SPELLS : [])
+      ];
+      customList.forEach(item => {
+        if (!item || !item.name || String(item.name).startsWith('↳')) return;
+        const tLower = String(item.type || '').toLowerCase();
+        const isCondOrDebuff = tLower === 'condition' || tLower === 'debuff' || Boolean(item.isDebuff);
+        if (isDebuffMode) {
+          if (isCondOrDebuff || tLower === 'spell' || tLower === 'buff') {
+            addCandidate(item, item.source || item.type || 'Custom DB', isCondOrDebuff ? 60 : 15);
+          }
+        } else {
+          if (!isCondOrDebuff) {
+            addCandidate(item, item.source || item.type || 'Custom DB', 50);
+          }
+        }
+      });
+
+      // 2. Scan Loaded SRD Compendium (`srd_combat_rules.json` Conditions & Buffs + `srd_spells.json` Buff Spells)
+      if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+        const allLoaded = window.SrdCompendium.getAllLoaded(['Condition', 'Buff', 'Spell']);
+        allLoaded.forEach(rec => {
+          if (!rec || !rec.name) return;
+          const rType = String(rec.type || '').toLowerCase();
+          if (rType === 'condition') {
+            addCandidate(rec, 'SRD Condition', isDebuffMode ? 90 : 10);
+          } else if (rType === 'buff') {
+            const hasNegMod = Array.isArray(rec.modifiers) && rec.modifiers.some(m => Number(m.value) < 0 || String(m.formula || '').trim().startsWith('-'));
+            if (isDebuffMode && hasNegMod) {
+              addCandidate(rec, 'SRD Debuff', 85);
+            } else if (!isDebuffMode && !hasNegMod) {
+              addCandidate(rec, 'SRD Combat Buff', 80);
+            } else {
+              addCandidate(rec, hasNegMod ? 'SRD Debuff' : 'SRD Buff', 25);
+            }
+          } else if (rType === 'spell') {
+            const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
+              ? RuleEngine.resolveSpellBuffSpec(rec, character, cl)
+              : null;
+            if (spec && spec.isBuffSpell) {
+              addCandidate(rec, `SRD Spell (${rec.school || 'Buff'})`, isDebuffMode ? 20 : 75);
+            } else if (q && q.length >= 2) {
+              // Also allow searching debuff spells like Slow, Bane, Ray of Enfeeblement, Bestow Curse
+              addCandidate(rec, `SRD Spell (${rec.school || 'Spell'})`, isDebuffMode ? 45 : 30);
+            }
+          }
+        });
+      }
+
+      results.sort((a, b) => b.score - a.score || a.entry.name.localeCompare(b.entry.name));
+      return results.slice(0, 14).map(r => Object.assign({}, r.entry, { _spotlightKind: r.kindLabel }));
+    }
+
+    function hideBuffSpotlightDropdown() {
+      const dd = document.getElementById('buff-spotlight-dropdown');
+      if (dd) dd.classList.add('hidden');
+    }
+
+    async function onBuffSpotlightInput(val) {
+      const q = String(val || '').trim();
+      const dd = document.getElementById('buff-spotlight-dropdown');
+      if (!dd) return;
+      if (q.length < 1) {
+        hideBuffSpotlightDropdown();
+        return;
+      }
+
+      const isDebuff = currentBuffModalMode === 'debuff';
+      _buffSpotlightResults = await searchBuffSpotlightCandidates(q, isDebuff);
+      _buffSpotlightActiveIdx = 0;
+      renderBuffSpotlightDropdown();
+    }
+    window.onBuffSpotlightInput = onBuffSpotlightInput;
+
+    function renderBuffSpotlightDropdown() {
+      const dd = document.getElementById('buff-spotlight-dropdown');
+      if (!dd) return;
+      if (!Array.isArray(_buffSpotlightResults) || _buffSpotlightResults.length === 0) {
+        dd.innerHTML = `
+          <div class="p-3 text-xs text-slate-400 flex items-center justify-between gap-2">
+            <span>No local SRD match. Press <b>Enter</b> or click <b>🧙‍♂️🤖 AI Fetch</b> to query 3.5e books!</span>
+          </div>
+        `;
+        dd.classList.remove('hidden');
+        return;
+      }
+
+      const cl = getBuffModalCasterLevel();
+      const evalCtx = { cl, level: Number(character?.level) || 6, bab: Number(character?.bab) || 0 };
+
+      dd.innerHTML = _buffSpotlightResults.map((item, idx) => {
+        const isSel = idx === _buffSpotlightActiveIdx;
+        const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
+          ? RuleEngine.resolveSpellBuffSpec(item, character, cl)
+          : null;
+
+        const pills = [];
+        const mods = (spec && Array.isArray(spec.modifiers) && spec.modifiers.length > 0)
+          ? spec.modifiers
+          : (Array.isArray(item.modifiers) ? item.modifiers : []);
+
+        mods.slice(0, 4).forEach(m => {
+          const lbl = (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel)
+            ? RuleEngine.formatBuffModifierLabel(m, evalCtx)
+            : `${m.value || m.formula} ${m.target}`;
+          if (lbl) {
+            const isNeg = String(lbl).trim().startsWith('-');
+            pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${isNeg ? 'bg-rose-950/90 text-rose-300 border-rose-700/70' : 'bg-indigo-950/90 text-indigo-200 border-indigo-700/70'}">${lbl}</span>`);
+          }
+        });
+
+        if (spec && spec.summaryText && pills.length === 0) {
+          pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-700/60">${spec.summaryText}</span>`);
+        } else if (item.ruleFlags?.actionRestriction) {
+          pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-950/80 text-rose-300 border border-rose-700/60">⚠️ ${item.ruleFlags.actionRestriction.slice(0, 48)}</span>`);
+        }
+
+        const desc = String(item.shortDescription || item.benefit || item.description || '')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+
+        return `
+          <div data-buff-spot-idx="${idx}" onmousedown="event.preventDefault(); pickBuffSpotlightResult(${idx})" class="p-2.5 cursor-pointer transition flex flex-col gap-1 ${isSel ? 'bg-indigo-950/95 text-white' : 'hover:bg-slate-900/90 text-slate-200'}">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-xs text-amber-300 truncate">${item.name}</span>
+              <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-[9px] font-mono text-purple-300 shrink-0">${item._spotlightKind || item.type || 'SRD 3.5e'}</span>
+            </div>
+            ${pills.length > 0 ? `<div class="flex flex-wrap gap-1">${pills.join('')}</div>` : ''}
+            ${desc ? `<div class="text-[10px] text-slate-400 line-clamp-1">${desc}</div>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      dd.classList.remove('hidden');
+    }
+
+    function pickBuffSpotlightResult(idx) {
+      const picked = _buffSpotlightResults[idx];
+      hideBuffSpotlightDropdown();
+      if (!picked) return;
+      selectBuffSpotlightCandidate(picked);
+    }
+    window.pickBuffSpotlightResult = pickBuffSpotlightResult;
+
+    function onBuffSpotlightKeydown(event) {
+      const dd = document.getElementById('buff-spotlight-dropdown');
+      const isOpen = dd && !dd.classList.contains('hidden') && _buffSpotlightResults.length > 0;
+      if (event.key === 'ArrowDown' && isOpen) {
+        event.preventDefault();
+        _buffSpotlightActiveIdx = (_buffSpotlightActiveIdx + 1) % _buffSpotlightResults.length;
+        renderBuffSpotlightDropdown();
+      } else if (event.key === 'ArrowUp' && isOpen) {
+        event.preventDefault();
+        _buffSpotlightActiveIdx = (_buffSpotlightActiveIdx - 1 + _buffSpotlightResults.length) % _buffSpotlightResults.length;
+        renderBuffSpotlightDropdown();
+      } else if (event.key === 'Escape') {
+        hideBuffSpotlightDropdown();
+      } else if (event.key === 'Enter') {
+        event.preventDefault();
+        if (isOpen && _buffSpotlightResults[_buffSpotlightActiveIdx]) {
+          pickBuffSpotlightResult(_buffSpotlightActiveIdx);
+        } else {
+          queryRuleMasterForBuff();
+        }
+      }
+    }
+    window.onBuffSpotlightKeydown = onBuffSpotlightKeydown;
+
+    function selectBuffModalEnergy(energyType) {
+      _selectedSpotlightEnergy = energyType;
+      if (_selectedSpotlightV2Entry) {
+        selectBuffSpotlightCandidate(_selectedSpotlightV2Entry, { keepEnergy: true });
+      }
+    }
+    window.selectBuffModalEnergy = selectBuffModalEnergy;
+
+    function selectBuffSpotlightCandidate(entry, opts = {}) {
+      if (!entry) return;
+      _selectedSpotlightV2Entry = JSON.parse(JSON.stringify(entry));
+      if (!opts.keepEnergy) {
+        _selectedSpotlightEnergy = entry.chosenEnergy || 'Fire';
+      }
+
+      const cl = getBuffModalCasterLevel();
+      const evalCtx = { cl, level: Number(character?.level) || 6, bab: Number(character?.bab) || 0 };
+      const rType = String(entry.type || '').toLowerCase();
+      const isCond = rType === 'condition' || entry.category === 'Combat Condition';
+
+      // Auto-switch Buff/Debuff mode if selecting a Condition
+      if (isCond && currentBuffModalMode !== 'debuff') {
+        switchBuffModalMode('debuff', { keepSelection: true });
+      }
+
+      const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
+        ? RuleEngine.resolveSpellBuffSpec({ ...entry, chosenEnergy: _selectedSpotlightEnergy }, character, cl)
+        : null;
+
+      const modifiers = (spec && Array.isArray(spec.modifiers) && spec.modifiers.length > 0)
+        ? spec.modifiers
+        : (Array.isArray(entry.modifiers) ? entry.modifiers : []);
+      const ruleFlags = { ...(entry.ruleFlags || {}), ...(spec?.ruleFlags || {}) };
+
+      // Extract flat form previews for AC, Atk, Dmg, STR..CHA
+      let acVal = 0, attVal = 0, dmgVal = 0, strVal = 0, dexVal = 0, conVal = 0, intVal = 0, wisVal = 0, chaVal = 0;
+      let primaryBonusType = entry.bonusType || (currentBuffModalMode === 'debuff' ? 'Penalty' : 'Enhancement');
+
+      modifiers.forEach(m => {
+        if (!m) return;
+        const val = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateFormula)
+          ? (Number(RuleEngine.evaluateFormula(m.formula !== undefined && m.formula !== null && m.formula !== '' ? m.formula : m.value, evalCtx)) || Number(m.value) || 0)
+          : (Number(m.value) || 0);
+        const t = String(m.target || '').toLowerCase();
+        if (m.type && m.type !== 'untyped') {
+          const capType = m.type.charAt(0).toUpperCase() + m.type.slice(1).toLowerCase();
+          if (['Enhancement', 'Morale', 'Luck', 'Armor', 'Shield', 'Deflection', 'Natural', 'Dodge', 'Penalty'].includes(capType)) {
+            primaryBonusType = capType;
+          } else if (m.type === 'natural_enhancement') {
+            primaryBonusType = 'Natural';
+          }
+        }
+        if (t.startsWith('ac')) acVal += val;
+        else if (t.startsWith('attack') || t === 'atk') attVal += val;
+        else if (t.startsWith('damage') || t === 'dmg') dmgVal += val;
+        else if (t === 'ability.str' || t === 'str') strVal += val;
+        else if (t === 'ability.dex' || t === 'dex') dexVal += val;
+        else if (t === 'ability.con' || t === 'con') conVal += val;
+        else if (t === 'ability.int' || t === 'int') intVal += val;
+        else if (t === 'ability.wis' || t === 'wis') wisVal += val;
+        else if (t === 'ability.cha' || t === 'cha') chaVal += val;
+      });
+
+      const durText = spec?.durationText || entry.duration || (isCond ? 'Condition' : '1 min/level');
+      let rounds = null;
+      const rdMatch = String(durText).match(/^(\d+)\s*(?:rd|round)/i);
+      if (rdMatch) rounds = parseInt(rdMatch[1], 10);
+      else if (/^(\d+)\s*min$/i.test(durText)) {
+        const mMatch = String(durText).match(/^(\d+)\s*min$/i);
+        if (mMatch && parseInt(mMatch[1], 10) <= 15) rounds = parseInt(mMatch[1], 10) * 10;
+      }
+
+      const cleanDesc = String(entry.shortDescription || entry.benefit || spec?.summaryText || entry.description || '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      const displayName = ruleFlags.energyChoice ? `${entry.name} (${_selectedSpotlightEnergy})` : entry.name;
+      const sourceVal = isCond ? 'Condition' : (rType === 'spell' ? 'Spell' : (entry.source && entry.source !== 'SRD 3.5e' ? entry.source : 'Spell'));
+
+      fillBuffFormFromEntry({
+        name: displayName,
+        source: sourceVal,
+        bonusType: primaryBonusType,
+        rounds: rounds !== null ? rounds : '',
+        durationText: durText,
+        ac: acVal || '',
+        att: attVal || '',
+        dmg: dmgVal || '',
+        str: strVal || '',
+        dex: dexVal || '',
+        con: conVal || '',
+        int: intVal || '',
+        wis: wisVal || '',
+        cha: chaVal || '',
+        notes: cleanDesc,
+        children: entry.children || []
+      });
+
+      const rmInput = document.getElementById('buff-rule-master-input');
+      if (rmInput) rmInput.value = entry.name;
+
+      // Render V2 Preview Banner (Modifiers + RuleFlags + Energy/Weapon Pickers)
+      renderBuffV2PreviewBanner(entry, spec, modifiers, ruleFlags, evalCtx);
+    }
+
+    function renderBuffV2PreviewBanner(entry, spec, modifiers, ruleFlags, evalCtx) {
+      const banner = document.getElementById('buff-v2-preview-banner');
+      const titleEl = document.getElementById('buff-v2-preview-title');
+      const sourceEl = document.getElementById('buff-v2-preview-source');
+      const pillsEl = document.getElementById('buff-v2-preview-pills');
+      const energyBox = document.getElementById('buff-v2-energy-picker');
+      const energyBtns = document.getElementById('buff-v2-energy-buttons');
+      const weaponBox = document.getElementById('buff-v2-weapon-picker');
+      const weaponSelect = document.getElementById('buff-v2-weapon-select');
+      if (!banner || !pillsEl) return;
+
+      if (!entry) {
+        banner.classList.add('hidden');
+        return;
+      }
+
+      if (titleEl) titleEl.innerHTML = `<span>✨</span><span>${entry.name} — Canonical V2 Mechanics</span>`;
+      if (sourceEl) sourceEl.textContent = entry._spotlightKind || entry.source || 'SRD 3.5e';
+
+      const pills = [];
+      modifiers.forEach(m => {
+        const lbl = (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel)
+          ? RuleEngine.formatBuffModifierLabel(m, evalCtx)
+          : `${m.value || m.formula} ${m.target}`;
+        if (lbl) {
+          const isNeg = String(lbl).trim().startsWith('-');
+          pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold border ${isNeg ? 'bg-rose-950 text-rose-200 border-rose-700' : 'bg-indigo-950 text-indigo-200 border-indigo-600'}">${lbl}</span>`);
+        }
+      });
+
+      if (spec?.summaryText && pills.length === 0) {
+        pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-950 text-emerald-200 border border-emerald-700">${spec.summaryText}</span>`);
+      }
+      if (ruleFlags.actionRestriction) {
+        pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-rose-950 text-rose-200 border border-rose-700">⚠️ ${ruleFlags.actionRestriction}</span>`);
+      }
+      if (ruleFlags.loseDexToAC) {
+        pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-rose-950 text-rose-200 border border-rose-700">Lose DEX to AC</span>`);
+      }
+      if (ruleFlags.halfSpeed) {
+        pills.push(`<span class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-950 text-amber-200 border border-amber-700">Half Speed</span>`);
+      }
+
+      pillsEl.innerHTML = pills.length > 0
+        ? pills.join('')
+        : `<span class="text-[11px] text-slate-400 italic">Custom / narrative effect (adjust numeric fields below if needed).</span>`;
+
+      // Energy Choice Picker
+      if (energyBox && energyBtns) {
+        if (ruleFlags.energyChoice) {
+          const ENERGIES = [
+            { type: 'Fire', icon: '🔥' },
+            { type: 'Cold', icon: '❄️' },
+            { type: 'Acid', icon: '🧪' },
+            { type: 'Electricity', icon: '⚡' },
+            { type: 'Sonic', icon: '🔊' }
+          ];
+          energyBtns.innerHTML = ENERGIES.map(e => {
+            const active = _selectedSpotlightEnergy === e.type;
+            return `<button type="button" onclick="selectBuffModalEnergy('${e.type}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? 'bg-amber-600 text-white border-amber-300 shadow' : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-white'}">${e.icon} ${e.type}</button>`;
+          }).join('');
+          energyBox.classList.remove('hidden');
+        } else {
+          energyBox.classList.add('hidden');
+        }
+      }
+
+      // Target Weapon Picker
+      if (weaponBox && weaponSelect) {
+        if (spec && spec.targetMode === 'weapon') {
+          const weapons = (character?.weapons || []).filter(w => w && w.name && w.name !== '-');
+          if (weapons.length > 0) {
+            weaponSelect.innerHTML = weapons.map(w => `<option value="${w.name}">⚔️ ${w.name}</option>`).join('');
+          } else {
+            weaponSelect.innerHTML = `<option value="">-- No Personal Weapon Equipped --</option>`;
+          }
+          weaponBox.classList.remove('hidden');
+        } else {
+          weaponBox.classList.add('hidden');
+        }
+      }
+
+      banner.classList.remove('hidden');
+    }
+
+    function switchBuffModalMode(mode, opts = {}) {
       currentBuffModalMode = mode === 'debuff' ? 'debuff' : 'buff';
       const isDebuff = currentBuffModalMode === 'debuff';
 
@@ -1543,10 +2069,14 @@
       const sourceSelect = document.getElementById('buff-input-source');
       const typeSelect = document.getElementById('buff-input-type');
 
-      // Clear children
-      currentBuffModalChildren = [];
-      const childrenPreview = document.getElementById('buff-children-preview-container');
-      if (childrenPreview) childrenPreview.classList.add('hidden');
+      if (!opts.keepSelection) {
+        currentBuffModalChildren = [];
+        _selectedSpotlightV2Entry = null;
+        const childrenPreview = document.getElementById('buff-children-preview-container');
+        if (childrenPreview) childrenPreview.classList.add('hidden');
+        const v2Banner = document.getElementById('buff-v2-preview-banner');
+        if (v2Banner) v2Banner.classList.add('hidden');
+      }
 
       if (isDebuff) {
         if (btnBuff) {
@@ -1567,10 +2097,10 @@
           modalBadge.className = 'text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-full';
           modalBadge.textContent = 'D&D 3.5e RAW (Debuff)';
         }
-        if (modalSubtitle) modalSubtitle.textContent = 'Select a D&D 3.5e RAW condition preset or define a custom debuff';
-        if (rmTitle) rmTitle.innerHTML = '<span>🧙‍♂️🤖</span><span>Fetch Debuff / Condition with Rule Master (AI)</span>';
-        if (rmInput) rmInput.placeholder = 'e.g., -4 lvl drain, Energy Drain, Sickened, Slow, Ray of Enfeeblement...';
-        if (presetLabel) presetLabel.textContent = '🩸 Select D&D 3.5e Condition / Debuff Preset';
+        if (modalSubtitle) modalSubtitle.textContent = 'Search 35+ SRD conditions & debuffs via Spotlight or Rule Master (AI)';
+        if (rmTitle) rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Condition Search &amp; Rule Master (AI)</span>';
+        if (rmInput) rmInput.placeholder = 'Search condition/debuff (e.g., Sickened, Shaken, Blinded, Slow, Curse)...';
+        if (presetLabel) presetLabel.textContent = '🩸 Quick-Pick D&D 3.5e RAW Conditions & Debuffs';
         if (nameLabel) nameLabel.textContent = 'Debuff Name *';
         if (saveBtn) {
           saveBtn.className = 'bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow';
@@ -1579,7 +2109,6 @@
         if (sourceSelect) sourceSelect.value = 'Condition';
         if (typeSelect) typeSelect.value = 'Penalty';
 
-        // Populate debuff presets
         if (presetSelect) {
           presetSelect.innerHTML = `
             <option value="custom">-- Define Custom Condition / Debuff --</option>
@@ -1610,10 +2139,10 @@
           modalBadge.className = 'text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-full';
           modalBadge.textContent = 'D&D 3.5e RAW (Buff)';
         }
-        if (modalSubtitle) modalSubtitle.textContent = 'Select a D&D 3.5e preset or define a custom buff';
-        if (rmTitle) rmTitle.innerHTML = '<span>🧙‍♂️🤖</span><span>Fetch Spell / Buff with Rule Master (AI)</span>';
-        if (rmInput) rmInput.placeholder = 'e.g., Righteous Might, Death Ward, Stoneskin, Fly...';
-        if (presetLabel) presetLabel.textContent = '⚡ Select D&D 3.5e Buff Preset';
+        if (modalSubtitle) modalSubtitle.textContent = 'Search 200+ V2 spells & combat buffs via Spotlight or Rule Master (AI)';
+        if (rmTitle) rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Buff Search &amp; Rule Master (AI)</span>';
+        if (rmInput) rmInput.placeholder = 'Search 200+ buffs (e.g., Haste, Righteous Might, Stoneskin, Barkskin)...';
+        if (presetLabel) presetLabel.textContent = '⚡ Quick-Pick D&D 3.5e RAW Buffs';
         if (nameLabel) nameLabel.textContent = 'Buff Name *';
         if (saveBtn) {
           saveBtn.className = 'bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow';
@@ -1622,7 +2151,6 @@
         if (sourceSelect) sourceSelect.value = 'Spell';
         if (typeSelect) typeSelect.value = 'Enhancement';
 
-        // Populate buff presets
         if (presetSelect) {
           presetSelect.innerHTML = `
             <option value="custom">-- Define Custom Buff --</option>
@@ -1633,6 +2161,8 @@
           `;
         }
       }
+
+      renderBuffQuickPickChips();
     }
 
     function renderBuffChildrenPreview(children) {
@@ -1674,10 +2204,17 @@
     function openAddBuffModal() {
       const modal = document.getElementById('add-buff-modal');
       if (!modal) return;
+      _selectedSpotlightV2Entry = null;
+      _selectedSpotlightEnergy = 'Fire';
+      hideBuffSpotlightDropdown();
+
+      const clEl = document.getElementById('buff-input-cl');
+      if (clEl) clEl.value = String(Math.max(1, Number(character?.level) || 6));
+
       switchBuffModalMode('buff');
       document.getElementById('buff-input-name').value = '';
       document.getElementById('buff-input-rounds').value = '10';
-      document.getElementById('buff-input-duration').value = '1 dk / CL';
+      document.getElementById('buff-input-duration').value = '1 min/level';
       document.getElementById('buff-input-ac').value = '';
       document.getElementById('buff-input-att').value = '';
       document.getElementById('buff-input-dmg').value = '';
@@ -1696,9 +2233,14 @@
       const rmInput = document.getElementById('buff-rule-master-input');
       if (rmInput) rmInput.value = '';
       modal.classList.remove('hidden');
+
+      setTimeout(() => {
+        if (rmInput) rmInput.focus();
+      }, 60);
     }
 
     function closeAddBuffModal() {
+      hideBuffSpotlightDropdown();
       const modal = document.getElementById('add-buff-modal');
       if (modal) modal.classList.add('hidden');
     }
@@ -1722,7 +2264,7 @@
       if (srcEl) {
         const rawSrc = (match.source || '').toLowerCase();
         if (rawSrc.includes('condition') || rawSrc.includes('durum')) {
-          srcEl.value = 'Condition (Durum)';
+          srcEl.value = 'Condition';
         } else if (rawSrc.includes('undead') || rawSrc.includes('monster') || rawSrc.includes('yaratık')) {
           srcEl.value = 'Undead / Monster';
         } else if (rawSrc.includes('potion') || rawSrc.includes('iksir')) {
@@ -1764,11 +2306,12 @@
       const statusEl = document.getElementById('buff-rule-master-status');
       const btn = document.getElementById('btn-buff-rule-master');
       if (!inputEl) return;
+      hideBuffSpotlightDropdown();
       const q = inputEl.value.trim();
       if (!q) {
         if (statusEl) {
           statusEl.className = 'text-xs text-amber-300 bg-amber-950/60 border border-amber-800/60 p-2 rounded-lg block';
-          statusEl.textContent = 'Please enter a rule, spell, or condition name to search.';
+          statusEl.textContent = 'Please enter a spell, buff, or condition name to search.';
         }
         return;
       }
@@ -1779,7 +2322,7 @@
       const isDebuffQuery = isDrainQuery || qLower.includes('sick') || qLower.includes('shaken') || qLower.includes('fatigue') || qLower.includes('slow') || qLower.includes('entangle') || qLower.includes('debuff') || qLower.includes('curse');
 
       if (isDebuffQuery && currentBuffModalMode !== 'debuff') {
-        switchBuffModalMode('debuff');
+        switchBuffModalMode('debuff', { keepSelection: true });
       }
 
       if (isDrainQuery) {
@@ -1800,7 +2343,7 @@
           });
           if (statusEl) {
             statusEl.className = 'text-xs text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 p-2 rounded-lg block';
-            statusEl.textContent = `✓ 🧙‍♂️🤖 Rule Master (AI): Detected D&D 3.5e RAW rule "${edMatch.name}"! Populated Parent effect and 5 Child sub-effects (Attack, Saves, Skills, HP, CL).`;
+            statusEl.textContent = `✓ Detected D&D 3.5e RAW rule "${edMatch.name}"! Populated Parent effect and 5 Child sub-effects (Attack, Saves, Skills, HP, CL).`;
           }
           return;
         }
@@ -1808,45 +2351,24 @@
 
       if (statusEl) {
         statusEl.className = 'text-xs text-indigo-300 bg-indigo-950/60 border border-indigo-800/60 p-2 rounded-lg flex items-center gap-2 block';
-        statusEl.innerHTML = '<span class="animate-spin inline-block">⏳</span><span>🧙‍♂️🤖 Searching Rule Master (AI)...</span>';
+        statusEl.innerHTML = '<span class="animate-spin inline-block">⏳</span><span>⚡ Searching SRD Compendium &amp; Rule Master (AI)...</span>';
       }
       if (btn) btn.disabled = true;
 
       try {
-        // 1. Önce yerel Master DB'de ara
-        const dbMatches = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb.filter(item => {
-          const name = (item.name || '').toLowerCase();
-          return name === q.toLowerCase() || name.includes(q.toLowerCase());
-        }) : [];
-
-        if (dbMatches.length > 0) {
-          const match = dbMatches[0];
-          fillBuffFormFromEntry({
-            name: match.name,
-            source: match.type === 'Potion' ? 'Potion' : (match.type === 'Spell' ? 'Spell' : 'Item / Equipment'),
-            bonusType: match.bonusType || (currentBuffModalMode === 'debuff' ? 'Penalty' : 'Enhancement'),
-            rounds: 10,
-            durationText: match.duration || '1 dk / CL',
-            ac: match.acBonus || match.ac || 0,
-            att: match.attBonus || match.att || 0,
-            dmg: match.dmgBonus || match.dmg || 0,
-            str: match.str || 0,
-            dex: match.dex || 0,
-            con: match.con || 0,
-            int: match.int || 0,
-            wis: match.wis || 0,
-            cha: match.cha || 0,
-            notes: match.benefit || match.desc || match.description || ''
-          });
-
+        // 1. 0ms Local Search across SRD Compendium (Conditions, Buffs, Spells) + Custom Master DB
+        const localCandidates = await searchBuffSpotlightCandidates(q, currentBuffModalMode === 'debuff');
+        const exactLocal = localCandidates.find(c => (c.name || '').toLowerCase().trim() === qLower) || localCandidates[0];
+        if (exactLocal && (exactLocal.name || '').toLowerCase().includes(qLower)) {
+          selectBuffSpotlightCandidate(exactLocal);
           if (statusEl) {
             statusEl.className = 'text-xs text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 p-2 rounded-lg block';
-            statusEl.textContent = `✓ Found "${match.name}" in Master DB and populated form!`;
+            statusEl.textContent = `✓ Found "${exactLocal.name}" in ${exactLocal._spotlightKind || 'Compendium'} (0 tokens) and populated Canonical V2 mechanics!`;
           }
           return;
         }
 
-        // 2. Rule Master AI ile 3.5e kitaplarını tara
+        // 2. Query Rule Master (AI) for Splatbook / Homebrew spells & conditions
         const apiKey = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getApiKey === 'function') 
           ? RuleMaster.getApiKey() 
           : (localStorage.getItem('gemini_api_key') || '');
@@ -1854,36 +2376,24 @@
         if (!apiKey) {
           if (statusEl) {
             statusEl.className = 'text-xs text-amber-300 bg-amber-950/60 border border-amber-800/60 p-2 rounded-lg block';
-            statusEl.innerHTML = `⚠️ Not found in Master DB. Add a free Gemini API key in Settings ⚙️ (top right) to fetch from D&D 3.5e sourcebooks via Rule Master (AI).`;
+            statusEl.innerHTML = `⚠️ "${q}" not found in local SRD Compendium. Add a free Gemini API key in Settings ⚙️ (top right) to fetch from D&D 3.5e splatbooks via Rule Master (AI).`;
           }
           return;
         }
 
-        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchSingleAiRuleRows === 'function') {
-          const rows = await RuleMaster.fetchSingleAiRuleRows(q, 'Spell', apiKey, statusEl);
-          if (rows && rows.length > 0) {
-            const row = rows[0];
-            fillBuffFormFromEntry({
-              name: row[0] || q,
-              source: 'Spell',
-              bonusType: row[6] || (currentBuffModalMode === 'debuff' ? 'Penalty' : 'Enhancement'),
-              rounds: 10,
-              durationText: row[26] || '1 dk / CL',
-              ac: Number(row[14]) || 0,
-              att: Number(row[16]) || 0,
-              dmg: Number(row[17]) || 0,
-              str: Number(row[8]) || 0,
-              dex: Number(row[9]) || 0,
-              con: Number(row[10]) || 0,
-              int: Number(row[11]) || 0,
-              wis: Number(row[12]) || 0,
-              cha: Number(row[13]) || 0,
-              notes: row[5] || ''
-            });
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchSingleAiRuleObjects === 'function') {
+          const categoryHint = currentBuffModalMode === 'debuff' ? 'Condition' : 'Spell';
+          const entries = await RuleMaster.fetchSingleAiRuleObjects(q, categoryHint, apiKey, statusEl);
+          if (entries && entries.length > 0) {
+            const v2Entry = (typeof RuleMaster.ensureV2 === 'function')
+              ? RuleMaster.ensureV2(entries[0])
+              : entries[0];
+            v2Entry._spotlightKind = 'Rule Master (AI)';
+            selectBuffSpotlightCandidate(v2Entry);
 
             if (statusEl) {
               statusEl.className = 'text-xs text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 p-2 rounded-lg block';
-              statusEl.textContent = `✓ 🧙‍♂️🤖 Rule Master (AI) fetched "${row[0] || q}" from D&D 3.5e compendiums and populated the form!`;
+              statusEl.textContent = `✓ 🧙‍♂️🤖 Rule Master (AI) fetched "${v2Entry.name || q}" from D&D 3.5e sourcebooks and populated Canonical V2 mechanics!`;
             }
             return;
           }
@@ -1941,32 +2451,133 @@
       }
 
       const isDebuff = currentBuffModalMode === 'debuff';
-      const source = document.getElementById('buff-input-source').value.trim() || (isDebuff ? 'Debuff' : 'Buff');
+      const cl = getBuffModalCasterLevel();
+      const source = document.getElementById('buff-input-source').value.trim() || (isDebuff ? 'Condition' : 'Spell');
       const bonusType = document.getElementById('buff-input-type').value;
       const roundsVal = document.getElementById('buff-input-rounds').value.trim();
-      const rounds = roundsVal !== '' ? parseInt(roundsVal) : null;
+      const rounds = roundsVal !== '' ? parseInt(roundsVal, 10) : null;
       const durationText = document.getElementById('buff-input-duration').value.trim();
-      const acBonus = parseInt(document.getElementById('buff-input-ac').value) || 0;
-      const attBonus = parseInt(document.getElementById('buff-input-att').value) || 0;
-      const dmgBonus = parseInt(document.getElementById('buff-input-dmg').value) || 0;
-      const strBonus = parseInt(document.getElementById('buff-input-str').value) || 0;
-      const dexBonus = parseInt(document.getElementById('buff-input-dex').value) || 0;
-      const conBonus = parseInt(document.getElementById('buff-input-con').value) || 0;
-      const intBonus = parseInt(document.getElementById('buff-input-int').value) || 0;
-      const wisBonus = parseInt(document.getElementById('buff-input-wis').value) || 0;
-      const chaBonus = parseInt(document.getElementById('buff-input-cha').value) || 0;
+      const acBonus = parseInt(document.getElementById('buff-input-ac').value, 10) || 0;
+      const attBonus = parseInt(document.getElementById('buff-input-att').value, 10) || 0;
+      const dmgBonus = parseInt(document.getElementById('buff-input-dmg').value, 10) || 0;
+      const strBonus = parseInt(document.getElementById('buff-input-str').value, 10) || 0;
+      const dexBonus = parseInt(document.getElementById('buff-input-dex').value, 10) || 0;
+      const conBonus = parseInt(document.getElementById('buff-input-con').value, 10) || 0;
+      const intBonus = parseInt(document.getElementById('buff-input-int').value, 10) || 0;
+      const wisBonus = parseInt(document.getElementById('buff-input-wis').value, 10) || 0;
+      const chaBonus = parseInt(document.getElementById('buff-input-cha').value, 10) || 0;
       const notes = document.getElementById('buff-input-notes').value.trim();
 
+      // Check if selected Spotlight entry is a Canonical V2 Spell Buff (and user didn't switch to another name)
+      const selectedBaseName = (_selectedSpotlightV2Entry?.name || '').toLowerCase().trim();
+      const cleanTypedBase = name.replace(/\s*\((?:fire|cold|acid|electricity|sonic)\)\s*$/i, '').toLowerCase().trim();
+      const matchesSpotlightV2 = Boolean(_selectedSpotlightV2Entry && selectedBaseName && selectedBaseName === cleanTypedBase);
+
+      // Build Canonical V2 `modifiers` and `ruleFlags`
+      let v2Modifiers = [];
+      let v2RuleFlags = {};
+      let v2Summary = '';
+      let chosenWeapon = null;
+      let chosenEnergy = null;
+
+      if (matchesSpotlightV2) {
+        const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
+          ? RuleEngine.resolveSpellBuffSpec({ ..._selectedSpotlightV2Entry, chosenEnergy: _selectedSpotlightEnergy }, character, cl)
+          : null;
+
+        // If it's a pure V2 Spell Buff and applySpellBuffToCharacter is available, we can use full V2 spell buff resolution!
+        if (!isDebuff && spec && spec.isBuffSpell && typeof window.applySpellBuffToCharacter === 'function') {
+          const weaponSelectEl = document.getElementById('buff-v2-weapon-select');
+          if (spec.targetMode === 'weapon' && weaponSelectEl && weaponSelectEl.value) {
+            chosenWeapon = weaponSelectEl.value;
+          }
+          if (spec.ruleFlags?.energyChoice) {
+            chosenEnergy = _selectedSpotlightEnergy || 'Fire';
+          }
+          const created = window.applySpellBuffToCharacter(_selectedSpotlightV2Entry, cl, {
+            chosenEnergy,
+            targetWeapon: chosenWeapon,
+            silentToast: true
+          });
+          if (created) {
+            if (rounds !== null && !isNaN(rounds)) created.rounds = rounds;
+            if (durationText) {
+              created.durationText = durationText;
+              created.duration = durationText;
+            }
+            if (notes) created.notes = notes;
+            saveStateToStorage(true);
+            renderAll();
+            closeAddBuffModal();
+            if (typeof showDiceTopToast === 'function') {
+              showDiceTopToast({
+                icon: '✨',
+                title: `${created.name} Activated`,
+                breakdown: `${created.summary || notes || 'Active Buff'} • CL ${cl} • ${created.durationText || created.duration || 'Active'}`,
+                total: 'Buff Active'
+              });
+            }
+            return;
+          }
+        }
+
+        if (Array.isArray(_selectedSpotlightV2Entry.modifiers) && _selectedSpotlightV2Entry.modifiers.length > 0) {
+          v2Modifiers = JSON.parse(JSON.stringify(_selectedSpotlightV2Entry.modifiers));
+        }
+        if (_selectedSpotlightV2Entry.ruleFlags && typeof _selectedSpotlightV2Entry.ruleFlags === 'object') {
+          v2RuleFlags = JSON.parse(JSON.stringify(_selectedSpotlightV2Entry.ruleFlags));
+        }
+        v2Summary = spec?.summaryText || _selectedSpotlightV2Entry.shortDescription || '';
+      }
+
+      // If user entered custom numeric values (or modified them), synthesize V2 modifiers if empty
+      const modTypeLower = String(bonusType || (isDebuff ? 'penalty' : 'enhancement')).toLowerCase();
+      if (v2Modifiers.length === 0) {
+        const pushMod = (target, val, customType = null) => {
+          if (!val) return;
+          v2Modifiers.push({
+            target,
+            value: val,
+            formula: String(val),
+            type: customType || (val < 0 ? 'penalty' : modTypeLower),
+            condition: null
+          });
+        };
+        if (acBonus) {
+          const acTarget = modTypeLower === 'armor' ? 'ac.armor'
+            : (modTypeLower === 'shield' ? 'ac.shield'
+            : (modTypeLower === 'deflection' ? 'ac.deflection'
+            : (modTypeLower === 'natural' ? 'ac.natural'
+            : (modTypeLower === 'dodge' ? 'ac.dodge' : 'ac.total'))));
+          pushMod(acTarget, acBonus, modTypeLower === 'natural' ? 'natural_enhancement' : modTypeLower);
+        }
+        pushMod('attack.all', attBonus);
+        pushMod('damage.weapon', dmgBonus);
+        pushMod('ability.str', strBonus);
+        pushMod('ability.dex', dexBonus);
+        pushMod('ability.con', conBonus);
+        pushMod('ability.int', intBonus);
+        pushMod('ability.wis', wisBonus);
+        pushMod('ability.cha', chaBonus);
+      }
+
       const newBuff = {
-        id: (isDebuff ? 'debuff_' : 'buff_') + Date.now(),
+        id: (_selectedSpotlightV2Entry?.id && matchesSpotlightV2)
+          ? _selectedSpotlightV2Entry.id
+          : ((isDebuff ? 'debuff_' : 'buff_') + Date.now()),
+        schemaVersion: 2,
         name,
         source,
         bonusType,
+        casterLevel: cl,
+        cl,
         isDebuff,
+        isCondition: source === 'Condition' || (_selectedSpotlightV2Entry?.type === 'Condition'),
         category: isDebuff ? 'Debuff' : (acBonus ? 'AC' : (strBonus || dexBonus || conBonus ? 'Stat' : 'Combat')),
         active: true,
         rounds,
         durationText: durationText || (rounds ? `${rounds} Rounds` : 'Permanent'),
+        duration: durationText || (rounds ? `${rounds} Rounds` : 'Permanent'),
         acBonus,
         attBonus,
         dmgBonus,
@@ -1977,65 +2588,61 @@
         wisBonus,
         chaBonus,
         notes,
+        summary: v2Summary || notes,
+        modifiers: v2Modifiers,
+        ruleFlags: v2RuleFlags,
         children: (currentBuffModalChildren && currentBuffModalChildren.length > 0) ? JSON.parse(JSON.stringify(currentBuffModalChildren)) : []
       };
 
       if (name.toLowerCase().includes('drain') || name.toLowerCase().includes('negative level')) {
         const lvlMatch = name.match(/(\d+)/);
-        if (lvlMatch) newBuff.negativeLevels = parseInt(lvlMatch[1]);
+        if (lvlMatch) newBuff.negativeLevels = parseInt(lvlMatch[1], 10);
       }
 
       if (!Array.isArray(character.buffs)) character.buffs = [];
-      character.buffs.push(newBuff);
+      const existingBuffIdx = character.buffs.findIndex(b => b && (b.id === newBuff.id || (b.name || '').toLowerCase().trim() === name.toLowerCase()));
+      if (existingBuffIdx >= 0) {
+        character.buffs[existingBuffIdx] = newBuff;
+      } else {
+        character.buffs.push(newBuff);
+      }
 
-      // Optional Master DB Synchronization (29-column schema)
+      // Optional Custom DB Synchronization (Canonical V2 schema — only if user checked the box and it's not already a core SRD entry)
       let addedToDb = false;
       const saveToDb = document.getElementById('buff-save-to-master-db')?.checked !== false;
-      if (saveToDb && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+      const isAlreadyCoreSrd = matchesSpotlightV2 && _selectedSpotlightV2Entry?.source === 'SRD 3.5e';
+      if (saveToDb && !isAlreadyCoreSrd && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         const cleanName = name.trim();
         const existingIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().trim() === cleanName.toLowerCase());
 
-        const entryData = {
+        const v2EntryData = {
+          id: newBuff.id,
+          schemaVersion: 2,
           name: cleanName,
-          type: isDebuff ? 'Debuff' : (source.toLowerCase().includes('spell') ? 'Spell' : (source.toLowerCase().includes('potion') ? 'Potion' : 'Buff')),
+          type: isDebuff ? (source === 'Condition' ? 'Condition' : 'Buff') : (source.toLowerCase().includes('spell') ? 'Spell' : 'Buff'),
+          category: isDebuff ? 'Combat Condition' : 'Spell / Combat Buff',
           slot: 'None',
-          parent: (newBuff.children && newBuff.children.length > 0) ? 'Parent' : '-',
-          prereq: '-',
           source: source || (isDebuff ? 'D&D 3.5e Condition' : 'D&D 3.5e Buff'),
           benefit: notes || (isDebuff ? `${cleanName} debuff effect` : `${cleanName} buff effect`),
-          bonusType: bonusType || (isDebuff ? 'Penalty' : 'Enhancement'),
-          scope: isDebuff ? 'Debuff / Condition' : 'Buff / Spell',
-          strBonus: strBonus || '',
-          dexBonus: dexBonus || '',
-          conBonus: conBonus || '',
-          intBonus: intBonus || '',
-          wisBonus: wisBonus || '',
-          chaBonus: chaBonus || '',
-          acBonus: acBonus || '',
-          attBonus: attBonus || '',
-          dmgBonus: dmgBonus || '',
-          hpBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels * 5}` : ''),
-          fortBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels}` : ''),
-          refBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels}` : ''),
-          willBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels}` : ''),
-          skillBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels}` : ''),
-          clBonus: (newBuff.negativeLevels ? `-${newBuff.negativeLevels}` : ''),
-          speedBonus: '',
-          duration: durationText || (rounds ? `${rounds} Rounds` : 'Permanent'),
-          action: 'Standard Action',
-          role: isDebuff ? 'Condition / Debuff' : 'Buff / Utility',
+          shortDescription: notes || '',
+          duration: newBuff.durationText,
+          modifiers: JSON.parse(JSON.stringify(v2Modifiers)),
+          damageParts: [],
+          modes: [],
+          ruleFlags: JSON.parse(JSON.stringify(v2RuleFlags)),
           tags: isDebuff ? ['debuff', 'condition'] : ['buff', 'temporary']
         };
 
         if (Array.isArray(newBuff.children) && newBuff.children.length > 0) {
-          entryData.children = JSON.parse(JSON.stringify(newBuff.children));
+          v2EntryData.children = JSON.parse(JSON.stringify(newBuff.children));
         }
 
         if (existingIdx >= 0) {
-          masterDb[existingIdx] = Object.assign({}, masterDb[existingIdx], entryData);
+          masterDb[existingIdx] = Object.assign({}, masterDb[existingIdx], v2EntryData);
         } else {
-          masterDb.push(entryData);
+          masterDb.push(v2EntryData);
         }
+        character.customDb = masterDb;
         addedToDb = true;
 
         if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
@@ -2043,11 +2650,23 @@
         }
       }
 
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
+        RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
+      }
+
       closeAddBuffModal();
       saveStateToStorage(true);
       renderAll();
-      const dbText = addedToDb ? ' and saved to Master DB' : '';
-      alert(`${isDebuff ? '🩸' : '✨'} ${isDebuff ? 'Debuff' : 'Buff'} "${name}" activated${dbText}!`);
+
+      if (typeof showDiceTopToast === 'function') {
+        const dbText = addedToDb ? ' • Saved to Custom DB' : '';
+        showDiceTopToast({
+          icon: isDebuff ? '🩸' : '✨',
+          title: `${name} (${isDebuff ? 'Debuff' : 'Buff'} Active)`,
+          breakdown: `${newBuff.summary || newBuff.durationText}${dbText}`,
+          total: isDebuff ? 'Debuff On' : 'Buff On'
+        });
+      }
     }
 
     // 🎒 INVENTORY, 14 BODY SLOTS & GEAR POOL (Madde 6 & 8)
