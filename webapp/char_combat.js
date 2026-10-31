@@ -9959,6 +9959,10 @@
     }
 
     function triggerCockpitShortRest() {
+      if (typeof executeShortRest === 'function') {
+        executeShortRest(5);
+        return;
+      }
       if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
         character.tomeOfBattle.readiedManeuvers.forEach(m => m.expended = false);
       }
@@ -9973,6 +9977,10 @@
     }
 
     function triggerCockpitLongRest() {
+      if (typeof performLongRest === 'function') {
+        performLongRest();
+        return;
+      }
       if (confirm('🌙 Take a Long Rest (8 Hours) and restore HP, all daily spell slots, and maneuvers?')) {
         // Refill HP
         if (character.hp) character.hp.current = character.hp.max || 44;

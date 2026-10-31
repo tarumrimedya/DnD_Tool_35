@@ -1327,11 +1327,19 @@
             return;
           }
 
-          const dur = (b.durationText || "").toLowerCase();
+          const dur = (b.durationText || b.duration || "").toLowerCase();
           const isPermanent = dur.includes("kalıcı") || dur.includes("permanent") || b.permanent;
-          const is24h = dur.includes("24 saat") || dur.includes("24 hour");
+          const is24h = dur.includes("24 saat") || dur.includes("24 hour") || dur.includes("24 hr");
           if (!isPermanent && !is24h) {
             b.active = false;
+            b._tempHpSynced = false;
+            if (b.initialDuration) {
+              b.duration = b.initialDuration;
+              b.durationText = b.initialDuration;
+            }
+            if (b.initialRounds !== undefined && b.initialRounds !== null) {
+              b.rounds = b.initialRounds;
+            }
           }
         });
       }
@@ -1481,17 +1489,127 @@
 
       // 2. Encounter round reset
       character.encounterRound = 1;
+      if (character.tactical) character.tactical.round = 1;
 
-      // 3. Expire combat / round-based buffs
+      // 3. Expire or decrement combat / round-based / minute-based buffs
       let expiredBuffs = 0;
+      const expiredBuffNames = [];
+      const restRounds = Math.max(1, Number(minutes) || 5) * 10;
       if (Array.isArray(character.buffs)) {
         character.buffs.forEach(b => {
-          if (b.active) {
-            const isRoundBased = b.rounds !== null && b.rounds !== undefined;
-            const isMinuteBased = (b.durationText || "").toLowerCase().includes("dk") || (b.durationText || "").toLowerCase().includes("min");
-            if (isRoundBased || (minutes >= 60 && isMinuteBased)) {
-              b.active = false;
-              expiredBuffs++;
+          if (!b || !b.active) return;
+
+          // Skip persistent condition debuffs (handled in section 4 or Long Rest)
+          const bIdLower = String(b.id || "").toLowerCase();
+          const bNameLower = String(b.name || "").toLowerCase();
+          if (
+            bIdLower === "debuff_exhausted" || bIdLower === "debuff_fatigued" ||
+            bIdLower === "debuff_sickened" || bIdLower === "debuff_shaken" ||
+            bNameLower === "exhausted" || bNameLower === "fatigued"
+          ) {
+            return;
+          }
+
+          const durRaw = String(b.durationText || b.duration || "").trim();
+          const durLower = durRaw.toLowerCase();
+          const isPermanent = Boolean(b.permanent) || durLower.includes("kalıcı") || durLower.includes("permanent") || durLower.includes("condition");
+          const is24h = durLower.includes("24 saat") || durLower.includes("24 hour") || durLower.includes("24 hr");
+          if (isPermanent || is24h) return;
+
+          if (!b.initialDuration && durRaw) b.initialDuration = durRaw;
+          if ((b.initialRounds === undefined || b.initialRounds === null) && b.rounds !== null && b.rounds !== undefined) {
+            b.initialRounds = Number(b.rounds);
+          }
+
+          const bCl = Math.max(1, Number(b.casterLevel || b.cl || character.level) || 1);
+          let shouldExpire = false;
+
+          // A. Explicit round counter (`b.rounds`)
+          if (b.rounds !== null && b.rounds !== undefined && Number(b.rounds) > 0) {
+            const remRds = Number(b.rounds) - restRounds;
+            if (remRds <= 0) {
+              shouldExpire = true;
+            } else {
+              b.rounds = remRds;
+              if (/\b(?:min|mins|minute|minutes|dk|dakika)\b/i.test(durLower)) {
+                const remMins = Math.max(1, Math.ceil(remRds / 10));
+                b.duration = `${remMins} min`;
+                b.durationText = `${remMins} min`;
+              }
+            }
+          } else {
+            // B. Parse duration string (`duration` / `durationText`)
+            let parsedMins = null;
+            let parsedRounds = null;
+
+            if (/\b1\s*round\/level/i.test(durLower)) {
+              parsedRounds = bCl;
+            } else {
+              const rdMatch = durLower.match(/(\d+)\s*(?:rd|rds|round|rounds|tur)\b/i);
+              if (rdMatch) parsedRounds = parseInt(rdMatch[1], 10);
+            }
+
+            if (parsedRounds !== null) {
+              if (parsedRounds <= restRounds) {
+                shouldExpire = true;
+              } else {
+                const remRds = parsedRounds - restRounds;
+                b.rounds = remRds;
+                b.duration = `${remRds} rounds`;
+                b.durationText = `${remRds} rounds`;
+              }
+            } else {
+              if (/10\s*min\.?\/level/i.test(durLower)) {
+                parsedMins = bCl * 10;
+              } else if (/\b1\s*min\.?\/level/i.test(durLower)) {
+                parsedMins = bCl;
+              } else if (/\b1\s*(?:hr|hour)\.?\/level/i.test(durLower)) {
+                parsedMins = bCl * 60;
+              } else {
+                const minMatch = durLower.match(/(\d+)\s*(?:min|mins|minute|minutes|dk|dakika)\b/i);
+                if (minMatch) {
+                  parsedMins = parseInt(minMatch[1], 10);
+                } else {
+                  const hrMatch = durLower.match(/(\d+)\s*(?:hr|hrs|hour|hours|saat)\b/i);
+                  if (hrMatch) parsedMins = parseInt(hrMatch[1], 10) * 60;
+                }
+              }
+
+              if (parsedMins !== null && parsedMins > 0) {
+                if (parsedMins <= minutes) {
+                  shouldExpire = true;
+                } else {
+                  const remMins = parsedMins - minutes;
+                  if (remMins >= 60 && remMins % 60 === 0 && /\b(?:hr|hrs|hour|hours|saat)\b/i.test(durLower)) {
+                    const remHrs = remMins / 60;
+                    b.duration = `${remHrs} hr`;
+                    b.durationText = `${remHrs} hr`;
+                  } else {
+                    b.duration = `${remMins} min`;
+                    b.durationText = `${remMins} min`;
+                    if (remMins <= 15) b.rounds = remMins * 10;
+                  }
+                }
+              }
+            }
+          }
+
+          if (shouldExpire) {
+            b.active = false;
+            expiredBuffs++;
+            if (b.name) expiredBuffNames.push(b.name);
+            if (b.initialDuration) {
+              b.duration = b.initialDuration;
+              b.durationText = b.initialDuration;
+            }
+            if (b.initialRounds !== undefined && b.initialRounds !== null) {
+              b.rounds = b.initialRounds;
+            }
+            const tempHp = typeof getBuffGrantedTempHp === 'function' ? getBuffGrantedTempHp(b) : (Number(b.grantedTempHp) || 0);
+            if (tempHp > 0 && character.hp) {
+              character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
+              b._tempHpSynced = false;
+              if (typeof markPlayerHpChanged === 'function') markPlayerHpChanged();
             }
           }
         });
@@ -1526,6 +1644,17 @@
         }
       }
 
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.recalculateCharacter === 'function') {
+        try {
+          RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), {
+            combatExpertise: character.tactical?.combatExpertise || 0,
+            fightingDefensively: character.tactical?.fightingDefensively || false,
+            totalDefense: character.tactical?.totalDefense || false,
+            charge: character.tactical?.charge || false
+          });
+        } catch (e) { console.warn('RuleEngine.recalculateCharacter error in short rest:', e); }
+      }
+
       if (typeof renderHUD === 'function') {
         try { renderHUD(); } catch (e) { console.warn('renderHUD immediate short rest error:', e); }
       }
@@ -1550,7 +1679,10 @@
       }
       if (nonlethalHealed > 0) summaryParts.push(`Healed ${nonlethalHealed} Nonlethal HP`);
       if (downgradedExhausted) summaryParts.push("Exhausted downgraded to Fatigued");
-      if (expiredBuffs > 0) summaryParts.push(`${expiredBuffs} timed buff(s) expired`);
+      if (expiredBuffs > 0) {
+        const namesLabel = expiredBuffNames.length <= 3 ? ` (${expiredBuffNames.join(", ")})` : "";
+        summaryParts.push(`${expiredBuffs} buff(s) expired${namesLabel}`);
+      }
       summaryParts.push("Encounter round reset");
 
       showDiceTopToast({

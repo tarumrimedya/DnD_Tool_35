@@ -1287,6 +1287,19 @@
         ? `${buffSpec.id || 'buff'}-${chosenEnergy.toLowerCase()}`
         : (buffSpec.id || `buff_${Date.now()}`);
 
+      const durText = buffSpec.durationText || '1 min';
+      let computedRounds = null;
+      const rdMatch = String(durText).match(/^(\d+)\s*(?:rd|rds|round|rounds)/i);
+      if (rdMatch) {
+        computedRounds = parseInt(rdMatch[1], 10);
+      } else {
+        const mMatch = String(durText).match(/^(\d+)\s*(?:min|mins|minute|minutes|dk)/i);
+        if (mMatch) {
+          const mins = parseInt(mMatch[1], 10);
+          if (mins > 0 && mins <= 15) computedRounds = mins * 10;
+        }
+      }
+
       const buffObj = {
         id: buffId,
         baseSpellId: buffSpec.id || spellItem.id || null,
@@ -1297,11 +1310,15 @@
         casterLevel: effCl,
         cl: effCl,
         chosenEnergy: chosenEnergy || null,
-        duration: buffSpec.durationText,
+        duration: durText,
+        durationText: durText,
+        initialDuration: durText,
+        rounds: computedRounds,
+        initialRounds: computedRounds,
         modifiers: Array.isArray(buffSpec.modifiers) ? JSON.parse(JSON.stringify(buffSpec.modifiers)) : [],
         ruleFlags: buffSpec.ruleFlags ? JSON.parse(JSON.stringify(buffSpec.ruleFlags)) : {},
         summary: buffSpec.summaryText,
-        description: `${buffSpec.summaryText} (${buffSpec.durationText})`
+        description: `${buffSpec.summaryText} (${durText})`
       };
 
       if (buffSpec.evaluatedEnergyRes > 0) {
