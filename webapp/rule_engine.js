@@ -1775,6 +1775,38 @@ const RuleEngine = {
     };
   },
 
+  // Evaluate or roll a Temp HP formula (supports flat numbers, @cl formulas, and dice like `1d8 + min(10, @cl)`)
+  rollOrEvaluateTempHp(formulaOrVal, evalCtx = { cl: 1, level: 1, bab: 0, chaMod: 0 }) {
+    if (formulaOrVal === undefined || formulaOrVal === null || formulaOrVal === '') {
+      return { total: 0, rollDesc: '', isDice: false };
+    }
+    const rawStr = String(formulaOrVal).trim();
+    if (!/\d*d\d+/i.test(rawStr)) {
+      const flatVal = Math.max(0, Number(this.evaluateFormula(rawStr, evalCtx)) || parseInt(rawStr, 10) || 0);
+      return { total: flatVal, rollDesc: flatVal > 0 ? `+${flatVal} Temp HP` : '', isDice: false };
+    }
+    const rolls = [];
+    const replaced = rawStr.replace(/(\d*)d(\d+)/gi, (_, countStr, sidesStr) => {
+      const cnt = Math.max(1, parseInt(countStr || '1', 10) || 1);
+      const sides = Math.max(2, parseInt(sidesStr, 10) || 6);
+      let sum = 0;
+      const dieResults = [];
+      for (let i = 0; i < cnt; i++) {
+        const r = Math.floor(Math.random() * sides) + 1;
+        sum += r;
+        dieResults.push(r);
+      }
+      rolls.push(`${cnt}d${sides}[${dieResults.join(',')}]`);
+      return String(sum);
+    });
+    const total = Math.max(0, Number(this.evaluateFormula(replaced, evalCtx)) || parseInt(replaced, 10) || 0);
+    return {
+      total,
+      rollDesc: `${rolls.join(' + ')} ➔ +${total} Temp HP`,
+      isDice: true
+    };
+  },
+
   // Format a single V2 modifier into a human-readable D&D 3.5e label
   formatBuffModifierLabel(mod, evalCtx = { cl: 1, level: 1, bab: 0, chaMod: 0 }) {
     if (!mod || !mod.target) return '';
@@ -1800,8 +1832,9 @@ const RuleEngine = {
       'attack.all': 'Attack', 'attack': 'Attack', 'attack.melee': 'Melee Attack', 'attack.ranged': 'Ranged Attack',
       'damage.weapon': 'Weapon Damage', 'damage.all': 'Damage', 'damage.melee': 'Melee Damage', 'damage.ranged': 'Ranged Damage',
       'initiative': 'Initiative', 'init': 'Initiative',
-      'speed.land': 'ft Speed', 'speed': 'ft Speed',
-      'skill.all': 'All Skills', 'skills.all': 'All Skills'
+      'speed.land': 'ft Speed', 'speed': 'ft Speed', 'speed.fly': 'ft Fly Speed',
+      'skill.all': 'All Skills', 'skills.all': 'All Skills',
+      'hp.temp': 'Temp HP', 'hp.max': 'Max HP', 'casterlevel': 'Caster Level'
     };
     let tLabel = targetLabelMap[t];
     if (!tLabel) {
@@ -1974,7 +2007,11 @@ const RuleEngine = {
         "heart of air": { targetMode: 'self', modifiers: [m('skill.jump', 10, 'enhancement')], ruleFlags: { heartSpell: true } },
         "heart of water": { targetMode: 'self', modifiers: [m('skill.escape_artist', 5, 'enhancement'), m('skill.swim', 8, 'racial')], ruleFlags: { heartSpell: true } },
         "heart of earth": { targetMode: 'self', tempHpFormula: 'min(30, @cl * 2)', modifiers: [], ruleFlags: { heartSpell: true } },
-        "heart of fire": { targetMode: 'self', modifiers: [m('speed.land', 10, 'enhancement')], ruleFlags: { heartSpell: true } }
+        "heart of fire": { targetMode: 'self', modifiers: [m('speed.land', 10, 'enhancement')], ruleFlags: { heartSpell: true } },
+        "aid": { targetMode: 'single', tempHpFormula: '1d8 + min(10, @cl)', modifiers: [m('attack.all', 1, 'morale'), { target: 'save.all', value: 1, formula: '1', type: 'morale', condition: 'vs Fear' }] },
+        "false life": { targetMode: 'self', tempHpFormula: '1d10 + min(10, @cl)', modifiers: [] },
+        "virtue": { targetMode: 'single', tempHpFormula: '1', modifiers: [] },
+        "vigor": { targetMode: 'self', tempHpFormula: '5 * @cl', modifiers: [] }
       };
       const tpl = BUILTIN_BUFFS[cleanName];
       if (tpl) {
@@ -2116,9 +2153,22 @@ const RuleEngine = {
       evaluatedLabels.push(`${steps > 0 ? '+' : ''}${steps} Creature Size`);
     }
     let evaluatedTempHp = 0;
-    if (tempHpFormula && !/d\d+/i.test(String(tempHpFormula))) {
-      evaluatedTempHp = Math.max(0, Number(this.evaluateFormula(tempHpFormula, evalCtx)) || 0);
-      if (evaluatedTempHp > 0) evaluatedLabels.push(`+${evaluatedTempHp} Temp HP`);
+    if (tempHpFormula) {
+      if (!/\d*d\d+/i.test(String(tempHpFormula))) {
+        evaluatedTempHp = Math.max(0, Number(this.evaluateFormula(tempHpFormula, evalCtx)) || 0);
+        if (evaluatedTempHp > 0 && !evaluatedLabels.some(l => l.includes('Temp HP'))) {
+          evaluatedLabels.push(`+${evaluatedTempHp} Temp HP`);
+        }
+      } else {
+        const diceMatch = String(tempHpFormula).match(/(\d*d\d+)/i);
+        const dicePart = diceMatch ? diceMatch[1] : '1d8';
+        const restExpr = String(tempHpFormula).replace(/(\d*d\d+)/i, '0');
+        const bonusVal = Math.max(0, Number(this.evaluateFormula(restExpr, evalCtx)) || 0);
+        const previewDiceLabel = bonusVal > 0 ? `+${dicePart}+${bonusVal} Temp HP` : `+${dicePart} Temp HP`;
+        if (!evaluatedLabels.some(l => l.includes('Temp HP'))) {
+          evaluatedLabels.push(previewDiceLabel);
+        }
+      }
     }
 
     // 5. Evaluate Duration string at Caster Level

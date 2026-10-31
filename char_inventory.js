@@ -1001,10 +1001,27 @@
       });
     }
 
+    function getBuffGrantedTempHp(buff) {
+      if (!buff) return 0;
+      if (Number(buff.grantedTempHp) > 0) return Number(buff.grantedTempHp);
+      if (Number(buff.ruleFlags?.tempHp) > 0) return Number(buff.ruleFlags.tempHp);
+      const mod = (buff.modifiers || []).find(m => m && String(m.target || '').toLowerCase() === 'hp.temp');
+      return mod ? (Number(mod.value) || 0) : 0;
+    }
+
     function toggleBuffActive(buffId) {
       const buff = (character.buffs || []).find(b => b.id === buffId);
       if (buff) {
+        const wasActive = Boolean(buff.active);
         buff.active = !buff.active;
+        const tempHp = getBuffGrantedTempHp(buff);
+        if (tempHp > 0 && character.hp) {
+          if (!wasActive && buff.active) {
+            character.hp.temp = (Number(character.hp.temp) || 0) + tempHp;
+          } else if (wasActive && !buff.active) {
+            character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
+          }
+        }
         saveStateToStorage(true);
         renderAll();
       }
@@ -1013,8 +1030,15 @@
     function adjustBuffRounds(buffId, delta) {
       const buff = (character.buffs || []).find(b => b.id === buffId);
       if (buff && buff.rounds !== null && buff.rounds !== undefined) {
+        const wasActive = Boolean(buff.active);
         buff.rounds = Math.max(0, buff.rounds + delta);
-        if (buff.rounds === 0) buff.active = false;
+        if (buff.rounds === 0) {
+          buff.active = false;
+          const tempHp = getBuffGrantedTempHp(buff);
+          if (wasActive && tempHp > 0 && character.hp) {
+            character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
+          }
+        }
         saveStateToStorage(true);
         renderAll();
       }
@@ -1029,6 +1053,12 @@
         ? `Delete "${buff.name}" (including ${childCount} sub-effects)?`
         : `Are you sure you want to delete this ${typeLabel}?`;
       if (confirm(confirmMsg)) {
+        if (buff && buff.active && character.hp) {
+          const tempHp = getBuffGrantedTempHp(buff);
+          if (tempHp > 0) {
+            character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
+          }
+        }
         character.buffs = (character.buffs || []).filter(b => b.id !== buffId);
         saveStateToStorage(true);
         renderAll();
@@ -1052,6 +1082,10 @@
             buff.rounds--;
             if (buff.rounds <= 0) {
               buff.active = false;
+              const tempHp = getBuffGrantedTempHp(buff);
+              if (tempHp > 0 && character.hp) {
+                character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
+              }
               expired.push(buff.name);
             }
           }
@@ -2172,7 +2206,7 @@
     }
     window.selectBuffModalEnergy = selectBuffModalEnergy;
 
-    function populateManualV2BuilderFromMechanics(modifiers, ruleFlags, evalCtx) {
+    function populateManualV2BuilderFromMechanics(modifiers, ruleFlags, evalCtx, entry = null, spec = null) {
       _buffModalV2Modifiers = Array.isArray(modifiers)
         ? modifiers.map(m => ({
             target: m.target || 'ability.str',
@@ -2195,7 +2229,8 @@
         if (el) el.value = val !== undefined && val !== null ? String(val) : '';
       };
 
-      setInputVal('buff-v2-flag-temphp', _buffModalV2RuleFlags.tempHpFormula || _buffModalV2RuleFlags.tempHp || '');
+      const tempHpExpr = spec?.tempHpFormula || entry?.tempHpFormula || _buffModalV2RuleFlags.tempHpFormula || _buffModalV2RuleFlags.tempHp || '';
+      setInputVal('buff-v2-flag-temphp', tempHpExpr);
       setInputVal('buff-v2-flag-concealment', _buffModalV2RuleFlags.concealment || '');
       setInputVal('buff-v2-flag-sr', _buffModalV2RuleFlags.srFormula || _buffModalV2RuleFlags.sr || '');
       setInputVal('buff-v2-flag-dr', _buffModalV2RuleFlags.dr || (_buffModalV2RuleFlags.drAdamantine ? `${_buffModalV2RuleFlags.drAdamantine}/Adamantine` : ''));
@@ -2299,7 +2334,7 @@
       });
 
       // Populate Manual V2 Builder rows & flags from this entry
-      populateManualV2BuilderFromMechanics(modifiers, ruleFlags, evalCtx);
+      populateManualV2BuilderFromMechanics(modifiers, ruleFlags, evalCtx, entry, spec);
 
       const rmInput = document.getElementById('buff-rule-master-input');
       if (rmInput) rmInput.value = entry.name;
@@ -2919,14 +2954,35 @@
       const negLvlRaw = parseInt(document.getElementById('buff-v2-flag-neglvl')?.value || '', 10);
       const actionRaw = (document.getElementById('buff-v2-flag-action')?.value || '').trim();
 
+      let grantedTempHp = 0;
       if (tempHpRaw) {
-        const evalTempHp = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateFormula)
-          ? (Number(RuleEngine.evaluateFormula(tempHpRaw, evalCtx)) || parseInt(tempHpRaw, 10) || 0)
-          : (parseInt(tempHpRaw, 10) || 0);
-        if (evalTempHp > 0 && !v2Modifiers.some(m => m.target === 'hp.temp')) {
-          v2Modifiers.push({ target: 'hp.temp', value: evalTempHp, formula: tempHpRaw, type: 'untyped', condition: null });
+        const rolled = (typeof RuleEngine !== 'undefined' && RuleEngine.rollOrEvaluateTempHp)
+          ? RuleEngine.rollOrEvaluateTempHp(tempHpRaw, evalCtx)
+          : { total: parseInt(tempHpRaw, 10) || 0 };
+        const evalTempHp = rolled.total || 0;
+        if (evalTempHp > 0) {
+          grantedTempHp = evalTempHp;
+          const existingMod = v2Modifiers.find(m => m.target === 'hp.temp');
+          if (existingMod) {
+            existingMod.value = evalTempHp;
+            existingMod.formula = tempHpRaw;
+          } else {
+            v2Modifiers.push({ target: 'hp.temp', value: evalTempHp, formula: tempHpRaw, type: 'untyped', condition: null });
+          }
+          v2RuleFlags.tempHp = evalTempHp;
         }
-        v2RuleFlags.tempHp = evalTempHp;
+      } else {
+        const modTemp = v2Modifiers.find(m => m.target === 'hp.temp');
+        if (modTemp) {
+          const rolled = (typeof RuleEngine !== 'undefined' && RuleEngine.rollOrEvaluateTempHp)
+            ? RuleEngine.rollOrEvaluateTempHp(modTemp.formula || modTemp.value, evalCtx)
+            : { total: Number(modTemp.value) || 0 };
+          if (rolled.total > 0) {
+            modTemp.value = rolled.total;
+            grantedTempHp = rolled.total;
+            v2RuleFlags.tempHp = rolled.total;
+          }
+        }
       }
       if (!isNaN(concRaw) && concRaw > 0) v2RuleFlags.concealment = concRaw;
       if (srRaw) {
@@ -3013,6 +3069,15 @@
 
       if (!Array.isArray(character.buffs)) character.buffs = [];
       const existingBuffIdx = character.buffs.findIndex(b => b && (b.id === newBuff.id || (b.name || '').toLowerCase().trim() === name.toLowerCase()));
+      const prevBuff = existingBuffIdx >= 0 ? character.buffs[existingBuffIdx] : null;
+      const prevGrantedTemp = (prevBuff && prevBuff.active) ? getBuffGrantedTempHp(prevBuff) : 0;
+
+      if (grantedTempHp > 0 && character.hp) {
+        newBuff.grantedTempHp = grantedTempHp;
+        const curTempWithoutPrev = Math.max(0, (Number(character.hp.temp) || 0) - prevGrantedTemp);
+        character.hp.temp = curTempWithoutPrev + grantedTempHp;
+      }
+
       if (existingBuffIdx >= 0) {
         character.buffs[existingBuffIdx] = newBuff;
       } else {

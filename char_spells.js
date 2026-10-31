@@ -1346,16 +1346,38 @@
         return sameName && sameWep && sameEnergy;
       });
 
+      const prevBuff = existingIdx !== -1 ? character.buffs[existingIdx] : null;
+      const prevGrantedTemp = (prevBuff && prevBuff.active && Number(prevBuff.grantedTempHp) > 0)
+        ? Number(prevBuff.grantedTempHp)
+        : 0;
+
+      // Apply flat or dice-rolled Temp HP if part of the buff (e.g. Aid, False Life, Divine Power, Greater Heroism, Heart of Earth)
+      let grantedTempHp = 0;
+      if (!options.skipTempHp && character.hp) {
+        if (buffSpec.evaluatedTempHp > 0) {
+          grantedTempHp = buffSpec.evaluatedTempHp;
+        } else if (buffSpec.tempHpFormula && typeof RuleEngine !== 'undefined' && RuleEngine.rollOrEvaluateTempHp) {
+          const rolled = RuleEngine.rollOrEvaluateTempHp(buffSpec.tempHpFormula, { cl: effCl, level: Number(character.level) || 1, bab: Number(character.bab) || 0 });
+          grantedTempHp = rolled.total || 0;
+          if (grantedTempHp > 0) {
+            buffObj.summary = String(buffObj.summary || '').replace(/\+\d*d\d+(?:\+\d+)?\s*Temp HP/i, `+${grantedTempHp} Temp HP (${rolled.rollDesc.split(' ➔ ')[0]})`);
+            if (!buffObj.summary.includes('Temp HP')) {
+              buffObj.summary = buffObj.summary ? `${buffObj.summary}, +${grantedTempHp} Temp HP` : `+${grantedTempHp} Temp HP`;
+            }
+          }
+        }
+        if (grantedTempHp > 0) {
+          buffObj.grantedTempHp = grantedTempHp;
+          buffObj.ruleFlags = { ...(buffObj.ruleFlags || {}), tempHp: grantedTempHp };
+          const curTempWithoutPrev = Math.max(0, (Number(character.hp.temp) || 0) - prevGrantedTemp);
+          character.hp.temp = curTempWithoutPrev + grantedTempHp;
+        }
+      }
+
       if (existingIdx !== -1) {
         character.buffs[existingIdx] = buffObj;
       } else {
         character.buffs.push(buffObj);
-      }
-
-      // Apply flat Temp HP if part of the buff (e.g. Divine Power, Greater Heroism, Heart of Earth)
-      if (buffSpec.evaluatedTempHp > 0 && !options.skipTempHp && character.hp) {
-        const prevTemp = Math.max(0, Number(character.hp.temp) || 0);
-        character.hp.temp = Math.max(prevTemp, buffSpec.evaluatedTempHp);
       }
 
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
@@ -1369,7 +1391,7 @@
           icon: '🛡️',
           title: `${buffObj.name} ➔ ${targetWeaponName || 'Self'}`,
           breakdown: `${buffObj.summary} • CL ${effCl} • Duration: ${buffSpec.durationText}`,
-          total: 'Buff Active'
+          total: grantedTempHp > 0 ? `+${grantedTempHp} Temp HP` : 'Buff Active'
         });
       }
       return buffObj;
