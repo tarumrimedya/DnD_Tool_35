@@ -1555,48 +1555,329 @@
     }
 
     let currentBuffModalMode = 'buff'; // 'buff' | 'debuff'
+    let currentBuffModalTab = 'spotlight'; // 'spotlight' | 'manual'
     let currentBuffModalChildren = [];
     let _selectedSpotlightV2Entry = null;
     let _selectedSpotlightEnergy = 'Fire';
     let _buffSpotlightResults = [];
     let _buffSpotlightActiveIdx = 0;
+    let _buffModalV2Modifiers = [];
+    let _buffModalV2RuleFlags = {};
+    let _buffManualEdited = false;
 
+    // Close Spotlight dropdown when clicking outside the Spotlight box
+    if (typeof document !== 'undefined' && !window._buffSpotlightOutsideClickBound) {
+      window._buffSpotlightOutsideClickBound = true;
+      document.addEventListener('mousedown', (ev) => {
+        const box = document.getElementById('buff-rule-master-box');
+        const dd = document.getElementById('buff-spotlight-dropdown');
+        if (dd && !dd.classList.contains('hidden') && box && !box.contains(ev.target)) {
+          dd.classList.add('hidden');
+        }
+      });
+    }
+
+    // 3 Compact Quick-Pick Examples per mode
     const BUFF_QUICK_PICKS = [
       { label: '⚡ Haste', query: 'Haste' },
-      { label: '🛡️ Mage Armor', query: 'Mage Armor' },
       { label: '✨ Shield of Faith', query: 'Shield of Faith' },
-      { label: '🌲 Barkskin', query: 'Barkskin' },
-      { label: '🐂 Bull\'s Strength', query: "Bull's Strength" },
-      { label: '⚔️ Divine Power', query: 'Divine Power' },
-      { label: '👑 Righteous Might', query: 'Righteous Might' },
-      { label: '🙏 Bless', query: 'Bless' },
-      { label: '✨ Prayer', query: 'Prayer' },
-      { label: '🦁 Heroism', query: 'Heroism' },
-      { label: '🛡️ Conviction', query: 'Conviction' },
-      { label: '🔥 Resist Energy', query: 'Resist Energy' },
-      { label: '💎 Stoneskin', query: 'Stoneskin' },
-      { label: '🕊️ Freedom of Movement', query: 'Freedom of Movement' },
-      { label: '🔨 Greater Mighty Wallop', query: 'Greater Mighty Wallop' },
-      { label: '💢 Barbarian Rage', query: 'Enraged' }
+      { label: '🐂 Bull\'s Strength', query: "Bull's Strength" }
     ];
 
     const DEBUFF_QUICK_PICKS = [
       { label: '🤢 Sickened', query: 'Sickened' },
       { label: '😱 Shaken', query: 'Shaken' },
-      { label: '😨 Frightened', query: 'Frightened' },
-      { label: '😫 Fatigued', query: 'Fatigued' },
-      { label: '🥵 Exhausted', query: 'Exhausted' },
-      { label: '🕸️ Entangled', query: 'Entangled' },
-      { label: '⏳ Slow', query: 'Slow' },
-      { label: '💀 Bane', query: 'Bane' },
-      { label: '🙈 Blinded', query: 'Blinded' },
-      { label: '💫 Dazzled', query: 'Dazzled' },
-      { label: '🔇 Deafened', query: 'Deafened' },
-      { label: '⚡ Stunned', query: 'Stunned' },
-      { label: '🤮 Nauseated', query: 'Nauseated' },
-      { label: '🧎 Prone', query: 'Prone' },
-      { label: '🩸 Energy Drain (-4 Lvl)', preset: 'energy_drain_4' }
+      { label: '😫 Fatigued', query: 'Fatigued' }
     ];
+
+    const BUFF_V2_TARGET_GROUPS = [
+      {
+        group: 'Abilities',
+        options: [
+          { value: 'ability.str', label: 'STR (Strength)' },
+          { value: 'ability.dex', label: 'DEX (Dexterity)' },
+          { value: 'ability.con', label: 'CON (Constitution)' },
+          { value: 'ability.int', label: 'INT (Intelligence)' },
+          { value: 'ability.wis', label: 'WIS (Wisdom)' },
+          { value: 'ability.cha', label: 'CHA (Charisma)' }
+        ]
+      },
+      {
+        group: 'Armor Class (AC)',
+        options: [
+          { value: 'ac.total', label: 'AC (Total)' },
+          { value: 'ac.armor', label: 'Armor AC' },
+          { value: 'ac.shield', label: 'Shield AC' },
+          { value: 'ac.natural', label: 'Natural Armor AC' },
+          { value: 'ac.deflection', label: 'Deflection AC' },
+          { value: 'ac.dodge', label: 'Dodge AC' },
+          { value: 'ac.touch', label: 'Touch AC' },
+          { value: 'ac.flatFooted', label: 'Flat-Footed AC' }
+        ]
+      },
+      {
+        group: 'Attack & Damage',
+        options: [
+          { value: 'attack.all', label: 'All Attacks' },
+          { value: 'attack.melee', label: 'Melee Attack' },
+          { value: 'attack.ranged', label: 'Ranged Attack' },
+          { value: 'damage.weapon', label: 'All Weapon Damage' },
+          { value: 'damage.melee', label: 'Melee Damage' },
+          { value: 'damage.ranged', label: 'Ranged Damage' }
+        ]
+      },
+      {
+        group: 'Saving Throws',
+        options: [
+          { value: 'save.all', label: 'All Saving Throws' },
+          { value: 'save.fort', label: 'Fortitude Save' },
+          { value: 'save.ref', label: 'Reflex Save' },
+          { value: 'save.will', label: 'Will Save' }
+        ]
+      },
+      {
+        group: 'Movement, Init & Caster',
+        options: [
+          { value: 'initiative', label: 'Initiative' },
+          { value: 'speed.land', label: 'Land Speed (ft)' },
+          { value: 'speed.fly', label: 'Fly Speed (ft)' },
+          { value: 'casterLevel', label: 'Caster Level (CL)' },
+          { value: 'hp.temp', label: 'Temporary HP' }
+        ]
+      },
+      {
+        group: 'Skills',
+        options: [
+          { value: 'skill.all', label: 'All Skills' },
+          { value: 'skill.concentration', label: 'Skill: Concentration' },
+          { value: 'skill.spot', label: 'Skill: Spot' },
+          { value: 'skill.listen', label: 'Skill: Listen' },
+          { value: 'skill.hide', label: 'Skill: Hide' },
+          { value: 'skill.move_silently', label: 'Skill: Move Silently' },
+          { value: 'skill.tumble', label: 'Skill: Tumble' },
+          { value: 'skill.search', label: 'Skill: Search' },
+          { value: 'skill.spellcraft', label: 'Skill: Spellcraft' },
+          { value: 'skill.umd', label: 'Skill: Use Magic Device' },
+          { value: 'skill.intimidate', label: 'Skill: Intimidate' },
+          { value: 'skill.diplomacy', label: 'Skill: Diplomacy' },
+          { value: 'skill.bluff', label: 'Skill: Bluff' },
+          { value: 'skill.balance', label: 'Skill: Balance' },
+          { value: 'skill.jump', label: 'Skill: Jump' },
+          { value: 'skill.climb', label: 'Skill: Climb' },
+          { value: 'skill.swim', label: 'Skill: Swim' }
+        ]
+      }
+    ];
+
+    const BUFF_V2_BONUS_TYPES = [
+      { value: 'enhancement', label: 'Enhancement' },
+      { value: 'morale', label: 'Morale' },
+      { value: 'luck', label: 'Luck' },
+      { value: 'sacred', label: 'Sacred' },
+      { value: 'profane', label: 'Profane' },
+      { value: 'competence', label: 'Competence' },
+      { value: 'insight', label: 'Insight' },
+      { value: 'resistance', label: 'Resistance' },
+      { value: 'armor', label: 'Armor' },
+      { value: 'shield', label: 'Shield' },
+      { value: 'deflection', label: 'Deflection' },
+      { value: 'natural_enhancement', label: 'Natural Armor' },
+      { value: 'dodge', label: 'Dodge (Stacks)' },
+      { value: 'size', label: 'Size' },
+      { value: 'racial', label: 'Racial' },
+      { value: 'circumstance', label: 'Circumstance' },
+      { value: 'alchemical', label: 'Alchemical' },
+      { value: 'penalty', label: 'Penalty' },
+      { value: 'untyped', label: 'Untyped (Stacks)' }
+    ];
+
+    const BUFF_V2_BOOLEAN_FLAGS = [
+      { key: 'extraAttackFullAttack', label: '⚡ Extra Attack (Haste)', mode: 'buff' },
+      { key: 'babEqualsLevel', label: '⚔️ BAB = Character Level', mode: 'buff' },
+      { key: 'keen', label: '🗡️ Keen (2x Crit Range)', mode: 'buff' },
+      { key: 'freedomOfMovement', label: '🕊️ Freedom of Movement', mode: 'buff' },
+      { key: 'immuneDeathEffects', label: '💀 Immune: Death / Neg. Energy', mode: 'buff' },
+      { key: 'immuneMindAffecting', label: '🧠 Immune: Mind-Affecting', mode: 'buff' },
+      { key: 'immuneFear', label: '😱 Immune: Fear', mode: 'buff' },
+      { key: 'immuneMagicMissile', label: '🛡️ Immune: Magic Missile', mode: 'buff' },
+      { key: 'loseDexToAC', label: '⚠️ Lose DEX to AC', mode: 'debuff' },
+      { key: 'effectiveDexZero', label: '🥶 Effective DEX 0 (Helpless)', mode: 'debuff' },
+      { key: 'halfSpeed', label: '🥾 Half Speed', mode: 'debuff' }
+    ];
+
+    function switchBuffModalTab(tabName) {
+      currentBuffModalTab = tabName === 'manual' ? 'manual' : 'spotlight';
+      const isManual = currentBuffModalTab === 'manual';
+      const paneSpot = document.getElementById('buff-modal-pane-spotlight');
+      const paneManual = document.getElementById('buff-modal-pane-manual');
+      const btnSpot = document.getElementById('buff-tab-btn-spotlight');
+      const btnManual = document.getElementById('buff-tab-btn-manual');
+
+      if (paneSpot) paneSpot.classList.toggle('hidden', isManual);
+      if (paneManual) paneManual.classList.toggle('hidden', !isManual);
+
+      if (btnSpot) {
+        btnSpot.className = !isManual
+          ? 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-purple-950/80 border-purple-500/60 text-purple-200 shadow-sm cursor-pointer'
+          : 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 cursor-pointer';
+      }
+      if (btnManual) {
+        btnManual.className = isManual
+          ? 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-indigo-950/80 border-indigo-500/60 text-indigo-200 shadow-sm cursor-pointer'
+          : 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 cursor-pointer';
+      }
+
+      if (isManual) {
+        hideBuffSpotlightDropdown();
+        renderBuffModalV2ModifierRows();
+        renderBuffModalV2RuleFlags();
+      }
+    }
+    window.switchBuffModalTab = switchBuffModalTab;
+
+    function syncBuffSpotlightDurationInputs(origin, val) {
+      const spotRds = document.getElementById('buff-spot-rounds');
+      const spotDur = document.getElementById('buff-spot-duration');
+      const manRds = document.getElementById('buff-input-rounds');
+      const manDur = document.getElementById('buff-input-duration');
+      if (origin === 'rounds' && manRds) manRds.value = val;
+      if (origin === 'duration' && manDur) manDur.value = val;
+      if (origin === 'manual_rounds' && spotRds) spotRds.value = val;
+      if (origin === 'manual_duration' && spotDur) spotDur.value = val;
+    }
+    window.syncBuffSpotlightDurationInputs = syncBuffSpotlightDurationInputs;
+
+    function renderBuffModalV2ModifierRows() {
+      const listEl = document.getElementById('buff-v2-modifiers-list');
+      if (!listEl) return;
+
+      if (!Array.isArray(_buffModalV2Modifiers) || _buffModalV2Modifiers.length === 0) {
+        listEl.innerHTML = `
+          <div class="text-[11px] text-slate-500 italic text-center py-2.5 bg-slate-900/50 rounded-lg border border-dashed border-slate-800">
+            No V2 stat modifiers yet. Click <b>+ Add Modifier</b> or a preset chip above to add one.
+          </div>
+        `;
+        return;
+      }
+
+      const buildTargetOptions = (selectedTarget) => {
+        const normSel = String(selectedTarget || 'ability.str').trim();
+        return BUFF_V2_TARGET_GROUPS.map(grp => `
+          <optgroup label="${grp.group}">
+            ${grp.options.map(opt => `<option value="${opt.value}" ${opt.value === normSel ? 'selected' : ''}>${opt.label}</option>`).join('')}
+          </optgroup>
+        `).join('');
+      };
+
+      const buildTypeOptions = (selectedType) => {
+        const normType = String(selectedType || (currentBuffModalMode === 'debuff' ? 'penalty' : 'enhancement')).toLowerCase().trim();
+        return BUFF_V2_BONUS_TYPES.map(t => `<option value="${t.value}" ${t.value === normType ? 'selected' : ''}>${t.label}</option>`).join('');
+      };
+
+      listEl.innerHTML = _buffModalV2Modifiers.map((mod, idx) => {
+        const formulaStr = mod.formula !== undefined && mod.formula !== null && mod.formula !== ''
+          ? String(mod.formula)
+          : String(mod.value !== undefined && mod.value !== null ? mod.value : '2');
+        const condStr = String(mod.condition || '').replace(/"/g, '&quot;');
+        return `
+          <div class="grid grid-cols-12 gap-1.5 items-center bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
+            <div class="col-span-4">
+              <select onchange="onBuffModalV2ModifierChange(${idx}, 'target', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-white font-medium focus:border-indigo-500 focus:outline-none">
+                ${buildTargetOptions(mod.target)}
+              </select>
+            </div>
+            <div class="col-span-2">
+              <input type="text" value="${formulaStr.replace(/"/g, '&quot;')}" placeholder="+2 or @cl" oninput="onBuffModalV2ModifierChange(${idx}, 'formula', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono font-bold text-amber-300 text-center focus:border-amber-400 focus:outline-none" title="Number (e.g. 4, -2) or V2 formula (e.g. 2 + min(3, floor(@cl / 6)))">
+            </div>
+            <div class="col-span-3">
+              <select onchange="onBuffModalV2ModifierChange(${idx}, 'type', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-indigo-200 focus:border-indigo-500 focus:outline-none">
+                ${buildTypeOptions(mod.type)}
+              </select>
+            </div>
+            <div class="col-span-2">
+              <input type="text" value="${condStr}" placeholder="Condition" oninput="onBuffModalV2ModifierChange(${idx}, 'condition', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[10px] text-slate-300 focus:border-indigo-500 focus:outline-none" title="Optional condition (e.g., vs Evil, vs Fear)">
+            </div>
+            <div class="col-span-1 text-right">
+              <button type="button" onclick="removeBuffModalV2ModifierRow(${idx})" class="w-6 h-6 rounded bg-rose-950/70 hover:bg-rose-800 text-rose-300 text-xs font-bold transition cursor-pointer" title="Remove Modifier">&times;</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function addBuffModalV2ModifierRow(preset = null) {
+      _buffManualEdited = true;
+      const isDebuff = currentBuffModalMode === 'debuff';
+      const defaultRow = {
+        target: preset?.target || (isDebuff ? 'attack.all' : 'ability.str'),
+        value: preset?.value !== undefined ? Number(preset.value) : (isDebuff ? -2 : 2),
+        formula: preset?.formula !== undefined ? String(preset.formula) : (isDebuff ? '-2' : '2'),
+        type: preset?.type || (isDebuff ? 'penalty' : 'enhancement'),
+        condition: preset?.condition || null
+      };
+      _buffModalV2Modifiers.push(defaultRow);
+      renderBuffModalV2ModifierRows();
+    }
+    window.addBuffModalV2ModifierRow = addBuffModalV2ModifierRow;
+
+    function removeBuffModalV2ModifierRow(idx) {
+      _buffManualEdited = true;
+      _buffModalV2Modifiers.splice(idx, 1);
+      renderBuffModalV2ModifierRows();
+    }
+    window.removeBuffModalV2ModifierRow = removeBuffModalV2ModifierRow;
+
+    function onBuffModalV2ModifierChange(idx, field, val) {
+      const row = _buffModalV2Modifiers[idx];
+      if (!row) return;
+      _buffManualEdited = true;
+      if (field === 'formula') {
+        row.formula = String(val).trim();
+        const num = Number(row.formula);
+        row.value = !Number.isNaN(num) ? num : 0;
+        if (num < 0 && (!row.type || row.type === 'enhancement')) {
+          row.type = 'penalty';
+          renderBuffModalV2ModifierRows();
+        }
+      } else if (field === 'condition') {
+        row.condition = String(val).trim() || null;
+      } else {
+        row[field] = val;
+      }
+    }
+    window.onBuffModalV2ModifierChange = onBuffModalV2ModifierChange;
+
+    function renderBuffModalV2RuleFlags() {
+      const grid = document.getElementById('buff-v2-ruleflags-grid');
+      if (!grid) return;
+
+      grid.innerHTML = BUFF_V2_BOOLEAN_FLAGS.map(f => {
+        const active = Boolean(_buffModalV2RuleFlags && _buffModalV2RuleFlags[f.key]);
+        const activeCls = f.mode === 'debuff'
+          ? 'bg-rose-600 text-white border-rose-400 shadow'
+          : 'bg-indigo-600 text-white border-indigo-400 shadow';
+        const idleCls = 'bg-slate-900 text-slate-400 border-slate-700 hover:text-slate-200 hover:border-slate-600';
+        return `
+          <button type="button" onclick="toggleBuffModalRuleFlag('${f.key}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? activeCls : idleCls}">
+            ${f.label}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleBuffModalRuleFlag(flagKey) {
+      _buffManualEdited = true;
+      if (!_buffModalV2RuleFlags || typeof _buffModalV2RuleFlags !== 'object') {
+        _buffModalV2RuleFlags = {};
+      }
+      if (_buffModalV2RuleFlags[flagKey]) {
+        delete _buffModalV2RuleFlags[flagKey];
+      } else {
+        _buffModalV2RuleFlags[flagKey] = true;
+      }
+      renderBuffModalV2RuleFlags();
+    }
+    window.toggleBuffModalRuleFlag = toggleBuffModalRuleFlag;
 
     function renderBuffQuickPickChips() {
       const container = document.getElementById('buff-quick-picks-container');
@@ -1604,8 +1885,8 @@
       const isDebuff = currentBuffModalMode === 'debuff';
       const list = isDebuff ? DEBUFF_QUICK_PICKS : BUFF_QUICK_PICKS;
       const chipCls = isDebuff
-        ? 'px-2 py-1 rounded-lg text-[10px] font-bold bg-rose-950/70 hover:bg-rose-800/80 text-rose-200 border border-rose-700/60 transition cursor-pointer'
-        : 'px-2 py-1 rounded-lg text-[10px] font-bold bg-indigo-950/70 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/60 transition cursor-pointer';
+        ? 'px-2 py-0.5 rounded-lg text-[10px] font-bold bg-rose-950/70 hover:bg-rose-800/80 text-rose-200 border border-rose-700/60 transition cursor-pointer'
+        : 'px-2 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-950/70 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/60 transition cursor-pointer';
 
       container.innerHTML = list.map((item, idx) => `
         <button type="button" onclick="onBuffQuickPickClick(${idx})" class="${chipCls}">
@@ -1620,15 +1901,7 @@
       const picked = list[idx];
       if (!picked) return;
 
-      if (picked.preset) {
-        const pSelect = document.getElementById('buff-preset-select');
-        if (pSelect) {
-          pSelect.value = picked.preset;
-          onBuffPresetChange();
-        }
-        return;
-      }
-
+      hideBuffSpotlightDropdown();
       const candidates = await searchBuffSpotlightCandidates(picked.query, isDebuff);
       const exact = candidates.find(c => (c.name || '').toLowerCase() === picked.query.toLowerCase()) || candidates[0];
       if (exact) {
@@ -1638,13 +1911,21 @@
     window.onBuffQuickPickClick = onBuffQuickPickClick;
 
     function getBuffModalCasterLevel() {
-      const clEl = document.getElementById('buff-input-cl');
-      const val = clEl ? parseInt(clEl.value, 10) : 0;
+      const activeClEl = currentBuffModalTab === 'manual'
+        ? (document.getElementById('buff-manual-cl') || document.getElementById('buff-input-cl'))
+        : (document.getElementById('buff-input-cl') || document.getElementById('buff-manual-cl'));
+      const val = activeClEl ? parseInt(activeClEl.value, 10) : 0;
       if (val && val > 0) return val;
       return Math.max(1, Number(character?.level) || 6);
     }
 
-    function onBuffCasterLevelChange() {
+    function onBuffCasterLevelChange(newVal) {
+      const cl1 = document.getElementById('buff-input-cl');
+      const cl2 = document.getElementById('buff-manual-cl');
+      if (newVal !== undefined) {
+        if (cl1 && String(cl1.value) !== String(newVal)) cl1.value = newVal;
+        if (cl2 && String(cl2.value) !== String(newVal)) cl2.value = newVal;
+      }
       if (_selectedSpotlightV2Entry) {
         selectBuffSpotlightCandidate(_selectedSpotlightV2Entry, { keepEnergy: true });
       }
@@ -1697,12 +1978,14 @@
         const tLower = String(item.type || '').toLowerCase();
         const isCondOrDebuff = tLower === 'condition' || tLower === 'debuff' || Boolean(item.isDebuff);
         if (isDebuffMode) {
-          if (isCondOrDebuff || tLower === 'spell' || tLower === 'buff') {
-            addCandidate(item, item.source || item.type || 'Custom DB', isCondOrDebuff ? 60 : 15);
+          if (isCondOrDebuff) {
+            addCandidate(item, item.source || item.type || 'Custom DB', 75);
+          } else if (q && (tLower === 'spell' || tLower === 'buff')) {
+            addCandidate(item, item.source || item.type || 'Custom DB', 15);
           }
         } else {
           if (!isCondOrDebuff) {
-            addCandidate(item, item.source || item.type || 'Custom DB', 50);
+            addCandidate(item, item.source || item.type || 'Custom DB', 70);
           }
         }
       });
@@ -1714,14 +1997,16 @@
           if (!rec || !rec.name) return;
           const rType = String(rec.type || '').toLowerCase();
           if (rType === 'condition') {
-            addCandidate(rec, 'SRD Condition', isDebuffMode ? 90 : 10);
+            if (isDebuffMode || q) {
+              addCandidate(rec, 'SRD Condition', isDebuffMode ? 95 : 15);
+            }
           } else if (rType === 'buff') {
             const hasNegMod = Array.isArray(rec.modifiers) && rec.modifiers.some(m => Number(m.value) < 0 || String(m.formula || '').trim().startsWith('-'));
             if (isDebuffMode && hasNegMod) {
-              addCandidate(rec, 'SRD Debuff', 85);
+              addCandidate(rec, 'SRD Debuff', 90);
             } else if (!isDebuffMode && !hasNegMod) {
-              addCandidate(rec, 'SRD Combat Buff', 80);
-            } else {
+              addCandidate(rec, 'SRD Combat Buff', 90);
+            } else if (q) {
               addCandidate(rec, hasNegMod ? 'SRD Debuff' : 'SRD Buff', 25);
             }
           } else if (rType === 'spell') {
@@ -1729,17 +2014,20 @@
               ? RuleEngine.resolveSpellBuffSpec(rec, character, cl)
               : null;
             if (spec && spec.isBuffSpell) {
-              addCandidate(rec, `SRD Spell (${rec.school || 'Buff'})`, isDebuffMode ? 20 : 75);
+              if (!isDebuffMode || q) {
+                addCandidate(rec, `SRD Spell (${rec.school || 'Buff'})`, isDebuffMode ? 20 : 85);
+              }
             } else if (q && q.length >= 2) {
               // Also allow searching debuff spells like Slow, Bane, Ray of Enfeeblement, Bestow Curse
-              addCandidate(rec, `SRD Spell (${rec.school || 'Spell'})`, isDebuffMode ? 45 : 30);
+              addCandidate(rec, `SRD Spell (${rec.school || 'Spell'})`, isDebuffMode ? 50 : 30);
             }
           }
         });
       }
 
       results.sort((a, b) => b.score - a.score || a.entry.name.localeCompare(b.entry.name));
-      return results.slice(0, 14).map(r => Object.assign({}, r.entry, { _spotlightKind: r.kindLabel }));
+      const maxLimit = q ? 30 : 80;
+      return results.slice(0, maxLimit).map(r => Object.assign({}, r.entry, { _spotlightKind: r.kindLabel }));
     }
 
     function hideBuffSpotlightDropdown() {
@@ -1747,19 +2035,30 @@
       if (dd) dd.classList.add('hidden');
     }
 
-    async function onBuffSpotlightInput(val) {
+    function toggleBuffSpotlightListDropdown(ev) {
+      if (ev) ev.stopPropagation();
+      const dd = document.getElementById('buff-spotlight-dropdown');
+      const inputEl = document.getElementById('buff-rule-master-input');
+      if (!dd) return;
+      if (!dd.classList.contains('hidden')) {
+        hideBuffSpotlightDropdown();
+      } else {
+        onBuffSpotlightInput(inputEl ? inputEl.value : '', true);
+      }
+    }
+    window.toggleBuffSpotlightListDropdown = toggleBuffSpotlightListDropdown;
+
+    async function onBuffSpotlightInput(val, forceOpen = false) {
       const q = String(val || '').trim();
       const dd = document.getElementById('buff-spotlight-dropdown');
       if (!dd) return;
-      if (q.length < 1) {
-        hideBuffSpotlightDropdown();
-        return;
-      }
 
       const isDebuff = currentBuffModalMode === 'debuff';
       _buffSpotlightResults = await searchBuffSpotlightCandidates(q, isDebuff);
       _buffSpotlightActiveIdx = 0;
-      renderBuffSpotlightDropdown();
+      if (forceOpen || q.length >= 0) {
+        renderBuffSpotlightDropdown();
+      }
     }
     window.onBuffSpotlightInput = onBuffSpotlightInput;
 
@@ -1866,6 +2165,41 @@
     }
     window.selectBuffModalEnergy = selectBuffModalEnergy;
 
+    function populateManualV2BuilderFromMechanics(modifiers, ruleFlags, evalCtx) {
+      _buffModalV2Modifiers = Array.isArray(modifiers)
+        ? modifiers.map(m => ({
+            target: m.target || 'ability.str',
+            value: (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateFormula)
+              ? (Number(RuleEngine.evaluateFormula(m.formula !== undefined && m.formula !== null && m.formula !== '' ? m.formula : m.value, evalCtx)) || Number(m.value) || 0)
+              : (Number(m.value) || 0),
+            formula: m.formula !== undefined && m.formula !== null && m.formula !== '' ? String(m.formula) : String(m.value || 0),
+            type: String(m.type || 'enhancement').toLowerCase(),
+            condition: m.condition || null
+          }))
+        : [];
+
+      _buffModalV2RuleFlags = (ruleFlags && typeof ruleFlags === 'object')
+        ? JSON.parse(JSON.stringify(ruleFlags))
+        : {};
+      _buffManualEdited = false;
+
+      const setInputVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val !== undefined && val !== null ? String(val) : '';
+      };
+
+      setInputVal('buff-v2-flag-temphp', _buffModalV2RuleFlags.tempHpFormula || _buffModalV2RuleFlags.tempHp || '');
+      setInputVal('buff-v2-flag-concealment', _buffModalV2RuleFlags.concealment || '');
+      setInputVal('buff-v2-flag-sr', _buffModalV2RuleFlags.srFormula || _buffModalV2RuleFlags.sr || '');
+      setInputVal('buff-v2-flag-dr', _buffModalV2RuleFlags.dr || (_buffModalV2RuleFlags.drAdamantine ? `${_buffModalV2RuleFlags.drAdamantine}/Adamantine` : ''));
+      setInputVal('buff-v2-flag-eres', _buffModalV2RuleFlags.energyResistance || '');
+      setInputVal('buff-v2-flag-neglvl', _buffModalV2RuleFlags.negativeLevels || '');
+      setInputVal('buff-v2-flag-action', _buffModalV2RuleFlags.actionRestriction || '');
+
+      renderBuffModalV2ModifierRows();
+      renderBuffModalV2RuleFlags();
+    }
+
     function selectBuffSpotlightCandidate(entry, opts = {}) {
       if (!entry) return;
       _selectedSpotlightV2Entry = JSON.parse(JSON.stringify(entry));
@@ -1892,7 +2226,7 @@
         : (Array.isArray(entry.modifiers) ? entry.modifiers : []);
       const ruleFlags = { ...(entry.ruleFlags || {}), ...(spec?.ruleFlags || {}) };
 
-      // Extract flat form previews for AC, Atk, Dmg, STR..CHA
+      // Extract flat form previews for backward-compatible properties
       let acVal = 0, attVal = 0, dmgVal = 0, strVal = 0, dexVal = 0, conVal = 0, intVal = 0, wisVal = 0, chaVal = 0;
       let primaryBonusType = entry.bonusType || (currentBuffModalMode === 'debuff' ? 'Penalty' : 'Enhancement');
 
@@ -1957,31 +2291,43 @@
         children: entry.children || []
       });
 
+      // Populate Manual V2 Builder rows & flags from this entry
+      populateManualV2BuilderFromMechanics(modifiers, ruleFlags, evalCtx);
+
       const rmInput = document.getElementById('buff-rule-master-input');
       if (rmInput) rmInput.value = entry.name;
 
       // Render V2 Preview Banner (Modifiers + RuleFlags + Energy/Weapon Pickers)
-      renderBuffV2PreviewBanner(entry, spec, modifiers, ruleFlags, evalCtx);
+      renderBuffV2PreviewBanner(entry, spec, modifiers, ruleFlags, evalCtx, cleanDesc, rounds, durText);
     }
 
-    function renderBuffV2PreviewBanner(entry, spec, modifiers, ruleFlags, evalCtx) {
+    function renderBuffV2PreviewBanner(entry, spec, modifiers, ruleFlags, evalCtx, cleanDesc = '', rounds = null, durText = '') {
       const banner = document.getElementById('buff-v2-preview-banner');
+      const emptyBox = document.getElementById('buff-v2-preview-empty');
       const titleEl = document.getElementById('buff-v2-preview-title');
+      const descEl = document.getElementById('buff-v2-preview-desc');
       const sourceEl = document.getElementById('buff-v2-preview-source');
       const pillsEl = document.getElementById('buff-v2-preview-pills');
       const energyBox = document.getElementById('buff-v2-energy-picker');
       const energyBtns = document.getElementById('buff-v2-energy-buttons');
       const weaponBox = document.getElementById('buff-v2-weapon-picker');
       const weaponSelect = document.getElementById('buff-v2-weapon-select');
+      const spotRds = document.getElementById('buff-spot-rounds');
+      const spotDur = document.getElementById('buff-spot-duration');
       if (!banner || !pillsEl) return;
 
       if (!entry) {
         banner.classList.add('hidden');
+        if (emptyBox) emptyBox.classList.remove('hidden');
         return;
       }
 
-      if (titleEl) titleEl.innerHTML = `<span>✨</span><span>${entry.name} — Canonical V2 Mechanics</span>`;
+      if (emptyBox) emptyBox.classList.add('hidden');
+      if (titleEl) titleEl.innerHTML = `<span>✨</span><span>${entry.name}</span>`;
+      if (descEl) descEl.textContent = cleanDesc || '';
       if (sourceEl) sourceEl.textContent = entry._spotlightKind || entry.source || 'SRD 3.5e';
+      if (spotRds) spotRds.value = rounds !== null && rounds !== undefined ? rounds : '';
+      if (spotDur) spotDur.value = durText || '';
 
       const pills = [];
       modifiers.forEach(m => {
@@ -2009,7 +2355,7 @@
 
       pillsEl.innerHTML = pills.length > 0
         ? pills.join('')
-        : `<span class="text-[11px] text-slate-400 italic">Custom / narrative effect (adjust numeric fields below if needed).</span>`;
+        : `<span class="text-[11px] text-slate-400 italic">Narrative / tactical effect (click "Edit V2 Modifiers" to add custom stat modifiers).</span>`;
 
       // Energy Choice Picker
       if (energyBox && energyBtns) {
@@ -2072,10 +2418,17 @@
       if (!opts.keepSelection) {
         currentBuffModalChildren = [];
         _selectedSpotlightV2Entry = null;
+        _buffModalV2Modifiers = [];
+        _buffModalV2RuleFlags = {};
+        _buffManualEdited = false;
         const childrenPreview = document.getElementById('buff-children-preview-container');
         if (childrenPreview) childrenPreview.classList.add('hidden');
         const v2Banner = document.getElementById('buff-v2-preview-banner');
         if (v2Banner) v2Banner.classList.add('hidden');
+        const emptyBox = document.getElementById('buff-v2-preview-empty');
+        if (emptyBox) emptyBox.classList.remove('hidden');
+        renderBuffModalV2ModifierRows();
+        renderBuffModalV2RuleFlags();
       }
 
       if (isDebuff) {
@@ -2099,9 +2452,9 @@
         }
         if (modalSubtitle) modalSubtitle.textContent = 'Search 35+ SRD conditions & debuffs via Spotlight or Rule Master (AI)';
         if (rmTitle) rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Condition Search &amp; Rule Master (AI)</span>';
-        if (rmInput) rmInput.placeholder = 'Search condition/debuff (e.g., Sickened, Shaken, Blinded, Slow, Curse)...';
-        if (presetLabel) presetLabel.textContent = '🩸 Quick-Pick D&D 3.5e RAW Conditions & Debuffs';
-        if (nameLabel) nameLabel.textContent = 'Debuff Name *';
+        if (rmInput) rmInput.placeholder = 'Click to browse all conditions, or type to filter (e.g., Sickened, Slow)...';
+        if (presetLabel) presetLabel.textContent = 'Examples:';
+        if (nameLabel) nameLabel.textContent = 'Debuff / Condition Name *';
         if (saveBtn) {
           saveBtn.className = 'bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow';
           saveBtn.innerHTML = '<span>🩸 Add & Activate Debuff</span>';
@@ -2116,8 +2469,6 @@
             <option value="sickened">🤢 Sickened (-2 Attack, Damage, Saves, Skills/Ability Checks)</option>
             <option value="shaken">😱 Shaken (-2 Attack, Saves, Skills/Ability Checks)</option>
             <option value="fatigued">😫 Fatigued (-2 STR, -2 DEX, Cannot Run/Charge)</option>
-            <option value="entangled">🕸️ Entangled (-2 Attack, -4 DEX, Half Speed)</option>
-            <option value="slow">⏳ Slow (-1 AC, -1 Attack, -1 Ref, Half Speed, Single Action)</option>
           `;
         }
       } else {
@@ -2141,9 +2492,9 @@
         }
         if (modalSubtitle) modalSubtitle.textContent = 'Search 200+ V2 spells & combat buffs via Spotlight or Rule Master (AI)';
         if (rmTitle) rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Buff Search &amp; Rule Master (AI)</span>';
-        if (rmInput) rmInput.placeholder = 'Search 200+ buffs (e.g., Haste, Righteous Might, Stoneskin, Barkskin)...';
-        if (presetLabel) presetLabel.textContent = '⚡ Quick-Pick D&D 3.5e RAW Buffs';
-        if (nameLabel) nameLabel.textContent = 'Buff Name *';
+        if (rmInput) rmInput.placeholder = 'Click to browse all buffs, or type to filter (e.g., Haste, Barkskin)...';
+        if (presetLabel) presetLabel.textContent = 'Examples:';
+        if (nameLabel) nameLabel.textContent = 'Buff / Effect Name *';
         if (saveBtn) {
           saveBtn.className = 'bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow';
           saveBtn.innerHTML = '<span>✨ Add & Activate Buff</span>';
@@ -2157,7 +2508,6 @@
             <option value="mage_armor">🛡️ Mage Armor (+4 Armor AC, 50 Rds / 5 Hrs)</option>
             <option value="bulls_str">🐂 Bull's Strength (+4 Enhancement STR, 10 Rounds)</option>
             <option value="haste">⚡ Haste (+1 Atk, +1 Dodge AC, +1 Ref, +30 ft Speed, 6 Rounds)</option>
-            <option value="prayer">✨ Prayer (+1 Luck Atk/Dmg/Saves/Skills, 6 Rounds)</option>
           `;
         }
       }
@@ -2206,25 +2556,40 @@
       if (!modal) return;
       _selectedSpotlightV2Entry = null;
       _selectedSpotlightEnergy = 'Fire';
+      _buffModalV2Modifiers = [];
+      _buffModalV2RuleFlags = {};
+      _buffManualEdited = false;
       hideBuffSpotlightDropdown();
 
+      const defCl = String(Math.max(1, Number(character?.level) || 6));
       const clEl = document.getElementById('buff-input-cl');
-      if (clEl) clEl.value = String(Math.max(1, Number(character?.level) || 6));
+      const clManEl = document.getElementById('buff-manual-cl');
+      if (clEl) clEl.value = defCl;
+      if (clManEl) clManEl.value = defCl;
 
       switchBuffModalMode('buff');
-      document.getElementById('buff-input-name').value = '';
-      document.getElementById('buff-input-rounds').value = '10';
-      document.getElementById('buff-input-duration').value = '1 min/level';
-      document.getElementById('buff-input-ac').value = '';
-      document.getElementById('buff-input-att').value = '';
-      document.getElementById('buff-input-dmg').value = '';
-      document.getElementById('buff-input-str').value = '';
-      document.getElementById('buff-input-dex').value = '';
-      document.getElementById('buff-input-con').value = '';
-      document.getElementById('buff-input-int').value = '';
-      document.getElementById('buff-input-wis').value = '';
-      document.getElementById('buff-input-cha').value = '';
-      document.getElementById('buff-input-notes').value = '';
+      switchBuffModalTab('spotlight');
+
+      const resetIds = [
+        'buff-input-name', 'buff-input-ac', 'buff-input-att', 'buff-input-dmg',
+        'buff-input-str', 'buff-input-dex', 'buff-input-con', 'buff-input-int',
+        'buff-input-wis', 'buff-input-cha', 'buff-input-notes',
+        'buff-v2-flag-temphp', 'buff-v2-flag-concealment', 'buff-v2-flag-sr',
+        'buff-v2-flag-dr', 'buff-v2-flag-eres', 'buff-v2-flag-neglvl', 'buff-v2-flag-action'
+      ];
+      resetIds.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      const rdsEl = document.getElementById('buff-input-rounds');
+      if (rdsEl) rdsEl.value = '10';
+      const durEl = document.getElementById('buff-input-duration');
+      if (durEl) durEl.value = '1 min/level';
+      const spotRds = document.getElementById('buff-spot-rounds');
+      if (spotRds) spotRds.value = '';
+      const spotDur = document.getElementById('buff-spot-duration');
+      if (spotDur) spotDur.value = '';
+
       const statusEl = document.getElementById('buff-rule-master-status');
       if (statusEl) {
         statusEl.className = 'hidden';
@@ -2233,10 +2598,6 @@
       const rmInput = document.getElementById('buff-rule-master-input');
       if (rmInput) rmInput.value = '';
       modal.classList.remove('hidden');
-
-      setTimeout(() => {
-        if (rmInput) rmInput.focus();
-      }, 60);
     }
 
     function closeAddBuffModal() {
@@ -2401,7 +2762,7 @@
 
         if (statusEl) {
           statusEl.className = 'text-xs text-rose-300 bg-rose-950/60 border border-rose-800/60 p-2 rounded-lg block';
-          statusEl.textContent = `"${q}" not found in compendium. Please define it manually below.`;
+          statusEl.textContent = `"${q}" not found in compendium. Switch to the 🛠️ Manual V2 Effect Builder tab to define it.`;
         }
       } catch (err) {
         if (statusEl) {
@@ -2421,8 +2782,13 @@
         srcEl.value = entry.source || (currentBuffModalMode === 'debuff' ? 'Condition' : 'Spell');
       }
       document.getElementById('buff-input-type').value = entry.bonusType || (currentBuffModalMode === 'debuff' ? 'Penalty' : 'Enhancement');
-      document.getElementById('buff-input-rounds').value = entry.rounds !== null && entry.rounds !== undefined ? entry.rounds : '';
+      const rdsStr = entry.rounds !== null && entry.rounds !== undefined ? entry.rounds : '';
+      document.getElementById('buff-input-rounds').value = rdsStr;
       document.getElementById('buff-input-duration').value = entry.durationText || '';
+      const spotRds = document.getElementById('buff-spot-rounds');
+      if (spotRds) spotRds.value = rdsStr;
+      const spotDur = document.getElementById('buff-spot-duration');
+      if (spotDur) spotDur.value = entry.durationText || '';
       document.getElementById('buff-input-ac').value = entry.ac || '';
       document.getElementById('buff-input-att').value = entry.att || '';
       document.getElementById('buff-input-dmg').value = entry.dmg || '';
@@ -2444,48 +2810,45 @@
     }
 
     function saveNewBuffFromModal() {
-      const name = document.getElementById('buff-input-name').value.trim();
+      let name = document.getElementById('buff-input-name').value.trim();
+      const spotQuery = (document.getElementById('buff-rule-master-input')?.value || '').trim();
+      if (!name && _selectedSpotlightV2Entry?.name) {
+        name = _selectedSpotlightV2Entry.name;
+      } else if (!name && spotQuery) {
+        name = spotQuery;
+      }
+
       if (!name) {
-        alert(currentBuffModalMode === 'debuff' ? 'Please enter a valid Debuff Name.' : 'Please enter a valid Buff Name.');
+        alert(currentBuffModalMode === 'debuff' ? 'Please select a Condition/Debuff from Spotlight or enter a Name in the Manual V2 tab.' : 'Please select a Buff from Spotlight or enter a Name in the Manual V2 tab.');
         return;
       }
 
       const isDebuff = currentBuffModalMode === 'debuff';
       const cl = getBuffModalCasterLevel();
+      const evalCtx = { cl, level: Number(character?.level) || 6, bab: Number(character?.bab) || 0 };
       const source = document.getElementById('buff-input-source').value.trim() || (isDebuff ? 'Condition' : 'Spell');
-      const bonusType = document.getElementById('buff-input-type').value;
+      const bonusType = document.getElementById('buff-input-type').value || (isDebuff ? 'Penalty' : 'Enhancement');
       const roundsVal = document.getElementById('buff-input-rounds').value.trim();
       const rounds = roundsVal !== '' ? parseInt(roundsVal, 10) : null;
       const durationText = document.getElementById('buff-input-duration').value.trim();
-      const acBonus = parseInt(document.getElementById('buff-input-ac').value, 10) || 0;
-      const attBonus = parseInt(document.getElementById('buff-input-att').value, 10) || 0;
-      const dmgBonus = parseInt(document.getElementById('buff-input-dmg').value, 10) || 0;
-      const strBonus = parseInt(document.getElementById('buff-input-str').value, 10) || 0;
-      const dexBonus = parseInt(document.getElementById('buff-input-dex').value, 10) || 0;
-      const conBonus = parseInt(document.getElementById('buff-input-con').value, 10) || 0;
-      const intBonus = parseInt(document.getElementById('buff-input-int').value, 10) || 0;
-      const wisBonus = parseInt(document.getElementById('buff-input-wis').value, 10) || 0;
-      const chaBonus = parseInt(document.getElementById('buff-input-cha').value, 10) || 0;
       const notes = document.getElementById('buff-input-notes').value.trim();
 
-      // Check if selected Spotlight entry is a Canonical V2 Spell Buff (and user didn't switch to another name)
+      // Check if selected Spotlight entry is a Canonical V2 Spell Buff and user didn't manually customize rows in Tab 2
       const selectedBaseName = (_selectedSpotlightV2Entry?.name || '').toLowerCase().trim();
       const cleanTypedBase = name.replace(/\s*\((?:fire|cold|acid|electricity|sonic)\)\s*$/i, '').toLowerCase().trim();
       const matchesSpotlightV2 = Boolean(_selectedSpotlightV2Entry && selectedBaseName && selectedBaseName === cleanTypedBase);
 
-      // Build Canonical V2 `modifiers` and `ruleFlags`
       let v2Modifiers = [];
       let v2RuleFlags = {};
       let v2Summary = '';
       let chosenWeapon = null;
       let chosenEnergy = null;
 
-      if (matchesSpotlightV2) {
+      if (matchesSpotlightV2 && !_buffManualEdited && currentBuffModalTab === 'spotlight') {
         const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
           ? RuleEngine.resolveSpellBuffSpec({ ..._selectedSpotlightV2Entry, chosenEnergy: _selectedSpotlightEnergy }, character, cl)
           : null;
 
-        // If it's a pure V2 Spell Buff and applySpellBuffToCharacter is available, we can use full V2 spell buff resolution!
         if (!isDebuff && spec && spec.isBuffSpell && typeof window.applySpellBuffToCharacter === 'function') {
           const weaponSelectEl = document.getElementById('buff-v2-weapon-select');
           if (spec.targetMode === 'weapon' && weaponSelectEl && weaponSelectEl.value) {
@@ -2520,49 +2883,89 @@
             return;
           }
         }
-
-        if (Array.isArray(_selectedSpotlightV2Entry.modifiers) && _selectedSpotlightV2Entry.modifiers.length > 0) {
-          v2Modifiers = JSON.parse(JSON.stringify(_selectedSpotlightV2Entry.modifiers));
-        }
-        if (_selectedSpotlightV2Entry.ruleFlags && typeof _selectedSpotlightV2Entry.ruleFlags === 'object') {
-          v2RuleFlags = JSON.parse(JSON.stringify(_selectedSpotlightV2Entry.ruleFlags));
-        }
-        v2Summary = spec?.summaryText || _selectedSpotlightV2Entry.shortDescription || '';
       }
 
-      // If user entered custom numeric values (or modified them), synthesize V2 modifiers if empty
-      const modTypeLower = String(bonusType || (isDebuff ? 'penalty' : 'enhancement')).toLowerCase();
-      if (v2Modifiers.length === 0) {
-        const pushMod = (target, val, customType = null) => {
-          if (!val) return;
-          v2Modifiers.push({
-            target,
-            value: val,
-            formula: String(val),
-            type: customType || (val < 0 ? 'penalty' : modTypeLower),
-            condition: null
-          });
-        };
-        if (acBonus) {
-          const acTarget = modTypeLower === 'armor' ? 'ac.armor'
-            : (modTypeLower === 'shield' ? 'ac.shield'
-            : (modTypeLower === 'deflection' ? 'ac.deflection'
-            : (modTypeLower === 'natural' ? 'ac.natural'
-            : (modTypeLower === 'dodge' ? 'ac.dodge' : 'ac.total'))));
-          pushMod(acTarget, acBonus, modTypeLower === 'natural' ? 'natural_enhancement' : modTypeLower);
+      // Collect Canonical V2 `modifiers` from `_buffModalV2Modifiers`
+      v2Modifiers = (_buffModalV2Modifiers || [])
+        .filter(m => m && m.target && (m.formula !== '' || m.value))
+        .map(m => {
+          const fStr = m.formula !== undefined && m.formula !== null && m.formula !== '' ? String(m.formula).trim() : String(m.value || 0);
+          const evaluatedVal = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateFormula)
+            ? (Number(RuleEngine.evaluateFormula(fStr, evalCtx)) || Number(fStr) || 0)
+            : (Number(fStr) || 0);
+          return {
+            target: m.target,
+            value: evaluatedVal,
+            formula: fStr,
+            type: String(m.type || (evaluatedVal < 0 ? 'penalty' : 'enhancement')).toLowerCase(),
+            condition: m.condition || null
+          };
+        });
+
+      // Collect Canonical V2 `ruleFlags` from toggles + structured defense inputs
+      v2RuleFlags = Object.assign({}, _buffModalV2RuleFlags || {});
+      const tempHpRaw = (document.getElementById('buff-v2-flag-temphp')?.value || '').trim();
+      const concRaw = parseInt(document.getElementById('buff-v2-flag-concealment')?.value || '', 10);
+      const srRaw = (document.getElementById('buff-v2-flag-sr')?.value || '').trim();
+      const drRaw = (document.getElementById('buff-v2-flag-dr')?.value || '').trim();
+      const eresRaw = (document.getElementById('buff-v2-flag-eres')?.value || '').trim();
+      const negLvlRaw = parseInt(document.getElementById('buff-v2-flag-neglvl')?.value || '', 10);
+      const actionRaw = (document.getElementById('buff-v2-flag-action')?.value || '').trim();
+
+      if (tempHpRaw) {
+        const evalTempHp = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateFormula)
+          ? (Number(RuleEngine.evaluateFormula(tempHpRaw, evalCtx)) || parseInt(tempHpRaw, 10) || 0)
+          : (parseInt(tempHpRaw, 10) || 0);
+        if (evalTempHp > 0 && !v2Modifiers.some(m => m.target === 'hp.temp')) {
+          v2Modifiers.push({ target: 'hp.temp', value: evalTempHp, formula: tempHpRaw, type: 'untyped', condition: null });
         }
-        pushMod('attack.all', attBonus);
-        pushMod('damage.weapon', dmgBonus);
-        pushMod('ability.str', strBonus);
-        pushMod('ability.dex', dexBonus);
-        pushMod('ability.con', conBonus);
-        pushMod('ability.int', intBonus);
-        pushMod('ability.wis', wisBonus);
-        pushMod('ability.cha', chaBonus);
+        v2RuleFlags.tempHp = evalTempHp;
       }
+      if (!isNaN(concRaw) && concRaw > 0) v2RuleFlags.concealment = concRaw;
+      if (srRaw) {
+        const evalSr = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateFormula)
+          ? (Number(RuleEngine.evaluateFormula(srRaw, evalCtx)) || parseInt(srRaw, 10) || srRaw)
+          : srRaw;
+        v2RuleFlags.sr = evalSr;
+      }
+      if (drRaw) v2RuleFlags.dr = drRaw;
+      if (eresRaw) v2RuleFlags.energyResistance = eresRaw;
+      if (!isNaN(negLvlRaw) && negLvlRaw > 0) v2RuleFlags.negativeLevels = negLvlRaw;
+      if (actionRaw) v2RuleFlags.actionRestriction = actionRaw;
+
+      // Compute legacy summary fields for card badges & backward compatibility
+      let acBonus = 0, attBonus = 0, dmgBonus = 0, strBonus = 0, dexBonus = 0, conBonus = 0, intBonus = 0, wisBonus = 0, chaBonus = 0;
+      const summaryParts = [];
+      v2Modifiers.forEach(m => {
+        const v = Number(m.value) || 0;
+        const t = String(m.target || '').toLowerCase();
+        if (t.startsWith('ac')) acBonus += v;
+        else if (t.startsWith('attack')) attBonus += v;
+        else if (t.startsWith('damage')) dmgBonus += v;
+        else if (t === 'ability.str') strBonus += v;
+        else if (t === 'ability.dex') dexBonus += v;
+        else if (t === 'ability.con') conBonus += v;
+        else if (t === 'ability.int') intBonus += v;
+        else if (t === 'ability.wis') wisBonus += v;
+        else if (t === 'ability.cha') chaBonus += v;
+
+        const lbl = (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel)
+          ? RuleEngine.formatBuffModifierLabel(m, evalCtx)
+          : `${v >= 0 ? '+' : ''}${v} ${m.target}`;
+        if (lbl) summaryParts.push(lbl);
+      });
+      if (v2RuleFlags.dr) summaryParts.push(`DR ${v2RuleFlags.dr}`);
+      if (v2RuleFlags.sr) summaryParts.push(`SR ${v2RuleFlags.sr}`);
+      if (v2RuleFlags.concealment) summaryParts.push(`${v2RuleFlags.concealment}% Concealment`);
+      if (v2RuleFlags.energyResistance) summaryParts.push(`Resist ${v2RuleFlags.energyResistance}`);
+      if (v2RuleFlags.extraAttackFullAttack) summaryParts.push('Extra Attack');
+      if (v2RuleFlags.freedomOfMovement) summaryParts.push('Freedom of Movement');
+      if (v2RuleFlags.actionRestriction) summaryParts.push(v2RuleFlags.actionRestriction);
+
+      v2Summary = summaryParts.join(', ') || notes;
 
       const newBuff = {
-        id: (_selectedSpotlightV2Entry?.id && matchesSpotlightV2)
+        id: (_selectedSpotlightV2Entry?.id && matchesSpotlightV2 && !_buffManualEdited)
           ? _selectedSpotlightV2Entry.id
           : ((isDebuff ? 'debuff_' : 'buff_') + Date.now()),
         schemaVersion: 2,
@@ -2594,7 +2997,9 @@
         children: (currentBuffModalChildren && currentBuffModalChildren.length > 0) ? JSON.parse(JSON.stringify(currentBuffModalChildren)) : []
       };
 
-      if (name.toLowerCase().includes('drain') || name.toLowerCase().includes('negative level')) {
+      if (!isNaN(negLvlRaw) && negLvlRaw > 0) {
+        newBuff.negativeLevels = negLvlRaw;
+      } else if (name.toLowerCase().includes('drain') || name.toLowerCase().includes('negative level')) {
         const lvlMatch = name.match(/(\d+)/);
         if (lvlMatch) newBuff.negativeLevels = parseInt(lvlMatch[1], 10);
       }

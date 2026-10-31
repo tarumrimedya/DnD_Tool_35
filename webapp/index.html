@@ -5951,8 +5951,8 @@
         <button onclick="closeAddBuffModal()" class="text-slate-400 hover:text-white p-1 rounded-lg text-lg font-bold">&times;</button>
       </div>
 
-      <!-- Segmented Mode Switch: [✨ Buff] / [🩸 Debuff / Durum] -->
-      <div class="bg-slate-950/90 px-4 py-2 border-b border-slate-800 flex items-center gap-2 shrink-0">
+      <!-- Segmented Mode Switch: [✨ Buff] / [🩸 Debuff / Condition] -->
+      <div class="bg-slate-950/90 px-4 pt-2 pb-1.5 border-b border-slate-800/80 flex items-center gap-2 shrink-0">
         <button 
           type="button" 
           id="btn-mode-buff"
@@ -5971,180 +5971,295 @@
         </button>
       </div>
 
-      <div class="p-4 space-y-3 overflow-y-auto">
-        <!-- Unified Spotlight Compendium Search + Rule Master (AI) -->
-        <div id="buff-rule-master-box" class="bg-gradient-to-r from-purple-950/70 via-indigo-950/60 to-slate-900 border border-purple-500/40 rounded-xl p-3 space-y-2 shadow-inner">
-          <div class="flex items-center justify-between gap-2">
-            <span id="buff-rule-master-title" class="text-xs font-bold text-purple-300 flex items-center gap-1.5">
-              <span>⚡</span>
-              <span>Spotlight Compendium Search &amp; Rule Master (AI)</span>
-            </span>
-            <span id="buff-spotlight-count-badge" class="text-[10px] text-purple-300 font-mono bg-purple-950/70 px-2 py-0.5 rounded border border-purple-500/40 shrink-0">236+ V2 Buffs &amp; Conditions</span>
-          </div>
-          <div class="flex items-stretch gap-2">
-            <div class="relative flex-1">
-              <input 
-                type="text" 
-                id="buff-rule-master-input" 
-                autocomplete="off"
-                placeholder="Type 2+ chars for Spotlight (e.g., Haste, Righteous Might, Sickened, Slow)..." 
-                oninput="onBuffSpotlightInput(this.value)"
-                onfocus="onBuffSpotlightInput(this.value)"
-                onkeydown="onBuffSpotlightKeydown(event)"
-                class="w-full bg-slate-950 border border-purple-500/50 rounded-lg pl-8 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400 font-medium">
-              <span class="absolute left-2.5 top-2.5 text-xs text-purple-400">🔍</span>
-              <!-- Spotlight Floating Dropdown -->
-              <div id="buff-spotlight-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 z-[150] max-h-64 overflow-y-auto rounded-xl bg-slate-950/98 border border-indigo-500/60 shadow-2xl divide-y divide-slate-800/80"></div>
-            </div>
-            <button 
-              type="button" 
-              onclick="queryRuleMasterForBuff()" 
-              id="btn-buff-rule-master"
-              class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0"
-              title="Search Compendium or Fetch from D&D 3.5e Sourcebooks with Rule Master (AI)">
-              <span>🧙‍♂️🤖</span>
-              <span>AI Fetch</span>
-            </button>
-          </div>
-          <div id="buff-rule-master-status" class="hidden text-[11px] py-1 px-2.5 rounded-lg"></div>
-        </div>
+      <!-- Segmented Tab Bar: [⚡ Spotlight & AI Search] vs [🛠️ Manual V2 Effect Builder] -->
+      <div class="bg-slate-950 px-4 py-1.5 border-b border-slate-800 flex items-center gap-1.5 shrink-0">
+        <button
+          type="button"
+          id="buff-tab-btn-spotlight"
+          onclick="switchBuffModalTab('spotlight')"
+          class="flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-purple-950/80 border-purple-500/60 text-purple-200 shadow-sm cursor-pointer">
+          <span>⚡</span>
+          <span>Spotlight &amp; Rule Master (AI)</span>
+        </button>
+        <button
+          type="button"
+          id="buff-tab-btn-manual"
+          onclick="switchBuffModalTab('manual')"
+          class="flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 cursor-pointer">
+          <span>🛠️</span>
+          <span>Manual V2 Effect Builder</span>
+        </button>
+      </div>
 
-        <!-- Quick-Pick Pills & Caster Level -->
-        <div class="space-y-1.5">
-          <div class="flex items-center justify-between gap-2">
-            <label id="buff-preset-label" class="block text-[10px] font-bold text-amber-400 uppercase tracking-wide">⚡ Quick-Pick D&amp;D 3.5e RAW Presets</label>
-            <div class="flex items-center gap-1.5">
-              <label for="buff-input-cl" class="text-[10px] font-bold text-indigo-300 uppercase">Caster Level (CL):</label>
-              <input type="number" id="buff-input-cl" min="1" max="40" value="6" onchange="onBuffCasterLevelChange()" class="w-12 bg-slate-900 border border-indigo-500/50 rounded px-1.5 py-0.5 text-xs font-mono font-bold text-amber-300 text-center focus:outline-none focus:border-amber-400">
+      <div class="p-4 space-y-3 overflow-y-auto flex-1">
+        <!-- ==================================================== -->
+        <!-- TAB 1: SPOTLIGHT COMPENDIUM SEARCH & RULE MASTER AI  -->
+        <!-- ==================================================== -->
+        <div id="buff-modal-pane-spotlight" class="space-y-3">
+          <div id="buff-rule-master-box" class="bg-gradient-to-r from-purple-950/70 via-indigo-950/60 to-slate-900 border border-purple-500/40 rounded-xl p-3 space-y-2.5 shadow-inner">
+            <div class="flex items-center justify-between gap-2">
+              <span id="buff-rule-master-title" class="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+                <span>⚡</span>
+                <span>Spotlight Compendium Search &amp; Rule Master (AI)</span>
+              </span>
+              <span id="buff-spotlight-count-badge" class="text-[10px] text-purple-300 font-mono bg-purple-950/70 px-2 py-0.5 rounded border border-purple-500/40 shrink-0">236+ V2 Buffs &amp; Conditions</span>
+            </div>
+            <div class="flex items-stretch gap-2">
+              <div class="relative flex-1">
+                <input 
+                  type="text" 
+                  id="buff-rule-master-input" 
+                  autocomplete="off"
+                  placeholder="Click to browse all buffs, or type to filter (e.g., Haste, Barkskin)..." 
+                  onclick="onBuffSpotlightInput(this.value, true)"
+                  onfocus="onBuffSpotlightInput(this.value, true)"
+                  oninput="onBuffSpotlightInput(this.value, true)"
+                  onkeydown="onBuffSpotlightKeydown(event)"
+                  class="w-full bg-slate-950 border border-purple-500/50 rounded-lg pl-8 pr-7 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400 font-medium">
+                <span class="absolute left-2.5 top-2.5 text-xs text-purple-400 pointer-events-none">🔍</span>
+                <button type="button" onclick="toggleBuffSpotlightListDropdown(event)" title="Show / Hide Full List" class="absolute right-2 top-2 text-xs text-slate-400 hover:text-purple-300 px-1">▾</button>
+                <!-- Spotlight Floating Dropdown -->
+                <div id="buff-spotlight-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 z-[150] max-h-64 overflow-y-auto rounded-xl bg-slate-950/98 border border-indigo-500/60 shadow-2xl divide-y divide-slate-800/80"></div>
+              </div>
+              <button 
+                type="button" 
+                onclick="queryRuleMasterForBuff()" 
+                id="btn-buff-rule-master"
+                class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0"
+                title="Search Compendium or Fetch from D&D 3.5e Sourcebooks with Rule Master (AI)">
+                <span>🧙‍♂️🤖</span>
+                <span>AI Fetch</span>
+              </button>
+            </div>
+            <div id="buff-rule-master-status" class="hidden text-[11px] py-1 px-2.5 rounded-lg"></div>
+
+            <!-- 3 Compact Quick-Pick Examples + Caster Level -->
+            <div class="pt-1 border-t border-purple-500/20 flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span id="buff-preset-label" class="text-[10px] font-bold text-amber-400 uppercase tracking-wide mr-0.5">Examples:</span>
+                <div id="buff-quick-picks-container" class="flex flex-wrap gap-1.5">
+                  <!-- Dynamically populated 3 quick-pick chips -->
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <label for="buff-input-cl" class="text-[10px] font-bold text-indigo-300 uppercase">CL:</label>
+                <input type="number" id="buff-input-cl" min="1" max="40" value="6" onchange="onBuffCasterLevelChange(this.value)" class="w-12 bg-slate-950 border border-indigo-500/50 rounded px-1.5 py-0.5 text-xs font-mono font-bold text-amber-300 text-center focus:outline-none focus:border-amber-400">
+              </div>
             </div>
           </div>
-          <div id="buff-quick-picks-container" class="flex flex-wrap gap-1.5">
-            <!-- Dynamically populated quick-pick chips for Buffs or Conditions -->
-          </div>
+
           <select id="buff-preset-select" onchange="onBuffPresetChange()" class="hidden">
             <option value="custom">-- Define Custom Buff --</option>
           </select>
-        </div>
 
-        <!-- Canonical V2 Effect Preview Banner -->
-        <div id="buff-v2-preview-banner" class="hidden bg-slate-950/90 border border-indigo-500/40 rounded-xl p-2.5 space-y-2 shadow-inner">
-          <div class="flex items-center justify-between gap-2">
-            <span id="buff-v2-preview-title" class="text-xs font-bold text-indigo-300 flex items-center gap-1.5">✨ Canonical V2 Effect Preview</span>
-            <span id="buff-v2-preview-source" class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-500/30">SRD 3.5e</span>
+          <!-- Empty State when no Spotlight effect is selected yet -->
+          <div id="buff-v2-preview-empty" class="bg-slate-950/60 border border-dashed border-slate-800 rounded-xl p-4 text-center space-y-1">
+            <div class="text-xs font-bold text-slate-300">Click the search bar above to browse 236+ D&amp;D 3.5e Buffs &amp; Conditions</div>
+            <div class="text-[11px] text-slate-500">Or type any splatbook spell name and click <b class="text-purple-300">🧙‍♂️🤖 AI Fetch</b>, or switch to the <b class="text-indigo-300">🛠️ Manual V2 Effect Builder</b> tab.</div>
           </div>
-          <div id="buff-v2-preview-pills" class="flex flex-wrap gap-1"></div>
-          <!-- Energy Type Picker (for Resist Energy / Protection from Energy / Energy Immunity) -->
-          <div id="buff-v2-energy-picker" class="hidden pt-1.5 border-t border-slate-800/80">
-            <span class="block text-[10px] font-bold text-amber-300 uppercase mb-1">🔥 Select Energy Type:</span>
-            <div id="buff-v2-energy-buttons" class="flex flex-wrap gap-1"></div>
-          </div>
-          <!-- Target Weapon Picker (for Mighty Wallop / Greater Magic Weapon / Keen Edge) -->
-          <div id="buff-v2-weapon-picker" class="hidden pt-1.5 border-t border-slate-800/80">
-            <span class="block text-[10px] font-bold text-amber-300 uppercase mb-1">⚔️ Select Target Weapon:</span>
-            <select id="buff-v2-weapon-select" class="w-full bg-slate-900 border border-amber-500/50 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-amber-200"></select>
-          </div>
-        </div>
 
-        <!-- Parent-Child Alt Etkiler Önizleme Kutusu -->
-        <div id="buff-children-preview-container" class="hidden bg-slate-950/80 p-3 rounded-xl border border-rose-500/40 space-y-2 shadow-inner">
-          <div class="flex items-center justify-between text-xs font-bold text-rose-300">
-            <span class="flex items-center gap-1.5">
-              <span>🌳</span>
-              <span>Parent-Child Sub-Effects:</span>
-            </span>
-            <span id="buff-children-count-badge" class="badge bg-rose-950 text-rose-200 border border-rose-700 text-[10px] px-2 py-0.5 rounded-full font-mono">0 Sub-Effects</span>
-          </div>
-          <div id="buff-children-list" class="space-y-1.5 max-h-40 overflow-y-auto text-xs font-mono pr-1">
-            <!-- Dynamic child items -->
-          </div>
-          <div class="text-[10px] text-slate-400 italic pt-1 border-t border-slate-800">
-            ℹ️ Toggling the Parent effect automatically enables or disables all linked child effects in the rule engine.
-          </div>
-        </div>
+          <!-- Canonical V2 Effect Preview Card -->
+          <div id="buff-v2-preview-banner" class="hidden bg-slate-950/90 border border-indigo-500/50 rounded-xl p-3 space-y-2.5 shadow-inner">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div id="buff-v2-preview-title" class="text-xs font-extrabold text-amber-300 flex items-center gap-1.5">✨ Canonical V2 Effect Preview</div>
+                <div id="buff-v2-preview-desc" class="text-[11px] text-slate-400 mt-0.5 line-clamp-2"></div>
+              </div>
+              <span id="buff-v2-preview-source" class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-500/30 shrink-0">SRD 3.5e</span>
+            </div>
+            <div id="buff-v2-preview-pills" class="flex flex-wrap gap-1"></div>
 
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label id="buff-label-name" class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Buff Name *</label>
-            <input type="text" id="buff-input-name" placeholder="e.g., Haste" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Source *</label>
-            <select id="buff-input-source" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white font-medium focus:border-indigo-500 focus:outline-none">
-              <option value="Spell">Spell</option>
-              <option value="Potion">Potion</option>
-              <option value="Scroll / Wand">Scroll / Wand</option>
-              <option value="Item / Equipment">Magic Item</option>
-              <option value="Stance / Maneuver">Stance / Maneuver</option>
-              <option value="Class Feature">Class Feature</option>
-              <option value="Condition">Condition</option>
-              <option value="Undead / Monster">Monster / Undead Ability</option>
-              <option value="Feat">Feat</option>
-              <option value="DM Boon">DM Boon (Custom)</option>
-              <option value="Other">Other / External</option>
-            </select>
-          </div>
-        </div>
+            <!-- Energy Type Picker (for Resist Energy / Protection from Energy / Energy Immunity) -->
+            <div id="buff-v2-energy-picker" class="hidden pt-2 border-t border-slate-800/80">
+              <span class="block text-[10px] font-bold text-amber-300 uppercase mb-1">🔥 Select Energy Type:</span>
+              <div id="buff-v2-energy-buttons" class="flex flex-wrap gap-1"></div>
+            </div>
 
-        <div class="grid grid-cols-3 gap-2">
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Bonus / Penalty Type</label>
-            <select id="buff-input-type" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-xs text-white">
-              <option value="Enhancement">Enhancement</option>
-              <option value="Morale">Morale</option>
-              <option value="Luck">Luck</option>
-              <option value="Armor">Armor</option>
-              <option value="Shield">Shield</option>
-              <option value="Deflection">Deflection</option>
-              <option value="Natural">Natural</option>
-              <option value="Dodge">Dodge</option>
-              <option value="Penalty">Penalty</option>
-              <option value="Untyped">Untyped</option>
-            </select>
+            <!-- Target Weapon Picker (for Mighty Wallop / Greater Magic Weapon / Keen Edge) -->
+            <div id="buff-v2-weapon-picker" class="hidden pt-2 border-t border-slate-800/80">
+              <span class="block text-[10px] font-bold text-amber-300 uppercase mb-1">⚔️ Select Target Weapon:</span>
+              <select id="buff-v2-weapon-select" class="w-full bg-slate-900 border border-amber-500/50 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-amber-200"></select>
+            </div>
+
+            <!-- Quick Duration Override & Customize in Manual V2 Builder Button -->
+            <div class="pt-2 border-t border-slate-800/80 flex flex-wrap items-end justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <div>
+                  <label class="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">Rounds</label>
+                  <input type="number" id="buff-spot-rounds" placeholder="Auto" oninput="syncBuffSpotlightDurationInputs('rounds', this.value)" class="w-16 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-white text-center">
+                </div>
+                <div>
+                  <label class="block text-[9px] font-bold text-slate-400 uppercase mb-0.5">Duration Text</label>
+                  <input type="text" id="buff-spot-duration" placeholder="e.g., 1 min/level" oninput="syncBuffSpotlightDurationInputs('duration', this.value)" class="w-32 bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-white">
+                </div>
+              </div>
+              <button type="button" onclick="switchBuffModalTab('manual')" class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-indigo-300 border border-indigo-500/40 text-[11px] font-bold transition cursor-pointer flex items-center gap-1">
+                <span>🛠️</span>
+                <span>Edit V2 Modifiers</span>
+              </button>
+            </div>
           </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Duration (Rounds)</label>
-            <input type="number" id="buff-input-rounds" placeholder="e.g., 10 (Blank = Permanent)" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Duration Text</label>
-            <input type="text" id="buff-input-duration" placeholder="e.g., 1 min/level" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
+
+          <!-- Parent-Child Sub-Effects Preview -->
+          <div id="buff-children-preview-container" class="hidden bg-slate-950/80 p-3 rounded-xl border border-rose-500/40 space-y-2 shadow-inner">
+            <div class="flex items-center justify-between text-xs font-bold text-rose-300">
+              <span class="flex items-center gap-1.5">
+                <span>🌳</span>
+                <span>Parent-Child Sub-Effects:</span>
+              </span>
+              <span id="buff-children-count-badge" class="badge bg-rose-950 text-rose-200 border border-rose-700 text-[10px] px-2 py-0.5 rounded-full font-mono">0 Sub-Effects</span>
+            </div>
+            <div id="buff-children-list" class="space-y-1.5 max-h-40 overflow-y-auto text-xs font-mono pr-1"></div>
+            <div class="text-[10px] text-slate-400 italic pt-1 border-t border-slate-800">
+              ℹ️ Toggling the Parent effect automatically enables or disables all linked child effects in the rule engine.
+            </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-2 bg-slate-900/60 p-2.5 rounded-lg border border-slate-800">
-          <div>
-            <label class="block text-[10px] font-bold text-sky-400 mb-0.5">AC Modifier (+/-)</label>
-            <input type="number" id="buff-input-ac" placeholder="0" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white text-center">
+        <!-- ==================================================== -->
+        <!-- TAB 2: MANUAL CANONICAL V2 EFFECT BUILDER            -->
+        <!-- ==================================================== -->
+        <div id="buff-modal-pane-manual" class="hidden space-y-3">
+          <!-- Identity & Source Row -->
+          <div class="grid grid-cols-12 gap-2 bg-slate-950/70 p-2.5 rounded-xl border border-slate-800">
+            <div class="col-span-7">
+              <label id="buff-label-name" class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Effect Name *</label>
+              <input type="text" id="buff-input-name" placeholder="e.g., Elven Blessing, Custom Boon" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white font-semibold focus:border-indigo-500 focus:outline-none">
+            </div>
+            <div class="col-span-5">
+              <label class="block text-[10px] font-bold text-slate-300 uppercase mb-1">Source *</label>
+              <select id="buff-input-source" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white font-medium focus:border-indigo-500 focus:outline-none">
+                <option value="Spell">Spell</option>
+                <option value="Potion">Potion</option>
+                <option value="Scroll / Wand">Scroll / Wand</option>
+                <option value="Item / Equipment">Magic Item</option>
+                <option value="Stance / Maneuver">Stance / Maneuver</option>
+                <option value="Class Feature">Class Feature</option>
+                <option value="Condition">Condition</option>
+                <option value="Undead / Monster">Monster / Undead Ability</option>
+                <option value="Feat">Feat</option>
+                <option value="DM Boon">DM Boon (Custom)</option>
+                <option value="Other">Other / External</option>
+              </select>
+            </div>
+            <div class="col-span-4">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Duration (Rounds)</label>
+              <input type="number" id="buff-input-rounds" placeholder="Blank = Perm." oninput="syncBuffSpotlightDurationInputs('manual_rounds', this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-mono text-white">
+            </div>
+            <div class="col-span-5">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Duration Text</label>
+              <input type="text" id="buff-input-duration" placeholder="e.g., 1 min/level" oninput="syncBuffSpotlightDurationInputs('manual_duration', this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white">
+            </div>
+            <div class="col-span-3">
+              <label class="block text-[10px] font-bold text-indigo-300 uppercase mb-1">Caster Lvl</label>
+              <input type="number" id="buff-manual-cl" min="1" max="40" value="6" onchange="onBuffCasterLevelChange(this.value)" class="w-full bg-slate-900 border border-indigo-500/50 rounded-lg px-2 py-1 text-xs font-mono font-bold text-amber-300 text-center">
+            </div>
           </div>
-          <div>
-            <label class="block text-[10px] font-bold text-emerald-400 mb-0.5">Attack Modifier (+/-)</label>
-            <input type="number" id="buff-input-att" placeholder="0" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white text-center">
+
+          <!-- Canonical V2 `modifiers` Builder -->
+          <div class="bg-slate-950/80 p-3 rounded-xl border border-indigo-500/40 space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div>
+                <span class="text-xs font-extrabold text-indigo-300 flex items-center gap-1.5">
+                  <span>📊</span>
+                  <span>Canonical V2 Modifiers (<code class="text-[10px] text-amber-300">modifiers[]</code>)</span>
+                </span>
+                <p class="text-[10px] text-slate-400">Add any combination of Ability, AC, Attack, Damage, Save, Speed, Initiative, or Skill modifiers (supports numbers or <code class="text-purple-300">@cl</code> formulas).</p>
+              </div>
+              <button type="button" onclick="addBuffModalV2ModifierRow()" class="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] shadow shrink-0 cursor-pointer transition">
+                + Add Modifier
+              </button>
+            </div>
+
+            <!-- Quick Add Target Presets -->
+            <div class="flex flex-wrap gap-1 pt-0.5">
+              <button type="button" onclick="addBuffModalV2ModifierRow({ target: 'ability.str', formula: '4', type: 'enhancement' })" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-[10px] font-mono text-slate-300 border border-slate-700 cursor-pointer">+STR</button>
+              <button type="button" onclick="addBuffModalV2ModifierRow({ target: 'ac.natural', formula: '2', type: 'natural_enhancement' })" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-[10px] font-mono text-sky-300 border border-slate-700 cursor-pointer">+AC</button>
+              <button type="button" onclick="addBuffModalV2ModifierRow({ target: 'attack.all', formula: '1', type: 'morale' })" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-[10px] font-mono text-emerald-300 border border-slate-700 cursor-pointer">+Attack</button>
+              <button type="button" onclick="addBuffModalV2ModifierRow({ target: 'damage.weapon', formula: '2', type: 'morale' })" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-[10px] font-mono text-amber-300 border border-slate-700 cursor-pointer">+Damage</button>
+              <button type="button" onclick="addBuffModalV2ModifierRow({ target: 'save.all', formula: '2', type: 'resistance' })" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-[10px] font-mono text-purple-300 border border-slate-700 cursor-pointer">+Saves</button>
+              <button type="button" onclick="addBuffModalV2ModifierRow({ target: 'speed.land', formula: '30', type: 'enhancement' })" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-[10px] font-mono text-teal-300 border border-slate-700 cursor-pointer">+Speed</button>
+              <button type="button" onclick="addBuffModalV2ModifierRow({ target: 'skill.all', formula: '2', type: 'competence' })" class="px-2 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-[10px] font-mono text-pink-300 border border-slate-700 cursor-pointer">+Skills</button>
+            </div>
+
+            <div id="buff-v2-modifiers-list" class="space-y-1.5 max-h-52 overflow-y-auto pr-0.5">
+              <!-- Dynamic V2 modifier rows rendered here -->
+            </div>
           </div>
+
+          <!-- Canonical V2 `ruleFlags` & Special Defenses -->
+          <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-amber-300 flex items-center gap-1.5">
+                <span>🛡️</span>
+                <span>Canonical V2 Rule Flags &amp; Defenses (<code class="text-[10px] text-indigo-300">ruleFlags</code>)</span>
+              </span>
+            </div>
+
+            <!-- Boolean Rule Flag Toggles -->
+            <div id="buff-v2-ruleflags-grid" class="flex flex-wrap gap-1.5">
+              <!-- Populated by renderBuffModalV2RuleFlags() -->
+            </div>
+
+            <!-- Structured V2 Special Defense / Mitigation Inputs -->
+            <div class="grid grid-cols-3 gap-2 pt-1.5 border-t border-slate-800/80">
+              <div>
+                <label class="block text-[9px] font-bold text-emerald-400 uppercase mb-0.5">Temp HP (<code class="text-[8px]">hp.temp</code>)</label>
+                <input type="text" id="buff-v2-flag-temphp" placeholder="e.g., 15 or @cl*2" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-white">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-sky-400 uppercase mb-0.5">Concealment %</label>
+                <input type="number" id="buff-v2-flag-concealment" min="0" max="100" step="5" placeholder="e.g., 20 or 50" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-white">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-purple-400 uppercase mb-0.5">Spell Resist (SR)</label>
+                <input type="text" id="buff-v2-flag-sr" placeholder="e.g., 20 or 12+@cl" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-white">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-amber-400 uppercase mb-0.5">Damage Reduction (DR)</label>
+                <input type="text" id="buff-v2-flag-dr" placeholder="e.g., 10/Adamantine" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-white">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-orange-400 uppercase mb-0.5">Energy Resistance</label>
+                <input type="text" id="buff-v2-flag-eres" placeholder="e.g., Fire 20" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-white">
+              </div>
+              <div>
+                <label class="block text-[9px] font-bold text-rose-400 uppercase mb-0.5">Negative Levels</label>
+                <input type="number" id="buff-v2-flag-neglvl" min="0" max="40" placeholder="0" class="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs font-mono text-white">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[9px] font-bold text-rose-300 uppercase mb-0.5">Action Restriction / Tactical Condition Note (<code class="text-[8px]">ruleFlags.actionRestriction</code>)</label>
+              <input type="text" id="buff-v2-flag-action" placeholder="e.g., Single move or standard action only; cannot run or charge" class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-xs text-white">
+            </div>
+          </div>
+
           <div>
-            <label class="block text-[10px] font-bold text-amber-400 mb-0.5">Damage Modifier (+/-)</label>
-            <input type="number" id="buff-input-dmg" placeholder="0" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white text-center">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Description / Notes</label>
+            <input type="text" id="buff-input-notes" placeholder="Effect description or tactical summary..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white">
+          </div>
+
+          <!-- Hidden legacy inputs kept for backward-compatible script hooks -->
+          <div class="hidden">
+            <select id="buff-input-type"><option value="Enhancement">Enhancement</option><option value="Penalty">Penalty</option><option value="Untyped">Untyped</option></select>
+            <input type="number" id="buff-input-ac">
+            <input type="number" id="buff-input-att">
+            <input type="number" id="buff-input-dmg">
+            <input type="number" id="buff-input-str">
+            <input type="number" id="buff-input-dex">
+            <input type="number" id="buff-input-con">
+            <input type="number" id="buff-input-int">
+            <input type="number" id="buff-input-wis">
+            <input type="number" id="buff-input-cha">
           </div>
         </div>
 
-        <div class="grid grid-cols-6 gap-1.5 bg-slate-900/60 p-2 rounded-lg border border-slate-800">
-          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">STR</label><input type="number" id="buff-input-str" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
-          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">DEX</label><input type="number" id="buff-input-dex" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
-          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">CON</label><input type="number" id="buff-input-con" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
-          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">INT</label><input type="number" id="buff-input-int" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
-          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">WIS</label><input type="number" id="buff-input-wis" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
-          <div class="text-center"><label class="block text-[9px] font-bold text-slate-400">CHA</label><input type="number" id="buff-input-cha" class="w-full bg-slate-950 border border-slate-700 rounded px-1 py-0.5 text-xs text-center text-white"></div>
-        </div>
-
-        <div>
-          <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Description / Notes</label>
-          <input type="text" id="buff-input-notes" placeholder="Effect description..." class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white">
-        </div>
-
-        <!-- Master DB Sync Checkbox -->
+        <!-- Master DB Sync Checkbox (Visible in both tabs) -->
         <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
           <input type="checkbox" id="buff-save-to-master-db" checked class="w-4 h-4 rounded text-indigo-600 bg-slate-900 border-slate-700 focus:ring-0 cursor-pointer">
           <label for="buff-save-to-master-db" class="text-[11px] text-indigo-300 font-semibold cursor-pointer select-none">
-            📚 Also save / update this effect in the permanent Master DB Compendium
+            📚 Also save / update custom or AI-fetched effects in the permanent Master DB Compendium
           </label>
         </div>
       </div>
