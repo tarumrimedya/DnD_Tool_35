@@ -2033,6 +2033,10 @@
     function hideBuffSpotlightDropdown() {
       const dd = document.getElementById('buff-spotlight-dropdown');
       if (dd) dd.classList.add('hidden');
+      const emptyBox = document.getElementById('buff-v2-preview-empty');
+      if (emptyBox && !_selectedSpotlightV2Entry) {
+        emptyBox.classList.remove('hidden');
+      }
     }
 
     function toggleBuffSpotlightListDropdown(ev) {
@@ -2065,9 +2069,12 @@
     function renderBuffSpotlightDropdown() {
       const dd = document.getElementById('buff-spotlight-dropdown');
       if (!dd) return;
+      const emptyBox = document.getElementById('buff-v2-preview-empty');
+      if (emptyBox) emptyBox.classList.add('hidden');
+
       if (!Array.isArray(_buffSpotlightResults) || _buffSpotlightResults.length === 0) {
         dd.innerHTML = `
-          <div class="p-3 text-xs text-slate-400 flex items-center justify-between gap-2">
+          <div class="p-3 text-xs text-slate-400 bg-slate-950 flex items-center justify-between gap-2">
             <span>No local SRD match. Press <b>Enter</b> or click <b>🧙‍♂️🤖 AI Fetch</b> to query 3.5e books!</span>
           </div>
         `;
@@ -2095,14 +2102,14 @@
             : `${m.value || m.formula} ${m.target}`;
           if (lbl) {
             const isNeg = String(lbl).trim().startsWith('-');
-            pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${isNeg ? 'bg-rose-950/90 text-rose-300 border-rose-700/70' : 'bg-indigo-950/90 text-indigo-200 border-indigo-700/70'}">${lbl}</span>`);
+            pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${isNeg ? 'bg-rose-950 text-rose-300 border-rose-700' : 'bg-indigo-950 text-indigo-200 border-indigo-700'}">${lbl}</span>`);
           }
         });
 
         if (spec && spec.summaryText && pills.length === 0) {
-          pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-700/60">${spec.summaryText}</span>`);
+          pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-700">${spec.summaryText}</span>`);
         } else if (item.ruleFlags?.actionRestriction) {
-          pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-950/80 text-rose-300 border border-rose-700/60">⚠️ ${item.ruleFlags.actionRestriction.slice(0, 48)}</span>`);
+          pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-950 text-rose-300 border border-rose-700">⚠️ ${item.ruleFlags.actionRestriction.slice(0, 48)}</span>`);
         }
 
         const desc = String(item.shortDescription || item.benefit || item.description || '')
@@ -2111,7 +2118,7 @@
           .trim();
 
         return `
-          <div data-buff-spot-idx="${idx}" onmousedown="event.preventDefault(); pickBuffSpotlightResult(${idx})" class="p-2.5 cursor-pointer transition flex flex-col gap-1 ${isSel ? 'bg-indigo-950/95 text-white' : 'hover:bg-slate-900/90 text-slate-200'}">
+          <div data-buff-spot-idx="${idx}" onmousedown="event.preventDefault(); pickBuffSpotlightResult(${idx})" class="p-2.5 cursor-pointer transition flex flex-col gap-1 ${isSel ? 'bg-indigo-950 text-white' : 'bg-slate-950 hover:bg-slate-900 text-slate-200'}">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-xs text-amber-300 truncate">${item.name}</span>
               <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-[9px] font-mono text-purple-300 shrink-0">${item._spotlightKind || item.type || 'SRD 3.5e'}</span>
