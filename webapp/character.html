@@ -198,9 +198,10 @@
         <span id="hp-temp-tag" onclick="clearTempHp()" class="hidden badge bg-cyan-950/90 hover:bg-rose-950 text-cyan-300 hover:text-rose-300 border border-cyan-600/70 text-[10px] font-mono font-bold ml-1 cursor-pointer transition" title="Temporary Hit Points (Temp HP) • Click to clear"></span>
       </div>
 
-      <!-- Mini HP Progress Bar -->
-      <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden mb-1.5 sm:mb-2">
-        <div id="hp-progress-bar" class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: 100%;"></div>
+      <!-- Mini HP & Temp HP Progress Bar -->
+      <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mb-1.5 sm:mb-2 flex">
+        <div id="hp-progress-bar" class="bg-emerald-500 h-full transition-all duration-300" style="width: 100%;"></div>
+        <div id="hp-temp-progress-bar" class="hidden bg-cyan-400 h-full transition-all duration-300 shadow-[0_0_8px_rgba(34,211,238,0.8)]" style="width: 0%;" title="Temporary HP Shield"></div>
       </div>
 
       <!-- Quick Adjust Controls (Hasar & İyileşme) -->

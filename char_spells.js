@@ -1368,9 +1368,11 @@
         }
         if (grantedTempHp > 0) {
           buffObj.grantedTempHp = grantedTempHp;
+          buffObj._tempHpSynced = true;
           buffObj.ruleFlags = { ...(buffObj.ruleFlags || {}), tempHp: grantedTempHp };
           const curTempWithoutPrev = Math.max(0, (Number(character.hp.temp) || 0) - prevGrantedTemp);
           character.hp.temp = curTempWithoutPrev + grantedTempHp;
+          character.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(character.hp?._lastDmUpdateTs) || 0) + 100);
         }
       }
 

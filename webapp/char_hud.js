@@ -2193,8 +2193,8 @@
       }
 
       const hpTempTag = document.getElementById('hp-temp-tag');
+      const tempHp = Math.max(0, Number(character.hp?.temp) || 0);
       if (hpTempTag) {
-        const tempHp = Math.max(0, Number(character.hp?.temp) || 0);
         if (tempHp > 0) {
           hpTempTag.textContent = `🛡️ +${tempHp} Temp`;
           hpTempTag.classList.remove('hidden');
@@ -2206,11 +2206,27 @@
 
       const pct = Math.max(0, Math.min(100, Math.round((curHp / maxHp) * 100)));
       const bar = document.getElementById('hp-progress-bar');
+      const tempBar = document.getElementById('hp-temp-progress-bar');
       if (bar) {
-        bar.style.width = pct + '%';
-        if (pct > 50) bar.className = 'bg-emerald-500 h-full rounded-full transition-all';
-        else if (pct > 25) bar.className = 'bg-amber-500 h-full rounded-full transition-all';
-        else bar.className = 'bg-rose-500 h-full rounded-full transition-all';
+        if (tempHp > 0) {
+          const totalPool = Math.max(maxHp, curHp + tempHp);
+          const hpWidth = Math.max(0, Math.min(92, Math.round((curHp / totalPool) * 100)));
+          const tempWidth = Math.max(8, 100 - hpWidth);
+          bar.style.width = hpWidth + '%';
+          if (tempBar) {
+            tempBar.style.width = tempWidth + '%';
+            tempBar.classList.remove('hidden');
+          }
+        } else {
+          bar.style.width = pct + '%';
+          if (tempBar) {
+            tempBar.style.width = '0%';
+            tempBar.classList.add('hidden');
+          }
+        }
+        if (pct > 50) bar.className = 'bg-emerald-500 h-full transition-all';
+        else if (pct > 25) bar.className = 'bg-amber-500 h-full transition-all';
+        else bar.className = 'bg-rose-500 h-full transition-all';
       }
 
       const condBadge = document.getElementById('hp-condition-badge');

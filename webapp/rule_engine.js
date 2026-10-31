@@ -2458,7 +2458,20 @@ const RuleEngine = {
             buff.ruleFlags = { ...(buff.ruleFlags || {}), ...resolvedSpec.ruleFlags };
             rawBuff.ruleFlags = buff.ruleFlags;
           }
+          if (resolvedSpec.evaluatedTempHp > 0 && !rawBuff.grantedTempHp) {
+            rawBuff.grantedTempHp = resolvedSpec.evaluatedTempHp;
+            buff.grantedTempHp = resolvedSpec.evaluatedTempHp;
+          }
         }
+      }
+
+      // Ensure active buff Temp HP is synced to character.hp.temp if not yet synced
+      const buffTempHp = Number(rawBuff.grantedTempHp) || Number(buff.ruleFlags?.tempHp) || Number((buff.modifiers || []).find(m => m && String(m.target || '').toLowerCase() === 'hp.temp')?.value) || 0;
+      if (buffTempHp > 0 && !rawBuff._tempHpSynced && character.hp) {
+        rawBuff.grantedTempHp = buffTempHp;
+        rawBuff._tempHpSynced = true;
+        character.hp.temp = Math.max(Number(character.hp.temp) || 0, buffTempHp);
+        character.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(character.hp?._lastDmUpdateTs) || 0) + 100);
       }
 
       if (buff.negativeLevels) {

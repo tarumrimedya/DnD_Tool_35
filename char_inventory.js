@@ -1009,6 +1009,11 @@
       return mod ? (Number(mod.value) || 0) : 0;
     }
 
+    function markPlayerHpChanged() {
+      if (!character || !character.hp) return;
+      character.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(character.hp?._lastDmUpdateTs) || 0) + 100);
+    }
+
     function toggleBuffActive(buffId) {
       const buff = (character.buffs || []).find(b => b.id === buffId);
       if (buff) {
@@ -1018,8 +1023,12 @@
         if (tempHp > 0 && character.hp) {
           if (!wasActive && buff.active) {
             character.hp.temp = (Number(character.hp.temp) || 0) + tempHp;
+            buff._tempHpSynced = true;
+            markPlayerHpChanged();
           } else if (wasActive && !buff.active) {
             character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
+            buff._tempHpSynced = false;
+            markPlayerHpChanged();
           }
         }
         saveStateToStorage(true);
@@ -1037,6 +1046,8 @@
           const tempHp = getBuffGrantedTempHp(buff);
           if (wasActive && tempHp > 0 && character.hp) {
             character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
+            buff._tempHpSynced = false;
+            markPlayerHpChanged();
           }
         }
         saveStateToStorage(true);
@@ -1057,6 +1068,7 @@
           const tempHp = getBuffGrantedTempHp(buff);
           if (tempHp > 0) {
             character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
+            markPlayerHpChanged();
           }
         }
         character.buffs = (character.buffs || []).filter(b => b.id !== buffId);
@@ -1085,6 +1097,8 @@
               const tempHp = getBuffGrantedTempHp(buff);
               if (tempHp > 0 && character.hp) {
                 character.hp.temp = Math.max(0, (Number(character.hp.temp) || 0) - tempHp);
+                buff._tempHpSynced = false;
+                markPlayerHpChanged();
               }
               expired.push(buff.name);
             }
@@ -3074,8 +3088,10 @@
 
       if (grantedTempHp > 0 && character.hp) {
         newBuff.grantedTempHp = grantedTempHp;
+        newBuff._tempHpSynced = true;
         const curTempWithoutPrev = Math.max(0, (Number(character.hp.temp) || 0) - prevGrantedTemp);
         character.hp.temp = curTempWithoutPrev + grantedTempHp;
+        markPlayerHpChanged();
       }
 
       if (existingBuffIdx >= 0) {
