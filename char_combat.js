@@ -2706,8 +2706,15 @@
 
     function getSpellHasSpellResistance(spell) {
       if (!spell) return false;
-      const params = typeof getSpellCriticalParams === 'function' ? getSpellCriticalParams(spell) : {};
       const master = typeof findMasterItem === 'function' ? findMasterItem(spell.name) : null;
+      const saveStr = String(spell.save || spell.savingThrow || master?.save || '').toLowerCase();
+      const rawSr = String(spell.spellResistance || spell.sr || master?.spellResistance || master?.sr || '').toLowerCase();
+      if (saveStr.includes('harmless') || rawSr.includes('harmless')) return false;
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec) {
+        const bSpec = RuleEngine.resolveSpellBuffSpec(spell, character, 1);
+        if (bSpec && bSpec.isBuffSpell) return false;
+      }
+      const params = typeof getSpellCriticalParams === 'function' ? getSpellCriticalParams(spell) : {};
       const srVal = (params.sr || spell.sr || master?.sr || '').toString().toLowerCase();
       if (srVal.includes('yes') || srVal === 'true') {
         return true;
@@ -3138,6 +3145,31 @@
         if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
       }
 
+      // 0A. Universal V2 Buff Spell Cast Flow (No fake d20 roll; opens Self/Ally/Energy/Weapon prompt or auto-applies Self buff)
+      if (!targetWeaponName && typeof window.handleBuffSpellCast === 'function' && window.handleBuffSpellCast(spell, cl, `Level ${finalLvl} ${sourceLabels[slotSource] || 'Spell'} Slot`, '🔮')) {
+        if (typeof renderAll === 'function') renderAll();
+        if (typeof recalculateOffense === 'function') recalculateOffense();
+        recalculateCombatSpell();
+        renderSpellSlotsStrip();
+        renderCombatCategorySpells();
+        return;
+      }
+
+      // 0B. Healing & Temp HP Dice Spells (Cure Wounds, Heal, Aid, False Life, Vigor, Virtue)
+      if (!targetWeaponName && typeof classifySpellOrManeuverEffect === 'function' && typeof resolveSpellEffectiveFormula === 'function' && typeof rollSpellOrManeuverFormula === 'function') {
+        const effType = classifySpellOrManeuverEffect(spell);
+        const effFormula = resolveSpellEffectiveFormula(spell, cl);
+        if ((effType === 'heal' || effType === 'temp_hp') && effFormula) {
+          rollSpellOrManeuverFormula(effFormula, `${spell.name} (Level ${finalLvl} • -1 Slot)`, spell);
+          if (typeof renderAll === 'function') renderAll();
+          if (typeof recalculateOffense === 'function') recalculateOffense();
+          recalculateCombatSpell();
+          renderSpellSlotsStrip();
+          renderCombatCategorySpells();
+          return;
+        }
+      }
+
       // Dynamic Spell Scaling (D&D 3.5e RAW)
       const params = typeof getSpellCriticalParams === 'function' ? getSpellCriticalParams(spell) : {};
       const scaling = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function')
@@ -3213,8 +3245,6 @@
           rawSum += r;
           diceToRoll3D.push({ type: 'd' + sides, value: r });
         }
-      } else if (diceToRoll3D.length === 0) {
-        diceToRoll3D.push({ type: 'd20', value: 20 });
       }
 
       let finalDmg = rawSum + staticBonus;
@@ -3395,7 +3425,24 @@
         // 1. Render in attack results card at the bottom of the Combat page
         renderSpellCastResults(spell, castData);
 
-        // 2. Toast notification & Buff Spell Target Prompt
+        // 2. Add to dice history first so the subsequent Toast is never overwritten
+        if (typeof addDiceHistoryEntry === 'function') {
+          addDiceHistoryEntry({
+            icon: '🔮',
+            title: `Casting ${spell.name}`,
+            formula: summaryText,
+            breakdown: [
+              (castData.isSizeModifier && castData.targetWeaponName) ? `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} Size)` : null,
+              hasAtk ? `Atk: ${totalAtk} (d20:${d20Atk}+${atkBonus}${isAtkCrit ? ' ⚡' : ''})` : null,
+              hasSr ? `SR: ${totalSr} (d20:${d20Sr}+CL:${totalSrBonus})` : null,
+              hasDamageDice ? calcNotice : `DC ${saveDc} ${spell.save || ''}`
+            ].filter(Boolean).join(' • '),
+            total: (castData.isSizeModifier && castData.targetWeaponName) ? `${castData.newDice} (+${castData.sizeSteps})` : (hasDamageDice ? `${finalDmg} Damage` : `DC ${saveDc}`),
+            isCrit: isAtkCrit
+          });
+        }
+
+        // 3. Toast notification & Buff Spell Target Prompt
         if (castData.isSizeModifier && castData.targetWeaponName) {
           showDiceTopToast({
             icon: '🔮',
@@ -3414,23 +3461,6 @@
           });
         }
 
-        // 3. Add to dice history
-        if (typeof addDiceHistoryEntry === 'function') {
-          addDiceHistoryEntry({
-            icon: '🔮',
-            title: `Casting ${spell.name}`,
-            formula: summaryText,
-            breakdown: [
-              (castData.isSizeModifier && castData.targetWeaponName) ? `${castData.targetWeaponName}: ${castData.oldDice} ➔ ${castData.newDice} (+${castData.sizeSteps} Size)` : null,
-              hasAtk ? `Atk: ${totalAtk} (d20:${d20Atk}+${atkBonus}${isAtkCrit ? ' ⚡' : ''})` : null,
-              hasSr ? `SR: ${totalSr} (d20:${d20Sr}+CL:${totalSrBonus})` : null,
-              hasDamageDice ? calcNotice : `DC ${saveDc} ${spell.save || ''}`
-            ].filter(Boolean).join(' • '),
-            total: (castData.isSizeModifier && castData.targetWeaponName) ? `${castData.newDice} (+${castData.sizeSteps})` : (hasDamageDice ? `${finalDmg} Damage` : `DC ${saveDc}`),
-            isCrit: isAtkCrit
-          });
-        }
-
         if (typeof renderAll === 'function') renderAll();
         if (typeof recalculateOffense === 'function') recalculateOffense();
         recalculateCombatSpell();
@@ -3438,7 +3468,7 @@
         renderCombatCategorySpells();
       };
 
-      if (window.Dice3D && typeof Dice3D.roll === 'function') {
+      if (window.Dice3D && typeof Dice3D.roll === 'function' && diceToRoll3D.length > 0) {
         try {
           Dice3D.roll(diceToRoll3D.slice(0, 10), onComplete);
         } catch (e) {
@@ -10697,9 +10727,13 @@
         saveStateToStorage(false);
         renderAll();
       } else if (pin.sourceType === 'Spell') {
+        const cl = typeof getEffectiveSpellCasterLevel === 'function' ? getEffectiveSpellCasterLevel(pin) : (Number(character?.level) || 1);
+        if (typeof window.handleBuffSpellCast === 'function' && window.handleBuffSpellCast(pin, cl, 'Pinned Spell Cast', '🔮')) {
+          return;
+        }
         const formula = pin.badge || (typeof findDiceExpression === 'function' ? findDiceExpression(pin.desc) : '');
         if (formula && typeof rollSpellOrManeuverFormula === 'function') {
-          rollSpellOrManeuverFormula(formula, `${pin.name} Effect`);
+          rollSpellOrManeuverFormula(formula, `${pin.name} Effect`, pin);
         } else {
           showDiceTopToast({
             icon: '🔮',
