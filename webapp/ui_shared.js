@@ -531,19 +531,19 @@
           <button type="button" onclick="DnDUI.closeCompendiumDrawer()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold border border-slate-700 transition cursor-pointer shrink-0">✕ Close</button>
         </div>
 
-        <!-- Unified 3-Tab Bar (Shown for Character Inventory; hidden in Bestiary Mode) -->
-        <div id="dnd-ui-compendium-tabs-bar" class="px-3 sm:px-4 py-2 bg-slate-900/95 border-b border-slate-800 grid grid-cols-3 gap-1.5 shrink-0 text-xs">
-          <button type="button" data-comp-tab="srd" onclick="DnDUI.switchCompendiumTab('srd')" class="w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow">
-            <span>📚</span>
-            <span class="truncate">SRD Compendium</span>
+        <!-- Unified 2-Tab Bar (Spotlight Search & Item Forge; hidden in Bestiary Mode) -->
+        <div id="dnd-ui-compendium-tabs-bar" class="px-3 sm:px-4 py-2 bg-slate-900/95 border-b border-slate-800 grid grid-cols-2 gap-2 shrink-0 text-xs">
+          <button type="button" id="dnd-ui-tab-btn-srd" data-comp-tab="srd" onclick="DnDUI.switchCompendiumTab('srd')" class="hidden w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-amber-600 text-white shadow">
+            <span>🔍</span>
+            <span class="truncate">Spotlight Search</span>
           </button>
-          <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-950/60">
+          <button type="button" id="dnd-ui-tab-btn-custom" data-comp-tab="custom" onclick="DnDUI.switchCompendiumTab('custom')" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-amber-600 text-white shadow">
+            <span>🔍</span>
+            <span class="truncate">Spotlight Search</span>
+          </button>
+          <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-300 hover:text-white bg-slate-950/60 border border-slate-800">
             <span>⚒️</span>
             <span class="truncate">Item Forge</span>
-          </button>
-          <button type="button" id="dnd-ui-tab-btn-custom" data-comp-tab="custom" onclick="DnDUI.switchCompendiumTab('custom')" class="w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-950/60">
-            <span>✨</span>
-            <span class="truncate">Custom &amp; AI</span>
           </button>
         </div>
 
@@ -648,18 +648,13 @@
     const customView = document.getElementById('dnd-ui-compendium-custom-view');
     const customContent = document.getElementById('add-pool-custom-tab-content');
     const customTabBtn = document.getElementById('dnd-ui-tab-btn-custom');
-    const tabsBar = document.getElementById('dnd-ui-compendium-tabs-bar');
+    const srdTabBtn = document.getElementById('dnd-ui-tab-btn-srd');
     if (customView && customContent && customContent.parentElement !== customView) {
       customView.appendChild(customContent);
     }
-    if (customTabBtn) {
-      const hasCustom = Boolean(customContent);
-      customTabBtn.classList.toggle('hidden', !hasCustom);
-      if (tabsBar) {
-        tabsBar.classList.toggle('grid-cols-3', hasCustom);
-        tabsBar.classList.toggle('grid-cols-2', !hasCustom);
-      }
-    }
+    const hasCustom = Boolean(customContent);
+    if (customTabBtn) customTabBtn.classList.toggle('hidden', !hasCustom);
+    if (srdTabBtn) srdTabBtn.classList.toggle('hidden', hasCustom);
   }
 
   function populateForgeControls() {
@@ -802,9 +797,9 @@
       </div>
 
       <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
-        <button type="button" onclick="DnDUI.equipAssembledForgeItem()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs shadow-lg transition cursor-pointer flex items-center gap-1.5">
-          <span>⚒️</span>
-          <span>Add / Equip Item to Character Inventory</span>
+        <button type="button" onclick="DnDUI.equipAssembledForgeItem()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-lg transition cursor-pointer flex items-center gap-1.5">
+          <span>➕</span>
+          <span>Add to Inventory</span>
         </button>
       </div>
     `;
@@ -850,25 +845,19 @@
     mountCustomTabContentIfPresent();
 
     _drawerState.onEquipCallback = options.onEquip || options.onSelect || null;
-    const rawTab = options.tab || options.defaultTab || options.category || 'srd';
+    const rawTab = options.tab || options.defaultTab || options.category || 'custom';
     const isBestiaryMode = Boolean(options.bestiaryOnly || rawTab === 'Monster');
+    const hasCustomMounted = Boolean(document.getElementById('add-pool-custom-tab-content'));
 
-    let initialTab = 'srd';
+    let initialTab = hasCustomMounted ? 'custom' : 'srd';
     if (isBestiaryMode) {
       initialTab = 'Monster';
     } else if (rawTab === 'forge') {
       initialTab = 'forge';
-    } else if (rawTab === 'custom') {
+    } else if (hasCustomMounted) {
       initialTab = 'custom';
     } else {
       initialTab = 'srd';
-      if (rawTab === 'Weapon' || rawTab === 'Armor' || rawTab === 'Item' || rawTab === 'all_gear') {
-        _drawerState.srdCategoryFilter = rawTab;
-      } else if (options.category === 'Weapon' || options.category === 'Armor' || options.category === 'Item') {
-        _drawerState.srdCategoryFilter = options.category;
-      } else {
-        _drawerState.srdCategoryFilter = 'all_gear';
-      }
     }
 
     const initialQuery = options.query || '';
@@ -892,7 +881,7 @@
       if (subFiltersBar) subFiltersBar.classList.remove('hidden');
       if (iconEl) iconEl.textContent = '🎒';
       if (titleEl) titleEl.textContent = 'Add Item to Inventory';
-      if (subEl) subEl.textContent = 'SRD 3.5e Compendium • V2 Item Forge • Custom & Rule Master AI';
+      if (subEl) subEl.textContent = 'Spotlight Search (SRD 3.5e, Custom DB & AI) • V2 Item Forge';
       if (input) input.placeholder = 'Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)...';
     }
 
@@ -960,21 +949,12 @@
     _drawerState.activeTab = tab;
 
     document.querySelectorAll('[data-comp-tab]').forEach(btn => {
+      if (btn.classList.contains('hidden')) return;
       const t = btn.getAttribute('data-comp-tab');
       const isActive = (t === tab) || (t === 'srd' && (tab === 'Weapon' || tab === 'Armor' || tab === 'Item'));
-      if (t === 'forge') {
-        btn.className = isActive
-          ? 'w-full py-2 px-2 rounded-lg font-black transition cursor-pointer flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow'
-          : 'w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-amber-300/90 hover:text-white bg-slate-950/60 border border-amber-500/30';
-      } else if (t === 'custom') {
-        btn.className = isActive
-          ? 'w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-purple-600 text-white shadow'
-          : 'w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-purple-300/90 hover:text-white bg-slate-950/60 border border-purple-500/30';
-      } else {
-        btn.className = isActive
-          ? 'w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow'
-          : 'w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-950/60 border border-slate-800';
-      }
+      btn.className = isActive
+        ? 'w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-amber-600 text-white shadow'
+        : 'w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-300 hover:text-white bg-slate-950/60 border border-slate-800';
     });
 
     const searchView = document.getElementById('dnd-ui-compendium-search-view');
@@ -1047,9 +1027,9 @@
         <div class="p-6 text-center space-y-3">
           <div class="text-slate-400 text-xs italic">No matching SRD V2 entries found${safeQ ? ` for "${safeQ}"` : ''}.</div>
           ${hasCustomTab ? `
-            <button type="button" onclick="DnDUI.jumpToCustomAiTabWithQuery('${safeQ.replace(/'/g, "\\'")}')" class="px-3 py-2 rounded-xl bg-purple-700/80 hover:bg-purple-600 text-white font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 border border-purple-400/50">
-              <span>✨</span>
-              <span>Search in Custom DB / Rule Master AI ➔</span>
+            <button type="button" onclick="DnDUI.jumpToCustomAiTabWithQuery('${safeQ.replace(/'/g, "\\'")}')" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5">
+              <span>🔍</span>
+              <span>Search in Spotlight / Rule Master AI ➔</span>
             </button>
           ` : ''}
         </div>
@@ -1086,7 +1066,7 @@
     _drawerState.selectedEntry = full;
 
     const isMonster = full.type === 'Monster' || String(full.id || '').startsWith('mst-');
-    const actionBtnLabel = isMonster ? 'Add to Campaign' : 'Add / Equip to Character';
+    const actionBtnLabel = isMonster ? 'Add to Campaign' : 'Add to Inventory';
     const dmgHtml = renderDamagePartsBadges(full.damageParts);
     const modHtml = renderModifiersBadges(full.modifiers);
     const tacHtml = renderTacticalBadges(full);

@@ -5212,18 +5212,50 @@
       return false;
     }
 
-    // Get all Master DB items not yet in bag
-    function getMasterDbItemsNotInInventory() {
-      const allDb = Array.isArray(masterDb) ? masterDb : [];
-      const combined = [...allDb];
-      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        window.BUNDLED_SRD_CORE_CATALOG.forEach(coreItem => {
-          if (coreItem && coreItem.name && !combined.some(m => (m.name || '').toLowerCase().trim() === coreItem.name.toLowerCase().trim())) {
-            combined.push(coreItem);
-          }
-        });
+    function cleanPoolItemDescription(raw) {
+      if (!raw || typeof raw !== 'string') return '';
+      return raw
+        .replace(/<\/(?:p|div|tr|li|h[1-6])>/gi, ' • ')
+        .replace(/<br\s*\/?>/gi, ' • ')
+        .replace(/<\/(?:th|td)>/gi, ' ')
+        .replace(/<[^>]+>/g, '')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&amp;/gi, '&')
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>')
+        .replace(/&quot;/gi, '"')
+        .replace(/&#39;/gi, "'")
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function getUnifiedEquipmentCatalog() {
+      const seenNames = new Set();
+      const combined = [];
+      const pushUnique = (entry) => {
+        if (!entry || !entry.name) return;
+        const key = String(entry.name).toLowerCase().trim();
+        if (!key || seenNames.has(key)) return;
+        seenNames.add(key);
+        combined.push(entry);
+      };
+
+      if (Array.isArray(masterDb)) {
+        masterDb.forEach(pushUnique);
       }
-      return combined.filter(item => {
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+        const srdGear = window.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield', 'Item']);
+        if (Array.isArray(srdGear)) srdGear.forEach(pushUnique);
+      }
+      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        window.BUNDLED_SRD_CORE_CATALOG.forEach(pushUnique);
+      }
+      return combined;
+    }
+
+    // Get all SRD + Master DB items not yet in inventory
+    function getMasterDbItemsNotInInventory() {
+      return getUnifiedEquipmentCatalog().filter(item => {
         return isEquipmentOrGear(item) && !isItemInInventory(item.name);
       });
     }
@@ -5321,7 +5353,7 @@
       if (!container) return;
 
       const total = unaddedList.length;
-      if (countBadge) countBadge.textContent = `${total} items not in bag`;
+      if (countBadge) countBadge.textContent = `${total} items available`;
 
       const wepCount = unaddedList.filter(i => mapEntryToGearCategory(i) === 'Weapon').length;
       const armCount = unaddedList.filter(i => {
@@ -5335,11 +5367,11 @@
       const potCount = unaddedList.filter(i => mapEntryToGearCategory(i) === 'Consumable').length;
 
       const tabs = [
-        { key: 'all', label: 'All', count: total },
+        { key: 'all', label: 'All Gear', count: total },
         { key: 'weapon', label: '⚔️ Weapons', count: wepCount },
         { key: 'armor', label: '🛡️ Armor & Shield', count: armCount },
-        { key: 'wondrous', label: '💍 Wondrous Items', count: wonCount },
-        { key: 'potion', label: '🧪 Potions & Consumables', count: potCount }
+        { key: 'wondrous', label: '💍 Magic & Wondrous', count: wonCount },
+        { key: 'potion', label: '🧪 Consumables', count: potCount }
       ];
 
       container.innerHTML = tabs.map(t => {
@@ -5354,6 +5386,57 @@
           </button>
         `;
       }).join('');
+    }
+
+    function renderSpotlightItemCardHtml(item, idx, isSearchMode = false) {
+      const cat = mapEntryToGearCategory(item);
+      const icon = getGearCategoryIcon(cat);
+      const source = item.source || 'SRD 3.5e';
+      const weight = Number(item.weightLb ?? item.weight) || 0;
+      const cost = Number(item.priceGp ?? item.cost) || 0;
+      const desc = cleanPoolItemDescription(item.benefit || item.description || item.shortDescription || '');
+      const inInv = isSearchMode ? isItemInInventory(item.name) : false;
+      const dmgBadges = (window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function')
+        ? window.DnDUI.renderDamagePartsBadges(item.damageParts)
+        : '';
+      const modBadges = (window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function')
+        ? window.DnDUI.renderModifiersBadges(item.modifiers)
+        : '';
+      const btnId = isSearchMode ? `btn-add-search-${idx}` : `btn-add-pool-${idx}`;
+
+      return `
+        <div id="pool-item-card-${idx}" class="bg-slate-900 border border-slate-700/80 hover:border-amber-500/60 p-2.5 rounded-xl transition space-y-1.5 shadow-sm">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-base">${icon}</span>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
+                  ${inInv ? `<span class="text-[9px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.2 rounded font-semibold">✓ In Inventory</span>` : ''}
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5 text-[10px] mt-0.5">
+                  <span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-semibold">${cat}</span>
+                  <span class="bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded">${item.slot || 'Slotless'}</span>
+                  <span class="text-slate-400 font-mono">${weight} lbs</span>
+                  <span class="text-amber-400 font-mono">${cost} gp</span>
+                  <span class="text-slate-500 font-serif italic">${source}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button type="button" onclick="fillPoolItemFormFromDb(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition" title="Populate Form / Customize">
+                ✏️
+              </button>
+              <button id="${btnId}" type="button" onclick="addMasterDbItemDirectlyToPool(${idx}, this)" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
+                <span>➕</span>
+                <span>Add to Inventory</span>
+              </button>
+            </div>
+          </div>
+          ${(dmgBadges || modBadges) ? `<div class="flex flex-wrap gap-1 pt-0.5">${dmgBadges}${modBadges}</div>` : ''}
+          ${desc ? `<p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed bg-slate-950/60 p-1.5 rounded border border-slate-800/80">${desc}</p>` : ''}
+        </div>
+      `;
     }
 
     function renderUnaddedMasterDbItems(catFilter = 'all') {
@@ -5384,77 +5467,27 @@
       window._poolCurrentMatches = filtered;
 
       if (filtered.length === 0) {
-        if (unadded.length === 0) {
-          resultsBox.innerHTML = `
-            <div class="p-5 bg-slate-900/80 border border-slate-800 rounded-xl text-center space-y-2 text-slate-400 shadow">
-              <div class="text-2xl">🎒✨</div>
-              <div class="text-xs font-bold text-white">All Master DB items are already in your inventory!</div>
-              <p class="text-[11px] text-slate-400 max-w-sm mx-auto">
-                Search 3.5e sourcebooks above via 🧙‍♂️🤖 Rule Master (AI) or use the custom form below to add a new item.
-              </p>
-            </div>
-          `;
-        } else {
-          resultsBox.innerHTML = `
-            <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-xl text-center text-xs text-slate-400">
-              No remaining unowned items in this category.
-            </div>
-          `;
-        }
+        resultsBox.innerHTML = `
+          <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-xl text-center text-xs text-slate-400">
+            No remaining unowned items in this category. Search above or use the manual form below.
+          </div>
+        `;
         return;
       }
 
+      const displaySlice = filtered.slice(0, 60);
       let html = `
         <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold px-1 mb-1">
           <span class="text-amber-300 flex items-center gap-1.5">
             <span>📦</span>
-            <span>Master DB Items Not Yet in Your Bag (${filtered.length}):</span>
+            <span>SRD 3.5e &amp; Custom Catalog (${filtered.length} available${filtered.length > 60 ? ', showing top 60' : ''}):</span>
           </span>
-          <span class="text-[10px] text-slate-400 font-normal">Click to add directly to your inventory</span>
+          <span class="text-[10px] text-slate-400 font-normal hidden sm:inline">Type above to filter or ask AI</span>
         </div>
         <div class="space-y-2">
+          ${displaySlice.map((item, idx) => renderSpotlightItemCardHtml(item, idx, false)).join('')}
+        </div>
       `;
-
-      filtered.forEach((item, idx) => {
-        const cat = mapEntryToGearCategory(item);
-        const icon = getGearCategoryIcon(cat);
-        const source = item.source || 'Core 3.5e';
-        const weight = Number(item.weight) || 0;
-        const cost = Number(item.cost) || 0;
-        const desc = item.benefit || item.description || '';
-
-        html += `
-          <div id="pool-item-card-${idx}" class="bg-slate-900 border border-slate-700/80 hover:border-amber-500/60 p-2.5 rounded-xl transition space-y-1.5 shadow-sm">
-            <div class="flex items-start justify-between gap-2">
-              <div class="flex items-center gap-2 min-w-0">
-                <span class="text-base">${icon}</span>
-                <div>
-                  <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
-                  <div class="flex flex-wrap items-center gap-1.5 text-[10px] mt-0.5">
-                    <span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-semibold">${cat}</span>
-                    <span class="bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded">${item.slot || 'Slotless'}</span>
-                    <span class="text-slate-400 font-mono">${weight} lbs</span>
-                    <span class="text-amber-400 font-mono">${cost} gp</span>
-                    <span class="text-slate-500 font-serif italic">${source}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" onclick="fillPoolItemFormFromDb(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition" title="Populate Form / Customize">
-                  ✏️
-                </button>
-                <button id="btn-add-pool-${idx}" type="button" onclick="addMasterDbItemDirectlyToPool(${idx}, this)" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
-                  <span>📥</span>
-                  <span>Add to Bag</span>
-                </button>
-              </div>
-            </div>
-            ${desc ? `<p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed bg-slate-950/60 p-1.5 rounded border border-slate-800/80">${desc}</p>` : ''}
-          </div>
-        `;
-      });
-
-      html += `</div>`;
       resultsBox.innerHTML = html;
     }
 
@@ -5463,28 +5496,30 @@
       if (!resultsBox) return;
 
       const q = query.toLowerCase().trim();
-      const allDb = Array.isArray(masterDb) ? masterDb : [];
+      const combined = getUnifiedEquipmentCatalog();
 
-      // Combine masterDb and bundled SRD catalog for equipment lookup without duplicates
-      const combined = [...allDb];
-      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        window.BUNDLED_SRD_CORE_CATALOG.forEach(coreItem => {
-          if (coreItem && coreItem.name && !combined.some(m => (m.name || '').toLowerCase().trim() === coreItem.name.toLowerCase().trim())) {
-            combined.push(coreItem);
-          }
-        });
-      }
-
-      // Filter Master DB items: MUST strictly be valid equipment/gear and match query
-      const matches = combined.filter(item => {
-        if (!item || !item.name) return false;
-        if (!isEquipmentOrGear(item)) return false;
+      // Score and filter SRD + Custom DB items so exact/prefix name matches rank first
+      const scored = [];
+      combined.forEach(item => {
+        if (!item || !item.name) return;
+        if (!isEquipmentOrGear(item)) return;
         const name = (item.name || '').toLowerCase();
         const type = (item.type || '').toLowerCase();
         const slot = (item.slot || '').toLowerCase();
-        const benefit = (item.benefit || item.description || '').toLowerCase();
-        return name.includes(q) || type.includes(q) || slot.includes(q) || benefit.includes(q);
+        const benefit = (item.benefit || item.description || item.shortDescription || '').toLowerCase();
+        if (name === q) {
+          scored.push({ item, score: 100 });
+        } else if (name.startsWith(q)) {
+          scored.push({ item, score: 80 });
+        } else if (name.includes(q)) {
+          scored.push({ item, score: 60 });
+        } else if (type.includes(q) || slot.includes(q) || benefit.includes(q)) {
+          scored.push({ item, score: 25 });
+        }
       });
+
+      scored.sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name));
+      const matches = scored.map(s => s.item);
 
       window._poolCurrentMatches = matches;
       renderPoolSearchResults(matches, query);
@@ -5497,21 +5532,20 @@
       const escapedQ = query.replace(/"/g, '&quot;');
 
       if (!matches || matches.length === 0) {
-        // NO MATCHES FOUND IN LOCAL MASTER DB -> PROMINENT AI LOOKUP CALLOUT
+        // NO MATCHES FOUND IN SRD + MASTER DB -> PROMINENT AI LOOKUP CALLOUT
         resultsBox.innerHTML = `
           <div class="p-4 bg-slate-900/90 border border-amber-500/50 rounded-xl space-y-3 shadow-lg">
             <div class="flex items-start gap-3">
               <span class="text-2xl">🔍</span>
               <div>
-                <h4 class="text-xs font-bold text-amber-300">"${escapedQ}" Not Found in Master DB</h4>
+                <h4 class="text-xs font-bold text-amber-300">"${escapedQ}" Not Found in Local SRD / Custom DB</h4>
                 <p class="text-[11px] text-slate-300 mt-0.5">
-                  The item you searched for is not in the local database. 
-                  Scan official D&D 3.5e sourcebooks (PHB, DMG, MIC, Complete) via 🧙‍♂️🤖 Rule Master (AI) to fetch it automatically.
+                  Scan official D&amp;D 3.5e sourcebooks (PHB, DMG, MIC, Complete) via 🧙‍♂️🤖 Rule Master (AI) to fetch it automatically.
                 </p>
               </div>
             </div>
             <div class="flex flex-wrap gap-2 pt-1 border-t border-slate-800">
-              <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="flex-1 bg-gradient-to-r from-purple-700 via-indigo-600 to-teal-600 hover:from-purple-600 hover:to-teal-500 text-white font-extrabold text-xs py-2 px-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
+              <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs py-2 px-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
                 <span>🧙‍♂️🤖</span>
                 <span>Search 3.5e Compendiums via Rule Master (AI)</span>
               </button>
@@ -5524,65 +5558,19 @@
         return;
       }
 
-      // MATCHES FOUND IN LOCAL MASTER DB
+      // MATCHES FOUND IN SRD + MASTER DB
       let html = `
         <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold px-1 mb-1">
-          <span>Master DB Search Results (${matches.length} items found):</span>
-          <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-purple-400 hover:text-purple-300 underline flex items-center gap-1 font-semibold">
+          <span>Spotlight Results (${matches.length} items found):</span>
+          <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-amber-400 hover:text-amber-300 underline flex items-center gap-1 font-semibold">
             <span>🧙‍♂️🤖 Search Rulebooks via Rule Master (AI)</span>
           </button>
         </div>
         <div class="space-y-2">
-      `;
-
-      // Render matched cards
-      matches.slice(0, 10).forEach((item, idx) => {
-        const cat = mapEntryToGearCategory(item);
-        const icon = getGearCategoryIcon(cat);
-        const source = item.source || 'Core 3.5e';
-        const weight = Number(item.weight) || 0;
-        const cost = Number(item.cost) || 0;
-        const desc = item.benefit || item.description || '';
-        const inBag = isItemInInventory(item.name);
-
-        html += `
-          <div class="bg-slate-900 border border-slate-700 hover:border-amber-500/60 p-2.5 rounded-xl transition space-y-1.5 shadow-sm">
-            <div class="flex items-start justify-between gap-2">
-              <div class="flex items-center gap-2 min-w-0">
-                <span class="text-base">${icon}</span>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
-                    ${inBag ? `<span class="text-[9px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.2 rounded font-semibold">✓ In Bag</span>` : ''}
-                  </div>
-                  <div class="flex flex-wrap items-center gap-1.5 text-[10px] mt-0.5">
-                    <span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-semibold">${cat}</span>
-                    <span class="bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded">${item.slot || 'Slotless'}</span>
-                    <span class="text-slate-400 font-mono">${weight} lbs</span>
-                    <span class="text-amber-400 font-mono">${cost} gp</span>
-                    <span class="text-slate-500 font-serif italic">${source}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" onclick="fillPoolItemFormFromDb(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition" title="Populate Form">
-                  ✏️
-                </button>
-                <button id="btn-add-search-${idx}" type="button" onclick="addMasterDbItemDirectlyToPool(${idx}, this)" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
-                  <span>📥</span>
-                  <span>${inBag ? 'Add Another' : 'Add to Bag'}</span>
-                </button>
-              </div>
-            </div>
-            ${desc ? `<p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed bg-slate-950/60 p-1.5 rounded border border-slate-800/80">${desc}</p>` : ''}
-          </div>
-        `;
-      });
-
-      html += `
+          ${matches.slice(0, 25).map((item, idx) => renderSpotlightItemCardHtml(item, idx, true)).join('')}
         </div>
         <div class="text-center pt-1">
-          <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-xs text-purple-300 hover:text-purple-200 bg-purple-950/60 hover:bg-purple-900 border border-purple-800/70 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 shadow">
+          <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-xs text-amber-300 hover:text-amber-200 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 shadow">
             <span>🧙‍♂️🤖</span>
             <span>Not what you're looking for? Search 3.5e Compendiums via <strong>Rule Master (AI)</strong> ("${escapedQ}")</span>
           </button>
@@ -5727,12 +5715,12 @@
                 </div>
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" onclick="fillPoolItemFormFromAi(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition" title="Forma Aktar">
+                <button type="button" onclick="fillPoolItemFormFromAi(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition" title="Populate Form">
                   ✏️
                 </button>
-                <button type="button" onclick="addAiItemToPoolAndDb(${idx})" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs py-1.5 px-3 rounded-lg shadow-md transition flex items-center gap-1">
-                  <span>📥</span>
-                  <span>Add to Bag</span>
+                <button type="button" onclick="addAiItemToPoolAndDb(${idx})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
+                  <span>➕</span>
+                  <span>Add to Inventory</span>
                 </button>
               </div>
             </div>
@@ -5756,18 +5744,32 @@
       if (!character.gearPool) character.gearPool = [];
       const cat = mapEntryToGearCategory(item);
       const isBeltItem = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
+      const itemWeight = Number(item.weightLb ?? item.weight) || 0;
+      const itemCost = Number(item.priceGp ?? item.cost) || 0;
+      const itemDesc = cleanPoolItemDescription(item.benefit || item.description || item.shortDescription || '');
 
       const newId = Date.now();
       character.gearPool.push({
         id: newId,
+        baseItemId: item.baseItemId || item.id || null,
         name: item.name,
         masterDbName: item.name,
         category: cat,
         slot: item.slot && item.slot !== 'None' ? item.slot : cat,
         qty: 1,
-        weight: Number(item.weight) || 0,
-        cost: Number(item.cost) || 0,
-        desc: item.benefit || item.description || '',
+        weight: itemWeight,
+        cost: itemCost,
+        desc: itemDesc,
+        material: item.material || null,
+        enhancementBonus: Number(item.enhancementBonus) || 0,
+        enhancements: Array.isArray(item.enhancements) ? item.enhancements : [],
+        modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+        damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
+        modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
+        weaponMeta: item.weaponMeta ? JSON.parse(JSON.stringify(item.weaponMeta)) : null,
+        armorMeta: item.armorMeta ? JSON.parse(JSON.stringify(item.armorMeta)) : null,
+        ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {},
+        tacticalBadges: Array.isArray(item.tacticalBadges) ? JSON.parse(JSON.stringify(item.tacticalBadges)) : [],
         isBelt: isBeltItem,
         isEquipped: false
       });
@@ -5783,21 +5785,26 @@
             id: item.id || ('wep_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
             baseItemId: item.baseItemId || item.id || null,
             name: item.name,
-            grip: item.slot === 'Main Hand' ? '1-Hand' : '2-Hand',
+            grip: (item.weaponMeta?.handedness || '').includes('Two') ? '2-Hand' : (item.slot === 'Main Hand' ? '1-Hand' : '2-Hand'),
             dice: (primaryPart && primaryPart.dice) || item.dice || '1d8',
             damageParts: Array.isArray(item.damageParts) && item.damageParts.length > 0
               ? JSON.parse(JSON.stringify(item.damageParts))
               : [{ dice: item.dice || '1d8', bonus: Number(item.dmgBonus) || 0, type: item.dmgType || 'Slashing', multiplyOnCrit: true }],
             modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
             modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
-            critMin: item.weaponMeta?.critMin || item.critMin || 20,
-            critMult: item.weaponMeta?.critMult || item.critMult || 2,
+            weaponMeta: item.weaponMeta ? JSON.parse(JSON.stringify(item.weaponMeta)) : null,
+            ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {},
+            tacticalBadges: Array.isArray(item.tacticalBadges) ? JSON.parse(JSON.stringify(item.tacticalBadges)) : [],
+            critMin: Number(item.weaponMeta?.critMin || item.critMin) || 20,
+            rawCritMin: Number(item.weaponMeta?.critMin || item.critMin) || 20,
+            critMult: Number(item.weaponMeta?.critMult || item.critMult) || 2,
             attBonus: Number(item.enhancementBonus || item.attBonus) || 0,
             dmgBonus: Number(item.enhancementBonus || item.dmgBonus) || 0,
             dmgType: (primaryPart && primaryPart.type) || item.dmgType || 'Slashing',
             bonusType: 'enhancement',
             tags: item.tags || [],
-            elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type }))
+            elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
+            keen: Boolean(item.ruleFlags && item.ruleFlags.keen)
           });
         }
       }
@@ -5810,7 +5817,7 @@
           character.consumables.push({
             name: item.name,
             qty: 1,
-            effect: item.benefit || 'Potion effect'
+            effect: itemDesc || 'Potion effect'
           });
         }
       }
@@ -5877,9 +5884,9 @@
       } else {
         closeAddPoolItemModal();
         if (attachedChildCount > 0) {
-          alert(`✅ "${item.name}" and ${attachedChildCount} linked sub-abilities added to your bag!`);
+          alert(`✅ "${item.name}" and ${attachedChildCount} linked sub-abilities added to your Inventory!`);
         } else {
-          alert(`✅ "${item.name}" added to your inventory pool!`);
+          alert(`✅ "${item.name}" added to your Inventory!`);
         }
       }
     }
@@ -6020,9 +6027,9 @@
       } else {
         closeAddPoolItemModal();
         if (attachedChildCount > 0) {
-          alert(`✅ "${item.name}" and ${attachedChildCount} sub-powers saved to Master DB and added to your bag!`);
+          alert(`✅ "${item.name}" and ${attachedChildCount} sub-powers saved to Master DB and added to your Inventory!`);
         } else {
-          alert(`✅ "${item.name}" saved to Master DB and added to your bag!`);
+          alert(`✅ "${item.name}" saved to Master DB and added to your Inventory!`);
         }
       }
     }
@@ -6057,9 +6064,9 @@
         category: cat,
         slot: v2Item.slot && v2Item.slot !== 'None' ? v2Item.slot : cat,
         qty: 1,
-        weight: Number(v2Item.weight) || 0,
-        cost: Number(v2Item.cost) || 0,
-        desc: v2Item.benefit || v2Item.description || '',
+        weight: Number(v2Item.weightLb ?? v2Item.weight) || 0,
+        cost: Number(v2Item.priceGp ?? v2Item.cost) || 0,
+        desc: cleanPoolItemDescription(v2Item.benefit || v2Item.description || ''),
         material: v2Item.material || null,
         enhancementBonus: Number(v2Item.enhancementBonus) || 0,
         enhancements: Array.isArray(v2Item.enhancements) ? v2Item.enhancements : [],
@@ -6112,9 +6119,9 @@
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           icon: '⚒️',
-          title: 'V2 Item Added to Inventory',
-          breakdown: `"${v2Item.name}" added to your Gear Pool.`,
-          total: `${Number(v2Item.cost || 0).toLocaleString('tr-TR')} gp`
+          title: 'Item Added to Inventory',
+          breakdown: `"${v2Item.name}" added to your Inventory.`,
+          total: `${Number(v2Item.priceGp ?? v2Item.cost ?? 0).toLocaleString('tr-TR')} gp`
         });
       }
     }
@@ -6133,7 +6140,7 @@
       resetAddPoolCustomTabForm();
       if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
         window.DnDUI.openCompendiumDrawer({
-          defaultTab: 'srd',
+          defaultTab: 'custom',
           category: defaultCategory,
           onSelect: (entry) => addV2ItemToCharacterGearPool(entry)
         });
@@ -6178,9 +6185,9 @@
       if (document.getElementById('api-category')) document.getElementById('api-category').value = cat;
       if (document.getElementById('api-slot')) document.getElementById('api-slot').value = item.slot || cat;
       if (document.getElementById('api-qty')) document.getElementById('api-qty').value = (item.qty !== undefined && item.qty !== null) ? item.qty : 1;
-      if (document.getElementById('api-weight')) document.getElementById('api-weight').value = item.weight || 0;
-      if (document.getElementById('api-cost')) document.getElementById('api-cost').value = item.cost || 0;
-      if (document.getElementById('api-desc')) document.getElementById('api-desc').value = item.benefit || item.description || '';
+      if (document.getElementById('api-weight')) document.getElementById('api-weight').value = item.weightLb ?? item.weight ?? 0;
+      if (document.getElementById('api-cost')) document.getElementById('api-cost').value = item.priceGp ?? item.cost ?? 0;
+      if (document.getElementById('api-desc')) document.getElementById('api-desc').value = cleanPoolItemDescription(item.benefit || item.description || '');
       if (document.getElementById('api-belt')) {
         document.getElementById('api-belt').checked = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
       }
@@ -6241,7 +6248,7 @@
       saveStateToStorage(true);
       renderAll();
       closeAddPoolItemModal();
-      alert(`✅ "${name}" added to your inventory pool!`);
+      alert(`✅ "${name}" added to your Inventory!`);
     }
 
     // ====================================================
