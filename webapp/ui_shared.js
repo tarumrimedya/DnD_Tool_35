@@ -512,27 +512,29 @@
 
     const wrapper = document.createElement('div');
     wrapper.id = 'dnd-ui-compendium-drawer';
-    wrapper.className = 'fixed inset-0 z-[9000] hidden';
+    wrapper.className = 'hidden fixed inset-0 z-[120] bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 overflow-y-auto';
+    wrapper.onclick = function (e) {
+      if (e.target === wrapper) closeCompendiumDrawer();
+    };
     wrapper.innerHTML = `
-      <!-- Backdrop -->
-      <div onclick="DnDUI.closeCompendiumDrawer()" class="absolute inset-0 bg-slate-950/75 backdrop-blur-sm transition-opacity"></div>
-
-      <!-- Right Slide-Over Panel -->
-      <div class="absolute right-0 top-0 bottom-0 w-full max-w-3xl bg-[#111a2e] border-l border-indigo-500/40 shadow-2xl flex flex-col text-slate-100 overflow-hidden">
+      <!-- Centered Modal Card (Matches Level-Up Wizard Modal Style) -->
+      <div class="bg-dndCard border border-amber-500/80 rounded-2xl max-w-2xl w-full shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col text-slate-100">
         <!-- Header -->
-        <div class="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
+        <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
           <div class="flex items-center gap-2.5 min-w-0">
-            <span id="dnd-ui-compendium-icon" class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-lg shrink-0">🎒</span>
+            <div id="dnd-ui-compendium-icon" class="w-8 h-8 rounded-lg bg-amber-950 border border-amber-500/60 flex items-center justify-center text-lg shrink-0">🎒</div>
             <div class="min-w-0">
-              <h3 id="dnd-ui-compendium-title" class="text-sm sm:text-base font-black text-white truncate">Add Item to Inventory</h3>
-              <p id="dnd-ui-compendium-subtitle" class="text-[11px] text-slate-400 truncate">SRD 3.5e Compendium • V2 Item Forge • Custom &amp; Rule Master AI</p>
+              <h3 id="dnd-ui-compendium-title" class="text-sm md:text-base font-extrabold text-white flex items-center gap-2 truncate">Add Item to Inventory</h3>
+              <p id="dnd-ui-compendium-subtitle" class="text-[10px] text-slate-400 truncate">Spotlight Search (SRD 3.5e, Custom DB &amp; AI) • V2 Item Forge</p>
             </div>
           </div>
-          <button type="button" onclick="DnDUI.closeCompendiumDrawer()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold border border-slate-700 transition cursor-pointer shrink-0">✕ Close</button>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="DnDUI.closeCompendiumDrawer()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer">✕ Close</button>
+          </div>
         </div>
 
         <!-- Unified 2-Tab Bar (Spotlight Search & Item Forge; hidden in Bestiary Mode) -->
-        <div id="dnd-ui-compendium-tabs-bar" class="px-3 sm:px-4 py-2 bg-slate-900/95 border-b border-slate-800 grid grid-cols-2 gap-2 shrink-0 text-xs">
+        <div id="dnd-ui-compendium-tabs-bar" class="px-4 py-2 bg-slate-900/95 border-b border-slate-800 grid grid-cols-2 gap-2 shrink-0 text-xs">
           <button type="button" id="dnd-ui-tab-btn-srd" data-comp-tab="srd" onclick="DnDUI.switchCompendiumTab('srd')" class="hidden w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-amber-600 text-white shadow">
             <span>🔍</span>
             <span class="truncate">Spotlight Search</span>
@@ -566,13 +568,13 @@
           <!-- Split Pane: Left Results, Right V2 Detail Card -->
           <div class="flex-1 grid grid-cols-1 md:grid-cols-12 min-h-0 overflow-hidden">
             <div id="dnd-ui-compendium-list" class="md:col-span-5 max-h-52 md:max-h-none border-b md:border-b-0 md:border-r border-slate-800 overflow-y-auto divide-y divide-slate-800/60 bg-slate-950/40"></div>
-            <div id="dnd-ui-compendium-detail" class="md:col-span-7 overflow-y-auto p-4 space-y-3 bg-[#131d33]"></div>
+            <div id="dnd-ui-compendium-detail" class="md:col-span-7 overflow-y-auto p-4 space-y-3"></div>
           </div>
         </div>
 
         <!-- VIEW 2: THE FORGE (DEMIRHANE LEGO ITEM ASSEMBLER) -->
-        <div id="dnd-ui-compendium-forge-view" class="hidden flex-1 overflow-y-auto p-4 space-y-4 bg-[#131d33] text-xs">
-          <div class="bg-slate-900/90 border border-amber-500/40 rounded-2xl p-4 space-y-3 shadow-lg">
+        <div id="dnd-ui-compendium-forge-view" class="hidden flex-1 overflow-y-auto p-4 space-y-3.5 text-xs">
+          <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-amber-500/50 rounded-xl p-3.5 space-y-3 shadow-xl">
             <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
               <div>
                 <h4 class="text-sm font-black text-amber-300 flex items-center gap-2">
@@ -636,7 +638,7 @@
         </div>
 
         <!-- VIEW 3: CUSTOM & AI ITEM (Mounts #add-pool-custom-tab-content on Character Sheet) -->
-        <div id="dnd-ui-compendium-custom-view" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden bg-[#131d33]"></div>
+        <div id="dnd-ui-compendium-custom-view" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden"></div>
       </div>
     `;
     document.body.appendChild(wrapper);
