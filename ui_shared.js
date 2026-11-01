@@ -492,7 +492,8 @@
 
   let _drawerState = {
     isOpen: false,
-    activeTab: 'all', // 'all' | 'Weapon' | 'Armor' | 'Feat' | 'Spell' | 'Condition' | 'Monster' | 'forge'
+    activeTab: 'srd', // 'srd' | 'forge' | 'custom' | 'Monster'
+    srdCategoryFilter: 'all_gear', // 'all_gear' | 'Weapon' | 'Armor' | 'Item'
     query: '',
     results: [],
     selectedEntry: null,
@@ -521,33 +522,50 @@
         <!-- Header -->
         <div class="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
           <div class="flex items-center gap-2.5 min-w-0">
-            <span id="dnd-ui-compendium-icon" class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-lg shrink-0">👹</span>
+            <span id="dnd-ui-compendium-icon" class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/40 flex items-center justify-center text-lg shrink-0">🎒</span>
             <div class="min-w-0">
-              <h3 id="dnd-ui-compendium-title" class="text-sm sm:text-base font-black text-white truncate">D&amp;D 3.5e Bestiary</h3>
-              <p id="dnd-ui-compendium-subtitle" class="text-[11px] text-slate-400 truncate">Official SRD 3.5e Monster Compendium</p>
+              <h3 id="dnd-ui-compendium-title" class="text-sm sm:text-base font-black text-white truncate">Add Item to Inventory</h3>
+              <p id="dnd-ui-compendium-subtitle" class="text-[11px] text-slate-400 truncate">SRD 3.5e Compendium • V2 Item Forge • Custom &amp; Rule Master AI</p>
             </div>
           </div>
           <button type="button" onclick="DnDUI.closeCompendiumDrawer()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-bold border border-slate-700 transition cursor-pointer shrink-0">✕ Close</button>
         </div>
 
-        <!-- Category Tabs (Shown only for Character Inventory Gear/Forge Drawer; hidden in Bestiary Mode) -->
-        <div id="dnd-ui-compendium-tabs-bar" class="px-4 py-2 bg-slate-900/90 border-b border-slate-800 grid grid-cols-3 gap-1.5 shrink-0 text-xs">
-          <button type="button" data-comp-tab="Weapon" onclick="DnDUI.switchCompendiumTab('Weapon')" class="w-full py-1.5 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-indigo-600 text-white">⚔️ Weapons</button>
-          <button type="button" data-comp-tab="Armor" onclick="DnDUI.switchCompendiumTab('Armor')" class="w-full py-1.5 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-950/60">🛡️ Armor &amp; Gear</button>
-          <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="w-full py-1.5 px-2 rounded-lg font-black transition cursor-pointer flex items-center justify-center gap-1.5 bg-amber-500/20 text-amber-300 border border-amber-500/50 hover:bg-amber-500 hover:text-slate-950">⚒️ The Forge</button>
+        <!-- Unified 3-Tab Bar (Shown for Character Inventory; hidden in Bestiary Mode) -->
+        <div id="dnd-ui-compendium-tabs-bar" class="px-3 sm:px-4 py-2 bg-slate-900/95 border-b border-slate-800 grid grid-cols-3 gap-1.5 shrink-0 text-xs">
+          <button type="button" data-comp-tab="srd" onclick="DnDUI.switchCompendiumTab('srd')" class="w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow">
+            <span>📚</span>
+            <span class="truncate">SRD Compendium</span>
+          </button>
+          <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-950/60">
+            <span>⚒️</span>
+            <span class="truncate">Item Forge</span>
+          </button>
+          <button type="button" id="dnd-ui-tab-btn-custom" data-comp-tab="custom" onclick="DnDUI.switchCompendiumTab('custom')" class="w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-950/60">
+            <span>✨</span>
+            <span class="truncate">Custom &amp; AI</span>
+          </button>
         </div>
 
-        <!-- VIEW 1: COMPENDIUM SEARCH & INSPECTOR -->
+        <!-- VIEW 1: SRD COMPENDIUM SEARCH & INSPECTOR -->
         <div id="dnd-ui-compendium-search-view" class="flex-1 flex flex-col min-h-0 overflow-hidden">
-          <!-- Search Bar -->
-          <div class="p-3 bg-slate-950/60 border-b border-slate-800 flex items-center gap-2 shrink-0">
-            <span class="text-slate-400 text-sm">🔍</span>
-            <input type="text" id="dnd-ui-compendium-input" oninput="DnDUI.onCompendiumSearchInput(this.value)" placeholder="Search Bestiary monsters (e.g. Aboleth, Dragon, Goblin, Balor)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 font-mono">
+          <!-- Search Bar + Category Sub-Filter Pills -->
+          <div class="p-3 bg-slate-950/60 border-b border-slate-800 space-y-2 shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="text-slate-400 text-sm">🔍</span>
+              <input type="text" id="dnd-ui-compendium-input" oninput="DnDUI.onCompendiumSearchInput(this.value)" placeholder="Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 font-mono">
+            </div>
+            <div id="dnd-ui-compendium-srd-subfilters" class="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-[11px]">
+              <button type="button" data-srd-sub="all_gear" onclick="DnDUI.setSrdSubFilter('all_gear')" class="px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition cursor-pointer bg-indigo-600/30 text-indigo-200 border border-indigo-500/50">📦 All Gear</button>
+              <button type="button" data-srd-sub="Weapon" onclick="DnDUI.setSrdSubFilter('Weapon')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">⚔️ Weapons</button>
+              <button type="button" data-srd-sub="Armor" onclick="DnDUI.setSrdSubFilter('Armor')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛡️ Armor &amp; Shields</button>
+              <button type="button" data-srd-sub="Item" onclick="DnDUI.setSrdSubFilter('Item')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">💍 Magic &amp; Wondrous</button>
+            </div>
           </div>
 
           <!-- Split Pane: Left Results, Right V2 Detail Card -->
           <div class="flex-1 grid grid-cols-1 md:grid-cols-12 min-h-0 overflow-hidden">
-            <div id="dnd-ui-compendium-list" class="md:col-span-5 border-r border-slate-800 overflow-y-auto divide-y divide-slate-800/60 bg-slate-950/40"></div>
+            <div id="dnd-ui-compendium-list" class="md:col-span-5 max-h-52 md:max-h-none border-b md:border-b-0 md:border-r border-slate-800 overflow-y-auto divide-y divide-slate-800/60 bg-slate-950/40"></div>
             <div id="dnd-ui-compendium-detail" class="md:col-span-7 overflow-y-auto p-4 space-y-3 bg-[#131d33]"></div>
           </div>
         </div>
@@ -616,10 +634,32 @@
           <!-- Live Assembled V2 Item Preview Card -->
           <div id="dnd-forge-preview-card" class="bg-slate-950/90 border border-indigo-500/50 rounded-2xl p-4 space-y-3 shadow-xl"></div>
         </div>
+
+        <!-- VIEW 3: CUSTOM & AI ITEM (Mounts #add-pool-custom-tab-content on Character Sheet) -->
+        <div id="dnd-ui-compendium-custom-view" class="hidden flex-1 flex flex-col min-h-0 overflow-hidden bg-[#131d33]"></div>
       </div>
     `;
     document.body.appendChild(wrapper);
+    mountCustomTabContentIfPresent();
     populateForgeControls();
+  }
+
+  function mountCustomTabContentIfPresent() {
+    const customView = document.getElementById('dnd-ui-compendium-custom-view');
+    const customContent = document.getElementById('add-pool-custom-tab-content');
+    const customTabBtn = document.getElementById('dnd-ui-tab-btn-custom');
+    const tabsBar = document.getElementById('dnd-ui-compendium-tabs-bar');
+    if (customView && customContent && customContent.parentElement !== customView) {
+      customView.appendChild(customContent);
+    }
+    if (customTabBtn) {
+      const hasCustom = Boolean(customContent);
+      customTabBtn.classList.toggle('hidden', !hasCustom);
+      if (tabsBar) {
+        tabsBar.classList.toggle('grid-cols-3', hasCustom);
+        tabsBar.classList.toggle('grid-cols-2', !hasCustom);
+      }
+    }
   }
 
   function populateForgeControls() {
@@ -807,14 +847,34 @@
 
   async function openCompendiumDrawer(options = {}) {
     ensureCompendiumDrawerDom();
+    mountCustomTabContentIfPresent();
 
     _drawerState.onEquipCallback = options.onEquip || options.onSelect || null;
-    const rawTab = options.tab || options.defaultTab || options.category || 'Weapon';
-    const initialTab = rawTab === 'browse' ? (options.category || 'Weapon') : rawTab;
+    const rawTab = options.tab || options.defaultTab || options.category || 'srd';
+    const isBestiaryMode = Boolean(options.bestiaryOnly || rawTab === 'Monster');
+
+    let initialTab = 'srd';
+    if (isBestiaryMode) {
+      initialTab = 'Monster';
+    } else if (rawTab === 'forge') {
+      initialTab = 'forge';
+    } else if (rawTab === 'custom') {
+      initialTab = 'custom';
+    } else {
+      initialTab = 'srd';
+      if (rawTab === 'Weapon' || rawTab === 'Armor' || rawTab === 'Item' || rawTab === 'all_gear') {
+        _drawerState.srdCategoryFilter = rawTab;
+      } else if (options.category === 'Weapon' || options.category === 'Armor' || options.category === 'Item') {
+        _drawerState.srdCategoryFilter = options.category;
+      } else {
+        _drawerState.srdCategoryFilter = 'all_gear';
+      }
+    }
+
     const initialQuery = options.query || '';
-    const isBestiaryMode = Boolean(options.bestiaryOnly || initialTab === 'Monster');
 
     const tabsBar = document.getElementById('dnd-ui-compendium-tabs-bar');
+    const subFiltersBar = document.getElementById('dnd-ui-compendium-srd-subfilters');
     const iconEl = document.getElementById('dnd-ui-compendium-icon');
     const titleEl = document.getElementById('dnd-ui-compendium-title');
     const subEl = document.getElementById('dnd-ui-compendium-subtitle');
@@ -822,16 +882,18 @@
 
     if (isBestiaryMode) {
       if (tabsBar) tabsBar.classList.add('hidden');
+      if (subFiltersBar) subFiltersBar.classList.add('hidden');
       if (iconEl) iconEl.textContent = '👹';
       if (titleEl) titleEl.textContent = 'D&D 3.5e Bestiary';
       if (subEl) subEl.textContent = 'Search & import official SRD 3.5e monsters into your campaign';
       if (input) input.placeholder = 'Search Bestiary monsters (e.g. Aboleth, Dragon, Goblin, Balor)...';
     } else {
       if (tabsBar) tabsBar.classList.remove('hidden');
-      if (iconEl) iconEl.textContent = '⚒️';
-      if (titleEl) titleEl.textContent = 'D&D 3.5e Armory & The Forge';
-      if (subEl) subEl.textContent = 'Browse SRD Weapons & Armor or assemble custom magic gear';
-      if (input) input.placeholder = 'Search weapons, armor, shields, or gear...';
+      if (subFiltersBar) subFiltersBar.classList.remove('hidden');
+      if (iconEl) iconEl.textContent = '🎒';
+      if (titleEl) titleEl.textContent = 'Add Item to Inventory';
+      if (subEl) subEl.textContent = 'SRD 3.5e Compendium • V2 Item Forge • Custom & Rule Master AI';
+      if (input) input.placeholder = 'Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)...';
     }
 
     const drawer = document.getElementById('dnd-ui-compendium-drawer');
@@ -847,10 +909,14 @@
       }
     }
     populateForgeControls();
+    updateSrdSubFilterButtonsUI();
 
     await switchCompendiumTab(initialTab);
-    if (initialTab !== 'forge' && input) {
-      setTimeout(() => input.focus(), 60);
+    if (initialTab === 'srd' || initialTab === 'Monster') {
+      if (input) setTimeout(() => input.focus(), 60);
+    } else if (initialTab === 'custom') {
+      const poolSearch = document.getElementById('pool-modal-search');
+      if (poolSearch) setTimeout(() => poolSearch.focus(), 60);
     }
   }
 
@@ -860,28 +926,83 @@
     _drawerState.isOpen = false;
   }
 
+  function updateSrdSubFilterButtonsUI() {
+    const current = _drawerState.srdCategoryFilter || 'all_gear';
+    document.querySelectorAll('[data-srd-sub]').forEach(btn => {
+      const sub = btn.getAttribute('data-srd-sub');
+      btn.className = sub === current
+        ? 'px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition cursor-pointer bg-indigo-600/30 text-indigo-200 border border-indigo-500/50'
+        : 'px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800';
+    });
+  }
+
+  async function setSrdSubFilter(subKey) {
+    _drawerState.srdCategoryFilter = subKey || 'all_gear';
+    updateSrdSubFilterButtonsUI();
+    await executeCompendiumDrawerSearch(_drawerState.query);
+  }
+
+  async function jumpToCustomAiTabWithQuery(queryStr) {
+    await switchCompendiumTab('custom');
+    const q = (queryStr || '').trim();
+    const poolSearch = document.getElementById('pool-modal-search');
+    if (poolSearch && q) {
+      poolSearch.value = q;
+      if (typeof global.onPoolModalSearchInput === 'function') {
+        global.onPoolModalSearchInput(q);
+      }
+      setTimeout(() => poolSearch.focus(), 50);
+    }
+  }
+
   async function switchCompendiumTab(tab) {
+    mountCustomTabContentIfPresent();
     _drawerState.activeTab = tab;
+
     document.querySelectorAll('[data-comp-tab]').forEach(btn => {
       const t = btn.getAttribute('data-comp-tab');
-      if (t === 'forge') return;
-      btn.className = t === tab
-        ? 'w-full py-1.5 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-indigo-600 text-white'
-        : 'w-full py-1.5 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-950/60';
+      const isActive = (t === tab) || (t === 'srd' && (tab === 'Weapon' || tab === 'Armor' || tab === 'Item'));
+      if (t === 'forge') {
+        btn.className = isActive
+          ? 'w-full py-2 px-2 rounded-lg font-black transition cursor-pointer flex items-center justify-center gap-1.5 bg-amber-500 text-slate-950 shadow'
+          : 'w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-amber-300/90 hover:text-white bg-slate-950/60 border border-amber-500/30';
+      } else if (t === 'custom') {
+        btn.className = isActive
+          ? 'w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-purple-600 text-white shadow'
+          : 'w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-purple-300/90 hover:text-white bg-slate-950/60 border border-purple-500/30';
+      } else {
+        btn.className = isActive
+          ? 'w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow'
+          : 'w-full py-2 px-2 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-950/60 border border-slate-800';
+      }
     });
 
     const searchView = document.getElementById('dnd-ui-compendium-search-view');
     const forgeView = document.getElementById('dnd-ui-compendium-forge-view');
+    const customView = document.getElementById('dnd-ui-compendium-custom-view');
 
     if (tab === 'forge') {
       if (searchView) searchView.classList.add('hidden');
+      if (customView) customView.classList.add('hidden');
       if (forgeView) forgeView.classList.remove('hidden');
       updateForgePreview();
       return;
     }
 
+    if (tab === 'custom') {
+      if (searchView) searchView.classList.add('hidden');
+      if (forgeView) forgeView.classList.add('hidden');
+      if (customView) customView.classList.remove('hidden');
+      const poolSearch = document.getElementById('pool-modal-search');
+      if ((!poolSearch || !poolSearch.value.trim()) && typeof global.renderUnaddedMasterDbItems === 'function') {
+        global.renderUnaddedMasterDbItems('all');
+      }
+      return;
+    }
+
     if (searchView) searchView.classList.remove('hidden');
     if (forgeView) forgeView.classList.add('hidden');
+    if (customView) customView.classList.add('hidden');
 
     await executeCompendiumDrawerSearch(_drawerState.query);
   }
@@ -896,14 +1017,22 @@
     if (!listEl || !global.SrdCompendium) return;
 
     const filters = { limit: 60 };
-    if (_drawerState.activeTab !== 'all') {
-      const tabMap = {
+    if (_drawerState.activeTab === 'Monster') {
+      filters.type = ['Monster'];
+    } else if (_drawerState.activeTab === 'srd' || _drawerState.activeTab === 'Weapon' || _drawerState.activeTab === 'Armor' || _drawerState.activeTab === 'Item') {
+      const sub = _drawerState.srdCategoryFilter || 'all_gear';
+      const subMap = {
+        all_gear: ['Weapon', 'Armor', 'Shield', 'Item'],
         Weapon: ['Weapon'],
-        Armor: ['Armor', 'Shield', 'Item'],
+        Armor: ['Armor', 'Shield'],
+        Item: ['Item']
+      };
+      filters.type = subMap[sub] || subMap.all_gear;
+    } else if (_drawerState.activeTab !== 'all') {
+      const tabMap = {
         Feat: ['Feat'],
         Spell: ['Spell', 'Power'],
-        Condition: ['Condition', 'Rule'],
-        Monster: ['Monster']
+        Condition: ['Condition', 'Rule']
       };
       filters.type = tabMap[_drawerState.activeTab] || _drawerState.activeTab;
     }
@@ -912,7 +1041,19 @@
     _drawerState.results = Array.isArray(results) ? results : [];
 
     if (_drawerState.results.length === 0) {
-      listEl.innerHTML = `<div class="p-6 text-center text-slate-500 text-xs italic">No matching SRD V2 entries found.</div>`;
+      const safeQ = escapeHtml(query || '');
+      const hasCustomTab = Boolean(document.getElementById('add-pool-custom-tab-content')) && _drawerState.activeTab !== 'Monster';
+      listEl.innerHTML = `
+        <div class="p-6 text-center space-y-3">
+          <div class="text-slate-400 text-xs italic">No matching SRD V2 entries found${safeQ ? ` for "${safeQ}"` : ''}.</div>
+          ${hasCustomTab ? `
+            <button type="button" onclick="DnDUI.jumpToCustomAiTabWithQuery('${safeQ.replace(/'/g, "\\'")}')" class="px-3 py-2 rounded-xl bg-purple-700/80 hover:bg-purple-600 text-white font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 border border-purple-400/50">
+              <span>✨</span>
+              <span>Search in Custom DB / Rule Master AI ➔</span>
+            </button>
+          ` : ''}
+        </div>
+      `;
       const detailEl = document.getElementById('dnd-ui-compendium-detail');
       if (detailEl) detailEl.innerHTML = '';
       return;
@@ -1032,6 +1173,8 @@
     openCompendiumDrawer,
     closeCompendiumDrawer,
     switchCompendiumTab,
+    setSrdSubFilter,
+    jumpToCustomAiTabWithQuery,
     onCompendiumSearchInput,
     selectCompendiumEntry,
     equipSelectedCompendiumEntry,

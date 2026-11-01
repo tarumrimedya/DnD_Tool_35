@@ -2147,44 +2147,32 @@
               <span class="text-amber-400">🎒</span>
               <span class="text-amber-300 font-bold">INVENTORY & GEAR POOL</span>
             </div>
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full sm:w-auto">
-              <div class="flex items-center gap-2 flex-1 sm:flex-initial">
-                <!-- Search -->
-                <input type="text" id="pool-search-input" oninput="renderGearPoolTable()" placeholder="Search gear pool..." class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:border-amber-500 flex-1 sm:w-44">
-                <!-- Category Filter (Madde 8: Weapon & Shield separated!) -->
-                <select id="pool-category-filter" onchange="renderGearPoolTable()" class="bg-slate-950 text-slate-300 border border-slate-700 rounded-lg px-2 py-1.5 text-xs shrink-0">
-                  <option value="All">All Categories</option>
-                  <option value="Weapon">Weapon</option>
-                  <option value="Shield">Shield</option>
-                  <option value="Armor">Armor</option>
-                  <option value="Head">Head</option>
-                  <option value="Eyes">Eyes</option>
-                  <option value="Neck">Neck</option>
-                  <option value="Shoulders">Shoulders</option>
-                  <option value="Torso">Torso</option>
-                  <option value="Belt">Belt</option>
-                  <option value="Bracers">Bracers</option>
-                  <option value="Gloves">Gloves</option>
-                  <option value="Ring">Ring</option>
-                  <option value="Boots">Boots</option>
-                  <option value="Consumable">Consumable</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <button type="button" onclick="openCharacterForgeDrawer()" class="w-full sm:w-auto bg-indigo-700 hover:bg-indigo-600 active:scale-95 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer shrink-0 border border-indigo-400/40" title="V2 Item Forge: Combine Material (Mithral, Adamantine) + Enhancement (+1..+5) + Special Abilities (Keen, Flaming, Vorpal)">
-                  <span>⚒️</span>
-                  <span>Item Forge (Lego)</span>
-                </button>
-                <button type="button" onclick="openCharacterCompendiumDrawer()" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-300 font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer shrink-0 border border-amber-500/40" title="Add Item from Modular SRD V2 Compendium (3,522 Entries)">
-                  <span>📚</span>
-                  <span>SRD Compendium</span>
-                </button>
-                <button type="button" onclick="openAddPoolItemModal()" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-500 active:scale-95 text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer shrink-0">
-                  <span>➕</span>
-                  <span>Add Custom Item</span>
-                </button>
-              </div>
+            <div class="flex items-center gap-1.5 w-full sm:w-auto">
+              <!-- Search -->
+              <input type="text" id="pool-search-input" oninput="renderGearPoolTable()" placeholder="Search gear pool..." class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:border-amber-500 flex-1 min-w-0 sm:w-44">
+              <!-- Category Filter (Madde 8: Weapon & Shield separated!) -->
+              <select id="pool-category-filter" onchange="renderGearPoolTable()" class="bg-slate-950 text-slate-300 border border-slate-700 rounded-lg px-2 py-1.5 text-xs shrink-0 max-w-[125px] sm:max-w-none">
+                <option value="All">All Categories</option>
+                <option value="Weapon">Weapon</option>
+                <option value="Shield">Shield</option>
+                <option value="Armor">Armor</option>
+                <option value="Head">Head</option>
+                <option value="Eyes">Eyes</option>
+                <option value="Neck">Neck</option>
+                <option value="Shoulders">Shoulders</option>
+                <option value="Torso">Torso</option>
+                <option value="Belt">Belt</option>
+                <option value="Bracers">Bracers</option>
+                <option value="Gloves">Gloves</option>
+                <option value="Ring">Ring</option>
+                <option value="Boots">Boots</option>
+                <option value="Consumable">Consumable</option>
+                <option value="Other">Other</option>
+              </select>
+              <button type="button" onclick="openCharacterCompendiumDrawer()" class="bg-gradient-to-r from-amber-600 to-indigo-600 hover:from-amber-500 hover:to-indigo-500 active:scale-95 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer shrink-0 border border-amber-400/40" title="Add Item: SRD Compendium (3,522 Entries) • V2 Item Forge (Lego) • Custom & Rule Master AI">
+                <span>➕</span>
+                <span>Add Item</span>
+              </button>
             </div>
           </div>
           <div class="overflow-x-auto">
@@ -6799,7 +6787,8 @@
         <button onclick="closeAddPoolItemModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 p-1.5 rounded-lg text-xs font-bold transition">✕ Close</button>
       </div>
 
-      <!-- Modal Scrollable Content -->
+      <!-- Modal Scrollable Content + Footer Wrapper (Mountable in Unified Compendium Drawer Tab 3) -->
+      <div id="add-pool-custom-tab-content" class="flex-1 flex flex-col min-h-0 overflow-hidden">
       <div class="p-4 space-y-3.5 text-xs overflow-y-auto flex-1 custom-scrollbar">
         <!-- 1. Search Box (Master DB + AI Integrated) -->
         <div class="bg-slate-900/90 p-3 rounded-xl border border-amber-500/40 space-y-2.5 shadow-inner">
@@ -6911,6 +6900,7 @@
           <button onclick="closeAddPoolItemModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs px-3 py-1.5 rounded-lg transition">Cancel</button>
           <button onclick="saveNewPoolItem()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition shadow">💾 Add to Gear Pool</button>
         </div>
+      </div>
       </div>
     </div>
   </div>

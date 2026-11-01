@@ -5228,19 +5228,14 @@
       });
     }
 
-    // Add Pool Item Modal handlers
-    function openAddPoolItemModal() {
-      const modal = document.getElementById('add-pool-item-modal');
-      if (!modal) return;
-
-      // Reset Search & AI states
+    // Add Pool Item Modal handlers (Unified into Compendium Drawer Tab 3: Custom & AI)
+    function resetAddPoolCustomTabForm() {
       const searchInput = document.getElementById('pool-modal-search');
       if (searchInput) searchInput.value = '';
       const clearBtn = document.getElementById('pool-modal-clear-search');
       if (clearBtn) clearBtn.classList.add('hidden');
       window._poolCurrentAiEntries = [];
 
-      // Reset manual form inputs
       if (document.getElementById('api-name')) document.getElementById('api-name').value = '';
       if (document.getElementById('api-category')) document.getElementById('api-category').value = 'Weapon';
       if (document.getElementById('api-slot')) document.getElementById('api-slot').value = '';
@@ -5250,14 +5245,27 @@
       if (document.getElementById('api-desc')) document.getElementById('api-desc').value = '';
       if (document.getElementById('api-belt')) document.getElementById('api-belt').checked = false;
 
-      // Close details by default so search is clean and primary
       const formDetails = document.getElementById('pool-manual-form-details');
       if (formDetails) formDetails.open = false;
 
-      // Automatically list Master DB items not yet in inventory
       renderUnaddedMasterDbItems('all');
+    }
 
+    function openAddPoolItemModal() {
+      resetAddPoolCustomTabForm();
+
+      if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
+        window.DnDUI.openCompendiumDrawer({
+          defaultTab: 'custom',
+          onSelect: (entry) => addV2ItemToCharacterGearPool(entry)
+        });
+        return;
+      }
+
+      const modal = document.getElementById('add-pool-item-modal');
+      if (!modal) return;
       modal.classList.remove('hidden');
+      const searchInput = document.getElementById('pool-modal-search');
       setTimeout(() => {
         if (searchInput) searchInput.focus();
       }, 50);
@@ -5266,6 +5274,9 @@
     function closeAddPoolItemModal() {
       const modal = document.getElementById('add-pool-item-modal');
       if (modal) modal.classList.add('hidden');
+      if (window.DnDUI && typeof window.DnDUI.closeCompendiumDrawer === 'function') {
+        window.DnDUI.closeCompendiumDrawer();
+      }
     }
 
     function setPoolSearchAndFilter(term) {
@@ -6109,6 +6120,7 @@
     }
 
     function openCharacterForgeDrawer() {
+      resetAddPoolCustomTabForm();
       if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
         window.DnDUI.openCompendiumDrawer({
           defaultTab: 'forge',
@@ -6117,10 +6129,11 @@
       }
     }
 
-    function openCharacterCompendiumDrawer(defaultCategory = 'Weapon') {
+    function openCharacterCompendiumDrawer(defaultCategory = 'all_gear') {
+      resetAddPoolCustomTabForm();
       if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
         window.DnDUI.openCompendiumDrawer({
-          defaultTab: 'browse',
+          defaultTab: 'srd',
           category: defaultCategory,
           onSelect: (entry) => addV2ItemToCharacterGearPool(entry)
         });
