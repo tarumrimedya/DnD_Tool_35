@@ -664,9 +664,14 @@
     const enhGrid = document.getElementById('dnd-forge-enhancements-grid');
     if (!baseSel || !enhGrid) return;
 
+    const srdReady = Boolean(global.SrdCompendium && typeof global.SrdCompendium.isReady === 'function' && global.SrdCompendium.isReady());
+    if (baseSel.dataset.srdPopulated === (srdReady ? 'full' : 'fallback') && enhGrid.children.length > 0) {
+      return;
+    }
+
     // Populate base weapons and armors from SrdCompendium if loaded
     let baseOptions = [];
-    if (global.SrdCompendium && typeof global.SrdCompendium.isReady === 'function' && global.SrdCompendium.isReady() && typeof global.SrdCompendium.getAllLoaded === 'function') {
+    if (srdReady && typeof global.SrdCompendium.getAllLoaded === 'function') {
       baseOptions = global.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield']);
     }
 
@@ -690,34 +695,37 @@
     baseSel.innerHTML = baseOptions.slice(0, 120).map(item =>
       `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} (${escapeHtml(item.type || item.subCategory || item.category)})</option>`
     ).join('');
+    baseSel.dataset.srdPopulated = srdReady ? 'full' : 'fallback';
 
-    const ENH_LIST = [
-      { id: 'enh-keen', label: '⚡ Keen (2× Crit)', bonusEq: '+1' },
-      { id: 'enh-flaming', label: '🔥 Flaming (+1d6)', bonusEq: '+1' },
-      { id: 'enh-flaming-burst', label: '🔥 Flaming Burst', bonusEq: '+2' },
-      { id: 'enh-frost', label: '❄️ Frost (+1d6)', bonusEq: '+1' },
-      { id: 'enh-icy-burst', label: '❄️ Icy Burst', bonusEq: '+2' },
-      { id: 'enh-shock', label: '⚡ Shock (+1d6)', bonusEq: '+1' },
-      { id: 'enh-shocking-burst', label: '⚡ Shocking Burst', bonusEq: '+2' },
-      { id: 'enh-corrosive', label: '🧪 Acidic (+1d6)', bonusEq: '+1' },
-      { id: 'enh-holy', label: '☀️ Holy (+2d6 vs Evil)', bonusEq: '+2' },
-      { id: 'enh-unholy', label: '💀 Unholy (+2d6 vs Good)', bonusEq: '+2' },
-      { id: 'enh-ghost-touch', label: '👻 Ghost Touch', bonusEq: '+1' },
-      { id: 'enh-speed', label: '⚡ Speed (+1 Atk)', bonusEq: '+3' },
-      { id: 'enh-vorpal', label: '🗡️ Vorpal (Nat 20)', bonusEq: '+5' },
-      { id: 'enh-wounding', label: '🩸 Wounding (1 CON)', bonusEq: '+2' },
-      { id: 'enh-fortification-light', label: '🛡️ Fortification 25%', bonusEq: '+1' },
-      { id: 'enh-fortification-moderate', label: '🛡️ Fortification 75%', bonusEq: '+3' },
-      { id: 'enh-animated', label: '🛡️ Animated Shield', bonusEq: '+2' }
-    ];
+    if (enhGrid.children.length === 0) {
+      const ENH_LIST = [
+        { id: 'enh-keen', label: '⚡ Keen (2× Crit)', bonusEq: '+1' },
+        { id: 'enh-flaming', label: '🔥 Flaming (+1d6)', bonusEq: '+1' },
+        { id: 'enh-flaming-burst', label: '🔥 Flaming Burst', bonusEq: '+2' },
+        { id: 'enh-frost', label: '❄️ Frost (+1d6)', bonusEq: '+1' },
+        { id: 'enh-icy-burst', label: '❄️ Icy Burst', bonusEq: '+2' },
+        { id: 'enh-shock', label: '⚡ Shock (+1d6)', bonusEq: '+1' },
+        { id: 'enh-shocking-burst', label: '⚡ Shocking Burst', bonusEq: '+2' },
+        { id: 'enh-corrosive', label: '🧪 Acidic (+1d6)', bonusEq: '+1' },
+        { id: 'enh-holy', label: '☀️ Holy (+2d6 vs Evil)', bonusEq: '+2' },
+        { id: 'enh-unholy', label: '💀 Unholy (+2d6 vs Good)', bonusEq: '+2' },
+        { id: 'enh-ghost-touch', label: '👻 Ghost Touch', bonusEq: '+1' },
+        { id: 'enh-speed', label: '⚡ Speed (+1 Atk)', bonusEq: '+3' },
+        { id: 'enh-vorpal', label: '🗡️ Vorpal (Nat 20)', bonusEq: '+5' },
+        { id: 'enh-wounding', label: '🩸 Wounding (1 CON)', bonusEq: '+2' },
+        { id: 'enh-fortification-light', label: '🛡️ Fortification 25%', bonusEq: '+1' },
+        { id: 'enh-fortification-moderate', label: '🛡️ Fortification 75%', bonusEq: '+3' },
+        { id: 'enh-animated', label: '🛡️ Animated Shield', bonusEq: '+2' }
+      ];
 
-    enhGrid.innerHTML = ENH_LIST.map(e => `
-      <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none">
-        <input type="checkbox" value="${e.id}" onchange="DnDUI.updateForgePreview()" class="dnd-forge-enh-chk rounded text-amber-500 bg-slate-900 border-slate-700">
-        <span class="text-[11px] font-semibold text-slate-200 truncate">${e.label}</span>
-        <span class="text-[9px] font-mono text-amber-400 ml-auto">${e.bonusEq}</span>
-      </label>
-    `).join('');
+      enhGrid.innerHTML = ENH_LIST.map(e => `
+        <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none">
+          <input type="checkbox" value="${e.id}" onchange="DnDUI.updateForgePreview()" class="dnd-forge-enh-chk rounded text-amber-500 bg-slate-900 border-slate-700">
+          <span class="text-[11px] font-semibold text-slate-200 truncate">${e.label}</span>
+          <span class="text-[9px] font-mono text-amber-400 ml-auto">${e.bonusEq}</span>
+        </label>
+      `).join('');
+    }
   }
 
   function getSelectedForgeItem() {
@@ -899,15 +907,14 @@
         await global.SrdCompendium.init();
       }
     }
-    populateForgeControls();
     updateSrdSubFilterButtonsUI();
 
     await switchCompendiumTab(initialTab);
     if (initialTab === 'srd' || initialTab === 'Monster') {
-      if (input) setTimeout(() => input.focus(), 60);
+      if (input) setTimeout(() => input.focus(), 40);
     } else if (initialTab === 'custom') {
       const poolSearch = document.getElementById('pool-modal-search');
-      if (poolSearch) setTimeout(() => poolSearch.focus(), 60);
+      if (poolSearch) setTimeout(() => poolSearch.focus(), 40);
     }
   }
 
@@ -967,6 +974,7 @@
       if (searchView) searchView.classList.add('hidden');
       if (customView) customView.classList.add('hidden');
       if (forgeView) forgeView.classList.remove('hidden');
+      populateForgeControls();
       updateForgePreview();
       return;
     }

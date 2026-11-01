@@ -5100,38 +5100,61 @@
     // Helper: Map Master DB / Rule Master entry to 14 official Body Slots & Gear Categories (Madde 8)
     function mapEntryToGearCategory(entry) {
       if (!entry) return 'Other';
+      if (entry._gearCatCache) return entry._gearCatCache;
 
-      // 1. Önce BUNDLED_SRD_CORE_CATALOG içinde ara (Dagger +2 -> Dagger -> Weapon)
-      const baseMatch = typeof findBaseItemInSrdCore === 'function' ? findBaseItemInSrdCore(entry.name) : null;
-      if (baseMatch && baseMatch.type) {
-        const bType = baseMatch.type.toLowerCase();
-        if (bType === 'weapon') return 'Weapon';
-        if (bType === 'armor') return 'Armor';
-        if (bType === 'shield') return 'Shield';
-      }
-
-      const type = (entry.type || '').toLowerCase();
+      const type = (entry.type || entry.subCategory || entry.category || '').toLowerCase();
       const slot = (entry.slot || '').toLowerCase();
       const name = (entry.name || '').toLowerCase();
 
-      // 2. Silah, Kalkan ve Zırh Anahtar Kelime Kalkanı
-      if (type.includes('weapon') || slot.includes('main hand') || slot.includes('two hand') || slot.includes('off hand')) return 'Weapon';
-      if (/\b(?:dagger|sword|blade|axe|bow|crossbow|mace|spear|hammer|rapier|scimitar|flail|halberd|glaive|lance|morningstar|scythe|trident|quarterstaff|sling|dart|javelin|shuriken|kama|nunchaku|siangham|kukri|falchion|whip|club|greatclub)\b/i.test(name)) return 'Weapon';
+      let result = '';
+      // 1. Fast direct type/slot/keyword checks first (O(1))
+      if (type.includes('weapon') || slot.includes('main hand') || slot.includes('two hand') || slot.includes('off hand')) {
+        result = 'Weapon';
+      } else if (type.includes('shield') || slot.includes('shield') || name.includes('shield') || name.includes('buckler')) {
+        result = 'Shield';
+      } else if (type.includes('armor') || slot === 'armor' || slot === 'body') {
+        result = 'Armor';
+      } else if (type.includes('potion') || type.includes('scroll') || type.includes('wand') || type.includes('consumable') || name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of') || name.startsWith('oil of')) {
+        result = 'Consumable';
+      } else if (slot.includes('head') || slot.includes('helm') || type.includes('head')) {
+        result = 'Head';
+      } else if (slot.includes('eyes') || slot.includes('face') || slot.includes('goggles')) {
+        result = 'Eyes';
+      } else if (slot.includes('neck') || slot.includes('throat') || slot.includes('amulet') || slot.includes('periapt')) {
+        result = 'Neck';
+      } else if (slot.includes('shoulder') || slot.includes('cloak') || slot.includes('cape')) {
+        result = 'Shoulders';
+      } else if (slot.includes('torso') || slot.includes('vest') || slot.includes('shirt')) {
+        result = 'Torso';
+      } else if (slot.includes('belt') || slot.includes('waist')) {
+        result = 'Belt';
+      } else if (slot.includes('arm') || slot.includes('bracer')) {
+        result = 'Bracers';
+      } else if (slot.includes('hand') || slot.includes('glove') || slot.includes('gauntlet')) {
+        result = 'Gloves';
+      } else if (slot.includes('ring') || type.includes('ring') || name.startsWith('ring of')) {
+        result = 'Ring';
+      } else if (slot.includes('feet') || slot.includes('boot')) {
+        result = 'Boots';
+      } else if (/\b(?:dagger|sword|blade|axe|bow|crossbow|mace|spear|hammer|rapier|scimitar|flail|halberd|glaive|lance|morningstar|scythe|trident|quarterstaff|sling|dart|javelin|shuriken|kama|nunchaku|siangham|kukri|falchion|whip|club|greatclub)\b/i.test(name)) {
+        result = 'Weapon';
+      } else if (/\b(?:plate|mail|leather|padded|hide|hauberk|cuirass)\b/i.test(name)) {
+        result = 'Armor';
+      }
 
-      if (type.includes('shield') || slot.includes('shield') || name.includes('shield') || name.includes('buckler')) return 'Shield';
-      if (type.includes('armor') || slot === 'armor' || slot === 'body' || /\b(?:plate|mail|leather|padded|hide|hauberk|cuirass)\b/i.test(name)) return 'Armor';
-      if (type.includes('potion') || type.includes('scroll') || type.includes('wand') || type.includes('consumable') || name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of') || name.startsWith('oil of')) return 'Consumable';
-      if (slot.includes('head') || slot.includes('helm') || type.includes('head')) return 'Head';
-      if (slot.includes('eyes') || slot.includes('face') || slot.includes('goggles')) return 'Eyes';
-      if (slot.includes('neck') || slot.includes('throat') || slot.includes('amulet') || slot.includes('periapt')) return 'Neck';
-      if (slot.includes('shoulder') || slot.includes('cloak') || slot.includes('cape')) return 'Shoulders';
-      if (slot.includes('torso') || slot.includes('vest') || slot.includes('shirt')) return 'Torso';
-      if (slot.includes('belt') || slot.includes('waist')) return 'Belt';
-      if (slot.includes('arm') || slot.includes('bracer')) return 'Bracers';
-      if (slot.includes('hand') || slot.includes('glove') || slot.includes('gauntlet')) return 'Gloves';
-      if (slot.includes('ring') || type.includes('ring') || name.startsWith('ring of')) return 'Ring';
-      if (slot.includes('feet') || slot.includes('boot')) return 'Boots';
-      return 'Other';
+      // 2. Fallback to BUNDLED_SRD_CORE_CATALOG only when direct fields are ambiguous
+      if (!result) {
+        const baseMatch = typeof findBaseItemInSrdCore === 'function' ? findBaseItemInSrdCore(entry.name) : null;
+        if (baseMatch && baseMatch.type) {
+          const bType = baseMatch.type.toLowerCase();
+          if (bType === 'weapon') result = 'Weapon';
+          else if (bType === 'armor') result = 'Armor';
+          else if (bType === 'shield') result = 'Shield';
+        }
+      }
+
+      entry._gearCatCache = result || 'Other';
+      return entry._gearCatCache;
     }
 
     function getGearCategoryIcon(cat) {
@@ -5159,21 +5182,40 @@
     window._poolCurrentAiEntries = [];
     let _poolSearchDebounceTimer = null;
     let _currentPoolCategoryFilter = 'all';
+    let _cachedUnifiedEquipmentCatalog = null;
+    let _cachedUnifiedCatalogKey = '';
+
+    // Fast O(1) Set of all owned item names in character inventory
+    function getOwnedItemNamesSet() {
+      const set = new Set();
+      if (typeof character === 'undefined' || !character) return set;
+      (character.gearPool || []).forEach(g => {
+        if (g && g.name) set.add(String(g.name).toLowerCase().trim());
+      });
+      Object.values(character.bodySlots || {}).forEach(s => {
+        if (s && s.name) set.add(String(s.name).toLowerCase().trim());
+      });
+      (character.weapons || []).forEach(w => {
+        if (w && w.name) set.add(String(w.name).toLowerCase().trim());
+      });
+      (character.consumables || []).forEach(c => {
+        if (c && c.name) set.add(String(c.name).toLowerCase().trim());
+      });
+      return set;
+    }
 
     // Check if an item is already in character inventory
-    function isItemInInventory(name) {
+    function isItemInInventory(name, ownedSet = null) {
       if (!name || typeof character === 'undefined' || !character) return false;
       const clean = String(name).toLowerCase().trim();
-      if ((character.gearPool || []).some(g => (g.name || '').toLowerCase().trim() === clean)) return true;
-      if (Object.values(character.bodySlots || {}).some(s => s && s.name && s.name.toLowerCase().trim() === clean)) return true;
-      if ((character.weapons || []).some(w => w && w.name && w.name.toLowerCase().trim() === clean)) return true;
-      if ((character.consumables || []).some(c => c && c.name && c.name.toLowerCase().trim() === clean)) return true;
-      return false;
+      if (ownedSet) return ownedSet.has(clean);
+      return getOwnedItemNamesSet().has(clean);
     }
 
     // Filter which Master DB / Library items are equipment/items (D&D 3.5e RAW)
     function isEquipmentOrGear(item) {
       if (!item || !item.name) return false;
+      if (typeof item._isGearCache === 'boolean') return item._isGearCache;
       const type = String(item.type || '').toLowerCase().trim();
       const cat = String(item.category || '').toLowerCase().trim();
 
@@ -5181,35 +5223,34 @@
       const nonGearTypes = [
         'feat', 'special ability', 'spell', 'maneuver', 'stance', 
         'warlock invocation', 'invocation', 'race', 'class', 'prestige class',
-        'domain', 'skill', 'trait', 'flaw', 'template', 'psionic power'
+        'domain', 'skill', 'trait', 'flaw', 'template', 'psionic power', 'monster'
       ];
       if (nonGearTypes.includes(type) || nonGearTypes.includes(cat)) {
+        item._isGearCache = false;
         return false;
       }
       if (type.includes('feat') || type.includes('spell') || type.includes('maneuver') || type.includes('ability')) {
+        item._isGearCache = false;
         return false;
       }
 
       // Valid equipment types or categories
+      let isGear = false;
       if (type.includes('weapon') || type.includes('armor') || type.includes('shield') || 
           type.includes('potion') || type.includes('ring') || type.includes('wondrous') || 
           type.includes('item') || type.includes('gear') || type.includes('consumable') ||
           type.includes('scroll') || type.includes('wand') || type.includes('rod') ||
           type.includes('equipment') || type.includes('accessory') || type === 'goods') {
-        return true;
+        isGear = true;
+      } else if (item.slot && item.slot !== 'None' && item.slot !== '-' && item.slot.toLowerCase() !== 'none') {
+        isGear = true;
+      } else if (Number(item.weight) > 0 || Number(item.cost) > 0 || Number(item.weightLb) > 0 || Number(item.priceGp) > 0) {
+        isGear = true;
+      } else if (type === 'other' || cat === 'other') {
+        isGear = !!(item.slot && item.slot !== 'None' && item.slot !== '-') || (Number(item.weight) > 0 || Number(item.cost) > 0);
       }
-      // If item has an official body slot (other than 'None' or '-')
-      if (item.slot && item.slot !== 'None' && item.slot !== '-' && item.slot.toLowerCase() !== 'none') {
-        return true;
-      }
-      // If it explicitly has positive weight or positive GP cost (common adventuring gear)
-      if (Number(item.weight) > 0 || Number(item.cost) > 0) {
-        return true;
-      }
-      if (type === 'other' || cat === 'other') {
-        return !!(item.slot && item.slot !== 'None' && item.slot !== '-') || (Number(item.weight) > 0 || Number(item.cost) > 0);
-      }
-      return false;
+      item._isGearCache = isGear;
+      return isGear;
     }
 
     function cleanPoolItemDescription(raw) {
@@ -5230,38 +5271,51 @@
     }
 
     function getUnifiedEquipmentCatalog() {
+      const mLen = Array.isArray(masterDb) ? masterDb.length : 0;
+      const bLen = (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG.length : 0;
+      const srdReady = Boolean(typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.isReady === 'function' && window.SrdCompendium.isReady());
+      const cacheKey = `${mLen}:${bLen}:${srdReady ? 1 : 0}`;
+
+      if (_cachedUnifiedEquipmentCatalog && _cachedUnifiedCatalogKey === cacheKey) {
+        return _cachedUnifiedEquipmentCatalog;
+      }
+
       const seenNames = new Set();
       const combined = [];
-      const pushUnique = (entry) => {
+      const pushUniqueGear = (entry) => {
         if (!entry || !entry.name) return;
         const key = String(entry.name).toLowerCase().trim();
         if (!key || seenNames.has(key)) return;
+        if (!isEquipmentOrGear(entry)) return;
         seenNames.add(key);
+        mapEntryToGearCategory(entry); // pre-warm category cache once
         combined.push(entry);
       };
 
       if (Array.isArray(masterDb)) {
-        masterDb.forEach(pushUnique);
+        masterDb.forEach(pushUniqueGear);
       }
-      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+      if (srdReady && typeof window.SrdCompendium.getAllLoaded === 'function') {
         const srdGear = window.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield', 'Item']);
-        if (Array.isArray(srdGear)) srdGear.forEach(pushUnique);
+        if (Array.isArray(srdGear)) srdGear.forEach(pushUniqueGear);
       }
       if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        window.BUNDLED_SRD_CORE_CATALOG.forEach(pushUnique);
+        window.BUNDLED_SRD_CORE_CATALOG.forEach(pushUniqueGear);
       }
+
+      _cachedUnifiedEquipmentCatalog = combined;
+      _cachedUnifiedCatalogKey = cacheKey;
       return combined;
     }
 
     // Get all SRD + Master DB items not yet in inventory
     function getMasterDbItemsNotInInventory() {
-      return getUnifiedEquipmentCatalog().filter(item => {
-        return isEquipmentOrGear(item) && !isItemInInventory(item.name);
-      });
+      const ownedSet = getOwnedItemNamesSet();
+      return getUnifiedEquipmentCatalog().filter(item => !ownedSet.has(String(item.name).toLowerCase().trim()));
     }
 
     // Add Pool Item Modal handlers (Unified into Compendium Drawer Tab 3: Custom & AI)
-    function resetAddPoolCustomTabForm() {
+    function resetAddPoolCustomTabForm(skipRender = false) {
       const searchInput = document.getElementById('pool-modal-search');
       if (searchInput) searchInput.value = '';
       const clearBtn = document.getElementById('pool-modal-clear-search');
@@ -5280,13 +5334,16 @@
       const formDetails = document.getElementById('pool-manual-form-details');
       if (formDetails) formDetails.open = false;
 
-      renderUnaddedMasterDbItems('all');
+      if (!skipRender) {
+        renderUnaddedMasterDbItems('all');
+      }
     }
 
     function openAddPoolItemModal() {
-      resetAddPoolCustomTabForm();
+      const useDrawer = Boolean(window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function');
+      resetAddPoolCustomTabForm(useDrawer);
 
-      if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
+      if (useDrawer) {
         window.DnDUI.openCompendiumDrawer({
           defaultTab: 'custom',
           onSelect: (entry) => addV2ItemToCharacterGearPool(entry)
@@ -5344,8 +5401,10 @@
       if (_poolSearchDebounceTimer) clearTimeout(_poolSearchDebounceTimer);
       _poolSearchDebounceTimer = setTimeout(() => {
         executePoolMasterDbSearch(query);
-      }, 150);
+      }, 120);
     }
+
+    const WONDROUS_CAT_SET = new Set(['Ring', 'Head', 'Eyes', 'Neck', 'Shoulders', 'Torso', 'Belt', 'Bracers', 'Gloves', 'Boots']);
 
     function renderPoolCategoryTabs(unaddedList, activeFilter) {
       const container = document.getElementById('pool-category-tabs-container');
@@ -5355,16 +5414,14 @@
       const total = unaddedList.length;
       if (countBadge) countBadge.textContent = `${total} items available`;
 
-      const wepCount = unaddedList.filter(i => mapEntryToGearCategory(i) === 'Weapon').length;
-      const armCount = unaddedList.filter(i => {
-        const c = mapEntryToGearCategory(i);
-        return c === 'Armor' || c === 'Shield';
-      }).length;
-      const wonCount = unaddedList.filter(i => {
-        const c = mapEntryToGearCategory(i);
-        return ['Ring', 'Head', 'Eyes', 'Neck', 'Shoulders', 'Torso', 'Belt', 'Bracers', 'Gloves', 'Boots'].includes(c);
-      }).length;
-      const potCount = unaddedList.filter(i => mapEntryToGearCategory(i) === 'Consumable').length;
+      let wepCount = 0, armCount = 0, wonCount = 0, potCount = 0;
+      for (let i = 0; i < total; i++) {
+        const c = mapEntryToGearCategory(unaddedList[i]);
+        if (c === 'Weapon') wepCount++;
+        else if (c === 'Armor' || c === 'Shield') armCount++;
+        else if (c === 'Consumable') potCount++;
+        else if (WONDROUS_CAT_SET.has(c)) wonCount++;
+      }
 
       const tabs = [
         { key: 'all', label: 'All Gear', count: total },
@@ -5388,20 +5445,26 @@
       }).join('');
     }
 
-    function renderSpotlightItemCardHtml(item, idx, isSearchMode = false) {
+    function renderSpotlightItemCardHtml(item, idx, isSearchMode = false, ownedSet = null) {
       const cat = mapEntryToGearCategory(item);
       const icon = getGearCategoryIcon(cat);
       const source = item.source || 'SRD 3.5e';
       const weight = Number(item.weightLb ?? item.weight) || 0;
       const cost = Number(item.priceGp ?? item.cost) || 0;
-      const desc = cleanPoolItemDescription(item.benefit || item.description || item.shortDescription || '');
-      const inInv = isSearchMode ? isItemInInventory(item.name) : false;
-      const dmgBadges = (window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function')
-        ? window.DnDUI.renderDamagePartsBadges(item.damageParts)
-        : '';
-      const modBadges = (window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function')
-        ? window.DnDUI.renderModifiersBadges(item.modifiers)
-        : '';
+      if (typeof item._cleanDescCache !== 'string') {
+        item._cleanDescCache = cleanPoolItemDescription(item.benefit || item.description || item.shortDescription || '');
+      }
+      const desc = item._cleanDescCache;
+      const inInv = isSearchMode ? isItemInInventory(item.name, ownedSet) : false;
+      if (typeof item._badgesHtmlCache !== 'string') {
+        const dmgBadges = (window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function')
+          ? window.DnDUI.renderDamagePartsBadges(item.damageParts)
+          : '';
+        const modBadges = (window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function')
+          ? window.DnDUI.renderModifiersBadges(item.modifiers)
+          : '';
+        item._badgesHtmlCache = (dmgBadges || modBadges) ? `<div class="flex flex-wrap gap-1 pt-0.5">${dmgBadges}${modBadges}</div>` : '';
+      }
       const btnId = isSearchMode ? `btn-add-search-${idx}` : `btn-add-pool-${idx}`;
 
       return `
@@ -5433,7 +5496,7 @@
               </button>
             </div>
           </div>
-          ${(dmgBadges || modBadges) ? `<div class="flex flex-wrap gap-1 pt-0.5">${dmgBadges}${modBadges}</div>` : ''}
+          ${item._badgesHtmlCache}
           ${desc ? `<p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed bg-slate-950/60 p-1.5 rounded border border-slate-800/80">${desc}</p>` : ''}
         </div>
       `;
@@ -5456,10 +5519,7 @@
           return c === 'Armor' || c === 'Shield';
         });
       } else if (catFilter === 'wondrous') {
-        filtered = unadded.filter(item => {
-          const c = mapEntryToGearCategory(item);
-          return ['Ring', 'Head', 'Eyes', 'Neck', 'Shoulders', 'Torso', 'Belt', 'Bracers', 'Gloves', 'Boots'].includes(c);
-        });
+        filtered = unadded.filter(item => WONDROUS_CAT_SET.has(mapEntryToGearCategory(item)));
       } else if (catFilter === 'potion') {
         filtered = unadded.filter(item => mapEntryToGearCategory(item) === 'Consumable');
       }
@@ -5475,12 +5535,13 @@
         return;
       }
 
-      const displaySlice = filtered.slice(0, 60);
+      const maxPreview = 30;
+      const displaySlice = filtered.slice(0, maxPreview);
       let html = `
         <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold px-1 mb-1">
           <span class="text-amber-300 flex items-center gap-1.5">
             <span>📦</span>
-            <span>SRD 3.5e &amp; Custom Catalog (${filtered.length} available${filtered.length > 60 ? ', showing top 60' : ''}):</span>
+            <span>SRD 3.5e &amp; Custom Catalog (${filtered.length} available${filtered.length > maxPreview ? `, showing top ${maxPreview}` : ''}):</span>
           </span>
           <span class="text-[10px] text-slate-400 font-normal hidden sm:inline">Type above to filter or ask AI</span>
         </div>
@@ -5500,23 +5561,25 @@
 
       // Score and filter SRD + Custom DB items so exact/prefix name matches rank first
       const scored = [];
-      combined.forEach(item => {
-        if (!item || !item.name) return;
-        if (!isEquipmentOrGear(item)) return;
+      for (let i = 0; i < combined.length; i++) {
+        const item = combined[i];
+        if (!item || !item.name) continue;
         const name = (item.name || '').toLowerCase();
         const type = (item.type || '').toLowerCase();
         const slot = (item.slot || '').toLowerCase();
-        const benefit = (item.benefit || item.description || item.shortDescription || '').toLowerCase();
         if (name === q) {
           scored.push({ item, score: 100 });
         } else if (name.startsWith(q)) {
           scored.push({ item, score: 80 });
         } else if (name.includes(q)) {
           scored.push({ item, score: 60 });
-        } else if (type.includes(q) || slot.includes(q) || benefit.includes(q)) {
-          scored.push({ item, score: 25 });
+        } else {
+          const benefit = (item.benefit || item.description || item.shortDescription || '').toLowerCase();
+          if (type.includes(q) || slot.includes(q) || benefit.includes(q)) {
+            scored.push({ item, score: 25 });
+          }
         }
-      });
+      }
 
       scored.sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name));
       const matches = scored.map(s => s.item);
@@ -5559,6 +5622,7 @@
       }
 
       // MATCHES FOUND IN SRD + MASTER DB
+      const ownedSet = getOwnedItemNamesSet();
       let html = `
         <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold px-1 mb-1">
           <span>Spotlight Results (${matches.length} items found):</span>
@@ -5567,7 +5631,7 @@
           </button>
         </div>
         <div class="space-y-2">
-          ${matches.slice(0, 25).map((item, idx) => renderSpotlightItemCardHtml(item, idx, true)).join('')}
+          ${matches.slice(0, 25).map((item, idx) => renderSpotlightItemCardHtml(item, idx, true, ownedSet)).join('')}
         </div>
         <div class="text-center pt-1">
           <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-xs text-amber-300 hover:text-amber-200 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 shadow">
