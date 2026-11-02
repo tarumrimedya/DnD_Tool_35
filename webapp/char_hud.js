@@ -306,7 +306,6 @@
         const authUser = await authPromise;
         if (!authUser) return;
       }
-      try { verifySettingsGeminiApiKey(false); } catch (e) {}
       try { await CloudSync.init(); } catch (e) {}
       if (window.CloudSync && typeof window.CloudSync.startLiveSyncPolling === 'function') {
         window.CloudSync.startLiveSyncPolling(8000);
@@ -1423,7 +1422,7 @@
 
     function updateCampaignNavButton() {
       const btnText = document.getElementById('btn-join-campaign-text');
-      const badge = document.getElementById('settings-campaign-badge');
+      const badge = window._modalsMounted !== false ? document.getElementById('settings-campaign-badge') : null;
       if (character.campaignInviteCode) {
         if (btnText) btnText.textContent = character.campaignInviteCode;
         if (badge) badge.textContent = character.campaignInviteCode;
@@ -1458,6 +1457,7 @@
       const modal = document.getElementById('settings-modal');
       if (!modal) return;
       modal.classList.remove('hidden');
+      updateCampaignNavButton();
 
       // Update & verify Gemini API key live status badge in settings
       verifySettingsGeminiApiKey(false);

@@ -110,6 +110,7 @@ const CloudSync = {
   },
 
   populateSettingsInputs() {
+    if (window._modalsMounted === false) return;
     const pinInput = document.getElementById('settings-app-pin');
     if (pinInput) pinInput.value = this.appPin;
 
@@ -127,6 +128,7 @@ const CloudSync = {
   },
 
   hideVaultLockModal() {
+    if (window._modalsMounted === false) return;
     const modal = document.getElementById('vault-lock-modal');
     if (modal) modal.classList.add('hidden');
   },
@@ -787,7 +789,7 @@ const CloudSync = {
       }
     }
 
-    const settingsStatus = document.getElementById('settings-gdrive-status');
+    const settingsStatus = window._modalsMounted !== false ? document.getElementById('settings-gdrive-status') : null;
     if (settingsStatus) {
       if (status === 'connected' || status === 'synced') {
         settingsStatus.innerHTML = '<span class="text-emerald-400 font-bold">🟢 Vercel KV Active & Synced</span>';

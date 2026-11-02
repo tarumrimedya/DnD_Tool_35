@@ -26,6 +26,8 @@ const WEBAPP = path.join(ROOT, 'webapp');
 const CORE_FILES = [
   'index.html',
   'character.html',
+  'tailwind_compiled.css',
+  'char_modals.js',
   'char_hud.js',
   'char_combat.js',
   'char_spells.js',
