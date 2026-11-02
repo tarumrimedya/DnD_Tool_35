@@ -15,12 +15,11 @@ function getDiceIconSvg(die, cls = "w-4 h-4 inline-block align-middle") {
   switch (d) {
     case '4':
       return `<svg class="${cls}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polygon points="50,10 90,85 10,85" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
-        <polygon points="50,34 76,76 24,76" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
-        <line x1="50" y1="34" x2="50" y2="10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <line x1="24" y1="76" x2="10" y2="85" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <line x1="76" y1="76" x2="90" y2="85" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
-        <text x="50" y="66" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, sans-serif">4</text>
+        <polygon points="50,10 92,78 12,86" fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+        <polygon points="50,10 54,54 12,86" fill="currentColor" fill-opacity="0.28" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+        <polygon points="50,10 92,78 54,54" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+        <polygon points="12,86 54,54 92,78" fill="currentColor" fill-opacity="0.34" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+        <text x="53" y="49" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">4</text>
       </svg>`;
     case '6':
       return `<svg class="${cls}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">

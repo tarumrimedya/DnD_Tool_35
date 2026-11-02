@@ -314,6 +314,146 @@ class Dice3DController {
     return texture;
   }
 
+  // Generate 512x512 decal texture for 3D pyramid d4 face with 3 corner vertex numerals
+  createD4FaceTexture(cornerValues, isApexHighlight = true) {
+    const [vTop, vLeft, vRight] = cornerValues || [4, 1, 2];
+    const key = `d4_pyr_${vTop}_${vLeft}_${vRight}_${isApexHighlight ? 1 : 0}_${this.diceColor}`;
+    if (this.textureCache.has(key)) {
+      return this.textureCache.get(key);
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 512;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, 512, 512);
+
+    const cx = 256;
+    const cy = 256;
+    const distPx = 152; // 48% from face centroid towards each of the 3 triangle vertices
+
+    const corners = [
+      { text: String(vTop), dx: 0, dy: -distPx, angle: 0, isPeak: isApexHighlight },
+      { text: String(vLeft), dx: -distPx * 0.8660254, dy: distPx * 0.5, angle: -(2 * Math.PI) / 3, isPeak: false },
+      { text: String(vRight), dx: distPx * 0.8660254, dy: distPx * 0.5, angle: (2 * Math.PI) / 3, isPeak: false }
+    ];
+
+    corners.forEach(c => {
+      ctx.save();
+      ctx.translate(cx + c.dx, cy + c.dy);
+      ctx.rotate(c.angle);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const fontSize = c.isPeak ? 116 : 98;
+      ctx.font = `900 ${fontSize}px "Cinzel", "Palatino Linotype", "Book Antiqua", "Georgia", serif`;
+
+      ctx.shadowColor = c.isPeak ? 'rgba(250, 204, 21, 0.92)' : 'rgba(245, 158, 11, 0.55)';
+      ctx.shadowBlur = c.isPeak ? 22 : 12;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 2;
+
+      const goldGrad = ctx.createLinearGradient(-45, -55, 45, 55);
+      if (c.isPeak) {
+        goldGrad.addColorStop(0, '#ffffff');
+        goldGrad.addColorStop(0.25, '#fef08a');
+        goldGrad.addColorStop(0.6, '#f59e0b');
+        goldGrad.addColorStop(1, '#b45309');
+      } else {
+        goldGrad.addColorStop(0, '#fffbeb');
+        goldGrad.addColorStop(0.3, '#fde68a');
+        goldGrad.addColorStop(0.7, '#d97706');
+        goldGrad.addColorStop(1, '#78350f');
+      }
+
+      ctx.lineWidth = Math.max(9, fontSize * 0.09);
+      ctx.lineJoin = 'miter';
+      ctx.miterLimit = 3;
+      ctx.strokeStyle = goldGrad;
+      ctx.strokeText(c.text, 0, 0);
+
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = c.isPeak ? '#fef3c7' : '#161311';
+      ctx.fillText(c.text, 0, 0);
+
+      ctx.lineWidth = 1.8;
+      ctx.strokeStyle = c.isPeak ? 'rgba(255, 255, 255, 0.95)' : 'rgba(254, 243, 199, 0.65)';
+      ctx.strokeText(c.text, 0, 0);
+
+      ctx.restore();
+    });
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.minFilter = THREE.LinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    this.textureCache.set(key, texture);
+    return texture;
+  }
+
+  // Custom 4-sided pyramid (regular tetrahedron) geometry with apex vertex at +Y and 3 corner numbers per face
+  createD4Geometry(radius, targetValue) {
+    const geo = new THREE.BufferGeometry();
+    const vertices = [];
+    const customFaces = [];
+
+    const R = radius * 1.24;
+    const rBase = R * Math.sqrt(8 / 9);
+    const yBase = -R / 3;
+
+    // 4 vertices of the regular tetrahedron: V0 is the top pyramid peak (+Y), V1..V3 form the base triangle
+    const V0 = new THREE.Vector3(0, R, 0);
+    const V1 = new THREE.Vector3(0, yBase, rBase);
+    const V2 = new THREE.Vector3(rBase * Math.cos(Math.PI / 6), yBase, -rBase * Math.sin(Math.PI / 6));
+    const V3 = new THREE.Vector3(-rBase * Math.cos(Math.PI / 6), yBase, -rBase * Math.sin(Math.PI / 6));
+
+    const val0 = [1, 2, 3, 4].includes(Number(targetValue)) ? Number(targetValue) : 4;
+    const otherVals = [1, 2, 3, 4].filter(v => v !== val0);
+    const val1 = otherVals[0];
+    const val2 = otherVals[1];
+    const val3 = otherVals[2];
+
+    const faceDefs = [
+      // 3 visible pyramid side faces meeting at Apex V0 (CCW outward winding, Va = V0)
+      { va: V0, vb: V1, vc: V2, vals: [val0, val1, val2], isSide: true },
+      { va: V0, vb: V2, vc: V3, vals: [val0, val2, val3], isSide: true },
+      { va: V0, vb: V3, vc: V1, vals: [val0, val3, val1], isSide: true },
+      // Bottom base face
+      { va: V1, vb: V3, vc: V2, vals: [val1, val3, val2], isSide: false }
+    ];
+
+    faceDefs.forEach(fd => {
+      vertices.push(
+        fd.va.x, fd.va.y, fd.va.z,
+        fd.vb.x, fd.vb.y, fd.vb.z,
+        fd.vc.x, fd.vc.y, fd.vc.z
+      );
+
+      const center = new THREE.Vector3().add(fd.va).add(fd.vb).add(fd.vc).divideScalar(3);
+      const e1 = new THREE.Vector3().subVectors(fd.vb, fd.va);
+      const e2 = new THREE.Vector3().subVectors(fd.vc, fd.va);
+      const normal = new THREE.Vector3().crossVectors(e1, e2).normalize();
+      if (normal.dot(center) < 0) {
+        normal.negate();
+      }
+      const topVec = new THREE.Vector3().subVectors(fd.va, center).normalize();
+
+      customFaces.push({
+        center,
+        normal,
+        topVec,
+        scale: 1.72,
+        cornerValues: fd.vals,
+        isApexHighlight: fd.isSide
+      });
+    });
+
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+    geo.computeVertexNormals();
+    geo.userData = { customFaces };
+    return geo;
+  }
+
   // Custom 10-sided pentagonal trapezohedron geometry for true D&D d10
   createD10Geometry(radius) {
     const geo = new THREE.BufferGeometry();
@@ -627,9 +767,9 @@ class Dice3DController {
 
     if (type === 'd4') {
       sides = 4;
-      radius = 1.55;
-      geo = new THREE.TetrahedronGeometry(radius, 0);
-      decalScale = 0.65;
+      radius = 1.62;
+      geo = this.createD4Geometry(radius, targetValue);
+      decalScale = 1.72;
     } else if (type === 'd6') {
       sides = 6;
       radius = 1.75;
@@ -788,7 +928,9 @@ class Dice3DController {
     for (let i = 0; i < maxDecals; i++) {
       const face = faces[i];
       const val = faceValues[i] || (i + 1);
-      const texture = this.createFaceTexture(val, sides);
+      const texture = face.cornerValues
+        ? this.createD4FaceTexture(face.cornerValues, face.isApexHighlight)
+        : this.createFaceTexture(val, sides);
 
       const fScale = face.scale || decalScale;
       const decalGeo = new THREE.PlaneGeometry(radius * fScale, radius * fScale);
@@ -820,15 +962,31 @@ class Dice3DController {
       dieMesh.add(decalMesh);
     }
 
-    // Target face 0 coordinate frame for 100% upright camera alignment
-    const f0 = faces[0];
-    const normal0 = f0 ? f0.normal.clone().normalize() : new THREE.Vector3(0, 1, 0);
-    let up0 = (f0 && f0.topVec) ? f0.topVec.clone().normalize() : new THREE.Vector3(0, 1, 0);
-    if (Math.abs(normal0.dot(up0)) > 0.92) {
-      up0 = new THREE.Vector3(0, 0, 1);
+    // Target orientation frame for camera alignment
+    // For d4: orient the pyramid's central peak (+Y apex) towards the camera with a slight 3D perspective tilt
+    // so all 3 triangular pyramid facets and the 3 central ridges meeting at the peak are clearly visible!
+    let normal0, right0, faceUp0;
+    if (type === 'd4') {
+      const yaw = Math.random() * Math.PI * 2;
+      const tilt = 0.21; // ~12° perspective tilt so all 3 pyramid faces around the peak are visible
+      normal0 = new THREE.Vector3(
+        Math.sin(tilt) * Math.cos(yaw),
+        Math.cos(tilt),
+        Math.sin(tilt) * Math.sin(yaw)
+      ).normalize();
+      const refUp = new THREE.Vector3(-Math.sin(yaw), 0, Math.cos(yaw)).normalize();
+      right0 = new THREE.Vector3().crossVectors(refUp, normal0).normalize();
+      faceUp0 = new THREE.Vector3().crossVectors(normal0, right0).normalize();
+    } else {
+      const f0 = faces[0];
+      normal0 = f0 ? f0.normal.clone().normalize() : new THREE.Vector3(0, 1, 0);
+      let up0 = (f0 && f0.topVec) ? f0.topVec.clone().normalize() : new THREE.Vector3(0, 1, 0);
+      if (Math.abs(normal0.dot(up0)) > 0.92) {
+        up0 = new THREE.Vector3(0, 0, 1);
+      }
+      right0 = new THREE.Vector3().crossVectors(up0, normal0).normalize();
+      faceUp0 = new THREE.Vector3().crossVectors(normal0, right0).normalize();
     }
-    const right0 = new THREE.Vector3().crossVectors(up0, normal0).normalize();
-    const faceUp0 = new THREE.Vector3().crossVectors(normal0, right0).normalize();
 
     return {
       mesh: dieMesh,

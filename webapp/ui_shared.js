@@ -26,7 +26,7 @@
     const d = String(dieType || 'd20').toLowerCase().replace(/[^0-9]/g, '');
     const label = d || '20';
     if (label === '4') {
-      return `<svg class="${classes}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,10 90,85 10,85" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/><text x="50" y="72" text-anchor="middle" fill="currentColor" font-size="28" font-weight="900" font-family="system-ui, sans-serif">4</text></svg>`;
+      return `<svg class="${classes}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,10 92,78 12,86" fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="50,10 54,54 12,86" fill="currentColor" fill-opacity="0.28" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><polygon points="50,10 92,78 54,54" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><polygon points="12,86 54,54 92,78" fill="currentColor" fill-opacity="0.34" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><text x="53" y="49" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">4</text></svg>`;
     }
     if (label === '6') {
       return `<svg class="${classes}" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="16" y="16" width="68" height="68" rx="10" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="6"/><text x="50" y="61" text-anchor="middle" fill="currentColor" font-size="30" font-weight="900" font-family="system-ui, sans-serif">6</text></svg>`;
