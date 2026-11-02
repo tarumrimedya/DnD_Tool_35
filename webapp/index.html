@@ -1847,26 +1847,26 @@
             </div>
             <div class="flex items-center gap-1.5 flex-wrap">
               <!-- Görünüm Değiştirici: Kart / Liste -->
-              <div class="h-8 inline-flex items-center rounded-lg bg-slate-950 p-0.5 border border-slate-800 text-xs shadow-inner">
-                <button type="button" onclick="setBuffsViewMode('grid')" id="buffs-view-grid-btn" class="h-full px-2.5 rounded-md font-bold transition flex items-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm" title="Card View (3-Column Grid)">
-                  <span>🎴</span><span class="hidden sm:inline">Cards</span>
+              <div class="w-36 h-8 grid grid-cols-2 items-center rounded-lg bg-slate-950 p-0.5 border border-slate-700 text-xs shadow-inner">
+                <button type="button" onclick="setBuffsViewMode('grid')" id="buffs-view-grid-btn" class="h-full w-full px-2 rounded-md font-bold transition inline-flex items-center justify-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm" title="Card View (3-Column Grid)">
+                  <span>🎴</span><span>Cards</span>
                 </button>
-                <button type="button" onclick="setBuffsViewMode('list')" id="buffs-view-list-btn" class="h-full px-2.5 rounded-md font-bold transition flex items-center gap-1 cursor-pointer text-slate-400 hover:text-white" title="List View (Compact Rows)">
-                  <span>📋</span><span class="hidden sm:inline">List</span>
+                <button type="button" onclick="setBuffsViewMode('list')" id="buffs-view-list-btn" class="h-full w-full px-2 rounded-md font-bold transition inline-flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white" title="List View (Compact Rows)">
+                  <span>📋</span><span>List</span>
                 </button>
               </div>
 
-              <button onclick="openAddBuffModal()" class="h-8 px-3 rounded-lg text-xs bg-emerald-700 hover:bg-emerald-600 text-white font-bold transition inline-flex items-center gap-1.5 shadow cursor-pointer">
+              <button onclick="openAddBuffModal()" class="w-36 h-8 px-2.5 rounded-lg text-xs bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-500/60 font-bold transition inline-flex items-center justify-center gap-1.5 shadow cursor-pointer whitespace-nowrap">
                 <span>➕</span><span>Add Buff</span>
               </button>
-              <button onclick="advanceNextRound()" class="h-8 px-3 rounded-lg text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition inline-flex items-center gap-1.5 shadow cursor-pointer" title="Advance to next round, decrementing active buff durations by 1 round">
-                <span>⏭️</span><span class="tracking-wide">Next Round</span>
-                <span class="round-counter-badge bg-indigo-950/80 text-indigo-200 border border-indigo-300/40 px-2 py-0.5 rounded-md text-[11px] font-mono font-black shadow-sm min-w-[3.25rem] text-center inline-block">Round 1</span>
+              <button onclick="advanceNextRound()" class="w-36 h-8 px-2 rounded-lg text-xs bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/60 font-bold transition inline-flex items-center justify-center gap-1 shadow cursor-pointer whitespace-nowrap" title="Advance to next round, decrementing active buff durations by 1 round">
+                <span>⏭️</span><span>Next</span>
+                <span class="round-counter-badge bg-indigo-950/90 text-indigo-200 border border-indigo-300/40 px-1.5 py-0.5 rounded text-[10px] font-mono font-black leading-none text-center inline-block">Rd 1</span>
               </button>
-              <button onclick="performRest()" class="h-8 px-3 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 font-bold transition inline-flex items-center gap-1.5 cursor-pointer" title="Short Rest: Recover maneuvers">
-                <span>☕</span><span>Rest</span>
+              <button onclick="performRest()" class="w-36 h-8 px-2.5 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-slate-700 font-bold transition inline-flex items-center justify-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap" title="Short Rest: Recover maneuvers">
+                <span>☕</span><span>Short Rest</span>
               </button>
-              <button onclick="performLongRest()" class="h-8 px-3 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 font-bold transition inline-flex items-center gap-1.5 cursor-pointer" title="Long Rest: Restore HP, all spell slots, and maneuvers">
+              <button onclick="performLongRest()" class="w-36 h-8 px-2.5 rounded-lg text-xs bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 font-bold transition inline-flex items-center justify-center gap-1.5 shadow-sm cursor-pointer whitespace-nowrap" title="Long Rest: Restore HP, all spell slots, and maneuvers">
                 <span>☀️</span><span>Long Rest</span>
               </button>
             </div>
@@ -1909,12 +1909,12 @@
             
             <!-- View Mode Switcher Toggle (Liste vs Silüet) -->
             <div class="flex items-center gap-2">
-              <div class="h-8 inline-flex items-center p-0.5 bg-slate-950 border border-slate-700/80 rounded-lg text-xs font-bold shadow-inner">
-                <button id="btn-body-view-list" onclick="setBodySlotsView('list')" type="button" class="h-full px-2.5 rounded-md transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer" title="Traditional List / Table View">
+              <div class="h-8 grid grid-cols-2 items-center p-0.5 bg-slate-950 border border-slate-700/80 rounded-lg text-xs font-bold shadow-inner">
+                <button id="btn-body-view-list" onclick="setBodySlotsView('list')" type="button" class="w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer" title="Traditional List / Table View">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                   <span>List View</span>
                 </button>
-                <button id="btn-body-view-silhouette" onclick="setBodySlotsView('silhouette')" type="button" class="h-full px-2.5 rounded-md transition flex items-center gap-1.5 bg-sky-600 text-white shadow cursor-pointer" title="Interactive Figure & Silhouette View">
+                <button id="btn-body-view-silhouette" onclick="setBodySlotsView('silhouette')" type="button" class="w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow cursor-pointer" title="Interactive Figure & Silhouette View">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                   <span>Silhouette View</span>
                 </button>

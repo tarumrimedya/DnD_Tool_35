@@ -6629,9 +6629,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const btnAll = document.getElementById('btn-skill-filter-all');
         const btnClass = document.getElementById('btn-skill-filter-class');
         const btnTrained = document.getElementById('btn-skill-filter-trained');
-        if (btnAll) btnAll.className = savedFilter === 'all' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
-        if (btnClass) btnClass.className = savedFilter === 'class' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
-        if (btnTrained) btnTrained.className = savedFilter === 'trained' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
+        if (btnAll) btnAll.className = savedFilter === 'all' ? 'ui-btn-sm h-7 px-2.5 rounded-md text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer inline-flex items-center justify-center' : 'ui-btn-sm h-7 px-2.5 rounded-md text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer inline-flex items-center justify-center';
+        if (btnClass) btnClass.className = savedFilter === 'class' ? 'ui-btn-sm h-7 px-2.5 rounded-md text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer inline-flex items-center justify-center' : 'ui-btn-sm h-7 px-2.5 rounded-md text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer inline-flex items-center justify-center';
+        if (btnTrained) btnTrained.className = savedFilter === 'trained' ? 'ui-btn-sm h-7 px-2.5 rounded-md text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer inline-flex items-center justify-center' : 'ui-btn-sm h-7 px-2.5 rounded-md text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer inline-flex items-center justify-center';
 
         const savedStat = localStorage.getItem('dnd35_skill_stat_filter') || 'all';
         activeSkillStatFilter = savedStat;

@@ -745,11 +745,11 @@
       const listBtn = document.getElementById('buffs-view-list-btn');
       if (gridBtn && listBtn) {
         if (viewMode === 'list') {
-          listBtn.className = "h-full px-2.5 rounded-md font-bold transition flex items-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm";
-          gridBtn.className = "h-full px-2.5 rounded-md font-bold transition flex items-center gap-1 cursor-pointer text-slate-400 hover:text-white";
+          listBtn.className = "h-full w-full px-2 rounded-md font-bold transition inline-flex items-center justify-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm";
+          gridBtn.className = "h-full w-full px-2 rounded-md font-bold transition inline-flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white";
         } else {
-          gridBtn.className = "h-full px-2.5 rounded-md font-bold transition flex items-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm";
-          listBtn.className = "h-full px-2.5 rounded-md font-bold transition flex items-center gap-1 cursor-pointer text-slate-400 hover:text-white";
+          gridBtn.className = "h-full w-full px-2 rounded-md font-bold transition inline-flex items-center justify-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm";
+          listBtn.className = "h-full w-full px-2 rounded-md font-bold transition inline-flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white";
         }
       }
 
@@ -3416,10 +3416,10 @@
         if (listView) listView.classList.add('hidden');
         if (silView) silView.classList.remove('hidden');
         if (btnSil) {
-          btnSil.className = 'h-full px-2.5 rounded-md transition flex items-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer';
+          btnSil.className = 'w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer';
         }
         if (btnList) {
-          btnList.className = 'h-full px-2.5 rounded-md transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
+          btnList.className = 'w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
         }
         if (rerender) {
           renderBodySlotsSilhouette();
@@ -3430,10 +3430,10 @@
         if (silView) silView.classList.add('hidden');
         if (listView) listView.classList.remove('hidden');
         if (btnList) {
-          btnList.className = 'h-full px-2.5 rounded-md transition flex items-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer';
+          btnList.className = 'w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer';
         }
         if (btnSil) {
-          btnSil.className = 'h-full px-2.5 rounded-md transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
+          btnSil.className = 'w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
         }
       }
     }
