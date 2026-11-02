@@ -87,9 +87,9 @@
         const btn = document.getElementById(t.id);
         if (!btn) return;
         if (t.cat === category) {
-          btn.className = `h-full px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${t.activeClass}`;
+          btn.className = `h-8 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${t.activeClass}`;
         } else {
-          btn.className = 'h-full px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800';
+          btn.className = 'h-8 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800';
         }
       });
 

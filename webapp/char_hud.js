@@ -6598,7 +6598,7 @@ function renderManualStatsPanel() {
       const cardTitle = document.getElementById('combat-card-title');
       const profileBtn = document.getElementById('combat-profile-save-btn');
 
-      const inactiveClass = 'h-full px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer';
+      const inactiveClass = 'h-8 px-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer';
 
       if (btnMelee) btnMelee.className = inactiveClass;
       if (btnRanged) btnRanged.className = inactiveClass;
@@ -6611,7 +6611,7 @@ function renderManualStatsPanel() {
         if (rangedModsBlock) rangedModsBlock.classList.remove('hidden');
 
         if (btnRanged) {
-          btnRanged.className = 'h-full px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow cursor-pointer';
+          btnRanged.className = 'h-8 px-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow cursor-pointer';
         }
         if (cardTitle) {
           cardTitle.innerHTML = '<span>🏹</span> <span class="truncate">ATTACK ROTATION</span>';
@@ -6654,7 +6654,7 @@ function renderManualStatsPanel() {
         if (rangedModsBlock) rangedModsBlock.classList.add('hidden');
 
         if (btnMelee) {
-          btnMelee.className = 'h-full px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer';
+          btnMelee.className = 'h-8 px-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer';
         }
         if (cardTitle) {
           cardTitle.innerHTML = '<span>⚔️</span> <span class="truncate">ATTACK ROTATION</span>';
