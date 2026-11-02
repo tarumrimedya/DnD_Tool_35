@@ -745,11 +745,11 @@
       const listBtn = document.getElementById('buffs-view-list-btn');
       if (gridBtn && listBtn) {
         if (viewMode === 'list') {
-          listBtn.className = "px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm";
-          gridBtn.className = "px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer text-slate-400 hover:text-white";
+          listBtn.className = "h-full px-2.5 rounded-md font-bold transition flex items-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm";
+          gridBtn.className = "h-full px-2.5 rounded-md font-bold transition flex items-center gap-1 cursor-pointer text-slate-400 hover:text-white";
         } else {
-          gridBtn.className = "px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm";
-          listBtn.className = "px-2 py-1 rounded-md font-bold transition flex items-center gap-1 cursor-pointer text-slate-400 hover:text-white";
+          gridBtn.className = "h-full px-2.5 rounded-md font-bold transition flex items-center gap-1 cursor-pointer bg-indigo-600 text-white shadow-sm";
+          listBtn.className = "h-full px-2.5 rounded-md font-bold transition flex items-center gap-1 cursor-pointer text-slate-400 hover:text-white";
         }
       }
 
@@ -3416,10 +3416,10 @@
         if (listView) listView.classList.add('hidden');
         if (silView) silView.classList.remove('hidden');
         if (btnSil) {
-          btnSil.className = 'px-2.5 py-1 rounded-md transition flex items-center gap-1.5 bg-sky-600 text-white shadow font-bold';
+          btnSil.className = 'h-full px-2.5 rounded-md transition flex items-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer';
         }
         if (btnList) {
-          btnList.className = 'px-2.5 py-1 rounded-md transition flex items-center gap-1.5 text-slate-400 hover:text-white';
+          btnList.className = 'h-full px-2.5 rounded-md transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
         }
         if (rerender) {
           renderBodySlotsSilhouette();
@@ -3430,10 +3430,10 @@
         if (silView) silView.classList.add('hidden');
         if (listView) listView.classList.remove('hidden');
         if (btnList) {
-          btnList.className = 'px-2.5 py-1 rounded-md transition flex items-center gap-1.5 bg-sky-600 text-white shadow font-bold';
+          btnList.className = 'h-full px-2.5 rounded-md transition flex items-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer';
         }
         if (btnSil) {
-          btnSil.className = 'px-2.5 py-1 rounded-md transition flex items-center gap-1.5 text-slate-400 hover:text-white';
+          btnSil.className = 'h-full px-2.5 rounded-md transition flex items-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
         }
       }
     }
@@ -4781,32 +4781,32 @@
           <td class="py-2 px-3 align-middle text-slate-300 text-xs">${item.desc || '-'}</td>
           <td class="py-2 px-3 text-center align-middle font-mono">
             <div class="flex items-center justify-center gap-1">
-              <button onclick="adjustPoolQty(${item.id}, -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs leading-none">-</button>
+              <button onclick="adjustPoolQty(${item.id}, -1)" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">-</button>
               <span class="w-6 text-center ${Number(item.qty) <= 0 ? 'text-rose-400 font-bold' : 'text-white font-bold'}">${(item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1}</span>
-              <button onclick="adjustPoolQty(${item.id}, 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded text-xs leading-none">+</button>
+              <button onclick="adjustPoolQty(${item.id}, 1)" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">+</button>
             </div>
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono text-slate-400">${item.weight || 0} lb</td>
           <td class="py-2 px-3 text-center align-middle font-mono text-amber-400">${item.cost || 0} GP</td>
           <td class="py-2.5 px-3 text-center align-middle">
-            <div class="flex items-center justify-center gap-2">
+            <div class="flex items-center justify-center gap-1.5">
               ${isConsumableOrSlotless(item) ? `
-                <div class="flex flex-col gap-2 w-20">
-                  <button onclick="consumeItem3D('pool', ${item.id})" class="w-full bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[11px] font-bold py-1 rounded transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Consume / Activate / Use">
+                <div class="flex flex-col gap-1.5 w-20">
+                  <button onclick="consumeItem3D('pool', ${item.id})" class="ui-btn-xs w-full h-6 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Consume / Activate / Use">
                     <span>🧪</span><span>Use</span>
                   </button>
-                  <button onclick="togglePoolBelt(${item.id})" class="w-full ${item.isBelt ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600 shadow-sm shadow-emerald-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'} border text-[11px] font-bold py-1 rounded transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="${item.isBelt ? 'Remove from Belt (Disable Quick Access)' : 'Attach to Belt (Add to Combat Quick Access)'}">
+                  <button onclick="togglePoolBelt(${item.id})" class="ui-btn-xs w-full h-6 ${item.isBelt ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600 shadow-sm shadow-emerald-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'} border text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="${item.isBelt ? 'Remove from Belt (Disable Quick Access)' : 'Attach to Belt (Add to Combat Quick Access)'}">
                     <span>${item.isBelt ? '🟢' : '⚡'}</span><span>${item.isBelt ? 'On Belt' : 'Belt'}</span>
                   </button>
                 </div>
               ` : `
                 <div class="w-20 flex items-center justify-center">
-                  <button onclick="equipPoolItem(${item.id})" class="w-full bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold py-1.5 rounded transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Equip to Body Slot">
+                  <button onclick="equipPoolItem(${item.id})" class="ui-btn-sm w-full h-7 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Equip to Body Slot">
                     <span>⚡</span><span>Equip</span>
                   </button>
                 </div>
               `}
-              <button onclick="deletePoolItem(${item.id})" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded transition cursor-pointer shrink-0" title="Delete">
+              <button onclick="deletePoolItem(${item.id})" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded-md transition cursor-pointer shrink-0" title="Delete">
                 🗑️
               </button>
             </div>

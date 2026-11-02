@@ -1405,16 +1405,16 @@ const RuleMaster = {
         </td>
         <td class="py-2.5 px-3 text-center">
           <div class="flex items-center justify-center gap-1">
-            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">
+            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Edit">
               ✏️
             </button>
-            <button onclick="RuleMaster.addChildPower(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs transition" title="Add Embedded Sub-Mode (Mode)">
+            <button onclick="RuleMaster.addChildPower(${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Add Embedded Sub-Mode (Mode)">
               🔗
             </button>
-            <button onclick="RuleMaster.duplicateEntry(${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs transition" title="Duplicate">
+            <button onclick="RuleMaster.duplicateEntry(${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Duplicate">
               📑
             </button>
-            <button onclick="RuleMaster.deleteEntry(${idx})" class="p-1 rounded bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs transition" title="Delete">
+            <button onclick="RuleMaster.deleteEntry(${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-rose-950 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Delete">
               🗑️
             </button>
           </div>
@@ -4250,10 +4250,10 @@ Return valid JSON only matching:
     const btnManual = document.getElementById('btn-inline-mode-manual');
     const headerTitle = document.getElementById('inline-panel-header-title');
 
-    const activeCls = 'w-full py-2 px-2.5 rounded-lg font-bold transition bg-purple-600 text-white shadow flex items-center justify-center gap-1.5 cursor-pointer';
-    const activeForgeCls = 'w-full py-2 px-2.5 rounded-lg font-bold transition bg-amber-500 text-slate-950 shadow flex items-center justify-center gap-1.5 cursor-pointer';
-    const inactiveCls = 'w-full py-2 px-2.5 rounded-lg font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer';
-    const inactiveForgeCls = 'w-full py-2 px-2.5 rounded-lg font-bold transition text-amber-300 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer';
+    const activeCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition bg-purple-600 text-white shadow flex items-center justify-center gap-1.5 cursor-pointer';
+    const activeForgeCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition bg-amber-500 text-slate-950 shadow flex items-center justify-center gap-1.5 cursor-pointer';
+    const inactiveCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer';
+    const inactiveForgeCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-amber-300 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer';
 
     if (searchPanel) searchPanel.classList.toggle('hidden', mode !== 'search');
     if (freetextPanel) freetextPanel.classList.toggle('hidden', mode !== 'freetext');

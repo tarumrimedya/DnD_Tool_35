@@ -87,9 +87,9 @@
         const btn = document.getElementById(t.id);
         if (!btn) return;
         if (t.cat === category) {
-          btn.className = `py-1.5 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${t.activeClass}`;
+          btn.className = `h-full px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer ${t.activeClass}`;
         } else {
-          btn.className = 'py-1.5 px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800';
+          btn.className = 'h-full px-1 sm:px-2 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer text-slate-400 hover:text-white hover:bg-slate-800';
         }
       });
 
@@ -2040,9 +2040,9 @@
       if (btnText) btnText.textContent = window.spellReorderModeActive ? 'Done ✓' : 'Reorder';
       if (btn) {
         if (window.spellReorderModeActive) {
-          btn.className = 'text-[9px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
+          btn.className = 'ui-btn-xs h-6 text-[10px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 rounded-md border border-emerald-600 transition';
         } else {
-          btn.className = 'text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
+          btn.className = 'ui-btn-xs h-6 text-[10px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 rounded-md border border-slate-800 transition';
         }
       }
       renderCombatCategorySpells();
@@ -6537,9 +6537,9 @@
       if (btnText) btnText.textContent = window.meleeReorderModeActive ? 'Done ✓' : 'Reorder';
       if (btn) {
         if (window.meleeReorderModeActive) {
-          btn.className = 'text-[9px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
+          btn.className = 'ui-btn-xs h-6 text-[10px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 rounded-md border border-emerald-600 transition';
         } else {
-          btn.className = 'text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
+          btn.className = 'ui-btn-xs h-6 text-[10px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 rounded-md border border-slate-800 transition';
         }
       }
       renderOffenseModifiersGrid();
@@ -6821,9 +6821,9 @@
       if (btnText) btnText.textContent = window.rangedReorderModeActive ? 'Done ✓' : 'Reorder';
       if (btn) {
         if (window.rangedReorderModeActive) {
-          btn.className = 'text-[9px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
+          btn.className = 'ui-btn-xs h-6 text-[10px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 rounded-md border border-emerald-600 transition';
         } else {
-          btn.className = 'text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
+          btn.className = 'ui-btn-xs h-6 text-[10px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 rounded-md border border-slate-800 transition';
         }
       }
       renderRangedModifiersGrid();

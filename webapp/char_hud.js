@@ -1604,8 +1604,8 @@
       if (btnStd) {
         const isSpent = !!spent.standard;
         btnStd.className = isSpent
-          ? 'px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
-          : 'px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
+          ? 'ui-btn-sm h-7 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
+          : 'ui-btn-sm h-7 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
         btnStd.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block shrink-0"></span><span class="truncate">Standard: Spent</span>' : '<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0"></span><span class="truncate">Standard: Ready</span>';
       }
 
@@ -1613,8 +1613,8 @@
       if (btnMove) {
         const isSpent = !!spent.move;
         btnMove.className = isSpent
-          ? 'px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
-          : 'px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
+          ? 'ui-btn-sm h-7 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
+          : 'ui-btn-sm h-7 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
         btnMove.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block shrink-0"></span><span class="truncate">Move: Spent</span>' : '<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0"></span><span class="truncate">Move: Ready</span>';
       }
 
@@ -1622,8 +1622,8 @@
       if (btnSwift) {
         const isSpent = !!spent.swift;
         btnSwift.className = isSpent
-          ? 'px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
-          : 'px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-purple-950/80 border-purple-500/60 text-purple-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
+          ? 'ui-btn-sm h-7 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
+          : 'ui-btn-sm h-7 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-purple-950/80 border-purple-500/60 text-purple-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
         btnSwift.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block shrink-0"></span><span class="truncate">Swift: Spent</span>' : '<span class="w-2 h-2 rounded-full bg-purple-400 inline-block shrink-0"></span><span class="truncate">Swift: Ready</span>';
       }
 
@@ -1631,8 +1631,8 @@
       if (btnImm) {
         const isSpent = !!spent.immediate;
         btnImm.className = isSpent
-          ? 'px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-rose-950/80 border-rose-500/60 text-rose-300 cursor-pointer whitespace-nowrap min-w-0'
-          : 'px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200 cursor-pointer whitespace-nowrap min-w-0';
+          ? 'ui-btn-sm h-7 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-rose-950/80 border-rose-500/60 text-rose-300 cursor-pointer whitespace-nowrap min-w-0'
+          : 'ui-btn-sm h-7 px-2 sm:px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition flex items-center justify-center sm:justify-start gap-1 bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200 cursor-pointer whitespace-nowrap min-w-0';
         btnImm.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-rose-500 inline-block shrink-0"></span><span class="truncate">Immediate: Spent</span>' : '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block shrink-0"></span><span class="truncate">Immediate (Reaction)</span>';
       }
 
@@ -6598,7 +6598,7 @@ function renderManualStatsPanel() {
       const cardTitle = document.getElementById('combat-card-title');
       const profileBtn = document.getElementById('combat-profile-save-btn');
 
-      const inactiveClass = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer';
+      const inactiveClass = 'h-full px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-slate-200 cursor-pointer';
 
       if (btnMelee) btnMelee.className = inactiveClass;
       if (btnRanged) btnRanged.className = inactiveClass;
@@ -6611,7 +6611,7 @@ function renderManualStatsPanel() {
         if (rangedModsBlock) rangedModsBlock.classList.remove('hidden');
 
         if (btnRanged) {
-          btnRanged.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow cursor-pointer';
+          btnRanged.className = 'h-full px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-amber-600 to-orange-600 text-white shadow cursor-pointer';
         }
         if (cardTitle) {
           cardTitle.innerHTML = '<span>🏹</span> <span class="truncate">ATTACK ROTATION</span>';
@@ -6654,7 +6654,7 @@ function renderManualStatsPanel() {
         if (rangedModsBlock) rangedModsBlock.classList.add('hidden');
 
         if (btnMelee) {
-          btnMelee.className = 'py-1.5 px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer';
+          btnMelee.className = 'h-full px-2 rounded-md font-bold text-xs flex items-center justify-center gap-1.5 transition bg-gradient-to-r from-red-600 to-rose-600 text-white shadow cursor-pointer';
         }
         if (cardTitle) {
           cardTitle.innerHTML = '<span>⚔️</span> <span class="truncate">ATTACK ROTATION</span>';

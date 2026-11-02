@@ -6588,9 +6588,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const btnAll = document.getElementById('btn-skill-filter-all');
       const btnClass = document.getElementById('btn-skill-filter-class');
       const btnTrained = document.getElementById('btn-skill-filter-trained');
-      if (btnAll) btnAll.className = filterMode === 'all' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
-      if (btnClass) btnClass.className = filterMode === 'class' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
-      if (btnTrained) btnTrained.className = filterMode === 'trained' ? 'px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer' : 'px-2 py-0.5 rounded text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer';
+      if (btnAll) btnAll.className = filterMode === 'all' ? 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer inline-flex items-center' : 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer inline-flex items-center';
+      if (btnClass) btnClass.className = filterMode === 'class' ? 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer inline-flex items-center' : 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer inline-flex items-center';
+      if (btnTrained) btnTrained.className = filterMode === 'trained' ? 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] font-bold bg-amber-600 text-white transition cursor-pointer inline-flex items-center' : 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer inline-flex items-center';
       renderSkills();
     }
 

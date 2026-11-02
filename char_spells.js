@@ -334,33 +334,33 @@
       // Update button styles
       if (buttons.spontaneous) {
         if (discipline === 'spontaneous') {
-          buttons.spontaneous.className = 'w-full lg:flex-1 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-purple-800 to-indigo-700 text-white shadow-md border border-purple-500/60 ring-1 ring-purple-400/30';
+          buttons.spontaneous.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-purple-800 to-indigo-700 text-white shadow-md border border-purple-500/60 ring-1 ring-purple-400/30';
         } else {
-          buttons.spontaneous.className = 'w-full lg:flex-1 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-purple-950/30 hover:bg-purple-900/40 text-purple-300 hover:text-purple-100 border border-purple-900/50 shadow-sm';
+          buttons.spontaneous.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-purple-950/30 hover:bg-purple-900/40 text-purple-300 hover:text-purple-100 border border-purple-900/50 shadow-sm';
         }
       }
 
       if (buttons.prepared) {
         if (discipline === 'prepared') {
-          buttons.prepared.className = 'w-full lg:flex-1 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-sky-800 to-blue-700 text-white shadow-md border border-sky-500/60 ring-1 ring-sky-400/30';
+          buttons.prepared.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-sky-800 to-blue-700 text-white shadow-md border border-sky-500/60 ring-1 ring-sky-400/30';
         } else {
-          buttons.prepared.className = 'w-full lg:flex-1 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-sky-950/30 hover:bg-sky-900/40 text-sky-300 hover:text-sky-100 border border-sky-900/50 shadow-sm';
+          buttons.prepared.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-sky-950/30 hover:bg-sky-900/40 text-sky-300 hover:text-sky-100 border border-sky-900/50 shadow-sm';
         }
       }
 
       if (buttons.divine) {
         if (discipline === 'divine') {
-          buttons.divine.className = 'w-full lg:flex-1 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-amber-800 to-yellow-700 text-white shadow-md border border-amber-500/60 ring-1 ring-amber-400/30';
+          buttons.divine.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-amber-800 to-yellow-700 text-white shadow-md border border-amber-500/60 ring-1 ring-amber-400/30';
         } else {
-          buttons.divine.className = 'w-full lg:flex-1 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-amber-950/30 hover:bg-amber-900/40 text-amber-300 hover:text-amber-100 border border-amber-900/50 shadow-sm';
+          buttons.divine.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-amber-950/30 hover:bg-amber-900/40 text-amber-300 hover:text-amber-100 border border-amber-900/50 shadow-sm';
         }
       }
 
       if (buttons.martial) {
         if (discipline === 'martial') {
-          buttons.martial.className = 'w-full lg:flex-1 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-rose-800 to-amber-700 text-white shadow-md border border-rose-500/60 ring-1 ring-rose-400/30';
+          buttons.martial.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-gradient-to-r from-rose-800 to-amber-700 text-white shadow-md border border-rose-500/60 ring-1 ring-rose-400/30';
         } else {
-          buttons.martial.className = 'w-full lg:flex-1 px-3 py-2 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-rose-950/30 hover:bg-rose-900/40 text-rose-300 hover:text-rose-100 border border-rose-900/50 shadow-sm';
+          buttons.martial.className = 'ui-btn-md w-full lg:flex-1 h-9 px-3 rounded-lg text-xs font-bold transition flex items-center justify-between gap-1.5 cursor-pointer whitespace-nowrap bg-rose-950/30 hover:bg-rose-900/40 text-rose-300 hover:text-rose-100 border border-rose-900/50 shadow-sm';
         }
       }
 
