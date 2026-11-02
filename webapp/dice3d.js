@@ -1089,14 +1089,16 @@ class Dice3DController {
       const mesh = dieData.mesh;
       const sp = spawnPositions[idx] || { x: (idx - (count - 1) / 2) * 3.2, z: 0 };
 
-      // Spawn height with random stagger and distinct horizontal offset
+      // Spawn at a natural tabletop throw height with smooth arc
+      const throwAngle = Math.atan2(-sp.z, -sp.x) + (Math.random() - 0.5) * 0.6;
+      const throwSpeed = 0.055 + Math.random() * 0.035;
       mesh.position.set(
-        sp.x + (Math.random() - 0.5) * 0.4,
-        9.5 + Math.random() * 3.0,
-        sp.z + (Math.random() - 0.5) * 0.4
+        sp.x - Math.cos(throwAngle) * 1.4 + (Math.random() - 0.5) * 0.35,
+        6.2 + Math.random() * 1.8,
+        sp.z - Math.sin(throwAngle) * 1.4 + (Math.random() - 0.5) * 0.35
       );
 
-      // Fast initial random tumble rotation
+      // Initial random orientation
       mesh.rotation.set(
         Math.random() * Math.PI * 2,
         Math.random() * Math.PI * 2,
@@ -1108,63 +1110,112 @@ class Dice3DController {
       const targetQuat = this.computeTargetQuat(dieData, mesh.position);
       const floorY = this.computeFloorY(mesh.geometry, targetQuat, dieData.radius);
 
+      // Angular velocity axis & speed for smooth quaternion tumbling
+      const spinAxis = new THREE.Vector3(
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2,
+        (Math.random() - 0.5) * 2
+      ).normalize();
+
       this.activeDice.push({
         ...dieData,
-        vx: (Math.random() - 0.5) * 0.08,
-        vy: -0.32 - Math.random() * 0.12,
-        vz: (Math.random() - 0.5) * 0.08,
-        rx: (Math.random() > 0.5 ? 1 : -1) * (0.28 + Math.random() * 0.22),
-        ry: (Math.random() > 0.5 ? 1 : -1) * (0.28 + Math.random() * 0.22),
-        rz: (Math.random() > 0.5 ? 1 : -1) * (0.28 + Math.random() * 0.22),
+        vx: Math.cos(throwAngle) * throwSpeed,
+        vy: -0.06 - Math.random() * 0.05,
+        vz: Math.sin(throwAngle) * throwSpeed,
+        spinAxis,
+        spinSpeed: 0.22 + Math.random() * 0.12,
         bounces: 0,
         settled: false,
-        settleProgress: 0,
+        settleStartTime: 0,
+        settleStartQuat: mesh.quaternion.clone(),
         targetQuat,
         floorY
       });
     });
 
     const startTime = performance.now();
-    const maxDuration = 1450; // ms
+    let lastTime = startTime;
+    const maxDuration = 1650; // ms
+    const stepQuat = new THREE.Quaternion();
 
     const animate = (now) => {
       const elapsed = now - startTime;
+      const rawDt = Math.min(40, Math.max(4, now - lastTime));
+      lastTime = now;
+      // Normalized frame scale (1.0 at 60fps / 16.67ms) so 60Hz, 120Hz, and 144Hz monitors animate identically
+      const dt = rawDt / 16.667;
       let allSettled = true;
 
-      // 1. Position & gravity update for unsettled dice
+      // 1. Smooth dt-normalized gravity, cushioned felt-table bounces & progressive quaternion alignment
       this.activeDice.forEach(die => {
         if (!die.settled) {
-          die.mesh.position.x += die.vx;
-          die.mesh.position.y += die.vy;
-          die.mesh.position.z += die.vz;
+          die.mesh.position.x += die.vx * dt;
+          die.mesh.position.y += die.vy * dt;
+          die.mesh.position.z += die.vz * dt;
 
-          die.mesh.rotation.x += die.rx;
-          die.mesh.rotation.y += die.ry;
-          die.mesh.rotation.z += die.rz;
+          // Smooth air & rolling drag
+          const airDrag = Math.pow(0.992, dt);
+          die.vx *= airDrag;
+          die.vz *= airDrag;
 
-          die.vy -= 0.016;
+          // Smooth gravity acceleration
+          die.vy -= 0.0115 * dt;
 
-          // Floor collision bounce
+          // Apply smooth quaternion spin
+          if (die.spinSpeed > 0.001) {
+            stepQuat.setFromAxisAngle(die.spinAxis, die.spinSpeed * dt);
+            die.mesh.quaternion.premultiply(stepQuat);
+          }
+
+          // After first bounce, progressively guide orientation towards targetQuat so there is never a harsh snap
+          if (die.bounces >= 1) {
+            die.targetQuat = this.computeTargetQuat(die, die.mesh.position);
+            const guideRate = die.bounces === 1 ? 0.045 : (die.bounces === 2 ? 0.095 : 0.16);
+            die.mesh.quaternion.slerp(die.targetQuat, 1 - Math.pow(1 - guideRate, dt));
+          }
+
+          // Cushioned felt-table floor collision
           if (die.mesh.position.y <= die.floorY) {
             die.mesh.position.y = die.floorY;
-            die.vy = -die.vy * 0.42; // Elastic restitution
-            die.vx *= 0.72; // Horizontal friction
-            die.vz *= 0.72;
-            die.rx *= 0.65;
-            die.ry *= 0.65;
-            die.rz *= 0.65;
             die.bounces++;
 
-            this.playDiceSound(Math.max(0.2, 1.0 - die.bounces * 0.25));
+            // Progressive energy absorption (soft felt tabletop feel)
+            const restitution = Math.max(0.22, 0.54 - die.bounces * 0.09);
+            die.vy = Math.abs(die.vy) * restitution;
 
-            if (die.bounces >= 3 || Math.abs(die.vy) < 0.035) {
+            const tableFriction = 0.78;
+            die.vx *= tableFriction;
+            die.vz *= tableFriction;
+            die.spinSpeed *= 0.62;
+
+            // Subtle organic deflection on early bounces
+            if (die.bounces <= 2) {
+              die.spinAxis.x += (Math.random() - 0.5) * 0.25;
+              die.spinAxis.z += (Math.random() - 0.5) * 0.25;
+              die.spinAxis.normalize();
+            }
+
+            const soundVol = Math.max(0.12, Math.pow(0.62, die.bounces - 1));
+            this.playDiceSound(soundVol);
+
+            if (die.bounces >= 4 || die.vy < 0.022) {
+              die.vy = 0;
               die.settled = true;
+              die.settleStartTime = now;
+              die.settleStartQuat.copy(die.mesh.quaternion);
               die.targetQuat = this.computeTargetQuat(die, die.mesh.position);
               die.floorY = this.computeFloorY(die.mesh.geometry, die.targetQuat, die.radius);
-              die.mesh.position.y = die.floorY;
             }
           }
           allSettled = false;
+        } else {
+          // Residual horizontal glide decay while settling onto target face
+          const glideFriction = Math.pow(0.86, dt);
+          die.vx *= glideFriction;
+          die.vz *= glideFriction;
+          die.mesh.position.x += die.vx * dt;
+          die.mesh.position.z += die.vz * dt;
+          die.mesh.position.y += (die.floorY - die.mesh.position.y) * (1 - Math.pow(0.75, dt));
         }
       });
 
@@ -1218,18 +1269,16 @@ class Dice3DController {
               dieB.vy += impulse * ny;
               dieB.vz += impulse * nz;
 
-              dieA.rx += (Math.random() - 0.5) * 0.12;
-              dieA.rz += (Math.random() - 0.5) * 0.12;
-              dieB.rx += (Math.random() - 0.5) * 0.12;
-              dieB.rz += (Math.random() - 0.5) * 0.12;
+              dieA.spinSpeed = Math.min(0.32, (dieA.spinSpeed || 0.1) + 0.04);
+              dieB.spinSpeed = Math.min(0.32, (dieB.spinSpeed || 0.1) + 0.04);
 
-              this.playDiceSound(0.35);
+              this.playDiceSound(0.3);
             }
           }
         }
       }
 
-      // 3. Ground Plane Separation & Upright Alignment for Settled Dice
+      // 3. Soft Ground Plane Separation for Settled Dice
       for (let i = 0; i < numDice; i++) {
         for (let j = i + 1; j < numDice; j++) {
           const a = this.activeDice[i];
@@ -1241,8 +1290,9 @@ class Dice3DController {
           if (dSq < minDist * minDist && dSq > 0.0001) {
             const dist = Math.sqrt(dSq);
             const overlap = minDist - dist;
-            const pushX = (dx / dist) * overlap * 0.5;
-            const pushZ = (dz / dist) * overlap * 0.5;
+            const softPush = overlap * 0.22 * dt;
+            const pushX = (dx / dist) * softPush;
+            const pushZ = (dz / dist) * softPush;
             a.mesh.position.x -= pushX;
             a.mesh.position.z -= pushZ;
             b.mesh.position.x += pushX;
@@ -1251,59 +1301,35 @@ class Dice3DController {
             if (a.settled) {
               a.targetQuat = this.computeTargetQuat(a, a.mesh.position);
               a.floorY = this.computeFloorY(a.mesh.geometry, a.targetQuat, a.radius);
-              a.mesh.position.y = a.floorY;
             }
             if (b.settled) {
               b.targetQuat = this.computeTargetQuat(b, b.mesh.position);
               b.floorY = this.computeFloorY(b.mesh.geometry, b.targetQuat, b.radius);
-              b.mesh.position.y = b.floorY;
             }
           }
         }
       }
 
-      // 4. Smooth Slerp alignment for settled dice
+      // 4. Smooth Cubic Ease-Out Quaternion Alignment for Settled Dice
+      let allAligned = allSettled;
       this.activeDice.forEach(die => {
         if (die.settled) {
-          if (die.settleProgress < 1.0) {
-            die.settleProgress += 0.08;
-            die.mesh.quaternion.slerp(die.targetQuat, 0.18);
-            if (die.settleProgress >= 1.0) {
-              die.mesh.quaternion.copy(die.targetQuat);
-            }
+          const settleElapsed = now - (die.settleStartTime || now);
+          const duration = 360; // 360ms smooth cubic ease-out settle
+          const t = Math.min(1.0, settleElapsed / duration);
+          const easeOutCubic = 1 - Math.pow(1 - t, 3);
+          die.mesh.quaternion.copy(die.settleStartQuat).slerp(die.targetQuat, easeOutCubic);
+          if (t < 1.0) {
+            allAligned = false;
           }
         }
       });
 
       this.renderer.render(this.scene, this.camera);
 
-      if (elapsed < maxDuration || (!allSettled && elapsed < 2000)) {
+      if (elapsed < maxDuration || (!allAligned && elapsed < 2200)) {
         this.animationFrameId = requestAnimationFrame(animate);
       } else {
-        // Ensure final separation & exact camera alignment
-        for (let pass = 0; pass < 6; pass++) {
-          for (let i = 0; i < numDice; i++) {
-            for (let j = i + 1; j < numDice; j++) {
-              const a = this.activeDice[i];
-              const b = this.activeDice[j];
-              const dx = b.mesh.position.x - a.mesh.position.x;
-              const dz = b.mesh.position.z - a.mesh.position.z;
-              const dSq = dx * dx + dz * dz;
-              const minDist = (a.radius + b.radius) * 1.20;
-              if (dSq < minDist * minDist && dSq > 0.0001) {
-                const dist = Math.sqrt(dSq);
-                const overlap = minDist - dist;
-                const pushX = (dx / dist) * overlap * 0.5;
-                const pushZ = (dz / dist) * overlap * 0.5;
-                a.mesh.position.x -= pushX;
-                a.mesh.position.z -= pushZ;
-                b.mesh.position.x += pushX;
-                b.mesh.position.z += pushZ;
-              }
-            }
-          }
-        }
-
         this.activeDice.forEach(die => {
           die.targetQuat = this.computeTargetQuat(die, die.mesh.position);
           die.floorY = this.computeFloorY(die.mesh.geometry, die.targetQuat, die.radius);
