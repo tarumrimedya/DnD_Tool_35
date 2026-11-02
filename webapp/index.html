@@ -123,17 +123,13 @@
                 </button>
               </div>
               
-              <!-- Satır 2: Karakter Sınıfları & Seviyeleri + Smart Notes & Mindmap Kısayolu -->
+              <!-- Satır 2: Karakter Sınıfları & Seviyeleri -->
               <div class="text-xs sm:text-sm font-semibold text-amber-400 flex items-center gap-2 flex-wrap">
                 <div class="flex items-center gap-1.5">
                   <span class="text-amber-500/80 text-xs">📜</span>
                   <span id="char-classes-display" class="break-words font-medium">Loading...</span>
                   <span id="core-classes" class="hidden">--</span>
                 </div>
-                <button type="button" onclick="if(window.HubNotes && typeof HubNotes.openCharacterNotebookModal==='function') HubNotes.openCharacterNotebookModal('editor'); else if(window.HubNotes) HubNotes.openFullNotesModal(null, 'editor');" class="ui-btn-sm h-7 px-2.5 sm:px-3 rounded-lg bg-amber-600/20 hover:bg-amber-600/35 text-amber-300 border border-amber-500/40 font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Open Smart Character &amp; Campaign Notebook (Notes, Mindmap &amp; AI Chronicler)">
-                  <span>📝</span>
-                  <span>Smart Notes &amp; Mindmap</span>
-                </button>
               </div>
 
               <!-- Gizli Stat Referansları (JS Uyumluluğu İçin) -->
@@ -146,26 +142,35 @@
             </div>
           </div>
 
-          <!-- Sağ Bölüm: Hub'a Dön, Ayarlar & Bulut Senkron (Simetrik Kontrol Bloğu) -->
-          <div class="flex flex-col items-stretch sm:items-end gap-1.5 pt-2 md:pt-0 border-t border-slate-800/80 md:border-0 w-full md:w-56 shrink-0">
-            <!-- Kullanıcı Profil Rozeti -->
-            <div id="user-profile-slot" class="w-full"></div>
-            <!-- 1. Sıra: Hub & Ayarlar Butonları -->
-            <div class="grid grid-cols-2 gap-1.5 w-full">
-              <a href="/hub" class="h-8 px-2.5 sm:px-3 rounded-lg bg-indigo-950/90 hover:bg-indigo-900 text-indigo-300 hover:text-white border border-indigo-700/80 text-xs font-bold shadow flex items-center justify-center gap-1.5 transition text-center" title="Return to Campaign & Character Hub">
-                <span>🏰</span>
-                <span class="inline">Hub</span>
-              </a>
-              <button type="button" onclick="openSettingsModal()" class="h-8 px-2.5 sm:px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow transition cursor-pointer text-center" title="Open Settings">
-                <span class="text-xs">⚙️</span>
-                <span class="inline">Settings</span>
-              </button>
-            </div>
-            <!-- 2. Sıra: Bulut Senkron Durumu -->
-            <div class="w-full">
-              <div id="sync-status-pill" onclick="if(window.SupabaseAuth) SupabaseAuth.handlePillClick(); else if(window.CloudSync) CloudSync.connect()" title="Check / sync cloud status" class="h-8 cursor-pointer flex items-center justify-center gap-1.5 px-2.5 rounded-lg text-[11px] font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate w-full">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-                <span id="sync-status-text">🟢 <span class="hidden sm:inline">Cloud </span>Synced</span>
+          <!-- Sağ Bölüm: Smart Notes & Mindmap (Sol Kutu) + Hub, Ayarlar & Bulut Senkron (Sağ Blok) -->
+          <div class="flex flex-col sm:flex-row items-stretch gap-2 pt-2 md:pt-0 border-t border-slate-800/80 md:border-0 w-full md:w-auto shrink-0">
+            <!-- Sağ Bloğun Solu: Smart Notes & Mindmap -->
+            <button type="button" onclick="if(window.HubNotes && typeof HubNotes.openCharacterNotebookModal==='function') HubNotes.openCharacterNotebookModal('editor'); else if(window.HubNotes) HubNotes.openFullNotesModal(null, 'editor');" class="w-full sm:w-28 md:w-32 px-3 py-2 rounded-xl bg-amber-600/15 hover:bg-amber-600/30 text-amber-300 hover:text-amber-200 border border-amber-500/40 hover:border-amber-400/70 font-sans font-bold text-xs shadow flex sm:flex-col items-center justify-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0 text-center" title="Open Smart Character &amp; Campaign Notebook (Notes, Mindmap &amp; AI Chronicler)">
+              <span class="text-base sm:text-xl leading-none">📝</span>
+              <span class="leading-tight">Smart Notes<br class="hidden sm:inline"><span class="sm:hidden"> </span>&amp; Mindmap</span>
+            </button>
+
+            <!-- Sağ Kontrol Bloğu: Kullanıcı, Hub/Ayarlar & Bulut Senkron -->
+            <div class="flex flex-col items-stretch sm:items-end justify-between gap-1.5 w-full md:w-56 shrink-0">
+              <!-- Kullanıcı Profil Rozeti -->
+              <div id="user-profile-slot" class="w-full"></div>
+              <!-- 1. Sıra: Hub & Ayarlar Butonları -->
+              <div class="grid grid-cols-2 gap-1.5 w-full">
+                <a href="/hub" class="h-8 px-2.5 sm:px-3 rounded-lg bg-indigo-950/90 hover:bg-indigo-900 text-indigo-300 hover:text-white border border-indigo-700/80 text-xs font-bold shadow flex items-center justify-center gap-1.5 transition text-center" title="Return to Campaign & Character Hub">
+                  <span>🏰</span>
+                  <span class="inline">Hub</span>
+                </a>
+                <button type="button" onclick="openSettingsModal()" class="h-8 px-2.5 sm:px-3 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 hover:border-slate-500 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow transition cursor-pointer text-center" title="Open Settings">
+                  <span class="text-xs">⚙️</span>
+                  <span class="inline">Settings</span>
+                </button>
+              </div>
+              <!-- 2. Sıra: Bulut Senkron Durumu -->
+              <div class="w-full">
+                <div id="sync-status-pill" onclick="if(window.SupabaseAuth) SupabaseAuth.handlePillClick(); else if(window.CloudSync) CloudSync.connect()" title="Check / sync cloud status" class="h-8 cursor-pointer flex items-center justify-center gap-1.5 px-2.5 rounded-lg text-[11px] font-semibold bg-emerald-950/80 text-emerald-300 border border-emerald-600 whitespace-nowrap shadow-sm transition truncate w-full">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+                  <span id="sync-status-text">🟢 <span class="hidden sm:inline">Cloud </span>Synced</span>
+                </div>
               </div>
             </div>
           </div>
