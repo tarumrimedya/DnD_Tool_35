@@ -3416,10 +3416,10 @@
         if (listView) listView.classList.add('hidden');
         if (silView) silView.classList.remove('hidden');
         if (btnSil) {
-          btnSil.className = 'w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer';
+          btnSil.className = 'w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
         }
         if (btnList) {
-          btnList.className = 'w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
+          btnList.className = 'w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
         }
         if (rerender) {
           renderBodySlotsSilhouette();
@@ -3430,10 +3430,10 @@
         if (silView) silView.classList.add('hidden');
         if (listView) listView.classList.remove('hidden');
         if (btnList) {
-          btnList.className = 'w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer';
+          btnList.className = 'w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
         }
         if (btnSil) {
-          btnSil.className = 'w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer';
+          btnSil.className = 'w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
         }
       }
     }
