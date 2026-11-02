@@ -965,10 +965,11 @@ const RuleMaster = {
   },
 
   // Open Edit / Add in Inline V2 Manual Rule Form (Replaces legacy V1 29-column modal)
-  openModalWithData(entry, editIndex = -1) {
+  openModalWithData(entry, editIndex = -1, options = {}) {
     this.selectedEntryIndex = editIndex;
     const v2 = this.ensureV2(entry ? JSON.parse(JSON.stringify(entry)) : this.createEmptyEntry('Weapon'));
     this._currentEditingEntry = v2;
+    this._changeAndAddOriginalSnapshot = null;
 
     // Ensure Inline Manual Rule mode is visible (Rule Master panel is permanently visible above all filters)
     this.switchInlineMode('manual');
@@ -1084,15 +1085,33 @@ const RuleMaster = {
     const bannerTitle = document.getElementById('im-editing-title');
     const saveDbLbl = document.getElementById('btn-im-save-db-label');
     const saveEqLbl = document.getElementById('btn-im-save-equip-label');
-    const isEditing = editIndex >= 0 || Boolean(v2.name && v2.name.trim());
+    const isChangeAndAdd = Boolean(options && options.changeAndAddMode);
+    const isEditing = isChangeAndAdd || editIndex >= 0 || Boolean(v2.name && v2.name.trim());
     if (banner) banner.classList.toggle('hidden', !isEditing);
     if (bannerTitle) {
-      bannerTitle.textContent = editIndex >= 0
-        ? `Editing Custom DB Entry: ${v2.name || 'Unnamed'}`
-        : `Draft Loaded: ${v2.name || 'New Entry'}`;
+      if (isChangeAndAdd) {
+        const srcLbl = options.sourceLabel || 'Site Database';
+        bannerTitle.textContent = `Change & Add (${srcLbl}): Modify "${v2.name || 'Entry'}" below before saving to Custom Master DB`;
+      } else {
+        bannerTitle.textContent = editIndex >= 0
+          ? `Editing Custom DB Entry: ${v2.name || 'Unnamed'}`
+          : `Draft Loaded: ${v2.name || 'New Entry'}`;
+      }
     }
-    if (saveDbLbl) saveDbLbl.textContent = editIndex >= 0 ? 'Update in Custom DB' : 'Save to Custom DB';
-    if (saveEqLbl) saveEqLbl.textContent = editIndex >= 0 ? 'Update & Equip to Character' : 'Save & Equip to Character';
+    if (saveDbLbl) {
+      saveDbLbl.textContent = isChangeAndAdd
+        ? 'Save Modified & Add to DB'
+        : (editIndex >= 0 ? 'Update in Custom DB' : 'Save to Custom DB');
+    }
+    if (saveEqLbl) {
+      saveEqLbl.textContent = isChangeAndAdd
+        ? 'Save Modified & Equip to Character'
+        : (editIndex >= 0 ? 'Update & Equip to Character' : 'Save & Equip to Character');
+    }
+
+    if (isChangeAndAdd) {
+      this._changeAndAddOriginalSnapshot = this.getComparableEntrySignature(this.buildInlineManualV2Entry());
+    }
 
     const panel = document.getElementById('inline-ai-adder-panel');
     if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -2479,6 +2498,87 @@ Return valid JSON only matching:
 }`;
   },
 
+  // Check if an entry already exists in the Site Database (Custom Master DB, SRD Compendium, or Core Catalogs)
+  getExistingSiteDbInfo(item) {
+    if (!item || typeof item !== 'object') {
+      return { exists: false, inMasterDb: false, inCoreCompendium: false, masterDbIndex: -1, sourceLabel: null };
+    }
+    const cleanName = (item.name || '').toLowerCase().trim();
+    const cleanId = (item.id || '').toLowerCase().trim();
+
+    // 1. Check Character Custom Master DB
+    if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+      const mIdx = masterDb.findIndex(m => m && ((cleanId && (m.id || '').toLowerCase().trim() === cleanId) || (cleanName && (m.name || '').toLowerCase().trim() === cleanName)));
+      if (mIdx >= 0) {
+        return { exists: true, inMasterDb: true, inCoreCompendium: false, masterDbIndex: mIdx, sourceLabel: 'Custom Master DB' };
+      }
+    }
+
+    // 2. Check SrdCompendium (3,522+ modular V2 entries)
+    if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
+      const exactComp = (cleanId && window.SrdCompendium.getById(cleanId)) || (cleanName && window.SrdCompendium.getByName(cleanName));
+      if (exactComp) {
+        return { exists: true, inMasterDb: false, inCoreCompendium: true, masterDbIndex: -1, sourceLabel: 'Site V2 SRD Compendium' };
+      }
+    }
+
+    // 3. Check Canonical Dictionary (ToB / Splatbook staples)
+    if (cleanName && this.canonicalDictionary && this.canonicalDictionary[cleanName] && typeof this.canonicalDictionary[cleanName] === 'object') {
+      return { exists: true, inMasterDb: false, inCoreCompendium: true, masterDbIndex: -1, sourceLabel: 'Site V2 Core Library' };
+    }
+
+    // 4. Check BUNDLED_TOB_MANEUVERS_CATALOG & BUNDLED_SRD_CORE_CATALOG
+    if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_TOB_MANEUVERS_CATALOG)) {
+      const tobMatch = window.BUNDLED_TOB_MANEUVERS_CATALOG.some(e => e && ((cleanName && (e.name || '').toLowerCase().trim() === cleanName) || (cleanId && (e.id || '').toLowerCase().trim() === cleanId)));
+      if (tobMatch) {
+        return { exists: true, inMasterDb: false, inCoreCompendium: true, masterDbIndex: -1, sourceLabel: 'Site V2 ToB Library' };
+      }
+    }
+    if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+      const coreMatch = window.BUNDLED_SRD_CORE_CATALOG.some(e => e && ((cleanName && (e.name || '').toLowerCase().trim() === cleanName) || (cleanId && (e.id || '').toLowerCase().trim() === cleanId)));
+      if (coreMatch) {
+        return { exists: true, inMasterDb: false, inCoreCompendium: true, masterDbIndex: -1, sourceLabel: 'Site V2 SRD Core' };
+      }
+      if (cleanName) {
+        const baseMatch = this.findBaseItemInSrdCore(cleanName);
+        if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanName) {
+          return { exists: true, inMasterDb: false, inCoreCompendium: true, masterDbIndex: -1, sourceLabel: 'Site V2 SRD Core' };
+        }
+      }
+    }
+
+    if (item._fromLocalSiteDb) {
+      return { exists: true, inMasterDb: false, inCoreCompendium: true, masterDbIndex: -1, sourceLabel: item._localSourceLabel || 'Site V2 Compendium' };
+    }
+
+    return { exists: false, inMasterDb: false, inCoreCompendium: false, masterDbIndex: -1, sourceLabel: null };
+  },
+
+  // Create a deterministic signature of editable V2 fields to verify modifications in "Change & Add" mode
+  getComparableEntrySignature(item) {
+    const v2 = this.ensureV2(item || {});
+    return JSON.stringify({
+      name: (v2.name || '').trim().toLowerCase(),
+      type: (v2.type || '').trim().toLowerCase(),
+      slot: (v2.slot || '').trim().toLowerCase(),
+      source: (v2.source || '').trim().toLowerCase(),
+      prereq: (v2.prereq || '-').trim().toLowerCase(),
+      benefit: (v2.benefit || v2.description || '').trim(),
+      action: (v2.action || 'Passive').trim().toLowerCase(),
+      cost: Number(v2.cost) || 0,
+      weight: Number(v2.weight) || 0,
+      charges: v2.dailyCharges?.max || 0,
+      modifiers: Array.isArray(v2.modifiers) ? v2.modifiers.map(m => ({ target: m.target, value: Number(m.value) || 0, type: m.type, condition: m.condition || null })) : [],
+      damageParts: Array.isArray(v2.damageParts) ? v2.damageParts.map(d => ({ dice: d.dice || '', bonus: Number(d.bonus) || 0, type: d.type || '' })) : [],
+      ruleFlags: v2.ruleFlags || {},
+      weaponStats: v2.weaponStats ? { baseDamage: v2.weaponStats.baseDamage, critMin: Number(v2.weaponStats.critMin) || 20, critMult: Number(v2.weaponStats.critMult) || 2 } : null,
+      armorStats: v2.armorStats ? { baseAc: v2.armorStats.baseAc, maxDex: v2.armorStats.maxDex, acp: v2.armorStats.acp, asf: v2.armorStats.asf } : null,
+      level: v2.level !== undefined && v2.level !== '' ? String(v2.level) : '',
+      school: (v2.school || v2.discipline || '').trim().toLowerCase(),
+      range: (v2.range || '').trim().toLowerCase()
+    });
+  },
+
   // 0ms Local Resolution Helper: Master DB -> SrdCompendium -> ItemAssembler -> Canonical Dictionary
   resolveLocalZeroTokenQuery(rawQuery) {
     if (!rawQuery || typeof rawQuery !== 'string') return [];
@@ -2493,11 +2593,18 @@ Return valid JSON only matching:
       cleanKey = this.canonicalDictionary[cleanKey];
     }
 
+    const markSiteDb = (entry, label) => {
+      const v2 = this.ensureV2(entry);
+      v2._fromLocalSiteDb = true;
+      v2._localSourceLabel = label;
+      return v2;
+    };
+
     // 1. Check user's Master DB first
     if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
       const dbMatch = masterDb.filter(m => m && (m.name || '').toLowerCase().trim() === cleanKey);
       if (dbMatch.length > 0) {
-        return dbMatch.map(m => this.ensureV2(m));
+        return dbMatch.map(m => markSiteDb(m, 'Custom Master DB'));
       }
     }
 
@@ -2505,7 +2612,7 @@ Return valid JSON only matching:
     if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
       const exactComp = window.SrdCompendium.getById(cleanKey) || window.SrdCompendium.getByName(cleanKey);
       if (exactComp) {
-        return [this.ensureV2(exactComp)];
+        return [markSiteDb(exactComp, 'Site V2 SRD Compendium')];
       }
     }
 
@@ -2521,24 +2628,24 @@ Return valid JSON only matching:
 
     // 4. Check Canonical Dictionary (ToB / Splatbook staples like Shock Trooper, Mountain Hammer, Shadow Blade)
     if (this.canonicalDictionary[cleanKey] && typeof this.canonicalDictionary[cleanKey] === 'object') {
-      return [this.ensureV2(this.canonicalDictionary[cleanKey])];
+      return [markSiteDb(this.canonicalDictionary[cleanKey], 'Site V2 Core Library')];
     }
 
     // 5. Check BUNDLED_TOB_MANEUVERS_CATALOG & BUNDLED_SRD_CORE_CATALOG
     if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_TOB_MANEUVERS_CATALOG)) {
       const tobMatch = window.BUNDLED_TOB_MANEUVERS_CATALOG.find(e => e && ((e.name || '').toLowerCase().trim() === cleanKey || (e.id || '').toLowerCase().trim() === cleanKey));
       if (tobMatch) {
-        return [this.ensureV2(tobMatch)];
+        return [markSiteDb(tobMatch, 'Site V2 ToB Library')];
       }
     }
     if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
       const coreExact = window.BUNDLED_SRD_CORE_CATALOG.find(e => e && ((e.name || '').toLowerCase().trim() === cleanKey || (e.id || '').toLowerCase().trim() === cleanKey));
       if (coreExact) {
-        return [this.ensureV2(coreExact)];
+        return [markSiteDb(coreExact, 'Site V2 SRD Core')];
       }
       const baseMatch = this.findBaseItemInSrdCore(cleanKey);
       if (baseMatch && (baseMatch.name || '').toLowerCase().trim() === cleanKey) {
-        return [this.normalizeEntry(baseMatch)];
+        return [markSiteDb(this.normalizeEntry(baseMatch), 'Site V2 SRD Core')];
       }
     }
 
@@ -2696,7 +2803,12 @@ Return valid JSON only matching:
       this.renderAiResults();
       if (resultsWrapper) resultsWrapper.classList.remove('hidden');
       if (statusBox) statusBox.classList.remove('hidden');
-      if (statusText) statusText.innerHTML = `⚡ <b>"${localFound[0].name}"</b> loaded instantaneously from local V2 Compendium / Item Assembler (0 ms, Zero Tokens).`;
+      const dbInfo = this.getExistingSiteDbInfo(localFound[0]);
+      if (statusText) {
+        statusText.innerHTML = dbInfo.exists
+          ? `✅ <b>"${localFound[0].name}"</b> already exists in the site database (<b>${dbInfo.sourceLabel}</b>). Direct duplicate addition is locked — click <b>Change &amp; Add</b> to customize and save a modified version.`
+          : `⚡ <b>"${localFound[0].name}"</b> assembled instantaneously via V2 Item Assembler (0 ms, Zero Tokens).`;
+      }
       if (btn) btn.disabled = false;
       return;
     }
@@ -2876,29 +2988,48 @@ Return valid JSON only matching:
       return;
     }
 
+    const newEntriesCount = this.lastAiResults.filter(it => !this.getExistingSiteDbInfo(it).exists).length;
+    const firstDbInfo = this.getExistingSiteDbInfo(this.lastAiResults[0]);
+
     let html = `
-      <div class="flex items-center justify-between bg-slate-900 border border-slate-800 p-3 rounded-xl mb-3 shadow">
+      <div class="flex items-center justify-between bg-slate-900 border ${newEntriesCount === 0 ? 'border-amber-500/50' : 'border-slate-800'} p-3 rounded-xl mb-3 shadow">
         <div>
-          <span class="text-xs font-bold text-amber-300">D&D 3.5e RAW Verified:</span>
-          <span class="text-xs text-slate-200 ml-1 font-semibold">${this.lastAiResults.length} Result(s) Found</span>
-          <span class="text-[11px] text-slate-400 block sm:inline sm:ml-2">100% Canonical V2 JSON Schema Compliant</span>
+          <span class="text-xs font-bold ${newEntriesCount === 0 ? 'text-amber-300' : 'text-amber-300'}">${newEntriesCount === 0 ? '📌 Already in Site Database:' : 'D&D 3.5e RAW Verified:'}</span>
+          <span class="text-xs text-slate-200 ml-1 font-semibold">${newEntriesCount === 0 ? (firstDbInfo.sourceLabel || 'Site V2 Compendium') : `${this.lastAiResults.length} Result(s) Found`}</span>
+          <span class="text-[11px] text-slate-400 block sm:inline sm:ml-2">${newEntriesCount === 0 ? 'Direct duplicate addition is disabled — use "Change & Add" to customize first' : '100% Canonical V2 JSON Schema Compliant'}</span>
         </div>
-        <button onclick="RuleMaster.addAllAiResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
-          <span>📥</span>
-          <span>Add All to DB</span>
-        </button>
+        ${newEntriesCount > 0 ? `
+          <button onclick="RuleMaster.addAllAiResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
+            <span>📥</span>
+            <span>${newEntriesCount < this.lastAiResults.length ? `Add New to DB (${newEntriesCount})` : 'Add All to DB'}</span>
+          </button>
+        ` : (this.lastAiResults.length === 1 ? `
+          <button onclick="RuleMaster.changeAndAddAiResult(0)" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs px-3.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
+            <span>✏️</span>
+            <span>Change &amp; Add</span>
+          </button>
+        ` : `
+          <span class="px-3 py-1.5 rounded-lg bg-slate-950 border border-amber-500/40 text-amber-300 font-bold text-xs flex items-center gap-1.5 select-none">
+            <span>🔒</span>
+            <span>Already in Site DB</span>
+          </span>
+        `)}
       </div>
       <div class="space-y-3">
     `;
 
     this.lastAiResults.forEach((rawItem, idx) => {
       const item = this.ensureV2(rawItem);
+      const dbInfo = this.getExistingSiteDbInfo(item);
       const modes = Array.isArray(item.modes) ? item.modes : [];
       const badgeClass = this.getTypeBadgeClass(item.type);
       const statPills = this.getEntrySummaryPills(item);
       const primaryBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
 
       const specificBadges = [];
+      if (dbInfo.exists) {
+        specificBadges.push(`<span class="badge bg-amber-950/90 text-amber-300 border border-amber-500/60 text-[10px] font-bold">📌 Already in ${dbInfo.inMasterDb ? 'Custom Master DB' : 'Site Database'}</span>`);
+      }
       if (item.level !== undefined && item.level !== null && item.level !== '') {
         specificBadges.push(`<span class="badge bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">Level ${item.level}</span>`);
       }
@@ -2913,7 +3044,7 @@ Return valid JSON only matching:
       }
 
       html += `
-        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3 shadow-md transition">
+        <div class="bg-slate-900 border ${dbInfo.exists ? 'border-amber-500/40' : 'border-slate-800'} rounded-xl p-4 space-y-3 shadow-md transition">
           <div class="flex flex-wrap items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-2 flex-wrap">
@@ -2932,16 +3063,29 @@ Return valid JSON only matching:
             </div>
 
             <div class="flex items-center gap-1.5">
-              <button onclick="RuleMaster.addAiResultToDb(${idx})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1">
-                <span>📥</span>
-                <span>Add to DB</span>
-              </button>
-              <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition font-bold" title="Equip / Add to Character">
+              ${dbInfo.exists ? `
+                <span class="px-2.5 py-1.5 rounded-lg bg-slate-950 border border-slate-700 text-slate-400 text-[11px] font-bold flex items-center gap-1 select-none" title="Already exists in ${dbInfo.sourceLabel} — direct addition disabled">
+                  <span>🔒</span>
+                  <span>Already in DB</span>
+                </span>
+                <button onclick="RuleMaster.changeAndAddAiResult(${idx})" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1 cursor-pointer" title="Modify this entry in the Builder and add to Custom Master DB">
+                  <span>✏️</span>
+                  <span>Change &amp; Add</span>
+                </button>
+              ` : `
+                <button onclick="RuleMaster.addAiResultToDb(${idx})" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
+                  <span>📥</span>
+                  <span>Add to DB</span>
+                </button>
+              `}
+              <button onclick="RuleMaster.equipAiResultToCharacter(${idx})" class="bg-emerald-950 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 text-xs px-2.5 py-1.5 rounded-lg transition font-bold cursor-pointer" title="Equip / Add to Character">
                 ⚡ Equip
               </button>
-              <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition" title="Edit">
-                ✏️ Edit
-              </button>
+              ${!dbInfo.exists ? `
+                <button onclick="RuleMaster.editAiResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2.5 py-1.5 rounded-lg border border-slate-700 transition cursor-pointer" title="Edit">
+                  ✏️ Edit
+                </button>
+              ` : ''}
             </div>
           </div>
 
@@ -2984,6 +3128,11 @@ Return valid JSON only matching:
   addAiResultToDb(index) {
     if (index >= 0 && index < this.lastAiResults.length) {
       const item = this.ensureV2(JSON.parse(JSON.stringify(this.lastAiResults[index])));
+      const dbInfo = this.getExistingSiteDbInfo(item);
+      if (dbInfo.exists) {
+        this.changeAndAddAiResult(index);
+        return;
+      }
       const existsIdx = masterDb.findIndex(m => (m.id && m.id === item.id) || (m.name || '').toLowerCase().trim() === (item.name || '').toLowerCase().trim());
       if (existsIdx >= 0) {
         masterDb[existsIdx] = item;
@@ -2999,18 +3148,36 @@ Return valid JSON only matching:
 
   addAllAiResultsToDb() {
     if (!this.lastAiResults.length) return;
+    let addedCount = 0;
     this.lastAiResults.forEach(rawItem => {
       const copy = this.ensureV2(JSON.parse(JSON.stringify(rawItem)));
+      if (this.getExistingSiteDbInfo(copy).exists) return;
       const existsIdx = masterDb.findIndex(m => (m.id && m.id === copy.id) || (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
       if (existsIdx >= 0) {
         masterDb[existsIdx] = copy;
       } else {
         masterDb.push(copy);
       }
+      addedCount++;
     });
+    if (addedCount === 0) {
+      alert('ℹ️ All listed entries already exist in the site database. Use "Change & Add" to customize an entry before adding it to Master DB.');
+      return;
+    }
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ ${this.lastAiResults.length} Canonical V2 rule(s) successfully added to Master_DB!`);
+    alert(`✅ ${addedCount} Canonical V2 rule(s) successfully added to Master_DB!`);
+  },
+
+  changeAndAddAiResult(index) {
+    if (index >= 0 && index < this.lastAiResults.length) {
+      const item = this.ensureV2(JSON.parse(JSON.stringify(this.lastAiResults[index])));
+      const dbInfo = this.getExistingSiteDbInfo(item);
+      this.openModalWithData(item, dbInfo.inMasterDb ? dbInfo.masterDbIndex : -1, {
+        changeAndAddMode: true,
+        sourceLabel: dbInfo.sourceLabel || 'Site Database'
+      });
+    }
   },
 
   editAiResultInModal(index) {
@@ -4057,7 +4224,14 @@ Return valid JSON only matching:
     if (localHits.length > 0) {
       this.renderInlineAiResults(localHits);
       const st = document.getElementById('inline-ai-status-text');
-      if (st) st.innerHTML = `⚡ <b>"${localHits[0].name}"</b> loaded instantaneously from local V2 Compendium / Item Assembler (0 ms, Zero Tokens).`;
+      const spinner = document.getElementById('inline-ai-loading-spinner');
+      if (spinner) spinner.classList.add('hidden');
+      const dbInfo = this.getExistingSiteDbInfo(localHits[0]);
+      if (st) {
+        st.innerHTML = dbInfo.exists
+          ? `✅ <b>"${localHits[0].name}"</b> already exists in the site database (<b>${dbInfo.sourceLabel}</b>). Direct duplicate addition to Master DB is disabled — click <b>Change &amp; Add</b> to customize and save a modified version.`
+          : `⚡ <b>"${localHits[0].name}"</b> assembled instantaneously via V2 Item Assembler (0 ms, Zero Tokens).`;
+      }
       const lb = document.getElementById('inline-ai-loading-box');
       if (lb) lb.classList.remove('hidden');
       return;
@@ -4075,10 +4249,12 @@ Return valid JSON only matching:
 
     const btn = document.getElementById('btn-inline-ai-search');
     const loadingBox = document.getElementById('inline-ai-loading-box');
+    const spinner = document.getElementById('inline-ai-loading-spinner');
     const statusText = document.getElementById('inline-ai-status-text');
     const resultsBox = document.getElementById('inline-ai-results-box');
 
     if (btn) btn.disabled = true;
+    if (spinner) spinner.classList.remove('hidden');
     if (loadingBox) loadingBox.classList.remove('hidden');
     if (resultsBox) resultsBox.innerHTML = '';
 
@@ -4109,51 +4285,81 @@ Return valid JSON only matching:
     const entries = this.convertRowsToEntries(rowsOrEntries).map(e => this.ensureV2(e));
     this._inlineEntries = entries;
 
+    const newEntriesCount = entries.filter(e => !this.getExistingSiteDbInfo(e).exists).length;
+    const firstDbInfo = this.getExistingSiteDbInfo(entries[0]);
+
     let html = `
-      <div class="flex items-center justify-between bg-slate-900 border border-purple-500/40 p-2.5 rounded-xl mb-2 shadow-md">
+      <div class="flex items-center justify-between bg-slate-900 border ${newEntriesCount === 0 ? 'border-amber-500/50' : 'border-purple-500/40'} p-2.5 rounded-xl mb-2 shadow-md">
         <div class="flex items-center gap-2">
-          <span class="text-base">✨</span>
+          <span class="text-base">${newEntriesCount === 0 ? '📌' : '✨'}</span>
           <div>
-            <div class="text-xs font-bold text-white">${entries.length} Canonical V2 Rule(s) Parsed</div>
-            <div class="text-[10px] text-slate-400">Parent entry and embedded modes can be added together</div>
+            <div class="text-xs font-bold ${newEntriesCount === 0 ? 'text-amber-300' : 'text-white'}">${newEntriesCount === 0 ? (entries.length === 1 ? `"${entries[0].name}" Already Exists in Site Database (${firstDbInfo.sourceLabel})` : `${entries.length} Rule(s) Already Exist in Site Database`) : `${entries.length} Canonical V2 Rule(s) Parsed`}</div>
+            <div class="text-[10px] text-slate-400">${newEntriesCount === 0 ? 'Direct duplicate addition to Master DB is disabled — click "Change & Add" to customize and save a modified version' : 'Parent entry and embedded modes can be added together'}</div>
           </div>
         </div>
-        <button onclick="RuleMaster.addAllInlineResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5">
-          <span>📥</span>
-          <span>Add All to DB</span>
-        </button>
+        ${newEntriesCount > 0 ? `
+          <button onclick="RuleMaster.addAllInlineResultsToDb()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
+            <span>📥</span>
+            <span>${newEntriesCount < entries.length ? `Add New to DB (${newEntriesCount})` : 'Add All to DB'}</span>
+          </button>
+        ` : (entries.length === 1 ? `
+          <button onclick="RuleMaster.changeAndAddInlineResult(0)" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer">
+            <span>✏️</span>
+            <span>Change &amp; Add</span>
+          </button>
+        ` : `
+          <span class="px-3 py-1.5 rounded-lg bg-slate-950 border border-amber-500/40 text-amber-300 font-bold text-xs flex items-center gap-1.5 select-none">
+            <span>🔒</span>
+            <span>Already in Site DB</span>
+          </span>
+        `)}
       </div>
       <div class="space-y-2 mt-2">
     `;
 
     entries.forEach((item, idx) => {
+      const dbInfo = this.getExistingSiteDbInfo(item);
       const modes = Array.isArray(item.modes) ? item.modes : [];
       const badgeClass = this.getTypeBadgeClass(item.type);
       const statPills = this.getEntrySummaryPills(item);
 
       html += `
-        <div class="bg-slate-950 border border-purple-500/40 rounded-xl p-3 shadow-md space-y-2">
+        <div class="bg-slate-950 border ${dbInfo.exists ? 'border-amber-500/45' : 'border-purple-500/40'} rounded-xl p-3 shadow-md space-y-2">
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-xs md:text-sm font-extrabold text-white">${item.name}</span>
                 <span class="badge ${badgeClass} text-[10px]">${item.type}</span>
+                ${dbInfo.exists ? `<span class="badge bg-amber-950/90 text-amber-300 border border-amber-500/60 text-[10px] font-bold">📌 Already in ${dbInfo.inMasterDb ? 'Custom Master DB' : 'Site Database'}</span>` : ''}
                 ${modes.length > 0 ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">⚡ ${modes.length} Embedded Mode(s)</span>` : ''}
                 <span class="text-[10px] text-slate-400">📚 <b>${item.source || 'PHB'}</b></span>
                 <span class="text-[10px] text-slate-400">• Slot: <b>${item.slot || 'None'}</b></span>
               </div>
             </div>
             <div class="flex items-center gap-1.5">
-              <button onclick="RuleMaster.addInlineResultToDb(${idx})" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1">
-                <span>📥</span>
-                <span>Add to DB</span>
-              </button>
-              <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition font-bold" title="Equip to Character">
+              ${dbInfo.exists ? `
+                <span class="px-2 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-400 text-[10px] font-bold flex items-center gap-1 select-none" title="Already exists in ${dbInfo.sourceLabel} — direct duplicate addition disabled">
+                  <span>🔒</span>
+                  <span>Already in DB</span>
+                </span>
+                <button onclick="RuleMaster.changeAndAddInlineResult(${idx})" class="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1 cursor-pointer" title="Modify this entry in the Builder and add to Custom Master DB">
+                  <span>✏️</span>
+                  <span>Change &amp; Add</span>
+                </button>
+              ` : `
+                <button onclick="RuleMaster.addInlineResultToDb(${idx})" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-2.5 py-1 rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
+                  <span>📥</span>
+                  <span>Add to DB</span>
+                </button>
+              `}
+              <button onclick="RuleMaster.equipInlineResultToCharacter(${idx})" class="bg-purple-950 hover:bg-purple-900 border border-purple-700 text-purple-300 text-xs px-2 py-1 rounded-lg transition font-bold cursor-pointer" title="Equip to Character">
                 ⚡ Equip
               </button>
-              <button onclick="RuleMaster.editInlineResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2 py-1 rounded-lg border border-slate-700 transition" title="Inspect / Edit in Form">
-                ✏️ Edit
-              </button>
+              ${!dbInfo.exists ? `
+                <button onclick="RuleMaster.editInlineResultInModal(${idx})" class="bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs px-2 py-1 rounded-lg border border-slate-700 transition cursor-pointer" title="Inspect / Edit in Form">
+                  ✏️ Edit
+                </button>
+              ` : ''}
             </div>
           </div>
 
@@ -4196,6 +4402,11 @@ Return valid JSON only matching:
   addInlineResultToDb(idx) {
     if (!this._inlineEntries || !this._inlineEntries[idx]) return;
     const item = this.ensureV2(JSON.parse(JSON.stringify(this._inlineEntries[idx])));
+    const dbInfo = this.getExistingSiteDbInfo(item);
+    if (dbInfo.exists) {
+      this.changeAndAddInlineResult(idx);
+      return;
+    }
     const existsIdx = masterDb.findIndex(m => (m.id && m.id === item.id) || (m.name || '').toLowerCase().trim() === (item.name || '').toLowerCase().trim());
     if (existsIdx >= 0) {
       masterDb[existsIdx] = item;
@@ -4210,18 +4421,35 @@ Return valid JSON only matching:
 
   addAllInlineResultsToDb() {
     if (!this._inlineEntries || !this._inlineEntries.length) return;
+    let addedCount = 0;
     [...this._inlineEntries].reverse().forEach(it => {
       const copy = this.ensureV2(JSON.parse(JSON.stringify(it)));
+      if (this.getExistingSiteDbInfo(copy).exists) return;
       const existsIdx = masterDb.findIndex(m => (m.id && m.id === copy.id) || (m.name || '').toLowerCase().trim() === (copy.name || '').toLowerCase().trim());
       if (existsIdx >= 0) {
         masterDb[existsIdx] = copy;
       } else {
         masterDb.unshift(copy);
       }
+      addedCount++;
     });
+    if (addedCount === 0) {
+      alert('ℹ️ All listed entries already exist in the site database. Use "Change & Add" to customize an entry before adding it to Master DB.');
+      return;
+    }
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ A total of ${this._inlineEntries.length} Canonical V2 rule(s) successfully added to Master_DB!`);
+    alert(`✅ A total of ${addedCount} Canonical V2 rule(s) successfully added to Master_DB!`);
+  },
+
+  changeAndAddInlineResult(idx) {
+    if (!this._inlineEntries || !this._inlineEntries[idx]) return;
+    const item = this.ensureV2(JSON.parse(JSON.stringify(this._inlineEntries[idx])));
+    const dbInfo = this.getExistingSiteDbInfo(item);
+    this.openModalWithData(item, dbInfo.inMasterDb ? dbInfo.masterDbIndex : -1, {
+      changeAndAddMode: true,
+      sourceLabel: dbInfo.sourceLabel || 'Site Database'
+    });
   },
 
   editInlineResultInModal(idx) {
@@ -4579,6 +4807,7 @@ Return valid JSON only matching:
   resetInlineManualForm() {
     this.selectedEntryIndex = -1;
     this._currentEditingEntry = null;
+    this._changeAndAddOriginalSnapshot = null;
     const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
     setVal('im-name', '');
     setVal('im-type', 'Weapon');
@@ -4631,6 +4860,17 @@ Return valid JSON only matching:
       alert('⚠️ Please enter a Rule / Item Name first.');
       document.getElementById('im-name')?.focus();
       return;
+    }
+    if (this._changeAndAddOriginalSnapshot) {
+      const currentSig = this.getComparableEntrySignature(v2Entry);
+      if (currentSig === this._changeAndAddOriginalSnapshot) {
+        alert(`⚠️ "${v2Entry.name}" already exists in the site database with identical values.\nPlease modify at least one field (e.g., Name, Stat Modifiers, Damage, Cost, or Description) before adding it to your Custom Master DB.`);
+        return;
+      }
+      if (editIdx < 0) {
+        const slug = v2Entry.name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+        v2Entry.id = `custom_${slug}_${Date.now()}`;
+      }
     }
     if (this.saveEntry(v2Entry, editIdx)) {
       if (alsoEquip) {
