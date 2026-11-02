@@ -2922,18 +2922,28 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   <span>Spotlight & AI Feat Search</span>
                   <span class="text-[9px] text-purple-300 font-normal">Compendium + 3.5e RAW Validation</span>
                 </label>
-                <div class="relative flex items-center">
-                  <div class="absolute left-2.5 text-slate-400 text-xs pointer-events-none">🔍</div>
+                <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1 flex items-center gap-1.5 border border-purple-400/75">
+                  <div class="w-7 h-7 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow">
+                    🔍
+                  </div>
                   <input type="text"
                          id="lvlup-feat-search-input-${idx}"
                          value="${(currentQuery || '').replace(/"/g, '&quot;')}"
                          placeholder="Search feats, pick from catalog, or enter custom name..."
                          onfocus="openLevelUpFeatSearchConsole(${idx})"
                          oninput="onLevelUpFeatSearchInput(${idx}, this.value)"
-                         class="w-full bg-slate-900 border border-slate-700 focus:border-purple-500 rounded-lg pl-8 pr-24 py-1.5 text-xs text-white font-bold focus:outline-none transition">
+                         onkeydown="if(event.key==='Enter'){event.preventDefault();triggerRuleMasterForLevelUpSlot(${idx});}"
+                         class="flex-1 h-7 bg-transparent text-xs text-white placeholder-slate-200 font-semibold focus:outline-none">
+                  <button type="button"
+                          onclick="triggerRuleMasterForLevelUpSlot(${idx})"
+                          class="h-7 px-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 text-[10px] font-bold transition flex items-center gap-1 shrink-0 shadow cursor-pointer"
+                          title="Search Compendium or Fetch via Rule Master AI">
+                    <span>🧙‍♂️</span>
+                    <span>AI Lookup</span>
+                  </button>
                   <button type="button"
                           onclick="toggleLevelUpFeatSearchConsole(${idx})"
-                          class="absolute right-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-[10px] font-bold border border-slate-600 transition flex items-center gap-1 cursor-pointer"
+                          class="h-7 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 hover:text-white text-[10px] font-bold border border-purple-500/40 transition flex items-center gap-1 shrink-0 cursor-pointer"
                           title="Toggle feat catalog">
                     <span>📜</span>
                     <span>${isOpen ? 'Close ▲' : 'Catalog ▼'}</span>
@@ -3749,9 +3759,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const btn = document.getElementById(`class-filter-tab-${t}`);
         if (btn) {
           if (t === tab) {
-            btn.className = 'px-2 py-1 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow';
+            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-purple-500/20 text-purple-200 border border-purple-400/50 shadow-sm cursor-pointer';
           } else {
-            btn.className = 'px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white';
+            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer';
           }
         }
       });
@@ -3865,8 +3875,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const btn = document.getElementById(`class-filter-tab-${t}`);
         if (btn) {
           btn.className = t === 'all' 
-            ? 'px-2 py-1 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow'
-            : 'px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white';
+            ? 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-purple-500/20 text-purple-200 border border-purple-400/50 shadow-sm cursor-pointer'
+            : 'px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer';
         }
       });
       filterLevelUpClassSearch();

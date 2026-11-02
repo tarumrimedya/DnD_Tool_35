@@ -1451,13 +1451,13 @@ const RuleMaster = {
     if (target) target.classList.remove('hidden');
 
     document.querySelectorAll('.mdb-subtab-btn').forEach(btn => {
-      btn.classList.remove('bg-purple-700', 'text-white', 'shadow');
-      btn.classList.add('text-slate-400');
+      btn.classList.remove('bg-purple-700', 'bg-slate-800/95', 'text-white', 'text-purple-200', 'border-purple-400/60', 'shadow', 'shadow-sm');
+      btn.classList.add('text-slate-400', 'border', 'border-transparent');
     });
     const activeBtn = document.getElementById(subTabId.replace('subtab-', 'btn-subtab-'));
     if (activeBtn) {
-      activeBtn.classList.add('bg-purple-700', 'text-white', 'shadow');
-      activeBtn.classList.remove('text-slate-400');
+      activeBtn.classList.add('bg-slate-800/95', 'text-purple-200', 'border', 'border-purple-400/60', 'shadow-sm');
+      activeBtn.classList.remove('text-slate-400', 'border-transparent');
     }
 
     if (subTabId === 'subtab-mdb-list') {
@@ -4250,10 +4250,10 @@ Return valid JSON only matching:
     const btnManual = document.getElementById('btn-inline-mode-manual');
     const headerTitle = document.getElementById('inline-panel-header-title');
 
-    const activeCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition bg-purple-600 text-white shadow flex items-center justify-center gap-1.5 cursor-pointer';
-    const activeForgeCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition bg-amber-500 text-slate-950 shadow flex items-center justify-center gap-1.5 cursor-pointer';
-    const inactiveCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer';
-    const inactiveForgeCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-amber-300 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer';
+    const activeCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition bg-slate-800/95 text-purple-200 border border-purple-400/60 shadow-sm flex items-center justify-center gap-1.5 cursor-pointer';
+    const activeForgeCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition bg-slate-800/95 text-amber-300 border border-amber-400/60 shadow-sm flex items-center justify-center gap-1.5 cursor-pointer';
+    const inactiveCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-slate-400 hover:text-white border border-transparent flex items-center justify-center gap-1.5 cursor-pointer';
+    const inactiveForgeCls = 'ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-slate-300 hover:text-amber-300 border border-transparent flex items-center justify-center gap-1.5 cursor-pointer';
 
     if (searchPanel) searchPanel.classList.toggle('hidden', mode !== 'search');
     if (freetextPanel) freetextPanel.classList.toggle('hidden', mode !== 'freetext');

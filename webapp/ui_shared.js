@@ -533,17 +533,17 @@
           </div>
         </div>
 
-        <!-- Unified 2-Tab Bar (Spotlight Search & Item Forge; hidden in Bestiary Mode) -->
-        <div id="dnd-ui-compendium-tabs-bar" class="px-4 py-2 bg-slate-900/95 border-b border-slate-800 grid grid-cols-2 gap-2 shrink-0 text-xs">
-          <button type="button" id="dnd-ui-tab-btn-srd" data-comp-tab="srd" onclick="DnDUI.switchCompendiumTab('srd')" class="hidden w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-amber-600 text-white shadow">
+        <!-- Unified 2-Tab Bar (Calmed surface so Spotlight Command Bar below is the primary focal point) -->
+        <div id="dnd-ui-compendium-tabs-bar" class="px-4 py-2 bg-slate-950 border-b border-slate-800 grid grid-cols-2 gap-2 shrink-0 text-xs">
+          <button type="button" id="dnd-ui-tab-btn-srd" data-comp-tab="srd" onclick="DnDUI.switchCompendiumTab('srd')" class="hidden w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-slate-800/95 text-amber-300 border border-amber-500/50 shadow-sm">
             <span>🔍</span>
             <span class="truncate">Spotlight Search</span>
           </button>
-          <button type="button" id="dnd-ui-tab-btn-custom" data-comp-tab="custom" onclick="DnDUI.switchCompendiumTab('custom')" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-amber-600 text-white shadow">
+          <button type="button" id="dnd-ui-tab-btn-custom" data-comp-tab="custom" onclick="DnDUI.switchCompendiumTab('custom')" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-slate-800/95 text-amber-300 border border-amber-500/50 shadow-sm">
             <span>🔍</span>
             <span class="truncate">Spotlight Search</span>
           </button>
-          <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-300 hover:text-white bg-slate-950/60 border border-slate-800">
+          <button type="button" data-comp-tab="forge" onclick="DnDUI.switchCompendiumTab('forge')" class="w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-900/50 border border-slate-800">
             <span>⚒️</span>
             <span class="truncate">Item Forge</span>
           </button>
@@ -552,10 +552,16 @@
         <!-- VIEW 1: SRD COMPENDIUM SEARCH & INSPECTOR -->
         <div id="dnd-ui-compendium-search-view" class="flex-1 flex flex-col min-h-0 overflow-hidden">
           <!-- Search Bar + Category Sub-Filter Pills -->
-          <div class="p-3 bg-slate-950/60 border-b border-slate-800 space-y-2 shrink-0">
-            <div class="flex items-center gap-2">
-              <span class="text-slate-400 text-sm">🔍</span>
-              <input type="text" id="dnd-ui-compendium-input" oninput="DnDUI.onCompendiumSearchInput(this.value)" placeholder="Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400 font-mono">
+          <div class="p-3 bg-slate-950/60 border-b border-slate-800 space-y-2.5 shrink-0">
+            <div class="ui-spotlight-well ui-spotlight-amber rounded-xl p-1.5 flex items-center gap-2 border border-amber-400/75">
+              <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 font-black flex items-center justify-center text-sm shrink-0 shadow">
+                🔍
+              </div>
+              <input type="text" id="dnd-ui-compendium-input" oninput="DnDUI.onCompendiumSearchInput(this.value)" placeholder="Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)..." class="flex-1 h-8 bg-transparent pr-2 text-xs sm:text-sm text-white placeholder-slate-200 focus:outline-none font-semibold">
+              <button type="button" onclick="DnDUI.onCompendiumSearchInput(document.getElementById('dnd-ui-compendium-input')?.value || '')" class="h-8 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer">
+                <span>🔍</span>
+                <span>Search</span>
+              </button>
             </div>
             <div id="dnd-ui-compendium-srd-subfilters" class="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-[11px]">
               <button type="button" data-srd-sub="all_gear" onclick="DnDUI.setSrdSubFilter('all_gear')" class="px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition cursor-pointer bg-indigo-600/30 text-indigo-200 border border-indigo-500/50">📦 All Gear</button>
@@ -962,8 +968,8 @@
       const t = btn.getAttribute('data-comp-tab');
       const isActive = (t === tab) || (t === 'srd' && (tab === 'Weapon' || tab === 'Armor' || tab === 'Item'));
       btn.className = isActive
-        ? 'w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-amber-600 text-white shadow'
-        : 'w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-300 hover:text-white bg-slate-950/60 border border-slate-800';
+        ? 'w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 bg-slate-800/95 text-amber-300 border border-amber-500/50 shadow-sm'
+        : 'w-full py-2 px-3 rounded-lg font-bold transition cursor-pointer flex items-center justify-center gap-1.5 text-slate-400 hover:text-white bg-slate-900/50 border border-slate-800';
     });
 
     const searchView = document.getElementById('dnd-ui-compendium-search-view');

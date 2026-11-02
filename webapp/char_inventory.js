@@ -5434,12 +5434,12 @@
       container.innerHTML = tabs.map(t => {
         const isActive = activeFilter === t.key;
         const activeClass = isActive 
-          ? 'bg-amber-600 text-white font-bold border-amber-500 shadow' 
-          : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white border-slate-700';
+          ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/50 shadow-sm' 
+          : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 hover:text-white border-slate-800 font-semibold';
         return `
-          <button type="button" onclick="renderUnaddedMasterDbItems('${t.key}')" class="px-2 py-0.5 rounded-lg border text-[10px] whitespace-nowrap transition flex items-center gap-1 ${activeClass}">
+          <button type="button" onclick="renderUnaddedMasterDbItems('${t.key}')" class="px-2.5 py-1 rounded-md border text-[10px] whitespace-nowrap transition flex items-center gap-1 cursor-pointer ${activeClass}">
             <span>${t.label}</span>
-            <span class="text-[9px] px-1 py-0.2 rounded-full ${isActive ? 'bg-black/30 text-white' : 'bg-slate-900 text-slate-400'}">${t.count}</span>
+            <span class="text-[9px] px-1 py-0.2 rounded-full ${isActive ? 'bg-amber-500/20 text-amber-200' : 'bg-slate-950 text-slate-400'}">${t.count}</span>
           </button>
         `;
       }).join('');

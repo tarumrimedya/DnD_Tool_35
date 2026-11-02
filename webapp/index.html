@@ -69,6 +69,9 @@
     .ui-btn-icon-sm { width: 1.5rem; height: 1.5rem; padding: 0; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; transition: all 0.15s ease; cursor: pointer; }
     .ui-input-md { height: 2rem; border-radius: 0.5rem; font-size: 0.75rem; line-height: 1; }
     .ui-input-sm { height: 1.75rem; border-radius: 0.375rem; font-size: 0.75rem; line-height: 1; }
+    .ui-spotlight-well { background: linear-gradient(180deg, rgba(30, 41, 59, 0.94) 0%, rgba(15, 23, 42, 0.98) 100%); box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.1); }
+    .ui-spotlight-amber { box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.45), 0 0 22px -4px rgba(245, 158, 11, 0.28), inset 0 1px 0 0 rgba(255, 255, 255, 0.08); }
+    .ui-spotlight-purple { box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.5), 0 0 22px -4px rgba(168, 85, 247, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.08); }
   </style>
 </head>
 <body class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
@@ -2287,35 +2290,37 @@
               <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[9px] shrink-0">RAW 3.5e • V2 Schema</span>
             </div>
 
-            <!-- 4 Equal Symmetrical Mode Toggle Tabs (25% x 4 on Desktop, 50% x 2 on Mobile) -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-950 p-1.5 rounded-xl border border-purple-500/40 text-xs w-full">
-              <button id="btn-inline-mode-search" type="button" onclick="RuleMaster.switchInlineMode('search')" class="ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition bg-purple-600 text-white shadow flex items-center justify-center gap-1.5 cursor-pointer">
+            <!-- 4 Equal Symmetrical Mode Toggle Tabs (Calmed surface so Spotlight Command Bar is primary focal point) -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-950 p-1.5 rounded-xl border border-slate-800 text-xs w-full">
+              <button id="btn-inline-mode-search" type="button" onclick="RuleMaster.switchInlineMode('search')" class="ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition bg-slate-800/95 text-purple-200 border border-purple-400/60 shadow-sm flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>🔍</span>
                 <span class="truncate">Search by Name</span>
               </button>
-              <button id="btn-inline-mode-freetext" type="button" onclick="RuleMaster.switchInlineMode('freetext')" class="ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer">
+              <button id="btn-inline-mode-freetext" type="button" onclick="RuleMaster.switchInlineMode('freetext')" class="ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-slate-400 hover:text-white border border-transparent flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>📜</span>
                 <span class="truncate">Free Text (AI)</span>
               </button>
-              <button id="btn-inline-mode-forge" type="button" onclick="RuleMaster.switchInlineMode('forge')" class="ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-amber-300 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer">
+              <button id="btn-inline-mode-forge" type="button" onclick="RuleMaster.switchInlineMode('forge')" class="ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-slate-300 hover:text-amber-300 border border-transparent flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>⚒️</span>
                 <span class="truncate">The Forge</span>
               </button>
-              <button id="btn-inline-mode-manual" type="button" onclick="RuleMaster.switchInlineMode('manual')" class="ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-slate-400 hover:text-white flex items-center justify-center gap-1.5 cursor-pointer">
+              <button id="btn-inline-mode-manual" type="button" onclick="RuleMaster.switchInlineMode('manual')" class="ui-btn-md w-full h-9 px-2.5 rounded-lg font-bold transition text-slate-400 hover:text-white border border-transparent flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>✏️</span>
                 <span class="truncate">Manual Rule</span>
               </button>
             </div>
 
-            <!-- MODE 1: Search by Name/Term -->
+            <!-- MODE 1: Search by Name/Term (Unified Alternatif A + C Command Bar) -->
             <div id="inline-mode-search" class="space-y-2.5">
-              <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
-                <div class="relative sm:col-span-6">
-                  <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">🔍</span>
-                  <input type="text" id="inline-ai-rule-query" placeholder="e.g., feat: Shock Trooper, spell: Haste, weapon: Dagger +2, item: Boots of Speed..." class="w-full h-10 bg-slate-950 border border-purple-500/50 rounded-lg pl-9 pr-3 text-xs text-white focus:outline-none focus:border-purple-400" onkeydown="if(event.key==='Enter') RuleMaster.queryInlineAiRule()">
+              <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border border-purple-400/75 transition">
+                <div class="flex items-center gap-2.5 flex-1 min-w-0">
+                  <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+                    🔍
+                  </div>
+                  <input type="text" id="inline-ai-rule-query" placeholder="Type any 3.5e Feat, Spell, Weapon, Item, or Deity name (e.g., feat: Shock Trooper, spell: Haste)..." class="w-full h-8 bg-transparent pr-2 text-xs sm:text-sm font-semibold text-white placeholder-slate-200 focus:outline-none" onkeydown="if(event.key==='Enter') RuleMaster.queryInlineAiRule()">
                 </div>
-                <div class="sm:col-span-3">
-                  <select id="inline-ai-rule-category" class="w-full h-10 bg-slate-950 border border-purple-500/50 rounded-lg px-3 text-xs text-slate-200 focus:outline-none">
+                <div class="flex items-center gap-2 shrink-0">
+                  <select id="inline-ai-rule-category" class="h-8 bg-slate-950/95 border border-purple-500/40 rounded-lg px-2.5 text-xs text-purple-200 font-semibold focus:outline-none cursor-pointer">
                     <option value="ALL">✨ Auto-Detect Category</option>
                     <option value="Feat">Feat</option>
                     <option value="Weapon">Weapon</option>
@@ -2325,23 +2330,21 @@
                     <option value="Spell">Spell</option>
                     <option value="Maneuver">Maneuver / Stance (ToB)</option>
                   </select>
-                </div>
-                <div class="sm:col-span-3">
-                  <button id="btn-inline-ai-search" type="button" onclick="RuleMaster.queryInlineAiRule()" class="w-full h-10 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 rounded-lg shadow transition flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer">
+                  <button id="btn-inline-ai-search" type="button" onclick="RuleMaster.queryInlineAiRule()" class="h-8 bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs px-3.5 rounded-lg shadow transition flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0">
                     <span>⚡</span>
                     <span>Fetch &amp; Inspect</span>
                   </button>
                 </div>
               </div>
 
-              <!-- Quick Suggestions (Symmetrical 6-Column Grid) -->
+              <!-- Quick Suggestions (Calmed Monochrome Chips — Highlight on Hover) -->
               <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 text-[10px]">
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('feat: Shock Trooper', 'ALL')" class="w-full bg-slate-800 hover:bg-purple-900 text-amber-300 px-2 py-1.5 rounded-lg border border-purple-900/60 font-mono transition truncate cursor-pointer">feat: Shock Trooper</button>
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('spell: Haste', 'ALL')" class="w-full bg-slate-800 hover:bg-purple-900 text-sky-300 px-2 py-1.5 rounded-lg border border-purple-900/60 font-mono transition truncate cursor-pointer">spell: Haste</button>
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('weapon: Dagger +2', 'ALL')" class="w-full bg-slate-800 hover:bg-purple-900 text-emerald-300 px-2 py-1.5 rounded-lg border border-purple-900/60 font-mono transition truncate cursor-pointer">weapon: Dagger +2</button>
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('item: Boots of Speed', 'ALL')" class="w-full bg-slate-800 hover:bg-purple-900 text-purple-300 px-2 py-1.5 rounded-lg border border-purple-900/60 font-mono transition truncate cursor-pointer">item: Boots of Speed</button>
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('maneuver: Mountain Hammer', 'ALL')" class="w-full bg-slate-800 hover:bg-purple-900 text-rose-300 px-2 py-1.5 rounded-lg border border-purple-900/60 font-mono transition truncate cursor-pointer">maneuver: Mtn Hammer</button>
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('deity: Kelemvor', 'ALL')" class="w-full bg-slate-800 hover:bg-purple-900 text-amber-200 px-2 py-1.5 rounded-lg border border-purple-900/60 font-mono transition truncate cursor-pointer">deity: Kelemvor</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('feat: Shock Trooper', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">feat: Shock Trooper</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('spell: Haste', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">spell: Haste</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('weapon: Dagger +2', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">weapon: Dagger +2</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('item: Boots of Speed', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">item: Boots of Speed</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('maneuver: Mountain Hammer', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">maneuver: Mtn Hammer</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('deity: Kelemvor', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">deity: Kelemvor</button>
               </div>
             </div>
 
@@ -2653,24 +2656,24 @@
           </div>
 
           <!-- Category Filter Bar (5 Equal Symmetrical Views Directly Above Custom DB List) -->
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 bg-slate-900 p-1.5 rounded-xl border border-slate-800 w-full">
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-list')" id="btn-subtab-mdb-list" class="mdb-subtab-btn ui-btn-md col-span-2 sm:col-span-1 w-full h-9 px-2.5 rounded-lg text-xs font-bold bg-purple-700 text-white shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-1.5 bg-slate-950 p-1.5 rounded-xl border border-slate-800 w-full">
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-list')" id="btn-subtab-mdb-list" class="mdb-subtab-btn ui-btn-md col-span-2 sm:col-span-1 w-full h-9 px-2.5 rounded-lg text-xs font-bold bg-slate-800/95 text-purple-200 border border-purple-400/60 shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer">
               <span>📑</span>
               <span class="truncate">All Entries</span>
             </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-weapons')" id="btn-subtab-mdb-weapons" class="mdb-subtab-btn ui-btn-md w-full h-9 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-weapons')" id="btn-subtab-mdb-weapons" class="mdb-subtab-btn ui-btn-md w-full h-9 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white border border-transparent transition flex items-center justify-center gap-1.5 cursor-pointer">
               <span>⚔️</span>
               <span class="truncate">Weapons &amp; Armor</span>
             </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-magic')" id="btn-subtab-mdb-magic" class="mdb-subtab-btn ui-btn-md w-full h-9 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-magic')" id="btn-subtab-mdb-magic" class="mdb-subtab-btn ui-btn-md w-full h-9 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white border border-transparent transition flex items-center justify-center gap-1.5 cursor-pointer">
               <span>🔮</span>
               <span class="truncate">Spells &amp; Maneuvers</span>
             </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-feats')" id="btn-subtab-mdb-feats" class="mdb-subtab-btn ui-btn-md w-full h-9 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-feats')" id="btn-subtab-mdb-feats" class="mdb-subtab-btn ui-btn-md w-full h-9 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white border border-transparent transition flex items-center justify-center gap-1.5 cursor-pointer">
               <span>🎖️</span>
               <span class="truncate">Feats</span>
             </button>
-            <button onclick="RuleMaster.switchSubTab('subtab-mdb-items')" id="btn-subtab-mdb-items" class="mdb-subtab-btn ui-btn-md w-full h-9 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <button onclick="RuleMaster.switchSubTab('subtab-mdb-items')" id="btn-subtab-mdb-items" class="mdb-subtab-btn ui-btn-md w-full h-9 px-2.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white border border-transparent transition flex items-center justify-center gap-1.5 cursor-pointer">
               <span>💍</span>
               <span class="truncate">Magic Items</span>
             </button>
@@ -2681,13 +2684,16 @@
           <!-- ========================================== -->
           <div id="subtab-mdb-list" class="mdb-subtab-content space-y-3.5">
 
-          <!-- Simplified Symmetrical Search & Category Filter Row -->
-          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
-            <div class="sm:col-span-8">
-              <input type="text" id="mdb-search-input" onkeyup="RuleMaster.renderTable()" placeholder="Search saved custom entries (name, description, source, discipline)..." class="w-full h-10 bg-slate-900 border border-slate-700 rounded-lg px-3 text-xs text-white focus:outline-none focus:border-purple-500">
+          <!-- Unified Command Bar Search & Category Filter Row -->
+          <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border border-purple-400/75">
+            <div class="flex items-center gap-2.5 flex-1 min-w-0">
+              <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+                🔍
+              </div>
+              <input type="text" id="mdb-search-input" onkeyup="RuleMaster.renderTable()" placeholder="Search saved custom entries (name, description, source, discipline)..." class="w-full h-8 bg-transparent pr-2 text-xs sm:text-sm font-semibold text-white placeholder-slate-200 focus:outline-none">
             </div>
-            <div class="sm:col-span-4">
-              <select id="mdb-category-filter" onchange="RuleMaster.renderTable()" class="w-full h-10 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-slate-300 focus:outline-none">
+            <div class="flex items-center gap-2 shrink-0">
+              <select id="mdb-category-filter" onchange="RuleMaster.renderTable()" class="h-8 bg-slate-950/95 border border-purple-500/40 rounded-lg px-2.5 text-xs text-purple-200 font-semibold focus:outline-none cursor-pointer">
                 <option value="ALL">All Categories</option>
                 <option value="Weapon">Weapons</option>
                 <option value="Shield">Shields</option>
@@ -2703,6 +2709,10 @@
                 <option value="Special Ability">Special Abilities (Class/Ex)</option>
                 <option value="DM Grant">DM Grants / Boons</option>
               </select>
+              <button type="button" onclick="RuleMaster.renderTable()" class="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs shadow transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
+                <span>🔍</span>
+                <span>Search</span>
+              </button>
             </div>
             <!-- Hidden legacy filters for JS compatibility -->
             <select id="mdb-bonus-filter" onchange="RuleMaster.renderTable()" class="hidden"><option value="ALL" selected>All Bonus Types</option></select>
@@ -4016,18 +4026,27 @@
             <span>Spotlight & AI Feat Search</span>
             <span class="text-[10px] text-purple-300 font-normal">Compendium + 3.5e RAW Validation</span>
           </label>
-          <div class="relative flex items-center">
-            <div class="absolute left-2.5 text-slate-400 text-xs pointer-events-none">🔍</div>
+          <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex items-center gap-2 border border-purple-400/75">
+            <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+              🔍
+            </div>
             <input type="text"
                    id="quick-feat-name"
                    placeholder="Search feats, pick from catalog, or enter custom name..."
                    onfocus="openQuickFeatCatalogConsole()"
                    oninput="onQuickFeatSearchInput(this.value)"
                    onkeydown="if(event.key==='Enter'){event.preventDefault();triggerRuleMasterForQuickFeat();}"
-                   class="w-full bg-slate-900 border border-slate-700 focus:border-purple-500 rounded-lg pl-8 pr-24 py-1.5 text-xs text-white font-bold focus:outline-none transition">
+                   class="flex-1 h-8 bg-transparent text-xs sm:text-sm text-white placeholder-slate-200 font-semibold focus:outline-none">
+            <button type="button"
+                    onclick="triggerRuleMasterForQuickFeat()"
+                    class="h-8 px-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 text-xs font-bold transition flex items-center gap-1 shrink-0 shadow cursor-pointer"
+                    title="Search Compendium or Fetch via Rule Master AI">
+              <span>🧙‍♂️</span>
+              <span>AI Lookup</span>
+            </button>
             <button type="button"
                     onclick="toggleQuickFeatCatalogConsole()"
-                    class="absolute right-1 px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-300 hover:text-white text-[10px] font-bold border border-slate-600 transition flex items-center gap-1 cursor-pointer"
+                    class="h-8 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 hover:text-white text-[10px] font-bold border border-purple-500/40 transition flex items-center gap-1 shrink-0 cursor-pointer"
                     title="Toggle feat catalog">
               <span>📜</span>
               <span id="quick-feat-catalog-toggle-text">Catalog ▼</span>
@@ -4099,19 +4118,22 @@
             </div>
             <span class="text-[9px] text-purple-400 font-medium">D&D 3.5e Compendium & AI</span>
           </div>
-          <div class="flex items-center gap-1.5">
+          <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex items-center gap-2 border border-purple-400/75">
+            <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+              🔍
+            </div>
             <input 
               type="text" 
               id="change-class-search-input" 
               placeholder="Search class name (e.g., Duskblade, Warblade, Beguiler, Assassin...)" 
               onkeydown="if(event.key==='Enter'){event.preventDefault();searchOrAddClassWithRuleMaster();}" 
-              class="flex-1 bg-slate-950 border border-purple-500/60 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-bold focus:border-purple-400 focus:outline-none focus:ring-1 focus:ring-purple-400">
+              class="flex-1 h-8 bg-transparent text-xs sm:text-sm text-white placeholder-slate-200 font-semibold focus:outline-none">
             <button 
               type="button" 
               onclick="searchOrAddClassWithRuleMaster()" 
-              class="bg-gradient-to-r from-purple-700 via-indigo-600 to-teal-600 hover:from-purple-600 hover:to-teal-500 active:scale-95 text-white font-extrabold text-[11px] px-3 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 shrink-0 cursor-pointer" 
+              class="h-8 bg-purple-600 hover:bg-purple-500 border border-purple-400/60 active:scale-95 text-white font-bold text-xs px-3 rounded-lg shadow transition flex items-center gap-1.5 shrink-0 cursor-pointer" 
               title="Find & select class, or import via D&D 3.5e rules">
-              <span>🧙‍♂️🤖</span>
+              <span>🧙‍♂️</span>
               <span>Search / Add</span>
             </button>
           </div>
@@ -4397,17 +4419,28 @@
 
       <!-- Body -->
       <div class="p-4 space-y-3 text-xs overflow-y-auto flex-1">
-        <!-- Search & Category Filter -->
-        <div class="flex flex-col sm:flex-row gap-2">
-          <input type="text" id="feat-picker-search" oninput="renderFeatPickerList()" placeholder="Search feats (e.g., Power Attack, Arcane Strike, Adaptive Style, Improved Initiative)..." class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500">
-          <select id="feat-picker-category" onchange="renderFeatPickerList()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-2 text-xs text-slate-200">
-            <option value="All">All Categories</option>
-            <option value="General">General</option>
-            <option value="Fighter">Fighter Bonus Feat</option>
-            <option value="Martial">Martial / Tome of Battle</option>
-            <option value="Metamagic">Metamagic & Spellcasting</option>
-            <option value="Special Ability">Special Ability (Class Feature)</option>
-          </select>
+        <!-- Search & Category Filter (Unified Alternatif A + C Command Bar) -->
+        <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border border-purple-400/75">
+          <div class="flex items-center gap-2 flex-1 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+              🔍
+            </div>
+            <input type="text" id="feat-picker-search" oninput="renderFeatPickerList()" placeholder="Search feats (e.g., Power Attack, Arcane Strike, Adaptive Style, Improved Initiative)..." class="w-full h-8 bg-transparent pr-2 text-xs sm:text-sm font-semibold text-white placeholder-slate-200 focus:outline-none">
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <select id="feat-picker-category" onchange="renderFeatPickerList()" class="h-8 bg-slate-950/95 border border-purple-500/40 rounded-lg px-2.5 text-xs text-purple-200 font-semibold focus:outline-none cursor-pointer">
+              <option value="All">All Categories</option>
+              <option value="General">General</option>
+              <option value="Fighter">Fighter Bonus Feat</option>
+              <option value="Martial">Martial / Tome of Battle</option>
+              <option value="Metamagic">Metamagic &amp; Spellcasting</option>
+              <option value="Special Ability">Special Ability (Class Feature)</option>
+            </select>
+            <button type="button" onclick="renderFeatPickerList()" class="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer">
+              <span>🔍</span>
+              <span>Search</span>
+            </button>
+          </div>
         </div>
 
         <!-- Catalog List -->
@@ -5702,26 +5735,34 @@
           <!-- Hidden select for engine & save backward compatibility -->
           <select id="lvlup-class-select" onchange="onLevelUpClassChange()" class="hidden"></select>
 
-          <!-- Search & Filters Row -->
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <div class="relative flex-1">
-              <input 
-                type="text" 
-                id="lvlup-class-search-input" 
-                placeholder="🔍 Search base or prestige class (e.g., Warblade, Duskblade, Abjurant, Rogue, Fighter)..."
-                oninput="filterLevelUpClassSearch()"
-                onkeydown="if(event.key === 'Enter'){ event.preventDefault(); onClassSearchEnterKey(); }"
-                class="w-full bg-slate-950 border border-purple-500/40 rounded-lg pl-7 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400">
-              <span class="absolute left-2.5 top-2 text-xs text-purple-400 pointer-events-none">⚔️</span>
-              <button type="button" onclick="clearLevelUpClassSearch()" class="absolute right-2 top-1.5 text-slate-500 hover:text-white text-xs cursor-pointer">✕</button>
+          <!-- Search & Filters Row (Unified Alternatif A + C Command Bar) -->
+          <div class="space-y-2">
+            <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex items-center gap-2 border border-purple-400/75">
+              <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+                🔎
+              </div>
+              <div class="relative flex-1 min-w-0">
+                <input 
+                  type="text" 
+                  id="lvlup-class-search-input" 
+                  placeholder="Search base or prestige class (e.g., Warblade, Duskblade, Abjurant, Rogue, Fighter)..."
+                  oninput="filterLevelUpClassSearch()"
+                  onkeydown="if(event.key === 'Enter'){ event.preventDefault(); onClassSearchEnterKey(); }"
+                  class="w-full h-8 bg-transparent pr-7 text-xs sm:text-sm font-semibold text-white placeholder-slate-200 focus:outline-none">
+                <button type="button" onclick="clearLevelUpClassSearch()" class="absolute right-1.5 top-1.5 text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+              </div>
+              <button type="button" onclick="onClassSearchEnterKey()" class="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer" title="Select matching class or fetch via Rule Master AI">
+                <span>🧙‍♂️</span>
+                <span>AI Lookup</span>
+              </button>
             </div>
             
-            <!-- Filter chips -->
-            <div class="flex items-center gap-1 overflow-x-auto shrink-0 pb-0.5 sm:pb-0">
-              <button type="button" onclick="setClassFilterTab('all')" id="class-filter-tab-all" class="px-2 py-1 rounded text-[10px] font-bold transition bg-purple-700 text-white shadow">All</button>
-              <button type="button" onclick="setClassFilterTab('base')" id="class-filter-tab-base" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">🛡️ Base</button>
-              <button type="button" onclick="setClassFilterTab('prestige')" id="class-filter-tab-prestige" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">👑 Prestige</button>
-              <button type="button" onclick="setClassFilterTab('custom')" id="class-filter-tab-custom" class="px-2 py-1 rounded text-[10px] font-bold transition bg-slate-800 text-slate-400 hover:text-white">⚙️ Custom</button>
+            <!-- Calmed Filter chips (Subordinate to Command Bar) -->
+            <div class="flex items-center gap-1.5 overflow-x-auto shrink-0 pb-0.5 sm:pb-0">
+              <button type="button" onclick="setClassFilterTab('all')" id="class-filter-tab-all" class="px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-purple-500/20 text-purple-200 border border-purple-400/50 shadow-sm cursor-pointer">All</button>
+              <button type="button" onclick="setClassFilterTab('base')" id="class-filter-tab-base" class="px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer">🛡️ Base</button>
+              <button type="button" onclick="setClassFilterTab('prestige')" id="class-filter-tab-prestige" class="px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer">👑 Prestige</button>
+              <button type="button" onclick="setClassFilterTab('custom')" id="class-filter-tab-custom" class="px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer">⚙️ Custom</button>
             </div>
           </div>
 
@@ -6002,8 +6043,11 @@
               </span>
               <span id="buff-spotlight-count-badge" class="text-[10px] text-purple-300 font-mono bg-purple-950/70 px-2 py-0.5 rounded border border-purple-500/40 shrink-0">236+ V2 Buffs &amp; Conditions</span>
             </div>
-            <div class="flex items-stretch gap-2">
-              <div class="relative flex-1">
+            <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex items-center gap-2 border border-purple-400/75">
+              <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+                🔍
+              </div>
+              <div class="relative flex-1 min-w-0">
                 <input 
                   type="text" 
                   id="buff-rule-master-input" 
@@ -6013,17 +6057,16 @@
                   onfocus="onBuffSpotlightInput(this.value, true)"
                   oninput="onBuffSpotlightInput(this.value, true)"
                   onkeydown="onBuffSpotlightKeydown(event)"
-                  class="w-full bg-slate-950 border border-purple-500/50 rounded-lg pl-8 pr-7 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-purple-400 font-medium">
-                <span class="absolute left-2.5 top-2.5 text-xs text-purple-400 pointer-events-none">🔍</span>
-                <button type="button" onclick="toggleBuffSpotlightListDropdown(event)" title="Show / Hide Full List" class="absolute right-2 top-2 text-xs text-slate-400 hover:text-purple-300 px-1">▾</button>
+                  class="w-full h-8 bg-transparent pr-7 text-xs sm:text-sm text-white placeholder-slate-200 focus:outline-none font-semibold">
+                <button type="button" onclick="toggleBuffSpotlightListDropdown(event)" title="Show / Hide Full List" class="absolute right-1.5 top-1.5 text-xs text-slate-300 hover:text-purple-200 px-1 cursor-pointer">▾</button>
               </div>
               <button 
                 type="button" 
                 onclick="queryRuleMasterForBuff()" 
                 id="btn-buff-rule-master"
-                class="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0"
+                class="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0"
                 title="Search Compendium or Fetch from D&D 3.5e Sourcebooks with Rule Master (AI)">
-                <span>🧙‍♂️🤖</span>
+                <span>🧙‍♂️</span>
                 <span>AI Fetch</span>
               </button>
             </div>
@@ -6708,47 +6751,55 @@
         </button>
       </div>
 
-      <!-- Search & Filters -->
-      <div class="p-3 bg-slate-950/40 border-b border-slate-800 shrink-0 space-y-2">
-        <div class="flex items-center gap-2">
-          <div class="relative flex-1">
+      <!-- Search & Filters (Unified Alternatif A + C Command Bar) -->
+      <div class="p-3 bg-slate-950/60 border-b border-slate-800 shrink-0 space-y-2">
+        <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border border-purple-400/75">
+          <div class="flex items-center gap-2 flex-1 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+              🔍
+            </div>
             <input 
               type="text" 
               id="spell-picker-search" 
               oninput="renderSpellPickerResults()" 
               onkeydown="if(event.key==='Enter') triggerSpellPickerAiSearch()"
               placeholder="Search Master DB (e.g., Fireball, Scorching Ray, Mountain Hammer)..." 
-              class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white font-bold focus:border-purple-500 focus:outline-none placeholder-slate-500"
+              class="w-full h-8 bg-transparent pr-2 text-xs sm:text-sm text-white font-semibold focus:outline-none placeholder-slate-200"
             >
-            <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
           </div>
-          <select id="spell-picker-source-filter" onchange="renderSpellPickerResults()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none" title="Spell Source Filter">
-            <option value="auto">🎯 Auto (Match Character Class)</option>
-            <option value="cleric">✝️ Cleric Spells</option>
-            <option value="char_domains">⚜️ My Selected Domains</option>
-            <option value="domain">⚜️ All Cleric Domains</option>
-            <option value="druid">🌿 Druid Spells</option>
-            <option value="paladin">🛡️ Paladin Spells</option>
-            <option value="ranger">🏹 Ranger Spells</option>
-            <option value="divine">🔮 All Divine Classes</option>
-            <option value="sor_wiz">⚡ Sorcerer / Wizard</option>
-            <option value="bard">🎵 Bard Spells</option>
-            <option value="arcane">✨ All Arcane Classes</option>
-            <option value="all">🌐 All Spells (Unfiltered)</option>
-          </select>
-          <select id="spell-picker-level-filter" onchange="renderSpellPickerResults()" class="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none">
-            <option value="all">All Levels</option>
-            <option value="0">Level 0</option>
-            <option value="1">Level 1</option>
-            <option value="2">Level 2</option>
-            <option value="3">Level 3</option>
-            <option value="4">Level 4</option>
-            <option value="5">Level 5</option>
-            <option value="6">Level 6</option>
-            <option value="7">Level 7</option>
-            <option value="8">Level 8</option>
-            <option value="9">Level 9</option>
-          </select>
+          <div class="flex items-center gap-1.5 flex-wrap sm:flex-nowrap shrink-0">
+            <select id="spell-picker-source-filter" onchange="renderSpellPickerResults()" class="h-8 bg-slate-950/95 border border-purple-500/40 rounded-lg px-2 text-xs text-purple-200 font-semibold focus:outline-none cursor-pointer" title="Spell Source Filter">
+              <option value="auto">🎯 Auto (Match Character Class)</option>
+              <option value="cleric">✝️ Cleric Spells</option>
+              <option value="char_domains">⚜️ My Selected Domains</option>
+              <option value="domain">⚜️ All Cleric Domains</option>
+              <option value="druid">🌿 Druid Spells</option>
+              <option value="paladin">🛡️ Paladin Spells</option>
+              <option value="ranger">🏹 Ranger Spells</option>
+              <option value="divine">🔮 All Divine Classes</option>
+              <option value="sor_wiz">⚡ Sorcerer / Wizard</option>
+              <option value="bard">🎵 Bard Spells</option>
+              <option value="arcane">✨ All Arcane Classes</option>
+              <option value="all">🌐 All Spells (Unfiltered)</option>
+            </select>
+            <select id="spell-picker-level-filter" onchange="renderSpellPickerResults()" class="h-8 bg-slate-950/95 border border-purple-500/40 rounded-lg px-2 text-xs text-purple-200 font-semibold focus:outline-none cursor-pointer">
+              <option value="all">All Levels</option>
+              <option value="0">Level 0</option>
+              <option value="1">Level 1</option>
+              <option value="2">Level 2</option>
+              <option value="3">Level 3</option>
+              <option value="4">Level 4</option>
+              <option value="5">Level 5</option>
+              <option value="6">Level 6</option>
+              <option value="7">Level 7</option>
+              <option value="8">Level 8</option>
+              <option value="9">Level 9</option>
+            </select>
+            <button type="button" onclick="triggerSpellPickerAiSearch()" class="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer" title="Search Compendium or Fetch via Rule Master AI">
+              <span>🧙‍♂️</span>
+              <span>AI Lookup</span>
+            </button>
+          </div>
         </div>
         <div id="spell-picker-target-hint" class="text-[11px] text-slate-400 flex items-center justify-between px-1"></div>
       </div>
@@ -6818,22 +6869,30 @@
             </div>
           </div>
 
-          <!-- Search Input & Category Filter Chips -->
-          <div class="space-y-2">
-            <div class="relative">
-              <input 
-                type="text" 
-                id="pool-modal-search" 
-                oninput="onPoolModalSearchInput(this.value)" 
-                onkeydown="if(event.key==='Enter') triggerPoolAiSearchIfNoMatches()"
-                placeholder="Spotlight search SRD 3.5e, Custom DB, or ask 🧙‍♂️🤖 Rule Master AI..." 
-                class="w-full bg-slate-950 border border-amber-500/40 rounded-lg pl-8 pr-8 py-1.5 text-xs text-white font-bold focus:border-amber-400 focus:outline-none placeholder-slate-500 shadow-sm"
-              >
-              <span class="absolute left-2.5 top-2 text-amber-400 text-xs pointer-events-none">🔎</span>
-              <button id="pool-modal-clear-search" onclick="clearPoolModalSearch()" class="hidden absolute right-2.5 top-1.5 text-slate-400 hover:text-white text-xs font-bold p-0.5 cursor-pointer">✕</button>
+          <!-- Search Input & Category Filter Chips (Unified Alternatif A + C Command Bar) -->
+          <div class="space-y-2.5">
+            <div class="ui-spotlight-well ui-spotlight-amber rounded-xl p-1.5 flex items-center gap-2 border border-amber-400/75 transition">
+              <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 font-black flex items-center justify-center text-sm shrink-0 shadow">
+                🔍
+              </div>
+              <div class="relative flex-1 min-w-0">
+                <input 
+                  type="text" 
+                  id="pool-modal-search" 
+                  oninput="onPoolModalSearchInput(this.value)" 
+                  onkeydown="if(event.key==='Enter') triggerPoolAiSearchIfNoMatches()"
+                  placeholder="Type weapon, armor, or item name — or click AI Lookup..." 
+                  class="w-full h-8 bg-transparent pr-7 text-xs sm:text-sm text-white font-semibold focus:outline-none placeholder-slate-200"
+                >
+                <button id="pool-modal-clear-search" onclick="clearPoolModalSearch()" class="hidden absolute right-1.5 top-1.5 text-slate-400 hover:text-white text-xs font-bold p-0.5 cursor-pointer">✕</button>
+              </div>
+              <button type="button" onclick="triggerPoolAiSearchIfNoMatches()" class="h-8 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer" title="Search SRD 3.5e &amp; Custom DB or ask Rule Master AI">
+                <span>🧙‍♂️</span>
+                <span>AI Lookup</span>
+              </button>
             </div>
 
-            <div id="pool-category-tabs-container" class="flex items-center gap-1 overflow-x-auto pb-0.5 custom-scrollbar text-[10px]">
+            <div id="pool-category-tabs-container" class="flex items-center gap-1.5 overflow-x-auto pb-0.5 custom-scrollbar text-[10px]">
               <!-- Dynamic tabs generated by renderPoolCategoryTabs -->
             </div>
           </div>
