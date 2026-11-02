@@ -152,10 +152,10 @@
 
           <!-- Sağ Bölüm: Smart Notes & Mindmap (Sol Kutu) + Hub, Ayarlar & Bulut Senkron (Sağ Blok) -->
           <div class="flex flex-col sm:flex-row items-stretch gap-2 pt-2 md:pt-0 border-t border-slate-800/80 md:border-0 w-full md:w-auto shrink-0">
-            <!-- Sağ Bloğun Solu: Smart Notes & Mindmap -->
-            <button type="button" onclick="if(window.HubNotes && typeof HubNotes.openCharacterNotebookModal==='function') HubNotes.openCharacterNotebookModal('editor'); else if(window.HubNotes) HubNotes.openFullNotesModal(null, 'editor');" class="w-full sm:w-28 md:w-32 px-3 py-2 rounded-xl bg-amber-600/15 hover:bg-amber-600/30 text-amber-300 hover:text-amber-200 border border-amber-500/40 hover:border-amber-400/70 font-sans font-bold text-xs shadow flex sm:flex-col items-center justify-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0 text-center" title="Open Smart Character &amp; Campaign Notebook (Notes, Mindmap &amp; AI Chronicler)">
+            <!-- Sağ Bloğun Solu: Quest Logs & Mindmap -->
+            <button type="button" onclick="if(window.HubNotes && typeof HubNotes.openCharacterNotebookModal==='function') HubNotes.openCharacterNotebookModal('editor'); else if(window.HubNotes) HubNotes.openFullNotesModal(null, 'editor');" class="w-full sm:w-28 md:w-32 px-3 py-2 rounded-xl bg-amber-600/15 hover:bg-amber-600/30 text-amber-300 hover:text-amber-200 border border-amber-500/40 hover:border-amber-400/70 font-sans font-bold text-xs shadow flex sm:flex-col items-center justify-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0 text-center" title="Open Quest Logs &amp; Campaign Logbook (Quest Logs, Mindmap &amp; AI Chronicler)">
               <span class="text-base sm:text-xl leading-none">📝</span>
-              <span class="leading-tight">Smart Notes<br class="hidden sm:inline"><span class="sm:hidden"> </span>&amp; Mindmap</span>
+              <span class="leading-tight">Quest Logs<br class="hidden sm:inline"><span class="sm:hidden"> </span>&amp; Mindmap</span>
             </button>
 
             <!-- Sağ Kontrol Bloğu: Kullanıcı, Hub/Ayarlar & Bulut Senkron -->
@@ -363,7 +363,7 @@
       </button>
       <button onclick="switchTab('tab-core')" id="tab-btn-core" class="tab-btn h-9 flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
         <span class="text-sm">👤</span>
-        <span>Character & Notes</span>
+        <span>Character & Logs</span>
       </button>
       <button onclick="switchTab('tab-database')" id="tab-btn-database" class="tab-btn h-9 flex-1 min-w-[105px] sm:min-w-[120px] lg:min-w-0 px-2.5 sm:px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 cursor-pointer select-none border whitespace-nowrap bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border-slate-700 hover:border-slate-500 shadow-sm">
         <span class="text-sm">📚</span>

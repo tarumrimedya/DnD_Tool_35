@@ -252,8 +252,8 @@
                 📜
               </span>
               <div class="min-w-0">
-                <h3 class="text-xs font-black text-white uppercase tracking-wider truncate" id="hub-notes-panel-badge">Notebook</h3>
-                <div class="text-[9px] text-slate-400 font-mono"><span id="hub-notes-panel-count">0</span> Notes • Pinned First 📌</div>
+                <h3 class="text-xs font-black text-white uppercase tracking-wider truncate" id="hub-notes-panel-badge">Quest Logs</h3>
+                <div class="text-[9px] text-slate-400 font-mono"><span id="hub-notes-panel-count">0</span> Logs • Pinned First 📌</div>
               </div>
             </div>
 
@@ -265,7 +265,7 @@
               <button type="button" onclick="HubNotes.openFullNotesModal(null, 'ai')" class="ui-btn-sm h-7 px-2 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-700/60 text-purple-300 hover:text-white transition inline-flex items-center gap-1 text-[11px] font-bold shadow cursor-pointer active:scale-95" title="Open AI Campaign Chronicler">
                 <span>✨</span>
               </button>
-              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'editor')" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 hover:text-white transition inline-flex items-center gap-1 text-[11px] font-bold shadow cursor-pointer active:scale-95" title="Open Fullscreen Notebook">
+              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'editor')" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 hover:text-white transition inline-flex items-center gap-1 text-[11px] font-bold shadow cursor-pointer active:scale-95" title="Open Fullscreen Quest Logs">
                 <span>📝</span>
                 <span class="text-[10px] hidden sm:inline">Expand</span>
               </button>
@@ -276,11 +276,11 @@
           <div class="h-8 flex items-center gap-1 bg-slate-900/90 p-0.5 rounded-lg border border-slate-800 shrink-0 text-xs">
             <button type="button" id="hub-notes-tab-write" onclick="HubNotes.switchPanelTab('write')" class="flex-1 h-full px-2 rounded-md text-[11px] font-bold transition flex items-center justify-center gap-1 bg-indigo-600 text-white shadow cursor-pointer">
               <span>✏️</span>
-              <span>AI Campaign Notebook</span>
+              <span>Quest Logs</span>
             </button>
             <button type="button" id="hub-notes-tab-list" onclick="HubNotes.switchPanelTab('list')" class="flex-1 h-full px-2 rounded-md text-[11px] font-bold transition flex items-center justify-center gap-1 text-slate-400 hover:text-white cursor-pointer">
               <span>📋</span>
-              <span>Saved Notes (<span id="hub-notes-tab-count">0</span>)</span>
+              <span>Saved Logs (<span id="hub-notes-tab-count">0</span>)</span>
             </button>
           </div>
 
@@ -290,7 +290,7 @@
             <div id="hub-notes-pinned-strip" class="hidden shrink-0 space-y-1 bg-amber-950/20 border border-amber-500/30 rounded-xl p-1.5 text-xs">
               <div class="text-[9px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
                 <span>📌</span>
-                <span>Pinned Notes:</span>
+                <span>Pinned Logs:</span>
               </div>
               <div id="hub-notes-pinned-chips" class="flex flex-wrap gap-1 max-h-12 overflow-y-auto"></div>
             </div>
@@ -305,7 +305,7 @@
 
               <!-- Gövde Alanı -->
               <textarea id="hub-quick-note-input"
-                placeholder="Write your note here...&#10;&#10;Tips:&#10;• Type # to autocomplete tags&#10;• Use - [ ] to add task checkboxes&#10;• Press Ctrl+Enter to save"
+                placeholder="Write your log here...&#10;&#10;Tips:&#10;• Type # to autocomplete tags&#10;• Use - [ ] to add task checkboxes&#10;• Press Ctrl+Enter to save"
                 class="w-full flex-1 bg-transparent text-xs text-white placeholder-slate-500 font-sans focus:outline-none resize-none leading-relaxed custom-scrollbar"
                 oninput="HubNotes.handleQuickInput(event)"
                 onkeydown="HubNotes.handleQuickKeydown(event)"></textarea>
@@ -323,7 +323,7 @@
 
               <button type="button" onclick="HubNotes.addQuickNote()" class="w-full h-8 px-3 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-indigo-950/50 transition transform active:scale-95 cursor-pointer">
                 <span>➕</span>
-                <span>Save Note (Ctrl+Enter)</span>
+                <span>Save Log (Ctrl+Enter)</span>
               </button>
             </div>
           </div>
@@ -334,7 +334,7 @@
             <div class="space-y-1.5 shrink-0">
               <div class="flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition">
                 <span class="text-slate-500 text-xs">🔍</span>
-                <input type="text" id="hub-inline-notes-search" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Search notes or #tags..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
+                <input type="text" id="hub-inline-notes-search" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Search logs or #tags..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
               </div>
 
               <div class="flex items-center gap-1 overflow-x-auto pb-1 text-[10px] font-mono no-scrollbar">
@@ -4925,7 +4925,7 @@ CRITICAL RULES:
           <div class="flex items-center justify-between gap-2 w-full lg:w-auto min-w-0">
             <div class="flex items-center gap-2 min-w-0">
               <span class="text-xl shrink-0">📝</span>
-              <h3 class="text-sm sm:text-base font-bold text-white truncate">AI Campaign Notebook</h3>
+              <h3 class="text-sm sm:text-base font-bold text-white truncate">Quest Logs &amp; AI Chronicler</h3>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <span id="hub-modal-target-title" class="inline-flex items-center text-xs font-normal text-indigo-300 truncate"></span>
@@ -4934,11 +4934,11 @@ CRITICAL RULES:
           </div>
 
           <div class="flex items-center gap-2 w-full lg:w-auto">
-            <!-- Mod Switcher: [ 📝 Notes (33%) ] [ 🕸️ Tag Mindmap (33%) ] [ ✨ AI Chronicler (33%) ] -->
+            <!-- Mod Switcher: [ 📝 Quest Logs (33%) ] [ 🕸️ Tag Mindmap (33%) ] [ ✨ AI Chronicler (33%) ] -->
             <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs w-full lg:w-auto shrink-0">
               <button type="button" id="hub-modal-tab-editor" onclick="HubNotes.switchModalView('editor')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs truncate">
                 <span>📝</span>
-                <span class="truncate">Notes</span>
+                <span class="truncate">Quest Logs</span>
               </button>
               <button type="button" id="hub-modal-tab-mindmap" onclick="HubNotes.switchModalView('mindmap')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs truncate">
                 <span>🕸️</span>
@@ -4962,13 +4962,13 @@ CRITICAL RULES:
             <!-- Arama -->
             <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition shrink-0">
               <span class="text-slate-500 text-xs">🔍</span>
-              <input type="text" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Search notes..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none">
+              <input type="text" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Search logs..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none">
             </div>
 
             <!-- Yeni Not Ekle Butonu -->
             <button type="button" onclick="HubNotes.createNewModalNote()" class="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95 cursor-pointer shrink-0">
               <span>➕</span>
-              <span>Create New Note</span>
+              <span>Create New Log</span>
             </button>
 
             <!-- Dinamik İlişkisel Etiket Filtre Çubuğu -->
@@ -4985,16 +4985,16 @@ CRITICAL RULES:
           <!-- Sağ Sütun: Not Editörü -->
           <div class="flex-1 flex flex-col p-4 space-y-3 bg-[#131d33] overflow-y-auto min-h-0">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 gap-2">
-              <div class="text-[11px] text-slate-400 font-mono truncate" id="hub-modal-date-badge">Selected note details</div>
+              <div class="text-[11px] text-slate-400 font-mono truncate" id="hub-modal-date-badge">Selected log details</div>
               <!-- Tam Simetrik 2x2 (Mobil) / 4'lü (PC) Eylem Butonları -->
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full lg:w-auto">
-                <button type="button" onclick="HubNotes.openAiChroniclerWithActiveNote()" class="w-full px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm truncate" title="Summarize this note and connected notes with AI">
+                <button type="button" onclick="HubNotes.openAiChroniclerWithActiveNote()" class="w-full px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm truncate" title="Summarize this log and connected logs with AI">
                   <span>✨</span>
                   <span class="truncate">AI Summarize</span>
                 </button>
                 <button type="button" id="hub-modal-save-btn" onclick="HubNotes.saveModalNote(true)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 truncate" title="Save Changes (Ctrl+S / Ctrl+Enter)">
                   <span>💾</span>
-                  <span id="hub-modal-save-text" class="truncate">Save Note</span>
+                  <span id="hub-modal-save-text" class="truncate">Save Log</span>
                 </button>
                 <button type="button" id="hub-modal-pin-btn" onclick="HubNotes.togglePinNote(null, event)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 flex items-center justify-center gap-1 cursor-pointer truncate">
                   📌 Pin to Top
@@ -5024,7 +5024,7 @@ CRITICAL RULES:
             <!-- Bitişik Başlık + Gövde Not Kağıdı -->
             <div class="w-full flex-1 min-h-[300px] bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-2.5 focus-within:border-indigo-500/80 transition shadow-inner">
               <!-- Başlık Alanı (Büyük, Kalın & Çerçevesiz) -->
-              <input type="text" id="hub-modal-note-title" placeholder="Note Title (Optional)..."
+              <input type="text" id="hub-modal-note-title" placeholder="Log Title (Optional)..."
                 class="w-full bg-transparent text-base sm:text-lg font-bold text-white placeholder-slate-600 focus:outline-none border-b border-slate-800/80 pb-2 font-sans tracking-wide"
                 oninput="HubNotes.handleEditorInput(event)"
                 onkeydown="HubNotes.handleTitleKeydown(event)"
@@ -5035,7 +5035,7 @@ CRITICAL RULES:
                 oninput="HubNotes.handleEditorInput(event)"
                 onkeydown="HubNotes.handleEditorKeydown(event)"
                 onblur="HubNotes.saveModalNote(false)"
-                placeholder="Write note details here...&#10;&#10;Tips:&#10;• Type '#' for smart tag autocomplete&#10;• Press Ctrl+S / Ctrl+Enter to save"
+                placeholder="Write log details here...&#10;&#10;Tips:&#10;• Type '#' for smart tag autocomplete&#10;• Press Ctrl+S / Ctrl+Enter to save"
                 class="w-full flex-1 min-h-[220px] bg-transparent text-xs sm:text-sm text-slate-200 placeholder-slate-600 focus:outline-none font-sans leading-relaxed resize-none pt-1 custom-scrollbar"></textarea>
             </div>
           </div>
@@ -5097,7 +5097,7 @@ CRITICAL RULES:
                 <span class="text-xl">🧙‍♂️</span>
                 <div>
                   <h4 class="text-xs font-bold text-white">AI Campaign Chronicler</h4>
-                  <p class="text-[10px] text-slate-400">Transforms micro-notes into a narrative session chronicle or quest dossier.</p>
+                  <p class="text-[10px] text-slate-400">Transforms micro-logs into a narrative session chronicle or quest dossier.</p>
                 </div>
               </div>
 
@@ -5105,10 +5105,10 @@ CRITICAL RULES:
               <div class="space-y-1">
                 <label class="text-[11px] font-bold text-slate-300">Synthesis Scope:</label>
                 <select id="hub-ai-scope-select" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-400">
-                  <option value="all">🌐 All Notes in Active Notebook</option>
+                  <option value="all">🌐 All Logs in Active Logbook</option>
                   <option value="tag">🏷️ Selected Tag Group</option>
-                  <option value="recent5">⏱️ Last 5 Notes (Latest Session)</option>
-                  <option value="recent10">⏱️ Last 10 Notes</option>
+                  <option value="recent5">⏱️ Last 5 Logs (Latest Session)</option>
+                  <option value="recent10">⏱️ Last 10 Logs</option>
                 </select>
                 <div id="hub-ai-scope-tag-picker" class="hidden pt-1">
                   <select id="hub-ai-tag-select" class="w-full bg-slate-950 border border-indigo-700/60 rounded-lg px-2.5 py-1.5 text-xs text-indigo-300 font-mono focus:outline-none"></select>
@@ -5123,7 +5123,7 @@ CRITICAL RULES:
                     <input type="radio" name="hub-ai-mode" value="narrative" checked class="mt-0.5 text-indigo-500 focus:ring-0">
                     <div>
                       <div class="text-xs font-bold text-indigo-200">📖 Session Chronicle &amp; Narrative</div>
-                      <div class="text-[10px] text-slate-400 leading-tight">Transforms notes into a fluent, atmospheric roleplaying chronicle.</div>
+                      <div class="text-[10px] text-slate-400 leading-tight">Transforms logs into a fluent, atmospheric roleplaying chronicle.</div>
                     </div>
                   </label>
                   <label class="flex items-start gap-2.5 p-2 rounded-xl border border-slate-800 bg-slate-900/60 cursor-pointer transition hover:bg-slate-800/60">
@@ -5164,9 +5164,9 @@ CRITICAL RULES:
                   <span id="hub-ai-status-badge" class="text-xs font-mono text-slate-400">Standby</span>
                 </div>
                 <div id="hub-ai-output-actions" class="hidden flex items-center gap-2">
-                  <button type="button" onclick="HubNotes.saveAiSynthesisAsNote()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95" title="Save synthesized chronicle as a new pinned note in this campaign">
+                  <button type="button" onclick="HubNotes.saveAiSynthesisAsNote()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95" title="Save synthesized chronicle as a new pinned log in this campaign">
                     <span>📌</span>
-                    <span>Save as Pinned Note</span>
+                    <span>Save as Pinned Log</span>
                   </button>
                   <button type="button" onclick="HubNotes.copyAiSynthesisToClipboard()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 cursor-pointer">
                     <span>📋</span>

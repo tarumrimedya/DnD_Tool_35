@@ -269,7 +269,7 @@
         id: charId,
         name: charName,
         isDm: false,
-        titleBadge: `👤 ${charName} Notes`,
+        titleBadge: `👤 ${charName} Logs`,
         targetObj: standaloneChar,
         notesList: list
       };
@@ -284,7 +284,7 @@
           id: charId,
           name: standaloneChar.name || 'Character',
           isDm: false,
-          titleBadge: `👤 ${standaloneChar.name || 'Character'} Notes`,
+          titleBadge: `👤 ${standaloneChar.name || 'Character'} Logs`,
           targetObj: standaloneChar,
           notesList: list
         };
@@ -311,7 +311,7 @@
             name: hName,
             rawName: camp.name,
             isDm: Boolean(camp.isDmMode),
-            titleBadge: camp.isDmMode ? '👑 DM Notes (Secret)' : '🏰 Campaign Notes',
+            titleBadge: camp.isDmMode ? '👑 DM Logs (Secret)' : '🏰 Campaign Logs',
             targetObj: camp,
             notesList: list
           };
@@ -326,7 +326,7 @@
             id: resolvedId,
             name: standaloneChar.name || hubMatchForStandalone?.name || 'Character',
             isDm: false,
-            titleBadge: `👤 ${standaloneChar.name || 'Character'} Notes`,
+            titleBadge: `👤 ${standaloneChar.name || 'Character'} Logs`,
             targetObj: standaloneChar,
             notesList: list
           };
@@ -339,7 +339,7 @@
             id: char.id,
             name: char.name || 'Character',
             isDm: false,
-            titleBadge: `👤 ${char.name || 'Character'} Notes`,
+            titleBadge: `👤 ${char.name || 'Character'} Logs`,
             targetObj: char,
             notesList: list
           };
@@ -359,7 +359,7 @@
           id: unassignedChar.id,
           name: unassignedChar.name || 'Standalone Character',
           isDm: false,
-          titleBadge: `👤 ${unassignedChar.name || 'Character'} Notes`,
+          titleBadge: `👤 ${unassignedChar.name || 'Character'} Logs`,
           targetObj: unassignedChar,
           notesList: list
         };
@@ -380,7 +380,7 @@
           name: hName,
           rawName: activeCamp.name,
           isDm: true,
-          titleBadge: '👑 DM Notes (Secret)',
+          titleBadge: '👑 DM Logs (Secret)',
           targetObj: activeCamp,
           notesList: list
         };
@@ -407,7 +407,7 @@
           id: targetChar.id,
           name: targetChar.name || 'Character',
           isDm: false,
-          titleBadge: `👤 ${targetChar.name || 'Character'} Notes`,
+          titleBadge: `👤 ${targetChar.name || 'Character'} Logs`,
           targetObj: targetChar,
           notesList: list
         };
@@ -421,7 +421,7 @@
         name: hName,
         rawName: activeCamp.name,
         isDm: false,
-        titleBadge: '🏰 Campaign Notes',
+        titleBadge: '🏰 Campaign Logs',
         targetObj: activeCamp,
         notesList: list
       };
@@ -436,7 +436,7 @@
         id: firstChar.id,
         name: firstChar.name || 'Character',
         isDm: false,
-        titleBadge: `👤 ${firstChar.name || 'Character'} Notes`,
+        titleBadge: `👤 ${firstChar.name || 'Character'} Logs`,
         targetObj: firstChar,
         notesList: list
       };
@@ -453,7 +453,7 @@
         name: hName,
         rawName: firstCamp.name,
         isDm: Boolean(firstCamp.isDmMode),
-        titleBadge: firstCamp.isDmMode ? '👑 DM Notes (Secret)' : '🏰 Campaign Notes',
+        titleBadge: firstCamp.isDmMode ? '👑 DM Logs (Secret)' : '🏰 Campaign Logs',
         targetObj: firstCamp,
         notesList: list
       };
@@ -462,7 +462,7 @@
     // 5. Hiçbir kampanya ve karakter yoksa dinamik güvenli alan oluştur
     const defaultCamp = {
       id: 'camp_default',
-      name: 'Genel Not Defteri',
+      name: 'General Quest Logs',
       notesList: [],
       smartNotes: []
     };
@@ -474,7 +474,7 @@
       id: defaultCamp.id,
       name: defaultCamp.name,
       isDm: false,
-      titleBadge: '📝 Genel Notlar',
+      titleBadge: '📝 General Logs',
       targetObj: defaultCamp,
       notesList: defaultCamp.notesList
     };
@@ -487,7 +487,7 @@
 
     return [{
       id: 'note_' + Date.now(),
-      title: 'Character Notes',
+      title: 'Character Logs',
       text: text,
       pinned: false,
       completed: false,
@@ -894,8 +894,8 @@
 
     const target = getActiveNotesTarget();
     if (!target) {
-      listEl.innerHTML = `<div class="p-4 text-center text-slate-500 text-xs italic">Select an active campaign to take notes.</div>`;
-      if (badgeEl) badgeEl.textContent = '📜 Notlar';
+      listEl.innerHTML = `<div class="p-4 text-center text-slate-500 text-xs italic">Select an active campaign to write logs.</div>`;
+      if (badgeEl) badgeEl.textContent = '📜 Quest Logs';
       if (countEl) countEl.textContent = '0';
       if (tabCountEl) tabCountEl.textContent = '0';
       return;
@@ -914,8 +914,8 @@
       listEl.innerHTML = `
         <div class="p-6 text-center text-slate-500 text-xs flex flex-col items-center justify-center gap-2 h-44">
           <span class="text-2xl opacity-60">📜</span>
-          <span>No saved notes found.</span>
-          <span class="text-[10px] text-slate-600">Switch to the "Write Note" tab to compose and save a new note.</span>
+          <span>No saved logs found.</span>
+          <span class="text-[10px] text-slate-600">Switch to the "Quest Logs" tab to compose and save a new log.</span>
         </div>`;
       return;
     }
@@ -1042,7 +1042,7 @@
     let selectHtml = `<select onchange="HubNotes.setTargetOverride(this.value)" class="bg-indigo-950/90 hover:bg-indigo-900/90 text-indigo-200 border border-indigo-700/80 rounded-lg px-2.5 py-1 text-xs font-bold focus:outline-none focus:border-indigo-400 cursor-pointer shadow-sm max-w-[280px] sm:max-w-[320px] truncate">`;
 
     if (chars.length > 0) {
-      selectHtml += `<optgroup label="👤 Character Notebooks">`;
+      selectHtml += `<optgroup label="👤 Character Logbooks">`;
       chars.forEach(c => {
         const val = `char:${c.id}`;
         let charContext = '';
@@ -1056,7 +1056,7 @@
     }
 
     if (camps.length > 0) {
-      selectHtml += `<optgroup label="🏰 Campaign Notebooks">`;
+      selectHtml += `<optgroup label="🏰 Campaign Logbooks">`;
       camps.forEach(cp => {
         const val = `campaign:${cp.id}`;
         const prefix = cp.isDmMode ? '👑 DM: ' : '🏰 ';
@@ -2214,11 +2214,11 @@ RULES:
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               <span class="text-[9px] text-slate-500 font-mono">${formatTimeAgo(note.updatedAt || note.createdAt)}</span>
-              <button type="button" onclick="HubNotes.deleteNote('${note.id}', event)" class="p-1 text-slate-500 hover:text-rose-400 rounded text-xs transition cursor-pointer" title="Bu Notu Sil">✕</button>
+              <button type="button" onclick="HubNotes.deleteNote('${note.id}', event)" class="p-1 text-slate-500 hover:text-rose-400 rounded text-xs transition cursor-pointer" title="Delete Log">✕</button>
             </div>
           </div>
           <div class="text-[11px] text-slate-400 line-clamp-2 break-words">
-            ${escapeHtml(previewText) || '<span class="italic text-slate-500">Empty note...</span>'}
+            ${escapeHtml(previewText) || '<span class="italic text-slate-500">Empty log...</span>'}
           </div>
         </div>
       `;
@@ -2247,7 +2247,7 @@ RULES:
     if (!target) {
       if (titleInput) { titleInput.value = ''; titleInput.disabled = true; }
       editor.value = '';
-      editor.placeholder = 'Select a note from the list on the left to edit, or create a new note.';
+      editor.placeholder = 'Select a log from the list on the left to edit, or create a new log.';
       editor.disabled = true;
       if (pinBtn) pinBtn.classList.add('opacity-40', 'pointer-events-none');
       if (deleteBtn) deleteBtn.classList.add('opacity-40', 'pointer-events-none');
@@ -2260,7 +2260,7 @@ RULES:
       _selectedModalNoteId = null;
       if (titleInput) { titleInput.value = ''; titleInput.disabled = false; }
       editor.value = '';
-      editor.placeholder = 'Write your note here... (Type "#" for tag autocomplete, or click Save Note)';
+      editor.placeholder = 'Write your log here... (Type "#" for tag autocomplete, or click Save Log)';
       editor.disabled = false;
       if (pinBtn) pinBtn.classList.add('opacity-40', 'pointer-events-none');
       if (deleteBtn) deleteBtn.classList.add('opacity-40', 'pointer-events-none');
@@ -2268,7 +2268,7 @@ RULES:
       if (dateBadge) {
         const state = getHubState();
         const dName = getTargetDisplayName(target, state);
-        dateBadge.textContent = `${dName} • New Note Draft`;
+        dateBadge.textContent = `${dName} • New Log Draft`;
       }
       return;
     }
@@ -2630,7 +2630,7 @@ RULES:
           <div class="flex items-center justify-between gap-2 w-full lg:w-auto min-w-0">
             <div class="flex items-center gap-2 min-w-0">
               <span class="text-xl shrink-0">📝</span>
-              <h3 class="text-sm sm:text-base font-bold text-white truncate">AI Campaign Notebook</h3>
+              <h3 class="text-sm sm:text-base font-bold text-white truncate">Quest Logs &amp; AI Chronicler</h3>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <span id="hub-modal-target-title" class="inline-flex items-center text-xs font-normal text-indigo-300 truncate"></span>
@@ -2641,7 +2641,7 @@ RULES:
           <div class="flex items-center gap-2 w-full lg:w-auto">
             <div class="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs w-full lg:w-auto shrink-0">
               <button type="button" id="hub-modal-tab-editor" onclick="HubNotes.switchModalView('editor')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white shadow cursor-pointer text-xs truncate">
-                <span>📝</span><span class="truncate">Notes</span>
+                <span>📝</span><span class="truncate">Quest Logs</span>
               </button>
               <button type="button" id="hub-modal-tab-mindmap" onclick="HubNotes.switchModalView('mindmap')" class="w-full px-2.5 sm:px-3 py-1.5 rounded-lg font-bold transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer text-xs truncate">
                 <span>🕸️</span><span class="truncate">Tag Mindmap</span>
@@ -2660,10 +2660,10 @@ RULES:
           <div class="w-full sm:w-80 border-b sm:border-b-0 sm:border-r border-slate-700/80 flex flex-col bg-slate-900/40 shrink-0 p-3 space-y-2.5 overflow-hidden">
             <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition shrink-0">
               <span class="text-slate-500 text-xs">🔍</span>
-              <input type="text" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Search notes..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none">
+              <input type="text" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Search logs..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none">
             </div>
             <button type="button" onclick="HubNotes.createNewModalNote()" class="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow transition active:scale-95 cursor-pointer shrink-0">
-              <span>➕</span><span>Create New Note</span>
+              <span>➕</span><span>Create New Log</span>
             </button>
             <div id="hub-modal-tags-bar" class="shrink-0 space-y-1.5"></div>
             <div id="hub-modal-notes-list" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar min-h-0"></div>
@@ -2671,13 +2671,13 @@ RULES:
 
           <div class="flex-1 flex flex-col p-4 space-y-3 bg-[#131d33] overflow-y-auto min-h-0">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between border-b border-slate-800 pb-2.5 shrink-0 gap-2">
-              <div class="text-[11px] text-slate-400 font-mono truncate" id="hub-modal-date-badge">Selected note details</div>
+              <div class="text-[11px] text-slate-400 font-mono truncate" id="hub-modal-date-badge">Selected log details</div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full lg:w-auto">
                 <button type="button" onclick="HubNotes.openAiChroniclerWithActiveNote()" class="w-full px-2.5 py-1.5 rounded-lg text-xs font-bold transition bg-purple-950/60 hover:bg-purple-900/80 text-purple-300 border border-purple-800/60 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm truncate">
                   <span>✨</span><span class="truncate">AI Summarize</span>
                 </button>
                 <button type="button" id="hub-modal-save-btn" onclick="HubNotes.saveModalNote(true)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-950/40 flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 truncate">
-                  <span>💾</span><span id="hub-modal-save-text" class="truncate">Save Note</span>
+                  <span>💾</span><span id="hub-modal-save-text" class="truncate">Save Log</span>
                 </button>
                 <button type="button" id="hub-modal-pin-btn" onclick="HubNotes.togglePinNote(null, event)" class="w-full px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-300 hover:text-white border border-slate-700 flex items-center justify-center gap-1 cursor-pointer truncate">
                   📌 Pin to Top
@@ -2703,7 +2703,7 @@ RULES:
             </div>
 
             <div class="w-full flex-1 min-h-[300px] bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-2.5 focus-within:border-indigo-500/80 transition shadow-inner">
-              <input type="text" id="hub-modal-note-title" placeholder="Note Title (Optional)..."
+              <input type="text" id="hub-modal-note-title" placeholder="Log Title (Optional)..."
                 class="w-full bg-transparent text-base sm:text-lg font-bold text-white placeholder-slate-600 focus:outline-none border-b border-slate-800/80 pb-2 font-sans tracking-wide"
                 oninput="HubNotes.handleEditorInput(event)"
                 onkeydown="HubNotes.handleTitleKeydown(event)"
@@ -2712,7 +2712,7 @@ RULES:
                 oninput="HubNotes.handleEditorInput(event)"
                 onkeydown="HubNotes.handleEditorKeydown(event)"
                 onblur="HubNotes.saveModalNote(false)"
-                placeholder="Write note details here...&#10;&#10;Tips:&#10;• Type '#' for smart tag autocomplete&#10;• Press Ctrl+S / Ctrl+Enter to save"
+                placeholder="Write log details here...&#10;&#10;Tips:&#10;• Type '#' for smart tag autocomplete&#10;• Press Ctrl+S / Ctrl+Enter to save"
                 class="w-full flex-1 min-h-[220px] bg-transparent text-xs sm:text-sm text-slate-200 placeholder-slate-600 focus:outline-none font-sans leading-relaxed resize-none pt-1 custom-scrollbar"></textarea>
             </div>
           </div>
@@ -2756,16 +2756,16 @@ RULES:
                 <span class="text-xl">🧙‍♂️</span>
                 <div>
                   <h4 class="text-xs font-bold text-white">AI Campaign Chronicler</h4>
-                  <p class="text-[10px] text-slate-400">Transforms micro-notes into a narrative session chronicle or quest dossier.</p>
+                  <p class="text-[10px] text-slate-400">Transforms micro-logs into a narrative session chronicle or quest dossier.</p>
                 </div>
               </div>
               <div class="space-y-1">
                 <label class="text-[11px] font-bold text-slate-300">Synthesis Scope:</label>
                 <select id="hub-ai-scope-select" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-400">
-                  <option value="all">🌐 All Notes in Active Notebook</option>
+                  <option value="all">🌐 All Logs in Active Logbook</option>
                   <option value="tag">🏷️ Selected Tag Group</option>
-                  <option value="recent5">⏱️ Last 5 Notes (Latest Session)</option>
-                  <option value="recent10">⏱️ Last 10 Notes</option>
+                  <option value="recent5">⏱️ Last 5 Logs (Latest Session)</option>
+                  <option value="recent10">⏱️ Last 10 Logs</option>
                 </select>
                 <div id="hub-ai-scope-tag-picker" class="hidden pt-1">
                   <select id="hub-ai-tag-select" class="w-full bg-slate-950 border border-indigo-700/60 rounded-lg px-2.5 py-1.5 text-xs text-indigo-300 font-mono focus:outline-none"></select>
@@ -2776,7 +2776,7 @@ RULES:
                 <div class="space-y-1.5" id="hub-ai-modes-container">
                   <label class="flex items-start gap-2.5 p-2 rounded-xl border border-indigo-500/50 bg-indigo-950/40 cursor-pointer transition hover:bg-indigo-950/60">
                     <input type="radio" name="hub-ai-mode" value="narrative" checked class="mt-0.5 text-indigo-500 focus:ring-0">
-                    <div><div class="text-xs font-bold text-indigo-200">📖 Session Chronicle &amp; Narrative</div><div class="text-[10px] text-slate-400 leading-tight">Transforms notes into a fluent, atmospheric roleplaying chronicle.</div></div>
+                    <div><div class="text-xs font-bold text-indigo-200">📖 Session Chronicle &amp; Narrative</div><div class="text-[10px] text-slate-400 leading-tight">Transforms logs into a fluent, atmospheric roleplaying chronicle.</div></div>
                   </label>
                   <label class="flex items-start gap-2.5 p-2 rounded-xl border border-slate-800 bg-slate-900/60 cursor-pointer transition hover:bg-slate-800/60">
                     <input type="radio" name="hub-ai-mode" value="quests" class="mt-0.5 text-indigo-500 focus:ring-0">
@@ -2801,7 +2801,7 @@ RULES:
                 <span id="hub-ai-status-badge" class="text-xs font-mono text-slate-400">Standby</span>
                 <div id="hub-ai-output-actions" class="hidden flex items-center gap-2">
                   <button type="button" onclick="HubNotes.saveAiSynthesisAsNote()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-emerald-600 hover:bg-emerald-500 text-white shadow-md flex items-center gap-1.5 cursor-pointer active:scale-95">
-                    <span>📌</span><span>Save as Pinned Note</span>
+                    <span>📌</span><span>Save as Pinned Log</span>
                   </button>
                   <button type="button" onclick="HubNotes.copyAiSynthesisToClipboard()" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 cursor-pointer">
                     <span>📋</span><span>Copy</span>
@@ -2848,8 +2848,8 @@ RULES:
             <div class="flex items-center gap-2 min-w-0">
               <span class="w-6 h-6 rounded-lg bg-indigo-600/20 border border-indigo-500/50 flex items-center justify-center text-indigo-400 shrink-0 text-xs">📜</span>
               <div class="min-w-0">
-                <h3 class="text-xs font-black text-white uppercase tracking-wider truncate" id="hub-notes-panel-badge">Smart Character Notes</h3>
-                <div class="text-[10px] text-slate-400 font-mono"><span id="hub-notes-panel-count">0</span> Notes • Cloud &amp; HUB Synced 📌</div>
+                <h3 class="text-xs font-black text-white uppercase tracking-wider truncate" id="hub-notes-panel-badge">Quest Logs</h3>
+                <div class="text-[10px] text-slate-400 font-mono"><span id="hub-notes-panel-count">0</span> Logs • Cloud &amp; HUB Synced 📌</div>
               </div>
             </div>
             <div class="flex items-center gap-1.5">
@@ -2859,7 +2859,7 @@ RULES:
               <button type="button" onclick="HubNotes.openFullNotesModal(null, 'ai')" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-purple-950 hover:bg-purple-900 border border-purple-700/60 text-purple-300 hover:text-white transition inline-flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="Open AI Campaign Chronicler">
                 <span>✨</span><span class="hidden sm:inline text-[10px]">AI Chronicler</span>
               </button>
-              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'editor')" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 hover:text-white transition inline-flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="Open Fullscreen Notebook">
+              <button type="button" onclick="HubNotes.openFullNotesModal(null, 'editor')" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/60 border border-indigo-500/50 text-indigo-200 hover:text-white transition inline-flex items-center gap-1 text-xs font-bold shadow cursor-pointer" title="Open Fullscreen Quest Logs">
                 <span>📝</span><span class="text-[10px]">Fullscreen</span>
               </button>
             </div>
@@ -2867,26 +2867,26 @@ RULES:
 
           <div class="h-8 flex items-center gap-1 bg-slate-900/90 p-0.5 rounded-lg border border-slate-800 shrink-0 text-xs">
             <button type="button" id="hub-notes-tab-write" onclick="HubNotes.switchPanelTab('write')" class="flex-1 h-full px-2 rounded-md text-xs font-bold transition flex items-center justify-center gap-1 bg-indigo-600 text-white shadow cursor-pointer">
-              <span>✏️</span><span>AI Campaign Notebook</span>
+              <span>✏️</span><span>Quest Logs</span>
             </button>
             <button type="button" id="hub-notes-tab-list" onclick="HubNotes.switchPanelTab('list')" class="flex-1 h-full px-2 rounded-md text-xs font-bold transition flex items-center justify-center gap-1 text-slate-400 hover:text-white cursor-pointer">
-              <span>📋</span><span>Saved Notes (<span id="hub-notes-tab-count">0</span>)</span>
+              <span>📋</span><span>Saved Logs (<span id="hub-notes-tab-count">0</span>)</span>
             </button>
           </div>
 
           <div id="hub-notes-write-view" class="flex flex-col space-y-2">
             <div id="hub-notes-pinned-strip" class="hidden shrink-0 space-y-1 bg-amber-950/20 border border-amber-500/30 rounded-xl p-2 text-xs">
-              <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1"><span>📌</span><span>Pinned Notes:</span></div>
+              <div class="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1"><span>📌</span><span>Pinned Logs:</span></div>
               <div id="hub-notes-pinned-chips" class="flex flex-wrap gap-1 max-h-16 overflow-y-auto"></div>
             </div>
 
             <div class="w-full bg-slate-900/90 border border-slate-700 rounded-xl p-3 flex flex-col space-y-2 focus-within:border-indigo-400 transition shadow-inner">
-              <input type="text" id="hub-quick-note-title" placeholder="Note Title (Optional)..."
+              <input type="text" id="hub-quick-note-title" placeholder="Log Title (Optional)..."
                 class="w-full bg-transparent text-sm font-bold text-white placeholder-slate-500 focus:outline-none border-b border-slate-700/60 pb-1.5 font-sans"
                 oninput="HubNotes.handleQuickInput(event)"
                 onkeydown="HubNotes.handleQuickTitleKeydown(event)">
               <textarea id="hub-quick-note-input" rows="4"
-                placeholder="Write your note here... (Supports #quest, #npc, #location, #loot tags and - [ ] task checkboxes)"
+                placeholder="Write your log here... (Supports #quest, #npc, #location, #loot tags and - [ ] task checkboxes)"
                 class="w-full bg-transparent text-xs text-white placeholder-slate-500 font-sans focus:outline-none resize-y leading-relaxed"
                 oninput="HubNotes.handleQuickInput(event)"
                 onkeydown="HubNotes.handleQuickKeydown(event)"></textarea>
@@ -2901,7 +2901,7 @@ RULES:
                 <button type="button" onclick="HubNotes.insertTagIntoQuickInput('- [ ] ')" class="ui-btn-xs w-full h-6 px-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold transition flex items-center justify-center cursor-pointer truncate">+ To-Do</button>
               </div>
               <button type="button" onclick="HubNotes.addQuickNote()" class="w-full h-8 px-4 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-md transition active:scale-95 cursor-pointer">
-                <span>➕</span><span>Save Note (Ctrl+Enter)</span>
+                <span>➕</span><span>Save Log (Ctrl+Enter)</span>
               </button>
             </div>
           </div>
@@ -2910,7 +2910,7 @@ RULES:
             <div class="flex flex-wrap items-center gap-2">
               <div class="flex-1 min-w-[180px] flex items-center gap-1.5 bg-slate-900/90 border border-slate-800 rounded-xl px-2.5 py-1.5 focus-within:border-indigo-400 transition">
                 <span class="text-slate-500 text-xs">🔍</span>
-                <input type="text" id="hub-inline-notes-search" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Search notes or #tags..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
+                <input type="text" id="hub-inline-notes-search" oninput="HubNotes.handleSearchInput(this.value)" placeholder="Search logs or #tags..." class="w-full bg-transparent text-xs text-white placeholder-slate-500 focus:outline-none font-mono">
               </div>
               <div class="flex items-center gap-1 overflow-x-auto text-[10px] font-mono">
                 <button type="button" onclick="HubNotes.setTagFilter('all')" class="px-2 py-0.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 transition cursor-pointer">#all</button>
