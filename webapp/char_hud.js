@@ -232,47 +232,7 @@
     });
 
     window.addEventListener('DOMContentLoaded', async () => {
-      // 0. Fast Pre-Render (Stale-While-Revalidate):
-      // Render immediately from localStorage so active character (e.g. test1) appears instantly in 0ms without waiting for network
-      try {
-        const _urlP = new URLSearchParams(window.location.search);
-        const _fastReqId = _urlP.get('id') || localStorage.getItem('dnd35_active_character_id');
-        let _fastChar = null;
-        if (_fastReqId) {
-          const _hRaw = localStorage.getItem('dnd35_hub_db');
-          if (_hRaw) {
-            const _hDb = JSON.parse(_hRaw);
-            const _found = (_hDb.characters || []).find(c => c.id === _fastReqId);
-            if (_found && _found.fullData) _fastChar = _found.fullData;
-          }
-        }
-        if (!_fastChar) {
-          const _cRaw = localStorage.getItem('dnd35_character');
-          if (_cRaw) {
-            const _parsed = JSON.parse(_cRaw);
-            if (_parsed && (!_fastReqId || _parsed.id === _fastReqId || _parsed._hubId === _fastReqId)) {
-              _fastChar = _parsed;
-            }
-          }
-        }
-        if (_fastChar) {
-          character = (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function')
-            ? window.SchemaMigrator.upgradeCharacterToV2(_fastChar)
-            : _fastChar;
-          if (typeof ensureAllSkills === 'function') {
-            try { ensureAllSkills(character); } catch (e) {}
-          }
-          try { renderHUD(); } catch (e) {}
-          try { renderAbilities(); } catch (e) {}
-          try { renderCharacterProfile(); } catch (e) {}
-          try { renderCombatCockpit(); } catch (e) {}
-          try { renderWeapons(); } catch (e) {}
-        }
-      } catch (_fastErr) {
-        console.warn('Fast pre-render notice:', _fastErr);
-      }
-
-      // Eğer kök (/) adresine ?id olmadan gelinmişse (login sonrası yönlendirme veya doğrudan giriş), derhal /hub'a yönlendir:
+      // Redirect root (/) without ?id immediately to /hub
       const _urlParams = new URLSearchParams(window.location.search);
       const _hasCharId = _urlParams.get('id');
       const _isRootPath = window.location.pathname === '/' || window.location.pathname === '';
@@ -281,15 +241,18 @@
         return;
       }
 
+      // 1. Start IndexedDB-First SRD Compendium (~10ms) and Auth check in parallel
       const srdInitPromise = (window.SrdCompendium && typeof window.SrdCompendium.init === 'function')
         ? window.SrdCompendium.init().catch(e => console.warn('SrdCompendium init warning:', e))
         : Promise.resolve();
 
-      if (window.SupabaseAuth) {
-        const authUser = await window.SupabaseAuth.requireAuth();
-        if (!authUser) return; // Oturum yoksa login'e yönlendirildi, sayfa yüklemesini durdur
-      }
+      const authPromise = (window.SupabaseAuth && typeof window.SupabaseAuth.requireAuth === 'function')
+        ? window.SupabaseAuth.requireAuth().catch(e => { console.warn('Auth check warning:', e); return null; })
+        : Promise.resolve(true);
+
       await srdInitPromise;
+
+      // 2. Load local character data immediately (0ms network wait; cloud revalidation runs in background)
       try {
         await loadInitialData();
       } catch (err) {
@@ -329,19 +292,25 @@
       } catch (err) {
         console.error('initSkillFilters failed:', err);
       }
+
+      // 3. Single-Pass Render: Restore active tab first so only HUD + visible tab render on Frame 1
       try {
         renderAll();
       } catch (e) {
         console.error('Initial renderAll error:', e);
+      }
+      try { restoreActiveTabAndScroll(); } catch (e) {}
+
+      // 4. Verify Auth & Non-Blocking Background Services
+      if (window.SupabaseAuth) {
+        const authUser = await authPromise;
+        if (!authUser) return;
       }
       try { verifySettingsGeminiApiKey(false); } catch (e) {}
       try { await CloudSync.init(); } catch (e) {}
       if (window.CloudSync && typeof window.CloudSync.startLiveSyncPolling === 'function') {
         window.CloudSync.startLiveSyncPolling(8000);
       }
-      try { initDiceColor(); } catch (e) {}
-      try { renderCustomTemplates(); } catch (e) {}
-      try { restoreActiveTabAndScroll(); } catch (e) {}
       try { initCharacterRealtimeSync(); } catch (e) {}
       try { initTabVisibilitySync(); } catch (e) {}
     });
@@ -561,178 +530,184 @@
       };
     }
 
-    async function loadInitialData() {
-      // Check if a specific character was requested from Hub via URL query or active ID
-      let loadedFromHub = false;
-      const urlParams = new URLSearchParams(window.location.search);
-      const reqId = urlParams.get('id') || localStorage.getItem('dnd35_active_character_id');
+    async function revalidateCharacterFromCloudInBackground(reqId) {
+      if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode()) return false;
+      try {
+        const cloudChars = await window.SupabaseAuth.fetchUserCharacters();
+        if (!Array.isArray(cloudChars) || cloudChars.length === 0) return false;
 
-      // 0. Cloud-First Senkronizasyon (Supabase oturumu aktifse buluttaki en taze veriyi kontrol et)
-      if (window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+        let matchedCloud = null;
+        if (reqId) {
+          matchedCloud = cloudChars.find(c => c.id === reqId);
+        }
+        if (!matchedCloud) {
+          const activeId = localStorage.getItem('dnd35_active_character_id');
+          if (activeId) {
+            matchedCloud = cloudChars.find(c => c.id === activeId);
+          }
+        }
+        if (!matchedCloud) {
+          matchedCloud = cloudChars.find(c => !c.is_npc) || cloudChars[0];
+        }
+        if (!matchedCloud || !matchedCloud.full_data) return false;
+
+        const cloudFd = matchedCloud.full_data;
+        cloudFd.id = matchedCloud.id;
+        cloudFd._hubId = matchedCloud.id;
+
+        const localSaved = character || (() => {
+          try {
+            const raw = localStorage.getItem('dnd35_character');
+            return raw ? JSON.parse(raw) : null;
+          } catch (e) { return null; }
+        })();
+
+        const cloudLvl = Number(cloudFd.level) || (Array.isArray(cloudFd.progression) ? cloudFd.progression.length : 0);
+        const localLvl = localSaved ? (Number(localSaved.level) || (Array.isArray(localSaved.progression) ? localSaved.progression.length : 0)) : 0;
+        const cloudTs = new Date(matchedCloud.updated_at || 0).getTime();
+        const localTs = localSaved?.lastModified ? new Date(localSaved.lastModified).getTime() : 0;
+
+        const isLocalEmpty = !localSaved ||
+                             (!localSaved.classes && !localSaved.class && localLvl <= 1 && (!localSaved.feats || localSaved.feats.length === 0) && (!localSaved.smartNotes || localSaved.smartNotes.length === 0));
+
+        // Only overwrite active local character if local is empty, different ID, or cloud is strictly newer
+        const shouldAdoptCloud = isLocalEmpty ||
+                                 (localSaved.id !== matchedCloud.id && localSaved._hubId !== matchedCloud.id) ||
+                                 cloudLvl > localLvl ||
+                                 (cloudLvl === localLvl && cloudTs > localTs + 500);
+
+        if (!shouldAdoptCloud) return false;
+
         try {
-          const cloudChars = await window.SupabaseAuth.fetchUserCharacters();
-          if (Array.isArray(cloudChars) && cloudChars.length > 0) {
-            let matchedCloud = null;
-            if (reqId) {
-              matchedCloud = cloudChars.find(c => c.id === reqId);
-            }
-            if (!matchedCloud) {
-              const activeId = localStorage.getItem('dnd35_active_character_id');
-              if (activeId) {
-                matchedCloud = cloudChars.find(c => c.id === activeId);
+          const hubRawPre = localStorage.getItem('dnd35_hub_db');
+          const hubDbPre = hubRawPre ? JSON.parse(hubRawPre) : null;
+          const hubCharPre = (hubDbPre?.characters || []).find(c => c.id === matchedCloud.id);
+          const hubNotes = hubCharPre?.smartNotes || hubCharPre?.notesList || hubCharPre?.fullData?.smartNotes || [];
+          const localNotes = (localSaved && (localSaved.id === matchedCloud.id || localSaved._hubId === matchedCloud.id)) ? (localSaved.smartNotes || localSaved.notesList || []) : [];
+          const cloudNotes = cloudFd.smartNotes || cloudFd.notesList || [];
+          const hubNTs = Number(hubCharPre?._notesUpdatedAt || hubCharPre?.fullData?._notesUpdatedAt || 0);
+          const localNTs = Number(localSaved?._notesUpdatedAt || 0);
+          const cloudNTs = Number(cloudFd._notesUpdatedAt || 0);
+          let bestNotes = cloudNotes;
+          let bestNTs = cloudNTs;
+          if (hubNTs > bestNTs || (hubNotes.length > bestNotes.length && hubNTs >= bestNTs)) {
+            bestNotes = hubNotes;
+            bestNTs = hubNTs;
+          }
+          if (localNTs > bestNTs || (localNotes.length > bestNotes.length && localNTs >= bestNTs)) {
+            bestNotes = localNotes;
+            bestNTs = localNTs;
+          }
+          if (Array.isArray(bestNotes) && bestNotes.length > 0) {
+            cloudFd.smartNotes = bestNotes;
+            cloudFd.notesList = bestNotes;
+            if (bestNTs > 0) cloudFd._notesUpdatedAt = bestNTs;
+          }
+          if (hubDbPre && Array.isArray(hubDbPre.characters)) {
+            const hIdx = hubDbPre.characters.findIndex(c => c.id === matchedCloud.id);
+            if (hIdx >= 0) {
+              hubDbPre.characters[hIdx].fullData = cloudFd;
+              if (Array.isArray(cloudFd.smartNotes)) {
+                hubDbPre.characters[hIdx].smartNotes = cloudFd.smartNotes;
+                hubDbPre.characters[hIdx].notesList = cloudFd.smartNotes;
+                if (cloudFd._notesUpdatedAt) hubDbPre.characters[hIdx]._notesUpdatedAt = cloudFd._notesUpdatedAt;
               }
-            }
-            if (!matchedCloud) {
-              matchedCloud = cloudChars.find(c => !c.is_npc) || cloudChars[0];
-            }
-
-            if (matchedCloud && matchedCloud.full_data) {
-              const cloudFd = matchedCloud.full_data;
-              cloudFd.id = matchedCloud.id;
-              cloudFd._hubId = matchedCloud.id;
-
-              const localSavedRaw = localStorage.getItem('dnd35_character');
-              let localSaved = null;
-              if (localSavedRaw) {
-                try { localSaved = JSON.parse(localSavedRaw); } catch (e) {}
-              }
-
-              const cloudLvl = Number(cloudFd.level) || (Array.isArray(cloudFd.progression) ? cloudFd.progression.length : 0);
-              const localLvl = localSaved ? (Number(localSaved.level) || (Array.isArray(localSaved.progression) ? localSaved.progression.length : 0)) : 0;
-              const cloudTs = new Date(matchedCloud.updated_at || 0).getTime();
-              const localTs = localSaved?.lastModified ? new Date(localSaved.lastModified).getTime() : 0;
-
-              const isLocalEmpty = !localSaved ||
-                                   (!localSaved.classes && !localSaved.class && localLvl <= 1 && (!localSaved.feats || localSaved.feats.length === 0) && (!localSaved.smartNotes || localSaved.smartNotes.length === 0));
-
-              const shouldAdoptCloud = isLocalEmpty ||
-                                       (localSaved.id !== matchedCloud.id && localSaved._hubId !== matchedCloud.id) ||
-                                       cloudLvl > localLvl ||
-                                       (cloudLvl === localLvl && cloudTs >= localTs);
-
-              if (shouldAdoptCloud) {
-                // Preserve any newer notes from localSaved or dnd35_hub_db before adopting cloudFd
-                try {
-                  const hubRawPre = localStorage.getItem('dnd35_hub_db');
-                  const hubDbPre = hubRawPre ? JSON.parse(hubRawPre) : null;
-                  const hubCharPre = (hubDbPre?.characters || []).find(c => c.id === matchedCloud.id);
-                  const hubNotes = hubCharPre?.smartNotes || hubCharPre?.notesList || hubCharPre?.fullData?.smartNotes || [];
-                  const localNotes = (localSaved && (localSaved.id === matchedCloud.id || localSaved._hubId === matchedCloud.id)) ? (localSaved.smartNotes || localSaved.notesList || []) : [];
-                  const cloudNotes = cloudFd.smartNotes || cloudFd.notesList || [];
-                  const hubNTs = Number(hubCharPre?._notesUpdatedAt || hubCharPre?.fullData?._notesUpdatedAt || 0);
-                  const localNTs = Number(localSaved?._notesUpdatedAt || 0);
-                  const cloudNTs = Number(cloudFd._notesUpdatedAt || 0);
-                  let bestNotes = cloudNotes;
-                  let bestNTs = cloudNTs;
-                  if (hubNTs > bestNTs || (hubNotes.length > bestNotes.length && hubNTs >= bestNTs)) {
-                    bestNotes = hubNotes;
-                    bestNTs = hubNTs;
-                  }
-                  if (localNTs > bestNTs || (localNotes.length > bestNotes.length && localNTs >= bestNTs)) {
-                    bestNotes = localNotes;
-                    bestNTs = localNTs;
-                  }
-                  if (Array.isArray(bestNotes) && bestNotes.length > 0) {
-                    cloudFd.smartNotes = bestNotes;
-                    cloudFd.notesList = bestNotes;
-                    if (bestNTs > 0) cloudFd._notesUpdatedAt = bestNTs;
-                  }
-                } catch (nErr) {}
-
-                character = cloudFd;
-                localStorage.setItem('dnd35_character', JSON.stringify(character));
-                localStorage.setItem('dnd35_active_character_id', character.id);
-                loadedFromHub = true;
-
-                // Hub yerel DB'sini de bu taze bulut verisiyle senkronize et
-                try {
-                  const hubRaw = localStorage.getItem('dnd35_hub_db');
-                  if (hubRaw) {
-                    const hubDb = JSON.parse(hubRaw);
-                    if (Array.isArray(hubDb.characters)) {
-                      let hIdx = hubDb.characters.findIndex(c => c.id === matchedCloud.id);
-                      if (hIdx >= 0) {
-                        hubDb.characters[hIdx].fullData = cloudFd;
-                        if (Array.isArray(cloudFd.smartNotes)) {
-                          hubDb.characters[hIdx].smartNotes = cloudFd.smartNotes;
-                          hubDb.characters[hIdx].notesList = cloudFd.smartNotes;
-                          if (cloudFd._notesUpdatedAt) hubDb.characters[hIdx]._notesUpdatedAt = cloudFd._notesUpdatedAt;
-                        }
-                        hubDb.characters[hIdx].name = matchedCloud.name || cloudFd.name || hubDb.characters[hIdx].name;
-                        hubDb.characters[hIdx].classes = cloudFd.classes || hubDb.characters[hIdx].classes;
-                        hubDb.characters[hIdx].level = Number(cloudFd.level) || hubDb.characters[hIdx].level;
-                        hubDb.characters[hIdx].maxHp = cloudFd.hp?.max || hubDb.characters[hIdx].maxHp;
-                        hubDb.characters[hIdx].currentHp = matchedCloud.current_hp !== undefined ? matchedCloud.current_hp : (cloudFd.hp?.current ?? hubDb.characters[hIdx].currentHp);
-                        hubDb.characters[hIdx].tempHp = matchedCloud.temp_hp || 0;
-                        localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDb));
-                      }
-                    }
-                  }
-                } catch (hErr) {}
-              }
+              hubDbPre.characters[hIdx].name = matchedCloud.name || cloudFd.name || hubDbPre.characters[hIdx].name;
+              hubDbPre.characters[hIdx].classes = cloudFd.classes || hubDbPre.characters[hIdx].classes;
+              hubDbPre.characters[hIdx].level = Number(cloudFd.level) || hubDbPre.characters[hIdx].level;
+              hubDbPre.characters[hIdx].maxHp = cloudFd.hp?.max || hubDbPre.characters[hIdx].maxHp;
+              hubDbPre.characters[hIdx].currentHp = matchedCloud.current_hp !== undefined ? matchedCloud.current_hp : (cloudFd.hp?.current ?? hubDbPre.characters[hIdx].currentHp);
+              hubDbPre.characters[hIdx].tempHp = matchedCloud.temp_hp || 0;
+              localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDbPre));
             }
           }
-        } catch (cloudErr) {
-          console.warn('loadInitialData cloud fetch notice:', cloudErr);
-        }
+        } catch (nErr) {}
+
+        character = cloudFd;
+        if (!Array.isArray(character.customDb)) character.customDb = [];
+        masterDb = character.customDb;
+        localStorage.setItem('dnd35_character', JSON.stringify(character));
+        localStorage.setItem('dnd35_active_character_id', character.id);
+        renderAll();
+        return true;
+      } catch (cloudErr) {
+        console.warn('Background cloud revalidation notice:', cloudErr);
+        return false;
+      }
+    }
+
+    async function loadInitialData() {
+      // Single-pass Local-First Hydration: read dnd35_hub_db and dnd35_character at most once
+      let loadedFromHub = false;
+      const urlParams = new URLSearchParams(window.location.search);
+      const queryId = urlParams.get('id');
+      const reqId = queryId || localStorage.getItem('dnd35_active_character_id');
+
+      let hubDb = null;
+      try {
+        const hubRaw = localStorage.getItem('dnd35_hub_db');
+        if (hubRaw) hubDb = JSON.parse(hubRaw);
+      } catch (e) {
+        console.warn('Hub DB parse notice:', e);
       }
 
+      let parsedSaved = null;
       try {
-        if (!loadedFromHub && reqId) {
-          const hubRaw = localStorage.getItem('dnd35_hub_db');
-          if (hubRaw) {
-            const hubDb = JSON.parse(hubRaw);
-            const found = (hubDb.characters || []).find(c => c.id === reqId);
-            if (found) {
-              if (found.fullData) {
-                character = found.fullData;
-                character._hubId = reqId;
-                if (found.name && character.name !== found.name) {
-                  character.name = found.name;
-                }
-                if (found.isNpc !== undefined && character.isNpc === undefined) {
-                  character.isNpc = found.isNpc;
-                }
-                if (found.cr && !character.cr) character.cr = found.cr;
-                // Preserve feats, specialAbilities, spells if passed at top level
-                if (!Array.isArray(character.feats) || character.feats.length === 0) {
-                  if (Array.isArray(found.feats)) character.feats = found.feats;
-                }
-                if (!Array.isArray(character.specialAbilities) || character.specialAbilities.length === 0) {
-                  if (Array.isArray(found.specialAbilities)) character.specialAbilities = found.specialAbilities;
-                }
-                if (!Array.isArray(character.spells) || character.spells.length === 0) {
-                  if (Array.isArray(found.spells)) character.spells = found.spells;
-                  else if (Array.isArray(character.spellcasting?.knownSpells)) character.spells = character.spellcasting.knownSpells;
-                }
-                if (found.spellcasting && (!character.spellcasting || !character.spellcasting.cl)) {
-                  character.spellcasting = Object.assign({}, found.spellcasting, character.spellcasting || {});
-                }
-                if (character.spellcasting && (!character.spellcasting.knownSpells || character.spellcasting.knownSpells.length === 0)) {
-                  if (Array.isArray(character.spells) && character.spells.length > 0) {
-                    character.spellcasting.knownSpells = character.spells;
-                  }
-                }
-                // Sync HP from found summary card if found.currentHp is defined
-                if (found.currentHp !== undefined) {
-                  if (!character.hp) character.hp = {};
-                  const hubHpTs = Number(found.lastHpUpdateTs) || 0;
-                  const playerHpTs = Number(character.hp._lastPlayerChangeTs) || 0;
-                  if (hubHpTs >= playerHpTs) {
-                    character.hp.current = found.currentHp;
-                    character.hp.max = found.maxHp || character.hp.max || 10;
-                    character.hp.temp = found.tempHp || 0;
-                    character.hp._lastDmUpdateTs = hubHpTs;
-                  }
-                }
-                loadedFromHub = true;
-              } else {
-                character = createCleanDnd35Character(found);
-                character._hubId = reqId;
-                found.fullData = character;
-                localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDb));
-                loadedFromHub = true;
+        const savedChar = localStorage.getItem('dnd35_character');
+        if (savedChar) parsedSaved = JSON.parse(savedChar);
+      } catch (e) {}
+
+      // 1. Fast Local Hydration from Hub DB or dnd35_character (<2ms, zero network wait)
+      try {
+        if (reqId && hubDb && Array.isArray(hubDb.characters)) {
+          const found = hubDb.characters.find(c => c.id === reqId);
+          if (found) {
+            if (found.fullData) {
+              character = found.fullData;
+              character._hubId = reqId;
+              if (found.name && character.name !== found.name) {
+                character.name = found.name;
               }
+              if (found.isNpc !== undefined && character.isNpc === undefined) {
+                character.isNpc = found.isNpc;
+              }
+              if (found.cr && !character.cr) character.cr = found.cr;
+              if (!Array.isArray(character.feats) || character.feats.length === 0) {
+                if (Array.isArray(found.feats)) character.feats = found.feats;
+              }
+              if (!Array.isArray(character.specialAbilities) || character.specialAbilities.length === 0) {
+                if (Array.isArray(found.specialAbilities)) character.specialAbilities = found.specialAbilities;
+              }
+              if (!Array.isArray(character.spells) || character.spells.length === 0) {
+                if (Array.isArray(found.spells)) character.spells = found.spells;
+                else if (Array.isArray(character.spellcasting?.knownSpells)) character.spells = character.spellcasting.knownSpells;
+              }
+              if (found.spellcasting && (!character.spellcasting || !character.spellcasting.cl)) {
+                character.spellcasting = Object.assign({}, found.spellcasting, character.spellcasting || {});
+              }
+              if (character.spellcasting && (!character.spellcasting.knownSpells || character.spellcasting.knownSpells.length === 0)) {
+                if (Array.isArray(character.spells) && character.spells.length > 0) {
+                  character.spellcasting.knownSpells = character.spells;
+                }
+              }
+              if (found.currentHp !== undefined) {
+                if (!character.hp) character.hp = {};
+                const hubHpTs = Number(found.lastHpUpdateTs) || 0;
+                const playerHpTs = Number(character.hp._lastPlayerChangeTs) || 0;
+                if (hubHpTs >= playerHpTs) {
+                  character.hp.current = found.currentHp;
+                  character.hp.max = found.maxHp || character.hp.max || 10;
+                  character.hp.temp = found.tempHp || 0;
+                  character.hp._lastDmUpdateTs = hubHpTs;
+                }
+              }
+              loadedFromHub = true;
+            } else {
+              character = createCleanDnd35Character(found);
+              character._hubId = reqId;
+              found.fullData = character;
+              localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDb));
+              loadedFromHub = true;
             }
           }
         }
@@ -740,17 +715,8 @@
         console.warn('Hub character load notice:', err);
       }
 
-      // 1. Try LocalStorage only if not loaded from hub and no specific foreign ID was requested
       if (!loadedFromHub) {
-        const queryId = urlParams.get('id');
-        const savedChar = localStorage.getItem('dnd35_character');
-        let parsedSaved = null;
-        if (savedChar) {
-          try { parsedSaved = JSON.parse(savedChar); } catch (e) {}
-        }
-
         if (queryId && parsedSaved && parsedSaved.id !== queryId && parsedSaved._hubId !== queryId) {
-          // Guard clause: URL requested an ID that does NOT match savedChar, generate clean character
           character = createCleanDnd35Character({ id: queryId, name: 'New Character' });
           character._hubId = queryId;
         } else if (parsedSaved) {
@@ -758,29 +724,32 @@
         }
       }
 
-      // Reconcile HP with Hub DB if available
+      // If local storage was completely empty, await cloud once; otherwise revalidate non-blocking in background
+      if (!character && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+        await revalidateCharacterFromCloudInBackground(reqId);
+      } else if (window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+        setTimeout(() => { revalidateCharacterFromCloudInBackground(reqId); }, 150);
+      }
+
+      // Reconcile HP with already-parsed Hub DB if available
       try {
-        const hubRaw = localStorage.getItem('dnd35_hub_db');
-        if (hubRaw && character) {
-          const hubDb = JSON.parse(hubRaw);
-          if (Array.isArray(hubDb.characters)) {
-            const myHubId = character._hubId || character.id;
-            const myName = (character.name || '').trim().toLowerCase();
-            const hubMatch = hubDb.characters.find(c => (myHubId && c.id === myHubId) || (myName && (c.name || '').trim().toLowerCase() === myName));
-            if (hubMatch) {
-              if (!character._hubId && hubMatch.id) character._hubId = hubMatch.id;
-              const hubHpTs = Number(hubMatch.lastHpUpdateTs) || 0;
-              const playerHpTs = Number(character.hp?._lastPlayerChangeTs) || 0;
-              if (hubHpTs >= playerHpTs && hubMatch.currentHp !== undefined) {
-                if (!character.hp) character.hp = {};
-                character.hp.current = hubMatch.currentHp;
-                character.hp.max = hubMatch.maxHp || character.hp.max || 10;
-                character.hp.temp = hubMatch.tempHp || 0;
-                character.hp._lastDmUpdateTs = hubHpTs;
-              }
-              if (window.HubNotes && typeof window.HubNotes.getActiveNotesTarget === 'function') {
-                window.HubNotes.getActiveNotesTarget();
-              }
+        if (hubDb && Array.isArray(hubDb.characters) && character) {
+          const myHubId = character._hubId || character.id;
+          const myName = (character.name || '').trim().toLowerCase();
+          const hubMatch = hubDb.characters.find(c => (myHubId && c.id === myHubId) || (myName && (c.name || '').trim().toLowerCase() === myName));
+          if (hubMatch) {
+            if (!character._hubId && hubMatch.id) character._hubId = hubMatch.id;
+            const hubHpTs = Number(hubMatch.lastHpUpdateTs) || 0;
+            const playerHpTs = Number(character.hp?._lastPlayerChangeTs) || 0;
+            if (hubHpTs >= playerHpTs && hubMatch.currentHp !== undefined) {
+              if (!character.hp) character.hp = {};
+              character.hp.current = hubMatch.currentHp;
+              character.hp.max = hubMatch.maxHp || character.hp.max || 10;
+              character.hp.temp = hubMatch.tempHp || 0;
+              character.hp._lastDmUpdateTs = hubHpTs;
+            }
+            if (window.HubNotes && typeof window.HubNotes.getActiveNotesTarget === 'function') {
+              window.HubNotes.getActiveNotesTarget();
             }
           }
         }
@@ -788,10 +757,18 @@
         console.warn('HP reconciliation warning:', reconErr);
       }
 
-      // Fetch bundled character_data.json for fallback or missing schema keys
+      // Fetch character_data.json ONLY when character is missing or legacy Kazmil is missing core fields
       try {
         let defaultChar = window.BUNDLED_CHARACTER_DATA || null;
-        if (!defaultChar) {
+        const mightBeKazmil = character && !character.isNpc && (character.name === "Kazmil'in Çırağı" || (!character._hubId && !queryId));
+        const kazmilNeedsPatch = mightBeKazmil && (
+          !character.bodySlots || Object.keys(character.bodySlots).length === 0 ||
+          !character.gearPool || character.gearPool.length === 0 ||
+          !character.levelProgression || character.levelProgression.length === 0 ||
+          !character.hitDie ||
+          !character.tomeOfBattle || !Array.isArray(character.tomeOfBattle.readiedManeuvers) || character.tomeOfBattle.readiedManeuvers.length === 0
+        );
+        if (!defaultChar && (!character || kazmilNeedsPatch)) {
           try {
             const res = await fetch('character_data.json');
             if (res.ok) defaultChar = await res.json();
@@ -804,13 +781,13 @@
             character = JSON.parse(JSON.stringify(defaultChar));
             character.id = character._hubId || 'char_active_player';
             character._hubId = character.id;
-            saveStateToStorage(false);
+            saveStateToStorage(false, true);
           }
-        } else if (defaultChar) {
+        } else {
           let updated = false;
-          const isKazmil = !character.isNpc && (character.name === defaultChar.name || character.name === "Kazmil'in Çırağı" || (!character._hubId && !urlParams.get('id')));
+          const isKazmil = !character.isNpc && ((defaultChar && character.name === defaultChar.name) || character.name === "Kazmil'in Çırağı" || (!character._hubId && !queryId));
 
-          if (isKazmil) {
+          if (isKazmil && defaultChar) {
             if (!character.bodySlots || Object.keys(character.bodySlots).length === 0) {
               character.bodySlots = defaultChar.bodySlots;
               updated = true;
@@ -827,7 +804,6 @@
               character.hitDie = defaultChar.hitDie;
               updated = true;
             }
-            // Fix legacy unadjusted progression hpGain (sum 23 for level 6) that caused HP misalignment
             const prog = character.levelProgression || [];
             if (prog.length >= 6) {
               const sumFirst6 = prog.slice(0, 6).reduce((acc, p) => acc + (Number(p.hpGain) || 0), 0);
@@ -877,11 +853,9 @@
           }
           if (typeof ensureAllSkills === 'function') {
             ensureAllSkills(character);
-            updated = true;
           }
           if (typeof normalizeCharacterSpellcasting === 'function') {
             normalizeCharacterSpellcasting(character);
-            updated = true;
           }
           if (!character.combatPins || (!character.combatPins.offense_melee && !character.combatPins.offense)) {
             character.combatPins = (defaultChar && defaultChar.combatPins && isKazmil) ? JSON.parse(JSON.stringify(defaultChar.combatPins)) : { offense_melee: [], offense_ranged: [], offense_spell: [], spell_control: [], spell_support: [], defense: [] };
@@ -913,7 +887,7 @@
           if (updated) saveStateToStorage(false);
         }
       } catch (e) {
-        console.error('Error fetching character_data.json:', e);
+        console.error('Error hydrating character defaults:', e);
       }
 
       // 2. Load Character-Scoped Custom DB (character.customDb <-> masterDb)
@@ -992,29 +966,23 @@
       if (character?.cloudCampaignId && typeof initCampaignRealtimeListener === 'function') {
         initCampaignRealtimeListener(character.cloudCampaignId);
       }
-
-      // Google ile oturum açılmışsa karakteri otomatik olarak Supabase bulutuna yedekle (Upsert)
-      if (character && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
-        window.SupabaseAuth.upsertUserCharacter(character).then(res => {
-          if (res) console.log('Karakter Supabase bulutuna otomatik yedeklendi:', character.name);
-        }).catch(e => {
-          console.warn('Karakter buluta otomatik yedeklenirken hata:', e);
-        });
-      }
     }
 
-    function saveStateToStorage(triggerCloudSync = true) {
-      if (!character) return;
-      if (Array.isArray(masterDb)) {
-        character.customDb = masterDb;
-      } else if (!Array.isArray(character.customDb)) {
-        character.customDb = [];
-        masterDb = character.customDb;
-      } else {
-        masterDb = character.customDb;
+    let _storageSaveTimer = null;
+    let _cloudSaveTimer = null;
+    let _pendingCloudSync = false;
+
+    function _commitLocalStorageSave() {
+      if (_storageSaveTimer) {
+        clearTimeout(_storageSaveTimer);
+        _storageSaveTimer = null;
       }
-      character.lastModified = new Date().toISOString();
-      localStorage.setItem('dnd35_character', JSON.stringify(character));
+      if (!character) return;
+      try {
+        localStorage.setItem('dnd35_character', JSON.stringify(character));
+      } catch (e) {
+        console.warn('dnd35_character save warning:', e);
+      }
 
       // Sync character changes back to Hub Database (dnd35_hub_db)
       try {
@@ -1031,7 +999,6 @@
               idx = hubDb.characters.findIndex(c => (c.name || '').trim().toLowerCase() === charName);
             }
             if (idx >= 0) {
-              // Guard clause: ensure we are not overwriting a different character
               if (character._hubId && hubDb.characters[idx].id && character._hubId !== hubDb.characters[idx].id) {
                 console.warn(`saveStateToStorage guard: character._hubId (${character._hubId}) !== summary.id (${hubDb.characters[idx].id}). Aborting hub overwrite.`);
                 return;
@@ -1040,13 +1007,11 @@
               const hubHpTs = Number(hubChar.lastHpUpdateTs) || 0;
               const playerHpTs = Number(character.hp?._lastPlayerChangeTs) || 0;
 
-              // Only update Hub's HP if the player explicitly changed it more recently than DM
               if (playerHpTs > hubHpTs) {
                 hubChar.currentHp = character.hp?.current ?? hubChar.currentHp;
                 hubChar.tempHp = character.hp?.temp ?? 0;
                 hubChar.lastHpUpdateTs = playerHpTs;
               } else if (hubHpTs > 0 && hubChar.currentHp !== undefined) {
-                // DM HP is authoritative: adopt Hub HP onto character
                 character.hp.current = hubChar.currentHp;
                 character.hp.temp = hubChar.tempHp || 0;
                 character.hp._lastDmUpdateTs = hubHpTs;
@@ -1094,18 +1059,24 @@
       } catch (hubErr) {
         console.warn('Hub auto-sync warning:', hubErr);
       }
+    }
 
-      if (triggerCloudSync && window.GDriveSync) {
+    function _commitCloudSave() {
+      if (_cloudSaveTimer) {
+        clearTimeout(_cloudSaveTimer);
+        _cloudSaveTimer = null;
+      }
+      if (!_pendingCloudSync || !character) return;
+      _pendingCloudSync = false;
+
+      if (window.GDriveSync) {
         window.GDriveSync.scheduleAutoSave();
       }
-
-      // Multi-User Cloud Karakter Senkronizasyonu (Kampanyaya bağlı olsun veya olmasın)
-      if (character && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
+      if (window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
         if (!character.id) {
           character.id = character._hubId || 'char_active_player';
           character._hubId = character.id;
         }
-        // Boş / henüz başlatılmamış nesnelerin buluttaki dolu karakteri ezmesini önle
         const curLvl = Number(character.level) || (Array.isArray(character.progression) ? character.progression.length : 0);
         const hasNotes = Array.isArray(character.smartNotes) && character.smartNotes.length > 0;
         if (curLvl === 0 && !character.classes && !character.race && !character.name && !hasNotes && (!character.feats || character.feats.length === 0)) {
@@ -1114,6 +1085,51 @@
           window.SupabaseAuth.upsertUserCharacter(character).catch(err => {
             console.warn('upsertUserCharacter background notice:', err);
           });
+        }
+      }
+    }
+
+    function flushPendingStorageSave() {
+      if (_storageSaveTimer) {
+        _commitLocalStorageSave();
+      }
+      if (_cloudSaveTimer || _pendingCloudSync) {
+        _commitCloudSave();
+      }
+    }
+    window.flushPendingStorageSave = flushPendingStorageSave;
+    window.addEventListener('beforeunload', flushPendingStorageSave);
+    window.addEventListener('pagehide', flushPendingStorageSave);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') flushPendingStorageSave();
+    });
+
+    function saveStateToStorage(triggerCloudSync = true, immediate = false) {
+      if (!character) return;
+      if (Array.isArray(masterDb)) {
+        character.customDb = masterDb;
+      } else if (!Array.isArray(character.customDb)) {
+        character.customDb = [];
+        masterDb = character.customDb;
+      } else {
+        masterDb = character.customDb;
+      }
+      character.lastModified = new Date().toISOString();
+
+      if (immediate) {
+        _commitLocalStorageSave();
+      } else {
+        if (_storageSaveTimer) clearTimeout(_storageSaveTimer);
+        _storageSaveTimer = setTimeout(_commitLocalStorageSave, 180);
+      }
+
+      if (triggerCloudSync) {
+        _pendingCloudSync = true;
+        if (immediate) {
+          _commitCloudSave();
+        } else {
+          if (_cloudSaveTimer) clearTimeout(_cloudSaveTimer);
+          _cloudSaveTimer = setTimeout(_commitCloudSave, 1000);
         }
       }
     }
@@ -1814,6 +1830,73 @@
     window.addEventListener('beforeunload', persistScrollPosition);
     window.addEventListener('pagehide', persistScrollPosition);
 
+    const ALL_SHEET_TABS = ['tab-combat', 'tab-spells', 'tab-skills', 'tab-defense', 'tab-inventory', 'tab-database', 'tab-dice'];
+    const _dirtyTabs = new Set(ALL_SHEET_TABS);
+
+    function renderTabIfNeeded(tabId, force = false) {
+      if (!tabId) tabId = 'tab-combat';
+      if (!force && !_dirtyTabs.has(tabId)) return;
+      _dirtyTabs.delete(tabId);
+
+      switch (tabId) {
+        case 'tab-combat':
+          try { renderWeapons(); } catch (e) { console.error('renderWeapons error:', e); }
+          try { renderActiveModifiers(); } catch (e) { console.error('renderActiveModifiers error:', e); }
+          try { renderActiveBuffs(); } catch (e) { console.error('renderActiveBuffs error:', e); }
+          try { renderSpecialDefenses(); } catch (e) { console.error('renderSpecialDefenses error:', e); }
+          try { renderCombatCockpit(); } catch (e) { console.error('renderCombatCockpit error:', e); }
+          break;
+        case 'tab-spells':
+          try {
+            if (typeof getMagicDisciplineClassLevels === 'function' && typeof autoSelectMagicDisciplineTab === 'function') {
+              const progLevels = getMagicDisciplineClassLevels(character);
+              const magicSig = `${character.id || character.name || ''}|${character.settings?.clMode || ''}|${character.settings?.casterType || ''}|${character.settings?.casterTypeExplicit ? 1 : 0}|${progLevels.spontaneous || 0},${progLevels.prepared || 0},${progLevels.divine || 0},${progLevels.martial || 0}`;
+              if (window._lastMagicDisciplineSig !== magicSig) {
+                window._lastMagicDisciplineSig = magicSig;
+                window._userManualMagicDiscipline = null;
+                if (character) delete character._preferredMagicDiscipline;
+                autoSelectMagicDisciplineTab(character, true);
+              } else {
+                autoSelectMagicDisciplineTab(character);
+              }
+            }
+          } catch (e) { console.error('autoSelectMagicDisciplineTab error:', e); }
+          try { renderSpellSlots(); } catch (e) { console.error('renderSpellSlots error:', e); }
+          try { renderManeuvers(); } catch (e) { console.error('renderManeuvers error:', e); }
+          try { renderKnownSpells(); } catch (e) { console.error('renderKnownSpells error:', e); }
+          break;
+        case 'tab-skills':
+          try { renderSkills(); } catch (e) { console.error('renderSkills error:', e); }
+          try { renderCoreFeatsAndSpecialAbilities(); } catch (e) { console.error('renderCoreFeatsAndSpecialAbilities error:', e); }
+          try { renderLevelProgression(); } catch (e) { console.error('renderLevelProgression error:', e); }
+          break;
+        case 'tab-defense':
+          try { renderSpecialDefenses(); } catch (e) { console.error('renderSpecialDefenses error:', e); }
+          try { renderDefenseBreakdown(); } catch (e) { console.error('renderDefenseBreakdown error:', e); }
+          try { renderActiveBuffs(); } catch (e) { console.error('renderActiveBuffs error:', e); }
+          break;
+        case 'tab-inventory':
+          try { renderInventory(); } catch (e) { console.error('renderInventory error:', e); }
+          try { renderConsumables(); } catch (e) { console.error('renderConsumables error:', e); }
+          break;
+        case 'tab-database':
+          if (typeof renderMasterDbTable === 'function') {
+            try { renderMasterDbTable(); } catch (e) { console.error('renderMasterDbTable error:', e); }
+          }
+          if (window.RuleMaster) {
+            try { RuleMaster.init(); } catch (e) { console.error('RuleMaster.init error:', e); }
+          }
+          break;
+        case 'tab-dice':
+          try { renderDiceHistory(); } catch (e) { console.error('renderDiceHistory error:', e); }
+          try { if (typeof updateDicePoolDisplay === 'function') updateDicePoolDisplay(); } catch (e) {}
+          try { if (typeof initDiceColor === 'function') initDiceColor(); } catch (e) {}
+          try { if (typeof renderCustomTemplates === 'function') renderCustomTemplates(); } catch (e) {}
+          break;
+      }
+    }
+    window.renderTabIfNeeded = renderTabIfNeeded;
+
     function switchTab(tabId, isRestoration = false) {
       try {
         const prevTab = localStorage.getItem('dnd35_active_tab') || 'tab-combat';
@@ -1851,22 +1934,8 @@
         activeMobileBtn.classList.add('text-rose-500');
       }
 
-      if (tabId === 'tab-spells' && typeof autoSelectMagicDisciplineTab === 'function') {
-        autoSelectMagicDisciplineTab(character);
-      }
-      if (tabId === 'tab-database' && window.RuleMaster) {
-        RuleMaster.init();
-      }
-      if (tabId === 'tab-defense') {
-        renderDefenseBreakdown();
-        renderActiveBuffs();
-      }
-      if (tabId === 'tab-dice') {
-        renderDiceHistory();
-        updateDicePoolDisplay();
-        initDiceColor();
-        renderCustomTemplates();
-      }
+      // Render target tab immediately if marked dirty
+      renderTabIfNeeded(tabId, false);
     }
 
     function restoreActiveTabAndScroll() {
@@ -2042,7 +2111,7 @@
       }
     }
 
-    function renderAll() {
+    function renderAll(options = {}) {
       if (!character) {
         if (window.BUNDLED_CHARACTER_DATA) {
           character = JSON.parse(JSON.stringify(window.BUNDLED_CHARACTER_DATA));
@@ -2081,52 +2150,24 @@
         }
       }
 
-      // 1. Core Hero HUD & Abilities (Rendered first so top bar and stats never fail)
+      // 1. Core Hero HUD & Abilities (Always rendered immediately so top bar and stats stay live)
       try { renderHUD(); } catch (e) { console.error('renderHUD error:', e); }
       try { renderAbilities(); } catch (e) { console.error('renderAbilities error:', e); }
       try { renderCharacterProfile(); } catch (e) { console.error('renderCharacterProfile error:', e); }
 
-      // 2. Combat & Tactical Cockpit
-      try { renderWeapons(); } catch (e) { console.error('renderWeapons error:', e); }
-      try { renderActiveModifiers(); } catch (e) { console.error('renderActiveModifiers error:', e); }
-      try { renderActiveBuffs(); } catch (e) { console.error('renderActiveBuffs error:', e); }
-      try { renderCombatCockpit(); } catch (e) { console.error('renderCombatCockpit error:', e); }
+      // 2. Mark all 7 tabs dirty and render only the currently active tab (or all tabs if explicitly requested)
+      ALL_SHEET_TABS.forEach(t => _dirtyTabs.add(t));
 
-      // 3. Spells & Maneuvers
-      try {
-        if (typeof getMagicDisciplineClassLevels === 'function' && typeof autoSelectMagicDisciplineTab === 'function') {
-          const progLevels = getMagicDisciplineClassLevels(character);
-          const magicSig = `${character.id || character.name || ''}|${character.settings?.clMode || ''}|${character.settings?.casterType || ''}|${character.settings?.casterTypeExplicit ? 1 : 0}|${progLevels.spontaneous || 0},${progLevels.prepared || 0},${progLevels.divine || 0},${progLevels.martial || 0}`;
-          if (window._lastMagicDisciplineSig !== magicSig) {
-            window._lastMagicDisciplineSig = magicSig;
-            window._userManualMagicDiscipline = null;
-            if (character) delete character._preferredMagicDiscipline;
-            autoSelectMagicDisciplineTab(character, true);
-          }
-        }
-      } catch (e) { console.error('autoSelectMagicDisciplineTab error:', e); }
-      try { renderSpellSlots(); } catch (e) { console.error('renderSpellSlots error:', e); }
-      try { renderManeuvers(); } catch (e) { console.error('renderManeuvers error:', e); }
-      try { renderKnownSpells(); } catch (e) { console.error('renderKnownSpells error:', e); }
-
-      // 4. Skills, Defense, Gear & Library
-      try { renderSkills(); } catch (e) { console.error('renderSkills error:', e); }
-      try { renderCoreFeatsAndSpecialAbilities(); } catch (e) { console.error('renderCoreFeatsAndSpecialAbilities error:', e); }
-      try { renderLevelProgression(); } catch (e) { console.error('renderLevelProgression error:', e); }
-      try { renderSpecialDefenses(); } catch (e) { console.error('renderSpecialDefenses error:', e); }
-      try { renderDefenseBreakdown(); } catch (e) { console.error('renderDefenseBreakdown error:', e); }
-      try { renderInventory(); } catch (e) { console.error('renderInventory error:', e); }
-      try { renderConsumables(); } catch (e) { console.error('renderConsumables error:', e); }
-      if (typeof renderMasterDbTable === 'function') {
-        try { renderMasterDbTable(); } catch (e) { console.error('renderMasterDbTable error:', e); }
-      }
-      if (window.HubNotes) {
+      if (options && options.allTabs) {
+        ALL_SHEET_TABS.forEach(t => renderTabIfNeeded(t, true));
+      } else {
+        let activeTab = 'tab-combat';
         try {
-          if (typeof window.HubNotes.ensureModalDom === 'function') window.HubNotes.ensureModalDom();
-          if (typeof window.HubNotes.getActiveNotesTarget === 'function') window.HubNotes.getActiveNotesTarget();
-        } catch (e) { console.error('HubNotes modal init error:', e); }
+          const savedTab = localStorage.getItem('dnd35_active_tab');
+          if (savedTab && ALL_SHEET_TABS.includes(savedTab)) activeTab = savedTab;
+        } catch (e) {}
+        renderTabIfNeeded(activeTab, true);
       }
-      try { renderDiceHistory(); } catch (e) { console.error('renderDiceHistory error:', e); }
     }
 
     function renderHUD() {

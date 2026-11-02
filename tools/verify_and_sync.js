@@ -18,6 +18,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const vm = require('vm');
+const { runRuleEngineTests } = require('./test_rule_engine');
 
 const ROOT = path.resolve(__dirname, '..');
 const WEBAPP = path.join(ROOT, 'webapp');
@@ -211,12 +212,21 @@ function main() {
     }
   }
 
+  // 7. Execute D&D 3.5e RAW RuleEngine Automated Regression Suite
+  let ruleTestRes = { passed: 0, elapsedMs: 0 };
+  try {
+    ruleTestRes = runRuleEngineTests();
+  } catch (reErr) {
+    console.error(`[FAIL] ${reErr.message}`);
+    errors++;
+  }
+
   const elapsed = Date.now() - startMs;
   if (errors > 0) {
     console.error(`\n❌ VERIFICATION FAILED with ${errors} error(s) (${elapsed}ms).`);
     process.exit(1);
   } else {
-    console.log(`✅ ALL CHECKS PASSED (${CORE_FILES.length} core files synced & verified, 0 U+1F3B2, 100% JS/HTML/Event/JSON valid) in ${elapsed}ms.`);
+    console.log(`✅ ALL CHECKS PASSED (${CORE_FILES.length} core files synced & verified, ${ruleTestRes.passed}/${ruleTestRes.passed} RAW math tests passed, 0 U+1F3B2, 100% JS/HTML/Event/JSON valid) in ${elapsed}ms.`);
     console.log(`📊 Active TR/Mojibake Lines Remaining: ${totalActiveTrLines} [${trSummary.join(', ') || '0 — 100% PURE ENGLISH!'}]`);
   }
 }

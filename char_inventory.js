@@ -3828,6 +3828,24 @@
       return result;
     }
 
+    let _heroSilhouetteScriptLoading = false;
+    function ensureHeroSilhouetteLoaded() {
+      if (window.HERO_SILHOUETTE_DATA_URI || _heroSilhouetteScriptLoading) return;
+      _heroSilhouetteScriptLoading = true;
+      const s = document.createElement('script');
+      s.src = 'hero_silhouette_data.js?v=20261023_16';
+      s.async = true;
+      s.onload = () => {
+        if (window.HERO_SILHOUETTE_DATA_URI) {
+          const imgEl = document.getElementById('sil-base-img');
+          if (imgEl && (!character || !character.customSilhouetteImg)) {
+            imgEl.setAttribute('href', window.HERO_SILHOUETTE_DATA_URI);
+          }
+        }
+      };
+      document.head.appendChild(s);
+    }
+
     function getSilhouetteImageSrc(charObj) {
       if (charObj && charObj.customSilhouetteImg) {
         return charObj.customSilhouetteImg;
@@ -3836,7 +3854,10 @@
         const localImg = localStorage.getItem('dnd35_silhouette_custom_img');
         if (localImg) return localImg;
       } catch(e) {}
-      return window.HERO_SILHOUETTE_DATA_URI || 'hero_silhouette.jpg';
+      if (!window.HERO_SILHOUETTE_DATA_URI) {
+        ensureHeroSilhouetteLoaded();
+      }
+      return window.HERO_SILHOUETTE_DATA_URI || '';
     }
 
     function triggerSilhouetteUpload() {

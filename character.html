@@ -3,10 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
-  <meta name="build-version" content="2026.10.25-2225">
+  <meta name="build-version" content="2026.11.02-2322">
   <title>D&D 3.5e Tactical Cockpit & Character Hub</title>
   <script>
     if ('scrollRestoration' in history) {
@@ -42,8 +39,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
 
-  <!-- Three.js CDN for 3D Animated Physics Dice -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Three.js CDN for 3D Animated Physics Dice (deferred so it never blocks first paint) -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
   <style>
     body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #080e1e; color: #f8fafc; transition: background-color 0.3s ease; }
@@ -7596,20 +7593,19 @@
   <!-- SCRIPT LOGIC -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js?v=20261025_01"></script>
-  <script src="srd_compendium.js?v=20261030_0142"></script>
-  <script src="rule_engine.js?v=20261029_2348"></script>
+  <script src="srd_compendium.js?v=20261102_2322"></script>
+  <script src="rule_engine.js?v=20261102_2322"></script>
   <script src="rule_master.js?v=20261030_0103"></script>
   <script src="ui_shared.js?v=20261101_2318"></script>
   <script src="hub_notes.js?v=20261029_2348"></script>
   <script src="dice3d.js?v=20261025_2338"></script>
   <script src="gdrive_sync.js?v=20261023_16"></script>
-  <script src="hero_silhouette_data.js?v=20261023_16"></script>
 
-  <script src="char_hud.js?v=20261030_1645"></script>
-  <script src="char_combat.js?v=20261030_1555"></script>
-  <script src="char_spells.js?v=20261030_1925"></script>
-  <script src="char_progression.js?v=20261030_1645"></script>
-  <script src="char_inventory.js?v=20261101_2318"></script>
+  <script src="char_hud.js?v=20261102_2322"></script>
+  <script src="char_combat.js?v=20261102_2322"></script>
+  <script src="char_spells.js?v=20261102_2322"></script>
+  <script src="char_progression.js?v=20261102_2322"></script>
+  <script src="char_inventory.js?v=20261102_2322"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" onclick="hideSpellHoverTooltip()" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     

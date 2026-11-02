@@ -35,6 +35,7 @@
   const _byId = new Map();          // id -> V2 Entry
   const _byName = new Map();        // lower(name) -> V2 Entry
   const _byTypeAndName = new Map(); // lower(type) + ':' + lower(name) -> V2 Entry
+  const _byType = new Map();        // lower(type) -> Array of V2 Entries (O(1) type bucket)
   const _loadedChunks = new Set();  // chunk filenames currently in memory
   const _chunkPromises = new Map(); // in-flight chunk load promises
   let _indexData = null;            // srd_index.json payload
@@ -151,10 +152,20 @@
     for (let i = 0; i < records.length; i++) {
       const rec = records[i];
       if (!rec || !rec.id) continue;
+      const isNew = !_catalogIds.has(rec.id);
       _byId.set(rec.id, rec);
-      if (!_catalogIds.has(rec.id)) {
+      if (isNew) {
         _catalogIds.add(rec.id);
         global.BUNDLED_SRD_CORE_CATALOG.push(rec);
+        const typeBucketKey = String(rec.type || '').toLowerCase();
+        if (typeBucketKey) {
+          let bucket = _byType.get(typeBucketKey);
+          if (!bucket) {
+            bucket = [];
+            _byType.set(typeBucketKey, bucket);
+          }
+          bucket.push(rec);
+        }
       }
       const nKey = normalizeNameKey(rec.name);
       if (nKey) {
@@ -164,6 +175,9 @@
         const tKey = `${String(rec.type || '').toLowerCase()}:${nKey}`;
         _byTypeAndName.set(tKey, rec);
       }
+    }
+    if (typeof global !== 'undefined') {
+      global._srdCatalogVersion = (_catalogIds.size || 0);
     }
   }
 
@@ -200,18 +214,22 @@
 
       _initPromise = (async () => {
         try {
-          // 1. Load srd_index.json (fall back to IDB if offline)
-          try {
-            const idxRes = await fetch(`${_basePath}/srd_index.json`, { cache: 'no-cache' });
-            if (idxRes.ok) {
-              _indexData = await idxRes.json();
-              await idbSet('srd_index.json', _indexData.compendiumHash, _indexData);
-            }
-          } catch (_) {
-            const cachedIdx = await idbGet('srd_index.json');
-            if (cachedIdx && cachedIdx.data) {
-              _indexData = cachedIdx.data;
-            }
+          const chunksToLoad = options.preloadAll
+            ? [...EAGER_CHUNKS, ...LAZY_CHUNKS]
+            : EAGER_CHUNKS;
+
+          // 1. IndexedDB-First (Stale-While-Revalidate): Resolve in ~10ms without blocking on network
+          const cachedIdx = await idbGet('srd_index.json');
+          if (cachedIdx && cachedIdx.data) {
+            _indexData = cachedIdx.data;
+          } else {
+            try {
+              const idxRes = await fetch(`${_basePath}/srd_index.json`);
+              if (idxRes.ok) {
+                _indexData = await idxRes.json();
+                await idbSet('srd_index.json', _indexData.compendiumHash, _indexData);
+              }
+            } catch (_) {}
           }
 
           if (!_indexData) {
@@ -219,15 +237,10 @@
             return false;
           }
 
-          // 2. Load eager chunks in parallel (using versioned IndexedDB cache)
-          const chunksToLoad = options.preloadAll
-            ? [...EAGER_CHUNKS, ...LAZY_CHUNKS]
-            : EAGER_CHUNKS;
-
+          // 2. Load eager chunks in parallel from IndexedDB cache (falling back to network only if missing)
           await Promise.all(chunksToLoad.map((fname) => SrdCompendium.ensureChunkLoaded(fname)));
           _ready = true;
 
-          // Expose legacy compatibility catalog array reference if needed during transition
           if (typeof global.dispatchEvent === 'function') {
             global.dispatchEvent(new CustomEvent('srdCompendiumReady', {
               detail: {
@@ -237,6 +250,34 @@
               }
             }));
           }
+
+          // 3. Non-blocking background hash revalidation when booted from IndexedDB cache
+          if (cachedIdx && cachedIdx.data) {
+            setTimeout(async () => {
+              try {
+                const bgRes = await fetch(`${_basePath}/srd_index.json`, { cache: 'no-cache' });
+                if (!bgRes.ok) return;
+                const remoteIdx = await bgRes.json();
+                if (remoteIdx && remoteIdx.compendiumHash && remoteIdx.compendiumHash !== _indexData.compendiumHash) {
+                  _indexData = remoteIdx;
+                  await idbSet('srd_index.json', remoteIdx.compendiumHash, remoteIdx);
+                  _loadedChunks.clear();
+                  await Promise.all(chunksToLoad.map((fname) => SrdCompendium.ensureChunkLoaded(fname)));
+                  if (typeof global.dispatchEvent === 'function') {
+                    global.dispatchEvent(new CustomEvent('srdCompendiumReady', {
+                      detail: {
+                        totalIndexed: _indexData.totalEntries,
+                        loadedEntries: _byId.size,
+                        compendiumHash: _indexData.compendiumHash,
+                        revalidated: true
+                      }
+                    }));
+                  }
+                }
+              } catch (_) {}
+            }, 1200);
+          }
+
           return true;
         } catch (err) {
           console.error('[SrdCompendium] Initialization error:', err);
@@ -257,6 +298,14 @@
 
     getIndexData() {
       return _indexData;
+    },
+
+    /**
+     * O(1) lookup of all loaded SRD entries for a specific type ('Weapon', 'Armor', 'Shield', 'Feat', 'Spell', 'Maneuver', 'Race').
+     */
+    getByType(type) {
+      if (!type) return [];
+      return _byType.get(String(type).toLowerCase().trim()) || [];
     },
 
     /**
@@ -363,18 +412,17 @@
      * Returns all loaded entries matching an optional filter predicate or type.
      */
     getAllLoaded(typeFilter = null) {
+      if (!typeFilter) {
+        return Array.from(_byId.values());
+      }
+      const types = Array.isArray(typeFilter) ? typeFilter : [typeFilter];
       const out = [];
-      const tf = typeFilter
-        ? (Array.isArray(typeFilter)
-            ? new Set(typeFilter.map((t) => String(t).toLowerCase()))
-            : new Set([String(typeFilter).toLowerCase()]))
-        : null;
-
-      _byId.forEach((val) => {
-        if (!tf || tf.has(String(val.type || '').toLowerCase())) {
-          out.push(val);
+      for (let i = 0; i < types.length; i++) {
+        const bucket = _byType.get(String(types[i] || '').toLowerCase().trim());
+        if (bucket && bucket.length > 0) {
+          for (let j = 0; j < bucket.length; j++) out.push(bucket[j]);
         }
-      });
+      }
       return out;
     },
 

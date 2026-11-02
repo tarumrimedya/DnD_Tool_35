@@ -3711,8 +3711,11 @@
         if (found) return enrichWeaponStats({ ...found }, wepName);
       }
 
-      // 4.5 Check window.BUNDLED_SRD_CORE_CATALOG (Ghost Core SRD)
-      if (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+      // 4.5 Check SrdCompendium O(1) first, then BUNDLED_SRD_CORE_CATALOG fallback
+      if (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+        found = window.SrdCompendium.getByName(wepName, 'Weapon') || window.SrdCompendium.getByName(wepName);
+        if (found) return enrichWeaponStats({ ...found }, wepName);
+      } else if (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
         found = window.BUNDLED_SRD_CORE_CATALOG.find(item => item && item.name && item.name.toLowerCase().trim() === wepName.toLowerCase().trim());
         if (found) return enrichWeaponStats({ ...found }, wepName);
       }
@@ -4205,9 +4208,12 @@
 
       if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateWeaponAttack) {
         try {
-          const paVal = parseInt(document.getElementById('power-attack-val')?.value) || 0;
-          const flanking = document.getElementById('mod-flanking')?.checked ?? false;
-          const charge = document.getElementById('mod-charge')?.checked ?? false;
+          const paEl = document.getElementById('power-attack-val');
+          const paVal = paEl ? (parseInt(paEl.value) || 0) : (Number(character.tactical?.powerAttack) || 0);
+          const flEl = document.getElementById('mod-flanking');
+          const flanking = flEl ? flEl.checked : !!(character.tactical?.flanking);
+          const chEl = document.getElementById('mod-charge');
+          const charge = chEl ? chEl.checked : !!(character.tactical?.charge);
           const hg = document.getElementById('mod-higher-ground')?.checked ?? (character.tactical?.higherGround ?? false);
           const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
           const nonChainMods = activeMods.filter(m => {
@@ -7086,9 +7092,12 @@
       const effectiveTwoHand = isTwoHand && !hasOversizedWeaponFeat;
       const gripSelect = document.getElementById('active-grip-select');
       const grip = (effectiveTwoHand ? '2-Hand' : (gripSelect?.value || '1-Hand'));
-      const paVal = parseInt(document.getElementById('power-attack-val')?.value) || 0;
-      const flanking = document.getElementById('mod-flanking')?.checked ?? false;
-      const charge = document.getElementById('mod-charge')?.checked ?? false;
+      const paEl = document.getElementById('power-attack-val');
+      const paVal = paEl ? (parseInt(paEl.value) || 0) : (Number(character.tactical?.powerAttack) || 0);
+      const flEl = document.getElementById('mod-flanking');
+      const flanking = flEl ? flEl.checked : !!(character.tactical?.flanking);
+      const chEl = document.getElementById('mod-charge');
+      const charge = chEl ? chEl.checked : !!(character.tactical?.charge);
       const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
 
       const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
@@ -7455,9 +7464,12 @@
       if (typeof syncCombatGripUI === 'function') syncCombatGripUI();
 
       const grip = gripSelect?.value || '1-Hand';
-      const paVal = parseInt(document.getElementById('power-attack-val')?.value) || 0;
-      const flanking = document.getElementById('mod-flanking')?.checked ?? false;
-      const charge = document.getElementById('mod-charge')?.checked ?? false;
+      const paEl = document.getElementById('power-attack-val');
+      const paVal = paEl ? (parseInt(paEl.value) || 0) : (Number(character.tactical?.powerAttack) || 0);
+      const flEl = document.getElementById('mod-flanking');
+      const flanking = flEl ? flEl.checked : !!(character.tactical?.flanking);
+      const chEl = document.getElementById('mod-charge');
+      const charge = chEl ? chEl.checked : !!(character.tactical?.charge);
       const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
 
       const activeMods = (character.activeModifiers || []).filter(m => m && m.active);

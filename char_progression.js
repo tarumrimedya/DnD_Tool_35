@@ -61,8 +61,8 @@
           });
         });
       }
-      // 2. Fallback / Supplement from BUNDLED_SRD_CORE_CATALOG
-      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+      // 2. Fallback from BUNDLED_SRD_CORE_CATALOG only if SrdCompendium is not ready
+      if (!(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
         window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Feat').forEach(f => {
           const k = (f.name || '').toLowerCase().trim();
           if (k && !skipPlaceholders.has(k) && f.category !== 'Warlock Invocation' && !invocationByName.has(k)) {

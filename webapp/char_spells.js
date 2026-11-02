@@ -5020,8 +5020,7 @@
       }
       if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
         addList(window.SrdCompendium.getAllLoaded(['Spell', 'Maneuver', 'Stance']));
-      }
-      if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+      } else if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
         addList(window.BUNDLED_SRD_CORE_CATALOG.filter(x => x && ['spell', 'maneuver', 'stance'].includes(String(x.type || '').toLowerCase())));
       }
       return combined;
@@ -6000,37 +5999,79 @@
       { key: 'offHand', name: 'Off-Hand/Shield', trName: 'Off-Hand / Shield', icon: '🛡️', allowed: ['Weapon', 'Shield'] }
     ];
 
-    // Helper: Match and resolve base items against official Core D&D 3.5e Catalog (BUNDLED_SRD_CORE_CATALOG)
+    // Helper: Match and resolve base items against official Core D&D 3.5e Catalog (O(1) Memoized)
+    let _baseItemLookupCache = new Map();
+    let _baseItemLookupCatalogVer = -1;
+    let _sortedEquipmentCandidatesCache = null;
+
     function findBaseItemInSrdCore(rawName) {
       if (!rawName || typeof rawName !== 'string') return null;
       const catalog = window.BUNDLED_SRD_CORE_CATALOG || [];
       if (!Array.isArray(catalog) || catalog.length === 0) return null;
 
-      // 1. Temizleme (Enhancement ve Malzeme Ön/Son Ekleri)
-      let cleaned = rawName
+      const curVer = window._srdCatalogVersion || catalog.length;
+      if (_baseItemLookupCatalogVer !== curVer) {
+        _baseItemLookupCache.clear();
+        _sortedEquipmentCandidatesCache = null;
+        _baseItemLookupCatalogVer = curVer;
+      }
+
+      const rawKey = rawName.trim().toLowerCase();
+      if (_baseItemLookupCache.has(rawKey)) {
+        return _baseItemLookupCache.get(rawKey);
+      }
+
+      // 1. Clean Enhancement & Material prefixes/suffixes
+      let cleaned = rawKey
         .replace(/\+\d+/g, '')
         .replace(/\b(?:masterwork|mwk|flaming|frost|shock|shocking|keen|holy|unholy|vicious|defending|anarchic|axiomatic|speed|vorpal|ghost touch|wounding|bane|throwing|returning|spell resistance \d+|fortification|slick|shadow|silent moves|glamered)\b/gi, '')
         .replace(/\b(?:adamantine|mithral|mithril|alchemical silver|silver|cold iron|darkwood|dragonhide)\b/gi, '')
         .replace(/[\(\)\[\],]/g, ' ')
         .replace(/\s+/g, ' ')
-        .trim()
-        .toLowerCase();
+        .trim();
 
-      if (!cleaned) return null;
+      if (!cleaned) {
+        _baseItemLookupCache.set(rawKey, null);
+        return null;
+      }
 
-      // 2. Tam Eşleşme (Exact Match)
-      const exact = catalog.find(c => (c.name || '').toLowerCase() === cleaned);
-      if (exact) return exact;
+      // 2. O(1) Exact Match via SrdCompendium or fallback
+      if (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+        const directHit = window.SrdCompendium.getByName(cleaned, 'Weapon')
+          || window.SrdCompendium.getByName(cleaned, 'Armor')
+          || window.SrdCompendium.getByName(cleaned, 'Shield')
+          || window.SrdCompendium.getByName(cleaned);
+        if (directHit && (directHit.name || '').toLowerCase() === cleaned) {
+          _baseItemLookupCache.set(rawKey, directHit);
+          return directHit;
+        }
+      } else {
+        const exact = catalog.find(c => (c.name || '').toLowerCase() === cleaned);
+        if (exact) {
+          _baseItemLookupCache.set(rawKey, exact);
+          return exact;
+        }
+      }
 
-      // 3. Uzunluk Sıralı En Uygun Eşleşme (Longest Match First, e.g. "Punching Dagger" before "Dagger")
-      const candidates = catalog
-        .filter(c => {
-          const cName = (c.name || '').toLowerCase();
-          return cName && (cleaned === cName || cleaned.endsWith(' ' + cName) || cleaned.startsWith(cName + ' ') || cleaned.includes(' ' + cName + ' ') || cleaned.includes(cName));
-        })
-        .sort((a, b) => (b.name || '').length - (a.name || '').length);
+      // 3. Pre-sorted equipment-only longest substring match (excludes 1,113 spells & 452 feats)
+      if (!_sortedEquipmentCandidatesCache) {
+        const equipTypes = new Set(['weapon', 'armor', 'shield', 'equipment', 'wondrous', 'ring', 'rod', 'staff', 'wand', 'potion', 'scroll']);
+        _sortedEquipmentCandidatesCache = catalog
+          .filter(c => c && c.name && equipTypes.has(String(c.type || c.category || '').toLowerCase()))
+          .map(c => ({ item: c, lowerName: c.name.toLowerCase(), len: c.name.length }))
+          .sort((a, b) => b.len - a.len);
+      }
 
-      if (candidates.length > 0) return candidates[0];
+      for (let i = 0; i < _sortedEquipmentCandidatesCache.length; i++) {
+        const entry = _sortedEquipmentCandidatesCache[i];
+        const cName = entry.lowerName;
+        if (cleaned === cName || cleaned.endsWith(' ' + cName) || cleaned.startsWith(cName + ' ') || cleaned.includes(' ' + cName + ' ') || cleaned.includes(cName)) {
+          _baseItemLookupCache.set(rawKey, entry.item);
+          return entry.item;
+        }
+      }
+
+      _baseItemLookupCache.set(rawKey, null);
       return null;
     }
 
@@ -7533,11 +7574,12 @@
     // D&D 3.5e Standard SRD Weapons Dynamic Helper (Sourced from window.BUNDLED_SRD_CORE_CATALOG & masterDb per Rule #5)
     function getSrdWeaponNames() {
       const set = new Set();
-      if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Weapon').forEach(w => {
-          if (w.name) set.add(w.name);
-        });
-      }
+      const weapons = (window.SrdCompendium && typeof window.SrdCompendium.getByType === 'function')
+        ? window.SrdCompendium.getByType('Weapon')
+        : (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG) ? window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Weapon') : []);
+      weapons.forEach(w => {
+        if (w && w.name) set.add(w.name);
+      });
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         masterDb.filter(i => i && i.type === 'Weapon').forEach(w => {
           if (w.name) set.add(w.name);
