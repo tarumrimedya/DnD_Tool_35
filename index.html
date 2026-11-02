@@ -1477,8 +1477,7 @@
               </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-              <button onclick="openProfileEditModal()" class="h-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer" title="Edit character identity, race, alignment, and profile">
-                <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"></polygon><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"></polygon><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"></line><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"></line><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"></line><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
+              <button onclick="openProfileEditModal()" class="w-40 h-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3 rounded-lg shadow inline-flex items-center justify-center gap-1.5 transition cursor-pointer whitespace-nowrap" title="Edit character identity, race, alignment, and profile">
                 <span>📜</span>
                 <span>Character Profile</span>
               </button>
@@ -1532,7 +1531,7 @@
                 <span>•</span>
                 <span>Stat +1: <strong class="text-sky-400">4, 8, 12, 16, 20</strong></span>
               </div>
-              <button onclick="openLevelUpModal()" class="h-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer">
+              <button onclick="openLevelUpModal()" class="w-40 h-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3 rounded-lg shadow inline-flex items-center justify-center gap-1.5 transition cursor-pointer whitespace-nowrap">
                 <span>⬆️</span>
                 <span>Level Up / Plan</span>
               </button>
@@ -1577,7 +1576,7 @@
               <span>Use <strong>✏️</strong> to edit a level's class/HP/stat, or <strong>➕</strong> to add bonus feats &amp; abilities.</span>
             </div>
             <div class="flex items-center gap-2">
-              <button type="button" onclick="addNewLevelRowToProgression()" class="h-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3.5 rounded-lg shadow flex items-center gap-1.5 transition cursor-pointer">
+              <button type="button" onclick="addNewLevelRowToProgression()" class="w-40 h-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3 rounded-lg shadow inline-flex items-center justify-center gap-1.5 transition cursor-pointer whitespace-nowrap">
                 <span>➕</span>
                 <span>Level Up</span>
               </button>
@@ -1606,11 +1605,11 @@
               <span>SKILLS & 3D DICE ROLLER</span>
             </span>
             <div class="flex items-center gap-2">
-              <button type="button" onclick="autoSyncClassSkills(true)" class="ui-btn-xs h-6 px-2 rounded text-[10px] font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 hover:text-white border border-amber-600/70 transition flex items-center gap-1 cursor-pointer" title="Automatically sync official class skills based on character classes">
+              <button type="button" onclick="autoSyncClassSkills(true)" class="ui-btn-xs h-6 px-2.5 rounded-md text-[10px] font-bold bg-amber-950/80 hover:bg-amber-900 text-amber-300 hover:text-white border border-amber-600/70 transition inline-flex items-center gap-1 cursor-pointer" title="Automatically sync official class skills based on character classes">
                 <span>⭐</span>
                 <span class="hidden sm:inline">Sync Class Skills</span>
               </button>
-              <span id="skills-mode-badge" class="h-6 text-[10px] px-2 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700 inline-flex items-center">D&D 3.5e RAW</span>
+              <span id="skills-mode-badge" class="ui-btn-xs h-6 text-[10px] px-2.5 rounded-md font-bold bg-slate-800 text-slate-300 border border-slate-700 inline-flex items-center">D&D 3.5e RAW</span>
             </div>
           </div>
 

@@ -187,8 +187,8 @@
       if (modeBadge) {
         modeBadge.textContent = isMerged ? '🔗 Consolidated Skills' : 'D&D 3.5e RAW (46 Skills)';
         modeBadge.className = isMerged 
-          ? 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-emerald-950 text-emerald-300 border border-emerald-700 cursor-pointer hover:border-emerald-400 transition' 
-          : 'text-[10px] px-2 py-0.5 rounded-full font-bold bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer hover:border-slate-500 transition';
+          ? 'ui-btn-xs h-6 text-[10px] px-2.5 rounded-md font-bold bg-emerald-950 text-emerald-300 border border-emerald-700 cursor-pointer hover:border-emerald-400 transition inline-flex items-center' 
+          : 'ui-btn-xs h-6 text-[10px] px-2.5 rounded-md font-bold bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer hover:border-slate-500 transition inline-flex items-center';
         modeBadge.title = 'Click to toggle in House Rules';
         modeBadge.onclick = () => { if (typeof openHouseRulesModal === 'function') openHouseRulesModal(); };
       }
