@@ -6146,9 +6146,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         let statBadgeItem = '';
         if (currentStatKey) {
           const sDef = STAT_KEYS.find(k => k.key === currentStatKey) || { key: currentStatKey, label: currentStatKey.toUpperCase(), name: currentStatKey.toUpperCase() };
-          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" class="w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-sky-600/70 shadow-sm transition text-left cursor-pointer" title="Level ${lvl.level} Ability Score Increase: +1 ${sDef.name}. Click to change or remove."><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+1 Stat: ${sDef.label}</span></button>`;
+          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-sky-600/70 shadow-sm transition text-left cursor-pointer" title="Level ${lvl.level} Ability Score Increase: +1 ${sDef.name}. Click to change or remove."><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+1 Stat: ${sDef.label}</span></button>`;
         } else if (isStatInterval) {
-          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" class="w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/90 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-dashed border-sky-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select +1 Ability Score Increase for Level ${lvl.level}"><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Ability (+1)</span></button>`;
+          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/90 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-dashed border-sky-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select +1 Ability Score Increase for Level ${lvl.level}"><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Ability (+1)</span></button>`;
         }
 
         // Filtered and partitioned feats for 3-column split:
@@ -6191,7 +6191,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const safeTip = tip.replace(/"/g, '&quot;');
           const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+/, '').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" title="${safeTip}" class="relative w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         const classBonusBadgeItems = classBonusFeats.map(fStr => {
@@ -6202,7 +6202,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const safeTip = tip.replace(/"/g, '&quot;');
           const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚔️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚔️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         let classLevelSoFar = 0;
@@ -6237,11 +6237,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                 ? 'bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border-yellow-500/80'
                 : 'bg-rose-950/90 hover:bg-rose-900 text-rose-200 border-rose-500/80';
               classBonusBadgeItems.push(
-                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" title="${safeTip}" class="relative w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${badgeColorCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${elig.eligible ? '⚜️' : '⚠️'}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">Domain: ${domName}${warSuffix}</span></button>`
+                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${badgeColorCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${elig.eligible ? '⚜️' : '⚠️'}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">Domain: ${domName}${warSuffix}</span></button>`
               );
             } else {
               pendingClassBonusButtons.push(
-                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" class="w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border border-dashed border-yellow-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Cleric Domain (${dSlot + 1}/2) — Grants a Domain Power and +1 Domain Spell Slot per spell level (1st–9th)"><span class="shrink-0">⚜️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+ Select Cleric Domain (${dSlot + 1}/2)</span></button>`
+                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border border-dashed border-yellow-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Cleric Domain (${dSlot + 1}/2) — Grants a Domain Power and +1 Domain Spell Slot per spell level (1st–9th)"><span class="shrink-0">⚜️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+ Select Cleric Domain (${dSlot + 1}/2)</span></button>`
               );
             }
           }
@@ -6265,7 +6265,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             btnIcon = '🔮';
             btnCls = 'bg-indigo-950/90 hover:bg-indigo-900 text-indigo-300 border-indigo-500';
           }
-          pendingClassBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat', true)" class="w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${btnCls} border border-dashed shadow-sm animate-pulse transition text-left cursor-pointer" title="Select ${lvl.className} Bonus Feat for this level"><span class="shrink-0">${btnIcon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">${btnText}</span></button>`);
+          pendingClassBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${btnCls} border border-dashed shadow-sm animate-pulse transition text-left cursor-pointer" title="Select ${lvl.className} Bonus Feat for this level"><span class="shrink-0">${btnIcon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">${btnText}</span></button>`);
         }
 
         // 2. Beceriler (Regular Feats) badges
@@ -6277,7 +6277,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const safeTip = tip.replace(/"/g, '&quot;');
           const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         // Check regular feat eligibility
@@ -6285,7 +6285,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const qualifiesForRegularFeat = isLevelQualifiesForFeat(lvl.level, featMode);
         const regularPromptButtons = [];
         if (qualifiesForRegularFeat && regularFeats.length === 0) {
-          regularPromptButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Character Feat for this level"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Feat</span></button>`);
+          regularPromptButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Character Feat for this level"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Feat</span></button>`);
         }
 
         // 3. Bonus badges (DM Boons, Invocations, Flaws, Racial, CL Boons)
@@ -6315,13 +6315,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           }
           const cleanStr = labelText;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         const qualifiesForHumanBonus = (lvl.level === 1 && isHuman);
         const pendingBonusButtons = [];
         if (qualifiesForHumanBonus && !otherBonusFeats.some(f => String(f).includes('[Racial]'))) {
-          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Racial Trait', true)" class="w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Human racial bonus feat (1st-Level RAW: Extra bonus feat)"><span class="shrink-0">🧬</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Human Bonus Feat</span></button>`);
+          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Racial Trait', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Human racial bonus feat (1st-Level RAW: Extra bonus feat)"><span class="shrink-0">🧬</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Human Bonus Feat</span></button>`);
         }
 
         // Warlock Invocation Progression Check (Warlock Boon or Warlock Class Level)
@@ -6333,7 +6333,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const hasInvocation = otherBonusFeats.some(f => String(f).includes('[Invocation]') || String(f).toLowerCase().includes('invocation'));
           if (!hasInvocation) {
             const tier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(lvl.level) : 'Least';
-            pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Warlock Invocation')" class="w-[82%] max-w-[138px] mx-auto min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Level ${lvl.level} Warlock Invocation (${tier})"><span class="shrink-0">🔮</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Invocation (${tier})</span></button>`);
+            pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Warlock Invocation')" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Level ${lvl.level} Warlock Invocation (${tier})"><span class="shrink-0">🔮</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Invocation (${tier})</span></button>`);
           }
         }
 
@@ -6387,10 +6387,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         lvl.will = rowWill;
 
         tr.innerHTML = `
-          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[32px] min-w-[32px]">
+          <td class="pt-2.5 pb-2.5 px-1.5 align-top text-center w-[44px] min-w-[44px]">
             <div class="h-6 flex items-center justify-center font-bold text-amber-400 text-xs">${lvl.level}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 align-top text-center w-[76px] min-w-[76px]">
+          <td class="pt-2.5 pb-2.5 px-1.5 align-top text-center w-[92px] min-w-[90px]">
             <div class="h-6 flex items-center justify-center">
               <label class="inline-flex items-center gap-1.5 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
                 <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
@@ -6400,42 +6400,42 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               </label>
             </div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-2 align-top text-left w-[110px] min-w-[100px]">
+          <td class="pt-2.5 pb-2.5 px-2.5 align-top text-left w-[135px] min-w-[120px]">
             <div class="h-6 flex items-center font-sans font-bold text-white text-xs whitespace-nowrap">${lvl.className}-${classLevelSoFar}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[36px] min-w-[36px]">
+          <td class="pt-2.5 pb-2.5 px-1.5 align-top text-center w-[48px] min-w-[46px]">
             <div class="h-6 flex items-center justify-center text-slate-400 font-bold text-xs">${lvl.hd}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
+          <td class="pt-2.5 pb-2.5 px-1.5 align-top text-center w-[50px] min-w-[48px]">
             <div class="h-6 flex items-center justify-center text-emerald-400 font-bold text-xs" title="Level Hit Die: +${lvl.hpGain} | Con: ${conModStr} (This Level: +${Math.max(1, (Number(lvl.hpGain) || 0) + conMod)})">+${lvl.hpGain}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
+          <td class="pt-2.5 pb-2.5 px-1.5 align-top text-center w-[50px] min-w-[48px]">
             <div class="h-6 flex items-center justify-center text-sky-400 font-bold text-xs">+${rowBab}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
+          <td class="pt-2.5 pb-2.5 px-1.5 align-top text-center w-[50px] min-w-[48px]">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowFort}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
+          <td class="pt-2.5 pb-2.5 px-1.5 align-top text-center w-[50px] min-w-[48px]">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowRef}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[38px] min-w-[38px]">
+          <td class="pt-2.5 pb-2.5 px-1.5 align-top text-center w-[50px] min-w-[48px]">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowWill}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-0.5 align-top text-center w-[44px] min-w-[44px]">
+          <td class="pt-2.5 pb-2.5 px-1.5 align-top text-center w-[54px] min-w-[50px]">
             <div class="h-6 flex items-center justify-center text-indigo-300 font-bold text-xs">${lvl.skillPts || 4}</div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 font-sans align-top text-center w-[150px] min-w-[135px] max-w-[165px]">
-            <div class="flex flex-col gap-1 items-center w-full">
+          <td class="pt-2.5 pb-2.5 px-0.5 font-sans align-top text-center w-[132px] min-w-[124px] max-w-[138px]">
+            <div class="flex flex-col gap-1 items-stretch w-full">
               ${(abilityBadgeItems.length > 0 || classBonusBadgeItems.length > 0 || pendingClassBonusButtons.length > 0) ? (abilityBadgeItems.join('') + classBonusBadgeItems.join('') + pendingClassBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 font-sans align-top text-center w-[150px] min-w-[135px] max-w-[165px]">
-            <div class="flex flex-col gap-1 items-center w-full">
+          <td class="pt-2.5 pb-2.5 px-0.5 font-sans align-top text-center w-[132px] min-w-[124px] max-w-[138px]">
+            <div class="flex flex-col gap-1 items-stretch w-full">
               ${(regularFeatBadgeItems.length > 0 || regularPromptButtons.length > 0) ? (regularFeatBadgeItems.join('') + regularPromptButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="pt-2.5 pb-2.5 px-1 font-sans align-top text-center w-[150px] min-w-[135px] max-w-[165px]">
-            <div class="flex flex-col gap-1 items-center w-full">
+          <td class="pt-2.5 pb-2.5 px-0.5 font-sans align-top text-center w-[132px] min-w-[124px] max-w-[138px]">
+            <div class="flex flex-col gap-1 items-stretch w-full">
               ${(statBadgeItem || otherBonusBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + otherBonusBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
