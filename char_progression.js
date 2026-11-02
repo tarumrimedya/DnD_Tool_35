@@ -3759,7 +3759,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const btn = document.getElementById(`class-filter-tab-${t}`);
         if (btn) {
           if (t === tab) {
-            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-purple-500/20 text-purple-200 border border-purple-400/50 shadow-sm cursor-pointer';
+            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-emerald-500/20 text-emerald-200 border border-emerald-400/50 shadow-sm cursor-pointer';
           } else {
             btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer';
           }
@@ -3875,7 +3875,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const btn = document.getElementById(`class-filter-tab-${t}`);
         if (btn) {
           btn.className = t === 'all' 
-            ? 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-purple-500/20 text-purple-200 border border-purple-400/50 shadow-sm cursor-pointer'
+            ? 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-emerald-500/20 text-emerald-200 border border-emerald-400/50 shadow-sm cursor-pointer'
             : 'px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer';
         }
       });
@@ -4360,7 +4360,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                     <span>Selected Class</span>
                   </span>
                 ` : `
-                  <button type="button" onclick="selectClassFromSearch('${safeName}')" class="px-2.5 py-1 rounded-lg bg-purple-700 hover:bg-purple-600 text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
+                  <button type="button" onclick="selectClassFromSearch('${safeName}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
                     <span>🎯</span>
                     <span>Select Class</span>
                   </button>

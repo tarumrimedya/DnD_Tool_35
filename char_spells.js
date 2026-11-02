@@ -4741,7 +4741,11 @@
           focusBorder: 'focus:border-rose-500',
           lvlBadge: 'bg-rose-950 text-rose-300 border-rose-700',
           addBtn: 'bg-rose-700 hover:bg-rose-600 text-white border-rose-500',
-          aiBtn: 'bg-rose-900/60 hover:bg-rose-700 text-rose-200 hover:text-white border-rose-600/50'
+          aiBtn: 'bg-rose-900/60 hover:bg-rose-700 text-rose-200 hover:text-white border-rose-600/50',
+          cmdWell: 'ui-spotlight-rose border-rose-400/75',
+          cmdIconBadge: 'bg-rose-600 text-white',
+          cmdSelect: 'border-rose-500/40 text-rose-200',
+          cmdLookupBtn: 'bg-rose-600 hover:bg-rose-500 text-white border-rose-400/60'
         };
       }
 
@@ -4756,7 +4760,11 @@
           focusBorder: 'focus:border-cyan-500',
           lvlBadge: 'bg-cyan-950 text-cyan-300 border-cyan-700',
           addBtn: 'bg-cyan-700 hover:bg-cyan-600 text-white border-cyan-500',
-          aiBtn: 'bg-cyan-900/60 hover:bg-cyan-700 text-cyan-200 hover:text-white border-cyan-600/50'
+          aiBtn: 'bg-cyan-900/60 hover:bg-cyan-700 text-cyan-200 hover:text-white border-cyan-600/50',
+          cmdWell: 'ui-spotlight-cyan border-cyan-400/75',
+          cmdIconBadge: 'bg-cyan-600 text-white',
+          cmdSelect: 'border-cyan-500/40 text-cyan-200',
+          cmdLookupBtn: 'bg-cyan-600 hover:bg-cyan-500 text-white border-cyan-400/60'
         };
       }
 
@@ -4773,7 +4781,11 @@
             focusBorder: 'focus:border-yellow-500',
             lvlBadge: 'bg-yellow-950 text-yellow-300 border-yellow-600',
             addBtn: 'bg-yellow-600 hover:bg-yellow-500 text-slate-950 font-extrabold border-yellow-400',
-            aiBtn: 'bg-yellow-900/60 hover:bg-yellow-700 text-yellow-200 hover:text-white border-yellow-600/50'
+            aiBtn: 'bg-yellow-900/60 hover:bg-yellow-700 text-yellow-200 hover:text-white border-yellow-600/50',
+            cmdWell: 'ui-spotlight-amber border-amber-400/75',
+            cmdIconBadge: 'bg-amber-500 text-slate-950',
+            cmdSelect: 'border-amber-500/40 text-amber-200',
+            cmdLookupBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black border-amber-400/60'
           };
         }
         return {
@@ -4786,7 +4798,11 @@
           focusBorder: 'focus:border-amber-500',
           lvlBadge: 'bg-amber-950 text-amber-300 border-amber-700',
           addBtn: 'bg-amber-700 hover:bg-amber-600 text-white border-amber-500',
-          aiBtn: 'bg-amber-900/60 hover:bg-amber-700 text-amber-200 hover:text-white border-amber-600/50'
+          aiBtn: 'bg-amber-900/60 hover:bg-amber-700 text-amber-200 hover:text-white border-amber-600/50',
+          cmdWell: 'ui-spotlight-amber border-amber-400/75',
+          cmdIconBadge: 'bg-amber-500 text-slate-950',
+          cmdSelect: 'border-amber-500/40 text-amber-200',
+          cmdLookupBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black border-amber-400/60'
         };
       }
 
@@ -4800,7 +4816,11 @@
         focusBorder: 'focus:border-purple-500',
         lvlBadge: 'bg-purple-950 text-purple-300 border-purple-700',
         addBtn: 'bg-purple-700 hover:bg-purple-600 text-white border-purple-500',
-        aiBtn: 'bg-purple-900/60 hover:bg-purple-700 text-purple-200 hover:text-white border-purple-600/50'
+        aiBtn: 'bg-purple-900/60 hover:bg-purple-700 text-purple-200 hover:text-white border-purple-600/50',
+        cmdWell: 'ui-spotlight-purple border-purple-400/75',
+        cmdIconBadge: 'bg-purple-600 text-white',
+        cmdSelect: 'border-purple-500/40 text-purple-200',
+        cmdLookupBtn: 'bg-purple-600 hover:bg-purple-500 text-white border-purple-400/60'
       };
     }
 
@@ -4864,12 +4884,27 @@
         spellTabBtn.innerHTML = `${type === 'Spell' ? palette.icon : '\uD83D\uDD2E'} Spell`;
       }
 
-      ['spell-picker-search', 'spell-picker-source-filter', 'spell-picker-level-filter'].forEach(id => {
+      const cmdBar = document.getElementById('spell-picker-command-bar');
+      if (cmdBar) {
+        cmdBar.className = `ui-spotlight-well ${palette.cmdWell || 'ui-spotlight-purple border-purple-400/75'} rounded-xl p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border`;
+      }
+
+      const cmdIconBadge = document.getElementById('spell-picker-icon-badge');
+      if (cmdIconBadge) {
+        cmdIconBadge.className = `w-8 h-8 rounded-lg ${palette.cmdIconBadge || 'bg-purple-600 text-white'} font-black flex items-center justify-center text-sm shrink-0 shadow`;
+      }
+
+      ['spell-picker-source-filter', 'spell-picker-level-filter'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-          el.className = el.className.replace(/focus:border-[a-z]+-\d+/g, palette.focusBorder);
+          el.className = `h-8 bg-slate-950/95 border ${palette.cmdSelect || 'border-purple-500/40 text-purple-200'} rounded-lg px-2 text-xs font-semibold focus:outline-none cursor-pointer`;
         }
       });
+
+      const cmdLookupBtn = document.getElementById('spell-picker-ai-lookup-btn');
+      if (cmdLookupBtn) {
+        cmdLookupBtn.className = `h-8 px-3 rounded-lg ${palette.cmdLookupBtn || 'bg-purple-600 hover:bg-purple-500 text-white border-purple-400/60'} border font-bold text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer`;
+      }
 
       const aiBtn = document.getElementById('spell-picker-ai-btn');
       if (aiBtn) {

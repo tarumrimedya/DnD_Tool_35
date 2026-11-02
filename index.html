@@ -72,6 +72,11 @@
     .ui-spotlight-well { background: linear-gradient(180deg, rgba(30, 41, 59, 0.94) 0%, rgba(15, 23, 42, 0.98) 100%); box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.1); }
     .ui-spotlight-amber { box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.45), 0 0 22px -4px rgba(245, 158, 11, 0.28), inset 0 1px 0 0 rgba(255, 255, 255, 0.08); }
     .ui-spotlight-purple { box-shadow: 0 0 0 1px rgba(168, 85, 247, 0.5), 0 0 22px -4px rgba(168, 85, 247, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.08); }
+    .ui-spotlight-emerald { box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.5), 0 0 22px -4px rgba(16, 185, 129, 0.28), inset 0 1px 0 0 rgba(255, 255, 255, 0.08); }
+    .ui-spotlight-indigo { box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.5), 0 0 22px -4px rgba(99, 102, 241, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.08); }
+    .ui-spotlight-rose { box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.5), 0 0 22px -4px rgba(244, 63, 94, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.08); }
+    .ui-spotlight-cyan { box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.5), 0 0 22px -4px rgba(6, 182, 212, 0.28), inset 0 1px 0 0 rgba(255, 255, 255, 0.08); }
+    .ui-spotlight-sky { box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5), 0 0 22px -4px rgba(56, 189, 248, 0.28), inset 0 1px 0 0 rgba(255, 255, 255, 0.08); }
   </style>
 </head>
 <body class="min-h-screen flex flex-col pb-20 md:pb-6 relative">
@@ -510,10 +515,18 @@
                     </div>
                     <button type="button" onclick="toggleSrdSpotlight(false)" class="ui-btn-icon-sm w-6 h-6 text-slate-400 hover:text-white text-xs font-bold cursor-pointer">✕</button>
                   </div>
-                  <div class="relative flex items-center">
-                    <span class="absolute left-2.5 text-xs text-amber-400 pointer-events-none">🔍</span>
-                    <input type="text" id="srd-spotlight-input" oninput="onSrdSpotlightInput(this.value)" placeholder="Search weapon or shield (e.g., Longsword, Spiked Chain, Heavy Shield, Composite Longbow)..." class="ui-input-md h-8 w-full bg-slate-900 border border-slate-700 focus:border-amber-400 rounded-lg pl-8 pr-8 text-xs text-white placeholder-slate-500 focus:outline-none transition">
-                    <button type="button" onclick="clearSrdSpotlightInput()" id="btn-clear-srd-spotlight" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold p-1 cursor-pointer hidden">✕</button>
+                  <div class="ui-spotlight-well ui-spotlight-amber rounded-xl p-1.5 flex items-center gap-2 border border-amber-400/75">
+                    <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 font-black flex items-center justify-center text-sm shrink-0 shadow">
+                      🔍
+                    </div>
+                    <div class="relative flex-1 min-w-0">
+                      <input type="text" id="srd-spotlight-input" oninput="onSrdSpotlightInput(this.value)" placeholder="Search weapon or shield (e.g., Longsword, Spiked Chain, Heavy Shield, Composite Longbow)..." class="w-full h-8 bg-transparent pr-7 text-xs sm:text-sm font-semibold text-white placeholder-slate-200 focus:outline-none">
+                      <button type="button" onclick="clearSrdSpotlightInput()" id="btn-clear-srd-spotlight" class="absolute right-1.5 top-1.5 text-slate-400 hover:text-white text-xs font-bold p-1 cursor-pointer hidden">✕</button>
+                    </div>
+                    <button type="button" onclick="onSrdSpotlightInput(document.getElementById('srd-spotlight-input').value)" class="h-8 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer">
+                      <span>🔍</span>
+                      <span>Search</span>
+                    </button>
                   </div>
                   <div id="srd-spotlight-results" class="max-h-60 overflow-y-auto divide-y divide-slate-800 bg-slate-900/95 border border-slate-800 rounded-lg p-1 space-y-1">
                     <!-- Populated dynamically via onSrdSpotlightInput -->
@@ -2771,14 +2784,23 @@
               <h3 class="text-xs md:text-sm font-bold text-white">Weapons, Armor & Shields</h3>
               <span id="wa-count-badge" class="badge bg-slate-800 text-slate-300 font-mono text-[10px]">0 Gear</span>
             </div>
-            <div class="flex items-center gap-2 flex-wrap">
-              <select id="wa-subfilter" onchange="RuleMaster.renderWeaponsArmors()" class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none">
-                <option value="ALL">All (Weapons + Armor + Shields)</option>
-                <option value="Weapon">Weapons Only</option>
-                <option value="Armor">Armor Only</option>
-                <option value="Shield">Shields Only</option>
-              </select>
-              <input type="text" id="wa-search-input" onkeyup="RuleMaster.renderWeaponsArmors()" placeholder="Search weapon or armor..." class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-3 text-xs text-white focus:outline-none focus:border-purple-500">
+            <div class="flex items-center gap-2 flex-wrap flex-1 justify-end">
+              <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1 flex items-center gap-1.5 border border-purple-400/75 flex-1 min-w-[260px] max-w-xl">
+                <div class="w-7 h-7 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow">
+                  🔍
+                </div>
+                <input type="text" id="wa-search-input" onkeyup="RuleMaster.renderWeaponsArmors()" placeholder="Search weapon or armor..." class="flex-1 h-7 bg-transparent px-1 text-xs text-white placeholder-slate-200 font-semibold focus:outline-none">
+                <select id="wa-subfilter" onchange="RuleMaster.renderWeaponsArmors()" class="h-7 bg-slate-950/95 border border-purple-500/40 rounded-lg px-2 text-xs text-purple-200 font-semibold focus:outline-none cursor-pointer">
+                  <option value="ALL">All Gear</option>
+                  <option value="Weapon">Weapons Only</option>
+                  <option value="Armor">Armor Only</option>
+                  <option value="Shield">Shields Only</option>
+                </select>
+                <button type="button" onclick="RuleMaster.renderWeaponsArmors()" class="h-7 px-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1 shrink-0 shadow transition cursor-pointer">
+                  <span>🔍</span>
+                  <span>Search</span>
+                </button>
+              </div>
               <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Weapon'), -1)" class="w-36 h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>➕</span>
                 <span>Add New</span>
@@ -2800,27 +2822,36 @@
               <h3 class="text-xs md:text-sm font-bold text-white">Spells, Maneuvers & Stances</h3>
               <span id="sm-count-badge" class="badge bg-slate-800 text-slate-300 font-mono text-[10px]">0 Spells/Maneuvers</span>
             </div>
-            <div class="flex items-center gap-2 flex-wrap">
-              <select id="sm-type-filter" onchange="RuleMaster.renderSpellsManeuvers()" class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none">
-                <option value="ALL">All (Spells + Maneuvers + Stances)</option>
-                <option value="Spell">Spells Only</option>
-                <option value="Maneuver">Maneuvers Only</option>
-                <option value="Stance">Stances Only</option>
-              </select>
-              <select id="sm-level-filter" onchange="RuleMaster.renderSpellsManeuvers()" class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none">
-                <option value="ALL">All Levels</option>
-                <option value="0">Level 0 (Cantrip)</option>
-                <option value="1">Level 1</option>
-                <option value="2">Level 2</option>
-                <option value="3">Level 3</option>
-                <option value="4">Level 4</option>
-                <option value="5">Level 5</option>
-                <option value="6">Level 6</option>
-                <option value="7">Level 7</option>
-                <option value="8">Level 8</option>
-                <option value="9">Level 9</option>
-              </select>
-              <input type="text" id="sm-search-input" onkeyup="RuleMaster.renderSpellsManeuvers()" placeholder="Search spell or maneuver..." class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-3 text-xs text-white focus:outline-none focus:border-purple-500">
+            <div class="flex items-center gap-2 flex-wrap flex-1 justify-end">
+              <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1 flex items-center gap-1.5 border border-purple-400/75 flex-1 min-w-[280px] max-w-2xl flex-wrap sm:flex-nowrap">
+                <div class="w-7 h-7 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow">
+                  🔍
+                </div>
+                <input type="text" id="sm-search-input" onkeyup="RuleMaster.renderSpellsManeuvers()" placeholder="Search spell or maneuver..." class="flex-1 h-7 bg-transparent px-1 text-xs text-white placeholder-slate-200 font-semibold focus:outline-none min-w-[140px]">
+                <select id="sm-type-filter" onchange="RuleMaster.renderSpellsManeuvers()" class="h-7 bg-slate-950/95 border border-purple-500/40 rounded-lg px-2 text-xs text-purple-200 font-semibold focus:outline-none cursor-pointer">
+                  <option value="ALL">All Types</option>
+                  <option value="Spell">Spells Only</option>
+                  <option value="Maneuver">Maneuvers Only</option>
+                  <option value="Stance">Stances Only</option>
+                </select>
+                <select id="sm-level-filter" onchange="RuleMaster.renderSpellsManeuvers()" class="h-7 bg-slate-950/95 border border-purple-500/40 rounded-lg px-2 text-xs text-purple-200 font-semibold focus:outline-none cursor-pointer">
+                  <option value="ALL">All Levels</option>
+                  <option value="0">Level 0 (Cantrip)</option>
+                  <option value="1">Level 1</option>
+                  <option value="2">Level 2</option>
+                  <option value="3">Level 3</option>
+                  <option value="4">Level 4</option>
+                  <option value="5">Level 5</option>
+                  <option value="6">Level 6</option>
+                  <option value="7">Level 7</option>
+                  <option value="8">Level 8</option>
+                  <option value="9">Level 9</option>
+                </select>
+                <button type="button" onclick="RuleMaster.renderSpellsManeuvers()" class="h-7 px-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1 shrink-0 shadow transition cursor-pointer">
+                  <span>🔍</span>
+                  <span>Search</span>
+                </button>
+              </div>
               <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Spell'), -1)" class="w-36 h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>➕</span>
                 <span>Add New</span>
@@ -2842,8 +2873,17 @@
               <h3 class="text-xs md:text-sm font-bold text-white">Feats & Special Abilities</h3>
               <span id="feats-count-badge" class="badge bg-slate-800 text-slate-300 font-mono text-[10px]">0 Feats</span>
             </div>
-            <div class="flex items-center gap-2">
-              <input type="text" id="feats-search-input" onkeyup="RuleMaster.renderFeats()" placeholder="Search feat name, prerequisite, or benefit..." class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-3 text-xs text-white focus:outline-none focus:border-purple-500">
+            <div class="flex items-center gap-2 flex-wrap flex-1 justify-end">
+              <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1 flex items-center gap-1.5 border border-purple-400/75 flex-1 min-w-[240px] max-w-lg">
+                <div class="w-7 h-7 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow">
+                  🔍
+                </div>
+                <input type="text" id="feats-search-input" onkeyup="RuleMaster.renderFeats()" placeholder="Search feat name, prerequisite, or benefit..." class="flex-1 h-7 bg-transparent px-1 text-xs text-white placeholder-slate-200 font-semibold focus:outline-none">
+                <button type="button" onclick="RuleMaster.renderFeats()" class="h-7 px-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1 shrink-0 shadow transition cursor-pointer">
+                  <span>🔍</span>
+                  <span>Search</span>
+                </button>
+              </div>
               <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Feat'), -1)" class="w-36 h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>➕</span>
                 <span>Add New Feat</span>
@@ -2865,23 +2905,32 @@
               <h3 class="text-xs md:text-sm font-bold text-white">Magic Items & Potions</h3>
               <span id="mi-count-badge" class="badge bg-slate-800 text-slate-300 font-mono text-[10px]">0 Items</span>
             </div>
-            <div class="flex items-center gap-2 flex-wrap">
-              <select id="mi-slot-filter" onchange="RuleMaster.renderMagicItems()" class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none">
-                <option value="ALL">All Body Slots</option>
-                <option value="Head">Head</option>
-                <option value="Eyes">Eyes</option>
-                <option value="Neck">Neck</option>
-                <option value="Torso">Torso</option>
-                <option value="Body">Body / Robe</option>
-                <option value="Waist">Waist</option>
-                <option value="Shoulders">Shoulders</option>
-                <option value="Arms">Arms</option>
-                <option value="Hands">Hands</option>
-                <option value="Ring">Ring</option>
-                <option value="Feet">Feet</option>
-                <option value="Slotless">Slotless</option>
-              </select>
-              <input type="text" id="mi-search-input" onkeyup="RuleMaster.renderMagicItems()" placeholder="Search magic item or potion..." class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-3 text-xs text-white focus:outline-none focus:border-purple-500">
+            <div class="flex items-center gap-2 flex-wrap flex-1 justify-end">
+              <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1 flex items-center gap-1.5 border border-purple-400/75 flex-1 min-w-[260px] max-w-xl">
+                <div class="w-7 h-7 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow">
+                  🔍
+                </div>
+                <input type="text" id="mi-search-input" onkeyup="RuleMaster.renderMagicItems()" placeholder="Search magic item or potion..." class="flex-1 h-7 bg-transparent px-1 text-xs text-white placeholder-slate-200 font-semibold focus:outline-none">
+                <select id="mi-slot-filter" onchange="RuleMaster.renderMagicItems()" class="h-7 bg-slate-950/95 border border-purple-500/40 rounded-lg px-2 text-xs text-purple-200 font-semibold focus:outline-none cursor-pointer">
+                  <option value="ALL">All Body Slots</option>
+                  <option value="Head">Head</option>
+                  <option value="Eyes">Eyes</option>
+                  <option value="Neck">Neck</option>
+                  <option value="Torso">Torso</option>
+                  <option value="Body">Body / Robe</option>
+                  <option value="Waist">Waist</option>
+                  <option value="Shoulders">Shoulders</option>
+                  <option value="Arms">Arms</option>
+                  <option value="Hands">Hands</option>
+                  <option value="Ring">Ring</option>
+                  <option value="Feet">Feet</option>
+                  <option value="Slotless">Slotless</option>
+                </select>
+                <button type="button" onclick="RuleMaster.renderMagicItems()" class="h-7 px-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1 shrink-0 shadow transition cursor-pointer">
+                  <span>🔍</span>
+                  <span>Search</span>
+                </button>
+              </div>
               <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Wondrous Item'), -1)" class="w-36 h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>➕</span>
                 <span>New Item</span>
@@ -4109,17 +4158,17 @@
       </div>
 
       <div class="p-4 space-y-3 text-xs">
-        <!-- Rule Master (AI) Sınıf Arama & Otomatik Ekleme (En Üstte) -->
-        <div class="bg-gradient-to-r from-purple-950/80 via-indigo-950/70 to-slate-900 border border-purple-500/60 rounded-xl p-3 space-y-2 shadow-inner">
+        <!-- Rule Master (AI) Sınıf Arama & Otomatik Ekleme (En Üstte — Sayfanın Kendi Amber Temasıyla Uyumlu) -->
+        <div class="bg-gradient-to-r from-amber-950/50 via-slate-900 to-slate-950 border border-amber-500/50 rounded-xl p-3 space-y-2 shadow-inner">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5 text-[11px] font-bold text-purple-300">
+            <div class="flex items-center gap-1.5 text-[11px] font-bold text-amber-300">
               <span>🧙‍♂️🤖</span>
               <span>Rule Master Class Search / Add</span>
             </div>
-            <span class="text-[9px] text-purple-400 font-medium">D&D 3.5e Compendium & AI</span>
+            <span class="text-[9px] text-amber-400 font-medium">D&D 3.5e Compendium & AI</span>
           </div>
-          <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex items-center gap-2 border border-purple-400/75">
-            <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+          <div class="ui-spotlight-well ui-spotlight-amber rounded-xl p-1.5 flex items-center gap-2 border border-amber-400/75">
+            <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 font-black flex items-center justify-center text-sm shrink-0 shadow">
               🔍
             </div>
             <input 
@@ -4131,7 +4180,7 @@
             <button 
               type="button" 
               onclick="searchOrAddClassWithRuleMaster()" 
-              class="h-8 bg-purple-600 hover:bg-purple-500 border border-purple-400/60 active:scale-95 text-white font-bold text-xs px-3 rounded-lg shadow transition flex items-center gap-1.5 shrink-0 cursor-pointer" 
+              class="h-8 bg-amber-500 hover:bg-amber-400 border border-amber-400/60 active:scale-95 text-slate-950 font-black text-xs px-3 rounded-lg shadow transition flex items-center gap-1.5 shrink-0 cursor-pointer" 
               title="Find & select class, or import via D&D 3.5e rules">
               <span>🧙‍♂️</span>
               <span>Search / Add</span>
@@ -4567,10 +4616,18 @@
               
               <!-- Spotlight Quick Search Bar -->
               <div class="p-2 border-b border-purple-900/40 bg-slate-900/80">
-                <div class="relative flex items-center">
-                  <span class="absolute left-2.5 text-xs text-purple-400 pointer-events-none">🔍</span>
-                  <input type="text" id="race-spotlight-search" placeholder="Search race or find via Rule Master AI..." oninput="onRaceSpotlightFilter(this.value)" onkeydown="onRaceSpotlightKeydown(event)" class="w-full bg-slate-950 border border-purple-500/40 focus:border-purple-400 rounded-lg pl-7 pr-7 py-1 text-xs text-white placeholder-slate-500 font-medium focus:outline-none transition">
-                  <button type="button" id="race-spotlight-clear-btn" onclick="clearRaceSpotlightFilter()" class="hidden absolute right-2 text-slate-400 hover:text-white text-xs px-1" title="Clear">✕</button>
+                <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1 flex items-center gap-1.5 border border-purple-400/75">
+                  <div class="w-7 h-7 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow">
+                    🔍
+                  </div>
+                  <div class="relative flex-1 min-w-0">
+                    <input type="text" id="race-spotlight-search" placeholder="Search race or find via Rule Master AI..." oninput="onRaceSpotlightFilter(this.value)" onkeydown="onRaceSpotlightKeydown(event)" class="w-full h-7 bg-transparent pr-6 text-xs text-white placeholder-slate-200 font-semibold focus:outline-none">
+                    <button type="button" id="race-spotlight-clear-btn" onclick="clearRaceSpotlightFilter()" class="hidden absolute right-1 top-1 text-slate-400 hover:text-white text-xs px-1 cursor-pointer" title="Clear">✕</button>
+                  </div>
+                  <button type="button" onclick="selectRaceItem('Other')" class="h-7 px-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1 shrink-0 shadow transition cursor-pointer" title="Find or create custom race via Rule Master AI">
+                    <span>🔮</span>
+                    <span>AI Race</span>
+                  </button>
                 </div>
               </div>
 
@@ -4624,10 +4681,17 @@
               
               <!-- Header / Filter Search -->
               <div class="p-2 border-b border-purple-900/40 bg-slate-900/80">
-                <div class="relative flex items-center">
-                  <span class="absolute left-2.5 text-xs text-purple-400 pointer-events-none">🔍</span>
-                  <input type="text" id="alignment-spotlight-search" placeholder="Search alignment (good, lawful, chaotic, neutral)..." oninput="onAlignmentFilter(this.value)" class="w-full bg-slate-950 border border-purple-500/40 focus:border-purple-400 rounded-lg pl-7 pr-7 py-1 text-xs text-white placeholder-slate-500 font-medium focus:outline-none transition">
-                  <button type="button" id="alignment-clear-btn" onclick="clearAlignmentFilter()" class="hidden absolute right-2 text-slate-400 hover:text-white text-xs px-1" title="Clear">✕</button>
+                <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1 flex items-center gap-1.5 border border-purple-400/75">
+                  <div class="w-7 h-7 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow">
+                    🔍
+                  </div>
+                  <div class="relative flex-1 min-w-0">
+                    <input type="text" id="alignment-spotlight-search" placeholder="Search alignment (good, lawful, chaotic, neutral)..." oninput="onAlignmentFilter(this.value)" class="w-full h-7 bg-transparent pr-6 text-xs text-white placeholder-slate-200 font-semibold focus:outline-none">
+                    <button type="button" id="alignment-clear-btn" onclick="clearAlignmentFilter()" class="hidden absolute right-1 top-1 text-slate-400 hover:text-white text-xs px-1 cursor-pointer" title="Clear">✕</button>
+                  </div>
+                  <button type="button" onclick="onAlignmentFilter(document.getElementById('alignment-spotlight-search').value)" class="h-7 px-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1 shrink-0 shadow transition cursor-pointer">
+                    <span>🔍</span>
+                  </button>
                 </div>
               </div>
 
@@ -4669,10 +4733,18 @@
               
               <!-- Spotlight Quick Search Bar -->
               <div class="p-2 border-b border-purple-900/40 bg-slate-900/80">
-                <div class="relative flex items-center">
-                  <span class="absolute left-2.5 text-xs text-purple-400 pointer-events-none">🔍</span>
-                  <input type="text" id="deity-spotlight-search" placeholder="Search deity, faith, favored weapon, or domain..." oninput="onDeitySpotlightFilter(this.value)" onkeydown="onDeitySpotlightKeydown(event)" class="w-full bg-slate-950 border border-purple-500/40 focus:border-purple-400 rounded-lg pl-7 pr-7 py-1 text-xs text-white placeholder-slate-500 font-medium focus:outline-none transition">
-                  <button type="button" id="deity-spotlight-clear-btn" onclick="clearDeitySpotlightFilter()" class="hidden absolute right-2 text-slate-400 hover:text-white text-xs px-1" title="Clear">✕</button>
+                <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1 flex items-center gap-1.5 border border-purple-400/75">
+                  <div class="w-7 h-7 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-xs shrink-0 shadow">
+                    🔍
+                  </div>
+                  <div class="relative flex-1 min-w-0">
+                    <input type="text" id="deity-spotlight-search" placeholder="Search deity, faith, favored weapon, or domain..." oninput="onDeitySpotlightFilter(this.value)" onkeydown="onDeitySpotlightKeydown(event)" class="w-full h-7 bg-transparent pr-6 text-xs text-white placeholder-slate-200 font-semibold focus:outline-none">
+                    <button type="button" id="deity-spotlight-clear-btn" onclick="clearDeitySpotlightFilter()" class="hidden absolute right-1 top-1 text-slate-400 hover:text-white text-xs px-1 cursor-pointer" title="Clear">✕</button>
+                  </div>
+                  <button type="button" onclick="selectDeityItem('Other')" class="h-7 px-2.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1 shrink-0 shadow transition cursor-pointer" title="Find or create custom deity via Rule Master AI">
+                    <span>🔮</span>
+                    <span>AI Deity</span>
+                  </button>
                 </div>
               </div>
 
@@ -5705,19 +5777,19 @@
         <!-- ==================================================== -->
         <!-- 🔍 RULE MASTER: SINIF & PRESTİJ SINIFI ARAMA KONSOLU -->
         <!-- ==========================================
-             1. CLASS SELECTION (SPOTLIGHT & RULE MASTER AI)
+             1. CLASS SELECTION (SPOTLIGHT & RULE MASTER AI — LEVEL-UP EMERALD THEME)
         ========================================== -->
-        <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-purple-500/50 rounded-xl p-3 shadow-xl space-y-2.5 transition" id="lvlup-class-search-card">
+        <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-emerald-500/50 rounded-xl p-3 shadow-xl space-y-2.5 transition" id="lvlup-class-search-card">
           <!-- Card Header -->
-          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-purple-500/20 pb-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-500/20 pb-2">
             <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-lg bg-purple-950/80 border border-purple-500/40 flex items-center justify-center text-base shadow shrink-0">
+              <div class="w-8 h-8 rounded-lg bg-emerald-950/80 border border-emerald-500/40 flex items-center justify-center text-base shadow shrink-0">
                 👑
               </div>
               <div>
                 <div class="text-xs font-black text-white flex items-center gap-1.5 flex-wrap">
                   <span class="font-bold">Target Class *</span>
-                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-500/40 font-mono">D&D 3.5e RAW</span>
+                  <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-500/40 font-mono">D&D 3.5e RAW</span>
                   <span id="lvlup-class-count-badge" class="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">27 Classes</span>
                 </div>
                 <div class="text-[10px] text-slate-400">Search base and prestige classes, inspect prerequisites, and assign your level.</div>
@@ -5735,10 +5807,10 @@
           <!-- Hidden select for engine & save backward compatibility -->
           <select id="lvlup-class-select" onchange="onLevelUpClassChange()" class="hidden"></select>
 
-          <!-- Search & Filters Row (Unified Alternatif A + C Command Bar) -->
+          <!-- Search & Filters Row (Unified Alternatif A + C Command Bar in Native Emerald Theme) -->
           <div class="space-y-2">
-            <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex items-center gap-2 border border-purple-400/75">
-              <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+            <div class="ui-spotlight-well ui-spotlight-emerald rounded-xl p-1.5 flex items-center gap-2 border border-emerald-400/75">
+              <div class="w-8 h-8 rounded-lg bg-emerald-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
                 🔎
               </div>
               <div class="relative flex-1 min-w-0">
@@ -5751,7 +5823,7 @@
                   class="w-full h-8 bg-transparent pr-7 text-xs sm:text-sm font-semibold text-white placeholder-slate-200 focus:outline-none">
                 <button type="button" onclick="clearLevelUpClassSearch()" class="absolute right-1.5 top-1.5 text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
               </div>
-              <button type="button" onclick="onClassSearchEnterKey()" class="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer" title="Select matching class or fetch via Rule Master AI">
+              <button type="button" onclick="onClassSearchEnterKey()" class="h-8 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400/60 font-bold text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer" title="Select matching class or fetch via Rule Master AI">
                 <span>🧙‍♂️</span>
                 <span>AI Lookup</span>
               </button>
@@ -5759,7 +5831,7 @@
             
             <!-- Calmed Filter chips (Subordinate to Command Bar) -->
             <div class="flex items-center gap-1.5 overflow-x-auto shrink-0 pb-0.5 sm:pb-0">
-              <button type="button" onclick="setClassFilterTab('all')" id="class-filter-tab-all" class="px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-purple-500/20 text-purple-200 border border-purple-400/50 shadow-sm cursor-pointer">All</button>
+              <button type="button" onclick="setClassFilterTab('all')" id="class-filter-tab-all" class="px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-emerald-500/20 text-emerald-200 border border-emerald-400/50 shadow-sm cursor-pointer">All</button>
               <button type="button" onclick="setClassFilterTab('base')" id="class-filter-tab-base" class="px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer">🛡️ Base</button>
               <button type="button" onclick="setClassFilterTab('prestige')" id="class-filter-tab-prestige" class="px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer">👑 Prestige</button>
               <button type="button" onclick="setClassFilterTab('custom')" id="class-filter-tab-custom" class="px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer">⚙️ Custom</button>
@@ -6016,7 +6088,7 @@
           type="button"
           id="buff-tab-btn-spotlight"
           onclick="switchBuffModalTab('spotlight')"
-          class="flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-purple-950/80 border-purple-500/60 text-purple-200 shadow-sm cursor-pointer">
+          class="flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-indigo-950/80 border-indigo-500/60 text-indigo-200 shadow-sm cursor-pointer">
           <span>⚡</span>
           <span>Spotlight &amp; Rule Master (AI)</span>
         </button>
@@ -6035,16 +6107,16 @@
         <!-- TAB 1: SPOTLIGHT COMPENDIUM SEARCH & RULE MASTER AI  -->
         <!-- ==================================================== -->
         <div id="buff-modal-pane-spotlight" class="space-y-3">
-          <div id="buff-rule-master-box" class="bg-gradient-to-r from-purple-950/70 via-indigo-950/60 to-slate-900 border border-purple-500/40 rounded-xl p-3 space-y-2.5 shadow-inner">
+          <div id="buff-rule-master-box" class="bg-gradient-to-r from-indigo-950/70 via-slate-900 to-slate-950 border border-indigo-500/40 rounded-xl p-3 space-y-2.5 shadow-inner">
             <div class="flex items-center justify-between gap-2">
-              <span id="buff-rule-master-title" class="text-xs font-bold text-purple-300 flex items-center gap-1.5">
+              <span id="buff-rule-master-title" class="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
                 <span>⚡</span>
                 <span>Spotlight Compendium Search &amp; Rule Master (AI)</span>
               </span>
-              <span id="buff-spotlight-count-badge" class="text-[10px] text-purple-300 font-mono bg-purple-950/70 px-2 py-0.5 rounded border border-purple-500/40 shrink-0">236+ V2 Buffs &amp; Conditions</span>
+              <span id="buff-spotlight-count-badge" class="text-[10px] text-indigo-300 font-mono bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-500/40 shrink-0">236+ V2 Buffs &amp; Conditions</span>
             </div>
-            <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex items-center gap-2 border border-purple-400/75">
-              <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+            <div id="buff-spotlight-command-bar" class="ui-spotlight-well ui-spotlight-indigo rounded-xl p-1.5 flex items-center gap-2 border border-indigo-400/75">
+              <div id="buff-spotlight-icon-badge" class="w-8 h-8 rounded-lg bg-indigo-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
                 🔍
               </div>
               <div class="relative flex-1 min-w-0">
@@ -6058,13 +6130,13 @@
                   oninput="onBuffSpotlightInput(this.value, true)"
                   onkeydown="onBuffSpotlightKeydown(event)"
                   class="w-full h-8 bg-transparent pr-7 text-xs sm:text-sm text-white placeholder-slate-200 focus:outline-none font-semibold">
-                <button type="button" onclick="toggleBuffSpotlightListDropdown(event)" title="Show / Hide Full List" class="absolute right-1.5 top-1.5 text-xs text-slate-300 hover:text-purple-200 px-1 cursor-pointer">▾</button>
+                <button type="button" onclick="toggleBuffSpotlightListDropdown(event)" title="Show / Hide Full List" class="absolute right-1.5 top-1.5 text-xs text-slate-300 hover:text-white px-1 cursor-pointer">▾</button>
               </div>
               <button 
                 type="button" 
                 onclick="queryRuleMasterForBuff()" 
                 id="btn-buff-rule-master"
-                class="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0"
+                class="h-8 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/60 font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0"
                 title="Search Compendium or Fetch from D&D 3.5e Sourcebooks with Rule Master (AI)">
                 <span>🧙‍♂️</span>
                 <span>AI Fetch</span>
@@ -6751,11 +6823,11 @@
         </button>
       </div>
 
-      <!-- Search & Filters (Unified Alternatif A + C Command Bar) -->
+      <!-- Search & Filters (Unified Alternatif A + C Command Bar — Dynamic Spell/Maneuver Theme) -->
       <div class="p-3 bg-slate-950/60 border-b border-slate-800 shrink-0 space-y-2">
-        <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border border-purple-400/75">
+        <div id="spell-picker-command-bar" class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 border border-purple-400/75">
           <div class="flex items-center gap-2 flex-1 min-w-0">
-            <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+            <div id="spell-picker-icon-badge" class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
               🔍
             </div>
             <input 
@@ -6795,7 +6867,7 @@
               <option value="8">Level 8</option>
               <option value="9">Level 9</option>
             </select>
-            <button type="button" onclick="triggerSpellPickerAiSearch()" class="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer" title="Search Compendium or Fetch via Rule Master AI">
+            <button type="button" id="spell-picker-ai-lookup-btn" onclick="triggerSpellPickerAiSearch()" class="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer" title="Search Compendium or Fetch via Rule Master AI">
               <span>🧙‍♂️</span>
               <span>AI Lookup</span>
             </button>

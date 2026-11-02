@@ -1888,6 +1888,7 @@
     function switchBuffModalTab(tabName) {
       currentBuffModalTab = tabName === 'manual' ? 'manual' : 'spotlight';
       const isManual = currentBuffModalTab === 'manual';
+      const isDebuff = currentBuffModalMode === 'debuff';
       const paneSpot = document.getElementById('buff-modal-pane-spotlight');
       const paneManual = document.getElementById('buff-modal-pane-manual');
       const btnSpot = document.getElementById('buff-tab-btn-spotlight');
@@ -1896,15 +1897,16 @@
       if (paneSpot) paneSpot.classList.toggle('hidden', isManual);
       if (paneManual) paneManual.classList.toggle('hidden', !isManual);
 
+      const activeTabClasses = isDebuff
+        ? 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-rose-950/80 border-rose-500/60 text-rose-200 shadow-sm cursor-pointer'
+        : 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-indigo-950/80 border-indigo-500/60 text-indigo-200 shadow-sm cursor-pointer';
+      const inactiveTabClasses = 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 cursor-pointer';
+
       if (btnSpot) {
-        btnSpot.className = !isManual
-          ? 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-purple-950/80 border-purple-500/60 text-purple-200 shadow-sm cursor-pointer'
-          : 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 cursor-pointer';
+        btnSpot.className = !isManual ? activeTabClasses : inactiveTabClasses;
       }
       if (btnManual) {
-        btnManual.className = isManual
-          ? 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-indigo-950/80 border-indigo-500/60 text-indigo-200 shadow-sm cursor-pointer'
-          : 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 cursor-pointer';
+        btnManual.className = isManual ? activeTabClasses : inactiveTabClasses;
       }
 
       if (isManual) {
@@ -2594,7 +2596,12 @@
       const modalTitle = document.getElementById('buff-modal-title');
       const modalBadge = document.getElementById('buff-modal-badge');
       const modalSubtitle = document.getElementById('buff-modal-subtitle');
+      const rmBox = document.getElementById('buff-rule-master-box');
       const rmTitle = document.getElementById('buff-rule-master-title');
+      const rmCountBadge = document.getElementById('buff-spotlight-count-badge');
+      const rmCmdBar = document.getElementById('buff-spotlight-command-bar');
+      const rmIconBadge = document.getElementById('buff-spotlight-icon-badge');
+      const rmBtn = document.getElementById('btn-buff-rule-master');
       const rmInput = document.getElementById('buff-rule-master-input');
       const presetLabel = document.getElementById('buff-preset-label');
       const presetSelect = document.getElementById('buff-preset-select');
@@ -2639,7 +2646,15 @@
           modalBadge.textContent = 'D&D 3.5e RAW (Debuff)';
         }
         if (modalSubtitle) modalSubtitle.textContent = 'Search 35+ SRD conditions & debuffs via Spotlight or Rule Master (AI)';
-        if (rmTitle) rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Condition Search &amp; Rule Master (AI)</span>';
+        if (rmBox) rmBox.className = 'bg-gradient-to-r from-rose-950/70 via-slate-900 to-slate-950 border border-rose-500/40 rounded-xl p-3 space-y-2.5 shadow-inner';
+        if (rmTitle) {
+          rmTitle.className = 'text-xs font-bold text-rose-300 flex items-center gap-1.5';
+          rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Condition Search &amp; Rule Master (AI)</span>';
+        }
+        if (rmCountBadge) rmCountBadge.className = 'text-[10px] text-rose-300 font-mono bg-rose-950/70 px-2 py-0.5 rounded border border-rose-500/40 shrink-0';
+        if (rmCmdBar) rmCmdBar.className = 'ui-spotlight-well ui-spotlight-rose rounded-xl p-1.5 flex items-center gap-2 border border-rose-400/75';
+        if (rmIconBadge) rmIconBadge.className = 'w-8 h-8 rounded-lg bg-rose-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow';
+        if (rmBtn) rmBtn.className = 'h-8 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white border border-rose-400/60 font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0';
         if (rmInput) rmInput.placeholder = 'Click to browse all conditions, or type to filter (e.g., Sickened, Slow)...';
         if (presetLabel) presetLabel.textContent = 'Examples:';
         if (nameLabel) nameLabel.textContent = 'Debuff / Condition Name *';
@@ -2679,7 +2694,15 @@
           modalBadge.textContent = 'D&D 3.5e RAW (Buff)';
         }
         if (modalSubtitle) modalSubtitle.textContent = 'Search 200+ V2 spells & combat buffs via Spotlight or Rule Master (AI)';
-        if (rmTitle) rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Buff Search &amp; Rule Master (AI)</span>';
+        if (rmBox) rmBox.className = 'bg-gradient-to-r from-indigo-950/70 via-slate-900 to-slate-950 border border-indigo-500/40 rounded-xl p-3 space-y-2.5 shadow-inner';
+        if (rmTitle) {
+          rmTitle.className = 'text-xs font-bold text-indigo-300 flex items-center gap-1.5';
+          rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Buff Search &amp; Rule Master (AI)</span>';
+        }
+        if (rmCountBadge) rmCountBadge.className = 'text-[10px] text-indigo-300 font-mono bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-500/40 shrink-0';
+        if (rmCmdBar) rmCmdBar.className = 'ui-spotlight-well ui-spotlight-indigo rounded-xl p-1.5 flex items-center gap-2 border border-indigo-400/75';
+        if (rmIconBadge) rmIconBadge.className = 'w-8 h-8 rounded-lg bg-indigo-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow';
+        if (rmBtn) rmBtn.className = 'h-8 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/60 font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0';
         if (rmInput) rmInput.placeholder = 'Click to browse all buffs, or type to filter (e.g., Haste, Barkskin)...';
         if (presetLabel) presetLabel.textContent = 'Examples:';
         if (nameLabel) nameLabel.textContent = 'Buff / Effect Name *';
@@ -2700,6 +2723,7 @@
         }
       }
 
+      switchBuffModalTab(currentBuffModalTab);
       renderBuffQuickPickChips();
     }
 
