@@ -1198,7 +1198,7 @@
             </div>
             <div class="flex items-center gap-2">
               <span id="spells-hud-asf-badge" class="h-8 px-2.5 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold inline-flex items-center">🛡️ ASF: %0</span>
-              <button onclick="restoreAllSpellSlots()" class="h-8 bg-purple-800 hover:bg-purple-700 text-white text-xs font-bold px-3 rounded-lg border border-purple-500/50 shadow transition flex items-center gap-1.5 cursor-pointer">
+              <button onclick="restoreAllSpellSlots()" class="w-40 h-8 bg-purple-800 hover:bg-purple-700 text-white text-xs font-bold px-3 rounded-lg border border-purple-500/50 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>✨</span>
                 <span>Restore All Slots</span>
               </button>
@@ -1336,7 +1336,7 @@
             </div>
             <div class="flex items-center gap-2">
               <span id="readied-quota-badge" class="h-8 px-2.5 rounded-lg bg-slate-950 text-amber-300 border border-amber-600/60 text-xs font-bold font-mono inline-flex items-center">0 / 0 Readied</span>
-              <button onclick="recoverAllManeuvers()" class="h-8 bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold px-3 rounded-lg border border-rose-500/60 shadow transition flex items-center gap-1.5 cursor-pointer" title="Recover all expended maneuvers as a Swift Action">
+              <button onclick="recoverAllManeuvers()" class="w-40 h-8 bg-rose-700 hover:bg-rose-600 text-white text-xs font-bold px-3 rounded-lg border border-rose-500/60 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer" title="Recover all expended maneuvers as a Swift Action">
                 <span>🔄</span>
                 <span>Swift Recover</span>
               </button>
@@ -2774,7 +2774,7 @@
                 <option value="Shield">Shields Only</option>
               </select>
               <input type="text" id="wa-search-input" onkeyup="RuleMaster.renderWeaponsArmors()" placeholder="Search weapon or armor..." class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-3 text-xs text-white focus:outline-none focus:border-purple-500">
-              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Weapon'), -1)" class="h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center gap-1.5 cursor-pointer">
+              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Weapon'), -1)" class="w-36 h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>➕</span>
                 <span>Add New</span>
               </button>
@@ -2816,7 +2816,7 @@
                 <option value="9">Level 9</option>
               </select>
               <input type="text" id="sm-search-input" onkeyup="RuleMaster.renderSpellsManeuvers()" placeholder="Search spell or maneuver..." class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-3 text-xs text-white focus:outline-none focus:border-purple-500">
-              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Spell'), -1)" class="h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center gap-1.5 cursor-pointer">
+              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Spell'), -1)" class="w-36 h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>➕</span>
                 <span>Add New</span>
               </button>
@@ -2839,7 +2839,7 @@
             </div>
             <div class="flex items-center gap-2">
               <input type="text" id="feats-search-input" onkeyup="RuleMaster.renderFeats()" placeholder="Search feat name, prerequisite, or benefit..." class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-3 text-xs text-white focus:outline-none focus:border-purple-500">
-              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Feat'), -1)" class="h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center gap-1.5 cursor-pointer">
+              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Feat'), -1)" class="w-36 h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>➕</span>
                 <span>Add New Feat</span>
               </button>
@@ -2877,7 +2877,7 @@
                 <option value="Slotless">Slotless</option>
               </select>
               <input type="text" id="mi-search-input" onkeyup="RuleMaster.renderMagicItems()" placeholder="Search magic item or potion..." class="ui-input-md h-8 bg-slate-950 border border-slate-700 rounded-lg px-3 text-xs text-white focus:outline-none focus:border-purple-500">
-              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Wondrous Item'), -1)" class="h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center gap-1.5 cursor-pointer">
+              <button onclick="RuleMaster.openModalWithData(RuleMaster.createEmptyEntry('Wondrous Item'), -1)" class="w-36 h-8 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 rounded-lg transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>➕</span>
                 <span>New Item</span>
               </button>

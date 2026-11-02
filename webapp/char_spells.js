@@ -947,7 +947,7 @@
         const isActive = String(lvlFilter) === String(lvl);
         const label = lvl === 'all' ? 'All' : (lvl === 0 ? 'Level 0' : `Level ${lvl}`);
         return `
-          <button type="button" onclick="setPreparedFilterLevel('${lvl}')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
+          <button type="button" onclick="setPreparedFilterLevel('${lvl}')" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
             isActive ? 'bg-sky-700 text-white border-sky-400 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
           }">${label}</button>
         `;
@@ -1055,7 +1055,7 @@
                     hasActiveSlot 
                       ? 'bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border-amber-600/80 cursor-pointer shadow' 
                       : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
-                  } text-xs font-bold font-mono px-2.5 py-1 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
+                  } h-7 min-w-[115px] text-xs font-bold font-mono px-2.5 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
                     hasActiveSlot ? `Cast Spell & Roll Damage (${dmgExpr})` : '⚠️ No active spell slots remaining (0 Left)'
                   }">
                     ${getFormulaDiceIconSvg(dmgExpr, 'w-3.5 h-3.5 text-amber-400 shrink-0')}
@@ -1066,7 +1066,7 @@
                     hasActiveSlot 
                       ? 'bg-sky-900/70 hover:bg-sky-600 text-white border-sky-500 cursor-pointer shadow' 
                       : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
-                  } text-xs font-bold px-2.5 py-1 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
+                  } h-7 min-w-[115px] text-xs font-bold px-2.5 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
                     hasActiveSlot ? 'Cast Spell (Spend Slot)' : '⚠️ No active spell slots remaining (0 Left)'
                   }">
                     <span>📖</span>
@@ -1110,7 +1110,7 @@
             <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This prepared slot is empty. Click to prepare a ${lvl === 0 ? 'Level 0 (Cantrip)' : `Level ${lvl}`} spell.</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
-                <button type="button" onclick="openPreparedSpellPickerForLevel(${lvl})" class="bg-sky-950/80 hover:bg-sky-900 text-sky-300 hover:text-white border border-dashed border-sky-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Prepare Level ${lvl} Spell">
+                <button type="button" onclick="openPreparedSpellPickerForLevel(${lvl})" class="h-7 min-w-[115px] bg-sky-950/80 hover:bg-sky-900 text-sky-300 hover:text-white border border-dashed border-sky-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Prepare Level ${lvl} Spell">
                   <span>✨</span>
                   <span>+ Select Spell</span>
                 </button>
@@ -1140,8 +1140,8 @@
               </div>
             </div>
             <div class="flex items-center gap-2">
-              <span class="badge ${ignoreAsf ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-slate-800 text-slate-400 border border-slate-700'} text-xs font-bold">${ignoreAsf ? '🛡️ ASF: 0% (DM Boon)' : '🛡️ ASF: Standard'}</span>
-              <button onclick="restoreAllPreparedSlots()" class="bg-sky-800 hover:bg-sky-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-sky-500/50 shadow transition flex items-center gap-1 cursor-pointer">
+              <span class="h-8 px-2.5 rounded-lg ${ignoreAsf ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-slate-800 text-slate-400 border border-slate-700'} text-xs font-bold inline-flex items-center">${ignoreAsf ? '🛡️ ASF: 0% (DM Boon)' : '🛡️ ASF: Standard'}</span>
+              <button onclick="restoreAllPreparedSlots()" class="w-40 h-8 bg-sky-800 hover:bg-sky-700 text-white text-xs font-bold px-3 rounded-lg border border-sky-500/50 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>✨</span>
                 <span>Restore All Slots</span>
               </button>
@@ -1150,14 +1150,14 @@
 
           <!-- 4x3 Fixed Slot Matrix -->
           <div class="bg-slate-950/80 border border-sky-900/50 rounded-xl p-2.5 space-y-2 shadow">
-            <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] px-1">
+            <div class="min-h-[24px] flex flex-wrap items-center justify-between gap-2 text-[11px] px-1">
               <span class="text-sky-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <span>⚡</span>
                 <span>Daily Prepared Slots (4×3 Vancian Matrix):</span>
               </span>
               <div class="flex items-center gap-2">
                 <span class="text-slate-400 text-[10px] hidden sm:inline">Casting expends a prepared slot • DM bonus slots supported</span>
-                <button type="button" onclick="openSpellSlotsModal(undefined, 'prepared')" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-amber-900/50 transition" title="Slot Management &amp; DM Bonuses">
+                <button type="button" onclick="openSpellSlotsModal(undefined, 'prepared')" class="ui-btn-xs h-6 px-2.5 text-[10px] text-amber-400 hover:text-amber-200 font-bold inline-flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 rounded-md border border-amber-900/50 transition" title="Slot Management &amp; DM Bonuses">
                   <span>⚙️</span>
                   <span>Slot &amp; DM Bonus Manager</span>
                 </button>
@@ -1173,10 +1173,10 @@
             <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
               <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
                 <div class="relative flex-1 min-w-[180px]">
-                  <input type="text" id="prep-spell-filter-search" value="${searchVal}" oninput="renderPreparedDisciplineView(${Boolean(hasPrepared)})" placeholder="Search prepared spell name, school, or effect..." class="w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 py-1.5 pl-8 focus:outline-none focus:border-sky-500">
-                  <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+                  <input type="text" id="prep-spell-filter-search" value="${searchVal}" oninput="renderPreparedDisciplineView(${Boolean(hasPrepared)})" placeholder="Search prepared spell name, school, or effect..." class="ui-input-md h-8 w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 pl-8 focus:outline-none focus:border-sky-500">
+                  <span class="absolute inset-y-0 left-2.5 flex items-center pointer-events-none text-slate-400 text-xs">🔍</span>
                 </div>
-                <select id="prep-spell-filter-school" onchange="renderPreparedDisciplineView(${Boolean(hasPrepared)})" class="bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 py-1.5 focus:outline-none focus:border-sky-500">
+                <select id="prep-spell-filter-school" onchange="renderPreparedDisciplineView(${Boolean(hasPrepared)})" class="ui-input-md h-8 bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 focus:outline-none focus:border-sky-500 cursor-pointer">
                   <option value="all" ${schoolVal === 'all' ? 'selected' : ''}>All Schools</option>
                   <option value="Abjuration" ${schoolVal === 'Abjuration' ? 'selected' : ''}>Abjuration</option>
                   <option value="Conjuration" ${schoolVal === 'Conjuration' ? 'selected' : ''}>Conjuration</option>
@@ -1842,7 +1842,7 @@
         const isActive = String(lvlFilter) === String(lvl);
         const label = lvl === 'all' ? 'All' : (lvl === 0 ? 'Level 0' : `Level ${lvl}`);
         return `
-          <button type="button" onclick="setDivineFilterLevel('${lvl}')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
+          <button type="button" onclick="setDivineFilterLevel('${lvl}')" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
             isActive ? 'bg-amber-700 text-white border-amber-400 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
           }">${label}</button>
         `;
@@ -1955,7 +1955,7 @@
                 ? 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80 cursor-pointer shadow'
                 : 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80 cursor-pointer shadow')
               : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
-          } text-[11px] font-bold font-mono px-2 py-1 rounded-lg border transition inline-flex items-center justify-center gap-1 whitespace-nowrap" title="${
+          } h-7 text-[11px] font-bold font-mono px-2 rounded-lg border transition inline-flex items-center justify-center gap-1 whitespace-nowrap" title="${
             hasActiveSlot ? `Cleric Spontaneous Conversion: Convert '${s.name}' slot into '${spontInfo.name}' (${spontInfo.formula})` : '⚠️ No active spell slots remaining (0 Left)'
           }">
             ${getFormulaDiceIconSvg(spontInfo.formula, spontMode === 'cure' ? 'w-3.5 h-3.5 text-emerald-300 shrink-0' : 'w-3.5 h-3.5 text-rose-300 shrink-0')}
@@ -2000,7 +2000,7 @@
                     hasActiveSlot 
                       ? 'bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border-amber-600/80 cursor-pointer shadow' 
                       : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
-                  } text-xs font-bold font-mono px-2.5 py-1 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
+                  } h-7 min-w-[115px] text-xs font-bold font-mono px-2.5 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
                     hasActiveSlot ? `Cast Spell & Roll Dice (${dmgExpr})` : '⚠️ No active spell slots remaining (0 Left)'
                   }">
                     ${getFormulaDiceIconSvg(dmgExpr, 'w-3.5 h-3.5 text-amber-400 shrink-0')}
@@ -2011,7 +2011,7 @@
                     hasActiveSlot 
                       ? 'bg-amber-900/70 hover:bg-amber-600 text-white border-amber-500 cursor-pointer shadow' 
                       : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
-                  } text-xs font-bold px-2.5 py-1 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
+                  } h-7 min-w-[115px] text-xs font-bold px-2.5 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
                     hasActiveSlot ? 'Cast Spell (Spend Slot)' : '⚠️ No active spell slots remaining (0 Left)'
                   }">
                     <span>✨</span>
@@ -2059,7 +2059,7 @@
             <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">Regular Cleric/Divine spell slot. Click to prepare a ${lvl === 0 ? 'Level 0 (Orison)' : `Level ${lvl}`} class spell.</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
-                <button type="button" onclick="openDivineSpellPickerForLevel(${lvl}, false)" class="bg-amber-950/80 hover:bg-amber-900 text-amber-300 hover:text-white border border-dashed border-amber-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Prepare Level ${lvl} Divine Spell">
+                <button type="button" onclick="openDivineSpellPickerForLevel(${lvl}, false)" class="h-7 min-w-[115px] bg-amber-950/80 hover:bg-amber-900 text-amber-300 hover:text-white border border-dashed border-amber-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Prepare Level ${lvl} Divine Spell">
                   <span>✨</span>
                   <span>+ Select Spell</span>
                 </button>
@@ -2109,7 +2109,7 @@
             </td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
-                <button type="button" onclick="${rowClickAction}" class="bg-yellow-950/90 hover:bg-yellow-800 text-yellow-200 hover:text-white border border-dashed border-yellow-400/90 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="${hasChosenDomains ? `Prepare Level ${lvl} Domain Spell (${domLabel})` : 'Select Cleric Domains'}">
+                <button type="button" onclick="${rowClickAction}" class="h-7 min-w-[115px] bg-yellow-950/90 hover:bg-yellow-800 text-yellow-200 hover:text-white border border-dashed border-yellow-400/90 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="${hasChosenDomains ? `Prepare Level ${lvl} Domain Spell (${domLabel})` : 'Select Cleric Domains'}">
                   <span>⚜️</span>
                   <span>${hasChosenDomains ? '+ Domain Spell' : '+ Select Domains'}</span>
                 </button>
@@ -2149,12 +2149,12 @@
                 spontMode === 'cure'
                   ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80'
                   : 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-500/80'
-              } border text-xs font-bold px-2.5 py-1.5 rounded-lg shadow transition flex items-center gap-1.5 cursor-pointer" title="${energyPolicy.reason}">
+              } h-8 px-3 border text-xs font-bold rounded-lg shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer" title="${energyPolicy.reason}">
                 <span>${spontMode === 'cure' ? '💚' : '💀'}</span>
                 <span>Spontaneous: ${spontMode === 'cure' ? 'Cure Wounds' : 'Inflict Wounds'}${energyPolicy.locked ? ' 🔒' : ''}</span>
               </button>
-              <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold">🛡️ ASF: 0%</span>
-              <button onclick="restoreAllDivineSlots()" class="bg-amber-800 hover:bg-amber-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-500/50 shadow transition flex items-center gap-1 cursor-pointer">
+              <span class="h-8 px-2.5 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold inline-flex items-center">🛡️ ASF: 0%</span>
+              <button onclick="restoreAllDivineSlots()" class="w-40 h-8 bg-amber-800 hover:bg-amber-700 text-white text-xs font-bold px-3 rounded-lg border border-amber-500/50 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>✨</span>
                 <span>Restore All Slots</span>
               </button>
@@ -2163,14 +2163,14 @@
 
           <!-- 4x3 Fixed Slot Matrix -->
           <div class="bg-slate-950/80 border border-amber-900/50 rounded-xl p-2.5 space-y-2 shadow">
-            <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] px-1">
+            <div class="min-h-[24px] flex flex-wrap items-center justify-between gap-2 text-[11px] px-1">
               <span class="text-amber-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <span>⚡</span>
                 <span>Daily Divine Spell Slots (4×3 Matrix):</span>
               </span>
               <div class="flex items-center gap-2">
                 <span class="text-slate-400 text-[10px] hidden sm:inline">Casting expends a divine slot • DM bonus slots supported</span>
-                <button type="button" onclick="openSpellSlotsModal(undefined, 'divine')" class="text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-amber-900/50 transition" title="Slot Management &amp; DM Bonuses">
+                <button type="button" onclick="openSpellSlotsModal(undefined, 'divine')" class="ui-btn-xs h-6 px-2.5 text-[10px] text-amber-400 hover:text-amber-200 font-bold inline-flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 rounded-md border border-amber-900/50 transition" title="Slot Management &amp; DM Bonuses">
                   <span>⚙️</span>
                   <span>Slot &amp; DM Bonus Manager</span>
                 </button>
@@ -2186,10 +2186,10 @@
             <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
               <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
                 <div class="relative flex-1 min-w-[180px]">
-                  <input type="text" id="divine-spell-filter-search" value="${searchVal}" oninput="renderDivineDisciplineView(${Boolean(hasDivine)})" placeholder="Search divine spell name, school, or effect..." class="w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 py-1.5 pl-8 focus:outline-none focus:border-amber-500">
-                  <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+                  <input type="text" id="divine-spell-filter-search" value="${searchVal}" oninput="renderDivineDisciplineView(${Boolean(hasDivine)})" placeholder="Search divine spell name, school, or effect..." class="ui-input-md h-8 w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 pl-8 focus:outline-none focus:border-amber-500">
+                  <span class="absolute inset-y-0 left-2.5 flex items-center pointer-events-none text-slate-400 text-xs">🔍</span>
                 </div>
-                <select id="divine-spell-filter-school" onchange="renderDivineDisciplineView(${Boolean(hasDivine)})" class="bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 py-1.5 focus:outline-none focus:border-amber-500">
+                <select id="divine-spell-filter-school" onchange="renderDivineDisciplineView(${Boolean(hasDivine)})" class="ui-input-md h-8 bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 focus:outline-none focus:border-amber-500 cursor-pointer">
                   <option value="all" ${schoolVal === 'all' ? 'selected' : ''}>All Schools</option>
                   <option value="Abjuration" ${schoolVal === 'Abjuration' ? 'selected' : ''}>Abjuration</option>
                   <option value="Conjuration" ${schoolVal === 'Conjuration' ? 'selected' : ''}>Conjuration (Healing / Summoning)</option>
@@ -2762,8 +2762,8 @@
         const ignoreAsf = character?.settings?.ignoreAsf !== false;
         asfBadge.textContent = ignoreAsf ? '🛡️ ASF: 0% (DM Boon)' : '🛡️ ASF: Standard';
         asfBadge.className = ignoreAsf
-          ? 'badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold'
-          : 'badge bg-slate-800 text-slate-400 border border-slate-700 text-xs font-bold';
+          ? 'h-8 px-2.5 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold inline-flex items-center'
+          : 'h-8 px-2.5 rounded-lg bg-slate-800 text-slate-400 border border-slate-700 text-xs font-bold inline-flex items-center';
       }
 
       // Martial Adept Header Info
@@ -3854,7 +3854,7 @@
           { key: 'stance', label: '🥋 Stances' }
         ];
         pillsEl.innerHTML = types.map(t => `
-          <button type="button" onclick="setManeuverTypeFilter('${t.key}')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
+          <button type="button" onclick="setManeuverTypeFilter('${t.key}')" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
             typeFilter === t.key ? 'bg-rose-800 text-white border-rose-500 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
           }">${t.label}</button>
         `).join('');
@@ -3908,17 +3908,17 @@
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
                 ${dmgExpr ? `
-                  <button onclick="rollSpellOrManeuverFormula('${dmgExpr}', '${m.name} Damage')" class="bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2 py-1 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Roll Damage Dice (${dmgExpr})">
+                  <button onclick="rollSpellOrManeuverFormula('${dmgExpr}', '${m.name} Damage')" class="h-7 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Roll Damage Dice (${dmgExpr})">
                     ${getFormulaDiceIconSvg(dmgExpr, 'w-3.5 h-3.5 text-amber-400 shrink-0')}
                     <span>${dmgExpr}</span>
                   </button>
                 ` : ''}
                 ${isReadied ? `
-                  <button onclick="toggleManeuverReadied('${escape(m.name)}')" class="bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
+                  <button onclick="toggleManeuverReadied('${escape(m.name)}')" class="h-7 min-w-[115px] bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-xs font-bold px-2.5 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
                     ✓ Readied
                   </button>
                 ` : `
-                  <button onclick="toggleManeuverReadied('${escape(m.name)}')" ${character.tomeOfBattle.readiedManeuvers.length >= maxReadied ? 'disabled' : ''} class="bg-slate-800 hover:bg-rose-900 disabled:opacity-40 text-slate-300 hover:text-white border border-slate-700 hover:border-rose-600 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
+                  <button onclick="toggleManeuverReadied('${escape(m.name)}')" ${character.tomeOfBattle.readiedManeuvers.length >= maxReadied ? 'disabled' : ''} class="h-7 min-w-[115px] bg-slate-800 hover:bg-rose-900 disabled:opacity-40 text-slate-300 hover:text-white border border-slate-700 hover:border-rose-600 text-xs font-bold px-2.5 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
                     + Ready
                   </button>
                 `}
@@ -3951,7 +3951,7 @@
             <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This maneuver slot is empty. Click to learn a maneuver up to Level ${initInfo.maxManeuverLvl}.</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
-                <button type="button" onclick="openManeuverPickerModal('Maneuver')" class="bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-dashed border-rose-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
+                <button type="button" onclick="openManeuverPickerModal('Maneuver')" class="h-7 min-w-[115px] bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-dashed border-rose-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
                   <span>⚔️</span>
                   <span>+ Select Maneuver</span>
                 </button>
@@ -3983,17 +3983,17 @@
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
                 ${dmgExpr ? `
-                  <button onclick="rollSpellOrManeuverFormula('${dmgExpr}', '${st.name} Damage')" class="bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2 py-1 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Roll Stance Damage (${dmgExpr})">
+                  <button onclick="rollSpellOrManeuverFormula('${dmgExpr}', '${st.name} Damage')" class="h-7 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Roll Stance Damage (${dmgExpr})">
                     ${getFormulaDiceIconSvg(dmgExpr, 'w-3.5 h-3.5 text-amber-400 shrink-0')}
                     <span>${dmgExpr}</span>
                   </button>
                 ` : ''}
                 ${isActive ? `
-                  <span class="badge bg-teal-950 text-teal-300 border border-teal-600 text-xs font-bold px-2.5 py-1 whitespace-nowrap">
+                  <span class="h-7 min-w-[115px] rounded-lg bg-teal-950 text-teal-300 border border-teal-600 text-xs font-bold px-2.5 inline-flex items-center justify-center whitespace-nowrap">
                     🥋 Active Stance
                   </span>
                 ` : `
-                  <button onclick="selectStanceDirectly('${escape(st.name)}')" class="bg-slate-800 hover:bg-teal-900 text-teal-300 border border-slate-700 hover:border-teal-600 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
+                  <button onclick="selectStanceDirectly('${escape(st.name)}')" class="h-7 min-w-[115px] bg-slate-800 hover:bg-teal-900 text-teal-300 border border-slate-700 hover:border-teal-600 text-xs font-bold px-2.5 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
                     Enter Stance
                   </button>
                 `}
@@ -4026,7 +4026,7 @@
             <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This stance slot is empty. Click to learn a new martial stance.</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
-                <button type="button" onclick="openManeuverPickerModal('Stance')" class="bg-teal-950/80 hover:bg-teal-900 text-teal-300 hover:text-white border border-dashed border-teal-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
+                <button type="button" onclick="openManeuverPickerModal('Stance')" class="h-7 min-w-[115px] bg-teal-950/80 hover:bg-teal-900 text-teal-300 hover:text-white border border-dashed border-teal-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
                   <span>🥋</span>
                   <span>+ Select Stance</span>
                 </button>
@@ -4363,7 +4363,7 @@
           const isActive = String(lvlFilter) === String(lvl);
           const label = lvl === 'all' ? 'All' : (lvl === 0 ? 'Level 0' : `Level ${lvl}`);
           pillsHtml += `
-            <button type="button" onclick="setSpellFilterLevel('${lvl}')" class="px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer border ${
+            <button type="button" onclick="setSpellFilterLevel('${lvl}')" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
               isActive 
                 ? 'bg-purple-800 text-white border-purple-500 shadow' 
                 : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
@@ -4509,7 +4509,7 @@
           <td class="py-2.5 px-3 text-right align-middle">
             <div class="flex items-center justify-end gap-2 w-full">
               ${isTouchAttack ? `
-                <button type="button" onclick="rollSpellTouchAttack(${originalIdx})" class="bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/80 text-xs font-bold font-mono px-2 py-1 rounded-lg transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shadow" title="Roll ${isRangedTouch ? 'Ranged' : 'Melee'} Touch Attack (BAB + ${isRangedTouch ? 'DEX' : 'STR'})">
+                <button type="button" onclick="rollSpellTouchAttack(${originalIdx})" class="h-7 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/80 text-xs font-bold font-mono px-2 rounded-lg transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shadow" title="Roll ${isRangedTouch ? 'Ranged' : 'Melee'} Touch Attack (BAB + ${isRangedTouch ? 'DEX' : 'STR'})">
                   <span>⚡</span>
                   <span>Touch ${touchAtkBonus >= 0 ? '+' : ''}${touchAtkBonus}</span>
                 </button>
@@ -4519,7 +4519,7 @@
                   hasActiveSlot 
                     ? 'bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border-amber-600/80 cursor-pointer shadow' 
                     : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
-                } text-xs font-bold font-mono px-2.5 py-1 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
+                } h-7 min-w-[115px] text-xs font-bold font-mono px-2.5 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
                   hasActiveSlot ? `Cast Spell & Roll Damage (${dmgExpr})` : '⚠️ No active spell slots remaining (0 Left)'
                 }">
                   ${getFormulaDiceIconSvg(dmgExpr, 'w-3.5 h-3.5 text-amber-400 shrink-0')}
@@ -4530,7 +4530,7 @@
                   hasActiveSlot 
                     ? 'bg-purple-900/70 hover:bg-purple-600 text-white border-purple-500 cursor-pointer shadow' 
                     : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
-                  } text-xs font-bold px-2.5 py-1 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
+                  } h-7 min-w-[115px] text-xs font-bold px-2.5 rounded-lg border transition inline-flex items-center justify-center gap-1.5 whitespace-nowrap" title="${
                     hasActiveSlot ? 'Cast Spell (Spend Slot)' : '⚠️ No active spell slots remaining (0 Left)'
                   }">
                     <span>🔮</span>
@@ -4580,7 +4580,7 @@
           <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This spell slot is empty. Click to learn a ${lvl === 0 ? 'Level 0 (Cantrip)' : `Level ${lvl}`} spell.</td>
           <td class="py-2.5 px-3 text-right align-middle">
             <div class="flex items-center justify-end gap-2 w-full">
-              <button type="button" onclick="openSpellPickerForSpecificLevel(${lvl})" class="bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-dashed border-purple-500/80 text-xs font-bold px-2.5 py-1 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Select Level ${lvl} Spell">
+              <button type="button" onclick="openSpellPickerForSpecificLevel(${lvl})" class="h-7 min-w-[115px] bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-dashed border-purple-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Select Level ${lvl} Spell">
                 <span>🔮</span>
                 <span>+ Select Spell</span>
               </button>
@@ -7450,12 +7450,12 @@
 
       if (foundCategory && foundPin) {
         if (foundCategory === 'offense') {
-          btn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-rose-950/90 text-rose-300 border-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.45)] hover:bg-rose-900';
+          btn.className = 'h-8 px-3 rounded-lg border text-xs font-bold transition inline-flex items-center justify-center gap-1.5 cursor-pointer bg-rose-950/90 text-rose-300 border-rose-500/80 shadow-[0_0_8px_rgba(244,63,94,0.45)] hover:bg-rose-900';
           btn.title = `📌 Combat Cockpit: Pinned to OFFENSE Drawer (${item.name}) - Click to unpin`;
           if (icon) icon.innerHTML = filledPinSvg;
           if (label) label.textContent = '📌 Pinned to Offense';
         } else if (foundCategory === 'defense') {
-          btn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-indigo-950/90 text-indigo-300 border-indigo-500/80 shadow-[0_0_8px_rgba(99,102,241,0.45)] hover:bg-indigo-900';
+          btn.className = 'h-8 px-3 rounded-lg border text-xs font-bold transition inline-flex items-center justify-center gap-1.5 cursor-pointer bg-indigo-950/90 text-indigo-300 border-indigo-500/80 shadow-[0_0_8px_rgba(99,102,241,0.45)] hover:bg-indigo-900';
           btn.title = `📌 Combat Cockpit: Pinned to DEFENSE Drawer (${item.name}) - Click to unpin`;
           if (icon) icon.innerHTML = filledPinSvg;
           if (label) label.textContent = '📌 Pinned to Defense';
@@ -7465,20 +7465,20 @@
         if (toggleBtn) {
           toggleBtn.classList.remove('hidden');
           if (foundPin.active) {
-            toggleBtn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]';
+            toggleBtn.className = 'h-8 px-3 rounded-lg border text-xs font-bold transition inline-flex items-center justify-center gap-1.5 cursor-pointer bg-emerald-600 hover:bg-emerald-500 text-white border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.7)]';
             toggleBtn.innerHTML = '<span>✓</span><span>Active in Combat</span>';
             toggleBtn.title = 'Ability is active in combat and applying its bonuses. Click to deactivate.';
           } else {
-            toggleBtn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-700/80 hover:border-slate-500';
+            toggleBtn.className = 'h-8 px-3 rounded-lg border text-xs font-bold transition inline-flex items-center justify-center gap-1.5 cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-700/80 hover:border-slate-500';
             toggleBtn.innerHTML = '<span>⚪</span><span>Inactive in Combat</span>';
             toggleBtn.title = 'Ability is pinned but currently inactive. Click to activate in combat.';
           }
         }
       } else {
-        btn.className = 'px-2.5 py-1.5 rounded-lg border text-xs font-bold transition flex items-center gap-1.5 cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-700/80 hover:border-slate-500';
+        btn.className = 'h-8 px-3 rounded-lg border text-xs font-bold transition inline-flex items-center justify-center gap-1.5 cursor-pointer bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border-slate-700/80 hover:border-slate-500';
         btn.title = `📌 Pin to Combat Cockpit (${item.name})`;
         if (icon) icon.innerHTML = outlinePinSvg;
-        if (label) label.textContent = '📌 Sabitle';
+        if (label) label.textContent = '📌 Pin to Combat';
         if (toggleBtn) toggleBtn.classList.add('hidden');
       }
     }

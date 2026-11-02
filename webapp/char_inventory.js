@@ -3380,7 +3380,7 @@
             <td class="py-2.5 px-3 text-center align-middle font-mono text-slate-400">${isOccupied ? slotData.weight + ' lb' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${isOccupied ? slotData.cost + ' GP' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle">
-              ${isOccupied ? `<button onclick="unequipSlot('${def.key}')" class="bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 text-[11px] font-semibold px-2 py-0.5 rounded transition">Unequip</button>` : '-'}
+              ${isOccupied ? `<button onclick="unequipSlot('${def.key}')" class="w-20 h-7 bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">Unequip</button>` : `<button onclick="openSlotEquipModal('${def.key}')" class="w-20 h-7 bg-sky-950/70 hover:bg-sky-900 text-sky-300 hover:text-white border border-sky-700/60 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">+ Equip</button>`}
             </td>
           `;
           slotsTbody.appendChild(tr);
@@ -3588,9 +3588,9 @@
       const isCustomized = (transform.scale !== 1.0 || transform.offsetX !== 0 || transform.offsetY !== 0);
       if (menuBtn) {
         if (isCustomized) {
-          menuBtn.className = "px-3 py-1 rounded-lg bg-sky-900/90 hover:bg-sky-800 border border-sky-400 text-sky-200 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-sky-950/40";
+          menuBtn.className = "ui-btn-sm h-7 px-2.5 rounded-lg bg-sky-900/90 hover:bg-sky-800 border border-sky-400 text-sky-200 hover:text-white text-xs font-bold transition inline-flex items-center gap-1.5 shadow-md shadow-sky-950/40 cursor-pointer";
         } else {
-          menuBtn.className = "px-3 py-1 rounded-lg bg-sky-950/80 hover:bg-sky-900 border border-sky-600/60 hover:border-sky-400 text-sky-200 hover:text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm";
+          menuBtn.className = "ui-btn-sm h-7 px-2.5 rounded-lg bg-sky-950/80 hover:bg-sky-900 border border-sky-600/60 hover:border-sky-400 text-sky-200 hover:text-white text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm cursor-pointer";
         }
       }
     }
@@ -4399,7 +4399,7 @@
                           <button type="button" onclick="event.stopPropagation(); ${activeBuff ? `dischargeDailyRoundItem('${encodeURIComponent(slotData.name)}', '${slotKey}')` : `castDailyRoundItem('${encodeURIComponent(slotData.name)}', '${slotKey}')`}"
                                   title="${activeBuff ? 'End Effect' : 'Spend 1 Charge & Activate'}"
                                   class="px-1.5 py-0.5 rounded text-[8px] font-bold transition flex items-center gap-0.5 cursor-pointer shadow-sm ${activeBuff ? 'bg-rose-950 text-rose-300 border border-rose-500 hover:bg-rose-900 animate-pulse' : 'bg-emerald-950 text-emerald-300 border border-emerald-600 hover:bg-emerald-900'}">
-                            <span>${activeBuff ? '🛑 Son' : '✨ At'}</span>
+                            <span>${activeBuff ? '🛑 End' : '✨ Cast'}</span>
                           </button>
                         ` : ''}
                       `;
@@ -4419,10 +4419,10 @@
               <div class="flex items-center gap-1.5 shrink-0">
                 ${tierBadge}
                 <input type="checkbox" ${slotData.active ? 'checked' : ''} onchange="toggleSlotActive('${slotKey}')" title="Toggle Active / Inactive" class="w-4 h-4 rounded text-sky-500 border-slate-700 bg-slate-950 focus:ring-0 cursor-pointer">
-                <button onclick="openSlotEquipModal('${slotKey}')" title="Change Item" class="p-1 rounded bg-slate-800 hover:bg-sky-900/60 text-slate-300 hover:text-sky-200 border border-slate-700 hover:border-sky-500 transition text-xs">
+                <button onclick="openSlotEquipModal('${slotKey}')" title="Change Item" class="w-6 h-6 rounded bg-slate-800 hover:bg-sky-900/60 text-slate-300 hover:text-sky-200 border border-slate-700 hover:border-sky-500 transition text-xs inline-flex items-center justify-center cursor-pointer">
                   🔄
                 </button>
-                <button onclick="unequipSlot('${slotKey}')" title="Unequip (Return to Inventory)" class="p-1 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition text-xs">
+                <button onclick="unequipSlot('${slotKey}')" title="Unequip (Return to Inventory)" class="w-6 h-6 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition text-xs inline-flex items-center justify-center cursor-pointer">
                   ❌
                 </button>
               </div>
@@ -4448,8 +4448,8 @@
 
               <div class="flex items-center gap-1.5 shrink-0">
                 ${tierBadge}
-                <button type="button" class="px-2 py-1 rounded bg-sky-950/70 group-hover:bg-sky-600 border border-sky-700/60 text-sky-300 group-hover:text-white text-[10px] sm:text-[11px] font-bold transition flex items-center gap-1 shadow-sm">
-                  <span>+ Ready</span>
+                <button type="button" class="h-6 px-2.5 rounded bg-sky-950/70 group-hover:bg-sky-600 border border-sky-700/60 text-sky-300 group-hover:text-white text-[10px] sm:text-[11px] font-bold transition inline-flex items-center justify-center gap-1 shadow-sm cursor-pointer">
+                  <span>+ Equip</span>
                 </button>
               </div>
             </div>
