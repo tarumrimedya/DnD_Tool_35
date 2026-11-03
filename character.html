@@ -40,12 +40,12 @@
      * Tier 3 (.ui-btn-xs):      24px (h-6)  - Card Sub-header Chips & Table Actions
      * Tier 4 (.ui-btn-icon-sm): 24x24px     - Square Collapse, Save, Stepper & Row Icons
      * ===================================================================== */
-    .ui-btn-md { height: 2.25rem; padding-left: 0.75rem; padding-right: 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
-    .ui-btn-sm { height: 1.75rem; padding-left: 0.625rem; padding-right: 0.625rem; border-radius: 0.375rem; font-size: 0.6875rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
-    .ui-btn-xs { height: 1.5rem; padding-left: 0.5rem; padding-right: 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
-    .ui-btn-icon { width: 1.75rem; height: 1.75rem; padding: 0; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; transition: all 0.15s ease; cursor: pointer; }
-    .ui-btn-icon-sm { width: 1.5rem; height: 1.5rem; padding: 0; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; transition: all 0.15s ease; cursor: pointer; }
-    .hidden { display: none !important; }
+    :where(.ui-btn-md, .ui-btn-sm, .ui-btn-xs, .ui-btn-icon, .ui-btn-icon-sm) { display: inline-flex; }
+    .ui-btn-md { height: 2.25rem; padding-left: 0.75rem; padding-right: 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; align-items: center; justify-content: center; gap: 0.375rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+    .ui-btn-sm { height: 1.75rem; padding-left: 0.625rem; padding-right: 0.625rem; border-radius: 0.375rem; font-size: 0.6875rem; font-weight: 700; align-items: center; justify-content: center; gap: 0.25rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+    .ui-btn-xs { height: 1.5rem; padding-left: 0.5rem; padding-right: 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; font-weight: 700; align-items: center; justify-content: center; gap: 0.25rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+    .ui-btn-icon { width: 1.75rem; height: 1.75rem; padding: 0; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 700; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; transition: all 0.15s ease; cursor: pointer; }
+    .ui-btn-icon-sm { width: 1.5rem; height: 1.5rem; padding: 0; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 700; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; transition: all 0.15s ease; cursor: pointer; }
     .ui-input-md { height: 2rem; border-radius: 0.5rem; font-size: 0.75rem; line-height: 1; }
     .ui-input-sm { height: 1.75rem; border-radius: 0.375rem; font-size: 0.75rem; line-height: 1; }
     .ui-spotlight-well { background: linear-gradient(180deg, rgba(30, 41, 59, 0.94) 0%, rgba(15, 23, 42, 0.98) 100%); box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.65), inset 0 1px 0 0 rgba(255, 255, 255, 0.1); }
@@ -3704,7 +3704,7 @@
   <script src="gdrive_sync.js?v=20261023_16"></script>
 
   <script src="char_hud.js?v=20261103_1905"></script>
-  <script src="char_combat.js?v=20261103_1955"></script>
+  <script src="char_combat.js?v=20261103_2040"></script>
   <script src="char_spells.js?v=20261103_1905"></script>
   <script src="char_progression.js?v=20261103_1825"></script>
   <script src="char_inventory.js?v=20261103_1955"></script>

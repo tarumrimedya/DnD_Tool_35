@@ -3929,6 +3929,55 @@
       if (!character) return;
       if (!character.tactical) character.tactical = {};
 
+      // Self-heal if an Off-Hand Weapon Head was previously saved into mainHand or set1.mainWeapon
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.isOffHandWeaponHead === 'function') {
+        const mhSlot = character.bodySlots?.mainHand;
+        const s1Name = character.tactical?.weaponSets?.set1?.mainWeapon;
+        const offHeadInMain = (mhSlot && mhSlot.name && mhSlot.name !== '-' && RuleEngine.isOffHandWeaponHead(mhSlot))
+          ? mhSlot
+          : ((s1Name && RuleEngine.isOffHandWeaponHead(s1Name)) ? { name: s1Name } : null);
+        if (offHeadInMain) {
+          const baseParentName = String(offHeadInMain.parent || offHeadInMain.name || '')
+            .replace(/^↳\s*/, '')
+            .replace(/\s*\(.*?\)\s*$/, '')
+            .trim()
+            .toLowerCase();
+          const parentPoolItem = (character.gearPool || []).find(p =>
+            p && !RuleEngine.isOffHandWeaponHead(p) &&
+            String(p.name || '').trim().toLowerCase() === baseParentName
+          );
+          const parentWepItem = (character.weapons || []).find(w =>
+            w && !RuleEngine.isOffHandWeaponHead(w) &&
+            String(w.name || '').trim().toLowerCase() === baseParentName
+          );
+          const resolvedParentName = parentPoolItem?.name || parentWepItem?.name || null;
+          if (!character.bodySlots) character.bodySlots = {};
+          if (!character.bodySlots.offHand || !character.bodySlots.offHand.name || character.bodySlots.offHand.name === '-') {
+            character.bodySlots.offHand = { ...(mhSlot || {}), name: offHeadInMain.name, active: true };
+          }
+          if (parentPoolItem) {
+            parentPoolItem.isEquipped = true;
+            character.bodySlots.mainHand = { ...parentPoolItem, masterDbName: parentPoolItem.masterDbName || parentPoolItem.name, active: true };
+          } else if (resolvedParentName && mhSlot && RuleEngine.isOffHandWeaponHead(mhSlot)) {
+            character.bodySlots.mainHand = { ...(parentWepItem || {}), name: resolvedParentName, category: 'Weapon', active: true };
+          }
+          if (resolvedParentName) {
+            character.activeWeapon = resolvedParentName;
+            if (character.tactical?.weaponSets?.set1) {
+              character.tactical.weaponSets.set1.mainWeapon = resolvedParentName;
+            }
+          }
+          character.activeOffHand = offHeadInMain.name;
+          if (character.tactical?.weaponSets) {
+            if (!character.tactical.weaponSets.set2) character.tactical.weaponSets.set2 = { name: 'Off-Hand', grip: 'Off-Hand' };
+            character.tactical.weaponSets.set2.mainWeapon = offHeadInMain.name;
+            character.tactical.weaponSets.set2.grip = 'Off-Hand';
+            character.tactical.weaponSets.activeSets = [1, 2];
+            character.tactical.weaponSets.activeSet = 'both';
+          }
+        }
+      }
+
       const isRangedMode = window._combatOffenseMode === 'ranged';
 
       const getValidMainWeapon = () => {
@@ -4017,10 +4066,11 @@
         }
 
         const currentMainWep = character.tactical.weaponSets.set1.mainWeapon;
+        const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(currentMainWep) : false;
         const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(currentMainWep) : isRangedOnlyWeapon(currentMainWep);
         const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
 
-        if (mainIsTwoHand && !hasOversized) {
+        if (mainIsTwoHand && !mainIsDouble && !hasOversized) {
           // Rule 1, 2, 3: Two-handed weapon without oversized feat forces 2-Hand grip, empties Set 2, and limits to single weapon
           character.tactical.weaponSets.set1.grip = '2-Hand';
           character.tactical.weaponSets.set2.mainWeapon = 'None';
