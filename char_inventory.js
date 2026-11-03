@@ -4431,11 +4431,6 @@
       // 6 Slots Right Column
       const RIGHT_KEYS = ['neck', 'armor', 'bracers', 'gloves', 'ring2', 'boots'];
 
-      const TIER_BADGES = {
-        head: 'V', eyes: 'V', shoulders: 'VI', torso: 'VI', belt: 'V', ring1: 'II',
-        neck: 'V', armor: 'V', bracers: 'III', gloves: 'IV', ring2: 'II', boots: 'II'
-      };
-
       let activeOccupiedCount = 0;
 
       function buildCardHtml(slotKey, isRight) {
@@ -4443,9 +4438,6 @@
         const slotData = character.bodySlots[slotKey] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
         const isOccupied = slotData.name && slotData.name !== '-';
         if (isOccupied && slotData.active) activeOccupiedCount++;
-        const tier = TIER_BADGES[slotKey] || 'I';
-
-        const tierBadge = `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm shrink-0">${tier}</span>`;
 
         if (isOccupied) {
           return `
@@ -4496,7 +4488,6 @@
               </div>
 
               <div class="flex items-center gap-1.5 shrink-0">
-                ${tierBadge}
                 <input type="checkbox" ${slotData.active ? 'checked' : ''} onchange="toggleSlotActive('${slotKey}')" title="Toggle Active / Inactive" class="w-4 h-4 rounded text-sky-500 border-slate-700 bg-slate-950 focus:ring-0 cursor-pointer">
                 ${isForgeEditableItem(slotData) ? `
                   <button onclick="openForgeForSlotItem('${slotKey}')" title="Customize in Item Forge" class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 transition text-xs inline-flex items-center justify-center cursor-pointer">
@@ -4531,7 +4522,6 @@
               </div>
 
               <div class="flex items-center gap-1.5 shrink-0">
-                ${tierBadge}
                 <button type="button" class="h-6 px-2.5 rounded bg-sky-950/70 group-hover:bg-sky-600 border border-sky-700/60 text-sky-300 group-hover:text-white text-[10px] sm:text-[11px] font-bold transition inline-flex items-center justify-center gap-1 shadow-sm cursor-pointer">
                   <span>+ Equip</span>
                 </button>
