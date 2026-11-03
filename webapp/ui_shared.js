@@ -632,7 +632,10 @@
 
             <!-- Special Abilities Checkboxes -->
             <div class="space-y-1.5 pt-2">
-              <label class="block text-slate-400 font-semibold">4. Magic Weapon / Armor Special Abilities:</label>
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <label id="dnd-forge-abilities-title" class="block text-slate-400 font-semibold">4. Magic Weapon Special Abilities:</label>
+                <span id="dnd-forge-budget-badge" class="px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-500/40">Budget: +0 / +1 Used (+1 Left)</span>
+              </div>
               <div id="dnd-forge-enhancements-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 max-h-44 overflow-y-auto p-1 custom-scroll">
                 <!-- Populated dynamically -->
               </div>
@@ -663,6 +666,138 @@
     const hasCustom = Boolean(customContent);
     if (customTabBtn) customTabBtn.classList.toggle('hidden', !hasCustom);
     if (srdTabBtn) srdTabBtn.classList.toggle('hidden', hasCustom);
+  }
+
+  const FORGE_ENH_CATALOG = [
+    // Weapon Special Abilities
+    { id: 'enh-keen', label: '⚡ Keen (2× Crit)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
+    { id: 'enh-flaming', label: '🔥 Flaming (+1d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
+    { id: 'enh-frost', label: '❄️ Frost (+1d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
+    { id: 'enh-shock', label: '⚡ Shock (+1d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
+    { id: 'enh-corrosive', label: '🧪 Acidic (+1d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
+    { id: 'enh-thundering', label: '🔊 Thundering', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
+    { id: 'enh-ghost-touch', label: '👻 Ghost Touch', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
+    { id: 'enh-defending', label: '🛡️ Defending', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
+    { id: 'enh-merciful', label: '💚 Merciful (+1d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
+    { id: 'enh-vicious', label: '⚡ Vicious (+2d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
+    { id: 'enh-flaming-burst', label: '🔥 Flaming Burst', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
+    { id: 'enh-icy-burst', label: '❄️ Icy Burst', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
+    { id: 'enh-shocking-burst', label: '⚡ Shocking Burst', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
+    { id: 'enh-holy', label: '☀️ Holy (+2d6 vs Evil)', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
+    { id: 'enh-unholy', label: '💀 Unholy (+2d6 vs Good)', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
+    { id: 'enh-axiomatic', label: '⚖️ Axiomatic (+2d6)', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
+    { id: 'enh-anarchic', label: '🌀 Anarchic (+2d6)', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
+    { id: 'enh-wounding', label: '🩸 Wounding (1 CON)', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
+    { id: 'enh-speed', label: '⚡ Speed (+1 Atk)', cost: 3, bonusEq: '+3', targetTypes: ['Weapon'] },
+    { id: 'enh-brilliant-energy', label: '✨ Brilliant Energy', cost: 4, bonusEq: '+4', targetTypes: ['Weapon'] },
+    { id: 'enh-dancing', label: '💃 Dancing (4 Rd)', cost: 4, bonusEq: '+4', targetTypes: ['Weapon'] },
+    { id: 'enh-vorpal', label: '🗡️ Vorpal (Nat 20)', cost: 5, bonusEq: '+5', targetTypes: ['Weapon'] },
+
+    // Armor Special Abilities
+    { id: 'enh-fortification-light', label: '🛡️ Fortification 25%', cost: 1, bonusEq: '+1', targetTypes: ['Armor', 'Shield'] },
+    { id: 'enh-spell-resistance', label: '✨ Spell Resist (13)', cost: 2, bonusEq: '+2', targetTypes: ['Armor', 'Shield'] },
+    { id: 'enh-fortification-moderate', label: '🛡️ Fortification 75%', cost: 3, bonusEq: '+3', targetTypes: ['Armor', 'Shield'] },
+    { id: 'enh-invulnerability', label: '🛡️ Invulnerability (DR 5)', cost: 3, bonusEq: '+3', targetTypes: ['Armor'] },
+    { id: 'enh-wild', label: '🐾 Wild (Wild Shape)', cost: 3, bonusEq: '+3', targetTypes: ['Armor', 'Shield'] },
+    { id: 'enh-fortification-heavy', label: '🛡️ Fortification 100%', cost: 5, bonusEq: '+5', targetTypes: ['Armor', 'Shield'] },
+
+    // Shield-Only Special Abilities
+    { id: 'enh-bashing', label: '🛡️ Bashing (+2 Size)', cost: 1, bonusEq: '+1', targetTypes: ['Shield'] },
+    { id: 'enh-arrow-catching', label: '🏹 Arrow Catching', cost: 1, bonusEq: '+1', targetTypes: ['Shield'] },
+    { id: 'enh-blinding', label: '✨ Blinding', cost: 1, bonusEq: '+1', targetTypes: ['Shield'] },
+    { id: 'enh-animated', label: '🛡️ Animated Shield', cost: 2, bonusEq: '+2', targetTypes: ['Shield'] },
+    { id: 'enh-arrow-deflection', label: '🏹 Arrow Deflection', cost: 2, bonusEq: '+2', targetTypes: ['Shield'] },
+    { id: 'enh-reflecting', label: '🪞 Reflecting (Spell)', cost: 5, bonusEq: '+5', targetTypes: ['Shield'] }
+  ];
+
+  function getSelectedForgeBaseType() {
+    const baseSel = document.getElementById('dnd-forge-base-select');
+    const baseId = baseSel?.value || 'wpn-longsword';
+    if (global.SrdCompendium && typeof global.SrdCompendium.getById === 'function') {
+      const rec = global.SrdCompendium.getById(baseId);
+      if (rec && ['Weapon', 'Armor', 'Shield'].includes(rec.type)) {
+        return rec.type;
+      }
+    }
+    if (baseId.startsWith('shd-')) return 'Shield';
+    if (baseId.startsWith('arm-')) return 'Armor';
+    const selOpt = baseSel?.selectedOptions?.[0];
+    const optTxt = String(selOpt?.textContent || '');
+    if (optTxt.includes('(Shield)')) return 'Shield';
+    if (optTxt.includes('(Armor)')) return 'Armor';
+    return 'Weapon';
+  }
+
+  function syncForgeEnhancementsGrid(preferredEnhIds = null) {
+    const enhGrid = document.getElementById('dnd-forge-enhancements-grid');
+    if (!enhGrid) return;
+
+    const baseType = getSelectedForgeBaseType();
+    const enhBonus = Math.max(0, Number(document.getElementById('dnd-forge-enh-bonus')?.value) || 0);
+
+    // Determine currently checked IDs (or use preferredEnhIds when initializing from item)
+    const rawCheckedIds = Array.isArray(preferredEnhIds)
+      ? preferredEnhIds.slice()
+      : Array.from(document.querySelectorAll('.dnd-forge-enh-chk:checked')).map(el => el.value);
+
+    // Filter catalog by selected item type (Weapon vs Armor vs Shield)
+    const eligibleCatalog = FORGE_ENH_CATALOG.filter(e => e.targetTypes.includes(baseType));
+    const eligibleMap = new Map(eligibleCatalog.map(e => [e.id, e]));
+
+    // Enforce Total Budget Rule: keep checked items in order only while their sum <= enhBonus
+    const validCheckedSet = new Set();
+    let usedBudget = 0;
+    for (let i = 0; i < rawCheckedIds.length; i++) {
+      const id = rawCheckedIds[i];
+      const def = eligibleMap.get(id);
+      if (!def) continue;
+      if (usedBudget + def.cost <= enhBonus) {
+        validCheckedSet.add(id);
+        usedBudget += def.cost;
+      }
+    }
+
+    const remainingBudget = Math.max(0, enhBonus - usedBudget);
+
+    // Update Section Title & Live Budget Pill
+    const titleEl = document.getElementById('dnd-forge-abilities-title');
+    if (titleEl) {
+      titleEl.textContent = `4. Magic ${baseType} Special Abilities:`;
+    }
+    const badgeEl = document.getElementById('dnd-forge-budget-badge');
+    if (badgeEl) {
+      if (enhBonus <= 0) {
+        badgeEl.className = 'px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-slate-900 text-slate-400 border border-slate-700';
+        badgeEl.textContent = '🔒 Requires +1..+5 Enhancement Bonus';
+      } else if (remainingBudget === 0) {
+        badgeEl.className = 'px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-500/50';
+        badgeEl.textContent = `Budget: +${usedBudget} / +${enhBonus} Used (Full)`;
+      } else {
+        badgeEl.className = 'px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-500/40';
+        badgeEl.textContent = `Budget: +${usedBudget} / +${enhBonus} Used (+${remainingBudget} Left)`;
+      }
+    }
+
+    enhGrid.innerHTML = eligibleCatalog.map(e => {
+      const isChecked = validCheckedSet.has(e.id);
+      const isLocked = !isChecked && e.cost > remainingBudget;
+      const labelCls = isChecked
+        ? 'flex items-center gap-1.5 p-1.5 rounded-lg bg-amber-950/40 border border-amber-500/70 cursor-pointer select-none shadow-sm'
+        : (isLocked
+            ? 'flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-950/40 border border-slate-800/60 opacity-40 cursor-not-allowed select-none'
+            : 'flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none');
+      const titleAttr = isLocked
+        ? `Requires +${e.cost} available Enhancement Budget (Remaining: +${remainingBudget})`
+        : `${e.label} (${e.bonusEq} Budget)`;
+
+      return `
+        <label class="${labelCls}" title="${escapeHtml(titleAttr)}">
+          <input type="checkbox" value="${e.id}" ${isChecked ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="DnDUI.onForgeControlChange()" class="dnd-forge-enh-chk rounded text-amber-500 bg-slate-900 border-slate-700">
+          <span class="text-[11px] font-semibold ${isChecked ? 'text-amber-200' : 'text-slate-200'} truncate">${e.label}</span>
+          <span class="text-[9px] font-mono ${isLocked ? 'text-slate-500' : 'text-amber-400'} ml-auto">${isLocked ? '🔒' + e.bonusEq : e.bonusEq}</span>
+        </label>
+      `;
+    }).join('');
   }
 
   function populateForgeControls() {
@@ -703,35 +838,7 @@
     ).join('');
     baseSel.dataset.srdPopulated = srdReady ? 'full' : 'fallback';
 
-    if (enhGrid.children.length === 0) {
-      const ENH_LIST = [
-        { id: 'enh-keen', label: '⚡ Keen (2× Crit)', bonusEq: '+1' },
-        { id: 'enh-flaming', label: '🔥 Flaming (+1d6)', bonusEq: '+1' },
-        { id: 'enh-flaming-burst', label: '🔥 Flaming Burst', bonusEq: '+2' },
-        { id: 'enh-frost', label: '❄️ Frost (+1d6)', bonusEq: '+1' },
-        { id: 'enh-icy-burst', label: '❄️ Icy Burst', bonusEq: '+2' },
-        { id: 'enh-shock', label: '⚡ Shock (+1d6)', bonusEq: '+1' },
-        { id: 'enh-shocking-burst', label: '⚡ Shocking Burst', bonusEq: '+2' },
-        { id: 'enh-corrosive', label: '🧪 Acidic (+1d6)', bonusEq: '+1' },
-        { id: 'enh-holy', label: '☀️ Holy (+2d6 vs Evil)', bonusEq: '+2' },
-        { id: 'enh-unholy', label: '💀 Unholy (+2d6 vs Good)', bonusEq: '+2' },
-        { id: 'enh-ghost-touch', label: '👻 Ghost Touch', bonusEq: '+1' },
-        { id: 'enh-speed', label: '⚡ Speed (+1 Atk)', bonusEq: '+3' },
-        { id: 'enh-vorpal', label: '🗡️ Vorpal (Nat 20)', bonusEq: '+5' },
-        { id: 'enh-wounding', label: '🩸 Wounding (1 CON)', bonusEq: '+2' },
-        { id: 'enh-fortification-light', label: '🛡️ Fortification 25%', bonusEq: '+1' },
-        { id: 'enh-fortification-moderate', label: '🛡️ Fortification 75%', bonusEq: '+3' },
-        { id: 'enh-animated', label: '🛡️ Animated Shield', bonusEq: '+2' }
-      ];
-
-      enhGrid.innerHTML = ENH_LIST.map(e => `
-        <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none">
-          <input type="checkbox" value="${e.id}" onchange="DnDUI.onForgeControlChange()" class="dnd-forge-enh-chk rounded text-amber-500 bg-slate-900 border-slate-700">
-          <span class="text-[11px] font-semibold text-slate-200 truncate">${e.label}</span>
-          <span class="text-[9px] font-mono text-amber-400 ml-auto">${e.bonusEq}</span>
-        </label>
-      `).join('');
-    }
+    syncForgeEnhancementsGrid();
   }
 
   function onForgeControlChange() {
@@ -739,6 +846,7 @@
     if (nlInput && nlInput.value) {
       nlInput.value = '';
     }
+    syncForgeEnhancementsGrid();
     updateForgePreview();
   }
 
@@ -833,15 +941,14 @@
 
     const enhSel = document.getElementById('dnd-forge-enh-bonus');
     if (enhSel) {
-      const clampedBonus = Math.max(0, Math.min(5, Math.round(Number(resolvedEnhBonus) || 0)));
+      const enhCostMap = new Map(FORGE_ENH_CATALOG.map(e => [e.id, e.cost]));
+      const minRequiredBudget = resolvedEnhancements.reduce((sum, id) => sum + (enhCostMap.get(id) || 0), 0);
+      const effectiveBonus = Math.max(Number(resolvedEnhBonus) || 0, minRequiredBudget);
+      const clampedBonus = Math.max(0, Math.min(5, Math.round(effectiveBonus)));
       enhSel.value = String(clampedBonus);
     }
 
-    const enhSet = new Set(resolvedEnhancements);
-    document.querySelectorAll('.dnd-forge-enh-chk').forEach(chk => {
-      chk.checked = enhSet.has(chk.value);
-    });
-
+    syncForgeEnhancementsGrid(resolvedEnhancements);
     updateForgePreview();
   }
 
@@ -888,12 +995,15 @@
           }
           const matSel = document.getElementById('dnd-forge-material-select');
           if (matSel) matSel.value = parsed.material || '';
+          const parsedEnhs = Array.isArray(parsed.enhancements) ? parsed.enhancements : [];
+          const enhCostMap = new Map(FORGE_ENH_CATALOG.map(e => [e.id, e.cost]));
+          const minBudget = parsedEnhs.reduce((sum, id) => sum + (enhCostMap.get(id) || 0), 0);
           const enhSel = document.getElementById('dnd-forge-enh-bonus');
-          if (enhSel) enhSel.value = String(Math.max(0, Math.min(5, Number(parsed.enhancementBonus) || 0)));
-          const enhSet = new Set(Array.isArray(parsed.enhancements) ? parsed.enhancements : []);
-          document.querySelectorAll('.dnd-forge-enh-chk').forEach(chk => {
-            chk.checked = enhSet.has(chk.value);
-          });
+          if (enhSel) {
+            const effBonus = Math.max(Number(parsed.enhancementBonus) || 0, minBudget);
+            enhSel.value = String(Math.max(0, Math.min(5, effBonus)));
+          }
+          syncForgeEnhancementsGrid(parsedEnhs);
         }
       } catch (_) {}
     }

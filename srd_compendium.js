@@ -618,6 +618,59 @@
     17: 13
   };
 
+  const BUILT_IN_ENHANCEMENT_FALLBACKS = {
+    'enh-corrosive': {
+      id: 'enh-corrosive',
+      name: 'Corrosive',
+      type: 'Enhancement',
+      targetType: 'Weapon',
+      enhIncrease: 1,
+      flatCost: 0,
+      damageParts: [{ dice: '1d6', bonus: 0, type: 'Acid', multiplyOnCrit: false, onCritOnly: false, source: 'Corrosive' }],
+      shortDescription: 'Deals +1d6 acid damage on a successful hit.'
+    },
+    'enh-ghost-touch': {
+      id: 'enh-ghost-touch',
+      name: 'Ghost Touch',
+      type: 'Enhancement',
+      targetType: 'Weapon',
+      enhIncrease: 1,
+      flatCost: 0,
+      ruleFlags: { ghostTouch: true },
+      shortDescription: 'Deals normal damage to incorporeal creatures.'
+    },
+    'enh-fortification-light': {
+      id: 'enh-fortification-light',
+      name: 'Light Fortification',
+      type: 'Enhancement',
+      targetType: 'Armor',
+      enhIncrease: 1,
+      flatCost: 0,
+      ruleFlags: { fortification: 25 },
+      shortDescription: '25% chance to negate Critical Hits and Sneak Attack bonus damage.'
+    },
+    'enh-fortification-moderate': {
+      id: 'enh-fortification-moderate',
+      name: 'Moderate Fortification',
+      type: 'Enhancement',
+      targetType: 'Armor',
+      enhIncrease: 3,
+      flatCost: 0,
+      ruleFlags: { fortification: 75 },
+      shortDescription: '75% chance to negate Critical Hits and Sneak Attack bonus damage.'
+    },
+    'enh-fortification-heavy': {
+      id: 'enh-fortification-heavy',
+      name: 'Heavy Fortification',
+      type: 'Enhancement',
+      targetType: 'Armor',
+      enhIncrease: 5,
+      flatCost: 0,
+      ruleFlags: { fortification: 100 },
+      shortDescription: '100% immunity to Critical Hits and Sneak Attack bonus damage.'
+    }
+  };
+
   const ItemAssembler = {
     /**
      * Builds a complete Canonical V2 Equipment Item from modular Lego components:
@@ -674,6 +727,7 @@
           const enhObj = typeof eRef === 'object' && eRef !== null
             ? eRef
             : (SrdCompendium.getById(eRef) ||
+               BUILT_IN_ENHANCEMENT_FALLBACKS[eRef] ||
                SrdCompendium.getByName(eRef, 'Enhancement') ||
                SrdCompendium.getById(slugify(eRef, 'enh')));
           if (enhObj) resolvedEnhs.push(safeClone(enhObj));
