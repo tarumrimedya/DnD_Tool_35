@@ -1,0 +1,1438 @@
+[
+    {
+        "id":  "dom-air-domain",
+        "schemaVersion":  2,
+        "name":  "Air Domain",
+        "domainName":  "Air",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Obscuring Mist",
+                             "2":  "Wind Wall",
+                             "3":  "Gaseous Form",
+                             "4":  "Air Walk",
+                             "5":  "Control Winds",
+                             "6":  "Chain Lightning",
+                             "7":  "Control Weather",
+                             "8":  "Whirlwind",
+                             "9":  "Elemental Swarm"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Obscuring Mist\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Wind Wall\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Gaseous Form\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Air Walk\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Control Winds\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Chain Lightning\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Control Weather\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Whirlwind\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Elemental Swarm\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "air"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-animal-domain",
+        "schemaVersion":  2,
+        "name":  "Animal Domain",
+        "domainName":  "Animal",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You can use speak with animals once per day as a spell-like ability.",
+        "classSkills":  [
+                            "Knowledge (Nature)"
+                        ],
+        "domainSpells":  {
+                             "1":  "Calm Animals",
+                             "2":  "Hold Animal",
+                             "3":  "Dominate Animal",
+                             "4":  "Summon Nature\u0027s Ally IV",
+                             "5":  "Commune with Nature",
+                             "6":  "Antilife Shell",
+                             "7":  "Animal Shapes",
+                             "8":  "Summon Nature\u0027s Ally VIII",
+                             "9":  "Shapechange"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You can use speak with animals once per day as a spell-like ability.\u003c/p\u003e\u003cp\u003e\u003cb\u003eBonus Class Skills:\u003c/b\u003e Knowledge (Nature)\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Calm Animals\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Hold Animal\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Dominate Animal\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Summon Nature\u0027s Ally IV\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Commune with Nature\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Antilife Shell\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Animal Shapes\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Summon Nature\u0027s Ally VIII\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Shapechange\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You can use speak with animals once per day as a spell-like ability.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "animal"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+                                                   "Knowledge (Nature)"
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-chaos-domain",
+        "schemaVersion":  2,
+        "name":  "Chaos Domain",
+        "domainName":  "Chaos",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You cast chaos spells at +1 caster level.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Protection from Law",
+                             "2":  "Shatter",
+                             "3":  "Magic Circle against Law",
+                             "4":  "Chaos Hammer",
+                             "5":  "Dispel Law",
+                             "6":  "Animate Objects",
+                             "7":  "Word of Chaos",
+                             "8":  "Cloak of Chaos",
+                             "9":  "Summon Monster IX"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You cast chaos spells at +1 caster level.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Protection from Law\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Shatter\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Magic Circle against Law\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Chaos Hammer\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Dispel Law\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Animate Objects\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Word of Chaos\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Cloak of Chaos\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Summon Monster IX\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You cast chaos spells at +1 caster level.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "chaos"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-death-domain",
+        "schemaVersion":  2,
+        "name":  "Death Domain",
+        "domainName":  "Death",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You may use a death touch once per day. Your death touch is a supernatural ability that produces a death effect. You must succeed on a melee touch attack against a living creature (using the rules for touch spells). When you touch, roll 1d6 per cleric level you possess. If the total at least equals the creature\u0027s current hit points, it dies (no save)..",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Cause Fear",
+                             "2":  "Death Knell",
+                             "3":  "Animate Dead",
+                             "4":  "Death Ward",
+                             "5":  "Slay Living",
+                             "6":  "Create Undead",
+                             "7":  "Destruction",
+                             "8":  "Create Greater Undead",
+                             "9":  "Wail of the Banshee"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You may use a death touch once per day. Your death touch is a supernatural ability that produces a death effect. You must succeed on a melee touch attack against a living creature (using the rules for touch spells). When you touch, roll 1d6 per cleric level you possess. If the total at least equals the creature\u0027s current hit points, it dies (no save)..\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Cause Fear\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Death Knell\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Animate Dead\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Death Ward\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Slay Living\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Create Undead\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Destruction\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Create Greater Undead\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Wail of the Banshee\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You may use a death touch once per day. Your death touch is a supernatural ability that produces a death effect. You must succeed on a melee touch attack against a living creature (using the rules for touch spells). When you touch, roll 1d6 per cleric level you possess. If the total at least equals the creature\u0027s current hit points, it dies (no save)..",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "death"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-destruction-domain",
+        "schemaVersion":  2,
+        "name":  "Destruction Domain",
+        "domainName":  "Destruction",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You gain the smite power, the supernatural ability to make a single melee attack with a +4 bonus on attack rolls and a bonus on damage rolls equal to your cleric level (if you hit). You must declare the smite before making the attack. This ability is usable once per day.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Inflict Light Wounds",
+                             "2":  "Shatter",
+                             "3":  "Contagion",
+                             "4":  "Inflict Critical Wounds",
+                             "5":  "Inflict Light Wounds (Mass)",
+                             "6":  "Harm",
+                             "7":  "Disintegrate",
+                             "8":  "Earthquake",
+                             "9":  "Implosion"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You gain the smite power, the supernatural ability to make a single melee attack with a +4 bonus on attack rolls and a bonus on damage rolls equal to your cleric level (if you hit). You must declare the smite before making the attack. This ability is usable once per day.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Inflict Light Wounds\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Shatter\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Contagion\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Inflict Critical Wounds\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Inflict Light Wounds (Mass)\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Harm\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Disintegrate\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Earthquake\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Implosion\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You gain the smite power, the supernatural ability to make a single melee attack with a +4 bonus on attack rolls and a bonus on damage rolls equal to your cleric level (if you hit). You must declare the smite before making the attack. This ability is usable once per day.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "destruction"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-earth-domain",
+        "schemaVersion":  2,
+        "name":  "Earth Domain",
+        "domainName":  "Earth",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Turn or destroy air creatures as a good cleric turns undead. Rebuke, command, or bolster earth creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Magic Stone",
+                             "2":  "Soften Earth and Stone",
+                             "3":  "Stone Shape",
+                             "4":  "Spike Stones",
+                             "5":  "Wall of Stone",
+                             "6":  "Stoneskin",
+                             "7":  "Earthquake",
+                             "8":  "Iron Body",
+                             "9":  "Elemental Swarm"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Turn or destroy air creatures as a good cleric turns undead. Rebuke, command, or bolster earth creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Magic Stone\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Soften Earth and Stone\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Stone Shape\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Spike Stones\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Wall of Stone\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Stoneskin\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Earthquake\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Iron Body\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Elemental Swarm\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Turn or destroy air creatures as a good cleric turns undead. Rebuke, command, or bolster earth creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "earth"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-evil-domain",
+        "schemaVersion":  2,
+        "name":  "Evil Domain",
+        "domainName":  "Evil",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You cast evil spells at +1 caster level.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Protection from Good",
+                             "2":  "Desecrate",
+                             "3":  "Magic Circle against Good",
+                             "4":  "Unholy Blight",
+                             "5":  "Dispel Good",
+                             "6":  "Create Undead",
+                             "7":  "Blasphemy",
+                             "8":  "Unholy Aura",
+                             "9":  "Summon Monster IX"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You cast evil spells at +1 caster level.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Protection from Good\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Desecrate\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Magic Circle against Good\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Unholy Blight\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Dispel Good\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Create Undead\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Blasphemy\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Unholy Aura\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Summon Monster IX\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You cast evil spells at +1 caster level.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "evil"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-fire-domain",
+        "schemaVersion":  2,
+        "name":  "Fire Domain",
+        "domainName":  "Fire",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Turn or destroy water creatures as a good cleric turns undead. Rebuke, command, or bolster fire creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Burning Hands",
+                             "2":  "Produce Flame",
+                             "3":  "Resist Energy",
+                             "4":  "Wall of Fire",
+                             "5":  "Fire Shield",
+                             "6":  "Fire Seeds",
+                             "7":  "Fire Storm",
+                             "8":  "Incendiary Cloud",
+                             "9":  "Elemental Swarm"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Turn or destroy water creatures as a good cleric turns undead. Rebuke, command, or bolster fire creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Burning Hands\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Produce Flame\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Resist Energy\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Wall of Fire\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Fire Shield\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Fire Seeds\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Fire Storm\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Incendiary Cloud\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Elemental Swarm\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Turn or destroy water creatures as a good cleric turns undead. Rebuke, command, or bolster fire creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "fire"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-good-domain",
+        "schemaVersion":  2,
+        "name":  "Good Domain",
+        "domainName":  "Good",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You cast good spells at +1 caster level.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Protection from Evil",
+                             "2":  "Aid",
+                             "3":  "Magic Circle against Evil",
+                             "4":  "Holy Smite",
+                             "5":  "Dispel Evil",
+                             "6":  "Blade Barrier",
+                             "7":  "Holy Word",
+                             "8":  "Holy Aura",
+                             "9":  "Summon Monster IX"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You cast good spells at +1 caster level.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Protection from Evil\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Aid\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Magic Circle against Evil\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Holy Smite\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Dispel Evil\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Blade Barrier\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Holy Word\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Holy Aura\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Summon Monster IX\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You cast good spells at +1 caster level.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "good"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-healing-domain",
+        "schemaVersion":  2,
+        "name":  "Healing Domain",
+        "domainName":  "Healing",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You cast healing spells at +1 caster level.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Cure Light Wounds",
+                             "2":  "Cure Moderate Wounds",
+                             "3":  "Cure Serious Wounds",
+                             "4":  "Cure Critical Wounds",
+                             "5":  "Cure Light Wounds (Mass)",
+                             "6":  "Heal",
+                             "7":  "Regenerate",
+                             "8":  "Cure Critical Wounds (Mass)",
+                             "9":  "Heal (Mass)"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You cast healing spells at +1 caster level.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Cure Light Wounds\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Cure Moderate Wounds\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Cure Serious Wounds\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Cure Critical Wounds\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Cure Light Wounds (Mass)\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Heal\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Regenerate\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Cure Critical Wounds (Mass)\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Heal (Mass)\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You cast healing spells at +1 caster level.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "healing"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-knowledge-domain",
+        "schemaVersion":  2,
+        "name":  "Knowledge Domain",
+        "domainName":  "Knowledge",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "All knowledge skills are class skills.  You cast divinations at +1 caster level.",
+        "classSkills":  [
+                            "TYPE=Knowledge"
+                        ],
+        "domainSpells":  {
+                             "1":  "Detect Secret Doors",
+                             "2":  "Detect Thoughts",
+                             "3":  "Clairaudience/Clairvoyance",
+                             "4":  "Divination",
+                             "5":  "True Seeing",
+                             "6":  "Find the Path",
+                             "7":  "Legend Lore",
+                             "8":  "Discern Location",
+                             "9":  "Foresight"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e All knowledge skills are class skills.  You cast divinations at +1 caster level.\u003c/p\u003e\u003cp\u003e\u003cb\u003eBonus Class Skills:\u003c/b\u003e TYPE=Knowledge\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Detect Secret Doors\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Detect Thoughts\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Clairaudience/Clairvoyance\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Divination\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e True Seeing\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Find the Path\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Legend Lore\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Discern Location\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Foresight\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: All knowledge skills are class skills.  You cast divinations at +1 caster level.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "knowledge"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+                                                   "TYPE=Knowledge"
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-law-domain",
+        "schemaVersion":  2,
+        "name":  "Law Domain",
+        "domainName":  "Law",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You cast law spells at +1 caster level.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Protection from Chaos",
+                             "2":  "Calm Emotions",
+                             "3":  "Magic Circle against Chaos",
+                             "4":  "Order\u0027s Wrath",
+                             "5":  "Dispel Chaos",
+                             "6":  "Hold Monster",
+                             "7":  "Dictum",
+                             "8":  "Shield of Law",
+                             "9":  "Summon Monster IX"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You cast law spells at +1 caster level.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Protection from Chaos\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Calm Emotions\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Magic Circle against Chaos\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Order\u0027s Wrath\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Dispel Chaos\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Hold Monster\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Dictum\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Shield of Law\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Summon Monster IX\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You cast law spells at +1 caster level.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "law"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-luck-domain",
+        "schemaVersion":  2,
+        "name":  "Luck Domain",
+        "domainName":  "Luck",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You gain the power of good fortune, which is usable once per day. This extraordinary ability allows you to reroll one roll that you have just made before the DM declares whether the roll results in success or failure. You must take the result of the reroll, even if it\u0027s worse than the original roll.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Entropic Shield",
+                             "2":  "Aid",
+                             "3":  "Protection from Energy",
+                             "4":  "Freedom of Movement",
+                             "5":  "Break Enchantment",
+                             "6":  "Mislead",
+                             "7":  "Spell Turning",
+                             "8":  "Moment of Prescience",
+                             "9":  "Miracle"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You gain the power of good fortune, which is usable once per day. This extraordinary ability allows you to reroll one roll that you have just made before the DM declares whether the roll results in success or failure. You must take the result of the reroll, even if it\u0027s worse than the original roll.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Entropic Shield\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Aid\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Protection from Energy\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Freedom of Movement\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Break Enchantment\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Mislead\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Spell Turning\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Moment of Prescience\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Miracle\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You gain the power of good fortune, which is usable once per day. This extraordinary ability allows you to reroll one roll that you have just made before the DM declares whether the roll results in success or failure. You must take the result of the reroll, even if it\u0027s worse than the original roll.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "luck"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-magic-domain",
+        "schemaVersion":  2,
+        "name":  "Magic Domain",
+        "domainName":  "Magic",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Use scrolls, wands, and other devices with spell completion or spell trigger activation as a wizard of one-half your cleric level (at least 1st level). For the purpose of using a scroll or other magic device, if you are also a wizard, actual wizard levels and these effective wizard levels stack.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Magic Aura",
+                             "2":  "Identify",
+                             "3":  "Dispel Magic",
+                             "4":  "Imbue with Spell Ability",
+                             "5":  "Spell Resistance",
+                             "6":  "Antimagic Field",
+                             "7":  "Spell Turning",
+                             "8":  "Protection from Spells",
+                             "9":  "Mage\u0027s Disjunction"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Use scrolls, wands, and other devices with spell completion or spell trigger activation as a wizard of one-half your cleric level (at least 1st level). For the purpose of using a scroll or other magic device, if you are also a wizard, actual wizard levels and these effective wizard levels stack.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Magic Aura\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Identify\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Dispel Magic\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Imbue with Spell Ability\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Spell Resistance\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Antimagic Field\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Spell Turning\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Protection from Spells\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Mage\u0027s Disjunction\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Use scrolls, wands, and other devices with spell completion or spell trigger activation as a wizard of one-half your cleric level (at least 1st level). For the purpose of using a scroll or other magic device, if you are also a wizard, actual wizard levels and these effective wizard levels stack.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "magic"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-plant-domain",
+        "schemaVersion":  2,
+        "name":  "Plant Domain",
+        "domainName":  "Plant",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Rebuke or command plant creatures as an evil cleric rebukes or commands undead. Use this ability a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "classSkills":  [
+                            "Knowledge (Nature)"
+                        ],
+        "domainSpells":  {
+                             "1":  "Entangle",
+                             "2":  "Barkskin",
+                             "3":  "Plant Growth",
+                             "4":  "Command Plants",
+                             "5":  "Wall of Thorns",
+                             "6":  "Repel Wood",
+                             "7":  "Animate Plants",
+                             "8":  "Control Plants",
+                             "9":  "Shambler"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Rebuke or command plant creatures as an evil cleric rebukes or commands undead. Use this ability a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.\u003c/p\u003e\u003cp\u003e\u003cb\u003eBonus Class Skills:\u003c/b\u003e Knowledge (Nature)\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Entangle\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Barkskin\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Plant Growth\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Command Plants\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Wall of Thorns\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Repel Wood\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Animate Plants\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Control Plants\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Shambler\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Rebuke or command plant creatures as an evil cleric rebukes or commands undead. Use this ability a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "plant"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+                                                   "Knowledge (Nature)"
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-protection-domain",
+        "schemaVersion":  2,
+        "name":  "Protection Domain",
+        "domainName":  "Protection",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You can generate a protective ward as a supernatural ability. Grant someone you touch a resistance bonus equal to your cleric level on his or her next saving throw. Activating this power is a standard action. The protective ward is an abjuration effect with a duration of 1 hour that is usable once per day.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Sanctuary",
+                             "2":  "Shield Other",
+                             "3":  "Protection from Energy",
+                             "4":  "Spell Immunity",
+                             "5":  "Spell Resistance",
+                             "6":  "Antimagic Field",
+                             "7":  "Repulsion",
+                             "8":  "Mind Blank",
+                             "9":  "Prismatic Sphere"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You can generate a protective ward as a supernatural ability. Grant someone you touch a resistance bonus equal to your cleric level on his or her next saving throw. Activating this power is a standard action. The protective ward is an abjuration effect with a duration of 1 hour that is usable once per day.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Sanctuary\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Shield Other\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Protection from Energy\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Spell Immunity\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Spell Resistance\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Antimagic Field\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Repulsion\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Mind Blank\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Prismatic Sphere\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You can generate a protective ward as a supernatural ability. Grant someone you touch a resistance bonus equal to your cleric level on his or her next saving throw. Activating this power is a standard action. The protective ward is an abjuration effect with a duration of 1 hour that is usable once per day.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "protection"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-strength-domain",
+        "schemaVersion":  2,
+        "name":  "Strength Domain",
+        "domainName":  "Strength",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You can perform a feat of strength as a supernatural ability. You gain an enhancement bonus to Strength equal to your cleric level. Activating the power is a free action, the power lasts 1 round, and it is usable once per day.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Enlarge Person",
+                             "2":  "Bull\u0027s Strength",
+                             "3":  "Magic Vestment",
+                             "4":  "Spell Immunity",
+                             "5":  "Righteous Might",
+                             "6":  "Stoneskin",
+                             "7":  "Grasping Hand",
+                             "8":  "Clenched Fist",
+                             "9":  "Crushing Hand"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You can perform a feat of strength as a supernatural ability. You gain an enhancement bonus to Strength equal to your cleric level. Activating the power is a free action, the power lasts 1 round, and it is usable once per day.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Enlarge Person\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Bull\u0027s Strength\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Magic Vestment\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Spell Immunity\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Righteous Might\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Stoneskin\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Grasping Hand\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Clenched Fist\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Crushing Hand\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You can perform a feat of strength as a supernatural ability. You gain an enhancement bonus to Strength equal to your cleric level. Activating the power is a free action, the power lasts 1 round, and it is usable once per day.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "strength"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-sun-domain",
+        "schemaVersion":  2,
+        "name":  "Sun Domain",
+        "domainName":  "Sun",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Once per day, you can perform a greater turning against undead in place of a regular turning. The greater turning is like a normal turning except that the undead creatures that would be turned are destroyed instead.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Endure Elements",
+                             "2":  "Heat Metal",
+                             "3":  "Searing Light",
+                             "4":  "Fire Shield",
+                             "5":  "Flame Strike",
+                             "6":  "Fire Seeds",
+                             "7":  "Sunbeam",
+                             "8":  "Sunburst",
+                             "9":  "Prismatic Sphere"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Once per day, you can perform a greater turning against undead in place of a regular turning. The greater turning is like a normal turning except that the undead creatures that would be turned are destroyed instead.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Endure Elements\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Heat Metal\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Searing Light\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Fire Shield\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Flame Strike\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Fire Seeds\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Sunbeam\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Sunburst\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Prismatic Sphere\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Once per day, you can perform a greater turning against undead in place of a regular turning. The greater turning is like a normal turning except that the undead creatures that would be turned are destroyed instead.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "sun"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-travel-domain",
+        "schemaVersion":  2,
+        "name":  "Travel Domain",
+        "domainName":  "Travel",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "For a total time per day of 1 round per cleric level you possess, you can act normally regardless of magical effects that impede movement as if you were affected by the spell freedom of movement. This effect occurs automatically as soon as it applies, lasts until it runs out or is no longer needed, and can operate multiple times per day (up to the total daily limit of rounds).This granted power is a supernatural ability.",
+        "classSkills":  [
+                            "Survival"
+                        ],
+        "domainSpells":  {
+                             "1":  "Longstrider",
+                             "2":  "Locate Object",
+                             "3":  "Fly",
+                             "4":  "Dimension Door",
+                             "5":  "Teleport",
+                             "6":  "Find the Path",
+                             "7":  "Teleport (Greater)",
+                             "8":  "Phase Door",
+                             "9":  "Astral Projection"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e For a total time per day of 1 round per cleric level you possess, you can act normally regardless of magical effects that impede movement as if you were affected by the spell freedom of movement. This effect occurs automatically as soon as it applies, lasts until it runs out or is no longer needed, and can operate multiple times per day (up to the total daily limit of rounds).This granted power is a supernatural ability.\u003c/p\u003e\u003cp\u003e\u003cb\u003eBonus Class Skills:\u003c/b\u003e Survival\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Longstrider\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Locate Object\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Fly\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Dimension Door\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Teleport\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Find the Path\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Teleport (Greater)\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Phase Door\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Astral Projection\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: For a total time per day of 1 round per cleric level you possess, you can act normally regardless of magical effects that impede movement as if you were affected by the spell freedom of movement. This effect occurs automatically as soon as it applies, lasts until it runs out or is no longer needed, and can operate multiple times per day (up to the total daily limit of rounds).This granted power is a supernatural ability.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "travel"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+                                                   "Survival"
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-trickery-domain",
+        "schemaVersion":  2,
+        "name":  "Trickery Domain",
+        "domainName":  "Trickery",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Bluff, Disguise and Hide are class skills.",
+        "classSkills":  [
+                            "Bluff",
+                            "Disguise",
+                            "Hide"
+                        ],
+        "domainSpells":  {
+                             "1":  "Disguise Self",
+                             "2":  "Invisibility",
+                             "3":  "Nondetection",
+                             "4":  "Confusion",
+                             "5":  "False Vision",
+                             "6":  "Mislead",
+                             "7":  "Screen",
+                             "8":  "Polymorph Any Object",
+                             "9":  "Time Stop"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Bluff, Disguise and Hide are class skills.\u003c/p\u003e\u003cp\u003e\u003cb\u003eBonus Class Skills:\u003c/b\u003e Bluff, Disguise, Hide\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Disguise Self\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Invisibility\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Nondetection\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Confusion\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e False Vision\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Mislead\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Screen\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Polymorph Any Object\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Time Stop\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Bluff, Disguise and Hide are class skills.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "trickery"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+                                                   "Bluff",
+                                                   "Disguise",
+                                                   "Hide"
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-war-domain",
+        "schemaVersion":  2,
+        "name":  "War Domain",
+        "domainName":  "War",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Free Martial Weapon Proficiency with deity\u0027s favored weapon (if necessary) and Weapon Focus with the deity\u0027s favored weapon.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Magic Weapon",
+                             "2":  "Spiritual Weapon",
+                             "3":  "Magic Vestment",
+                             "4":  "Divine Power",
+                             "5":  "Flame Strike",
+                             "6":  "Blade Barrier",
+                             "7":  "Power Word Blind",
+                             "8":  "Power Word Stun",
+                             "9":  "Power Word Kill"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Free Martial Weapon Proficiency with deity\u0027s favored weapon (if necessary) and Weapon Focus with the deity\u0027s favored weapon.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Magic Weapon\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Spiritual Weapon\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Magic Vestment\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Divine Power\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Flame Strike\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Blade Barrier\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Power Word Blind\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Power Word Stun\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Power Word Kill\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Free Martial Weapon Proficiency with deity\u0027s favored weapon (if necessary) and Weapon Focus with the deity\u0027s favored weapon.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "war"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-water-domain",
+        "schemaVersion":  2,
+        "name":  "Water Domain",
+        "domainName":  "Water",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Turn or destroy fire creatures as a good cleric turns undead. Rebuke, command, or bolster water creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Obscuring Mist",
+                             "2":  "Fog Cloud",
+                             "3":  "Water Breathing",
+                             "4":  "Control Water",
+                             "5":  "Ice Storm",
+                             "6":  "Cone of Cold",
+                             "7":  "Acid Fog",
+                             "8":  "Horrid Wilting",
+                             "9":  "Elemental Swarm"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Turn or destroy fire creatures as a good cleric turns undead. Rebuke, command, or bolster water creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Obscuring Mist\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Fog Cloud\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Water Breathing\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Control Water\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Ice Storm\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Cone of Cold\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Acid Fog\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Horrid Wilting\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Elemental Swarm\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Turn or destroy fire creatures as a good cleric turns undead. Rebuke, command, or bolster water creatures as an evil cleric rebukes undead. Use these abilities a total number of times per day equal to 3 + your Charisma modifier. This granted power is a supernatural ability.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "water"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-artifice-domain",
+        "schemaVersion":  2,
+        "name":  "Artifice Domain",
+        "domainName":  "Artifice",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Cast Conjuration (creation) spells at +1 casterlevel.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Animate Rope",
+                             "2":  "Wood Shape",
+                             "3":  "Stone Shape",
+                             "4":  "Minor Creation",
+                             "5":  "Fabricate",
+                             "6":  "Major Creation",
+                             "7":  "Hardening",
+                             "8":  "True Creation",
+                             "9":  "Prismatic Sphere"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Cast Conjuration (creation) spells at +1 casterlevel.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Animate Rope\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Wood Shape\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Stone Shape\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Minor Creation\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Fabricate\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Major Creation\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Hardening\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e True Creation\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Prismatic Sphere\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Cast Conjuration (creation) spells at +1 casterlevel.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "artifice"
+                 ],
+        "modifiers":  {
+                          "formula":  "4",
+                          "type":  "untyped",
+                          "target":  "skill.type_craft",
+                          "value":  4,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-charm-domain",
+        "schemaVersion":  2,
+        "name":  "Charm Domain",
+        "domainName":  "Charm",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Boost Cha by +4 1/day. Activating is a free action. Cha increase lasts 1 minute.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Charm Person",
+                             "2":  "Calm Emotions",
+                             "3":  "Suggestion",
+                             "4":  "Heroism",
+                             "5":  "Charm Monster",
+                             "6":  "Geas/Quest",
+                             "7":  "Insanity",
+                             "8":  "Demand",
+                             "9":  "Dominate Monster"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Boost Cha by +4 1/day. Activating is a free action. Cha increase lasts 1 minute.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Charm Person\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Calm Emotions\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Suggestion\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Heroism\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Charm Monster\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Geas/Quest\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Insanity\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Demand\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Dominate Monster\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Boost Cha by +4 1/day. Activating is a free action. Cha increase lasts 1 minute.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "charm"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-community-domain",
+        "schemaVersion":  2,
+        "name":  "Community Domain",
+        "domainName":  "Community",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Use calm emotions as a spell-like ability once per day. Gain a +2 competence bonus on Diplomacy checks.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Bless",
+                             "2":  "Shield Other",
+                             "3":  "Prayer",
+                             "4":  "Status",
+                             "5":  "Telepathic Bond",
+                             "6":  "Heroes\u0027 Feast",
+                             "7":  "Refuge",
+                             "8":  "Heal (Mass)",
+                             "9":  "Miracle"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Use calm emotions as a spell-like ability once per day. Gain a +2 competence bonus on Diplomacy checks.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Bless\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Shield Other\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Prayer\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Status\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Telepathic Bond\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Heroes\u0027 Feast\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Refuge\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Heal (Mass)\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Miracle\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Use calm emotions as a spell-like ability once per day. Gain a +2 competence bonus on Diplomacy checks.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "community"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "competence",
+                          "target":  "skill.diplomacy",
+                          "value":  2,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-creation-domain",
+        "schemaVersion":  2,
+        "name":  "Creation Domain",
+        "domainName":  "Creation",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Cast Conjuration (creation) spells at +2 caster levels.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Create Water",
+                             "2":  "Minor Image",
+                             "3":  "Create Food and Water",
+                             "4":  "Minor Creation",
+                             "5":  "Major Creation",
+                             "6":  "Heroes\u0027 Feast",
+                             "7":  "Permanent Image",
+                             "8":  "True Creation",
+                             "9":  "Genesis"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Cast Conjuration (creation) spells at +2 caster levels.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Create Water\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Minor Image\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Create Food and Water\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Minor Creation\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Major Creation\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Heroes\u0027 Feast\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Permanent Image\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e True Creation\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Genesis\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Cast Conjuration (creation) spells at +2 caster levels.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "creation"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-darkness-domain",
+        "schemaVersion":  2,
+        "name":  "Darkness Domain",
+        "domainName":  "Darkness",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Free Blind-Fight feat.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Obscuring Mist",
+                             "2":  "Blindness/Deafness",
+                             "3":  "Blacklight",
+                             "4":  "Armor of Darkness",
+                             "5":  "Summon Monster V",
+                             "6":  "Prying Eyes",
+                             "7":  "Nightmare",
+                             "8":  "Power Word Blind",
+                             "9":  "Power Word Kill"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Free Blind-Fight feat.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Obscuring Mist\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Blindness/Deafness\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Blacklight\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Armor of Darkness\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Summon Monster V\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Prying Eyes\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Nightmare\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Power Word Blind\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Power Word Kill\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Free Blind-Fight feat.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "darkness"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-glory-domain",
+        "schemaVersion":  2,
+        "name":  "Glory Domain",
+        "domainName":  "Glory",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Turn undead with a +2 bonus on the turning check and +1d6 to the turning damage roll.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Disrupt Undead",
+                             "2":  "Bless Weapon",
+                             "3":  "Searing Light",
+                             "4":  "Holy Smite",
+                             "5":  "Holy Sword",
+                             "6":  "Bolt of Glory",
+                             "7":  "Sunbeam",
+                             "8":  "Crown of Glory",
+                             "9":  "Gate"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Turn undead with a +2 bonus on the turning check and +1d6 to the turning damage roll.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Disrupt Undead\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Bless Weapon\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Searing Light\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Holy Smite\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Holy Sword\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Bolt of Glory\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Sunbeam\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Crown of Glory\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Gate\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Turn undead with a +2 bonus on the turning check and +1d6 to the turning damage roll.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "glory"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-liberation-domain",
+        "schemaVersion":  2,
+        "name":  "Liberation Domain",
+        "domainName":  "Liberation",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "+2 morale bonus on all saving throws against enchantment spells or effects.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Remove Fear",
+                             "2":  "Remove Paralysis",
+                             "3":  "Remove Curse",
+                             "4":  "Freedom of Movement",
+                             "5":  "Break Enchantment",
+                             "6":  "Dispel Magic (Greater)",
+                             "7":  "Refuge",
+                             "8":  "Mind Blank",
+                             "9":  "Freedom"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e +2 morale bonus on all saving throws against enchantment spells or effects.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Remove Fear\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Remove Paralysis\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Remove Curse\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Freedom of Movement\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Break Enchantment\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Dispel Magic (Greater)\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Refuge\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Mind Blank\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Freedom\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: +2 morale bonus on all saving throws against enchantment spells or effects.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "liberation"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-madness-domain",
+        "schemaVersion":  2,
+        "name":  "Madness Domain",
+        "domainName":  "Madness",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You gain an Insanity score equal to half your class level. For spellcasting (determining bonus spells and DCs), you use your Wisdom score plus your Insanity score in place of Wisdom alone.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Confusion (Lesser)",
+                             "2":  "Touch of Madness",
+                             "3":  "Rage",
+                             "4":  "Confusion",
+                             "5":  "Bolts of Bedevilment",
+                             "6":  "Phantasmal Killer",
+                             "7":  "Insanity",
+                             "8":  "Maddening Scream",
+                             "9":  "Weird"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You gain an Insanity score equal to half your class level. For spellcasting (determining bonus spells and DCs), you use your Wisdom score plus your Insanity score in place of Wisdom alone.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Confusion (Lesser)\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Touch of Madness\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Rage\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Confusion\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Bolts of Bedevilment\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Phantasmal Killer\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Insanity\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Maddening Scream\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Weird\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You gain an Insanity score equal to half your class level. For spellcasting (determining bonus spells and DCs), you use your Wisdom score plus your Insanity score in place of Wisdom alone.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "madness"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-nobility-domain",
+        "schemaVersion":  2,
+        "name":  "Nobility Domain",
+        "domainName":  "Nobility",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear the character speak for 1 round. Using this ability is a standard action. It lasts a number of rounds equal to the character\u0027s Charisma bonus and can be used once per day.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Divine Favor",
+                             "2":  "Enthrall",
+                             "3":  "Magic Vestment",
+                             "4":  "Discern Lies",
+                             "5":  "Command (Greater)",
+                             "6":  "Geas/Quest",
+                             "7":  "Repulsion",
+                             "8":  "Demand",
+                             "9":  "Storm of Vengeance"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear the character speak for 1 round. Using this ability is a standard action. It lasts a number of rounds equal to the character\u0027s Charisma bonus and can be used once per day.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Divine Favor\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Enthrall\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Magic Vestment\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Discern Lies\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Command (Greater)\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Geas/Quest\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Repulsion\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Demand\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Storm of Vengeance\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You have the spell-like ability to inspire allies, giving them a +2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls. Allies must be able to hear the character speak for 1 round. Using this ability is a standard action. It lasts a number of rounds equal to the character\u0027s Charisma bonus and can be used once per day.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "nobility"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-repose-domain",
+        "schemaVersion":  2,
+        "name":  "Repose Domain",
+        "domainName":  "Repose",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "You may use a death touch once per day.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Deathwatch",
+                             "2":  "Gentle Repose",
+                             "3":  "Speak with Dead",
+                             "4":  "Death Ward",
+                             "5":  "Slay Living",
+                             "6":  "Undeath to Death",
+                             "7":  "Destruction",
+                             "8":  "Surelife",
+                             "9":  "Wail of the Banshee"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e You may use a death touch once per day.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Deathwatch\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Gentle Repose\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Speak with Dead\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Death Ward\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Slay Living\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Undeath to Death\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Destruction\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Surelife\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Wail of the Banshee\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: You may use a death touch once per day.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "repose"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-rune-domain",
+        "schemaVersion":  2,
+        "name":  "Rune Domain",
+        "domainName":  "Rune",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Free Scribe Scroll feat.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Erase",
+                             "2":  "Secret Page",
+                             "3":  "Glyph of Warding",
+                             "4":  "Explosive Runes",
+                             "5":  "Planar Binding (Lesser)",
+                             "6":  "Glyph of Warding (Greater)",
+                             "7":  "Instant Summons",
+                             "8":  "Symbol of Death",
+                             "9":  "Teleportation Circle"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Free Scribe Scroll feat.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Erase\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Secret Page\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Glyph of Warding\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Explosive Runes\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Planar Binding (Lesser)\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Glyph of Warding (Greater)\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Instant Summons\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Symbol of Death\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Teleportation Circle\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Free Scribe Scroll feat.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "rune"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-scalykind-domain",
+        "schemaVersion":  2,
+        "name":  "Scalykind Domain",
+        "domainName":  "Scalykind",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Rebuke or command animals (reptilian creatures and snakes only) as an evil cleric rebukes or commands undead.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Magic Fang",
+                             "2":  "Animal Trance",
+                             "3":  "Magic Fang (Greater)",
+                             "4":  "Poison",
+                             "5":  "Animal Growth",
+                             "6":  "Eyebite",
+                             "7":  "Creeping Doom",
+                             "8":  "Animal Shapes",
+                             "9":  "Shapechange"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Rebuke or command animals (reptilian creatures and snakes only) as an evil cleric rebukes or commands undead.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Magic Fang\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Animal Trance\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Magic Fang (Greater)\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Poison\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Animal Growth\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Eyebite\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Creeping Doom\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Animal Shapes\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Shapechange\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Rebuke or command animals (reptilian creatures and snakes only) as an evil cleric rebukes or commands undead.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "scalykind"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-weather-domain",
+        "schemaVersion":  2,
+        "name":  "Weather Domain",
+        "domainName":  "Weather",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / PHB p.185",
+        "grantedPower":  "Survival is a class skill.",
+        "classSkills":  [
+                            "Survival"
+                        ],
+        "domainSpells":  {
+                             "1":  "Obscuring Mist",
+                             "2":  "Fog Cloud",
+                             "3":  "Call Lightning",
+                             "4":  "Sleet Storm",
+                             "5":  "Ice Storm",
+                             "6":  "Control Winds",
+                             "7":  "Control Weather",
+                             "8":  "Whirlwind",
+                             "9":  "Storm of Vengeance"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e Survival is a class skill.\u003c/p\u003e\u003cp\u003e\u003cb\u003eBonus Class Skills:\u003c/b\u003e Survival\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Obscuring Mist\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Fog Cloud\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Call Lightning\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Sleet Storm\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Ice Storm\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Control Winds\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Control Weather\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Whirlwind\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Storm of Vengeance\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: Survival is a class skill.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "weather"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+                                                   "Survival"
+                                               ]
+                      }
+    },
+    {
+        "id":  "dom-mind-domain",
+        "schemaVersion":  2,
+        "name":  "Mind Domain",
+        "domainName":  "Mind",
+        "type":  "Domain",
+        "category":  "Cleric Domain",
+        "source":  "SRD 3.5e / XPH",
+        "grantedPower":  "+2 Bonus on Bluff, Diplomacy and Sense Motive Checks as well as +2 saves vs. enchantment spells and effects.",
+        "classSkills":  [
+
+                        ],
+        "domainSpells":  {
+                             "1":  "Comprehend Languages",
+                             "2":  "Detect Thoughts",
+                             "3":  "Telepathic Bond (Lesser)",
+                             "4":  "Discern Lies",
+                             "5":  "Telepathic Bond",
+                             "6":  "Probe Thoughts",
+                             "7":  "Brain Spider",
+                             "8":  "Mind Blank",
+                             "9":  "Weird"
+                         },
+        "description":  "\u003cp\u003e\u003cb\u003eGranted Power:\u003c/b\u003e +2 Bonus on Bluff, Diplomacy and Sense Motive Checks as well as +2 saves vs. enchantment spells and effects.\u003c/p\u003e\u003cp\u003e\u003cb\u003eDomain Spells:\u003c/b\u003e\u003c/p\u003e\u003cul\u003e\u003cli\u003e\u003cb\u003e1:\u003c/b\u003e Comprehend Languages\u003c/li\u003e\u003cli\u003e\u003cb\u003e2:\u003c/b\u003e Detect Thoughts\u003c/li\u003e\u003cli\u003e\u003cb\u003e3:\u003c/b\u003e Telepathic Bond (Lesser)\u003c/li\u003e\u003cli\u003e\u003cb\u003e4:\u003c/b\u003e Discern Lies\u003c/li\u003e\u003cli\u003e\u003cb\u003e5:\u003c/b\u003e Telepathic Bond\u003c/li\u003e\u003cli\u003e\u003cb\u003e6:\u003c/b\u003e Probe Thoughts\u003c/li\u003e\u003cli\u003e\u003cb\u003e7:\u003c/b\u003e Brain Spider\u003c/li\u003e\u003cli\u003e\u003cb\u003e8:\u003c/b\u003e Mind Blank\u003c/li\u003e\u003cli\u003e\u003cb\u003e9:\u003c/b\u003e Weird\u003c/li\u003e\u003c/ul\u003e",
+        "shortDescription":  "Granted Power: +2 Bonus on Bluff, Diplomacy and Sense Motive Checks as well as +2 saves vs. enchantment spells and effects.",
+        "tags":  [
+                     "srd",
+                     "domain",
+                     "mind"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "skill.bluff",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "skill.diplomacy",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "skill.sense_motive",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "bonusClassSkills":  [
+
+                                               ]
+                      }
+    }
+]

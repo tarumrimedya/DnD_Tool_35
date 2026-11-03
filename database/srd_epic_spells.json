@@ -1,0 +1,1778 @@
+[
+    {
+        "id":  "spl-epic-animus-blast",
+        "schemaVersion":  2,
+        "name":  "Animus Blast",
+        "type":  "Spell",
+        "category":  "Evocation",
+        "subschool":  "",
+        "descriptor":  "Cold",
+        "level":  10,
+        "spellcraftDC":  50,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 standard action",
+        "range":  "300 ft.",
+        "target":  "20-ft.-radius hemisphere burst",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Reflex half",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Evocation  [Cold] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 50\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 300 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e 20-ft.-radius hemisphere burst | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Reflex half | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 50.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Evocation, Spellcraft DC 50). Target/Area: 20-ft.-radius hemisphere burst. Save: Reflex half.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "evocation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  50,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-animus-blizzard",
+        "schemaVersion":  2,
+        "name":  "Animus Blizzard",
+        "type":  "Spell",
+        "category":  "Evocation",
+        "subschool":  "",
+        "descriptor":  "Cold",
+        "level":  10,
+        "spellcraftDC":  78,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 minute",
+        "range":  "300 ft.",
+        "target":  "20-ft.-radius hemisphere burst",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Reflex half",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Evocation  [Cold] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 78\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e 300 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e 20-ft.-radius hemisphere burst | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Reflex half | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 78.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Evocation, Spellcraft DC 78). Target/Area: 20-ft.-radius hemisphere burst. Save: Reflex half.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "evocation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  78,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-contingent-resurrection",
+        "schemaVersion":  2,
+        "name":  "Contingent Resurrection",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Healing",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  52,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, DF",
+        "castingTime":  "1 minute",
+        "range":  "Touch",
+        "target":  "You or creature touched",
+        "duration":  "Contingent until expended, then instantaneous",
+        "savingThrow":  "None (see text)",
+        "spellResistance":  "Yes (harmless)",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Healing)  | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 52\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e Touch | \u003cb\u003eTarget/Area:\u003c/b\u003e You or creature touched | \u003cb\u003eDuration:\u003c/b\u003e Contingent until expended, then instantaneous | \u003cb\u003eSave:\u003c/b\u003e None (see text) | \u003cb\u003eSR:\u003c/b\u003e Yes (harmless)\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 52.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 52). Target/Area: You or creature touched. Save: None (see text).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  52,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-create-living-vault-ritual",
+        "schemaVersion":  2,
+        "name":  "Create Living Vault (Ritual)",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Creation",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  58,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP",
+        "castingTime":  "100 days, 11 minutes",
+        "range":  "0 ft.",
+        "target":  "One living vault, 50 ft. by 50 ft. by 10 ft.",
+        "duration":  "Instantaneous",
+        "savingThrow":  "None",
+        "spellResistance":  "None",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Creation)  | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 58\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 100 days, 11 minutes | \u003cb\u003eRange:\u003c/b\u003e 0 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One living vault, 50 ft. by 50 ft. by 10 ft. | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e None\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 58.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 58). Target/Area: One living vault, 50 ft. by 50 ft. by 10 ft.. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  58,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-crown-of-vermin",
+        "schemaVersion":  2,
+        "name":  "Crown of Vermin",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Summoning",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  56,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 minute",
+        "range":  "Personal",
+        "target":  "Aura of one thousand insects that surrounds you in a 10-ft. -radius spread",
+        "duration":  "20 rounds (D)",
+        "savingThrow":  "None (see text)",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Summoning)  | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 56\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e Personal | \u003cb\u003eTarget/Area:\u003c/b\u003e Aura of one thousand insects that surrounds you in a 10-ft. -radius spread | \u003cb\u003eDuration:\u003c/b\u003e 20 rounds (D) | \u003cb\u003eSave:\u003c/b\u003e None (see text) | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 56.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 56). Target/Area: Aura of one thousand insects that surrounds you in a 10-ft. -radius spread. Save: None (see text).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  56,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-damnation",
+        "schemaVersion":  2,
+        "name":  "Damnation",
+        "type":  "Spell",
+        "category":  "Enchantment",
+        "subschool":  "Compulsion",
+        "descriptor":  "Mind-Affecting|Teleportation",
+        "level":  10,
+        "spellcraftDC":  97,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP",
+        "castingTime":  "1 standard action",
+        "range":  "",
+        "target":  "Creature touched",
+        "duration":  "Instantaneous (20 hours for compulsion)",
+        "savingThrow":  "Will negates (see text)",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Enchantment (Compulsion) [Mind-Affecting|Teleportation] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 97\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e  | \u003cb\u003eTarget/Area:\u003c/b\u003e Creature touched | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous (20 hours for compulsion) | \u003cb\u003eSave:\u003c/b\u003e Will negates (see text) | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 97.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Enchantment, Spellcraft DC 97). Target/Area: Creature touched. Save: Will negates (see text).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "enchantment"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  97,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-demise-unseen",
+        "schemaVersion":  2,
+        "name":  "Demise Unseen",
+        "type":  "Spell",
+        "category":  "Illusion|Necromancy",
+        "subschool":  "Figment",
+        "descriptor":  "Death|Evil",
+        "level":  10,
+        "spellcraftDC":  80,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 standard action",
+        "range":  "300 ft.",
+        "target":  "One creature of up to 80 HD",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Fort negates",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Illusion|Necromancy (Figment) [Death|Evil] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 80\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 300 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One creature of up to 80 HD | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Fort negates | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 80.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Illusion|Necromancy, Spellcraft DC 80). Target/Area: One creature of up to 80 HD. Save: Fort negates.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "illusion|necromancy"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  80,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-dire-winter",
+        "schemaVersion":  2,
+        "name":  "Dire Winter",
+        "type":  "Spell",
+        "category":  "Evocation",
+        "subschool":  "",
+        "descriptor":  "Cold",
+        "level":  10,
+        "spellcraftDC":  319,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP",
+        "castingTime":  "1 minute",
+        "range":  "1,000 ft.",
+        "target":  "1,000-ft. -radius emanation",
+        "duration":  "20 hours",
+        "savingThrow":  "None",
+        "spellResistance":  "None",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Evocation  [Cold] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 319\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e 1,000 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e 1,000-ft. -radius emanation | \u003cb\u003eDuration:\u003c/b\u003e 20 hours | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e None\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 319.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Evocation, Spellcraft DC 319). Target/Area: 1,000-ft. -radius emanation. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "evocation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  319,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-dragon-knight-ritual",
+        "schemaVersion":  2,
+        "name":  "Dragon Knight (Ritual)",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Summoning",
+        "descriptor":  "Fire",
+        "level":  10,
+        "spellcraftDC":  38,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, Ritual",
+        "castingTime":  "1 standard action",
+        "range":  "75 ft.",
+        "target":  "One summoned adult red dragon",
+        "duration":  "20 rounds (D)",
+        "savingThrow":  "None (see text)",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Summoning) [Fire] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 38\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 75 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One summoned adult red dragon | \u003cb\u003eDuration:\u003c/b\u003e 20 rounds (D) | \u003cb\u003eSave:\u003c/b\u003e None (see text) | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 38.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 38). Target/Area: One summoned adult red dragon. Save: None (see text).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  38,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-dragon-strike-ritual",
+        "schemaVersion":  2,
+        "name":  "Dragon Strike (Ritual)",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Summoning",
+        "descriptor":  "Fire",
+        "level":  10,
+        "spellcraftDC":  50,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, Ritual, XP",
+        "castingTime":  "1 standard action",
+        "range":  "75 ft.",
+        "target":  "Ten summoned adult red dragons",
+        "duration":  "20 rounds (D)",
+        "savingThrow":  "None (see text)",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Summoning) [Fire] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 50\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 75 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e Ten summoned adult red dragons | \u003cb\u003eDuration:\u003c/b\u003e 20 rounds (D) | \u003cb\u003eSave:\u003c/b\u003e None (see text) | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 50.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 50). Target/Area: Ten summoned adult red dragons. Save: None (see text).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  50,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-dreamscape",
+        "schemaVersion":  2,
+        "name":  "Dreamscape",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "",
+        "descriptor":  "Teleportation",
+        "level":  10,
+        "spellcraftDC":  29,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 minute",
+        "range":  "Touch",
+        "target":  "You and other touched willing creatures weighing up to 1,000 lb.",
+        "duration":  "Instantaneous (D)",
+        "savingThrow":  "Yes (harmless) (see text)",
+        "spellResistance":  "Yes (harmless)",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration  [Teleportation] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 29\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e Touch | \u003cb\u003eTarget/Area:\u003c/b\u003e You and other touched willing creatures weighing up to 1,000 lb. | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous (D) | \u003cb\u003eSave:\u003c/b\u003e Yes (harmless) (see text) | \u003cb\u003eSR:\u003c/b\u003e Yes (harmless)\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 29.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 29). Target/Area: You and other touched willing creatures weighing up to 1,000 lb.. Save: Yes (harmless) (see text).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  29,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-eclipse",
+        "schemaVersion":  2,
+        "name":  "Eclipse",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Creation",
+        "descriptor":  "Transportation",
+        "level":  10,
+        "spellcraftDC":  42,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP",
+        "castingTime":  "10 minutes",
+        "range":  "200 miles",
+        "target":  "5-mile radius, centered on you",
+        "duration":  "Up to 8 hours (D)",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Creation) [Transportation] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 42\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 10 minutes | \u003cb\u003eRange:\u003c/b\u003e 200 miles | \u003cb\u003eTarget/Area:\u003c/b\u003e 5-mile radius, centered on you | \u003cb\u003eDuration:\u003c/b\u003e Up to 8 hours (D) | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 42.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 42). Target/Area: 5-mile radius, centered on you. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  42,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-eidolon",
+        "schemaVersion":  2,
+        "name":  "Eidolon",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Creation",
+        "descriptor":  "Transportation",
+        "level":  10,
+        "spellcraftDC":  79,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP",
+        "castingTime":  "1 minute",
+        "range":  "5 ft.",
+        "target":  "One duplicate of caster",
+        "duration":  "8 hours",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Creation) [Transportation] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 79\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e 5 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One duplicate of caster | \u003cb\u003eDuration:\u003c/b\u003e 8 hours | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 79.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 79). Target/Area: One duplicate of caster. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  79,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-enslave-ritual",
+        "schemaVersion":  2,
+        "name":  "Enslave (Ritual)",
+        "type":  "Spell",
+        "category":  "Enchantment",
+        "subschool":  "Compulsion",
+        "descriptor":  "Mind-Affecting",
+        "level":  10,
+        "spellcraftDC":  80,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP",
+        "castingTime":  "1 standard action",
+        "range":  "75 ft.",
+        "target":  "One living creature",
+        "duration":  "Permanent",
+        "savingThrow":  "Will negates",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Enchantment (Compulsion) [Mind-Affecting] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 80\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 75 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One living creature | \u003cb\u003eDuration:\u003c/b\u003e Permanent | \u003cb\u003eSave:\u003c/b\u003e Will negates | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 80.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Enchantment, Spellcraft DC 80). Target/Area: One living creature. Save: Will negates.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "enchantment"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  80,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-epic-counterspell",
+        "schemaVersion":  2,
+        "name":  "Epic Counterspell",
+        "type":  "Spell",
+        "category":  "Abjuration",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  69,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 standard action",
+        "range":  "300 ft.",
+        "target":  "One creature or object",
+        "duration":  "Instantaneous",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Abjuration   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 69\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 300 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One creature or object | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 69.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Abjuration, Spellcraft DC 69). Target/Area: One creature or object. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "abjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  69,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-epic-mage-armor",
+        "schemaVersion":  2,
+        "name":  "Epic Mage Armor",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Creation",
+        "descriptor":  "Force",
+        "level":  10,
+        "spellcraftDC":  46,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 minute",
+        "range":  "Touch",
+        "target":  "Creature touched",
+        "duration":  "24 hours (D)",
+        "savingThrow":  "Will negates (harmless)",
+        "spellResistance":  "Yes (harmless)",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Creation) [Force] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 46\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e Touch | \u003cb\u003eTarget/Area:\u003c/b\u003e Creature touched | \u003cb\u003eDuration:\u003c/b\u003e 24 hours (D) | \u003cb\u003eSave:\u003c/b\u003e Will negates (harmless) | \u003cb\u003eSR:\u003c/b\u003e Yes (harmless)\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 46.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 46). Target/Area: Creature touched. Save: Will negates (harmless).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  46,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-epic-repulsion",
+        "schemaVersion":  2,
+        "name":  "Epic Repulsion",
+        "type":  "Spell",
+        "category":  "Abjuration",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  52,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "10 minutes",
+        "range":  "Touch",
+        "target":  "Object or creature touched",
+        "duration":  "Permanent",
+        "savingThrow":  "None",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Abjuration   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 52\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 10 minutes | \u003cb\u003eRange:\u003c/b\u003e Touch | \u003cb\u003eTarget/Area:\u003c/b\u003e Object or creature touched | \u003cb\u003eDuration:\u003c/b\u003e Permanent | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 52.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Abjuration, Spellcraft DC 52). Target/Area: Object or creature touched. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "abjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  52,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-epic-spell-reflection",
+        "schemaVersion":  2,
+        "name":  "Epic Spell Reflection",
+        "type":  "Spell",
+        "category":  "Abjuration",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  68,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP",
+        "castingTime":  "41 days, 11 minutes",
+        "range":  "Touch",
+        "target":  "Object or creature touched",
+        "duration":  "Permanent",
+        "savingThrow":  "None",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Abjuration   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 68\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 41 days, 11 minutes | \u003cb\u003eRange:\u003c/b\u003e Touch | \u003cb\u003eTarget/Area:\u003c/b\u003e Object or creature touched | \u003cb\u003eDuration:\u003c/b\u003e Permanent | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 68.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Abjuration, Spellcraft DC 68). Target/Area: Object or creature touched. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "abjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  68,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-eternal-freedom",
+        "schemaVersion":  2,
+        "name":  "Eternal Freedom",
+        "type":  "Spell",
+        "category":  "Abjuration",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  150,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, Ritual, XP",
+        "castingTime":  "1 minute",
+        "range":  "Touch",
+        "target":  "Touched creature or object of 2,000 lb. or less",
+        "duration":  "Permanent",
+        "savingThrow":  "Will negates",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Abjuration   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 150\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e Touch | \u003cb\u003eTarget/Area:\u003c/b\u003e Touched creature or object of 2,000 lb. or less | \u003cb\u003eDuration:\u003c/b\u003e Permanent | \u003cb\u003eSave:\u003c/b\u003e Will negates | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 150.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Abjuration, Spellcraft DC 150). Target/Area: Touched creature or object of 2,000 lb. or less. Save: Will negates.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "abjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  150,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-gathering-of-maggots",
+        "schemaVersion":  2,
+        "name":  "Gathering of Maggots",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Healing",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  49,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, DF",
+        "castingTime":  "7 days",
+        "range":  "",
+        "target":  "Dead creature touched",
+        "duration":  "Permanent",
+        "savingThrow":  "Fortitude negates (harmless)",
+        "spellResistance":  "Yes (harmless)",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Healing)  | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 49\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 7 days | \u003cb\u003eRange:\u003c/b\u003e  | \u003cb\u003eTarget/Area:\u003c/b\u003e Dead creature touched | \u003cb\u003eDuration:\u003c/b\u003e Permanent | \u003cb\u003eSave:\u003c/b\u003e Fortitude negates (harmless) | \u003cb\u003eSR:\u003c/b\u003e Yes (harmless)\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 49.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 49). Target/Area: Dead creature touched. Save: Fortitude negates (harmless).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  49,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-genesis-mod",
+        "schemaVersion":  2,
+        "name":  "Genesis.MOD",
+        "type":  "Spell",
+        "category":  "Universal",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  0,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 standard action",
+        "range":  "",
+        "target":  "",
+        "duration":  "Instantaneous",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Universal   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 0\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e  | \u003cb\u003eTarget/Area:\u003c/b\u003e  | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003e\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Universal, Spellcraft DC 0). Target/Area: . Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "universal"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  0,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-ruin-greater",
+        "schemaVersion":  2,
+        "name":  "Ruin (Greater)",
+        "type":  "Spell",
+        "category":  "Transmutation",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  59,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP",
+        "castingTime":  "1 standard action",
+        "range":  "12,000 ft.",
+        "target":  "One creature, or up to a 10-foot cube of nonliving matter",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Fortitude half",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Transmutation   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 59\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 12,000 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One creature, or up to a 10-foot cube of nonliving matter | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Fortitude half | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 59.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Transmutation, Spellcraft DC 59). Target/Area: One creature, or up to a 10-foot cube of nonliving matter. Save: Fortitude half.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "transmutation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  59,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-spell-resistance-greater",
+        "schemaVersion":  2,
+        "name":  "Spell Resistance (Greater)",
+        "type":  "Spell",
+        "category":  "Transmutation",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  45,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, Ritual",
+        "castingTime":  "1 minute",
+        "range":  "Touch",
+        "target":  "Creature touched",
+        "duration":  "20 hours",
+        "savingThrow":  "Will negates (harmless)",
+        "spellResistance":  "Yes (harmless)",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Transmutation   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 45\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e Touch | \u003cb\u003eTarget/Area:\u003c/b\u003e Creature touched | \u003cb\u003eDuration:\u003c/b\u003e 20 hours | \u003cb\u003eSave:\u003c/b\u003e Will negates (harmless) | \u003cb\u003eSR:\u003c/b\u003e Yes (harmless)\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 45.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Transmutation, Spellcraft DC 45). Target/Area: Creature touched. Save: Will negates (harmless).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "transmutation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  45,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-hellball",
+        "schemaVersion":  2,
+        "name":  "Hellball",
+        "type":  "Spell",
+        "category":  "Evocation",
+        "subschool":  "",
+        "descriptor":  "Acid|Fire|Electricity|Sonic",
+        "level":  10,
+        "spellcraftDC":  90,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP",
+        "castingTime":  "1 standard action",
+        "range":  "300 ft.",
+        "target":  "40-ft. -radius spread",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Reflex half",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Evocation  [Acid|Fire|Electricity|Sonic] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 90\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 300 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e 40-ft. -radius spread | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Reflex half | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 90.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Evocation, Spellcraft DC 90). Target/Area: 40-ft. -radius spread. Save: Reflex half.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "evocation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  90,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-kinetic-control",
+        "schemaVersion":  2,
+        "name":  "Kinetic Control",
+        "type":  "Spell",
+        "category":  "Abjuration",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  100,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 minute",
+        "range":  "Personal; touch",
+        "target":  "You; creature or object touched",
+        "duration":  "12 hours or until discharged",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Abjuration   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 100\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e Personal; touch | \u003cb\u003eTarget/Area:\u003c/b\u003e You; creature or object touched | \u003cb\u003eDuration:\u003c/b\u003e 12 hours or until discharged | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 100.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Abjuration, Spellcraft DC 100). Target/Area: You; creature or object touched. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "abjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  100,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-let-go-of-me",
+        "schemaVersion":  2,
+        "name":  "Let Go of Me",
+        "type":  "Spell",
+        "category":  "Transmutation",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  43,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "None",
+        "castingTime":  "1 free action",
+        "range":  "Touch",
+        "target":  "One creature or force grappling you",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Fortitude half",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Transmutation   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 43\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 free action | \u003cb\u003eRange:\u003c/b\u003e Touch | \u003cb\u003eTarget/Area:\u003c/b\u003e One creature or force grappling you | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Fortitude half | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 43.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Transmutation, Spellcraft DC 43). Target/Area: One creature or force grappling you. Save: Fortitude half.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "transmutation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  43,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-living-lightning",
+        "schemaVersion":  2,
+        "name":  "Living Lightning",
+        "type":  "Spell",
+        "category":  "Evocation",
+        "subschool":  "",
+        "descriptor":  "Electricity",
+        "level":  10,
+        "spellcraftDC":  140,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "None",
+        "castingTime":  "1 standard action",
+        "range":  "300 ft. or 150 ft.",
+        "target":  "A bolt 5 ft. wide by 300 ft. long, or 10 ft. wide by 150 ft. long",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Reflex half",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Evocation  [Electricity] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 140\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 300 ft. or 150 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e A bolt 5 ft. wide by 300 ft. long, or 10 ft. wide by 150 ft. long | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Reflex half | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 140.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Evocation, Spellcraft DC 140). Target/Area: A bolt 5 ft. wide by 300 ft. long, or 10 ft. wide by 150 ft. long. Save: Reflex half.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "evocation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  140,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-lord-of-nightmares",
+        "schemaVersion":  2,
+        "name":  "Lord of Nightmares",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Summoning",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  50,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP",
+        "castingTime":  "1 standard action",
+        "range":  "75 ft.",
+        "target":  "One summoned creature",
+        "duration":  "20 rounds",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Summoning)  | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 50\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 75 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One summoned creature | \u003cb\u003eDuration:\u003c/b\u003e 20 rounds | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 50.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 50). Target/Area: One summoned creature. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  50,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-frog-mass",
+        "schemaVersion":  2,
+        "name":  "Frog (Mass)",
+        "type":  "Spell",
+        "category":  "Transmutation",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  55,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 standard action",
+        "range":  "300 ft.",
+        "target":  "40-ft. -radius hemisphere",
+        "duration":  "Permanent",
+        "savingThrow":  "Fortitude negates",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Transmutation   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 55\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 300 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e 40-ft. -radius hemisphere | \u003cb\u003eDuration:\u003c/b\u003e Permanent | \u003cb\u003eSave:\u003c/b\u003e Fortitude negates | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 55.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Transmutation, Spellcraft DC 55). Target/Area: 40-ft. -radius hemisphere. Save: Fortitude negates.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "transmutation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  55,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-momento-mori",
+        "schemaVersion":  2,
+        "name":  "Momento Mori",
+        "type":  "Spell",
+        "category":  "Necromancy",
+        "subschool":  "",
+        "descriptor":  "Death",
+        "level":  10,
+        "spellcraftDC":  86,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "None",
+        "castingTime":  "1 quickened action",
+        "range":  "300 ft.",
+        "target":  "One living creature",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Fortitude partial (see text)",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Necromancy  [Death] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 86\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 quickened action | \u003cb\u003eRange:\u003c/b\u003e 300 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One living creature | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Fortitude partial (see text) | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 86.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Necromancy, Spellcraft DC 86). Target/Area: One living creature. Save: Fortitude partial (see text).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "necromancy"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  86,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-mummy-dust",
+        "schemaVersion":  2,
+        "name":  "Mummy Dust",
+        "type":  "Spell",
+        "category":  "Necromancy",
+        "subschool":  "",
+        "descriptor":  "Evil",
+        "level":  10,
+        "spellcraftDC":  35,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S ,M, XP",
+        "castingTime":  "1 standard action",
+        "range":  "Touch",
+        "target":  "Two 18-HD mummies",
+        "duration":  "Instantaneous",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Necromancy  [Evil] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 35\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e Touch | \u003cb\u003eTarget/Area:\u003c/b\u003e Two 18-HD mummies | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 35.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Necromancy, Spellcraft DC 35). Target/Area: Two 18-HD mummies. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "necromancy"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  35,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-nailed-to-the-sky",
+        "schemaVersion":  2,
+        "name":  "Nailed to the Sky",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "",
+        "descriptor":  "Teleportation",
+        "level":  10,
+        "spellcraftDC":  62,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S ,XP",
+        "castingTime":  "1 standard action",
+        "range":  "300 ft.",
+        "target":  "Creature or object weighing up to 1,000 lb.",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Will negates",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration  [Teleportation] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 62\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 300 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e Creature or object weighing up to 1,000 lb. | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Will negates | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 62.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 62). Target/Area: Creature or object weighing up to 1,000 lb.. Save: Will negates.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  62,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-origin-of-species-achaierai",
+        "schemaVersion":  2,
+        "name":  "Origin of Species (Achaierai)",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Creation|Healing",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  38,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, DF, XP",
+        "castingTime":  "100 days, 11 minutes",
+        "range":  "0 ft.",
+        "target":  "One constructed creature up to Medium (20 cu. ft.)",
+        "duration":  "Permanent",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Creation|Healing)  | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 38\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 100 days, 11 minutes | \u003cb\u003eRange:\u003c/b\u003e 0 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One constructed creature up to Medium (20 cu. ft.) | \u003cb\u003eDuration:\u003c/b\u003e Permanent | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 38.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 38). Target/Area: One constructed creature up to Medium (20 cu. ft.). Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  38,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-peripety",
+        "schemaVersion":  2,
+        "name":  "Peripety",
+        "type":  "Spell",
+        "category":  "Abjuration",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  27,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 minute",
+        "range":  "Personal",
+        "target":  "You",
+        "duration":  "12 hours",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Abjuration   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 27\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e Personal | \u003cb\u003eTarget/Area:\u003c/b\u003e You | \u003cb\u003eDuration:\u003c/b\u003e 12 hours | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 27.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Abjuration, Spellcraft DC 27). Target/Area: You. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "abjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  27,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-pestilence",
+        "schemaVersion":  2,
+        "name":  "Pestilence",
+        "type":  "Spell",
+        "category":  "Conjuration|Necromancy",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  104,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, Ritual, XP",
+        "castingTime":  "10 minutes",
+        "range":  "0 ft.",
+        "target":  "1,000-ft. -radius hemisphere",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Fortitude negates",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration|Necromancy   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 104\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 10 minutes | \u003cb\u003eRange:\u003c/b\u003e 0 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e 1,000-ft. -radius hemisphere | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Fortitude negates | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 104.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration|Necromancy, Spellcraft DC 104). Target/Area: 1,000-ft. -radius hemisphere. Save: Fortitude negates.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration|necromancy"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  104,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-rain-of-fire",
+        "schemaVersion":  2,
+        "name":  "Rain of Fire",
+        "type":  "Spell",
+        "category":  "Evocation",
+        "subschool":  "",
+        "descriptor":  "Fire",
+        "level":  10,
+        "spellcraftDC":  50,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 minute",
+        "range":  "0 ft.",
+        "target":  "2-mile-radius emanation",
+        "duration":  "20 hours",
+        "savingThrow":  "Reflex negates (see text)",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Evocation  [Fire] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 50\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e 0 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e 2-mile-radius emanation | \u003cb\u003eDuration:\u003c/b\u003e 20 hours | \u003cb\u003eSave:\u003c/b\u003e Reflex negates (see text) | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 50.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Evocation, Spellcraft DC 50). Target/Area: 2-mile-radius emanation. Save: Reflex negates (see text).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "evocation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  50,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-raise-island",
+        "schemaVersion":  2,
+        "name":  "Raise Island",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Creation",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  38,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP, Ritual",
+        "castingTime":  "65 days, 11 minutes",
+        "range":  "0 ft.",
+        "target":  "100-ft. -radius hemispherical island",
+        "duration":  "Permanent",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Creation)  | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 38\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 65 days, 11 minutes | \u003cb\u003eRange:\u003c/b\u003e 0 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e 100-ft. -radius hemispherical island | \u003cb\u003eDuration:\u003c/b\u003e Permanent | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 38.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 38). Target/Area: 100-ft. -radius hemispherical island. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  38,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-ruin",
+        "schemaVersion":  2,
+        "name":  "Ruin",
+        "type":  "Spell",
+        "category":  "Transmutation",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  27,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, XP",
+        "castingTime":  "1 full round",
+        "range":  "12,000 ft.",
+        "target":  "One creature, or up to a 10-foot cube of nonliving matter",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Fortitude half",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Transmutation   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 27\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 full round | \u003cb\u003eRange:\u003c/b\u003e 12,000 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One creature, or up to a 10-foot cube of nonliving matter | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Fortitude half | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 27.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Transmutation, Spellcraft DC 27). Target/Area: One creature, or up to a 10-foot cube of nonliving matter. Save: Fortitude half.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "transmutation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  27,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-safe-time",
+        "schemaVersion":  2,
+        "name":  "Safe Time",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "",
+        "descriptor":  "Teleportation",
+        "level":  10,
+        "spellcraftDC":  64,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 minute",
+        "range":  "Touch",
+        "target":  "You or creature touched",
+        "duration":  "Contingent until expended, then 1 round of safe time",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration  [Teleportation] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 64\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e Touch | \u003cb\u003eTarget/Area:\u003c/b\u003e You or creature touched | \u003cb\u003eDuration:\u003c/b\u003e Contingent until expended, then 1 round of safe time | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 64.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 64). Target/Area: You or creature touched. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  64,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-soul-dominion",
+        "schemaVersion":  2,
+        "name":  "Soul Dominion",
+        "type":  "Spell",
+        "category":  "Divination|Enchantment",
+        "subschool":  "Compulsion",
+        "descriptor":  "Mind-Affecting",
+        "level":  10,
+        "spellcraftDC":  72,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "10 minutes",
+        "range":  "See text",
+        "target":  "One other living creature",
+        "duration":  "20 minutes (D)",
+        "savingThrow":  "Will negates (see text)",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Divination|Enchantment (Compulsion) [Mind-Affecting] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 72\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 10 minutes | \u003cb\u003eRange:\u003c/b\u003e See text | \u003cb\u003eTarget/Area:\u003c/b\u003e One other living creature | \u003cb\u003eDuration:\u003c/b\u003e 20 minutes (D) | \u003cb\u003eSave:\u003c/b\u003e Will negates (see text) | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 72.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Divination|Enchantment, Spellcraft DC 72). Target/Area: One other living creature. Save: Will negates (see text).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "divination|enchantment"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  72,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-soul-scry",
+        "schemaVersion":  2,
+        "name":  "Soul Scry",
+        "type":  "Spell",
+        "category":  "Divination",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  55,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "10 minutes",
+        "range":  "See text",
+        "target":  "One other living creature",
+        "duration":  "20 minutes (D)",
+        "savingThrow":  "Will negates",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Divination   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 55\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 10 minutes | \u003cb\u003eRange:\u003c/b\u003e See text | \u003cb\u003eTarget/Area:\u003c/b\u003e One other living creature | \u003cb\u003eDuration:\u003c/b\u003e 20 minutes (D) | \u003cb\u003eSave:\u003c/b\u003e Will negates | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 55.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Divination, Spellcraft DC 55). Target/Area: One other living creature. Save: Will negates.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "divination"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  55,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-spell-worm",
+        "schemaVersion":  2,
+        "name":  "Spell Worm",
+        "type":  "Spell",
+        "category":  "Enchantment",
+        "subschool":  "Compulsion",
+        "descriptor":  "Mind-Affecting",
+        "level":  10,
+        "spellcraftDC":  45,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 standard action",
+        "range":  "75 ft.",
+        "target":  "One living creature",
+        "duration":  "20 hours or until completed",
+        "savingThrow":  "Will negates",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Enchantment (Compulsion) [Mind-Affecting] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 45\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 75 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One living creature | \u003cb\u003eDuration:\u003c/b\u003e 20 hours or until completed | \u003cb\u003eSave:\u003c/b\u003e Will negates | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 45.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Enchantment, Spellcraft DC 45). Target/Area: One living creature. Save: Will negates.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "enchantment"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  45,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-summon-behemoth",
+        "schemaVersion":  2,
+        "name":  "Summon Behemoth",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Summoning",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  72,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 standard action",
+        "range":  "75 ft.",
+        "target":  "Summoned creature",
+        "duration":  "20 rounds (D)",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Summoning)  | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 72\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 75 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e Summoned creature | \u003cb\u003eDuration:\u003c/b\u003e 20 rounds (D) | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 72.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 72). Target/Area: Summoned creature. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  72,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-superb-dispelling",
+        "schemaVersion":  2,
+        "name":  "Superb Dispelling",
+        "type":  "Spell",
+        "category":  "Abjuration",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  59,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 standard action",
+        "range":  "300 ft.",
+        "target":  "One creature or object",
+        "duration":  "Instantaneous",
+        "savingThrow":  "None",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Abjuration   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 59\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 300 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One creature or object | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e None | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 59.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Abjuration, Spellcraft DC 59). Target/Area: One creature or object. Save: None.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "abjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  59,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-time-duplicate",
+        "schemaVersion":  2,
+        "name":  "Time Duplicate",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "",
+        "descriptor":  "Teleportation",
+        "level":  10,
+        "spellcraftDC":  71,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 free action",
+        "range":  "",
+        "target":  "You",
+        "duration":  "1 round (see text)",
+        "savingThrow":  "None (harmless)",
+        "spellResistance":  "None (harmless)",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration  [Teleportation] | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 71\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 free action | \u003cb\u003eRange:\u003c/b\u003e  | \u003cb\u003eTarget/Area:\u003c/b\u003e You | \u003cb\u003eDuration:\u003c/b\u003e 1 round (see text) | \u003cb\u003eSave:\u003c/b\u003e None (harmless) | \u003cb\u003eSR:\u003c/b\u003e None (harmless)\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 71.\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 71). Target/Area: You. Save: None (harmless).",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  71,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-vengeful-gaze-of-god",
+        "schemaVersion":  2,
+        "name":  "Vengeful Gaze of God",
+        "type":  "Spell",
+        "category":  "Transmutation",
+        "subschool":  "",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  419,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 standard action",
+        "range":  "12,000 ft.",
+        "target":  "One creature, or up to a 10-foot cube of nonliving matter in line of sight",
+        "duration":  "Instantaneous",
+        "savingThrow":  "Fortitude half",
+        "spellResistance":  "Yes",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Transmutation   | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 419\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 standard action | \u003cb\u003eRange:\u003c/b\u003e 12,000 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e One creature, or up to a 10-foot cube of nonliving matter in line of sight | \u003cb\u003eDuration:\u003c/b\u003e Instantaneous | \u003cb\u003eSave:\u003c/b\u003e Fortitude half | \u003cb\u003eSR:\u003c/b\u003e Yes\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 419\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Transmutation, Spellcraft DC 419). Target/Area: One creature, or up to a 10-foot cube of nonliving matter in line of sight. Save: Fortitude half.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "transmutation"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  419,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-verdigris",
+        "schemaVersion":  2,
+        "name":  "Verdigris",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Creation",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  58,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S",
+        "castingTime":  "1 minute",
+        "range":  "300 ft.",
+        "target":  "100-ft.-radius hemisphere",
+        "duration":  "24 hours",
+        "savingThrow":  "Reflex half",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Creation)  | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 58\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 1 minute | \u003cb\u003eRange:\u003c/b\u003e 300 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e 100-ft.-radius hemisphere | \u003cb\u003eDuration:\u003c/b\u003e 24 hours | \u003cb\u003eSave:\u003c/b\u003e Reflex half | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 58\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 58). Target/Area: 100-ft.-radius hemisphere. Save: Reflex half.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  58,
+                          "epic":  true
+                      }
+    },
+    {
+        "id":  "spl-epic-verdigris-tsunami",
+        "schemaVersion":  2,
+        "name":  "Verdigris Tsunami",
+        "type":  "Spell",
+        "category":  "Conjuration",
+        "subschool":  "Creation",
+        "descriptor":  "",
+        "level":  10,
+        "spellcraftDC":  170,
+        "source":  "SRD 3.5e / ELH",
+        "components":  "V, S, Ritual, XP",
+        "castingTime":  "10 minutes",
+        "range":  "1,500 ft.",
+        "target":  "1,000-ft.-radius hemisphere",
+        "duration":  "Permanent",
+        "savingThrow":  "Reflex half",
+        "spellResistance":  "No",
+        "description":  "\u003cp\u003e\u003cb\u003eSchool:\u003c/b\u003e Conjuration (Creation)  | \u003cb\u003eSpellcraft DC:\u003c/b\u003e 170\u003c/p\u003e\u003cp\u003e\u003cb\u003eCasting Time:\u003c/b\u003e 10 minutes | \u003cb\u003eRange:\u003c/b\u003e 1,500 ft. | \u003cb\u003eTarget/Area:\u003c/b\u003e 1,000-ft.-radius hemisphere | \u003cb\u003eDuration:\u003c/b\u003e Permanent | \u003cb\u003eSave:\u003c/b\u003e Reflex half | \u003cb\u003eSR:\u003c/b\u003e No\u003c/p\u003e\u003cp\u003eSee text. Spellcraft DC 170\u003c/p\u003e",
+        "shortDescription":  "Epic Spell (Conjuration, Spellcraft DC 170). Target/Area: 1,000-ft.-radius hemisphere. Save: Reflex half.",
+        "tags":  [
+                     "srd",
+                     "spell",
+                     "epic",
+                     "conjuration"
+                 ],
+        "modifiers":  [
+
+                      ],
+        "damageParts":  [
+
+                        ],
+        "ruleFlags":  {
+                          "spellcraftDC":  170,
+                          "epic":  true
+                      }
+    }
+]

@@ -1,0 +1,2619 @@
+[
+    {
+        "id":  "alch-acid-flask",
+        "schemaVersion":  2,
+        "name":  "Acid (Flask)",
+        "type":  "Consumable",
+        "category":  "Alchemical Item",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  10,
+        "weight":  1,
+        "description":  "\u003cp\u003eAlchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Alchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "alchemical-item"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "alch-alchemist-s-fire-flask",
+        "schemaVersion":  2,
+        "name":  "Alchemist\u0027s Fire (Flask)",
+        "type":  "Consumable",
+        "category":  "Alchemical Item",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  20,
+        "weight":  1,
+        "description":  "\u003cp\u003eAlchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Alchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "alchemical-item"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "alch-antitoxin-vial",
+        "schemaVersion":  2,
+        "name":  "Antitoxin (Vial)",
+        "type":  "Consumable",
+        "category":  "Alchemical Item",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  50,
+        "weight":  0,
+        "description":  "\u003cp\u003eAlchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Alchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "alchemical-item"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "alch-smokestick",
+        "schemaVersion":  2,
+        "name":  "Smokestick",
+        "type":  "Consumable",
+        "category":  "Alchemical Item",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  20,
+        "weight":  0.5,
+        "description":  "\u003cp\u003eAlchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Alchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "alchemical-item"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "alch-sunrod",
+        "schemaVersion":  2,
+        "name":  "Sunrod",
+        "type":  "Consumable",
+        "category":  "Alchemical Item",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  2,
+        "weight":  1,
+        "description":  "\u003cp\u003eBright Illumination: 30 ft.. Shadowy Illumination: 60 ft.. Duration: 6 hr.\u003c/p\u003e",
+        "shortDescription":  "Bright Illumination: 30 ft.. Shadowy Illumination: 60 ft.. Duration: 6 hr.",
+        "tags":  [
+                     "srd",
+                     "alchemical-item"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "alch-tanglefoot-bag",
+        "schemaVersion":  2,
+        "name":  "Tanglefoot Bag",
+        "type":  "Consumable",
+        "category":  "Alchemical Item",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  50,
+        "weight":  4,
+        "description":  "\u003cp\u003eAlchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Alchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "alchemical-item"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "alch-thunderstone",
+        "schemaVersion":  2,
+        "name":  "Thunderstone",
+        "type":  "Consumable",
+        "category":  "Alchemical Item",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  30,
+        "weight":  1,
+        "description":  "\u003cp\u003eAlchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Alchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "alchemical-item"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "alch-tindertwig",
+        "schemaVersion":  2,
+        "name":  "Tindertwig",
+        "type":  "Consumable",
+        "category":  "Alchemical Item",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  1,
+        "weight":  0,
+        "description":  "\u003cp\u003eAlchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Alchemical Item from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "alchemical-item"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-alchemist-s-lab",
+        "schemaVersion":  2,
+        "name":  "Alchemist\u0027s Lab",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  500,
+        "weight":  40,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_alchemy",
+                          "value":  2,
+                          "condition":  null
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-armorsmithing",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Armorsmithing)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_armorsmithing",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-armorsmithing-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Armorsmithing), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_armorsmithing",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-bowmaking",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Bowmaking)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_bowmaking",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-bowmaking-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Bowmaking), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_bowmaking",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-blacksmithing",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Blacksmithing)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_blacksmithing",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-blacksmithing-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Blacksmithing), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_blacksmithing",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-carpentry",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Carpentry)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_carpentry",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-carpentry-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Carpentry), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_carpentry",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-leatherworking",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Leatherworking)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_leatherworking",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-leatherworking-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Leatherworking), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_leatherworking",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-painting",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Painting)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_painting",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-painting-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Painting), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_painting",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-pottery",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Pottery)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_pottery",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-pottery-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Pottery), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_pottery",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-sculpting",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Sculpting)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_sculpting",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-sculpting-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Sculpting), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_sculpting",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-shipmaking",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Shipmaking)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_shipmaking",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-shipmaking-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Shipmaking), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_shipmaking",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-stonemasonry",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Stonemasonry)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_stonemasonry",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-stonemasonry-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Stonemasonry), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_stonemasonry",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-trapmaking",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Trapmaking)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_trapmaking",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-trapmaking-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Trapmaking), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_trapmaking",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-weaponsmithing",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Weaponsmithing)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_weaponsmithing",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-weaponsmithing-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Weaponsmithing), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_weaponsmithing",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-woodworking",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Woodworking)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.craft_woodworking",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-artisan-s-tools-woodworking-masterwork",
+        "schemaVersion":  2,
+        "name":  "Artisan\u0027s Tools (Woodworking), Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  55,
+        "weight":  5,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.craft_woodworking",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-climber-s-kit",
+        "schemaVersion":  2,
+        "name":  "Climber\u0027s Kit",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  80,
+        "weight":  5,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.climb",
+                          "value":  2,
+                          "condition":  null
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-disguise-kit",
+        "schemaVersion":  2,
+        "name":  "Disguise Kit",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  50,
+        "weight":  8,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.disguise",
+                          "value":  2,
+                          "condition":  null
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-healer-s-kit",
+        "schemaVersion":  2,
+        "name":  "Healer\u0027s Kit",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  50,
+        "weight":  1,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.heal",
+                          "value":  2,
+                          "condition":  null
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-hourglass",
+        "schemaVersion":  2,
+        "name":  "Hourglass",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  25,
+        "weight":  1,
+        "description":  "\u003cp\u003eSkill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Skill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-holly-and-mistletoe",
+        "schemaVersion":  2,
+        "name":  "Holly and Mistletoe",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  0,
+        "weight":  0,
+        "description":  "\u003cp\u003eSkill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Skill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-holy-symbol-wooden",
+        "schemaVersion":  2,
+        "name":  "Holy Symbol (Wooden)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  1,
+        "weight":  0,
+        "description":  "\u003cp\u003eSkill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Skill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-holy-symbol-silver",
+        "schemaVersion":  2,
+        "name":  "Holy Symbol (Silver)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  25,
+        "weight":  1,
+        "description":  "\u003cp\u003eSkill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Skill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-magnifying-glass",
+        "schemaVersion":  2,
+        "name":  "Magnifying Glass",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  100,
+        "weight":  0,
+        "description":  "\u003cp\u003ea +2 circumstance bonus on Appraise checks involving any item that is small or highly detailed.\u003c/p\u003e",
+        "shortDescription":  "a +2 circumstance bonus on Appraise checks involving any item that is small or highly detailed.",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-bells",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Bells)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_percussion_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-bells-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Bells), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_percussion_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-chime",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Chime)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_percussion_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-chime-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Chime), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_percussion_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-drum",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Drum)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_percussion_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-drum-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Drum), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_percussion_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-gong",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Gong)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_percussion_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-gong-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Gong), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_percussion_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-fiddle",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Fiddle)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_string_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-fiddle-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Fiddle), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_string_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-harp",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Harp)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_string_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-harp-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Harp), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_string_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-lute",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Lute)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_string_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-lute-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Lute), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_string_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-mandolin",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Mandolin)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_string_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-mandolin-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Mandolin), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_string_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-flute",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Flute)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_wind_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-flute-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Flute), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_wind_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-pan-pipes",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Pan Pipes)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_wind_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-pan-pipes-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Pan Pipes), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_wind_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-recorder",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Recorder)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_wind_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-recorder-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Recorder), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_wind_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-shawm",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Shawm)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_wind_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-shawm-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Shawm), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_wind_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-trumpet",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Trumpet)",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  3,
+        "description":  "\u003cp\u003eGrants +  bonus on .\u003c/p\u003e",
+        "shortDescription":  "Grants +  bonus on .",
+        "tags":  [
+                     "srd",
+                     "musical-instrument"
+                 ],
+        "modifiers":  {
+                          "formula":  "2",
+                          "type":  "circumstance",
+                          "target":  "skill.perform_wind_instruments",
+                          "value":  2,
+                          "condition":  "Masterwork Only"
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-musical-instrument-trumpet-masterwork",
+        "schemaVersion":  2,
+        "name":  "Musical Instrument (Trumpet), Masterwork",
+        "type":  "Gear",
+        "category":  "Musical Instrument",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  100,
+        "weight":  3,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.perform_wind_instruments",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-scale-merchant-s",
+        "schemaVersion":  2,
+        "name":  "Scale (Merchant\u0027s)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  2,
+        "weight":  1,
+        "description":  "\u003cp\u003e+2 to appraise items valued by weight\u003c/p\u003e",
+        "shortDescription":  "+2 to appraise items valued by weight",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-spell-component-pouch",
+        "schemaVersion":  2,
+        "name":  "Spell Component Pouch",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  5,
+        "weight":  2,
+        "description":  "\u003cp\u003eSkill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Skill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-spellbook-wizard-s-blank",
+        "schemaVersion":  2,
+        "name":  "Spellbook (Wizard\u0027s/Blank)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  15,
+        "weight":  3,
+        "description":  "\u003cp\u003eSkill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Skill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-thieves-tools",
+        "schemaVersion":  2,
+        "name":  "Thieves\u0027 Tools",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  30,
+        "weight":  1,
+        "description":  "\u003cp\u003eGrants +0 circumstance bonus on disable_device.\u003c/p\u003e",
+        "shortDescription":  "Grants +0 circumstance bonus on disable_device.",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "0",
+                              "type":  "circumstance",
+                              "target":  "skill.disable_device",
+                              "value":  0,
+                              "condition":  "Masterwork Only"
+                          },
+                          {
+                              "formula":  "0",
+                              "type":  "circumstance",
+                              "target":  "skill.open_lock",
+                              "value":  0,
+                              "condition":  "Masterwork Only"
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.disable_device",
+                              "value":  2,
+                              "condition":  "Masterwork Only"
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.open_lock",
+                              "value":  2,
+                              "condition":  "Masterwork Only"
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-thieves-tools-masterwork",
+        "schemaVersion":  2,
+        "name":  "Thieves\u0027 Tools, Masterwork",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.129",
+        "cost":  125,
+        "weight":  1,
+        "masterwork":  true,
+        "description":  "\u003cp\u003eMasterwork quality tool. Grants a +2 circumstance bonus on related skill checks.\u003c/p\u003e",
+        "shortDescription":  "Masterwork quality tool. Grants a +2 circumstance bonus on related skill checks.",
+        "tags":  [
+                     "srd",
+                     "masterwork",
+                     "tool"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "0",
+                              "type":  "circumstance",
+                              "target":  "skill.disable_device",
+                              "value":  0,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "0",
+                              "type":  "circumstance",
+                              "target":  "skill.open_lock",
+                              "value":  0,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.disable_device",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "circumstance",
+                              "target":  "skill.open_lock",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+                          "masterwork":  true
+                      }
+    },
+    {
+        "id":  "tool-waterclock",
+        "schemaVersion":  2,
+        "name":  "Waterclock",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  1000,
+        "weight":  200,
+        "description":  "\u003cp\u003eSkill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Skill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-laboratory-homunculus",
+        "schemaVersion":  2,
+        "name":  "Laboratory (Homunculus)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  500,
+        "weight":  40,
+        "description":  "\u003cp\u003eSkill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Skill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    },
+    {
+        "id":  "tool-laboratory-shield-guardian",
+        "schemaVersion":  2,
+        "name":  "Laboratory (Shield Guardian)",
+        "type":  "Gear",
+        "category":  "Skill Tool \u0026 Kit",
+        "slot":  "Slotless",
+        "source":  "SRD 3.5e / PHB p.128",
+        "cost":  500,
+        "weight":  40,
+        "description":  "\u003cp\u003eSkill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).\u003c/p\u003e",
+        "shortDescription":  "Skill Tool \u0026 Kit from Core D\u0026D 3.5e SRD (PHB Equipment).",
+        "tags":  [
+                     "srd",
+                     "skill-tool-kit"
+                 ],
+        "modifiers":  {
+
+                      },
+        "damageParts":  [
+
+                        ],
+        "modes":  [
+
+                  ],
+        "ruleFlags":  {
+
+                      }
+    }
+]

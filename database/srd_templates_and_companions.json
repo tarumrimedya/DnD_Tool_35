@@ -1,0 +1,4149 @@
+[
+    {
+        "id":  "tmpl-celestial",
+        "schemaVersion":  2,
+        "name":  "Celestial (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  2,
+        "hitDieOverride":  null,
+        "dr":  "5/Magic",
+        "sr":  "CelestialSR",
+        "description":  "\u003cp\u003e\u003cb\u003eCelestial Template\u003c/b\u003e (SRD 3.5e / MM): LA +2 | DR 5/Magic | SR CelestialSR\u003c/p\u003e",
+        "shortDescription":  "LA +2 | DR 5/Magic | SR CelestialSR",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  2,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-celestial",
+        "schemaVersion":  2,
+        "name":  "Half Celestial (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  4,
+        "hitDieOverride":  null,
+        "dr":  "5/Magic",
+        "sr":  "HalfCelestialSR",
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Celestial Template\u003c/b\u003e (SRD 3.5e / MM): LA +4 | DR 5/Magic | SR HalfCelestialSR | ac.natural: +1\u003c/p\u003e",
+        "shortDescription":  "LA +4 | DR 5/Magic | SR HalfCelestialSR | ac.natural: +1",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+                          "formula":  "1",
+                          "type":  "natural",
+                          "target":  "ac.natural",
+                          "value":  1,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  4,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-fiendish",
+        "schemaVersion":  2,
+        "name":  "Fiendish (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  2,
+        "hitDieOverride":  null,
+        "dr":  "5/Magic",
+        "sr":  "FiendishSR",
+        "description":  "\u003cp\u003e\u003cb\u003eFiendish Template\u003c/b\u003e (SRD 3.5e / MM): LA +2 | DR 5/Magic | SR FiendishSR\u003c/p\u003e",
+        "shortDescription":  "LA +2 | DR 5/Magic | SR FiendishSR",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  2,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-fiend",
+        "schemaVersion":  2,
+        "name":  "Half Fiend (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  4,
+        "hitDieOverride":  null,
+        "dr":  "5/Magic",
+        "sr":  "HalfFiendSR",
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Fiend Template\u003c/b\u003e (SRD 3.5e / MM): LA +4 | DR 5/Magic | SR HalfFiendSR | ac.natural: +1, ability.str: +4, ability.dex: +4, ability.con: +2, ability.int: +4, ability.cha: +2\u003c/p\u003e",
+        "shortDescription":  "LA +4 | DR 5/Magic | SR HalfFiendSR | ac.natural: +1, ability.str: +4, ability.dex: +4, ability.con: +2, ability.int: +4, ability.cha: +2",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "1",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  1,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "4",
+                              "type":  "untyped",
+                              "target":  "ability.str",
+                              "value":  4,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "4",
+                              "type":  "untyped",
+                              "target":  "ability.dex",
+                              "value":  4,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "ability.con",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "4",
+                              "type":  "untyped",
+                              "target":  "ability.int",
+                              "value":  4,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "ability.cha",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  4,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-dragon-black",
+        "schemaVersion":  2,
+        "name":  "Half Dragon (Black) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Dragon (Black) Template\u003c/b\u003e (SRD 3.5e / MM): Creature/Character Template (SRD 3.5e / MM).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / MM).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-dragon-blue",
+        "schemaVersion":  2,
+        "name":  "Half Dragon (Blue) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Dragon (Blue) Template\u003c/b\u003e (SRD 3.5e / MM): Creature/Character Template (SRD 3.5e / MM).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / MM).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-dragon-green",
+        "schemaVersion":  2,
+        "name":  "Half Dragon (Green) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Dragon (Green) Template\u003c/b\u003e (SRD 3.5e / MM): Creature/Character Template (SRD 3.5e / MM).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / MM).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-dragon-red",
+        "schemaVersion":  2,
+        "name":  "Half Dragon (Red) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Dragon (Red) Template\u003c/b\u003e (SRD 3.5e / MM): Creature/Character Template (SRD 3.5e / MM).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / MM).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-dragon-white",
+        "schemaVersion":  2,
+        "name":  "Half Dragon (White) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Dragon (White) Template\u003c/b\u003e (SRD 3.5e / MM): Creature/Character Template (SRD 3.5e / MM).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / MM).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-dragon-brass",
+        "schemaVersion":  2,
+        "name":  "Half Dragon (Brass) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Dragon (Brass) Template\u003c/b\u003e (SRD 3.5e / MM): Creature/Character Template (SRD 3.5e / MM).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / MM).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-dragon-bronze",
+        "schemaVersion":  2,
+        "name":  "Half Dragon (Bronze) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Dragon (Bronze) Template\u003c/b\u003e (SRD 3.5e / MM): Creature/Character Template (SRD 3.5e / MM).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / MM).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-dragon-copper",
+        "schemaVersion":  2,
+        "name":  "Half Dragon (Copper) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Dragon (Copper) Template\u003c/b\u003e (SRD 3.5e / MM): Creature/Character Template (SRD 3.5e / MM).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / MM).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-dragon-gold",
+        "schemaVersion":  2,
+        "name":  "Half Dragon (Gold) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Dragon (Gold) Template\u003c/b\u003e (SRD 3.5e / MM): Creature/Character Template (SRD 3.5e / MM).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / MM).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-half-dragon-silver",
+        "schemaVersion":  2,
+        "name":  "Half Dragon (Silver) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eHalf Dragon (Silver) Template\u003c/b\u003e (SRD 3.5e / MM): Creature/Character Template (SRD 3.5e / MM).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / MM).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-lycanthrope",
+        "schemaVersion":  2,
+        "name":  "Lycanthrope (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eLycanthrope Template\u003c/b\u003e (SRD 3.5e / MM): ac.natural: +2, ability.wis: +2\u003c/p\u003e",
+        "shortDescription":  "ac.natural: +2, ability.wis: +2",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "ability.wis",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-lycanthrope-animal-form",
+        "schemaVersion":  2,
+        "name":  "Lycanthrope (Animal Form) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  "10/silver",
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eLycanthrope (Animal Form) Template\u003c/b\u003e (SRD 3.5e / MM): DR 10/silver\u003c/p\u003e",
+        "shortDescription":  "DR 10/silver",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-lycanthrope-hybrid-form",
+        "schemaVersion":  2,
+        "name":  "Lycanthrope (Hybrid Form) (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  "10/silver",
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eLycanthrope (Hybrid Form) Template\u003c/b\u003e (SRD 3.5e / MM): DR 10/silver\u003c/p\u003e",
+        "shortDescription":  "DR 10/silver",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-werebear",
+        "schemaVersion":  2,
+        "name":  "Werebear (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  4,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eWerebear Template\u003c/b\u003e (SRD 3.5e / MM): CR +4\u003c/p\u003e",
+        "shortDescription":  "CR +4",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  4
+                      }
+    },
+    {
+        "id":  "tmpl-wereboar",
+        "schemaVersion":  2,
+        "name":  "Wereboar (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  3,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eWereboar Template\u003c/b\u003e (SRD 3.5e / MM): CR +3\u003c/p\u003e",
+        "shortDescription":  "CR +3",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  3
+                      }
+    },
+    {
+        "id":  "tmpl-wererat",
+        "schemaVersion":  2,
+        "name":  "Wererat (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  2,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eWererat Template\u003c/b\u003e (SRD 3.5e / MM): CR +2 | skill.swim: +8\u003c/p\u003e",
+        "shortDescription":  "CR +2 | skill.swim: +8",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+                          "formula":  "8",
+                          "type":  "racial",
+                          "target":  "skill.swim",
+                          "value":  8,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  2
+                      }
+    },
+    {
+        "id":  "tmpl-weretiger",
+        "schemaVersion":  2,
+        "name":  "Weretiger (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  4,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eWeretiger Template\u003c/b\u003e (SRD 3.5e / MM): CR +4 | skill.balance: +4, skill.hide: +4, skill.move_silently: +4\u003c/p\u003e",
+        "shortDescription":  "CR +4 | skill.balance: +4, skill.hide: +4, skill.move_silently: +4",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "4",
+                              "type":  "racial",
+                              "target":  "skill.balance",
+                              "value":  4,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "4",
+                              "type":  "racial",
+                              "target":  "skill.hide",
+                              "value":  4,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "4",
+                              "type":  "racial",
+                              "target":  "skill.move_silently",
+                              "value":  4,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  4
+                      }
+    },
+    {
+        "id":  "tmpl-werewolf",
+        "schemaVersion":  2,
+        "name":  "Werewolf (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  2,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eWerewolf Template\u003c/b\u003e (SRD 3.5e / MM): CR +2\u003c/p\u003e",
+        "shortDescription":  "CR +2",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  2
+                      }
+    },
+    {
+        "id":  "tmpl-dire-werewolf",
+        "schemaVersion":  2,
+        "name":  "Dire Werewolf (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  4,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eDire Werewolf Template\u003c/b\u003e (SRD 3.5e / MM): CR +4\u003c/p\u003e",
+        "shortDescription":  "CR +4",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  4
+                      }
+    },
+    {
+        "id":  "tmpl-dire-wereboar",
+        "schemaVersion":  2,
+        "name":  "Dire Wereboar (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  4,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eDire Wereboar Template\u003c/b\u003e (SRD 3.5e / MM): CR +4\u003c/p\u003e",
+        "shortDescription":  "CR +4",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  4
+                      }
+    },
+    {
+        "id":  "tmpl-ghost",
+        "schemaVersion":  2,
+        "name":  "Ghost (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  2,
+        "levelAdjustment":  5,
+        "hitDieOverride":  "d12",
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eGhost Template\u003c/b\u003e (SRD 3.5e / MM): CR +2 | LA +5 | HD d12 | skill.hide: +8, skill.listen: +8, skill.search: +8, skill.spot: +8, ability.cha: +4\u003c/p\u003e",
+        "shortDescription":  "CR +2 | LA +5 | HD d12 | skill.hide: +8, skill.listen: +8, skill.search: +8, skill.spot: +8, ability.cha: +4",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.hide",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.listen",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.search",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.spot",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "4",
+                              "type":  "untyped",
+                              "target":  "ability.cha",
+                              "value":  4,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  5,
+                          "crIncrease":  2
+                      }
+    },
+    {
+        "id":  "tmpl-lich",
+        "schemaVersion":  2,
+        "name":  "Lich (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  2,
+        "levelAdjustment":  4,
+        "hitDieOverride":  "d12",
+        "dr":  "15/Bludgeoning and Magic",
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eLich Template\u003c/b\u003e (SRD 3.5e / MM): CR +2 | LA +4 | HD d12 | DR 15/Bludgeoning and Magic | skill.hide: +8, skill.listen: +8, skill.move_silently: +8, skill.search: +8, skill.sense_motive: +8, skill.spot: +8, ac.natural: +5\u003c/p\u003e",
+        "shortDescription":  "CR +2 | LA +4 | HD d12 | DR 15/Bludgeoning and Magic | skill.hide: +8, skill.listen: +8, skill.move_silently: +8, skill.search: +8, skill.sense_motive: +8, skill.spot: +8, ac.natural: +5",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.hide",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.listen",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.move_silently",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.search",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.sense_motive",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.spot",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "5",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  5,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  4,
+                          "crIncrease":  2
+                      }
+    },
+    {
+        "id":  "tmpl-skeleton",
+        "schemaVersion":  2,
+        "name":  "Skeleton (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  "d12",
+        "dr":  "5/Bludgeoning",
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eSkeleton Template\u003c/b\u003e (SRD 3.5e / MM): HD d12 | DR 5/Bludgeoning | ac.natural: +1, ac.natural: +2, ac.natural: +2, ac.natural: +3, ac.natural: +6, ac.natural: +10, ability.dex: +2\u003c/p\u003e",
+        "shortDescription":  "HD d12 | DR 5/Bludgeoning | ac.natural: +1, ac.natural: +2, ac.natural: +2, ac.natural: +3, ac.natural: +6, ac.natural: +10, ability.dex: +2",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "1",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  1,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "3",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  3,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "6",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  6,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "10",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  10,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "ability.dex",
+                              "value":  2,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-vampire",
+        "schemaVersion":  2,
+        "name":  "Vampire (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  2,
+        "levelAdjustment":  8,
+        "hitDieOverride":  "d12",
+        "dr":  "10/Silver and Magic",
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eVampire Template\u003c/b\u003e (SRD 3.5e / MM): CR +2 | LA +8 | HD d12 | DR 10/Silver and Magic | skill.bluff: +8, skill.hide: +8, skill.listen: +8, skill.move_silently: +8, skill.search: +8, skill.sense_motive: +8, skill.spot: +8, ac.natural: +6, ability.str: +6, ability.dex: +4, ability.int: +2, ability.wis: +2, ability.cha: +4\u003c/p\u003e",
+        "shortDescription":  "CR +2 | LA +8 | HD d12 | DR 10/Silver and Magic | skill.bluff: +8, skill.hide: +8, skill.listen: +8, skill.move_silently: +8, skill.search: +8, skill.sense_motive: +8, skill.spot: +8, ac.natural: +6, ability.str: +6, ability.dex: +4, ability.int: +2, ability.wis: +2, ability.cha: +4",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.bluff",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.hide",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.listen",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.move_silently",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.search",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.sense_motive",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "8",
+                              "type":  "racial",
+                              "target":  "skill.spot",
+                              "value":  8,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "6",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  6,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "6",
+                              "type":  "untyped",
+                              "target":  "ability.str",
+                              "value":  6,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "4",
+                              "type":  "untyped",
+                              "target":  "ability.dex",
+                              "value":  4,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "ability.int",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "ability.wis",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "4",
+                              "type":  "untyped",
+                              "target":  "ability.cha",
+                              "value":  4,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  8,
+                          "crIncrease":  2
+                      }
+    },
+    {
+        "id":  "tmpl-zombie",
+        "schemaVersion":  2,
+        "name":  "Zombie (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / MM",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  "d12",
+        "dr":  "5/Slashing",
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eZombie Template\u003c/b\u003e (SRD 3.5e / MM): HD d12 | DR 5/Slashing | ac.natural: +1, ac.natural: +2, ac.natural: +3, ac.natural: +4, ac.natural: +7, ac.natural: +11, ability.str: +2, ability.dex: +-2\u003c/p\u003e",
+        "shortDescription":  "HD d12 | DR 5/Slashing | ac.natural: +1, ac.natural: +2, ac.natural: +3, ac.natural: +4, ac.natural: +7, ac.natural: +11, ability.str: +2, ability.dex: +-2",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "1",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  1,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "3",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  3,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "4",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  4,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "7",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  7,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "11",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  11,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "ability.str",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "-2",
+                              "type":  "untyped",
+                              "target":  "ability.dex",
+                              "value":  -2,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-demilich",
+        "schemaVersion":  2,
+        "name":  "Demilich (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / ELH",
+        "crIncrease":  6,
+        "levelAdjustment":  6,
+        "hitDieOverride":  null,
+        "dr":  "15/Epic and Bludgeoning",
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eDemilich Template\u003c/b\u003e (SRD 3.5e / ELH): CR +6 | LA +6 | DR 15/Epic and Bludgeoning | skill.hide: +20, skill.listen: +20, skill.move_silently: +20, skill.sense_motive: +20, skill.spot: +20\u003c/p\u003e",
+        "shortDescription":  "CR +6 | LA +6 | DR 15/Epic and Bludgeoning | skill.hide: +20, skill.listen: +20, skill.move_silently: +20, skill.sense_motive: +20, skill.spot: +20",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "20",
+                              "type":  "racial",
+                              "target":  "skill.hide",
+                              "value":  20,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "20",
+                              "type":  "racial",
+                              "target":  "skill.listen",
+                              "value":  20,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "20",
+                              "type":  "racial",
+                              "target":  "skill.move_silently",
+                              "value":  20,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "20",
+                              "type":  "racial",
+                              "target":  "skill.sense_motive",
+                              "value":  20,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "20",
+                              "type":  "racial",
+                              "target":  "skill.spot",
+                              "value":  20,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  6,
+                          "crIncrease":  6
+                      }
+    },
+    {
+        "id":  "tmpl-paragon",
+        "schemaVersion":  2,
+        "name":  "Paragon (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / ELH",
+        "crIncrease":  15,
+        "levelAdjustment":  15,
+        "hitDieOverride":  null,
+        "dr":  "10/Epic",
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003eParagon Template\u003c/b\u003e (SRD 3.5e / ELH): CR +15 | LA +15 | DR 10/Epic | skill.all: +10, ac: +12, ac: +12\u003c/p\u003e",
+        "shortDescription":  "CR +15 | LA +15 | DR 10/Epic | skill.all: +10, ac: +12, ac: +12",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "10",
+                              "type":  "competence",
+                              "target":  "skill.all",
+                              "value":  10,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "12",
+                              "type":  "insight",
+                              "target":  "ac",
+                              "value":  12,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "12",
+                              "type":  "luck",
+                              "target":  "ac",
+                              "value":  12,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  15,
+                          "crIncrease":  15
+                      }
+    },
+    {
+        "id":  "tmpl-pseudonatural",
+        "schemaVersion":  2,
+        "name":  "Pseudonatural (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / ELH",
+        "crIncrease":  0,
+        "levelAdjustment":  16,
+        "hitDieOverride":  null,
+        "dr":  "5/Epic",
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003ePseudonatural Template\u003c/b\u003e (SRD 3.5e / ELH): LA +16 | DR 5/Epic | ac.natural: +35, ability.str: +22\u003c/p\u003e",
+        "shortDescription":  "LA +16 | DR 5/Epic | ac.natural: +35, ability.str: +22",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "35",
+                              "type":  "natural",
+                              "target":  "ac.natural",
+                              "value":  35,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "22",
+                              "type":  "untyped",
+                              "target":  "ability.str",
+                              "value":  22,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  16,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-worm-that-walks",
+        "schemaVersion":  2,
+        "name":  "Worm that Walks (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / ELH",
+        "crIncrease":  3,
+        "levelAdjustment":  3,
+        "hitDieOverride":  "d8",
+        "dr":  null,
+        "sr":  "TL+10",
+        "description":  "\u003cp\u003e\u003cb\u003eWorm that Walks Template\u003c/b\u003e (SRD 3.5e / ELH): CR +3 | LA +3 | HD d8 | SR TL+10 | skill.hide: +20, skill.listen: +20, skill.move_silently: +20, skill.survival: +20, ac: +20\u003c/p\u003e",
+        "shortDescription":  "CR +3 | LA +3 | HD d8 | SR TL+10 | skill.hide: +20, skill.listen: +20, skill.move_silently: +20, skill.survival: +20, ac: +20",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "20",
+                              "type":  "racial",
+                              "target":  "skill.hide",
+                              "value":  20,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "20",
+                              "type":  "racial",
+                              "target":  "skill.listen",
+                              "value":  20,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "20",
+                              "type":  "racial",
+                              "target":  "skill.move_silently",
+                              "value":  20,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "20",
+                              "type":  "racial",
+                              "target":  "skill.survival",
+                              "value":  20,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "20",
+                              "type":  "insight",
+                              "target":  "ac",
+                              "value":  20,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  3,
+                          "crIncrease":  3
+                      }
+    },
+    {
+        "id":  "tmpl-psionic",
+        "schemaVersion":  2,
+        "name":  "Psionic (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / XPH",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003ePsionic Template\u003c/b\u003e (SRD 3.5e / XPH): Creature/Character Template (SRD 3.5e / XPH).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / XPH).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-phrenic",
+        "schemaVersion":  2,
+        "name":  "Phrenic (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / XPH",
+        "crIncrease":  0,
+        "levelAdjustment":  2,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  "10+HD",
+        "description":  "\u003cp\u003e\u003cb\u003ePhrenic Template\u003c/b\u003e (SRD 3.5e / XPH): LA +2 | SR 10+HD | ability.int: +2, ability.wis: +2, ability.cha: +4\u003c/p\u003e",
+        "shortDescription":  "LA +2 | SR 10+HD | ability.int: +2, ability.wis: +2, ability.cha: +4",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  [
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "ability.int",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "2",
+                              "type":  "untyped",
+                              "target":  "ability.wis",
+                              "value":  2,
+                              "condition":  null
+                          },
+                          {
+                              "formula":  "4",
+                              "type":  "untyped",
+                              "target":  "ability.cha",
+                              "value":  4,
+                              "condition":  null
+                          }
+                      ],
+        "ruleFlags":  {
+                          "levelAdjustment":  2,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-petitioner",
+        "schemaVersion":  2,
+        "name":  "Petitioner (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  null,
+        "description":  "\u003cp\u003e\u003cb\u003ePetitioner Template\u003c/b\u003e (SRD 3.5e / Deities \u0026 Demigods): Creature/Character Template (SRD 3.5e / Deities \u0026 Demigods).\u003c/p\u003e",
+        "shortDescription":  "Creature/Character Template (SRD 3.5e / Deities \u0026 Demigods).",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-divine-rank",
+        "schemaVersion":  2,
+        "name":  "Divine Rank (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  "32+DivineRank",
+        "description":  "\u003cp\u003e\u003cb\u003eDivine Rank Template\u003c/b\u003e (SRD 3.5e / Deities \u0026 Demigods): SR 32+DivineRank | ac.natural: +13\u003c/p\u003e",
+        "shortDescription":  "SR 32+DivineRank | ac.natural: +13",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+                          "formula":  "13",
+                          "type":  "natural",
+                          "target":  "ac.natural",
+                          "value":  13,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "tmpl-innate-divine-rank",
+        "schemaVersion":  2,
+        "name":  "Innate Divine Rank (Template)",
+        "type":  "Template",
+        "category":  "Creature Template",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "crIncrease":  0,
+        "levelAdjustment":  0,
+        "hitDieOverride":  null,
+        "dr":  null,
+        "sr":  "32+DivineRank",
+        "description":  "\u003cp\u003e\u003cb\u003eInnate Divine Rank Template\u003c/b\u003e (SRD 3.5e / Deities \u0026 Demigods): SR 32+DivineRank | ac.natural: +13\u003c/p\u003e",
+        "shortDescription":  "SR 32+DivineRank | ac.natural: +13",
+        "tags":  [
+                     "srd",
+                     "template"
+                 ],
+        "modifiers":  {
+                          "formula":  "13",
+                          "type":  "natural",
+                          "target":  "ac.natural",
+                          "value":  13,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "levelAdjustment":  0,
+                          "crIncrease":  0
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-companion-bat",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Companion ~ Bat",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / PHB",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Companion ~ Bat).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Companion ~ Bat).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-companion-cat",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Companion ~ Cat",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / PHB",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Companion ~ Cat).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Companion ~ Cat).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-companion-hawk",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Companion ~ Hawk",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / PHB",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Companion ~ Hawk).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Companion ~ Hawk).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-companion-lizard",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Companion ~ Lizard",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / PHB",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Companion ~ Lizard).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Companion ~ Lizard).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-companion-owl",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Companion ~ Owl",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / PHB",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Companion ~ Owl).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Companion ~ Owl).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-companion-rat",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Companion ~ Rat",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / PHB",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Companion ~ Rat).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Companion ~ Rat).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-companion-raven",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Companion ~ Raven",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / PHB",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Companion ~ Raven).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Companion ~ Raven).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-companion-snake-viper-tiny",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Companion ~ Snake (Viper/Tiny)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / PHB",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Companion ~ Snake (Viper/Tiny)).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Companion ~ Snake (Viper/Tiny)).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-companion-toad",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Companion ~ Toad",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / PHB",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Companion ~ Toad).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Companion ~ Toad).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-companion-weasel",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Companion ~ Weasel",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / PHB",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Companion ~ Weasel).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Companion ~ Weasel).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Psicrystal).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Psicrystal).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-artiste",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Artiste)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eGrants master +3 on skill.type_craft plus Alertness feat while within arm\u0027s reach.\u003c/p\u003e",
+        "shortDescription":  "Grants master +3 on skill.type_craft plus Alertness feat while within arm\u0027s reach.",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+                          "formula":  "3",
+                          "type":  "untyped",
+                          "target":  "skill.type_craft",
+                          "value":  3,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-bully",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Bully)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eGrants master +3 on skill.intimidate plus Alertness feat while within arm\u0027s reach.\u003c/p\u003e",
+        "shortDescription":  "Grants master +3 on skill.intimidate plus Alertness feat while within arm\u0027s reach.",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+                          "formula":  "3",
+                          "type":  "untyped",
+                          "target":  "skill.intimidate",
+                          "value":  3,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-coward",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Coward)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eGrants master +3 on skill.hide plus Alertness feat while within arm\u0027s reach.\u003c/p\u003e",
+        "shortDescription":  "Grants master +3 on skill.hide plus Alertness feat while within arm\u0027s reach.",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+                          "formula":  "3",
+                          "type":  "untyped",
+                          "target":  "skill.hide",
+                          "value":  3,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-friendly",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Friendly)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eGrants master +3 on skill.diplomacy plus Alertness feat while within arm\u0027s reach.\u003c/p\u003e",
+        "shortDescription":  "Grants master +3 on skill.diplomacy plus Alertness feat while within arm\u0027s reach.",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+                          "formula":  "3",
+                          "type":  "untyped",
+                          "target":  "skill.diplomacy",
+                          "value":  3,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-hero",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Hero)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Psicrystal (Hero)).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Psicrystal (Hero)).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-liar",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Liar)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eGrants master +3 on skill.bluff plus Alertness feat while within arm\u0027s reach.\u003c/p\u003e",
+        "shortDescription":  "Grants master +3 on skill.bluff plus Alertness feat while within arm\u0027s reach.",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+                          "formula":  "3",
+                          "type":  "untyped",
+                          "target":  "skill.bluff",
+                          "value":  3,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-meticulous",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Meticulous)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eGrants master +3 on skill.search plus Alertness feat while within arm\u0027s reach.\u003c/p\u003e",
+        "shortDescription":  "Grants master +3 on skill.search plus Alertness feat while within arm\u0027s reach.",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+                          "formula":  "3",
+                          "type":  "untyped",
+                          "target":  "skill.search",
+                          "value":  3,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-nimble",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Nimble)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Psicrystal (Nimble)).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Psicrystal (Nimble)).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-observant",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Observant)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eGrants master +3 on skill.spot plus Alertness feat while within arm\u0027s reach.\u003c/p\u003e",
+        "shortDescription":  "Grants master +3 on skill.spot plus Alertness feat while within arm\u0027s reach.",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+                          "formula":  "3",
+                          "type":  "untyped",
+                          "target":  "skill.spot",
+                          "value":  3,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-poised",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Poised)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eGrants master +3 on skill.balance plus Alertness feat while within arm\u0027s reach.\u003c/p\u003e",
+        "shortDescription":  "Grants master +3 on skill.balance plus Alertness feat while within arm\u0027s reach.",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+                          "formula":  "3",
+                          "type":  "untyped",
+                          "target":  "skill.balance",
+                          "value":  3,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-resolved",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Resolved)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Psicrystal (Resolved)).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Psicrystal (Resolved)).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-sage",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Sage)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eFamiliar / Psicrystal special master bonus (Psicrystal (Sage)).\u003c/p\u003e",
+        "shortDescription":  "Familiar / Psicrystal special master bonus (Psicrystal (Sage)).",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-single-minded",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Single Minded)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eGrants master +3 on skill.concentration plus Alertness feat while within arm\u0027s reach.\u003c/p\u003e",
+        "shortDescription":  "Grants master +3 on skill.concentration plus Alertness feat while within arm\u0027s reach.",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+                          "formula":  "3",
+                          "type":  "untyped",
+                          "target":  "skill.concentration",
+                          "value":  3,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-sneaky",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Sneaky)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eGrants master +3 on skill.move_silently plus Alertness feat while within arm\u0027s reach.\u003c/p\u003e",
+        "shortDescription":  "Grants master +3 on skill.move_silently plus Alertness feat while within arm\u0027s reach.",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+                          "formula":  "3",
+                          "type":  "untyped",
+                          "target":  "skill.move_silently",
+                          "value":  3,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "comp-familiar-bonus-psicrystal-sympathetic",
+        "schemaVersion":  2,
+        "name":  "Familiar Master Bonus: Psicrystal (Sympathetic)",
+        "type":  "CompanionBonus",
+        "category":  "Familiar Bonus",
+        "source":  "SRD 3.5e / XPH",
+        "description":  "\u003cp\u003eGrants master +3 on skill.sense_motive plus Alertness feat while within arm\u0027s reach.\u003c/p\u003e",
+        "shortDescription":  "Grants master +3 on skill.sense_motive plus Alertness feat while within arm\u0027s reach.",
+        "tags":  [
+                     "srd",
+                     "familiar",
+                     "companion"
+                 ],
+        "modifiers":  {
+                          "formula":  "3",
+                          "type":  "untyped",
+                          "target":  "skill.sense_motive",
+                          "value":  3,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "grantsAlertness":  true
+                      }
+    },
+    {
+        "id":  "sda-alter-form",
+        "schemaVersion":  2,
+        "name":  "Alter Form",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-alter-reality",
+        "schemaVersion":  2,
+        "name":  "Alter Reality",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-alter-size",
+        "schemaVersion":  2,
+        "name":  "Alter Size",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-annihilating-strike",
+        "schemaVersion":  2,
+        "name":  "Annihilating Strike",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-arcane-mastery",
+        "schemaVersion":  2,
+        "name":  "Arcane Mastery",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-area-divine-shield",
+        "schemaVersion":  2,
+        "name":  "Area Divine Shield",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-automatic-metamagic",
+        "schemaVersion":  2,
+        "name":  "Automatic Metamagic",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-avatar",
+        "schemaVersion":  2,
+        "name":  "Avatar",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-banestrike",
+        "schemaVersion":  2,
+        "name":  "Banestrike",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-battlesense",
+        "schemaVersion":  2,
+        "name":  "Battlesense",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-call-creatures",
+        "schemaVersion":  2,
+        "name":  "Call Creatures",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-clearsight",
+        "schemaVersion":  2,
+        "name":  "Clearsight",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-command-plants",
+        "schemaVersion":  2,
+        "name":  "Command Plants",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-control-creatures",
+        "schemaVersion":  2,
+        "name":  "Control Creatures",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-craft-artifact",
+        "schemaVersion":  2,
+        "name":  "Craft Artifact",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-create-object",
+        "schemaVersion":  2,
+        "name":  "Create Object",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-create-greater-object",
+        "schemaVersion":  2,
+        "name":  "Create Greater Object",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-air-mastery",
+        "schemaVersion":  2,
+        "name":  "Divine Air Mastery",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-archery",
+        "schemaVersion":  2,
+        "name":  "Divine Archery",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-armor-mastery",
+        "schemaVersion":  2,
+        "name":  "Divine Armor Mastery",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-bard",
+        "schemaVersion":  2,
+        "name":  "Divine Bard",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-battle-mastery",
+        "schemaVersion":  2,
+        "name":  "Divine Battle Mastery",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-blast",
+        "schemaVersion":  2,
+        "name":  "Divine Blast",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-blessing",
+        "schemaVersion":  2,
+        "name":  "Divine Blessing",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-celerity",
+        "schemaVersion":  2,
+        "name":  "Divine Celerity",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-creation",
+        "schemaVersion":  2,
+        "name":  "Divine Creation",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-dodge",
+        "schemaVersion":  2,
+        "name":  "Divine Dodge",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-druid",
+        "schemaVersion":  2,
+        "name":  "Divine Druid",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-earth-mastery",
+        "schemaVersion":  2,
+        "name":  "Divine Earth Mastery",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-fast-healing",
+        "schemaVersion":  2,
+        "name":  "Divine Fast Healing",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-fire-mastery",
+        "schemaVersion":  2,
+        "name":  "Divine Fire Mastery",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-glibness",
+        "schemaVersion":  2,
+        "name":  "Divine Glibness",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-inspiration",
+        "schemaVersion":  2,
+        "name":  "Divine Inspiration",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-monk",
+        "schemaVersion":  2,
+        "name":  "Divine Monk",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-paladin",
+        "schemaVersion":  2,
+        "name":  "Divine Paladin",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-radiance",
+        "schemaVersion":  2,
+        "name":  "Divine Radiance",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-rage",
+        "schemaVersion":  2,
+        "name":  "Divine Rage",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-ranger",
+        "schemaVersion":  2,
+        "name":  "Divine Ranger",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-recall",
+        "schemaVersion":  2,
+        "name":  "Divine Recall",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-rogue",
+        "schemaVersion":  2,
+        "name":  "Divine Rogue",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-shield",
+        "schemaVersion":  2,
+        "name":  "Divine Shield",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-skill-focus",
+        "schemaVersion":  2,
+        "name":  "Divine Skill Focus",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+                          "formula":  "10",
+                          "type":  "untyped",
+                          "target":  "skill.list",
+                          "value":  10,
+                          "condition":  null
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-sneak-attack",
+        "schemaVersion":  2,
+        "name":  "Divine Sneak Attack",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-spell-focus",
+        "schemaVersion":  2,
+        "name":  "Divine Spell Focus",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-spellcasting",
+        "schemaVersion":  2,
+        "name":  "Divine Spellcasting",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-splendor",
+        "schemaVersion":  2,
+        "name":  "Divine Splendor",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-storm",
+        "schemaVersion":  2,
+        "name":  "Divine Storm",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-water-mastery",
+        "schemaVersion":  2,
+        "name":  "Divine Water Mastery",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-weapon-focus",
+        "schemaVersion":  2,
+        "name":  "Divine Weapon Focus",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-weapon-mastery",
+        "schemaVersion":  2,
+        "name":  "Divine Weapon Mastery",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-divine-weapon-specialization",
+        "schemaVersion":  2,
+        "name":  "Divine Weapon Specialization",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-energy-burst",
+        "schemaVersion":  2,
+        "name":  "Energy Burst",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-energy-storm",
+        "schemaVersion":  2,
+        "name":  "Energy Storm",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-extra-domain",
+        "schemaVersion":  2,
+        "name":  "Extra Domain",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-extra-energy-immunity",
+        "schemaVersion":  2,
+        "name":  "Extra Energy Immunity",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-extra-sense-enhancement",
+        "schemaVersion":  2,
+        "name":  "Extra Sense Enhancement",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-footsore",
+        "schemaVersion":  2,
+        "name":  "Footsore",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-free-move",
+        "schemaVersion":  2,
+        "name":  "Free Move",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-frightful-presence",
+        "schemaVersion":  2,
+        "name":  "Frightful Presence",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-gift-of-life",
+        "schemaVersion":  2,
+        "name":  "Gift of Life",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-grow-creature",
+        "schemaVersion":  2,
+        "name":  "Grow Creature",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-hand-of-death",
+        "schemaVersion":  2,
+        "name":  "Hand of Death",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-increased-damage-reduction",
+        "schemaVersion":  2,
+        "name":  "Increased Damage Reduction",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-increased-energy-resistance",
+        "schemaVersion":  2,
+        "name":  "Increased Energy Resistance",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-increased-spell-resitance",
+        "schemaVersion":  2,
+        "name":  "Increased Spell Resitance",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-indomitable-strength",
+        "schemaVersion":  2,
+        "name":  "Indomitable Strength",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-instant-counterspell",
+        "schemaVersion":  2,
+        "name":  "Instant Counterspell",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-instant-move",
+        "schemaVersion":  2,
+        "name":  "Instant Move",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-irresistible-blows",
+        "schemaVersion":  2,
+        "name":  "Irresistible Blows",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-irresistible-performance",
+        "schemaVersion":  2,
+        "name":  "Irresistible Performance",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-know-death",
+        "schemaVersion":  2,
+        "name":  "Know Death",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-know-secrets",
+        "schemaVersion":  2,
+        "name":  "Know Secrets",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-lay-curse",
+        "schemaVersion":  2,
+        "name":  "Lay Curse",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-lay-quest",
+        "schemaVersion":  2,
+        "name":  "Lay Quest",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-life-and-death",
+        "schemaVersion":  2,
+        "name":  "Life and Death",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-life-drain",
+        "schemaVersion":  2,
+        "name":  "Life Drain",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-mass-divine-blast",
+        "schemaVersion":  2,
+        "name":  "Mass Divine Blast",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-mass-life-and-death",
+        "schemaVersion":  2,
+        "name":  "Mass Life and Death",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-master-crafter",
+        "schemaVersion":  2,
+        "name":  "Master Crafter",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-mind-of-the-beast",
+        "schemaVersion":  2,
+        "name":  "Mind of the Beast",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-possess-mortal",
+        "schemaVersion":  2,
+        "name":  "Possess Mortal",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-power-of-luck",
+        "schemaVersion":  2,
+        "name":  "Power of Luck",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-power-of-nature",
+        "schemaVersion":  2,
+        "name":  "Power of Nature",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-power-of-truth",
+        "schemaVersion":  2,
+        "name":  "Power of Truth",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-rejuvenation",
+        "schemaVersion":  2,
+        "name":  "Rejuvenation",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-see-magic",
+        "schemaVersion":  2,
+        "name":  "See Magic",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-shapechange",
+        "schemaVersion":  2,
+        "name":  "Shapechange",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-shift-form",
+        "schemaVersion":  2,
+        "name":  "Shift Form",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-speak-with-creatures",
+        "schemaVersion":  2,
+        "name":  "Speak with Creatures",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-spontaneous-wizard-spells",
+        "schemaVersion":  2,
+        "name":  "Spontaneous Wizard Spells",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-stride",
+        "schemaVersion":  2,
+        "name":  "Stride",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-sunder-and-disjoin",
+        "schemaVersion":  2,
+        "name":  "Sunder and Disjoin",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-supreme-initiative",
+        "schemaVersion":  2,
+        "name":  "Supreme Initiative",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-true-knowledge",
+        "schemaVersion":  2,
+        "name":  "True Knowledge",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-true-shapechange",
+        "schemaVersion":  2,
+        "name":  "True Shapechange",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-undead-mastery",
+        "schemaVersion":  2,
+        "name":  "Undead Mastery",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-undead-qualities",
+        "schemaVersion":  2,
+        "name":  "Undead Qualities",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-wave-of-chaos",
+        "schemaVersion":  2,
+        "name":  "Wave of Chaos",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    },
+    {
+        "id":  "sda-wound-enemy",
+        "schemaVersion":  2,
+        "name":  "Wound Enemy",
+        "type":  "SalientDivineAbility",
+        "category":  "Salient Divine Ability",
+        "source":  "SRD 3.5e / Deities \u0026 Demigods",
+        "description":  "\u003cp\u003eSalient Divine Ability.\u003c/p\u003e",
+        "shortDescription":  "Salient Divine Ability.",
+        "tags":  [
+                     "srd",
+                     "divine",
+                     "salient-divine-ability"
+                 ],
+        "modifiers":  {
+
+                      },
+        "ruleFlags":  {
+                          "divine":  true
+                      }
+    }
+]

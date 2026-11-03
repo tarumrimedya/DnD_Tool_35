@@ -702,6 +702,15 @@
                 character.campaignId = found.campaignId;
               }
               if (found.cr && !character.cr) character.cr = found.cr;
+              if (!Array.isArray(character.levelProgression) || character.levelProgression.length === 0) {
+                if (Array.isArray(found.levelProgression) && found.levelProgression.length > 0) {
+                  character.levelProgression = found.levelProgression;
+                } else if (Array.isArray(character.progression) && character.progression.length > 0) {
+                  character.levelProgression = character.progression;
+                } else if (Array.isArray(found.progression) && found.progression.length > 0) {
+                  character.levelProgression = found.progression;
+                }
+              }
               if (!Array.isArray(character.feats) || character.feats.length === 0) {
                 if (Array.isArray(found.feats)) character.feats = found.feats;
               }
@@ -2005,13 +2014,15 @@
     window.addEventListener('beforeunload', persistScrollPosition);
     window.addEventListener('pagehide', persistScrollPosition);
 
-    const ALL_SHEET_TABS = ['tab-combat', 'tab-spells', 'tab-skills', 'tab-defense', 'tab-inventory', 'tab-database', 'tab-dice'];
+    const ALL_SHEET_TABS = ['tab-combat', 'tab-spells', 'tab-core', 'tab-skills', 'tab-defense', 'tab-inventory', 'tab-database', 'tab-sync', 'tab-dice'];
     const _dirtyTabs = new Set(ALL_SHEET_TABS);
 
     function renderTabIfNeeded(tabId, force = false) {
       if (!tabId) tabId = 'tab-combat';
       if (!force && !_dirtyTabs.has(tabId)) return;
       _dirtyTabs.delete(tabId);
+      if (tabId === 'tab-core') _dirtyTabs.delete('tab-skills');
+      if (tabId === 'tab-skills') _dirtyTabs.delete('tab-core');
 
       switch (tabId) {
         case 'tab-combat':
@@ -2040,6 +2051,7 @@
           try { renderManeuvers(); } catch (e) { console.error('renderManeuvers error:', e); }
           try { renderKnownSpells(); } catch (e) { console.error('renderKnownSpells error:', e); }
           break;
+        case 'tab-core':
         case 'tab-skills':
           try { renderSkills(); } catch (e) { console.error('renderSkills error:', e); }
           try { renderCoreFeatsAndSpecialAbilities(); } catch (e) { console.error('renderCoreFeatsAndSpecialAbilities error:', e); }
