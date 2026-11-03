@@ -1961,9 +1961,11 @@
         const theme = getSpellLevelTheme(lvl);
         const dmgExpr = resolveSpellEffectiveFormula(s, cl);
         const spontInfo = getClericSpontaneousSpellInfo(lvl, cl, spontMode);
-        const isAlreadyCureOrInflict = /^(cure|inflict|mass cure|mass inflict)\b/i.test((s.name || '').trim());
+        const isAlreadyTarget = spontMode === 'inflict'
+          ? /^(inflict|mass inflict)\b/i.test((s.name || '').trim())
+          : /^(cure|mass cure)\b/i.test((s.name || '').trim());
         // D&D 3.5e RAW (PHB p.32): Domain spells cannot be spontaneously converted to Cure/Inflict Wounds
-        const showSpontBtn = Boolean(spontInfo && !isAlreadyCureOrInflict && !isDom);
+        const showSpontBtn = Boolean(spontInfo && !isAlreadyTarget && !isDom);
         const spontBtnHtml = showSpontBtn ? `
           <button onclick="castClericSpontaneousConversion(${originalIdx})" class="${
             hasActiveSlot
