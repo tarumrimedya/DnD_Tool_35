@@ -4576,43 +4576,60 @@
       if (bottomDock) {
         const mh = character.bodySlots?.mainHand || {};
         const oh = character.bodySlots?.offHand || {};
-        const mhHas = mh.name && mh.name !== '-';
-        const ohHas = oh.name && oh.name !== '-';
+        const mhHas = Boolean(mh.name && mh.name !== '-');
+        const ohHas = Boolean(oh.name && oh.name !== '-');
+        if (mhHas && typeof hydrateGearItemStats === 'function') hydrateGearItemStats(mh);
+        if (ohHas && typeof hydrateGearItemStats === 'function') hydrateGearItemStats(oh);
         const mhIsDouble = mhHas && typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(mh);
         const mhIsTwoHand = mhHas && typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon && RuleEngine.isTwoHandedWeapon(mh);
         const hasOversized = typeof RuleEngine !== 'undefined' && RuleEngine.hasOversizedWeaponFeat && RuleEngine.hasOversizedWeaponFeat(character);
         const isDoubleTwfActive = mhIsDouble && Array.isArray(character.tactical?.weaponSets?.activeSets) && character.tactical.weaponSets.activeSets.includes(2);
+
+        const mhStatsHtml = mhHas ? renderGearItemStatsBadgesHtml(mh, { compact: true, noMargin: true }) : '';
+        const ohStatsHtml = ohHas ? renderGearItemStatsBadgesHtml(oh, { compact: true, noMargin: true }) : '';
 
         let offHandBadgeHtml = '';
         if (mhIsDouble) {
           // Double Weapon occupies BOTH slots; clicking Off-Hand badge toggles TWF!
           offHandBadgeHtml = `
             <div onclick="if(typeof activateWeaponSet==='function'){activateWeaponSet(2); renderAll();}"
-                 class="flex items-center gap-2 px-3 py-1.5 rounded-lg ${isDoubleTwfActive ? 'bg-sky-950/80 border border-sky-400 text-white shadow-md shadow-sky-950/60 ring-1 ring-sky-400/40' : 'bg-slate-950 border border-amber-500/60 hover:border-sky-400 text-slate-200'} text-xs cursor-pointer select-none transition"
+                 class="flex flex-col justify-center gap-1 px-3 py-1.5 rounded-xl ${isDoubleTwfActive ? 'bg-sky-950/80 border border-sky-400 text-white shadow-md shadow-sky-950/60 ring-1 ring-sky-400/40' : 'bg-slate-950 border border-amber-500/60 hover:border-sky-400 text-slate-200'} text-xs cursor-pointer select-none transition"
                  title="Double Weapon occupies both hands. Click to toggle Two-Weapon Fighting (TWF)">
-              <span class="${isDoubleTwfActive ? 'text-sky-400' : 'text-amber-400'} font-bold text-[10px]">OFF-HAND:</span>
-              <span class="font-bold truncate max-w-[140px]">${mh.name}</span>
-              <span class="text-[9px] font-black px-1.5 py-0.5 rounded ${isDoubleTwfActive ? 'bg-sky-500 text-slate-950' : 'bg-amber-950/80 text-amber-300 border border-amber-700/60'}">${isDoubleTwfActive ? '⚔️ TWF ON' : '2H • Click for TWF'}</span>
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="${isDoubleTwfActive ? 'text-sky-400' : 'text-amber-400'} font-bold text-[10px] shrink-0">OFF-HAND:</span>
+                  <span class="font-bold truncate max-w-[180px]">${mh.name}</span>
+                </div>
+                <span class="text-[9px] font-black px-1.5 py-0.5 rounded shrink-0 ${isDoubleTwfActive ? 'bg-sky-500 text-slate-950' : 'bg-amber-950/80 text-amber-300 border border-amber-700/60'}">${isDoubleTwfActive ? '⚔️ TWF ON' : '2H • Click for TWF'}</span>
+              </div>
+              ${mhStatsHtml}
             </div>
           `;
         } else if (mhIsTwoHand && !hasOversized) {
           // Regular Two-Handed Weapon occupies BOTH slots and locks Off-Hand
           offHandBadgeHtml = `
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950/70 border border-slate-800 text-slate-400 text-xs select-none opacity-80"
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/70 border border-slate-800 text-slate-400 text-xs select-none opacity-80"
                  title="Both hands are occupied by two-handed weapon ${mh.name}">
               <span class="text-amber-500/80 font-bold text-[10px]">OFF-HAND:</span>
-              <span class="font-bold truncate max-w-[140px]">🔒 ${mh.name}</span>
+              <span class="font-bold truncate max-w-[160px]">🔒 ${mh.name}</span>
               <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800">2-Hand Grip</span>
             </div>
           `;
         } else {
           // One-Handed / Light Weapon or Empty Main Hand: normal Off-Hand slot
           offHandBadgeHtml = `
-            <div onclick="openSlotEquipModal('offHand')" class="flex items-center gap-2 pl-3 ${ohHas ? 'pr-1.5' : 'pr-3'} py-1 rounded-lg ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
-              <span class="text-amber-400 font-bold text-[10px]">OFF-HAND:</span>
-              <span class="font-bold truncate max-w-[140px]">${ohHas ? oh.name : '+ Equip Off-Hand'}</span>
-              ${ohHas && isForgeEditableItem(oh) ? `<button type="button" onclick="event.stopPropagation(); openForgeForSlotItem('offHand')" title="Customize Off-Hand in Item Forge" class="w-6 h-6 ml-0.5 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
-              ${ohHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('offHand')" title="Unequip Off-Hand" class="w-6 h-6 ml-0.5 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
+            <div onclick="openSlotEquipModal('offHand')" class="flex flex-col justify-center gap-1 pl-3 ${ohHas ? 'pr-2 py-1.5' : 'pr-3 py-1.5'} rounded-xl ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-amber-400 font-bold text-[10px] shrink-0">OFF-HAND:</span>
+                  <span class="font-bold truncate max-w-[180px]">${ohHas ? oh.name : '+ Equip Off-Hand'}</span>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  ${ohHas && isForgeEditableItem(oh) ? `<button type="button" onclick="event.stopPropagation(); openForgeForSlotItem('offHand')" title="Customize Off-Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
+                  ${ohHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('offHand')" title="Unequip Off-Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
+                </div>
+              </div>
+              ${ohStatsHtml}
             </div>
           `;
         }
@@ -4625,14 +4642,21 @@
             </div>
 
             <!-- Weapon Quick Slots -->
-            <div class="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+            <div class="flex items-stretch gap-2.5 flex-wrap flex-1 min-w-0">
               <!-- Main Hand Badge -->
-              <div onclick="openSlotEquipModal('mainHand')" class="flex items-center gap-2 pl-3 ${mhHas ? 'pr-1.5' : 'pr-3'} py-1 rounded-lg ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
-                <span class="text-sky-400 font-bold text-[10px]">MAIN HAND:</span>
-                <span class="font-bold truncate max-w-[140px]">${mhHas ? mh.name : '+ Equip Main Hand'}</span>
-                ${mhIsDouble ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
-                ${mhHas && isForgeEditableItem(mh) ? `<button type="button" onclick="event.stopPropagation(); openForgeForSlotItem('mainHand')" title="Customize Main Hand in Item Forge" class="w-6 h-6 ml-0.5 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
-                ${mhHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('mainHand')" title="Unequip Main Hand" class="w-6 h-6 ml-0.5 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
+              <div onclick="openSlotEquipModal('mainHand')" class="flex flex-col justify-center gap-1 pl-3 ${mhHas ? 'pr-2 py-1.5' : 'pr-3 py-1.5'} rounded-xl ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-sky-400 font-bold text-[10px] shrink-0">MAIN HAND:</span>
+                    <span class="font-bold truncate max-w-[180px]">${mhHas ? mh.name : '+ Equip Main Hand'}</span>
+                    ${mhIsDouble ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60 shrink-0">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
+                  </div>
+                  <div class="flex items-center gap-1 shrink-0">
+                    ${mhHas && isForgeEditableItem(mh) ? `<button type="button" onclick="event.stopPropagation(); openForgeForSlotItem('mainHand')" title="Customize Main Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
+                    ${mhHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('mainHand')" title="Unequip Main Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
+                  </div>
+                </div>
+                ${mhStatsHtml}
               </div>
 
               <!-- Off Hand Badge -->
@@ -5151,7 +5175,15 @@
 
         // 5. Remaining non-attack modifiers & tactical badges
         if (!minimal) {
-          const otherMods = (item.modifiers || []).filter(m => m && m.target !== 'attack.weapon' && m.target !== 'attack');
+          const hasDrBypassBadge = Array.isArray(item.tacticalBadges) && item.tacticalBadges.some(tb => {
+            const lbl = typeof tb === 'string' ? tb : (tb?.label || tb?.name || '');
+            return /dr\s*bypass/i.test(lbl);
+          });
+          const otherMods = (item.modifiers || []).filter(m => {
+            if (!m || m.target === 'attack.weapon' || m.target === 'attack') return false;
+            if (m.target === 'dr.bypass' && hasDrBypassBadge) return false;
+            return true;
+          });
           if (otherMods.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
             const modHtml = window.DnDUI.renderModifiersBadges(otherMods, { compact });
             if (modHtml) parts.push(modHtml);
@@ -5248,7 +5280,8 @@
       }
 
       if (parts.length === 0) return '';
-      return `<div class="flex flex-wrap items-center gap-1 mb-1">${parts.join('')}</div>`;
+      const marginCls = options.noMargin ? '' : ' mb-1';
+      return `<div class="flex flex-wrap items-center gap-1${marginCls}">${parts.join('')}</div>`;
     }
 
     // Render Gear Pool Table (Madde 6 & 8)
