@@ -4973,6 +4973,19 @@
       );
       const missingArmorMeta = (cat === 'Armor' || item.type === 'Armor') && item.maxDex === undefined && !item.armorMeta;
 
+      if (isArmorOrShield) {
+        if (item.ruleFlags && item.ruleFlags.bypassDR) {
+          delete item.ruleFlags.bypassDR;
+        }
+        if (Array.isArray(item.tacticalBadges)) {
+          item.tacticalBadges = item.tacticalBadges.filter(tb => {
+            if (!tb) return false;
+            const lbl = typeof tb === 'string' ? tb : (tb.label || tb.name || '');
+            return !((typeof tb === 'object' && tb.id === 'bypass-dr') || /^(?:dr\s*bypass|bypass\s*dr)\b/i.test(lbl.trim()));
+          });
+        }
+      }
+
       if (!missingWeaponStats && !missingArmorStats && !missingArmorMeta && item._statsHydrated) {
         return item;
       }
@@ -5102,6 +5115,25 @@
         if (!item.material && ref.material) {
           item.material = ref.material;
         }
+      }
+
+      if (isArmorOrShield) {
+        if (item.ruleFlags && item.ruleFlags.bypassDR) {
+          delete item.ruleFlags.bypassDR;
+        }
+        if (Array.isArray(item.tacticalBadges)) {
+          item.tacticalBadges = item.tacticalBadges.filter(tb => {
+            if (!tb) return false;
+            const lbl = typeof tb === 'string' ? tb : (tb.label || tb.name || '');
+            return !((typeof tb === 'object' && tb.id === 'bypass-dr') || /^(?:dr\s*bypass|bypass\s*dr)\b/i.test(lbl.trim()));
+          });
+        }
+      } else if (isWeapon && item.ruleFlags && Array.isArray(item.ruleFlags.bypassDR) && item.ruleFlags.bypassDR.length > 0 && Array.isArray(item.tacticalBadges)) {
+        item.tacticalBadges = item.tacticalBadges.filter(tb => {
+          if (!tb) return false;
+          const lbl = typeof tb === 'string' ? tb : (tb.label || tb.name || '');
+          return !((typeof tb === 'object' && tb.id === 'bypass-dr') || /^(?:dr\s*bypass|bypass\s*dr)\b/i.test(lbl.trim()));
+        });
       }
 
       if (srdReady) {

@@ -194,12 +194,16 @@
     if (!entry || typeof entry !== 'object') return '';
     const badges = [];
     const rf = entry.ruleFlags || {};
+    const isArmorOrShield = entry.type === 'Armor' || entry.type === 'Shield' ||
+      entry.category === 'Armor' || entry.category === 'Shield' ||
+      entry.slot === 'Armor' || entry.slot === 'armor';
 
     if (rf.keen) {
       badges.push({ icon: '⚡', text: 'Keen (2× Crit Range)', cls: 'bg-amber-950/80 text-amber-300 border-amber-500/60' });
     }
-    if (Array.isArray(rf.bypassDR) && rf.bypassDR.length > 0) {
-      badges.push({ icon: '🛡️', text: `Bypass DR/${rf.bypassDR.join(',')}`, cls: 'bg-sky-950/80 text-sky-300 border-sky-500/60' });
+    const hasBypassRf = !isArmorOrShield && Array.isArray(rf.bypassDR) && rf.bypassDR.length > 0;
+    if (hasBypassRf) {
+      badges.push({ icon: '🛡️', text: `Bypass DR/${rf.bypassDR.join(', ')}`, cls: 'bg-sky-950/80 text-sky-300 border-sky-500/60' });
     }
     if (rf.lightArmorCategory) {
       badges.push({ icon: '🪶', text: 'Mithral (-1 Armor Cat)', cls: 'bg-cyan-950/80 text-cyan-300 border-cyan-500/60' });
@@ -212,6 +216,8 @@
         if (!tb) return;
         const label = typeof tb === 'string' ? tb : (tb.label || tb.name || '');
         if (!label) return;
+        const isDrBypassLabel = (typeof tb === 'object' && tb.id === 'bypass-dr') || /^(?:dr\s*bypass|bypass\s*dr)\b/i.test(label.trim());
+        if (isDrBypassLabel && (isArmorOrShield || hasBypassRf)) return;
         if (!badges.some(b => b.text.toLowerCase() === label.toLowerCase())) {
           badges.push({ icon: '🛡️', text: label, cls: 'bg-purple-950/70 text-purple-200 border-purple-600/50' });
         }

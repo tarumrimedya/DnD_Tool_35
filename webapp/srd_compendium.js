@@ -744,8 +744,8 @@
       item.masterwork = isMasterwork;
 
       // 3. Apply Material Rules (Mithral, Adamantine, Darkwood, Cold Iron, Alchemical Silver)
-      const bypassDRSet = new Set(Array.isArray(item.ruleFlags.bypassDR) ? item.ruleFlags.bypassDR : []);
-      if (matFlags.bypassDR) bypassDRSet.add(matFlags.bypassDR);
+      const bypassDRSet = new Set(isWeapon && Array.isArray(item.ruleFlags.bypassDR) ? item.ruleFlags.bypassDR : []);
+      if (isWeapon && matFlags.bypassDR) bypassDRSet.add(matFlags.bypassDR);
 
       if (isArmor || isShield) {
         const aMod = matFlags.armorMod || {};
@@ -935,13 +935,10 @@
         }
       }
 
-      if (bypassDRSet.size > 0) {
+      if (isWeapon && bypassDRSet.size > 0) {
         item.ruleFlags.bypassDR = Array.from(bypassDRSet);
-        item.tacticalBadges.push({
-          id: 'bypass-dr',
-          label: `DR Bypass: ${item.ruleFlags.bypassDR.join(', ')}`,
-          summary: `Overcomes Damage Reduction: ${item.ruleFlags.bypassDR.join(', ')}.`
-        });
+      } else {
+        delete item.ruleFlags.bypassDR;
       }
 
       // 6. Custom Modifiers & Notes
