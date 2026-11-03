@@ -175,7 +175,7 @@ img,video{max-width:100%;height:auto}
 .table{display:table}
 .\!grid{display:grid !important}
 .grid{display:grid}
-.hidden{display:none!important}
+.hidden{display:none}
 input.flex-1,select.flex-1,textarea.flex-1{min-width:0}
 .h-1{height:0.25rem}
 .h-1\.5{height:0.375rem}
