@@ -30,10 +30,10 @@
     const idleMount = function() {
       if (!window._modalsMounted) window.ensureModalsMounted();
     };
-    if (typeof requestIdleCallback === 'function') {
-      requestIdleCallback(idleMount, { timeout: 2000 });
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(function() { setTimeout(idleMount, 50); });
     } else {
-      setTimeout(idleMount, 1200);
+      setTimeout(idleMount, 50);
     }
   });
 })();

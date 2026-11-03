@@ -28,6 +28,7 @@ const CORE_FILES = [
   'character.html',
   'tailwind_compiled.css',
   'char_modals.js',
+  'hero_silhouette_data.js',
   'char_hud.js',
   'char_combat.js',
   'char_spells.js',
