@@ -9790,8 +9790,28 @@
         `;
       }).join('');
 
-      grid.innerHTML = coreHtml + pinnedHtml;
+      const isExpanded = Boolean(window.combatSkillsDrawerExpanded);
+      const expandBar = document.getElementById('combat-skills-expand-bar');
+      const expandBtn = document.getElementById('btn-toggle-expand-combat-skills');
+      if (expandBar && expandBtn) {
+        if (pinnedSkills.length > 0) {
+          expandBar.classList.remove('hidden');
+          expandBtn.innerHTML = isExpanded
+            ? `<span>▴ Hide Pinned Skills (${pinnedSkills.length})</span>`
+            : `<span>▾ Show Pinned Skills (+${pinnedSkills.length})</span>`;
+        } else {
+          expandBar.classList.add('hidden');
+        }
+      }
+
+      grid.innerHTML = isExpanded ? (coreHtml + pinnedHtml) : coreHtml;
     }
+
+    function toggleExpandCombatSkills() {
+      window.combatSkillsDrawerExpanded = !window.combatSkillsDrawerExpanded;
+      renderCombatSkillsCard();
+    }
+    window.toggleExpandCombatSkills = toggleExpandCombatSkills;
 
     function unpinCombatSkill(skillName) {
       if (!character || !skillName) return;
