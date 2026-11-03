@@ -392,8 +392,11 @@
         </div>
       </div>
 
+      <!-- COLLAPSED COCKPIT PANELS DOCK (Minimized panels dock directly under Action Economy Bar) -->
+      <div id="cockpit-collapsed-dock" class="hidden grid grid-cols-1 gap-2.5"></div>
+
       <!-- 3-COLUMN TACTICAL DASHBOARD -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3 xl:gap-4 items-start">
+      <div id="cockpit-tactical-grid" class="grid grid-cols-1 md:grid-cols-3 gap-3 xl:gap-4 items-start">
         
         <!-- ==================================================== -->
         <!-- COLUMN 1: ⚔️ OFFENSE / SALDIRI (MARTIAL) -->
@@ -402,7 +405,7 @@
           
           <!-- 1. Weapon Selector & TWF Card (FİZİKSEL SALDIRI) -->
           <div class="bg-dndCard border border-rose-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-physical-card">
-            <div class="min-h-[28px] flex items-center justify-between border-b border-slate-800 pb-2 gap-2 whitespace-nowrap">
+            <div id="cockpit-physical-header" class="min-h-[28px] flex items-center justify-between border-b border-slate-800 pb-2 gap-2 whitespace-nowrap">
               <span id="combat-card-title" class="text-xs font-black uppercase text-rose-400 tracking-wider flex items-center gap-1.5 truncate min-w-0">
                 <span>⚔️</span>
                 <span class="truncate">ATTACK ROTATION</span>
@@ -418,13 +421,13 @@
             </div>
 
             <!-- COLLAPSED MINI BAR (When physical panel is collapsed) -->
-            <div id="combat-physical-collapsed-bar" onclick="toggleCockpitPanel('physical')" class="hidden bg-slate-950/80 hover:bg-slate-900 border border-rose-900/40 hover:border-rose-600/50 rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition">
-              <div class="flex items-center gap-2">
+            <div id="combat-physical-collapsed-bar" onclick="toggleCockpitPanel('physical')" class="hidden bg-dndCard hover:bg-slate-900/95 border border-rose-500/40 hover:border-rose-400/70 rounded-xl px-3.5 py-2 flex items-center justify-between cursor-pointer transition shadow-md">
+              <div class="flex items-center gap-2.5 min-w-0">
                 <span>⚔️</span>
-                <span class="text-xs font-bold text-rose-300">Physical Attack</span>
-                <span id="combat-physical-collapsed-summary" class="text-[10px] text-amber-400 font-mono">Ready</span>
+                <span class="text-xs font-black uppercase tracking-wider text-rose-400">Attack Rotation</span>
+                <span id="combat-physical-collapsed-summary" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-rose-950/50 border border-rose-900/60 text-amber-300 truncate">Ready</span>
               </div>
-              <span class="text-[10px] text-rose-400 font-bold">▾ Expand</span>
+              <span class="text-[10px] text-rose-300 font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-700 shrink-0">▾ Expand</span>
             </div>
 
             <!-- PHYSICAL CARD BODY (Collapsible) -->
@@ -684,7 +687,7 @@
           
           <div class="bg-dndCard border border-purple-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-spell-card">
             <!-- Header with Title, CL Badge & Collapse Toggle -->
-            <div class="min-h-[28px] flex items-center justify-between border-b border-slate-800 pb-2 gap-2">
+            <div id="cockpit-spell-header" class="min-h-[28px] flex items-center justify-between border-b border-slate-800 pb-2 gap-2">
               <span class="text-xs font-black uppercase text-purple-400 tracking-wider flex items-center gap-1.5">
                 <span>🔮</span> SPELL COMMAND CENTER
               </span>
@@ -699,13 +702,13 @@
             </div>
 
             <!-- COLLAPSED MINI BAR (When spell panel is collapsed) -->
-            <div id="combat-spell-collapsed-bar" onclick="toggleCockpitPanel('spell')" class="hidden bg-slate-950/80 hover:bg-slate-900 border border-purple-900/40 hover:border-purple-600/50 rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition">
-              <div class="flex items-center gap-2">
+            <div id="combat-spell-collapsed-bar" onclick="toggleCockpitPanel('spell')" class="hidden bg-dndCard hover:bg-slate-900/95 border border-purple-500/40 hover:border-purple-400/70 rounded-xl px-3.5 py-2 flex items-center justify-between cursor-pointer transition shadow-md">
+              <div class="flex items-center gap-2.5 min-w-0">
                 <span>🔮</span>
-                <span class="text-xs font-bold text-purple-300">Spell Command Center</span>
-                <span id="combat-spell-collapsed-summary" class="text-[10px] text-amber-400 font-mono">CL: -- • Slot: --</span>
+                <span class="text-xs font-black uppercase tracking-wider text-purple-400">Spell Command Center</span>
+                <span id="combat-spell-collapsed-summary" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-purple-950/50 border border-purple-900/60 text-amber-300 truncate">CL: -- • Slot: --</span>
               </div>
-              <span class="text-[10px] text-purple-400 font-bold">▾ Expand</span>
+              <span class="text-[10px] text-purple-300 font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-700 shrink-0">▾ Expand</span>
             </div>
 
             <!-- SPELL PANEL BODY (Collapsible) -->
@@ -842,7 +845,7 @@
           
           <!-- CARD A: 🛡️ SAVUNMA & REAKSİYONLAR -->
           <div class="bg-dndCard border border-indigo-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-defense-card">
-            <div class="min-h-[28px] flex items-center justify-between border-b border-slate-800 pb-2 gap-2">
+            <div id="cockpit-defense-header" class="min-h-[28px] flex items-center justify-between border-b border-slate-800 pb-2 gap-2">
               <span class="text-xs font-black uppercase text-indigo-400 tracking-wider flex items-center gap-1.5">
                 <span>🛡️</span> DEFENSE &amp; REACTIONS
               </span>
@@ -854,13 +857,13 @@
             </div>
 
             <!-- COLLAPSED MINI BAR (When defense panel is collapsed) -->
-            <div id="combat-defense-collapsed-bar" onclick="toggleCockpitPanel('defense')" class="hidden bg-slate-950/80 hover:bg-slate-900 border border-indigo-900/40 hover:border-indigo-600/50 rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition">
-              <div class="flex items-center gap-2">
+            <div id="combat-defense-collapsed-bar" onclick="toggleCockpitPanel('defense')" class="hidden bg-dndCard hover:bg-slate-900/95 border border-indigo-500/40 hover:border-indigo-400/70 rounded-xl px-3.5 py-2 flex items-center justify-between cursor-pointer transition shadow-md">
+              <div class="flex items-center gap-2.5 min-w-0">
                 <span>🛡️</span>
-                <span class="text-xs font-bold text-indigo-300">Defense</span>
-                <span id="combat-defense-collapsed-summary" class="text-[10px] text-amber-400 font-mono">AC: 21 | Touch: 16 | Flat: 18</span>
+                <span class="text-xs font-black uppercase tracking-wider text-indigo-400">Defense &amp; Reactions</span>
+                <span id="combat-defense-collapsed-summary" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-indigo-950/50 border border-indigo-900/60 text-amber-300 truncate">AC: 21 | Touch: 16 | Flat: 18</span>
               </div>
-              <span class="text-[10px] text-indigo-400 font-bold">▾ Expand</span>
+              <span class="text-[10px] text-indigo-300 font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-700 shrink-0">▾ Expand</span>
             </div>
 
             <!-- DEFENSE CARD BODY (Collapsible) -->
@@ -1006,7 +1009,7 @@
 
           <!-- CARD B: 🧪 ACİL SARF & İKSİR KEMERİ -->
           <div class="bg-dndCard border border-emerald-500/40 rounded-xl p-3.5 shadow-lg space-y-3" id="cockpit-consumables-card">
-            <div class="min-h-[28px] flex items-center justify-between border-b border-slate-800 pb-2 gap-2">
+            <div id="cockpit-consumables-header" class="min-h-[28px] flex items-center justify-between border-b border-slate-800 pb-2 gap-2">
               <span class="text-xs font-black uppercase text-emerald-400 tracking-wider flex items-center gap-1.5">
                 <span>🧪</span> QUICK CONSUMABLES &amp; POTION BELT
               </span>
@@ -1019,13 +1022,13 @@
             </div>
 
             <!-- COLLAPSED MINI BAR (When consumables panel is collapsed) -->
-            <div id="combat-consumables-collapsed-bar" onclick="toggleCockpitPanel('consumables')" class="hidden bg-slate-950/80 hover:bg-slate-900 border border-emerald-900/40 hover:border-emerald-600/50 rounded-lg p-2.5 flex items-center justify-between cursor-pointer transition">
-              <div class="flex items-center gap-2">
+            <div id="combat-consumables-collapsed-bar" onclick="toggleCockpitPanel('consumables')" class="hidden bg-dndCard hover:bg-slate-900/95 border border-emerald-500/40 hover:border-emerald-400/70 rounded-xl px-3.5 py-2 flex items-center justify-between cursor-pointer transition shadow-md">
+              <div class="flex items-center gap-2.5 min-w-0">
                 <span>🧪</span>
-                <span class="text-xs font-bold text-emerald-300">Quick-Draw &amp; Belt</span>
-                <span id="combat-consumables-collapsed-summary" class="text-[10px] text-slate-400 font-mono">Quick Potions</span>
+                <span class="text-xs font-black uppercase tracking-wider text-emerald-400">Quick Consumables &amp; Belt</span>
+                <span id="combat-consumables-collapsed-summary" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-950/50 border border-emerald-900/60 text-amber-300 truncate">Quick Potions</span>
               </div>
-              <span class="text-[10px] text-emerald-400 font-bold">▾ Expand</span>
+              <span class="text-[10px] text-emerald-300 font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-700 shrink-0">▾ Expand</span>
             </div>
 
             <!-- CONSUMABLES CARD BODY (Collapsible) -->

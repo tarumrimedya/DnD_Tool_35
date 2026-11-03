@@ -6955,19 +6955,51 @@ function renderManualStatsPanel() {
       if (!character) return;
       if (!character.cockpitCollapsed) character.cockpitCollapsed = {};
 
+      const dockEl = document.getElementById('cockpit-collapsed-dock');
+      const gridEl = document.getElementById('cockpit-tactical-grid');
+
       const panels = [
-        { key: 'physical', bodyId: 'combat-physical-card-body', barId: 'combat-physical-collapsed-bar', btnId: 'btn-collapse-physical' },
-        { key: 'spell', bodyId: 'combat-spell-card-body', barId: 'combat-spell-collapsed-bar', btnId: 'btn-collapse-spell' },
-        { key: 'defense', bodyId: 'combat-defense-card-body', barId: 'combat-defense-collapsed-bar', btnId: 'btn-collapse-defense' },
-        { key: 'consumables', bodyId: 'combat-consumables-card-body', barId: 'combat-consumables-collapsed-bar', btnId: 'btn-collapse-consumables' }
+        { key: 'physical', cardId: 'cockpit-physical-card', headerId: 'cockpit-physical-header', bodyId: 'combat-physical-card-body', barId: 'combat-physical-collapsed-bar', btnId: 'btn-collapse-physical', colId: 'cockpit-column-physical' },
+        { key: 'spell', cardId: 'cockpit-spell-card', headerId: 'cockpit-spell-header', bodyId: 'combat-spell-card-body', barId: 'combat-spell-collapsed-bar', btnId: 'btn-collapse-spell', colId: 'cockpit-column-spell' },
+        { key: 'defense', cardId: 'cockpit-defense-card', headerId: 'cockpit-defense-header', bodyId: 'combat-defense-card-body', barId: 'combat-defense-collapsed-bar', btnId: 'btn-collapse-defense', colId: 'cockpit-column-defense-consumables' },
+        { key: 'consumables', cardId: 'cockpit-consumables-card', headerId: 'cockpit-consumables-header', bodyId: 'combat-consumables-card-body', barId: 'combat-consumables-collapsed-bar', btnId: 'btn-collapse-consumables', colId: 'cockpit-column-defense-consumables' }
       ];
+
+      let collapsedCount = 0;
 
       panels.forEach(p => {
         const isCollapsed = !!character.cockpitCollapsed[p.key];
+        const cardEl = document.getElementById(p.cardId);
+        const headerEl = document.getElementById(p.headerId);
         const bodyEl = document.getElementById(p.bodyId);
         const barEl = document.getElementById(p.barId);
         const btnEl = document.getElementById(p.btnId);
+        const colEl = document.getElementById(p.colId);
 
+        if (isCollapsed) collapsedCount++;
+
+        if (cardEl && dockEl && colEl) {
+          if (isCollapsed) {
+            if (cardEl.parentElement !== dockEl) {
+              dockEl.appendChild(cardEl);
+            }
+            cardEl.classList.remove('bg-dndCard', 'border', 'p-3.5', 'shadow-lg', 'space-y-3');
+          } else {
+            if (cardEl.parentElement !== colEl) {
+              if (p.key === 'defense') {
+                colEl.insertBefore(cardEl, colEl.firstChild);
+              } else {
+                colEl.appendChild(cardEl);
+              }
+            }
+            cardEl.classList.add('bg-dndCard', 'border', 'p-3.5', 'shadow-lg', 'space-y-3');
+          }
+        }
+
+        if (headerEl) {
+          if (isCollapsed) headerEl.classList.add('hidden');
+          else headerEl.classList.remove('hidden');
+        }
         if (bodyEl) {
           if (isCollapsed) bodyEl.classList.add('hidden');
           else bodyEl.classList.remove('hidden');
@@ -6981,6 +7013,45 @@ function renderManualStatsPanel() {
           btnEl.title = isCollapsed ? 'Expand Panel' : 'Collapse Panel';
         }
       });
+
+      if (dockEl) {
+        if (collapsedCount === 0) {
+          dockEl.className = 'hidden';
+        } else if (collapsedCount === 1) {
+          dockEl.className = 'grid grid-cols-1 gap-2';
+        } else if (collapsedCount === 2) {
+          dockEl.className = 'grid grid-cols-1 md:grid-cols-2 gap-2';
+        } else if (collapsedCount === 3) {
+          dockEl.className = 'grid grid-cols-1 md:grid-cols-3 gap-2';
+        } else {
+          dockEl.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2';
+        }
+      }
+
+      const colPhys = document.getElementById('cockpit-column-physical');
+      const colSpell = document.getElementById('cockpit-column-spell');
+      const colDefCons = document.getElementById('cockpit-column-defense-consumables');
+
+      const physVisible = !character.cockpitCollapsed.physical;
+      const spellVisible = !character.cockpitCollapsed.spell;
+      const defConsVisible = !character.cockpitCollapsed.defense || !character.cockpitCollapsed.consumables;
+
+      if (colPhys) colPhys.classList.toggle('hidden', !physVisible);
+      if (colSpell) colSpell.classList.toggle('hidden', !spellVisible);
+      if (colDefCons) colDefCons.classList.toggle('hidden', !defConsVisible);
+
+      const visibleCols = (physVisible ? 1 : 0) + (spellVisible ? 1 : 0) + (defConsVisible ? 1 : 0);
+      if (gridEl) {
+        if (visibleCols === 0) {
+          gridEl.className = 'hidden';
+        } else if (visibleCols === 1) {
+          gridEl.className = 'grid grid-cols-1 gap-3 xl:gap-4 items-start';
+        } else if (visibleCols === 2) {
+          gridEl.className = 'grid grid-cols-1 md:grid-cols-2 gap-3 xl:gap-4 items-start';
+        } else {
+          gridEl.className = 'grid grid-cols-1 md:grid-cols-3 gap-3 xl:gap-4 items-start';
+        }
+      }
     }
 
     function initCockpitPanelsState() {
