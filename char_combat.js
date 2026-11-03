@@ -1100,6 +1100,10 @@
       // 1. Damage / Dice expression (V2 damageParts primary lookup + fallback)
       const v2PrimaryPart = (Array.isArray(spell.damageParts) && spell.damageParts[0]) || (Array.isArray(masterSpell.damageParts) && masterSpell.damageParts[0]) || null;
       let diceExpr = (scaling && scaling.diceFormula) ? scaling.diceFormula : ((v2PrimaryPart && v2PrimaryPart.dice) || spell.dice || spell.damageDice || masterSpell.dice || '');
+      if (diceExpr && (String(diceExpr).includes('@') || /\b(min|max|floor|ceil)\s*\(/i.test(String(diceExpr))) && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateFormula === 'function') {
+        const evaluated = RuleEngine.evaluateFormula(String(diceExpr), { cl, level: cl, critMult: 1 });
+        if (evaluated && String(evaluated) !== '0') diceExpr = String(evaluated).trim();
+      }
       if (!diceExpr && (spell.benefit || masterSpell.benefit)) {
         const text = spell.benefit || masterSpell.benefit || '';
         const m = text.match(/\b\d+d\d+(?:\s*[+-]\s*\d+)?\b/i);

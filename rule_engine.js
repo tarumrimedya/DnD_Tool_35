@@ -198,6 +198,7 @@ const RuleEngine = {
     const level = Number(context.level ?? cl) || 1;
     const bab = Number(context.bab ?? 0) || 0;
     const enh = Number(context.enhancement ?? context.enhancementBonus ?? 0) || 0;
+    const critMult = Number(context.critMult ?? 1) || 1;
 
     let expr = raw
       .replace(/@item\.level\b/gi, String(cl))
@@ -205,6 +206,7 @@ const RuleEngine = {
       .replace(/@level\b/gi, String(level))
       .replace(/@bab\b/gi, String(bab))
       .replace(/@enhancement\b/gi, String(enh))
+      .replace(/@critMult\b/gi, String(critMult))
       .replace(/@strMod\b/gi, String(Number(context.strMod) || 0))
       .replace(/@dexMod\b/gi, String(Number(context.dexMod) || 0))
       .replace(/@conMod\b/gi, String(Number(context.conMod) || 0))
@@ -216,12 +218,24 @@ const RuleEngine = {
         return String(cLvl);
       });
 
-    // If expression contains dice notation like "(min(10, 5))d6", evaluate parenthesized math sub-expressions
+    // If expression contains dice notation like "(min(10, 5))d6" or "2d8+(min(5, 10))*1", evaluate math parts
     if (/\d*d\d+/i.test(expr)) {
-      return expr.replace(/\(([^()]+)\)(?=d\d+)/gi, (_, sub) => {
+      let diceResolved = expr.replace(/\(([^()]+)\)(?=d\d+)/gi, (_, sub) => {
         const val = this.evaluateFormula(sub, context);
         return String(Math.max(1, Math.floor(Number(val) || 1)));
       });
+      // Also handle non-parenthesized min/max/floor/ceil before d\d+, e.g. "min(5, 10)d6"
+      diceResolved = diceResolved.replace(/^(min|max|floor|ceil|round)\(([^()]+)\)(?=d\d+)/i, (full) => {
+        const val = this.evaluateFormula(full, context);
+        return String(Math.max(1, Math.floor(Number(val) || 1)));
+      });
+      const tailMatch = diceResolved.match(/^(\d+d\d+)\s*([+-][\s\S]+)$/i);
+      if (tailMatch && !/\d+d\d+/i.test(tailMatch[2])) {
+        const bonusVal = Math.floor(Number(this.evaluateFormula(tailMatch[2], context)) || 0);
+        if (bonusVal === 0) return tailMatch[1];
+        return `${tailMatch[1]}${bonusVal > 0 ? '+' : ''}${bonusVal}`;
+      }
+      return diceResolved;
     }
 
     // Safe arithmetic / Math function evaluation

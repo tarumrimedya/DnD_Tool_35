@@ -1022,7 +1022,7 @@
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
         const hasActiveSlot = remainingSlots > 0;
         const theme = getSpellLevelTheme(lvl);
-        const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
+        const dmgExpr = resolveSpellEffectiveFormula(s, cl);
 
         return `
           <tr class="transition border-l-4 ${theme.borderLeft} ${
@@ -1254,13 +1254,27 @@
 
     function resolveSpellEffectiveFormula(s, cl = 6) {
       if (!s) return null;
+      const effCl = Math.max(1, Number(cl || s.casterLevel || character?.level) || 6);
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellDynamicScaling === 'function') {
+        const scaling = RuleEngine.resolveSpellDynamicScaling(s, effCl);
+        if (scaling && scaling.diceFormula) {
+          return String(scaling.diceFormula).trim();
+        }
+      }
       const v2Part = Array.isArray(s.damageParts) && s.damageParts[0] ? s.damageParts[0].dice : null;
       const direct = v2Part || s.damageDice || s.dice || findDiceExpression(s.benefit || s.notes || s.description);
-      if (direct) return direct;
+      if (direct) {
+        const rawStr = String(direct).trim();
+        if ((rawStr.includes('@') || /\b(min|max|floor|ceil)\s*\(/i.test(rawStr)) && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateFormula === 'function') {
+          const evaluated = RuleEngine.evaluateFormula(rawStr, { cl: effCl, level: Number(character?.level) || effCl, critMult: 1 });
+          if (evaluated && String(evaluated) !== '0') return String(evaluated).trim();
+        }
+        return rawStr;
+      }
       const n = (s.name || '').toLowerCase().trim();
       if (n === 'heal' || n === 'mass heal') {
         const cap = n === 'mass heal' ? 250 : 150;
-        return String(Math.min(cap, 10 * Math.max(1, Number(cl) || 6)));
+        return String(Math.min(cap, 10 * effCl));
       }
       if (n === 'cure minor wounds' || n === 'inflict minor wounds' || n === 'virtue') {
         return '1';
@@ -1945,7 +1959,7 @@
           : Math.max(0, regDaily - regUsed);
         const hasActiveSlot = remainingSlots > 0 && ((slotObj ? (slotObj.daily - slotObj.used) : 0) > 0);
         const theme = getSpellLevelTheme(lvl);
-        const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
+        const dmgExpr = resolveSpellEffectiveFormula(s, cl);
         const spontInfo = getClericSpontaneousSpellInfo(lvl, cl, spontMode);
         const isAlreadyCureOrInflict = /^(cure|inflict|mass cure|mass inflict)\b/i.test((s.name || '').trim());
         // D&D 3.5e RAW (PHB p.32): Domain spells cannot be spontaneously converted to Cure/Inflict Wounds
@@ -4480,7 +4494,7 @@
 
       function renderSpellRow(s, originalIdx, lvl) {
         const dc = getSpellDc(s.level !== undefined ? s.level : lvl);
-        const dmgExpr = s.damageDice || findDiceExpression(s.benefit);
+        const dmgExpr = resolveSpellEffectiveFormula(s, cl);
         const slotObj = (character?.spellcasting?.slots || []).find(sl => Number(sl.level) === lvl);
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
         const hasActiveSlot = remainingSlots > 0;
