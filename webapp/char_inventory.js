@@ -4394,6 +4394,51 @@
       if (!character) return;
       if (!character.bodySlots) character.bodySlots = {};
 
+      // Self-heal: if an Off-Hand Weapon Head was previously placed in mainHand, move it to offHand and restore parent Double Weapon to mainHand
+      if (character.bodySlots.mainHand && character.bodySlots.mainHand.name && character.bodySlots.mainHand.name !== '-' &&
+          typeof RuleEngine !== 'undefined' && typeof RuleEngine.isOffHandWeaponHead === 'function' &&
+          RuleEngine.isOffHandWeaponHead(character.bodySlots.mainHand)) {
+        const misplacedOffHead = character.bodySlots.mainHand;
+        const ohSlot = character.bodySlots.offHand;
+        if (!ohSlot || !ohSlot.name || ohSlot.name === '-') {
+          character.bodySlots.offHand = { ...misplacedOffHead, active: true };
+        }
+        const baseParentName = String(misplacedOffHead.parent || misplacedOffHead.name || '')
+          .replace(/^↳\s*/, '')
+          .replace(/\s*\(.*?\)\s*$/, '')
+          .trim()
+          .toLowerCase();
+        const parentPoolItem = (character.gearPool || []).find(p =>
+          p && !RuleEngine.isOffHandWeaponHead(p) &&
+          String(p.name || '').trim().toLowerCase() === baseParentName
+        );
+        if (parentPoolItem) {
+          parentPoolItem.isEquipped = true;
+          character.bodySlots.mainHand = {
+            ...parentPoolItem,
+            masterDbName: parentPoolItem.masterDbName || parentPoolItem.name,
+            active: true
+          };
+          character.activeWeapon = parentPoolItem.name;
+        } else {
+          character.bodySlots.mainHand = { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+        }
+        character.activeOffHand = misplacedOffHead.name;
+        ensureWeaponSetsData();
+        if (character.tactical?.weaponSets) {
+          if (parentPoolItem && character.tactical.weaponSets.set1) {
+            character.tactical.weaponSets.set1.mainWeapon = parentPoolItem.name;
+          }
+          if (character.tactical.weaponSets.set2) {
+            character.tactical.weaponSets.set2.mainWeapon = misplacedOffHead.name;
+            character.tactical.weaponSets.set2.grip = 'Off-Hand';
+          }
+          character.tactical.weaponSets.activeSets = [1, 2];
+          character.tactical.weaponSets.activeSet = 'both';
+        }
+        saveStateToStorage(true);
+      }
+
       const leftContainer = document.getElementById('sil-left-slots');
       const rightContainer = document.getElementById('sil-right-slots');
       const figureContainer = document.getElementById('sil-figure-container');
@@ -4565,26 +4610,29 @@
             <!-- Weapon Quick Slots -->
             <div class="flex items-center gap-2 flex-wrap flex-1 min-w-0">
               <!-- Main Hand Badge -->
-              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg ${mhHas ? 'bg-slate-950 border border-sky-500/60 text-white' : 'bg-slate-950/60 border border-slate-800 text-slate-500'} text-xs">
+              <div onclick="openSlotEquipModal('mainHand')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
                 <span class="text-sky-400 font-bold text-[10px]">MAIN HAND:</span>
-                <span class="font-bold truncate max-w-[140px]">${mhHas ? mh.name : '(Unarmed)'}</span>
-                ${mhHas ? `<button onclick="unequipSlot('mainHand')" title="Unequip" class="text-rose-400 hover:text-white text-[10px] ml-1">✕</button>` : ''}
+                <span class="font-bold truncate max-w-[140px]">${mhHas ? mh.name : '+ Equip Main Hand'}</span>
+                ${mhHas ? `<button onclick="event.stopPropagation(); unequipSlot('mainHand')" title="Unequip" class="text-rose-400 hover:text-white text-[10px] ml-1 cursor-pointer">✕</button>` : ''}
               </div>
 
               <!-- Off Hand Badge -->
-              <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg ${ohHas ? 'bg-slate-950 border border-amber-500/60 text-white' : 'bg-slate-950/60 border border-slate-800 text-slate-500'} text-xs">
+              <div onclick="openSlotEquipModal('offHand')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
                 <span class="text-amber-400 font-bold text-[10px]">OFF-HAND:</span>
-                <span class="font-bold truncate max-w-[140px]">${ohHas ? oh.name : '(Empty)'}</span>
-                ${ohHas ? `<button onclick="unequipSlot('offHand')" title="Unequip" class="text-rose-400 hover:text-white text-[10px] ml-1">✕</button>` : ''}
+                <span class="font-bold truncate max-w-[140px]">${ohHas ? oh.name : '+ Equip Off-Hand'}</span>
+                ${ohHas ? `<button onclick="event.stopPropagation(); unequipSlot('offHand')" title="Unequip" class="text-rose-400 hover:text-white text-[10px] ml-1 cursor-pointer">✕</button>` : ''}
               </div>
 
               <!-- Quick Draw Weapons from Pool -->
-              ${readyWeapons.slice(0, 3).map(w => `
-                <button onclick="equipPoolItem(${w.id})" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white text-[11px] font-medium transition flex items-center gap-1.5 shrink-0" title="Quick Equip">
-                  <span>⚡</span>
+              ${readyWeapons.slice(0, 3).map(w => {
+                const isOffHead = typeof RuleEngine !== 'undefined' && RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(w);
+                return `
+                <button onclick="equipPoolItem(${w.id}${isOffHead ? ", 'offHand'" : ''})" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white text-[11px] font-medium transition flex items-center gap-1.5 shrink-0 cursor-pointer" title="${isOffHead ? 'Equip to Off-Hand' : 'Quick Equip'}">
+                  <span>${isOffHead ? '🗡️' : '⚡'}</span>
                   <span class="truncate max-w-[110px]">${w.name}</span>
                 </button>
-              `).join('')}
+              `;
+              }).join('')}
             </div>
           </div>
         `;
@@ -4697,7 +4745,8 @@
       if (character.bodySlots?.[slotKey]) {
         if (slotKey === 'offHand' && !character.bodySlots.offHand.active) {
           const mh = character.bodySlots.mainHand;
-          if (mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh) && !RuleEngine.hasOversizedWeaponFeat(character)) {
+          const isDouble = mh && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(mh);
+          if (mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh) && !isDouble && !RuleEngine.hasOversizedWeaponFeat(character)) {
             if (typeof showDiceTopToast === 'function') {
               showDiceTopToast({
                 title: 'Two-Handed Weapon Restriction',
@@ -4857,13 +4906,38 @@
                     <span>${item.isBelt ? '🟢' : '⚡'}</span><span>${item.isBelt ? 'On Belt' : 'Belt'}</span>
                   </button>
                 </div>
-              ` : `
-                <div class="w-20 flex items-center justify-center">
-                  <button onclick="equipPoolItem(${item.id})" class="ui-btn-sm w-full h-7 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Equip to Body Slot">
-                    <span>⚡</span><span>Equip</span>
-                  </button>
-                </div>
-              `}
+              ` : (() => {
+                const isOffHead = typeof RuleEngine !== 'undefined' && RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(item);
+                const isOneHandWep = item.category === 'Weapon' && !isOffHead && !(typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon && RuleEngine.isTwoHandedWeapon(item));
+                if (isOffHead) {
+                  return `
+                    <div class="w-20 flex items-center justify-center">
+                      <button onclick="equipPoolItem(${item.id}, 'offHand')" class="ui-btn-sm w-full h-7 bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1 shadow-sm" title="Equip to Off-Hand Slot">
+                        <span>🗡️</span><span>Off-Hand</span>
+                      </button>
+                    </div>
+                  `;
+                }
+                if (isOneHandWep) {
+                  return `
+                    <div class="flex flex-col gap-1 w-20">
+                      <button onclick="equipPoolItem(${item.id}, 'mainHand')" class="ui-btn-xs w-full h-6 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[10px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1 shadow-sm" title="Equip to Main Hand">
+                        <span>⚔️</span><span>Main</span>
+                      </button>
+                      <button onclick="equipPoolItem(${item.id}, 'offHand')" class="ui-btn-xs w-full h-6 bg-amber-950/80 hover:bg-amber-900 text-amber-300 border border-amber-700/80 text-[10px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1 shadow-sm" title="Equip to Off-Hand (TWF)">
+                        <span>🗡️</span><span>Off-Hand</span>
+                      </button>
+                    </div>
+                  `;
+                }
+                return `
+                  <div class="w-20 flex items-center justify-center">
+                    <button onclick="equipPoolItem(${item.id})" class="ui-btn-sm w-full h-7 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Equip to Body Slot">
+                      <span>⚡</span><span>Equip</span>
+                    </button>
+                  </div>
+                `;
+              })()}
               <button onclick="deletePoolItem(${item.id})" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded-md transition cursor-pointer shrink-0" title="Delete">
                 🗑️
               </button>
@@ -4946,27 +5020,58 @@
       let twoHandWarningMsg = null;
 
       if (item.category === 'Weapon') {
+        const isOffHead = typeof RuleEngine !== 'undefined' && RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(item);
+        const isDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(item);
         const isTwoHand = RuleEngine.isTwoHandedWeapon(item);
         const mh = character.bodySlots?.mainHand;
         const oh = character.bodySlots?.offHand;
 
-        if (isTwoHand) {
-          // A Two-Handed weapon ALWAYS occupies Main Hand!
+        if (isOffHead) {
+          // Off-Hand Head of a Double Weapon ALWAYS equips to Off-Hand
+          targetSlotKey = targetSlotKeyOverride || 'offHand';
+          const mhIsDouble = mh && mh.name && mh.name !== '-' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(mh);
+          const mhIsTwoHand = mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
+          if (mhIsTwoHand && !hasOversized) {
+            const prevMhName = mh.name;
+            unequipSlot('mainHand', true);
+            twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" to equip "${item.name}" in off-hand.`;
+          }
+          // If Main Hand is empty and the parent Double Weapon is in the pool unequipped, auto-equip parent in Main Hand
+          const curMh = character.bodySlots?.mainHand;
+          if (!curMh || !curMh.name || curMh.name === '-') {
+            const baseParentName = String(item.parent || item.name || '')
+              .replace(/^↳\s*/, '')
+              .replace(/\s*\(.*?\)\s*$/, '')
+              .trim()
+              .toLowerCase();
+            const parentPoolItem = (character.gearPool || []).find(p =>
+              p && !p.isEquipped && p.id !== item.id &&
+              !(RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(p)) &&
+              String(p.name || '').trim().toLowerCase() === baseParentName
+            );
+            if (parentPoolItem) {
+              equipPoolItem(parentPoolItem.id, 'mainHand');
+            }
+          }
+        } else if (isTwoHand) {
+          // A Two-Handed / Double weapon occupies Main Hand
           targetSlotKey = 'mainHand';
 
-          // If off-hand currently has a weapon or shield and character lacks oversized feat:
-          if (oh && oh.name && oh.name !== '-' && !hasOversized) {
+          // Keep off-hand if equipping a Double Weapon and off-hand holds an Off-Hand Head
+          const ohIsOffHead = oh && oh.name && oh.name !== '-' && RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(oh);
+          if (oh && oh.name && oh.name !== '-' && !hasOversized && !(isDouble && ohIsOffHead)) {
             const prevOhName = oh.name;
             unequipSlot('offHand', true);
             twoHandWarningMsg = `Unequipped off-hand "${prevOhName}" because "${item.name}" is a two-handed weapon.`;
           }
         } else if (!targetSlotKey) {
-          // One-handed or light weapon (e.g. Rapier)
+          // One-handed or light weapon (e.g. Rapier, Dagger)
           if (!mh || !mh.name || mh.name === '-') {
             targetSlotKey = 'mainHand';
           } else {
-            // Check if Main Hand is already wielding a two-handed weapon
-            const mhIsTwoHand = RuleEngine.isTwoHandedWeapon(mh);
+            // Check if Main Hand is already wielding a non-double two-handed weapon
+            const mhIsDouble = RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(mh);
+            const mhIsTwoHand = RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
             if (mhIsTwoHand && !hasOversized) {
               const prevMhName = mh.name;
               unequipSlot('mainHand', true);
@@ -4975,6 +5080,14 @@
             } else {
               targetSlotKey = 'offHand'; // Dual wield with 1-hand or light weapon
             }
+          }
+        } else if (targetSlotKey === 'offHand') {
+          const mhIsDouble = mh && mh.name && mh.name !== '-' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(mh);
+          const mhIsTwoHand = mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
+          if (mhIsTwoHand && !hasOversized) {
+            const prevMhName = mh.name;
+            unequipSlot('mainHand', true);
+            twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" to equip "${item.name}" in off-hand.`;
           }
         }
       } else if (item.category === 'Shield') {
@@ -5053,6 +5166,16 @@
         description: item.description || item.desc || '',
         scope: item.scope || '',
         targetSkill: item.targetSkill || '',
+        dice: item.dice || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : undefined),
+        critMin: item.critMin || item.weaponMeta?.critMin,
+        critMult: item.critMult || item.weaponMeta?.critMult,
+        attBonus: item.attBonus || item.enhancementBonus || 0,
+        dmgBonus: item.dmgBonus || item.enhancementBonus || 0,
+        dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : undefined),
+        isLight: item.isLight || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item)),
+        parent: item.parent,
+        damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : undefined,
+        modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : undefined,
         acBonus: item.acBonus,
         bonusType: item.bonusType,
         strBonus: item.strBonus,
@@ -5083,19 +5206,23 @@
         const targetGrip = isTwoHand ? '2-Hand' : (targetSlotKey === 'offHand' ? 'Off-Hand' : '1-Hand');
 
         if (existingWep) {
-          if (isTwoHand && !hasOversized) existingWep.grip = '2-Hand';
+          if (targetSlotKey === 'offHand') existingWep.grip = 'Off-Hand';
+          else if (isTwoHand && !hasOversized) existingWep.grip = '2-Hand';
         } else {
           character.weapons.push({
             name: item.name,
             grip: targetGrip,
-            dice: item.dice || (isTwoHand ? '2d6' : '1d6'),
-            critMin: item.critMin || (item.name.toLowerCase().includes('jovar') || item.name.toLowerCase().includes('rapier') ? 18 : 20),
-            critMult: item.critMult || 2,
-            attBonus: item.attBonus || 0,
-            dmgBonus: item.dmgBonus || 0,
-            dmgType: item.dmgType || 'Slashing',
+            dice: item.dice || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : (isTwoHand ? '2d6' : '1d6')),
+            critMin: item.critMin || item.weaponMeta?.critMin || (item.name.toLowerCase().includes('jovar') || item.name.toLowerCase().includes('rapier') ? 18 : 20),
+            critMult: item.critMult || item.weaponMeta?.critMult || 2,
+            attBonus: item.attBonus || item.enhancementBonus || 0,
+            dmgBonus: item.dmgBonus || item.enhancementBonus || 0,
+            dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : 'Slashing'),
             bonusType: item.bonusType || 'Enhancement',
-            tags: isTwoHand ? ['two-handed'] : []
+            isLight: item.isLight || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item)),
+            damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : undefined,
+            ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : undefined,
+            tags: isTwoHand ? ['two-handed'] : (targetSlotKey === 'offHand' ? ['off-hand'] : [])
           });
         }
         if (targetSlotKey === 'mainHand') {
@@ -5110,12 +5237,39 @@
           character.tactical.weaponSets.set1.mainWeapon = item.name;
         }
         character.activeWeapon = item.name;
+
+        // If equipping a Double Weapon in Main Hand and its Off-Hand Head is in the pool unequipped while Off-Hand is empty, auto-equip Off-Hand Head!
+        const isDoubleWep = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(item);
+        const curOh = character.bodySlots?.offHand;
+        if (isDoubleWep && (!curOh || !curOh.name || curOh.name === '-')) {
+          const baseNameLower = String(item.name || '').trim().toLowerCase();
+          const matchingOffHead = (character.gearPool || []).find(p =>
+            p && !p.isEquipped && p.id !== item.id &&
+            RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(p) &&
+            (String(p.parent || '').trim().toLowerCase() === baseNameLower || String(p.name || '').toLowerCase().includes(baseNameLower))
+          );
+          if (matchingOffHead) {
+            equipPoolItem(matchingOffHead.id, 'offHand');
+          }
+        }
       } else if (targetSlotKey === 'offHand') {
         if (character.tactical?.weaponSets?.set2) {
           character.tactical.weaponSets.set2.mainWeapon = item.name;
+          character.tactical.weaponSets.set2.grip = 'Off-Hand';
         }
-        if (character.tactical?.weaponSets?.activeSets?.includes(2)) {
-          character.activeOffHand = item.name;
+        if (character.tactical?.weaponSets) {
+          if (!Array.isArray(character.tactical.weaponSets.activeSets)) {
+            character.tactical.weaponSets.activeSets = [1];
+          }
+          if (!character.tactical.weaponSets.activeSets.includes(2)) {
+            character.tactical.weaponSets.activeSets.push(2);
+          }
+          character.tactical.weaponSets.activeSet = (character.tactical.weaponSets.activeSets.includes(1) && character.tactical.weaponSets.activeSets.includes(2)) ? 'both' : 2;
+        }
+        character.activeOffHand = item.name;
+        if (item.category === 'Weapon' && Array.isArray(character.activeModifiers)) {
+          const twfMod = character.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
+          if (twfMod) twfMod.active = true;
         }
       }
       try { renderWeaponSetsUI(); } catch (e) {}
@@ -5948,7 +6102,70 @@
       const itemModes = Array.isArray(item.modes) ? item.modes : [];
       if (itemModes.length > 0) {
         itemModes.forEach(mode => {
-          const modeClean = (mode.name || '').replace(/^↳\s*/, '').trim();
+          // If this mode is the Off-Hand Head of a Double Weapon, auto-add the Off-Hand Head entry to gearPool & weapons
+          if (mode.id === 'offhand-head' || mode.ruleFlags?.doubleWeaponOffHand) {
+            const offHeadName = `↳ ${item.name} (Off-Hand Head)`;
+            const alreadyInPool = (character.gearPool || []).some(p =>
+              p && (String(p.name || '').toLowerCase() === offHeadName.toLowerCase() ||
+              (RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(p) && String(p.parent || '').toLowerCase() === String(item.name || '').toLowerCase()))
+            );
+            if (!alreadyInPool) {
+              const modePart = Array.isArray(mode.damageParts) && mode.damageParts[0] ? mode.damageParts[0] : null;
+              const offDice = (modePart && modePart.dice) || item.dice || '1d6';
+              const offType = (modePart && modePart.type) || item.dmgType || 'Bludgeoning';
+              const offCritMin = Number(mode.critRange || item.critMin) || 20;
+              const offCritMult = Number(mode.critMult || item.critMult) || 2;
+              const offDesc = `Secondary head of ${item.name}, treated as a light weapon for two-weapon fighting penalties.`;
+              character.gearPool.push({
+                id: Date.now() + Math.floor(Math.random() * 1000) + 1,
+                baseItemId: `${item.id || 'wpn'}-offhand-head`,
+                name: offHeadName,
+                masterDbName: offHeadName,
+                parent: item.name,
+                category: 'Weapon',
+                slot: 'Off-Hand',
+                qty: 1,
+                weight: 0,
+                cost: 0,
+                desc: offDesc,
+                dice: offDice,
+                dmgType: offType,
+                critMin: offCritMin,
+                critMult: offCritMult,
+                isLight: true,
+                damageParts: Array.isArray(mode.damageParts) ? JSON.parse(JSON.stringify(mode.damageParts)) : [{ dice: offDice, bonus: 0, type: offType, multiplyOnCrit: true }],
+                ruleFlags: { isLight: true, doubleWeaponOffHand: true },
+                isBelt: false,
+                isEquipped: false
+              });
+              if (!character.weapons.some(w => String(w.name || '').toLowerCase() === offHeadName.toLowerCase())) {
+                character.weapons.push({
+                  id: `${item.id || 'wpn'}_offhand_head`,
+                  name: offHeadName,
+                  grip: 'Off-Hand',
+                  dice: offDice,
+                  damageParts: Array.isArray(mode.damageParts) ? JSON.parse(JSON.stringify(mode.damageParts)) : [{ dice: offDice, bonus: 0, type: offType, multiplyOnCrit: true }],
+                  critMin: offCritMin,
+                  rawCritMin: offCritMin,
+                  critMult: offCritMult,
+                  attBonus: Number(item.enhancementBonus || item.attBonus) || 0,
+                  dmgBonus: Number(item.enhancementBonus || item.dmgBonus) || 0,
+                  dmgType: offType,
+                  isLight: true,
+                  ruleFlags: { isLight: true, doubleWeaponOffHand: true },
+                  tags: ['off-hand', 'double', 'light']
+                });
+              }
+              attachedChildCount++;
+            }
+            return;
+          }
+          // Skip other weapon grip modes (primary-head, 2h-single) so they aren't added as elemental activeModifiers
+          if (mode.handedness || mode.id === 'primary-head' || mode.id === '2h-single' || mode.ruleFlags?.doubleWeapon) {
+            return;
+          }
+          const modeClean = (mode.name || mode.label || '').replace(/^↳\s*/, '').trim();
+          if (!modeClean) return;
           const modePart = Array.isArray(mode.damageParts) && mode.damageParts[0] ? mode.damageParts[0] : null;
           const modeDice = (modePart && modePart.dice) || mode.dice || '';
           if (mode.action?.toLowerCase().includes('action') || (mode.duration && mode.duration !== 'Continuous')) {

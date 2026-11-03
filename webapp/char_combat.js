@@ -3522,10 +3522,11 @@
     function onWeaponChange() {
       character.activeWeapon = document.getElementById('active-weapon-select').value;
       const wep = (character.weapons || []).find(w => w.name === character.activeWeapon) || (typeof findWeaponEverywhere === 'function' ? findWeaponEverywhere(character.activeWeapon) : null);
+      const isDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(wep || character.activeWeapon) : false;
       const isTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(character.activeWeapon) : false;
       const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
 
-      if (isTwoHand && !hasOversized) {
+      if (isTwoHand && !isDouble && !hasOversized) {
         if (wep) wep.grip = '2-Hand';
         const gripSelect = document.getElementById('active-grip-select');
         if (gripSelect) gripSelect.value = '2-Hand';
@@ -4285,12 +4286,14 @@
         const is2 = activeSets.includes(2);
         const isDual = is1 && is2;
 
+        const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(s1.mainWeapon) : false;
         const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(s1.mainWeapon) : false;
         const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
-        const isTwoHandLocked = mainIsTwoHand && !hasOversized;
+        const isTwoHandLocked = mainIsTwoHand && !mainIsDouble && !hasOversized;
 
-        // Stats for Card 1: STRICTLY Main Hand only
-        const s1MainStats = getWeaponCombatDisplayStats(s1.mainWeapon, isTwoHandLocked ? '2-Hand' : (s1.grip || '1-Hand'), false);
+        // Stats for Card 1: STRICTLY Main Hand only (Double weapons use 1-Hand in TWF mode, 2-Hand in single mode)
+        const effectiveS1Grip = isTwoHandLocked ? '2-Hand' : (mainIsDouble ? (isDual ? '1-Hand' : '2-Hand') : (s1.grip || '1-Hand'));
+        const s1MainStats = getWeaponCombatDisplayStats(s1.mainWeapon, effectiveS1Grip, false);
 
         // Stats for Card 2: STRICTLY Off-Hand / Shield only
         const s2OffStats = isTwoHandLocked ? null : getWeaponCombatDisplayStats(s2.mainWeapon, 'Off-Hand', true);
@@ -4451,11 +4454,12 @@
       }
 
       const s1Main = sets.set1?.mainWeapon;
+      const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(s1Main) : false;
       const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(s1Main) : false;
       const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
 
-      // Rule 1: If main hand is two-handed and oversized feat is missing, off-hand cannot be activated
-      if (setNum === 2 && mainIsTwoHand && !hasOversized) {
+      // Rule 1: If main hand is two-handed (and not a double weapon) and oversized feat is missing, off-hand cannot be activated
+      if (setNum === 2 && mainIsTwoHand && !mainIsDouble && !hasOversized) {
         if (typeof showToast === 'function') {
           showToast(`Your main-hand weapon "${s1Main}" is two-handed! Off-hand and TWF cannot be used without the 'Monkey Grip' feat.`, 'warning');
         }
@@ -4490,9 +4494,10 @@
       const sets = character.tactical.weaponSets;
 
       const s1Main = sets.set1?.mainWeapon;
+      const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(s1Main) : false;
       const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(s1Main) : false;
       const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
-      const isTwoHandLocked = mainIsTwoHand && !hasOversized;
+      const isTwoHandLocked = mainIsTwoHand && !mainIsDouble && !hasOversized;
 
       if (!character.activeModifiers) character.activeModifiers = [];
       let twfMod = character.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
@@ -4840,9 +4845,10 @@
       const s2Main = document.getElementById('set2-main-select');
       const s2Hint = document.getElementById('set2-weapon-editor-hint');
       const mainWep = sets.set1?.mainWeapon;
+      const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(mainWep) : false;
       const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(mainWep) : false;
       const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
-      const isTwoHandLocked = mainIsTwoHand && !hasOversized;
+      const isTwoHandLocked = mainIsTwoHand && !mainIsDouble && !hasOversized;
 
       if (s2Main) {
         if (isTwoHandLocked) {
@@ -4885,9 +4891,10 @@
         const chosen = document.getElementById('set1-main-select')?.value || sets.set1.mainWeapon;
         sets.set1.mainWeapon = chosen;
 
+        const isChosenDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(chosen) : false;
         const isChosenTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(chosen) : isRangedOnlyWeapon(chosen);
 
-        if (isChosenTwoHand && !hasOversized) {
+        if (isChosenTwoHand && !isChosenDouble && !hasOversized) {
           // Rule 1, 2, 3: Two-handed weapon without oversized feat
           sets.set1.grip = '2-Hand';
           const s1Grip = document.getElementById('set1-grip-select');
@@ -4926,10 +4933,11 @@
       } else {
         // setNum === 2 (Off-Hand)
         const mainWep = sets.set1?.mainWeapon;
+        const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(mainWep) : false;
         const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(mainWep) : false;
 
-        // Rule 1: Cannot equip another weapon in off-hand
-        if (mainIsTwoHand && !hasOversized) {
+        // Rule 1: Cannot equip another weapon in off-hand when wielding a non-double two-handed weapon
+        if (mainIsTwoHand && !mainIsDouble && !hasOversized) {
           sets.set2.mainWeapon = 'None';
           sets.set2.grip = 'Off-Hand';
           syncWeaponSetToBodySlot('offHand', 'None');
@@ -7079,11 +7087,9 @@
       const wep = (character.weapons || []).find(w => w && w.name === wepName) || findWeaponEverywhere(wepName) || { name: 'Unarmed Strike', dice: '1d3', critMin: 20, critMult: 2, dmgType: 'Bludgeoning', isLight: true };
       if (!wep) return [];
 
+      const isDoubleWep = RuleEngine && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(wep) : false;
       const isTwoHand = RuleEngine.isTwoHandedWeapon(wep);
       const hasOversizedWeaponFeat = RuleEngine ? RuleEngine.hasOversizedWeaponFeat(character) : false;
-      const effectiveTwoHand = isTwoHand && !hasOversizedWeaponFeat;
-      const gripSelect = document.getElementById('active-grip-select');
-      const grip = (effectiveTwoHand ? '2-Hand' : (gripSelect?.value || '1-Hand'));
       const paEl = document.getElementById('power-attack-val');
       const paVal = paEl ? (parseInt(paEl.value) || 0) : (Number(character.tactical?.powerAttack) || 0);
       const flEl = document.getElementById('mod-flanking');
@@ -7097,9 +7103,14 @@
       const isDualFromSets = sets && Array.isArray(sets.activeSets) && sets.activeSets.includes(1) && sets.activeSets.includes(2);
       const offHandWep = getResolvedOffHandWeapon(character);
       const hasOffHandWeapon = !!(offHandWep && offHandWep.name && offHandWep.name !== 'None' && !offHandWep.isBuckler && offHandWep.dmgType !== 'Shield');
+      const wantsTWF = (isDualFromSets && hasOffHandWeapon) || (activeMods.some(m => (m.name || '').includes('TWF')) && hasOffHandWeapon);
 
-      // Rule 2: If main hand is two-handed and there is no oversized weapon feat, TWF cannot be active
-      const isTWF = !effectiveTwoHand && ((isDualFromSets && hasOffHandWeapon) || (activeMods.some(m => (m.name || '').includes('TWF')) && hasOffHandWeapon));
+      const effectiveTwoHand = isTwoHand && !hasOversizedWeaponFeat && !(isDoubleWep && wantsTWF);
+      const gripSelect = document.getElementById('active-grip-select');
+      const grip = (effectiveTwoHand ? '2-Hand' : ((isDoubleWep && wantsTWF) ? '1-Hand' : (gripSelect?.value || '1-Hand')));
+
+      // Rule 2: If main hand is two-handed (and not a double weapon in TWF mode) and there is no oversized weapon feat, TWF cannot be active
+      const isTWF = !effectiveTwoHand && wantsTWF;
       const isFlurry = activeMods.some(m => (m.name || '').includes('Flurry'));
 
       const nonChainMods = activeMods.filter(m => {
@@ -9203,10 +9214,11 @@
       if (!select) return;
 
       const currentMainWep = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon;
+      const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(currentMainWep) : false;
       const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(currentMainWep) : false;
       const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
 
-      if (mainIsTwoHand && !hasOversized) {
+      if (mainIsTwoHand && !mainIsDouble && !hasOversized) {
         select.innerHTML = '<option value="None" selected>None / Empty (Main Hand 2H Weapon)</option>';
         select.value = 'None';
         select.disabled = true;
@@ -9326,11 +9338,12 @@
       if (!select) return;
 
       const currentMainWep = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon;
+      const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(currentMainWep) : false;
       const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(currentMainWep) : false;
       const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
 
       // Rule 1: Prevent equipping another weapon in the off-hand
-      if (mainIsTwoHand && !hasOversized && select.value !== 'None') {
+      if (mainIsTwoHand && !mainIsDouble && !hasOversized && select.value !== 'None') {
         select.value = 'None';
         character.activeOffHand = 'None';
         if (typeof showToast === 'function') {

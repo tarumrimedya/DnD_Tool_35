@@ -287,9 +287,48 @@ const RuleEngine = {
     return found ? this.ensureV2Entry(found) : null;
   },
 
+  // Check if weapon is the secondary / off-hand head of a Double Weapon or explicit Off-Hand weapon
+  isOffHandWeaponHead(weapon) {
+    if (!weapon) return false;
+    const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
+    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+    if (name.includes('off-hand') || name.includes('offhand') || name.includes('ikinci el')) return true;
+    if (typeof weapon === 'object') {
+      if (weapon.isOffHandHead || weapon.ruleFlags?.doubleWeaponOffHand) return true;
+      const slot = String(weapon.slot || '').toLowerCase().trim();
+      if ((slot === 'off-hand' || slot === 'offhand') && (weapon.category || weapon.type || '').toLowerCase() !== 'shield') return true;
+      const desc = String(weapon.desc || weapon.benefit || weapon.description || '').toLowerCase();
+      if (desc.includes('secondary head') || desc.includes('off-hand head') || desc.includes('secondary blade') || desc.includes('secondary spear head') || desc.includes('secondary pick head')) return true;
+    }
+    return false;
+  },
+
+  // Check if weapon is a D&D 3.5e Double Weapon (can be wielded 2H with one end or TWF with both ends)
+  isDoubleWeapon(weapon) {
+    if (!weapon || this.isOffHandWeaponHead(weapon)) return false;
+    const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
+    if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
+    if (typeof weapon === 'object') {
+      if (weapon.isDoubleWeapon || weapon.ruleFlags?.doubleWeapon) return true;
+      if (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase().includes('double'))) return true;
+      const desc = String(weapon.desc || weapon.benefit || weapon.description || '').toLowerCase();
+      if (desc.includes('is a double weapon') || desc.includes('double weapon.')) return true;
+    }
+    const db = this.getMasterDbEntry(weapon);
+    if (db && !this.isOffHandWeaponHead(db)) {
+      if (db.isDoubleWeapon || db.ruleFlags?.doubleWeapon) return true;
+      if (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase().includes('double'))) return true;
+    }
+    const doubleWeapons = [
+      'dire flail', 'two-bladed sword', 'orc double axe', 'gnome hooked hammer', 'dwarven urgrosh', 'quarterstaff'
+    ];
+    return doubleWeapons.some(dw => name.includes(dw));
+  },
+
   // Check if weapon is Light according to D&D 3.5e RAW rules
   isLightWeapon(weapon) {
     if (!weapon) return false;
+    if (this.isOffHandWeaponHead(weapon)) return true;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
     if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
 
@@ -394,6 +433,7 @@ const RuleEngine = {
   // Check if weapon is Two-Handed according to D&D 3.5e RAW rules
   isTwoHandedWeapon(weapon) {
     if (!weapon) return false;
+    if (this.isOffHandWeaponHead(weapon)) return false;
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
     if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
 
@@ -2387,7 +2427,8 @@ const RuleEngine = {
     if (character.bodySlots && typeof character.bodySlots === 'object') {
       const mh = character.bodySlots.mainHand;
       const oh = character.bodySlots.offHand;
-      const isMhTwoHand = mh && mh.name && mh.name !== '-' && this.isTwoHandedWeapon(mh);
+      const isDoubleValidPair = mh && oh && this.isDoubleWeapon(mh) && this.isOffHandWeaponHead(oh);
+      const isMhTwoHand = mh && mh.name && mh.name !== '-' && this.isTwoHandedWeapon(mh) && !isDoubleValidPair;
       const isOhOccupied = oh && oh.active !== false && oh.name && oh.name !== '-';
 
       if (isMhTwoHand && isOhOccupied) {
