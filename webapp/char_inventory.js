@@ -3327,11 +3327,21 @@
       }
     }
 
+    let _srdInitTriggeredForInventory = false;
     // 🎒 INVENTORY, 14 BODY SLOTS & GEAR POOL (Madde 6 & 8)
     function renderInventory() {
       if (!character) return;
       if (!character.bodySlots) character.bodySlots = {};
       if (!character.gearPool) character.gearPool = [];
+
+      if (!_srdInitTriggeredForInventory && window.SrdCompendium && typeof window.SrdCompendium.init === 'function') {
+        if (typeof window.SrdCompendium.isReady !== 'function' || !window.SrdCompendium.isReady()) {
+          _srdInitTriggeredForInventory = true;
+          window.SrdCompendium.init().then(() => {
+            renderInventory();
+          }).catch(() => {});
+        }
+      }
 
       // 1. Calculate Carrying Capacity & Weights
       const strScore = character.abilities?.str || 10;
@@ -3409,7 +3419,10 @@
               ${conflictNotice}
             </td>
             <td class="py-2.5 px-3 align-middle font-bold ${isOccupied ? 'text-white' : 'text-slate-500 italic'}">${isOccupied ? slotData.name : '(Empty Slot)'}</td>
-            <td class="py-2.5 px-3 align-middle text-slate-300 text-xs">${slotData.desc || '-'}</td>
+            <td class="py-2.5 px-3 align-middle text-slate-300 text-xs">
+              ${isOccupied ? renderGearItemStatsBadgesHtml(slotData, { compact: true }) : ''}
+              <div>${slotData.desc || '-'}</div>
+            </td>
             <td class="py-2.5 px-3 text-center align-middle font-mono text-slate-400">${isOccupied ? slotData.weight + ' lb' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${isOccupied ? slotData.cost + ' GP' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle">
@@ -4473,6 +4486,7 @@
                   <div class="text-xs font-bold text-white truncate group-hover:text-amber-300 transition" title="${slotData.name}">
                     ${slotData.name}
                   </div>
+                  ${renderGearItemStatsBadgesHtml(slotData, { compact: true, minimal: true })}
                   <div class="text-[9px] sm:text-[10px] text-slate-400 truncate flex items-center gap-2">
                     ${slotData.desc ? `<span class="truncate max-w-[120px] sm:max-w-[160px]">${slotData.desc}</span>` : ''}
                     <span class="font-mono text-slate-500">${slotData.weight ? slotData.weight + ' lb' : ''}</span>
@@ -4707,6 +4721,7 @@
               <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">Currently Equipped</span>
               <span class="text-xs font-extrabold text-white truncate">${currentSlotData.name}</span>
             </div>
+            ${renderGearItemStatsBadgesHtml(currentSlotData, { compact: true })}
             <div class="text-[10px] text-slate-300 truncate mt-0.5">${currentSlotData.desc || 'Equipped in ' + (def?.trName || def?.name || _currentEquipSlotKey)}</div>
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
@@ -4773,6 +4788,7 @@
               <span class="text-xs font-bold text-white">${item.name}</span>
               <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800/60">${item.category}</span>
             </div>
+            ${renderGearItemStatsBadgesHtml(item, { compact: true })}
             <div class="text-[10px] text-slate-400 truncate mt-0.5">${item.desc || 'No properties specified'}</div>
             <div class="text-[9px] text-slate-500 flex items-center gap-2 mt-0.5">
               <span>Weight: <strong class="text-slate-300 font-mono">${item.weight || 0} lb</strong></span>
@@ -4856,7 +4872,24 @@
           wisBonus: slot.wisBonus,
           chaBonus: slot.chaBonus,
           maxDex: slot.maxDex,
-          checkPenalty: slot.checkPenalty
+          checkPenalty: slot.checkPenalty,
+          spellFailure: slot.spellFailure,
+          baseItemId: slot.baseItemId,
+          material: slot.material,
+          enhancementBonus: slot.enhancementBonus,
+          enhancements: Array.isArray(slot.enhancements) ? slot.enhancements.slice() : undefined,
+          dice: slot.dice,
+          critMin: slot.critMin,
+          critRange: slot.critRange,
+          critMult: slot.critMult,
+          handedness: slot.handedness,
+          attBonus: slot.attBonus,
+          dmgBonus: slot.dmgBonus,
+          dmgType: slot.dmgType,
+          damageParts: Array.isArray(slot.damageParts) ? JSON.parse(JSON.stringify(slot.damageParts)) : undefined,
+          modifiers: Array.isArray(slot.modifiers) ? JSON.parse(JSON.stringify(slot.modifiers)) : undefined,
+          ruleFlags: slot.ruleFlags ? JSON.parse(JSON.stringify(slot.ruleFlags)) : undefined,
+          tacticalBadges: Array.isArray(slot.tacticalBadges) ? JSON.parse(JSON.stringify(slot.tacticalBadges)) : undefined
         });
       }
 
@@ -4889,6 +4922,286 @@
           icon: '📦'
         });
       }
+    }
+
+    // Hydrate missing V2 weapon/armor/shield stats on pool or slot items from SRD Compendium & ItemAssembler
+    function hydrateGearItemStats(item) {
+      if (!item || typeof item !== 'object' || !item.name || item.name === '-') return item;
+      const cat = (item.category && item.category !== 'Other')
+        ? item.category
+        : (typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(item) : (item.type || 'Other'));
+
+      const isWeapon = cat === 'Weapon' || item.type === 'Weapon';
+      const isArmorOrShield = cat === 'Armor' || cat === 'Shield' || item.type === 'Armor' || item.type === 'Shield';
+
+      const missingWeaponStats = isWeapon && (
+        ((!Array.isArray(item.damageParts) || item.damageParts.length === 0) && !item.dice) ||
+        (!item.critMin && !item.critRange && !item.weaponMeta?.critMin)
+      );
+      const missingArmorStats = isArmorOrShield && (
+        (item.acBonus === undefined || item.acBonus === null) &&
+        (!Array.isArray(item.modifiers) || !item.modifiers.some(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield' || m.target === 'ac')))
+      );
+      const missingArmorMeta = (cat === 'Armor' || item.type === 'Armor') && item.maxDex === undefined && !item.armorMeta;
+
+      if (!missingWeaponStats && !missingArmorStats && !missingArmorMeta && item._statsHydrated) {
+        return item;
+      }
+
+      let ref = null;
+      const srdReady = Boolean(window.SrdCompendium && typeof window.SrdCompendium.isReady === 'function' && window.SrdCompendium.isReady());
+
+      if (window.ItemAssembler && typeof window.ItemAssembler.assembleItem === 'function' && srdReady) {
+        if (item.baseItemId && (item.enhancementBonus > 0 || item.material || (Array.isArray(item.enhancements) && item.enhancements.length > 0))) {
+          ref = window.ItemAssembler.assembleItem({
+            baseItemId: item.baseItemId,
+            material: item.material,
+            enhancementBonus: item.enhancementBonus,
+            enhancements: item.enhancements
+          });
+        } else if (typeof window.ItemAssembler.parseNaturalLanguageItem === 'function') {
+          const parsed = window.ItemAssembler.parseNaturalLanguageItem(item.name);
+          if (parsed && parsed.baseItemId) {
+            ref = window.ItemAssembler.assembleItem(parsed);
+          }
+        }
+      }
+
+      if (!ref && window.SrdCompendium) {
+        if (item.baseItemId || item.id) {
+          ref = window.SrdCompendium.getById(item.baseItemId || item.id);
+        }
+        if (!ref && typeof window.SrdCompendium.getByName === 'function') {
+          ref = window.SrdCompendium.getByName(item.masterDbName || item.name);
+        }
+      }
+
+      if (!ref && typeof findMasterItem === 'function') {
+        ref = findMasterItem(item.masterDbName || item.name);
+      }
+      if (!ref && typeof findBaseItemInSrdCore === 'function') {
+        ref = findBaseItemInSrdCore(item.name);
+      }
+
+      if (ref) {
+        if (!item.baseItemId && (ref.baseItemId || ref.id)) item.baseItemId = ref.baseItemId || ref.id;
+        if ((!Array.isArray(item.damageParts) || item.damageParts.length === 0) && Array.isArray(ref.damageParts) && ref.damageParts.length > 0) {
+          item.damageParts = JSON.parse(JSON.stringify(ref.damageParts));
+        }
+        if ((!Array.isArray(item.modifiers) || item.modifiers.length === 0) && Array.isArray(ref.modifiers) && ref.modifiers.length > 0) {
+          item.modifiers = JSON.parse(JSON.stringify(ref.modifiers));
+        }
+        if ((!item.ruleFlags || Object.keys(item.ruleFlags).length === 0) && ref.ruleFlags) {
+          item.ruleFlags = JSON.parse(JSON.stringify(ref.ruleFlags));
+        }
+        if ((!Array.isArray(item.tacticalBadges) || item.tacticalBadges.length === 0) && Array.isArray(ref.tacticalBadges) && ref.tacticalBadges.length > 0) {
+          item.tacticalBadges = JSON.parse(JSON.stringify(ref.tacticalBadges));
+        }
+        if (!item.dice && (ref.dice || (Array.isArray(ref.damageParts) && ref.damageParts[0]?.dice))) {
+          item.dice = ref.dice || ref.damageParts[0].dice;
+        }
+        if (!item.dmgType && (ref.dmgType || (Array.isArray(ref.damageParts) && ref.damageParts[0]?.type))) {
+          item.dmgType = ref.dmgType || ref.damageParts[0].type;
+        }
+        if (!item.critMin && !item.critRange && (ref.critRange || ref.critMin || ref.weaponMeta?.critMin)) {
+          item.critMin = ref.critRange || ref.critMin || ref.weaponMeta?.critMin;
+          item.critRange = item.critMin;
+        }
+        if (!item.critMult && (ref.critMult || ref.weaponMeta?.critMult)) {
+          item.critMult = ref.critMult || ref.weaponMeta?.critMult;
+        }
+        if (!item.handedness && (ref.handedness || ref.weaponMeta?.handedness)) {
+          item.handedness = ref.handedness || ref.weaponMeta?.handedness;
+        }
+        if (item.acBonus === undefined && ref.acBonus !== undefined) {
+          item.acBonus = ref.acBonus;
+        }
+        if (item.maxDex === undefined && (ref.maxDex !== undefined || ref.armorMeta?.maxDex !== undefined)) {
+          item.maxDex = ref.maxDex !== undefined ? ref.maxDex : ref.armorMeta?.maxDex;
+        }
+        if (item.checkPenalty === undefined && (ref.checkPenalty !== undefined || ref.armorMeta?.acp !== undefined)) {
+          item.checkPenalty = ref.checkPenalty !== undefined ? ref.checkPenalty : ref.armorMeta?.acp;
+        }
+        if (item.spellFailure === undefined && (ref.spellFailure !== undefined || ref.armorMeta?.asf !== undefined)) {
+          item.spellFailure = ref.spellFailure !== undefined ? ref.spellFailure : ref.armorMeta?.asf;
+        }
+        if (!item.enhancementBonus && ref.enhancementBonus) {
+          item.enhancementBonus = ref.enhancementBonus;
+        }
+        if (!item.material && ref.material) {
+          item.material = ref.material;
+        }
+      }
+
+      if (srdReady || ref) {
+        item._statsHydrated = true;
+      }
+      return item;
+    }
+
+    function renderGearItemStatsBadgesHtml(item, options = {}) {
+      if (!item || typeof item !== 'object' || !item.name || item.name === '-') return '';
+      hydrateGearItemStats(item);
+
+      const compact = Boolean(options.compact);
+      const minimal = Boolean(options.minimal);
+      const sizeCls = compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-[11px]';
+      const cat = (item.category && item.category !== 'Other')
+        ? item.category
+        : (typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(item) : (item.type || 'Other'));
+      const isWeapon = cat === 'Weapon' || item.type === 'Weapon';
+      const isArmor = cat === 'Armor' || item.type === 'Armor';
+      const isShield = cat === 'Shield' || item.type === 'Shield';
+
+      const parts = [];
+
+      if (isWeapon) {
+        // 1. Damage Parts Badges (with polyhedral SVG dice icons)
+        let dmgParts = Array.isArray(item.damageParts) && item.damageParts.length > 0 ? item.damageParts : null;
+        if (!dmgParts && item.dice) {
+          dmgParts = [{
+            dice: item.dice,
+            bonus: Number(item.dmgBonus ?? item.enhancementBonus) || 0,
+            type: item.dmgType || 'Physical',
+            multiplyOnCrit: true
+          }];
+        }
+        if (dmgParts && window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function') {
+          const dmgHtml = window.DnDUI.renderDamagePartsBadges(dmgParts, { compact });
+          if (dmgHtml) parts.push(dmgHtml);
+        }
+
+        // 2. Attack Bonus Badge (+X Atk)
+        const atkMod = (item.modifiers || []).find(m => m && (m.target === 'attack.weapon' || m.target === 'attack' || m.target === 'attack.all'));
+        const atkVal = atkMod ? (Number(atkMod.value) || 0) : (Number(item.attBonus || item.enhancementBonus) || 0);
+        if (atkVal !== 0) {
+          const atkCls = atkVal > 0
+            ? 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60'
+            : 'bg-rose-950/80 text-rose-300 border-rose-600/60';
+          parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} ${atkCls}" title="Weapon Attack Bonus"><span>⚔️ ${atkVal > 0 ? '+' + atkVal : atkVal} Atk</span></span>`);
+        }
+
+        // 3. Critical Threat Range & Multiplier Badge
+        const cMin = Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || 20;
+        const cMult = Number(item.critMult || item.weaponMeta?.critMult) || 2;
+        const critStr = cMin < 20 ? `${cMin}-20/×${cMult}` : `×${cMult}`;
+        parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-amber-950/75 text-amber-300 border-amber-600/50" title="Critical Threat Range &amp; Multiplier"><span>🎯 ${critStr}</span></span>`);
+
+        // 4. Handedness / Double Weapon / Range Badge
+        if (!minimal) {
+          const isDouble = Boolean(item.ruleFlags?.doubleWeapon || (typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(item)));
+          const rawHand = String(item.handedness || item.weaponMeta?.handedness || item.grip || '');
+          let gripLabel = '';
+          if (isDouble) gripLabel = 'Double Weapon';
+          else if (/two|2-hand/i.test(rawHand)) gripLabel = '2-Hand';
+          else if (/light/i.test(rawHand)) gripLabel = 'Light';
+          else if (/one|1-hand/i.test(rawHand)) gripLabel = '1-Hand';
+          else if (/ranged/i.test(rawHand)) gripLabel = 'Ranged';
+          if (gripLabel) {
+            parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-semibold ${sizeCls} bg-slate-800/90 text-slate-300 border-slate-700">${gripLabel}</span>`);
+          }
+        }
+
+        // 5. Remaining non-attack modifiers & tactical badges
+        if (!minimal) {
+          const otherMods = (item.modifiers || []).filter(m => m && m.target !== 'attack.weapon' && m.target !== 'attack');
+          if (otherMods.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
+            const modHtml = window.DnDUI.renderModifiersBadges(otherMods, { compact });
+            if (modHtml) parts.push(modHtml);
+          }
+          if (window.DnDUI && typeof window.DnDUI.renderTacticalBadges === 'function') {
+            const tacHtml = window.DnDUI.renderTacticalBadges(item, { compact });
+            if (tacHtml) parts.push(tacHtml);
+          }
+        }
+      } else if (isArmor || isShield) {
+        // 1. Armor / Shield AC Bonus Badge
+        const acMod = (item.modifiers || []).find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield' || m.target === 'ac'));
+        const acVal = acMod ? (Number(acMod.value) || 0) : (Number(item.acBonus) || 0);
+        const enhVal = Number(item.enhancementBonus) || 0;
+        if (acVal > 0) {
+          const acLabel = isShield ? `+${acVal} Shield AC` : `+${acVal} Armor AC`;
+          const acTitle = `${isShield ? 'Shield' : 'Armor'} Bonus to AC${enhVal > 0 ? ` (includes +${enhVal} Enhancement)` : ''}`;
+          parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-sky-950/85 text-sky-200 border-sky-500/70 shadow-sm" title="${acTitle}"><span>🛡️ ${acLabel}</span></span>`);
+        }
+
+        // 2. Max DEX Bonus Badge
+        const maxDex = item.maxDex !== undefined ? item.maxDex : item.armorMeta?.maxDex;
+        if (maxDex !== null && maxDex !== undefined && maxDex !== '' && !isNaN(Number(maxDex))) {
+          parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-slate-800/90 text-emerald-300 border-slate-600/70" title="Maximum DEX Bonus to AC"><span>Max DEX +${Number(maxDex)}</span></span>`);
+        }
+
+        // 3. Armor Check Penalty (ACP) Badge
+        const acp = item.checkPenalty !== undefined ? item.checkPenalty : item.armorMeta?.acp;
+        if (acp !== null && acp !== undefined && acp !== '' && !isNaN(Number(acp)) && Number(acp) !== 0) {
+          parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-rose-950/60 text-rose-300 border-rose-700/50" title="Armor Check Penalty"><span>ACP ${Number(acp)}</span></span>`);
+        }
+
+        // 4. Arcane Spell Failure (ASF) Badge
+        if (!minimal) {
+          const asf = item.spellFailure !== undefined ? item.spellFailure : item.armorMeta?.asf;
+          if (asf !== null && asf !== undefined && Number(asf) > 0) {
+            parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-indigo-950/60 text-indigo-300 border-indigo-700/50" title="Arcane Spell Failure Chance"><span>ASF ${Number(asf)}%</span></span>`);
+          }
+        }
+
+        // 5. Other Modifiers & Tactical Badges (DR 2/-, Mithral, Fortification, etc.)
+        const hasDrBadge = Array.isArray(item.tacticalBadges) && item.tacticalBadges.some(tb => {
+          const lbl = typeof tb === 'string' ? tb : (tb?.label || tb?.name || '');
+          return /^dr\b/i.test(lbl);
+        });
+        const otherMods = (item.modifiers || []).filter(m => {
+          if (!m || !m.target) return false;
+          if (m.target === 'ac.armor' || m.target === 'ac.shield') return false;
+          if (m.target === 'dr' && hasDrBadge) return false;
+          return true;
+        });
+        if (otherMods.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
+          const modHtml = window.DnDUI.renderModifiersBadges(otherMods, { compact });
+          if (modHtml) parts.push(modHtml);
+        }
+        if (window.DnDUI && typeof window.DnDUI.renderTacticalBadges === 'function') {
+          const tacHtml = window.DnDUI.renderTacticalBadges(item, { compact });
+          if (tacHtml) parts.push(tacHtml);
+        }
+      } else {
+        // Wondrous / Rings / Cloaks / Belts / Consumables
+        if (Array.isArray(item.damageParts) && item.damageParts.length > 0 && window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function') {
+          const dmgHtml = window.DnDUI.renderDamagePartsBadges(item.damageParts, { compact });
+          if (dmgHtml) parts.push(dmgHtml);
+        }
+        if (Array.isArray(item.modifiers) && item.modifiers.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
+          const modHtml = window.DnDUI.renderModifiersBadges(item.modifiers, { compact });
+          if (modHtml) parts.push(modHtml);
+        } else {
+          // Legacy flat bonus fallback
+          const legacyPairs = [
+            ['AC', item.acBonus],
+            ['STR', item.strBonus],
+            ['DEX', item.dexBonus],
+            ['CON', item.conBonus],
+            ['INT', item.intBonus],
+            ['WIS', item.wisBonus],
+            ['CHA', item.chaBonus],
+            ['Fort', item.fortBonus],
+            ['Ref', item.refBonus],
+            ['Will', item.willBonus]
+          ];
+          legacyPairs.forEach(([lbl, val]) => {
+            const n = Number(val) || 0;
+            if (n !== 0) {
+              parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-emerald-950/70 text-emerald-300 border-emerald-700/60"><span>${n > 0 ? '+' + n : n} ${lbl}</span></span>`);
+            }
+          });
+        }
+        if (window.DnDUI && typeof window.DnDUI.renderTacticalBadges === 'function') {
+          const tacHtml = window.DnDUI.renderTacticalBadges(item, { compact });
+          if (tacHtml) parts.push(tacHtml);
+        }
+      }
+
+      if (parts.length === 0) return '';
+      return `<div class="flex flex-wrap items-center gap-1 mb-1">${parts.join('')}</div>`;
     }
 
     // Render Gear Pool Table (Madde 6 & 8)
@@ -4930,6 +5243,7 @@
       }
 
       filtered.forEach(item => {
+        const statsBadgesHtml = renderGearItemStatsBadgesHtml(item, { compact: true });
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-900/60 transition border-b border-slate-800/80';
         tr.innerHTML = `
@@ -4939,7 +5253,10 @@
               <span>${item.name}</span>
             </div>
           </td>
-          <td class="py-2 px-3 align-middle text-slate-300 text-xs">${item.desc || '-'}</td>
+          <td class="py-2 px-3 align-middle text-slate-300 text-xs">
+            ${statsBadgesHtml}
+            <div>${item.desc || '-'}</div>
+          </td>
           <td class="py-2 px-3 text-center align-middle font-mono">
             <div class="flex items-center justify-center gap-1">
               <button onclick="adjustPoolQty(${item.id}, -1)" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">-</button>
@@ -5188,7 +5505,9 @@
       }
 
       // Equip new item with full properties
+      hydrateGearItemStats(item);
       character.bodySlots[targetSlotKey] = {
+        baseItemId: item.baseItemId,
         name: item.name,
         masterDbName: item.masterDbName || item.name,
         category: item.category,
@@ -5200,9 +5519,14 @@
         description: item.description || item.desc || '',
         scope: item.scope || '',
         targetSkill: item.targetSkill || '',
+        material: item.material,
+        enhancementBonus: item.enhancementBonus,
+        enhancements: Array.isArray(item.enhancements) ? item.enhancements.slice() : undefined,
         dice: item.dice || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : undefined),
-        critMin: item.critMin || item.weaponMeta?.critMin,
+        critMin: item.critMin || item.critRange || item.weaponMeta?.critMin,
+        critRange: item.critRange || item.critMin || item.weaponMeta?.critMin,
         critMult: item.critMult || item.weaponMeta?.critMult,
+        handedness: item.handedness || item.weaponMeta?.handedness,
         attBonus: item.attBonus || item.enhancementBonus || 0,
         dmgBonus: item.dmgBonus || item.enhancementBonus || 0,
         dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : undefined),
@@ -5227,7 +5551,9 @@
         clBonus: item.clBonus,
         maxDex: item.maxDex,
         checkPenalty: item.checkPenalty,
+        spellFailure: item.spellFailure,
         ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : undefined,
+        tacticalBadges: Array.isArray(item.tacticalBadges) ? JSON.parse(JSON.stringify(item.tacticalBadges)) : undefined,
         combatModifiers: item.combatModifiers ? JSON.parse(JSON.stringify(item.combatModifiers)) : undefined
       };
       item.isEquipped = true;
@@ -5701,13 +6027,7 @@
       const desc = item._cleanDescCache;
       const inInv = isSearchMode ? isItemInInventory(item.name, ownedSet) : false;
       if (typeof item._badgesHtmlCache !== 'string') {
-        const dmgBadges = (window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function')
-          ? window.DnDUI.renderDamagePartsBadges(item.damageParts)
-          : '';
-        const modBadges = (window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function')
-          ? window.DnDUI.renderModifiersBadges(item.modifiers)
-          : '';
-        item._badgesHtmlCache = (dmgBadges || modBadges) ? `<div class="flex flex-wrap gap-1 pt-0.5">${dmgBadges}${modBadges}</div>` : '';
+        item._badgesHtmlCache = renderGearItemStatsBadgesHtml(item, { compact: true });
       }
       const btnId = isSearchMode ? `btn-add-search-${idx}` : `btn-add-pool-${idx}`;
 
@@ -6059,6 +6379,8 @@
       const itemDesc = cleanPoolItemDescription(item.benefit || item.description || item.shortDescription || '');
 
       const newId = Date.now();
+      const primaryPart = Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0] : null;
+      const armorAcMod = Array.isArray(item.modifiers) ? item.modifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield')) : null;
       character.gearPool.push({
         id: newId,
         baseItemId: item.baseItemId || item.id || null,
@@ -6080,6 +6402,18 @@
         armorMeta: item.armorMeta ? JSON.parse(JSON.stringify(item.armorMeta)) : null,
         ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {},
         tacticalBadges: Array.isArray(item.tacticalBadges) ? JSON.parse(JSON.stringify(item.tacticalBadges)) : [],
+        dice: (primaryPart && primaryPart.dice) || item.dice,
+        dmgType: (primaryPart && primaryPart.type) || item.dmgType,
+        critMin: Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || undefined,
+        critRange: Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || undefined,
+        critMult: Number(item.critMult || item.weaponMeta?.critMult) || undefined,
+        handedness: item.handedness || item.weaponMeta?.handedness,
+        attBonus: Number(item.enhancementBonus || item.attBonus) || 0,
+        dmgBonus: Number(item.enhancementBonus || item.dmgBonus) || 0,
+        acBonus: item.acBonus !== undefined ? item.acBonus : (armorAcMod ? Number(armorAcMod.value) : undefined),
+        maxDex: item.maxDex !== undefined ? item.maxDex : item.armorMeta?.maxDex,
+        checkPenalty: item.checkPenalty !== undefined ? item.checkPenalty : item.armorMeta?.acp,
+        spellFailure: item.spellFailure !== undefined ? item.spellFailure : item.armorMeta?.asf,
         isBelt: isBeltItem,
         isEquipped: false
       });
@@ -6371,6 +6705,8 @@
       if (!Array.isArray(character.gearPool)) character.gearPool = [];
       const cat = typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(v2Item) : (v2Item.type || 'Other');
       const isBeltItem = (v2Item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
+      const primaryPart = Array.isArray(v2Item.damageParts) && v2Item.damageParts[0] ? v2Item.damageParts[0] : null;
+      const armorAcMod = Array.isArray(v2Item.modifiers) ? v2Item.modifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield')) : null;
       const newEntry = {
         id: v2Item.id || ('item_' + Date.now()),
         baseItemId: v2Item.baseItemId || v2Item.id || null,
@@ -6392,6 +6728,18 @@
         armorMeta: v2Item.armorMeta ? JSON.parse(JSON.stringify(v2Item.armorMeta)) : null,
         ruleFlags: v2Item.ruleFlags ? JSON.parse(JSON.stringify(v2Item.ruleFlags)) : {},
         tacticalBadges: Array.isArray(v2Item.tacticalBadges) ? JSON.parse(JSON.stringify(v2Item.tacticalBadges)) : [],
+        dice: (primaryPart && primaryPart.dice) || v2Item.dice,
+        dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType,
+        critMin: Number(v2Item.critRange || v2Item.critMin || v2Item.weaponMeta?.critMin) || undefined,
+        critRange: Number(v2Item.critRange || v2Item.critMin || v2Item.weaponMeta?.critMin) || undefined,
+        critMult: Number(v2Item.critMult || v2Item.weaponMeta?.critMult) || undefined,
+        handedness: v2Item.handedness || v2Item.weaponMeta?.handedness,
+        attBonus: Number(v2Item.enhancementBonus || v2Item.attBonus) || 0,
+        dmgBonus: Number(v2Item.enhancementBonus || v2Item.dmgBonus) || 0,
+        acBonus: v2Item.acBonus !== undefined ? v2Item.acBonus : (armorAcMod ? Number(armorAcMod.value) : undefined),
+        maxDex: v2Item.maxDex !== undefined ? v2Item.maxDex : v2Item.armorMeta?.maxDex,
+        checkPenalty: v2Item.checkPenalty !== undefined ? v2Item.checkPenalty : v2Item.armorMeta?.acp,
+        spellFailure: v2Item.spellFailure !== undefined ? v2Item.spellFailure : v2Item.armorMeta?.asf,
         isBelt: isBeltItem,
         isEquipped: false
       };
