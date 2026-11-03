@@ -564,11 +564,31 @@
 
         const cloudLvl = Number(cloudFd.level) || (Array.isArray(cloudFd.progression) ? cloudFd.progression.length : 0);
         const localLvl = localSaved ? (Number(localSaved.level) || (Array.isArray(localSaved.progression) ? localSaved.progression.length : 0)) : 0;
-        const cloudTs = new Date(matchedCloud.updated_at || 0).getTime();
-        const localTs = localSaved?.lastModified ? new Date(localSaved.lastModified).getTime() : 0;
+        const cloudRowTs = new Date(matchedCloud.updated_at || 0).getTime();
+        const cloudFdTs = cloudFd.lastModified ? new Date(cloudFd.lastModified).getTime() : 0;
+        const cloudTs = cloudFdTs > 0 ? Math.max(cloudRowTs, cloudFdTs) : cloudRowTs;
+        const localModTs = localSaved?.lastModified ? new Date(localSaved.lastModified).getTime() : 0;
+        const localCloudTs = localSaved?._cloudUpdatedAt ? new Date(localSaved._cloudUpdatedAt).getTime() : 0;
+        const localTs = Math.max(localModTs, localCloudTs);
 
         const isLocalEmpty = !localSaved ||
                              (!localSaved.classes && !localSaved.class && localLvl <= 1 && (!localSaved.feats || localSaved.feats.length === 0) && (!localSaved.smartNotes || localSaved.smartNotes.length === 0));
+
+        const isSameSnapshot = Boolean(
+          localSaved &&
+          (localSaved.id === matchedCloud.id || localSaved._hubId === matchedCloud.id) &&
+          ((matchedCloud.updated_at && localSaved._cloudUpdatedAt === matchedCloud.updated_at) ||
+           (cloudFd.lastModified && localSaved.lastModified && cloudFd.lastModified === localSaved.lastModified) ||
+           (cloudFdTs > 0 && localModTs > 0 && cloudFdTs <= localModTs))
+        );
+
+        if (isSameSnapshot && !isLocalEmpty) {
+          if (matchedCloud.updated_at && character && character._cloudUpdatedAt !== matchedCloud.updated_at) {
+            character._cloudUpdatedAt = matchedCloud.updated_at;
+            try { localStorage.setItem('dnd35_character', JSON.stringify(character)); } catch (e) {}
+          }
+          return false;
+        }
 
         // Only overwrite active local character if local is empty, different ID, or cloud is strictly newer
         const shouldAdoptCloud = isLocalEmpty ||
@@ -577,6 +597,13 @@
                                  (cloudLvl === localLvl && cloudTs > localTs + 500);
 
         if (!shouldAdoptCloud) return false;
+
+        if (matchedCloud.updated_at) {
+          cloudFd._cloudUpdatedAt = matchedCloud.updated_at;
+          if (!cloudFd.lastModified || new Date(matchedCloud.updated_at).getTime() > new Date(cloudFd.lastModified).getTime()) {
+            cloudFd.lastModified = matchedCloud.updated_at;
+          }
+        }
 
         try {
           const hubRawPre = localStorage.getItem('dnd35_hub_db');
@@ -1085,7 +1112,18 @@
         if (curLvl === 0 && !character.classes && !character.race && !character.name && !hasNotes && (!character.feats || character.feats.length === 0)) {
           console.warn('saveStateToStorage: Character appears uninitialized/empty, prevented overwriting cloud data.');
         } else {
-          window.SupabaseAuth.upsertUserCharacter(character).catch(err => {
+          const pushedModTs = character.lastModified;
+          window.SupabaseAuth.upsertUserCharacter(character).then(savedRow => {
+            if (savedRow && savedRow.updated_at && character) {
+              character._cloudUpdatedAt = savedRow.updated_at;
+              if (character.lastModified === pushedModTs) {
+                character.lastModified = savedRow.updated_at;
+              }
+              try {
+                localStorage.setItem('dnd35_character', JSON.stringify(character));
+              } catch (e) {}
+            }
+          }).catch(err => {
             console.warn('upsertUserCharacter background notice:', err);
           });
         }
@@ -1153,19 +1191,43 @@
         if (incoming.id !== myCharId && incoming.id !== character.id && incoming.id !== character._hubId) {
           return;
         }
+        if (_pendingCloudSync || _cloudSaveTimer) return;
 
         if (incoming.full_data) {
           const remoteFd = incoming.full_data;
+          const remoteUpdatedAt = incoming.updated_at || incoming.last_player_update_ts || '';
+          const remoteFdTs = remoteFd.lastModified ? new Date(remoteFd.lastModified).getTime() : 0;
+          const localModTs = character.lastModified ? new Date(character.lastModified).getTime() : 0;
+          const localCloudTs = character._cloudUpdatedAt ? new Date(character._cloudUpdatedAt).getTime() : 0;
+
+          const isSameSnapshot = Boolean(
+            (remoteUpdatedAt && character._cloudUpdatedAt === remoteUpdatedAt) ||
+            (remoteFd.lastModified && character.lastModified && remoteFd.lastModified === character.lastModified) ||
+            (remoteFdTs > 0 && localModTs > 0 && remoteFdTs <= localModTs)
+          );
+          if (isSameSnapshot) {
+            if (remoteUpdatedAt && character._cloudUpdatedAt !== remoteUpdatedAt) {
+              character._cloudUpdatedAt = remoteUpdatedAt;
+              try { localStorage.setItem('dnd35_character', JSON.stringify(character)); } catch (e) {}
+            }
+            return;
+          }
+
           const remoteLvl = Number(remoteFd.level) || (Array.isArray(remoteFd.progression) ? remoteFd.progression.length : 0);
           const localLvl = Number(character.level) || (Array.isArray(character.progression) ? character.progression.length : 0);
-          const remoteTs = new Date(incoming.updated_at || incoming.last_player_update_ts || 0).getTime();
-          const localTs = character.lastModified ? new Date(character.lastModified).getTime() : 0;
+          const remoteRowTs = new Date(remoteUpdatedAt || 0).getTime();
+          const remoteTs = remoteFdTs > 0 ? Math.max(remoteRowTs, remoteFdTs) : remoteRowTs;
+          const localTs = Math.max(localModTs, localCloudTs);
 
           // Eğer uzaktaki kopya daha yüksek seviyeliyse veya yerelden daha güncelse:
           if (remoteLvl > localLvl || (remoteLvl === localLvl && remoteTs > localTs + 500)) {
             console.log(`[Realtime Sync] Updated character received from another device: Lvl ${remoteLvl}`);
             remoteFd.id = myCharId;
             remoteFd._hubId = myCharId;
+            if (remoteUpdatedAt) {
+              remoteFd._cloudUpdatedAt = remoteUpdatedAt;
+              remoteFd.lastModified = remoteUpdatedAt;
+            }
             if (!Array.isArray(remoteFd.customDb)) remoteFd.customDb = [];
             character = remoteFd;
             masterDb = character.customDb;
@@ -1196,9 +1258,11 @@
 
             renderAll();
             if (typeof showDiceTopToast === 'function') {
+              const msg = `Character updated from another device (${character.classes || 'Level ' + character.level})!`;
               showDiceTopToast({
                 title: '⚡ Live Cloud Sync',
-                text: `Character updated from another device (${character.classes || 'Level ' + character.level})!`,
+                text: msg,
+                breakdown: msg,
                 color: 'emerald'
               });
             }
@@ -1216,6 +1280,7 @@
         _lastVisibilitySyncTs = now;
 
         if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode() || !character) return;
+        if (_pendingCloudSync || _cloudSaveTimer) return;
         const myCharId = character._hubId || character.id;
         if (!myCharId) return;
 
@@ -1225,15 +1290,38 @@
           const matched = cloudChars.find(c => c.id === myCharId);
           if (matched && matched.full_data) {
             const remoteFd = matched.full_data;
+            const remoteUpdatedAt = matched.updated_at || '';
+            const remoteFdTs = remoteFd.lastModified ? new Date(remoteFd.lastModified).getTime() : 0;
+            const localModTs = character.lastModified ? new Date(character.lastModified).getTime() : 0;
+            const localCloudTs = character._cloudUpdatedAt ? new Date(character._cloudUpdatedAt).getTime() : 0;
+
+            const isSameSnapshot = Boolean(
+              (remoteUpdatedAt && character._cloudUpdatedAt === remoteUpdatedAt) ||
+              (remoteFd.lastModified && character.lastModified && remoteFd.lastModified === character.lastModified) ||
+              (remoteFdTs > 0 && localModTs > 0 && remoteFdTs <= localModTs)
+            );
+            if (isSameSnapshot) {
+              if (remoteUpdatedAt && character._cloudUpdatedAt !== remoteUpdatedAt) {
+                character._cloudUpdatedAt = remoteUpdatedAt;
+                try { localStorage.setItem('dnd35_character', JSON.stringify(character)); } catch (e) {}
+              }
+              return;
+            }
+
             const remoteLvl = Number(remoteFd.level) || (Array.isArray(remoteFd.progression) ? remoteFd.progression.length : 0);
             const localLvl = Number(character.level) || (Array.isArray(character.progression) ? character.progression.length : 0);
-            const remoteTs = new Date(matched.updated_at || 0).getTime();
-            const localTs = character.lastModified ? new Date(character.lastModified).getTime() : 0;
+            const remoteRowTs = new Date(remoteUpdatedAt || 0).getTime();
+            const remoteTs = remoteFdTs > 0 ? Math.max(remoteRowTs, remoteFdTs) : remoteRowTs;
+            const localTs = Math.max(localModTs, localCloudTs);
 
             if (remoteLvl > localLvl || (remoteLvl === localLvl && remoteTs > localTs + 500)) {
               console.log(`[Tab Focus Sync] Pulled latest character from cloud on tab focus: Lvl ${remoteLvl}`);
               remoteFd.id = myCharId;
               remoteFd._hubId = myCharId;
+              if (remoteUpdatedAt) {
+                remoteFd._cloudUpdatedAt = remoteUpdatedAt;
+                remoteFd.lastModified = remoteUpdatedAt;
+              }
               if (!Array.isArray(remoteFd.customDb)) remoteFd.customDb = [];
               character = remoteFd;
               masterDb = character.customDb;
@@ -1243,9 +1331,11 @@
               }
               renderAll();
               if (typeof showDiceTopToast === 'function') {
+                const msg = `Loaded latest version from cloud (${character.classes || 'Level ' + character.level}).`;
                 showDiceTopToast({
                   title: '🔄 Tab Sync',
-                  text: `Loaded latest version from cloud (${character.classes || 'Level ' + character.level}).`,
+                  text: msg,
+                  breakdown: msg,
                   color: 'emerald'
                 });
               }
@@ -1277,13 +1367,19 @@
           character = matched.full_data;
           character.id = matched.id;
           character._hubId = matched.id;
+          if (matched.updated_at) {
+            character._cloudUpdatedAt = matched.updated_at;
+            character.lastModified = matched.updated_at;
+          }
           localStorage.setItem('dnd35_character', JSON.stringify(character));
           localStorage.setItem('dnd35_active_character_id', character.id);
           renderAll();
           if (typeof showDiceTopToast === 'function') {
+            const msg = `"${character.name}" (${character.classes || 'Level ' + character.level}) loaded successfully!`;
             showDiceTopToast({
               title: '✅ Pulled from Cloud',
-              text: `"${character.name}" (${character.classes || 'Level ' + character.level}) loaded successfully!`,
+              text: msg,
+              breakdown: msg,
               color: 'emerald'
             });
           } else {
@@ -1305,10 +1401,17 @@
         character.lastModified = new Date().toISOString();
         const res = await window.SupabaseAuth.upsertUserCharacter(character);
         if (res) {
+          if (res.updated_at) {
+            character._cloudUpdatedAt = res.updated_at;
+            character.lastModified = res.updated_at;
+            try { localStorage.setItem('dnd35_character', JSON.stringify(character)); } catch (e) {}
+          }
           if (typeof showDiceTopToast === 'function') {
+            const msg = `"${character.name}" saved to the cloud successfully!`;
             showDiceTopToast({
               title: '☁️ Pushed to Cloud',
-              text: `"${character.name}" saved to the cloud successfully!`,
+              text: msg,
+              breakdown: msg,
               color: 'emerald'
             });
           } else {
