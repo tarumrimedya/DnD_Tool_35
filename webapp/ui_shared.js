@@ -603,11 +603,11 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
               <div>
                 <label class="block text-slate-400 mb-1 font-semibold">1. Base Item (Weapon / Armor)</label>
-                <select id="dnd-forge-base-select" onchange="DnDUI.updateForgePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400"></select>
+                <select id="dnd-forge-base-select" onchange="DnDUI.onForgeControlChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400"></select>
               </div>
               <div>
                 <label class="block text-slate-400 mb-1 font-semibold">2. Special Material</label>
-                <select id="dnd-forge-material-select" onchange="DnDUI.updateForgePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400">
+                <select id="dnd-forge-material-select" onchange="DnDUI.onForgeControlChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400">
                   <option value="">Standard (Steel / Leather / Wood)</option>
                   <option value="mat-mithral">Mithral (Light / -ACP / +Max DEX)</option>
                   <option value="mat-adamantine">Adamantine (Bypass Hardness 20 / Armor DR)</option>
@@ -619,7 +619,7 @@
               </div>
               <div>
                 <label class="block text-slate-400 mb-1 font-semibold">3. Enhancement Bonus</label>
-                <select id="dnd-forge-enh-bonus" onchange="DnDUI.updateForgePreview()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-amber-300 font-bold font-mono focus:outline-none focus:border-amber-400">
+                <select id="dnd-forge-enh-bonus" onchange="DnDUI.onForgeControlChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-amber-300 font-bold font-mono focus:outline-none focus:border-amber-400">
                   <option value="0">Masterwork / Normal (+0)</option>
                   <option value="1" selected>+1 Enhancement</option>
                   <option value="2">+2 Enhancement</option>
@@ -698,7 +698,7 @@
       ];
     }
 
-    baseSel.innerHTML = baseOptions.slice(0, 120).map(item =>
+    baseSel.innerHTML = baseOptions.map(item =>
       `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} (${escapeHtml(item.type || item.subCategory || item.category)})</option>`
     ).join('');
     baseSel.dataset.srdPopulated = srdReady ? 'full' : 'fallback';
@@ -726,12 +726,123 @@
 
       enhGrid.innerHTML = ENH_LIST.map(e => `
         <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none">
-          <input type="checkbox" value="${e.id}" onchange="DnDUI.updateForgePreview()" class="dnd-forge-enh-chk rounded text-amber-500 bg-slate-900 border-slate-700">
+          <input type="checkbox" value="${e.id}" onchange="DnDUI.onForgeControlChange()" class="dnd-forge-enh-chk rounded text-amber-500 bg-slate-900 border-slate-700">
           <span class="text-[11px] font-semibold text-slate-200 truncate">${e.label}</span>
           <span class="text-[9px] font-mono text-amber-400 ml-auto">${e.bonusEq}</span>
         </label>
       `).join('');
     }
+  }
+
+  function onForgeControlChange() {
+    const nlInput = document.getElementById('dnd-forge-nl-input');
+    if (nlInput && nlInput.value) {
+      nlInput.value = '';
+    }
+    updateForgePreview();
+  }
+
+  function populateForgeFromItem(item) {
+    if (!item) return;
+    populateForgeControls();
+
+    const nlInput = document.getElementById('dnd-forge-nl-input');
+    if (nlInput) nlInput.value = '';
+
+    let resolvedBaseId = item.baseItemId || null;
+    let resolvedMaterial = item.material || '';
+    let resolvedEnhBonus = Number(item.enhancementBonus);
+    let resolvedEnhancements = Array.isArray(item.enhancements) ? item.enhancements.slice() : [];
+
+    // Try direct SRD lookup by ID or Name
+    if (!resolvedBaseId && global.SrdCompendium) {
+      if (item.id && typeof global.SrdCompendium.getById === 'function') {
+        const byId = global.SrdCompendium.getById(item.id);
+        if (byId && ['Weapon', 'Armor', 'Shield'].includes(byId.type)) {
+          resolvedBaseId = byId.id;
+        }
+      }
+      if (!resolvedBaseId && (item.masterDbName || item.name) && typeof global.SrdCompendium.getByName === 'function') {
+        const byName = global.SrdCompendium.getByName(item.masterDbName || item.name);
+        if (byName && ['Weapon', 'Armor', 'Shield'].includes(byName.type)) {
+          resolvedBaseId = byName.id;
+        }
+      }
+    }
+
+    // Parse natural language composite item (e.g., "+2 Keen Mithral Scimitar") if needed
+    const rawName = String(item.name || item.masterDbName || '').trim();
+    if ((!resolvedBaseId || isNaN(resolvedEnhBonus) || (!resolvedMaterial && resolvedEnhancements.length === 0)) && rawName && global.ItemAssembler && typeof global.ItemAssembler.parseNaturalLanguageItem === 'function') {
+      try {
+        const parsed = global.ItemAssembler.parseNaturalLanguageItem(rawName);
+        if (parsed) {
+          if (!resolvedBaseId && parsed.baseItemId) resolvedBaseId = parsed.baseItemId;
+          if (!resolvedMaterial && parsed.material) resolvedMaterial = parsed.material;
+          if ((isNaN(resolvedEnhBonus) || resolvedEnhBonus === 0) && Number(parsed.enhancementBonus) > 0) {
+            resolvedEnhBonus = Number(parsed.enhancementBonus);
+          }
+          if (resolvedEnhancements.length === 0 && Array.isArray(parsed.enhancements) && parsed.enhancements.length > 0) {
+            resolvedEnhancements = parsed.enhancements.slice();
+          }
+        }
+      } catch (_) {}
+    }
+
+    // Infer enhancement bonus from item.attBonus or modifiers if still missing
+    if (isNaN(resolvedEnhBonus)) {
+      if (Array.isArray(item.modifiers)) {
+        const enhMod = item.modifiers.find(m => m && String(m.type || '').toLowerCase() === 'enhancement' && Number(m.value) > 0);
+        if (enhMod) resolvedEnhBonus = Number(enhMod.value) || 0;
+      }
+      if (isNaN(resolvedEnhBonus)) {
+        resolvedEnhBonus = 0;
+      }
+    }
+
+    if (item.ruleFlags && item.ruleFlags.keen && !resolvedEnhancements.includes('enh-keen')) {
+      resolvedEnhancements.push('enh-keen');
+    }
+
+    const baseSel = document.getElementById('dnd-forge-base-select');
+    if (baseSel) {
+      let hasOpt = resolvedBaseId && Array.from(baseSel.options).some(opt => opt.value === resolvedBaseId);
+      if (!hasOpt && rawName) {
+        const cleanLower = rawName.toLowerCase();
+        const optsByLen = Array.from(baseSel.options)
+          .map(opt => ({
+            value: opt.value,
+            baseLabel: String(opt.textContent || '').replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase()
+          }))
+          .filter(o => o.baseLabel.length >= 3)
+          .sort((a, b) => b.baseLabel.length - a.baseLabel.length);
+        const foundOpt = optsByLen.find(o => cleanLower === o.baseLabel || cleanLower.includes(o.baseLabel));
+        if (foundOpt) {
+          resolvedBaseId = foundOpt.value;
+          hasOpt = true;
+        }
+      }
+      if (hasOpt && resolvedBaseId) {
+        baseSel.value = resolvedBaseId;
+      }
+    }
+
+    const matSel = document.getElementById('dnd-forge-material-select');
+    if (matSel) {
+      matSel.value = resolvedMaterial || '';
+    }
+
+    const enhSel = document.getElementById('dnd-forge-enh-bonus');
+    if (enhSel) {
+      const clampedBonus = Math.max(0, Math.min(5, Math.round(Number(resolvedEnhBonus) || 0)));
+      enhSel.value = String(clampedBonus);
+    }
+
+    const enhSet = new Set(resolvedEnhancements);
+    document.querySelectorAll('.dnd-forge-enh-chk').forEach(chk => {
+      chk.checked = enhSet.has(chk.value);
+    });
+
+    updateForgePreview();
   }
 
   function getSelectedForgeItem() {
@@ -766,6 +877,26 @@
   }
 
   function onForgeNaturalLanguageInput(val) {
+    const trimmed = String(val || '').trim();
+    if (trimmed.length >= 4 && global.ItemAssembler && typeof global.ItemAssembler.parseNaturalLanguageItem === 'function') {
+      try {
+        const parsed = global.ItemAssembler.parseNaturalLanguageItem(trimmed);
+        if (parsed && parsed.baseItemId) {
+          const baseSel = document.getElementById('dnd-forge-base-select');
+          if (baseSel && Array.from(baseSel.options).some(o => o.value === parsed.baseItemId)) {
+            baseSel.value = parsed.baseItemId;
+          }
+          const matSel = document.getElementById('dnd-forge-material-select');
+          if (matSel) matSel.value = parsed.material || '';
+          const enhSel = document.getElementById('dnd-forge-enh-bonus');
+          if (enhSel) enhSel.value = String(Math.max(0, Math.min(5, Number(parsed.enhancementBonus) || 0)));
+          const enhSet = new Set(Array.isArray(parsed.enhancements) ? parsed.enhancements : []);
+          document.querySelectorAll('.dnd-forge-enh-chk').forEach(chk => {
+            chk.checked = enhSet.has(chk.value);
+          });
+        }
+      } catch (_) {}
+    }
     updateForgePreview();
   }
 
@@ -783,6 +914,12 @@
     const modBadges = renderModifiersBadges(item.modifiers);
     const tacBadges = renderTacticalBadges(item);
     const modesHtml = renderModesPills(item, item.activeModeId, '');
+    const isEditMode = Boolean(_drawerState.forgeEditMode);
+    const actionBtnLabel = isEditMode ? 'Save Changes to Item' : 'Add to Inventory';
+    const actionBtnIcon = isEditMode ? '⚒️' : '➕';
+    const actionBtnClass = isEditMode
+      ? 'px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition cursor-pointer flex items-center gap-1.5'
+      : 'px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-lg transition cursor-pointer flex items-center gap-1.5';
 
     container.innerHTML = `
       <div class="flex flex-wrap items-start justify-between gap-3 border-b border-slate-800 pb-3">
@@ -813,9 +950,9 @@
       </div>
 
       <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
-        <button type="button" onclick="DnDUI.equipAssembledForgeItem()" class="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow-lg transition cursor-pointer flex items-center gap-1.5">
-          <span>➕</span>
-          <span>Add to Inventory</span>
+        <button type="button" onclick="DnDUI.equipAssembledForgeItem()" class="${actionBtnClass}">
+          <span>${actionBtnIcon}</span>
+          <span>${actionBtnLabel}</span>
         </button>
       </div>
     `;
@@ -861,6 +998,7 @@
     mountCustomTabContentIfPresent();
 
     _drawerState.onEquipCallback = options.onEquip || options.onSelect || null;
+    _drawerState.forgeEditMode = Boolean(options.editMode);
     const rawTab = options.tab || options.defaultTab || options.category || 'custom';
     const isBestiaryMode = Boolean(options.bestiaryOnly || rawTab === 'Monster');
     const hasCustomMounted = Boolean(document.getElementById('add-pool-custom-tab-content'));
@@ -868,7 +1006,7 @@
     let initialTab = hasCustomMounted ? 'custom' : 'srd';
     if (isBestiaryMode) {
       initialTab = 'Monster';
-    } else if (rawTab === 'forge') {
+    } else if (rawTab === 'forge' || options.forgeItem) {
       initialTab = 'forge';
     } else if (hasCustomMounted) {
       initialTab = 'custom';
@@ -892,6 +1030,13 @@
       if (titleEl) titleEl.textContent = 'D&D 3.5e Bestiary';
       if (subEl) subEl.textContent = 'Search & import official SRD 3.5e monsters into your campaign';
       if (input) input.placeholder = 'Search Bestiary monsters (e.g. Aboleth, Dragon, Goblin, Balor)...';
+    } else if (_drawerState.forgeEditMode && options.forgeItem) {
+      if (tabsBar) tabsBar.classList.remove('hidden');
+      if (subFiltersBar) subFiltersBar.classList.remove('hidden');
+      if (iconEl) iconEl.textContent = '⚒️';
+      if (titleEl) titleEl.textContent = `Item Forge — Customize ${options.forgeItem.name || 'Item'}`;
+      if (subEl) subEl.textContent = 'Modify base weapon/armor, special materials, enhancement bonus & magical properties';
+      if (input) input.placeholder = 'Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)...';
     } else {
       if (tabsBar) tabsBar.classList.remove('hidden');
       if (subFiltersBar) subFiltersBar.classList.remove('hidden');
@@ -916,6 +1061,9 @@
     updateSrdSubFilterButtonsUI();
 
     await switchCompendiumTab(initialTab);
+    if (options.forgeItem) {
+      populateForgeFromItem(options.forgeItem);
+    }
     if (initialTab === 'srd' || initialTab === 'Monster') {
       if (input) setTimeout(() => input.focus(), 40);
     } else if (initialTab === 'custom') {
@@ -1175,6 +1323,8 @@
     selectCompendiumEntry,
     equipSelectedCompendiumEntry,
     onForgeNaturalLanguageInput,
+    onForgeControlChange,
+    populateForgeFromItem,
     updateForgePreview,
     equipAssembledForgeItem
   };

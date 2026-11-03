@@ -3413,7 +3413,10 @@
             <td class="py-2.5 px-3 text-center align-middle font-mono text-slate-400">${isOccupied ? slotData.weight + ' lb' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${isOccupied ? slotData.cost + ' GP' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle">
-              ${isOccupied ? `<button onclick="unequipSlot('${def.key}')" class="w-20 h-7 bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">Unequip</button>` : `<button onclick="openSlotEquipModal('${def.key}')" class="w-20 h-7 bg-sky-950/70 hover:bg-sky-900 text-sky-300 hover:text-white border border-sky-700/60 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">+ Equip</button>`}
+              <div class="inline-flex items-center justify-center gap-1.5">
+                ${isOccupied && isForgeEditableItem(slotData) ? `<button onclick="openForgeForSlotItem('${def.key}')" title="Customize in Item Forge" class="w-7 h-7 bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 text-xs rounded-lg inline-flex items-center justify-center transition cursor-pointer shrink-0">⚒️</button>` : ''}
+                ${isOccupied ? `<button onclick="unequipSlot('${def.key}')" class="w-20 h-7 bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">Unequip</button>` : `<button onclick="openSlotEquipModal('${def.key}')" class="w-20 h-7 bg-sky-950/70 hover:bg-sky-900 text-sky-300 hover:text-white border border-sky-700/60 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">+ Equip</button>`}
+              </div>
             </td>
           `;
           slotsTbody.appendChild(tr);
@@ -4481,6 +4484,11 @@
               <div class="flex items-center gap-1.5 shrink-0">
                 ${tierBadge}
                 <input type="checkbox" ${slotData.active ? 'checked' : ''} onchange="toggleSlotActive('${slotKey}')" title="Toggle Active / Inactive" class="w-4 h-4 rounded text-sky-500 border-slate-700 bg-slate-950 focus:ring-0 cursor-pointer">
+                ${isForgeEditableItem(slotData) ? `
+                  <button onclick="openForgeForSlotItem('${slotKey}')" title="Customize in Item Forge" class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 transition text-xs inline-flex items-center justify-center cursor-pointer">
+                    ⚒️
+                  </button>
+                ` : ''}
                 <button onclick="openSlotEquipModal('${slotKey}')" title="Change Item" class="w-6 h-6 rounded bg-slate-800 hover:bg-sky-900/60 text-slate-300 hover:text-sky-200 border border-slate-700 hover:border-sky-500 transition text-xs inline-flex items-center justify-center cursor-pointer">
                   🔄
                 </button>
@@ -4596,7 +4604,8 @@
             <div onclick="openSlotEquipModal('offHand')" class="flex items-center gap-2 pl-3 ${ohHas ? 'pr-1.5' : 'pr-3'} py-1 rounded-lg ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
               <span class="text-amber-400 font-bold text-[10px]">OFF-HAND:</span>
               <span class="font-bold truncate max-w-[140px]">${ohHas ? oh.name : '+ Equip Off-Hand'}</span>
-              ${ohHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('offHand')" title="Unequip Off-Hand" class="w-6 h-6 ml-1 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
+              ${ohHas && isForgeEditableItem(oh) ? `<button type="button" onclick="event.stopPropagation(); openForgeForSlotItem('offHand')" title="Customize Off-Hand in Item Forge" class="w-6 h-6 ml-0.5 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
+              ${ohHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('offHand')" title="Unequip Off-Hand" class="w-6 h-6 ml-0.5 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
             </div>
           `;
         }
@@ -4615,7 +4624,8 @@
                 <span class="text-sky-400 font-bold text-[10px]">MAIN HAND:</span>
                 <span class="font-bold truncate max-w-[140px]">${mhHas ? mh.name : '+ Equip Main Hand'}</span>
                 ${mhIsDouble ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
-                ${mhHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('mainHand')" title="Unequip Main Hand" class="w-6 h-6 ml-1 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
+                ${mhHas && isForgeEditableItem(mh) ? `<button type="button" onclick="event.stopPropagation(); openForgeForSlotItem('mainHand')" title="Customize Main Hand in Item Forge" class="w-6 h-6 ml-0.5 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
+                ${mhHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('mainHand')" title="Unequip Main Hand" class="w-6 h-6 ml-0.5 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
               </div>
 
               <!-- Off Hand Badge -->
@@ -4714,10 +4724,18 @@
             </div>
             <div class="text-[10px] text-slate-300 truncate mt-0.5">${currentSlotData.desc || 'Equipped in ' + (def?.trName || def?.name || _currentEquipSlotKey)}</div>
           </div>
-          <button type="button" onclick="unequipSlot('${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-rose-900/90 hover:bg-rose-700 border border-rose-500/70 text-rose-100 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 shrink-0 cursor-pointer">
-            <span>✕</span>
-            <span>Unequip</span>
-          </button>
+          <div class="flex items-center gap-1.5 shrink-0">
+            ${isForgeEditableItem(currentSlotData) ? `
+              <button type="button" onclick="openForgeForSlotItem('${_currentEquipSlotKey}')" class="px-2.5 py-1.5 bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer" title="Customize in Item Forge">
+                <span>⚒️</span>
+                <span>Forge</span>
+              </button>
+            ` : ''}
+            <button type="button" onclick="unequipSlot('${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-rose-900/90 hover:bg-rose-700 border border-rose-500/70 text-rose-100 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 cursor-pointer">
+              <span>✕</span>
+              <span>Unequip</span>
+            </button>
+          </div>
         </div>
       ` : '';
 
@@ -4777,9 +4795,16 @@
               <span>Value: <strong class="text-amber-400 font-mono">${item.cost || 0} GP</strong></span>
             </div>
           </div>
-          <button onclick="equipPoolItem(${item.id}, '${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 shrink-0 cursor-pointer">
-            <span>⚡ Equip</span>
-          </button>
+          <div class="flex items-center gap-1.5 shrink-0">
+            ${isForgeEditableItem(item) ? `
+              <button type="button" onclick="openForgeForPoolItem(${item.id})" class="w-8 h-8 rounded-lg bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white text-xs font-bold transition shadow inline-flex items-center justify-center cursor-pointer" title="Customize in Item Forge">
+                ⚒️
+              </button>
+            ` : ''}
+            <button onclick="equipPoolItem(${item.id}, '${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer">
+              <span>⚡ Equip</span>
+            </button>
+          </div>
         </div>
       `).join('');
     }
@@ -4957,6 +4982,11 @@
                   </button>
                 </div>
               `}
+              ${isForgeEditableItem(item) ? `
+                <button onclick="openForgeForPoolItem(${item.id})" class="w-7 h-7 flex items-center justify-center bg-amber-950/80 hover:bg-amber-800 border border-amber-600/60 text-amber-300 hover:text-white text-xs rounded-md transition cursor-pointer shrink-0" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
+                  ⚒️
+                </button>
+              ` : ''}
               <button onclick="deletePoolItem(${item.id})" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded-md transition cursor-pointer shrink-0" title="Delete">
                 🗑️
               </button>
@@ -5705,6 +5735,11 @@
               ${inInv ? `<span class="text-[9px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.2 rounded font-semibold shrink-0">✓ Owned</span>` : ''}
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
+              ${isForgeEditableItem(item) ? `
+                <button type="button" onclick="openForgeForSpotlightItem(${idx}, false)" class="bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white p-1.5 rounded-lg text-xs font-bold transition cursor-pointer" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
+                  ⚒️
+                </button>
+              ` : ''}
               <button type="button" onclick="fillPoolItemFormFromDb(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition cursor-pointer" title="Populate Form / Customize">
                 ✏️
               </button>
@@ -6420,6 +6455,264 @@
         });
       }
     }
+
+    function isForgeEditableItem(item) {
+      if (!item || !item.name || item.name === '-') return false;
+      const directCat = String(item.category || item.type || '').trim();
+      if (['Weapon', 'Armor', 'Shield'].includes(directCat)) return true;
+      const mapped = typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(item) : 'Other';
+      return ['Weapon', 'Armor', 'Shield'].includes(mapped);
+    }
+    window.isForgeEditableItem = isForgeEditableItem;
+
+    function applyForgedItemUpdate(originalItem, targetSlotKey, forgedV2Item) {
+      if (!forgedV2Item || !character) return;
+      if (!Array.isArray(character.gearPool)) character.gearPool = [];
+
+      const oldName = String(originalItem?.name || '').trim();
+      const oldNameLower = oldName.toLowerCase();
+      const newName = String(forgedV2Item.name || oldName || 'Forged Item').trim();
+      const cat = typeof mapEntryToGearCategory === 'function'
+        ? mapEntryToGearCategory(forgedV2Item)
+        : (forgedV2Item.type || originalItem?.category || 'Weapon');
+      const newWeight = Number(forgedV2Item.weightLb ?? forgedV2Item.weight) || 0;
+      const newCost = Number(forgedV2Item.priceGp ?? forgedV2Item.cost) || 0;
+      const newDesc = cleanPoolItemDescription(forgedV2Item.benefit || forgedV2Item.description || originalItem?.desc || '');
+      const primaryPart = Array.isArray(forgedV2Item.damageParts) && forgedV2Item.damageParts[0] ? forgedV2Item.damageParts[0] : null;
+      const secondaryParts = Array.isArray(forgedV2Item.damageParts) && forgedV2Item.damageParts.length > 1 ? forgedV2Item.damageParts.slice(1) : [];
+
+      const clonedModifiers = Array.isArray(forgedV2Item.modifiers) ? JSON.parse(JSON.stringify(forgedV2Item.modifiers)) : [];
+      const clonedDamageParts = Array.isArray(forgedV2Item.damageParts) ? JSON.parse(JSON.stringify(forgedV2Item.damageParts)) : [];
+      const clonedModes = Array.isArray(forgedV2Item.modes) ? JSON.parse(JSON.stringify(forgedV2Item.modes)) : [];
+      const clonedWeaponMeta = forgedV2Item.weaponMeta ? JSON.parse(JSON.stringify(forgedV2Item.weaponMeta)) : null;
+      const clonedArmorMeta = forgedV2Item.armorMeta ? JSON.parse(JSON.stringify(forgedV2Item.armorMeta)) : null;
+      const clonedRuleFlags = forgedV2Item.ruleFlags ? JSON.parse(JSON.stringify(forgedV2Item.ruleFlags)) : {};
+      const clonedTacticalBadges = Array.isArray(forgedV2Item.tacticalBadges) ? JSON.parse(JSON.stringify(forgedV2Item.tacticalBadges)) : [];
+
+      const armorAcMod = clonedModifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield'));
+      const computedAcBonus = armorAcMod ? (Number(armorAcMod.value) || 0) : (forgedV2Item.acBonus ?? originalItem?.acBonus);
+
+      // 1. Update matching item in character.gearPool
+      const poolItem = character.gearPool.find(p => {
+        if (!p) return false;
+        if (originalItem?.id !== undefined && p.id === originalItem.id) return true;
+        return oldNameLower && String(p.name || '').toLowerCase().trim() === oldNameLower;
+      });
+
+      if (poolItem) {
+        poolItem.baseItemId = forgedV2Item.baseItemId || forgedV2Item.id || poolItem.baseItemId || null;
+        poolItem.name = newName;
+        poolItem.masterDbName = newName;
+        poolItem.category = cat;
+        poolItem.slot = (forgedV2Item.slot && forgedV2Item.slot !== 'None') ? forgedV2Item.slot : (poolItem.slot || cat);
+        poolItem.weight = newWeight;
+        poolItem.cost = newCost;
+        poolItem.desc = newDesc;
+        poolItem.material = forgedV2Item.material || null;
+        poolItem.enhancementBonus = Number(forgedV2Item.enhancementBonus) || 0;
+        poolItem.enhancements = Array.isArray(forgedV2Item.enhancements) ? forgedV2Item.enhancements.slice() : [];
+        poolItem.modifiers = clonedModifiers;
+        poolItem.damageParts = clonedDamageParts;
+        poolItem.modes = clonedModes;
+        poolItem.weaponMeta = clonedWeaponMeta;
+        poolItem.armorMeta = clonedArmorMeta;
+        poolItem.ruleFlags = clonedRuleFlags;
+        poolItem.tacticalBadges = clonedTacticalBadges;
+        poolItem.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || poolItem.dice;
+        poolItem.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || poolItem.critMin;
+        poolItem.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || poolItem.critMult;
+        poolItem.attBonus = Number(forgedV2Item.enhancementBonus) || 0;
+        poolItem.dmgBonus = Number(forgedV2Item.enhancementBonus) || 0;
+        poolItem.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || poolItem.dmgType;
+        if (computedAcBonus !== undefined) poolItem.acBonus = computedAcBonus;
+        if (clonedArmorMeta) {
+          poolItem.maxDex = clonedArmorMeta.maxDex;
+          poolItem.checkPenalty = clonedArmorMeta.acp;
+        }
+      }
+
+      // 2. Update equipped bodySlot(s) if equipped
+      if (character.bodySlots) {
+        const slotKeysToUpdate = [];
+        if (targetSlotKey && character.bodySlots[targetSlotKey] && character.bodySlots[targetSlotKey].name !== '-') {
+          slotKeysToUpdate.push(targetSlotKey);
+        } else if (oldNameLower) {
+          Object.keys(character.bodySlots).forEach(sk => {
+            const sd = character.bodySlots[sk];
+            if (sd && sd.name && String(sd.name).toLowerCase().trim() === oldNameLower) {
+              slotKeysToUpdate.push(sk);
+            }
+          });
+        }
+
+        slotKeysToUpdate.forEach(sk => {
+          const sd = character.bodySlots[sk];
+          if (!sd) return;
+          sd.baseItemId = forgedV2Item.baseItemId || forgedV2Item.id || sd.baseItemId || null;
+          sd.name = newName;
+          sd.masterDbName = newName;
+          sd.category = cat;
+          sd.weight = newWeight;
+          sd.cost = newCost;
+          sd.desc = newDesc;
+          sd.benefit = newDesc;
+          sd.description = newDesc;
+          sd.material = forgedV2Item.material || null;
+          sd.enhancementBonus = Number(forgedV2Item.enhancementBonus) || 0;
+          sd.enhancements = Array.isArray(forgedV2Item.enhancements) ? forgedV2Item.enhancements.slice() : [];
+          sd.modifiers = JSON.parse(JSON.stringify(clonedModifiers));
+          sd.damageParts = JSON.parse(JSON.stringify(clonedDamageParts));
+          sd.modes = JSON.parse(JSON.stringify(clonedModes));
+          sd.weaponMeta = clonedWeaponMeta ? JSON.parse(JSON.stringify(clonedWeaponMeta)) : null;
+          sd.armorMeta = clonedArmorMeta ? JSON.parse(JSON.stringify(clonedArmorMeta)) : null;
+          sd.ruleFlags = JSON.parse(JSON.stringify(clonedRuleFlags));
+          sd.tacticalBadges = JSON.parse(JSON.stringify(clonedTacticalBadges));
+          sd.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || sd.dice;
+          sd.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || sd.critMin;
+          sd.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || sd.critMult;
+          sd.attBonus = Number(forgedV2Item.enhancementBonus) || 0;
+          sd.dmgBonus = Number(forgedV2Item.enhancementBonus) || 0;
+          sd.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || sd.dmgType;
+          if (computedAcBonus !== undefined) sd.acBonus = computedAcBonus;
+          if (clonedArmorMeta) {
+            sd.maxDex = clonedArmorMeta.maxDex;
+            sd.checkPenalty = clonedArmorMeta.acp;
+          }
+        });
+      }
+
+      // 3. Update character.weapons and tactical weapon sets if Weapon
+      if (cat === 'Weapon' || originalItem?.category === 'Weapon') {
+        if (!Array.isArray(character.weapons)) character.weapons = [];
+        const wepIdx = character.weapons.findIndex(w => {
+          if (!w) return false;
+          if (originalItem?.id !== undefined && w.id === originalItem.id) return true;
+          return oldNameLower && String(w.name || '').toLowerCase().trim() === oldNameLower;
+        });
+
+        const updatedWepObj = {
+          id: forgedV2Item.id || originalItem?.id || ('wep_' + Date.now()),
+          baseItemId: forgedV2Item.baseItemId || forgedV2Item.id || null,
+          name: newName,
+          grip: (clonedWeaponMeta?.handedness || '').includes('Two') ? '2-Hand' : (wepIdx >= 0 ? character.weapons[wepIdx].grip : '1-Hand'),
+          dice: (primaryPart && primaryPart.dice) || forgedV2Item.dice || '1d8',
+          damageParts: JSON.parse(JSON.stringify(clonedDamageParts)),
+          modifiers: JSON.parse(JSON.stringify(clonedModifiers)),
+          modes: JSON.parse(JSON.stringify(clonedModes)),
+          weaponMeta: clonedWeaponMeta ? JSON.parse(JSON.stringify(clonedWeaponMeta)) : null,
+          ruleFlags: JSON.parse(JSON.stringify(clonedRuleFlags)),
+          tacticalBadges: JSON.parse(JSON.stringify(clonedTacticalBadges)),
+          critMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
+          rawCritMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
+          critMult: Number(clonedWeaponMeta?.critMult || forgedV2Item.critMult) || 2,
+          attBonus: Number(forgedV2Item.enhancementBonus) || 0,
+          dmgBonus: Number(forgedV2Item.enhancementBonus) || 0,
+          dmgType: (primaryPart && primaryPart.type) || forgedV2Item.dmgType || 'Slashing',
+          bonusType: 'enhancement',
+          tags: forgedV2Item.tags || [],
+          elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
+          keen: Boolean(clonedRuleFlags && clonedRuleFlags.keen)
+        };
+
+        if (wepIdx >= 0) {
+          character.weapons[wepIdx] = Object.assign({}, character.weapons[wepIdx], updatedWepObj);
+        } else {
+          character.weapons.push(updatedWepObj);
+        }
+
+        if (oldNameLower && String(character.activeWeapon || '').toLowerCase().trim() === oldNameLower) {
+          character.activeWeapon = newName;
+        }
+        if (oldNameLower && String(character.activeOffHand || '').toLowerCase().trim() === oldNameLower) {
+          character.activeOffHand = newName;
+        }
+        if (character.tactical?.weaponSets) {
+          const s1 = character.tactical.weaponSets.set1;
+          const s2 = character.tactical.weaponSets.set2;
+          if (s1 && oldNameLower && String(s1.mainWeapon || '').toLowerCase().trim() === oldNameLower) {
+            s1.mainWeapon = newName;
+          }
+          if (s2 && oldNameLower && String(s2.mainWeapon || '').toLowerCase().trim() === oldNameLower) {
+            s2.mainWeapon = newName;
+          }
+        }
+      }
+
+      // 4. Register assembled custom item in masterDb if modified
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb) && (forgedV2Item.enhancementBonus > 0 || forgedV2Item.material || (forgedV2Item.enhancements && forgedV2Item.enhancements.length > 0))) {
+        const existingIdx = masterDb.findIndex(m => m && String(m.name || '').toLowerCase().trim() === newName.toLowerCase());
+        if (existingIdx >= 0) {
+          masterDb[existingIdx] = Object.assign({}, masterDb[existingIdx], forgedV2Item);
+        } else {
+          masterDb.push(forgedV2Item);
+        }
+      }
+
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.recalculateCharacter === 'function') {
+        RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
+      }
+
+      saveStateToStorage(true);
+      renderAll();
+
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '⚒️',
+          title: 'Item Reforged',
+          breakdown: oldName && oldName !== newName
+            ? `"${oldName}" reforged into "${newName}".`
+            : `"${newName}" properties updated in Item Forge.`,
+          total: `${newCost.toLocaleString('en-US')} gp`
+        });
+      }
+    }
+
+    function openForgeForPoolItem(itemId) {
+      const item = (character.gearPool || []).find(p => p && p.id === itemId);
+      if (!item) return;
+      closeSlotEquipModal();
+      if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
+        window.DnDUI.openCompendiumDrawer({
+          defaultTab: 'forge',
+          editMode: true,
+          forgeItem: item,
+          onSelect: (assembledItem) => applyForgedItemUpdate(item, null, assembledItem)
+        });
+      }
+    }
+    window.openForgeForPoolItem = openForgeForPoolItem;
+
+    function openForgeForSlotItem(slotKey) {
+      const slotData = character.bodySlots?.[slotKey];
+      if (!slotData || !slotData.name || slotData.name === '-') return;
+      const cleanSlotName = String(slotData.name || '').toLowerCase().trim();
+      const poolMatch = (character.gearPool || []).find(p => p && String(p.name || '').toLowerCase().trim() === cleanSlotName);
+      const sourceItem = poolMatch || slotData;
+      closeSlotEquipModal();
+      if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
+        window.DnDUI.openCompendiumDrawer({
+          defaultTab: 'forge',
+          editMode: true,
+          forgeItem: sourceItem,
+          onSelect: (assembledItem) => applyForgedItemUpdate(sourceItem, slotKey, assembledItem)
+        });
+      }
+    }
+    window.openForgeForSlotItem = openForgeForSlotItem;
+
+    function openForgeForSpotlightItem(idx, isAi = false) {
+      const item = isAi ? window._poolCurrentAiEntries?.[idx] : window._poolCurrentMatches?.[idx];
+      if (!item) return;
+      if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
+        window.DnDUI.openCompendiumDrawer({
+          defaultTab: 'forge',
+          editMode: false,
+          forgeItem: item,
+          onSelect: (assembledItem) => addV2ItemToCharacterGearPool(assembledItem)
+        });
+      }
+    }
+    window.openForgeForSpotlightItem = openForgeForSpotlightItem;
 
     function openCharacterForgeDrawer() {
       resetAddPoolCustomTabForm();
