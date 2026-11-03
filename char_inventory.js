@@ -4593,7 +4593,7 @@
           // Double Weapon occupies BOTH slots; clicking Off-Hand badge toggles TWF!
           offHandBadgeHtml = `
             <div onclick="if(typeof activateWeaponSet==='function'){activateWeaponSet(2); renderAll();}"
-                 class="h-full min-w-0 flex flex-col justify-between gap-1.5 px-3 py-2 rounded-xl ${isDoubleTwfActive ? 'bg-sky-950/80 border border-sky-400 text-white shadow-md shadow-sky-950/60 ring-1 ring-sky-400/40' : 'bg-slate-950 border border-amber-500/60 hover:border-sky-400 text-slate-200'} text-xs cursor-pointer select-none transition"
+                 class="h-full min-w-0 flex flex-col justify-start gap-1.5 px-3 py-2 rounded-xl ${isDoubleTwfActive ? 'bg-sky-950/80 border border-sky-400 text-white shadow-md shadow-sky-950/60 ring-1 ring-sky-400/40' : 'bg-slate-950 border border-amber-500/60 hover:border-sky-400 text-slate-200'} text-xs cursor-pointer select-none transition"
                  title="Double Weapon occupies both hands. Click to toggle Two-Weapon Fighting (TWF)">
               <div class="flex items-center justify-between gap-2 min-w-0">
                 <div class="flex items-center gap-1.5 min-w-0 flex-1">
@@ -4608,7 +4608,7 @@
         } else if (mhIsTwoHand && !hasOversized) {
           // Regular Two-Handed Weapon occupies BOTH slots and locks Off-Hand
           offHandBadgeHtml = `
-            <div class="h-full min-w-0 flex flex-col justify-center gap-1 px-3 py-2 rounded-xl bg-slate-950/70 border border-slate-800 text-slate-400 text-xs select-none opacity-80"
+            <div class="h-full min-w-0 flex flex-col justify-start gap-1.5 px-3 py-2 rounded-xl bg-slate-950/70 border border-slate-800 text-slate-400 text-xs select-none opacity-80"
                  title="Both hands are occupied by two-handed weapon ${mh.name}">
               <div class="flex items-center justify-between gap-2 min-w-0">
                 <div class="flex items-center gap-1.5 min-w-0 flex-1">
@@ -4622,7 +4622,7 @@
         } else {
           // One-Handed / Light Weapon or Empty Main Hand: normal Off-Hand slot
           offHandBadgeHtml = `
-            <div onclick="openSlotEquipModal('offHand')" class="h-full min-w-0 flex flex-col justify-between gap-1.5 pl-3 ${ohHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
+            <div onclick="openSlotEquipModal('offHand')" class="h-full min-w-0 flex flex-col justify-start gap-1.5 pl-3 ${ohHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
               <div class="flex items-center justify-between gap-2 min-w-0">
                 <div class="flex items-center gap-1.5 min-w-0 flex-1">
                   <span class="text-amber-400 font-bold text-[10px] shrink-0">OFF-HAND:</span>
@@ -4648,7 +4648,7 @@
             <!-- Weapon Quick Slots (Equal Width & Equal Height Side-by-Side Grid) -->
             <div class="grid grid-cols-2 gap-2.5 flex-1 min-w-0 w-full items-stretch">
               <!-- Main Hand Badge -->
-              <div onclick="openSlotEquipModal('mainHand')" class="h-full min-w-0 flex flex-col justify-between gap-1.5 pl-3 ${mhHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
+              <div onclick="openSlotEquipModal('mainHand')" class="h-full min-w-0 flex flex-col justify-start gap-1.5 pl-3 ${mhHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
                 <div class="flex items-center justify-between gap-2 min-w-0">
                   <div class="flex items-center gap-1.5 min-w-0 flex-1">
                     <span class="text-sky-400 font-bold text-[10px] shrink-0">MAIN HAND:</span>
@@ -5160,7 +5160,8 @@
       const isArmor = cat === 'Armor' || item.type === 'Armor';
       const isShield = cat === 'Shield' || item.type === 'Shield';
 
-      const parts = [];
+      const coreParts = [];
+      const propParts = [];
 
       if (isWeapon) {
         // 1. Damage Parts Badges (with polyhedral SVG dice icons)
@@ -5175,7 +5176,7 @@
         }
         if (dmgParts && window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function') {
           const dmgHtml = window.DnDUI.renderDamagePartsBadges(dmgParts, { compact });
-          if (dmgHtml) parts.push(dmgHtml);
+          if (dmgHtml) coreParts.push(dmgHtml);
         }
 
         // 2. Attack Bonus Badge (+X Atk)
@@ -5185,14 +5186,14 @@
           const atkCls = atkVal > 0
             ? 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60'
             : 'bg-rose-950/80 text-rose-300 border-rose-600/60';
-          parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} ${atkCls}" title="Weapon Attack Bonus"><span>⚔️ ${atkVal > 0 ? '+' + atkVal : atkVal} Atk</span></span>`);
+          coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} ${atkCls}" title="Weapon Attack Bonus"><span>⚔️ ${atkVal > 0 ? '+' + atkVal : atkVal} Atk</span></span>`);
         }
 
         // 3. Critical Threat Range & Multiplier Badge
         const cMin = Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || 20;
         const cMult = Number(item.critMult || item.weaponMeta?.critMult) || 2;
         const critStr = cMin < 20 ? `${cMin}-20/×${cMult}` : `×${cMult}`;
-        parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-amber-950/75 text-amber-300 border-amber-600/50" title="Critical Threat Range &amp; Multiplier"><span>🎯 ${critStr}</span></span>`);
+        coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-amber-950/75 text-amber-300 border-amber-600/50" title="Critical Threat Range &amp; Multiplier"><span>🎯 ${critStr}</span></span>`);
 
         // 4. Handedness / Double Weapon / Range Badge
         if (!minimal) {
@@ -5200,16 +5201,16 @@
           const rawHand = String(item.handedness || item.weaponMeta?.handedness || item.grip || '');
           let gripLabel = '';
           if (isDouble) gripLabel = 'Double Weapon';
-          else if (/two|2-hand/i.test(rawHand)) gripLabel = '2-Hand';
+          else if (/^(?:2h|two|2-hand)/i.test(rawHand)) gripLabel = '2-Hand';
           else if (/light/i.test(rawHand)) gripLabel = 'Light';
-          else if (/one|1-hand/i.test(rawHand)) gripLabel = '1-Hand';
+          else if (/^(?:1h|one|1-hand)/i.test(rawHand)) gripLabel = '1-Hand';
           else if (/ranged/i.test(rawHand)) gripLabel = 'Ranged';
           if (gripLabel) {
-            parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-semibold ${sizeCls} bg-slate-800/90 text-slate-300 border-slate-700">${gripLabel}</span>`);
+            coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-semibold ${sizeCls} bg-slate-800/90 text-slate-300 border-slate-700">${gripLabel}</span>`);
           }
         }
 
-        // 5. Remaining non-attack modifiers & tactical badges
+        // 5. Remaining non-attack modifiers & tactical badges (Row 2: Special Properties)
         if (!minimal) {
           const hasDrBypassBadge = Array.isArray(item.tacticalBadges) && item.tacticalBadges.some(tb => {
             const lbl = typeof tb === 'string' ? tb : (tb?.label || tb?.name || '');
@@ -5222,11 +5223,11 @@
           });
           if (otherMods.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
             const modHtml = window.DnDUI.renderModifiersBadges(otherMods, { compact });
-            if (modHtml) parts.push(modHtml);
+            if (modHtml) propParts.push(modHtml);
           }
           if (window.DnDUI && typeof window.DnDUI.renderTacticalBadges === 'function') {
             const tacHtml = window.DnDUI.renderTacticalBadges(item, { compact });
-            if (tacHtml) parts.push(tacHtml);
+            if (tacHtml) propParts.push(tacHtml);
           }
         }
       } else if (isArmor || isShield) {
@@ -5237,30 +5238,30 @@
         if (acVal > 0) {
           const acLabel = isShield ? `+${acVal} Shield AC` : `+${acVal} Armor AC`;
           const acTitle = `${isShield ? 'Shield' : 'Armor'} Bonus to AC${enhVal > 0 ? ` (includes +${enhVal} Enhancement)` : ''}`;
-          parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-sky-950/85 text-sky-200 border-sky-500/70 shadow-sm" title="${acTitle}"><span>🛡️ ${acLabel}</span></span>`);
+          coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-sky-950/85 text-sky-200 border-sky-500/70 shadow-sm" title="${acTitle}"><span>🛡️ ${acLabel}</span></span>`);
         }
 
         // 2. Max DEX Bonus Badge
         const maxDex = item.maxDex !== undefined ? item.maxDex : item.armorMeta?.maxDex;
         if (maxDex !== null && maxDex !== undefined && maxDex !== '' && !isNaN(Number(maxDex))) {
-          parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-slate-800/90 text-emerald-300 border-slate-600/70" title="Maximum DEX Bonus to AC"><span>Max DEX +${Number(maxDex)}</span></span>`);
+          coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-slate-800/90 text-emerald-300 border-slate-600/70" title="Maximum DEX Bonus to AC"><span>Max DEX +${Number(maxDex)}</span></span>`);
         }
 
         // 3. Armor Check Penalty (ACP) Badge
         const acp = item.checkPenalty !== undefined ? item.checkPenalty : item.armorMeta?.acp;
         if (acp !== null && acp !== undefined && acp !== '' && !isNaN(Number(acp)) && Number(acp) !== 0) {
-          parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-rose-950/60 text-rose-300 border-rose-700/50" title="Armor Check Penalty"><span>ACP ${Number(acp)}</span></span>`);
+          coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-rose-950/60 text-rose-300 border-rose-700/50" title="Armor Check Penalty"><span>ACP ${Number(acp)}</span></span>`);
         }
 
         // 4. Arcane Spell Failure (ASF) Badge
         if (!minimal) {
           const asf = item.spellFailure !== undefined ? item.spellFailure : item.armorMeta?.asf;
           if (asf !== null && asf !== undefined && Number(asf) > 0) {
-            parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-indigo-950/60 text-indigo-300 border-indigo-700/50" title="Arcane Spell Failure Chance"><span>ASF ${Number(asf)}%</span></span>`);
+            coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-semibold ${sizeCls} bg-indigo-950/60 text-indigo-300 border-indigo-700/50" title="Arcane Spell Failure Chance"><span>ASF ${Number(asf)}%</span></span>`);
           }
         }
 
-        // 5. Other Modifiers & Tactical Badges (DR 2/-, Mithral, Fortification, etc.)
+        // 5. Other Modifiers & Tactical Badges (Row 2: DR 2/-, Mithral, Fortification, etc.)
         const hasDrBadge = Array.isArray(item.tacticalBadges) && item.tacticalBadges.some(tb => {
           const lbl = typeof tb === 'string' ? tb : (tb?.label || tb?.name || '');
           return /^dr\b/i.test(lbl);
@@ -5273,21 +5274,21 @@
         });
         if (otherMods.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
           const modHtml = window.DnDUI.renderModifiersBadges(otherMods, { compact });
-          if (modHtml) parts.push(modHtml);
+          if (modHtml) propParts.push(modHtml);
         }
         if (window.DnDUI && typeof window.DnDUI.renderTacticalBadges === 'function') {
           const tacHtml = window.DnDUI.renderTacticalBadges(item, { compact });
-          if (tacHtml) parts.push(tacHtml);
+          if (tacHtml) propParts.push(tacHtml);
         }
       } else {
         // Wondrous / Rings / Cloaks / Belts / Consumables
         if (Array.isArray(item.damageParts) && item.damageParts.length > 0 && window.DnDUI && typeof window.DnDUI.renderDamagePartsBadges === 'function') {
           const dmgHtml = window.DnDUI.renderDamagePartsBadges(item.damageParts, { compact });
-          if (dmgHtml) parts.push(dmgHtml);
+          if (dmgHtml) coreParts.push(dmgHtml);
         }
         if (Array.isArray(item.modifiers) && item.modifiers.length > 0 && window.DnDUI && typeof window.DnDUI.renderModifiersBadges === 'function') {
           const modHtml = window.DnDUI.renderModifiersBadges(item.modifiers, { compact });
-          if (modHtml) parts.push(modHtml);
+          if (modHtml) coreParts.push(modHtml);
         } else {
           // Legacy flat bonus fallback
           const legacyPairs = [
@@ -5305,19 +5306,23 @@
           legacyPairs.forEach(([lbl, val]) => {
             const n = Number(val) || 0;
             if (n !== 0) {
-              parts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-emerald-950/70 text-emerald-300 border-emerald-700/60"><span>${n > 0 ? '+' + n : n} ${lbl}</span></span>`);
+              coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-emerald-950/70 text-emerald-300 border-emerald-700/60"><span>${n > 0 ? '+' + n : n} ${lbl}</span></span>`);
             }
           });
         }
         if (window.DnDUI && typeof window.DnDUI.renderTacticalBadges === 'function') {
           const tacHtml = window.DnDUI.renderTacticalBadges(item, { compact });
-          if (tacHtml) parts.push(tacHtml);
+          if (tacHtml) propParts.push(tacHtml);
         }
       }
 
-      if (parts.length === 0) return '';
+      if (coreParts.length === 0 && propParts.length === 0) return '';
       const marginCls = options.noMargin ? '' : ' mb-1';
-      return `<div class="flex flex-wrap items-center gap-1${marginCls}">${parts.join('')}</div>`;
+      if (coreParts.length > 0 && propParts.length > 0) {
+        return `<div class="flex flex-col gap-1${marginCls}"><div class="flex flex-wrap items-center gap-1">${coreParts.join('')}</div><div class="flex flex-wrap items-center gap-1">${propParts.join('')}</div></div>`;
+      }
+      const singleRow = coreParts.length > 0 ? coreParts : propParts;
+      return `<div class="flex flex-wrap items-center gap-1${marginCls}">${singleRow.join('')}</div>`;
     }
 
     // Render Gear Pool Table (Madde 6 & 8)
