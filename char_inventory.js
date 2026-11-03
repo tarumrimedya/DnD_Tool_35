@@ -4593,12 +4593,12 @@
           // Double Weapon occupies BOTH slots; clicking Off-Hand badge toggles TWF!
           offHandBadgeHtml = `
             <div onclick="if(typeof activateWeaponSet==='function'){activateWeaponSet(2); renderAll();}"
-                 class="flex flex-col justify-center gap-1 px-3 py-1.5 rounded-xl ${isDoubleTwfActive ? 'bg-sky-950/80 border border-sky-400 text-white shadow-md shadow-sky-950/60 ring-1 ring-sky-400/40' : 'bg-slate-950 border border-amber-500/60 hover:border-sky-400 text-slate-200'} text-xs cursor-pointer select-none transition"
+                 class="h-full min-w-0 flex flex-col justify-between gap-1.5 px-3 py-2 rounded-xl ${isDoubleTwfActive ? 'bg-sky-950/80 border border-sky-400 text-white shadow-md shadow-sky-950/60 ring-1 ring-sky-400/40' : 'bg-slate-950 border border-amber-500/60 hover:border-sky-400 text-slate-200'} text-xs cursor-pointer select-none transition"
                  title="Double Weapon occupies both hands. Click to toggle Two-Weapon Fighting (TWF)">
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2 min-w-0">
+              <div class="flex items-center justify-between gap-2 min-w-0">
+                <div class="flex items-center gap-1.5 min-w-0 flex-1">
                   <span class="${isDoubleTwfActive ? 'text-sky-400' : 'text-amber-400'} font-bold text-[10px] shrink-0">OFF-HAND:</span>
-                  <span class="font-bold truncate max-w-[180px]">${mh.name}</span>
+                  <span class="font-bold truncate">${mh.name}</span>
                 </div>
                 <span class="text-[9px] font-black px-1.5 py-0.5 rounded shrink-0 ${isDoubleTwfActive ? 'bg-sky-500 text-slate-950' : 'bg-amber-950/80 text-amber-300 border border-amber-700/60'}">${isDoubleTwfActive ? '⚔️ TWF ON' : '2H • Click for TWF'}</span>
               </div>
@@ -4608,21 +4608,25 @@
         } else if (mhIsTwoHand && !hasOversized) {
           // Regular Two-Handed Weapon occupies BOTH slots and locks Off-Hand
           offHandBadgeHtml = `
-            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-950/70 border border-slate-800 text-slate-400 text-xs select-none opacity-80"
+            <div class="h-full min-w-0 flex flex-col justify-center gap-1 px-3 py-2 rounded-xl bg-slate-950/70 border border-slate-800 text-slate-400 text-xs select-none opacity-80"
                  title="Both hands are occupied by two-handed weapon ${mh.name}">
-              <span class="text-amber-500/80 font-bold text-[10px]">OFF-HAND:</span>
-              <span class="font-bold truncate max-w-[160px]">🔒 ${mh.name}</span>
-              <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800">2-Hand Grip</span>
+              <div class="flex items-center justify-between gap-2 min-w-0">
+                <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                  <span class="text-amber-500/80 font-bold text-[10px] shrink-0">OFF-HAND:</span>
+                  <span class="font-bold truncate">🔒 ${mh.name}</span>
+                </div>
+                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 shrink-0">2-Hand Grip</span>
+              </div>
             </div>
           `;
         } else {
           // One-Handed / Light Weapon or Empty Main Hand: normal Off-Hand slot
           offHandBadgeHtml = `
-            <div onclick="openSlotEquipModal('offHand')" class="flex flex-col justify-center gap-1 pl-3 ${ohHas ? 'pr-2 py-1.5' : 'pr-3 py-1.5'} rounded-xl ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
-              <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2 min-w-0">
+            <div onclick="openSlotEquipModal('offHand')" class="h-full min-w-0 flex flex-col justify-between gap-1.5 pl-3 ${ohHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
+              <div class="flex items-center justify-between gap-2 min-w-0">
+                <div class="flex items-center gap-1.5 min-w-0 flex-1">
                   <span class="text-amber-400 font-bold text-[10px] shrink-0">OFF-HAND:</span>
-                  <span class="font-bold truncate max-w-[180px]">${ohHas ? oh.name : '+ Equip Off-Hand'}</span>
+                  <span class="font-bold truncate">${ohHas ? oh.name : '+ Equip Off-Hand'}</span>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
                   ${ohHas && isForgeEditableItem(oh) ? `<button type="button" onclick="event.stopPropagation(); openForgeForSlotItem('offHand')" title="Customize Off-Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
@@ -4635,20 +4639,20 @@
         }
 
         bottomDock.innerHTML = `
-          <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-2.5">
             <div class="flex items-center gap-2 shrink-0">
               <span class="text-amber-400 text-sm">⚔️</span>
               <span class="text-xs font-bold text-amber-300 uppercase tracking-wider">Weapons &amp; Quick Loadout:</span>
             </div>
 
-            <!-- Weapon Quick Slots -->
-            <div class="flex items-stretch gap-2.5 flex-wrap flex-1 min-w-0">
+            <!-- Weapon Quick Slots (Equal Width & Equal Height Side-by-Side Grid) -->
+            <div class="grid grid-cols-2 gap-2.5 flex-1 min-w-0 w-full items-stretch">
               <!-- Main Hand Badge -->
-              <div onclick="openSlotEquipModal('mainHand')" class="flex flex-col justify-center gap-1 pl-3 ${mhHas ? 'pr-2 py-1.5' : 'pr-3 py-1.5'} rounded-xl ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
-                <div class="flex items-center justify-between gap-2">
-                  <div class="flex items-center gap-2 min-w-0">
+              <div onclick="openSlotEquipModal('mainHand')" class="h-full min-w-0 flex flex-col justify-between gap-1.5 pl-3 ${mhHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
+                <div class="flex items-center justify-between gap-2 min-w-0">
+                  <div class="flex items-center gap-1.5 min-w-0 flex-1">
                     <span class="text-sky-400 font-bold text-[10px] shrink-0">MAIN HAND:</span>
-                    <span class="font-bold truncate max-w-[180px]">${mhHas ? mh.name : '+ Equip Main Hand'}</span>
+                    <span class="font-bold truncate">${mhHas ? mh.name : '+ Equip Main Hand'}</span>
                     ${mhIsDouble ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60 shrink-0">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
                   </div>
                   <div class="flex items-center gap-1 shrink-0">
