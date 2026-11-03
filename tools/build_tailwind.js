@@ -234,6 +234,7 @@ async function buildTailwind() {
     .replace(/\s*;\s*/g, ';')
     .replace(/\s*:\s*/g, ':')
     .replace(/;\}/g, '}')
+    .replace(/\.hidden\{display:none\}/g, '.hidden{display:none!important}')
     .trim();
   const outPath = path.join(ROOT, 'tailwind_compiled.css');
   fs.writeFileSync(outPath, css, 'utf8');

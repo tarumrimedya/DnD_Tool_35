@@ -423,6 +423,7 @@
         schemaVersion: "2.0",
         id: charId,
         _hubId: charId,
+        campaignId: summary.campaignId || null,
         isNpc: isNpc,
         cr: summary.cr || '',
         name: name,
@@ -669,6 +670,9 @@
               }
               if (found.isNpc !== undefined && character.isNpc === undefined) {
                 character.isNpc = found.isNpc;
+              }
+              if (found.campaignId !== undefined) {
+                character.campaignId = found.campaignId;
               }
               if (found.cr && !character.cr) character.cr = found.cr;
               if (!Array.isArray(character.feats) || character.feats.length === 0) {
@@ -2170,6 +2174,38 @@
       }
     }
 
+    function isCurrentCampaignDmMode() {
+      if (!character) return false;
+      try {
+        const hubRaw = localStorage.getItem('dnd35_hub_db');
+        if (!hubRaw) return false;
+        const hubDb = JSON.parse(hubRaw);
+        if (!hubDb || !Array.isArray(hubDb.campaigns)) return false;
+
+        let campId = character.campaignId || character.cloudCampaignId || null;
+        if (Array.isArray(hubDb.characters)) {
+          const charId = character._hubId || character.id;
+          const hubChar = charId ? hubDb.characters.find(c => c.id === charId) : null;
+          if (hubChar && hubChar.campaignId !== undefined) {
+            campId = hubChar.campaignId;
+          }
+        }
+        if (!campId || campId === 'all' || campId === 'unassigned') return false;
+
+        const camp = hubDb.campaigns.find(cp => cp.id === campId || (cp.cloudCampaignId && cp.cloudCampaignId === campId));
+        if (!camp) return false;
+        if (camp.isDmMode) return true;
+
+        if (camp.parentId) {
+          const parentCamp = hubDb.campaigns.find(cp => cp.id === camp.parentId || (cp.cloudCampaignId && cp.cloudCampaignId === camp.parentId));
+          if (parentCamp && parentCamp.isDmMode) return true;
+        }
+        return false;
+      } catch (e) {
+        return false;
+      }
+    }
+
     function renderHUD() {
       const nameEl = document.getElementById('char-name-display');
       if (nameEl) nameEl.textContent = character.name;
@@ -2178,15 +2214,19 @@
       const babEl = document.getElementById('char-bab-display');
       if (babEl) babEl.textContent = '+' + (character.bab || 0);
 
-      // Toggle Level Up vs NPC Statblock button
+      // Toggle Level Up vs NPC Statblock button (Edit Statblock only active when DM Mode is active on the campaign)
       const lvlUpBtn = document.getElementById('btn-header-level-up');
       const npcStatBtn = document.getElementById('btn-header-npc-statblock');
-      if (character.isNpc) {
-        if (lvlUpBtn) lvlUpBtn.classList.add('hidden');
+      const isDmMode = isCurrentCampaignDmMode();
+      if (isDmMode) {
         if (npcStatBtn) npcStatBtn.classList.remove('hidden');
+        if (lvlUpBtn) {
+          if (character.isNpc) lvlUpBtn.classList.add('hidden');
+          else lvlUpBtn.classList.remove('hidden');
+        }
       } else {
-        if (lvlUpBtn) lvlUpBtn.classList.remove('hidden');
         if (npcStatBtn) npcStatBtn.classList.add('hidden');
+        if (lvlUpBtn) lvlUpBtn.classList.remove('hidden');
       }
       
       const initData = getCharacterInitiative();
