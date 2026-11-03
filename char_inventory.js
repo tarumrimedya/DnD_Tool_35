@@ -4593,10 +4593,10 @@
         } else {
           // One-Handed / Light Weapon or Empty Main Hand: normal Off-Hand slot
           offHandBadgeHtml = `
-            <div onclick="openSlotEquipModal('offHand')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
+            <div onclick="openSlotEquipModal('offHand')" class="flex items-center gap-2 pl-3 ${ohHas ? 'pr-1.5' : 'pr-3'} py-1 rounded-lg ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
               <span class="text-amber-400 font-bold text-[10px]">OFF-HAND:</span>
               <span class="font-bold truncate max-w-[140px]">${ohHas ? oh.name : '+ Equip Off-Hand'}</span>
-              ${ohHas ? `<button onclick="event.stopPropagation(); unequipSlot('offHand')" title="Unequip" class="text-rose-400 hover:text-white text-[10px] ml-1 cursor-pointer">✕</button>` : ''}
+              ${ohHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('offHand')" title="Unequip Off-Hand" class="w-6 h-6 ml-1 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
             </div>
           `;
         }
@@ -4611,11 +4611,11 @@
             <!-- Weapon Quick Slots -->
             <div class="flex items-center gap-2 flex-wrap flex-1 min-w-0">
               <!-- Main Hand Badge -->
-              <div onclick="openSlotEquipModal('mainHand')" class="flex items-center gap-2 px-3 py-1.5 rounded-lg ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
+              <div onclick="openSlotEquipModal('mainHand')" class="flex items-center gap-2 pl-3 ${mhHas ? 'pr-1.5' : 'pr-3'} py-1 rounded-lg ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
                 <span class="text-sky-400 font-bold text-[10px]">MAIN HAND:</span>
                 <span class="font-bold truncate max-w-[140px]">${mhHas ? mh.name : '+ Equip Main Hand'}</span>
                 ${mhIsDouble ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
-                ${mhHas ? `<button onclick="event.stopPropagation(); unequipSlot('mainHand')" title="Unequip" class="text-rose-400 hover:text-white text-[10px] ml-1 cursor-pointer">✕</button>` : ''}
+                ${mhHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('mainHand')" title="Unequip Main Hand" class="w-6 h-6 ml-1 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
               </div>
 
               <!-- Off Hand Badge -->
@@ -4673,6 +4673,53 @@
 
       const def = BODY_SLOT_DEFS.find(d => d.key === _currentEquipSlotKey);
       const showAll = document.getElementById('slot-equip-show-all')?.checked || false;
+      const currentSlotData = character.bodySlots?.[_currentEquipSlotKey];
+      const hasEquipped = Boolean(currentSlotData && currentSlotData.name && currentSlotData.name !== '-');
+
+      // Ensure footer Unequip button is present and synced with slot state
+      const modalEl = document.getElementById('slot-equip-modal');
+      if (modalEl) {
+        let footerUnequipBtn = document.getElementById('slot-equip-footer-unequip-btn');
+        if (!footerUnequipBtn) {
+          const closeBtn = modalEl.querySelector('button[onclick="closeSlotEquipModal()"]:not(.w-7)');
+          if (closeBtn && closeBtn.parentElement) {
+            closeBtn.parentElement.className = 'bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0';
+            footerUnequipBtn = document.createElement('button');
+            footerUnequipBtn.id = 'slot-equip-footer-unequip-btn';
+            footerUnequipBtn.type = 'button';
+            footerUnequipBtn.className = 'px-3.5 py-1.5 rounded-lg bg-rose-950/80 hover:bg-rose-800 border border-rose-700 text-rose-200 hover:text-white font-bold text-xs transition flex items-center gap-1.5 cursor-pointer';
+            closeBtn.parentElement.insertBefore(footerUnequipBtn, closeBtn);
+          }
+        }
+        if (footerUnequipBtn) {
+          if (hasEquipped) {
+            footerUnequipBtn.classList.remove('hidden');
+            footerUnequipBtn.innerHTML = `<span>✕</span><span>Unequip ${currentSlotData.name}</span>`;
+            footerUnequipBtn.onclick = () => {
+              unequipSlot(_currentEquipSlotKey);
+              closeSlotEquipModal();
+            };
+          } else {
+            footerUnequipBtn.classList.add('hidden');
+          }
+        }
+      }
+
+      const equippedBannerHtml = hasEquipped ? `
+        <div class="p-3 rounded-xl bg-sky-950/40 border border-sky-500/60 flex items-center justify-between gap-3 mb-2 shadow-sm">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">Currently Equipped</span>
+              <span class="text-xs font-extrabold text-white truncate">${currentSlotData.name}</span>
+            </div>
+            <div class="text-[10px] text-slate-300 truncate mt-0.5">${currentSlotData.desc || 'Equipped in ' + (def?.trName || def?.name || _currentEquipSlotKey)}</div>
+          </div>
+          <button type="button" onclick="unequipSlot('${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-rose-900/90 hover:bg-rose-700 border border-rose-500/70 text-rose-100 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 shrink-0 cursor-pointer">
+            <span>✕</span>
+            <span>Unequip</span>
+          </button>
+        </div>
+      ` : '';
 
       const pool = character.gearPool || [];
       const eligible = pool.filter(item => {
@@ -4700,13 +4747,14 @@
 
       if (eligible.length === 0) {
         container.innerHTML = `
-          <div class="py-8 text-center space-y-3">
+          ${equippedBannerHtml}
+          <div class="py-6 text-center space-y-3">
             <div class="text-3xl text-slate-600">🎒</div>
             <p class="text-xs text-slate-400">
-              No eligible items found in your inventory pool for <strong>${def?.trName || def?.name || 'this slot'}</strong>.
+              No ${hasEquipped ? 'other ' : ''}eligible items found in your inventory pool for <strong>${def?.trName || def?.name || 'this slot'}</strong>.
             </p>
-            <div class="pt-2">
-              <button onclick="closeSlotEquipModal(); openAddPoolItemModal();" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition shadow">
+            <div class="pt-2 flex flex-wrap items-center justify-center gap-2">
+              <button onclick="closeSlotEquipModal(); openAddPoolItemModal();" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition shadow cursor-pointer">
                 ➕ Add New Item to Inventory
               </button>
             </div>
@@ -4715,7 +4763,7 @@
         return;
       }
 
-      container.innerHTML = eligible.map(item => `
+      container.innerHTML = equippedBannerHtml + eligible.map(item => `
         <div class="p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/60 transition flex items-center justify-between gap-3">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
@@ -4729,7 +4777,7 @@
               <span>Value: <strong class="text-amber-400 font-mono">${item.cost || 0} GP</strong></span>
             </div>
           </div>
-          <button onclick="equipPoolItem(${item.id}, '${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 shrink-0">
+          <button onclick="equipPoolItem(${item.id}, '${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 shrink-0 cursor-pointer">
             <span>⚡ Equip</span>
           </button>
         </div>
