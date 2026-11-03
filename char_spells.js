@@ -905,15 +905,15 @@
 
         if (isUnlocked) {
           matrixHtml += `
-            <div class="${remaining <= 0 ? 'bg-slate-950/70 border border-slate-800/80 opacity-50 grayscale-[30%]' : 'bg-slate-900/90 border border-sky-800/60 hover:border-sky-500'} flex items-center justify-between rounded-xl px-3 py-2 shadow-sm transition w-full" ${remaining <= 0 ? 'title="⚠️ All prepared slots at this level are expended"' : ''}>
+            <div class="${remaining <= 0 ? 'bg-slate-950/70 border border-slate-800/80 opacity-50 grayscale-[30%]' : 'bg-slate-900/90 border border-sky-800/60 hover:border-sky-500'} flex items-center justify-between rounded-xl px-2 sm:px-3 py-2 shadow-sm transition w-full" ${remaining <= 0 ? 'title="⚠️ All prepared slots at this level are expended"' : ''}>
               <div class="flex flex-col min-w-0">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="font-extrabold text-white text-xs whitespace-nowrap">${lvlLabel}</span>
+                <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                  <span class="font-extrabold text-white text-[11px] sm:text-xs truncate">${lvlLabel}</span>
                   <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-sky-950/90 text-emerald-400 border border-sky-700/60 font-bold whitespace-nowrap" title="Save DC = 10 + ${lvl} + ${statKey}(+${statMod >= 0 ? '+' + statMod : statMod})">DC ${dc}</span>
                 </div>
                 <span class="text-[10px] text-sky-300 font-mono mt-0.5">${s.daily} Prepared Slots</span>
               </div>
-              <div class="h-7 w-px bg-slate-800 mx-1.5 shrink-0"></div>
+              <div class="h-7 w-px bg-slate-800 mx-1 sm:mx-1.5 shrink-0"></div>
               <div class="flex flex-col items-end shrink-0">
                 <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Slots Left</span>
                 <span class="text-xs sm:text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${s.daily}</span>
@@ -923,15 +923,15 @@
         } else {
           const reqClText = lvl >= 10 ? 'Epic (CL 21+)' : `CL ${Math.max(1, lvl * 2 - 1)}+`;
           matrixHtml += `
-            <div class="flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl px-3 py-2 opacity-50 select-none transition w-full" title="${lvlLabel} locked (Requires ${reqClText})">
+            <div class="flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl px-2 sm:px-3 py-2 opacity-50 select-none transition w-full" title="${lvlLabel} locked (Requires ${reqClText})">
               <div class="flex flex-col min-w-0">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="font-bold text-slate-500 text-xs whitespace-nowrap">${lvlLabel}</span>
+                <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                  <span class="font-bold text-slate-500 text-[11px] sm:text-xs truncate">${lvlLabel}</span>
                   <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 font-bold whitespace-nowrap">DC ${dc}</span>
                 </div>
                 <span class="text-[10px] text-slate-600 font-mono mt-0.5">🔒 Locked (${reqClText})</span>
               </div>
-              <div class="h-7 w-px bg-slate-800/60 mx-1.5 shrink-0"></div>
+              <div class="h-7 w-px bg-slate-800/60 mx-1 sm:mx-1.5 shrink-0"></div>
               <div class="flex flex-col items-end shrink-0">
                 <span class="text-[9px] text-slate-600 uppercase tracking-wider font-semibold">Slots Left</span>
                 <span class="text-xs sm:text-sm font-black font-mono text-slate-600 whitespace-nowrap">🔒 0 / 0</span>
@@ -2888,7 +2888,7 @@
             isDepleted
               ? 'bg-slate-950/70 border border-slate-800/80 opacity-50 grayscale-[30%]'
               : (activeSource.key === 'prepared' ? 'bg-slate-900/90 border border-sky-800/60 hover:border-sky-500' : (activeSource.key === 'divine' ? 'bg-slate-900/90 border border-amber-800/60 hover:border-amber-500' : 'bg-slate-900/90 border border-purple-800/60 hover:border-purple-600'))
-          } rounded-xl px-3 py-2 shadow-sm transition w-full`;
+          } rounded-xl px-2 sm:px-3 py-2 shadow-sm transition w-full`;
           if (isDepleted) div.title = '⚠️ All spell slots at this level are expended';
 
           let knownSubtitle = '';
@@ -2912,14 +2912,14 @@
 
           div.innerHTML = `
             <div class="flex flex-col min-w-0">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="font-extrabold text-white text-xs whitespace-nowrap">${lvlLabel}</span>
+              <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                <span class="font-extrabold text-white text-[11px] sm:text-xs truncate">${lvlLabel}</span>
                 <span class="text-[10px] font-mono px-1.5 py-0.5 rounded ${dcBadgeClass} font-bold whitespace-nowrap" title="Save DC = 10 + ${lvl} + ${statKey}(${statMod >= 0 ? '+' + statMod : statMod})">DC ${dc}</span>
               </div>
               ${knownSubtitle}
             </div>
 
-            <div class="h-7 w-px bg-slate-800 mx-1.5 shrink-0"></div>
+            <div class="h-7 w-px bg-slate-800 mx-1 sm:mx-1.5 shrink-0"></div>
 
             <div class="flex flex-col items-end shrink-0">
               <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Slots Left</span>
@@ -2929,18 +2929,18 @@
         } else {
           const isSpont = activeSource.key === 'spontaneous';
           const reqClText = lvl >= 10 ? 'Epic (CL 21+)' : (lvl <= 1 ? 'CL 1+' : (isSpont ? `CL ${lvl * 2}+` : `CL ${lvl * 2 - 1}+`));
-          div.className = 'flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl px-3 py-2 opacity-50 select-none transition w-full';
+          div.className = 'flex items-center justify-between bg-slate-950/50 border border-slate-800/70 rounded-xl px-2 sm:px-3 py-2 opacity-50 select-none transition w-full';
           div.title = `${lvlLabel} locked (Requires ${reqClText})`;
           div.innerHTML = `
             <div class="flex flex-col min-w-0">
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="font-bold text-slate-500 text-xs whitespace-nowrap">${lvlLabel}</span>
+              <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+                <span class="font-bold text-slate-500 text-[11px] sm:text-xs truncate">${lvlLabel}</span>
                 <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 font-bold whitespace-nowrap">DC ${dc}</span>
               </div>
               <span class="text-[10px] text-slate-600 font-mono mt-0.5">🔒 Locked (${reqClText})</span>
             </div>
 
-            <div class="h-7 w-px bg-slate-800/60 mx-1.5 shrink-0"></div>
+            <div class="h-7 w-px bg-slate-800/60 mx-1 sm:mx-1.5 shrink-0"></div>
 
             <div class="flex flex-col items-end shrink-0">
               <span class="text-[9px] text-slate-600 uppercase tracking-wider font-semibold">Slots Left</span>

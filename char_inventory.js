@@ -635,35 +635,35 @@
 
       savesList.innerHTML = `
         <div class="flex items-center py-0.5 border-b border-slate-800/80 text-xs font-mono">
-          <span class="text-slate-400 w-36 shrink-0 flex items-center gap-1.5 font-sans">
+          <span class="text-slate-400 w-24 sm:w-36 shrink-0 flex items-center gap-1.5 font-sans">
             <span>🛡️</span>
             <span>Fortitude:</span>
           </span>
-          <span class="text-emerald-400 font-bold w-9 text-right shrink-0">${saves.fort >= 0 ? '+' : ''}${saves.fort}</span>
-          <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
-          <span class="text-white flex-1 truncate">
+          <span class="text-emerald-400 font-bold w-7 sm:w-9 text-right shrink-0">${saves.fort >= 0 ? '+' : ''}${saves.fort}</span>
+          <span class="text-slate-500 font-bold px-1 sm:px-2 shrink-0">:</span>
+          <span class="text-white flex-1 min-w-0 text-[11px] sm:text-xs break-words">
             ${baseFort} (Base) + ${conMod} (Con) + ${resist} (Resist)${formatBonusText(bonusFort)}
           </span>
         </div>
         <div class="flex items-center py-0.5 border-b border-slate-800/80 text-xs font-mono">
-          <span class="text-slate-400 w-36 shrink-0 flex items-center gap-1.5 font-sans">
+          <span class="text-slate-400 w-24 sm:w-36 shrink-0 flex items-center gap-1.5 font-sans">
             <span>⚡</span>
             <span>Reflex:</span>
           </span>
-          <span class="text-sky-400 font-bold w-9 text-right shrink-0">${saves.ref >= 0 ? '+' : ''}${saves.ref}</span>
-          <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
-          <span class="text-white flex-1 truncate">
+          <span class="text-sky-400 font-bold w-7 sm:w-9 text-right shrink-0">${saves.ref >= 0 ? '+' : ''}${saves.ref}</span>
+          <span class="text-slate-500 font-bold px-1 sm:px-2 shrink-0">:</span>
+          <span class="text-white flex-1 min-w-0 text-[11px] sm:text-xs break-words">
             ${baseRef} (Base) + ${dexMod} (Dex) + ${resist} (Resist)${formatBonusText(bonusRef)}
           </span>
         </div>
         <div class="flex items-center py-0.5 border-b border-slate-800/80 text-xs font-mono">
-          <span class="text-slate-400 w-36 shrink-0 flex items-center gap-1.5 font-sans">
+          <span class="text-slate-400 w-24 sm:w-36 shrink-0 flex items-center gap-1.5 font-sans">
             <span>🧠</span>
             <span>Will:</span>
           </span>
-          <span class="text-purple-400 font-bold w-9 text-right shrink-0">${saves.will >= 0 ? '+' : ''}${saves.will}</span>
-          <span class="text-slate-500 font-bold px-2 shrink-0">:</span>
-          <span class="text-white flex-1 truncate">
+          <span class="text-purple-400 font-bold w-7 sm:w-9 text-right shrink-0">${saves.will >= 0 ? '+' : ''}${saves.will}</span>
+          <span class="text-slate-500 font-bold px-1 sm:px-2 shrink-0">:</span>
+          <span class="text-white flex-1 min-w-0 text-[11px] sm:text-xs break-words">
             ${baseWill} (Base) + ${wisMod} (Wis) + ${resist} (Resist)${formatBonusText(bonusWill)}
           </span>
         </div>
@@ -3440,10 +3440,10 @@
         if (listView) listView.classList.add('hidden');
         if (silView) silView.classList.remove('hidden');
         if (btnSil) {
-          btnSil.className = 'w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
+          btnSil.className = 'w-full sm:w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
         }
         if (btnList) {
-          btnList.className = 'w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
+          btnList.className = 'w-full sm:w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
         }
         if (rerender) {
           renderBodySlotsSilhouette();
@@ -3454,10 +3454,10 @@
         if (silView) silView.classList.add('hidden');
         if (listView) listView.classList.remove('hidden');
         if (btnList) {
-          btnList.className = 'w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
+          btnList.className = 'w-full sm:w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
         }
         if (btnSil) {
-          btnSil.className = 'w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
+          btnSil.className = 'w-full sm:w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
         }
       }
     }
