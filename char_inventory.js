@@ -1140,6 +1140,10 @@
         );
       }
 
+      if (!character.tactical) character.tactical = {};
+      character.tactical.round = character.encounterRound;
+      if (typeof resetActionEconomy === 'function') resetActionEconomy();
+
       updateRoundDisplays();
       saveStateToStorage(true);
       renderAll();
@@ -1148,7 +1152,8 @@
         const details = [
           ...hpLogs,
           ...expiredPeriodic.map(e => `${e} expired`),
-          ...expired.map(e => `${e} expired`)
+          ...expired.map(e => `${e} expired`),
+          'Actions refreshed'
         ].join(' • ');
         showDiceTopToast({
           icon: '⏳',
@@ -1160,7 +1165,7 @@
         showDiceTopToast({
           icon: '⏳',
           title: `Round ${character.encounterRound} Started`,
-          breakdown: 'Advanced to next round',
+          breakdown: 'Advanced to next round • All actions refreshed',
           total: `Rd ${character.encounterRound}`
         });
       }
@@ -1214,6 +1219,9 @@
     function executeLongRest(isFullHeal = true) {
       if (!character) return;
       character.encounterRound = 1;
+      if (!character.tactical) character.tactical = {};
+      character.tactical.round = 1;
+      if (typeof resetActionEconomy === 'function') resetActionEconomy();
 
       const hasRingOfSustenance = !!(
         character.bodySlots && (
@@ -1490,6 +1498,7 @@
       // 2. Encounter round reset
       character.encounterRound = 1;
       if (character.tactical) character.tactical.round = 1;
+      if (typeof resetActionEconomy === 'function') resetActionEconomy();
 
       // 3. Expire or decrement combat / round-based / minute-based buffs
       let expiredBuffs = 0;

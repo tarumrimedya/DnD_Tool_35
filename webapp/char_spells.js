@@ -1671,6 +1671,7 @@
       const regUsed = slot ? Math.max(0, (slot.used || 0) - (slot.domainUsed || 0)) : 0;
       if (slot && regUsed < regDaily && slot.used < slot.daily) {
         slot.used++;
+        if (typeof consumeActionEconomy === 'function') consumeActionEconomy('standard', spont.name);
         saveStateToStorage(true);
         renderAll();
         rollSpellOrManeuverFormula(
@@ -1714,6 +1715,7 @@
 
       if (slot && slot.used < slot.daily) {
         slot.used++;
+        if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
         saveStateToStorage(true);
         renderAll();
         if (handleBuffSpellCast(s, cl, `Level ${lvl} Prepared Slot Expended`, '📖')) {
@@ -2299,6 +2301,7 @@
       if (isDom) {
         slot.domainUsed = Math.min(domDaily, domUsed + 1);
       }
+      if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
       saveStateToStorage(true);
       renderAll();
       if (handleBuffSpellCast(s, cl, `Level ${lvl} ${isDom ? 'Domain' : 'Divine'} Slot Expended`, isDom ? '⚜️' : '✨')) {
@@ -3276,6 +3279,9 @@
             btn.onclick = (e) => {
               e.stopPropagation();
               clearSpellPreCastChoice();
+              if (typeof consumeActionEconomy === 'function') {
+                consumeActionEconomy(data?.spellItem || 'standard', spellName);
+              }
               if (typeof opt.execute === 'function') {
                 opt.execute();
               }
@@ -4104,6 +4110,7 @@
         });
       } else {
         m.expended = true;
+        if (typeof consumeActionEconomy === 'function') consumeActionEconomy(m, m.name);
         const dmgExpr = m.damageDice || findDiceExpression(m.notes || m.benefit);
         renderManeuvers();
         saveStateToStorage();
@@ -4163,6 +4170,7 @@
 
     function recoverAllManeuvers() {
       (character?.tomeOfBattle?.readiedManeuvers || []).forEach(m => m.expended = false);
+      if (typeof consumeActionEconomy === 'function') consumeActionEconomy('swift', 'Recover Maneuvers');
       if (character) character.lastModified = new Date().toISOString();
       renderManeuvers();
       saveStateToStorage(true);
@@ -4183,6 +4191,9 @@
       const selectEl = document.getElementById('active-stance-select');
       if (selectEl) {
         character.activeStance = selectEl.value;
+        if (selectEl.value && selectEl.value !== 'None' && typeof consumeActionEconomy === 'function') {
+          consumeActionEconomy('swift', `Stance: ${selectEl.value}`);
+        }
       }
       if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
       recalculateOffense();
@@ -4194,6 +4205,9 @@
     function selectStanceDirectly(escapedName) {
       const name = unescape(escapedName);
       character.activeStance = name;
+      if (name && name !== 'None' && typeof consumeActionEconomy === 'function') {
+        consumeActionEconomy('swift', `Stance: ${name}`);
+      }
       if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
       recalculateOffense();
       renderSpellsCockpit();
@@ -4638,6 +4652,7 @@
 
       if (slot && slot.used < slot.daily) {
         slot.used++;
+        if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
         saveStateToStorage(true);
         renderAll();
 

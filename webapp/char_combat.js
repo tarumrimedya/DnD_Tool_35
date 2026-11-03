@@ -3132,22 +3132,14 @@
       saveStateToStorage(false);
 
       // If Quicken, consume Swift Action; if spontaneous metamagic, consume Full-Round Action in Action Economy!
-      if (isQuicken) {
-        if (!character.tactical) character.tactical = {};
-        if (!character.tactical.spentActions) character.tactical.spentActions = {};
-        character.tactical.spentActions.swift = true;
-        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
-      } else if (isMetamagicActive) {
-        if (!character.tactical) character.tactical = {};
-        if (!character.tactical.spentActions) character.tactical.spentActions = {};
-        character.tactical.spentActions.standard = true;
-        character.tactical.spentActions.move = true;
-        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
-      } else {
-        if (!character.tactical) character.tactical = {};
-        if (!character.tactical.spentActions) character.tactical.spentActions = {};
-        character.tactical.spentActions.standard = true;
-        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+      if (typeof consumeActionEconomy === 'function') {
+        if (isQuicken) {
+          consumeActionEconomy('swift', `${spell.name} (Quickened)`);
+        } else if (isMetamagicActive) {
+          consumeActionEconomy('full', `${spell.name} (Metamagic)`);
+        } else {
+          consumeActionEconomy(spell.castingTime || spell.action || 'standard', spell.name);
+        }
       }
 
       // 0A. Universal V2 Buff Spell Cast Flow (No fake d20 roll; opens Self/Ally/Energy/Weapon prompt or auto-applies Self buff)
@@ -7677,6 +7669,10 @@
       const item = chain[targetIdx] || chain[0];
       if (!item) return;
 
+      if (typeof consumeActionEconomy === 'function') {
+        consumeActionEconomy('standard', item.weapon?.name || item.label || 'Single Attack');
+      }
+
       const noCritConfirm = document.getElementById('house-no-crit-confirm') ? document.getElementById('house-no-crit-confirm').checked : (character.houseRules?.noCritConfirm ?? true);
       const maneuverCrit = document.getElementById('house-maneuver-crit') ? document.getElementById('house-maneuver-crit').checked : (character.houseRules?.maneuverCrit ?? false);
 
@@ -9407,6 +9403,9 @@
       renderHUD();
       if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
       if (nextState) {
+        if (typeof consumeActionEconomy === 'function') {
+          consumeActionEconomy('immediate', 'Shield Block');
+        }
         showDiceTopToast({
           icon: '🛡️',
           title: 'Shield Block Triggered!',
@@ -9827,6 +9826,9 @@
       }
 
       item.qty = (item.qty || 1) - 1;
+      if (typeof consumeActionEconomy === 'function') {
+        consumeActionEconomy('standard', name);
+      }
 
       // Healing Potion
       if (name.toLowerCase().includes('cure serious')) {
@@ -9946,6 +9948,8 @@
     function advanceCombatRound() {
       if (!character.tactical) character.tactical = {};
       character.tactical.round = (character.tactical.round || 1) + 1;
+      character.encounterRound = character.tactical.round;
+      if (typeof resetActionEconomy === 'function') resetActionEconomy();
 
       // Reset 1-round temporary reactions
       let notes = [];
@@ -10361,6 +10365,10 @@
 
     function executeFullAttackRoll(isCustom) {
       dismissAttackDecisionToast();
+
+      if (typeof consumeActionEconomy === 'function') {
+        consumeActionEconomy('full', 'Full Attack');
+      }
 
       if (isCustom) {
         (character.activeModifiers || []).forEach((mod, idx) => {
@@ -11280,6 +11288,7 @@
       if (!shouldStack && !replaceTarget) {
         const items = container.querySelectorAll('.dice-toast-item');
         items.forEach(it => {
+          if (it.id === 'action-economy-overuse-toast' && (Date.now() - (it._createdAt || 0) < 2500)) return;
           if (it._dismissTimer) clearTimeout(it._dismissTimer);
           it.remove();
         });
@@ -11299,6 +11308,7 @@
       const toast = document.createElement('div');
       const toastId = options.toastId || entry.toastId || (replaceId || 'dice-top-toast');
       toast.id = toastId;
+      toast._createdAt = Date.now();
       toast.className = `dice-toast-item pointer-events-auto transform -translate-y-8 opacity-0 transition-all duration-300 ease-out bg-slate-900/95 rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md flex items-center gap-3 sm:gap-4 text-white max-w-[94vw] sm:max-w-md w-full select-none ${hasActions ? 'cursor-default' : 'cursor-pointer'} shadow-xl`;
       toast.style.border = `2px solid ${palette.border}`;
       toast.style.boxShadow = palette.glow;
@@ -12454,6 +12464,7 @@
     }
 
     function rollInitiative3D() {
+      if (typeof resetActionEconomy === 'function') resetActionEconomy();
       const init = getCharacterInitiative();
       const mod = init.total;
       const d20 = Math.floor(Math.random() * 20) + 1;

@@ -1685,9 +1685,9 @@
       saveStateToStorage(false);
     }
 
-    function advanceCombatTurn() {
+    function resetActionEconomy() {
+      if (!character) return;
       if (!character.tactical) character.tactical = {};
-      character.tactical.round = (Number(character.tactical.round) || 1) + 1;
       character.tactical.spentActions = {
         standard: false,
         move: false,
@@ -1695,11 +1695,79 @@
         immediate: false
       };
       updateActionEconomyUI();
+    }
+    window.resetActionEconomy = resetActionEconomy;
+
+    function consumeActionEconomy(actionTypeOrString, sourceLabel = '') {
+      if (!character) return false;
+      if (!character.tactical) character.tactical = {};
+      if (!character.tactical.spentActions) character.tactical.spentActions = {};
+
+      const spent = character.tactical.spentActions;
+      const raw = String(
+        (actionTypeOrString && typeof actionTypeOrString === 'object')
+          ? (actionTypeOrString.castingTime || actionTypeOrString.action || actionTypeOrString.initiationAction || 'standard')
+          : (actionTypeOrString || 'standard')
+      ).trim().toLowerCase();
+
+      if (/free/i.test(raw)) return false;
+
+      let kind = 'standard';
+      if (/full[-\s]*round|1\s*round|^full$/i.test(raw)) kind = 'full';
+      else if (/swift/i.test(raw)) kind = 'swift';
+      else if (/immediate|reaction/i.test(raw)) kind = 'immediate';
+      else if (/move/i.test(raw)) kind = 'move';
+
+      let alreadySpent = false;
+      let spentLabel = 'Standard Action';
+
+      if (kind === 'full') {
+        alreadySpent = Boolean(spent.standard || spent.move);
+        if (spent.standard && spent.move) {
+          spentLabel = 'Full-Round Action (Standard + Move)';
+        } else if (spent.standard) {
+          spentLabel = 'Standard Action (required for Full-Round Action)';
+        } else if (spent.move) {
+          spentLabel = 'Move Action (required for Full-Round Action)';
+        } else {
+          spentLabel = 'Full-Round Action';
+        }
+        spent.standard = true;
+        spent.move = true;
+      } else {
+        alreadySpent = Boolean(spent[kind]);
+        const cap = kind.charAt(0).toUpperCase() + kind.slice(1);
+        spentLabel = `${cap} Action`;
+        spent[kind] = true;
+      }
+
+      updateActionEconomyUI();
+      saveStateToStorage(false);
+
+      if (alreadySpent && typeof showDiceTopToast === 'function') {
+        const roundNum = Number(character.encounterRound || character.tactical?.round) || 1;
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'Extra Action Used',
+          breakdown: `${spentLabel} was already spent in Round ${roundNum}${sourceLabel ? ' • ' + sourceLabel : ''}.`,
+          total: 'Extra Action'
+        }, { stack: true, toastId: 'action-economy-overuse-toast' });
+      }
+
+      return !alreadySpent;
+    }
+    window.consumeActionEconomy = consumeActionEconomy;
+
+    function advanceCombatTurn() {
+      if (!character.tactical) character.tactical = {};
+      character.tactical.round = (Number(character.tactical.round) || 1) + 1;
+      character.encounterRound = character.tactical.round;
+      resetActionEconomy();
       saveStateToStorage(false);
       showDiceTopToast({
         icon: '⚔️',
         title: 'New Turn Started',
-        breakdown: `Round ${character.tactical.round}: Full action budget (Standard, Move, Swift) refreshed.`,
+        breakdown: `Round ${character.tactical.round}: Full action budget (Standard, Move, Swift, Immediate) refreshed.`,
         total: `Rd ${character.tactical.round}`
       });
     }
