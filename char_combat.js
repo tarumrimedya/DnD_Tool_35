@@ -1107,7 +1107,7 @@
       }
       let effectText = (scaling && scaling.displayText)
         ? scaling.displayText
-        : (diceExpr ? `${diceExpr} ${spell.dmgType || masterSpell.dmgType || ''}`.trim() : (spell.effect || spell.target || masterSpell.effect || 'Effect / Benefit'));
+        : (diceExpr ? `${diceExpr} ${spell.dmgType || masterSpell.dmgType || ''}`.trim() : (spell.effect || spell.target || masterSpell.effect || ''));
 
       // 2. Saving Throw & Dynamic DC
       let saveText = spell.save || spell.savingThrow || masterSpell.save || '';
@@ -1908,7 +1908,7 @@
                   <span class="text-[7px] font-mono font-bold px-1 py-0.2 rounded border uppercase tracking-wider shrink-0 ${srcBadgeClass}">${srcBadgeLabel}</span>
                   <span class="text-[8px] font-mono text-slate-300 font-bold uppercase truncate">${params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level)}</span>
                 </div>
-                <span class="text-[9px] text-slate-200 font-mono font-bold shrink-0 truncate">${params.dice || params.effect || ''}</span>
+                ${params.dice ? `<span class="text-[9px] text-slate-200 font-mono font-bold shrink-0 truncate">${params.dice}</span>` : ''}
               </div>
               <div class="text-[11px] ${titleColorClass} truncate my-0.5">
                 ${sp.name}
