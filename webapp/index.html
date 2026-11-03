@@ -12,7 +12,7 @@
   </script>
   
   <!-- Static Compiled Tailwind CSS (Zero Runtime JIT Overhead) -->
-  <link rel="stylesheet" href="tailwind_compiled.css?v=20261103_1538">
+  <link rel="stylesheet" href="tailwind_compiled.css?v=20261103_1825">
 
   <!-- Google Fonts: Cinzel for RPG Dice -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,6 +31,7 @@
     ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
     .badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; display: inline-flex; align-items: center; line-height: 1.2; }
     input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    input.flex-1, select.flex-1, textarea.flex-1 { min-width: 0; }
 
     /* =====================================================================
      * CANONICAL UI/UX 4-TIER BUTTON & FORM DESIGN SYSTEM
@@ -3689,7 +3690,7 @@
 
   <!-- Deferred Modals Root (Mounted on Demand / Idle via char_modals.js) -->
   <div id="deferred-modals-root"></div>
-  <script src="char_modals.js?v=20261103_1645"></script>
+  <script src="char_modals.js?v=20261103_1825"></script>
 
   <!-- SCRIPT LOGIC -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3705,7 +3706,7 @@
   <script src="char_hud.js?v=20261103_1503"></script>
   <script src="char_combat.js?v=20261102_2322"></script>
   <script src="char_spells.js?v=20261103_1538"></script>
-  <script src="char_progression.js?v=20261102_2322"></script>
+  <script src="char_progression.js?v=20261103_1825"></script>
   <script src="char_inventory.js?v=20261103_1600"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" onclick="hideSpellHoverTooltip()" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">

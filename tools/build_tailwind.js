@@ -234,7 +234,7 @@ async function buildTailwind() {
     .replace(/\s*;\s*/g, ';')
     .replace(/\s*:\s*/g, ':')
     .replace(/;\}/g, '}')
-    .replace(/\.hidden\{display:none\}/g, '.hidden{display:none!important}')
+    .replace(/\.hidden\{display:none\}/g, '.hidden{display:none!important}\ninput.flex-1,select.flex-1,textarea.flex-1{min-width:0}')
     .trim();
   const outPath = path.join(ROOT, 'tailwind_compiled.css');
   fs.writeFileSync(outPath, css, 'utf8');

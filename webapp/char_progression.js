@@ -2914,32 +2914,36 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 <span>Spotlight & AI Feat Search</span>
                 <span class="text-[9px] text-purple-300 font-normal">Compendium + 3.5e RAW Validation</span>
               </label>
-              <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex items-center gap-2 border border-purple-400/75">
-                <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
-                  🔍
+              <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 border border-purple-400/75">
+                <div class="flex items-center gap-2 flex-1 min-w-[160px] w-full sm:w-auto">
+                  <div class="w-8 h-8 rounded-lg bg-purple-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow">
+                    🔍
+                  </div>
+                  <input type="text"
+                         id="lvlup-feat-search-input-${idx}"
+                         value="${(currentQuery || '').replace(/"/g, '&quot;')}"
+                         placeholder="Search feats, pick from catalog, or enter custom name..."
+                         onfocus="openLevelUpFeatSearchConsole(${idx})"
+                         oninput="onLevelUpFeatSearchInput(${idx}, this.value)"
+                         onkeydown="if(event.key==='Enter'){event.preventDefault();triggerRuleMasterForLevelUpSlot(${idx});}"
+                         class="flex-1 min-w-0 h-8 bg-transparent text-xs sm:text-sm text-white placeholder-slate-200 font-semibold focus:outline-none">
                 </div>
-                <input type="text"
-                       id="lvlup-feat-search-input-${idx}"
-                       value="${(currentQuery || '').replace(/"/g, '&quot;')}"
-                       placeholder="Search feats, pick from catalog, or enter custom name..."
-                       onfocus="openLevelUpFeatSearchConsole(${idx})"
-                       oninput="onLevelUpFeatSearchInput(${idx}, this.value)"
-                       onkeydown="if(event.key==='Enter'){event.preventDefault();triggerRuleMasterForLevelUpSlot(${idx});}"
-                       class="flex-1 h-8 bg-transparent text-xs sm:text-sm text-white placeholder-slate-200 font-semibold focus:outline-none">
-                <button type="button"
-                        onclick="triggerRuleMasterForLevelUpSlot(${idx})"
-                        class="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow cursor-pointer"
-                        title="Search Compendium or Fetch via Rule Master AI">
-                  <span>🧙‍♂️</span>
-                  <span>AI Lookup</span>
-                </button>
-                <button type="button"
-                        onclick="toggleLevelUpFeatSearchConsole(${idx})"
-                        class="h-8 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 hover:text-white text-xs font-bold border border-purple-500/40 transition flex items-center gap-1 shrink-0 cursor-pointer"
-                        title="Toggle feat catalog">
-                  <span>📜</span>
-                  <span>${isOpen ? 'Close ▲' : 'Catalog ▼'}</span>
-                </button>
+                <div class="flex items-center gap-1.5 w-full sm:w-auto shrink-0">
+                  <button type="button"
+                          onclick="triggerRuleMasterForLevelUpSlot(${idx})"
+                          class="flex-1 sm:flex-initial justify-center h-8 px-2.5 sm:px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow cursor-pointer"
+                          title="Search Compendium or Fetch via Rule Master AI">
+                    <span>🧙‍♂️</span>
+                    <span>AI Lookup</span>
+                  </button>
+                  <button type="button"
+                          onclick="toggleLevelUpFeatSearchConsole(${idx})"
+                          class="flex-1 sm:flex-initial justify-center h-8 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 hover:text-white text-xs font-bold border border-purple-500/40 transition flex items-center gap-1 shrink-0 cursor-pointer"
+                          title="Toggle feat catalog">
+                    <span>📜</span>
+                    <span>${isOpen ? 'Close ▲' : 'Catalog ▼'}</span>
+                  </button>
+                </div>
               </div>
             </div>
 
