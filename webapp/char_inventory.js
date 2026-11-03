@@ -4569,13 +4569,6 @@
         const hasOversized = typeof RuleEngine !== 'undefined' && RuleEngine.hasOversizedWeaponFeat && RuleEngine.hasOversizedWeaponFeat(character);
         const isDoubleTwfActive = mhIsDouble && Array.isArray(character.tactical?.weaponSets?.activeSets) && character.tactical.weaponSets.activeSets.includes(2);
 
-        // Un-equipped weapons in pool available to draw
-        const readyWeapons = (character.gearPool || []).filter(item =>
-          !item.isEquipped &&
-          (item.category === 'Weapon' || item.category === 'Shield') &&
-          !(typeof RuleEngine !== 'undefined' && RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(item))
-        );
-
         let offHandBadgeHtml = '';
         if (mhIsDouble) {
           // Double Weapon occupies BOTH slots; clicking Off-Hand badge toggles TWF!
@@ -4630,14 +4623,6 @@
 
               <!-- Off Hand Badge -->
               ${offHandBadgeHtml}
-
-              <!-- Quick Draw Weapons from Pool -->
-              ${readyWeapons.slice(0, 3).map(w => `
-                <button onclick="equipPoolItem(${w.id})" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white text-[11px] font-medium transition flex items-center gap-1.5 shrink-0 cursor-pointer" title="Quick Equip">
-                  <span>⚡</span>
-                  <span class="truncate max-w-[110px]">${w.name}</span>
-                </button>
-              `).join('')}
             </div>
           </div>
         `;
