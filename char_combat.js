@@ -3684,19 +3684,27 @@
       if (!found) {
         found = (character.weapons || []).find(w => w && w.name && w.name.toLowerCase().trim() === wepName.toLowerCase().trim());
       }
-      if (found) return enrichWeaponStats({ ...found }, wepName);
+      if (found) {
+        if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(found);
+        return enrichWeaponStats({ ...found }, wepName);
+      }
 
       // 2. Check bodySlots.mainHand / offHand
       if (character.bodySlots?.mainHand?.name === wepName) {
+        if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(character.bodySlots.mainHand);
         return enrichWeaponStats({ ...character.bodySlots.mainHand }, wepName);
       }
       if (character.bodySlots?.offHand?.name === wepName) {
+        if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(character.bodySlots.offHand);
         return enrichWeaponStats({ ...character.bodySlots.offHand }, wepName);
       }
 
       // 3. Check gearPool
       found = (character.gearPool || []).find(g => g && g.name === wepName);
-      if (found) return enrichWeaponStats({ ...found }, wepName);
+      if (found) {
+        if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(found);
+        return enrichWeaponStats({ ...found }, wepName);
+      }
 
       // 4. Check masterDb if available
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
@@ -4083,6 +4091,12 @@
           }
         }
 
+        if (typeof hydrateGearItemStats === 'function') {
+          (character.weapons || []).forEach(w => { if (w) hydrateGearItemStats(w); });
+          if (character.bodySlots?.mainHand?.name && character.bodySlots.mainHand.name !== '-') hydrateGearItemStats(character.bodySlots.mainHand);
+          if (character.bodySlots?.offHand?.name && character.bodySlots.offHand.name !== '-') hydrateGearItemStats(character.bodySlots.offHand);
+        }
+
         const currentMainWep = character.tactical.weaponSets.set1.mainWeapon;
         const mainIsDouble = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(currentMainWep) : false;
         const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(currentMainWep) : isRangedOnlyWeapon(currentMainWep);
@@ -4104,7 +4118,11 @@
           character.tactical.weaponSets.activeSet = 1;
           character.activeOffHand = 'None';
         } else {
-          const s2Wep = character.tactical.weaponSets.set2.mainWeapon;
+          let s2Wep = character.tactical.weaponSets.set2.mainWeapon;
+          if (!isRangedMode && (!s2Wep || s2Wep === 'None') && character.bodySlots?.offHand?.name && character.bodySlots.offHand.name !== '-' && character.bodySlots.offHand.name !== 'None') {
+            character.tactical.weaponSets.set2.mainWeapon = character.bodySlots.offHand.name;
+            s2Wep = character.tactical.weaponSets.set2.mainWeapon;
+          }
           if (isRangedMode) {
             if (s2Wep && s2Wep !== 'None' && !isRangedOrThrownWeapon(s2Wep) && !s2Wep.toLowerCase().includes('buckler')) {
               character.tactical.weaponSets.set2.mainWeapon = 'None';
@@ -4113,6 +4131,15 @@
             if (s2Wep && s2Wep !== 'None' && isRangedOnlyWeapon(s2Wep)) {
               character.tactical.weaponSets.set2.mainWeapon = getValidOffWeapon(character.tactical.weaponSets.set1.mainWeapon);
             }
+          }
+          const resolvedS2 = character.tactical.weaponSets.set2.mainWeapon;
+          const isTwfDual = character.tactical.weaponSets.activeSets.includes(1) && character.tactical.weaponSets.activeSets.includes(2) && resolvedS2 && resolvedS2 !== 'None';
+          if (isTwfDual) {
+            character.tactical.weaponSets.set1.grip = '1-Hand';
+            character.activeWeapon = character.tactical.weaponSets.set1.mainWeapon;
+            character.activeOffHand = resolvedS2;
+          } else if (!character.tactical.weaponSets.activeSets.includes(2)) {
+            character.activeOffHand = 'None';
           }
         }
 
@@ -7002,40 +7029,59 @@
     }
 
     function getResolvedOffHandWeapon(character) {
-      const currentOffHandName = character.activeOffHand;
-      if (!currentOffHandName || currentOffHandName === 'None') {
+      const sets = character.tactical?.weaponSets;
+      const isDualSets = sets && Array.isArray(sets.activeSets) && sets.activeSets.includes(2) && sets.set2?.mainWeapon && sets.set2.mainWeapon !== 'None';
+      const currentOffHandName = (character.activeOffHand && character.activeOffHand !== 'None')
+        ? character.activeOffHand
+        : (isDualSets ? sets.set2.mainWeapon : 'None');
+      if (!currentOffHandName || currentOffHandName === 'None' || currentOffHandName === '-') {
         return null;
       }
 
-      const fromWeps = (character.weapons || []).find(w => w.name === currentOffHandName);
+      const fromWeps = (character.weapons || []).find(w => w && w.name === currentOffHandName);
+      if (fromWeps && typeof hydrateGearItemStats === 'function') hydrateGearItemStats(fromWeps);
       if (typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(fromWeps || currentOffHandName) && RuleEngine.getDoubleWeaponOffHandHeadStats) {
         return RuleEngine.getDoubleWeaponOffHandHeadStats(fromWeps || currentOffHandName);
       }
-      if (fromWeps) return { ...fromWeps, grip: 'Off-Hand' };
+      if (fromWeps) {
+        const enriched = enrichWeaponStats({ ...fromWeps, grip: 'Off-Hand' }, currentOffHandName);
+        enriched.grip = 'Off-Hand';
+        if (RuleEngine && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(enriched)) enriched.isLight = true;
+        return enriched;
+      }
 
       const offHandItem = character.bodySlots?.offHand;
       if (offHandItem && offHandItem.name === currentOffHandName) {
+        if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(offHandItem);
         const isShield = offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield'));
-        const isHeavy = (offHandItem.name || '').toLowerCase().includes('heavy');
-        const isBuckler = (offHandItem.name || '').toLowerCase().includes('buckler');
-        return {
-          name: offHandItem.name + (isShield ? ' (Shield Bash)' : ''),
-          grip: 'Off-Hand',
-          dice: isShield ? (isHeavy ? '1d4' : (isBuckler ? '1d3' : '1d3')) : (offHandItem.dice || '1d4'),
-          critMin: 20,
-          critMult: 2,
-          attBonus: offHandItem.attBonus || 0,
-          dmgBonus: offHandItem.dmgBonus || 0,
-          dmgType: isShield ? 'Bludgeoning' : (offHandItem.dmgType || 'Piercing'),
-          isLight: !isHeavy,
-          isBuckler,
-          tags: ['off-hand', isShield ? 'shield-bash' : 'light']
-        };
+        if (isShield) {
+          const isHeavy = (offHandItem.name || '').toLowerCase().includes('heavy');
+          const isBuckler = (offHandItem.name || '').toLowerCase().includes('buckler');
+          return {
+            name: offHandItem.name + ' (Shield Bash)',
+            grip: 'Off-Hand',
+            dice: isHeavy ? '1d4' : '1d3',
+            critMin: 20,
+            critMult: 2,
+            attBonus: offHandItem.attBonus || 0,
+            dmgBonus: offHandItem.dmgBonus || 0,
+            dmgType: 'Bludgeoning',
+            isLight: !isHeavy,
+            isBuckler,
+            tags: ['off-hand', 'shield-bash']
+          };
+        }
+        const enrichedOff = enrichWeaponStats({ ...offHandItem, grip: 'Off-Hand' }, currentOffHandName);
+        enrichedOff.grip = 'Off-Hand';
+        if (RuleEngine && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(enrichedOff)) enrichedOff.isLight = true;
+        return enrichedOff;
       }
 
       const everywhere = findWeaponEverywhere(currentOffHandName);
       if (everywhere) {
-        return { ...everywhere, grip: 'Off-Hand' };
+        const res = { ...everywhere, grip: 'Off-Hand' };
+        if (RuleEngine && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(res)) res.isLight = true;
+        return res;
       }
 
       return null;
@@ -7230,6 +7276,7 @@
       const wepName = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon || 'Unarmed Strike';
       const wep = (character.weapons || []).find(w => w && w.name === wepName) || findWeaponEverywhere(wepName) || { name: 'Unarmed Strike', dice: '1d3', critMin: 20, critMult: 2, dmgType: 'Bludgeoning', isLight: true };
       if (!wep) return [];
+      if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(wep);
 
       const isDoubleWep = RuleEngine && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(wep) : false;
       const isTwoHand = RuleEngine.isTwoHandedWeapon(wep);
@@ -7251,7 +7298,7 @@
 
       const effectiveTwoHand = isTwoHand && !hasOversizedWeaponFeat && !(isDoubleWep && wantsTWF);
       const gripSelect = document.getElementById('active-grip-select');
-      const grip = (effectiveTwoHand ? '2-Hand' : ((isDoubleWep && wantsTWF) ? '1-Hand' : (gripSelect?.value || '1-Hand')));
+      const grip = (effectiveTwoHand ? '2-Hand' : (wantsTWF ? '1-Hand' : (gripSelect?.value || '1-Hand')));
 
       // Rule 2: If main hand is two-handed (and not a double weapon in TWF mode) and there is no oversized weapon feat, TWF cannot be active
       const isTWF = !effectiveTwoHand && wantsTWF;
@@ -7280,7 +7327,7 @@
       const hasGTWF = feats.some(f => f.includes('greater two-weapon fighting'));
       const hasOversized = feats.some(f => f.includes('oversized two-weapon fighting'));
 
-      const isOffHandLight = offHandWep ? (offHandWep.isLight || hasOversized) : false;
+      const isOffHandLight = offHandWep ? Boolean(offHandWep.isLight || (RuleEngine && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(offHandWep)) || hasOversized) : false;
 
       let twfMainPenalty = 0;
       let twfOffPenalty = 0;
@@ -7600,17 +7647,23 @@
       const wepName = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon || 'Unarmed Strike';
       const wep = (character.weapons || []).find(w => w && w.name === wepName) || findWeaponEverywhere(wepName) || { name: 'Unarmed Strike', dice: '1d3', critMin: 20, critMult: 2, dmgType: 'Bludgeoning', isLight: true };
       if (!wep) return;
+      if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(wep);
 
+      const isDoubleWep = RuleEngine && RuleEngine.isDoubleWeapon ? RuleEngine.isDoubleWeapon(wep) : false;
       const isTwoHand = RuleEngine.isTwoHandedWeapon(wep);
       const hasOversized = RuleEngine.hasOversizedWeaponFeat(character);
       const gripSelect = document.getElementById('active-grip-select');
+      const sets = character.tactical?.weaponSets;
+      const isDualSets = sets && Array.isArray(sets.activeSets) && sets.activeSets.includes(1) && sets.activeSets.includes(2) && sets.set2?.mainWeapon && sets.set2.mainWeapon !== 'None';
 
-      if (isTwoHand && !hasOversized && gripSelect && gripSelect.value !== '2-Hand') {
+      if (isDualSets && (!isTwoHand || isDoubleWep || hasOversized)) {
+        if (gripSelect && gripSelect.value !== '1-Hand') gripSelect.value = '1-Hand';
+      } else if (isTwoHand && !hasOversized && gripSelect && gripSelect.value !== '2-Hand') {
         gripSelect.value = '2-Hand';
       }
       if (typeof syncCombatGripUI === 'function') syncCombatGripUI();
 
-      const grip = gripSelect?.value || '1-Hand';
+      const grip = (isDualSets && (!isTwoHand || isDoubleWep || hasOversized)) ? '1-Hand' : (gripSelect?.value || '1-Hand');
       const paEl = document.getElementById('power-attack-val');
       const paVal = paEl ? (parseInt(paEl.value) || 0) : (Number(character.tactical?.powerAttack) || 0);
       const flEl = document.getElementById('mod-flanking');

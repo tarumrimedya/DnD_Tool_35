@@ -4934,9 +4934,14 @@
       const isWeapon = cat === 'Weapon' || item.type === 'Weapon';
       const isArmorOrShield = cat === 'Armor' || cat === 'Shield' || item.type === 'Armor' || item.type === 'Shield';
 
+      const isStubWeaponFallback = isWeapon && !item._statsHydrated && (
+        (item.dice === '1d8' && (!item.critMin || item.critMin === 20) && (!item.critMult || item.critMult === 2) && (!Array.isArray(item.enhancements) || item.enhancements.length === 0)) ||
+        !item.handedness
+      );
       const missingWeaponStats = isWeapon && (
         ((!Array.isArray(item.damageParts) || item.damageParts.length === 0) && !item.dice) ||
-        (!item.critMin && !item.critRange && !item.weaponMeta?.critMin)
+        (!item.critMin && !item.critRange && !item.weaponMeta?.critMin) ||
+        isStubWeaponFallback
       );
       const missingArmorStats = isArmorOrShield && (
         (item.acBonus === undefined || item.acBonus === null) &&
@@ -5016,32 +5021,32 @@
         if ((!item.baseItemId || String(item.baseItemId).startsWith('mi-')) && (ref.baseItemId || ref.id)) {
           item.baseItemId = ref.baseItemId || ref.id;
         }
-        if ((fromAssembler || !Array.isArray(item.damageParts) || item.damageParts.length === 0) && Array.isArray(ref.damageParts) && ref.damageParts.length > 0) {
+        if ((fromAssembler || isStubWeaponFallback || !Array.isArray(item.damageParts) || item.damageParts.length === 0) && Array.isArray(ref.damageParts) && ref.damageParts.length > 0) {
           item.damageParts = JSON.parse(JSON.stringify(ref.damageParts));
         }
-        if ((fromAssembler || !Array.isArray(item.modifiers) || item.modifiers.length === 0) && Array.isArray(ref.modifiers) && ref.modifiers.length > 0) {
+        if ((fromAssembler || isStubWeaponFallback || !Array.isArray(item.modifiers) || item.modifiers.length === 0) && Array.isArray(ref.modifiers) && ref.modifiers.length > 0) {
           item.modifiers = JSON.parse(JSON.stringify(ref.modifiers));
         }
-        if ((fromAssembler || !item.ruleFlags || Object.keys(item.ruleFlags).length === 0) && ref.ruleFlags) {
+        if ((fromAssembler || isStubWeaponFallback || !item.ruleFlags || Object.keys(item.ruleFlags).length === 0) && ref.ruleFlags) {
           item.ruleFlags = JSON.parse(JSON.stringify(ref.ruleFlags));
         }
-        if ((fromAssembler || !Array.isArray(item.tacticalBadges) || item.tacticalBadges.length === 0) && Array.isArray(ref.tacticalBadges) && ref.tacticalBadges.length > 0) {
+        if ((fromAssembler || isStubWeaponFallback || !Array.isArray(item.tacticalBadges) || item.tacticalBadges.length === 0) && Array.isArray(ref.tacticalBadges) && ref.tacticalBadges.length > 0) {
           item.tacticalBadges = JSON.parse(JSON.stringify(ref.tacticalBadges));
         }
-        if (!item.dice && (ref.dice || (Array.isArray(ref.damageParts) && ref.damageParts[0]?.dice))) {
+        if ((fromAssembler || isStubWeaponFallback || !item.dice) && (ref.dice || (Array.isArray(ref.damageParts) && ref.damageParts[0]?.dice))) {
           item.dice = ref.dice || ref.damageParts[0].dice;
         }
-        if (!item.dmgType && (ref.dmgType || (Array.isArray(ref.damageParts) && ref.damageParts[0]?.type))) {
+        if ((fromAssembler || isStubWeaponFallback || !item.dmgType) && (ref.dmgType || (Array.isArray(ref.damageParts) && ref.damageParts[0]?.type))) {
           item.dmgType = ref.dmgType || ref.damageParts[0].type;
         }
-        if (!item.critMin && !item.critRange && (ref.critRange || ref.critMin || ref.weaponMeta?.critMin)) {
+        if ((fromAssembler || isStubWeaponFallback || (!item.critMin && !item.critRange)) && (ref.critRange || ref.critMin || ref.weaponMeta?.critMin)) {
           item.critMin = ref.critRange || ref.critMin || ref.weaponMeta?.critMin;
           item.critRange = item.critMin;
         }
-        if (!item.critMult && (ref.critMult || ref.weaponMeta?.critMult)) {
+        if ((fromAssembler || isStubWeaponFallback || !item.critMult) && (ref.critMult || ref.weaponMeta?.critMult)) {
           item.critMult = ref.critMult || ref.weaponMeta?.critMult;
         }
-        if (!item.handedness && (ref.handedness || ref.weaponMeta?.handedness)) {
+        if ((fromAssembler || isStubWeaponFallback || !item.handedness) && (ref.handedness || ref.weaponMeta?.handedness)) {
           item.handedness = ref.handedness || ref.weaponMeta?.handedness;
         }
         if ((fromAssembler || item.acBonus === undefined) && ref.acBonus !== undefined) {
@@ -5056,8 +5061,19 @@
         if ((fromAssembler || item.spellFailure === undefined) && (ref.spellFailure !== undefined || ref.armorMeta?.asf !== undefined)) {
           item.spellFailure = ref.spellFailure !== undefined ? ref.spellFailure : ref.armorMeta?.asf;
         }
-        if (!item.enhancementBonus && ref.enhancementBonus) {
+        if ((fromAssembler || isStubWeaponFallback || !item.enhancementBonus) && ref.enhancementBonus) {
           item.enhancementBonus = ref.enhancementBonus;
+        }
+        if ((fromAssembler || isStubWeaponFallback) && isWeapon) {
+          const atkMod = (item.modifiers || []).find(m => m && (m.target === 'attack.weapon' || m.target === 'attack'));
+          const dmgMod = (item.modifiers || []).find(m => m && (m.target === 'damage.weapon' || m.target === 'damage'));
+          if (atkMod && atkMod.value !== undefined) item.attBonus = Number(atkMod.value) || 0;
+          else if (item.enhancementBonus) item.attBonus = Number(item.enhancementBonus) || 0;
+          if (dmgMod && dmgMod.value !== undefined) item.dmgBonus = Number(dmgMod.value) || 0;
+          else if (item.enhancementBonus) item.dmgBonus = Number(item.enhancementBonus) || 0;
+          if (item.handedness && String(item.handedness).toLowerCase().includes('light')) {
+            item.isLight = true;
+          }
         }
         if (!item.material && ref.material) {
           item.material = ref.material;
@@ -5597,21 +5613,36 @@
         const targetGrip = isTwoHand ? '2-Hand' : (targetSlotKey === 'offHand' ? 'Off-Hand' : '1-Hand');
 
         if (existingWep) {
-          if (targetSlotKey === 'offHand') existingWep.grip = 'Off-Hand';
-          else if (isTwoHand && !hasOversized) existingWep.grip = '2-Hand';
+          existingWep.grip = targetGrip;
+          hydrateGearItemStats(existingWep);
+          if (item.dice) existingWep.dice = item.dice;
+          if (item.critMin || item.critRange) existingWep.critMin = item.critMin || item.critRange;
+          if (item.critMult) existingWep.critMult = item.critMult;
+          if (item.dmgType) existingWep.dmgType = item.dmgType;
+          if (item.handedness) existingWep.handedness = item.handedness;
+          if (item.enhancementBonus !== undefined) existingWep.enhancementBonus = item.enhancementBonus;
+          if (item.attBonus !== undefined) existingWep.attBonus = item.attBonus;
+          if (item.dmgBonus !== undefined) existingWep.dmgBonus = item.dmgBonus;
+          if (item.isLight !== undefined) existingWep.isLight = item.isLight;
+          if (Array.isArray(item.damageParts) && item.damageParts.length > 0) existingWep.damageParts = JSON.parse(JSON.stringify(item.damageParts));
+          if (Array.isArray(item.modifiers) && item.modifiers.length > 0) existingWep.modifiers = JSON.parse(JSON.stringify(item.modifiers));
         } else {
           character.weapons.push({
+            baseItemId: item.baseItemId,
             name: item.name,
             grip: targetGrip,
+            handedness: item.handedness || item.weaponMeta?.handedness,
             dice: item.dice || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : (isTwoHand ? '2d6' : '1d6')),
-            critMin: item.critMin || item.weaponMeta?.critMin || (item.name.toLowerCase().includes('jovar') || item.name.toLowerCase().includes('rapier') ? 18 : 20),
+            critMin: item.critMin || item.critRange || item.weaponMeta?.critMin || (item.name.toLowerCase().includes('jovar') || item.name.toLowerCase().includes('rapier') ? 18 : 20),
             critMult: item.critMult || item.weaponMeta?.critMult || 2,
+            enhancementBonus: item.enhancementBonus || 0,
             attBonus: item.attBonus || item.enhancementBonus || 0,
             dmgBonus: item.dmgBonus || item.enhancementBonus || 0,
             dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : 'Slashing'),
             bonusType: item.bonusType || 'Enhancement',
             isLight: item.isLight || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item)),
             damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : undefined,
+            modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : undefined,
             ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : undefined,
             tags: isTwoHand ? ['two-handed'] : (targetSlotKey === 'offHand' ? ['off-hand'] : [])
           });
@@ -5625,19 +5656,36 @@
       ensureWeaponSetsData();
       if (targetSlotKey === 'mainHand') {
         const isDoubleWep = typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(item);
+        const isTwoHandWep = typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon && RuleEngine.isTwoHandedWeapon(item);
         if (character.tactical?.weaponSets?.set1) {
           character.tactical.weaponSets.set1.mainWeapon = item.name;
-          if (isDoubleWep) character.tactical.weaponSets.set1.grip = '2-Hand';
+          character.tactical.weaponSets.set1.grip = (isDoubleWep || isTwoHandWep) ? '2-Hand' : '1-Hand';
         }
+        const gripSelectEl = document.getElementById('active-grip-select');
+        if (gripSelectEl) gripSelectEl.value = (isDoubleWep || isTwoHandWep) ? '2-Hand' : '1-Hand';
         if (isDoubleWep && character.tactical?.weaponSets?.set2) {
           character.tactical.weaponSets.set2.mainWeapon = item.name;
           character.tactical.weaponSets.set2.grip = 'Off-Hand';
           character.tactical.weaponSets.activeSets = [1];
           character.tactical.weaponSets.activeSet = 1;
           character.activeOffHand = 'None';
+        } else if (!isTwoHandWep && character.bodySlots?.offHand?.name && character.bodySlots.offHand.name !== '-') {
+          // If an off-hand item is already equipped when equipping a 1-hand main weapon, keep both active
+          if (character.tactical?.weaponSets) {
+            character.tactical.weaponSets.set2.mainWeapon = character.bodySlots.offHand.name;
+            character.tactical.weaponSets.set2.grip = 'Off-Hand';
+            character.tactical.weaponSets.activeSets = [1, 2];
+            character.tactical.weaponSets.activeSet = 'both';
+          }
+          character.activeOffHand = character.bodySlots.offHand.name;
         }
         character.activeWeapon = item.name;
       } else if (targetSlotKey === 'offHand') {
+        if (character.tactical?.weaponSets?.set1) {
+          character.tactical.weaponSets.set1.grip = '1-Hand';
+        }
+        const gripSelectEl = document.getElementById('active-grip-select');
+        if (gripSelectEl) gripSelectEl.value = '1-Hand';
         if (character.tactical?.weaponSets?.set2) {
           character.tactical.weaponSets.set2.mainWeapon = item.name;
           character.tactical.weaponSets.set2.grip = 'Off-Hand';
@@ -5646,15 +5694,32 @@
           if (!Array.isArray(character.tactical.weaponSets.activeSets)) {
             character.tactical.weaponSets.activeSets = [1];
           }
+          if (!character.tactical.weaponSets.activeSets.includes(1) && character.bodySlots?.mainHand?.name && character.bodySlots.mainHand.name !== '-') {
+            character.tactical.weaponSets.activeSets.unshift(1);
+          }
           if (!character.tactical.weaponSets.activeSets.includes(2)) {
             character.tactical.weaponSets.activeSets.push(2);
           }
           character.tactical.weaponSets.activeSet = (character.tactical.weaponSets.activeSets.includes(1) && character.tactical.weaponSets.activeSets.includes(2)) ? 'both' : 2;
         }
         character.activeOffHand = item.name;
-        if (item.category === 'Weapon' && Array.isArray(character.activeModifiers)) {
-          const twfMod = character.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
-          if (twfMod) twfMod.active = true;
+        if (item.category === 'Weapon') {
+          if (!Array.isArray(character.activeModifiers)) character.activeModifiers = [];
+          let twfMod = character.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
+          if (!twfMod) {
+            twfMod = {
+              name: 'Two-Weapon Fighting (TWF)',
+              source: 'Combat',
+              bonusAtk: 0,
+              dice: '',
+              type: 'TWF',
+              active: true,
+              notes: 'Extra Off-Hand Attack (RAW TWF)'
+            };
+            character.activeModifiers.push(twfMod);
+          } else {
+            twfMod.active = true;
+          }
         }
       }
       try { renderWeaponSetsUI(); } catch (e) {}
@@ -6460,7 +6525,8 @@
             id: item.id || ('wep_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
             baseItemId: item.baseItemId || item.id || null,
             name: item.name,
-            grip: (item.weaponMeta?.handedness || '').includes('Two') ? '2-Hand' : (item.slot === 'Main Hand' ? '1-Hand' : '2-Hand'),
+            grip: (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon && RuleEngine.isTwoHandedWeapon(item)) ? '2-Hand' : '1-Hand',
+            handedness: item.handedness || item.weaponMeta?.handedness,
             dice: (primaryPart && primaryPart.dice) || item.dice || '1d8',
             damageParts: Array.isArray(item.damageParts) && item.damageParts.length > 0
               ? JSON.parse(JSON.stringify(item.damageParts))
@@ -6470,12 +6536,14 @@
             weaponMeta: item.weaponMeta ? JSON.parse(JSON.stringify(item.weaponMeta)) : null,
             ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {},
             tacticalBadges: Array.isArray(item.tacticalBadges) ? JSON.parse(JSON.stringify(item.tacticalBadges)) : [],
-            critMin: Number(item.weaponMeta?.critMin || item.critMin) || 20,
-            rawCritMin: Number(item.weaponMeta?.critMin || item.critMin) || 20,
-            critMult: Number(item.weaponMeta?.critMult || item.critMult) || 2,
+            critMin: Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || 20,
+            rawCritMin: Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || 20,
+            critMult: Number(item.critMult || item.weaponMeta?.critMult) || 2,
+            enhancementBonus: Number(item.enhancementBonus) || 0,
             attBonus: Number(item.enhancementBonus || item.attBonus) || 0,
             dmgBonus: Number(item.enhancementBonus || item.dmgBonus) || 0,
             dmgType: (primaryPart && primaryPart.type) || item.dmgType || 'Slashing',
+            isLight: Boolean(item.isLight || (item.handedness && String(item.handedness).toLowerCase().includes('light')) || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item))),
             bonusType: 'enhancement',
             tags: item.tags || [],
             elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),

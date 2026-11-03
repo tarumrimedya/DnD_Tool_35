@@ -486,22 +486,37 @@ const RuleEngine = {
     const name = (typeof weapon === 'string' ? weapon : (weapon.name || '')).toLowerCase().trim();
     if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
 
-    const type = (typeof weapon === 'object' ? (weapon.type || weapon.category || '') : '').toLowerCase();
-    const slot = (typeof weapon === 'object' ? (weapon.slot || '') : '').toLowerCase();
-    const tags = (typeof weapon === 'object' && Array.isArray(weapon.tags)) ? weapon.tags.map(t => String(t).toLowerCase()) : [];
-    const desc = (typeof weapon === 'object' ? (weapon.desc || weapon.benefit || weapon.description || '') : '').toLowerCase();
-
-    if (typeof weapon === 'object') {
-      if (weapon.isTwoHanded || weapon.twoHanded || weapon.grip === '2-Hand' || weapon.category === 'Two-Handed') return true;
-    }
-    if (tags.some(t => t.includes('two-hand') || t.includes('2-hand') || t.includes('two handed') || t.includes('çift el') || t.includes('iki el'))) return true;
-    if (slot.includes('two-hand') || slot.includes('2-hand') || slot.includes('two handed') || slot.includes('çift el') || slot.includes('iki el')) return true;
-    if (desc.includes('2-handed') || desc.includes('two-handed') || desc.includes('two hands') || desc.includes('requires 2 hands') || desc.includes('massive 2-handed') || desc.includes('çift el') || desc.includes('iki el')) return true;
+    if (this.isLightWeapon(weapon)) return false;
 
     const db = this.getMasterDbEntry(weapon);
-    if (db) {
-      if (db.isTwoHanded || db.twoHanded || db.grip === '2-Hand' || db.category === 'Two-Handed') return true;
-      if (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase().includes('two-hand') || String(t).toLowerCase().includes('2-hand'))) return true;
+    const rawHandedness = String(
+      (typeof weapon === 'object' ? (weapon.handedness || weapon.weaponMeta?.handedness || '') : '') ||
+      (db ? (db.handedness || db.weaponMeta?.handedness || '') : '')
+    ).toLowerCase().trim();
+
+    if (rawHandedness.includes('light') || rawHandedness.includes('one-handed') || rawHandedness === '1-hand') {
+      return false;
+    }
+    if (rawHandedness.includes('two-handed') || rawHandedness === '2-hand') {
+      return true;
+    }
+
+    // Standard D&D 3.5e One-Handed / Light Weapons (never Two-Handed even if gripped in 2 hands)
+    const oneHandedOrLightWeapons = [
+      'battleaxe', 'longsword', 'rapier', 'scimitar', 'warhammer', 'morningstar',
+      'heavy mace', 'light mace', 'dagger', 'punching dagger', 'short sword', 'shortsword',
+      'handaxe', 'throwing axe', 'kukri', 'light hammer', 'light pick', 'heavy pick',
+      'sap', 'sickle', 'trident', 'whip', 'kama', 'nunchaku', 'sai', 'siangham',
+      'bastard sword', 'dwarven waraxe', 'shortspear', 'gauntlet', 'spiked gauntlet', 'unarmed strike'
+    ];
+    if (oneHandedOrLightWeapons.some(w => name.includes(w))) {
+      return false;
+    }
+    if (name.includes('club') && !name.includes('greatclub')) {
+      return false;
+    }
+    if (name.includes('flail') && !name.includes('heavy flail') && !name.includes('dire flail')) {
+      return false;
     }
 
     // Standard D&D 3.5e Two-Handed Weapons (including Turkish names and SRD weapons)
@@ -521,6 +536,22 @@ const RuleEngine = {
     // Spear is two-handed in 3.5e; shortspear is one-handed
     if ((name.includes('spear') && !name.includes('shortspear')) || (name.includes('mızrak') && !name.includes('kısa mızrak'))) {
       return true;
+    }
+
+    const slot = (typeof weapon === 'object' ? (weapon.slot || '') : '').toLowerCase();
+    const tags = (typeof weapon === 'object' && Array.isArray(weapon.tags)) ? weapon.tags.map(t => String(t).toLowerCase()) : [];
+    const desc = (typeof weapon === 'object' ? (weapon.desc || weapon.benefit || weapon.description || '') : '').toLowerCase();
+
+    if (typeof weapon === 'object') {
+      if (weapon.isTwoHanded || weapon.twoHanded || weapon.category === 'Two-Handed') return true;
+    }
+    if (tags.some(t => t.includes('two-hand') || t.includes('2-hand') || t.includes('two handed') || t.includes('çift el') || t.includes('iki el'))) return true;
+    if (slot.includes('two-hand') || slot.includes('2-hand') || slot.includes('two handed') || slot.includes('çift el') || slot.includes('iki el')) return true;
+    if (desc.includes('2-handed') || desc.includes('two-handed') || desc.includes('requires 2 hands') || desc.includes('massive 2-handed')) return true;
+
+    if (db) {
+      if (db.isTwoHanded || db.twoHanded || db.category === 'Two-Handed') return true;
+      if (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase().includes('two-hand') || String(t).toLowerCase().includes('2-hand'))) return true;
     }
 
     return false;
