@@ -487,7 +487,7 @@
         if (fighterOnly && !isFb) return;
         if (levelFilter !== null && Number(level) !== levelFilter) return;
 
-        let score = isCustom ? 5 : 0;
+        let score = (q && isCustom) ? 5 : 0;
         if (q) {
           if (nLower === q) {
             score += 1000;

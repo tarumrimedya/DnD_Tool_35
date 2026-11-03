@@ -4653,6 +4653,7 @@
         if ((_currentEquipSlotKey === 'ring1' || _currentEquipSlotKey === 'ring2') && cat === 'ring') return true;
         return false;
       });
+      eligible.sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
 
       if (eligible.length === 0) {
         container.innerHTML = `
@@ -5360,6 +5361,8 @@
         window.BUNDLED_SRD_CORE_CATALOG.forEach(pushUniqueGear);
       }
 
+      combined.sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
+
       _cachedUnifiedEquipmentCatalog = combined;
       _cachedUnifiedCatalogKey = cacheKey;
       return combined;
@@ -5526,32 +5529,29 @@
 
       return `
         <div id="pool-item-card-${idx}" class="bg-slate-900 border border-slate-700/80 hover:border-amber-500/60 p-2.5 rounded-xl transition space-y-1.5 shadow-sm">
-          <div class="flex items-start justify-between gap-2">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="text-base">${icon}</span>
-              <div class="min-w-0">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
-                  ${inInv ? `<span class="text-[9px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.2 rounded font-semibold">✓ In Inventory</span>` : ''}
-                </div>
-                <div class="flex flex-wrap items-center gap-1.5 text-[10px] mt-0.5">
-                  <span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-semibold">${cat}</span>
-                  <span class="bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded">${item.slot || 'Slotless'}</span>
-                  <span class="text-slate-400 font-mono">${weight} lbs</span>
-                  <span class="text-amber-400 font-mono">${cost} gp</span>
-                  <span class="text-slate-500 font-serif italic">${source}</span>
-                </div>
-              </div>
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+              <span class="text-base shrink-0">${icon}</span>
+              <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
+              ${inInv ? `<span class="text-[9px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.2 rounded font-semibold shrink-0">✓ Owned</span>` : ''}
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
-              <button type="button" onclick="fillPoolItemFormFromDb(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition" title="Populate Form / Customize">
+              <button type="button" onclick="fillPoolItemFormFromDb(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition cursor-pointer" title="Populate Form / Customize">
                 ✏️
               </button>
-              <button id="${btnId}" type="button" onclick="addMasterDbItemDirectlyToPool(${idx}, this)" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
+              <button id="${btnId}" type="button" onclick="addMasterDbItemDirectlyToPool(${idx}, this)" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-2.5 sm:px-3 rounded-lg shadow transition flex items-center gap-1 whitespace-nowrap cursor-pointer">
                 <span>➕</span>
-                <span>Add to Inventory</span>
+                <span class="sm:hidden">Add</span>
+                <span class="hidden sm:inline">Add to Inventory</span>
               </button>
             </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
+            <span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-semibold">${cat}</span>
+            <span class="bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded">${item.slot || 'Slotless'}</span>
+            <span class="text-slate-400 font-mono">${weight} lbs</span>
+            <span class="text-amber-400 font-mono">${cost} gp</span>
+            <span class="text-slate-500 font-serif italic">${source}</span>
           </div>
           ${item._badgesHtmlCache}
           ${desc ? `<p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed bg-slate-950/60 p-1.5 rounded border border-slate-800/80">${desc}</p>` : ''}

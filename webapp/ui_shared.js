@@ -563,7 +563,7 @@
                 <span>Search</span>
               </button>
             </div>
-            <div id="dnd-ui-compendium-srd-subfilters" class="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-[11px]">
+            <div id="dnd-ui-compendium-srd-subfilters" class="flex flex-wrap items-center gap-1.5 text-[11px]">
               <button type="button" data-srd-sub="all_gear" onclick="DnDUI.setSrdSubFilter('all_gear')" class="px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition cursor-pointer bg-indigo-600/30 text-indigo-200 border border-indigo-500/50">📦 All Gear</button>
               <button type="button" data-srd-sub="Weapon" onclick="DnDUI.setSrdSubFilter('Weapon')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">⚔️ Weapons</button>
               <button type="button" data-srd-sub="Armor" onclick="DnDUI.setSrdSubFilter('Armor')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛡️ Armor &amp; Shields</button>
@@ -678,7 +678,7 @@
     // Populate base weapons and armors from SrdCompendium if loaded
     let baseOptions = [];
     if (srdReady && typeof global.SrdCompendium.getAllLoaded === 'function') {
-      baseOptions = global.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield']);
+      baseOptions = global.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield']).slice().sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
     }
 
     if (baseOptions.length === 0) {
