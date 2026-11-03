@@ -4447,9 +4447,9 @@
                  class="group relative bg-[#0b1329]/90 hover:bg-[#0f172a] border ${slotData.active ? 'border-sky-500/60 shadow-[0_0_15px_rgba(56,189,248,0.15)]' : 'border-slate-800 opacity-70'} rounded-xl p-2 sm:p-2.5 transition flex items-center justify-between gap-2.5">
               
               <div class="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
-                <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg ${slotData.active ? 'bg-sky-950/80 border border-sky-400/60 text-sky-300' : 'bg-slate-800/80 border border-slate-700 text-slate-500'} flex items-center justify-center text-base sm:text-lg shrink-0 shadow-inner group-hover:scale-105 transition">
+                <button type="button" onclick="toggleSlotActive('${slotKey}')" title="Toggle Active / Inactive (${slotData.active ? 'Active' : 'Inactive'})" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg ${slotData.active ? 'bg-sky-950/80 border border-sky-400/60 text-sky-300 shadow-[0_0_8px_rgba(56,189,248,0.25)]' : 'bg-slate-800/80 border border-slate-700 text-slate-500 grayscale opacity-60'} flex items-center justify-center text-base sm:text-lg shrink-0 shadow-inner hover:scale-105 hover:border-sky-400 transition cursor-pointer">
                   ${def.icon}
-                </div>
+                </button>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-1.5 flex-wrap">
                     <span class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-sky-400">${def.trName || def.name}</span>
@@ -4488,15 +4488,11 @@
               </div>
 
               <div class="flex items-center gap-1.5 shrink-0">
-                <input type="checkbox" ${slotData.active ? 'checked' : ''} onchange="toggleSlotActive('${slotKey}')" title="Toggle Active / Inactive" class="w-4 h-4 rounded text-sky-500 border-slate-700 bg-slate-950 focus:ring-0 cursor-pointer">
                 ${isForgeEditableItem(slotData) ? `
                   <button onclick="openForgeForSlotItem('${slotKey}')" title="Customize in Item Forge" class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 transition text-xs inline-flex items-center justify-center cursor-pointer">
                     ⚒️
                   </button>
                 ` : ''}
-                <button onclick="openSlotEquipModal('${slotKey}')" title="Change Item" class="w-6 h-6 rounded bg-slate-800 hover:bg-sky-900/60 text-slate-300 hover:text-sky-200 border border-slate-700 hover:border-sky-500 transition text-xs inline-flex items-center justify-center cursor-pointer">
-                  🔄
-                </button>
                 <button onclick="unequipSlot('${slotKey}')" title="Unequip (Return to Inventory)" class="w-6 h-6 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition text-xs inline-flex items-center justify-center cursor-pointer">
                   ❌
                 </button>
