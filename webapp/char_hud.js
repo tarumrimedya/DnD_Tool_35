@@ -1726,8 +1726,8 @@
       if (btnStd) {
         const isSpent = !!spent.standard;
         btnStd.className = isSpent
-          ? 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
-          : 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
+          ? 'ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
+          : 'ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
         btnStd.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block shrink-0"></span><span class="truncate">Standard</span>' : '<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0"></span><span class="truncate">Standard</span>';
       }
 
@@ -1735,8 +1735,8 @@
       if (btnMove) {
         const isSpent = !!spent.move;
         btnMove.className = isSpent
-          ? 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
-          : 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
+          ? 'ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
+          : 'ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
         btnMove.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block shrink-0"></span><span class="truncate">Move</span>' : '<span class="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0"></span><span class="truncate">Move</span>';
       }
 
@@ -1744,8 +1744,8 @@
       if (btnSwift) {
         const isSpent = !!spent.swift;
         btnSwift.className = isSpent
-          ? 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
-          : 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-purple-950/80 border-purple-500/60 text-purple-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
+          ? 'ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
+          : 'ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-purple-950/80 border-purple-500/60 text-purple-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
         btnSwift.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block shrink-0"></span><span class="truncate">Swift</span>' : '<span class="w-2 h-2 rounded-full bg-purple-400 inline-block shrink-0"></span><span class="truncate">Swift</span>';
       }
 
@@ -1753,8 +1753,8 @@
       if (btnImm) {
         const isSpent = !!spent.immediate;
         btnImm.className = isSpent
-          ? 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
-          : 'ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-rose-950/80 border-rose-500/60 text-rose-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
+          ? 'ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-slate-900 border-slate-700 text-slate-500 line-through opacity-60 cursor-pointer whitespace-nowrap min-w-0'
+          : 'ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-rose-950/80 border-rose-500/60 text-rose-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0';
         btnImm.innerHTML = isSpent ? '<span class="w-2 h-2 rounded-full bg-slate-500 inline-block shrink-0"></span><span class="truncate">Immediate</span>' : '<span class="w-2 h-2 rounded-full bg-rose-400 inline-block shrink-0"></span><span class="truncate">Immediate</span>';
       }
 

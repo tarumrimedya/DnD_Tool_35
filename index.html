@@ -367,21 +367,21 @@
 
       <!-- ACTION ECONOMY BAR -->
       <div class="bg-dndCard border border-amber-500/30 rounded-xl p-2.5 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        <!-- Action Status Badges (Mobilde 2x2 Izgara / Masaüstünde Esnek Satır) -->
-        <div class="grid grid-cols-2 sm:flex sm:items-center sm:flex-wrap gap-1.5 w-full sm:w-auto min-w-0" id="action-economy-buttons-container">
-          <button type="button" id="btn-action-std" onclick="toggleActionEconomy('standard')" class="ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0">
+        <!-- Action Status Badges (Mobilde 2x2 Izgara / Masaüstünde Eşit Genişlikte 4'lü Izgara) -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 w-full sm:w-auto min-w-0" id="action-economy-buttons-container">
+          <button type="button" id="btn-action-std" onclick="toggleActionEconomy('standard')" class="ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0">
             <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0"></span>
             <span class="truncate">Standard</span>
           </button>
-          <button type="button" id="btn-action-move" onclick="toggleActionEconomy('move')" class="ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0">
+          <button type="button" id="btn-action-move" onclick="toggleActionEconomy('move')" class="ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-emerald-950/80 border-emerald-500/60 text-emerald-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0">
             <span class="w-2 h-2 rounded-full bg-emerald-400 inline-block shrink-0"></span>
             <span class="truncate">Move</span>
           </button>
-          <button type="button" id="btn-action-swift" onclick="toggleActionEconomy('swift')" class="ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-purple-950/80 border-purple-500/60 text-purple-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0">
+          <button type="button" id="btn-action-swift" onclick="toggleActionEconomy('swift')" class="ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-purple-950/80 border-purple-500/60 text-purple-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0">
             <span class="w-2 h-2 rounded-full bg-purple-400 inline-block shrink-0"></span>
             <span class="truncate">Swift</span>
           </button>
-          <button type="button" id="btn-action-immediate" onclick="toggleActionEconomy('immediate')" class="ui-btn-sm h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center sm:justify-start gap-1.5 bg-rose-950/80 border-rose-500/60 text-rose-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0">
+          <button type="button" id="btn-action-immediate" onclick="toggleActionEconomy('immediate')" class="ui-btn-sm w-full sm:w-24 h-7 px-2.5 rounded-lg text-[11px] sm:text-xs font-bold border transition-all duration-150 active:scale-95 flex items-center justify-center gap-1.5 bg-rose-950/80 border-rose-500/60 text-rose-300 shadow-sm cursor-pointer whitespace-nowrap min-w-0">
             <span class="w-2 h-2 rounded-full bg-rose-400 inline-block shrink-0"></span>
             <span class="truncate">Immediate</span>
           </button>
