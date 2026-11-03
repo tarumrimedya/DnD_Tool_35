@@ -4949,52 +4949,83 @@
       }
 
       let ref = null;
+      let fromAssembler = false;
       const srdReady = Boolean(window.SrdCompendium && typeof window.SrdCompendium.isReady === 'function' && window.SrdCompendium.isReady());
 
-      if (window.ItemAssembler && typeof window.ItemAssembler.assembleItem === 'function' && srdReady) {
-        if (item.baseItemId && (item.enhancementBonus > 0 || item.material || (Array.isArray(item.enhancements) && item.enhancements.length > 0))) {
-          ref = window.ItemAssembler.assembleItem({
-            baseItemId: item.baseItemId,
-            material: item.material,
-            enhancementBonus: item.enhancementBonus,
-            enhancements: item.enhancements
-          });
-        } else if (typeof window.ItemAssembler.parseNaturalLanguageItem === 'function') {
-          const parsed = window.ItemAssembler.parseNaturalLanguageItem(item.name);
-          if (parsed && parsed.baseItemId) {
-            ref = window.ItemAssembler.assembleItem(parsed);
-          }
+      const hasValidStats = (cand) => {
+        if (!cand || typeof cand !== 'object') return false;
+        if (isWeapon) {
+          return (Array.isArray(cand.damageParts) && cand.damageParts.length > 0) || Boolean(cand.dice);
         }
+        if (isArmorOrShield) {
+          return (cand.acBonus !== undefined && cand.acBonus !== null) ||
+            (Array.isArray(cand.modifiers) && cand.modifiers.some(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield' || m.target === 'ac')));
+        }
+        return true;
+      };
+
+      // 1. Try ItemAssembler first for composite/forged items (e.g. "Adamantine Breastplate", "+5 Speed Dire Flail")
+      if (window.ItemAssembler && srdReady) {
+        try {
+          if (item.baseItemId && !String(item.baseItemId).startsWith('mi-') && typeof window.ItemAssembler.assemble === 'function' &&
+              (item.enhancementBonus > 0 || item.material || (Array.isArray(item.enhancements) && item.enhancements.length > 0))) {
+            const assembled = window.ItemAssembler.assemble({
+              baseItemId: item.baseItemId,
+              material: item.material,
+              enhancementBonus: item.enhancementBonus,
+              enhancements: item.enhancements
+            });
+            if (hasValidStats(assembled)) {
+              ref = assembled;
+              fromAssembler = true;
+            }
+          }
+          if (!ref && typeof window.ItemAssembler.parseNaturalLanguageItem === 'function') {
+            const parsedAssembled = window.ItemAssembler.parseNaturalLanguageItem(item.name);
+            if (hasValidStats(parsedAssembled)) {
+              ref = parsedAssembled;
+              fromAssembler = true;
+            }
+          }
+        } catch (_) {}
       }
 
+      // 2. Try SrdCompendium direct ID or Name lookup
       if (!ref && window.SrdCompendium) {
         if (item.baseItemId || item.id) {
-          ref = window.SrdCompendium.getById(item.baseItemId || item.id);
+          const byIdCand = window.SrdCompendium.getById(item.baseItemId || item.id);
+          if (hasValidStats(byIdCand)) ref = byIdCand;
         }
         if (!ref && typeof window.SrdCompendium.getByName === 'function') {
-          ref = window.SrdCompendium.getByName(item.masterDbName || item.name);
+          const byNameCand = window.SrdCompendium.getByName(item.masterDbName || item.name);
+          if (hasValidStats(byNameCand)) ref = byNameCand;
         }
       }
 
+      // 3. Try Master DB & Bundled SRD Core Catalog
       if (!ref && typeof findMasterItem === 'function') {
-        ref = findMasterItem(item.masterDbName || item.name);
+        const masterCand = findMasterItem(item.masterDbName || item.name);
+        if (hasValidStats(masterCand)) ref = masterCand;
       }
       if (!ref && typeof findBaseItemInSrdCore === 'function') {
-        ref = findBaseItemInSrdCore(item.name);
+        const coreCand = findBaseItemInSrdCore(item.name);
+        if (hasValidStats(coreCand)) ref = coreCand;
       }
 
       if (ref) {
-        if (!item.baseItemId && (ref.baseItemId || ref.id)) item.baseItemId = ref.baseItemId || ref.id;
-        if ((!Array.isArray(item.damageParts) || item.damageParts.length === 0) && Array.isArray(ref.damageParts) && ref.damageParts.length > 0) {
+        if ((!item.baseItemId || String(item.baseItemId).startsWith('mi-')) && (ref.baseItemId || ref.id)) {
+          item.baseItemId = ref.baseItemId || ref.id;
+        }
+        if ((fromAssembler || !Array.isArray(item.damageParts) || item.damageParts.length === 0) && Array.isArray(ref.damageParts) && ref.damageParts.length > 0) {
           item.damageParts = JSON.parse(JSON.stringify(ref.damageParts));
         }
-        if ((!Array.isArray(item.modifiers) || item.modifiers.length === 0) && Array.isArray(ref.modifiers) && ref.modifiers.length > 0) {
+        if ((fromAssembler || !Array.isArray(item.modifiers) || item.modifiers.length === 0) && Array.isArray(ref.modifiers) && ref.modifiers.length > 0) {
           item.modifiers = JSON.parse(JSON.stringify(ref.modifiers));
         }
-        if ((!item.ruleFlags || Object.keys(item.ruleFlags).length === 0) && ref.ruleFlags) {
+        if ((fromAssembler || !item.ruleFlags || Object.keys(item.ruleFlags).length === 0) && ref.ruleFlags) {
           item.ruleFlags = JSON.parse(JSON.stringify(ref.ruleFlags));
         }
-        if ((!Array.isArray(item.tacticalBadges) || item.tacticalBadges.length === 0) && Array.isArray(ref.tacticalBadges) && ref.tacticalBadges.length > 0) {
+        if ((fromAssembler || !Array.isArray(item.tacticalBadges) || item.tacticalBadges.length === 0) && Array.isArray(ref.tacticalBadges) && ref.tacticalBadges.length > 0) {
           item.tacticalBadges = JSON.parse(JSON.stringify(ref.tacticalBadges));
         }
         if (!item.dice && (ref.dice || (Array.isArray(ref.damageParts) && ref.damageParts[0]?.dice))) {
@@ -5013,16 +5044,16 @@
         if (!item.handedness && (ref.handedness || ref.weaponMeta?.handedness)) {
           item.handedness = ref.handedness || ref.weaponMeta?.handedness;
         }
-        if (item.acBonus === undefined && ref.acBonus !== undefined) {
+        if ((fromAssembler || item.acBonus === undefined) && ref.acBonus !== undefined) {
           item.acBonus = ref.acBonus;
         }
-        if (item.maxDex === undefined && (ref.maxDex !== undefined || ref.armorMeta?.maxDex !== undefined)) {
+        if ((fromAssembler || item.maxDex === undefined) && (ref.maxDex !== undefined || ref.armorMeta?.maxDex !== undefined)) {
           item.maxDex = ref.maxDex !== undefined ? ref.maxDex : ref.armorMeta?.maxDex;
         }
-        if (item.checkPenalty === undefined && (ref.checkPenalty !== undefined || ref.armorMeta?.acp !== undefined)) {
+        if ((fromAssembler || item.checkPenalty === undefined) && (ref.checkPenalty !== undefined || ref.armorMeta?.acp !== undefined)) {
           item.checkPenalty = ref.checkPenalty !== undefined ? ref.checkPenalty : ref.armorMeta?.acp;
         }
-        if (item.spellFailure === undefined && (ref.spellFailure !== undefined || ref.armorMeta?.asf !== undefined)) {
+        if ((fromAssembler || item.spellFailure === undefined) && (ref.spellFailure !== undefined || ref.armorMeta?.asf !== undefined)) {
           item.spellFailure = ref.spellFailure !== undefined ? ref.spellFailure : ref.armorMeta?.asf;
         }
         if (!item.enhancementBonus && ref.enhancementBonus) {
@@ -5033,7 +5064,7 @@
         }
       }
 
-      if (srdReady || ref) {
+      if (srdReady) {
         item._statsHydrated = true;
       }
       return item;
