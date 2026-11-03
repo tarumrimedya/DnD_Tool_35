@@ -325,6 +325,55 @@ const RuleEngine = {
     return doubleWeapons.some(dw => name.includes(dw));
   },
 
+  // Build the virtual Off-Hand Head weapon stats for a Double Weapon (D&D 3.5e RAW: treated as a Light weapon)
+  getDoubleWeaponOffHandHeadStats(weapon) {
+    if (!weapon) return null;
+    const baseObj = (typeof weapon === 'object') ? weapon : (this.getMasterDbEntry(weapon) || { name: String(weapon) });
+    const db = this.getMasterDbEntry(baseObj) || baseObj;
+    const rawName = String(baseObj.name || db.name || weapon || '').replace(/^↳\s*/, '').replace(/\s*\(.*?\)\s*$/, '').trim();
+    const nameLower = rawName.toLowerCase();
+    const modes = Array.isArray(baseObj.modes) && baseObj.modes.length > 0 ? baseObj.modes : (Array.isArray(db.modes) ? db.modes : []);
+    const offMode = modes.find(m => m && (m.id === 'offhand-head' || (m.ruleFlags && m.ruleFlags.doubleWeaponOffHand)));
+    const modePart = offMode && Array.isArray(offMode.damageParts) && offMode.damageParts[0] ? offMode.damageParts[0] : null;
+
+    let offDice = (modePart && modePart.dice) || baseObj.dice || db.dice || '1d8';
+    let offDmgType = (modePart && modePart.type) || baseObj.dmgType || db.dmgType || 'Bludgeoning';
+    let offCritMin = Number((offMode && offMode.critRange) || baseObj.critMin || db.critMin || db.critRange) || 20;
+    let offCritMult = Number((offMode && offMode.critMult) || baseObj.critMult || db.critMult) || 2;
+
+    if (nameLower.includes('gnome hooked hammer')) {
+      offDice = '1d6'; offDmgType = 'Piercing'; offCritMin = 20; offCritMult = 4;
+    } else if (nameLower.includes('dwarven urgrosh')) {
+      offDice = '1d6'; offDmgType = 'Piercing'; offCritMin = 20; offCritMult = 3;
+    } else if (nameLower.includes('two-bladed sword')) {
+      offDice = '1d8'; offDmgType = 'Slashing'; offCritMin = 19; offCritMult = 2;
+    } else if (nameLower.includes('orc double axe')) {
+      offDice = '1d8'; offDmgType = 'Slashing'; offCritMin = 20; offCritMult = 3;
+    } else if (nameLower.includes('dire flail')) {
+      offDice = '1d8'; offDmgType = 'Bludgeoning'; offCritMin = 20; offCritMult = 2;
+    } else if (nameLower.includes('quarterstaff')) {
+      offDice = '1d6'; offDmgType = 'Bludgeoning'; offCritMin = 20; offCritMult = 2;
+    }
+
+    const enh = Number(baseObj.enhancementBonus || baseObj.attBonus || db.enhancementBonus || db.attBonus) || 0;
+    return {
+      name: `${rawName} (Off-Hand)`,
+      parent: rawName,
+      grip: 'Off-Hand',
+      dice: offDice,
+      critMin: offCritMin,
+      critMult: offCritMult,
+      attBonus: enh,
+      dmgBonus: Number(baseObj.dmgBonus ?? enh) || 0,
+      dmgType: offDmgType,
+      isLight: true,
+      isDoubleOffHandVirtual: true,
+      damageParts: [{ dice: offDice, bonus: 0, type: offDmgType, multiplyOnCrit: true }],
+      ruleFlags: { isLight: true, doubleWeaponOffHand: true },
+      tags: ['off-hand', 'double', 'light']
+    };
+  },
+
   // Check if weapon is Light according to D&D 3.5e RAW rules
   isLightWeapon(weapon) {
     if (!weapon) return false;

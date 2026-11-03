@@ -3929,51 +3929,69 @@
       if (!character) return;
       if (!character.tactical) character.tactical = {};
 
-      // Self-heal if an Off-Hand Weapon Head was previously saved into mainHand or set1.mainWeapon
+      // Clean up any legacy separate "↳ ... (Off-Hand Head)" entries and consolidate into the parent Double Weapon
       if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.isOffHandWeaponHead === 'function') {
         const mhSlot = character.bodySlots?.mainHand;
+        const ohSlot = character.bodySlots?.offHand;
         const s1Name = character.tactical?.weaponSets?.set1?.mainWeapon;
-        const offHeadInMain = (mhSlot && mhSlot.name && mhSlot.name !== '-' && RuleEngine.isOffHandWeaponHead(mhSlot))
+        const offHeadCandidate = (mhSlot && mhSlot.name && mhSlot.name !== '-' && RuleEngine.isOffHandWeaponHead(mhSlot))
           ? mhSlot
-          : ((s1Name && RuleEngine.isOffHandWeaponHead(s1Name)) ? { name: s1Name } : null);
-        if (offHeadInMain) {
-          const baseParentName = String(offHeadInMain.parent || offHeadInMain.name || '')
+          : ((ohSlot && ohSlot.name && ohSlot.name !== '-' && RuleEngine.isOffHandWeaponHead(ohSlot))
+            ? ohSlot
+            : ((s1Name && RuleEngine.isOffHandWeaponHead(s1Name)) ? { name: s1Name } : null));
+
+        // Remove any separate "↳ ... (Off-Hand Head)" items from gearPool and weapons
+        if (Array.isArray(character.gearPool)) {
+          character.gearPool = character.gearPool.filter(p => !(p && RuleEngine.isOffHandWeaponHead(p)));
+        }
+        if (Array.isArray(character.weapons)) {
+          character.weapons = character.weapons.filter(w => !(w && RuleEngine.isOffHandWeaponHead(w)));
+        }
+
+        if (offHeadCandidate) {
+          const baseParentName = String(offHeadCandidate.parent || offHeadCandidate.name || '')
             .replace(/^↳\s*/, '')
             .replace(/\s*\(.*?\)\s*$/, '')
-            .trim()
-            .toLowerCase();
-          const parentPoolItem = (character.gearPool || []).find(p =>
-            p && !RuleEngine.isOffHandWeaponHead(p) &&
-            String(p.name || '').trim().toLowerCase() === baseParentName
-          );
-          const parentWepItem = (character.weapons || []).find(w =>
-            w && !RuleEngine.isOffHandWeaponHead(w) &&
-            String(w.name || '').trim().toLowerCase() === baseParentName
-          );
-          const resolvedParentName = parentPoolItem?.name || parentWepItem?.name || null;
+            .trim();
+          const baseLower = baseParentName.toLowerCase();
+          let parentPoolItem = (character.gearPool || []).find(p => p && String(p.name || '').trim().toLowerCase() === baseLower);
+          let parentWepItem = (character.weapons || []).find(w => w && String(w.name || '').trim().toLowerCase() === baseLower);
+          const dbEntry = RuleEngine.getMasterDbEntry ? RuleEngine.getMasterDbEntry(baseParentName) : null;
+          const resolvedName = parentPoolItem?.name || parentWepItem?.name || dbEntry?.name || baseParentName || 'Dire Flail';
+
+          if (!parentWepItem && resolvedName) {
+            if (!Array.isArray(character.weapons)) character.weapons = [];
+            parentWepItem = {
+              name: resolvedName,
+              grip: '2-Hand',
+              dice: dbEntry?.dice || offHeadCandidate.dice || '1d8',
+              critMin: Number(dbEntry?.critMin || dbEntry?.critRange || offHeadCandidate.critMin) || 20,
+              critMult: Number(dbEntry?.critMult || offHeadCandidate.critMult) || 2,
+              attBonus: Number(offHeadCandidate.attBonus) || 0,
+              dmgBonus: Number(offHeadCandidate.dmgBonus) || 0,
+              dmgType: dbEntry?.dmgType || offHeadCandidate.dmgType || 'Bludgeoning',
+              tags: ['two-handed', 'double']
+            };
+            character.weapons.push(parentWepItem);
+          }
+
           if (!character.bodySlots) character.bodySlots = {};
-          if (!character.bodySlots.offHand || !character.bodySlots.offHand.name || character.bodySlots.offHand.name === '-') {
-            character.bodySlots.offHand = { ...(mhSlot || {}), name: offHeadInMain.name, active: true };
+          if (parentPoolItem) parentPoolItem.isEquipped = true;
+          character.bodySlots.mainHand = {
+            ...(dbEntry || parentPoolItem || parentWepItem || {}),
+            name: resolvedName,
+            masterDbName: resolvedName,
+            category: 'Weapon',
+            active: true
+          };
+          character.bodySlots.offHand = { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+          character.activeWeapon = resolvedName;
+          if (character.tactical?.weaponSets?.set1) {
+            character.tactical.weaponSets.set1.mainWeapon = resolvedName;
           }
-          if (parentPoolItem) {
-            parentPoolItem.isEquipped = true;
-            character.bodySlots.mainHand = { ...parentPoolItem, masterDbName: parentPoolItem.masterDbName || parentPoolItem.name, active: true };
-          } else if (resolvedParentName && mhSlot && RuleEngine.isOffHandWeaponHead(mhSlot)) {
-            character.bodySlots.mainHand = { ...(parentWepItem || {}), name: resolvedParentName, category: 'Weapon', active: true };
-          }
-          if (resolvedParentName) {
-            character.activeWeapon = resolvedParentName;
-            if (character.tactical?.weaponSets?.set1) {
-              character.tactical.weaponSets.set1.mainWeapon = resolvedParentName;
-            }
-          }
-          character.activeOffHand = offHeadInMain.name;
-          if (character.tactical?.weaponSets) {
-            if (!character.tactical.weaponSets.set2) character.tactical.weaponSets.set2 = { name: 'Off-Hand', grip: 'Off-Hand' };
-            character.tactical.weaponSets.set2.mainWeapon = offHeadInMain.name;
+          if (character.tactical?.weaponSets?.set2) {
+            character.tactical.weaponSets.set2.mainWeapon = resolvedName;
             character.tactical.weaponSets.set2.grip = 'Off-Hand';
-            character.tactical.weaponSets.activeSets = [1, 2];
-            character.tactical.weaponSets.activeSet = 'both';
           }
         }
       }
@@ -4070,7 +4088,14 @@
         const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(currentMainWep) : isRangedOnlyWeapon(currentMainWep);
         const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
 
-        if (mainIsTwoHand && !mainIsDouble && !hasOversized) {
+        if (mainIsDouble) {
+          // Double Weapon occupies both hands: Set 2 always mirrors Set 1's Double Weapon
+          character.tactical.weaponSets.set2.mainWeapon = currentMainWep;
+          character.tactical.weaponSets.set2.grip = 'Off-Hand';
+          const isTwfOn = character.tactical.weaponSets.activeSets.includes(2);
+          character.tactical.weaponSets.set1.grip = isTwfOn ? '1-Hand' : '2-Hand';
+          character.activeOffHand = isTwfOn ? currentMainWep : 'None';
+        } else if (mainIsTwoHand && !hasOversized) {
           // Rule 1, 2, 3: Two-handed weapon without oversized feat forces 2-Hand grip, empties Set 2, and limits to single weapon
           character.tactical.weaponSets.set1.grip = '2-Hand';
           character.tactical.weaponSets.set2.mainWeapon = 'None';
@@ -4156,6 +4181,9 @@
       }
 
       let wep = findWeaponEverywhere(wepName);
+      if (isOffHand && typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(wep || wepName) && RuleEngine.getDoubleWeaponOffHandHeadStats) {
+        wep = RuleEngine.getDoubleWeaponOffHandHeadStats(wep || wepName);
+      }
       if (!wep) {
         return {
           dmgStr: '1d6',
@@ -4345,9 +4373,10 @@
         const effectiveS1Grip = isTwoHandLocked ? '2-Hand' : (mainIsDouble ? (isDual ? '1-Hand' : '2-Hand') : (s1.grip || '1-Hand'));
         const s1MainStats = getWeaponCombatDisplayStats(s1.mainWeapon, effectiveS1Grip, false);
 
-        // Stats for Card 2: STRICTLY Off-Hand / Shield only
-        const s2OffStats = isTwoHandLocked ? null : getWeaponCombatDisplayStats(s2.mainWeapon, 'Off-Hand', true);
-        const isCard2Shield = s2OffStats?.isShield;
+        // Stats for Card 2: STRICTLY Off-Hand / Shield only (Double weapons use s1.mainWeapon's secondary head)
+        const card2WepName = mainIsDouble ? s1.mainWeapon : s2.mainWeapon;
+        const s2OffStats = isTwoHandLocked ? null : getWeaponCombatDisplayStats(card2WepName, 'Off-Hand', true);
+        const isCard2Shield = !mainIsDouble && s2OffStats?.isShield;
 
       // Card 1 UI (Main Hand)
       const card1Html = `
@@ -4360,12 +4389,12 @@
               ${is1 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">ACTIVE</span>` : ''}
               ${s1MainStats?.enhancementBonus ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">+${s1MainStats.enhancementBonus} Magic</span>` : ''}
               ${s1MainStats?.keen ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-red-950/60 text-red-300 border border-red-500/50">🩸 Keen</span>` : ''}
-              ${isTwoHandLocked ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-900/40 text-amber-400 border border-amber-700/50">2H Weapon</span>` : ''}
+              ${mainIsDouble ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-700/50">Double Weapon</span>` : (isTwoHandLocked ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-900/40 text-amber-400 border border-amber-700/50">2H Weapon</span>` : '')}
             </div>
             <!-- Equipment & Grip -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
               <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${s1.mainWeapon || 'None'}</span>
-              <span class="text-slate-500">(${s1MainStats?.isShield ? 'Shield' : (isTwoHandLocked ? '2-Hand' : (s1.grip || '1-Hand'))})</span>
+              <span class="text-slate-500">(${s1MainStats?.isShield ? 'Shield' : effectiveS1Grip})</span>
             </div>
             <!-- Row 1: Modified Weapon Damage or Shield Defense -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
@@ -4400,7 +4429,7 @@
         </div>
       `;
 
-      // Card 2 UI (Off-Hand / Shield) - Disabled if main weapon is two-handed
+      // Card 2 UI (Off-Hand / Shield) - Disabled if main weapon is two-handed (unless Double Weapon)
       let card2Html = '';
       if (isTwoHandLocked) {
         card2Html = `
@@ -4409,21 +4438,60 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span class="text-xs text-slate-600">🔒</span>
-              <span class="text-xs font-bold text-slate-400">Off-Hand (Locked)</span>
-              <span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-950/50 text-amber-500 border border-amber-900/50">2-Hand Required</span>
+              <span class="text-xs font-bold text-slate-400">Off-Hand (2-Hand Grip)</span>
+              <span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-950/50 text-amber-500 border border-amber-900/50">Occupied</span>
             </div>
             <!-- Equipment Info -->
             <div class="text-[10px] text-slate-500 truncate mt-0.5 font-mono">
-              <span>Main-hand "${s1.mainWeapon || 'Weapon'}" requires two hands</span>
+              <span>${s1.mainWeapon || 'Weapon'} (2-Hand)</span>
             </div>
             <!-- Description -->
             <div class="text-[9px] text-slate-600 mt-0.5 font-mono">
-              <span>* Off-hand &amp; TWF unavailable with 2H weapon without Monkey Grip</span>
+              <span>* Both hands occupied by two-handed weapon</span>
             </div>
           </div>
           <div class="shrink-0 text-right">
             <span class="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-900 text-slate-600 border border-slate-800">
-              Disabled
+              2H Grip
+            </span>
+          </div>
+        </div>
+        `;
+      } else if (mainIsDouble) {
+        card2Html = `
+        <!-- CARD 2: DOUBLE WEAPON OFF-HAND HEAD (CLICK TO TOGGLE TWF) -->
+        <div onclick="activateWeaponSet(2)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is2 ? 'bg-gradient-to-r from-sky-950/60 to-slate-900/90 border-sky-500 text-sky-200 shadow-md shadow-sky-950/40 ring-1 ring-sky-500/40' : 'bg-slate-900/75 border-amber-500/40 text-slate-300 hover:border-sky-500/60 hover:text-white'}">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-xs ${is2 ? 'text-sky-400' : 'text-amber-400'}">🗡️</span>
+              <span class="text-xs font-black truncate ${is2 ? 'text-white' : 'text-slate-200'}">Off-Hand (Secondary Head)</span>
+              ${is2
+                ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">ACTIVE (TWF)</span>`
+                : `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-950/60 text-amber-300 border border-amber-700/60">2-Hand Grip • Click for TWF</span>`
+              }
+            </div>
+            <!-- Equipment & Type -->
+            <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
+              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-amber-200/90 font-bold'}">${s1.mainWeapon}</span>
+              <span class="text-slate-500">(${is2 ? 'Off-Hand Light' : '2-Hand Grip'})</span>
+            </div>
+            <!-- Row 1: Weapon Damage -->
+            <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
+              <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Damage:</span>
+              <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${s2OffStats?.dmgStr || '1d8'}</span>
+              ${s2OffStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ Modified</span>` : ''}
+            </div>
+            <!-- Row 2: Critical & Damage Type -->
+            <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
+              <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Crit &amp; Type:</span>
+              <span class="${is2 ? 'text-white' : 'text-slate-300'} font-semibold font-mono">${s2OffStats?.critStr || '20 / x2'}</span>
+              <span class="text-slate-600">•</span>
+              <span class="${is2 ? 'text-sky-200/90' : 'text-slate-400'}">${s2OffStats?.dmgType || 'Bludgeoning'}</span>
+            </div>
+          </div>
+          <div class="shrink-0 text-right">
+            <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-amber-300 border border-amber-500/40 hover:bg-sky-950 hover:text-sky-200'}">
+              ${is2 ? 'TWF Active' : 'Enable TWF'}
             </span>
           </div>
         </div>
@@ -4516,6 +4584,22 @@
         return;
       }
 
+      // Double Weapon special toggle: Card 1 is always active; clicking Card 2 toggles TWF (activeSets [1] <-> [1, 2])
+      if (mainIsDouble) {
+        if (setNum === 2) {
+          if (sets.activeSets.includes(2)) {
+            sets.activeSets = [1];
+          } else {
+            sets.activeSets = [1, 2];
+          }
+        } else {
+          sets.activeSets = [1];
+        }
+        sets.activeSet = (sets.activeSets.includes(1) && sets.activeSets.includes(2)) ? 'both' : 1;
+        applyWeaponSetsConfiguration();
+        return;
+      }
+
       const idx = sets.activeSets.indexOf(setNum);
       if (idx >= 0) {
         if (sets.activeSets.length > 1) {
@@ -4598,18 +4682,23 @@
       const is2 = sets.activeSets.includes(2);
       const isDual = is1 && is2;
 
+      if (mainIsDouble) {
+        sets.set2.mainWeapon = sets.set1.mainWeapon;
+        sets.set2.grip = 'Off-Hand';
+      }
+
       if (isDual) {
         // BOTH ACTIVE: Main Hand (Card 1) + Off Hand (Card 2)
         character.activeWeapon = sets.set1.mainWeapon;
-        character.activeOffHand = sets.set2.mainWeapon;
+        character.activeOffHand = mainIsDouble ? sets.set1.mainWeapon : sets.set2.mainWeapon;
 
         const gripSelect = document.getElementById('active-grip-select');
         if (gripSelect) gripSelect.value = '1-Hand';
         if (sets.set1) sets.set1.grip = '1-Hand';
 
         // Check if Card 2 is a weapon (not pure shield)
-        const offItemStats = getWeaponCombatDisplayStats(sets.set2.mainWeapon, 'Off-Hand', true);
-        const isOffWeapon = offItemStats && !offItemStats.isBuckler && offItemStats.dmgType !== 'Shield';
+        const offItemStats = getWeaponCombatDisplayStats(character.activeOffHand, 'Off-Hand', true);
+        const isOffWeapon = mainIsDouble || (offItemStats && !offItemStats.isBuckler && offItemStats.dmgType !== 'Shield');
 
         twfMod.active = isOffWeapon;
       } else if (is1) {
@@ -4617,8 +4706,10 @@
         character.activeWeapon = sets.set1.mainWeapon;
         character.activeOffHand = 'None';
 
+        const singleGrip = mainIsDouble ? '2-Hand' : (sets.set1.grip || '1-Hand');
+        if (sets.set1) sets.set1.grip = singleGrip;
         const gripSelect = document.getElementById('active-grip-select');
-        if (gripSelect) gripSelect.value = sets.set1.grip || '1-Hand';
+        if (gripSelect) gripSelect.value = singleGrip;
 
         twfMod.active = false;
       } else if (is2) {
@@ -6917,6 +7008,9 @@
       }
 
       const fromWeps = (character.weapons || []).find(w => w.name === currentOffHandName);
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.isDoubleWeapon && RuleEngine.isDoubleWeapon(fromWeps || currentOffHandName) && RuleEngine.getDoubleWeaponOffHandHeadStats) {
+        return RuleEngine.getDoubleWeaponOffHandHeadStats(fromWeps || currentOffHandName);
+      }
       if (fromWeps) return { ...fromWeps, grip: 'Off-Hand' };
 
       const offHandItem = character.bodySlots?.offHand;
