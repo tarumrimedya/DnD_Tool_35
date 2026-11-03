@@ -1662,8 +1662,17 @@
       });
     }
 
-    function castClericSpontaneousConversion(spellIdx) {
-      const s = character?.spellcasting?.divineSpells?.[spellIdx];
+    function castClericSpontaneousConversion(spellIdxOrName, fallbackLvl) {
+      const divList = character?.spellcasting?.divineSpells || [];
+      let s = null;
+      if (typeof spellIdxOrName === 'number') {
+        s = divList[spellIdxOrName];
+      } else if (typeof spellIdxOrName === 'string') {
+        const cleanName = spellIdxOrName.toLowerCase().trim();
+        s = divList.find(item => item && !item.isDomainSpell && (item.name || '').toLowerCase().trim() === cleanName && (fallbackLvl === undefined || Number(item.level || 0) === Number(fallbackLvl)))
+          || divList.find(item => item && (item.name || '').toLowerCase().trim() === cleanName)
+          || { name: spellIdxOrName, level: Number(fallbackLvl) || 0, isDomainSpell: false };
+      }
       if (!s) return;
       if (s.isDomainSpell) {
         showDiceTopToast({
@@ -1674,9 +1683,10 @@
         });
         return;
       }
-      const lvl = Number(s.level) || 0;
+      const lvl = Number(s.level ?? fallbackLvl) || 0;
       const { cl } = getDivineCasterInfo();
-      const mode = character?.spellcasting?.clericSpontaneousMode || 'cure';
+      const policy = (typeof resolveClericEnergyPolicy === 'function') ? resolveClericEnergyPolicy(character) : null;
+      const mode = (policy && policy.forcedMode) || character?.spellcasting?.clericSpontaneousMode || 'cure';
       const spont = getClericSpontaneousSpellInfo(lvl, cl, mode);
       if (!spont) return;
 
@@ -1702,6 +1712,8 @@
         });
       }
     }
+    window.getClericSpontaneousSpellInfo = getClericSpontaneousSpellInfo;
+    window.castClericSpontaneousConversion = castClericSpontaneousConversion;
 
     function castPreparedSpellDirectly(spellIdx) {
       const s = character?.spellcasting?.preparedSpells?.[spellIdx];

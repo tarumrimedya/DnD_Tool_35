@@ -1901,6 +1901,33 @@
             </div>
           ` : '';
 
+          let bottomRightHtml = '';
+          if (reorderControls) {
+            bottomRightHtml = reorderControls;
+          } else {
+            const energyPolicy = (srcKey === 'divine' && typeof resolveClericEnergyPolicy === 'function')
+              ? resolveClericEnergyPolicy(character)
+              : null;
+            const spontMode = (energyPolicy && energyPolicy.forcedMode) || character?.spellcasting?.clericSpontaneousMode || 'cure';
+            const isAlreadyTarget = spontMode === 'inflict'
+              ? /^(inflict|mass inflict)\b/i.test((sp.name || '').trim())
+              : /^(cure|mass cure)\b/i.test((sp.name || '').trim());
+            const divCl = (typeof getDivineCasterInfo === 'function') ? (getDivineCasterInfo().cl || 5) : (Number(character?.spellcasting?.cl) || Number(character?.level) || 5);
+            const spontInfo = (srcKey === 'divine' && !sp.isDomainSpell && !isAlreadyTarget && typeof getClericSpontaneousSpellInfo === 'function')
+              ? getClericSpontaneousSpellInfo(lvl, divCl, spontMode)
+              : null;
+
+            if (spontInfo) {
+              const btnColorCls = spontMode === 'inflict'
+                ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80'
+                : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80';
+              const shortText = spontMode === 'inflict' ? `Inflict ${spontInfo.formula}` : `Cure ${spontInfo.formula}`;
+              bottomRightHtml = `<button type="button" onclick="event.stopPropagation(); castClericSpontaneousConversion('${safeName}', ${lvl})" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[8px] leading-none inline-flex items-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${sp.name}' into '${spontInfo.name}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
+            } else if (params.save && params.save !== 'None') {
+              bottomRightHtml = `<span class="truncate shrink-0 font-mono text-[8px] text-slate-500">${params.save}</span>`;
+            }
+          }
+
           return `
             <div onclick="selectCombatSpellDirect('${safeName}', '${srcKey}')"
                  onmouseenter="showSpellHoverTooltip(event, '${safeName}', '${srcKey}')"
@@ -1917,9 +1944,9 @@
               <div class="text-[11px] ${titleColorClass} truncate my-0.5">
                 ${sp.name}
               </div>
-              <div class="flex items-center justify-between w-full text-[8px] text-slate-400 mt-0.5">
+              <div class="flex items-center justify-between w-full text-[8px] text-slate-400 mt-0.5 gap-1">
                 <span class="truncate">${params.action}</span>
-                ${reorderControls ? reorderControls : `<span class="truncate shrink-0 font-mono text-[8px] text-slate-500">${params.save !== 'None' ? params.save : params.sr}</span>`}
+                ${bottomRightHtml}
               </div>
             </div>
           `;
