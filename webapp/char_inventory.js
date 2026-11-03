@@ -3837,12 +3837,15 @@
       s.async = true;
       s.onload = () => {
         if (window.HERO_SILHOUETTE_DATA_URI) {
-          const imgEl = document.getElementById('sil-base-img');
-          if (imgEl && (!character || !character.customSilhouetteImg)) {
-            imgEl.setAttribute('href', window.HERO_SILHOUETTE_DATA_URI);
+          const src = getSilhouetteImageSrc(character);
+          const imgEl = document.getElementById('sil-bg-image') || document.getElementById('sil-base-img');
+          if (imgEl && src) {
+            imgEl.setAttribute('href', src);
+            imgEl.setAttribute('xlink:href', src);
           }
         }
       };
+      s.onerror = () => { _heroSilhouetteScriptLoading = false; };
       document.head.appendChild(s);
     }
 
