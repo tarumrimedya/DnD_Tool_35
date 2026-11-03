@@ -545,26 +545,6 @@
                           <option value="2-Hand">2-Hand</option>
                         </select>
                       </div>
-
-                      <!-- Set 1 Enhancement Stepper & Elemental Chips -->
-                      <div class="bg-slate-900/90 border border-slate-800 rounded p-1.5 space-y-1.5 mt-1">
-                        <div class="flex items-center justify-between">
-                          <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                            <span>✨</span> Enhancement (+1..+5)
-                          </span>
-                          <div class="flex items-center gap-1">
-                            <button type="button" onclick="stepWeaponEnhancement(1, -1)" class="ui-btn-icon-sm w-6 h-6 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-bold transition cursor-pointer">-</button>
-                            <span id="set1-enhancement-badge" class="h-6 px-1.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-black border border-amber-500/40 min-w-[28px] inline-flex items-center justify-center">+0</span>
-                            <button type="button" onclick="stepWeaponEnhancement(1, 1)" class="ui-btn-icon-sm w-6 h-6 flex items-center justify-center bg-amber-600 hover:bg-amber-500 text-white rounded text-xs font-bold transition cursor-pointer">+</button>
-                          </div>
-                        </div>
-                        <div class="pt-1 border-t border-slate-800/80">
-                          <div class="text-[8px] uppercase font-bold text-slate-500 mb-1">Elemental & Property Chips</div>
-                          <div class="flex flex-wrap gap-1" id="set1-elemental-chips-container">
-                            <!-- Populated dynamically -->
-                          </div>
-                        </div>
-                      </div>
                     </div>
 
                     <!-- Set 2 Config -->
@@ -580,26 +560,6 @@
                       </div>
                       <div id="set2-weapon-editor-hint" class="text-[9px] text-slate-400 italic pt-1">
                         * Equipped in the off-hand for Two-Weapon Fighting (TWF) or shield defense.
-                      </div>
-
-                      <!-- Set 2 Enhancement Stepper & Elemental Chips -->
-                      <div class="bg-slate-900/90 border border-slate-800 rounded p-1.5 space-y-1.5 mt-1">
-                        <div class="flex items-center justify-between">
-                          <span class="text-[9px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                            <span>✨</span> Enhancement (+1..+5)
-                          </span>
-                          <div class="flex items-center gap-1">
-                            <button type="button" onclick="stepWeaponEnhancement(2, -1)" class="ui-btn-icon-sm w-6 h-6 flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-bold transition cursor-pointer">-</button>
-                            <span id="set2-enhancement-badge" class="h-6 px-1.5 rounded bg-sky-500/20 text-sky-300 font-mono text-[10px] font-black border border-sky-500/40 min-w-[28px] inline-flex items-center justify-center">+0</span>
-                            <button type="button" onclick="stepWeaponEnhancement(2, 1)" class="ui-btn-icon-sm w-6 h-6 flex items-center justify-center bg-sky-600 hover:bg-sky-500 text-white rounded text-xs font-bold transition cursor-pointer">+</button>
-                          </div>
-                        </div>
-                        <div class="pt-1 border-t border-slate-800/80">
-                          <div class="text-[8px] uppercase font-bold text-slate-500 mb-1">Elemental & Property Chips</div>
-                          <div class="flex flex-wrap gap-1" id="set2-elemental-chips-container">
-                            <!-- Populated dynamically -->
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>
