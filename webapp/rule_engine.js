@@ -1738,7 +1738,7 @@ const RuleEngine = {
         diceFormula,
         dmgType: isCure ? 'Healing / Positive' : 'Negative Energy',
         displayText: `${diceFormula} ${isCure ? 'Healing' : 'Damage'}`,
-        descDetail: `CL ${cl}: 1d8+${bonus} (tavan +5)`
+        descDetail: `CL ${cl}: 1d8+${bonus} (max +5)`
       };
     }
     if (cleanName.includes('cure moderate') || cleanName.includes('inflict moderate')) {
@@ -1756,7 +1756,7 @@ const RuleEngine = {
         diceFormula,
         dmgType: isCure ? 'Healing / Positive' : 'Negative Energy',
         displayText: `${diceFormula} ${isCure ? 'Healing' : 'Damage'}`,
-        descDetail: `CL ${cl}: 2d8+${bonus} (tavan +10)`
+        descDetail: `CL ${cl}: 2d8+${bonus} (max +10)`
       };
     }
     if (cleanName.includes('cure serious') || cleanName.includes('inflict serious')) {
@@ -1774,7 +1774,7 @@ const RuleEngine = {
         diceFormula,
         dmgType: isCure ? 'Healing / Positive' : 'Negative Energy',
         displayText: `${diceFormula} ${isCure ? 'Healing' : 'Damage'}`,
-        descDetail: `CL ${cl}: 3d8+${bonus} (tavan +15)`
+        descDetail: `CL ${cl}: 3d8+${bonus} (max +15)`
       };
     }
     if (cleanName.includes('cure critical') || cleanName.includes('inflict critical')) {
@@ -1792,7 +1792,7 @@ const RuleEngine = {
         diceFormula,
         dmgType: isCure ? 'Healing / Positive' : 'Negative Energy',
         displayText: `${diceFormula} ${isCure ? 'Healing' : 'Damage'}`,
-        descDetail: `CL ${cl}: 4d8+${bonus} (tavan +20)`
+        descDetail: `CL ${cl}: 4d8+${bonus} (max +20)`
       };
     }
 
@@ -1811,7 +1811,7 @@ const RuleEngine = {
         staticBonus: bonus,
         diceFormula,
         dmgType: 'STR Penalty',
-        displayText: `${diceFormula} STR Azaltma`,
+        displayText: `${diceFormula} STR Penalty`,
         descDetail: `CL ${cl}: 1d6 + ${bonus} STR Penalty (max +5)`
       };
     }
@@ -1832,7 +1832,7 @@ const RuleEngine = {
         diceFormula,
         dmgType: 'Negative / Temp HP',
         displayText: `${diceFormula} Negative Damage & Temp HP`,
-        descDetail: `CL ${cl}: ${diceCount}d6 (tavan 10d6)`
+        descDetail: `CL ${cl}: ${diceCount}d6 (max 10d6)`
       };
     }
 

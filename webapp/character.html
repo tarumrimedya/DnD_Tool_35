@@ -3675,20 +3675,22 @@
   <div id="combat-spell-hover-tooltip" onclick="hideSpellHoverTooltip()" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     
     <!-- 1. BAŞLIK BÖLÜMÜ -->
-    <div class="border-b border-purple-900/50 pb-1.5 space-y-0.5">
+    <div class="border-b border-purple-900/50 pb-1.5 space-y-1">
       <div class="flex items-center justify-between gap-2">
-        <div class="flex items-center gap-1.5 min-w-0">
-          <span id="spell-tooltip-icon" class="text-purple-400 text-sm">🔮</span>
+        <div class="flex items-center gap-1.5 min-w-0 flex-1">
+          <span id="spell-tooltip-icon" class="text-purple-400 text-sm shrink-0">🔮</span>
           <div id="spell-tooltip-title" class="font-black text-white text-sm truncate">Spell Name</div>
         </div>
         <div class="flex items-center gap-1.5 shrink-0">
-          <span id="spell-tooltip-school" class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800">1. Lvl • Evocation [Force]</span>
           <button type="button" onclick="hideSpellHoverTooltip(); event.stopPropagation();" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold leading-none cursor-pointer rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60" title="Close">✕</button>
         </div>
       </div>
-      <!-- Kaynak & Sınıf Bilgisi -->
-      <div class="flex items-center justify-between text-[9px] font-mono text-slate-400 px-0.5">
-        <span id="spell-tooltip-source-class" class="text-purple-300 font-bold truncate">Spontaneous • Sorcerer</span>
+      <!-- Kaynak, Sınıf & Okul Bilgisi -->
+      <div class="flex items-center justify-between gap-2 text-[9px] font-mono text-slate-400 px-0.5">
+        <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
+          <span id="spell-tooltip-source-class" class="text-purple-300 font-bold truncate">Spontaneous • Sorcerer</span>
+          <span id="spell-tooltip-school" class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0">1. Lvl • Evocation [Force]</span>
+        </div>
         <span id="spell-tooltip-cl-badge" class="text-amber-400/90 font-bold shrink-0">CL 16</span>
       </div>
     </div>

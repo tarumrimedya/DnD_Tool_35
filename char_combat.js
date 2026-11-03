@@ -1399,7 +1399,7 @@
       if (descEl) {
         let fullDesc = params.benefit || 'No description available.';
         if (scaling && scaling.descDetail) {
-          fullDesc = `${fullDesc} \n[⚡ CL ${cl}: ${scaling.descDetail}]`;
+          fullDesc = `${fullDesc} \n[⚡ ${scaling.descDetail}]`;
         }
         descEl.innerText = fullDesc;
       }
