@@ -415,9 +415,10 @@
       const baseDaily = wizDailyTable[lvl] || [3, 1];
       const result = baseDaily.map((base, spellLvl) => {
         const bonus = (spellLvl >= 1 && intMod >= spellLvl) ? Math.floor((intMod - spellLvl) / 4) + 1 : 0;
+        const itemSlotBonus = Number(character?.bonusSpellSlotsByLevel?.[spellLvl]) || 0;
         const prev = prevSlots.find(s => Number(s.level) === spellLvl);
         const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
-        const daily = Math.max(0, base + bonus + dmBonus);
+        const daily = Math.max(0, base + bonus + itemSlotBonus + dmBonus);
         return {
           level: spellLvl,
           daily,
@@ -744,8 +745,7 @@
 
     function getDivineCasterInfo() {
       const classesStatus = checkCharacterMagicClasses();
-      const wisVal = character?.stats?.WIS?.value ?? character?.abilities?.wis ?? 10;
-      const wisMod = character?.stats?.WIS?.mod ?? Math.floor((wisVal - 10) / 2);
+      const baseWisVal = character?.stats?.WIS?.value ?? character?.abilities?.wis ?? 10;
       const clMode = character?.settings?.clMode || 'Class Level';
       const cType = character?.settings?.casterType || 'spontaneous';
       const cTypeExplicit = character?.settings?.casterTypeExplicit === true;
@@ -763,7 +763,15 @@
       } else if (classesStatus.hasDivine) {
         cl = 1;
       }
-      return { statKey: 'WIS', statVal: wisVal, statMod: wisMod, cl, clMode, hasClass: classesStatus.hasDivine, divLvls };
+
+      // Madness Domain (srd_domains.json): For spellcasting (bonus spells and Save DCs), add Insanity score (Cleric Level / 2) to Wisdom
+      const chosenDoms = typeof getCharacterClericDomains === 'function' ? getCharacterClericDomains(character) : [];
+      const hasMadness = chosenDoms.some(d => String(d || '').toLowerCase() === 'madness');
+      const insanityBonus = (hasMadness && (divLvls > 0 || cl > 0)) ? Math.max(1, Math.floor((divLvls || cl || 1) / 2)) : 0;
+      const wisVal = baseWisVal + insanityBonus;
+      const wisMod = Math.floor((wisVal - 10) / 2);
+
+      return { statKey: 'WIS', statVal: wisVal, baseWisVal, insanityBonus, statMod: wisMod, cl, clMode, hasClass: classesStatus.hasDivine, divLvls };
     }
 
     function renderPreparedDisciplineView(hasPrepared) {
@@ -2080,6 +2088,87 @@
         `;
       }
 
+      // Build Cleric Turn/Rebuke Undead, Elemental Turning & Active Domain Granted Powers Strip
+      const turnDomainInfo = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getTurnUndeadAndDomainPowers === 'function')
+        ? RuleEngine.getTurnUndeadAndDomainPowers(character)
+        : { hasTurnUndead: false, activeDomainPowers: [], elementalTurningPools: [] };
+      if (!character.spellcasting.domainPowerUses || typeof character.spellcasting.domainPowerUses !== 'object') {
+        character.spellcasting.domainPowerUses = {};
+      }
+      const turnUsed = Math.max(0, Number(character.spellcasting.turnUndeadUsed) || 0);
+      const turnMax = turnDomainInfo.maxDailyTurns || 0;
+      const turnRem = Math.max(0, turnMax - turnUsed);
+      const isRebuke = spontMode === 'inflict';
+      const turnTitle = isRebuke ? 'Rebuke / Command Undead' : 'Turn / Destroy Undead';
+      const turnBonusTip = (turnDomainInfo.turningBonusSources || []).length > 0
+        ? ` • Bonuses: ${turnDomainInfo.turningBonusSources.join(', ')}`
+        : '';
+
+      let domainPowersStripHtml = '';
+      if (turnDomainInfo.hasTurnUndead || turnDomainInfo.elementalTurningPools.length > 0 || turnDomainInfo.activeDomainPowers.length > 0) {
+        const turnBtnHtml = turnDomainInfo.hasTurnUndead ? `
+          <button type="button" onclick="rollTurnUndeadCheck('undead', false)" class="${
+            turnRem > 0
+              ? (isRebuke ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-200 border-rose-500/80 shadow' : 'bg-sky-950/90 hover:bg-sky-800 text-sky-200 border-sky-500/80 shadow')
+              : 'bg-slate-900 text-slate-500 border-slate-800 opacity-50 cursor-not-allowed'
+          } h-8 px-2.5 rounded-lg border text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer" title="${turnTitle} (PHB p. 159): Check ${turnDomainInfo.turningCheckFormula}, Turning Damage ${turnDomainInfo.turningDamageFormula} HD (Cleric Lvl ${turnDomainInfo.effectiveTurningLevel})${turnBonusTip}">
+            <span>${isRebuke ? '💀' : '☀️'}</span>
+            <span>${isRebuke ? 'Rebuke Undead' : 'Turn Undead'}</span>
+            <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-950/80 border border-slate-700">${turnRem}/${turnMax}</span>
+          </button>
+        ` : '';
+
+        const elemBtnsHtml = (turnDomainInfo.elementalTurningPools || []).map(ep => {
+          const used = Math.max(0, Number(character.spellcasting.domainPowerUses[ep.id]) || 0);
+          const rem = Math.max(0, ep.maxUses - used);
+          return `
+            <button type="button" onclick="rollTurnUndeadCheck('${ep.id}', false)" class="${
+              rem > 0
+                ? 'bg-teal-950/90 hover:bg-teal-800 text-teal-200 border-teal-500/80 shadow'
+                : 'bg-slate-900 text-slate-500 border-slate-800 opacity-50 cursor-not-allowed'
+            } h-8 px-2.5 rounded-lg border text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer" title="${ep.domain} Domain Elemental Turning: Check ${turnDomainInfo.turningCheckFormula}, Damage ${turnDomainInfo.turningDamageFormula} HD">
+              <span>${ep.icon}</span>
+              <span>${ep.label}</span>
+              <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-950/80 border border-slate-700">${rem}/${ep.maxUses}</span>
+            </button>
+          `;
+        }).join('');
+
+        const activePowersBtnsHtml = (turnDomainInfo.activeDomainPowers || []).map(pw => {
+          const used = Math.max(0, Number(character.spellcasting.domainPowerUses[pw.id]) || 0);
+          const rem = Math.max(0, pw.maxUses - used);
+          const unit = pw.unitLabel || '/day';
+          return `
+            <button type="button" onclick="activateClericDomainPower('${pw.id}')" class="${
+              rem > 0
+                ? 'bg-amber-950/90 hover:bg-amber-800 text-amber-200 border-amber-500/80 shadow'
+                : 'bg-slate-900 text-slate-500 border-slate-800 opacity-50 cursor-not-allowed'
+            } h-8 px-2.5 rounded-lg border text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer" title="${pw.domain} Domain Granted Power (${pw.actionType}): ${pw.summary}">
+              <span>${pw.icon}</span>
+              <span>${pw.name}</span>
+              <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-950/80 border border-slate-700">${rem}/${pw.maxUses}${unit === 'rds/day' ? ' rds' : ''}</span>
+            </button>
+          `;
+        }).join('');
+
+        domainPowersStripHtml = `
+          <div class="bg-slate-950/85 border border-yellow-600/40 rounded-xl p-2.5 space-y-2 shadow">
+            <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] px-1">
+              <span class="text-yellow-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                <span>⚜️</span>
+                <span>Turn / Rebuke Undead &amp; Active Domain Granted Powers:</span>
+              </span>
+              <span class="text-slate-400 text-[10px] font-mono">Check: ${turnDomainInfo.turningCheckFormula} • Turning Damage: ${turnDomainInfo.turningDamageFormula} HD${turnDomainInfo.extraTurningUses > 0 ? ` • Extra Turning (+${turnDomainInfo.extraTurningUses})` : ''}</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              ${turnBtnHtml}
+              ${elemBtnsHtml}
+              ${activePowersBtnsHtml}
+            </div>
+          </div>
+        `;
+      }
+
       container.innerHTML = `
         <div class="space-y-4">
           <!-- Caster Header Bar -->
@@ -2122,6 +2211,7 @@
           </div>
 
           <!-- 4x3 Fixed Slot Matrix -->
+          ${domainPowersStripHtml}
           <div class="bg-slate-950/80 border border-amber-900/50 rounded-xl p-2.5 space-y-2 shadow">
             <div class="min-h-[24px] flex flex-wrap items-center justify-between gap-2 text-[11px] px-1">
               <span class="text-amber-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
@@ -2283,15 +2373,186 @@
         s.used = 0;
         s.domainUsed = 0;
       });
+      if (character?.spellcasting) {
+        character.spellcasting.turnUndeadUsed = 0;
+        character.spellcasting.domainPowerUses = {};
+      }
       saveStateToStorage();
       renderAll();
       showDiceTopToast({
         icon: '✨',
-        title: 'Divine Spell Slots',
-        breakdown: 'All daily divine & domain spell slots refreshed',
+        title: 'Divine Slots & Domain Powers Restored',
+        breakdown: 'All daily divine slots, domain slots, Turn Undead uses, and 1/day Domain powers refreshed.',
         total: 'Restored'
       });
     }
+
+    // D&D 3.5e RAW Turn/Rebuke Undead & Elemental Turning Roller (PHB p. 159 + Glory/Sun/Extra Turning)
+    function rollTurnUndeadCheck(poolId = 'undead', isGreaterTurning = false) {
+      if (!character || typeof RuleEngine === 'undefined' || typeof RuleEngine.getTurnUndeadAndDomainPowers !== 'function') return;
+      if (!character.spellcasting) character.spellcasting = {};
+      if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
+
+      const info = RuleEngine.getTurnUndeadAndDomainPowers(character);
+      const isRebuke = (character.spellcasting.clericSpontaneousMode || 'cure') === 'inflict';
+      let label = isRebuke ? 'Rebuke Undead' : 'Turn Undead';
+      let maxUses = info.maxDailyTurns || 1;
+      let used = Math.max(0, Number(character.spellcasting.turnUndeadUsed) || 0);
+
+      if (poolId !== 'undead') {
+        const ep = (info.elementalTurningPools || []).find(p => p.id === poolId);
+        if (!ep) return;
+        label = `${ep.label} (${ep.domain} Domain)`;
+        maxUses = ep.maxUses;
+        used = Math.max(0, Number(character.spellcasting.domainPowerUses[poolId]) || 0);
+      }
+
+      if (used >= maxUses) {
+        showDiceTopToast({
+          icon: '⚠️',
+          title: `No ${label} Uses Remaining`,
+          breakdown: `All ${maxUses} daily uses of ${label} have been expended.`,
+          total: '0 Left'
+        });
+        return;
+      }
+
+      if (poolId === 'undead') {
+        character.spellcasting.turnUndeadUsed = used + 1;
+      } else {
+        character.spellcasting.domainPowerUses[poolId] = used + 1;
+      }
+      if (typeof consumeActionEconomy === 'function') consumeActionEconomy('standard', label);
+      saveStateToStorage(true);
+      renderAll();
+
+      // Roll Turning Check (1d20 + CHA + Glory + Knowledge Religion Synergy) & Turning Damage (2d6/3d6 + Cleric Lvl + CHA)
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const checkMod = info.chaMod + info.turningCheckBonus;
+      const checkTotal = d20 + checkMod;
+
+      // PHB Table 8-9: Turning Undead Max Hit Dice Affected
+      let maxHdOffset = -4;
+      if (checkTotal <= 0) maxHdOffset = -4;
+      else if (checkTotal <= 3) maxHdOffset = -3;
+      else if (checkTotal <= 6) maxHdOffset = -2;
+      else if (checkTotal <= 9) maxHdOffset = -1;
+      else if (checkTotal <= 12) maxHdOffset = 0;
+      else if (checkTotal <= 15) maxHdOffset = 1;
+      else if (checkTotal <= 18) maxHdOffset = 2;
+      else if (checkTotal <= 21) maxHdOffset = 3;
+      else maxHdOffset = 4;
+      const maxHdAffected = Math.max(1, info.effectiveTurningLevel + maxHdOffset);
+
+      const diceCount = 2 + (info.turningDamageDiceBonus || 0);
+      let dmgRolls = [];
+      let dmgDiceSum = 0;
+      for (let i = 0; i < diceCount; i++) {
+        const r = Math.floor(Math.random() * 6) + 1;
+        dmgRolls.push(r);
+        dmgDiceSum += r;
+      }
+      const totalHdTurned = Math.max(1, dmgDiceSum + info.effectiveTurningLevel + info.chaMod);
+      const destroyThreshold = Math.floor(info.effectiveTurningLevel / 2);
+      const greaterNote = isGreaterTurning
+        ? ' • ☀️ GREATER TURNING: All turned undead are DESTROYED instead!'
+        : (destroyThreshold >= 1 ? ` • Destroy/Command if ≤ ${destroyThreshold} HD` : '');
+
+      showDiceTopToast({
+        icon: isGreaterTurning ? '☀️' : (isRebuke ? '💀' : '✨'),
+        title: `${isGreaterTurning ? 'Greater Turning (Sun Domain)' : label} (${maxUses - used - 1}/${maxUses} Left)`,
+        breakdown: `Turning Check: 1d20(${d20}) ${checkMod >= 0 ? '+' : ''}${checkMod} = ${checkTotal} ➔ Max Creature HD: ${maxHdAffected} HD • Turning Damage: ${diceCount}d6([${dmgRolls.join('+')}])+${info.effectiveTurningLevel + info.chaMod} = ${totalHdTurned} Total HD${greaterNote}`,
+        total: `${totalHdTurned} HD (Max ${maxHdAffected} HD)`
+      });
+    }
+    window.rollTurnUndeadCheck = rollTurnUndeadCheck;
+
+    // Activate 1/day Cleric Domain Granted Power (Strength, Protection, Destruction, Charm, Travel, Luck, Death/Repose, Sun, Nobility, Animal, Community)
+    function activateClericDomainPower(powerId) {
+      if (!character || typeof RuleEngine === 'undefined' || typeof RuleEngine.getTurnUndeadAndDomainPowers !== 'function') return;
+      if (!character.spellcasting) character.spellcasting = {};
+      if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
+
+      const info = RuleEngine.getTurnUndeadAndDomainPowers(character);
+      const pw = (info.activeDomainPowers || []).find(p => p.id === powerId);
+      if (!pw) return;
+
+      const used = Math.max(0, Number(character.spellcasting.domainPowerUses[pw.id]) || 0);
+      if (used >= pw.maxUses) {
+        showDiceTopToast({
+          icon: '⚠️',
+          title: `${pw.name} Expended`,
+          breakdown: `No daily uses remaining for ${pw.name} (${pw.domain} Domain).`,
+          total: '0 Left'
+        });
+        return;
+      }
+
+      if (pw.kind === 'greater_turning') {
+        character.spellcasting.domainPowerUses[pw.id] = used + 1;
+        rollTurnUndeadCheck('undead', true);
+        return;
+      }
+
+      character.spellcasting.domainPowerUses[pw.id] = used + 1;
+      if (typeof consumeActionEconomy === 'function') consumeActionEconomy(pw.actionType, pw.name);
+
+      if (pw.kind === 'buff') {
+        if (!Array.isArray(character.buffs)) character.buffs = [];
+        const buffObj = {
+          id: pw.id,
+          schemaVersion: 2,
+          name: `${pw.name} (${pw.domain} Domain)`,
+          active: true,
+          source: 'Domain',
+          casterLevel: info.domainCasterLvl,
+          cl: info.domainCasterLvl,
+          duration: pw.durationText,
+          durationText: pw.durationText,
+          initialDuration: pw.durationText,
+          modifiers: Array.isArray(pw.modifiers) ? JSON.parse(JSON.stringify(pw.modifiers)) : [],
+          ruleFlags: pw.ruleFlags ? JSON.parse(JSON.stringify(pw.ruleFlags)) : {},
+          summary: pw.summary,
+          description: `${pw.summary} (${pw.durationText})`
+        };
+        const existingIdx = character.buffs.findIndex(b => b && (b.id === pw.id || b.name === buffObj.name));
+        if (existingIdx !== -1) character.buffs[existingIdx] = buffObj;
+        else character.buffs.push(buffObj);
+
+        if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
+          RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
+        }
+        saveStateToStorage(true);
+        renderAll();
+        showDiceTopToast({
+          icon: pw.icon || '⚜️',
+          title: `${pw.name} (${pw.domain} Domain) Activated`,
+          breakdown: `${pw.summary} • Duration: ${pw.durationText} • ${pw.maxUses - used - 1}/${pw.maxUses} Left`,
+          total: 'Buff Active'
+        });
+        return;
+      }
+
+      saveStateToStorage(true);
+      renderAll();
+
+      if (pw.kind === 'roll' && pw.formula) {
+        rollSpellOrManeuverFormula(
+          pw.formula,
+          `${pw.name} (${pw.domain} Domain • If Total ≥ Target Current HP, Target Dies)`,
+          { name: pw.name, effectType: 'damage' }
+        );
+        return;
+      }
+
+      showDiceTopToast({
+        icon: pw.icon || '⚜️',
+        title: `${pw.name} (${pw.domain} Domain)`,
+        breakdown: `${pw.summary} • ${pw.maxUses - used - 1}/${pw.maxUses} Left`,
+        total: 'Activated'
+      });
+    }
+    window.activateClericDomainPower = activateClericDomainPower;
 
     function getCasterInfo() {
       const classesStatus = checkCharacterMagicClasses();

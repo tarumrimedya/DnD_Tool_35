@@ -2185,6 +2185,386 @@ const RuleEngine = {
     return Math.max(1, rawBase + bonus);
   },
 
+  // Canonical V2 Active Cleric Domains Harvester (with Built-in Fallback for all 36 SRD Domains)
+  getCharacterActiveDomainEntries(character = null) {
+    if (!character) return [];
+    const domainNames = new Set();
+    if (Array.isArray(character?.spellcasting?.domains)) {
+      character.spellcasting.domains.forEach(d => {
+        const cleanD = String(d || '').replace(/^[⚜️\s]*Domain:\s*/i, '').trim();
+        if (cleanD) domainNames.add(cleanD);
+      });
+    }
+    const progList = Array.isArray(character?.levelProgression) ? character.levelProgression : [];
+    const activeMaxLvl = Number(character?.level) || 0;
+    progList.forEach((row, idx) => {
+      if (!row || row.isPlanned || row.active === false) return;
+      const rowLvl = Number(row.level) || (idx + 1);
+      if (activeMaxLvl > 0 && rowLvl > activeMaxLvl) return;
+      const combined = [
+        ...(Array.isArray(row.specialAbilities) ? row.specialAbilities : []),
+        ...(Array.isArray(row.feats) ? row.feats : [])
+      ];
+      combined.forEach(entry => {
+        const m = String(entry || '').match(/Domain:\s*([A-Za-z]+)/i);
+        if (m && m[1]) domainNames.add(m[1].trim());
+      });
+    });
+
+    const BUILTIN_DOMAINS = {
+      air: { name: 'Air', modifiers: [], ruleFlags: { turnEarth: true, rebukeAir: true }, spellLikeAbilities: [] },
+      animal: { name: 'Animal', modifiers: [], ruleFlags: {}, spellLikeAbilities: [{ name: 'Speak with Animals', uses: '1/day', casterLevel: 'clericLevel' }] },
+      artifice: { name: 'Artifice', modifiers: [{ target: 'skill.craft', value: 4, type: 'Domain', condition: null }, { target: 'casterLevel.creation', value: 1, type: 'Domain', condition: 'Conjuration (Creation) spells' }], ruleFlags: {}, spellLikeAbilities: [] },
+      chaos: { name: 'Chaos', modifiers: [{ target: 'casterLevel.chaotic', value: 1, type: 'Domain', condition: 'Chaos spells' }], ruleFlags: {}, spellLikeAbilities: [] },
+      charm: { name: 'Charm', modifiers: [], ruleFlags: { boostChaBy4OncePerDay: true }, spellLikeAbilities: [] },
+      community: { name: 'Community', modifiers: [{ target: 'skill.diplomacy', value: 2, type: 'Competence', condition: null }], ruleFlags: {}, spellLikeAbilities: [{ name: 'Calm Emotions', uses: '1/day', casterLevel: 'clericLevel' }] },
+      creation: { name: 'Creation', modifiers: [{ target: 'casterLevel.creation', value: 2, type: 'Domain', condition: 'Conjuration (Creation) spells' }], ruleFlags: {}, spellLikeAbilities: [] },
+      darkness: { name: 'Darkness', modifiers: [], ruleFlags: {}, spellLikeAbilities: [] },
+      death: { name: 'Death', modifiers: [], ruleFlags: { deathTouch: '1/day' }, spellLikeAbilities: [] },
+      destruction: { name: 'Destruction', modifiers: [], ruleFlags: { smiteAttack: '1/day' }, spellLikeAbilities: [] },
+      earth: { name: 'Earth', modifiers: [], ruleFlags: { turnAir: true, rebukeEarth: true }, spellLikeAbilities: [] },
+      evil: { name: 'Evil', modifiers: [{ target: 'casterLevel.evil', value: 1, type: 'Domain', condition: 'Evil spells' }], ruleFlags: {}, spellLikeAbilities: [] },
+      fire: { name: 'Fire', modifiers: [], ruleFlags: { turnWater: true, rebukeFire: true }, spellLikeAbilities: [] },
+      glory: { name: 'Glory', modifiers: [{ target: 'turning.check', value: 2, type: 'Domain', condition: 'Turn undead checks' }, { target: 'turning.damageDice', value: 1, type: 'Domain', condition: 'Turn undead damage (+1d6)' }], ruleFlags: {}, spellLikeAbilities: [] },
+      good: { name: 'Good', modifiers: [{ target: 'casterLevel.good', value: 1, type: 'Domain', condition: 'Good spells' }], ruleFlags: {}, spellLikeAbilities: [] },
+      healing: { name: 'Healing', modifiers: [{ target: 'casterLevel.healing', value: 1, type: 'Domain', condition: 'Conjuration (Healing) spells' }], ruleFlags: {}, spellLikeAbilities: [] },
+      knowledge: { name: 'Knowledge', modifiers: [{ target: 'casterLevel.divination', value: 1, type: 'Domain', condition: 'Divination spells' }], ruleFlags: {}, spellLikeAbilities: [] },
+      law: { name: 'Law', modifiers: [{ target: 'casterLevel.lawful', value: 1, type: 'Domain', condition: 'Law spells' }], ruleFlags: {}, spellLikeAbilities: [] },
+      liberation: { name: 'Liberation', modifiers: [{ target: 'save.all', value: 2, type: 'Morale', condition: 'vs enchantment spells or effects' }], ruleFlags: {}, spellLikeAbilities: [] },
+      luck: { name: 'Luck', modifiers: [], ruleFlags: { goodFortuneReroll: '1/day' }, spellLikeAbilities: [] },
+      madness: { name: 'Madness', modifiers: [], ruleFlags: { insanityBonus: 'clericLevel / 2' }, spellLikeAbilities: [] },
+      magic: { name: 'Magic', modifiers: [], ruleFlags: { useWizardSpellDevices: true }, spellLikeAbilities: [] },
+      mind: { name: 'Mind', modifiers: [{ target: 'skill.bluff', value: 2, type: 'Competence', condition: null }, { target: 'skill.diplomacy', value: 2, type: 'Competence', condition: null }, { target: 'skill.senseMotive', value: 2, type: 'Competence', condition: null }, { target: 'save.will', value: 2, type: 'Competence', condition: 'vs enchantment spells and effects' }], ruleFlags: {}, spellLikeAbilities: [] },
+      nobility: { name: 'Nobility', modifiers: [], ruleFlags: {}, spellLikeAbilities: [{ name: 'Inspire Allies (+2 Morale to saves, attack, checks, damage)', uses: '1/day', duration: 'Charisma bonus rounds' }] },
+      plant: { name: 'Plant', modifiers: [], ruleFlags: { rebukePlant: true }, spellLikeAbilities: [] },
+      protection: { name: 'Protection', modifiers: [], ruleFlags: { protectiveWard: '1/day' }, spellLikeAbilities: [] },
+      repose: { name: 'Repose', modifiers: [], ruleFlags: { deathTouch: '1/day' }, spellLikeAbilities: [] },
+      rune: { name: 'Rune', modifiers: [], ruleFlags: {}, spellLikeAbilities: [] },
+      scalykind: { name: 'Scalykind', modifiers: [], ruleFlags: { rebukeScalykind: true }, spellLikeAbilities: [] },
+      strength: { name: 'Strength', modifiers: [], ruleFlags: { featOfStrength: '1/day' }, spellLikeAbilities: [] },
+      sun: { name: 'Sun', modifiers: [], ruleFlags: { greaterTurning: '1/day' }, spellLikeAbilities: [] },
+      travel: { name: 'Travel', modifiers: [], ruleFlags: { freedomOfMovementRoundsPerDay: 'clericLevel' }, spellLikeAbilities: [] },
+      trickery: { name: 'Trickery', modifiers: [], ruleFlags: {}, spellLikeAbilities: [] },
+      war: { name: 'War', modifiers: [], ruleFlags: { warDeityFavoredWeapon: true }, spellLikeAbilities: [] },
+      water: { name: 'Water', modifiers: [], ruleFlags: { turnFire: true, rebukeWater: true }, spellLikeAbilities: [] },
+      weather: { name: 'Weather', modifiers: [], ruleFlags: {}, spellLikeAbilities: [] }
+    };
+
+    const entries = [];
+    domainNames.forEach(domName => {
+      const domLower = domName.toLowerCase();
+      const srdDom = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
+        ? window.SrdCompendium.getDomain(domName)
+        : null;
+      const fallback = BUILTIN_DOMAINS[domLower] || { name: domName, modifiers: [], ruleFlags: {}, spellLikeAbilities: [] };
+      entries.push({
+        name: srdDom?.name || fallback.name || domName,
+        modifiers: (srdDom && Array.isArray(srdDom.modifiers) && srdDom.modifiers.length > 0) ? srdDom.modifiers : (fallback.modifiers || []),
+        ruleFlags: { ...(fallback.ruleFlags || {}), ...(srdDom?.ruleFlags || {}) },
+        spellLikeAbilities: (srdDom?.grantedPower?.spellLikeAbilities?.length > 0)
+          ? srdDom.grantedPower.spellLikeAbilities
+          : (fallback.spellLikeAbilities || []),
+        description: srdDom?.grantedPower?.description || srdDom?.description || ''
+      });
+    });
+    return entries;
+  },
+
+  // Canonical V2 Turn/Rebuke Undead, Elemental Turning & Cleric Domain Active Powers Resolver
+  getTurnUndeadAndDomainPowers(character = null) {
+    if (!character) return { hasTurnUndead: false, activeDomainPowers: [], elementalTurningPools: [] };
+    const chaMod = this.getAbilityMod(character?.abilities?.cha || 10);
+    const progList = Array.isArray(character?.levelProgression) ? character.levelProgression.filter(p => p && !p.isPlanned && p.active !== false) : [];
+    let clericLvl = 0;
+    let paladinLvl = 0;
+    let dreadNecroLvl = 0;
+    progList.forEach(p => {
+      const cn = String(p.className || p.class || '').toLowerCase().trim();
+      if (cn.includes('cleric') || cn.includes('rahip')) clericLvl++;
+      else if (cn.includes('paladin')) paladinLvl++;
+      else if (cn.includes('dread necromancer')) dreadNecroLvl++;
+    });
+    if (clericLvl > 0 && clericLvl === progList.length && Number(character.level) > progList.length) {
+      clericLvl = Number(character.level);
+    }
+    if (clericLvl === 0 && paladinLvl === 0 && dreadNecroLvl === 0) {
+      const cStr = String(character.classes || character.class || '').toLowerCase();
+      if (cStr.includes('cleric') || cStr.includes('rahip')) clericLvl = Number(character.level) || 1;
+      else if (cStr.includes('paladin')) paladinLvl = Number(character.level) || 1;
+    }
+
+    const allFeatsAndAbilities = [
+      ...(Array.isArray(character.feats) ? character.feats : []),
+      ...(Array.isArray(character.specialAbilities) ? character.specialAbilities : []),
+      ...progList.flatMap(p => [...(p.feats || []), ...(p.specialAbilities || [])])
+    ];
+
+    const hasExplicitTurn = allFeatsAndAbilities.some(f => {
+      const n = String(typeof f === 'string' ? f : (f?.name || '')).toLowerCase();
+      return n.includes('turn undead') || n.includes('rebuke undead');
+    });
+    const hasTurnUndead = clericLvl >= 1 || paladinLvl >= 4 || dreadNecroLvl >= 1 || hasExplicitTurn;
+    const effectiveTurningLevel = clericLvl > 0
+      ? clericLvl
+      : (dreadNecroLvl > 0 ? dreadNecroLvl : (paladinLvl >= 4 ? (paladinLvl - 3) : (Number(character.level) || 1)));
+    const domainCasterLvl = Math.max(1, clericLvl || Number(character.level) || 1);
+
+    // Count Extra Turning (+4 uses per feat) from V2 `turnUndead` modifier or feat name
+    let extraTurningUses = 0;
+    const seenExtraTurning = new Set();
+    (Array.isArray(character.feats) ? character.feats : []).forEach((f, idx) => {
+      if (!f || f.active === false) return;
+      const fName = String(typeof f === 'string' ? f : (f.name || '')).toLowerCase().trim();
+      const mods = Array.isArray(f.modifiers) ? f.modifiers : (this.getMasterDbEntry(f, 'Feat')?.modifiers || []);
+      const turnMod = (mods || []).find(m => m && String(m.target || '').toLowerCase() === 'turnundead');
+      if (turnMod) {
+        extraTurningUses += Number(turnMod.value) || 4;
+        seenExtraTurning.add(idx);
+      } else if (fName.includes('extra turning')) {
+        extraTurningUses += 4;
+        seenExtraTurning.add(idx);
+      }
+    });
+    if (extraTurningUses === 0) {
+      progList.forEach(p => {
+        (p.feats || []).forEach(f => {
+          const fName = String(typeof f === 'string' ? f : (f?.name || '')).toLowerCase().trim();
+          if (fName.includes('extra turning')) extraTurningUses += 4;
+        });
+      });
+    }
+
+    // Active Domains: Check Glory (+2 turning check, +1d6 turning damage), Madness, and active 1/day powers
+    const activeDomains = this.getCharacterActiveDomainEntries(character);
+    let turningCheckBonus = 0;
+    let turningDamageDiceBonus = 0;
+    const turningBonusSources = [];
+
+    // Knowledge (religion) 5+ ranks grants +2 Synergy bonus on Turn/Rebuke Undead checks (PHB p. 159)
+    const knowRelSkill = (Array.isArray(character.skills) ? character.skills : []).find(sk => {
+      const k = String(sk?.key || sk?.name || '').toLowerCase();
+      return k.includes('religion') || k === 'knowledge_religion';
+    });
+    if (knowRelSkill && Number(knowRelSkill.ranks) >= 5) {
+      turningCheckBonus += 2;
+      turningBonusSources.push('Knowledge (Religion) 5+ Ranks (+2 Synergy)');
+    }
+
+    const elementalTurningPools = [];
+    const activeDomainPowers = [];
+
+    activeDomains.forEach(dom => {
+      const domName = dom.name;
+      (dom.modifiers || []).forEach(mod => {
+        const t = String(mod?.target || '').toLowerCase();
+        const v = Number(mod?.value) || 0;
+        if (t === 'turning.check' && v !== 0) {
+          turningCheckBonus += v;
+          turningBonusSources.push(`${domName} Domain (+${v} Check)`);
+        } else if (t === 'turning.damagedice' && v !== 0) {
+          turningDamageDiceBonus += v;
+          turningBonusSources.push(`${domName} Domain (+${v}d6 Damage)`);
+        }
+      });
+
+      const rf = dom.ruleFlags || {};
+      if (rf.turnEarth || rf.rebukeAir) {
+        elementalTurningPools.push({ id: 'turn_air_domain', domain: domName, label: 'Turn Earth / Rebuke Air', icon: '🌪️', maxUses: Math.max(1, 3 + chaMod + extraTurningUses) });
+      }
+      if (rf.turnAir || rf.rebukeEarth) {
+        elementalTurningPools.push({ id: 'turn_earth_domain', domain: domName, label: 'Turn Air / Rebuke Earth', icon: '🪨', maxUses: Math.max(1, 3 + chaMod + extraTurningUses) });
+      }
+      if (rf.turnWater || rf.rebukeFire) {
+        elementalTurningPools.push({ id: 'turn_fire_domain', domain: domName, label: 'Turn Water / Rebuke Fire', icon: '🔥', maxUses: Math.max(1, 3 + chaMod + extraTurningUses) });
+      }
+      if (rf.turnFire || rf.rebukeWater) {
+        elementalTurningPools.push({ id: 'turn_water_domain', domain: domName, label: 'Turn Fire / Rebuke Water', icon: '🌊', maxUses: Math.max(1, 3 + chaMod + extraTurningUses) });
+      }
+      if (rf.rebukePlant) {
+        elementalTurningPools.push({ id: 'turn_plant_domain', domain: domName, label: 'Rebuke / Command Plants', icon: '🌿', maxUses: Math.max(1, 3 + chaMod + extraTurningUses) });
+      }
+      if (rf.rebukeScalykind) {
+        elementalTurningPools.push({ id: 'turn_scalykind_domain', domain: domName, label: 'Rebuke Reptiles & Snakes', icon: '🐍', maxUses: Math.max(1, 3 + chaMod + extraTurningUses) });
+      }
+
+      if (rf.featOfStrength) {
+        activeDomainPowers.push({
+          id: 'dom_strength_feat',
+          domain: domName,
+          name: 'Feat of Strength',
+          icon: '💪',
+          actionType: 'Free Action',
+          maxUses: 1,
+          durationText: '1 round',
+          summary: `+${domainCasterLvl} Enhancement to STR for 1 round`,
+          kind: 'buff',
+          modifiers: [{ target: 'ability.str', value: domainCasterLvl, formula: String(domainCasterLvl), type: 'Enhancement', condition: null }]
+        });
+      }
+      if (rf.protectiveWard) {
+        activeDomainPowers.push({
+          id: 'dom_protection_ward',
+          domain: domName,
+          name: 'Protective Ward',
+          icon: '🛡️',
+          actionType: 'Standard Action',
+          maxUses: 1,
+          durationText: '1 hour (next save)',
+          summary: `+${domainCasterLvl} Resistance bonus on next saving throw`,
+          kind: 'buff',
+          modifiers: [{ target: 'save.all', value: domainCasterLvl, formula: String(domainCasterLvl), type: 'Resistance', condition: null }]
+        });
+      }
+      if (rf.smiteAttack) {
+        activeDomainPowers.push({
+          id: 'dom_destruction_smite',
+          domain: domName,
+          name: 'Destruction Smite',
+          icon: '⚔️',
+          actionType: 'Free Action (Declare)',
+          maxUses: 1,
+          durationText: '1 round (single melee attack)',
+          summary: `+4 Attack and +${domainCasterLvl} Damage on single melee attack`,
+          kind: 'buff',
+          modifiers: [
+            { target: 'attack.all', value: 4, formula: '4', type: 'Untyped', condition: null },
+            { target: 'damage.weapon', value: domainCasterLvl, formula: String(domainCasterLvl), type: 'Untyped', condition: null }
+          ]
+        });
+      }
+      if (rf.boostChaBy4OncePerDay) {
+        activeDomainPowers.push({
+          id: 'dom_charm_boost',
+          domain: domName,
+          name: 'Charm Boost (+4 CHA)',
+          icon: '✨',
+          actionType: 'Free Action',
+          maxUses: 1,
+          durationText: '1 min',
+          summary: '+4 Untyped bonus to CHA for 1 minute',
+          kind: 'buff',
+          modifiers: [{ target: 'ability.cha', value: 4, formula: '4', type: 'Untyped', condition: null }]
+        });
+      }
+      if (rf.freedomOfMovementRoundsPerDay) {
+        activeDomainPowers.push({
+          id: 'dom_travel_fom',
+          domain: domName,
+          name: 'Freedom of Movement (Travel)',
+          icon: '🪽',
+          actionType: 'Automatic / Free',
+          maxUses: domainCasterLvl,
+          unitLabel: 'rds/day',
+          durationText: '1 round',
+          summary: `Act normally regardless of magical impediments (${domainCasterLvl} rds/day)`,
+          kind: 'buff',
+          modifiers: [],
+          ruleFlags: { freedomOfMovement: true }
+        });
+      }
+      if (rf.goodFortuneReroll) {
+        activeDomainPowers.push({
+          id: 'dom_luck_reroll',
+          domain: domName,
+          name: 'Good Fortune (Reroll)',
+          icon: '🍀',
+          actionType: 'Immediate / Free',
+          maxUses: 1,
+          durationText: 'Instantaneous',
+          summary: 'Reroll one roll just made before DM declares success or failure',
+          kind: 'reroll'
+        });
+      }
+      if (rf.deathTouch) {
+        activeDomainPowers.push({
+          id: `dom_${domName.toLowerCase()}_deathtouch`,
+          domain: domName,
+          name: `Death Touch (${domName})`,
+          icon: '💀',
+          actionType: 'Standard Action (Melee Touch)',
+          maxUses: 1,
+          durationText: 'Instantaneous',
+          summary: `Roll ${domainCasterLvl}d6; if total >= target current HP, it dies (no save)`,
+          kind: 'roll',
+          formula: `${domainCasterLvl}d6`
+        });
+      }
+      if (rf.greaterTurning) {
+        activeDomainPowers.push({
+          id: 'dom_sun_greater_turning',
+          domain: domName,
+          name: 'Greater Turning',
+          icon: '☀️',
+          actionType: 'Standard Action',
+          maxUses: 1,
+          durationText: 'Instantaneous',
+          summary: 'Undead creatures that would be turned are destroyed instead (1/day)',
+          kind: 'greater_turning'
+        });
+      }
+
+      (dom.spellLikeAbilities || []).forEach(sla => {
+        const slaName = String(sla?.name || '').trim();
+        if (!slaName) return;
+        if (domName.toLowerCase() === 'nobility' || slaName.toLowerCase().includes('inspire allies')) {
+          const durRds = Math.max(1, chaMod);
+          activeDomainPowers.push({
+            id: 'dom_nobility_inspire',
+            domain: domName,
+            name: 'Inspire Allies',
+            icon: '👑',
+            actionType: 'Standard Action',
+            maxUses: 1,
+            durationText: `${durRds} round${durRds > 1 ? 's' : ''}`,
+            summary: `+2 Morale bonus on saving throws, attack rolls, ability/skill checks, and weapon damage (${durRds} rds)`,
+            kind: 'buff',
+            modifiers: [
+              { target: 'save.all', value: 2, formula: '2', type: 'Morale', condition: null },
+              { target: 'attack.all', value: 2, formula: '2', type: 'Morale', condition: null },
+              { target: 'damage.weapon', value: 2, formula: '2', type: 'Morale', condition: null },
+              { target: 'skill.all', value: 2, formula: '2', type: 'Morale', condition: null }
+            ]
+          });
+        } else {
+          activeDomainPowers.push({
+            id: `dom_${domName.toLowerCase()}_sla_${slaName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
+            domain: domName,
+            name: `${slaName} (Sp)`,
+            icon: '🔮',
+            actionType: 'Standard Action',
+            maxUses: 1,
+            durationText: `CL ${domainCasterLvl}`,
+            summary: `${domName} Domain Spell-Like Ability (1/day at CL ${domainCasterLvl})`,
+            kind: 'sla',
+            spellName: slaName
+          });
+        }
+      });
+    });
+
+    const maxDailyTurns = Math.max(1, 3 + chaMod + extraTurningUses);
+    const totalCheckMod = chaMod + turningCheckBonus;
+    const turningCheckFormula = `1d20${totalCheckMod >= 0 ? '+' + totalCheckMod : totalCheckMod}`;
+    const totalDmgMod = effectiveTurningLevel + chaMod;
+    const turningDamageFormula = `${2 + turningDamageDiceBonus}d6${totalDmgMod >= 0 ? '+' + totalDmgMod : totalDmgMod}`;
+
+    return {
+      hasTurnUndead,
+      effectiveTurningLevel,
+      domainCasterLvl,
+      chaMod,
+      extraTurningUses,
+      turningCheckBonus,
+      turningDamageDiceBonus,
+      turningBonusSources,
+      maxDailyTurns,
+      turningCheckFormula,
+      turningDamageFormula,
+      elementalTurningPools,
+      activeDomainPowers
+    };
+  },
+
   // Universal Canonical V2 Spell Buff Resolver (SRD + Splatbooks + Dynamic NLP Fallback)
   resolveSpellBuffSpec(spell, character = null, customCl = null) {
     if (!spell) return { isBuffSpell: false };
@@ -2588,6 +2968,13 @@ const RuleEngine = {
     let itemSpeedBonus = 0;
     let buffSpeedBonus = 0;
     let buffSpeedPenalty = 0;
+    let swimSpeed = 0;
+    let climbSpeed = 0;
+    let flySpeed = 0;
+    let bonusPowerPoints = 0;
+    let grappleModBonus = 0;
+    const bonusSpellSlotsByLevel = {};
+    const conditionalSaveBonuses = [];
     let buffAcPenalty = 0;
     let buffSkillBonus = 0;
     let debuffHpPenalty = 0;
@@ -2646,19 +3033,41 @@ const RuleEngine = {
 
         // Saving Throws (`save.all`, `saves.all`, `save.fort`, `fort`, etc.)
         const saveSub = target.replace(/^saves?\./, '');
-        if (saveSub === 'all' || target === 'saves' || target === 'all_saves') {
-          saveBonusBuckets.fort.push({ val, type: mType, source: sourceName });
-          saveBonusBuckets.ref.push({ val, type: mType, source: sourceName });
-          saveBonusBuckets.will.push({ val, type: mType, source: sourceName });
-          if (mTypeLower === 'resistance' && val > resistBonus) resistBonus = val;
-          return;
-        }
-        if (saveSub === 'fort' || saveSub === 'ref' || saveSub === 'will') {
+        if (saveSub === 'all' || target === 'saves' || target === 'all_saves' || saveSub === 'fort' || saveSub === 'ref' || saveSub === 'will') {
+          if (mod.condition && sourceCategory !== 'buff') {
+            conditionalSaveBonuses.push({
+              target: saveSub === 'all' ? 'All Saves' : saveSub.toUpperCase(),
+              val,
+              type: mType,
+              condition: String(mod.condition),
+              source: sourceName
+            });
+            return;
+          }
+          if (saveSub === 'all' || target === 'saves' || target === 'all_saves') {
+            saveBonusBuckets.fort.push({ val, type: mType, source: sourceName });
+            saveBonusBuckets.ref.push({ val, type: mType, source: sourceName });
+            saveBonusBuckets.will.push({ val, type: mType, source: sourceName });
+            if (mTypeLower === 'resistance' && val > resistBonus) resistBonus = val;
+            return;
+          }
           saveBonusBuckets[saveSub].push({ val, type: mType, source: sourceName });
           return;
         }
 
-        // Speed (`speed`, `speed.land`, `speed.all`)
+        // Speed (`speed.swim`, `speed.climb`, `speed.fly` vs Land Speed `speed`, `speed.land`, `speed.all`)
+        if (target === 'speed.swim') {
+          if (val > swimSpeed) swimSpeed = val;
+          return;
+        }
+        if (target === 'speed.climb') {
+          if (val > climbSpeed) climbSpeed = val;
+          return;
+        }
+        if (target === 'speed.fly') {
+          if (val > flySpeed) flySpeed = val;
+          return;
+        }
         if (target === 'speed' || target.startsWith('speed.')) {
           if (val < 0 || mTypeLower === 'penalty') {
             buffSpeedPenalty += Math.abs(val);
@@ -2667,6 +3076,27 @@ const RuleEngine = {
           } else {
             if (val > buffSpeedBonus) buffSpeedBonus = val;
           }
+          return;
+        }
+
+        // Psionic Power Points (`psionic.powerPoints`, `psionic`)
+        if (target === 'psionic.powerpoints' || target === 'psionic') {
+          bonusPowerPoints += val;
+          return;
+        }
+
+        // Bonus Spell Slots (`spellSlot.level1` .. `spellSlot.level9`)
+        if (target.startsWith('spellslot.level')) {
+          const slotLvl = parseInt(target.replace('spellslot.level', ''), 10);
+          if (!isNaN(slotLvl) && slotLvl >= 0 && slotLvl <= 11) {
+            bonusSpellSlotsByLevel[slotLvl] = (bonusSpellSlotsByLevel[slotLvl] || 0) + val;
+          }
+          return;
+        }
+
+        // Combat Maneuver / Grapple (`cmb`, `grapple`, `opposed.grapple`)
+        if (target === 'cmb' || target === 'grapple' || target === 'opposed.grapple') {
+          if (val > grappleModBonus) grappleModBonus = val;
           return;
         }
 
@@ -2903,6 +3333,14 @@ const RuleEngine = {
       }
     }
 
+    // 3.95. Collect Active Cleric Domain Modifiers (Canonical V2 `srd_domains.json`)
+    const activeDomainEntries = this.getCharacterActiveDomainEntries(character);
+    activeDomainEntries.forEach(dom => {
+      if (dom && Array.isArray(dom.modifiers) && dom.modifiers.length > 0) {
+        applyV2Modifiers(dom.modifiers, `${dom.name} Domain`, 'domain', evalContext);
+      }
+    });
+
     // 4. Resolve Stacking for Abilities (RAW: Same types take Math.max, untyped/dodge/racial stack)
     if (!character.abilities) character.abilities = {};
     character.abilitySources = abilityBuckets;
@@ -3119,6 +3557,12 @@ const RuleEngine = {
       calcSpeed = Math.max(5, Math.floor(calcSpeed / 10) * 5 || 5);
     }
     character.effectiveSpeed = calcSpeed;
+    character.swimSpeed = swimSpeed;
+    character.climbSpeed = climbSpeed;
+    character.flySpeed = flySpeed;
+    character.bonusPowerPoints = bonusPowerPoints;
+    character.bonusSpellSlotsByLevel = bonusSpellSlotsByLevel;
+    character.conditionalSaveBonuses = conditionalSaveBonuses;
     character.effectiveArmorCategory = equippedArmorCategory;
     character.buffSkillBonus = buffSkillBonus;
     character.buffInitiativeBonus = this.resolveBonusStacking(initBonusBuckets);
@@ -3126,6 +3570,11 @@ const RuleEngine = {
 
     // 8. Resolve Rule Flags & Action Economy
     character.ruleFlags = this.evaluateRuleFlags(character);
+    if (grappleModBonus > (character.ruleFlags?.opposedCheckBonus?.grapple || 0)) {
+      if (!character.ruleFlags.opposedCheckBonus) character.ruleFlags.opposedCheckBonus = {};
+      character.ruleFlags.opposedCheckBonus.grapple = grappleModBonus;
+    }
+    character.grappleBonus = (Number(character.bab) || 0) + this.getAbilityMod(character.abilities?.str || 10) + (character.ruleFlags?.opposedCheckBonus?.grapple || 0);
     character.actionEconomy = this.evaluateActionEconomy(character, options);
 
     return {
@@ -4041,6 +4490,31 @@ const RuleEngine = {
         rawStr = Math.max(1, rawStr - 3);
       }
     }
+    if (targetChar) {
+      let carryStrBonus = 0;
+      const itemsToScan = [
+        ...(Array.isArray(targetChar.gearPool) ? targetChar.gearPool : []),
+        ...(targetChar.bodySlots && typeof targetChar.bodySlots === 'object' ? Object.values(targetChar.bodySlots) : [])
+      ];
+      const seenItemNames = new Set();
+      itemsToScan.forEach(it => {
+        if (!it || it.active === false || !it.name || it.name === '-') return;
+        const nLower = String(it.name).toLowerCase().trim();
+        if (seenItemNames.has(nLower)) return;
+        seenItemNames.add(nLower);
+        const dbIt = (!Array.isArray(it.modifiers) || it.modifiers.length === 0) ? this.getMasterDbEntry(it) : null;
+        const mods = (Array.isArray(it.modifiers) && it.modifiers.length > 0) ? it.modifiers : (dbIt?.modifiers || []);
+        mods.forEach(m => {
+          if (m && String(m.target || '').toLowerCase() === 'carryingcapacity.strbonus') {
+            carryStrBonus += Number(m.value) || 0;
+          }
+        });
+        if (mods.length === 0 && nLower.includes('backpack') && nLower.includes('masterwork')) {
+          carryStrBonus = Math.max(carryStrBonus, 1);
+        }
+      });
+      rawStr += carryStrBonus;
+    }
     const s = Math.max(1, Math.min(29, rawStr));
     const table = {
       1: [3, 6, 10], 2: [6, 13, 20], 3: [10, 20, 30], 4: [13, 26, 40],
@@ -4248,6 +4722,20 @@ const RuleEngine = {
         matchSkillModifiers(raceObj.modifiers, `${raceObj.name || character.race} (Race)`, 'racial', evalCtx);
       }
     }
+
+    // 5.5. Cleric Domain Skill Modifiers from Canonical V2 Domain entries (e.g. Artifice +4 Craft, Community +2 Diplomacy, Mind +2 Bluff/Diplomacy/Sense Motive)
+    const activeDomains = this.getCharacterActiveDomainEntries(character);
+    activeDomains.forEach(dom => {
+      if (!dom || !Array.isArray(dom.modifiers) || dom.modifiers.length === 0) return;
+      const alreadyAppliedViaAbility = featsList.some(f => {
+        const fn = String(typeof f === 'string' ? f : (f?.name || '')).toLowerCase();
+        const fMods = typeof f === 'object' && Array.isArray(f?.modifiers) ? f.modifiers : [];
+        return fn.includes(dom.name.toLowerCase()) && fMods.length > 0;
+      });
+      if (!alreadyAppliedViaAbility) {
+        matchSkillModifiers(dom.modifiers, `${dom.name} Domain`, 'untyped', evalCtx);
+      }
+    });
 
     // 6. Resolve Stacking Rules (D&D 3.5e RAW)
     let total = 0;

@@ -9040,6 +9040,22 @@
         });
       }
 
+      // 4.5. Conditional Save Bonuses from Domains, Feats & Races (e.g. Mind / Liberation Domain +2 vs Enchantment)
+      if (Array.isArray(character.conditionalSaveBonuses)) {
+        character.conditionalSaveBonuses.forEach(cs => {
+          if (!cs || !cs.val) return;
+          const sign = cs.val >= 0 ? `+${cs.val}` : `${cs.val}`;
+          pushUniqueDefense({
+            type: 'conditional_save',
+            name: cs.source || 'Domain / Feat',
+            label: `${sign} ${cs.target} (${cs.condition})`,
+            icon: '🛡️',
+            bgClass: 'bg-indigo-950/80 text-indigo-300 border-indigo-500/60 hover:border-indigo-400',
+            benefit: `${cs.source}: ${sign} ${cs.type || 'Untyped'} bonus on ${cs.target} ${cs.condition}.`
+          });
+        });
+      }
+
       // 5. Active Spell & Tactical Passive Defenses from `character.buffs`
       const ENERGY_STYLE_MAP = {
         fire: { icon: '🔥', cls: 'bg-orange-950/80 text-orange-300 border-orange-500/60 hover:border-orange-400' },

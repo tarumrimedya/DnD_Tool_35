@@ -7533,7 +7533,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         character.specialAbilities.push({
           name: `⚜️ ${d} Domain (Granted Power)`,
           source: 'Cleric Domain',
-          benefit: benefitText
+          benefit: benefitText,
+          modifiers: Array.isArray(meta?.modifiers) ? JSON.parse(JSON.stringify(meta.modifiers)) : [],
+          ruleFlags: meta?.ruleFlags ? JSON.parse(JSON.stringify(meta.ruleFlags)) : {}
         });
       });
 
