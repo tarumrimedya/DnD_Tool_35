@@ -85,3 +85,48 @@
   * [x] Kök dizin ile `webapp/` altındaki tüm dosyaların (19 kök dosya + 7 `database/srd_*.json` paket dosyası) %100 birebir SHA-256 pariteyle eşitlenmesi.
   * [x] `gdrive_sync.js` bulut senkronizasyon köprüsünün (`foundInCloudHub.fullData`, `remoteChar`, `mergedDb`) Kanonik V2 şema yükselticilerine (`SchemaMigrator.upgradeCharacterToV2`, `RuleMaster.normalizeDatabaseList`) bağlanması ve disk üzerindeki `character_data.json` ile `master_db.json` dosyalarının `schemaVersion: 2`'ye yükseltilmesi.
   * [x] `Flash` modeli ile uçtan uca V2 şema, sıfır-token Lego montaj (`ItemAssembler`), kural motoru (`RuleEngine`) ve regresyon doğrulaması.
+
+---
+
+## 🌟 3. Faz 9: Genişletilmiş V2 Veri Havuzu & Sistem Entegrasyonu (Öneri Havuzu ve Karar Matrisi)
+
+> **PM Gatekeeper Kuralı (`Gemini 4 Argon`):** Her alt paket (`Seçenek A–F`) devreye alınırken **Pre-Flight Mimari Kontrat** (tekil `SrdCompendium` V2 kaynağı, sıfır duplikasyon, mevcut `RuleEngine` kancası) ➔ **Kapsamlı Uygulama** ➔ **Post-Flight `git diff` & `tools/verify_and_sync.js` Denetimi** protokolü işletilir.
+
+### [x] Faz 9.0: Magic Item Compendium (MIC) & Augmentation Crystals V2 Entegrasyonu [TAMAMLANDI]
+* [x] **953 resmi MIC 3.5e sihirli eşyasının** (Silahlar, Zırhlar, Giysiler, Harikalar, Relic'ler, Set Eşyaları ve Eklenti Kristalleri) Kanonik V2 (`schemaVersion: 2`, `modifiers`, `damageParts`, `ruleFlags`) formatında `database/srd_equipment.json` (toplam **1.945** ekipman) içine entegre edilmesi.
+* [x] Silah ve zırhlara **Augmentation Crystal** (Least / Lesser / Greater kristal yuvası ve +1/+3 efsun önkoşulu) soketleme sisteminin kurulması.
+* [x] **The Forge (Demirhane)** ve kod tabanındaki ~1.300+ satırlık statik eşya/efsun yedek dizilerinin silinerek %100 dinamik `SrdCompendium` V2 mimarisine geçilmesi.
+
+### [ ] Faz 9.A (Seçenek A): Eksik Core DMG & Psionic Prestige Class'lar (`database/srd_classes_races.json`) [SIRADA]
+* **Mevcut Durum:** Sistemde sınırlı sayıda Prestige Class mevcut.
+* **Kapsam & Teslimatlar:**
+  * [ ] **7 Core DMG PrC:** *Dragon Disciple, Duelist, Hierophant, Horizon Walker, Loremaster, Shadowdancer, Thaumaturgist* (BAB, Fort/Ref/Will Save dizileri, Hit Die, Skill Points, Class Skills, yapısal Prerequisites ve seviye bazlı Class Features tablolarıyla).
+  * [ ] **9 Psionic PrC (XPH):** *Cerebremancer, Elocator, Metamind, Psionic Fist, Pyrokineticist, Slayer, Thrallherd, War Mind, Wilder/Psion PrC bağlantıları*.
+* **Mimari Kontrat:** Ayrı kopya dizi oluşturulmadan doğrudan `database/srd_classes_races.json` içine `category: "Class", subCategory: "Prestige"` V2 şemasıyla eklenecek; `Level-Up Wizard` (`char_progression.js`) doğrudan `SrdCompendium` üzerinden okuyacak.
+
+### [x] Faz 9.B (Seçenek B): 36 Cleric Domain & Alan Yetenekleri (`database/srd_domains.json`) [TAMAMLANDI]
+* [x] *Air, Animal, Chaos, Death, Destruction, Earth, Evil, Fire, Good, Healing, Knowledge, Law, Luck, Magic, Plant, Protection, Strength, Sun, Travel, Trickery, War, Water* dahil **36 resmi Domain**'in Granted Power, V2 `modifiers` ve 1–9 seviye büyü/ID (`spellIds`) zincirleriyle `database/srd_domains.json` içine işlenmesi.
+* [x] `char_spells.js` içindeki 145 satırlık statik `DND35_CLERIC_DOMAINS` kopyasının tamamen silinip `SrdCompendium.getAllDomains()` ve `SrdCompendium.getDomain()` tekil kaynağına bağlanması.
+
+### [x] Faz 9.C (Seçenek C): Kural/Mekanik Etkili Simyasal Eşyalar, Alet Kitleri & 28 RAW Zehir (`database/srd_equipment.json`) [TAMAMLANDI]
+* [x] **Alchemical Weapons/Items:** *Alchemist's Fire (1d6 fire), Acid Flask (1d6 acid), Tanglefoot Bag, Thunderstone, Smokestick, Sunrod, Antitoxin (+5 Fort poison)* V2 `damageParts` ve `modifiers` zenginleştirmesi.
+* [x] **Tools & Skill Kits (+2 Circumstance Bonus):** *Masterwork Thieves' Tools, Healer's Kit, Climber's Kit, Disguise Kit, Masterwork Artisans/Musical Tools* V2 `modifiers` entegrasyonu.
+* [x] **28 Resmi DMG Zehiri:** Injury, Contact, Ingested ve Inhaled türlerinde Fortitude DC ve Initial/Secondary hasarlarıyla `srd_equipment.json`'a eklenmesi.
+
+### [x] Faz 9.D (Seçenek D): Animal Companion, Familiar & Special Mount Sistemi (`database/srd_companions.json`) [TAMAMLANDI]
+* [x] Seviyeye göre Bonus HD, Natural Armor, Str/Dex artışı, Bonus Tricks, Special Abilities ve Familiar'ın efendiye sağladığı pasif V2 `modifiers` (*Alertness, +2 Fortitude, +3 Bluff* vb.) tablolarının `database/srd_companions.json` olarak oluşturulması.
+* [x] `srd_monsters.json` (645 yaratık) ile sıfır veri kopyası üreten dinamik şablon hesaplayıcısının (`SrdCompendium.calculateCompanionStats`) kurulması.
+* [x] **3 Arayüz Entegrasyonu:** `Char` sekmesinde 3-4 satırlık özet kartı, `Combat` sekmesinde `🐾 Companion & Mount Attacks` çekmecesi, `Inventory` sekmesinde `🐾 Companion` 5 yuvalı ekipman görünümü.
+
+### [ ] Faz 9.E (Seçenek E): Karakter Şablonları — Templates (`database/srd_classes_races.json` veya `database/srd_templates.json`) [PLANLANDI]
+* **Mevcut Durum:** Sadece temel ırklar (Base Races) seçilebiliyor; şablon (Template) katmanı yok.
+* **Kapsam & Teslimatlar:**
+  * [ ] **7 Resmi SRD Şablonu:** *Half-Dragon (+8 Str, +2 Con, +2 Int, +2 Cha, +4 Nat AC, Breath Weapon, Immunity), Half-Celestial, Half-Fiend, Lich, Vampire, Lycanthrope (Werewolf / Werebear / Wererat / Weretiger / Wereboar), Ghost*.
+  * [ ] Karakter kurgusunda **Level Adjustment (LA)**, tip değişimi, doğal zırh, yetenek skoru artışları (`modifiers`), DR/SR ve özel saldırıların (`damageParts`) `RuleEngine` üzerinden otomatik karaktere giydirilmesi.
+
+### [ ] Faz 9.F (Seçenek F): Epic Level Handbook — Epic Feats, Epic Spells & +6..+10 Efsunlar [PLANLANDI]
+* **Mevcut Durum:** Sistem 1–20 seviye SRD ve MIC kurallarını kapsıyor.
+* **Kapsam & Teslimatlar:**
+  * [ ] **Epic Feats (`database/srd_feats.json`):** ~180 resmi Epic Feat (*Armor Skin, Epic Weapon Focus/Specialization, Devastating Critical, Overwhelming Critical, Dire Charge, Automatic Quicken/Silent/Still Spell, Great Strength..Charisma* vb.) V2 `prerequisites` (`minLevel: 21`) ve `modifiers` ile.
+  * [ ] **Epic Spells (`database/srd_spells.json`):** 48 resmi Epic Büyü (*Hellball, Greater Ruin, Mom's/Mummy Dust, Soul Dominion, Epic Mage Armor* vb.).
+  * [ ] **Epic Item Forge & Enhancements (`database/srd_equipment.json` & `ItemAssembler`):** 21+ seviye veya Epic toggle açıkken +6..+10 silah/zırh efsun bonusu, toplam +20 efsun bütçesi ve Epic maliyet çarpanı (`bonus² × 10.000 gp`).
