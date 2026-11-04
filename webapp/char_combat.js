@@ -5166,14 +5166,32 @@
     // =========================================================================
     // 📚 SPOTLIGHT TYPEAHEAD & PROGRESSIVE DISCLOSURE WEAPON SYSTEM (FAZ 4)
     // =========================================================================
-    const SRD_WEAPON_PROPERTIES = [
-      { id: 'flaming', name: 'Flaming', dice: '1d6', type: 'Fire', icon: '🔥', activeClass: 'bg-rose-600/30 border-rose-500 text-rose-300 ring-1 ring-rose-500/50' },
-      { id: 'frost', name: 'Frost', dice: '1d6', type: 'Cold', icon: '❄️', activeClass: 'bg-sky-600/30 border-sky-500 text-sky-300 ring-1 ring-sky-500/50' },
-      { id: 'shock', name: 'Shock', dice: '1d6', type: 'Electricity', icon: '⚡', activeClass: 'bg-amber-600/30 border-amber-500 text-amber-300 ring-1 ring-amber-500/50' },
-      { id: 'holy', name: 'Holy', dice: '2d6', type: 'Holy (Good)', icon: '✨', activeClass: 'bg-yellow-600/30 border-yellow-500 text-yellow-300 ring-1 ring-yellow-500/50' },
-      { id: 'unholy', name: 'Unholy', dice: '2d6', type: 'Unholy (Evil)', icon: '💀', activeClass: 'bg-purple-600/30 border-purple-500 text-purple-300 ring-1 ring-purple-500/50' },
-      { id: 'keen', name: 'Keen', dice: '', type: 'Crit Range 2x', icon: '🩸', activeClass: 'bg-red-600/40 border-red-500 text-red-200 ring-1 ring-red-500/60', isKeen: true }
+    const QUICK_WEAPON_BUFFS = [
+      { id: 'flaming', enhId: 'enh-flaming', icon: '🔥', activeClass: 'bg-rose-600/30 border-rose-500 text-rose-300 ring-1 ring-rose-500/50' },
+      { id: 'frost', enhId: 'enh-frost', icon: '❄️', activeClass: 'bg-sky-600/30 border-sky-500 text-sky-300 ring-1 ring-sky-500/50' },
+      { id: 'shock', enhId: 'enh-shock', icon: '⚡', activeClass: 'bg-amber-600/30 border-amber-500 text-amber-300 ring-1 ring-amber-500/50' },
+      { id: 'holy', enhId: 'enh-holy', icon: '✨', activeClass: 'bg-yellow-600/30 border-yellow-500 text-yellow-300 ring-1 ring-yellow-500/50' },
+      { id: 'unholy', enhId: 'enh-unholy', icon: '💀', activeClass: 'bg-purple-600/30 border-purple-500 text-purple-300 ring-1 ring-purple-500/50' },
+      { id: 'keen', enhId: 'enh-keen', icon: '🩸', activeClass: 'bg-red-600/40 border-red-500 text-red-200 ring-1 ring-red-500/60' }
     ];
+
+    function getQuickBuffDef(propId) {
+      const buff = QUICK_WEAPON_BUFFS.find(b => b.id === propId || b.enhId === propId);
+      if (!buff) return null;
+      const compItem = (typeof SrdCompendium !== 'undefined' && SrdCompendium.getById)
+        ? SrdCompendium.getById(buff.enhId)
+        : null;
+      const firstDmg = compItem?.damageParts?.[0];
+      const fallbackName = buff.id.charAt(0).toUpperCase() + buff.id.slice(1);
+      return {
+        ...buff,
+        name: compItem?.name || fallbackName,
+        dice: firstDmg?.dice || (buff.id === 'holy' || buff.id === 'unholy' ? '2d6' : buff.id === 'keen' ? '' : '1d6'),
+        type: firstDmg?.type || (buff.id === 'flaming' ? 'Fire' : buff.id === 'frost' ? 'Cold' : buff.id === 'shock' ? 'Electricity' : buff.id === 'holy' ? 'Holy' : buff.id === 'unholy' ? 'Unholy' : 'Crit Range 2x'),
+        isKeen: buff.id === 'keen' || !!compItem?.ruleFlags?.keen
+      };
+    }
+    const SRD_WEAPON_PROPERTIES = QUICK_WEAPON_BUFFS;
 
     function toggleSrdSpotlight(forceState = null) {
       const container = document.getElementById('srd-spotlight-container');
@@ -5466,7 +5484,7 @@
       }
       if (!wep) return;
 
-      const propDef = SRD_WEAPON_PROPERTIES.find(p => p.id === propId);
+      const propDef = getQuickBuffDef(propId);
       if (!propDef) return;
 
       if (propDef.isKeen) {
@@ -5542,12 +5560,14 @@
       const activeMods = Array.isArray(wep?.elementalMods) ? wep.elementalMods : [];
       const isKeen = !!wep?.keen;
 
-      container.innerHTML = SRD_WEAPON_PROPERTIES.map(prop => {
+      container.innerHTML = QUICK_WEAPON_BUFFS.map(buff => {
+        const prop = getQuickBuffDef(buff.id);
+        if (!prop) return '';
         let isActive = false;
         if (prop.isKeen) {
           isActive = isKeen;
         } else {
-          isActive = activeMods.some(m => m.id === prop.id);
+          isActive = activeMods.some(m => m.id === prop.id || m.enhId === prop.enhId);
         }
 
         const badgeClass = isActive

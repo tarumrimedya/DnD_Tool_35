@@ -41,11 +41,6 @@
         }
       });
 
-      DND35_FEAT_CATALOG.forEach(f => {
-        const k = (f.name || '').toLowerCase().trim();
-        if (!includeInvocations && (f.category === 'Warlock Invocation' || invocationByName.has(k))) return;
-        map.set(k, { ...f });
-      });
       // 1. Canonical V2 SrdCompendium (452 SRD Feats with structured prerequisites)
       if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
         window.SrdCompendium.getAllLoaded('Feat').forEach(f => {
@@ -76,8 +71,6 @@
           }
         });
       }
-      DND35_DM_BOONS_CATALOG.forEach(b => map.set(b.name.toLowerCase(), { ...b }));
-      DND35_FLAWS_CATALOG.forEach(fl => map.set(fl.name.toLowerCase(), { ...fl }));
       (masterDb || []).forEach(m => {
         if (!m || !m.name) return;
         const nameStr = String(m.name).trim();

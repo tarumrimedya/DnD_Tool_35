@@ -6325,20 +6325,6 @@
     let currentViewedFeatName = null;
     let isFeatPickerForLevelUp = false;
 
-    // Built-in D&D 3.5e Core, Tome of Battle & Complete Series Feat Catalog
-    // (Empty: Dynamically sourced from window.BUNDLED_SRD_CORE_CATALOG & masterDb per Rule #5)
-    const DND35_FEAT_CATALOG = [];
-
-    // Built-in D&D 3.5e DM Boons, Grants & Campaign Awards (Kural 5 / RAW uyumlu: VarsayÄ±lan boÅŸ, masterDb Ã¼zerinden dinamik beslenir)
-    const DND35_DM_BOONS_CATALOG = [];
-
-    // Built-in D&D 3.5e Flaws (Kural 5 / RAW uyumlu: VarsayÄ±lan boÅŸ, masterDb Ã¼zerinden dinamik beslenir)
-    const DND35_FLAWS_CATALOG = [];
-
-    // Built-in D&D 3.5e Warlock Invocations (Complete Arcane & Complete Mage)
-    // (Empty: Dynamically sourced from window.BUNDLED_SRD_CORE_CATALOG & masterDb per Rule #5)
-    const DND35_WARLOCK_INVOCATIONS = [];
-
     function getAllWarlockInvocations() {
       const map = new Map();
       if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
@@ -6358,14 +6344,6 @@
       }
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         masterDb.filter(i => i && (i.category === 'Warlock Invocation' || (i.type === 'Special Ability' && i.category === 'Warlock Invocation'))).forEach(inv => {
-          const k = (inv.name || '').toLowerCase();
-          if (k && !map.has(k)) {
-            map.set(k, inv);
-          }
-        });
-      }
-      if (typeof DND35_WARLOCK_INVOCATIONS !== 'undefined' && Array.isArray(DND35_WARLOCK_INVOCATIONS)) {
-        DND35_WARLOCK_INVOCATIONS.forEach(inv => {
           const k = (inv.name || '').toLowerCase();
           if (k && !map.has(k)) {
             map.set(k, inv);
@@ -7883,12 +7861,12 @@
         const n = m.name || '';
         return n.toLowerCase() === featName.toLowerCase() || n.toLowerCase() === cleanName.toLowerCase() || n.toLowerCase() === baseFeatName.toLowerCase();
       });
-      const fFromCat = DND35_FEAT_CATALOG.find(c => c.name.toLowerCase() === featName.toLowerCase() || c.name.toLowerCase() === cleanName.toLowerCase() || c.name.toLowerCase() === baseFeatName.toLowerCase());
+      const fFromComp = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function')
+        ? (window.SrdCompendium.getByName(featName, 'Feat') || window.SrdCompendium.getByName(cleanName, 'Feat') || window.SrdCompendium.getByName(baseFeatName, 'Feat'))
+        : null;
       const fFromBundled = (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
         ? window.BUNDLED_SRD_CORE_CATALOG.find(i => i && i.type === 'Feat' && (i.name.toLowerCase() === featName.toLowerCase() || i.name.toLowerCase() === cleanName.toLowerCase() || i.name.toLowerCase() === baseFeatName.toLowerCase()))
         : null;
-      const bFromCat = DND35_DM_BOONS_CATALOG.find(b => b.name.toLowerCase() === featName.toLowerCase() || b.name.toLowerCase() === cleanName.toLowerCase());
-      const flFromCat = DND35_FLAWS_CATALOG.find(fl => fl.name.toLowerCase() === featName.toLowerCase() || fl.name.toLowerCase() === cleanName.toLowerCase());
 
       const title = cleanName || featName;
       let source = 'D&D 3.5e Core Rules';
@@ -7896,24 +7874,16 @@
       let benefit = 'This feat or special ability modifies your character rules.';
       let notes = '';
 
-      if (fFromCat) {
-        source = fFromCat.source || source;
-        category = fFromCat.category || category;
-        benefit = fFromCat.benefit || benefit;
-        if (fFromCat.prereq && fFromCat.prereq !== '-') notes = `Prerequisite: ${fFromCat.prereq}`;
+      if (fFromComp) {
+        source = fFromComp.source || source;
+        category = fFromComp.category || category;
+        benefit = fFromComp.shortDescription || fFromComp.benefit || fFromComp.description || benefit;
+        if (fFromComp.prerequisites && fFromComp.prerequisites !== '-') notes = `Prerequisite: ${fFromComp.prerequisites}`;
       } else if (fFromBundled) {
         source = fFromBundled.source || source;
         category = fFromBundled.category || category;
         benefit = fFromBundled.benefit || benefit;
         if (fFromBundled.prereq && fFromBundled.prereq !== '-') notes = `Prerequisite: ${fFromBundled.prereq}`;
-      } else if (bFromCat) {
-        source = bFromCat.source || 'Campaign Boon';
-        category = 'DM Boon';
-        benefit = bFromCat.benefit || benefit;
-      } else if (flFromCat) {
-        source = flFromCat.source || 'Unearthed Arcana';
-        category = 'Flaw';
-        benefit = flFromCat.benefit || benefit;
       }
 
       if (fFromChar && typeof fFromChar === 'object') {
