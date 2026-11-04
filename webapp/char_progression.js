@@ -3508,14 +3508,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       const isBoonCl = clMode === 'Character Level (DM Boon)' || clMode.includes('Warlock Boon');
       const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
       const def = allDefs[className] || {};
-      const isPrestige = Boolean(def.isPrestige || def.type === 'prestige');
+      const isPrestige = Boolean(def.isPrestige || def.type === 'prestige' || def.type === 'Prestige Class');
 
       const descLower = (def.description || '').toLowerCase();
       const hasSpellProgInPrestige = isPrestige && (
+        (def.spellcastingProgression && def.spellcastingProgression !== 'none') ||
         descLower.includes('spell') ||
-        descLower.includes('bÃ¼yÃ¼') ||
         descLower.includes('caster level') ||
-        ['eldritch knight', 'arcane trickster', 'mystic theurge', 'archmage', 'hierophant', 'loremaster', 'dragon disciple'].some(p => (className || '').toLowerCase().includes(p))
+        ['eldritch knight', 'arcane trickster', 'mystic theurge', 'archmage', 'hierophant', 'loremaster', 'dragon disciple', 'red wizard', 'thaumaturgist', 'cerebremancer', 'slayer'].some(p => (className || '').toLowerCase().includes(p))
       );
 
       const curCl = Number(character.spellcasting?.cl) || 0;
@@ -3903,12 +3903,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         });
       }
 
-      // 3. Known / Arcane classes
+      // 3. Known / Arcane & Divine classes
       const classesStr = (character.classes || '').toLowerCase();
       const hasArcane = classesStr.includes('sorcerer') || classesStr.includes('wizard') || classesStr.includes('duskblade') || classesStr.includes('bard') || classesStr.includes('warlock');
+      const hasDivine = classesStr.includes('cleric') || classesStr.includes('druid') || classesStr.includes('paladin') || classesStr.includes('ranger') || (Array.isArray(character?.spellcasting?.divineSlots) && character.spellcasting.divineSlots.some(s => (Number(s.daily) || 0) > 0));
 
-      // 4. Race
+      // 4. Race & Alignment
       const raceStr = (character.race || '').toLowerCase();
+      const alignStr = String(character.alignment || '').toUpperCase().trim();
 
       let allMet = true;
       const checks = def.prerequisites.map(req => {
@@ -3925,9 +3927,35 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         } else if (req.key === 'arcane') {
           met = hasArcane;
           info = met ? '(Arcane Caster)' : '(No Arcane Spells)';
+        } else if (req.key === 'divine') {
+          met = hasDivine;
+          info = met ? '(Divine Caster)' : '(No Divine Spells)';
+        } else if (req.key === 'spells') {
+          const isDual = (def.spellcastingProgression === 'dual_arcane_divine' || (className || '').toLowerCase().includes('mystic theurge'));
+          met = isDual ? (hasArcane && hasDivine) : (hasArcane || hasDivine);
+          info = met ? '(Spellcaster Eligible)' : (isDual ? '(Requires Arcane & Divine)' : '(Requires Spellcasting)');
+        } else if (req.key === 'alignment') {
+          if (alignStr) {
+            if (Array.isArray(req.allowed) && req.allowed.length > 0) {
+              met = req.allowed.includes(alignStr);
+            } else if (Array.isArray(req.forbidden) && req.forbidden.length > 0) {
+              met = !req.forbidden.includes(alignStr);
+            }
+            info = met ? `(${alignStr} Eligible)` : `(Current: ${alignStr})`;
+          }
+        } else if (req.key === 'skill' && req.skill && req.ranks) {
+          const skObj = character.skills ? character.skills[req.skill] : null;
+          const curRanks = Number(typeof skObj === 'object' ? skObj?.ranks : skObj) || 0;
+          met = curRanks >= Number(req.ranks);
+          info = `(Ranks: ${curRanks}/${req.ranks})`;
         } else if (req.key === 'race') {
-          met = raceStr.includes((req.val || '').toLowerCase());
-          info = met ? '(Race Eligible)' : `(Requires ${req.val})`;
+          if (req.val) {
+            met = raceStr.includes((req.val || '').toLowerCase());
+            info = met ? '(Race Eligible)' : `(Requires ${req.val})`;
+          } else {
+            met = !raceStr.includes('dragon');
+            info = met ? '(Race Eligible)' : '(Cannot be Dragon)';
+          }
         } else {
           met = true;
         }

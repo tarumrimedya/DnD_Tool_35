@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "a8f2730662115b67",
+  "compendiumHash": "16f628a2c4f38f79",
   "generatedAt": "2026-11-04T15:37:19.474Z",
-  "totalEntries": 4764,
+  "totalEntries": 4781,
   "chunks": {
     "srd_equipment.json": {
       "count": 1021,
@@ -20,7 +20,7 @@
     "srd_classes_races.json": {
       "count": 239,
       "bytes": 464086,
-      "hash": "1047a1ac10df5faa",
+      "hash": "d03375990b5c6e22",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -40243,6 +40243,142 @@
       "c": "Poison",
       "s": "Slotless",
       "f": "srd_equipment.json"
+    },
+    {
+      "id": "cls-dragon-disciple",
+      "n": "Dragon Disciple",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-duelist",
+      "n": "Duelist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-hierophant",
+      "n": "Hierophant",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-horizon-walker",
+      "n": "Horizon Walker",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-loremaster",
+      "n": "Loremaster",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-red-wizard",
+      "n": "Red Wizard",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-shadowdancer",
+      "n": "Shadowdancer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-thaumaturgist",
+      "n": "Thaumaturgist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-cerebremancer",
+      "n": "Cerebremancer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-elocator",
+      "n": "Elocator",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-metamind",
+      "n": "Metamind",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-psion-uncarnate",
+      "n": "Psion Uncarnate",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-psionic-fist",
+      "n": "Psionic Fist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-pyrokineticist",
+      "n": "Pyrokineticist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-slayer",
+      "n": "Slayer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-thrallherd",
+      "n": "Thrallherd",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-war-mind",
+      "n": "War Mind",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
     }
   ]
 }

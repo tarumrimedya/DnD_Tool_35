@@ -97,12 +97,11 @@
 * [x] Silah ve zırhlara **Augmentation Crystal** (Least / Lesser / Greater kristal yuvası ve +1/+3 efsun önkoşulu) soketleme sisteminin kurulması.
 * [x] **The Forge (Demirhane)** ve kod tabanındaki ~1.300+ satırlık statik eşya/efsun yedek dizilerinin silinerek %100 dinamik `SrdCompendium` V2 mimarisine geçilmesi.
 
-### [ ] Faz 9.A (Seçenek A): Eksik Core DMG & Psionic Prestige Class'lar (`database/srd_classes_races.json`) [SIRADA]
-* **Mevcut Durum:** Sistemde sınırlı sayıda Prestige Class mevcut.
+### [x] Faz 9.A (Seçenek A): Eksik Core DMG & Psionic Prestige Class'lar (`database/srd_classes_races.json`) [TAMAMLANDI]
 * **Kapsam & Teslimatlar:**
-  * [ ] **7 Core DMG PrC:** *Dragon Disciple, Duelist, Hierophant, Horizon Walker, Loremaster, Shadowdancer, Thaumaturgist* (BAB, Fort/Ref/Will Save dizileri, Hit Die, Skill Points, Class Skills, yapısal Prerequisites ve seviye bazlı Class Features tablolarıyla).
-  * [ ] **9 Psionic PrC (XPH):** *Cerebremancer, Elocator, Metamind, Psionic Fist, Pyrokineticist, Slayer, Thrallherd, War Mind, Wilder/Psion PrC bağlantıları*.
-* **Mimari Kontrat:** Ayrı kopya dizi oluşturulmadan doğrudan `database/srd_classes_races.json` içine `category: "Class", subCategory: "Prestige"` V2 şemasıyla eklenecek; `Level-Up Wizard` (`char_progression.js`) doğrudan `SrdCompendium` üzerinden okuyacak.
+  * [x] **16 Core DMG PrC:** *Arcane Archer, Arcane Trickster, Archmage, Assassin, Blackguard, Dragon Disciple, Duelist, Dwarven Defender, Eldritch Knight, Hierophant, Horizon Walker, Loremaster, Mystic Theurge, Red Wizard, Shadowdancer, Thaumaturgist* (BAB, Fort/Ref/Will Save dizileri, Hit Die, Skill Points, Class Skills, yapısal Prerequisites ve seviye 1..10 Class Features tablolarıyla).
+  * [x] **9 Psionic PrC (XPH):** *Cerebremancer, Elocator, Metamind, Psion Uncarnate, Psionic Fist, Pyrokineticist, Slayer, Thrallherd, War Mind*.
+* **Mimari Kontrat:** `char_spells.js` ve `rule_engine.js` içindeki statik Core DMG Prestige Class kopyaları silinerek doğrudan `database/srd_classes_races.json` (`SrdCompendium.getAllClasses()` / `SrdCompendium.getClass()`) tekil kaynağına bağlandı; `Level-Up Wizard` (`char_progression.js`) tüm önkoşul (`bab`, `feat`, `arcane`, `divine`, `spells`, `alignment`, `skill`, `race`) ve seviye yeteneklerini doğrudan `SrdCompendium` üzerinden okuyor.
 
 ### [x] Faz 9.B (Seçenek B): 36 Cleric Domain & Alan Yetenekleri (`database/srd_domains.json`) [TAMAMLANDI]
 * [x] *Air, Animal, Chaos, Death, Destruction, Earth, Evil, Fire, Good, Healing, Knowledge, Law, Luck, Magic, Plant, Protection, Strength, Sun, Travel, Trickery, War, Water* dahil **36 resmi Domain**'in Granted Power, V2 `modifiers` ve 1–9 seviye büyü/ID (`spellIds`) zincirleriyle `database/srd_domains.json` içine işlenmesi.

@@ -5164,55 +5164,6 @@ const RuleEngine = {
         5: [{ name: "Blood Wind (Ex)", category: "Special Ability", type: "Ex", summary: "Ricochet thrown weapon to an additional foe within range" }]
       }
     },
-    "Arcane Archer": {
-      hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
-      bonusFeatLevels: [],
-      features: {
-        1: [{ name: "Enhance Arrow +1 (Su)", category: "Special Ability", type: "Su", summary: "Fired arrows receive +1 enhancement bonus" }],
-        2: [{ name: "Imbue Arrow (Sp)", category: "Special Ability", type: "Sp", summary: "Place area spell upon an arrow; spell detonates where arrow lands" }],
-        4: [{ name: "Seeker Arrow (Sp)", category: "Special Ability", type: "Sp", summary: "Arrow shoots around corners and ignores cover" }]
-      }
-    },
-    "Assassin": {
-      hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 4,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Sneak Attack +1d6", category: "Special Ability", type: "Ex", summary: "+1d6 precision damage" },
-          { name: "Death Attack (Ex)", category: "Special Ability", type: "Ex", summary: "Kill or paralyze studied target" },
-          { name: "Poison Use", category: "Special Ability", type: "Ex", summary: "Never risk poisoning self when applying poison" }
-        ],
-        2: [{ name: "+1 Save vs Poison", category: "Special Ability", type: "Ex", summary: "+1 bonus on saving throws against poison" }]
-      }
-    },
-    "Shadowdancer": {
-      hd: 8, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 6,
-      bonusFeatLevels: [],
-      features: {
-        1: [{ name: "Hide in Plain Sight (Su)", category: "Special Ability", type: "Su", summary: "Hide while observed as long as within 10 ft of a shadow" }],
-        2: [
-          { name: "Evasion (Ex)", category: "Special Ability", type: "Ex", summary: "Take no damage on successful Reflex save" },
-          { name: "Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Retain Dex bonus to AC even when flat-footed" }
-        ],
-        4: [{ name: "Shadow Jump (Su)", category: "Special Ability", type: "Su", summary: "Travel between shadows like Dimension Door" }]
-      }
-    },
-    "Dragon Disciple": {
-      hd: 12, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 2,
-      bonusFeatLevels: [],
-      features: {
-        1: [{ name: "Natural Armor Increase +1 (Ex)", category: "Special Ability", type: "Ex", summary: "+1 natural armor bonus to AC" }],
-        2: [{ name: "Ability Boost (+2 Str) (Ex)", category: "Special Ability", type: "Ex", summary: "Permanent +2 racial bonus to Strength" }],
-        3: [{ name: "Breath Weapon (Su)", category: "Special Ability", type: "Su", summary: "Line or cone breath weapon dealing energy damage" }]
-      }
-    },
-    "Mystic Theurge": {
-      hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
-      bonusFeatLevels: [],
-      features: {
-        1: [{ name: "Combined Spellcasting (Arcane & Divine)", category: "Special Ability", type: "Ex", summary: "Advance both arcane and divine spellcasting progression" }]
-      }
-    },
     "Dervish": {
       hd: 10, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
       bonusFeatLevels: [],
@@ -5260,9 +5211,40 @@ const RuleEngine = {
     }
   },
 
+  getClassDef(className) {
+    if (!className) return null;
+    const localDef = this.DND35_CLASS_DEFS ? this.DND35_CLASS_DEFS[className] : null;
+    const srdClass = (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.getClass === 'function')
+      ? SrdCompendium.getClass(className)
+      : null;
+    if (!localDef && !srdClass) return null;
+    if (!srdClass) return localDef;
+    const babRate = Number(srdClass.bab) || (srdClass.babProgression === 'high' ? 1.0 : (srdClass.babProgression === 'med' || srdClass.babProgression === 'medium' ? 0.75 : 0.5));
+    const fortSave = srdClass.fort || (srdClass.savingThrows?.fort === 'high' ? 'good' : 'poor');
+    const refSave = srdClass.ref || (srdClass.savingThrows?.ref === 'high' ? 'good' : 'poor');
+    const willSave = srdClass.will || (srdClass.savingThrows?.will === 'high' ? 'good' : 'poor');
+    const hdNum = Number(String(srdClass.hitDie || srdClass.hd || 8).replace(/[^0-9]/g, '')) || 8;
+    const skillPts = Number(srdClass.skillPointsPerLevel || srdClass.skills) || 2;
+    return Object.assign({}, localDef || {}, {
+      hd: hdNum,
+      bab: babRate,
+      fort: fortSave,
+      ref: refSave,
+      will: willSave,
+      skills: skillPts,
+      maxLevel: Number(srdClass.maxLevel) || (localDef?.maxLevel) || (srdClass.isPrestige || srdClass.category === 'Prestige' ? 10 : 20),
+      features: (srdClass.features && Object.keys(srdClass.features).length > 0) ? srdClass.features : (localDef?.features || {}),
+      bonusFeatLevels: Array.isArray(srdClass.bonusFeatLevels) && srdClass.bonusFeatLevels.length > 0 ? srdClass.bonusFeatLevels : (localDef?.bonusFeatLevels || []),
+      bonusFeatContract: srdClass.bonusFeatContract || localDef?.bonusFeatContract || null,
+      bonusFeatContracts: srdClass.bonusFeatContracts || localDef?.bonusFeatContracts || null,
+      prerequisites: Array.isArray(srdClass.prerequisites) && srdClass.prerequisites.length > 0 ? srdClass.prerequisites : (localDef?.prerequisites || []),
+      classSkills: Array.isArray(srdClass.classSkills) && srdClass.classSkills.length > 0 ? srdClass.classSkills : (localDef?.classSkills || [])
+    });
+  },
+
   // Get slot contract for bonus feats
   getClassBonusFeatContract(className, classLevel) {
-    const def = this.DND35_CLASS_DEFS ? this.DND35_CLASS_DEFS[className] : null;
+    const def = this.getClassDef(className);
     if (!def) return null;
     const cl = Number(classLevel) || 1;
     if (def.bonusFeatContracts && def.bonusFeatContracts[cl]) return def.bonusFeatContracts[cl];
@@ -5272,10 +5254,10 @@ const RuleEngine = {
 
   // Get granted class features, bonus feats and Slot Contract for a given class and level
   getClassLevelFeatures(className, classLevel) {
-    const def = this.DND35_CLASS_DEFS ? this.DND35_CLASS_DEFS[className] : null;
+    const def = this.getClassDef(className);
     if (!def) return { features: [], featureObjects: [], hasBonusFeat: false, bonusFeatContract: null };
     const cl = Number(classLevel) || 1;
-    const rawFeatures = (def.features && def.features[cl]) ? def.features[cl] : [];
+    const rawFeatures = (def.features && (def.features[cl] || def.features[String(cl)])) ? (def.features[cl] || def.features[String(cl)]) : [];
     const features = rawFeatures.map(f => (typeof f === 'string' ? f : f.name));
     const featureObjects = rawFeatures.map(f => (typeof f === 'string' ? { name: f, benefit: '' } : f));
     const hasBonusFeat = Array.isArray(def.bonusFeatLevels) && def.bonusFeatLevels.includes(cl);
@@ -5338,7 +5320,7 @@ const RuleEngine = {
       baseHp += Number(lvl.hpGain) || 0;
 
       const cName = lvl.className || 'Warblade';
-      const cDef = this.DND35_CLASS_DEFS[cName] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+      const cDef = this.getClassDef(cName) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
       classCounts[cName] = (classCounts[cName] || 0) + 1;
 
       // Fractional BAB
@@ -5396,7 +5378,7 @@ const RuleEngine = {
     } else {
       // Standard Core 3.5e: sum table values for each class
       Object.entries(classCounts).forEach(([cName, count]) => {
-        const cDef = this.DND35_CLASS_DEFS[cName] || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good' };
+        const cDef = this.getClassDef(cName) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good' };
         if (cDef.bab === 1.0) finalBab += count;
         else if (cDef.bab === 0.75) finalBab += Math.floor(count * 0.75);
         else finalBab += Math.floor(count * 0.5);

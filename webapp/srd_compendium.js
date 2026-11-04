@@ -655,6 +655,34 @@
       return this.getByName(raw, 'Domain');
     },
 
+    getAllClasses() {
+      let list = this.getAllLoaded('Class');
+      if (list.length === 0 && typeof require !== 'undefined') {
+        try {
+          const fs = require('fs');
+          const path = require('path');
+          const p = path.resolve(__dirname, 'database/srd_classes_races.json');
+          if (fs.existsSync(p)) {
+            const records = JSON.parse(fs.readFileSync(p, 'utf8'));
+            registerEntries(records);
+            list = this.getAllLoaded('Class');
+          }
+        } catch (_) {}
+      }
+      return list;
+    },
+
+    getClass(idOrName) {
+      if (!idOrName) return null;
+      this.getAllClasses();
+      const raw = String(idOrName).trim();
+      const byId = this.getById(raw);
+      if (byId && byId.type === 'Class') return byId;
+      const bySlug = this.getById(`cls-${raw.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`);
+      if (bySlug && bySlug.type === 'Class') return bySlug;
+      return this.getByName(raw, 'Class');
+    },
+
     getCompanionsData() {
       if (!_companionsData && typeof require !== 'undefined') {
         try {

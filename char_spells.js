@@ -7288,7 +7288,7 @@
       "Abjurant Champion": {
         classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "handle_animal", "intimidate", "jump", "k_arcana", "ride", "spellcraft", "swim"],
         hd: 10, bab: 1.0, fort: "poor", ref: "poor", will: "good", skills: 2,
-        type: 'Prestige Class', source: 'Complete Mage', role: 'Gish (Arcane Warrior)',
+        type: 'Prestige Class', isPrestige: true, maxLevel: 5, source: 'Complete Mage', role: 'Gish (Arcane Warrior)',
         description: 'Arcane gish prestige class that casts enhanced abjuration spells as swift actions and scales CL to BAB.',
         prerequisites: [
           { text: "Base Attack Bonus: +5", key: "bab", min: 5 },
@@ -7297,20 +7297,10 @@
           { text: "Weapon: Proficient with at least one martial weapon", key: "weapon" }
         ]
       },
-      "Eldritch Knight": {
-        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "jump", "k_arcana", "k_nobility", "ride", "sense_motive", "spellcraft", "swim"],
-        hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
-        type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Gish (Arcane Warrior)',
-        description: 'Classic warrior-mage prestige class offering full Base Attack Bonus and 9/10 arcane spellcasting progression.',
-        prerequisites: [
-          { text: "Weapon: Proficient with all martial weapons", key: "weapon" },
-          { text: "Spells: Able to cast 3rd-level arcane spells", key: "arcane", minLvl: 3 }
-        ]
-      },
       "Bloodstorm Blade": {
         classSkills: ["balance", "craft_alchemy", "craft_armor", "craft_weapon", "intimidate", "jump", "martial_lore", "tumble"],
         hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
-        type: 'Prestige Class', source: 'Tome of Battle', role: 'Martial / Thrown Weapon Specialist',
+        type: 'Prestige Class', isPrestige: true, source: 'Tome of Battle', role: 'Martial / Thrown Weapon Specialist',
         maxLevel: 10,
         description: 'Legendary Iron Heart master who treats thrown weapons as melee strikes and ricochets blades back to hand instantly.',
         prerequisites: [
@@ -7354,62 +7344,10 @@
           ]
         }
       },
-      "Arcane Archer": {
-        classSkills: ["craft_alchemy", "craft_armor", "craft_weapon", "hide", "listen", "move_silently", "ride", "spot", "survival", "use_rope"],
-        hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
-        type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Ranged Martial / Arcane Archer',
-        description: 'Elven master archer who imbues arrows with area spells and gains automatic magical enhancement on all arrows fired.',
-        prerequisites: [
-          { text: "Race: Elf or Half-Elf", key: "race", val: "Elf" },
-          { text: "Base Attack Bonus: +6", key: "bab", min: 6 },
-          { text: "Feats: Point Blank Shot, Precise Shot, Weapon Focus (longbow or shortbow)", key: "feat", name: "Point Blank Shot" },
-          { text: "Spells: Able to cast 1st-level arcane spells", key: "arcane", minLvl: 1 }
-        ]
-      },
-      "Assassin": {
-        classSkills: ["balance", "bluff", "climb", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "diplomacy", "disable_device", "disguise", "escape_artist", "forgery", "gather_information", "hide", "intimidate", "jump", "listen", "move_silently", "open_lock", "search", "sense_motive", "sleight_of_hand", "spot", "swim", "tumble", "umd", "use_rope"],
-        hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 4,
-        type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Stealth / Death Attack & Poison',
-        description: 'Deadly infiltrator trained in Death Attack, poison use, Sneak Attack, and shadow/illusion magic.',
-        prerequisites: [
-          { text: "Skills: Disguise 4 ranks, Hide 8 ranks, Move Silently 8 ranks", key: "skill" },
-          { text: "Special: Evil alignment; must kill someone for no other reason than to join the Assassins", key: "special" }
-        ]
-      },
-      "Shadowdancer": {
-        classSkills: ["balance", "bluff", "decipher_script", "diplomacy", "disguise", "escape_artist", "hide", "jump", "listen", "move_silently", "perform", "profession", "search", "sleight_of_hand", "spot", "tumble", "use_rope"],
-        hd: 8, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 6,
-        type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Stealth / Shadow Jump & Evasion',
-        description: 'Acrobatic master of shadows who can Hide in Plain Sight, Shadow Jump, and summon shades.',
-        prerequisites: [
-          { text: "Skills: Move Silently 8 ranks, Hide 10 ranks, Perform (dance) 5 ranks", key: "skill" },
-          { text: "Feats: Combat Reflexes, Dodge, Mobility", key: "feat", name: "Dodge" }
-        ]
-      },
-      "Dragon Disciple": {
-        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "escape_artist", "gather_information", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "listen", "profession", "search", "spellcraft", "spot"],
-        hd: 12, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 2,
-        type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Gish / Dragon Transformation (+STR/CON)',
-        description: 'Scion of draconic blood who awakens Half-Dragon physical traits (+8 STR, +2 CON, +2 INT, +2 CHA, Natural Armor, Breath Weapon).',
-        prerequisites: [
-          { text: "Spells: Ability to cast arcane spells without preparation", key: "arcane", minLvl: 1 },
-          { text: "Skills: Knowledge (arcana) 8 ranks", key: "skill" }
-        ]
-      },
-      "Mystic Theurge": {
-        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "k_arcana", "k_religion", "profession", "sense_motive", "spellcraft"],
-        hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
-        type: 'Prestige Class', source: "Dungeon Master's Guide", role: 'Hybrid Caster (Arcane & Divine)',
-        description: 'Dual-tradition caster who advances both Arcane and Divine spellcasting at every class level.',
-        prerequisites: [
-          { text: "Spells: Able to cast 2nd-level arcane spells AND 2nd-level divine spells", key: "spells" },
-          { text: "Skills: Knowledge (arcana) 6 ranks, Knowledge (religion) 6 ranks", key: "skill" }
-        ]
-      },
       "Dervish": {
         classSkills: ["balance", "craft_alchemy", "craft_armor", "craft_weapon", "escape_artist", "jump", "listen", "perform", "profession", "swim", "tumble"],
         hd: 10, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
-        type: 'Prestige Class', source: 'Complete Warrior', role: 'Martial / Mobile Full Attack',
+        type: 'Prestige Class', isPrestige: true, maxLevel: 10, source: 'Complete Warrior', role: 'Martial / Mobile Full Attack',
         description: 'Whirling slashing-weapon specialist who executes a full attack while moving at full speed via Dervish Dance.',
         prerequisites: [
           { text: "Base Attack Bonus: +5", key: "bab", min: 5 },
@@ -7420,7 +7358,7 @@
       "Spellsword": {
         classSkills: ["climb", "concentration", "jump", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "profession", "spellcraft"],
         hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
-        type: 'Prestige Class', source: 'Complete Warrior', role: 'Gish / Ignore ASF & Spell Channeling',
+        type: 'Prestige Class', isPrestige: true, maxLevel: 10, source: 'Complete Warrior', role: 'Gish / Ignore ASF & Spell Channeling',
         description: 'Armored spellsword who reduces Arcane Spell Failure (ASF) and channels spells through melee weapons.',
         prerequisites: [
           { text: "Base Attack Bonus: +4", key: "bab", min: 4 },
@@ -7431,7 +7369,7 @@
       "Jade Phoenix Mage": {
         classSkills: ["climb", "concentration", "diplomacy", "handle_animal", "intimidate", "jump", "martial_lore", "ride", "sense_motive", "tumble"],
         hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
-        type: 'Prestige Class', source: 'Tome of Battle', role: 'Gish (Martial Adept + Arcane)',
+        type: 'Prestige Class', isPrestige: true, maxLevel: 10, source: 'Tome of Battle', role: 'Gish (Martial Adept + Arcane)',
         description: 'Sublime arcane-martial adept who blends arcane magic with Desert Wind and Devoted Spirit maneuvers.',
         prerequisites: [
           { text: "Martial Maneuvers: Two maneuvers (at least one strike) and one stance", key: "maneuver" },
@@ -7452,6 +7390,47 @@
       if (typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) {
         Object.keys(RuleEngine.DND35_CLASS_DEFS).forEach(k => {
           all[k] = Object.assign({}, RuleEngine.DND35_CLASS_DEFS[k], all[k]);
+        });
+      }
+
+      // Hydrate Canonical V2 Base & Prestige Classes from SrdCompendium (database/srd_classes_races.json)
+      if (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.getAllClasses === 'function') {
+        const srdClasses = SrdCompendium.getAllClasses() || [];
+        srdClasses.forEach(c => {
+          if (!c || !c.name) return;
+          // Skip NPC classes in main PC Level-Up Wizard unless already present
+          if (/\(npc\)/i.test(c.name) && !all[c.name]) return;
+          const isPrestige = Boolean(c.isPrestige || c.category === 'Prestige' || c.subCategory === 'Prestige' || c.type === 'Prestige Class');
+          const babRate = Number(c.bab) || (c.babProgression === 'high' ? 1.0 : (c.babProgression === 'med' || c.babProgression === 'medium' ? 0.75 : 0.5));
+          const fortSave = c.fort || (c.savingThrows?.fort === 'high' ? 'good' : 'poor');
+          const refSave = c.ref || (c.savingThrows?.ref === 'high' ? 'good' : 'poor');
+          const willSave = c.will || (c.savingThrows?.will === 'high' ? 'good' : 'poor');
+          const hdNum = Number(String(c.hitDie || c.hd || 8).replace(/[^0-9]/g, '')) || 8;
+          const skillPts = Number(c.skillPointsPerLevel || c.skills) || 2;
+          const prev = all[c.name] || {};
+
+          all[c.name] = Object.assign({}, prev, {
+            id: c.id || prev.id,
+            hd: hdNum,
+            bab: babRate,
+            fort: fortSave,
+            ref: refSave,
+            will: willSave,
+            skills: skillPts,
+            maxLevel: Number(c.maxLevel || prev.maxLevel) || (isPrestige ? 10 : 20),
+            classSkills: Array.isArray(c.classSkills) && c.classSkills.length > 0 ? c.classSkills : (prev.classSkills || []),
+            features: (c.features && Object.keys(c.features).length > 0) ? c.features : (prev.features || {}),
+            bonusFeatLevels: Array.isArray(c.bonusFeatLevels) && c.bonusFeatLevels.length > 0 ? c.bonusFeatLevels : (prev.bonusFeatLevels || []),
+            bonusFeatContract: c.bonusFeatContract || prev.bonusFeatContract || null,
+            bonusFeatContracts: c.bonusFeatContracts || prev.bonusFeatContracts || null,
+            prerequisites: Array.isArray(c.prerequisites) && c.prerequisites.length > 0 ? c.prerequisites : (prev.prerequisites || []),
+            spellcastingProgression: c.spellcastingProgression || prev.spellcastingProgression || 'none',
+            description: (c.description && !c.description.startsWith('<p>')) ? c.description : (prev.description || c.shortDescription || ''),
+            role: c.role || prev.role || (isPrestige ? 'Prestige Class' : 'Base Class'),
+            source: c.source || prev.source || 'SRD 3.5e',
+            type: isPrestige ? 'Prestige Class' : 'Base Class',
+            isPrestige
+          });
         });
       }
 
