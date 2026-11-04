@@ -704,48 +704,6 @@
     if (srdTabBtn) srdTabBtn.classList.toggle('hidden', hasCustom);
   }
 
-  const FORGE_ENH_CATALOG = [
-    // Weapon Special Abilities
-    { id: 'enh-keen', label: '⚡ Keen (2× Crit)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
-    { id: 'enh-flaming', label: '🔥 Flaming (+1d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
-    { id: 'enh-frost', label: '❄️ Frost (+1d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
-    { id: 'enh-shock', label: '⚡ Shock (+1d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
-    { id: 'enh-corrosive', label: '🧪 Acidic (+1d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
-    { id: 'enh-thundering', label: '🔊 Thundering', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
-    { id: 'enh-ghost-touch', label: '👻 Ghost Touch', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
-    { id: 'enh-defending', label: '🛡️ Defending', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
-    { id: 'enh-merciful', label: '💚 Merciful (+1d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
-    { id: 'enh-vicious', label: '⚡ Vicious (+2d6)', cost: 1, bonusEq: '+1', targetTypes: ['Weapon'] },
-    { id: 'enh-flaming-burst', label: '🔥 Flaming Burst', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
-    { id: 'enh-icy-burst', label: '❄️ Icy Burst', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
-    { id: 'enh-shocking-burst', label: '⚡ Shocking Burst', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
-    { id: 'enh-holy', label: '☀️ Holy (+2d6 vs Evil)', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
-    { id: 'enh-unholy', label: '💀 Unholy (+2d6 vs Good)', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
-    { id: 'enh-axiomatic', label: '⚖️ Axiomatic (+2d6)', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
-    { id: 'enh-anarchic', label: '🌀 Anarchic (+2d6)', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
-    { id: 'enh-wounding', label: '🩸 Wounding (1 CON)', cost: 2, bonusEq: '+2', targetTypes: ['Weapon'] },
-    { id: 'enh-speed', label: '⚡ Speed (+1 Atk)', cost: 3, bonusEq: '+3', targetTypes: ['Weapon'] },
-    { id: 'enh-brilliant-energy', label: '✨ Brilliant Energy', cost: 4, bonusEq: '+4', targetTypes: ['Weapon'] },
-    { id: 'enh-dancing', label: '💃 Dancing (4 Rd)', cost: 4, bonusEq: '+4', targetTypes: ['Weapon'] },
-    { id: 'enh-vorpal', label: '🗡️ Vorpal (Nat 20)', cost: 5, bonusEq: '+5', targetTypes: ['Weapon'] },
-
-    // Armor Special Abilities
-    { id: 'enh-fortification-light', label: '🛡️ Fortification 25%', cost: 1, bonusEq: '+1', targetTypes: ['Armor', 'Shield'] },
-    { id: 'enh-spell-resistance', label: '✨ Spell Resist (13)', cost: 2, bonusEq: '+2', targetTypes: ['Armor', 'Shield'] },
-    { id: 'enh-fortification-moderate', label: '🛡️ Fortification 75%', cost: 3, bonusEq: '+3', targetTypes: ['Armor', 'Shield'] },
-    { id: 'enh-invulnerability', label: '🛡️ Invulnerability (DR 5)', cost: 3, bonusEq: '+3', targetTypes: ['Armor'] },
-    { id: 'enh-wild', label: '🐾 Wild (Wild Shape)', cost: 3, bonusEq: '+3', targetTypes: ['Armor', 'Shield'] },
-    { id: 'enh-fortification-heavy', label: '🛡️ Fortification 100%', cost: 5, bonusEq: '+5', targetTypes: ['Armor', 'Shield'] },
-
-    // Shield-Only Special Abilities
-    { id: 'enh-bashing', label: '🛡️ Bashing (+2 Size)', cost: 1, bonusEq: '+1', targetTypes: ['Shield'] },
-    { id: 'enh-arrow-catching', label: '🏹 Arrow Catching', cost: 1, bonusEq: '+1', targetTypes: ['Shield'] },
-    { id: 'enh-blinding', label: '✨ Blinding', cost: 1, bonusEq: '+1', targetTypes: ['Shield'] },
-    { id: 'enh-animated', label: '🛡️ Animated Shield', cost: 2, bonusEq: '+2', targetTypes: ['Shield'] },
-    { id: 'enh-arrow-deflection', label: '🏹 Arrow Deflection', cost: 2, bonusEq: '+2', targetTypes: ['Shield'] },
-    { id: 'enh-reflecting', label: '🪞 Reflecting (Spell)', cost: 5, bonusEq: '+5', targetTypes: ['Shield'] }
-  ];
-
   function getSelectedForgeBaseType() {
     const baseSel = document.getElementById('dnd-forge-base-select');
     const baseId = baseSel?.value || 'wpn-longsword';
@@ -826,18 +784,12 @@
         }));
       }
     }
-    if (eligibleCatalog.length === 0) {
-      eligibleCatalog = FORGE_ENH_CATALOG.filter(e => e.targetTypes.includes(baseType));
-    } else {
-      const existingIds = new Set(eligibleCatalog.map(e => e.id));
-      FORGE_ENH_CATALOG.filter(e => e.targetTypes.includes(baseType)).forEach(e => {
-        if (!existingIds.has(e.id)) {
-          eligibleCatalog.push(e);
-          existingIds.add(e.id);
-        }
-      });
-    }
     eligibleCatalog.sort((a, b) => String(a.label || a.name || '').localeCompare(String(b.label || b.name || '')));
+
+    if (eligibleCatalog.length === 0) {
+      enhGrid.innerHTML = '<div class="col-span-full p-3 text-center text-slate-400 italic">⏳ Loading enhancements from SRD &amp; MIC Compendium...</div>';
+      return;
+    }
 
     const eligibleMap = new Map(eligibleCatalog.map(e => [e.id, e]));
 
@@ -925,21 +877,8 @@
     }
 
     if (baseOptions.length === 0) {
-      baseOptions = [
-        { id: 'arm-chain-shirt', name: 'Chain Shirt (+4 AC)', type: 'Armor' },
-        { id: 'arm-chainmail', name: 'Chainmail (+5 AC)', type: 'Armor' },
-        { id: 'arm-breastplate', name: 'Breastplate (+5 AC)', type: 'Armor' },
-        { id: 'arm-half-plate', name: 'Half-Plate (+7 AC)', type: 'Armor' },
-        { id: 'arm-full-plate', name: 'Full Plate (+8 AC)', type: 'Armor' },
-        { id: 'shd-heavy-steel-shield', name: 'Heavy Steel Shield (+2 AC)', type: 'Shield' },
-        { id: 'shd-buckler', name: 'Buckler (+1 AC)', type: 'Shield' },
-        { id: 'wpn-longsword', name: 'Longsword (1d8, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-greatsword', name: 'Greatsword (2d6, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-scimitar', name: 'Scimitar (1d6, 18-20/x2)', type: 'Weapon' },
-        { id: 'wpn-rapier', name: 'Rapier (1d6, 18-20/x2)', type: 'Weapon' },
-        { id: 'wpn-dagger', name: 'Dagger (1d4, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-composite-longbow', name: 'Composite Longbow (1d8, x3)', type: 'Weapon' }
-      ];
+      baseSel.innerHTML = '<option value="" disabled selected>⏳ Loading SRD Equipment Compendium...</option>';
+      return;
     }
 
     const currentFilter = _drawerState.forgeBaseTypeFilter || 'all';
@@ -1569,6 +1508,12 @@
   }
 
   // Export window.DnDUI
+  if (typeof global.addEventListener === 'function') {
+    global.addEventListener('srdCompendiumReady', () => {
+      populateForgeControls();
+    });
+  }
+
   global.DnDUI = {
     getDiceIconSvg,
     getFormulaDiceIconSvg,

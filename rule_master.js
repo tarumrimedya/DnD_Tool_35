@@ -4953,21 +4953,9 @@ Return valid JSON only matching:
         enhList = window.SrdCompendium.getEnhancements(targetType);
       }
       if (!enhList || enhList.length === 0) {
-        enhList = (targetType === 'Armor' || targetType === 'Shield')
-          ? [
-              { id: 'enh-fortification-light', name: 'Light Fortification (25%)', enhIncrease: 1 },
-              { id: 'enh-fortification-moderate', name: 'Moderate Fortification (75%)', enhIncrease: 3 },
-              { id: 'enh-fortification-heavy', name: 'Heavy Fortification (100%)', enhIncrease: 5 },
-              { id: 'enh-ghost-touch', name: 'Ghost Touch', enhIncrease: 1 }
-            ]
-          : [
-              { id: 'enh-keen', name: 'Keen (2× Crit)', enhIncrease: 1 },
-              { id: 'enh-flaming', name: 'Flaming (+1d6 Fire)', enhIncrease: 1 },
-              { id: 'enh-frost', name: 'Frost (+1d6 Cold)', enhIncrease: 1 },
-              { id: 'enh-shock', name: 'Shock (+1d6 Elec)', enhIncrease: 1 },
-              { id: 'enh-holy', name: 'Holy (+2d6 vs Evil)', enhIncrease: 2 },
-              { id: 'enh-ghost-touch', name: 'Ghost Touch', enhIncrease: 1 }
-            ];
+        enhGrid.innerHTML = '<div class="col-span-full p-2 text-center text-slate-400 italic text-[11px]">⏳ Loading abilities from SRD Compendium...</div>';
+        if (badgeEl) badgeEl.textContent = `0 Abilities`;
+        return;
       }
 
       enhList.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
@@ -5020,21 +5008,8 @@ Return valid JSON only matching:
       baseOptions = window.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield']);
     }
     if (!baseOptions || baseOptions.length === 0) {
-      baseOptions = [
-        { id: 'arm-chain-shirt', name: 'Chain Shirt (+4 AC)', type: 'Armor' },
-        { id: 'arm-chainmail', name: 'Chainmail (+5 AC)', type: 'Armor' },
-        { id: 'arm-breastplate', name: 'Breastplate (+5 AC)', type: 'Armor' },
-        { id: 'arm-half-plate', name: 'Half-Plate (+7 AC)', type: 'Armor' },
-        { id: 'arm-full-plate', name: 'Full Plate (+8 AC)', type: 'Armor' },
-        { id: 'shd-heavy-steel-shield', name: 'Heavy Steel Shield (+2 AC)', type: 'Shield' },
-        { id: 'shd-buckler', name: 'Buckler (+1 AC)', type: 'Shield' },
-        { id: 'wpn-longsword', name: 'Longsword (1d8, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-greatsword', name: 'Greatsword (2d6, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-scimitar', name: 'Scimitar (1d6, 18-20/x2)', type: 'Weapon' },
-        { id: 'wpn-rapier', name: 'Rapier (1d6, 18-20/x2)', type: 'Weapon' },
-        { id: 'wpn-dagger', name: 'Dagger (1d4, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-composite-longbow', name: 'Composite Longbow (1d8, x3)', type: 'Weapon' }
-      ];
+      baseSel.innerHTML = '<option value="" disabled selected>⏳ Loading SRD Equipment Compendium...</option>';
+      return;
     }
 
     const currentFilter = this._forgeBaseTypeFilter || 'all';
