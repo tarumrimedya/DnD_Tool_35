@@ -5891,13 +5891,12 @@
 
     function getGearCategoryIcon(cat) {
       switch (cat) {
-        case 'Weapon': return '⚔️';
-        case 'Shield': return '🛡️';
         case 'Armor': return '🥋';
+        case 'Shield': return '🛡️';
+        case 'Weapon': return '⚔️';
+        case 'Consumable': return '🧪';
         case 'Crystal': return '💎';
-        case 'Tool': return '🔧';
-        case 'Rod': return '🪄';
-        case 'Staff': return '🦯';
+        case 'Ring': return '💍';
         case 'Head': return '👑';
         case 'Eyes': return '👓';
         case 'Neck': return '📿';
@@ -5906,9 +5905,11 @@
         case 'Belt': return '🎗️';
         case 'Bracers': return '🦾';
         case 'Gloves': return '🧤';
-        case 'Ring': return '💍';
         case 'Boots': return '👢';
-        case 'Consumable': return '🧪';
+        case 'Rod': return '🪄';
+        case 'Staff': return '🦯';
+        case 'Tool': return '🔧';
+        case 'Wondrous': return '✨';
         default: return '📦';
       }
     }
@@ -6168,11 +6169,11 @@
 
       const tabs = [
         { key: 'all', label: 'All Gear', count: total },
-        { key: 'weapon', label: '⚔️ Weapons', count: wepCount },
         { key: 'armor', label: '🛡️ Armor & Shield', count: armCount },
-        { key: 'wondrous', label: '💍 Magic & Wondrous', count: wonCount },
+        { key: 'weapon', label: '⚔️ Weapons', count: wepCount },
+        { key: 'potion', label: '🧪 Consumables', count: potCount },
         { key: 'crystal', label: '💎 Crystals', count: crysCount },
-        { key: 'potion', label: '🧪 Consumables', count: potCount }
+        { key: 'wondrous', label: '💍 Magic & Wondrous', count: wonCount }
       ];
 
       container.innerHTML = tabs.map(t => {

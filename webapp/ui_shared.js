@@ -584,8 +584,10 @@
             </div>
             <div id="dnd-ui-compendium-srd-subfilters" class="flex flex-wrap items-center gap-1.5 text-[11px]">
               <button type="button" data-srd-sub="all_gear" onclick="DnDUI.setSrdSubFilter('all_gear')" class="px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition cursor-pointer bg-indigo-600/30 text-indigo-200 border border-indigo-500/50">📦 All Gear</button>
-              <button type="button" data-srd-sub="Weapon" onclick="DnDUI.setSrdSubFilter('Weapon')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">⚔️ Weapons</button>
               <button type="button" data-srd-sub="Armor" onclick="DnDUI.setSrdSubFilter('Armor')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛡️ Armor &amp; Shields</button>
+              <button type="button" data-srd-sub="Weapon" onclick="DnDUI.setSrdSubFilter('Weapon')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">⚔️ Weapons</button>
+              <button type="button" data-srd-sub="Consumable" onclick="DnDUI.setSrdSubFilter('Consumable')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🧪 Consumables</button>
+              <button type="button" data-srd-sub="Crystal" onclick="DnDUI.setSrdSubFilter('Crystal')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">💎 Crystals</button>
               <button type="button" data-srd-sub="Item" onclick="DnDUI.setSrdSubFilter('Item')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">💍 Magic &amp; Wondrous</button>
             </div>
           </div>
@@ -1371,10 +1373,12 @@
     } else if (_drawerState.activeTab === 'srd' || _drawerState.activeTab === 'Weapon' || _drawerState.activeTab === 'Armor' || _drawerState.activeTab === 'Item') {
       const sub = _drawerState.srdCategoryFilter || 'all_gear';
       const subMap = {
-        all_gear: ['Weapon', 'Armor', 'Shield', 'Item'],
-        Weapon: ['Weapon'],
+        all_gear: ['Weapon', 'Armor', 'Shield', 'Item', 'MagicItem', 'AugmentationCrystal', 'Consumable', 'Ammo', 'Tool'],
         Armor: ['Armor', 'Shield'],
-        Item: ['Item']
+        Weapon: ['Weapon'],
+        Consumable: ['Consumable', 'Ammo'],
+        Crystal: ['AugmentationCrystal'],
+        Item: ['Item', 'MagicItem', 'Tool']
       };
       filters.type = subMap[sub] || subMap.all_gear;
     } else if (_drawerState.activeTab !== 'all') {
