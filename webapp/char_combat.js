@@ -1045,6 +1045,7 @@
     }
 
     function getEffectiveSpellCasterLevel(spell = null) {
+      let baseCl = 0;
       if (spell) {
         const spellNameLower = (spell.name || '').toLowerCase();
         const isDivineSpell = (spell._spellSource === 'divine') || (Array.isArray(character?.spellcasting?.divineSpells) && character.spellcasting.divineSpells.some(s => (s.name || '').toLowerCase() === spellNameLower));
@@ -1052,20 +1053,28 @@
 
         if (isDivineSpell && typeof getDivineCasterInfo === 'function') {
           const dCl = Number(getDivineCasterInfo().cl);
-          if (dCl > 0) return dCl;
+          if (dCl > 0) baseCl = dCl;
         }
-        if (isPreparedSpell && typeof getPreparedCasterInfo === 'function') {
+        if (!baseCl && isPreparedSpell && typeof getPreparedCasterInfo === 'function') {
           const pCl = Number(getPreparedCasterInfo().cl);
-          if (pCl > 0) return pCl;
+          if (pCl > 0) baseCl = pCl;
         }
       }
 
-      if (typeof getCasterInfo === 'function') {
+      if (!baseCl && typeof getCasterInfo === 'function') {
         const cCl = Number(getCasterInfo()?.cl);
-        if (cCl > 0) return cCl;
+        if (cCl > 0) baseCl = cCl;
       }
 
-      return Number(character?.spellcasting?.cl) || Number(character?.spellcasting?.caster_level) || Number(character?.casterLevel) || Number(character?.level) || 1;
+      if (!baseCl) {
+        baseCl = Number(character?.spellcasting?.cl) || Number(character?.spellcasting?.caster_level) || Number(character?.casterLevel) || Number(character?.level) || 1;
+      }
+
+      if (spell && typeof RuleEngine !== 'undefined' && typeof RuleEngine.getSpellEffectiveCasterLevel === 'function') {
+        return RuleEngine.getSpellEffectiveCasterLevel(spell, character, baseCl);
+      }
+
+      return baseCl;
     }
 
     // --- SPELL CRITICAL PARAMETERS & HOVER TOOLTIP ENGINE ---
@@ -1233,13 +1242,17 @@
         durationFormatted = `${cl} Rounds`;
       } else if (/min/i.test(rawDur)) {
         if (/level|lvl/i.test(rawDur)) {
-          durationFormatted = `${cl} Min (1 min/lvl)`;
+          const perLvlMatch = String(rawDur).match(/(\d+)\s*min/i);
+          const minsPerLvl = perLvlMatch ? Math.max(1, parseInt(perLvlMatch[1], 10)) : 1;
+          durationFormatted = `${cl * minsPerLvl} Min (${minsPerLvl} min/lvl)`;
         } else {
           durationFormatted = rawDur;
         }
       } else if (/hour/i.test(rawDur)) {
         if (/level|lvl/i.test(rawDur)) {
-          durationFormatted = `${cl} Hours (1 hr/lvl)`;
+          const perHrMatch = String(rawDur).match(/(\d+)\s*(?:hour|hr)/i);
+          const hrsPerLvl = perHrMatch ? Math.max(1, parseInt(perHrMatch[1], 10)) : 1;
+          durationFormatted = `${cl * hrsPerLvl} Hours (${hrsPerLvl} hr/lvl)`;
         } else {
           durationFormatted = rawDur;
         }
@@ -9038,10 +9051,22 @@
 
       (character.buffs || []).forEach(b => {
         if (!b || b.active === false) return;
-        const bCl = Number(b.casterLevel || b.cl || character.level) || 1;
+        const rawBCl = Number(b.casterLevel || b.cl || character.level) || 1;
+        const minDomainCl = (typeof RuleEngine !== 'undefined' && RuleEngine.getSpellEffectiveCasterLevel)
+          ? RuleEngine.getSpellEffectiveCasterLevel(b, character, Number(character.level) || 1)
+          : rawBCl;
+        const bCl = Math.max(rawBCl, minDomainCl);
         const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
           ? RuleEngine.resolveSpellBuffSpec(b, character, bCl)
           : null;
+        if (bCl > rawBCl && spec && spec.isBuffSpell) {
+          b.casterLevel = bCl;
+          b.cl = bCl;
+          if (spec.durationText) {
+            b.duration = spec.durationText;
+            b.durationText = spec.durationText;
+          }
+        }
         const rf = { ...(spec?.ruleFlags || {}), ...(b.ruleFlags || {}) };
         const bName = b.name || spec?.name || 'Spell Buff';
         const energyType = b.chosenEnergy || (/\((fire|cold|acid|electricity|sonic)\)/i.exec(bName)?.[1]) || null;
@@ -9188,13 +9213,14 @@
           });
         }
         if (rf.wardAlignment) {
+          const wardDur = b.duration || spec?.durationText || 'Active';
           pushUniqueDefense({
             type: 'ward',
             name: bName,
             label: `Ward vs. ${rf.wardAlignment}`,
             icon: '✨',
             bgClass: 'bg-teal-950/80 text-teal-300 border-teal-500/60 hover:border-teal-400',
-            benefit: `${bName}: +2 Deflection AC & +2 Resistance saves vs. ${rf.wardAlignment}; blocks mental control and direct bodily contact by non-${rf.wardAlignment} summoned creatures.`
+            benefit: `${bName} (CL ${bCl} • ${wardDur}): +2 Deflection AC & +2 Resistance saves vs. ${rf.wardAlignment}; blocks mental control and direct bodily contact by non-${rf.wardAlignment} summoned creatures.`
           });
         }
         if (rf.uncannyDodge) {
@@ -9262,12 +9288,22 @@
           if (buffsCount) buffsCount.textContent = `${activeBuffEntries.length}`;
 
           buffsList.innerHTML = activeBuffEntries.map(({ b, idx }) => {
-            const bCl = Number(b.casterLevel || b.cl || character.level) || 1;
+            const rawBCl = Number(b.casterLevel || b.cl || character.level) || 1;
+            const minDomainCl = (typeof RuleEngine !== 'undefined' && RuleEngine.getSpellEffectiveCasterLevel)
+              ? RuleEngine.getSpellEffectiveCasterLevel(b, character, Number(character.level) || 1)
+              : rawBCl;
+            const bCl = Math.max(rawBCl, minDomainCl);
             const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
               ? RuleEngine.resolveSpellBuffSpec(b, character, bCl)
               : null;
             const summaryText = b.summary || spec?.summaryText || b.description || 'Active Buff';
-            const durText = b.duration || spec?.durationText || '';
+            const durText = (bCl > rawBCl && spec?.durationText) ? spec.durationText : (b.duration || spec?.durationText || '');
+            const clBonusInfo = (typeof RuleEngine !== 'undefined' && RuleEngine.getSpellCasterLevelBonus)
+              ? RuleEngine.getSpellCasterLevelBonus(b, character)
+              : { bonus: 0, sources: [] };
+            const clBadge = (b.source === 'Spell' || spec?.isBuffSpell)
+              ? `<span class="text-[9px] font-mono ${clBonusInfo.bonus > 0 ? 'text-teal-300 bg-teal-950/80 border-teal-600/60 font-bold' : 'text-slate-400 bg-slate-950 border-slate-800'} px-1 py-0.2 rounded border" title="${clBonusInfo.sources?.length ? clBonusInfo.sources.join(', ') : `Caster Level ${bCl}`}">CL ${bCl}</span>`
+              : '';
             const wepBadge = b.targetWeapon
               ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-950/90 text-amber-300 border border-amber-600/50">⚔️ ${b.targetWeapon}</span>`
               : '';
@@ -9284,6 +9320,7 @@
                       <span class="text-[11px] font-bold text-emerald-300 truncate">${b.name || 'Buff'}</span>
                       ${wepBadge}
                       ${energyBadge}
+                      ${clBadge}
                       ${durText ? `<span class="text-[9px] font-mono text-slate-400 bg-slate-950 px-1 py-0.2 rounded border border-slate-800">${durText}</span>` : ''}
                     </div>
                     <div class="text-[10px] text-amber-300/90 truncate">${summaryText}</div>

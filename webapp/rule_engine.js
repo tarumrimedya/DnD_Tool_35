@@ -2010,11 +2010,188 @@ const RuleEngine = {
     { id: 'spl-energy-immunity', schemaVersion: 2, name: 'Energy Immunity', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 6, learnedAt: { class: { Cleric: 6, Druid: 6, Sorcerer: 7, Wizard: 7 } }, source: 'Spell Compendium p.80', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Touch', target: 'Creature touched', duration: '24 hours', save: 'None', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains complete immunity to one chosen energy type for 24 hours.', description: 'This abjuration grants a creature complete protection against damage from whichever one of five energy types you select: acid, cold, electricity, fire, or sonic.', modifiers: [], damageParts: [], modes: [], ruleFlags: { energyChoice: true, energyImmunity: true } }
   ],
 
+  // Canonical V2 Spell Caster Level Bonus Resolver (Cleric Domains, Feats, Items & Buffs with `casterLevel.*` modifiers)
+  getSpellCasterLevelBonus(spell, character = null) {
+    if (!spell || !character) return { bonus: 0, sources: [] };
+
+    const rawSpellName = String(typeof spell === 'string' ? spell : (spell.name || '')).trim();
+    const baseLookupName = rawSpellName.replace(/\s*\((?:fire|cold|acid|electricity|sonic)\)\s*$/i, '').trim();
+    const cleanName = baseLookupName.toLowerCase();
+    const spellObj = typeof spell === 'object' ? spell : { name: rawSpellName };
+    const dbEntry = this.getMasterDbEntry(spellObj, 'Spell') || this.getMasterDbEntry({ name: baseLookupName }, 'Spell') || {};
+
+    // 1. Collect spell's school, subschool, and descriptors from V2 fields + built-in fallback sets
+    const schoolStr = String(spellObj.school || spellObj.category || dbEntry.school || dbEntry.category || '').toLowerCase();
+    const subschoolStr = String(spellObj.subschool || dbEntry.subschool || '').toLowerCase();
+    const rawDesc = [
+      Array.isArray(spellObj.descriptors) ? spellObj.descriptors.join(', ') : (spellObj.descriptors || ''),
+      Array.isArray(dbEntry.descriptors) ? dbEntry.descriptors.join(', ') : (dbEntry.descriptors || ''),
+      Array.isArray(spellObj.tags) ? spellObj.tags.join(', ') : '',
+      Array.isArray(dbEntry.tags) ? dbEntry.tags.join(', ') : ''
+    ].join(', ').toLowerCase();
+
+    const descriptorSet = new Set();
+    rawDesc.split(/[,;/|]+/).forEach(token => {
+      const t = token.replace(/[\[\]()]/g, '').trim();
+      if (t) descriptorSet.add(t);
+    });
+
+    // Extract bracketed descriptor or parenthesized subschool from school string if present (e.g. "Abjuration [Chaotic]", "Conjuration (Healing)")
+    const bracketMatch = schoolStr.match(/\[([^\]]+)\]/);
+    if (bracketMatch) {
+      bracketMatch[1].split(/[,;/]+/).forEach(t => {
+        const cleanT = t.trim();
+        if (cleanT) descriptorSet.add(cleanT);
+      });
+    }
+    let effectiveSubschool = subschoolStr;
+    const parenMatch = schoolStr.match(/\(([^)]+)\)/);
+    if (parenMatch && !effectiveSubschool) {
+      effectiveSubschool = parenMatch[1].trim().toLowerCase();
+    }
+
+    // Built-in D&D 3.5e RAW fallback mapping in case character copy lacks descriptors/subschool before Compendium finishes loading
+    const CHAOTIC_SPELLS = new Set(['protection from law', 'magic circle against law', 'chaos hammer', 'word of chaos', 'cloak of chaos', 'dispel law', 'summon monster (chaotic)']);
+    const LAWFUL_SPELLS = new Set(['protection from chaos', 'magic circle against chaos', "order's wrath", 'dictum', 'shield of law', 'dispel chaos', 'calm emotions']);
+    const GOOD_SPELLS = new Set(['protection from evil', 'magic circle against evil', 'aid', 'holy smite', 'holy word', 'holy aura', 'dispel evil', 'bless water', 'consecrate', 'hallow']);
+    const EVIL_SPELLS = new Set(['protection from good', 'magic circle against good', 'unholy blight', 'blasphemy', 'unholy aura', 'dispel good', 'curse water', 'desecrate', 'unhallow', 'death knell', 'animate dead', 'create undead', 'create greater undead']);
+    if (CHAOTIC_SPELLS.has(cleanName) || /\bagainst law\b/i.test(cleanName)) descriptorSet.add('chaotic');
+    if (LAWFUL_SPELLS.has(cleanName) || /\bagainst chaos\b/i.test(cleanName)) descriptorSet.add('lawful');
+    if (GOOD_SPELLS.has(cleanName) || /\bagainst evil\b/i.test(cleanName)) descriptorSet.add('good');
+    if (EVIL_SPELLS.has(cleanName) || /\bagainst good\b/i.test(cleanName)) descriptorSet.add('evil');
+    if (/^(cure|mass cure|heal|mass heal|regenerate|delay poison|neutralize poison|remove|restoration|lesser restoration|greater restoration)\b/i.test(cleanName) && !effectiveSubschool) {
+      effectiveSubschool = 'healing';
+    }
+
+    // Check if Animate Objects is prepared via Chaos Domain (gets [Chaotic] descriptor per PHB p.186)
+    if (cleanName === 'animate objects' && String(spellObj.domainSource || '').toLowerCase() === 'chaos') {
+      descriptorSet.add('chaotic');
+    }
+
+    // 2. Harvest character's active Cleric Domains
+    const domainNames = new Set();
+    if (Array.isArray(character?.spellcasting?.domains)) {
+      character.spellcasting.domains.forEach(d => {
+        const cleanD = String(d || '').replace(/^Domain:\s*/i, '').trim();
+        if (cleanD) domainNames.add(cleanD);
+      });
+    }
+    const progList = Array.isArray(character?.levelProgression) ? character.levelProgression : [];
+    const activeMaxLvl = Number(character?.level) || 0;
+    progList.forEach((row, idx) => {
+      if (!row || row.isPlanned || row.active === false) return;
+      const rowLvl = Number(row.level) || (idx + 1);
+      if (activeMaxLvl > 0 && rowLvl > activeMaxLvl) return;
+      const combined = [
+        ...(Array.isArray(row.specialAbilities) ? row.specialAbilities : []),
+        ...(Array.isArray(row.feats) ? row.feats : [])
+      ];
+      combined.forEach(entry => {
+        const m = String(entry || '').match(/^Domain:\s*(.+)$/i);
+        if (m && m[1]) domainNames.add(m[1].trim());
+      });
+    });
+
+    // Built-in Canonical V2 fallback modifiers for the 8 SRD domains that grant Caster Level bonuses
+    const BUILTIN_DOMAIN_CL_MODS = {
+      chaos: [{ target: 'casterLevel.chaotic', value: 1, type: 'untyped' }],
+      evil: [{ target: 'casterLevel.evil', value: 1, type: 'untyped' }],
+      good: [{ target: 'casterLevel.good', value: 1, type: 'untyped' }],
+      law: [{ target: 'casterLevel.lawful', value: 1, type: 'untyped' }],
+      healing: [{ target: 'casterLevel.healing', value: 1, type: 'untyped' }],
+      knowledge: [{ target: 'casterLevel.divination', value: 1, type: 'untyped' }],
+      artifice: [{ target: 'casterLevel.creation', value: 1, type: 'untyped' }],
+      creation: [{ target: 'casterLevel.creation', value: 2, type: 'untyped' }]
+    };
+
+    const candidateModifiers = [];
+    domainNames.forEach(domName => {
+      const domLower = domName.toLowerCase();
+      const srdDom = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
+        ? window.SrdCompendium.getDomain(domName)
+        : null;
+      const mods = (srdDom && Array.isArray(srdDom.modifiers) && srdDom.modifiers.length > 0)
+        ? srdDom.modifiers
+        : (BUILTIN_DOMAIN_CL_MODS[domLower] || []);
+      const displayDom = domName.charAt(0).toUpperCase() + domName.slice(1);
+      mods.forEach(mod => {
+        if (mod && String(mod.target || '').startsWith('casterLevel')) {
+          candidateModifiers.push({ ...mod, _sourceLabel: `${displayDom} Domain` });
+        }
+      });
+    });
+
+    // Also harvest any `casterLevel.*` V2 modifiers from active character feats, equipped items, and active buffs
+    const extraSources = [
+      ...(Array.isArray(character?.feats) ? character.feats.filter(f => f && f.active !== false).map(f => ({ entry: f, label: f.name || 'Feat' })) : []),
+      ...(Array.isArray(character?.buffs) ? character.buffs.filter(b => b && b.active !== false).map(b => ({ entry: b, label: b.name || 'Buff' })) : [])
+    ];
+    extraSources.forEach(({ entry, label }) => {
+      const dbFeat = (!Array.isArray(entry.modifiers) || entry.modifiers.length === 0)
+        ? (this.getMasterDbEntry(entry) || {})
+        : {};
+      const mods = (Array.isArray(entry.modifiers) && entry.modifiers.length > 0)
+        ? entry.modifiers
+        : (Array.isArray(dbFeat.modifiers) ? dbFeat.modifiers : []);
+      mods.forEach(mod => {
+        if (mod && String(mod.target || '').startsWith('casterLevel')) {
+          candidateModifiers.push({ ...mod, _sourceLabel: label });
+        }
+      });
+    });
+
+    // 3. Evaluate which `casterLevel.*` modifiers match this spell
+    let totalBonus = 0;
+    const matchedSources = [];
+    candidateModifiers.forEach(mod => {
+      const target = String(mod.target || '').trim().toLowerCase();
+      const val = Number(mod.value) || 0;
+      if (val === 0) return;
+
+      let matches = false;
+      if (target === 'casterlevel' || target === 'casterlevel.all') {
+        matches = true;
+      } else if (target === 'casterlevel.chaotic' || target === 'casterlevel.chaos') {
+        matches = descriptorSet.has('chaotic') || descriptorSet.has('chaos');
+      } else if (target === 'casterlevel.lawful' || target === 'casterlevel.law') {
+        matches = descriptorSet.has('lawful') || descriptorSet.has('law');
+      } else if (target === 'casterlevel.good') {
+        matches = descriptorSet.has('good');
+      } else if (target === 'casterlevel.evil') {
+        matches = descriptorSet.has('evil');
+      } else if (target === 'casterlevel.healing') {
+        matches = effectiveSubschool.includes('healing') || descriptorSet.has('healing');
+      } else if (target === 'casterlevel.creation') {
+        matches = effectiveSubschool.includes('creation') || descriptorSet.has('creation');
+      } else if (target === 'casterlevel.divination') {
+        matches = schoolStr.includes('divination');
+      } else if (target.startsWith('casterlevel.')) {
+        const subKey = target.slice('casterlevel.'.length);
+        matches = descriptorSet.has(subKey) || effectiveSubschool.includes(subKey) || schoolStr.includes(subKey);
+      }
+
+      if (matches) {
+        totalBonus += val;
+        matchedSources.push(`${mod._sourceLabel} (${val >= 0 ? '+' : ''}${val} CL)`);
+      }
+    });
+
+    return { bonus: totalBonus, sources: matchedSources };
+  },
+
+  getSpellEffectiveCasterLevel(spell, character = null, baseCl = null) {
+    const rawBase = Math.max(1, Number(baseCl || spell?.casterLevel || spell?.cl || character?.level) || 1);
+    const { bonus } = this.getSpellCasterLevelBonus(spell, character);
+    return Math.max(1, rawBase + bonus);
+  },
+
   // Universal Canonical V2 Spell Buff Resolver (SRD + Splatbooks + Dynamic NLP Fallback)
   resolveSpellBuffSpec(spell, character = null, customCl = null) {
     if (!spell) return { isBuffSpell: false };
     const charLvl = Number(character?.level) || 1;
-    const cl = Math.max(1, Number(customCl || spell.casterLevel || spell.cl || charLvl) || 1);
+    const cl = (customCl !== null && customCl !== undefined)
+      ? Math.max(1, Number(customCl) || 1)
+      : this.getSpellEffectiveCasterLevel(spell, character, Number(spell.casterLevel || spell.cl || charLvl) || 1);
     const chaMod = this.getAbilityMod(character?.abilities?.cha || 10);
     const evalCtx = { cl, level: charLvl, bab: Number(character?.bab) || 0, chaMod };
 

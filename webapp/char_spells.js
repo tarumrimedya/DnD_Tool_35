@@ -921,7 +921,8 @@
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
         const hasActiveSlot = remainingSlots > 0;
         const theme = getSpellLevelTheme(lvl);
-        const dmgExpr = resolveSpellEffectiveFormula(s, cl);
+        const spellCl = getSpellEffectiveCl(s, cl);
+        const dmgExpr = resolveSpellEffectiveFormula(s, spellCl);
 
         return `
           <tr class="transition border-l-4 ${theme.borderLeft} ${
@@ -1151,6 +1152,22 @@
       });
     }
 
+    function getSpellCasterLevelBonusInfo(s) {
+      if (!s || typeof RuleEngine === 'undefined' || typeof RuleEngine.getSpellCasterLevelBonus !== 'function') {
+        return { bonus: 0, sources: [] };
+      }
+      return RuleEngine.getSpellCasterLevelBonus(s, character);
+    }
+
+    function getSpellEffectiveCl(s, baseCl = 6) {
+      const rawCl = Math.max(1, Number(baseCl || s?.casterLevel || character?.level) || 6);
+      if (!s || typeof RuleEngine === 'undefined' || typeof RuleEngine.getSpellEffectiveCasterLevel !== 'function') {
+        return rawCl;
+      }
+      return RuleEngine.getSpellEffectiveCasterLevel(s, character, rawCl);
+    }
+    window.getSpellEffectiveCl = getSpellEffectiveCl;
+
     function resolveSpellEffectiveFormula(s, cl = 6) {
       if (!s) return null;
       const effCl = Math.max(1, Number(cl || s.casterLevel || character?.level) || 6);
@@ -1319,10 +1336,14 @@
       renderAll();
 
       if (!options.silentToast) {
+        const clBonusInfo = getSpellCasterLevelBonusInfo(spellWithChoice);
+        const clLabel = (clBonusInfo.bonus !== 0 && clBonusInfo.sources.length > 0)
+          ? `CL ${effCl} (${clBonusInfo.sources.join(', ')})`
+          : `CL ${effCl}`;
         showDiceTopToast({
           icon: '🛡️',
           title: `${buffObj.name} ➔ ${targetWeaponName || 'Self'}`,
-          breakdown: `${buffObj.summary} • CL ${effCl} • Duration: ${buffSpec.durationText}`,
+          breakdown: `${buffObj.summary} • ${clLabel} • Duration: ${buffSpec.durationText}`,
           total: grantedTempHp > 0 ? `+${grantedTempHp} Temp HP` : 'Buff Active'
         });
       }
@@ -1501,8 +1522,11 @@
     function getClericSpontaneousSpellInfo(lvl, cl = 6, mode = 'cure') {
       const numLvl = Number(lvl);
       if (isNaN(numLvl) || numLvl < 0 || numLvl > 8) return null;
-      const effCl = Math.max(1, Number(cl) || 6);
       const isCure = mode !== 'inflict';
+      const baseCl = Math.max(1, Number(cl) || 6);
+      const effCl = isCure
+        ? getSpellEffectiveCl({ name: 'Cure Light Wounds', school: 'Conjuration', subschool: 'healing' }, baseCl)
+        : baseCl;
 
       if (numLvl === 0) {
         return isCure
@@ -1619,7 +1643,8 @@
       if (!s) return;
       const name = s.name;
       const lvl = Number(s.level) || 0;
-      const { cl } = getPreparedCasterInfo();
+      const { cl: baseCl } = getPreparedCasterInfo();
+      const cl = getSpellEffectiveCl(s, baseCl);
       const dmgExpr = resolveSpellEffectiveFormula(s, cl);
       const slot = character.spellcasting?.preparedSlots?.find(sl => Number(sl.level) === lvl);
       if (!slot || slot.used >= slot.daily) {
@@ -1870,7 +1895,9 @@
           : Math.max(0, regDaily - regUsed);
         const hasActiveSlot = remainingSlots > 0 && ((slotObj ? (slotObj.daily - slotObj.used) : 0) > 0);
         const theme = getSpellLevelTheme(lvl);
-        const dmgExpr = resolveSpellEffectiveFormula(s, cl);
+        const spellCl = getSpellEffectiveCl(s, cl);
+        const clBonusInfo = getSpellCasterLevelBonusInfo(s);
+        const dmgExpr = resolveSpellEffectiveFormula(s, spellCl);
         const spontInfo = getClericSpontaneousSpellInfo(lvl, cl, spontMode);
         const isAlreadyTarget = spontMode === 'inflict'
           ? /^(inflict|mass inflict)\b/i.test((s.name || '').trim())
@@ -1895,6 +1922,9 @@
         const domainBadgeHtml = isDom
           ? `<span class="badge bg-yellow-950/90 text-yellow-300 border border-yellow-500/80 text-[10px] font-bold px-1.5 py-0.5 shrink-0" title="Prepared in Dedicated Cleric Domain Slot (Cannot be converted to Cure/Inflict)">⚜️ ${s.domainSource ? s.domainSource + ' Domain' : 'Domain Slot'}</span>`
           : '';
+        const clBoostBadgeHtml = clBonusInfo.bonus > 0
+          ? `<span class="badge bg-teal-950/90 text-teal-300 border border-teal-500/70 text-[10px] font-bold font-mono px-1.5 py-0.5 shrink-0" title="Effective Caster Level ${spellCl} (${clBonusInfo.sources.join(', ')})">⚡ CL ${spellCl} (+${clBonusInfo.bonus})</span>`
+          : '';
 
         return `
           <tr class="transition border-l-4 ${isDom ? 'border-l-yellow-400 bg-yellow-950/10' : theme.borderLeft} ${
@@ -1909,6 +1939,7 @@
                 <span>${isDom ? '⚜️' : '✨'}</span>
                 <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
                 ${domainBadgeHtml}
+                ${clBoostBadgeHtml}
                 ${!hasActiveSlot ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
               </div>
             </td>
@@ -2199,7 +2230,8 @@
       const name = s.name;
       const lvl = Number(s.level) || 0;
       const isDom = Boolean(s.isDomainSpell);
-      const { cl } = getDivineCasterInfo();
+      const { cl: baseCl } = getDivineCasterInfo();
+      const cl = getSpellEffectiveCl(s, baseCl);
       const dmgExpr = resolveSpellEffectiveFormula(s, cl);
       const slot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
       const domDaily = slot ? (Number(slot.domainDaily) || 0) : 0;
@@ -4407,7 +4439,8 @@
 
       function renderSpellRow(s, originalIdx, lvl) {
         const dc = getSpellDc(s.level !== undefined ? s.level : lvl);
-        const dmgExpr = resolveSpellEffectiveFormula(s, cl);
+        const spellCl = getSpellEffectiveCl(s, cl);
+        const dmgExpr = resolveSpellEffectiveFormula(s, spellCl);
         const slotObj = (character?.spellcasting?.slots || []).find(sl => Number(sl.level) === lvl);
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
         const hasActiveSlot = remainingSlots > 0;
@@ -4557,7 +4590,8 @@
       if (!s) return;
       const name = s.name;
       const lvl = Number(s.level) || 0;
-      const { cl } = getCasterInfo();
+      const { cl: baseCl } = getCasterInfo();
+      const cl = getSpellEffectiveCl(s, baseCl);
       const dmgExpr = resolveSpellEffectiveFormula(s, cl);
 
       const slot = character.spellcasting?.slots?.find(sl => sl.level === lvl);
@@ -5671,6 +5705,9 @@
           name: item.name,
           level: resolvedLvl,
           school: schoolName,
+          subschool: item.subschool || '',
+          descriptors: item.descriptors || '',
+          tags: Array.isArray(item.tags) ? [...item.tags] : [],
           benefit: cleanBenefit,
           range: rangeText,
           target: item.target || item.area || '',
