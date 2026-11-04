@@ -6220,9 +6220,6 @@
                   ⚒️
                 </button>
               ` : ''}
-              <button type="button" onclick="fillPoolItemFormFromDb(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition cursor-pointer" title="Populate Form / Customize">
-                ✏️
-              </button>
               <button id="${btnId}" type="button" onclick="addMasterDbItemDirectlyToPool(${idx}, this)" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-2.5 sm:px-3 rounded-lg shadow transition flex items-center gap-1 whitespace-nowrap cursor-pointer">
                 <span>➕</span>
                 <span class="sm:hidden">Add</span>
@@ -6522,9 +6519,6 @@
                 </div>
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" onclick="fillPoolItemFormFromAi(${idx})" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white p-1.5 rounded-lg text-xs font-bold transition" title="Populate Form">
-                  ✏️
-                </button>
                 <button type="button" onclick="addAiItemToPoolAndDb(${idx})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
                   <span>➕</span>
                   <span>Add to Inventory</span>
