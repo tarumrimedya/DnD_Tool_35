@@ -7789,7 +7789,9 @@
     "shortDescription": "Fitted metal chest and back plate with greaves, offering solid protection without fully encumbering the limbs.",
     "tags": [
       "armor",
-      "medium"
+      "medium",
+      "breastplate",
+      "breast plate"
     ],
     "modifiers": [
       {
@@ -7941,7 +7943,10 @@
     "shortDescription": "Shaped steel plates covering vital areas combined with chainmail joints. Run speed is x3 instead of x4.",
     "tags": [
       "armor",
-      "heavy"
+      "heavy",
+      "half-plate",
+      "half plate",
+      "halfplate"
     ],
     "modifiers": [
       {
@@ -7979,7 +7984,8 @@
     "shortDescription": "Multiple layers of animal hides cured together. Favored by barbarians and druids.",
     "tags": [
       "armor",
-      "medium"
+      "medium",
+      "hide"
     ],
     "modifiers": [
       {
@@ -8263,7 +8269,9 @@
     "shortDescription": "Coat and leggings covered in overlapping scales of bronze or iron.",
     "tags": [
       "armor",
-      "medium"
+      "medium",
+      "scale mail",
+      "scalemail"
     ],
     "modifiers": [
       {
@@ -8301,7 +8309,9 @@
     "shortDescription": "Complete suit of interlocking steel rings over a quilted fabric layer.",
     "tags": [
       "armor",
-      "medium"
+      "medium",
+      "chain mail",
+      "chainmail"
     ],
     "modifiers": [
       {

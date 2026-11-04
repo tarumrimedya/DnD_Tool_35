@@ -453,6 +453,7 @@
      */
     search(query = '', filters = {}) {
       const q = normalizeNameKey(query);
+      const qClean = q ? q.replace(/[^a-z0-9]/g, '') : '';
       const qTokens = q ? q.split(/\s+/).filter(Boolean) : [];
       const limit = filters.limit || 50;
       const includeMasterDb = filters.includeMasterDb !== false;
@@ -481,6 +482,7 @@
         const cLower = String(category || '').toLowerCase();
         const sLower = String(slot || '').toLowerCase();
         const nLower = normalizeNameKey(name);
+        const nClean = nLower.replace(/[^a-z0-9]/g, '');
 
         if (allowedTypes && !allowedTypes.has(tLower)) return;
         if (catFilter && !cLower.includes(catFilter)) return;
@@ -490,17 +492,18 @@
 
         let score = (q && isCustom) ? 5 : 0;
         if (q) {
-          if (nLower === q) {
+          if (nLower === q || (qClean && nClean === qClean)) {
             score += 1000;
-          } else if (nLower.startsWith(q)) {
+          } else if (nLower.startsWith(q) || (qClean.length >= 3 && nClean.startsWith(qClean))) {
             score += 600 - Math.min(100, nLower.length);
-          } else if (nLower.includes(q)) {
+          } else if (nLower.includes(q) || (qClean.length >= 3 && nClean.includes(qClean))) {
             score += 350 - Math.min(100, nLower.indexOf(q));
           } else {
             // Token match across name + category + type
             const haystack = `${nLower} ${cLower} ${tLower}`;
             for (let i = 0; i < qTokens.length; i++) {
-              if (!haystack.includes(qTokens[i])) return;
+              const tok = qTokens[i];
+              if (!haystack.includes(tok) && !nClean.includes(tok)) return;
             }
             score += 150;
           }

@@ -6240,8 +6240,26 @@
       `;
     }
 
+    function itemMatchesPoolCategory(item, catKey) {
+      if (!catKey || catKey === 'all') return true;
+      const c = mapEntryToGearCategory(item);
+      if (catKey === 'weapon') return c === 'Weapon';
+      if (catKey === 'armor') return c === 'Armor' || c === 'Shield';
+      if (catKey === 'potion') return c === 'Consumable';
+      if (catKey === 'crystal') return c === 'Crystal';
+      if (catKey === 'wondrous') return WONDROUS_CAT_SET.has(c);
+      return true;
+    }
+
     function renderUnaddedMasterDbItems(catFilter = 'all') {
       _currentPoolCategoryFilter = catFilter;
+      const searchInput = document.getElementById('pool-modal-search');
+      const query = (searchInput?.value || '').trim();
+      if (query) {
+        executePoolMasterDbSearch(query);
+        return;
+      }
+
       const unadded = getMasterDbItemsNotInInventory();
       renderPoolCategoryTabs(unadded, catFilter);
 
@@ -6269,7 +6287,7 @@
       if (filtered.length === 0) {
         resultsBox.innerHTML = `
           <div class="p-4 bg-slate-900/80 border border-slate-800 rounded-xl text-center text-xs text-slate-400">
-            No remaining unowned items in this category. Search above or use the manual form below.
+            No remaining unowned items in this category. Search above or craft in Item Forge.
           </div>
         `;
         return;
@@ -6296,36 +6314,86 @@
       const resultsBox = document.getElementById('pool-search-results-box');
       if (!resultsBox) return;
 
-      const q = query.toLowerCase().trim();
-      const combined = getUnifiedEquipmentCatalog();
+      const q = String(query || '').toLowerCase().trim();
+      if (!q) {
+        renderUnaddedMasterDbItems(_currentPoolCategoryFilter || 'all');
+        return;
+      }
 
-      // Score and filter SRD + Custom DB items so exact/prefix name matches rank first
+      const qClean = q.replace(/[^a-z0-9]/g, '');
+      const qTokens = q.split(/[\s\-_',.]+/).filter(Boolean);
+      const combined = getUnifiedEquipmentCatalog();
+      const activeFilter = _currentPoolCategoryFilter || 'all';
+
+      // Score and filter SRD + Custom DB items so exact/prefix/compound name matches rank first
       const scored = [];
       for (let i = 0; i < combined.length; i++) {
         const item = combined[i];
         if (!item || !item.name) continue;
-        const name = (item.name || '').toLowerCase();
-        const type = (item.type || '').toLowerCase();
-        const slot = (item.slot || '').toLowerCase();
-        if (name === q) {
-          scored.push({ item, score: 100 });
-        } else if (name.startsWith(q)) {
-          scored.push({ item, score: 80 });
-        } else if (name.includes(q)) {
-          scored.push({ item, score: 60 });
+
+        const name = String(item.name || '').toLowerCase().trim();
+        const nameClean = name.replace(/[^a-z0-9]/g, '');
+        const cat = String(item.category || '').toLowerCase();
+        const type = String(item.type || '').toLowerCase();
+        const slot = String(item.slot || '').toLowerCase();
+        const desc = String(item.benefit || item.description || item.shortDescription || '').toLowerCase();
+        const tags = Array.isArray(item.tags) ? item.tags.join(' ').toLowerCase() : '';
+
+        let score = 0;
+
+        // 1. Exact match (handles spacing/hyphen variants: "chain mail" <-> "chainmail", "half plate" <-> "half-plate")
+        if (name === q || (qClean && nameClean === qClean)) {
+          score = 1000;
+        } else if (name.startsWith(q) || (qClean.length >= 3 && nameClean.startsWith(qClean))) {
+          score = 800 - Math.min(100, name.length);
+        } else if (name.includes(q) || (qClean.length >= 3 && nameClean.includes(qClean))) {
+          score = 600 - Math.min(100, name.indexOf(q));
         } else {
-          const benefit = (item.benefit || item.description || item.shortDescription || '').toLowerCase();
-          if (type.includes(q) || slot.includes(q) || benefit.includes(q)) {
-            scored.push({ item, score: 25 });
+          // 2. Multi-word tokenized matching across name, category, type, slot, tags, description
+          const haystack = `${name} ${cat} ${type} ${slot} ${tags} ${desc}`;
+          let allTokensInName = true;
+          let allTokensInHaystack = true;
+          for (let t = 0; t < qTokens.length; t++) {
+            const tok = qTokens[t];
+            if (!name.includes(tok) && !nameClean.includes(tok)) allTokensInName = false;
+            if (!haystack.includes(tok) && !nameClean.includes(tok)) {
+              allTokensInHaystack = false;
+              break;
+            }
           }
+          if (allTokensInName && qTokens.length > 0) {
+            score = 400;
+          } else if (allTokensInHaystack && qTokens.length > 0) {
+            score = 200;
+          }
+        }
+
+        if (score > 0) {
+          // Boost item if it matches current active category tab
+          if (itemMatchesPoolCategory(item, activeFilter)) {
+            score += 250;
+          }
+          scored.push({ item, score });
         }
       }
 
       scored.sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name));
-      const matches = scored.map(s => s.item);
+      const allMatches = scored.map(s => s.item);
 
-      window._poolCurrentMatches = matches;
-      renderPoolSearchResults(matches, query);
+      // Category tab filtering: if specific tab selected and has matches in that tab, narrow to that tab
+      let displayMatches = allMatches;
+      if (activeFilter !== 'all') {
+        const inCat = allMatches.filter(item => itemMatchesPoolCategory(item, activeFilter));
+        if (inCat.length > 0) {
+          displayMatches = inCat;
+        }
+      }
+
+      // Update category tab count badges to reflect current search matches
+      renderPoolCategoryTabs(allMatches, activeFilter);
+
+      window._poolCurrentMatches = displayMatches;
+      renderPoolSearchResults(displayMatches, query);
     }
 
     function renderPoolSearchResults(matches, query) {
@@ -6335,7 +6403,7 @@
       const escapedQ = query.replace(/"/g, '&quot;');
 
       if (!matches || matches.length === 0) {
-        // NO MATCHES FOUND IN SRD + MASTER DB -> PROMINENT AI LOOKUP CALLOUT
+        // NO MATCHES FOUND IN SRD + MASTER DB -> PROMINENT AI LOOKUP & ITEM FORGE CALLOUT
         resultsBox.innerHTML = `
           <div class="p-4 bg-slate-900/90 border border-amber-500/50 rounded-xl space-y-3 shadow-lg">
             <div class="flex items-start gap-3">
@@ -6343,17 +6411,18 @@
               <div>
                 <h4 class="text-xs font-bold text-amber-300">"${escapedQ}" Not Found in Local SRD / Custom DB</h4>
                 <p class="text-[11px] text-slate-300 mt-0.5">
-                  Scan official D&amp;D 3.5e sourcebooks (PHB, DMG, MIC, Complete) via 🧙‍♂️🤖 Rule Master (AI) to fetch it automatically.
+                  Scan official D&amp;D 3.5e sourcebooks (PHB, DMG, MIC, Complete) via 🧙‍♂️🤖 Rule Master (AI) or craft a custom item in Item Forge.
                 </p>
               </div>
             </div>
             <div class="flex flex-wrap gap-2 pt-1 border-t border-slate-800">
-              <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs py-2 px-3 rounded-lg shadow-md transition flex items-center justify-center gap-2">
+              <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs py-2 px-3 rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
                 <span>🧙‍♂️🤖</span>
                 <span>Search 3.5e Compendiums via Rule Master (AI)</span>
               </button>
-              <button type="button" onclick="fillPoolFormWithQueryName('${escapedQ}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-2 px-3 rounded-lg transition">
-                ✏️ Define Manually
+              <button type="button" onclick="if(window.DnDUI && typeof window.DnDUI.switchCompendiumTab === 'function') { window.DnDUI.switchCompendiumTab('forge'); } else { openItemForgeModal(); }" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <span>⚒️</span>
+                <span>Open in Item Forge</span>
               </button>
             </div>
           </div>

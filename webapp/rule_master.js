@@ -5022,7 +5022,9 @@ Return valid JSON only matching:
     if (!baseOptions || baseOptions.length === 0) {
       baseOptions = [
         { id: 'arm-chain-shirt', name: 'Chain Shirt (+4 AC)', type: 'Armor' },
+        { id: 'arm-chainmail', name: 'Chainmail (+5 AC)', type: 'Armor' },
         { id: 'arm-breastplate', name: 'Breastplate (+5 AC)', type: 'Armor' },
+        { id: 'arm-half-plate', name: 'Half-Plate (+7 AC)', type: 'Armor' },
         { id: 'arm-full-plate', name: 'Full Plate (+8 AC)', type: 'Armor' },
         { id: 'shd-heavy-steel-shield', name: 'Heavy Steel Shield (+2 AC)', type: 'Shield' },
         { id: 'shd-buckler', name: 'Buckler (+1 AC)', type: 'Shield' },
