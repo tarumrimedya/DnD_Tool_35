@@ -1256,8 +1256,8 @@ const RuleEngine = {
         active: false,
         rounds: 50,
         durationText: "10 min / CL",
-        notes: "+2 Enhancement bonus to Natural Armor",
-        modifiers: [{ target: "ac.natural", value: 2, formula: "min(5, 2 + max(0, floor((@cl - 3) / 3)))", type: "natural_enhancement", condition: null }],
+        notes: "+2 to +5 Enhancement bonus to Natural Armor (+1 per 3 CL above 3rd, max +5 at CL 12)",
+        modifiers: [{ target: "ac.natural", value: 0, formula: "2 + min(3, max(0, floor((@cl - 3) / 3)))", type: "natural_enhancement", condition: null }],
         damageParts: [],
         modes: [],
         ruleFlags: {}
@@ -1273,8 +1273,8 @@ const RuleEngine = {
         active: false,
         rounds: 10,
         durationText: "1 min / CL",
-        notes: "+2 Deflection bonus to AC",
-        modifiers: [{ target: "ac.deflection", value: 2, formula: "2 + min(3, floor(@cl / 6))", type: "deflection", condition: null }],
+        notes: "+2 to +5 Deflection bonus to AC (+1 per 6 CL, max +5 at CL 18)",
+        modifiers: [{ target: "ac.deflection", value: 0, formula: "2 + min(3, floor(@cl / 6))", type: "deflection", condition: null }],
         damageParts: [],
         modes: [],
         ruleFlags: {}
@@ -1290,10 +1290,10 @@ const RuleEngine = {
         active: false,
         rounds: 10,
         durationText: "1 min (10 Rounds)",
-        notes: "+1 to +3 Luck bonus on attack and weapon damage rolls",
+        notes: "+1 to +3 Luck bonus on attack and weapon damage rolls (+1 per 3 CL, min +1, max +3)",
         modifiers: [
-          { target: "attack.all", value: 2, formula: "min(3, 1 + floor(@cl / 3))", type: "luck", condition: null },
-          { target: "damage.weapon", value: 2, formula: "min(3, 1 + floor(@cl / 3))", type: "luck", condition: null }
+          { target: "attack.all", value: 0, formula: "min(3, max(1, floor(@cl / 3)))", type: "luck", condition: null },
+          { target: "damage.weapon", value: 0, formula: "min(3, max(1, floor(@cl / 3)))", type: "luck", condition: null }
         ],
         damageParts: [],
         modes: [],
@@ -1944,8 +1944,9 @@ const RuleEngine = {
   // Format a single V2 modifier into a human-readable D&D 3.5e label
   formatBuffModifierLabel(mod, evalCtx = { cl: 1, level: 1, bab: 0, chaMod: 0 }) {
     if (!mod || !mod.target) return '';
-    const rawExpr = mod.value !== undefined && mod.value !== null && mod.value !== 0 ? mod.value : (mod.formula !== undefined ? mod.formula : mod.value);
-    const val = Number(this.evaluateFormula(rawExpr, evalCtx)) || 0;
+    const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
+    const rawExpr = hasFormula ? mod.formula : mod.value;
+    const val = Number(this.evaluateFormula(rawExpr, evalCtx)) || Number(mod.value) || 0;
     if (val === 0) return '';
     const sign = val >= 0 ? `+${val}` : `${val}`;
     const bType = mod.type && mod.type !== 'untyped' && mod.type !== 'penalty'
@@ -2994,8 +2995,9 @@ const RuleEngine = {
       modifiers.forEach(mod => {
         if (!mod || !mod.target) return;
         const target = String(mod.target).trim().toLowerCase();
-        const rawExpr = (mod.value !== undefined && mod.value !== null && mod.value !== 0) ? mod.value : (mod.formula !== undefined ? mod.formula : mod.value);
-        const val = Number(this.evaluateFormula(rawExpr, ctx)) || 0;
+        const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
+        const rawExpr = hasFormula ? mod.formula : mod.value;
+        const val = Number(this.evaluateFormula(rawExpr, ctx)) || Number(mod.value) || 0;
         if (val === 0) return;
 
         const mType = String(mod.type || (val < 0 ? 'penalty' : 'untyped')).trim();
@@ -3188,9 +3190,12 @@ const RuleEngine = {
       const buffCl = Number(buff.casterLevel || buff.cl || charLvl) || charLvl;
       const buffCtx = { ...evalContext, cl: buffCl };
 
-      // Auto-hydrate V2 modifiers & ruleFlags from canonical spell spec if missing on a spell buff
-      if ((!Array.isArray(buff.modifiers) || buff.modifiers.length === 0) && !buff.negativeLevels && !buff.isCondition) {
-        const resolvedSpec = this.resolveSpellBuffSpec(buff, character, buffCl);
+      // Auto-hydrate V2 modifiers & ruleFlags from canonical spell spec if missing or using legacy static/off-by-one formulas on a scaling spell buff
+      const isScalingSpellBuff = /^(divine favor|barkskin|shield of faith|conviction|mass conviction|conviction, mass|magic vestment|greater magic weapon|magic weapon, greater|greater magic fang|magic fang, greater)$/i.test(String(buff.name || '').trim());
+      const lacksFormulaOnScalingSpell = isScalingSpellBuff && Array.isArray(buff.modifiers) && buff.modifiers.some(m => !m || !String(m.formula || '').includes('@cl') || String(m.formula || '').includes('1 + floor(@cl / 3)'));
+      if (((!Array.isArray(buff.modifiers) || buff.modifiers.length === 0) || lacksFormulaOnScalingSpell) && !buff.negativeLevels && !buff.isCondition) {
+        const cleanSpellQuery = { name: buff.name, id: String(buff.id || '').startsWith('spl-') ? buff.id : undefined };
+        const resolvedSpec = this.resolveSpellBuffSpec(cleanSpellQuery, character, buffCl);
         if (resolvedSpec && resolvedSpec.isBuffSpell) {
           if (Array.isArray(resolvedSpec.modifiers) && resolvedSpec.modifiers.length > 0) {
             buff.modifiers = resolvedSpec.modifiers;
@@ -4073,10 +4078,9 @@ const RuleEngine = {
       ((t === 'rangeddamage' || t === 'damage.ranged') && isRangedWep)
     );
     const evalModExpr = (mObj, ctxObj) => {
-      const raw = (mObj.value !== undefined && mObj.value !== null && mObj.value !== 0)
-        ? mObj.value
-        : (mObj.formula !== undefined ? mObj.formula : mObj.value);
-      return Number(this.evaluateFormula(raw, ctxObj)) || 0;
+      const hasFormula = mObj.formula !== undefined && mObj.formula !== null && String(mObj.formula).trim() !== '';
+      const raw = hasFormula ? mObj.formula : mObj.value;
+      return Number(this.evaluateFormula(raw, ctxObj)) || Number(mObj.value) || 0;
     };
     const isBuffMatchingWeapon = (bObj) => {
       if (!bObj || !bObj.targetWeapon) return true;
@@ -4143,7 +4147,17 @@ const RuleEngine = {
         if (!rawBuff || !rawBuff.active) return;
         const b = this.ensureV2Entry(rawBuff);
         if (!isBuffMatchingWeapon(b)) return;
-        const bCtx = { ...evalCtx, cl: Number(b.casterLevel || b.cl || charLvl) || charLvl };
+        const bCl = Number(b.casterLevel || b.cl || charLvl) || charLvl;
+        const isScalingAtkBuff = /^(divine favor|greater magic weapon|magic weapon, greater|greater magic fang|magic fang, greater)$/i.test(String(b.name || '').trim());
+        if (isScalingAtkBuff && (!Array.isArray(b.modifiers) || b.modifiers.some(m => !m || !String(m.formula || '').includes('@cl') || String(m.formula || '').includes('1 + floor(@cl / 3)')))) {
+          const cleanSpellQuery = { name: b.name, id: String(b.id || '').startsWith('spl-') ? b.id : undefined };
+          const resolvedSpec = this.resolveSpellBuffSpec(cleanSpellQuery, character, bCl);
+          if (resolvedSpec && Array.isArray(resolvedSpec.modifiers) && resolvedSpec.modifiers.length > 0) {
+            b.modifiers = resolvedSpec.modifiers;
+            rawBuff.modifiers = resolvedSpec.modifiers;
+          }
+        }
+        const bCtx = { ...evalCtx, cl: bCl };
         let appliedNegLvlAtk = false;
         if (Array.isArray(b.modifiers)) {
           b.modifiers.forEach(mod => {
@@ -4280,7 +4294,8 @@ const RuleEngine = {
         if (!rawBuff || !rawBuff.active) return;
         const b = this.ensureV2Entry(rawBuff);
         if (!isBuffMatchingWeapon(b)) return;
-        const bCtx = { ...evalCtx, cl: Number(b.casterLevel || b.cl || charLvl) || charLvl };
+        const bCl = Number(b.casterLevel || b.cl || charLvl) || charLvl;
+        const bCtx = { ...evalCtx, cl: bCl };
         if (Array.isArray(b.modifiers)) {
           b.modifiers.forEach(mod => {
             if (!mod || !mod.target) return;
@@ -4635,8 +4650,9 @@ const RuleEngine = {
 
         const subTarget = rawTarget.replace(/^skills?\./, '').trim();
         const tNorm = subTarget.replace(/[^a-z0-9]/g, '');
-        const rawExpr = (mod.value !== undefined && mod.value !== null && mod.value !== 0) ? mod.value : (mod.formula !== undefined ? mod.formula : mod.value);
-        const val = Number(this.evaluateFormula(rawExpr, ctx)) || 0;
+        const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
+        const rawExpr = hasFormula ? mod.formula : mod.value;
+        const val = Number(this.evaluateFormula(rawExpr, ctx)) || Number(mod.value) || 0;
         if (val === 0) return;
         const mType = mod.type || (val < 0 ? 'penalty' : defaultType);
 
@@ -4778,8 +4794,9 @@ const RuleEngine = {
 
         const subTarget = rawTarget.replace(/^skills?\./, '').trim();
         const tNorm = subTarget.replace(/[^a-z0-9]/g, '');
-        const rawExpr = (mod.value !== undefined && mod.value !== null && mod.value !== 0) ? mod.value : (mod.formula !== undefined ? mod.formula : mod.value);
-        const val = Number(this.evaluateFormula(rawExpr, evalCtx)) || 0;
+        const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
+        const rawExpr = hasFormula ? mod.formula : mod.value;
+        const val = Number(this.evaluateFormula(rawExpr, evalCtx)) || Number(mod.value) || 0;
         if (val === 0) return;
         const bType = mod.type || 'competence';
 

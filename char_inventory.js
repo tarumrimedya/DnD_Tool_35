@@ -822,9 +822,13 @@
 
         // Render Canonical V2 modifiers if present
         const hasV2Modifiers = Array.isArray(buff.modifiers) && buff.modifiers.length > 0;
+        const buffCl = Number(buff.casterLevel || buff.cl || character.level) || 1;
+        const hasDynamicClFormula = hasV2Modifiers && buff.modifiers.some(m => m && String(m.formula || '').includes('@cl'));
+        if (hasDynamicClFormula || buff.casterLevel || buff.cl) {
+          badges.push(`<span class="bg-slate-800/90 text-amber-300 border border-amber-700/60 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">CL ${buffCl}</span>`);
+        }
         if (hasV2Modifiers) {
-          const buffCl = Number(buff.casterLevel || buff.cl || character.level) || 6;
-          const evalCtx = { cl: buffCl, level: Number(character.level) || 6, bab: Number(character.bab) || 0 };
+          const evalCtx = { cl: buffCl, level: Number(character.level) || 1, bab: Number(character.bab) || 0 };
           buff.modifiers.forEach(mod => {
             if (!mod) return;
             const lbl = (typeof RuleEngine !== 'undefined' && RuleEngine.formatBuffModifierLabel)
