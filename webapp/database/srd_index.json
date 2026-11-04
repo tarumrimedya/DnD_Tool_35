@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "365403adbc1357a3",
-  "generatedAt": "2026-10-28T11:13:00.954799+00:00",
-  "totalEntries": 4698,
+  "compendiumHash": "4fc1b6071ebe2531",
+  "generatedAt": "2026-11-04T10:42:27.315Z",
+  "totalEntries": 4735,
   "chunks": {
     "srd_equipment.json": {
       "count": 992,
@@ -30,10 +30,10 @@
       "eagerLoad": true
     },
     "srd_spells.json": {
-      "count": 1113,
-      "bytes": 2168217,
-      "hash": "4789ae3c627bf82f",
-      "eagerLoad": false
+      "count": 1114,
+      "bytes": 2175523,
+      "hash": "92e7282fc4b69e05",
+      "eagerLoad": true
     },
     "srd_monsters.json": {
       "count": 645,
@@ -51,6 +51,12 @@
       "count": 953,
       "bytes": 1555396,
       "hash": "a17a165298d9567d",
+      "eagerLoad": true
+    },
+    "srd_domains.json": {
+      "count": 36,
+      "bytes": 75813,
+      "hash": "f2f210f0ca3a8365",
       "eagerLoad": true
     }
   },
@@ -39702,6 +39708,303 @@
       "c": "Specific Armor",
       "s": "Armor",
       "f": "mic_compendium.json"
+    },
+    {
+      "id": "spl-blacklight",
+      "n": "Blacklight",
+      "t": "Spell",
+      "c": "Evocation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 3
+    },
+    {
+      "id": "dom-air",
+      "n": "Air",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-animal",
+      "n": "Animal",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-chaos",
+      "n": "Chaos",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-death",
+      "n": "Death",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-destruction",
+      "n": "Destruction",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-earth",
+      "n": "Earth",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-evil",
+      "n": "Evil",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-fire",
+      "n": "Fire",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-good",
+      "n": "Good",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-healing",
+      "n": "Healing",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-knowledge",
+      "n": "Knowledge",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-law",
+      "n": "Law",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-luck",
+      "n": "Luck",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-magic",
+      "n": "Magic",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-plant",
+      "n": "Plant",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-protection",
+      "n": "Protection",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-strength",
+      "n": "Strength",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-sun",
+      "n": "Sun",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-travel",
+      "n": "Travel",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-trickery",
+      "n": "Trickery",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-war",
+      "n": "War",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-water",
+      "n": "Water",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-artifice",
+      "n": "Artifice",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-charm",
+      "n": "Charm",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-community",
+      "n": "Community",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-creation",
+      "n": "Creation",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-darkness",
+      "n": "Darkness",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-glory",
+      "n": "Glory",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-liberation",
+      "n": "Liberation",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-madness",
+      "n": "Madness",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-nobility",
+      "n": "Nobility",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-repose",
+      "n": "Repose",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-rune",
+      "n": "Rune",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-scalykind",
+      "n": "Scalykind",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-weather",
+      "n": "Weather",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
+    },
+    {
+      "id": "dom-mind",
+      "n": "Mind",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
     }
   ]
 }

@@ -193,7 +193,8 @@
             "Maneuver",
             "Stance",
             "Race",
-            "Deity"
+            "Deity",
+            "Domain"
           ],
           "description": "Varlığın kural kategorisi."
         },

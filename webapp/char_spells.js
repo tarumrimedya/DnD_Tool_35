@@ -582,9 +582,39 @@
       Weather: {
         grantedPower: "Survival is a class skill (gain a +2 competence bonus in natural storms).",
         classSkills: ["survival"]
+      },
+      Mind: {
+        grantedPower: "+2 competence bonus on Bluff, Diplomacy, and Sense Motive checks; +2 bonus on Will saves against enchantment spells and effects.",
+        classSkills: ["bluff", "diplomacy", "sense_motive"]
       }
     };
     window.DND35_CLERIC_DOMAINS = DND35_CLERIC_DOMAINS;
+
+    function syncClericDomainsWithCompendium() {
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllDomains === 'function') {
+        const loadedDomains = window.SrdCompendium.getAllDomains();
+        if (Array.isArray(loadedDomains) && loadedDomains.length > 0) {
+          loadedDomains.forEach(d => {
+            if (!d || !d.name) return;
+            DND35_CLERIC_DOMAINS[d.name] = {
+              id: d.id,
+              name: d.name,
+              grantedPower: d.grantedPower?.description || d.description || '',
+              classSkills: d.grantedPower?.classSkills || [],
+              grantedFeats: d.grantedPower?.grantedFeats || [],
+              modifiers: d.modifiers || [],
+              ruleFlags: d.ruleFlags || {},
+              spells: d.spells || []
+            };
+          });
+        }
+      }
+    }
+    window.syncClericDomainsWithCompendium = syncClericDomainsWithCompendium;
+    if (typeof window !== 'undefined') {
+      window.addEventListener('srdCompendiumReady', syncClericDomainsWithCompendium);
+      syncClericDomainsWithCompendium();
+    }
 
     function hasClericDomainCapability(char = character) {
       if (!char) return false;

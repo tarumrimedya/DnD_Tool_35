@@ -50439,5 +50439,53 @@
       }
     },
     "buffTargetMode": "self"
+  },
+  {
+    "id": "spl-blacklight",
+    "foundryId": "gen_blacklight_cd3",
+    "schemaVersion": 2,
+    "name": "Blacklight",
+    "type": "Spell",
+    "category": "Evocation",
+    "subschool": "",
+    "descriptors": "darkness",
+    "level": 3,
+    "learnedAt": {
+      "class": {
+        "Sorcerer": 3,
+        "Wizard": 3
+      },
+      "domain": {
+        "Darkness": 3
+      }
+    },
+    "slot": "None",
+    "source": "SRD 3.5e / Complete Divine",
+    "actionType": "standard",
+    "castingTime": "standard",
+    "components": [
+      "V",
+      "S",
+      "M"
+    ],
+    "materials": "a piece of coal and the dried eyeball of a bat",
+    "range": "close",
+    "area": "20-ft.-radius emanation centered on a creature, object, or point in space",
+    "target": "",
+    "duration": "1 round/level (D)",
+    "save": "Will negates or none (object)",
+    "sr": true,
+    "powerPointsCost": null,
+    "description": "<p>The caster creates an area of total darkness. The darkness is impenetrable to normal vision and darkvision, but the caster can see normally within the area. Creatures outside the spell's area cannot see through it. Low-light vision or darkvision does not function within or through the area. Spells of 3rd level or lower with the light descriptor do not counter or dispel blacklight, but a daylight spell will illuminate the area normally.</p><p><i>Material Component:</i> A piece of coal and the dried eyeball of a bat.</p>",
+    "shortDescription": "Creates an area of impenetrable total darkness within which only the caster can see.",
+    "tags": [
+      "spell",
+      "evocation",
+      "darkness"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
   }
 ]

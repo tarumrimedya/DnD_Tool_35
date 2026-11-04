@@ -7110,6 +7110,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
     function getDomainSpellsByDomainMap() {
       const domainSpellsMap = {};
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllDomains === 'function') {
+        const domains = window.SrdCompendium.getAllDomains();
+        if (Array.isArray(domains) && domains.length > 0) {
+          domains.forEach(d => {
+            if (!d || !d.name) return;
+            domainSpellsMap[d.name] = (d.spells || []).map(s => ({ level: s.level, name: s.name, id: s.id }));
+          });
+          return domainSpellsMap;
+        }
+      }
       const allSpells = typeof getCombinedSpellManeuverCatalog === 'function'
         ? getCombinedSpellManeuverCatalog()
         : (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function' ? window.SrdCompendium.getAllLoaded(['Spell']) : []);
@@ -7150,12 +7160,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           <div id="cleric-domain-deity-banner" class="px-3.5 py-2 bg-slate-950/90 border-b border-slate-800 text-[11px] flex flex-wrap items-center justify-between gap-2"></div>
           <div class="p-3 border-b border-slate-800 bg-slate-950/60 flex flex-wrap items-center justify-between gap-2">
             <div class="relative flex-1 min-w-[200px]">
-              <input id="cleric-domain-search-input" type="text" oninput="renderClericDomainPickerList()" placeholder="Search 35 domains, granted powers, or domain spells..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white font-bold focus:border-yellow-500 focus:outline-none placeholder-slate-500">
+              <input id="cleric-domain-search-input" type="text" oninput="renderClericDomainPickerList()" placeholder="Search 36 domains, granted powers, or domain spells..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white font-bold focus:border-yellow-500 focus:outline-none placeholder-slate-500">
               <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
             </div>
             <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-300 cursor-pointer select-none bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700 hover:border-yellow-600/60" title="Allow selecting domains outside your Deity's portfolio or Alignment restrictions (House Rule / DM Override)">
               <input id="cleric-domain-dm-override" type="checkbox" onchange="window._clericDomainDmOverride = this.checked; renderClericDomainPickerList();" class="accent-amber-500 rounded cursor-pointer">
-              <span>DM Override (Unlock All 35)</span>
+              <span>DM Override (Unlock All 36)</span>
             </label>
             <div id="cleric-domain-current-summary" class="text-[11px] text-yellow-300 font-bold"></div>
           </div>

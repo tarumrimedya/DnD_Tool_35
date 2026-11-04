@@ -23,7 +23,8 @@
     'srd_combat_rules.json',
     'srd_spells.json',
     'srd_maneuvers.json',
-    'mic_compendium.json'
+    'mic_compendium.json',
+    'srd_domains.json'
   ];
 
   const LAZY_CHUNKS = [
@@ -619,6 +620,20 @@
         const ct = (c.targetType || c.slot || '').toLowerCase();
         return ct.includes(t);
       });
+    },
+
+    getAllDomains() {
+      return this.getAllLoaded('Domain');
+    },
+
+    getDomain(idOrName) {
+      if (!idOrName) return null;
+      const raw = String(idOrName).trim();
+      const byId = this.getById(raw);
+      if (byId && byId.type === 'Domain') return byId;
+      const bySlug = this.getById(`dom-${raw.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`);
+      if (bySlug && bySlug.type === 'Domain') return bySlug;
+      return this.getByName(raw, 'Domain');
     }
   };
 
