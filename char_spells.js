@@ -3196,7 +3196,14 @@
     function restoreAllSpellSlots() {
       (character?.spellcasting?.slots || []).forEach(s => s.used = 0);
       (character?.spellcasting?.preparedSlots || []).forEach(s => s.used = 0);
-      (character?.spellcasting?.divineSlots || []).forEach(s => s.used = 0);
+      (character?.spellcasting?.divineSlots || []).forEach(s => {
+        s.used = 0;
+        s.domainUsed = 0;
+      });
+      if (character?.spellcasting) {
+        character.spellcasting.turnUndeadUsed = 0;
+        character.spellcasting.domainPowerUses = {};
+      }
       if (character) character.lastModified = new Date().toISOString();
       renderSpellSlots();
       saveStateToStorage(true);
@@ -3208,8 +3215,8 @@
       showDiceTopToast({
         icon: '✨',
         title: 'Spell Slots',
-        breakdown: 'All daily spell slots refreshed and restored',
-        total: 'Yenilendi'
+        breakdown: 'All daily spell slots, domain slots, and domain powers refreshed and restored',
+        total: 'Restored'
       });
     }
 

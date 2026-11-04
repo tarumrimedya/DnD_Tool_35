@@ -996,6 +996,10 @@
         s.used = 0;
         if (sourceKey === 'divine') s.domainUsed = 0;
       });
+      if (sourceKey === 'divine' && character?.spellcasting) {
+        character.spellcasting.turnUndeadUsed = 0;
+        character.spellcasting.domainPowerUses = {};
+      }
       saveStateToStorage(false);
       renderSpellSlotsStrip();
       renderSpellSlotsModalRows();
@@ -1021,6 +1025,10 @@
         s.used = 0;
         s.domainUsed = 0;
       });
+      if (character?.spellcasting) {
+        character.spellcasting.turnUndeadUsed = 0;
+        character.spellcasting.domainPowerUses = {};
+      }
       (character?.tomeOfBattle?.readiedManeuvers || []).forEach(m => m.expended = false);
 
       saveStateToStorage(false);
@@ -3129,6 +3137,11 @@
           const targetSlot = slots.find(s => Number(s.level) === finalLvl);
           if (targetSlot) {
             targetSlot.used++;
+            if (slotSource === 'divine' && spell.isDomainSpell) {
+              const domDaily = Number(targetSlot.domainDaily) || 0;
+              const domUsed = Number(targetSlot.domainUsed) || 0;
+              targetSlot.domainUsed = Math.min(domDaily, domUsed + 1);
+            }
             if (typeof renderSpellSlots === 'function') renderSpellSlots();
             if (slotSource === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
             if (slotSource === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
@@ -3157,6 +3170,32 @@
         return;
       }
 
+      if (slotSource === 'divine') {
+        const isDom = Boolean(spell.isDomainSpell);
+        const domDaily = Number(targetSlot.domainDaily) || 0;
+        const domUsed = Number(targetSlot.domainUsed) || 0;
+        const regDaily = targetSlot.regularDaily !== undefined ? Number(targetSlot.regularDaily) : Math.max(0, (Number(targetSlot.daily) || 0) - domDaily);
+        const regUsed = Math.max(0, (Number(targetSlot.used) || 0) - domUsed);
+        if (isDom && (domDaily <= 0 || domUsed >= domDaily)) {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'No Domain Slot Remaining!',
+            breakdown: `Level ${finalLvl} Domain spell slot (${domUsed}/${domDaily}) has already been expended today.`,
+            total: '0 Slots'
+          });
+          return;
+        }
+        if (!isDom && regUsed >= regDaily) {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'No Regular Divine Slots Remaining!',
+            breakdown: `Level ${finalLvl} regular Divine spell slots (${regUsed}/${regDaily}) are expended. Remaining slot is reserved for your Domain spell.`,
+            total: '0 Slots'
+          });
+          return;
+        }
+      }
+
       if (targetSlot.used >= targetSlot.daily) {
         showDiceTopToast({
           icon: '⚠️',
@@ -3168,6 +3207,11 @@
       }
 
       targetSlot.used++;
+      if (slotSource === 'divine' && spell.isDomainSpell) {
+        const domDaily = Number(targetSlot.domainDaily) || 0;
+        const domUsed = Number(targetSlot.domainUsed) || 0;
+        targetSlot.domainUsed = Math.min(domDaily, domUsed + 1);
+      }
       if (typeof renderSpellSlots === 'function') renderSpellSlots();
       if (slotSource === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
       if (slotSource === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
@@ -10646,8 +10690,21 @@
         // Refill HP
         if (character.hp) character.hp.current = character.hp.max || 44;
         // Refill spell slots
-        if (character.spellcasting && Array.isArray(character.spellcasting.slots)) {
-          character.spellcasting.slots.forEach(s => s.used = 0);
+        if (character.spellcasting) {
+          if (Array.isArray(character.spellcasting.slots)) {
+            character.spellcasting.slots.forEach(s => s.used = 0);
+          }
+          if (Array.isArray(character.spellcasting.preparedSlots)) {
+            character.spellcasting.preparedSlots.forEach(s => s.used = 0);
+          }
+          if (Array.isArray(character.spellcasting.divineSlots)) {
+            character.spellcasting.divineSlots.forEach(s => {
+              s.used = 0;
+              s.domainUsed = 0;
+            });
+          }
+          character.spellcasting.turnUndeadUsed = 0;
+          character.spellcasting.domainPowerUses = {};
         }
         // Refill maneuvers
         if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {

@@ -1310,7 +1310,12 @@
         character.spellcasting.divineSlots.forEach(s => {
           if (s.used > 0) refreshedSpells += s.used;
           s.used = 0;
+          s.domainUsed = 0;
         });
+      }
+      if (character.spellcasting) {
+        character.spellcasting.turnUndeadUsed = 0;
+        character.spellcasting.domainPowerUses = {};
       }
 
       // 3. Tome of Battle Maneuvers: Kusanan & kullanilan manevralarin tekrar kusanilmasi / tazelenmesi
