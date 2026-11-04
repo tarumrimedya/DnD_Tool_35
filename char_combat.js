@@ -9435,8 +9435,9 @@
       try { renderOffenseModifiersGrid(); } catch (e) { console.error('renderOffenseModifiersGrid error:', e); }
       try { recalculateOffense(); } catch (e) { console.error('recalculateOffense error:', e); }
 
-      // 4. Utility Column: Quick Consumables
+      // 4. Utility Column: Quick Consumables & Companion Combat
       try { renderCockpitConsumables(); } catch (e) { console.error('renderCockpitConsumables error:', e); }
+      try { renderCockpitCompanionCard(); } catch (e) { console.error('renderCockpitCompanionCard error:', e); }
 
       // 5. Pin Drawers (Spell, Defense, and Ranged Ammunition Drawers)
       try { renderCombatPins('offense_spell'); } catch (e) { console.error("renderCombatPins('offense_spell') error:", e); }
@@ -10223,6 +10224,301 @@
           </div>
         `;
       }).join('');
+    }
+
+    // ====================================================
+    // 🐾 COMPANION & MOUNT COMBAT (Madde D)
+    // ====================================================
+    function renderCockpitCompanionCard() {
+      const contentEl = document.getElementById('cockpit-companion-content');
+      const badgeEl = document.getElementById('combat-companion-hp-badge');
+      const summaryEl = document.getElementById('combat-companion-collapsed-summary');
+      if (!contentEl) return;
+
+      if (!character || !character.companion || !character.companion.baseMonsterId) {
+        if (badgeEl) badgeEl.textContent = 'HP: --/--';
+        if (summaryEl) summaryEl.textContent = 'No Companion';
+        contentEl.innerHTML = `
+          <div class="p-3 text-center bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-2">
+            <div class="flex items-center justify-center gap-1.5 text-amber-400 font-bold">
+              <span>🐾</span>
+              <span>No Active Companion or Mount</span>
+            </div>
+            <p class="text-[11px] text-slate-500">Bind or summon an Animal Companion, Familiar, or Special Mount to manage attacks &amp; health in combat.</p>
+            <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-7 px-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
+              <span>➕</span>
+              <span>Select / Summon Companion</span>
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
+        ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
+        : null;
+
+      if (!stats) {
+        contentEl.innerHTML = `
+          <div class="p-2 text-center text-xs text-rose-400 bg-rose-950/40 rounded-lg border border-rose-800">
+            Unable to calculate companion stats. Ensure Bestiary data is loaded.
+          </div>
+        `;
+        return;
+      }
+
+      // Update Header Badges
+      if (badgeEl) {
+        badgeEl.textContent = `HP: ${stats.hp.current}/${stats.hp.max} (${stats.totalHd} HD)`;
+      }
+      if (summaryEl) {
+        const primaryAtk = stats.attacks[0] ? `${stats.attacks[0].name} ${stats.attacks[0].formattedAttack}` : 'Ready';
+        summaryEl.textContent = `${stats.customName} (${stats.baseName}) • HP ${stats.hp.current}/${stats.hp.max} • AC ${stats.ac.total} • ${primaryAtk}`;
+      }
+
+      const hpPercent = Math.max(0, Math.min(100, Math.round((stats.hp.current / (stats.hp.max || 1)) * 100)));
+      let hpBarColor = 'bg-emerald-500';
+      if (hpPercent <= 25) hpBarColor = 'bg-rose-600';
+      else if (hpPercent <= 50) hpBarColor = 'bg-amber-500';
+
+      const typeLabel = stats.type === 'familiar' ? 'Familiar' : (stats.type === 'special_mount' ? 'Special Mount' : 'Animal Companion');
+      const icon = stats.type === 'familiar' ? '🦉' : (stats.type === 'special_mount' ? '🐎' : '🐺');
+
+      contentEl.innerHTML = `
+        <!-- Top Title & Level Bar -->
+        <div class="flex items-center justify-between gap-2 bg-slate-950/70 p-2 rounded-lg border border-slate-800">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="text-base shrink-0">${icon}</span>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs font-black text-amber-300 truncate">${safeEscapeHtml(stats.customName)}</span>
+                <span class="text-[10px] text-slate-400 font-mono truncate">(${safeEscapeHtml(stats.baseName)} • ${typeLabel})</span>
+              </div>
+              <div class="text-[9px] text-slate-400 font-mono">
+                Level Bracket: <strong class="text-white">${stats.effectiveLevel}</strong> • Size: <strong class="text-slate-300">${stats.size}</strong>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1 shrink-0">
+            <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-slate-300 hover:text-amber-300 bg-slate-900 hover:bg-slate-800 rounded border border-slate-700 transition flex items-center gap-1 cursor-pointer" title="Manage Companion Configuration">
+              <span>⚙️</span>
+              <span>Manage</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- HP Bar & Quick +/- Controls -->
+        <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800 space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-1.5 font-bold">
+              <span class="text-rose-400">❤️</span>
+              <span class="text-white">Hit Points:</span>
+              <span class="font-mono text-emerald-400 font-black">${stats.hp.current}</span>
+              <span class="text-slate-500">/</span>
+              <span class="font-mono text-slate-300">${stats.hp.max}</span>
+              <span class="text-[10px] text-slate-500 font-mono font-normal">(${stats.totalHd} HD)</span>
+            </div>
+            <!-- Quick HP Adjusters -->
+            <div class="inline-flex items-center gap-1">
+              <button type="button" onclick="adjustCompanionHp(-5)" class="h-5 px-1.5 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Damage -5">-5</button>
+              <button type="button" onclick="adjustCompanionHp(-1)" class="h-5 px-1.5 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Damage -1">-1</button>
+              <button type="button" onclick="adjustCompanionHp(1)" class="h-5 px-1.5 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Heal +1">+1</button>
+              <button type="button" onclick="adjustCompanionHp(5)" class="h-5 px-1.5 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Heal +5">+5</button>
+            </div>
+          </div>
+          <!-- Progress Bar -->
+          <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden border border-slate-800">
+            <div class="h-full transition-all duration-300 ${hpBarColor}" style="width: ${hpPercent}%"></div>
+          </div>
+        </div>
+
+        <!-- 3-Column Defensive & Mobility Strip -->
+        <div class="grid grid-cols-3 gap-1.5 text-center font-mono">
+          <div class="bg-slate-950/80 p-1.5 rounded-lg border border-slate-800">
+            <div class="text-[9px] uppercase font-bold text-slate-400">Armor Class</div>
+            <div class="text-sm font-black text-amber-300">${stats.ac.total}</div>
+            <div class="text-[8px] text-slate-500">Touch ${stats.ac.touch} • FF ${stats.ac.flatFooted}</div>
+          </div>
+          <div class="bg-slate-950/80 p-1.5 rounded-lg border border-slate-800">
+            <div class="text-[9px] uppercase font-bold text-slate-400">Saving Throws</div>
+            <div class="text-xs font-black text-emerald-400">
+              +${stats.saves.fort} / +${stats.saves.ref} / +${stats.saves.will}
+            </div>
+            <div class="text-[8px] text-slate-500">Fort / Ref / Will</div>
+          </div>
+          <div class="bg-slate-950/80 p-1.5 rounded-lg border border-slate-800">
+            <div class="text-[9px] uppercase font-bold text-slate-400">Speed &amp; BAB</div>
+            <div class="text-xs font-black text-sky-300">${stats.speed.land} ft</div>
+            <div class="text-[8px] text-slate-500">BAB: +${stats.bab}</div>
+          </div>
+        </div>
+
+        <!-- Attacks Rotation Buttons -->
+        <div class="space-y-1">
+          <div class="text-[9px] font-bold uppercase tracking-wider text-amber-400 flex items-center justify-between">
+            <span>⚔️ ATTACK ROTATIONS (ROLL TO-HIT &amp; DAMAGE)</span>
+            <span class="text-slate-500 font-mono text-[8px]">${stats.attacks.length} Attacks</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            ${stats.attacks.map((atk, idx) => `
+              <button type="button" onclick="rollCompanionAttack(${idx})" class="w-full p-2 bg-gradient-to-r from-amber-950/60 to-slate-900 hover:from-amber-900/80 hover:to-slate-800 border border-amber-600/50 hover:border-amber-400 text-left rounded-lg transition active:scale-[0.98] shadow-sm cursor-pointer flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                  <div class="text-xs font-black text-white flex items-center gap-1">
+                    <span>⚔️</span>
+                    <span class="truncate">${safeEscapeHtml(atk.name)}</span>
+                  </div>
+                  <div class="text-[10px] font-mono text-amber-300 font-bold">
+                    ${atk.formattedAttack} (${atk.formattedDamage})
+                  </div>
+                </div>
+                <div class="px-2 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shrink-0 shadow">
+                  ROLL
+                </div>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- Tactical Actions & Special Abilities -->
+        <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
+          ${stats.monsterFeats.some(f => /trip/i.test(f)) ? `
+            <button type="button" onclick="rollCompanionTactical('trip')" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-sky-200 bg-sky-950/80 hover:bg-sky-900 border border-sky-600/50 rounded flex items-center gap-1 cursor-pointer transition">
+              <span>💥</span>
+              <span>Trip Check (+${stats.abilityMods.str})</span>
+            </button>
+          ` : ''}
+          ${stats.type === 'familiar' ? `
+            <button type="button" onclick="rollCompanionTactical('touch_spell')" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-purple-200 bg-purple-950/80 hover:bg-purple-900 border border-purple-600/50 rounded flex items-center gap-1 cursor-pointer transition">
+              <span>⚡</span>
+              <span>Deliver Touch Spell</span>
+            </button>
+          ` : ''}
+          ${stats.specialAbilities.map(sa => `
+            <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700">${safeEscapeHtml(sa)}</span>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    function adjustCompanionHp(delta) {
+      if (!character || !character.companion) return;
+      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
+        ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
+        : null;
+      const maxHp = stats ? stats.hp.max : 20;
+      const cur = character.companion.currentHp !== undefined ? character.companion.currentHp : maxHp;
+      const next = Math.max(0, Math.min(maxHp, cur + delta));
+      character.companion.currentHp = next;
+
+      saveStateToStorage(false);
+      renderCockpitCompanionCard();
+      if (typeof renderCoreFeatsAndSpecialAbilities === 'function') {
+        renderCoreFeatsAndSpecialAbilities();
+      }
+
+      showDiceTopToast({
+        icon: delta >= 0 ? '💚' : '🩸',
+        title: `${character.companion.name || 'Companion'} HP`,
+        breakdown: `Current HP: ${next} / ${maxHp}`,
+        total: (delta >= 0 ? '+' : '') + delta
+      });
+    }
+
+    function rollCompanionAttack(attackIdx) {
+      if (!character || !character.companion) return;
+      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
+        ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
+        : null;
+      if (!stats || !stats.attacks[attackIdx]) return;
+
+      const atk = stats.attacks[attackIdx];
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      const isCrit = d20 === 20;
+      const isFumble = d20 === 1;
+      const totalAtk = d20 + atk.attackBonus;
+
+      // Damage roll
+      let dmgRoll = 0;
+      const diceMatch = atk.damageDice.match(/(\d+)d(\d+)/i);
+      if (diceMatch) {
+        const count = parseInt(diceMatch[1], 10);
+        const sides = parseInt(diceMatch[2], 10);
+        for (let i = 0; i < count; i++) {
+          dmgRoll += Math.floor(Math.random() * sides) + 1;
+        }
+      } else {
+        dmgRoll = 3;
+      }
+      const totalDmg = Math.max(1, dmgRoll + atk.damageBonus);
+
+      const card = document.getElementById('attack-results-card');
+      if (card) {
+        card.classList.remove('hidden');
+        const iconEl = document.getElementById('result-card-icon');
+        if (iconEl) iconEl.textContent = '🐾';
+        const titleEl = document.getElementById('result-card-title');
+        if (titleEl) titleEl.textContent = `${stats.customName} — ${atk.name} Attack`;
+        const subEl = document.getElementById('result-card-subtitle');
+        if (subEl) subEl.textContent = `${stats.baseName} Natural Attack • BAB +${stats.bab} • Str +${stats.abilityMods.str}`;
+        const grandLabel = document.getElementById('result-grand-total-label');
+        if (grandLabel) grandLabel.textContent = 'Total Natural Attack Damage:';
+
+        const summaryGrid = document.getElementById('result-summary-grid');
+        if (summaryGrid) {
+          summaryGrid.innerHTML = `
+            <div class="p-3 rounded-lg border ${isCrit ? 'bg-rose-950/50 border-rose-500' : (isFumble ? 'bg-slate-900 border-rose-700/60' : 'bg-slate-900 border-amber-700/60')} space-y-1.5">
+              <div class="flex justify-between items-center">
+                <span class="font-bold text-white text-xs">${atk.name} Attack Roll</span>
+                ${isCrit ? '<span class="badge bg-amber-500 text-black font-black text-[10px]">NAT 20 / CRITICAL</span>' : (isFumble ? '<span class="badge bg-rose-600 text-white font-black text-[10px]">NAT 1 / FUMBLE</span>' : '')}
+              </div>
+              <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1">
+                <span class="text-xs text-slate-400">Total Attack: <strong class="text-amber-400 text-base font-black">${totalAtk >= 0 ? '+' : ''}${totalAtk}</strong></span>
+                <span class="text-xs text-slate-400">(d20: <strong class="text-white">${d20}</strong> + ${atk.attackBonus >= 0 ? '+' : ''}${atk.attackBonus})</span>
+              </div>
+              <div class="text-[10px] text-amber-300 font-mono">
+                Damage: <strong class="text-white text-sm">${totalDmg}</strong> (${atk.damageDice} [${dmgRoll}] + ${atk.damageBonus})
+              </div>
+            </div>
+          `;
+        }
+
+        const grandValEl = document.getElementById('result-grand-total-val');
+        if (grandValEl) grandValEl.textContent = `${totalDmg} Damage`;
+      }
+
+      showDiceTopToast({
+        icon: '⚔️',
+        title: `${stats.customName} ${atk.name}`,
+        breakdown: `Atk: ${totalAtk} (d20: ${d20}) | Dmg: ${totalDmg}`,
+        total: totalAtk
+      });
+    }
+
+    function rollCompanionTactical(actionType) {
+      if (!character || !character.companion) return;
+      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
+        ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
+        : null;
+      if (!stats) return;
+
+      const d20 = Math.floor(Math.random() * 20) + 1;
+      if (actionType === 'trip') {
+        const bonus = stats.abilityMods.str;
+        const total = d20 + bonus;
+        showDiceTopToast({
+          icon: '💥',
+          title: `${stats.customName} Trip Check`,
+          breakdown: `d20: ${d20} + Str mod ${bonus >= 0 ? '+' : ''}${bonus}`,
+          total: total
+        });
+      } else if (actionType === 'touch_spell') {
+        showDiceTopToast({
+          icon: '⚡',
+          title: `${stats.customName} Touch Delivery`,
+          breakdown: `Familiar delivers master's touch spell via natural touch attack`,
+          total: 'Delivered'
+        });
+      }
     }
 
     // --- ROUND ADVANCEMENT & REST ---
@@ -12772,6 +13068,12 @@
       }
     }
 
+    // Explicit window exports for companion combat
+    window.renderCockpitCompanionCard = renderCockpitCompanionCard;
+    window.adjustCompanionHp = adjustCompanionHp;
+    window.rollCompanionAttack = rollCompanionAttack;
+    window.rollCompanionTactical = rollCompanionTactical;
+
     function rollSave3D(saveName) {
       const saves = RuleEngine.evaluateSaves(character);
       const mod = saveName === 'Fortitude' ? saves.fort : (saveName === 'Reflex' ? saves.ref : saves.will);
@@ -12799,6 +13101,12 @@
       }
     }
 
+    // Explicit window exports for companion combat
+    window.renderCockpitCompanionCard = renderCockpitCompanionCard;
+    window.adjustCompanionHp = adjustCompanionHp;
+    window.rollCompanionAttack = rollCompanionAttack;
+    window.rollCompanionTactical = rollCompanionTactical;
+
     function rollSkill3D(skillName, totalMod, subtitle = '') {
       const d20 = Math.floor(Math.random() * 20) + 1;
       const total = d20 + totalMod;
@@ -12824,4 +13132,10 @@
         showResult();
       }
     }
+
+    // Explicit window exports for companion combat
+    window.renderCockpitCompanionCard = renderCockpitCompanionCard;
+    window.adjustCompanionHp = adjustCompanionHp;
+    window.rollCompanionAttack = rollCompanionAttack;
+    window.rollCompanionTactical = rollCompanionTactical;
 

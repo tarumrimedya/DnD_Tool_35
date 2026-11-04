@@ -5911,6 +5911,114 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const abilitiesList = Array.from(abilityMap.values());
       const isOpen = _coreFeatsAccordionOpen === true;
 
+      // Check for Companion Capability or Existing Companion (Madde D)
+      let companionCardHtml = '';
+      const hasCompanion = Boolean(character.companion && character.companion.baseMonsterId);
+      const classesLower = String(character.classes || '').toLowerCase();
+      const isEligible = hasCompanion ||
+        /druid|ranger|wizard|sorcerer|paladin/i.test(classesLower) ||
+        abilitiesList.some(a => /animal companion|familiar|special mount|mount/i.test(a.name)) ||
+        featsList.some(f => /animal companion|familiar|special mount|mount/i.test(f.name));
+
+      if (hasCompanion) {
+        const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
+          ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
+          : null;
+
+        if (stats) {
+          const typeLabel = stats.type === 'familiar' ? 'Familiar' : (stats.type === 'special_mount' ? 'Special Mount' : 'Animal Companion');
+          const icon = stats.type === 'familiar' ? '🦉' : (stats.type === 'special_mount' ? '🐎' : '🐺');
+
+          companionCardHtml = `
+            <div class="mt-3.5 border border-amber-500/40 rounded-xl bg-slate-900/90 p-3 shadow-md space-y-2">
+              <!-- Header: 🐾 Name & Animal (Type) - [Manage] [Dismiss] -->
+              <div class="flex items-center justify-between border-b border-slate-800 pb-2 gap-2">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-base shrink-0">${icon}</span>
+                  <div class="flex items-center gap-2 flex-wrap min-w-0">
+                    <span class="text-xs font-black text-amber-300 truncate">${safeEscapeHtml(stats.customName)}</span>
+                    <span class="text-[10px] text-slate-400 font-mono truncate">(${safeEscapeHtml(stats.baseName)} • ${typeLabel})</span>
+                    <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-700/60">${stats.totalHd} HD</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button type="button" onclick="openCompanionModal()" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-amber-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded border border-amber-600/50 transition cursor-pointer">
+                    <span>⚙️</span>
+                    <span>Manage</span>
+                  </button>
+                  <button type="button" onclick="dismissCompanion()" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-rose-400 hover:text-white bg-slate-950 hover:bg-rose-900/70 rounded border border-rose-800/60 transition cursor-pointer" title="Dismiss companion">
+                    <span>✕</span>
+                    <span>Dismiss</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Line 1: HP, AC, Speed, Initiative/BAB -->
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+                <div class="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800/80">
+                  <span class="text-[9px] uppercase font-bold text-slate-400 block">Hit Points</span>
+                  <span class="font-bold text-emerald-400">${stats.hp.current} / ${stats.hp.max}</span>
+                </div>
+                <div class="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800/80">
+                  <span class="text-[9px] uppercase font-bold text-slate-400 block">Armor Class</span>
+                  <span class="font-bold text-amber-300">${stats.ac.total}</span>
+                  <span class="text-[8px] text-slate-500 font-normal">T ${stats.ac.touch} • FF ${stats.ac.flatFooted}</span>
+                </div>
+                <div class="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800/80">
+                  <span class="text-[9px] uppercase font-bold text-slate-400 block">Speed &amp; BAB</span>
+                  <span class="font-bold text-sky-300">${stats.speed.land} ft</span>
+                  <span class="text-[8px] text-slate-500 font-normal">BAB +${stats.bab}</span>
+                </div>
+                <div class="bg-slate-950/70 p-1.5 rounded-lg border border-slate-800/80">
+                  <span class="text-[9px] uppercase font-bold text-slate-400 block">Saves (F / R / W)</span>
+                  <span class="font-bold text-purple-300">+${stats.saves.fort} / +${stats.saves.ref} / +${stats.saves.will}</span>
+                </div>
+              </div>
+
+              <!-- Line 2: Ability Scores -->
+              <div class="bg-slate-950/70 px-2.5 py-1.5 rounded-lg border border-slate-800/80 flex items-center justify-between text-[11px] font-mono flex-wrap gap-2">
+                <div><strong class="text-slate-400">STR</strong> <span class="text-white font-bold">${stats.abilities.str}</span> <span class="text-amber-400 font-semibold">(+${stats.abilityMods.str})</span></div>
+                <div><strong class="text-slate-400">DEX</strong> <span class="text-white font-bold">${stats.abilities.dex}</span> <span class="text-amber-400 font-semibold">(+${stats.abilityMods.dex})</span></div>
+                <div><strong class="text-slate-400">CON</strong> <span class="text-white font-bold">${stats.abilities.con}</span> <span class="text-amber-400 font-semibold">(+${stats.abilityMods.con})</span></div>
+                <div><strong class="text-slate-400">INT</strong> <span class="text-white font-bold">${stats.abilities.int}</span></div>
+                <div><strong class="text-slate-400">WIS</strong> <span class="text-white font-bold">${stats.abilities.wis}</span> <span class="text-amber-400 font-semibold">(+${stats.abilityMods.wis})</span></div>
+                <div><strong class="text-slate-400">CHA</strong> <span class="text-white font-bold">${stats.abilities.cha}</span></div>
+              </div>
+
+              <!-- Line 3: Attacks & Damage -->
+              <div class="bg-slate-950/70 px-2.5 py-1.5 rounded-lg border border-slate-800/80 flex items-center justify-between text-xs flex-wrap gap-2">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[10px] font-bold text-amber-400 uppercase">Natural Attacks:</span>
+                  ${stats.attacks.map(atk => `<span class="font-mono text-white font-bold bg-slate-900 px-2 py-0.5 rounded border border-slate-700">${safeEscapeHtml(atk.name)} ${atk.formattedAttack} (${atk.formattedDamage})</span>`).join(' ')}
+                </div>
+              </div>
+
+              <!-- Line 4: Special Qualities & Tricks -->
+              <div class="flex items-center gap-1.5 text-[10px] text-slate-300 flex-wrap pt-0.5">
+                <span class="text-[9px] font-bold text-purple-400 uppercase">Traits &amp; Tricks:</span>
+                ${[...stats.specialAbilities, ...stats.monsterFeats, stats.bonusTricks ? `${stats.bonusTricks} Bonus Tricks` : null, stats.masterBonusText].filter(Boolean).map(t => `<span class="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-300 font-medium">${safeEscapeHtml(t)}</span>`).join('')}
+              </div>
+            </div>
+          `;
+        }
+      } else if (isEligible) {
+        companionCardHtml = `
+          <div class="mt-3.5 border border-dashed border-amber-600/50 rounded-xl bg-slate-950/40 p-2.5 flex items-center justify-between gap-2 flex-wrap">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🐾</span>
+              <div>
+                <span class="text-xs font-bold text-amber-300 block">Animal Companion / Familiar / Mount Available</span>
+                <span class="text-[10px] text-slate-400">Character is eligible to bind an animal companion, summon a familiar, or call a paladin war mount.</span>
+              </div>
+            </div>
+            <button type="button" onclick="openCompanionModal()" class="ui-btn-xs h-7 px-3 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-lg transition shadow flex items-center gap-1.5 cursor-pointer">
+              <span>➕</span>
+              <span>Select Companion</span>
+            </button>
+          </div>
+        `;
+      }
+
       container.innerHTML = `
         <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/60 shadow mt-4">
           <!-- Akordeon Başlık Çubuğu -->
@@ -6013,6 +6121,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                 </div>
               </div>
             </div>
+            ${companionCardHtml}
           </div>
         </div>
       `;
@@ -7453,5 +7562,372 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       renderClericDomainPickerList();
       renderAll();
     }
+
+    // ====================================================
+    // 🐾 COMPANION & MOUNT MANAGEMENT MODAL (Madde D)
+    // ====================================================
+    let _activeCompanionModalType = 'animal_companion';
+    let _activeCompanionModalAnimalId = null;
+
+    function ensureCompanionModalDom() {
+      let modal = document.getElementById('companion-modal');
+      if (modal) return modal;
+
+      modal = document.createElement('div');
+      modal.id = 'companion-modal';
+      modal.className = 'fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden';
+      modal.innerHTML = `
+        <div class="bg-[#0b1329] border border-amber-500/50 rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden my-auto flex flex-col max-h-[92vh]">
+          <!-- Modal Header -->
+          <div class="bg-slate-900/90 px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
+            <div class="flex items-center gap-2">
+              <span class="text-xl">🐾</span>
+              <div>
+                <h3 class="text-sm sm:text-base font-black text-white">Companion &amp; Mount Management</h3>
+                <p class="text-[10px] text-slate-400">D&amp;D 3.5e RAW Template &amp; Progression System</p>
+              </div>
+            </div>
+            <button type="button" onclick="closeCompanionModal()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">
+              ✕
+            </button>
+          </div>
+
+          <!-- Modal Scrollable Body -->
+          <div id="companion-modal-body" class="p-4 overflow-y-auto space-y-3.5 flex-1 text-xs">
+            <!-- Dynamically populated by renderCompanionModalContent() -->
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="bg-slate-900/90 px-4 py-3 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0">
+            <div>
+              <button type="button" id="btn-companion-modal-dismiss" onclick="dismissCompanion()" class="px-3 py-1.5 rounded-lg bg-rose-950 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-bold text-xs transition cursor-pointer hidden">
+                ✕ Dismiss Companion
+              </button>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="closeCompanionModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer">
+                Cancel
+              </button>
+              <button type="button" onclick="saveCompanionSelection()" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs shadow transition cursor-pointer">
+                ✓ Bind / Save Companion
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      return modal;
+    }
+
+    function openCompanionModal() {
+      const modal = ensureCompanionModalDom();
+      if (character && character.companion) {
+        _activeCompanionModalType = character.companion.type || 'animal_companion';
+        _activeCompanionModalAnimalId = character.companion.baseMonsterId || null;
+      } else {
+        // Auto-select based on classes
+        const classesLower = String(character?.classes || '').toLowerCase();
+        if (/wizard|sorcerer/.test(classesLower) && !/druid|ranger/.test(classesLower)) {
+          _activeCompanionModalType = 'familiar';
+        } else if (/paladin/.test(classesLower) && !/druid|ranger/.test(classesLower)) {
+          _activeCompanionModalType = 'special_mount';
+        } else {
+          _activeCompanionModalType = 'animal_companion';
+        }
+      }
+
+      // Ensure srd_monsters is loaded
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureChunkLoaded === 'function') {
+        window.SrdCompendium.ensureChunkLoaded('srd_monsters.json').then(() => {
+          renderCompanionModalContent();
+        }).catch(() => {});
+      }
+
+      modal.classList.remove('hidden');
+      renderCompanionModalContent();
+    }
+
+    function closeCompanionModal() {
+      const modal = document.getElementById('companion-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function onCompanionTypeChange(newType) {
+      _activeCompanionModalType = newType;
+      _activeCompanionModalAnimalId = null;
+      renderCompanionModalContent();
+    }
+
+    function onCompanionAnimalChange(animalId) {
+      _activeCompanionModalAnimalId = animalId;
+      renderCompanionModalContent();
+    }
+
+    function renderCompanionModalContent() {
+      const bodyEl = document.getElementById('companion-modal-body');
+      if (!bodyEl || !character) return;
+
+      const compData = (window.SrdCompendium && typeof window.SrdCompendium.getCompanionsData === 'function')
+        ? window.SrdCompendium.getCompanionsData()
+        : null;
+
+      const allowedAnimals = (window.SrdCompendium && typeof window.SrdCompendium.getAllowedAnimals === 'function')
+        ? window.SrdCompendium.getAllowedAnimals(_activeCompanionModalType)
+        : [];
+
+      if (!_activeCompanionModalAnimalId && allowedAnimals.length > 0) {
+        _activeCompanionModalAnimalId = allowedAnimals[0].id;
+      }
+
+      // Calculate Effective Level
+      const classesStr = String(character.classes || '');
+      let effectiveLevel = 1;
+      let levelNote = '';
+      if (_activeCompanionModalType === 'animal_companion') {
+        let lvl = 0;
+        const dM = classesStr.match(/druid\s*(\d+)/i);
+        const rM = classesStr.match(/ranger\s*(\d+)/i);
+        if (dM) lvl += parseInt(dM[1], 10);
+        if (rM) {
+          const rLvl = parseInt(rM[1], 10);
+          if (rLvl >= 4) lvl += Math.floor(rLvl / 2);
+        }
+        if (lvl === 0) lvl = parseInt(character.level || 1, 10);
+        const curAnimal = allowedAnimals.find(a => a.id === _activeCompanionModalAnimalId);
+        const adj = (curAnimal && curAnimal.levelAdj) ? curAnimal.levelAdj : 0;
+        effectiveLevel = Math.max(1, lvl + adj);
+        levelNote = `Class Level: ${lvl}${adj !== 0 ? ` • Animal Level Adj: ${adj}` : ''} ➔ Effective Druid Level: ${effectiveLevel}`;
+      } else if (_activeCompanionModalType === 'familiar') {
+        let lvl = 0;
+        const wM = classesStr.match(/wizard\s*(\d+)/i);
+        const sM = classesStr.match(/sorcerer\s*(\d+)/i);
+        if (wM) lvl += parseInt(wM[1], 10);
+        if (sM) lvl += parseInt(sM[1], 10);
+        if (lvl === 0) lvl = parseInt(character.level || 1, 10);
+        effectiveLevel = Math.max(1, lvl);
+        levelNote = `Master Caster Level: ${effectiveLevel}`;
+      } else if (_activeCompanionModalType === 'special_mount') {
+        let lvl = 0;
+        const pM = classesStr.match(/paladin\s*(\d+)/i);
+        if (pM) lvl += parseInt(pM[1], 10);
+        if (lvl === 0) lvl = parseInt(character.level || 5, 10);
+        effectiveLevel = Math.max(5, lvl);
+        levelNote = `Paladin Level: ${effectiveLevel}`;
+      }
+
+      // Existing Companion Name fallback
+      const existingName = (character.companion && character.companion.name)
+        ? character.companion.name
+        : (allowedAnimals.find(a => a.id === _activeCompanionModalAnimalId)?.name || 'Companion');
+
+      // Dismiss button visibility
+      const dismissBtn = document.getElementById('btn-companion-modal-dismiss');
+      if (dismissBtn) {
+        dismissBtn.classList.toggle('hidden', !(character.companion && character.companion.baseMonsterId));
+      }
+
+      // Calculate preview stats
+      const previewConfig = {
+        type: _activeCompanionModalType,
+        baseMonsterId: _activeCompanionModalAnimalId,
+        name: existingName,
+        gear: character.companion?.gear || {}
+      };
+      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
+        ? window.SrdCompendium.calculateCompanionStats(character, previewConfig)
+        : null;
+
+      bodyEl.innerHTML = `
+        <!-- Type Selection Tabs -->
+        <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
+          <button type="button" onclick="onCompanionTypeChange('animal_companion')" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'animal_companion' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
+            <span>🐺</span>
+            <span>Animal Companion</span>
+          </button>
+          <button type="button" onclick="onCompanionTypeChange('familiar')" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'familiar' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
+            <span>🦉</span>
+            <span>Familiar</span>
+          </button>
+          <button type="button" onclick="onCompanionTypeChange('special_mount')" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'special_mount' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
+            <span>🐎</span>
+            <span>Special Mount</span>
+          </button>
+        </div>
+
+        <!-- Level Banner -->
+        <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex items-center gap-2">
+            <span class="text-base text-amber-400">📈</span>
+            <span class="font-mono text-slate-300 text-xs">${safeEscapeHtml(levelNote)}</span>
+          </div>
+          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-950 text-amber-300 border border-slate-800">
+            Bracket: Lvl ${effectiveLevel}
+          </span>
+        </div>
+
+        <!-- Creature Selection & Name Controls -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Select Creature / Animal</label>
+            <select id="companion-select-animal" onchange="onCompanionAnimalChange(this.value)" class="ui-input-md w-full h-9 bg-slate-950 text-amber-200 border border-slate-700 rounded-lg px-2.5 text-xs font-bold cursor-pointer">
+              ${allowedAnimals.map(a => {
+                const isSelected = a.id === _activeCompanionModalAnimalId;
+                const reqText = a.minLevel ? ` (Req Lvl ${a.minLevel})` : (a.levelAdj ? ` (Adj ${a.levelAdj})` : '');
+                const bonusText = a.masterBonusText ? ` • [${a.masterBonusText}]` : '';
+                return `<option value="${a.id}" ${isSelected ? 'selected' : ''}>${a.name}${reqText}${bonusText}</option>`;
+              }).join('')}
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Companion Custom Name</label>
+            <input type="text" id="companion-input-name" value="${safeEscapeHtml(existingName)}" placeholder="e.g., Ghost, Fang, Shadow..." class="ui-input-md w-full h-9 bg-slate-950 text-white border border-slate-700 rounded-lg px-2.5 text-xs font-semibold focus:border-amber-500">
+          </div>
+        </div>
+
+        <!-- Live Companion Stats Preview -->
+        ${stats ? `
+          <div class="bg-slate-950/90 border border-amber-500/40 rounded-xl p-3 space-y-2.5 shadow-inner">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
+              <span class="text-xs font-black uppercase text-amber-400 tracking-wider flex items-center gap-1.5">
+                <span>⚡</span> LIVE CALCULATED STATS PREVIEW (D&amp;D 3.5E RAW)
+              </span>
+              <span class="text-[10px] font-mono text-emerald-400 font-bold">${stats.totalHd} Hit Dice</span>
+            </div>
+
+            <!-- Preview 4-Cell Defensive Strip -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+              <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
+                <span class="text-[9px] uppercase font-bold text-slate-400 block">HP</span>
+                <span class="font-black text-emerald-400 text-sm">${stats.hp.max}</span>
+              </div>
+              <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
+                <span class="text-[9px] uppercase font-bold text-slate-400 block">Armor Class</span>
+                <span class="font-black text-amber-300 text-sm">${stats.ac.total}</span>
+                <span class="text-[8px] text-slate-500 block">Nat +${stats.ac.naturalArmor}</span>
+              </div>
+              <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
+                <span class="text-[9px] uppercase font-bold text-slate-400 block">Base Attack</span>
+                <span class="font-black text-sky-300 text-sm">+${stats.bab}</span>
+              </div>
+              <div class="bg-slate-900/80 p-2 rounded-lg border border-slate-800 text-center">
+                <span class="text-[9px] uppercase font-bold text-slate-400 block">Fort / Ref / Will</span>
+                <span class="font-black text-purple-300 text-xs">+${stats.saves.fort} / +${stats.saves.ref} / +${stats.saves.will}</span>
+              </div>
+            </div>
+
+            <!-- Preview Abilities Strip -->
+            <div class="bg-slate-900/70 p-2 rounded-lg border border-slate-800 flex items-center justify-between text-xs font-mono flex-wrap gap-2">
+              <div><strong class="text-slate-400">STR</strong> <span class="text-white">${stats.abilities.str}</span> <span class="text-amber-400">(+${stats.abilityMods.str})</span></div>
+              <div><strong class="text-slate-400">DEX</strong> <span class="text-white">${stats.abilities.dex}</span> <span class="text-amber-400">(+${stats.abilityMods.dex})</span></div>
+              <div><strong class="text-slate-400">CON</strong> <span class="text-white">${stats.abilities.con}</span> <span class="text-amber-400">(+${stats.abilityMods.con})</span></div>
+              <div><strong class="text-slate-400">INT</strong> <span class="text-white">${stats.abilities.int}</span></div>
+              <div><strong class="text-slate-400">WIS</strong> <span class="text-white">${stats.abilities.wis}</span> <span class="text-amber-400">(+${stats.abilityMods.wis})</span></div>
+              <div><strong class="text-slate-400">CHA</strong> <span class="text-white">${stats.abilities.cha}</span></div>
+            </div>
+
+            <!-- Attacks & Abilities Preview -->
+            <div class="text-xs space-y-1">
+              <div class="text-[11px] text-slate-300">
+                <strong class="text-amber-300">Attacks:</strong> ${stats.attacks.map(a => `${a.name} ${a.formattedAttack} (${a.formattedDamage})`).join(', ') || 'None'}
+              </div>
+              <div class="text-[11px] text-slate-400">
+                <strong class="text-purple-300">Special:</strong> ${[...stats.specialAbilities, ...stats.monsterFeats, stats.masterBonusText].filter(Boolean).join(' • ') || 'Standard'}
+              </div>
+            </div>
+          </div>
+        ` : `
+          <div class="p-3 text-center text-xs text-slate-500 italic bg-slate-950/60 rounded-xl border border-slate-800">
+            Select a creature to preview scaled companion stats.
+          </div>
+        `}
+      `;
+    }
+
+    function saveCompanionSelection() {
+      if (!character) return;
+      const nameInput = document.getElementById('companion-input-name');
+      const nameVal = (nameInput ? nameInput.value.trim() : '') || 'Companion';
+      const animalId = _activeCompanionModalAnimalId;
+
+      if (!animalId) {
+        alert('Please select a valid creature or animal.');
+        return;
+      }
+
+      const prevGear = character.companion?.gear || {};
+      character.companion = {
+        type: _activeCompanionModalType,
+        baseMonsterId: animalId,
+        name: nameVal,
+        gear: prevGear
+      };
+
+      // Calculate initial HP
+      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
+        ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
+        : null;
+      if (stats) {
+        character.companion.currentHp = stats.hp.max;
+      }
+
+      // Sync into specialAbilities array
+      if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+      character.specialAbilities = character.specialAbilities.filter(a => {
+        const n = typeof a === 'string' ? a : (a?.name || '');
+        return !/^🐾\s*(Animal Companion|Familiar|Special Mount)/i.test(n);
+      });
+
+      const typeLabel = _activeCompanionModalType === 'familiar' ? 'Familiar' : (_activeCompanionModalType === 'special_mount' ? 'Special Mount' : 'Animal Companion');
+      const icon = _activeCompanionModalType === 'familiar' ? '🦉' : (_activeCompanionModalType === 'special_mount' ? '🐎' : '🐺');
+      character.specialAbilities.push({
+        name: `🐾 ${typeLabel}: ${nameVal} (${stats?.baseName || animalId})`,
+        source: typeLabel,
+        benefit: `${stats ? `${stats.totalHd} HD, HP ${stats.hp.max}, AC ${stats.ac.total}, Attacks: ${stats.attacks.map(a => a.name).join('/')}` : 'Bound Companion'}`
+      });
+
+      saveStateToStorage(true);
+      closeCompanionModal();
+      renderAll();
+
+      showDiceTopToast({
+        icon: icon,
+        title: `${nameVal} Bound`,
+        breakdown: `${typeLabel} (${stats?.baseName || animalId}) configured.`,
+        total: 'Bound'
+      });
+    }
+
+    function dismissCompanion() {
+      if (!character || !character.companion) return;
+      if (!confirm(`Are you sure you want to dismiss ${character.companion.name || 'your companion'}?`)) return;
+
+      character.companion = null;
+      if (Array.isArray(character.specialAbilities)) {
+        character.specialAbilities = character.specialAbilities.filter(a => {
+          const n = typeof a === 'string' ? a : (a?.name || '');
+          return !/^🐾\s*(Animal Companion|Familiar|Special Mount)/i.test(n);
+        });
+      }
+
+      saveStateToStorage(true);
+      closeCompanionModal();
+      renderAll();
+
+      showDiceTopToast({
+        icon: '🐾',
+        title: 'Companion Dismissed',
+        breakdown: 'Companion has been unbound from the character sheet.',
+        total: 'Dismissed'
+      });
+    }
+
+    // Attach to global window
+    window.openCompanionModal = openCompanionModal;
+    window.closeCompanionModal = closeCompanionModal;
+    window.onCompanionTypeChange = onCompanionTypeChange;
+    window.onCompanionAnimalChange = onCompanionAnimalChange;
+    window.saveCompanionSelection = saveCompanionSelection;
+    window.dismissCompanion = dismissCompanion;
+
 
 

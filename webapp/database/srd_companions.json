@@ -1,0 +1,648 @@
+{
+  "schemaVersion": 2,
+  "version": "2.0.0",
+  "title": "D&D 3.5e RAW Companion, Familiar & Mount Progression System",
+  "source": "SRD 3.5e / Player's Handbook (p. 35-36, 44, 52-53)",
+  "druidProgression": [
+    {
+      "minLevel": 1,
+      "maxLevel": 2,
+      "bonusHd": 0,
+      "natArmorAdj": 0,
+      "strDexAdj": 0,
+      "bonusTricks": 1,
+      "special": [
+        "Link",
+        "Share Spells"
+      ]
+    },
+    {
+      "minLevel": 3,
+      "maxLevel": 5,
+      "bonusHd": 2,
+      "natArmorAdj": 2,
+      "strDexAdj": 1,
+      "bonusTricks": 2,
+      "special": [
+        "Evasion"
+      ]
+    },
+    {
+      "minLevel": 6,
+      "maxLevel": 8,
+      "bonusHd": 4,
+      "natArmorAdj": 4,
+      "strDexAdj": 2,
+      "bonusTricks": 3,
+      "special": [
+        "Devotion"
+      ]
+    },
+    {
+      "minLevel": 9,
+      "maxLevel": 11,
+      "bonusHd": 6,
+      "natArmorAdj": 6,
+      "strDexAdj": 3,
+      "bonusTricks": 4,
+      "special": [
+        "Multiattack"
+      ]
+    },
+    {
+      "minLevel": 12,
+      "maxLevel": 14,
+      "bonusHd": 8,
+      "natArmorAdj": 8,
+      "strDexAdj": 4,
+      "bonusTricks": 5,
+      "special": []
+    },
+    {
+      "minLevel": 15,
+      "maxLevel": 17,
+      "bonusHd": 10,
+      "natArmorAdj": 10,
+      "strDexAdj": 5,
+      "bonusTricks": 6,
+      "special": [
+        "Improved Evasion"
+      ]
+    },
+    {
+      "minLevel": 18,
+      "maxLevel": 20,
+      "bonusHd": 12,
+      "natArmorAdj": 12,
+      "strDexAdj": 6,
+      "bonusTricks": 7,
+      "special": []
+    }
+  ],
+  "druidAllowedAnimals": [
+    {
+      "id": "mst-badger",
+      "name": "Badger",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-camel",
+      "name": "Camel",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-dire-rat",
+      "name": "Dire Rat",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-dog",
+      "name": "Dog",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-dog-riding",
+      "name": "Dog, Riding",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-eagle",
+      "name": "Eagle",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-hawk",
+      "name": "Hawk",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-horse-heavy",
+      "name": "Horse, Heavy",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-horse-light",
+      "name": "Horse, Light",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-owl",
+      "name": "Owl",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-pony",
+      "name": "Pony",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-pony-war",
+      "name": "Pony, War",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-snake-small-viper",
+      "name": "Snake, Small Viper",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-snake-medium-viper",
+      "name": "Snake, Medium Viper",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-wolf",
+      "name": "Wolf",
+      "minLevel": 1,
+      "levelAdj": 0
+    },
+    {
+      "id": "mst-ape",
+      "name": "Ape",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-bear-black",
+      "name": "Bear, Black",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-bison",
+      "name": "Bison",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-boar",
+      "name": "Boar",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-cheetah",
+      "name": "Cheetah",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-crocodile",
+      "name": "Crocodile",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-dire-badger",
+      "name": "Dire Badger",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-dire-bat",
+      "name": "Dire Bat",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-dire-weasel",
+      "name": "Dire Weasel",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-leopard",
+      "name": "Leopard",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-lizard-monitor",
+      "name": "Lizard, Monitor",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-shark-large",
+      "name": "Shark, Large",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-constrictor-snake",
+      "name": "Constrictor Snake",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-snake-large-viper",
+      "name": "Snake, Large Viper",
+      "minLevel": 4,
+      "levelAdj": -3
+    },
+    {
+      "id": "mst-bear-brown",
+      "name": "Bear, Brown",
+      "minLevel": 7,
+      "levelAdj": -6
+    },
+    {
+      "id": "mst-crocodile-giant",
+      "name": "Crocodile, Giant",
+      "minLevel": 7,
+      "levelAdj": -6
+    },
+    {
+      "id": "mst-dire-ape",
+      "name": "Dire Ape",
+      "minLevel": 7,
+      "levelAdj": -6
+    },
+    {
+      "id": "mst-dire-boar",
+      "name": "Dire Boar",
+      "minLevel": 7,
+      "levelAdj": -6
+    },
+    {
+      "id": "mst-dire-wolf",
+      "name": "Dire Wolf",
+      "minLevel": 7,
+      "levelAdj": -6
+    },
+    {
+      "id": "mst-lion",
+      "name": "Lion",
+      "minLevel": 7,
+      "levelAdj": -6
+    },
+    {
+      "id": "mst-snake-huge-viper",
+      "name": "Snake, Huge Viper",
+      "minLevel": 7,
+      "levelAdj": -6
+    },
+    {
+      "id": "mst-tiger",
+      "name": "Tiger",
+      "minLevel": 7,
+      "levelAdj": -6
+    },
+    {
+      "id": "mst-bear-polar",
+      "name": "Bear, Polar",
+      "minLevel": 10,
+      "levelAdj": -9
+    },
+    {
+      "id": "mst-dire-lion",
+      "name": "Dire Lion",
+      "minLevel": 10,
+      "levelAdj": -9
+    },
+    {
+      "id": "mst-shark-huge",
+      "name": "Shark, Huge",
+      "minLevel": 10,
+      "levelAdj": -9
+    },
+    {
+      "id": "mst-constrictor-snake-giant",
+      "name": "Constrictor Snake, Giant",
+      "minLevel": 10,
+      "levelAdj": -9
+    },
+    {
+      "id": "mst-dire-bear",
+      "name": "Dire Bear",
+      "minLevel": 13,
+      "levelAdj": -12
+    },
+    {
+      "id": "mst-dire-shark",
+      "name": "Dire Shark",
+      "minLevel": 16,
+      "levelAdj": -15
+    },
+    {
+      "id": "mst-dire-tiger",
+      "name": "Dire Tiger",
+      "minLevel": 16,
+      "levelAdj": -15
+    },
+    {
+      "id": "mst-triceratops",
+      "name": "Triceratops",
+      "minLevel": 16,
+      "levelAdj": -15
+    }
+  ],
+  "familiarProgression": [
+    {
+      "minLevel": 1,
+      "maxLevel": 2,
+      "natArmorAdj": 1,
+      "intScore": 6,
+      "special": [
+        "Alertness",
+        "Improved Evasion",
+        "Share Spells",
+        "Empathic Link"
+      ]
+    },
+    {
+      "minLevel": 3,
+      "maxLevel": 4,
+      "natArmorAdj": 2,
+      "intScore": 7,
+      "special": [
+        "Deliver Touch Spells"
+      ]
+    },
+    {
+      "minLevel": 5,
+      "maxLevel": 6,
+      "natArmorAdj": 3,
+      "intScore": 8,
+      "special": [
+        "Speak with Master"
+      ]
+    },
+    {
+      "minLevel": 7,
+      "maxLevel": 8,
+      "natArmorAdj": 4,
+      "intScore": 9,
+      "special": [
+        "Speak with Animals of Its Kind"
+      ]
+    },
+    {
+      "minLevel": 9,
+      "maxLevel": 10,
+      "natArmorAdj": 5,
+      "intScore": 10,
+      "special": []
+    },
+    {
+      "minLevel": 11,
+      "maxLevel": 12,
+      "natArmorAdj": 6,
+      "intScore": 11,
+      "special": [
+        "Spell Resistance (Master Level + 5)"
+      ]
+    },
+    {
+      "minLevel": 13,
+      "maxLevel": 14,
+      "natArmorAdj": 7,
+      "intScore": 12,
+      "special": [
+        "Scry on Familiar"
+      ]
+    },
+    {
+      "minLevel": 15,
+      "maxLevel": 16,
+      "natArmorAdj": 8,
+      "intScore": 13,
+      "special": []
+    },
+    {
+      "minLevel": 17,
+      "maxLevel": 18,
+      "natArmorAdj": 9,
+      "intScore": 14,
+      "special": []
+    },
+    {
+      "minLevel": 19,
+      "maxLevel": 20,
+      "natArmorAdj": 10,
+      "intScore": 15,
+      "special": []
+    }
+  ],
+  "familiarAllowedAnimals": [
+    {
+      "id": "mst-bat",
+      "name": "Bat",
+      "masterBonusText": "+3 bonus on Listen checks",
+      "modifiers": [
+        {
+          "target": "skill.listen",
+          "value": 3,
+          "type": "Circumstance",
+          "condition": null
+        }
+      ]
+    },
+    {
+      "id": "mst-cat",
+      "name": "Cat",
+      "masterBonusText": "+3 bonus on Move Silently checks",
+      "modifiers": [
+        {
+          "target": "skill.move_silently",
+          "value": 3,
+          "type": "Circumstance",
+          "condition": null
+        }
+      ]
+    },
+    {
+      "id": "mst-hawk",
+      "name": "Hawk",
+      "masterBonusText": "+3 bonus on Spot checks in bright light",
+      "modifiers": [
+        {
+          "target": "skill.spot",
+          "value": 3,
+          "type": "Circumstance",
+          "condition": "in bright light"
+        }
+      ]
+    },
+    {
+      "id": "mst-lizard",
+      "name": "Lizard",
+      "masterBonusText": "+3 bonus on Climb checks",
+      "modifiers": [
+        {
+          "target": "skill.climb",
+          "value": 3,
+          "type": "Circumstance",
+          "condition": null
+        }
+      ]
+    },
+    {
+      "id": "mst-owl",
+      "name": "Owl",
+      "masterBonusText": "+3 bonus on Spot checks in shadows",
+      "modifiers": [
+        {
+          "target": "skill.spot",
+          "value": 3,
+          "type": "Circumstance",
+          "condition": "in shadows"
+        }
+      ]
+    },
+    {
+      "id": "mst-rat",
+      "name": "Rat",
+      "masterBonusText": "+2 bonus on Fortitude saves",
+      "modifiers": [
+        {
+          "target": "save.fort",
+          "value": 2,
+          "type": "Circumstance",
+          "condition": null
+        }
+      ]
+    },
+    {
+      "id": "mst-raven",
+      "name": "Raven",
+      "masterBonusText": "+3 bonus on Appraise checks; speaks one language of master’s choice",
+      "modifiers": [
+        {
+          "target": "skill.appraise",
+          "value": 3,
+          "type": "Circumstance",
+          "condition": null
+        }
+      ]
+    },
+    {
+      "id": "mst-snake-tiny-viper",
+      "name": "Snake, Tiny Viper",
+      "masterBonusText": "+3 bonus on Bluff checks",
+      "modifiers": [
+        {
+          "target": "skill.bluff",
+          "value": 3,
+          "type": "Circumstance",
+          "condition": null
+        }
+      ]
+    },
+    {
+      "id": "mst-toad",
+      "name": "Toad",
+      "masterBonusText": "+3 bonus on master’s maximum Hit Points",
+      "modifiers": [
+        {
+          "target": "hp.max",
+          "value": 3,
+          "type": "Untyped",
+          "condition": null
+        }
+      ]
+    },
+    {
+      "id": "mst-weasel",
+      "name": "Weasel",
+      "masterBonusText": "+2 bonus on Reflex saves",
+      "modifiers": [
+        {
+          "target": "save.ref",
+          "value": 2,
+          "type": "Circumstance",
+          "condition": null
+        }
+      ]
+    }
+  ],
+  "paladinMountProgression": [
+    {
+      "minLevel": 5,
+      "maxLevel": 7,
+      "bonusHd": 2,
+      "natArmorAdj": 4,
+      "strAdj": 1,
+      "intScore": 6,
+      "special": [
+        "Empathic Link",
+        "Improved Evasion",
+        "Share Spells",
+        "Share Saving Throws"
+      ]
+    },
+    {
+      "minLevel": 8,
+      "maxLevel": 10,
+      "bonusHd": 4,
+      "natArmorAdj": 6,
+      "strAdj": 2,
+      "intScore": 7,
+      "special": [
+        "Improved Speed (+10 ft)"
+      ]
+    },
+    {
+      "minLevel": 11,
+      "maxLevel": 14,
+      "bonusHd": 6,
+      "natArmorAdj": 8,
+      "strAdj": 3,
+      "intScore": 8,
+      "special": [
+        "Command"
+      ]
+    },
+    {
+      "minLevel": 15,
+      "maxLevel": 20,
+      "bonusHd": 8,
+      "natArmorAdj": 10,
+      "strAdj": 4,
+      "intScore": 9,
+      "special": [
+        "Spell Resistance (Paladin Level + 5)"
+      ]
+    }
+  ],
+  "paladinAllowedMounts": [
+    {
+      "id": "mst-warhorse-heavy",
+      "name": "Warhorse, Heavy",
+      "minLevel": 5,
+      "size": "Large"
+    },
+    {
+      "id": "mst-warhorse-light",
+      "name": "Warhorse, Light",
+      "minLevel": 5,
+      "size": "Large"
+    },
+    {
+      "id": "mst-pony-war",
+      "name": "Pony, War",
+      "minLevel": 5,
+      "size": "Medium (for Small Paladins)"
+    },
+    {
+      "id": "mst-dog-riding",
+      "name": "Dog, Riding",
+      "minLevel": 5,
+      "size": "Medium (for Small Paladins)"
+    }
+  ]
+}

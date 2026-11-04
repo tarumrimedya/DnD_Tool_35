@@ -62,7 +62,8 @@ const DB_FILES = [
   'srd_maneuvers.json',
   'srd_monsters.json',
   'mic_compendium.json',
-  'srd_domains.json'
+  'srd_domains.json',
+  'srd_companions.json'
 ];
 
 function sha256(filePath) {

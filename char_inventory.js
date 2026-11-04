@@ -3458,32 +3458,41 @@
 
       const listView = document.getElementById('body-slots-list-view');
       const silView = document.getElementById('body-slots-silhouette-view');
+      const compView = document.getElementById('body-slots-companion-view');
       const btnList = document.getElementById('btn-body-view-list');
       const btnSil = document.getElementById('btn-body-view-silhouette');
+      const btnComp = document.getElementById('btn-body-view-companion');
 
-      if (currentBodySlotsView === 'silhouette') {
+      const activeBtnClass = 'w-full sm:w-28 md:w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
+      const inactiveBtnClass = 'w-full sm:w-28 md:w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
+
+      if (currentBodySlotsView === 'companion') {
+        if (listView) listView.classList.add('hidden');
+        if (silView) silView.classList.add('hidden');
+        if (compView) compView.classList.remove('hidden');
+        if (btnComp) btnComp.className = activeBtnClass;
+        if (btnSil) btnSil.className = inactiveBtnClass;
+        if (btnList) btnList.className = inactiveBtnClass;
+        renderCompanionGearView();
+      } else if (currentBodySlotsView === 'silhouette') {
+        if (compView) compView.classList.add('hidden');
         if (listView) listView.classList.add('hidden');
         if (silView) silView.classList.remove('hidden');
-        if (btnSil) {
-          btnSil.className = 'w-full sm:w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
-        }
-        if (btnList) {
-          btnList.className = 'w-full sm:w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
-        }
+        if (btnSil) btnSil.className = activeBtnClass;
+        if (btnList) btnList.className = inactiveBtnClass;
+        if (btnComp) btnComp.className = inactiveBtnClass;
         if (rerender) {
           renderBodySlotsSilhouette();
         } else {
           setTimeout(updateSilhouetteConnectorLines, 50);
         }
       } else {
+        if (compView) compView.classList.add('hidden');
         if (silView) silView.classList.add('hidden');
         if (listView) listView.classList.remove('hidden');
-        if (btnList) {
-          btnList.className = 'w-full sm:w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
-        }
-        if (btnSil) {
-          btnSil.className = 'w-full sm:w-40 h-full px-3 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
-        }
+        if (btnList) btnList.className = activeBtnClass;
+        if (btnSil) btnSil.className = inactiveBtnClass;
+        if (btnComp) btnComp.className = inactiveBtnClass;
       }
     }
 
@@ -4823,6 +4832,371 @@
         </div>
       `).join('');
     }
+
+    // ====================================================
+    // 🐾 COMPANION GEAR & BODY SLOTS (Madde D)
+    // ====================================================
+    const COMPANION_SLOT_DEFS = [
+      { key: 'armor', name: 'Armor / Barding', icon: '🛡️', allowed: ['Armor', 'Barding'], hint: 'Light, Medium, or Heavy armor fitted as barding' },
+      { key: 'neck', name: 'Neck / Collar', icon: '📿', allowed: ['Neck', 'Wondrous'], hint: 'Amulet of Mighty Fists, Collar of Healing, Periapt' },
+      { key: 'feet', name: 'Feet / Horseshoes', icon: '🐾', allowed: ['Feet', 'Boots', 'Horseshoes'], hint: 'Horseshoes of Speed, Horseshoes of a Zephyr, Boots' },
+      { key: 'saddle', name: 'Saddle / Tack', icon: '🏇', allowed: ['Gear', 'Tool'], hint: 'Military Saddle, Exotic Saddle, Battle Bridle, Pack Saddle' },
+      { key: 'slotless', name: 'Slotless / Pack', icon: '🎒', allowed: ['Slotless', 'Gear', 'Wondrous'], hint: 'Saddlebags, Ioun Stones, Wonder items' }
+    ];
+
+    let _activeCompanionEquipSlotKey = null;
+
+    function renderCompanionGearView() {
+      const container = document.getElementById('body-slots-companion-view');
+      if (!container) return;
+
+      if (!character || !character.companion || !character.companion.baseMonsterId) {
+        container.innerHTML = `
+          <div class="p-8 text-center bg-slate-950/60 rounded-2xl border border-slate-800 space-y-3 max-w-lg mx-auto my-6">
+            <div class="text-3xl">🐾</div>
+            <h4 class="text-sm font-black text-white uppercase tracking-wider">No Active Companion or Mount</h4>
+            <p class="text-xs text-slate-400">Select or summon an Animal Companion, Familiar, or Special Mount to manage equipment slots and barding.</p>
+            <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-8 px-4 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
+              <span>➕</span>
+              <span>Select / Summon Companion</span>
+            </button>
+          </div>
+        `;
+        return;
+      }
+
+      const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
+        ? window.SrdCompendium.calculateCompanionStats(character, character.companion)
+        : null;
+
+      if (!stats) {
+        container.innerHTML = `<div class="p-4 text-center text-xs text-rose-400">Loading companion Bestiary data...</div>`;
+        return;
+      }
+
+      const typeLabel = stats.type === 'familiar' ? 'Familiar' : (stats.type === 'special_mount' ? 'Special Mount' : 'Animal Companion');
+      const icon = stats.type === 'familiar' ? '🦉' : (stats.type === 'special_mount' ? '🐎' : '🐺');
+      const gear = character.companion.gear || {};
+
+      container.innerHTML = `
+        <!-- Companion Summary Banner -->
+        <div class="bg-gradient-to-r from-amber-950/40 via-slate-900 to-sky-950/40 border border-amber-500/50 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-12 h-12 rounded-xl bg-slate-950 border border-amber-500/60 flex items-center justify-center text-2xl shrink-0 shadow-inner">
+              ${icon}
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="text-sm sm:text-base font-black text-white truncate">${safeEscapeHtml(stats.customName)}</h3>
+                <span class="text-xs text-amber-300 font-mono">(${safeEscapeHtml(stats.baseName)} • ${typeLabel})</span>
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-700/60">${stats.totalHd} HD</span>
+              </div>
+              <div class="flex items-center gap-3 text-xs font-mono text-slate-300 flex-wrap mt-0.5">
+                <span>HP: <strong class="text-emerald-400">${stats.hp.current}/${stats.hp.max}</strong></span>
+                <span>•</span>
+                <span>AC: <strong class="text-amber-300">${stats.ac.total}</strong></span>
+                <span>•</span>
+                <span>Speed: <strong class="text-sky-300">${stats.speed.land} ft</strong></span>
+                <span>•</span>
+                <span>BAB: <strong class="text-white">+${stats.bab}</strong></span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-8 px-3 bg-slate-900 hover:bg-slate-800 border border-amber-600/50 text-amber-300 hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+              <span>⚙️</span>
+              <span>Manage Companion</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5 Dedicated Body Slots Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          ${COMPANION_SLOT_DEFS.map(slotDef => {
+            const item = gear[slotDef.key];
+            const isOccupied = Boolean(item && item.name && item.name !== '-');
+
+            if (isOccupied) {
+              const acBadge = (item.acBonus || item.armorBonus) ? `<span class="px-1.5 py-0.2 rounded font-mono text-[9px] bg-sky-950 text-sky-300 border border-sky-700 font-bold">+${(item.acBonus || item.armorBonus) + (item.enhancementBonus || 0)} AC</span>` : '';
+              const enhBadge = item.enhancementBonus ? `<span class="px-1.5 py-0.2 rounded font-mono text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold">+${item.enhancementBonus} Magic</span>` : '';
+
+              return `
+                <div class="bg-slate-900/90 border border-amber-500/60 rounded-xl p-3 shadow-md flex flex-col justify-between space-y-2">
+                  <div>
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-1.5">
+                      <div class="flex items-center gap-1.5 text-xs font-bold text-amber-300 uppercase tracking-wide">
+                        <span>${slotDef.icon}</span>
+                        <span>${slotDef.name}</span>
+                      </div>
+                      <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold">EQUIPPED</span>
+                    </div>
+                    <div class="flex items-start justify-between gap-2">
+                      <div class="min-w-0">
+                        <div class="text-xs font-black text-white truncate">${safeEscapeHtml(item.name)}</div>
+                        <div class="flex items-center gap-1 flex-wrap mt-1">
+                          ${acBadge}
+                          ${enhBadge}
+                          ${item.weight ? `<span class="text-[9px] text-slate-400 font-mono">${item.weight} lbs</span>` : ''}
+                        </div>
+                        <div class="text-[10px] text-slate-400 mt-1 line-clamp-2">${safeEscapeHtml(item.desc || item.benefit || slotDef.hint)}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+                    <button type="button" onclick="openCompanionEquipModal('${slotDef.key}')" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded transition cursor-pointer">
+                      <span>⇄</span>
+                      <span>Swap</span>
+                    </button>
+                    <button type="button" onclick="unequipCompanionSlot('${slotDef.key}')" class="ui-btn-xs h-6 px-2.5 text-[10px] font-bold text-rose-300 hover:text-white bg-rose-950 hover:bg-rose-900 border border-rose-700/60 rounded transition cursor-pointer">
+                      <span>✕</span>
+                      <span>Unequip</span>
+                    </button>
+                  </div>
+                </div>
+              `;
+            } else {
+              return `
+                <div class="bg-slate-950/60 border border-dashed border-slate-800 hover:border-slate-700 rounded-xl p-3 flex flex-col justify-between space-y-2 transition">
+                  <div>
+                    <div class="flex items-center justify-between border-b border-slate-800/60 pb-1.5 mb-1.5">
+                      <div class="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wide">
+                        <span>${slotDef.icon}</span>
+                        <span>${slotDef.name}</span>
+                      </div>
+                      <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-900 text-slate-500 border border-slate-800">EMPTY</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 italic min-h-[30px]">${slotDef.hint}</p>
+                  </div>
+                  <div class="pt-2 border-t border-slate-800/60 text-right">
+                    <button type="button" onclick="openCompanionEquipModal('${slotDef.key}')" class="ui-btn-xs h-6 px-2.5 bg-amber-600/90 hover:bg-amber-500 text-white rounded font-bold text-[10px] shadow transition cursor-pointer inline-flex items-center gap-1">
+                      <span>➕</span>
+                      <span>Equip</span>
+                    </button>
+                  </div>
+                </div>
+              `;
+            }
+          }).join('')}
+        </div>
+      `;
+    }
+
+    function ensureCompanionEquipModalDom() {
+      let modal = document.getElementById('companion-equip-modal');
+      if (modal) return modal;
+
+      modal = document.createElement('div');
+      modal.id = 'companion-equip-modal';
+      modal.className = 'fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[9999] flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden';
+      modal.innerHTML = `
+        <div class="bg-[#0b1329] border border-amber-500/50 rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden my-auto flex flex-col max-h-[88vh]">
+          <!-- Header -->
+          <div class="bg-slate-900/90 px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-3 shrink-0">
+            <div class="flex items-center gap-2">
+              <span id="companion-equip-modal-icon" class="text-xl">🛡️</span>
+              <div>
+                <h3 id="companion-equip-modal-title" class="text-sm sm:text-base font-black text-white">Equip Companion Slot</h3>
+                <p id="companion-equip-modal-subtitle" class="text-[10px] text-slate-400">Select compatible item from character gear pool</p>
+              </div>
+            </div>
+            <button type="button" onclick="closeCompanionEquipModal()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">
+              ✕
+            </button>
+          </div>
+
+          <!-- Search & Filter Controls -->
+          <div class="p-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+            <input type="text" id="companion-equip-search-input" oninput="renderCompanionEquipList()" placeholder="Filter items in gear pool..." class="ui-input-md h-8 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white placeholder-slate-500">
+            <label class="flex items-center gap-1.5 text-[11px] text-slate-400 shrink-0 cursor-pointer select-none">
+              <input type="checkbox" id="companion-equip-show-all" onchange="renderCompanionEquipList()" class="rounded border-slate-700 text-amber-500">
+              <span>Show All Items</span>
+            </label>
+          </div>
+
+          <!-- Items List -->
+          <div id="companion-equip-items-list" class="p-3 overflow-y-auto space-y-2 flex-1 text-xs">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Footer -->
+          <div class="bg-slate-900/90 px-4 py-2.5 border-t border-slate-800 flex items-center justify-end shrink-0">
+            <button type="button" onclick="closeCompanionEquipModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer">
+              Close
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      return modal;
+    }
+
+    function openCompanionEquipModal(slotKey) {
+      _activeCompanionEquipSlotKey = slotKey;
+      const modal = ensureCompanionEquipModalDom();
+      const def = COMPANION_SLOT_DEFS.find(d => d.key === slotKey) || { key: slotKey, name: slotKey, icon: '🐾' };
+
+      const titleEl = document.getElementById('companion-equip-modal-title');
+      const iconEl = document.getElementById('companion-equip-modal-icon');
+      const subEl = document.getElementById('companion-equip-modal-subtitle');
+      const searchEl = document.getElementById('companion-equip-search-input');
+      const showAllEl = document.getElementById('companion-equip-show-all');
+
+      if (titleEl) titleEl.textContent = `Equip Companion: ${def.name}`;
+      if (iconEl) iconEl.textContent = def.icon;
+      if (subEl) subEl.textContent = `Select an item from Gear Pool for ${character?.companion?.name || 'Companion'}`;
+      if (searchEl) searchEl.value = '';
+      if (showAllEl) showAllEl.checked = false;
+
+      renderCompanionEquipList();
+      modal.classList.remove('hidden');
+    }
+
+    function closeCompanionEquipModal() {
+      const modal = document.getElementById('companion-equip-modal');
+      if (modal) modal.classList.add('hidden');
+      _activeCompanionEquipSlotKey = null;
+    }
+
+    function renderCompanionEquipList() {
+      const container = document.getElementById('companion-equip-items-list');
+      if (!container || !_activeCompanionEquipSlotKey || !character) return;
+
+      const slotDef = COMPANION_SLOT_DEFS.find(d => d.key === _activeCompanionEquipSlotKey);
+      const query = (document.getElementById('companion-equip-search-input')?.value || '').toLowerCase().trim();
+      const showAll = document.getElementById('companion-equip-show-all')?.checked || false;
+
+      const gearPool = Array.isArray(character.gearPool) ? character.gearPool : [];
+      const compatibleItems = gearPool.filter(item => {
+        if (!item || !item.name) return false;
+        if (query && !item.name.toLowerCase().includes(query)) return false;
+        if (showAll) return true;
+
+        const nameLower = item.name.toLowerCase();
+        const catLower = (item.category || '').toLowerCase();
+        const slotLower = (item.slot || '').toLowerCase();
+
+        if (_activeCompanionEquipSlotKey === 'armor') {
+          return catLower === 'armor' || nameLower.includes('barding') || nameLower.includes('armor');
+        } else if (_activeCompanionEquipSlotKey === 'neck') {
+          return slotLower === 'neck' || catLower === 'neck' || nameLower.includes('collar') || nameLower.includes('amulet') || nameLower.includes('periapt');
+        } else if (_activeCompanionEquipSlotKey === 'feet') {
+          return slotLower === 'boots' || catLower === 'feet' || catLower === 'boots' || nameLower.includes('horseshoes') || nameLower.includes('boots');
+        } else if (_activeCompanionEquipSlotKey === 'saddle') {
+          return nameLower.includes('saddle') || nameLower.includes('bridle') || nameLower.includes('bit') || nameLower.includes('tack');
+        } else if (_activeCompanionEquipSlotKey === 'slotless') {
+          return catLower === 'gear' || catLower === 'tool' || catLower === 'wondrous' || nameLower.includes('saddlebags');
+        }
+        return false;
+      });
+
+      if (compatibleItems.length === 0) {
+        container.innerHTML = `
+          <div class="py-8 text-center text-xs text-slate-500 italic space-y-2">
+            <div>No matching items found in your character's Gear Pool.</div>
+            <div class="text-[10px] text-slate-600">Try checking "Show All Items" or add items to your Gear Pool from the compendium.</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = compatibleItems.map(item => {
+        const acBonus = (item.acBonus || item.armorBonus) ? `+${(item.acBonus || item.armorBonus) + (item.enhancementBonus || 0)} AC` : null;
+        const enhBonus = item.enhancementBonus ? `+${item.enhancementBonus} Magic` : null;
+
+        return `
+          <div class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-amber-500/50 flex items-center justify-between gap-3 transition">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs font-bold text-white truncate">${safeEscapeHtml(item.name)}</span>
+                <span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 border border-slate-700 uppercase font-mono">${safeEscapeHtml(item.category || 'Gear')}</span>
+                ${acBadge(acBonus)}
+                ${enhBadge(enhBonus)}
+              </div>
+              <div class="text-[10px] text-slate-400 mt-0.5 truncate">${safeEscapeHtml(item.desc || item.benefit || '')}</div>
+            </div>
+            <button type="button" onclick="equipItemToCompanion(${item.id}, '${_activeCompanionEquipSlotKey}')" class="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs rounded-lg shadow transition cursor-pointer shrink-0">
+              ✓ Equip
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      function acBadge(b) {
+        return b ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-sky-950 text-sky-300 border border-sky-700">${b}</span>` : '';
+      }
+      function enhBadge(b) {
+        return b ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-700">${b}</span>` : '';
+      }
+    }
+
+    function equipItemToCompanion(itemId, slotKey) {
+      if (!character || !character.companion) return;
+      if (!Array.isArray(character.gearPool)) character.gearPool = [];
+
+      const itemIdx = character.gearPool.findIndex(i => i && i.id === itemId);
+      if (itemIdx === -1) {
+        alert('Item not found in Gear Pool.');
+        return;
+      }
+
+      const item = character.gearPool[itemIdx];
+      if (!character.companion.gear) character.companion.gear = {};
+
+      // Return existing item in this slot to Gear Pool if any
+      const existing = character.companion.gear[slotKey];
+      if (existing && existing.name && existing.name !== '-') {
+        character.gearPool.push(existing);
+      }
+
+      // If quantity > 1, decrement; otherwise remove
+      if (item.qty && item.qty > 1) {
+        item.qty -= 1;
+        character.companion.gear[slotKey] = { ...item, qty: 1 };
+      } else {
+        character.companion.gear[slotKey] = item;
+        character.gearPool.splice(itemIdx, 1);
+      }
+
+      saveStateToStorage(true);
+      closeCompanionEquipModal();
+      renderAll();
+
+      showDiceTopToast({
+        icon: '🐾',
+        title: 'Companion Item Equipped',
+        breakdown: `${item.name} equipped in ${slotKey}.`,
+        total: 'Equipped'
+      });
+    }
+
+    function unequipCompanionSlot(slotKey) {
+      if (!character || !character.companion || !character.companion.gear) return;
+      const item = character.companion.gear[slotKey];
+      if (!item || !item.name || item.name === '-') return;
+
+      if (!Array.isArray(character.gearPool)) character.gearPool = [];
+      character.gearPool.push(item);
+      delete character.companion.gear[slotKey];
+
+      saveStateToStorage(true);
+      renderAll();
+
+      showDiceTopToast({
+        icon: '🐾',
+        title: 'Companion Item Unequipped',
+        breakdown: `${item.name} returned to Gear Pool.`,
+        total: 'Unequipped'
+      });
+    }
+
+    // Attach to global window
+    window.renderCompanionGearView = renderCompanionGearView;
+    window.openCompanionEquipModal = openCompanionEquipModal;
+    window.closeCompanionEquipModal = closeCompanionEquipModal;
+    window.renderCompanionEquipList = renderCompanionEquipList;
+    window.equipItemToCompanion = equipItemToCompanion;
+    window.unequipCompanionSlot = unequipCompanionSlot;
+
 
     function toggleSlotActive(slotKey) {
       if (character.bodySlots?.[slotKey]) {

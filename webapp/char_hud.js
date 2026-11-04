@@ -6972,6 +6972,7 @@ function renderManualStatsPanel() {
 
       const panels = [
         { key: 'physical', cardId: 'cockpit-physical-card', headerId: 'cockpit-physical-header', bodyId: 'combat-physical-card-body', barId: 'combat-physical-collapsed-bar', btnId: 'btn-collapse-physical', colId: 'cockpit-column-physical' },
+        { key: 'companion', cardId: 'cockpit-companion-card', headerId: 'cockpit-companion-header', bodyId: 'combat-companion-card-body', barId: 'combat-companion-collapsed-bar', btnId: 'btn-collapse-companion', colId: 'cockpit-column-physical' },
         { key: 'spell', cardId: 'cockpit-spell-card', headerId: 'cockpit-spell-header', bodyId: 'combat-spell-card-body', barId: 'combat-spell-collapsed-bar', btnId: 'btn-collapse-spell', colId: 'cockpit-column-spell' },
         { key: 'defense', cardId: 'cockpit-defense-card', headerId: 'cockpit-defense-header', bodyId: 'combat-defense-card-body', barId: 'combat-defense-collapsed-bar', btnId: 'btn-collapse-defense', colId: 'cockpit-column-defense-consumables' },
         { key: 'consumables', cardId: 'cockpit-consumables-card', headerId: 'cockpit-consumables-header', bodyId: 'combat-consumables-card-body', barId: 'combat-consumables-collapsed-bar', btnId: 'btn-collapse-consumables', colId: 'cockpit-column-defense-consumables' }

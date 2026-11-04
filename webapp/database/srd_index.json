@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "4fc1b6071ebe2531",
-  "generatedAt": "2026-11-04T10:57:41.246Z",
+  "compendiumHash": "e465bcad4eaeaab2",
+  "generatedAt": "2026-11-04T15:37:19.474Z",
   "totalEntries": 4764,
   "chunks": {
     "srd_equipment.json": {
@@ -57,6 +57,12 @@
       "count": 36,
       "bytes": 75813,
       "hash": "f2f210f0ca3a8365",
+      "eagerLoad": true
+    },
+    "srd_companions.json": {
+      "count": 1,
+      "bytes": 12603,
+      "hash": "8760b06c5e1146a0",
       "eagerLoad": true
     }
   },
