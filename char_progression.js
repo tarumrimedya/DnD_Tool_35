@@ -4739,8 +4739,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     }
 
     function openLevelUpModal(forPlanningOnly = false) {
+      if (typeof window.ensureModalsMounted === 'function') window.ensureModalsMounted();
       const modal = document.getElementById('level-up-modal');
-      if (!modal) return;
+      if (!modal || !character) return;
 
       const prog = character.levelProgression || [];
 

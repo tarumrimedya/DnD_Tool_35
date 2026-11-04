@@ -1436,22 +1436,23 @@
     // 🎟️ KAMPANYAYA KATILIM VE CANLI REALTIME YÖNETİMİ
     // =========================================================================
     function openJoinCampaignModal(prefilledCode = '') {
+      if (typeof window.ensureModalsMounted === 'function') window.ensureModalsMounted();
       const modal = document.getElementById('join-campaign-modal');
       if (!modal) return;
 
       const codeInput = document.getElementById('join-campaign-input-code');
       if (codeInput) {
-        codeInput.value = prefilledCode || character.campaignInviteCode || '';
+        codeInput.value = prefilledCode || character?.campaignInviteCode || '';
       }
 
       const badgeBox = document.getElementById('current-campaign-badge-box');
       const nameEl = document.getElementById('current-campaign-name');
       const codeEl = document.getElementById('current-campaign-code');
 
-      if (character.campaignInviteCode || character.cloudCampaignId) {
+      if (character?.campaignInviteCode || character?.cloudCampaignId) {
         if (badgeBox) badgeBox.classList.remove('hidden');
-        if (nameEl) nameEl.textContent = character.campaignName || 'Active Campaign';
-        if (codeEl) codeEl.textContent = `CODE: ${character.campaignInviteCode || 'CLOUD'}`;
+        if (nameEl) nameEl.textContent = character?.campaignName || 'Active Campaign';
+        if (codeEl) codeEl.textContent = `CODE: ${character?.campaignInviteCode || 'CLOUD'}`;
       } else {
         if (badgeBox) badgeBox.classList.add('hidden');
       }
@@ -1539,7 +1540,7 @@
     function updateCampaignNavButton() {
       const btnText = document.getElementById('btn-join-campaign-text');
       const badge = window._modalsMounted !== false ? document.getElementById('settings-campaign-badge') : null;
-      if (character.campaignInviteCode) {
+      if (character?.campaignInviteCode) {
         if (btnText) btnText.textContent = character.campaignInviteCode;
         if (badge) badge.textContent = character.campaignInviteCode;
       } else {
@@ -1570,6 +1571,7 @@
     }
 
     function openSettingsModal() {
+      if (typeof window.ensureModalsMounted === 'function') window.ensureModalsMounted();
       const modal = document.getElementById('settings-modal');
       if (!modal) return;
       modal.classList.remove('hidden');
@@ -1598,46 +1600,46 @@
       const manCrit = document.getElementById('house-maneuver-crit');
       const setNoCrit = document.getElementById('settings-no-crit-confirm');
       const setManCrit = document.getElementById('settings-maneuver-crit');
-      if (setNoCrit) setNoCrit.checked = character.houseRules?.noCritConfirm ?? true;
-      if (setManCrit) setManCrit.checked = character.houseRules?.maneuverCrit ?? false;
-      if (noCrit) noCrit.checked = character.houseRules?.noCritConfirm ?? true;
-      if (manCrit) manCrit.checked = character.houseRules?.maneuverCrit ?? false;
+      if (setNoCrit) setNoCrit.checked = character?.houseRules?.noCritConfirm ?? true;
+      if (setManCrit) setManCrit.checked = character?.houseRules?.maneuverCrit ?? false;
+      if (noCrit) noCrit.checked = character?.houseRules?.noCritConfirm ?? true;
+      if (manCrit) manCrit.checked = character?.houseRules?.maneuverCrit ?? false;
 
       const setCritCap = document.getElementById('setting-crit-cap-min');
-      if (setCritCap) setCritCap.value = String(character.houseRules?.critCapMin ?? 15);
+      if (setCritCap) setCritCap.value = String(character?.houseRules?.critCapMin ?? 15);
       const setKeenStack = document.getElementById('setting-keen-imp-stacking');
-      if (setKeenStack) setKeenStack.value = character.houseRules?.keenImpCritStacking || 'stack_diminishing';
+      if (setKeenStack) setKeenStack.value = character?.houseRules?.keenImpCritStacking || 'stack_diminishing';
       const setPrecisionRule = document.getElementById('setting-precision-rule');
-      if (setPrecisionRule) setPrecisionRule.value = character.houseRules?.precisionDamageRule || 'once_per_turn';
+      if (setPrecisionRule) setPrecisionRule.value = character?.houseRules?.precisionDamageRule || 'once_per_turn';
 
       updateHouseRuleSkillConsolidationUI();
 
       // Sync Feat Mode, Caster CL Mode & Ignore ASF in House Rules
       const featModeSel = document.getElementById('setting-feat-mode');
-      if (featModeSel && character.settings?.featMode) {
+      if (featModeSel && character?.settings?.featMode) {
         featModeSel.value = character.settings.featMode;
       }
       const clModeSel = document.getElementById('setting-cl-mode');
       if (clModeSel) {
-        clModeSel.value = character.settings?.clMode || 'Class Level';
+        clModeSel.value = character?.settings?.clMode || 'Class Level';
       }
       const casterTypeSel = document.getElementById('setting-caster-type');
       if (casterTypeSel) {
-        casterTypeSel.value = character.settings?.casterType || 'spontaneous';
+        casterTypeSel.value = character?.settings?.casterType || 'spontaneous';
       }
       if (typeof updateCasterTypeUIState === 'function') updateCasterTypeUIState();
       const asfChk = document.getElementById('setting-ignore-asf');
       if (asfChk) {
-        asfChk.checked = character.settings?.ignoreAsf !== false;
+        asfChk.checked = character?.settings?.ignoreAsf !== false;
       }
       const babSaveSel = document.getElementById('setting-bab-save-system');
       if (babSaveSel) {
-        babSaveSel.value = character.settings?.babSaveSystem || 'standard';
+        babSaveSel.value = character?.settings?.babSaveSystem || 'standard';
       }
 
       const pinLimitSel = document.getElementById('setting-pin-drawer-limit');
       if (pinLimitSel) {
-        pinLimitSel.value = character.settings?.pinDrawerLimit || 5;
+        pinLimitSel.value = character?.settings?.pinDrawerLimit || 5;
       }
 
       // Populate Rule Sources and Splatbooks Catalog
@@ -6137,11 +6139,13 @@ function renderManualStatsPanel() {
       let sumMods = 0;
 
       // Resolve selected race object for accurate preview
-      const curSelectedRace = (document.getElementById('profile-edit-race')?.value || character?.race || '').toLowerCase().trim();
+      const rawSelectedRace = (document.getElementById('profile-edit-race')?.value || character?.race || '').trim();
+      const curSelectedRace = rawSelectedRace.toLowerCase();
       const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
         ? window.BUNDLED_SRD_CORE_CATALOG
         : [];
-      const raceObj = catalog.find(item => item && item.type === 'Race' && (item.name || '').toLowerCase().trim() === curSelectedRace);
+      const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(rawSelectedRace, 'Race') : null)
+        || catalog.find(item => item && item.type === 'Race' && (item.name || '').toLowerCase().trim() === curSelectedRace);
 
       previewContainer.innerHTML = STAT_KEYS.map(s => {
         const baseScore = Number(statDistState.workingAbilities[s.key]) || 10;
@@ -6200,7 +6204,8 @@ function renderManualStatsPanel() {
         const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
           ? window.BUNDLED_SRD_CORE_CATALOG
           : [];
-        const raceObj = catalog.find(item => item && item.type === 'Race' && (item.name.toLowerCase() === newRace.toLowerCase() || item.name.toLowerCase().includes(newRace.toLowerCase())));
+        const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(newRace, 'Race') : null)
+          || catalog.find(item => item && item.type === 'Race' && (item.name.toLowerCase() === newRace.toLowerCase() || item.name.toLowerCase().includes(newRace.toLowerCase())));
 
         if (raceObj) {
           if (!character.size || (oldRace && oldRace.toLowerCase() !== newRace.toLowerCase())) {
@@ -6806,6 +6811,7 @@ function renderManualStatsPanel() {
 
       container.innerHTML = effects.map(eff => {
         const isDmg = eff.type === 'damage';
+        const icon = isDmg ? '🩸' : '💚';
         const bgClass = isDmg 
           ? 'bg-rose-950/70 border-rose-700/60 text-rose-200' 
           : 'bg-emerald-950/70 border-emerald-700/60 text-emerald-200';

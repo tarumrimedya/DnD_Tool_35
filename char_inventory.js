@@ -2773,6 +2773,7 @@
     }
 
     function openAddBuffModal() {
+      if (typeof window.ensureModalsMounted === 'function') window.ensureModalsMounted();
       const modal = document.getElementById('add-buff-modal');
       if (!modal) return;
       _selectedSpotlightV2Entry = null;
@@ -2826,6 +2827,9 @@
       const modal = document.getElementById('add-buff-modal');
       if (modal) modal.classList.add('hidden');
     }
+    window.openAddBuffModal = openAddBuffModal;
+    window.openBuffModal = openAddBuffModal;
+    window.closeAddBuffModal = closeAddBuffModal;
 
     function onBuffPresetChange() {
       const presetKey = document.getElementById('buff-preset-select').value;

@@ -2924,11 +2924,15 @@ Return valid JSON only matching:
     });
   },
 
+  queryAiBatch() {
+    return this.importMultipleFromAi();
+  },
+
   async importMultipleFromAi() {
-    const input = document.getElementById('ai-bulk-import-input');
-    const btn = document.getElementById('ai-bulk-import-btn');
-    const statusBox = document.getElementById('ai-rule-status');
-    const statusText = document.getElementById('ai-rule-status-text');
+    const input = document.getElementById('ai-bulk-import-input') || document.getElementById('ai-batch-query');
+    const btn = document.getElementById('ai-bulk-import-btn') || document.getElementById('btn-ai-batch-search');
+    const statusBox = document.getElementById('ai-rule-status') || document.getElementById('ai-batch-status');
+    const statusText = document.getElementById('ai-rule-status-text') || document.getElementById('ai-batch-status-text');
 
     if (!input || !input.value.trim()) {
       alert('Please enter the rules you want to import, separated by commas or newlines.');

@@ -220,6 +220,38 @@ function main() {
     }
   }
 
+  // 5c. Verify balanced <div> tags for every top-level modal in char_modals.js
+  const cmPath = path.join(ROOT, 'char_modals.js');
+  if (fs.existsSync(cmPath)) {
+    try {
+      const cmRaw = fs.readFileSync(cmPath, 'utf8');
+      const htmlLine = cmRaw.split('\n').find(l => l.includes('const DEFERRED_MODALS_HTML = '));
+      if (htmlLine) {
+        const modalHtml = JSON.parse(htmlLine.replace(/^\s*const DEFERRED_MODALS_HTML = /, '').replace(/;\s*$/, ''));
+        const topIds = ['modal-weapon-profile-settings','modal-spell-weapon-target','attack-decision-toast','modal-pin-details','modal-pin-category-picker','modal-spell-slots-manager','feat-detail-modal','quick-level-feat-modal','change-level-class-modal','level-stat-picker-modal','create-custom-class-modal','feat-picker-modal','stat-distribution-modal','npc-statblock-modal','planned-level-choice-modal','level-up-modal','add-buff-modal','skill-consolidation-modal','custom-skill-modal','periodic-hp-modal','slot-equip-modal','spell-maneuver-modal','add-pool-item-modal','join-campaign-modal','settings-modal','vault-lock-modal'];
+        for (let i = 0; i < topIds.length; i++) {
+          const s = modalHtml.indexOf('<div id="' + topIds[i] + '"');
+          const e = (i + 1 < topIds.length) ? modalHtml.indexOf('<div id="' + topIds[i + 1] + '"') : modalHtml.length;
+          if (s < 0) {
+            console.error(`[FAIL] Missing top-level modal #${topIds[i]} in char_modals.js`);
+            errors++;
+            continue;
+          }
+          const chunk = modalHtml.slice(s, e);
+          const opens = (chunk.match(/<div\b/g) || []).length;
+          const closes = (chunk.match(/<\/div>/g) || []).length;
+          if (opens !== closes) {
+            console.error(`[FAIL] Unbalanced <div> tags in char_modals.js #${topIds[i]}: opens=${opens}, closes=${closes}`);
+            errors++;
+          }
+        }
+      }
+    } catch (cmErr) {
+      console.error(`[FAIL] char_modals.js modal balance check failed: ${cmErr.message}`);
+      errors++;
+    }
+  }
+
   // 6. Mojibake & Turkish Character Audit across active UI/Logic files
   const AUDIT_FILES = [
     'index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js',
