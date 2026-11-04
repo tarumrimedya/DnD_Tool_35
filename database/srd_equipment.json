@@ -28451,15 +28451,15 @@
     "foundryId": "2iE45eWpm4RbVtLs",
     "schemaVersion": 2,
     "name": "Holy symbol, silver",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Divine Focus",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 25,
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>A holy symbol focuses positive energy. A cleric or paladin uses it as the focus for his spells and as a tool for turning undead. Each religion has its own holy symbol, and a sun symbol is the default holy symbol for clerics not associated with any particular religion. A silver holy symbol works no better than a wooden one, but it serves as a mark of status for the wielder. Unholy Symbols: An unholy symbol is like a holy symbol except that it focuses negative energy and is used by evil clerics (or by neutral clerics who want to cast evil spells or command undead). A skull is the default unholy symbol for clerics not associated with any particular religion.</p>",
-    "shortDescription": "A holy symbol focuses positive energy. A cleric or paladin uses it as the focus for his spells and as a tool for turning undead. Each religion has its own holy symbol, and a sun symbol is the default holy symbol for cle…",
+    "shortDescription": "A finely crafted silver holy symbol required to channel divine spells and turn undead.",
     "tags": [
       "gear",
       "wondrous",
@@ -28468,7 +28468,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "divineFocus": true
+    }
   },
   {
     "id": "gear-bit-and-bridle",
@@ -28571,15 +28573,15 @@
     "foundryId": "4pm6cplubOTRxMPe",
     "schemaVersion": 2,
     "name": "Spellbook",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Spell Focus",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 15,
     "weight": 3,
     "casterLevel": 0,
     "description": "<p>This large, leatherbound book serves as a wizard’s reference. A spellbook has 100 pages of parchment, and each spell takes up one page per spell level (one page each for 0-level spells). See Space in the Spellbook, page 179.</p>",
-    "shortDescription": "This large, leatherbound book serves as a wizard’s reference. A spellbook has 100 pages of parchment, and each spell takes up one page per spell level (one page each for 0-level spells). See Space in the Spellbook, page…",
+    "shortDescription": "A large, leather-bound wizard’s spellbook containing 100 blank parchment pages.",
     "tags": [
       "gear",
       "wondrous",
@@ -28588,28 +28590,37 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "spellbookPages": 100
+    }
   },
   {
     "id": "gear-artisans-tools-masterworked",
     "foundryId": "5a5AyKFG9FZSx4k7",
     "schemaVersion": 2,
     "name": "Artisan’s tools, masterworked",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 55,
     "weight": 5,
     "casterLevel": 0,
     "description": "<p>These tools serve the same purpose as artisan’s tools (above), but masterwork artisan’s tools are the perfect tools for the job, so you get a +2 circumstance bonus on Craft checks made with them.</p>",
-    "shortDescription": "These tools serve the same purpose as artisan’s tools (above), but masterwork artisan’s tools are the perfect tools for the job, so you get a +2 circumstance bonus on Craft checks made with them.",
+    "shortDescription": "Masterwork tools providing a +2 circumstance bonus on Craft checks for their designated trade.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.craft",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -28619,15 +28630,15 @@
     "foundryId": "6bvjWLKWteMgVFQa",
     "schemaVersion": 2,
     "name": "Tindertwig",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Consumable",
+    "category": "Alchemical",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 1,
     "weight": 0,
     "casterLevel": 0,
     "description": "<p>The alchemical substance on the end of this small, wooden stick ignites when struck against a rough surface. Creating a flame with a tindertwig is much faster than creating a flame with flint and steel (or a magnifying glass) and tinder. Lighting a torch with a tindertwig is a standard action (rather than a full-round action), and lighting any other fire with one is at least a standard action.</p>",
-    "shortDescription": "The alchemical substance on the end of this small, wooden stick ignites when struck against a rough surface. Creating a flame with a tindertwig is much faster than creating a flame with flint and steel (or a magnifying…",
+    "shortDescription": "Alchemical match; lights a small flame as a standard action.",
     "tags": [
       "gear",
       "wondrous",
@@ -28636,7 +28647,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "swiftIgnition": true
+    }
   },
   {
     "id": "gear-hammer",
@@ -28691,15 +28704,15 @@
     "foundryId": "76ZSd5C8wjqupu58",
     "schemaVersion": 2,
     "name": "Smokestick",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Consumable",
+    "category": "Alchemical",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 20,
     "weight": 0.5,
     "casterLevel": 0,
     "description": "<p>This alchemically treated wooden stick instantly creates thick, opaque smoke when ignited. The smoke fills a 10- foot cube (treat the effect as a fog cloud spell, except that a moderate or stronger wind dissipates the smoke in 1 round). The stick is consumed after 1 round, and the smoke dissipates naturally.</p>",
-    "shortDescription": "This alchemically treated wooden stick instantly creates thick, opaque smoke when ignited. The smoke fills a 10- foot cube (treat the effect as a fog cloud spell, except that a moderate or stronger wind dissipates the s…",
+    "shortDescription": "Instantly creates a 10-ft. cube of thick, opaque smoke providing total concealment.",
     "tags": [
       "gear",
       "wondrous",
@@ -28708,7 +28721,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "smokeCubeRadiusFt": 10,
+      "grantsConcealment": true,
+      "duration": "1 round/wind"
+    }
   },
   {
     "id": "gear-monks-outfit",
@@ -28979,24 +28996,40 @@
     "foundryId": "CLrtXQqD3oJ2uubQ",
     "schemaVersion": 2,
     "name": "Alchemist’s fire",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Consumable",
+    "category": "Alchemical",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 20,
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>Alchemist&rsquo;s fire is sticky, adhesive substance that ignites when exposed to air. You can throw a flask of alchemist&rsquo;s fire as a splash weapon (see Throw Splash Weapon, page 158). Treat this attack as a ranged touch attack with a range increment of 10 feet. A direct hit deals 1d6 points of fire damage. Every creature within 5 feet of the point where the flask hits takes 1 point of fire damage from the splash. On the round following a direct hit, the target takes an additional 1d6 points of damage. If desired, the target can use a full-round action to attempt to extinguish the flames before taking this additional damage. Extinguishing the flames requires a DC 15 Reflex save. Rolling on the ground provides the target a +2 bonus on the save. Leaping into a lake or magically extinguishing the flames automatically smothers the fire.</p>",
-    "shortDescription": "Alchemist’s fire is sticky, adhesive substance that ignites when exposed to air. You can throw a flask of alchemist’s fire as a splash weapon (see Throw Splash Weapon, page 158). Treat this attack as a ranged touch atta…",
+    "shortDescription": "Ranged touch splash weapon. Deals 1d6 fire damage on direct hit + 1 splash damage; target takes 1d6 fire next round (Reflex DC 15 negates).",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Alchemist's Fire (Direct)"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "splashDamage": 1,
+      "splashType": "Fire",
+      "rangeIncrement": 10,
+      "touchAttack": true,
+      "alchemicalReflexDc": 15,
+      "secondaryBurnDice": "1d6"
+    }
   },
   {
     "id": "gear-warpony",
@@ -29147,24 +29180,39 @@
     "foundryId": "F65wMWPBzQU4TVMZ",
     "schemaVersion": 2,
     "name": "Holy water",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Consumable",
+    "category": "Alchemical",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 25,
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>Holy water damages undead creatures and evil outsiders almost as if it were acid. A flask of holy water can be thrown as a splash weapon (see Throw Splash Weapon, page 158). Treat this attack as a ranged touch attack with a range increment of 10 feet. A flask breaks if thrown against the body of a corporeal creature, but to use it against an incorporeal creature, you must open the flask and pour the holy water out onto the target. Thus, you can douse an incorporeal creature with holy water only if you are adjacent to it. Doing so is a ranged touch attack that does not provoke attacks of opportunity. A direct hit by a flask of holy water deals 2d4 points of damage to an undead creature or an evil outsider. Each such creature within 5 feet of the point where the flask hits takes 1 point of damage from the splash. Temples to good deities sell holy water at cost (making no profit) because the clerics are happy to supply people with what they need to battle evil.</p>",
-    "shortDescription": "Holy water damages undead creatures and evil outsiders almost as if it were acid. A flask of holy water can be thrown as a splash weapon (see Throw Splash Weapon, page 158). Treat this attack as a ranged touch attack wi…",
+    "shortDescription": "Ranged touch splash weapon. Deals 2d6 damage to undead and evil outsiders + 1 splash damage within 5 feet.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Holy",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Holy Water (vs Undead/Evil Outsiders)"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "splashDamage": 1,
+      "splashType": "Holy",
+      "rangeIncrement": 10,
+      "touchAttack": true,
+      "targetRestriction": "Undead or Evil Outsiders"
+    }
   },
   {
     "id": "gear-soap",
@@ -29219,21 +29267,28 @@
     "foundryId": "FSayt67cePY4DpwC",
     "schemaVersion": 2,
     "name": "Alchemist’s lab",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 500,
     "weight": 40,
     "casterLevel": 0,
     "description": "<p>This set of equipment includes beakers, bottles, mixing and measuring containers, and a miscellany of chemicals and substances. An alchemist’s lab always has the perfect tool for making alchemical items, so it provides a +2 circumstance bonus on Craft (alchemy) checks. It has no bearing on the costs related to the Craft (alchemy) skill (page 70). Without this lab, a character with the Craft (alchemy) skill is assumed to have enough tools to use the skill but not enough to get the +2 bonus that the lab provides.</p>",
-    "shortDescription": "This set of equipment includes beakers, bottles, mixing and measuring containers, and a miscellany of chemicals and substances. An alchemist’s lab always has the perfect tool for making alchemical items, so it provides…",
+    "shortDescription": "Full laboratory providing a +2 circumstance bonus on Craft (alchemy) checks.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.craft_alchemy",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -29243,21 +29298,28 @@
     "foundryId": "G2p4z3bVa3c65hpc",
     "schemaVersion": 2,
     "name": "Exotic Saddle, Military",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 60,
     "weight": 40,
     "casterLevel": 0,
     "description": "<p>An exotic saddle is like a normal saddle of the same sort except that it is designed for an unusual mount, such as a hippogriff. Exotic saddles come in military, pack, and riding styles.</p>\n<p>A military saddle braces the rider, providing a +2 circumstance bonus on Ride checks related to staying in the saddle. If you’re knocked unconscious while in a military saddle, you have a 75% chance to stay in the saddle (compared to 50% for a riding saddle).</p>",
-    "shortDescription": "An exotic saddle is like a normal saddle of the same sort except that it is designed for an unusual mount, such as a hippogriff. Exotic saddles come in military, pack, and riding styles. A military saddle braces the rid…",
+    "shortDescription": "Braced exotic saddle granting a +2 circumstance bonus on Ride checks to stay in the saddle.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.ride",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": "staying in the saddle"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -29267,15 +29329,15 @@
     "foundryId": "HI9wuR45EdpUP5U2",
     "schemaVersion": 2,
     "name": "Pouch, Spell Component",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Spell Focus",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 5,
     "weight": 2,
     "casterLevel": 0,
     "description": "<p>This small, watertight leather belt pouch has many compartments. A spellcaster with a spell component pouch is assumed to have all the material components and focuses needed for spellcasting, except for those components that have a specific cost, divine focuses, and focuses that wouldn’t fit in a pouch (such as the natural pool that a druid needs to look into to cast scrying).</p>",
-    "shortDescription": "This small, watertight leather belt pouch has many compartments. A spellcaster with a spell component pouch is assumed to have all the material components and focuses needed for spellcasting, except for those components…",
+    "shortDescription": "Watertight leather pouch holding all required spell components without specific gp costs.",
     "tags": [
       "gear",
       "wondrous",
@@ -29284,7 +29346,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "spellComponentFocus": true
+    }
   },
   {
     "id": "gear-ink-1-oz-vial",
@@ -29411,15 +29475,15 @@
     "foundryId": "JPR4dAKnUbJFsvMi",
     "schemaVersion": 2,
     "name": "Thieves’ tools",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 30,
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>This kit contains the tools you need to use the Disable Device and Open Lock skills. The kit includes one or more skeleton keys, long metal picks and pries, a long-nosed clamp, a small hand saw, and a small wedge and hammer. Without these tools, you must improvise tools, and you take a –2 circumstance penalty on Disable Device and Open Locks checks.</p>",
-    "shortDescription": "This kit contains the tools you need to use the Disable Device and Open Lock skills. The kit includes one or more skeleton keys, long metal picks and pries, a long-nosed clamp, a small hand saw, and a small wedge and ha…",
+    "shortDescription": "Essential tools needed to pick locks and disarm traps without the -2 improvised penalty.",
     "tags": [
       "gear",
       "wondrous",
@@ -29428,28 +29492,43 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "eliminatesImprovisedPenalty": true
+    }
   },
   {
     "id": "gear-thieves-tools-masterworked",
     "foundryId": "JPR4dAdnUbJFsvMi",
     "schemaVersion": 2,
     "name": "Thieves’ tools masterworked",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 100,
     "weight": 2,
     "casterLevel": 0,
     "description": "<p>This kit contains extra tools and tools of better make, which grant a +2 circumstance bonus on Disable Device and Open Lock checks.</p>",
-    "shortDescription": "This kit contains extra tools and tools of better make, which grant a +2 circumstance bonus on Disable Device and Open Lock checks.",
+    "shortDescription": "Masterwork lockpicks and probes granting a +2 circumstance bonus on Disable Device and Open Lock checks.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.disable_device",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": null
+      },
+      {
+        "target": "skill.open_lock",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -29483,24 +29562,33 @@
     "foundryId": "K8dnv2zsyiZ2wSxp",
     "schemaVersion": 2,
     "name": "Healer’s kit",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 50,
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>This kit is full of herbs, salves, bandages and other useful materials. It is the perfect tool for healing and provides a +2 circumstance bonus on Heal checks. A healer’s kit is exhausted after ten uses.</p>",
-    "shortDescription": "This kit is full of herbs, salves, bandages and other useful materials. It is the perfect tool for healing and provides a +2 circumstance bonus on Heal checks. A healer’s kit is exhausted after ten uses.",
+    "shortDescription": "Bandages, salves, and splints granting a +2 circumstance bonus on Heal checks (10 uses).",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.heal",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "charges": 10
+    }
   },
   {
     "id": "gear-entertainers-outfit",
@@ -29819,39 +29907,49 @@
     "foundryId": "RwSypkdSKQsFhTfL",
     "schemaVersion": 2,
     "name": "Antitoxin",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Consumable",
+    "category": "Alchemical",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 50,
     "weight": 0,
     "casterLevel": 0,
     "description": "<p>If you drink antitoxin, you get a +5 alchemical bonus on Fortitude saving throws against poison for 1 hour.</p>",
-    "shortDescription": "If you drink antitoxin, you get a +5 alchemical bonus on Fortitude saving throws against poison for 1 hour.",
+    "shortDescription": "Drinking grants a +5 alchemical bonus on Fortitude saves against poison for 1 hour.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "save.fort",
+        "value": 5,
+        "type": "Alchemical",
+        "condition": "vs poison for 1 hour"
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "duration": "1 hour",
+      "alchemicalBonus": true
+    }
   },
   {
     "id": "gear-thunderstone",
     "foundryId": "Rwwll19LISUgCJIA",
     "schemaVersion": 2,
     "name": "Thunderstone",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Consumable",
+    "category": "Alchemical",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 0,
     "weight": 0,
     "casterLevel": 0,
     "description": "<p>You can throw this stone as a ranged attack with a range increment of 20 feet. When it strikes a hard surface (or is struck hard), it creates a deafening bang that is treated as a sonic attack. Each creature within a 10-foot-radius spread must make a DC 15 Fortitude save or be deafened for 1 hour. A deafened creature, in addition to the obvious effects, takes a &ndash;4 penalty on initiative and has a 20% chance to miscast and lose any spell with a verbal component that it tries to cast. Since you don&rsquo;t need to hit a specific target, you can simply aim at a particular 5-foot square. Treat the target square as AC 5; if you miss, see Throw Splash Weapon, page 158, to determine where the thunderstone lands.</p>",
-    "shortDescription": "You can throw this stone as a ranged attack with a range increment of 20 feet. When it strikes a hard surface (or is struck hard), it creates a deafening bang that is treated as a sonic attack. Each creature within a 10…",
+    "shortDescription": "Thrown item. Detonates in a deafening bang; all creatures within 10 ft. must pass DC 15 Fortitude save or be deafened for 1 hour.",
     "tags": [
       "gear",
       "wondrous",
@@ -29860,7 +29958,14 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "rangeIncrement": 20,
+      "blastRadiusFt": 10,
+      "fortDc": 15,
+      "deafenedDuration": "1 hour",
+      "initPenalty": -4,
+      "spellFailurePercent": 20
+    }
   },
   {
     "id": "gear-lock-average",
@@ -29891,15 +29996,15 @@
     "foundryId": "SAvVbqQVGTIxUi6f",
     "schemaVersion": 2,
     "name": "Torch, Everburning",
-    "type": "Gear",
-    "category": "Other",
+    "type": "Tool",
+    "category": "Alchemical",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 110,
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>This otherwise normal torch has a <a class=\"entity-link\" draggable=\"true\" data-pack=\"D35E.spells\" data-id=\"V13HaBxmB2REfcP3\"><i class=\"fas fa-suitcase\"></i> Continual Flame </a> spell cast upon it. An everburning torch clearly illuminates a 20-foot radius and provides shadowy illumination out to a 40-foot radius.</p>",
-    "shortDescription": "This otherwise normal torch has a Continual Flame spell cast upon it. An everburning torch clearly illuminates a 20-foot radius and provides shadowy illumination out to a 40-foot radius.",
+    "shortDescription": "Shines like a normal torch (20-ft. bright, 40-ft. shadowy), but produces no heat and does not burn out.",
     "tags": [
       "gear",
       "other",
@@ -29908,7 +30013,12 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "continuousLight": true,
+      "brightIlluminationFt": 20,
+      "shadowyIlluminationFt": 40,
+      "heat": false
+    }
   },
   {
     "id": "gear-lantern-bullseye",
@@ -29939,21 +30049,28 @@
     "foundryId": "SoV9cuiXxis6qEwh",
     "schemaVersion": 2,
     "name": "Scale, merchant’s",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 2,
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>This scale includes a small balance and pans, plus a suitable assortment of weights. A scale grants a +2 circumstance bonus on Appraise checks involving items that are valued by weight, including anything made of precious metals.</p>",
-    "shortDescription": "This scale includes a small balance and pans, plus a suitable assortment of weights. A scale grants a +2 circumstance bonus on Appraise checks involving items that are valued by weight, including anything made of precio…",
+    "shortDescription": "Grants a +2 circumstance bonus on Appraise checks involving precious metals or items valued by weight.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.appraise",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": "items valued by weight"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -29987,21 +30104,28 @@
     "foundryId": "U3a9kPCuYYPhpFXQ",
     "schemaVersion": 2,
     "name": "Saddle, Military",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 20,
     "weight": 30,
     "casterLevel": 0,
     "description": "<p>A military saddle braces the rider, providing a +2 circumstance bonus on Ride checks related to staying in the saddle. If you&rsquo;re knocked unconscious while in a military saddle, you have a 75% chance to stay in the saddle (compared to 50% for a riding saddle).</p>",
-    "shortDescription": "A military saddle braces the rider, providing a +2 circumstance bonus on Ride checks related to staying in the saddle. If you’re knocked unconscious while in a military saddle, you have a 75% chance to stay in the saddl…",
+    "shortDescription": "Braced military saddle granting a +2 circumstance bonus on Ride checks to stay in the saddle.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.ride",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": "staying in the saddle"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -30083,21 +30207,28 @@
     "foundryId": "YfJhoNHfyYYdRpEA",
     "schemaVersion": 2,
     "name": "Climber’s kit",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 80,
     "weight": 5,
     "casterLevel": 0,
     "description": "<p>A climber’s kit includes special pitons, boot tips, gloves, and a harness that aids in all sorts of climbing. This is the perfect tool for climbing and gives you a +2 circumstance bonus on Climb checks.</p>",
-    "shortDescription": "A climber’s kit includes special pitons, boot tips, gloves, and a harness that aids in all sorts of climbing. This is the perfect tool for climbing and gives you a +2 circumstance bonus on Climb checks.",
+    "shortDescription": "Special pitons, boot spikes, and harness granting a +2 circumstance bonus on Climb checks.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.climb",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -30179,21 +30310,28 @@
     "foundryId": "ZP3XWngyyWP79Uee",
     "schemaVersion": 2,
     "name": "Cold weather outfit",
-    "type": "Gear",
-    "category": "Wondrous",
-    "slot": "Slotless",
+    "type": "Tool",
+    "category": "Clothing",
+    "slot": "Torso",
     "source": "SRD 3.5e",
     "cost": 8,
     "weight": 7,
     "casterLevel": 0,
     "description": "<p>A cold weather outfit includes a wool coat, linen shirt, wool cap, heavy cloak, thick pants or skirt, and boots. This outfit grants a +5 circumstance bonus on Fortitude saving throws against exposure to cold weather (see the Dungeon Master’s Guide for information on cold dangers).</p>",
-    "shortDescription": "A cold weather outfit includes a wool coat, linen shirt, wool cap, heavy cloak, thick pants or skirt, and boots. This outfit grants a +5 circumstance bonus on Fortitude saving throws against exposure to cold weather (se…",
+    "shortDescription": "Heavy furs and insulated wool granting a +5 circumstance bonus on Fortitude saves against cold.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "save.fort",
+        "value": 5,
+        "type": "Circumstance",
+        "condition": "vs cold weather exposure"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -30227,15 +30365,15 @@
     "foundryId": "Zx6lcY4b2M3MGtM1",
     "schemaVersion": 2,
     "name": "Sunrod",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Consumable",
+    "category": "Alchemical",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 2,
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>This 1-foot-long, gold-tipped, iron rod glows brightly when struck. It clearly illuminates a 30-foot radius and provides shadowy illumination in a 60-foot radius. It glows for 6 hours, after which the gold tip is burned out and worthless. See pages 164 for more rules on illumination.</p>",
-    "shortDescription": "This 1-foot-long, gold-tipped, iron rod glows brightly when struck. It clearly illuminates a 30-foot radius and provides shadowy illumination in a 60-foot radius. It glows for 6 hours, after which the gold tip is burned…",
+    "shortDescription": "Sheds gold-tinted glow (30-ft. bright light, 60-ft. shadowy) for 6 hours.",
     "tags": [
       "gear",
       "wondrous",
@@ -30244,7 +30382,11 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "brightIlluminationFt": 30,
+      "shadowyIlluminationFt": 60,
+      "durationHours": 6
+    }
   },
   {
     "id": "gear-whetstone",
@@ -30299,15 +30441,15 @@
     "foundryId": "abNMnT7mncirrtcS",
     "schemaVersion": 2,
     "name": "Tanglefoot Bag",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Consumable",
+    "category": "Alchemical",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 50,
     "weight": 4,
     "casterLevel": 0,
     "description": "<p>This round leather bag is full of alchemical goo. When you throw a tanglefoot bag at a creature (as a ranged touch attack with a range increment of 10 feet), the bag comes apart and the goo bursts out, entangling the target and then becoming tough and resilient upon exposure to air. An entangled creature takes a –2 penalty on attack rolls and a –4 penalty to Dexterity and must make a DC 15 Reflex save or be glued to the floor, unable to move. Even on a successful save, it can move only at half speed. Huge or larger creatures are unaffected by a tanglefoot bag. A flying creature is not stuck to the floor, but it must make a DC 15 Reflex save or be unable to fly (assuming it uses its wings to fly) and fall to the ground. A tanglefoot bag does not function underwater. A creature that is glued to the floor (or unable to fly) can break free by making a DC 17 Strength check or by dealing 15 points of damage to the goo with a slashing weapon. A creature trying to scrape goo off itself, or another creature assisting, does not need to make an attack roll; hitting the goo is automatic, after which the creature that hit makes a damage roll to see how much of the goo was scraped off. Once free, the creature can move (including flying) at half speed. A character capable of spellcasting who is bound by the goo must make a DC 15 Concentration check to cast a spell. The goo becomes brittle and fragile after 2d4 rounds, cracking apart and losing its effectiveness. An application of universal solvent (see page 268 of the Dungeon Master’s Guide) to a stuck creature dissolves the alchemical goo immediately.</p>",
-    "shortDescription": "This round leather bag is full of alchemical goo. When you throw a tanglefoot bag at a creature (as a ranged touch attack with a range increment of 10 feet), the bag comes apart and the goo bursts out, entangling the ta…",
+    "shortDescription": "Ranged touch weapon. Entangles target (-2 attack, -4 Dex, half speed). DC 15 Reflex save or glued to floor.",
     "tags": [
       "gear",
       "wondrous",
@@ -30316,7 +30458,14 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "rangeIncrement": 10,
+      "touchAttack": true,
+      "reflexDc": 15,
+      "entangleAttackPenalty": -2,
+      "entangleDexPenalty": -4,
+      "halfSpeed": true
+    }
   },
   {
     "id": "gear-inkpen",
@@ -30371,15 +30520,15 @@
     "foundryId": "f7Qa9po7YqpmZEg7",
     "schemaVersion": 2,
     "name": "Musical instrument, common",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 5,
     "weight": 3,
     "casterLevel": 0,
     "description": "<p>Popular instruments include the fife, recorder, lute, mandolin, and shawm. A masterwork instrument grants a +2 circumstance bonus on Perform checks involving its use.</p>",
-    "shortDescription": "Popular instruments include the fife, recorder, lute, mandolin, and shawm. A masterwork instrument grants a +2 circumstance bonus on Perform checks involving its use.",
+    "shortDescription": "Standard instrument of typical manufacture for bardic music or performances.",
     "tags": [
       "gear",
       "wondrous",
@@ -30755,24 +30904,33 @@
     "foundryId": "mufn7Y8fChmsyw5s",
     "schemaVersion": 2,
     "name": "Disguise kit",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 50,
     "weight": 8,
     "casterLevel": 0,
     "description": "<p>This bag contains cosmetics, hair dye, and small physical props. The kit is the perfect tool for disguise and provides a +2 circumstance bonus on Disguise checks. A disguise kit is exhausted after ten uses.</p>",
-    "shortDescription": "This bag contains cosmetics, hair dye, and small physical props. The kit is the perfect tool for disguise and provides a +2 circumstance bonus on Disguise checks. A disguise kit is exhausted after ten uses.",
+    "shortDescription": "Cosmetics, false hair, and costume props granting a +2 circumstance bonus on Disguise checks (10 uses).",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.disguise",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "charges": 10
+    }
   },
   {
     "id": "gear-fishing-net-25-sq-ft",
@@ -30875,21 +31033,28 @@
     "foundryId": "qW6YLVqWnW2aKmdT",
     "schemaVersion": 2,
     "name": "Rope, silk, 1m.",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 0.6,
     "weight": 0.3,
     "casterLevel": 0,
     "description": "<p>This rope has 4 hit points and can be burst with a DC 24 Strength check. It is so supple that it provides a +2 circumstance bonus on Use Rope checks.</p>",
-    "shortDescription": "This rope has 4 hit points and can be burst with a DC 24 Strength check. It is so supple that it provides a +2 circumstance bonus on Use Rope checks.",
+    "shortDescription": "Strong silk rope (50 ft.) granting a +2 circumstance bonus on Use Rope checks.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.use_rope",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -31067,15 +31232,15 @@
     "foundryId": "sUAwgYTHuUjZLP8i",
     "schemaVersion": 2,
     "name": "Holy symbol, wooden",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Divine Focus",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 1,
     "weight": 0,
     "casterLevel": 0,
     "description": "<p>A holy symbol focuses positive energy. A cleric or paladin uses it as the focus for his spells and as a tool for turning undead. Each religion has its own holy symbol, and a sun symbol is the default holy symbol for clerics not associated with any particular religion. A silver holy symbol works no better than a wooden one, but it serves as a mark of status for the wielder. Unholy Symbols: An unholy symbol is like a holy symbol except that it focuses negative energy and is used by evil clerics (or by neutral clerics who want to cast evil spells or command undead). A skull is the default unholy symbol for clerics not associated with any particular religion.</p>",
-    "shortDescription": "A holy symbol focuses positive energy. A cleric or paladin uses it as the focus for his spells and as a tool for turning undead. Each religion has its own holy symbol, and a sun symbol is the default holy symbol for cle…",
+    "shortDescription": "A carved wooden holy symbol required to channel divine spells and turn undead.",
     "tags": [
       "gear",
       "wondrous",
@@ -31084,7 +31249,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "divineFocus": true
+    }
   },
   {
     "id": "gear-bucket",
@@ -31139,21 +31306,28 @@
     "foundryId": "tGUSwP6gLIqsiEE8",
     "schemaVersion": 2,
     "name": "Backpack, Masterwork",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 50,
     "weight": 4,
     "casterLevel": 0,
     "description": "<p>A backpack is a leather pack carried on the back, typically with straps to secure it. </p>\n<p>The masterworked backpack makes the players strength score count as if it was one higher.</p>",
-    "shortDescription": "A backpack is a leather pack carried on the back, typically with straps to secure it. The masterworked backpack makes the players strength score count as if it was one higher.",
+    "shortDescription": "Ergonomic frame that treats the wearer’s Strength as 1 point higher for carrying capacity.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "carryingCapacity.strBonus",
+        "value": 1,
+        "type": "Circumstance",
+        "condition": "carrying capacity calculations"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -31163,21 +31337,28 @@
     "foundryId": "tPue8zCeebNuWVXv",
     "schemaVersion": 2,
     "name": "Magnifying glass",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 100,
     "weight": 0,
     "casterLevel": 0,
     "description": "<p>This simple lens allows a closer look at small objects. It is also useful as a substitute for flint and steel when starting fires. Lighting a fire with a magnifying glass requires light as bright as sunlight to focus, tinder to ignite, and at least a full-round action. A magnifying glass grants a +2 circumstance bonus on Appraise checks involving any item that is small or highly detailed, such as a gem.</p>",
-    "shortDescription": "This simple lens allows a closer look at small objects. It is also useful as a substitute for flint and steel when starting fires. Lighting a fire with a magnifying glass requires light as bright as sunlight to focus, t…",
+    "shortDescription": "Grants a +2 circumstance bonus on Appraise checks involving small or highly detailed items.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.appraise",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": "detailed or small objects"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -31211,39 +31392,53 @@
     "foundryId": "ukJMYFrrvECT4dPv",
     "schemaVersion": 2,
     "name": "Acid",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Consumable",
+    "category": "Alchemical",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 10,
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>You can throw a flask of acid as a splash weapon (see Throw Splash Weapon, page 158). Treat this attack as a ranged touch attack with a range increment of 10 feet. A direct hit deals 1d6 points of acid damage. Every creature within 5 feet of the point where the acid hits takes 1 point of acid damage from the splash.</p>",
-    "shortDescription": "You can throw a flask of acid as a splash weapon (see Throw Splash Weapon, page 158). Treat this attack as a ranged touch attack with a range increment of 10 feet. A direct hit deals 1d6 points of acid damage. Every cre…",
+    "shortDescription": "Ranged touch splash weapon. Deals 1d6 acid damage on direct hit + 1 acid splash damage within 5 feet.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Acid",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Acid (Direct)"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "splashDamage": 1,
+      "splashType": "Acid",
+      "rangeIncrement": 10,
+      "touchAttack": true
+    }
   },
   {
     "id": "gear-artisans-tools",
     "foundryId": "uzCh6mMKPydadcCz",
     "schemaVersion": 2,
     "name": "Artisan’s tools",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 5,
     "weight": 5,
     "casterLevel": 0,
     "description": "<p>These special tools include the items needed to pursue any craft. Without them, you have to use improvised tools (&ndash; 2 penalty on Craft checks), if you can do the job at all.</p>",
-    "shortDescription": "These special tools include the items needed to pursue any craft. Without them, you have to use improvised tools (– 2 penalty on Craft checks), if you can do the job at all.",
+    "shortDescription": "Standard tools needed to practice any Craft skill without the -2 improvised penalty.",
     "tags": [
       "gear",
       "wondrous",
@@ -31252,7 +31447,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "eliminatesImprovisedPenalty": true
+    }
   },
   {
     "id": "gear-donkey-or-mule",
@@ -31331,21 +31528,28 @@
     "foundryId": "wns8KNLGtTHxyb8e",
     "schemaVersion": 2,
     "name": "Musical instrument, masterworked",
-    "type": "Gear",
-    "category": "Wondrous",
+    "type": "Tool",
+    "category": "Tool",
     "slot": "Slotless",
     "source": "SRD 3.5e",
     "cost": 100,
     "weight": 3,
     "casterLevel": 0,
     "description": "<p>Popular instruments include the fife, recorder, lute, mandolin, and shawm. A masterwork instrument grants a +2 circumstance bonus on Perform checks involving its use.</p>",
-    "shortDescription": "Popular instruments include the fife, recorder, lute, mandolin, and shawm. A masterwork instrument grants a +2 circumstance bonus on Perform checks involving its use.",
+    "shortDescription": "Masterwork instrument providing a +2 circumstance bonus on Perform checks with it.",
     "tags": [
       "gear",
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.perform",
+        "value": 2,
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -32147,5 +32351,857 @@
       }
     ],
     "modes": []
+  },
+  {
+    "id": "gear-unholy-water",
+    "foundryId": "gen_unholy_water_phb",
+    "schemaVersion": 2,
+    "name": "Unholy water",
+    "type": "Consumable",
+    "category": "Alchemical",
+    "slot": "Slotless",
+    "source": "SRD 3.5e",
+    "cost": 25,
+    "weight": 1,
+    "casterLevel": 0,
+    "description": "<p>Unholy water damages good outsiders almost like acid damages normal creatures. A flask of unholy water can be thrown as a splash weapon (ranged touch attack with 10-ft. range increment). A direct hit deals 2d6 points of damage to a good outsider. Each creature within 5 feet of the point where the flask hits takes 1 point of splash damage.</p>",
+    "shortDescription": "Ranged touch splash weapon. Deals 2d6 damage to good outsiders + 1 splash damage within 5 feet.",
+    "tags": [
+      "gear",
+      "consumable",
+      "alchemical",
+      "splash"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Unholy",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Unholy Water (vs Good Outsiders)"
+      }
+    ],
+    "modes": [],
+    "ruleFlags": {
+      "splashDamage": 1,
+      "splashType": "Unholy",
+      "rangeIncrement": 10,
+      "touchAttack": true,
+      "targetRestriction": "Good Outsiders"
+    }
+  },
+  {
+    "id": "psn-nitharit",
+    "foundryId": "rsrd_psn_nitharit",
+    "schemaVersion": 2,
+    "name": "Poison (Nitharit)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 650,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Contact (Fortitude DC 13)<br/><b>Initial Damage:</b> 0<br/><b>Secondary Damage:</b> 3d6 Con</p>",
+    "shortDescription": "Contact poison (DC 13 Fortitude). Initial: 0, Secondary: 3d6 Con.",
+    "tags": [
+      "poison",
+      "consumable",
+      "contact"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Contact",
+      "fortDc": 13,
+      "initialEffect": "0",
+      "secondaryEffect": "3d6 Con"
+    }
+  },
+  {
+    "id": "psn-sassone-leaf-residue",
+    "foundryId": "rsrd_psn_sassone_leaf_residue",
+    "schemaVersion": 2,
+    "name": "Poison (Sassone Leaf Residue)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 300,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Contact (Fortitude DC 16)<br/><b>Initial Damage:</b> 2d12 hp<br/><b>Secondary Damage:</b> 1d6 Con</p>",
+    "shortDescription": "Contact poison (DC 16 Fortitude). Initial: 2d12 hp, Secondary: 1d6 Con.",
+    "tags": [
+      "poison",
+      "consumable",
+      "contact"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Contact",
+      "fortDc": 16,
+      "initialEffect": "2d12 hp",
+      "secondaryEffect": "1d6 Con"
+    }
+  },
+  {
+    "id": "psn-malyss-root-paste",
+    "foundryId": "rsrd_psn_malyss_root_paste",
+    "schemaVersion": 2,
+    "name": "Poison (Malyss Root Paste)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 500,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Contact (Fortitude DC 16)<br/><b>Initial Damage:</b> 1 Dex<br/><b>Secondary Damage:</b> 2d4 Dex</p>",
+    "shortDescription": "Contact poison (DC 16 Fortitude). Initial: 1 Dex, Secondary: 2d4 Dex.",
+    "tags": [
+      "poison",
+      "consumable",
+      "contact"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Contact",
+      "fortDc": 16,
+      "initialEffect": "1 Dex",
+      "secondaryEffect": "2d4 Dex"
+    }
+  },
+  {
+    "id": "psn-terinav-root",
+    "foundryId": "rsrd_psn_terinav_root",
+    "schemaVersion": 2,
+    "name": "Poison (Terinav Root)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 750,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Contact (Fortitude DC 16)<br/><b>Initial Damage:</b> 1d6 Dex<br/><b>Secondary Damage:</b> 2d6 Dex</p>",
+    "shortDescription": "Contact poison (DC 16 Fortitude). Initial: 1d6 Dex, Secondary: 2d6 Dex.",
+    "tags": [
+      "poison",
+      "consumable",
+      "contact"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Contact",
+      "fortDc": 16,
+      "initialEffect": "1d6 Dex",
+      "secondaryEffect": "2d6 Dex"
+    }
+  },
+  {
+    "id": "psn-black-lotus-extract",
+    "foundryId": "rsrd_psn_black_lotus_extract",
+    "schemaVersion": 2,
+    "name": "Poison (Black Lotus Extract)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 4500,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Contact (Fortitude DC 20)<br/><b>Initial Damage:</b> 3d6 Con<br/><b>Secondary Damage:</b> 3d6 Con</p>",
+    "shortDescription": "Contact poison (DC 20 Fortitude). Initial: 3d6 Con, Secondary: 3d6 Con.",
+    "tags": [
+      "poison",
+      "consumable",
+      "contact"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Contact",
+      "fortDc": 20,
+      "initialEffect": "3d6 Con",
+      "secondaryEffect": "3d6 Con"
+    }
+  },
+  {
+    "id": "psn-dragon-bile",
+    "foundryId": "rsrd_psn_dragon_bile",
+    "schemaVersion": 2,
+    "name": "Poison (Dragon Bile)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 1500,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Contact (Fortitude DC 26)<br/><b>Initial Damage:</b> 3d6 Str<br/><b>Secondary Damage:</b> 0</p>",
+    "shortDescription": "Contact poison (DC 26 Fortitude). Initial: 3d6 Str, Secondary: 0.",
+    "tags": [
+      "poison",
+      "consumable",
+      "contact"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Contact",
+      "fortDc": 26,
+      "initialEffect": "3d6 Str",
+      "secondaryEffect": "0"
+    }
+  },
+  {
+    "id": "psn-striped-toadstool",
+    "foundryId": "rsrd_psn_striped_toadstool",
+    "schemaVersion": 2,
+    "name": "Poison (Striped Toadstool)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 180,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Ingested (Fortitude DC 11)<br/><b>Initial Damage:</b> 1 Wis<br/><b>Secondary Damage:</b> 2d6 Wis + 1d4 Int</p>",
+    "shortDescription": "Ingested poison (DC 11 Fortitude). Initial: 1 Wis, Secondary: 2d6 Wis + 1d4 Int.",
+    "tags": [
+      "poison",
+      "consumable",
+      "ingested"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Ingested",
+      "fortDc": 11,
+      "initialEffect": "1 Wis",
+      "secondaryEffect": "2d6 Wis + 1d4 Int"
+    }
+  },
+  {
+    "id": "psn-arsenic",
+    "foundryId": "rsrd_psn_arsenic",
+    "schemaVersion": 2,
+    "name": "Poison (Arsenic)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 120,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Ingested (Fortitude DC 13)<br/><b>Initial Damage:</b> 1 Con<br/><b>Secondary Damage:</b> 1d8 Con</p>",
+    "shortDescription": "Ingested poison (DC 13 Fortitude). Initial: 1 Con, Secondary: 1d8 Con.",
+    "tags": [
+      "poison",
+      "consumable",
+      "ingested"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Ingested",
+      "fortDc": 13,
+      "initialEffect": "1 Con",
+      "secondaryEffect": "1d8 Con"
+    }
+  },
+  {
+    "id": "psn-id-moss",
+    "foundryId": "rsrd_psn_id_moss",
+    "schemaVersion": 2,
+    "name": "Poison (Id Moss)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 125,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Ingested (Fortitude DC 14)<br/><b>Initial Damage:</b> 1d4 Int<br/><b>Secondary Damage:</b> 2d6 Int</p>",
+    "shortDescription": "Ingested poison (DC 14 Fortitude). Initial: 1d4 Int, Secondary: 2d6 Int.",
+    "tags": [
+      "poison",
+      "consumable",
+      "ingested"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Ingested",
+      "fortDc": 14,
+      "initialEffect": "1d4 Int",
+      "secondaryEffect": "2d6 Int"
+    }
+  },
+  {
+    "id": "psn-oil-of-taggit",
+    "foundryId": "rsrd_psn_oil_of_taggit",
+    "schemaVersion": 2,
+    "name": "Poison (Oil of Taggit)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 90,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Ingested (Fortitude DC 15)<br/><b>Initial Damage:</b> 0<br/><b>Secondary Damage:</b> Unconsciousness</p>",
+    "shortDescription": "Ingested poison (DC 15 Fortitude). Initial: 0, Secondary: Unconsciousness.",
+    "tags": [
+      "poison",
+      "consumable",
+      "ingested"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Ingested",
+      "fortDc": 15,
+      "initialEffect": "0",
+      "secondaryEffect": "Unconsciousness"
+    }
+  },
+  {
+    "id": "psn-lich-dust",
+    "foundryId": "rsrd_psn_lich_dust",
+    "schemaVersion": 2,
+    "name": "Poison (Lich Dust)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 250,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Ingested (Fortitude DC 17)<br/><b>Initial Damage:</b> 2d6 Str<br/><b>Secondary Damage:</b> 1d6 Str</p>",
+    "shortDescription": "Ingested poison (DC 17 Fortitude). Initial: 2d6 Str, Secondary: 1d6 Str.",
+    "tags": [
+      "poison",
+      "consumable",
+      "ingested"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Ingested",
+      "fortDc": 17,
+      "initialEffect": "2d6 Str",
+      "secondaryEffect": "1d6 Str"
+    }
+  },
+  {
+    "id": "psn-dark-reaver-powder",
+    "foundryId": "rsrd_psn_dark_reaver_powder",
+    "schemaVersion": 2,
+    "name": "Poison (Dark Reaver Powder)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 300,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Ingested (Fortitude DC 18)<br/><b>Initial Damage:</b> 2d6 Con<br/><b>Secondary Damage:</b> 1d6 Con + 1d6 Str</p>",
+    "shortDescription": "Ingested poison (DC 18 Fortitude). Initial: 2d6 Con, Secondary: 1d6 Con + 1d6 Str.",
+    "tags": [
+      "poison",
+      "consumable",
+      "ingested"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Ingested",
+      "fortDc": 18,
+      "initialEffect": "2d6 Con",
+      "secondaryEffect": "1d6 Con + 1d6 Str"
+    }
+  },
+  {
+    "id": "psn-ungol-dust",
+    "foundryId": "rsrd_psn_ungol_dust",
+    "schemaVersion": 2,
+    "name": "Poison (Ungol Dust)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 1000,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Inhaled (Fortitude DC 15)<br/><b>Initial Damage:</b> 1 Cha<br/><b>Secondary Damage:</b> 1d6 Cha + 1 Cha drain</p>",
+    "shortDescription": "Inhaled poison (DC 15 Fortitude). Initial: 1 Cha, Secondary: 1d6 Cha + 1 Cha drain.",
+    "tags": [
+      "poison",
+      "consumable",
+      "inhaled"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Inhaled",
+      "fortDc": 15,
+      "initialEffect": "1 Cha",
+      "secondaryEffect": "1d6 Cha + 1 Cha drain"
+    }
+  },
+  {
+    "id": "psn-insanity-mist",
+    "foundryId": "rsrd_psn_insanity_mist",
+    "schemaVersion": 2,
+    "name": "Poison (Insanity Mist)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 1500,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Inhaled (Fortitude DC 15)<br/><b>Initial Damage:</b> 1d4 Wis<br/><b>Secondary Damage:</b> 2d6 Wis</p>",
+    "shortDescription": "Inhaled poison (DC 15 Fortitude). Initial: 1d4 Wis, Secondary: 2d6 Wis.",
+    "tags": [
+      "poison",
+      "consumable",
+      "inhaled"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Inhaled",
+      "fortDc": 15,
+      "initialEffect": "1d4 Wis",
+      "secondaryEffect": "2d6 Wis"
+    }
+  },
+  {
+    "id": "psn-burnt-othur-fumes",
+    "foundryId": "rsrd_psn_burnt_othur_fumes",
+    "schemaVersion": 2,
+    "name": "Poison (Burnt Othur Fumes)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 2100,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Inhaled (Fortitude DC 18)<br/><b>Initial Damage:</b> 1 Con drain<br/><b>Secondary Damage:</b> 3d6 Con</p>",
+    "shortDescription": "Inhaled poison (DC 18 Fortitude). Initial: 1 Con drain, Secondary: 3d6 Con.",
+    "tags": [
+      "poison",
+      "consumable",
+      "inhaled"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Inhaled",
+      "fortDc": 18,
+      "initialEffect": "1 Con drain",
+      "secondaryEffect": "3d6 Con"
+    }
+  },
+  {
+    "id": "psn-black-adder-venom",
+    "foundryId": "rsrd_psn_black_adder_venom",
+    "schemaVersion": 2,
+    "name": "Poison (Black Adder Venom)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 120,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 11)<br/><b>Initial Damage:</b> 1d6 Con<br/><b>Secondary Damage:</b> 1d6 Con</p>",
+    "shortDescription": "Injury poison (DC 11 Fortitude). Initial: 1d6 Con, Secondary: 1d6 Con.",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 11,
+      "initialEffect": "1d6 Con",
+      "secondaryEffect": "1d6 Con"
+    }
+  },
+  {
+    "id": "psn-small-centipede-poison",
+    "foundryId": "rsrd_psn_small_centipede_poison",
+    "schemaVersion": 2,
+    "name": "Poison (Small Centipede Poison)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 90,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 11)<br/><b>Initial Damage:</b> 1d2 Dex<br/><b>Secondary Damage:</b> 1d2 Dex</p>",
+    "shortDescription": "Injury poison (DC 11 Fortitude). Initial: 1d2 Dex, Secondary: 1d2 Dex.",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 11,
+      "initialEffect": "1d2 Dex",
+      "secondaryEffect": "1d2 Dex"
+    }
+  },
+  {
+    "id": "psn-bloodroot",
+    "foundryId": "rsrd_psn_bloodroot",
+    "schemaVersion": 2,
+    "name": "Poison (Bloodroot)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 100,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 12)<br/><b>Initial Damage:</b> 0<br/><b>Secondary Damage:</b> 1d4 Con + 1d3 Wis</p>",
+    "shortDescription": "Injury poison (DC 12 Fortitude). Initial: 0, Secondary: 1d4 Con + 1d3 Wis.",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 12,
+      "initialEffect": "0",
+      "secondaryEffect": "1d4 Con + 1d3 Wis"
+    }
+  },
+  {
+    "id": "psn-drow-poison",
+    "foundryId": "rsrd_psn_drow_poison",
+    "schemaVersion": 2,
+    "name": "Poison (Drow Poison)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 75,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 13)<br/><b>Initial Damage:</b> Unconsciousness (1 min)<br/><b>Secondary Damage:</b> Unconsciousness (2d4 hours)</p>",
+    "shortDescription": "Injury poison (DC 13 Fortitude). Initial: Unconsciousness (1 min), Secondary: Unconsciousness (2d4 hours).",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 13,
+      "initialEffect": "Unconsciousness (1 min)",
+      "secondaryEffect": "Unconsciousness (2d4 hours)"
+    }
+  },
+  {
+    "id": "psn-greenblood-oil",
+    "foundryId": "rsrd_psn_greenblood_oil",
+    "schemaVersion": 2,
+    "name": "Poison (Greenblood Oil)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 100,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 13)<br/><b>Initial Damage:</b> 1 Con<br/><b>Secondary Damage:</b> 1d2 Con</p>",
+    "shortDescription": "Injury poison (DC 13 Fortitude). Initial: 1 Con, Secondary: 1d2 Con.",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 13,
+      "initialEffect": "1 Con",
+      "secondaryEffect": "1d2 Con"
+    }
+  },
+  {
+    "id": "psn-blue-whinnis",
+    "foundryId": "rsrd_psn_blue_whinnis",
+    "schemaVersion": 2,
+    "name": "Poison (Blue Whinnis)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 120,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 14)<br/><b>Initial Damage:</b> 1 Con<br/><b>Secondary Damage:</b> Unconsciousness (1d3 hours)</p>",
+    "shortDescription": "Injury poison (DC 14 Fortitude). Initial: 1 Con, Secondary: Unconsciousness (1d3 hours).",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 14,
+      "initialEffect": "1 Con",
+      "secondaryEffect": "Unconsciousness (1d3 hours)"
+    }
+  },
+  {
+    "id": "psn-medium-spider-venom",
+    "foundryId": "rsrd_psn_medium_spider_venom",
+    "schemaVersion": 2,
+    "name": "Poison (Medium Spider Venom)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 150,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 14)<br/><b>Initial Damage:</b> 1d4 Str<br/><b>Secondary Damage:</b> 1d4 Str</p>",
+    "shortDescription": "Injury poison (DC 14 Fortitude). Initial: 1d4 Str, Secondary: 1d4 Str.",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 14,
+      "initialEffect": "1d4 Str",
+      "secondaryEffect": "1d4 Str"
+    }
+  },
+  {
+    "id": "psn-shadow-essence",
+    "foundryId": "rsrd_psn_shadow_essence",
+    "schemaVersion": 2,
+    "name": "Poison (Shadow Essence)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 250,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 17)<br/><b>Initial Damage:</b> 1 Str drain<br/><b>Secondary Damage:</b> 2d6 Str</p>",
+    "shortDescription": "Injury poison (DC 17 Fortitude). Initial: 1 Str drain, Secondary: 2d6 Str.",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 17,
+      "initialEffect": "1 Str drain",
+      "secondaryEffect": "2d6 Str"
+    }
+  },
+  {
+    "id": "psn-wyvern-poison",
+    "foundryId": "rsrd_psn_wyvern_poison",
+    "schemaVersion": 2,
+    "name": "Poison (Wyvern Poison)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 3000,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 17)<br/><b>Initial Damage:</b> 2d6 Con<br/><b>Secondary Damage:</b> 2d6 Con</p>",
+    "shortDescription": "Injury poison (DC 17 Fortitude). Initial: 2d6 Con, Secondary: 2d6 Con.",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 17,
+      "initialEffect": "2d6 Con",
+      "secondaryEffect": "2d6 Con"
+    }
+  },
+  {
+    "id": "psn-large-scorpion-venom",
+    "foundryId": "rsrd_psn_large_scorpion_venom",
+    "schemaVersion": 2,
+    "name": "Poison (Large Scorpion Venom)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 200,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 18)<br/><b>Initial Damage:</b> 1d6 Str<br/><b>Secondary Damage:</b> 1d6 Str</p>",
+    "shortDescription": "Injury poison (DC 18 Fortitude). Initial: 1d6 Str, Secondary: 1d6 Str.",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 18,
+      "initialEffect": "1d6 Str",
+      "secondaryEffect": "1d6 Str"
+    }
+  },
+  {
+    "id": "psn-giant-wasp-poison",
+    "foundryId": "rsrd_psn_giant_wasp_poison",
+    "schemaVersion": 2,
+    "name": "Poison (Giant Wasp Poison)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 210,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 18)<br/><b>Initial Damage:</b> 1d6 Dex<br/><b>Secondary Damage:</b> 1d6 Dex</p>",
+    "shortDescription": "Injury poison (DC 18 Fortitude). Initial: 1d6 Dex, Secondary: 1d6 Dex.",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 18,
+      "initialEffect": "1d6 Dex",
+      "secondaryEffect": "1d6 Dex"
+    }
+  },
+  {
+    "id": "psn-deathblade",
+    "foundryId": "rsrd_psn_deathblade",
+    "schemaVersion": 2,
+    "name": "Poison (Deathblade)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 1800,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 20)<br/><b>Initial Damage:</b> 1d6 Con<br/><b>Secondary Damage:</b> 2d6 Con</p>",
+    "shortDescription": "Injury poison (DC 20 Fortitude). Initial: 1d6 Con, Secondary: 2d6 Con.",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 20,
+      "initialEffect": "1d6 Con",
+      "secondaryEffect": "2d6 Con"
+    }
+  },
+  {
+    "id": "psn-purple-worm-poison",
+    "foundryId": "rsrd_psn_purple_worm_poison",
+    "schemaVersion": 2,
+    "name": "Poison (Purple Worm Poison)",
+    "type": "Consumable",
+    "category": "Poison",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / DMG Table 8-2",
+    "cost": 700,
+    "weight": 0,
+    "casterLevel": 0,
+    "description": "<p><b>Type:</b> Injury (Fortitude DC 24)<br/><b>Initial Damage:</b> 1d6 Str<br/><b>Secondary Damage:</b> 2d6 Str</p>",
+    "shortDescription": "Injury poison (DC 24 Fortitude). Initial: 1d6 Str, Secondary: 2d6 Str.",
+    "tags": [
+      "poison",
+      "consumable",
+      "injury"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "poisonMethod": "Injury",
+      "fortDc": 24,
+      "initialEffect": "1d6 Str",
+      "secondaryEffect": "2d6 Str"
+    }
   }
 ]
