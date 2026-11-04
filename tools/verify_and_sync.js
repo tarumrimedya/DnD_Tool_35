@@ -90,6 +90,36 @@ function main() {
     }
   }
 
+  // 2b. Verify & Auto-Sync database/srd_index.json chunk hashes
+  const srdIdxPath = path.join(ROOT, 'database', 'srd_index.json');
+  if (fs.existsSync(srdIdxPath)) {
+    try {
+      const idxData = JSON.parse(fs.readFileSync(srdIdxPath, 'utf8'));
+      let idxChanged = false;
+      if (idxData && idxData.chunks) {
+        const allHashes = [];
+        for (const [chunkName, meta] of Object.entries(idxData.chunks)) {
+          const chunkPath = path.join(ROOT, 'database', chunkName);
+          if (fs.existsSync(chunkPath)) {
+            const actualHash = sha256(chunkPath).slice(0, 16);
+            allHashes.push(actualHash);
+            if (meta.hash !== actualHash) {
+              meta.hash = actualHash;
+              idxChanged = true;
+            }
+          }
+        }
+        if (idxChanged) {
+          idxData.compendiumHash = crypto.createHash('sha256').update(allHashes.join(':')).digest('hex').slice(0, 16);
+          fs.writeFileSync(srdIdxPath, JSON.stringify(idxData, null, 2) + '\n', 'utf8');
+        }
+      }
+    } catch (e) {
+      console.error(`[FAIL] srd_index.json hash check error: ${e.message}`);
+      errors++;
+    }
+  }
+
   // 3. Sync database/ -> webapp/database/
   for (const rel of DB_FILES) {
     const src = path.join(ROOT, 'database', rel);
@@ -141,6 +171,16 @@ function main() {
         new vm.Script(text, { filename: rel });
       } catch (e) {
         console.error(`[FAIL] JS syntax error in ${rel}: ${e.message}`);
+        errors++;
+      }
+
+      // 5c. Architectural Guardrails (No Proxy alien patterns, no duplicate static catalogs in UI modules)
+      if (/\bnew\s+Proxy\s*\(/.test(text)) {
+        console.error(`[FAIL] Architectural violation in ${rel}: 'new Proxy()' is banned per project consistency rules.`);
+        errors++;
+      }
+      if (/const\s+(DND35_FEAT_CATALOG|DND35_DM_BOONS_CATALOG|DND35_FLAWS_CATALOG|DND35_WARLOCK_INVOCATIONS|SRD_WEAPON_PROPERTIES|DND35_CLERIC_DOMAINS)\s*=/.test(text)) {
+        console.error(`[FAIL] Architectural violation in ${rel}: Duplicate static catalog definition detected. Use SrdCompendium single-source-of-truth.`);
         errors++;
       }
     } else if (rel.endsWith('.html') && rel !== 'character.html') {

@@ -1,8 +1,11 @@
 # Joyful-Fermi Project Rules (STRICT)
 
 ## 1. Model Governance, Modular Codebase & Zero-Token Verification
-- **Lead Architect (`Gemini 4 Argon`):** Argon leads all architecture, rule engine (`rule_engine.js`, `rule_master.js`), and V2 schema decisions, routing simpler data/schema tasks to `flash_lite` or local scripts.
-- **Zero-Token Sync & Audit (`tools/verify_and_sync.js`):** **NEVER** spawn a subagent (`invoke_subagent`) for SHA-256 parity, JS/HTML/JSON syntax, or banned emoji checks. Always run `tools/verify_and_sync.js` (**0 tokens, ~90ms**), which auto-syncs `index.html` ➔ `character.html` and all core files ➔ `webapp/`.
+- **Lead Architect & PM Gatekeeper (`Gemini 4 Argon`):** Argon acts as Lead Architect and Project Manager. Every implementation task MUST follow the 3-step PM Gatekeeper Protocol:
+  1. **Pre-Flight Contract:** Define the exact V2 data source (`SrdCompendium` API), existing UI/JS pattern to follow, and legacy code/constants to be deleted. Never introduce alien patterns (`new Proxy`, ad-hoc global caches) when a project-wide pattern exists.
+  2. **Scoped Execution:** Route data/schema conversion or isolated tasks to `flash_lite` / local scripts with strict line-range and API boundaries.
+  3. **Post-Flight `git diff` Audit:** Before reporting completion, run `git diff` and `tools/verify_and_sync.js` to verify zero duplicate static catalogs remain in `char_*.js` and `database/srd_index.json` SHA-256 chunk hashes match.
+- **Zero-Token Sync & Audit (`tools/verify_and_sync.js`):** **NEVER** spawn a subagent (`invoke_subagent`) for SHA-256 parity, JS/HTML/JSON syntax, or banned emoji checks. Always run `tools/verify_and_sync.js` (**0 tokens, ~160ms**), which auto-syncs `index.html` ➔ `character.html`, `database/*.json` hashes ➔ `srd_index.json`, and all core files ➔ `webapp/`, while enforcing architectural lint rules.
 - **Modular Character Sheet & Context Discipline:**
   - `index.html` (7,698 lines pure HTML/DOM) + 5 domain JS modules (`char_hud.js`, `char_combat.js`, `char_spells.js`, `char_progression.js`, `char_inventory.js`).
   - Read only the target module and exact 30–60 line range needed. Edit only root files; never read `character.html` or `webapp/*` copies directly.

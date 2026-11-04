@@ -5191,7 +5191,6 @@
         isKeen: buff.id === 'keen' || !!compItem?.ruleFlags?.keen
       };
     }
-    const SRD_WEAPON_PROPERTIES = QUICK_WEAPON_BUFFS;
 
     function toggleSrdSpotlight(forceState = null) {
       const container = document.getElementById('srd-spotlight-container');
