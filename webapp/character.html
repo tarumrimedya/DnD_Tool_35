@@ -2333,12 +2333,20 @@
             <div id="inline-mode-forge" class="hidden space-y-3 text-xs">
               <div>
                 <label class="block text-[11px] font-bold text-amber-300 mb-1">⚡ Quick Natural Language Assembly (Optional):</label>
-                <input type="text" id="mdb-forge-nl-input" oninput="RuleMaster.updateInlineForgePreview()" placeholder="e.g. +2 Keen Mithral Scimitar, +3 Flaming Burst Adamantine Greatsword..." class="w-full h-10 bg-slate-950 border border-amber-500/50 rounded-lg px-3 text-xs text-white font-mono focus:outline-none focus:border-amber-400">
+                <input type="text" id="mdb-forge-nl-input" oninput="RuleMaster.updateInlineForgePreview()" placeholder="e.g. +1 Mithral Breastplate with Crystal of Adaptation, +2 Keen Mithral Scimitar with Fire Assault Crystal..." class="w-full h-10 bg-slate-950 border border-amber-500/50 rounded-lg px-3 text-xs text-white font-mono focus:outline-none focus:border-amber-400">
+              </div>
+
+              <!-- Category Filter for Base Items (Armor & Shields Prioritized) -->
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] text-slate-400 font-semibold uppercase">Category Filter:</span>
+                <button type="button" data-forge-filter="all" onclick="RuleMaster.setForgeBaseTypeFilter('all')" class="px-2.5 py-0.5 rounded text-[10px] font-bold transition bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer">📦 All Base Items</button>
+                <button type="button" data-forge-filter="Armor" onclick="RuleMaster.setForgeBaseTypeFilter('Armor')" class="px-2.5 py-0.5 rounded text-[10px] font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 cursor-pointer">🛡️ Armor &amp; Shields</button>
+                <button type="button" data-forge-filter="Weapon" onclick="RuleMaster.setForgeBaseTypeFilter('Weapon')" class="px-2.5 py-0.5 rounded text-[10px] font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 cursor-pointer">⚔️ Weapons</button>
               </div>
 
               <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 <div>
-                  <label class="block text-[11px] text-slate-400 mb-1 font-semibold">1. Base Weapon / Armor / Shield</label>
+                  <label class="block text-[11px] text-slate-400 mb-1 font-semibold">1. Base Armor / Shield / Weapon</label>
                   <select id="mdb-forge-base-select" onchange="RuleMaster.onForgeBaseItemChange()" class="w-full h-10 bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-white focus:outline-none focus:border-amber-400"></select>
                 </div>
                 <div>

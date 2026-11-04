@@ -4999,6 +4999,77 @@ Return valid JSON only matching:
     this.updateInlineForgePreview();
   },
 
+  setForgeBaseTypeFilter(type = 'all') {
+    this._forgeBaseTypeFilter = type;
+    document.querySelectorAll('[data-forge-filter]').forEach(btn => {
+      const f = btn.getAttribute('data-forge-filter');
+      btn.className = f === type
+        ? 'px-2.5 py-0.5 rounded text-[10px] font-bold transition bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer'
+        : 'px-2.5 py-0.5 rounded text-[10px] font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 cursor-pointer';
+    });
+    this.renderForgeBaseSelectOptions();
+    this.onForgeBaseItemChange();
+  },
+
+  renderForgeBaseSelectOptions(preferredId = null) {
+    const baseSel = document.getElementById('mdb-forge-base-select');
+    if (!baseSel) return;
+
+    let baseOptions = [];
+    if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+      baseOptions = window.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield']);
+    }
+    if (!baseOptions || baseOptions.length === 0) {
+      baseOptions = [
+        { id: 'arm-chain-shirt', name: 'Chain Shirt (+4 AC)', type: 'Armor' },
+        { id: 'arm-breastplate', name: 'Breastplate (+5 AC)', type: 'Armor' },
+        { id: 'arm-full-plate', name: 'Full Plate (+8 AC)', type: 'Armor' },
+        { id: 'shd-heavy-steel-shield', name: 'Heavy Steel Shield (+2 AC)', type: 'Shield' },
+        { id: 'shd-buckler', name: 'Buckler (+1 AC)', type: 'Shield' },
+        { id: 'wpn-longsword', name: 'Longsword (1d8, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-greatsword', name: 'Greatsword (2d6, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-scimitar', name: 'Scimitar (1d6, 18-20/x2)', type: 'Weapon' },
+        { id: 'wpn-rapier', name: 'Rapier (1d6, 18-20/x2)', type: 'Weapon' },
+        { id: 'wpn-dagger', name: 'Dagger (1d4, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-composite-longbow', name: 'Composite Longbow (1d8, x3)', type: 'Weapon' }
+      ];
+    }
+
+    const currentFilter = this._forgeBaseTypeFilter || 'all';
+    const armorList = baseOptions.filter(item => item.type === 'Armor' || item.type === 'Shield')
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+    const weaponList = baseOptions.filter(item => item.type === 'Weapon')
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+
+    let html = '';
+    if (currentFilter === 'all' || currentFilter === 'Armor') {
+      if (armorList.length > 0) {
+        html += `<optgroup label="🛡️ Armor &amp; Shields">` +
+          armorList.map(item => `<option value="${item.id}">${item.name} (${item.type || item.category || 'Gear'})</option>`).join('') +
+          `</optgroup>`;
+      }
+    }
+    if (currentFilter === 'all' || currentFilter === 'Weapon') {
+      if (weaponList.length > 0) {
+        html += `<optgroup label="⚔️ Weapons">` +
+          weaponList.map(item => `<option value="${item.id}">${item.name} (${item.type || item.category || 'Gear'})</option>`).join('') +
+          `</optgroup>`;
+      }
+    }
+
+    const prevVal = preferredId !== null ? preferredId : baseSel.value;
+    baseSel.innerHTML = html;
+
+    const allCurrentIds = Array.from(baseSel.options).map(o => o.value);
+    if (prevVal && allCurrentIds.includes(prevVal)) {
+      baseSel.value = prevVal;
+    } else if (allCurrentIds.includes('arm-chain-shirt')) {
+      baseSel.value = 'arm-chain-shirt';
+    } else if (allCurrentIds.length > 0) {
+      baseSel.value = allCurrentIds[0];
+    }
+  },
+
   async populateInlineForgeControls() {
     const baseSel = document.getElementById('mdb-forge-base-select');
     const enhGrid = document.getElementById('mdb-forge-enhancements-grid');
@@ -5010,35 +5081,7 @@ Return valid JSON only matching:
       }
     }
 
-    let baseOptions = [];
-    if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
-      baseOptions = window.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield']);
-    }
-    if (!baseOptions || baseOptions.length === 0) {
-      baseOptions = [
-        { id: 'wpn-longsword', name: 'Longsword (1d8, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-greatsword', name: 'Greatsword (2d6, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-scimitar', name: 'Scimitar (1d6, 18-20/x2)', type: 'Weapon' },
-        { id: 'wpn-rapier', name: 'Rapier (1d6, 18-20/x2)', type: 'Weapon' },
-        { id: 'wpn-greataxe', name: 'Greataxe (1d12, x3)', type: 'Weapon' },
-        { id: 'wpn-warhammer', name: 'Warhammer (1d8, x3)', type: 'Weapon' },
-        { id: 'wpn-dagger', name: 'Dagger (1d4, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-composite-longbow', name: 'Composite Longbow (1d8, x3)', type: 'Weapon' },
-        { id: 'arm-chain-shirt', name: 'Chain Shirt (+4 AC)', type: 'Armor' },
-        { id: 'arm-breastplate', name: 'Breastplate (+5 AC)', type: 'Armor' },
-        { id: 'arm-full-plate', name: 'Full Plate (+8 AC)', type: 'Armor' },
-        { id: 'shd-heavy-steel-shield', name: 'Heavy Steel Shield (+2 AC)', type: 'Shield' }
-      ];
-    }
-
-    if (!baseSel.options.length || baseSel.options.length <= 12) {
-      const prevVal = baseSel.value;
-      baseSel.innerHTML = baseOptions.slice(0, 160).map(item =>
-        `<option value="${item.id}">${item.name} (${item.type || item.category || 'Gear'})</option>`
-      ).join('');
-      if (prevVal) baseSel.value = prevVal;
-    }
-
+    this.renderForgeBaseSelectOptions();
     this.syncInlineForgeSubControls();
   },
 
@@ -5052,7 +5095,7 @@ Return valid JSON only matching:
       } catch (_) {}
     }
 
-    const baseId = document.getElementById('mdb-forge-base-select')?.value || 'wpn-longsword';
+    const baseId = document.getElementById('mdb-forge-base-select')?.value || 'arm-chain-shirt';
     const matId = document.getElementById('mdb-forge-material-select')?.value || '';
     const enhBonus = Number(document.getElementById('mdb-forge-enh-bonus')?.value) || 0;
     const crystalId = document.getElementById('mdb-forge-crystal-select')?.value || '';

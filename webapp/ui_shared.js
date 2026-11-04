@@ -616,14 +616,22 @@
             <div class="space-y-1">
               <label class="block text-[11px] font-bold text-indigo-300">⚡ Quick Natural Language Assembly (Optional):</label>
               <div class="flex items-center gap-2">
-                <input type="text" id="dnd-forge-nl-input" oninput="DnDUI.onForgeNaturalLanguageInput(this.value)" placeholder="e.g. +2 Keen Mithral Scimitar, +3 Flaming Burst Adamantine Greatsword..." class="flex-1 bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-400">
+                <input type="text" id="dnd-forge-nl-input" oninput="DnDUI.onForgeNaturalLanguageInput(this.value)" placeholder="e.g. +1 Mithral Breastplate with Crystal of Adaptation, +2 Keen Mithral Scimitar with Fire Assault Crystal..." class="flex-1 bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-400">
               </div>
+            </div>
+
+            <!-- Category Filter for Base Items (Armor & Shields Prioritized) -->
+            <div class="flex items-center gap-1.5 pt-1 flex-wrap">
+              <span class="text-[10px] text-slate-400 font-semibold uppercase">Category Filter:</span>
+              <button type="button" data-dnd-forge-filter="all" onclick="DnDUI.setForgeBaseTypeFilter('all')" class="px-2.5 py-0.5 rounded-lg text-[10px] font-bold transition bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer">📦 All Base Items</button>
+              <button type="button" data-dnd-forge-filter="Armor" onclick="DnDUI.setForgeBaseTypeFilter('Armor')" class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 cursor-pointer">🛡️ Armor &amp; Shields</button>
+              <button type="button" data-dnd-forge-filter="Weapon" onclick="DnDUI.setForgeBaseTypeFilter('Weapon')" class="px-2.5 py-0.5 rounded-lg text-[10px] font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 cursor-pointer">⚔️ Weapons</button>
             </div>
 
             <!-- Structured Pickers -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
               <div>
-                <label class="block text-slate-400 mb-1 font-semibold">1. Base Item (Weapon / Armor)</label>
+                <label class="block text-slate-400 mb-1 font-semibold">1. Base Item (Armor / Shield / Weapon)</label>
                 <select id="dnd-forge-base-select" onchange="DnDUI.onForgeControlChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400"></select>
               </div>
               <div>
@@ -894,6 +902,79 @@
     }
   }
 
+  function setForgeBaseTypeFilter(type = 'all') {
+    _drawerState.forgeBaseTypeFilter = type;
+    document.querySelectorAll('[data-dnd-forge-filter]').forEach(btn => {
+      const f = btn.getAttribute('data-dnd-forge-filter');
+      btn.className = f === type
+        ? 'px-2.5 py-0.5 rounded-lg text-[10px] font-bold transition bg-amber-500/20 text-amber-300 border border-amber-500/40 cursor-pointer'
+        : 'px-2.5 py-0.5 rounded-lg text-[10px] font-semibold transition bg-slate-900 text-slate-400 hover:text-white border border-slate-800 cursor-pointer';
+    });
+    populateForgeBaseSelectOptions();
+    onForgeControlChange();
+  }
+
+  function populateForgeBaseSelectOptions(preferredId = null) {
+    const baseSel = document.getElementById('dnd-forge-base-select');
+    if (!baseSel) return;
+
+    const srdReady = Boolean(global.SrdCompendium && typeof global.SrdCompendium.isReady === 'function' && global.SrdCompendium.isReady());
+    let baseOptions = [];
+    if (srdReady && typeof global.SrdCompendium.getAllLoaded === 'function') {
+      baseOptions = global.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield']);
+    }
+
+    if (baseOptions.length === 0) {
+      baseOptions = [
+        { id: 'arm-chain-shirt', name: 'Chain Shirt (+4 AC)', type: 'Armor' },
+        { id: 'arm-breastplate', name: 'Breastplate (+5 AC)', type: 'Armor' },
+        { id: 'arm-full-plate', name: 'Full Plate (+8 AC)', type: 'Armor' },
+        { id: 'shd-heavy-steel-shield', name: 'Heavy Steel Shield (+2 AC)', type: 'Shield' },
+        { id: 'shd-buckler', name: 'Buckler (+1 AC)', type: 'Shield' },
+        { id: 'wpn-longsword', name: 'Longsword (1d8, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-greatsword', name: 'Greatsword (2d6, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-scimitar', name: 'Scimitar (1d6, 18-20/x2)', type: 'Weapon' },
+        { id: 'wpn-rapier', name: 'Rapier (1d6, 18-20/x2)', type: 'Weapon' },
+        { id: 'wpn-dagger', name: 'Dagger (1d4, 19-20/x2)', type: 'Weapon' },
+        { id: 'wpn-composite-longbow', name: 'Composite Longbow (1d8, x3)', type: 'Weapon' }
+      ];
+    }
+
+    const currentFilter = _drawerState.forgeBaseTypeFilter || 'all';
+    const armorList = baseOptions.filter(item => item.type === 'Armor' || item.type === 'Shield')
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+    const weaponList = baseOptions.filter(item => item.type === 'Weapon')
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+
+    let html = '';
+    if (currentFilter === 'all' || currentFilter === 'Armor') {
+      if (armorList.length > 0) {
+        html += `<optgroup label="🛡️ Armor &amp; Shields">` +
+          armorList.map(item => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} (${escapeHtml(item.type || item.subCategory || item.category)})</option>`).join('') +
+          `</optgroup>`;
+      }
+    }
+    if (currentFilter === 'all' || currentFilter === 'Weapon') {
+      if (weaponList.length > 0) {
+        html += `<optgroup label="⚔️ Weapons">` +
+          weaponList.map(item => `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} (${escapeHtml(item.type || item.subCategory || item.category)})</option>`).join('') +
+          `</optgroup>`;
+      }
+    }
+
+    const prevVal = preferredId !== null ? preferredId : baseSel.value;
+    baseSel.innerHTML = html;
+
+    const allCurrentIds = Array.from(baseSel.options).map(o => o.value);
+    if (prevVal && allCurrentIds.includes(prevVal)) {
+      baseSel.value = prevVal;
+    } else if (allCurrentIds.includes('arm-chain-shirt')) {
+      baseSel.value = 'arm-chain-shirt';
+    } else if (allCurrentIds.length > 0) {
+      baseSel.value = allCurrentIds[0];
+    }
+  }
+
   function populateForgeControls() {
     const baseSel = document.getElementById('dnd-forge-base-select');
     const enhGrid = document.getElementById('dnd-forge-enhancements-grid');
@@ -904,34 +985,8 @@
       return;
     }
 
-    // Populate base weapons and armors from SrdCompendium if loaded
-    let baseOptions = [];
-    if (srdReady && typeof global.SrdCompendium.getAllLoaded === 'function') {
-      baseOptions = global.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield']).slice().sort((a, b) => String(a?.name || '').localeCompare(String(b?.name || '')));
-    }
-
-    if (baseOptions.length === 0) {
-      baseOptions = [
-        { id: 'wpn-longsword', name: 'Longsword (1d8, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-greatsword', name: 'Greatsword (2d6, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-scimitar', name: 'Scimitar (1d6, 18-20/x2)', type: 'Weapon' },
-        { id: 'wpn-rapier', name: 'Rapier (1d6, 18-20/x2)', type: 'Weapon' },
-        { id: 'wpn-greataxe', name: 'Greataxe (1d12, x3)', type: 'Weapon' },
-        { id: 'wpn-warhammer', name: 'Warhammer (1d8, x3)', type: 'Weapon' },
-        { id: 'wpn-dagger', name: 'Dagger (1d4, 19-20/x2)', type: 'Weapon' },
-        { id: 'wpn-composite-longbow', name: 'Composite Longbow (1d8, x3)', type: 'Weapon' },
-        { id: 'arm-chain-shirt', name: 'Chain Shirt (+4 AC)', type: 'Armor' },
-        { id: 'arm-breastplate', name: 'Breastplate (+5 AC)', type: 'Armor' },
-        { id: 'arm-full-plate', name: 'Full Plate (+8 AC)', type: 'Armor' },
-        { id: 'shd-heavy-steel-shield', name: 'Heavy Steel Shield (+2 AC)', type: 'Shield' }
-      ];
-    }
-
-    baseSel.innerHTML = baseOptions.map(item =>
-      `<option value="${escapeHtml(item.id)}">${escapeHtml(item.name)} (${escapeHtml(item.type || item.subCategory || item.category)})</option>`
-    ).join('');
+    populateForgeBaseSelectOptions();
     baseSel.dataset.srdPopulated = srdReady ? 'full' : 'fallback';
-
     syncForgeEnhancementsGrid();
   }
 
@@ -1058,7 +1113,7 @@
       } catch (_) {}
     }
 
-    const baseId = document.getElementById('dnd-forge-base-select')?.value || 'wpn-longsword';
+    const baseId = document.getElementById('dnd-forge-base-select')?.value || 'arm-chain-shirt';
     const matId = document.getElementById('dnd-forge-material-select')?.value || '';
     const enhBonus = Number(document.getElementById('dnd-forge-enh-bonus')?.value) || 0;
     const crystalId = document.getElementById('dnd-forge-crystal-select')?.value || '';
@@ -1534,6 +1589,7 @@
     onForgeNaturalLanguageInput,
     onForgeEnhSearchInput,
     onForgeControlChange,
+    setForgeBaseTypeFilter,
     populateForgeFromItem,
     updateForgePreview,
     equipAssembledForgeItem
