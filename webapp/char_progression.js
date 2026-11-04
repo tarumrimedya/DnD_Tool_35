@@ -6506,10 +6506,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         lvl.will = rowWill;
 
         tr.innerHTML = `
-          <td class="py-2 px-1 align-top text-center w-8">
+          <td class="py-2 px-1.5 align-top text-center w-11">
             <div class="h-6 flex items-center justify-center font-bold text-amber-400 text-xs">${lvl.level}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-[78px]">
+          <td class="py-2 px-1.5 align-top text-center w-24">
             <div class="h-6 flex items-center justify-center">
               <label class="inline-flex items-center gap-1 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
                 <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
@@ -6519,46 +6519,46 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               </label>
             </div>
           </td>
-          <td class="py-2 px-1.5 align-top text-left w-[104px]">
+          <td class="py-2 px-2 align-top text-left w-32">
             <div class="h-6 flex items-center font-sans font-bold text-white text-xs truncate" title="${lvl.className}-${classLevelSoFar}">${lvl.className}-${classLevelSoFar}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-9">
+          <td class="py-2 px-1.5 align-top text-center w-14">
             <div class="h-6 flex items-center justify-center text-slate-400 font-bold text-xs">${lvl.hd}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-9">
+          <td class="py-2 px-1.5 align-top text-center w-14">
             <div class="h-6 flex items-center justify-center text-emerald-400 font-bold text-xs" title="Level Hit Die: +${lvl.hpGain} | Con: ${conModStr} (This Level: +${Math.max(1, (Number(lvl.hpGain) || 0) + conMod)})">+${lvl.hpGain}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-9">
+          <td class="py-2 px-1.5 align-top text-center w-14">
             <div class="h-6 flex items-center justify-center text-sky-400 font-bold text-xs">+${rowBab}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-9">
+          <td class="py-2 px-1.5 align-top text-center w-14">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowFort}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-9">
+          <td class="py-2 px-1.5 align-top text-center w-14">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowRef}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-9">
+          <td class="py-2 px-1.5 align-top text-center w-14">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowWill}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-9">
+          <td class="py-2 px-1.5 align-top text-center w-14">
             <div class="h-6 flex items-center justify-center text-indigo-300 font-bold text-xs">${lvl.skillPts || 4}</div>
           </td>
-          <td class="py-2 px-1 font-sans align-top text-center min-w-0">
-            <div class="flex flex-col gap-1 items-stretch w-full min-w-0">
+          <td class="py-2 px-1.5 font-sans align-top text-center w-[144px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
               ${(abilityBadgeItems.length > 0 || classBonusBadgeItems.length > 0 || pendingClassBonusButtons.length > 0) ? (abilityBadgeItems.join('') + classBonusBadgeItems.join('') + pendingClassBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1 font-sans align-top text-center min-w-0">
-            <div class="flex flex-col gap-1 items-stretch w-full min-w-0">
+          <td class="py-2 px-1.5 font-sans align-top text-center w-[144px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
               ${(regularFeatBadgeItems.length > 0 || regularPromptButtons.length > 0) ? (regularFeatBadgeItems.join('') + regularPromptButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1 font-sans align-top text-center min-w-0">
-            <div class="flex flex-col gap-1 items-stretch w-full min-w-0">
+          <td class="py-2 px-1.5 font-sans align-top text-center w-[144px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
               ${(statBadgeItem || otherBonusBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + otherBonusBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-[54px] whitespace-nowrap shrink-0">
+          <td class="py-2 px-1.5 align-top text-center w-[60px] whitespace-nowrap shrink-0">
             <div class="h-6 flex items-center justify-center gap-0.5">
               <button onclick="openQuickFeatPickerForLevel(${idx})" class="text-emerald-400 hover:text-emerald-300 p-0.5 text-xs transition font-bold" title="Add Feat, Ability, Invocation, or Bonus to this level">
                 ➕

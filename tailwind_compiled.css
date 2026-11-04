@@ -273,11 +273,10 @@ input.flex-1,select.flex-1,textarea.flex-1{min-width:0}
 .w-72{width:18rem}
 .w-8{width:2rem}
 .w-9{width:2.25rem}
-.w-\[104px\]{width:104px}
+.w-\[144px\]{width:144px}
 .w-\[340px\]{width:340px}
 .w-\[36\%\]{width:36%}
-.w-\[54px\]{width:54px}
-.w-\[78px\]{width:78px}
+.w-\[60px\]{width:60px}
 .w-\[80px\]{width:80px}
 .w-\[92vw\]{width:92vw}
 .w-full{width:100%}
@@ -307,6 +306,7 @@ input.flex-1,select.flex-1,textarea.flex-1{min-width:0}
 .max-w-\[120px\]{max-width:120px}
 .max-w-\[125px\]{max-width:125px}
 .max-w-\[130px\]{max-width:130px}
+.max-w-\[134px\]{max-width:134px}
 .max-w-\[140px\]{max-width:140px}
 .max-w-\[1680px\]{max-width:1680px}
 .max-w-\[170px\]{max-width:170px}
@@ -1661,6 +1661,7 @@ input.flex-1,select.flex-1,textarea.flex-1{min-width:0}
 .text-sky-300\/80{color:rgb(125 211 252 / 0.8)}
 .text-sky-300\/90{color:rgb(125 211 252 / 0.9)}
 .text-sky-400{--tw-text-opacity:1;color:rgb(56 189 248 / var(--tw-text-opacity, 1))}
+.text-sky-400\/90{color:rgb(56 189 248 / 0.9)}
 .text-sky-500{--tw-text-opacity:1;color:rgb(14 165 233 / var(--tw-text-opacity, 1))}
 .text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}
 .text-slate-200{--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}
