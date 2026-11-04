@@ -5914,11 +5914,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       // Check for Companion Capability or Existing Companion (Madde D)
       let companionCardHtml = '';
       const hasCompanion = Boolean(character.companion && character.companion.baseMonsterId);
-      const classesLower = String(character.classes || '').toLowerCase();
-      const isEligible = hasCompanion ||
-        /druid|ranger|wizard|sorcerer|paladin/i.test(classesLower) ||
-        abilitiesList.some(a => /animal companion|familiar|special mount|mount/i.test(a.name)) ||
-        featsList.some(f => /animal companion|familiar|special mount|mount/i.test(f.name));
+      const isEligible = typeof window.isCharacterCompanionEligible === 'function'
+        ? window.isCharacterCompanionEligible(character)
+        : false;
 
       if (hasCompanion) {
         const stats = (window.SrdCompendium && typeof window.SrdCompendium.calculateCompanionStats === 'function')
@@ -6015,6 +6013,18 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               <span>➕</span>
               <span>Select Companion</span>
             </button>
+          </div>
+        `;
+      } else {
+        companionCardHtml = `
+          <div class="mt-3.5 border border-dashed border-slate-800 rounded-xl bg-slate-950/40 p-2.5 flex items-center justify-between gap-2 flex-wrap">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🔒</span>
+              <div>
+                <span class="text-xs font-bold text-slate-400 block">Companion &amp; Mount Locked (Prerequisites Not Met)</span>
+                <span class="text-[10px] text-slate-500">Add a required feat or class feature (<strong class="text-amber-400/90">Animal Companion</strong>, <strong class="text-purple-400/90">Summon Familiar</strong>, <strong class="text-sky-400/90">Special Mount</strong>, <strong class="text-amber-300/90">Obtain Familiar</strong>, or <strong class="text-emerald-400/90">Wild Cohort</strong>) first to bind a companion.</span>
+              </div>
+            </div>
           </div>
         `;
       }
@@ -7583,6 +7593,43 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     let _activeCompanionModalType = 'animal_companion';
     let _activeCompanionModalAnimalId = null;
 
+    function isCharacterCompanionEligible(charObj) {
+      const c = charObj || character;
+      if (!c) return false;
+      if (c.companion && c.companion.baseMonsterId) return true;
+
+      const companionRegex = /animal companion|summon familiar|familiar|special mount|wild cohort|obtain familiar|improved familiar|draconic familiar|celestial familiar|dragonfamiliar|bonded mount/i;
+
+      // Check feats
+      const feats = Array.isArray(c.feats) ? c.feats : [];
+      for (const f of feats) {
+        const name = typeof f === 'string' ? f : (f?.name || '');
+        if (companionRegex.test(name)) return true;
+      }
+
+      // Check specialAbilities
+      const abilities = Array.isArray(c.specialAbilities) ? c.specialAbilities : [];
+      for (const a of abilities) {
+        const name = typeof a === 'string' ? a : (a?.name || '');
+        if (companionRegex.test(name)) return true;
+      }
+
+      // Check levelProgression feats & classFeatures
+      const prog = Array.isArray(c.levelProgression) ? c.levelProgression : [];
+      for (const p of prog) {
+        const pFeats = Array.isArray(p?.feats) ? p.feats : [];
+        for (const fn of pFeats) {
+          if (typeof fn === 'string' && companionRegex.test(fn)) return true;
+        }
+        const pFeatures = Array.isArray(p?.classFeatures) ? p.classFeatures : [];
+        for (const cf of pFeatures) {
+          if (typeof cf === 'string' && companionRegex.test(cf)) return true;
+        }
+      }
+
+      return false;
+    }
+
     function ensureCompanionModalDom() {
       let modal = document.getElementById('companion-modal');
       if (modal) return modal;
@@ -7634,6 +7681,17 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     }
 
     function openCompanionModal() {
+      if (!isCharacterCompanionEligible(character)) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '🐾',
+            title: 'Prerequisite Not Met',
+            breakdown: 'Add the required feat or class feature (Animal Companion, Summon Familiar, Special Mount, Obtain Familiar, Wild Cohort) first.',
+            total: 'Locked'
+          });
+        }
+        return;
+      }
       const modal = ensureCompanionModalDom();
       if (character && character.companion) {
         _activeCompanionModalType = character.companion.type || 'animal_companion';
@@ -7936,6 +7994,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     }
 
     // Attach to global window
+    window.isCharacterCompanionEligible = isCharacterCompanionEligible;
     window.openCompanionModal = openCompanionModal;
     window.closeCompanionModal = closeCompanionModal;
     window.onCompanionTypeChange = onCompanionTypeChange;

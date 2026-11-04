@@ -10235,21 +10235,37 @@
       if (!contentEl) return;
 
       if (!character || !character.companion || !character.companion.baseMonsterId) {
+        const isEligible = typeof window.isCharacterCompanionEligible === 'function'
+          ? window.isCharacterCompanionEligible(character)
+          : false;
         if (badgeEl) badgeEl.textContent = 'HP: --/--';
-        if (summaryEl) summaryEl.textContent = 'No Companion';
-        contentEl.innerHTML = `
-          <div class="p-3 text-center bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-2">
-            <div class="flex items-center justify-center gap-1.5 text-amber-400 font-bold">
-              <span>🐾</span>
-              <span>No Active Companion or Mount</span>
+        if (summaryEl) summaryEl.textContent = isEligible ? 'No Companion' : 'Prerequisites Not Met';
+
+        if (!isEligible) {
+          contentEl.innerHTML = `
+            <div class="p-3 text-center bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-2">
+              <div class="flex items-center justify-center gap-1.5 text-slate-300 font-bold">
+                <span>🔒</span>
+                <span>Companion &amp; Mount Locked (Prerequisites Not Met)</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Add a required feat or class feature (<strong class="text-amber-400/90">Animal Companion</strong>, <strong class="text-purple-400/90">Summon Familiar</strong>, <strong class="text-sky-400/90">Special Mount</strong>, <strong class="text-amber-300/90">Obtain Familiar</strong>, or <strong class="text-emerald-400/90">Wild Cohort</strong>) in the <strong class="text-slate-300">Character</strong> tab before binding a companion.</p>
             </div>
-            <p class="text-[11px] text-slate-500">Bind or summon an Animal Companion, Familiar, or Special Mount to manage attacks &amp; health in combat.</p>
-            <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-7 px-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
-              <span>➕</span>
-              <span>Select / Summon Companion</span>
-            </button>
-          </div>
-        `;
+          `;
+        } else {
+          contentEl.innerHTML = `
+            <div class="p-3 text-center bg-slate-950/60 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-2">
+              <div class="flex items-center justify-center gap-1.5 text-amber-400 font-bold">
+                <span>🐾</span>
+                <span>No Active Companion or Mount</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Bind or summon an Animal Companion, Familiar, or Special Mount to manage attacks &amp; health in combat.</p>
+              <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-7 px-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
+                <span>➕</span>
+                <span>Select / Summon Companion</span>
+              </button>
+            </div>
+          `;
+        }
         return;
       }
 

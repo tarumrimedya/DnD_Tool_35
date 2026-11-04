@@ -30,7 +30,7 @@ const RuleMaster = {
       priority: 2,
       name: "Core 3.5e SRD (d20srd & dndsrd)",
       scope: "PHB, DMG, MM Core Rules, Feats, Spells, Magic Items",
-      url: "https://www.d20srd.org/index.html",
+      url: "https://www.d20srd.org/index.htm",
       mirror: "http://dndsrd.net",
       type: "Clean HTML",
       status: "Active",
@@ -49,9 +49,9 @@ const RuleMaster = {
 
   // Comprehensive D&D 3.5e Splatbooks and Sourcebooks Catalog
   splatbooks: [
-    { code: "PHB", name: "Player's Handbook 3.5", cat: "Core", note: "Core classes, races, feats, skills, and spells", url: "https://www.d20srd.org" },
-    { code: "DMG", name: "Dungeon Master's Guide 3.5", cat: "Core", note: "Magic items, prestige classes, and treasure", url: "https://www.d20srd.org" },
-    { code: "MM", name: "Monster Manual 3.5", cat: "Core", note: "Monsters, racial traits, and templates", url: "https://www.d20srd.org" },
+    { code: "PHB", name: "Player's Handbook 3.5", cat: "Core", note: "Core classes, races, feats, skills, and spells", url: "https://www.d20srd.org/index.htm" },
+    { code: "DMG", name: "Dungeon Master's Guide 3.5", cat: "Core", note: "Magic items, prestige classes, and treasure", url: "https://www.d20srd.org/index.htm" },
+    { code: "MM", name: "Monster Manual 3.5", cat: "Core", note: "Monsters, racial traits, and templates", url: "https://www.d20srd.org/index.htm" },
     { code: "MIC", name: "Magic Item Compendium", cat: "Equipment", note: "Expanded magic items, body slots, and augment crystals", url: "https://srd.dndtools.org" },
     { code: "SpC", name: "Spell Compendium", cat: "Spells", note: "Consolidated master archive of splatbook spells", url: "https://srd.dndtools.org" },
     { code: "ToB", name: "Tome of Battle (Book of 9 Swords)", cat: "Combat", note: "Martial maneuvers, stances, and Martial Adept classes", url: "https://srd.dndtools.org" },
@@ -70,7 +70,7 @@ const RuleMaster = {
     { code: "LoM", name: "Lords of Madness", cat: "Aberrations", note: "Mind Flayer, Beholder, and Aberration lore & feats", url: "https://srd.dndtools.org" },
     { code: "BoED", name: "Book of Exalted Deeds", cat: "Alignment", note: "Celestial powers, Exalted Feats, and Vow mechanics", url: "https://srd.dndtools.org" },
     { code: "BoVD", name: "Book of Vile Darkness", cat: "Alignment", note: "Fiendish powers, Vile Damage, and Vile Feats", url: "https://srd.dndtools.org" },
-    { code: "XPH", name: "Expanded Psionics Handbook", cat: "Psionics", note: "Psionic powers, classes, and psionic feats", url: "https://www.d20srd.org" },
+    { code: "XPH", name: "Expanded Psionics Handbook", cat: "Psionics", note: "Psionic powers, classes, and psionic feats", url: "https://www.d20srd.org/index.htm" },
     { code: "RoS", name: "Races of Stone", cat: "Races", note: "Dwarf and Gnome options, Goliath race, exotic armor", url: "https://srd.dndtools.org" },
     { code: "RoD", name: "Races of Destiny", cat: "Races", note: "Human, Half-Elf, Half-Orc, and Illumian options", url: "https://srd.dndtools.org" },
     { code: "RotW", name: "Races of the Wild", cat: "Races", note: "Elf and Halfling mechanics, Raptorans", url: "https://srd.dndtools.org" },

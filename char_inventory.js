@@ -4851,17 +4851,31 @@
       if (!container) return;
 
       if (!character || !character.companion || !character.companion.baseMonsterId) {
-        container.innerHTML = `
-          <div class="p-8 text-center bg-slate-950/60 rounded-2xl border border-slate-800 space-y-3 max-w-lg mx-auto my-6">
-            <div class="text-3xl">🐾</div>
-            <h4 class="text-sm font-black text-white uppercase tracking-wider">No Active Companion or Mount</h4>
-            <p class="text-xs text-slate-400">Select or summon an Animal Companion, Familiar, or Special Mount to manage equipment slots and barding.</p>
-            <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-8 px-4 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
-              <span>➕</span>
-              <span>Select / Summon Companion</span>
-            </button>
-          </div>
-        `;
+        const isEligible = typeof window.isCharacterCompanionEligible === 'function'
+          ? window.isCharacterCompanionEligible(character)
+          : false;
+
+        if (!isEligible) {
+          container.innerHTML = `
+            <div class="p-8 text-center bg-slate-950/60 rounded-2xl border border-slate-800 space-y-3 max-w-lg mx-auto my-6">
+              <div class="text-3xl">🔒</div>
+              <h4 class="text-sm font-black text-slate-300 uppercase tracking-wider">Companion &amp; Mount Locked (Prerequisites Not Met)</h4>
+              <p class="text-xs text-slate-400">Add a required feat or class feature (<strong class="text-amber-400/90">Animal Companion</strong>, <strong class="text-purple-400/90">Summon Familiar</strong>, <strong class="text-sky-400/90">Special Mount</strong>, <strong class="text-amber-300/90">Obtain Familiar</strong>, or <strong class="text-emerald-400/90">Wild Cohort</strong>) in the <strong class="text-slate-200">Character</strong> tab before binding a companion.</p>
+            </div>
+          `;
+        } else {
+          container.innerHTML = `
+            <div class="p-8 text-center bg-slate-950/60 rounded-2xl border border-slate-800 space-y-3 max-w-lg mx-auto my-6">
+              <div class="text-3xl">🐾</div>
+              <h4 class="text-sm font-black text-white uppercase tracking-wider">No Active Companion or Mount</h4>
+              <p class="text-xs text-slate-400">Select or summon an Animal Companion, Familiar, or Special Mount to manage equipment slots and barding.</p>
+              <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-8 px-4 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
+                <span>➕</span>
+                <span>Select / Summon Companion</span>
+              </button>
+            </div>
+          `;
+        }
         return;
       }
 
