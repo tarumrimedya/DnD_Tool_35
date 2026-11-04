@@ -6333,9 +6333,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           for (let dSlot = 0; dSlot < 2; dSlot++) {
             const domName = chosenDomains[dSlot];
             if (domName) {
-              const domDef = (typeof DND35_CLERIC_DOMAINS === 'object' && DND35_CLERIC_DOMAINS[domName]) ? DND35_CLERIC_DOMAINS[domName] : null;
+              const domDef = (window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
+                ? window.SrdCompendium.getDomain(domName)
+                : (typeof DND35_CLERIC_DOMAINS === 'object' ? DND35_CLERIC_DOMAINS[domName] : null);
               const elig = (typeof checkClericDomainEligibility === 'function') ? checkClericDomainEligibility(domName, character) : { eligible: true, reason: '' };
-              const gPower = domDef ? domDef.grantedPower : 'Cleric Domain Granted Power';
+              const gPower = domDef ? (domDef.grantedPower?.description || domDef.grantedPower || domDef.description || 'Cleric Domain Granted Power') : 'Cleric Domain Granted Power';
               const warSuffix = (domName === 'War' && favWep) ? ` [WF: ${favWep}]` : '';
               const warnPrefix = !elig.eligible ? `⚠️ RAW Conflict: ${elig.reason} — ` : '';
               const safeTip = `${warnPrefix}Cleric Domain (${dSlot + 1}/2): ${domName}${warSuffix} — ${gPower} (Click to change domain)`.replace(/"/g, '&quot;');
@@ -7369,15 +7371,24 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
 
       const query = (document.getElementById('cleric-domain-search-input')?.value || '').toLowerCase().trim();
-      const domainsCatalog = (typeof DND35_CLERIC_DOMAINS === 'object' && DND35_CLERIC_DOMAINS) ? DND35_CLERIC_DOMAINS : {};
+      const allDomains = (window.SrdCompendium && typeof window.SrdCompendium.getAllDomains === 'function')
+        ? window.SrdCompendium.getAllDomains()
+        : [];
       const domainSpellsMap = getDomainSpellsByDomainMap();
 
-      const entries = Object.entries(domainsCatalog).filter(([domName, meta]) => {
+      const entries = allDomains.filter(d => {
+        if (!d || !d.name) return false;
         if (!query) return true;
-        const gp = String(meta?.grantedPower || '').toLowerCase();
-        const spList = (domainSpellsMap[domName] || []).map(s => s.name.toLowerCase()).join(' ');
-        return domName.toLowerCase().includes(query) || gp.includes(query) || spList.includes(query);
-      }).map(([domName, meta]) => {
+        const gp = String(d.grantedPower?.description || d.description || '').toLowerCase();
+        const spList = (domainSpellsMap[d.name] || d.spells || []).map(s => (s.name || '').toLowerCase()).join(' ');
+        return d.name.toLowerCase().includes(query) || gp.includes(query) || spList.includes(query);
+      }).map(d => {
+        const domName = d.name;
+        const meta = {
+          grantedPower: d.grantedPower?.description || d.description || '',
+          classSkills: d.grantedPower?.classSkills || d.classSkills || [],
+          spells: d.spells || []
+        };
         const elig = (typeof checkClericDomainEligibility === 'function')
           ? checkClericDomainEligibility(domName, character)
           : { eligible: true, alignmentBlocked: false, deityBlocked: false, inDeityPortfolio: false, reason: '' };
@@ -7452,7 +7463,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const chosen = (typeof getCharacterClericDomains === 'function')
         ? getCharacterClericDomains(character)
         : (Array.isArray(character?.spellcasting?.domains) ? character.spellcasting.domains.filter(Boolean) : []);
-      const domainsCatalog = (typeof DND35_CLERIC_DOMAINS === 'object' && DND35_CLERIC_DOMAINS) ? DND35_CLERIC_DOMAINS : {};
       const deityMeta = (typeof getCharacterDeityMeta === 'function') ? getCharacterDeityMeta(character) : null;
       const favWeapon = (deityMeta && deityMeta.weapon && deityMeta.weapon !== '-') ? deityMeta.weapon : "Deity's Favored Weapon";
 
@@ -7503,10 +7513,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         return !/^⚜️\s*Domain:/i.test(n) && !/\bDomain\s*\(Granted Power\)/i.test(n);
       });
       chosen.forEach(d => {
-        const meta = domainsCatalog[d];
+        const meta = (window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
+          ? window.SrdCompendium.getDomain(d)
+          : (typeof DND35_CLERIC_DOMAINS === 'object' ? DND35_CLERIC_DOMAINS[d] : null);
         const benefitText = (d === 'War' && favWeapon)
           ? `Free Martial Weapon Proficiency (${favWeapon}) and Weapon Focus (${favWeapon}).`
-          : (meta ? meta.grantedPower : `${d} Domain Granted Power`);
+          : (meta?.grantedPower?.description || meta?.grantedPower || meta?.description || `${d} Domain Granted Power`);
         character.specialAbilities.push({
           name: `⚜️ ${d} Domain (Granted Power)`,
           source: 'Cleric Domain',
@@ -7542,11 +7554,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       closeClericDomainPickerModal();
       renderAll();
 
-      const meta = (typeof DND35_CLERIC_DOMAINS === 'object' && DND35_CLERIC_DOMAINS) ? DND35_CLERIC_DOMAINS[domainName] : null;
+      const meta = (window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
+        ? window.SrdCompendium.getDomain(domainName)
+        : (typeof DND35_CLERIC_DOMAINS === 'object' ? DND35_CLERIC_DOMAINS[domainName] : null);
       showDiceTopToast({
         icon: '⚜️',
         title: `${domainName} Domain Selected`,
-        breakdown: meta ? meta.grantedPower : `Granted Power & Domain Spells unlocked.`,
+        breakdown: meta?.grantedPower?.description || meta?.grantedPower || meta?.description || `Granted Power & Domain Spells unlocked.`,
         total: `Domain ${ctx.slotIdx + 1}/2`
       });
     }

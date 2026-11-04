@@ -441,166 +441,22 @@
       return result;
     }
 
-    // Official D&D 3.5e SRD 35 Cleric Domains Catalog (Granted Powers & Class Skills)
-    const DND35_CLERIC_DOMAINS = {
-      Air: {
-        grantedPower: "Turn or destroy earth creatures as a good cleric turns undead. Rebuke, command, or bolster air creatures as an evil cleric rebukes undead (3 + Cha modifier/day).",
-        classSkills: []
-      },
-      Animal: {
-        grantedPower: "Use Speak with Animals once per day as a spell-like ability. Knowledge (nature) is a class skill.",
-        classSkills: ["k_nature"]
-      },
-      Artifice: {
-        grantedPower: "Gain a +4 bonus on Craft checks. You cast Conjuration (Creation) spells at +1 caster level.",
-        classSkills: []
-      },
-      Chaos: {
-        grantedPower: "You cast chaos spells at +1 caster level.",
-        classSkills: []
-      },
-      Charm: {
-        grantedPower: "Boost your Charisma by +4 once per day as a free action (lasts 1 minute).",
-        classSkills: []
-      },
-      Community: {
-        grantedPower: "Use Calm Emotions 1/day as a spell-like ability. Gain a +2 competence bonus on Diplomacy checks.",
-        classSkills: []
-      },
-      Creation: {
-        grantedPower: "You cast Conjuration (Creation) spells at +2 caster level.",
-        classSkills: []
-      },
-      Darkness: {
-        grantedPower: "Free Blind-Fight feat.",
-        classSkills: []
-      },
-      Death: {
-        grantedPower: "Death Touch (Su) 1/day: Make a melee touch attack; roll 1d6 per cleric level. If the total at least equals the target's current HP, it dies (no save).",
-        classSkills: []
-      },
-      Destruction: {
-        grantedPower: "Smite (Su) 1/day: Make a single melee attack with a +4 bonus on attack rolls and a damage bonus equal to your cleric level.",
-        classSkills: []
-      },
-      Earth: {
-        grantedPower: "Turn or destroy air creatures as a good cleric turns undead. Rebuke, command, or bolster earth creatures as an evil cleric rebukes undead (3 + Cha modifier/day).",
-        classSkills: []
-      },
-      Evil: {
-        grantedPower: "You cast evil spells at +1 caster level.",
-        classSkills: []
-      },
-      Fire: {
-        grantedPower: "Turn or destroy water creatures as a good cleric turns undead. Rebuke, command, or bolster fire creatures as an evil cleric rebukes undead (3 + Cha modifier/day).",
-        classSkills: []
-      },
-      Glory: {
-        grantedPower: "Turn undead with a +2 bonus on the turning check and +1d6 to the turning damage roll.",
-        classSkills: []
-      },
-      Good: {
-        grantedPower: "You cast good spells at +1 caster level.",
-        classSkills: []
-      },
-      Healing: {
-        grantedPower: "You cast Conjuration (Healing) spells at +1 caster level.",
-        classSkills: []
-      },
-      Knowledge: {
-        grantedPower: "All Knowledge skills are class skills. You cast divination spells at +1 caster level.",
-        classSkills: ["k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes"]
-      },
-      Law: {
-        grantedPower: "You cast law spells at +1 caster level.",
-        classSkills: []
-      },
-      Liberation: {
-        grantedPower: "Gain a +2 morale bonus on all saving throws against enchantment spells or effects.",
-        classSkills: []
-      },
-      Luck: {
-        grantedPower: "Good Fortune (Ex) 1/day: Reroll one roll that you have just made before the DM declares whether it results in success or failure.",
-        classSkills: []
-      },
-      Madness: {
-        grantedPower: "Gain an Insanity score equal to half your class level (use 1/day as a bonus on a Wisdom-based check or Will save).",
-        classSkills: []
-      },
-      Magic: {
-        grantedPower: "Use scrolls, wands, and other spell completion or spell trigger devices as a wizard of one-half your cleric level (minimum 1st level).",
-        classSkills: []
-      },
-      Nobility: {
-        grantedPower: "Inspire Allies (Sp) 1/day: Standard action to grant allies who can hear you a +2 morale bonus on saves, attack rolls, ability checks, skill checks, and weapon damage rolls for Cha bonus rounds.",
-        classSkills: []
-      },
-      Plant: {
-        grantedPower: "Rebuke or command plant creatures as an evil cleric rebukes undead (3 + Cha modifier/day). Knowledge (nature) is a class skill.",
-        classSkills: ["k_nature"]
-      },
-      Protection: {
-        grantedPower: "Protective Ward (Su) 1/day: Standard action touch grants a resistance bonus equal to your cleric level on the target's next saving throw (max 1 hour).",
-        classSkills: []
-      },
-      Repose: {
-        grantedPower: "Death Touch / Ward against undead; gentle repose and protection of souls against undeath.",
-        classSkills: []
-      },
-      Rune: {
-        grantedPower: "Free Scribe Scroll feat.",
-        classSkills: []
-      },
-      Scalykind: {
-        grantedPower: "Rebuke or command animals and magical beasts with the reptilian subtype as an evil cleric rebukes undead (3 + Cha modifier/day).",
-        classSkills: []
-      },
-      Strength: {
-        grantedPower: "Feat of Strength (Su) 1/day: Free action to gain an enhancement bonus to Strength equal to your cleric level for 1 round.",
-        classSkills: []
-      },
-      Sun: {
-        grantedPower: "Greater Turning (Su) 1/day: Perform a greater turning against undead in place of a regular turning (undead that would be turned are destroyed instead).",
-        classSkills: []
-      },
-      Travel: {
-        grantedPower: "For a total time per day of 1 round per cleric level, act normally regardless of magical effects that impede movement (as Freedom of Movement). Survival is a class skill.",
-        classSkills: ["survival"]
-      },
-      Trickery: {
-        grantedPower: "Bluff, Disguise, and Hide are class skills.",
-        classSkills: ["bluff", "disguise", "hide"]
-      },
-      War: {
-        grantedPower: "Free Martial Weapon Proficiency with deity's favored weapon (if necessary) and Weapon Focus with the deity's favored weapon.",
-        classSkills: []
-      },
-      Water: {
-        grantedPower: "Turn or destroy fire creatures as a good cleric turns undead. Rebuke, command, or bolster water creatures as an evil cleric rebukes undead (3 + Cha modifier/day).",
-        classSkills: []
-      },
-      Weather: {
-        grantedPower: "Survival is a class skill (gain a +2 competence bonus in natural storms).",
-        classSkills: ["survival"]
-      },
-      Mind: {
-        grantedPower: "+2 competence bonus on Bluff, Diplomacy, and Sense Motive checks; +2 bonus on Will saves against enchantment spells and effects.",
-        classSkills: ["bluff", "diplomacy", "sense_motive"]
-      }
-    };
-    window.DND35_CLERIC_DOMAINS = DND35_CLERIC_DOMAINS;
-
-    function syncClericDomainsWithCompendium() {
+    // ====================================================
+    // ⚜️ CLERIC DOMAINS CATALOG ACCESSOR (D&D 3.5e RAW)
+    // Sourced 100% dynamically from database/srd_domains.json via SrdCompendium
+    // ====================================================
+    function getClericDomainsCatalog() {
+      const catalog = {};
       if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllDomains === 'function') {
-        const loadedDomains = window.SrdCompendium.getAllDomains();
-        if (Array.isArray(loadedDomains) && loadedDomains.length > 0) {
-          loadedDomains.forEach(d => {
+        const loaded = window.SrdCompendium.getAllDomains();
+        if (Array.isArray(loaded)) {
+          loaded.forEach(d => {
             if (!d || !d.name) return;
-            DND35_CLERIC_DOMAINS[d.name] = {
+            catalog[d.name] = {
               id: d.id,
               name: d.name,
               grantedPower: d.grantedPower?.description || d.description || '',
-              classSkills: d.grantedPower?.classSkills || [],
+              classSkills: d.grantedPower?.classSkills || d.classSkills || [],
               grantedFeats: d.grantedPower?.grantedFeats || [],
               modifiers: d.modifiers || [],
               ruleFlags: d.ruleFlags || {},
@@ -609,11 +465,21 @@
           });
         }
       }
+      return catalog;
     }
-    window.syncClericDomainsWithCompendium = syncClericDomainsWithCompendium;
+
     if (typeof window !== 'undefined') {
-      window.addEventListener('srdCompendiumReady', syncClericDomainsWithCompendium);
-      syncClericDomainsWithCompendium();
+      try {
+        Object.defineProperty(window, 'DND35_CLERIC_DOMAINS', {
+          get() {
+            return getClericDomainsCatalog();
+          },
+          configurable: true,
+          enumerable: true
+        });
+      } catch (_) {
+        window.DND35_CLERIC_DOMAINS = {};
+      }
     }
 
     function hasClericDomainCapability(char = character) {
@@ -656,7 +522,10 @@
         if (!p || p.active === false) return;
         [...(p.specialAbilities || []), ...(p.feats || [])].forEach(str => {
           const m = String(str || '').match(/Domain:\s*([A-Za-z]+)/i);
-          if (m && DND35_CLERIC_DOMAINS[m[1]] && !harvested.includes(m[1])) {
+          const hasDom = (window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
+            ? Boolean(window.SrdCompendium.getDomain(m?.[1]))
+            : Boolean(DND35_CLERIC_DOMAINS && DND35_CLERIC_DOMAINS[m?.[1]]);
+          if (m && hasDom && !harvested.includes(m[1])) {
             harvested.push(m[1]);
           }
         });
@@ -6979,12 +6848,15 @@
       });
 
       // Add Cleric Domain granted class skills (Trickery, Travel, Knowledge, Animal, Plant, Weather)
-      if (typeof getCharacterClericDomains === 'function' && typeof DND35_CLERIC_DOMAINS === 'object') {
+      if (typeof getCharacterClericDomains === 'function') {
         const chosenDomains = getCharacterClericDomains(char);
         chosenDomains.forEach(domName => {
-          const domDef = DND35_CLERIC_DOMAINS[domName];
-          if (domDef && Array.isArray(domDef.classSkills)) {
-            domDef.classSkills.forEach(sk => classSkills.add(sk));
+          const domDef = (window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
+            ? window.SrdCompendium.getDomain(domName)
+            : (typeof DND35_CLERIC_DOMAINS === 'object' ? DND35_CLERIC_DOMAINS[domName] : null);
+          const skills = domDef?.grantedPower?.classSkills || domDef?.classSkills || [];
+          if (Array.isArray(skills)) {
+            skills.forEach(sk => classSkills.add(sk));
           }
         });
       }

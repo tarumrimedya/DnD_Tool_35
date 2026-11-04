@@ -628,11 +628,25 @@
     },
 
     getAllDomains() {
-      return this.getAllLoaded('Domain');
+      let list = this.getAllLoaded('Domain');
+      if (list.length === 0 && typeof require !== 'undefined') {
+        try {
+          const fs = require('fs');
+          const path = require('path');
+          const p = path.resolve(__dirname, 'database/srd_domains.json');
+          if (fs.existsSync(p)) {
+            const records = JSON.parse(fs.readFileSync(p, 'utf8'));
+            registerEntries(records);
+            list = this.getAllLoaded('Domain');
+          }
+        } catch (_) {}
+      }
+      return list;
     },
 
     getDomain(idOrName) {
       if (!idOrName) return null;
+      this.getAllDomains();
       const raw = String(idOrName).trim();
       const byId = this.getById(raw);
       if (byId && byId.type === 'Domain') return byId;
