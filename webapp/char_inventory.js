@@ -1906,16 +1906,15 @@
       if (paneSpot) paneSpot.classList.toggle('hidden', isManual);
       if (paneManual) paneManual.classList.toggle('hidden', !isManual);
 
-      const activeTabClasses = isDebuff
-        ? 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-rose-950/80 border-rose-500/60 text-rose-200 shadow-sm cursor-pointer'
-        : 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-indigo-950/80 border-indigo-500/60 text-indigo-200 shadow-sm cursor-pointer';
-      const inactiveTabClasses = 'flex-1 py-1.5 px-3 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 transition border bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 cursor-pointer';
-
       if (btnSpot) {
-        btnSpot.className = !isManual ? activeTabClasses : inactiveTabClasses;
+        btnSpot.className = isDebuff
+          ? 'text-[10px] bg-slate-900 hover:bg-slate-800 text-rose-300 hover:text-rose-200 px-2.5 py-1 rounded border border-rose-500/40 hover:border-rose-400 font-bold inline-flex items-center gap-1 transition cursor-pointer shadow-sm'
+          : 'text-[10px] bg-slate-900 hover:bg-slate-800 text-indigo-300 hover:text-indigo-200 px-2.5 py-1 rounded border border-indigo-500/40 hover:border-indigo-400 font-bold inline-flex items-center gap-1 transition cursor-pointer shadow-sm';
       }
       if (btnManual) {
-        btnManual.className = isManual ? activeTabClasses : inactiveTabClasses;
+        btnManual.className = isDebuff
+          ? 'text-[10px] bg-slate-900/90 hover:bg-slate-800 text-rose-200 hover:text-white px-2 py-0.5 rounded border border-rose-500/50 hover:border-rose-400 font-bold inline-flex items-center gap-1 transition cursor-pointer shadow-sm'
+          : 'text-[10px] bg-slate-900/90 hover:bg-slate-800 text-indigo-200 hover:text-white px-2 py-0.5 rounded border border-indigo-500/50 hover:border-indigo-400 font-bold inline-flex items-center gap-1 transition cursor-pointer shadow-sm';
       }
 
       if (isManual) {
