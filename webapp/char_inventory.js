@@ -477,6 +477,25 @@
         }
       }
 
+      const condAcList = Array.isArray(character.conditionalAcBonuses)
+        ? character.conditionalAcBonuses
+        : (Array.isArray(bd.conditionalBonuses) ? bd.conditionalBonuses : []);
+      const conditionalAcHtml = condAcList.length > 0 ? `
+        <div class="pt-1.5 mt-1 border-t border-indigo-500/30 space-y-1 font-sans">
+          <div class="text-[10px] font-bold text-indigo-400 uppercase tracking-wide flex items-center gap-1">
+            <span>🛡️</span>
+            <span>Situational AC Bonuses (Not Added to Base AC)</span>
+          </div>
+          ${condAcList.map(c => {
+            const sign = (Number(c.val) || 0) >= 0 ? '+' : '';
+            const typeStr = c.type && c.type !== 'Untyped' ? ` ${c.type}` : '';
+            const condStr = c.condition ? ` (${c.condition})` : '';
+            const srcStr = c.source ? ` <span class="text-slate-400 font-normal">— ${c.source}</span>` : '';
+            return `<div class="flex items-center justify-between text-[11px] bg-indigo-950/40 border border-indigo-500/30 rounded px-2 py-0.5 text-indigo-200"><span class="font-semibold">${sign}${c.val}${typeStr} AC <span class="text-amber-300 font-bold">${condStr}</span>${srcStr}</span></div>`;
+          }).join('')}
+        </div>
+      ` : '';
+
       acList.innerHTML = `
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Base 10:</span><span class="text-white font-bold">10</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Armor Bonus:${armorSourceStr}</span><span class="text-sky-400 font-bold">+${bd.armor || 0}</span></div>
@@ -492,6 +511,7 @@
           <span>Flat-Footed: <strong class="text-slate-400">${bd.flat || acCalc.flat}</strong></span>
           <span>Armor Check Penalty (ACP): <strong class="text-rose-400">${bd.acp ? '-' + Math.abs(bd.acp) : '0'}</strong></span>
         </div>
+        ${conditionalAcHtml}
       `;
 
       const saves = RuleEngine.evaluateSaves(character);
@@ -575,6 +595,17 @@
       }
       if (charFeats.some(f => f.includes('steadfast determination'))) {
         bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Steadfast Determination: Uses CON modifier instead of WIS on Will saves; Natural 1 on Fortitude saves is not an automatic failure.</div>`);
+      }
+
+      // 4. Situational / Conditional Save Bonuses (Not Added to Base Saves)
+      if (Array.isArray(character.conditionalSaveBonuses) && character.conditionalSaveBonuses.length > 0) {
+        character.conditionalSaveBonuses.forEach(cs => {
+          const sign = (Number(cs.val) || 0) >= 0 ? '+' : '';
+          const typeStr = cs.type && cs.type !== 'Untyped' ? ` ${cs.type}` : '';
+          const condStr = cs.condition ? ` (${cs.condition})` : '';
+          const srcStr = cs.source ? ` — ${cs.source}` : '';
+          bonusNotes.push(`<div class="py-0.5 text-indigo-200 font-semibold">🛡️ Situational Save: ${sign}${cs.val}${typeStr} to ${cs.target || 'All Saves'} <span class="text-amber-300 font-bold">${condStr}</span><span class="text-slate-400 font-normal">${srcStr}</span></div>`);
+        });
       }
 
       // Attack Bonus Detailed RAW Breakdown

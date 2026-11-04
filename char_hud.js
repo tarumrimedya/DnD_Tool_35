@@ -2588,17 +2588,27 @@
           if (bd.dodge) detailedParts.push(`Dodge +${bd.dodge}`);
           if (bd.penalty) detailedParts.push(`Penalty ${bd.penalty}`);
 
-          const shortParts = [];
-          if (bd.armor) shortParts.push(`Armor +${bd.armor}`);
-          if (bd.shield) shortParts.push(`Shield +${bd.shield}`);
-          if (bd.dex !== undefined) shortParts.push(`Dex ${bd.dex >= 0 ? '+' + bd.dex : bd.dex}`);
-          if (bd.natural) shortParts.push(`Nat +${bd.natural}`);
-          if (bd.deflection) shortParts.push(`Defl +${bd.deflection}`);
-          if (bd.dodge) shortParts.push(`Dodge +${bd.dodge}`);
-          if (bd.penalty) shortParts.push(`Penalty ${bd.penalty}`);
+          const condAcList = Array.isArray(character.conditionalAcBonuses)
+            ? character.conditionalAcBonuses
+            : (Array.isArray(character.acBreakdown?.conditionalBonuses) ? character.acBreakdown.conditionalBonuses : []);
 
-          acNotesEl.textContent = shortParts.join(' • ') || 'Base AC 10';
-          acNotesEl.title = `AC Breakdown: ${detailedParts.join(' • ')} (Base 10) | Click 'Breakdown' for full details.`;
+          if (condAcList.length > 0) {
+            const shortCondParts = condAcList.map(ca => {
+              const sign = ca.val >= 0 ? `+${ca.val}` : `${ca.val}`;
+              return `${sign} ${ca.type || 'Bonus'} (${ca.condition})`;
+            });
+            const fullCondParts = condAcList.map(ca => {
+              const sign = ca.val >= 0 ? `+${ca.val}` : `${ca.val}`;
+              return `${sign} ${ca.type || 'Bonus'} AC ${ca.condition} [${ca.source}]`;
+            });
+            acNotesEl.textContent = shortCondParts.join(' • ');
+            acNotesEl.className = 'h-7 flex items-center justify-center text-[10px] text-teal-300 font-semibold text-center truncate bg-slate-950/50 rounded-md px-2 border border-teal-800/50';
+            acNotesEl.title = `Situational AC Bonuses (Not Added to Base AC): ${fullCondParts.join(' • ')} | Base AC Breakdown: ${detailedParts.join(' • ')} (Base 10)`;
+          } else {
+            acNotesEl.textContent = 'No situational AC bonuses';
+            acNotesEl.className = 'h-7 flex items-center justify-center text-[10px] text-slate-500 italic text-center truncate bg-slate-950/50 rounded-md px-2 border border-slate-800/60';
+            acNotesEl.title = `AC Breakdown: ${detailedParts.join(' • ')} (Base 10) | Click 'Breakdown' for full details.`;
+          }
         }
       }
 

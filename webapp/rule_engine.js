@@ -1973,13 +1973,14 @@ const RuleEngine = {
     };
     let tLabel = targetLabelMap[t];
     if (!tLabel) {
-      if (t.startsWith('skill.') || t.startsWith('skills.')) {
+      if ( t.startsWith('skill.') || t.startsWith('skills.')) {
         tLabel = t.replace(/^skills?\./, '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
       } else {
         tLabel = t.toUpperCase();
       }
     }
-    return `${sign}${bType} ${tLabel}`;
+    const condSuffix = mod.condition ? ` (${String(mod.condition).trim()})` : '';
+    return `${sign}${bType} ${tLabel}${condSuffix}`;
   },
 
   // Built-in Canonical V2 Splatbook Buff Spells (Dragon Magic, Races of the Dragon, Spell Compendium, Complete Mage)
@@ -2595,7 +2596,7 @@ const RuleEngine = {
 
     // 2. Fallback Built-in Splatbook & Core Templates if Compendium is not yet loaded in memory
     if (modifiers.length === 0 && !sizeModifier && !tempHpFormula && Object.keys(ruleFlags).length === 0) {
-      const m = (target, formula, type = 'untyped') => ({ target, value: typeof formula === 'number' ? formula : 0, formula: String(formula), type, condition: null });
+      const m = (target, formula, type = 'untyped', condition = null) => ({ target, value: typeof formula === 'number' ? formula : 0, formula: String(formula), type, condition });
       const BUILTIN_BUFFS = {
         "bull's strength": { targetMode: 'single', modifiers: [m('ability.str', 4, 'enhancement')] },
         "bull's strength, mass": { targetMode: 'party', modifiers: [m('ability.str', 4, 'enhancement')] },
@@ -2649,14 +2650,14 @@ const RuleEngine = {
         "greater resistance": { targetMode: 'single', modifiers: [m('save.all', 3, 'resistance')] },
         "resistance, superior": { targetMode: 'single', modifiers: [m('save.all', 6, 'resistance')] },
         "superior resistance": { targetMode: 'single', modifiers: [m('save.all', 6, 'resistance')] },
-        "protection from evil": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Evil', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "protection from good": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Good', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "protection from law": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Law', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "protection from chaos": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Chaos', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "magic circle against evil": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Evil', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "magic circle against good": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Good', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "magic circle against law": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Law', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "magic circle against chaos": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection'), m('save.all', 2, 'resistance')], ruleFlags: { wardAlignment: 'Chaos', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "protection from evil": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Evil'), m('save.all', 2, 'resistance', 'vs. Evil')], ruleFlags: { wardAlignment: 'Evil', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "protection from good": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Good'), m('save.all', 2, 'resistance', 'vs. Good')], ruleFlags: { wardAlignment: 'Good', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "protection from law": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Law'), m('save.all', 2, 'resistance', 'vs. Law')], ruleFlags: { wardAlignment: 'Law', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "protection from chaos": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Chaos'), m('save.all', 2, 'resistance', 'vs. Chaos')], ruleFlags: { wardAlignment: 'Chaos', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "magic circle against evil": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Evil'), m('save.all', 2, 'resistance', 'vs. Evil')], ruleFlags: { wardAlignment: 'Evil', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "magic circle against good": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Good'), m('save.all', 2, 'resistance', 'vs. Good')], ruleFlags: { wardAlignment: 'Good', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "magic circle against law": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Law'), m('save.all', 2, 'resistance', 'vs. Law')], ruleFlags: { wardAlignment: 'Law', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
+        "magic circle against chaos": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Chaos'), m('save.all', 2, 'resistance', 'vs. Chaos')], ruleFlags: { wardAlignment: 'Chaos', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
         "resist energy": { targetMode: 'single', modifiers: [], ruleFlags: { energyChoice: true, energyResistanceFormula: '@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)' } },
         "resist energy, mass": { targetMode: 'party', modifiers: [], ruleFlags: { energyChoice: true, energyResistanceFormula: '@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)' } },
         "mass resist energy": { targetMode: 'party', modifiers: [], ruleFlags: { energyChoice: true, energyResistanceFormula: '@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)' } },
@@ -2975,6 +2976,7 @@ const RuleEngine = {
     let bonusPowerPoints = 0;
     let grappleModBonus = 0;
     const bonusSpellSlotsByLevel = {};
+    const conditionalAcBonuses = [];
     const conditionalSaveBonuses = [];
     let buffAcPenalty = 0;
     let buffSkillBonus = 0;
@@ -3014,6 +3016,25 @@ const RuleEngine = {
         // Armor Class (both `ac.*` and `ac` / `armor` / `shield` / `natural` / `deflection` / `dodge`)
         const acSub = target.startsWith('ac.') ? target.slice(3) : target;
         if (target === 'ac' || target.startsWith('ac.') || ['armor', 'shield', 'natural', 'deflection', 'dodge'].includes(acSub)) {
+          if (mod.condition) {
+            const acTypeLabel = acSub === 'deflection' || mTypeLower === 'deflection'
+              ? 'Deflection'
+              : (acSub === 'dodge' || mTypeLower === 'dodge'
+                ? 'Dodge'
+                : (acSub === 'natural' || mTypeLower.includes('natural')
+                  ? 'Natural'
+                  : (acSub === 'shield' || mTypeLower === 'shield'
+                    ? 'Shield'
+                    : (acSub === 'armor' || mTypeLower === 'armor' ? 'Armor' : (mType.charAt(0).toUpperCase() + mType.slice(1))))));
+            conditionalAcBonuses.push({
+              target: 'AC',
+              val,
+              type: acTypeLabel,
+              condition: String(mod.condition).trim(),
+              source: sourceName
+            });
+            return;
+          }
           if (val < 0 || mTypeLower === 'penalty') {
             buffAcPenalty += Math.abs(val);
           } else if (acSub === 'shield' || mTypeLower === 'shield') {
@@ -3036,12 +3057,12 @@ const RuleEngine = {
         // Saving Throws (`save.all`, `saves.all`, `save.fort`, `fort`, etc.)
         const saveSub = target.replace(/^saves?\./, '');
         if (saveSub === 'all' || target === 'saves' || target === 'all_saves' || saveSub === 'fort' || saveSub === 'ref' || saveSub === 'will') {
-          if (mod.condition && sourceCategory !== 'buff') {
+          if (mod.condition) {
             conditionalSaveBonuses.push({
-              target: saveSub === 'all' ? 'All Saves' : saveSub.toUpperCase(),
+              target: saveSub === 'all' || target === 'saves' || target === 'all_saves' ? 'All Saves' : saveSub.toUpperCase(),
               val,
-              type: mType,
-              condition: String(mod.condition),
+              type: mType.charAt(0).toUpperCase() + mType.slice(1),
+              condition: String(mod.condition).trim(),
               source: sourceName
             });
             return;
@@ -3190,10 +3211,12 @@ const RuleEngine = {
       const buffCl = Number(buff.casterLevel || buff.cl || charLvl) || charLvl;
       const buffCtx = { ...evalContext, cl: buffCl };
 
-      // Auto-hydrate V2 modifiers & ruleFlags from canonical spell spec if missing or using legacy static/off-by-one formulas on a scaling spell buff
+      // Auto-hydrate V2 modifiers & ruleFlags from canonical spell spec if missing or using legacy static/off-by-one formulas on a scaling or ward spell buff
       const isScalingSpellBuff = /^(divine favor|barkskin|shield of faith|conviction|mass conviction|conviction, mass|magic vestment|greater magic weapon|magic weapon, greater|greater magic fang|magic fang, greater)$/i.test(String(buff.name || '').trim());
+      const isWardSpellBuff = /^(protection from (?:evil|good|law|chaos)|magic circle against (?:evil|good|law|chaos))$/i.test(String(buff.name || '').trim());
       const lacksFormulaOnScalingSpell = isScalingSpellBuff && Array.isArray(buff.modifiers) && buff.modifiers.some(m => !m || !String(m.formula || '').includes('@cl') || String(m.formula || '').includes('1 + floor(@cl / 3)'));
-      if (((!Array.isArray(buff.modifiers) || buff.modifiers.length === 0) || lacksFormulaOnScalingSpell) && !buff.negativeLevels && !buff.isCondition) {
+      const lacksConditionOnWardSpell = isWardSpellBuff && Array.isArray(buff.modifiers) && buff.modifiers.some(m => m && !m.condition);
+      if (((!Array.isArray(buff.modifiers) || buff.modifiers.length === 0) || lacksFormulaOnScalingSpell || lacksConditionOnWardSpell) && !buff.negativeLevels && !buff.isCondition) {
         const cleanSpellQuery = { name: buff.name, id: String(buff.id || '').startsWith('spl-') ? buff.id : undefined };
         const resolvedSpec = this.resolveSpellBuffSpec(cleanSpellQuery, character, buffCl);
         if (resolvedSpec && resolvedSpec.isBuffSpell) {
@@ -3297,6 +3320,28 @@ const RuleEngine = {
       if (rf.hpPerLevel || cleanName.includes('draconic toughness')) {
         draconicToughnessHp = Math.max(draconicToughnessHp, charLvl);
       }
+      if (rf.dodgeBonus || cleanName === 'dodge') {
+        if (!conditionalAcBonuses.some(c => (c.source || '').toLowerCase() === 'dodge')) {
+          conditionalAcBonuses.push({
+            target: 'AC',
+            val: Number(rf.dodgeBonus) || 1,
+            type: 'Dodge',
+            condition: 'vs. Designated Opponent',
+            source: 'Dodge'
+          });
+        }
+      }
+      if (rf.mobilityBonus || cleanName === 'mobility') {
+        if (!conditionalAcBonuses.some(c => (c.source || '').toLowerCase() === 'mobility')) {
+          conditionalAcBonuses.push({
+            target: 'AC',
+            val: Number(rf.mobilityBonus) || 4,
+            type: 'Dodge',
+            condition: 'vs. AoO from Movement',
+            source: 'Mobility'
+          });
+        }
+      }
 
       // Dynamic scaling natural armor boons (e.g. "Nat AC 2+1/4lvl") if not already in V2 modifiers
       if (featMods.length === 0 && (cleanName.includes('nat ac') || cleanName.includes('natural armor') || cleanName.includes('doğal zırh'))) {
@@ -3335,6 +3380,33 @@ const RuleEngine = {
       if (raceObj && Array.isArray(raceObj.modifiers)) {
         const raceLabel = `${raceObj.name || character.race} (Race)`;
         applyV2Modifiers(raceObj.modifiers, raceLabel, 'race', evalContext);
+      }
+      const rLower = String(character.race).toLowerCase();
+      if (rLower.includes('dwarf')) {
+        if (!conditionalAcBonuses.some(c => c.condition === 'vs. Giants')) {
+          conditionalAcBonuses.push({ target: 'AC', val: 4, type: 'Dodge', condition: 'vs. Giants', source: `${character.race} (Race)` });
+        }
+        if (!conditionalSaveBonuses.some(c => c.condition === 'vs. Poison' && (c.source || '').includes('Race'))) {
+          conditionalSaveBonuses.push({ target: 'All Saves', val: 2, type: 'Racial', condition: 'vs. Poison', source: `${character.race} (Race)` });
+        }
+        if (!conditionalSaveBonuses.some(c => c.condition === 'vs. Spells & Spell-Like Effects' && (c.source || '').includes('Race'))) {
+          conditionalSaveBonuses.push({ target: 'All Saves', val: 2, type: 'Racial', condition: 'vs. Spells & Spell-Like Effects', source: `${character.race} (Race)` });
+        }
+      } else if (rLower.includes('gnome')) {
+        if (!conditionalAcBonuses.some(c => c.condition === 'vs. Giants')) {
+          conditionalAcBonuses.push({ target: 'AC', val: 4, type: 'Dodge', condition: 'vs. Giants', source: `${character.race} (Race)` });
+        }
+        if (!conditionalSaveBonuses.some(c => c.condition === 'vs. Illusions' && (c.source || '').includes('Race'))) {
+          conditionalSaveBonuses.push({ target: 'All Saves', val: 2, type: 'Racial', condition: 'vs. Illusions', source: `${character.race} (Race)` });
+        }
+      } else if (rLower.includes('halfling')) {
+        if (!conditionalSaveBonuses.some(c => c.condition === 'vs. Fear' && (c.source || '').includes('Race'))) {
+          conditionalSaveBonuses.push({ target: 'All Saves', val: 2, type: 'Morale', condition: 'vs. Fear', source: `${character.race} (Race)` });
+        }
+      } else if (rLower.includes('elf') || rLower.includes('elven')) {
+        if (!conditionalSaveBonuses.some(c => c.condition === 'vs. Enchantment Spells & Effects' && (c.source || '').includes('Race'))) {
+          conditionalSaveBonuses.push({ target: 'All Saves', val: 2, type: 'Racial', condition: 'vs. Enchantment Spells & Effects', source: `${character.race} (Race)` });
+        }
       }
     }
 
@@ -3403,10 +3475,6 @@ const RuleEngine = {
     const totalDefense = tacticalOptions.totalDefense || false;
     const charge = tacticalOptions.charge || false;
 
-    if (charFeatNames.some(f => f === 'dodge') && !dodgeBonuses.some(d => (d.source || '').toLowerCase() === 'dodge')) {
-      effectiveDodge += 1;
-    }
-
     // D&D 3.5e RAW (PHB p. 84, Tumble): 5+ ranks in Tumble increases Fighting Defensively dodge bonus to +3 and Total Defense to +6
     const skillList = Array.isArray(character.skills) ? character.skills : Object.values(character.skills || {});
     const tumbleSkill = skillList.find(s => s && s.name && s.name.toLowerCase() === 'tumble');
@@ -3474,8 +3542,10 @@ const RuleEngine = {
         natural: naturalBonuses,
         deflection: deflectionBonuses,
         dodge: dodgeBonuses
-      }
+      },
+      conditionalBonuses: conditionalAcBonuses
     };
+    character.conditionalAcBonuses = conditionalAcBonuses;
 
     if (character.isNpc && character.ac && character.ac.total) {
       character.acBreakdown.total = character.ac.total;
