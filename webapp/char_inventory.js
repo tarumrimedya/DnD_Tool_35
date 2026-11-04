@@ -4631,8 +4631,8 @@
               <span class="text-xs font-bold text-amber-300 uppercase tracking-wider">Weapons &amp; Quick Loadout:</span>
             </div>
 
-            <!-- Weapon Quick Slots (Equal Width & Equal Height Side-by-Side Grid) -->
-            <div class="grid grid-cols-2 gap-2.5 flex-1 min-w-0 w-full items-stretch">
+            <!-- Weapon Quick Slots (Stacked on Mobile, Side-by-Side on sm+) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 min-w-0 w-full items-stretch">
               <!-- Main Hand Badge -->
               <div onclick="openSlotEquipModal('mainHand')" class="h-full min-w-0 flex flex-col justify-start gap-1.5 pl-3 ${mhHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
                 <div class="flex items-center justify-between gap-2 min-w-0">
