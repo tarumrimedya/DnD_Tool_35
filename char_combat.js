@@ -1611,6 +1611,114 @@
         };
       }
 
+      if (idClean === 'turnundead') {
+        const info = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getTurnUndeadAndDomainPowers === 'function')
+          ? RuleEngine.getTurnUndeadAndDomainPowers(character)
+          : { maxDailyTurns: 3, effectiveTurningLevel: 1, turningCheckFormula: '1d20', turningDamageFormula: '2d6', turningBonusSources: [] };
+        const energyPolicy = typeof resolveClericEnergyPolicy === 'function' ? resolveClericEnergyPolicy(character) : null;
+        const spontMode = (energyPolicy && energyPolicy.forcedMode) || character?.spellcasting?.clericSpontaneousMode || 'cure';
+        const isRebuke = spontMode === 'inflict';
+        const used = Math.max(0, Number(character?.spellcasting?.turnUndeadUsed) || 0);
+        const rem = Math.max(0, (info.maxDailyTurns || 0) - used);
+        const bonusNote = (info.turningBonusSources || []).length > 0 ? ` (${info.turningBonusSources.join(', ')})` : '';
+        return {
+          title: isRebuke ? 'Rebuke / Command Undead' : 'Turn / Destroy Undead',
+          type: `Supernatural (${rem}/${info.maxDailyTurns || 0} Left)`,
+          color: isRebuke ? 'rose' : 'amber',
+          val1: `Check: ${info.turningCheckFormula} (Max HD)`,
+          val2: `Damage: ${info.turningDamageFormula} HD`,
+          source: `PHB p. 159 (Cleric Lvl ${info.effectiveTurningLevel})`,
+          action: 'Standard Action (60 ft. range)',
+          desc: `Channel ${isRebuke ? 'Negative Energy to rebuke or command' : 'Positive Energy to turn or destroy'} undead within 60 ft. (line of effect). Turning check determines highest HD undead affected (PHB Table 8-9); Turning damage determines total HD affected${bonusNote}.`
+        };
+      }
+
+      if (idClean.startsWith('elemturn_')) {
+        const rawPoolId = String(modId).replace(/^elemTurn_/i, '');
+        const info = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getTurnUndeadAndDomainPowers === 'function')
+          ? RuleEngine.getTurnUndeadAndDomainPowers(character)
+          : { elementalTurningPools: [], turningCheckFormula: '1d20', turningDamageFormula: '2d6' };
+        const ep = (info.elementalTurningPools || []).find(p => p.id.toLowerCase() === rawPoolId.toLowerCase());
+        if (ep) {
+          const used = Math.max(0, Number(character?.spellcasting?.domainPowerUses?.[ep.id]) || 0);
+          const rem = Math.max(0, ep.maxUses - used);
+          return {
+            title: `${ep.label} (${ep.domain} Domain)`,
+            type: `Domain Turning (${rem}/${ep.maxUses} Left)`,
+            color: 'teal',
+            val1: `Check: ${info.turningCheckFormula}`,
+            val2: `Damage: ${info.turningDamageFormula} HD`,
+            source: `${ep.domain} Domain (PHB p. 185)`,
+            action: 'Standard Action',
+            desc: `${ep.domain} Domain Granted Power: Turn or rebuke elemental/subtype creatures as a Good or Evil Cleric turns or rebukes undead. Uses its own separate daily pool (3 + CHA modifier/day).`
+          };
+        }
+      }
+
+      if (idClean.startsWith('dompower_')) {
+        const rawPwId = String(modId).replace(/^domPower_/i, '');
+        const info = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getTurnUndeadAndDomainPowers === 'function')
+          ? RuleEngine.getTurnUndeadAndDomainPowers(character)
+          : { activeDomainPowers: [] };
+        const pw = (info.activeDomainPowers || []).find(p => p.id.toLowerCase() === rawPwId.toLowerCase());
+        if (pw) {
+          const used = Math.max(0, Number(character?.spellcasting?.domainPowerUses?.[pw.id]) || 0);
+          const rem = Math.max(0, pw.maxUses - used);
+          return {
+            title: `${pw.name} (${pw.domain} Domain)`,
+            type: `Domain Power (${rem}/${pw.maxUses} Left)`,
+            color: 'amber',
+            val1: pw.durationText || '1/day',
+            val2: pw.actionType ? `${pw.actionType.charAt(0).toUpperCase() + pw.actionType.slice(1)} Action` : 'Domain Power',
+            source: `${pw.domain} Domain (PHB p. 185)`,
+            action: `${pw.actionType ? pw.actionType.charAt(0).toUpperCase() + pw.actionType.slice(1) : 'Standard'} Action`,
+            desc: pw.summary || 'Activate Cleric Domain granted power.'
+          };
+        }
+      }
+
+      if (idClean.startsWith('divinefeat_')) {
+        const featKey = idClean.replace(/^divinefeat_/, '');
+        const chaMod = Math.floor(((Number(character?.abilities?.cha) || 10) - 10) / 2);
+        const bonusVal = Math.max(1, chaMod);
+        if (featKey === 'divine_might') {
+          return {
+            title: 'Divine Might [Divine]',
+            type: 'Costs 1 Turn/Rebuke Use',
+            color: 'amber',
+            val1: `+${bonusVal} Sacred Damage`,
+            val2: '1 Full Round',
+            source: 'Complete Warrior p. 106',
+            action: 'Free Action',
+            desc: `Spend 1 Turn/Rebuke Undead attempt as a free action to add your Charisma bonus (+${bonusVal}) as a sacred/profane bonus to all weapon damage rolls for 1 full round.`
+          };
+        }
+        if (featKey === 'divine_vengeance') {
+          return {
+            title: 'Divine Vengeance [Divine]',
+            type: 'Costs 1 Turn Undead Use',
+            color: 'amber',
+            val1: '+2d6 Sacred Damage vs. Undead',
+            val2: '1 Full Round',
+            source: 'Complete Warrior p. 106',
+            action: 'Free Action',
+            desc: 'Spend 1 Turn Undead attempt to add +2d6 points of sacred energy damage to all successful melee attacks against undead until the end of your next action.'
+          };
+        }
+        if (featKey === 'divine_shield') {
+          return {
+            title: 'Divine Shield [Divine]',
+            type: 'Costs 1 Turn/Rebuke Use',
+            color: 'sky',
+            val1: `+${bonusVal} Shield AC Bonus`,
+            val2: `${Math.max(1, Math.floor((Number(character?.level) || 1) / 2))} Rounds`,
+            source: 'Complete Warrior p. 106',
+            action: 'Standard Action',
+            desc: `Spend 1 Turn/Rebuke Undead attempt to channel energy into your shield, adding your Charisma bonus (+${bonusVal}) to your shield's AC bonus for a number of rounds equal to half your character level.`
+          };
+        }
+      }
+
       // 4. Check Metamagic definitions
       const metaMap = {
         'meta_empower': { title: 'Empower Spell', type: 'Metamagic Feat', color: 'purple', val1: '+50% Variable Effect (x1.5)', val2: '+2 Spell Slot', action: 'Casting a Spell', desc: 'All variable, numeric effects of an empowered spell are increased by one-half (x1.5). Saving throws and opposed rolls are not affected. An empowered spell uses up a spell slot two levels higher.' },
@@ -2339,6 +2447,115 @@
       renderSpellTacticalModifiers();
     }
 
+    function triggerDivineChannelingFeat(featKey) {
+      if (!character || typeof RuleEngine === 'undefined' || typeof RuleEngine.getTurnUndeadAndDomainPowers !== 'function') return;
+      if (!character.spellcasting) character.spellcasting = {};
+      if (!Array.isArray(character.buffs)) character.buffs = [];
+
+      const buffId = `buf_feat_${featKey}`;
+      const existingBuff = character.buffs.find(b => b && b.id === buffId);
+      if (existingBuff && existingBuff.active) {
+        existingBuff.active = false;
+        if (RuleEngine.recalculateCharacter) RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
+        saveStateToStorage(true);
+        renderAll();
+        showDiceTopToast({
+          icon: '✨',
+          title: `${existingBuff.name} Deactivated`,
+          breakdown: 'Divine channeling effect ended.',
+          total: 'Off'
+        });
+        return;
+      }
+
+      const info = RuleEngine.getTurnUndeadAndDomainPowers(character);
+      const maxTurns = info.maxDailyTurns || 0;
+      const usedTurns = Math.max(0, Number(character.spellcasting.turnUndeadUsed) || 0);
+      if (!info.hasTurnUndead || usedTurns >= maxTurns) {
+        showDiceTopToast({
+          icon: '⚠️',
+          title: 'No Turn/Rebuke Uses Remaining',
+          breakdown: `Requires 1 Turn/Rebuke Undead attempt (${Math.max(0, maxTurns - usedTurns)}/${maxTurns} remaining).`,
+          total: '0 Left'
+        });
+        return;
+      }
+
+      character.spellcasting.turnUndeadUsed = usedTurns + 1;
+      const chaMod = Math.max(1, Math.floor(((Number(character?.abilities?.cha) || 10) - 10) / 2));
+      const halfLvl = Math.max(1, Math.floor((Number(character?.level) || 1) / 2));
+
+      let buffObj = null;
+      if (featKey === 'divine_might') {
+        buffObj = {
+          id: buffId,
+          schemaVersion: 2,
+          name: 'Divine Might',
+          active: true,
+          source: 'Divine Feat',
+          duration: '1 Round',
+          durationText: '1 Round',
+          initialDuration: '1 Round',
+          rounds: 1,
+          initialRounds: 1,
+          modifiers: [{ target: 'damage.melee', value: chaMod, type: 'sacred', condition: null }],
+          summary: `+${chaMod} Sacred bonus to weapon damage rolls for 1 full round.`,
+          description: `Spend 1 Turn/Rebuke attempt as a free action to add your Charisma bonus (+${chaMod}) to weapon damage for 1 full round.`
+        };
+        if (typeof consumeActionEconomy === 'function') consumeActionEconomy('free', 'Divine Might');
+      } else if (featKey === 'divine_vengeance') {
+        buffObj = {
+          id: buffId,
+          schemaVersion: 2,
+          name: 'Divine Vengeance',
+          active: true,
+          source: 'Divine Feat',
+          duration: '1 Round',
+          durationText: '1 Round',
+          initialDuration: '1 Round',
+          rounds: 1,
+          initialRounds: 1,
+          damageParts: [{ dice: '2d6', bonus: 0, type: 'Sacred (vs. Undead)', multiplyOnCrit: false, onCritOnly: false, source: 'Divine Vengeance' }],
+          summary: '+2d6 Sacred energy damage on melee attacks against undead for 1 round.',
+          description: 'Spend 1 Turn Undead attempt to add 2d6 sacred energy damage to melee attacks against undead until the end of your next action.'
+        };
+        if (typeof consumeActionEconomy === 'function') consumeActionEconomy('free', 'Divine Vengeance');
+      } else if (featKey === 'divine_shield') {
+        buffObj = {
+          id: buffId,
+          schemaVersion: 2,
+          name: 'Divine Shield',
+          active: true,
+          source: 'Divine Feat',
+          duration: `${halfLvl} Rounds`,
+          durationText: `${halfLvl} Rounds`,
+          initialDuration: `${halfLvl} Rounds`,
+          rounds: halfLvl,
+          initialRounds: halfLvl,
+          modifiers: [{ target: 'ac.shield', value: chaMod, type: 'sacred', condition: null }],
+          summary: `+${chaMod} Sacred bonus to Shield AC for ${halfLvl} rounds.`,
+          description: `Spend 1 Turn/Rebuke attempt as a standard action to add your Charisma bonus (+${chaMod}) to your shield's AC bonus for ${halfLvl} rounds.`
+        };
+        if (typeof consumeActionEconomy === 'function') consumeActionEconomy('standard', 'Divine Shield');
+      }
+
+      if (buffObj) {
+        const idx = character.buffs.findIndex(b => b && b.id === buffId);
+        if (idx !== -1) character.buffs[idx] = buffObj;
+        else character.buffs.push(buffObj);
+
+        if (RuleEngine.recalculateCharacter) RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
+        saveStateToStorage(true);
+        renderAll();
+        showDiceTopToast({
+          icon: '☀️',
+          title: `${buffObj.name} Activated (-1 Turn Use)`,
+          breakdown: `${buffObj.summary} • Turn Uses Left: ${Math.max(0, maxTurns - usedTurns - 1)}/${maxTurns}`,
+          total: 'Active'
+        });
+      }
+    }
+
     function renderSpellTacticalModifiers() {
       const container = document.getElementById('combat-spell-modifiers-dynamic-grid');
       if (!container) return;
@@ -2394,6 +2611,138 @@
         </button>
       `;
 
+      // Card 3+: Turn / Rebuke Undead, Elemental Turning, Active Domain Granted Powers & [Divine] Channeling Feats
+      const channelAndDomainCards = [];
+      const turnDomainInfo = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getTurnUndeadAndDomainPowers === 'function')
+        ? RuleEngine.getTurnUndeadAndDomainPowers(character)
+        : { hasTurnUndead: false, activeDomainPowers: [], elementalTurningPools: [] };
+
+      if (turnDomainInfo.hasTurnUndead) {
+        const turnUsed = Math.max(0, Number(character?.spellcasting?.turnUndeadUsed) || 0);
+        const turnMax = turnDomainInfo.maxDailyTurns || 0;
+        const turnRem = Math.max(0, turnMax - turnUsed);
+        const energyPolicy = typeof resolveClericEnergyPolicy === 'function' ? resolveClericEnergyPolicy(character) : null;
+        const spontMode = (energyPolicy && energyPolicy.forcedMode) || character?.spellcasting?.clericSpontaneousMode || 'cure';
+        const isRebuke = spontMode === 'inflict';
+        const borderCls = turnRem > 0
+          ? (isRebuke ? 'border-slate-800 bg-slate-900 text-slate-300 hover:border-rose-500/70' : 'border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/70')
+          : 'border-slate-800/60 bg-slate-950/60 text-slate-500 opacity-60';
+        const badgeCls = turnRem > 0
+          ? (isRebuke ? 'text-rose-400 font-bold' : 'text-amber-400 font-bold')
+          : 'text-slate-500';
+        const titleCls = turnRem > 0
+          ? (isRebuke ? 'text-rose-300 group-hover:text-white' : 'text-amber-300 group-hover:text-white')
+          : 'text-slate-500';
+
+        channelAndDomainCards.push(`
+          <button type="button" onclick="if(typeof rollTurnUndeadCheck==='function') rollTurnUndeadCheck('undead', false)"
+                  onmouseenter="showCombatModifierHoverTooltip(event, 'turnUndead', 'spell')"
+                  onmouseleave="hideCombatModifierHoverTooltip()"
+                  onmousemove="updateCombatModifierHoverTooltipPos(event)"
+                  class="relative border ${borderCls} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
+            <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+              <span class="text-[8px] font-mono ${badgeCls} truncate max-w-[85px]">Channel (${turnRem}/${turnMax})</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+              <div class="text-[10px] font-bold ${titleCls} leading-tight truncate w-full">
+                <span class="mr-0.5 text-[9px]">${isRebuke ? '💀' : '☀️'}</span>${isRebuke ? 'Rebuke Undead' : 'Turn Undead'}
+              </div>
+              <div class="text-[9px] ${turnRem > 0 ? 'text-sky-300 font-bold' : 'text-slate-500'} font-mono mt-1 truncate w-full">${turnDomainInfo.turningCheckFormula} • ${turnDomainInfo.turningDamageFormula} HD</div>
+            </div>
+          </button>
+        `);
+      }
+
+      // Elemental Turning Pools (Air, Earth, Fire, Water, Plant, etc.)
+      (turnDomainInfo.elementalTurningPools || []).forEach(ep => {
+        const epUsed = Math.max(0, Number(character?.spellcasting?.domainPowerUses?.[ep.id]) || 0);
+        const epRem = Math.max(0, ep.maxUses - epUsed);
+        const safePoolId = (ep.id || '').replace(/'/g, "\\'");
+        channelAndDomainCards.push(`
+          <button type="button" onclick="if(typeof rollTurnUndeadCheck==='function') rollTurnUndeadCheck('${safePoolId}', false)"
+                  onmouseenter="showCombatModifierHoverTooltip(event, 'elemTurn_${safePoolId}', 'spell')"
+                  onmouseleave="hideCombatModifierHoverTooltip()"
+                  onmousemove="updateCombatModifierHoverTooltipPos(event)"
+                  class="relative border ${epRem > 0 ? 'border-slate-800 bg-slate-900 text-slate-300 hover:border-teal-500/70' : 'border-slate-800/60 bg-slate-950/60 text-slate-500 opacity-60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
+            <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+              <span class="text-[8px] font-mono ${epRem > 0 ? 'text-teal-400 font-bold' : 'text-slate-500'} truncate max-w-[85px]">${ep.domain} (${epRem}/${ep.maxUses})</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+              <div class="text-[10px] font-bold ${epRem > 0 ? 'text-teal-300 group-hover:text-white' : 'text-slate-500'} leading-tight truncate w-full">
+                <span class="mr-0.5 text-[9px]">${ep.icon || '⚜️'}</span>${ep.label}
+              </div>
+              <div class="text-[9px] ${epRem > 0 ? 'text-amber-300 font-bold' : 'text-slate-500'} font-mono mt-1 truncate w-full">${turnDomainInfo.turningCheckFormula} • ${turnDomainInfo.turningDamageFormula} HD</div>
+            </div>
+          </button>
+        `);
+      });
+
+      // Active Domain Granted Powers (Strength, Luck, Sun Greater Turning, Protection, Trickery, War, etc.)
+      (turnDomainInfo.activeDomainPowers || []).forEach(pw => {
+        const pwUsed = Math.max(0, Number(character?.spellcasting?.domainPowerUses?.[pw.id]) || 0);
+        const pwRem = Math.max(0, pw.maxUses - pwUsed);
+        const isBuffActive = pw.kind === 'buff' && (character?.buffs || []).some(b => b && b.active && b.id === pw.id);
+        const safePwId = (pw.id || '').replace(/'/g, "\\'");
+        const subLabel = pw.formula ? pw.formula : (pw.durationText || '1/day');
+        const activeCls = isBuffActive
+          ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_12px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/30'
+          : (pwRem > 0 ? 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/70' : 'border border-slate-800/60 bg-slate-950/60 text-slate-500 opacity-60');
+
+        channelAndDomainCards.push(`
+          <button type="button" onclick="if(typeof activateClericDomainPower==='function') activateClericDomainPower('${safePwId}')"
+                  onmouseenter="showCombatModifierHoverTooltip(event, 'domPower_${safePwId}', 'spell')"
+                  onmouseleave="hideCombatModifierHoverTooltip()"
+                  onmousemove="updateCombatModifierHoverTooltipPos(event)"
+                  class="relative ${activeCls} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
+            <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+              <span class="text-[8px] font-mono ${isBuffActive ? 'text-amber-300 font-bold' : (pwRem > 0 ? 'text-amber-400 font-bold' : 'text-slate-500')} truncate max-w-[85px]">${pw.domain} (${pwRem}/${pw.maxUses})</span>
+            </div>
+            <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+              <div class="text-[10px] ${isBuffActive ? 'font-black text-white' : (pwRem > 0 ? 'font-bold text-amber-200 group-hover:text-white' : 'font-bold text-slate-500')} leading-tight truncate w-full">
+                <span class="mr-0.5 text-[9px]">${pw.icon || '⚜️'}</span>${pw.name}
+              </div>
+              <div class="text-[9px] ${isBuffActive ? 'text-amber-200 font-bold' : (pwRem > 0 ? 'text-slate-400' : 'text-slate-500')} font-mono mt-1 truncate w-full">${subLabel}</div>
+            </div>
+          </button>
+        `);
+      });
+
+      // [Divine] Channeling Feats (Divine Might, Divine Vengeance, Divine Shield)
+      if (turnDomainInfo.hasTurnUndead) {
+        const chaMod = Math.max(1, Math.floor(((Number(character?.abilities?.cha) || 10) - 10) / 2));
+        const charFeatNames = (featsList || []).map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
+        const divineFeatsDef = [
+          { match: 'divine might', key: 'divine_might', name: 'Divine Might', icon: '⚡', desc: `+${chaMod} Sacred Dmg` },
+          { match: 'divine vengeance', key: 'divine_vengeance', name: 'Divine Vengeance', icon: '☀️', desc: '+2d6 vs. Undead' },
+          { match: 'divine shield', key: 'divine_shield', name: 'Divine Shield', icon: '🛡️', desc: `+${chaMod} Shield AC` }
+        ];
+        divineFeatsDef.forEach(df => {
+          if (charFeatNames.some(fn => fn.includes(df.match))) {
+            const isActive = (character?.buffs || []).some(b => b && b.active && b.id === `buf_feat_${df.key}`);
+            const activeCls = isActive
+              ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_12px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/30'
+              : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/70';
+            channelAndDomainCards.push(`
+              <button type="button" onclick="triggerDivineChannelingFeat('${df.key}')"
+                      onmouseenter="showCombatModifierHoverTooltip(event, 'divineFeat_${df.key}', 'spell')"
+                      onmouseleave="hideCombatModifierHoverTooltip()"
+                      onmousemove="updateCombatModifierHoverTooltipPos(event)"
+                      class="relative ${activeCls} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
+                <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
+                  <span class="text-[8px] font-mono ${isActive ? 'text-amber-300 font-bold' : 'text-amber-400 font-bold'} truncate max-w-[85px]">${isActive ? 'Active (1 Rd)' : 'Divine (-1 Turn)'}</span>
+                </div>
+                <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
+                  <div class="text-[10px] ${isActive ? 'font-black text-white' : 'font-bold text-amber-200 group-hover:text-white'} leading-tight truncate w-full">
+                    <span class="mr-0.5 text-[9px]">${df.icon}</span>${df.name}
+                  </div>
+                  <div class="text-[9px] ${isActive ? 'text-amber-200 font-bold' : 'text-slate-400'} font-mono mt-1 truncate w-full">${df.desc}</div>
+                </div>
+              </button>
+            `);
+          }
+        });
+      }
+
       // Build modifier cards (Glow Card Toggle)
       const modCards = modifiers.map(mod => {
         const isActive = isSpellCockpitModifierActive(mod);
@@ -2444,7 +2793,7 @@
         `;
       });
 
-      const allItems = [defCardHtml, srCardHtml, ...modCards];
+      const allItems = [defCardHtml, srCardHtml, ...channelAndDomainCards, ...modCards];
       const totalCount = allItems.length;
 
       // Update badge
