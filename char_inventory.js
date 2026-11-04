@@ -2159,7 +2159,29 @@
         results.push({ entry, kindLabel, score });
       };
 
-      // 1. Scan Character Custom DB (`masterDb`) & Splatbook Buff Spells
+      const isPurelyNegativeMods = (mods, rf = {}) => {
+        if (rf && (rf.loseDexToAC || rf.effectiveDexZero || rf.halfSpeed || rf.actionRestriction || rf.negativeLevels)) {
+          return true;
+        }
+        if (!Array.isArray(mods) || mods.length === 0) return false;
+        const hasNeg = mods.some(m => Number(m?.value) < 0 || String(m?.formula || '').trim().startsWith('-'));
+        const hasPos = mods.some(m => Number(m?.value) > 0 || (m?.formula && !String(m.formula).trim().startsWith('-') && Number(m.formula) > 0));
+        return hasNeg && !hasPos;
+      };
+
+      // Canonical V2 Debuff Spells (for Debuff / Condition mode only)
+      const CANONICAL_DEBUFF_SPELLS = [
+        { id: 'debuff-spell-bane', schemaVersion: 2, name: 'Bane', type: 'Debuff', category: 'Enchantment', school: 'Enchantment', duration: '1 min/level', shortDescription: '-1 penalty on attack rolls and -1 penalty on saving throws against fear.', modifiers: [{ target: 'attack.all', value: -1, formula: '-1', type: 'penalty', condition: null }, { target: 'save.will', value: -1, formula: '-1', type: 'penalty', condition: 'vs fear' }], ruleFlags: {} },
+        { id: 'debuff-spell-doom', schemaVersion: 2, name: 'Doom', type: 'Debuff', category: 'Necromancy', school: 'Necromancy', duration: '1 min/level', shortDescription: 'Subject becomes Shaken (-2 on attack rolls, saving throws, skill checks, and ability checks).', modifiers: [{ target: 'attack.all', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'save.all', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'skill.all', value: -2, formula: '-2', type: 'penalty', condition: null }], ruleFlags: {} },
+        { id: 'debuff-spell-crushing-despair', schemaVersion: 2, name: 'Crushing Despair', type: 'Debuff', category: 'Enchantment', school: 'Enchantment', duration: '1 min/level', shortDescription: '-2 penalty on attack rolls, saving throws, ability checks, skill checks, and weapon damage rolls.', modifiers: [{ target: 'attack.all', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'damage.weapon', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'save.all', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'skill.all', value: -2, formula: '-2', type: 'penalty', condition: null }], ruleFlags: {} },
+        { id: 'debuff-spell-slow', schemaVersion: 2, name: 'Slow', type: 'Debuff', category: 'Transmutation', school: 'Transmutation', duration: '1 round/level', shortDescription: 'Single move or standard action only; -1 on attack rolls, AC, and Reflex saves; half speed.', modifiers: [{ target: 'attack.all', value: -1, formula: '-1', type: 'penalty', condition: null }, { target: 'ac.total', value: -1, formula: '-1', type: 'penalty', condition: null }, { target: 'save.ref', value: -1, formula: '-1', type: 'penalty', condition: null }], ruleFlags: { halfSpeed: true, actionRestriction: 'Slowed: Can take only a single move action or standard action each turn.' } },
+        { id: 'debuff-spell-bestow-curse', schemaVersion: 2, name: 'Bestow Curse (-4 Penalty)', type: 'Debuff', category: 'Necromancy', school: 'Necromancy', duration: 'Permanent', shortDescription: '-4 penalty on attack rolls, saves, ability checks, and skill checks.', modifiers: [{ target: 'attack.all', value: -4, formula: '-4', type: 'penalty', condition: null }, { target: 'save.all', value: -4, formula: '-4', type: 'penalty', condition: null }, { target: 'skill.all', value: -4, formula: '-4', type: 'penalty', condition: null }], ruleFlags: {} },
+        { id: 'debuff-spell-ray-of-enfeeblement', schemaVersion: 2, name: 'Ray of Enfeeblement', type: 'Debuff', category: 'Necromancy', school: 'Necromancy', duration: '1 min/level', shortDescription: '1d6 + 1 per two caster levels (max 1d6+5) penalty to Strength (cannot drop STR below 1).', modifiers: [{ target: 'ability.str', value: -6, formula: '-6', type: 'penalty', condition: null }], ruleFlags: {} },
+        { id: 'debuff-spell-touch-of-idiocy', schemaVersion: 2, name: 'Touch of Idiocy', type: 'Debuff', category: 'Enchantment', school: 'Enchantment', duration: '10 min/level', shortDescription: '1d6 penalty to INT, WIS, and CHA (cannot drop below 1).', modifiers: [{ target: 'ability.int', value: -3, formula: '-3', type: 'penalty', condition: null }, { target: 'ability.wis', value: -3, formula: '-3', type: 'penalty', condition: null }, { target: 'ability.cha', value: -3, formula: '-3', type: 'penalty', condition: null }], ruleFlags: {} },
+        { id: 'debuff-spell-mind-fog', schemaVersion: 2, name: 'Mind Fog', type: 'Debuff', category: 'Enchantment', school: 'Enchantment', duration: '2d6 rounds', shortDescription: '-10 competence penalty on Wisdom checks and Will saves.', modifiers: [{ target: 'save.will', value: -10, formula: '-10', type: 'penalty', condition: null }], ruleFlags: {} }
+      ];
+
+      // 1. Scan Character Custom DB (`masterDb`) & Splatbook Buff Spells (Strictly filtered by Buff vs Debuff mode)
       const customList = [
         ...(typeof masterDb !== 'undefined' && Array.isArray(masterDb) ? masterDb : []),
         ...(typeof RuleEngine !== 'undefined' && Array.isArray(RuleEngine.SPLATBOOK_BUFF_SPELLS) ? RuleEngine.SPLATBOOK_BUFF_SPELLS : [])
@@ -2167,19 +2189,33 @@
       customList.forEach(item => {
         if (!item || !item.name || String(item.name).startsWith('↳')) return;
         const tLower = String(item.type || '').toLowerCase();
-        const isCondOrDebuff = tLower === 'condition' || tLower === 'debuff' || Boolean(item.isDebuff);
+        const catLower = String(item.category || '').toLowerCase();
+        if (!['condition', 'debuff', 'buff', 'spell'].includes(tLower) && !['combat condition', 'buff', 'debuff'].includes(catLower)) {
+          return;
+        }
+        const isCondOrDebuff = tLower === 'condition' || tLower === 'debuff' || catLower === 'combat condition' || Boolean(item.isDebuff) || isPurelyNegativeMods(item.modifiers, item.ruleFlags);
         if (isDebuffMode) {
           if (isCondOrDebuff) {
-            addCandidate(item, item.source || item.type || 'Custom DB', 75);
-          } else if (q && (tLower === 'spell' || tLower === 'buff')) {
-            addCandidate(item, item.source || item.type || 'Custom DB', 15);
+            addCandidate(item, item.source || item.type || 'Custom Debuff', 75);
           }
         } else {
           if (!isCondOrDebuff) {
-            addCandidate(item, item.source || item.type || 'Custom DB', 70);
+            if (tLower === 'spell') {
+              const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
+                ? RuleEngine.resolveSpellBuffSpec(item, character, cl)
+                : null;
+              if (!spec || !spec.isBuffSpell) return;
+            }
+            addCandidate(item, item.source || item.type || 'Custom Buff', 70);
           }
         }
       });
+
+      if (isDebuffMode) {
+        CANONICAL_DEBUFF_SPELLS.forEach(ds => {
+          addCandidate(ds, `SRD Debuff Spell (${ds.school})`, 88);
+        });
+      }
 
       // 2. Scan Loaded SRD Compendium (`srd_combat_rules.json` Conditions & Buffs + `srd_spells.json` Buff Spells)
       if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
@@ -2188,29 +2224,24 @@
           if (!rec || !rec.name) return;
           const rType = String(rec.type || '').toLowerCase();
           if (rType === 'condition') {
-            if (isDebuffMode || q) {
-              addCandidate(rec, 'SRD Condition', isDebuffMode ? 95 : 15);
+            if (isDebuffMode) {
+              addCandidate(rec, 'SRD Condition', 95);
             }
           } else if (rType === 'buff') {
-            const hasNegMod = Array.isArray(rec.modifiers) && rec.modifiers.some(m => Number(m.value) < 0 || String(m.formula || '').trim().startsWith('-'));
-            if (isDebuffMode && hasNegMod) {
+            const isNegBuff = isPurelyNegativeMods(rec.modifiers, rec.ruleFlags);
+            if (isDebuffMode && isNegBuff) {
               addCandidate(rec, 'SRD Debuff', 90);
-            } else if (!isDebuffMode && !hasNegMod) {
+            } else if (!isDebuffMode && !isNegBuff) {
               addCandidate(rec, 'SRD Combat Buff', 90);
-            } else if (q) {
-              addCandidate(rec, hasNegMod ? 'SRD Debuff' : 'SRD Buff', 25);
             }
           } else if (rType === 'spell') {
-            const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
-              ? RuleEngine.resolveSpellBuffSpec(rec, character, cl)
-              : null;
-            if (spec && spec.isBuffSpell) {
-              if (!isDebuffMode || q) {
-                addCandidate(rec, `SRD Spell (${rec.school || 'Buff'})`, isDebuffMode ? 20 : 85);
+            if (!isDebuffMode) {
+              const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
+                ? RuleEngine.resolveSpellBuffSpec(rec, character, cl)
+                : null;
+              if (spec && spec.isBuffSpell) {
+                addCandidate(rec, `SRD Buff Spell (${rec.school || 'Buff'})`, 85);
               }
-            } else if (q && q.length >= 2) {
-              // Also allow searching debuff spells like Slow, Bane, Ray of Enfeeblement, Bestow Curse
-              addCandidate(rec, `SRD Spell (${rec.school || 'Spell'})`, isDebuffMode ? 50 : 30);
             }
           }
         });
@@ -2660,7 +2691,10 @@
           rmTitle.className = 'text-xs font-bold text-rose-300 flex items-center gap-1.5';
           rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Condition Search &amp; Rule Master (AI)</span>';
         }
-        if (rmCountBadge) rmCountBadge.className = 'text-[10px] text-rose-300 font-mono bg-rose-950/70 px-2 py-0.5 rounded border border-rose-500/40 shrink-0';
+        if (rmCountBadge) {
+          rmCountBadge.className = 'text-[10px] text-rose-300 font-mono bg-rose-950/70 px-2 py-0.5 rounded border border-rose-500/40 shrink-0';
+          rmCountBadge.textContent = '45+ V2 Conditions & Debuffs';
+        }
         if (rmCmdBar) rmCmdBar.className = 'ui-spotlight-well ui-spotlight-rose rounded-xl p-1.5 flex items-center gap-2 border border-rose-400/75';
         if (rmIconBadge) rmIconBadge.className = 'w-8 h-8 rounded-lg bg-rose-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow';
         if (rmBtn) rmBtn.className = 'h-8 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white border border-rose-400/60 font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0';
@@ -2708,7 +2742,10 @@
           rmTitle.className = 'text-xs font-bold text-indigo-300 flex items-center gap-1.5';
           rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Buff Search &amp; Rule Master (AI)</span>';
         }
-        if (rmCountBadge) rmCountBadge.className = 'text-[10px] text-indigo-300 font-mono bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-500/40 shrink-0';
+        if (rmCountBadge) {
+          rmCountBadge.className = 'text-[10px] text-indigo-300 font-mono bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-500/40 shrink-0';
+          rmCountBadge.textContent = '180+ V2 Buffs & Spells';
+        }
         if (rmCmdBar) rmCmdBar.className = 'ui-spotlight-well ui-spotlight-indigo rounded-xl p-1.5 flex items-center gap-2 border border-indigo-400/75';
         if (rmIconBadge) rmIconBadge.className = 'w-8 h-8 rounded-lg bg-indigo-600 text-white font-black flex items-center justify-center text-sm shrink-0 shadow';
         if (rmBtn) rmBtn.className = 'h-8 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-400/60 font-bold text-xs shadow flex items-center gap-1.5 transition active:scale-95 cursor-pointer shrink-0';
@@ -2734,6 +2771,10 @@
 
       switchBuffModalTab(currentBuffModalTab);
       renderBuffQuickPickChips();
+      const dd = document.getElementById('buff-spotlight-dropdown');
+      if (dd && !dd.classList.contains('hidden')) {
+        onBuffSpotlightInput(rmInput ? rmInput.value : '', true);
+      }
     }
 
     function renderBuffChildrenPreview(children) {
