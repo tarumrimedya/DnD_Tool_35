@@ -619,7 +619,7 @@
             </div>
 
             <!-- Structured Pickers -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
               <div>
                 <label class="block text-slate-400 mb-1 font-semibold">1. Base Item (Weapon / Armor)</label>
                 <select id="dnd-forge-base-select" onchange="DnDUI.onForgeControlChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400"></select>
@@ -647,15 +647,22 @@
                   <option value="5">+5 Enhancement (Pre-Epic Cap)</option>
                 </select>
               </div>
+              <div>
+                <label class="block text-slate-400 mb-1 font-semibold">4. Augmentation Crystal (MIC)</label>
+                <select id="dnd-forge-crystal-select" onchange="DnDUI.onForgeControlChange()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-2.5 py-2 text-white focus:outline-none focus:border-amber-400">
+                  <option value="">No Augmentation Crystal Attached</option>
+                </select>
+              </div>
             </div>
 
             <!-- Special Abilities Checkboxes -->
             <div class="space-y-1.5 pt-2">
               <div class="flex items-center justify-between gap-2 flex-wrap">
-                <label id="dnd-forge-abilities-title" class="block text-slate-400 font-semibold">4. Magic Weapon Special Abilities:</label>
+                <label id="dnd-forge-abilities-title" class="block text-slate-400 font-semibold">5. Magic Special Abilities:</label>
                 <span id="dnd-forge-budget-badge" class="px-2 py-0.5 rounded-lg text-[10px] font-mono font-bold bg-amber-950/80 text-amber-300 border border-amber-500/40">Budget: +0 / +1 Used (+1 Left)</span>
               </div>
-              <div id="dnd-forge-enhancements-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 max-h-44 overflow-y-auto p-1 custom-scroll">
+              <input type="text" id="dnd-forge-enh-search" oninput="DnDUI.onForgeEnhSearchInput(this.value)" placeholder="🔍 Quick filter abilities (e.g. Keen, Flaming, Ghost, Fortification)..." class="w-full h-8 text-[11px] bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-white mb-1 focus:outline-none focus:border-amber-400">
+              <div id="dnd-forge-enhancements-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 max-h-48 overflow-y-auto p-1 custom-scroll">
                 <!-- Populated dynamically -->
               </div>
             </div>
@@ -747,12 +754,47 @@
     return 'Weapon';
   }
 
-  function syncForgeEnhancementsGrid(preferredEnhIds = null) {
+  function onForgeEnhSearchInput(val) {
+    const enhGrid = document.getElementById('dnd-forge-enhancements-grid');
+    if (!enhGrid) return;
+    const q = (val || '').toLowerCase().trim();
+    const labels = enhGrid.querySelectorAll('label');
+    labels.forEach(l => {
+      const text = (l.textContent || '').toLowerCase();
+      const chk = l.querySelector('input');
+      if (!q || text.includes(q) || (chk && chk.checked)) {
+        l.classList.remove('hidden');
+      } else {
+        l.classList.add('hidden');
+      }
+    });
+  }
+
+  function syncForgeEnhancementsGrid(preferredEnhIds = null, preferredCrystalId = null) {
     const enhGrid = document.getElementById('dnd-forge-enhancements-grid');
     if (!enhGrid) return;
 
     const baseType = getSelectedForgeBaseType();
     const enhBonus = Math.max(0, Number(document.getElementById('dnd-forge-enh-bonus')?.value) || 0);
+
+    // Sync Augmentation Crystal dropdown for this baseType
+    const crysSel = document.getElementById('dnd-forge-crystal-select');
+    if (crysSel) {
+      const currentVal = preferredCrystalId !== null ? preferredCrystalId : crysSel.value;
+      let crystals = [];
+      if (global.SrdCompendium && typeof global.SrdCompendium.getCrystals === 'function') {
+        crystals = global.SrdCompendium.getCrystals(baseType);
+      }
+      crystals.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+      let optHtml = '<option value="">No Augmentation Crystal Attached</option>';
+      optHtml += crystals.map(c =>
+        `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)} (${Number(c.cost || 0).toLocaleString('en-US')} gp)</option>`
+      ).join('');
+      crysSel.innerHTML = optHtml;
+      if (currentVal && crystals.some(c => c.id === currentVal)) {
+        crysSel.value = currentVal;
+      }
+    }
 
     // Determine currently checked IDs (or use preferredEnhIds when initializing from item)
     const rawCheckedIds = Array.isArray(preferredEnhIds)
@@ -760,7 +802,33 @@
       : Array.from(document.querySelectorAll('.dnd-forge-enh-chk:checked')).map(el => el.value);
 
     // Filter catalog by selected item type (Weapon vs Armor vs Shield)
-    const eligibleCatalog = FORGE_ENH_CATALOG.filter(e => e.targetTypes.includes(baseType));
+    let eligibleCatalog = [];
+    if (global.SrdCompendium && typeof global.SrdCompendium.getEnhancements === 'function') {
+      const compList = global.SrdCompendium.getEnhancements(baseType);
+      if (Array.isArray(compList) && compList.length > 0) {
+        eligibleCatalog = compList.map(e => ({
+          id: e.id,
+          name: e.name,
+          label: `${e.name}`,
+          cost: Number(e.enhIncrease) || 0,
+          bonusEq: e.enhIncrease ? `+${e.enhIncrease}` : (e.flatCost ? `${e.flatCost} gp` : '+0'),
+          shortDescription: e.shortDescription || e.name
+        }));
+      }
+    }
+    if (eligibleCatalog.length === 0) {
+      eligibleCatalog = FORGE_ENH_CATALOG.filter(e => e.targetTypes.includes(baseType));
+    } else {
+      const existingIds = new Set(eligibleCatalog.map(e => e.id));
+      FORGE_ENH_CATALOG.filter(e => e.targetTypes.includes(baseType)).forEach(e => {
+        if (!existingIds.has(e.id)) {
+          eligibleCatalog.push(e);
+          existingIds.add(e.id);
+        }
+      });
+    }
+    eligibleCatalog.sort((a, b) => String(a.label || a.name || '').localeCompare(String(b.label || b.name || '')));
+
     const eligibleMap = new Map(eligibleCatalog.map(e => [e.id, e]));
 
     // Enforce Total Budget Rule: keep checked items in order only while their sum <= enhBonus
@@ -781,7 +849,7 @@
     // Update Section Title & Live Budget Pill
     const titleEl = document.getElementById('dnd-forge-abilities-title');
     if (titleEl) {
-      titleEl.textContent = `4. Magic ${baseType} Special Abilities:`;
+      titleEl.textContent = `5. Magic ${baseType} Special Abilities (${eligibleCatalog.length}):`;
     }
     const badgeEl = document.getElementById('dnd-forge-budget-badge');
     if (badgeEl) {
@@ -807,16 +875,21 @@
             : 'flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none');
       const titleAttr = isLocked
         ? `Requires +${e.cost} available Enhancement Budget (Remaining: +${remainingBudget})`
-        : `${e.label} (${e.bonusEq} Budget)`;
+        : `${e.label || e.name} (${e.bonusEq} Budget)`;
 
       return `
         <label class="${labelCls}" title="${escapeHtml(titleAttr)}">
           <input type="checkbox" value="${e.id}" ${isChecked ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="DnDUI.onForgeControlChange()" class="dnd-forge-enh-chk rounded text-amber-500 bg-slate-900 border-slate-700">
-          <span class="text-[11px] font-semibold ${isChecked ? 'text-amber-200' : 'text-slate-200'} truncate">${e.label}</span>
+          <span class="text-[11px] font-semibold ${isChecked ? 'text-amber-200' : 'text-slate-200'} truncate">${e.label || e.name}</span>
           <span class="text-[9px] font-mono ${isLocked ? 'text-slate-500' : 'text-amber-400'} ml-auto">${isLocked ? '🔒' + e.bonusEq : e.bonusEq}</span>
         </label>
       `;
     }).join('');
+
+    const searchInp = document.getElementById('dnd-forge-enh-search');
+    if (searchInp && searchInp.value) {
+      onForgeEnhSearchInput(searchInp.value);
+    }
   }
 
   function populateForgeControls() {
@@ -967,7 +1040,8 @@
       enhSel.value = String(clampedBonus);
     }
 
-    syncForgeEnhancementsGrid(resolvedEnhancements);
+    const resolvedCrystalId = (item.crystal && (item.crystal.id || item.crystal)) || null;
+    syncForgeEnhancementsGrid(resolvedEnhancements, resolvedCrystalId);
     updateForgePreview();
   }
 
@@ -985,6 +1059,7 @@
     const baseId = document.getElementById('dnd-forge-base-select')?.value || 'wpn-longsword';
     const matId = document.getElementById('dnd-forge-material-select')?.value || '';
     const enhBonus = Number(document.getElementById('dnd-forge-enh-bonus')?.value) || 0;
+    const crystalId = document.getElementById('dnd-forge-crystal-select')?.value || '';
     const checkedEnhs = Array.from(document.querySelectorAll('.dnd-forge-enh-chk:checked')).map(el => el.value);
 
     const assembleFn = global.ItemAssembler.assemble || global.ItemAssembler.assembleItem;
@@ -995,6 +1070,7 @@
         material: matId || null,
         enhancementBonus: enhBonus,
         enhancements: checkedEnhs,
+        crystal: crystalId || null,
         masterwork: enhBonus > 0 || Boolean(matId)
       });
     } catch (_) {
@@ -1452,6 +1528,7 @@
     selectCompendiumEntry,
     equipSelectedCompendiumEntry,
     onForgeNaturalLanguageInput,
+    onForgeEnhSearchInput,
     onForgeControlChange,
     populateForgeFromItem,
     updateForgePreview,

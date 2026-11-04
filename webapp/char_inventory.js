@@ -5830,13 +5830,15 @@
 
       let result = '';
       // 1. Fast direct type/slot/keyword checks first (O(1))
-      if (type.includes('weapon') || slot.includes('main hand') || slot.includes('two hand') || slot.includes('off hand')) {
+      if (type.includes('crystal') || (entry.category && entry.category.toLowerCase().includes('crystal')) || slot.includes('crystal')) {
+        result = 'Crystal';
+      } else if (type.includes('weapon') || slot.includes('main hand') || slot.includes('two hand') || slot.includes('off hand')) {
         result = 'Weapon';
       } else if (type.includes('shield') || slot.includes('shield') || name.includes('shield') || name.includes('buckler')) {
         result = 'Shield';
       } else if (type.includes('armor') || slot === 'armor' || slot === 'body') {
         result = 'Armor';
-      } else if (type.includes('potion') || type.includes('scroll') || type.includes('wand') || type.includes('consumable') || name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of') || name.startsWith('oil of')) {
+      } else if (type.includes('potion') || type.includes('scroll') || type.includes('wand') || type.includes('consumable') || type === 'ammo' || name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of') || name.startsWith('oil of')) {
         result = 'Consumable';
       } else if (slot.includes('head') || slot.includes('helm') || type.includes('head')) {
         result = 'Head';
@@ -5858,6 +5860,14 @@
         result = 'Ring';
       } else if (slot.includes('feet') || slot.includes('boot')) {
         result = 'Boots';
+      } else if (type.includes('tool') || (entry.category && entry.category.toLowerCase().includes('tool'))) {
+        result = 'Tool';
+      } else if (type.includes('rod') || (entry.category && entry.category.toLowerCase().includes('rod'))) {
+        result = 'Rod';
+      } else if (type.includes('staff') || (entry.category && entry.category.toLowerCase().includes('staff'))) {
+        result = 'Staff';
+      } else if (type.includes('wondrous') || (entry.category && entry.category.toLowerCase().includes('wondrous'))) {
+        result = 'Wondrous';
       } else if (/\b(?:dagger|sword|blade|axe|bow|crossbow|mace|spear|hammer|rapier|scimitar|flail|halberd|glaive|lance|morningstar|scythe|trident|quarterstaff|sling|dart|javelin|shuriken|kama|nunchaku|siangham|kukri|falchion|whip|club|greatclub)\b/i.test(name)) {
         result = 'Weapon';
       } else if (/\b(?:plate|mail|leather|padded|hide|hauberk|cuirass)\b/i.test(name)) {
@@ -5884,6 +5894,10 @@
         case 'Weapon': return '⚔️';
         case 'Shield': return '🛡️';
         case 'Armor': return '🥋';
+        case 'Crystal': return '💎';
+        case 'Tool': return '🔧';
+        case 'Rod': return '🪄';
+        case 'Staff': return '🦯';
         case 'Head': return '👑';
         case 'Eyes': return '👓';
         case 'Neck': return '📿';
@@ -5962,6 +5976,8 @@
           type.includes('potion') || type.includes('ring') || type.includes('wondrous') || 
           type.includes('item') || type.includes('gear') || type.includes('consumable') ||
           type.includes('scroll') || type.includes('wand') || type.includes('rod') ||
+          type.includes('staff') || type.includes('tool') || type.includes('crystal') ||
+          cat.includes('crystal') || type === 'ammo' ||
           type.includes('equipment') || type.includes('accessory') || type === 'goods') {
         isGear = true;
       } else if (item.slot && item.slot !== 'None' && item.slot !== '-' && item.slot.toLowerCase() !== 'none') {
@@ -6020,7 +6036,7 @@
         masterDb.forEach(pushUniqueGear);
       }
       if (srdReady && typeof window.SrdCompendium.getAllLoaded === 'function') {
-        const srdGear = window.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield', 'Item']);
+        const srdGear = window.SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield', 'Item', 'MagicItem', 'AugmentationCrystal', 'Tool', 'Consumable', 'Ammo', 'Gear']);
         if (Array.isArray(srdGear)) srdGear.forEach(pushUniqueGear);
       }
       if (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
@@ -6130,7 +6146,7 @@
       }, 120);
     }
 
-    const WONDROUS_CAT_SET = new Set(['Ring', 'Head', 'Eyes', 'Neck', 'Shoulders', 'Torso', 'Belt', 'Bracers', 'Gloves', 'Boots']);
+    const WONDROUS_CAT_SET = new Set(['Ring', 'Head', 'Eyes', 'Neck', 'Shoulders', 'Torso', 'Belt', 'Bracers', 'Gloves', 'Boots', 'Tool', 'Rod', 'Staff', 'Wondrous', 'Other']);
 
     function renderPoolCategoryTabs(unaddedList, activeFilter) {
       const container = document.getElementById('pool-category-tabs-container');
@@ -6140,12 +6156,13 @@
       const total = unaddedList.length;
       if (countBadge) countBadge.textContent = `${total} items available`;
 
-      let wepCount = 0, armCount = 0, wonCount = 0, potCount = 0;
+      let wepCount = 0, armCount = 0, wonCount = 0, potCount = 0, crysCount = 0;
       for (let i = 0; i < total; i++) {
         const c = mapEntryToGearCategory(unaddedList[i]);
         if (c === 'Weapon') wepCount++;
         else if (c === 'Armor' || c === 'Shield') armCount++;
         else if (c === 'Consumable') potCount++;
+        else if (c === 'Crystal') crysCount++;
         else if (WONDROUS_CAT_SET.has(c)) wonCount++;
       }
 
@@ -6154,6 +6171,7 @@
         { key: 'weapon', label: '⚔️ Weapons', count: wepCount },
         { key: 'armor', label: '🛡️ Armor & Shield', count: armCount },
         { key: 'wondrous', label: '💍 Magic & Wondrous', count: wonCount },
+        { key: 'crystal', label: '💎 Crystals', count: crysCount },
         { key: 'potion', label: '🧪 Consumables', count: potCount }
       ];
 
@@ -6242,6 +6260,8 @@
         });
       } else if (catFilter === 'wondrous') {
         filtered = unadded.filter(item => WONDROUS_CAT_SET.has(mapEntryToGearCategory(item)));
+      } else if (catFilter === 'crystal') {
+        filtered = unadded.filter(item => mapEntryToGearCategory(item) === 'Crystal');
       } else if (catFilter === 'potion') {
         filtered = unadded.filter(item => mapEntryToGearCategory(item) === 'Consumable');
       }

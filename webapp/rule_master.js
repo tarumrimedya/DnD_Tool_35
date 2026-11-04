@@ -4882,6 +4882,123 @@ Return valid JSON only matching:
     }
   },
 
+  getSelectedInlineForgeBaseType() {
+    const baseSel = document.getElementById('mdb-forge-base-select');
+    if (!baseSel || !baseSel.value) return 'Weapon';
+    const baseId = baseSel.value;
+    if (window.SrdCompendium && typeof window.SrdCompendium.getById === 'function') {
+      const base = window.SrdCompendium.getById(baseId);
+      if (base && base.type) return base.type;
+    }
+    const optText = (baseSel.options[baseSel.selectedIndex]?.text || '').toLowerCase();
+    if (optText.includes('(shield)')) return 'Shield';
+    if (optText.includes('(armor)')) return 'Armor';
+    return 'Weapon';
+  },
+
+  filterForgeEnhancements(query = '') {
+    const enhGrid = document.getElementById('mdb-forge-enhancements-grid');
+    if (!enhGrid) return;
+    const q = (query || '').toLowerCase().trim();
+    const labels = enhGrid.querySelectorAll('label');
+    labels.forEach(l => {
+      const text = (l.textContent || '').toLowerCase();
+      const chk = l.querySelector('input');
+      if (!q || text.includes(q) || (chk && chk.checked)) {
+        l.classList.remove('hidden');
+      } else {
+        l.classList.add('hidden');
+      }
+    });
+  },
+
+  syncInlineForgeSubControls(preferredEnhIds = null, preferredCrystalId = null) {
+    const targetType = this.getSelectedInlineForgeBaseType();
+    const enhGrid = document.getElementById('mdb-forge-enhancements-grid');
+    const crysSel = document.getElementById('mdb-forge-crystal-select');
+    const badgeEl = document.getElementById('mdb-forge-budget-badge');
+    const titleEl = document.getElementById('mdb-forge-abilities-title');
+
+    if (titleEl) {
+      titleEl.textContent = `5. Special ${targetType} Abilities:`;
+    }
+
+    // 1. Populate Augmentation Crystal select
+    if (crysSel) {
+      const currentVal = preferredCrystalId !== null ? preferredCrystalId : crysSel.value;
+      let crystals = [];
+      if (window.SrdCompendium && typeof window.SrdCompendium.getCrystals === 'function') {
+        crystals = window.SrdCompendium.getCrystals(targetType);
+      }
+      crystals.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+      let optHtml = '<option value="">No Augmentation Crystal Attached</option>';
+      optHtml += crystals.map(c =>
+        `<option value="${c.id}">${c.name} (${Number(c.cost || 0).toLocaleString('en-US')} gp)</option>`
+      ).join('');
+      crysSel.innerHTML = optHtml;
+      if (currentVal && crystals.some(c => c.id === currentVal)) {
+        crysSel.value = currentVal;
+      }
+    }
+
+    // 2. Populate Enhancements Grid from SrdCompendium
+    if (enhGrid) {
+      const rawChecked = Array.isArray(preferredEnhIds)
+        ? preferredEnhIds
+        : Array.from(enhGrid.querySelectorAll('.mdb-forge-enh-chk:checked')).map(el => el.value);
+      const checkedSet = new Set(rawChecked);
+
+      let enhList = [];
+      if (window.SrdCompendium && typeof window.SrdCompendium.getEnhancements === 'function') {
+        enhList = window.SrdCompendium.getEnhancements(targetType);
+      }
+      if (!enhList || enhList.length === 0) {
+        enhList = (targetType === 'Armor' || targetType === 'Shield')
+          ? [
+              { id: 'enh-fortification-light', name: 'Light Fortification (25%)', enhIncrease: 1 },
+              { id: 'enh-fortification-moderate', name: 'Moderate Fortification (75%)', enhIncrease: 3 },
+              { id: 'enh-fortification-heavy', name: 'Heavy Fortification (100%)', enhIncrease: 5 },
+              { id: 'enh-ghost-touch', name: 'Ghost Touch', enhIncrease: 1 }
+            ]
+          : [
+              { id: 'enh-keen', name: 'Keen (2× Crit)', enhIncrease: 1 },
+              { id: 'enh-flaming', name: 'Flaming (+1d6 Fire)', enhIncrease: 1 },
+              { id: 'enh-frost', name: 'Frost (+1d6 Cold)', enhIncrease: 1 },
+              { id: 'enh-shock', name: 'Shock (+1d6 Elec)', enhIncrease: 1 },
+              { id: 'enh-holy', name: 'Holy (+2d6 vs Evil)', enhIncrease: 2 },
+              { id: 'enh-ghost-touch', name: 'Ghost Touch', enhIncrease: 1 }
+            ];
+      }
+
+      enhList.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+      if (badgeEl) {
+        badgeEl.textContent = `${enhList.length} Abilities (${targetType})`;
+      }
+
+      enhGrid.innerHTML = enhList.map(e => {
+        const isChecked = checkedSet.has(e.id);
+        const bonusEq = e.enhIncrease ? `+${e.enhIncrease}` : (e.flatCost ? `${e.flatCost} gp` : '');
+        return `
+          <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none">
+            <input type="checkbox" value="${e.id}" ${isChecked ? 'checked' : ''} onchange="RuleMaster.updateInlineForgePreview()" class="mdb-forge-enh-chk rounded text-amber-500 bg-slate-950 border-slate-700">
+            <span class="text-[11px] font-semibold text-slate-200 truncate" title="${e.shortDescription || e.name}">${e.name}</span>
+            <span class="text-[9px] font-mono text-amber-400 ml-auto shrink-0">${bonusEq}</span>
+          </label>
+        `;
+      }).join('');
+
+      const searchInp = document.getElementById('mdb-forge-enh-search');
+      if (searchInp && searchInp.value) {
+        this.filterForgeEnhancements(searchInp.value);
+      }
+    }
+  },
+
+  onForgeBaseItemChange() {
+    this.syncInlineForgeSubControls();
+    this.updateInlineForgePreview();
+  },
+
   async populateInlineForgeControls() {
     const baseSel = document.getElementById('mdb-forge-base-select');
     const enhGrid = document.getElementById('mdb-forge-enhancements-grid');
@@ -4916,40 +5033,13 @@ Return valid JSON only matching:
 
     if (!baseSel.options.length || baseSel.options.length <= 12) {
       const prevVal = baseSel.value;
-      baseSel.innerHTML = baseOptions.slice(0, 120).map(item =>
+      baseSel.innerHTML = baseOptions.slice(0, 160).map(item =>
         `<option value="${item.id}">${item.name} (${item.type || item.category || 'Gear'})</option>`
       ).join('');
       if (prevVal) baseSel.value = prevVal;
     }
 
-    if (!enhGrid.children.length) {
-      const ENH_LIST = [
-        { id: 'enh-keen', label: '⚡ Keen (2× Crit)', bonusEq: '+1' },
-        { id: 'enh-flaming', label: '🔥 Flaming (+1d6)', bonusEq: '+1' },
-        { id: 'enh-flaming-burst', label: '🔥 Flaming Burst', bonusEq: '+2' },
-        { id: 'enh-frost', label: '❄️ Frost (+1d6)', bonusEq: '+1' },
-        { id: 'enh-icy-burst', label: '❄️ Icy Burst', bonusEq: '+2' },
-        { id: 'enh-shock', label: '⚡ Shock (+1d6)', bonusEq: '+1' },
-        { id: 'enh-shocking-burst', label: '⚡ Shocking Burst', bonusEq: '+2' },
-        { id: 'enh-corrosive', label: '🧪 Acidic (+1d6)', bonusEq: '+1' },
-        { id: 'enh-holy', label: '☀️ Holy (+2d6 vs Evil)', bonusEq: '+2' },
-        { id: 'enh-unholy', label: '💀 Unholy (+2d6 vs Good)', bonusEq: '+2' },
-        { id: 'enh-ghost-touch', label: '👻 Ghost Touch', bonusEq: '+1' },
-        { id: 'enh-speed', label: '⚡ Speed (+1 Atk)', bonusEq: '+3' },
-        { id: 'enh-vorpal', label: '🗡️ Vorpal (Nat 20)', bonusEq: '+5' },
-        { id: 'enh-wounding', label: '🩸 Wounding (1 CON)', bonusEq: '+2' },
-        { id: 'enh-fortification-light', label: '🛡️ Fortification 25%', bonusEq: '+1' },
-        { id: 'enh-fortification-moderate', label: '🛡️ Fortification 75%', bonusEq: '+3' }
-      ];
-
-      enhGrid.innerHTML = ENH_LIST.map(e => `
-        <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none">
-          <input type="checkbox" value="${e.id}" onchange="RuleMaster.updateInlineForgePreview()" class="mdb-forge-enh-chk rounded text-amber-500 bg-slate-950 border-slate-700">
-          <span class="text-[11px] font-semibold text-slate-200 truncate">${e.label}</span>
-          <span class="text-[9px] font-mono text-amber-400 ml-auto">${e.bonusEq}</span>
-        </label>
-      `).join('');
-    }
+    this.syncInlineForgeSubControls();
   },
 
   getSelectedInlineForgeItem() {
@@ -4965,6 +5055,7 @@ Return valid JSON only matching:
     const baseId = document.getElementById('mdb-forge-base-select')?.value || 'wpn-longsword';
     const matId = document.getElementById('mdb-forge-material-select')?.value || '';
     const enhBonus = Number(document.getElementById('mdb-forge-enh-bonus')?.value) || 0;
+    const crystalId = document.getElementById('mdb-forge-crystal-select')?.value || '';
     const checkedEnhs = Array.from(document.querySelectorAll('.mdb-forge-enh-chk:checked')).map(el => el.value);
 
     const assembleFn = window.ItemAssembler.assemble || window.ItemAssembler.assembleItem;
@@ -4975,6 +5066,7 @@ Return valid JSON only matching:
         material: matId || null,
         enhancementBonus: enhBonus,
         enhancements: checkedEnhs,
+        crystal: crystalId || null,
         masterwork: enhBonus > 0 || Boolean(matId)
       });
     } catch (_) {

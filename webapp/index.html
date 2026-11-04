@@ -2336,10 +2336,10 @@
                 <input type="text" id="mdb-forge-nl-input" oninput="RuleMaster.updateInlineForgePreview()" placeholder="e.g. +2 Keen Mithral Scimitar, +3 Flaming Burst Adamantine Greatsword..." class="w-full h-10 bg-slate-950 border border-amber-500/50 rounded-lg px-3 text-xs text-white font-mono focus:outline-none focus:border-amber-400">
               </div>
 
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 <div>
                   <label class="block text-[11px] text-slate-400 mb-1 font-semibold">1. Base Weapon / Armor / Shield</label>
-                  <select id="mdb-forge-base-select" onchange="RuleMaster.updateInlineForgePreview()" class="w-full h-10 bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-white focus:outline-none focus:border-amber-400"></select>
+                  <select id="mdb-forge-base-select" onchange="RuleMaster.onForgeBaseItemChange()" class="w-full h-10 bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-white focus:outline-none focus:border-amber-400"></select>
                 </div>
                 <div>
                   <label class="block text-[11px] text-slate-400 mb-1 font-semibold">2. Special Material</label>
@@ -2364,11 +2364,21 @@
                     <option value="5">+5 Enhancement (Pre-Epic Cap)</option>
                   </select>
                 </div>
+                <div>
+                  <label class="block text-[11px] text-slate-400 mb-1 font-semibold">4. Augmentation Crystal (MIC):</label>
+                  <select id="mdb-forge-crystal-select" onchange="RuleMaster.updateInlineForgePreview()" class="w-full h-10 bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-white focus:outline-none focus:border-amber-400">
+                    <option value="">No Augmentation Crystal Attached</option>
+                  </select>
+                </div>
               </div>
 
               <div>
-                <label class="block text-[11px] text-slate-400 mb-1 font-semibold">4. Special Weapon / Armor Abilities:</label>
-                <div id="mdb-forge-enhancements-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 max-h-40 overflow-y-auto p-1 custom-scroll"></div>
+                <div class="flex items-center justify-between mb-1">
+                  <label id="mdb-forge-abilities-title" class="text-[11px] text-slate-400 font-semibold">5. Special Weapon / Armor Abilities:</label>
+                  <span id="mdb-forge-budget-badge" class="px-2 py-0.5 rounded text-[10px] font-mono text-amber-300 bg-amber-950/60 border border-amber-500/40">180+ Abilities (MIC &amp; SRD)</span>
+                </div>
+                <input type="text" id="mdb-forge-enh-search" oninput="RuleMaster.filterForgeEnhancements(this.value)" placeholder="🔍 Quick filter abilities (e.g. Keen, Flaming, Ghost, Fortification, Acid)..." class="w-full h-8 text-[11px] bg-slate-950 border border-slate-700 rounded-lg px-2.5 text-white mb-1.5 focus:outline-none focus:border-amber-400">
+                <div id="mdb-forge-enhancements-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 max-h-48 overflow-y-auto p-1 custom-scroll"></div>
               </div>
 
               <!-- Live Assembled V2 Item Preview -->

@@ -22,7 +22,8 @@
     'srd_classes_races.json',
     'srd_combat_rules.json',
     'srd_spells.json',
-    'srd_maneuvers.json'
+    'srd_maneuvers.json',
+    'mic_compendium.json'
   ];
 
   const LAZY_CHUNKS = [
@@ -605,6 +606,16 @@
       const list = this.getAllLoaded('Enhancement');
       if (!targetType) return list;
       return list.filter((e) => !e.targetType || e.targetType === targetType || e.targetType === 'Any');
+    },
+
+    getCrystals(targetType = null) {
+      const list = this.getAllLoaded('AugmentationCrystal');
+      if (!targetType) return list;
+      const t = targetType.toLowerCase();
+      return list.filter((c) => {
+        const ct = (c.targetType || c.slot || '').toLowerCase();
+        return ct.includes(t);
+      });
     }
   };
 
@@ -941,6 +952,49 @@
         delete item.ruleFlags.bypassDR;
       }
 
+      // 5b. Resolve Augmentation Crystal (Magic Item Compendium RAW)
+      let resolvedCrystal = null;
+      if (spec.crystal) {
+        const cRef = spec.crystal;
+        const crysObj = typeof cRef === 'object' && cRef !== null
+          ? cRef
+          : (SrdCompendium.getById(cRef) ||
+             SrdCompendium.getByName(cRef, 'AugmentationCrystal') ||
+             SrdCompendium.getById(slugify(cRef, 'crys')));
+        if (crysObj) {
+          resolvedCrystal = safeClone(crysObj);
+          item.crystal = {
+            id: resolvedCrystal.id,
+            name: resolvedCrystal.name,
+            slot: resolvedCrystal.slot,
+            cost: Number(resolvedCrystal.cost) || 0,
+            shortDescription: resolvedCrystal.shortDescription || resolvedCrystal.name
+          };
+
+          // Merge crystal modifiers if any
+          if (Array.isArray(resolvedCrystal.modifiers) && resolvedCrystal.modifiers.length > 0) {
+            item.modifiers.push(...safeClone(resolvedCrystal.modifiers));
+          }
+
+          // Merge crystal damageParts if any (e.g. Energy Assault +1d6)
+          if (isWeapon && Array.isArray(resolvedCrystal.damageParts) && resolvedCrystal.damageParts.length > 0) {
+            item.damageParts.push(...safeClone(resolvedCrystal.damageParts));
+            item.modes.forEach((m) => {
+              if (Array.isArray(m.damageParts)) {
+                m.damageParts.push(...safeClone(resolvedCrystal.damageParts));
+              }
+            });
+          }
+
+          // Merge crystal tactical badge
+          item.tacticalBadges.push({
+            id: resolvedCrystal.id,
+            label: `💎 ${resolvedCrystal.name}`,
+            summary: resolvedCrystal.shortDescription || resolvedCrystal.benefit || resolvedCrystal.name
+          });
+        }
+      }
+
       // 6. Custom Modifiers & Notes
       if (Array.isArray(spec.customModifiers) && spec.customModifiers.length > 0) {
         item.modifiers.push(...safeClone(spec.customModifiers));
@@ -976,6 +1030,9 @@
           totalCost += 1000 * totalEnhIncrease * totalEnhIncrease;
         }
         totalCost += flatEnhGold;
+      }
+      if (resolvedCrystal && resolvedCrystal.cost) {
+        totalCost += Number(resolvedCrystal.cost) || 0;
       }
       item.cost = totalCost;
 
@@ -1064,6 +1121,19 @@
         }
       }
 
+      let crystal = null;
+      const crystalMatch = working.match(/(?:with|socketed with|attached with)\s+([a-z0-9\s,'-]+)$/i);
+      if (crystalMatch) {
+        const cQuery = crystalMatch[1].trim();
+        const foundCrystal = SrdCompendium.getByName(cQuery, 'AugmentationCrystal') ||
+          SrdCompendium.getById(`crys-${slugify(cQuery)}`) ||
+          SrdCompendium.getCrystals().find(c => (c.name || '').toLowerCase().includes(cQuery.toLowerCase()));
+        if (foundCrystal) {
+          crystal = foundCrystal.id;
+          working = working.replace(crystalMatch[0], ' ').trim();
+        }
+      }
+
       const baseQuery = working
         .replace(/\bof\b/gi, ' ')
         .replace(/[(),]/g, ' ')
@@ -1091,6 +1161,7 @@
           masterwork,
           enhancementBonus,
           enhancements,
+          crystal,
           source: 'ItemAssembler-ZeroToken'
         });
       } catch (e) {

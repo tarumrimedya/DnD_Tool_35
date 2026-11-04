@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "a30f8d4090842ded",
+  "compendiumHash": "365403adbc1357a3",
   "generatedAt": "2026-10-28T11:13:00.954799+00:00",
-  "totalEntries": 3745,
+  "totalEntries": 4698,
   "chunks": {
     "srd_equipment.json": {
       "count": 992,
@@ -45,6 +45,12 @@
       "count": 208,
       "bytes": 216499,
       "hash": "badf9341263baa5a",
+      "eagerLoad": true
+    },
+    "mic_compendium.json": {
+      "count": 953,
+      "bytes": 1555396,
+      "hash": "a17a165298d9567d",
       "eagerLoad": true
     }
   },
@@ -32072,6 +32078,7630 @@
       "c": "Exotic",
       "s": "Off-Hand",
       "f": "srd_equipment.json"
+    },
+    {
+      "id": "mi-mic-aberrant-sphere",
+      "n": "Aberrant Sphere",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-acidic",
+      "n": "Acidic",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-acidic-burst-synergy",
+      "n": "Acidic Burst [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-acrobat-boots",
+      "n": "Acrobat Boots",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-adamantine-mind-blade-gauntlets",
+      "n": "Adamantine Mind Blade Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-agility",
+      "n": "Agility",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-agility-greater-synergy",
+      "n": "Agility, Greater [Synergy]",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-agility-improved-synergy",
+      "n": "Agility, Improved [Synergy]",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amber-amulet-of-vermin",
+      "n": "Amber Amulet of Vermin",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-aquatic-salvation",
+      "n": "Amulet of Aquatic Salvation",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-catapsi",
+      "n": "Amulet of Catapsi",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-emergency-healing",
+      "n": "Amulet of Emergency Healing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-fortune-prevailing",
+      "n": "Amulet of Fortune Prevailing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-incarnum-shielding",
+      "n": "Amulet of Incarnum Shielding",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-inviolate-form",
+      "n": "Amulet of Inviolate Form",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-retributive-healing",
+      "n": "Amulet of Retributive Healing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-second-chances",
+      "n": "Amulet of Second Chances",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-teamwork",
+      "n": "Amulet of Teamwork",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-tears",
+      "n": "Amulet of Tears",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-toxin-delay",
+      "n": "Amulet of Toxin Delay",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-amulet-of-wordtwisting",
+      "n": "Amulet of Wordtwisting",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-anchoring",
+      "n": "Anchoring",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-anchoring-greater-synergy",
+      "n": "Anchoring, Greater [Synergy]",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-angelhelm",
+      "n": "Angelhelm",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ankh-of-ascension",
+      "n": "Ankh of Ascension",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-anklet-of-translocation",
+      "n": "Anklet of Translocation",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-anstruth-harp",
+      "n": "Anstruth Harp",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-aporter",
+      "n": "Aporter",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-aquan",
+      "n": "Aquan",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-aquatic",
+      "n": "Aquatic",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-arcane-might",
+      "n": "Arcane Might",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-arcane-thieves-tools",
+      "n": "Arcane Thieves' Tools",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-arcanist-s-gloves",
+      "n": "Arcanist's Gloves",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-armband-of-confrontation",
+      "n": "Armband of Confrontation",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-armband-of-elusive-action",
+      "n": "Armband of Elusive Action",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-armband-of-maximized-healing",
+      "n": "Armband of Maximized Healing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-armbands-of-might",
+      "n": "Armbands of Might",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-armor-of-the-fallen-leaves-relic",
+      "n": "Armor of the Fallen Leaves [Relic]",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-aroma-of-curdled-death",
+      "n": "Aroma of Curdled Death",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-aroma-of-dreams",
+      "n": "Aroma of Dreams",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "ammo-mic-arrow-of-biting",
+      "n": "Arrow of Biting",
+      "t": "Ammo",
+      "c": "Ammunition",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-artificer-s-monocle",
+      "n": "Artificer's Monocle",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-assassin-whip",
+      "n": "Assassin Whip",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-auran",
+      "n": "Auran",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-averter",
+      "n": "Averter",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-axe-of-ancestral-virtue-relic",
+      "n": "Axe of Ancestral Virtue [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-axe-of-the-sea-reavers",
+      "n": "Axe of the Sea Reavers",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-axeblock",
+      "n": "Axeblock",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-badge-of-glory",
+      "n": "Badge of Glory",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-badge-of-the-svirfneblin",
+      "n": "Badge of the Svirfneblin",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-badge-of-valor",
+      "n": "Badge of Valor",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bag-of-boulders",
+      "n": "Bag of Boulders",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bag-of-endless-caltrops",
+      "n": "Bag of Endless Caltrops",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bag-of-flames",
+      "n": "Bag of Flames",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-balance",
+      "n": "Balance",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-balance-greater-synergy",
+      "n": "Balance, Greater [Synergy]",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-balance-improved-synergy",
+      "n": "Balance, Improved [Synergy]",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bands-of-blood-rage",
+      "n": "Bands of Blood Rage",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-bane-blind",
+      "n": "Bane Blind",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-banishing",
+      "n": "Banishing",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-banner-of-the-storm-s-eye",
+      "n": "Banner of the Storm's Eye",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-barbs-of-retribution",
+      "n": "Barbs of Retribution",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "shd-mic-barricade-buckler",
+      "n": "Barricade Buckler",
+      "t": "Shield",
+      "c": "Specific Shield",
+      "s": "Off-Hand/Shield",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-battle-bridle",
+      "n": "Battle Bridle",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bear-helm",
+      "n": "Bear Helm",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-bearskin-armor",
+      "n": "Bearskin Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-beastskin",
+      "n": "Beastskin",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-beetle-elixir",
+      "n": "Beetle Elixir",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-beholder-crown",
+      "n": "Beholder Crown",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-belt-of-battle",
+      "n": "Belt of Battle",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-belt-of-growth",
+      "n": "Belt of Growth",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-belt-of-hidden-pouches",
+      "n": "Belt of Hidden Pouches",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-belt-of-one-mighty-blow",
+      "n": "Belt of One Mighty Blow",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-belt-of-priestly-might",
+      "n": "Belt of Priestly Might",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-belt-of-the-champion-relic",
+      "n": "Belt of the Champion [Relic]",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-belt-of-the-wide-earth",
+      "n": "Belt of the Wide Earth",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-belt-of-theft-healing",
+      "n": "Belt of Theft-Healing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-belt-of-ultimate-athleticism",
+      "n": "Belt of Ultimate Athleticism",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-berserker",
+      "n": "Berserker",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-binding",
+      "n": "Binding",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-bladed-crossbow",
+      "n": "Bladed Crossbow",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-blast-disk",
+      "n": "Blast Disk",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-blast-globes",
+      "n": "Blast Globes",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-blazing-skylance",
+      "n": "Blazing Skylance",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-blessed",
+      "n": "Blessed",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-blessed-bandage",
+      "n": "Blessed Bandage",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-blight-stone",
+      "n": "Blight Stone",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-blighter-s-hex-eye",
+      "n": "Blighter's Hex-Eye",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-blindfold-of-true-darkness",
+      "n": "Blindfold of True Darkness",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-blindhelm",
+      "n": "Blindhelm",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-blindsighted",
+      "n": "Blindsighted",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-blinking",
+      "n": "Blinking",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-blood-claw-choker",
+      "n": "Blood Claw Choker",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-bloodfeeding",
+      "n": "Bloodfeeding",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-bloodstone",
+      "n": "Bloodstone",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-blueshine",
+      "n": "Blueshine",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-blurring",
+      "n": "Blurring",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-blurring-greater-synergy",
+      "n": "Blurring, Greater [Synergy]",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-blurstrike",
+      "n": "Blurstrike",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-bodyfeeder",
+      "n": "Bodyfeeder",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bolt-shirt",
+      "n": "Bolt Shirt",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bone-ring",
+      "n": "Bone Ring",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-agile-leaping",
+      "n": "Boots of Agile Leaping",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-big-stepping",
+      "n": "Boots of Big Stepping",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-desperation",
+      "n": "Boots of Desperation",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-dragonstriding",
+      "n": "Boots of Dragonstriding",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-jumping",
+      "n": "Boots of Jumping",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-landing",
+      "n": "Boots of Landing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-sidestepping",
+      "n": "Boots of Sidestepping",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-skating",
+      "n": "Boots of Skating",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-stomping",
+      "n": "Boots of Stomping",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-swift-passage",
+      "n": "Boots of Swift Passage",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-temporal-acceleration",
+      "n": "Boots of Temporal Acceleration",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-the-battle-charger",
+      "n": "Boots of the Battle Charger",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-the-mountain-king",
+      "n": "Boots of the Mountain King",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-the-mountain-king-greater",
+      "n": "Boots of the Mountain King, Greater",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-the-unending-journey-relic",
+      "n": "Boots of the Unending Journey [Relic]",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-tracklessness",
+      "n": "Boots of Tracklessness",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-boots-of-tremorsense",
+      "n": "Boots of Tremorsense",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-bow-of-songs",
+      "n": "Bow of Songs",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-bow-of-the-wintermoon-relic",
+      "n": "Bow of the Wintermoon [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-bowstaff",
+      "n": "Bowstaff",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-accuracy",
+      "n": "Bracers of Accuracy",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-aerial-combat",
+      "n": "Bracers of Aerial Combat",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-arcane-freedom",
+      "n": "Bracers of Arcane Freedom",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-blinding-strike",
+      "n": "Bracers of Blinding Strike",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-dawn",
+      "n": "Bracers of Dawn",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-great-collision",
+      "n": "Bracers of Great Collision",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-lightning",
+      "n": "Bracers of Lightning",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-opportunity",
+      "n": "Bracers of Opportunity",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-quick-strike",
+      "n": "Bracers of Quick Strike",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-repulsion",
+      "n": "Bracers of Repulsion",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-retaliation",
+      "n": "Bracers of Retaliation",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-the-blast-barrier",
+      "n": "Bracers of the Blast Barrier",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-the-entangling-blast",
+      "n": "Bracers of the Entangling Blast",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-bracers-of-wind",
+      "n": "Bracers of Wind",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-brash",
+      "n": "Brash",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-brawler-s-gauntlets",
+      "n": "Brawler's Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-breastplate-of-terror",
+      "n": "Breastplate of Terror",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-brooch-of-avoidance",
+      "n": "Brooch of Avoidance",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-brooch-of-stability",
+      "n": "Brooch of Stability",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-brutal-surge",
+      "n": "Brutal Surge",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-brute-gauntlets",
+      "n": "Brute Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-brute-ring",
+      "n": "Brute Ring",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-buoyant",
+      "n": "Buoyant",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-burning-veil",
+      "n": "Burning Veil",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-burnoose-of-1-001-thorns",
+      "n": "Burnoose of 1,001 Thorns",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-caduceus-bracers",
+      "n": "Caduceus Bracers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-called",
+      "n": "Called",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-camouflage-paint",
+      "n": "Camouflage Paint",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-canaith-mandolin",
+      "n": "Canaith Mandolin",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cannith-goggles",
+      "n": "Cannith Goggles",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cape-of-the-viper",
+      "n": "Cape of the Viper",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-casting-glove",
+      "n": "Casting Glove",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cat-s-eye-brooch",
+      "n": "Cat's-Eye Brooch",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-caustic-veil",
+      "n": "Caustic Veil",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-censer-of-the-last-breath-relic",
+      "n": "Censer of the Last Breath [Relic]",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-chain-of-obeisance-relic",
+      "n": "Chain of Obeisance [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-changeling",
+      "n": "Changeling",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-chargebreaker",
+      "n": "Chargebreaker",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-charging",
+      "n": "Charging",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-charm-of-countersong",
+      "n": "Charm of Countersong",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-chasuble-of-fell-power",
+      "n": "Chasuble of Fell Power",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-chasuble-of-fell-power-greater",
+      "n": "Chasuble of Fell Power, Greater",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-chime-of-harmonic-agony",
+      "n": "Chime of Harmonic Agony",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-choker-of-life-protection",
+      "n": "Choker of Life Protection",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-chromatic-rod-relic",
+      "n": "Chromatic Rod [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-chronocharm-of-the-celestial-wanderer",
+      "n": "Chronocharm of the Celestial Wanderer",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-chronocharm-of-the-fateweaver",
+      "n": "Chronocharm of the Fateweaver",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-chronocharm-of-the-grand-master",
+      "n": "Chronocharm of the Grand Master",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-chronocharm-of-the-horizon-walker",
+      "n": "Chronocharm of the Horizon Walker",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-chronocharm-of-the-laughing-rogue",
+      "n": "Chronocharm of the Laughing Rogue",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-chronocharm-of-the-uncaring-archmage",
+      "n": "Chronocharm of the Uncaring Archmage",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-circlet-of-mages",
+      "n": "Circlet of Mages",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-circlet-of-rapid-casting",
+      "n": "Circlet of Rapid Casting",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-circlet-of-solace",
+      "n": "Circlet of Solace",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-circlet-of-wild-surging",
+      "n": "Circlet of Wild Surging",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-claw-gloves",
+      "n": "Claw Gloves",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cli-lyre",
+      "n": "Cli Lyre",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-battle",
+      "n": "Cloak of Battle",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-elemental-protection",
+      "n": "Cloak of Elemental Protection",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-predatory-vigor",
+      "n": "Cloak of Predatory Vigor",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-quills",
+      "n": "Cloak of Quills",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-soulbound-resistance",
+      "n": "Cloak of Soulbound Resistance",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-soulbound-resistance-greater",
+      "n": "Cloak of Soulbound Resistance, Greater",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-stone",
+      "n": "Cloak of Stone",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-the-salamander",
+      "n": "Cloak of the Salamander",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-the-salamander-greater",
+      "n": "Cloak of the Salamander, Greater",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-thorns",
+      "n": "Cloak of Thorns",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-turn-resistance",
+      "n": "Cloak of Turn Resistance",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloak-of-weaponry",
+      "n": "Cloak of Weaponry",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cloudwalker-anklets",
+      "n": "Cloudwalker Anklets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cobra-straps",
+      "n": "Cobra Straps",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cognizance-crystal",
+      "n": "Cognizance Crystal",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-collar-of-healing",
+      "n": "Collar of Healing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-collision",
+      "n": "Collision",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-commander",
+      "n": "Commander",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-conduit-rod",
+      "n": "Conduit Rod",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-consumptive",
+      "n": "Consumptive",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-contact-medallion",
+      "n": "Contact Medallion",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cord-of-favor",
+      "n": "Cord of Favor",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-cornucopia-of-the-needful-relic",
+      "n": "Cornucopia of the Needful [Relic]",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-corrosive",
+      "n": "Corrosive",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-corsair-s-eyepatch",
+      "n": "Corsair's Eyepatch",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-counterstrike-bracers",
+      "n": "Counterstrike Bracers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crest-of-bravery",
+      "n": "Crest of Bravery",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crimson-dragonhide-bracers",
+      "n": "Crimson Dragonhide Bracers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crown-of-flames",
+      "n": "Crown of Flames",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crystal-anchor-of-alertness",
+      "n": "Crystal Anchor of Alertness",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-crystal-echoblade",
+      "n": "Crystal Echoblade",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crystal-mask-of-detection",
+      "n": "Crystal Mask of Detection",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crystal-mask-of-discernment",
+      "n": "Crystal Mask of Discernment",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crystal-mask-of-dread",
+      "n": "Crystal Mask of Dread",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crystal-mask-of-insight",
+      "n": "Crystal Mask of Insight",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crystal-mask-of-knowledge",
+      "n": "Crystal Mask of Knowledge",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crystal-mask-of-languages",
+      "n": "Crystal Mask of Languages",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crystal-mask-of-mindarmor",
+      "n": "Crystal Mask of Mindarmor",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crystal-mask-of-psionic-craft",
+      "n": "Crystal Mask of Psionic Craft",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-crystal-mask-of-visual-insight",
+      "n": "Crystal Mask of Visual Insight",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-adamant-armor",
+      "n": "Crystal of Adamant Armor",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-adamant-weaponry-greater",
+      "n": "Crystal of Adamant Weaponry, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-adamant-weaponry-least",
+      "n": "Crystal of Adamant Weaponry, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-adamant-weaponry-lesser",
+      "n": "Crystal of Adamant Weaponry, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-adaptation",
+      "n": "Crystal of Adaptation",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-alacrity",
+      "n": "Crystal of Alacrity",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-aquatic-action",
+      "n": "Crystal of Aquatic Action",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-arcane-steel-greater",
+      "n": "Crystal of Arcane Steel, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-arcane-steel-least",
+      "n": "Crystal of Arcane Steel, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-arcane-steel-lesser",
+      "n": "Crystal of Arcane Steel, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-arrow-deflection",
+      "n": "Crystal of Arrow Deflection",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Shield Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-bent-sight",
+      "n": "Crystal of Bent Sight",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Shield Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-acid-greater",
+      "n": "Crystal of Energy Assault, Acid, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-acid-least",
+      "n": "Crystal of Energy Assault, Acid, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-acid-lesser",
+      "n": "Crystal of Energy Assault, Acid, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-cold-greater",
+      "n": "Crystal of Energy Assault, Cold, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-cold-least",
+      "n": "Crystal of Energy Assault, Cold, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-cold-lesser",
+      "n": "Crystal of Energy Assault, Cold, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-electricity",
+      "n": "Crystal of Energy Assault, Electricity",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-electricity-least",
+      "n": "Crystal of Energy Assault, Electricity, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-electricity-lesser",
+      "n": "Crystal of Energy Assault, Electricity, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-fire-greater",
+      "n": "Crystal of Energy Assault, Fire, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-fire-least",
+      "n": "Crystal of Energy Assault, Fire, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-energy-assault-fire-lesser",
+      "n": "Crystal of Energy Assault, Fire, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-glancing-blows",
+      "n": "Crystal of Glancing Blows",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-illumination-greater",
+      "n": "Crystal of Illumination, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-illumination-least",
+      "n": "Crystal of Illumination, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-illumination-lesser",
+      "n": "Crystal of Illumination, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-life-drinking-greater",
+      "n": "Crystal of Life Drinking, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-life-drinking-least",
+      "n": "Crystal of Life Drinking, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-life-drinking-lesser",
+      "n": "Crystal of Life Drinking, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-lifekeeping",
+      "n": "Crystal of Lifekeeping",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-mind-cloaking",
+      "n": "Crystal of Mind Cloaking",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-return-greater",
+      "n": "Crystal of Return, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-return-least",
+      "n": "Crystal of Return, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-return-lesser",
+      "n": "Crystal of Return, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-screening",
+      "n": "Crystal of Screening",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-security-greater",
+      "n": "Crystal of Security, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-security-least",
+      "n": "Crystal of Security, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-security-lesser",
+      "n": "Crystal of Security, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-crystal-of-stamina",
+      "n": "Crystal of Stamina",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-cudgel-that-never-forgets-relic",
+      "n": "Cudgel That Never Forgets [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-cursespewing",
+      "n": "Cursespewing",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-daern-s-instant-tent",
+      "n": "Daern's Instant Tent",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-dagger-of-defiance",
+      "n": "Dagger of Defiance",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-dagger-of-denial-relic",
+      "n": "Dagger of Denial [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-dawnstar-relic",
+      "n": "Dawnstar [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-daylight",
+      "n": "Daylight",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-daylight-pellet",
+      "n": "Daylight Pellet",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-deadly-precision",
+      "n": "Deadly Precision",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-death-spike",
+      "n": "Death Spike",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-death-ward",
+      "n": "Death Ward",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-deathguardian-bracers",
+      "n": "Deathguardian Bracers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-deathstrike-bracers",
+      "n": "Deathstrike Bracers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-deepdweller",
+      "n": "Deepdweller",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-defensive-surge",
+      "n": "Defensive Surge",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-demolition-crystal-greater",
+      "n": "Demolition Crystal, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-demolition-crystal-least",
+      "n": "Demolition Crystal, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-demolition-crystal-lesser",
+      "n": "Demolition Crystal, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-desiccating",
+      "n": "Desiccating",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-desiccating-burst-synergy",
+      "n": "Desiccating Burst [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-desperation-chain",
+      "n": "Desperation Chain",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-devastation-gauntlets",
+      "n": "Devastation Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-diamondskin-decanter",
+      "n": "Diamondskin Decanter",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dimension-stride-boots",
+      "n": "Dimension Stride Boots",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-disarming",
+      "n": "Disarming",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-dislocator",
+      "n": "Dislocator",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-dispelling",
+      "n": "Dispelling",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dispelling-cord",
+      "n": "Dispelling Cord",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-dispelling-greater-synergy",
+      "n": "Dispelling, Greater [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-displacement",
+      "n": "Displacement",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-divine-wrath",
+      "n": "Divine Wrath",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-domain-draught",
+      "n": "Domain Draught",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-domineering",
+      "n": "Domineering",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-doom-burst",
+      "n": "Doom Burst",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-doss-lute",
+      "n": "Doss Lute",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dove-s-harp",
+      "n": "Dove's Harp",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dragon-mask",
+      "n": "Dragon Mask",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dragon-spirit-amulet",
+      "n": "Dragon Spirit Amulet",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dragon-spirit-cincture",
+      "n": "Dragon Spirit Cincture",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "pot-mic-dragon-s-draught",
+      "n": "Dragon's Draught",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dragon-s-eye-amulet",
+      "n": "Dragon's-Eye Amulet",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-dragondodger",
+      "n": "Dragondodger",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-dragondoom",
+      "n": "Dragondoom",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dragondoom-scepter",
+      "n": "Dragondoom Scepter",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dragonfang-gauntlets",
+      "n": "Dragonfang Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-dragonhunter",
+      "n": "Dragonhunter",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-dragonrider-armor",
+      "n": "Dragonrider Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dragonscale-cloak-relic",
+      "n": "Dragonscale Cloak [Relic]",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dreaming-blindfold",
+      "n": "Dreaming Blindfold",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-drums-of-marching",
+      "n": "Drums of Marching",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-dust-of-dispersion",
+      "n": "Dust of Dispersion",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-dwarf-crusher",
+      "n": "Dwarf Crusher",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-eager",
+      "n": "Eager",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-eagle-claw-talisman",
+      "n": "Eagle Claw Talisman",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-earthplate-armor",
+      "n": "Earthplate Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-easy-travel",
+      "n": "Easy Travel",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-ectoplasmic-feedback",
+      "n": "Ectoplasmic Feedback",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-ectoplasmic-wall",
+      "n": "Ectoplasmic Wall",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ehlonna-s-seed-pouch-relic",
+      "n": "Ehlonna's Seed Pouch [Relic]",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-electric-eel-elixir",
+      "n": "Electric Eel Elixir",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-electric-eel-hide",
+      "n": "Electric Eel Hide",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-elixir-of-adamantine-blood",
+      "n": "Elixir of Adamantine Blood",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-elixir-of-flaming-fists",
+      "n": "Elixir of Flaming Fists",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-empowered-spellshard",
+      "n": "Empowered Spellshard",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-enduring-amulet",
+      "n": "Enduring Amulet",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-enemy-spirit-pouch",
+      "n": "Enemy Spirit Pouch",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-energy-aura",
+      "n": "Energy Aura",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-energy-defense-synergy",
+      "n": "Energy Defense [Synergy]",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-energy-immunity",
+      "n": "Energy Immunity",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-energy-surge-synergy",
+      "n": "Energy Surge [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-enervating",
+      "n": "Enervating",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-enveloping-pit-relic",
+      "n": "Enveloping Pit [Relic]",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ephod-of-authority",
+      "n": "Ephod of Authority",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-essentia-helm",
+      "n": "Essentia Helm",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-essentia-jewel",
+      "n": "Essentia Jewel",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-eternal-wand",
+      "n": "Eternal Wand",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-ethereal-reaver",
+      "n": "Ethereal Reaver",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-everbright",
+      "n": "Everbright",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-everfull-mug",
+      "n": "Everfull Mug",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-everlasting-feedbag",
+      "n": "Everlasting Feedbag",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-everlasting-rations",
+      "n": "Everlasting Rations",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-executioner-s-hood-relic",
+      "n": "Executioner's Hood [Relic]",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-exoskeleton-armor",
+      "n": "Exoskeleton Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-exploding-spike",
+      "n": "Exploding Spike",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-explosive-sling",
+      "n": "Explosive Sling",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-eyes-of-expanded-vision",
+      "n": "Eyes of Expanded Vision",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-eyes-of-power-leech",
+      "n": "Eyes of Power Leech",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-eyes-of-power-leech-vampiric",
+      "n": "Eyes of Power Leech, Vampiric",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-eyes-of-truth",
+      "n": "Eyes of Truth",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-fanged-mask",
+      "n": "Fanged Mask",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-farspeaking-amulet",
+      "n": "Farspeaking Amulet",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-fearsome",
+      "n": "Fearsome",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-field-provisions-box",
+      "n": "Field Provisions Box",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-fiendhelm",
+      "n": "Fiendhelm",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-fiendslayer-crystal-greater",
+      "n": "Fiendslayer Crystal, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-fiendslayer-crystal-least",
+      "n": "Fiendslayer Crystal, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-fiendslayer-crystal-lesser",
+      "n": "Fiendslayer Crystal, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-fiercebane-synergy",
+      "n": "Fiercebane [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-fiery-tunic",
+      "n": "Fiery Tunic",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-finned-gauntlets",
+      "n": "Finned Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-fireflower-pendant",
+      "n": "Fireflower Pendant",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-flesh-ring-of-scorn",
+      "n": "Flesh Ring of Scorn",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-flesheater",
+      "n": "Flesheater",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-fleshgrinding",
+      "n": "Fleshgrinding",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-fochlucan-bandore",
+      "n": "Fochlucan Bandore",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-force",
+      "n": "Force",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-forceful-skylance",
+      "n": "Forceful Skylance",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-formless-vest",
+      "n": "Formless Vest",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "ammo-mic-fountainhead-arrow",
+      "n": "Fountainhead Arrow",
+      "t": "Ammo",
+      "c": "Ammunition",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-foxhide-armor",
+      "n": "Foxhide Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-freedom",
+      "n": "Freedom",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-galeb-duhr-hammer",
+      "n": "Galeb Duhr Hammer",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-gauntlet-of-gruumsh",
+      "n": "Gauntlet of Gruumsh",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-arrow-reflection",
+      "n": "Gauntlets of Arrow Reflection",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-gauntlets-of-destruction",
+      "n": "Gauntlets of Destruction",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-eldritch-energy",
+      "n": "Gauntlets of Eldritch Energy",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-gloves-of-endless-javelins",
+      "n": "Gloves of Endless Javelins",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-energy-transformation",
+      "n": "Gauntlets of Energy Transformation",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-extended-range",
+      "n": "Gauntlets of Extended Range",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-ghost-fighting",
+      "n": "Gauntlets of Ghost Fighting",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-giantfelling",
+      "n": "Gauntlets of Giantfelling",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-gauntlet-of-infinite-blades",
+      "n": "Gauntlet of Infinite Blades",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-lassitude",
+      "n": "Gauntlets of Lassitude",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-mindfire",
+      "n": "Gauntlets of Mindfire",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-the-blazing-arc",
+      "n": "Gauntlets of the Blazing Arc",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-gauntlets-of-the-blood-lord-relic",
+      "n": "Gauntlets of the Blood-Lord [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-the-talon-relic",
+      "n": "Gauntlets of the Talon [Relic]",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-throwing",
+      "n": "Gauntlets of Throwing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gauntlets-of-weaponry-arcane",
+      "n": "Gauntlets of Weaponry Arcane",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gem-of-the-glitterdepth-relic",
+      "n": "Gem of the Glitterdepth [Relic]",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-ghost-net",
+      "n": "Ghost Net",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ghost-shroud",
+      "n": "Ghost Shroud",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Body",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-ghost-strike-synergy",
+      "n": "Ghost Strike [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-ghost-ward",
+      "n": "Ghost Ward",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ghoul-gauntlets",
+      "n": "Ghoul Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-ghoul-shell-armor",
+      "n": "Ghoul Shell Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-gilled",
+      "n": "Gilled",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-githborn-talisman",
+      "n": "Githborn Talisman",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-glitter-stone",
+      "n": "Glitter Stone",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-globe-of-sunlight",
+      "n": "Globe of Sunlight",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-agile-striking",
+      "n": "Gloves of Agile Striking",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-eldritch-admixture",
+      "n": "Gloves of Eldritch Admixture",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-flame",
+      "n": "Gloves of Flame",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-fortunate-striking",
+      "n": "Gloves of Fortunate Striking",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-incarnum-theft",
+      "n": "Gloves of Incarnum Theft",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-lightning",
+      "n": "Gloves of Lightning",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-manual-prowess",
+      "n": "Gloves of Manual Prowess",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-object-reading",
+      "n": "Gloves of Object Reading",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-spell-disruption",
+      "n": "Gloves of Spell Disruption",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-the-balanced-hand",
+      "n": "Gloves of the Balanced Hand",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-the-starry-sky",
+      "n": "Gloves of the Starry Sky",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-the-titan-s-grip",
+      "n": "Gloves of the Titan's Grip",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gloves-of-the-uldra-savant",
+      "n": "Gloves of the Uldra Savant",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-glyph-seal",
+      "n": "Glyph Seal",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-glyph-seal-greater",
+      "n": "Glyph Seal, Greater",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-goggles-of-day",
+      "n": "Goggles of Day",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-goggles-of-draconic-vision",
+      "n": "Goggles of Draconic Vision",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-goggles-of-foefinding",
+      "n": "Goggles of Foefinding",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-goggles-of-lifesight",
+      "n": "Goggles of Lifesight",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-goggles-of-the-ebon-hunter",
+      "n": "Goggles of the Ebon Hunter",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-goggles-of-the-golden-sun",
+      "n": "Goggles of the Golden Sun",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-goodberry-bracelet",
+      "n": "Goodberry Bracelet",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-greater-piwafwi",
+      "n": "Greater Piwafwi",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-greatreach-bracers",
+      "n": "Greatreach Bracers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gwaeron-s-belt",
+      "n": "Gwaeron's Belt",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-gwaeron-s-boots",
+      "n": "Gwaeron's Boots",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-hair-shirt-of-suffering",
+      "n": "Hair Shirt of Suffering",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-hammerblock",
+      "n": "Hammerblock",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-hammersphere",
+      "n": "Hammersphere",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-hand-of-the-oak-father",
+      "n": "Hand of the Oak Father",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-harmonizing",
+      "n": "Harmonizing",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-harrow-rod",
+      "n": "Harrow Rod",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-hat-of-anonymity",
+      "n": "Hat of Anonymity",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-hawkfeather-armor",
+      "n": "Hawkfeather Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-headband-of-conscious-effort",
+      "n": "Headband of Conscious Effort",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-headband-of-the-lorebinder",
+      "n": "Headband of the Lorebinder",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-healing",
+      "n": "Healing",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-healing-belt",
+      "n": "Healing Belt",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-healing-salve",
+      "n": "Healing Salve",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-healing-greater-synergy",
+      "n": "Healing, Greater [Synergy]",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-heartening",
+      "n": "Heartening",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-heartseeking-amulet",
+      "n": "Heartseeking Amulet",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-heavenly-burst",
+      "n": "Heavenly Burst",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-hellcat-gauntlets",
+      "n": "Hellcat Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-helm-of-battle",
+      "n": "Helm of Battle",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-helm-of-gazes",
+      "n": "Helm of Gazes",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-helm-of-glorious-recovery",
+      "n": "Helm of Glorious Recovery",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-helm-of-heroes",
+      "n": "Helm of Heroes",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-helm-of-tactics",
+      "n": "Helm of Tactics",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-helm-of-the-hunter",
+      "n": "Helm of the Hunter",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-helm-of-the-purple-plume-relic",
+      "n": "Helm of the Purple Plume [Relic]",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-helm-of-wounding-sight",
+      "n": "Helm of Wounding Sight",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-hexbands",
+      "n": "Hexbands",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-hideaway",
+      "n": "Hideaway",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-holy-surge-synergy",
+      "n": "Holy Surge [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-hooked-hammer-of-the-hearthfire-relic",
+      "n": "Hooked Hammer of the Hearthfire [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-horn-of-plenty",
+      "n": "Horn of Plenty",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-horn-of-resilience",
+      "n": "Horn of Resilience",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-horned-helm",
+      "n": "Horned Helm",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-hunting",
+      "n": "Hunting",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-icy-strand-of-the-north",
+      "n": "Icy Strand of the North",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-ignan",
+      "n": "Ignan",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-illuminating",
+      "n": "Illuminating",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-illusion-bane",
+      "n": "Illusion Bane",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-illusion-theft-synergy",
+      "n": "Illusion Theft [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-impact",
+      "n": "Impact",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-impaling",
+      "n": "Impaling",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-impedance",
+      "n": "Impedance",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-impervious-vestment",
+      "n": "Impervious Vestment",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-implacable",
+      "n": "Implacable",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-incarnum-focus",
+      "n": "Incarnum Focus",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-incense-of-concentration",
+      "n": "Incense of Concentration",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-incorporeal-binding-synergy",
+      "n": "Incorporeal Binding [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-infinite-scrollcase",
+      "n": "Infinite Scrollcase",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-inquisitor-bracers",
+      "n": "Inquisitor Bracers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-iron-ward-diamond",
+      "n": "Iron Ward Diamond",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-jumping-caltrops",
+      "n": "Jumping Caltrops",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ki-straps",
+      "n": "Ki Straps",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-knockback",
+      "n": "Knockback",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-kyton-armor",
+      "n": "Kyton Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-landing",
+      "n": "Landing",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-lash-of-sands",
+      "n": "Lash of Sands",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-lens-of-the-desert",
+      "n": "Lens of the Desert",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-lenses-of-bright-vision",
+      "n": "Lenses of Bright Vision",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-lenses-of-revelation",
+      "n": "Lenses of Revelation",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-lenses-of-true-form",
+      "n": "Lenses of True Form",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-life-ring",
+      "n": "Life Ring",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-lightning-gauntlets",
+      "n": "Lightning Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-lightning-tunic",
+      "n": "Lightning Tunic",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-linked",
+      "n": "Linked",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-living-chain",
+      "n": "Living Chain",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-lockpicking-ring",
+      "n": "Lockpicking Ring",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-lore-gem",
+      "n": "Lore Gem",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-lucky",
+      "n": "Lucky",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mac-fuirmidh-cithern",
+      "n": "Mac-Fuirmidh Cithern",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-mace-of-the-dark-children",
+      "n": "Mace of the Dark Children",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-magebane",
+      "n": "Magebane",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-magic-bedroll",
+      "n": "Magic Bedroll",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-magic-siphon",
+      "n": "Magic Siphon",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-magic-eating",
+      "n": "Magic-Eating",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-maiming",
+      "n": "Maiming",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-manifester",
+      "n": "Manifester",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-manifester-weapon",
+      "n": "Manifester",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-manticore-greatsword",
+      "n": "Manticore Greatsword",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mantle-of-second-chances",
+      "n": "Mantle of Second Chances",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mantle-of-the-predator",
+      "n": "Mantle of the Predator",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-map-of-unseen-lands-relic",
+      "n": "Map of Unseen Lands [Relic]",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mask-of-blood",
+      "n": "Mask of Blood",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mask-of-lies",
+      "n": "Mask of Lies",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mask-of-mastery",
+      "n": "Mask of Mastery",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mask-of-mental-armor",
+      "n": "Mask of Mental Armor",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mask-of-silent-trickery",
+      "n": "Mask of Silent Trickery",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mask-of-sweet-air",
+      "n": "Mask of Sweet Air",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mask-of-the-tiger",
+      "n": "Mask of the Tiger",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-masking",
+      "n": "Masking",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-medal-of-gallantry",
+      "n": "Medal of Gallantry",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-medal-of-steadfast-honor",
+      "n": "Medal of Steadfast Honor",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-medallion-of-aerial-defense",
+      "n": "Medallion of Aerial Defense",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-memento-magica",
+      "n": "Memento Magica",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-menacing",
+      "n": "Menacing",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mesmerist-s-gloves",
+      "n": "Mesmerist's Gloves",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-metalline",
+      "n": "Metalline",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-metamagic-rod-chaining",
+      "n": "Metamagic Rod, Chaining",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-metamagic-rod-reach",
+      "n": "Metamagic Rod, Reach",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-metamagic-rod-sculpting",
+      "n": "Metamagic Rod, Sculpting",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-metamagic-rod-substitution",
+      "n": "Metamagic Rod, Substitution",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-meteoric-knife",
+      "n": "Meteoric Knife",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-mighty-smiting",
+      "n": "Mighty Smiting",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-millennial-chainmail-relic",
+      "n": "Millennial Chainmail [Relic]",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mind-blade-gauntlet",
+      "n": "Mind Blade Gauntlet",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mind-blade-gauntlet-greater",
+      "n": "Mind Blade Gauntlet, Greater",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mind-blade-gauntlet-lesser",
+      "n": "Mind Blade Gauntlet, Lesser",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-mindarmor",
+      "n": "Mindarmor",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-mindcrusher",
+      "n": "Mindcrusher",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-mindfeeder",
+      "n": "Mindfeeder",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mindvault",
+      "n": "Mindvault",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mirror-of-suggestion",
+      "n": "Mirror of Suggestion",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mirror-of-time-hop",
+      "n": "Mirror of Time Hop",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-mithral-bells",
+      "n": "Mithral Bells",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-mithralmist-shirt",
+      "n": "Mithralmist Shirt",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-mobility",
+      "n": "Mobility",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-monocle-of-perusal",
+      "n": "Monocle of Perusal",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-moonstone-mask",
+      "n": "Moonstone Mask",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-morningstar-of-the-many-relic",
+      "n": "Morningstar of the Many [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-morphing",
+      "n": "Morphing",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-necklace-of-copper-dragon-scales",
+      "n": "Necklace of Copper Dragon Scales",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-necklace-of-warning",
+      "n": "Necklace of Warning",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-necrotic-focus",
+      "n": "Necrotic Focus",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-nimbleness",
+      "n": "Nimbleness",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-noble-pennon",
+      "n": "Noble Pennon",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ollamh-harp",
+      "n": "Ollamh Harp",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-orb-of-blinding",
+      "n": "Orb of Blinding",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-orb-of-environmental-adaptation",
+      "n": "Orb of Environmental Adaptation",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-orb-of-mental-renewal",
+      "n": "Orb of Mental Renewal",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "shd-mic-overhead-shield",
+      "n": "Overhead Shield",
+      "t": "Shield",
+      "c": "Specific Shield",
+      "s": "Off-Hand/Shield",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-owlfeather-armor",
+      "n": "Owlfeather Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-panther-mask",
+      "n": "Panther Mask",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-paralytic-burst",
+      "n": "Paralytic Burst",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-paralyzing",
+      "n": "Paralyzing",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-parrying",
+      "n": "Parrying",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-pearl-of-brain-lock",
+      "n": "Pearl of Brain Lock",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-pearl-of-breath-crisis",
+      "n": "Pearl of Breath Crisis",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-pearl-of-speech",
+      "n": "Pearl of Speech",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-pendant-of-joy",
+      "n": "Pendant of Joy",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-periapt-of-the-sullen-sea",
+      "n": "Periapt of the Sullen Sea",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-personal-oasis",
+      "n": "Personal Oasis",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-phoenix-ash-threat-greater",
+      "n": "Phoenix Ash Threat, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-phoenix-ash-threat-least",
+      "n": "Phoenix Ash Threat, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-phoenix-ash-threat-lesser",
+      "n": "Phoenix Ash Threat, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-phoenix-cloak",
+      "n": "Phoenix Cloak",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-phoenix-helm",
+      "n": "Phoenix Helm",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-phylactery-of-virtue",
+      "n": "Phylactery of Virtue",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-pick-of-piercing",
+      "n": "Pick of Piercing",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-piercer-cloak",
+      "n": "Piercer Cloak",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-pipes-of-frenzied-revelry-relic",
+      "n": "Pipes of Frenzied Revelry [Relic]",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-platinum-helm-relic",
+      "n": "Platinum Helm [Relic]",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-porcupine-elixir",
+      "n": "Porcupine Elixir",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-portable-foxhole",
+      "n": "Portable Foxhole",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-powder-of-the-black-veil",
+      "n": "Powder of the Black Veil",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-power-storing",
+      "n": "Power Storing",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-precise",
+      "n": "Precise",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-prismatic-burst",
+      "n": "Prismatic Burst",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-profane",
+      "n": "Profane",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-profane-burst-synergy",
+      "n": "Profane Burst [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-psibane",
+      "n": "Psibane",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psionatrix",
+      "n": "Psionatrix",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-psychic",
+      "n": "Psychic",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-celestial-embrace",
+      "n": "Psychoactive Skin of Celestial Embrace",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-ectoplasmic-armor",
+      "n": "Psychoactive Skin of Ectoplasmic Armor",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-fiendish-embrace",
+      "n": "Psychoactive Skin of Fiendish Embrace",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-fiery-response",
+      "n": "Psychoactive Skin of Fiery Response",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-iron",
+      "n": "Psychoactive Skin of Iron",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-nimbleness",
+      "n": "Psychoactive Skin of Nimbleness",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-power-damping",
+      "n": "Psychoactive Skin of Power Damping",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-the-celestial",
+      "n": "Psychoactive Skin of the Celestial",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-the-chameleon",
+      "n": "Psychoactive Skin of the Chameleon",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-the-claw",
+      "n": "Psychoactive Skin of the Claw",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-the-defender",
+      "n": "Psychoactive Skin of the Defender",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-the-fiend",
+      "n": "Psychoactive Skin of the Fiend",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-the-hero",
+      "n": "Psychoactive Skin of the Hero",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-the-psion",
+      "n": "Psychoactive Skin of the Psion",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-the-spider",
+      "n": "Psychoactive Skin of the Spider",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-psychoactive-skin-of-the-troll",
+      "n": "Psychoactive Skin of the Troll",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-psychokinetic",
+      "n": "Psychokinetic",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-psychokinetic-burst-synergy",
+      "n": "Psychokinetic Burst [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-quarterstaff-of-battle",
+      "n": "Quarterstaff of Battle",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-quick-loading",
+      "n": "Quick Loading",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-quickness",
+      "n": "Quickness",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-quicksilver-boots",
+      "n": "Quicksilver Boots",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-quiver-of-energy",
+      "n": "Quiver of Energy",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-radiant",
+      "n": "Radiant",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-radiant-sphere",
+      "n": "Radiant Sphere",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-rags-of-restraint",
+      "n": "Rags of Restraint",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-ranged",
+      "n": "Ranged",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-rapidstrike-bracers",
+      "n": "Rapidstrike Bracers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-rapier-of-desperate-measures-relic",
+      "n": "Rapier of Desperate Measures [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-rapier-of-unerring-direction-relic",
+      "n": "Rapier of Unerring Direction [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-raptor-arrow-relic",
+      "n": "Raptor Arrow [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-raptor-s-mask",
+      "n": "Raptor's Mask",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-reach-gauntlets",
+      "n": "Reach Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-rearguard-s-cape",
+      "n": "Rearguard's Cape",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-reciprocal-bracers",
+      "n": "Reciprocal Bracers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-reins-of-ascension",
+      "n": "Reins of Ascension",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-reliquary-holy-symbol",
+      "n": "Reliquary Holy Symbol",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-rending-gauntlets",
+      "n": "Rending Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-repelling-gauntlets",
+      "n": "Repelling Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-replenishing-skin",
+      "n": "Replenishing Skin",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-resounding",
+      "n": "Resounding",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-restful-crystal",
+      "n": "Restful Crystal",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-retaliation",
+      "n": "Retaliation",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-retributive-amulet",
+      "n": "Retributive Amulet",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-revealing",
+      "n": "Revealing",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-revelation-crystal-greater",
+      "n": "Revelation Crystal, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-revelation-crystal-least",
+      "n": "Revelation Crystal, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-revelation-crystal-lesser",
+      "n": "Revelation Crystal, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-rhino-elixir",
+      "n": "Rhino Elixir",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-riding-boots",
+      "n": "Riding Boots",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-adamantine-touch",
+      "n": "Ring of Adamantine Touch",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-antivenom",
+      "n": "Ring of Antivenom",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-arcane-might",
+      "n": "Ring of Arcane Might",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-arming",
+      "n": "Ring of Arming",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-avoidance",
+      "n": "Ring of Avoidance",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-brief-blessing",
+      "n": "Ring of Brief Blessing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-communication",
+      "n": "Ring of Communication",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-divergence",
+      "n": "Ring of Divergence",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-dragon-friendship",
+      "n": "Ring of Dragon Friendship",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-entropic-deflection",
+      "n": "Ring of Entropic Deflection",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-essentia",
+      "n": "Ring of Essentia",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-floating",
+      "n": "Ring of Floating",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-four-winds",
+      "n": "Ring of Four Winds",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-greater-counterspells",
+      "n": "Ring of Greater Counterspells",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-lightning-flashes",
+      "n": "Ring of Lightning Flashes",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-master-artifice",
+      "n": "Ring of Master Artifice",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-master-artifice-greater",
+      "n": "Ring of Master Artifice, Greater",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-master-artifice-lesser",
+      "n": "Ring of Master Artifice, Lesser",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-mystic-defiance",
+      "n": "Ring of Mystic Defiance",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-mystic-fire",
+      "n": "Ring of Mystic Fire",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-mystic-healing",
+      "n": "Ring of Mystic Healing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-mystic-lightning",
+      "n": "Ring of Mystic Lightning",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-negative-protection",
+      "n": "Ring of Negative Protection",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-nine-lives",
+      "n": "Ring of Nine Lives",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-piercing-spells",
+      "n": "Ring of Piercing Spells",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-positive-protection",
+      "n": "Ring of Positive Protection",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-self-sufficiency",
+      "n": "Ring of Self-Sufficiency",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-silent-spells",
+      "n": "Ring of Silent Spells",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-soulbound-protection",
+      "n": "Ring of Soulbound Protection",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-soulbound-protection-greater",
+      "n": "Ring of Soulbound Protection, Greater",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-spell-battle",
+      "n": "Ring of Spell-Battle",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-the-darkhidden",
+      "n": "Ring of the Darkhidden",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-the-forcewall",
+      "n": "Ring of the Forcewall",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-the-icy-soul",
+      "n": "Ring of the Icy Soul",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-thunderclaps",
+      "n": "Ring of Thunderclaps",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-universal-energy-resistance",
+      "n": "Ring of Universal Energy Resistance",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-vanishing",
+      "n": "Ring of Vanishing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-vengeance",
+      "n": "Ring of Vengeance",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ring-of-water-breathing",
+      "n": "Ring of Water Breathing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-rings-of-force-armor",
+      "n": "Rings of Force Armor",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-roaring",
+      "n": "Roaring",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-robe-of-arcane-might",
+      "n": "Robe of Arcane Might",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Body",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-robe-of-mysterious-conjuration",
+      "n": "Robe of Mysterious Conjuration",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Body",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-robe-of-retaliation",
+      "n": "Robe of Retaliation",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Body",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-robe-of-the-inferno",
+      "n": "Robe of the Inferno",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Body",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-robe-of-thunder",
+      "n": "Robe of Thunder",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Body",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-rock-boots",
+      "n": "Rock Boots",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-bodily-restoration",
+      "n": "Rod of Bodily Restoration",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-rod-of-cats",
+      "n": "Rod of Cats",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-rod-of-celestial-might",
+      "n": "Rod of Celestial Might",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-rod-of-defiance",
+      "n": "Rod of Defiance",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-rod-of-enervating-strike",
+      "n": "Rod of Enervating Strike",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-escape",
+      "n": "Rod of Escape",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-force",
+      "n": "Rod of Force",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-rod-of-freedom",
+      "n": "Rod of Freedom",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-frost",
+      "n": "Rod of Frost",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-fumbling",
+      "n": "Rod of Fumbling",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-grievous-wounds",
+      "n": "Rod of Grievous Wounds",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-reversal-relic",
+      "n": "Rod of Reversal [Relic]",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-silence",
+      "n": "Rod of Silence",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-sliding",
+      "n": "Rod of Sliding",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-sure-striking",
+      "n": "Rod of Sure Striking",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-rod-of-surprises",
+      "n": "Rod of Surprises",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-rod-of-the-recluse-relic",
+      "n": "Rod of the Recluse [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-transposition",
+      "n": "Rod of Transposition",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-undead-mastery",
+      "n": "Rod of Undead Mastery",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-rod-of-viscid-globs",
+      "n": "Rod of Viscid Globs",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-rod-of-whips",
+      "n": "Rod of Whips",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-rogue-blade",
+      "n": "Rogue Blade",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-rogue-s-vest",
+      "n": "Rogue's Vest",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-rope-of-climbing-superior",
+      "n": "Rope of Climbing, Superior",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-rope-of-stone",
+      "n": "Rope of Stone",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-rubicund-frenzy",
+      "n": "Rubicund Frenzy",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Armor Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-ruby-blade-relic",
+      "n": "Ruby Blade [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-ruby-cincture-of-immutability",
+      "n": "Ruby Cincture of Immutability",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-abjuration",
+      "n": "Runestaff of Abjuration",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-cacophony",
+      "n": "Runestaff of Cacophony",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-charming",
+      "n": "Runestaff of Charming",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-conjuration",
+      "n": "Runestaff of Conjuration",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-destruction",
+      "n": "Runestaff of Destruction",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-divination",
+      "n": "Runestaff of Divination",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-earth-and-stone",
+      "n": "Runestaff of Earth and Stone",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-enchantment",
+      "n": "Runestaff of Enchantment",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-entrapment",
+      "n": "Runestaff of Entrapment",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-ethereal-action",
+      "n": "Runestaff of Ethereal Action",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-evocation",
+      "n": "Runestaff of Evocation",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-eyes",
+      "n": "Runestaff of Eyes",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-fiendish-darkness",
+      "n": "Runestaff of Fiendish Darkness",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-fire",
+      "n": "Runestaff of Fire",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-forced-happiness",
+      "n": "Runestaff of Forced Happiness",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-frost",
+      "n": "Runestaff of Frost",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-illumination",
+      "n": "Runestaff of Illumination",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-illusion",
+      "n": "Runestaff of Illusion",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-insanity",
+      "n": "Runestaff of Insanity",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-necromancy",
+      "n": "Runestaff of Necromancy",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-night",
+      "n": "Runestaff of Night",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-opening",
+      "n": "Runestaff of Opening",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-passage",
+      "n": "Runestaff of Passage",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-power",
+      "n": "Runestaff of Power",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-size-alteration",
+      "n": "Runestaff of Size Alteration",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-the-architect",
+      "n": "Runestaff of the Architect",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-the-artisan",
+      "n": "Runestaff of the Artisan",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-the-assassin",
+      "n": "Runestaff of the Assassin",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-the-undead-slayer",
+      "n": "Runestaff of the Undead Slayer",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-the-undying",
+      "n": "Runestaff of the Undying",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-time",
+      "n": "Runestaff of Time",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-transmutation",
+      "n": "Runestaff of Transmutation",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-transportation",
+      "n": "Runestaff of Transportation",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "stf-mic-runestaff-of-vision",
+      "n": "Runestaff of Vision",
+      "t": "MagicItem",
+      "c": "Staff",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-sacred",
+      "n": "Sacred",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-sacred-burst-synergy",
+      "n": "Sacred Burst [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-sacred-scabbard",
+      "n": "Sacred Scabbard",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-safewing-emblem",
+      "n": "Safewing Emblem",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-salve-of-minor-spell-resistance",
+      "n": "Salve of Minor Spell Resistance",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-sandals-of-springing",
+      "n": "Sandals of Springing",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-sandals-of-sprinting",
+      "n": "Sandals of Sprinting",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-sandals-of-the-light-step",
+      "n": "Sandals of the Light Step",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-scarab-of-invulnerability",
+      "n": "Scarab of Invulnerability",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-scarab-of-stabilization",
+      "n": "Scarab of Stabilization",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-scentblinder",
+      "n": "Scentblinder",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-scepter-of-the-netherworld",
+      "n": "Scepter of the Netherworld",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-scorpion-kama",
+      "n": "Scorpion Kama",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-scourge-of-pain",
+      "n": "Scourge of Pain",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-scout-s-headband",
+      "n": "Scout's Headband",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-screaming",
+      "n": "Screaming",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-screaming-burst-synergy",
+      "n": "Screaming Burst [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-scrolls-of-uncertain-provenance-relic",
+      "n": "Scrolls of Uncertain Provenance [Relic]",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-scry-shroud",
+      "n": "Scry Shroud",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-scrying-beacon",
+      "n": "Scrying Beacon",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-scrying-shard",
+      "n": "Scrying Shard",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-sending-stones",
+      "n": "Sending Stones",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-sepulchral-vest",
+      "n": "Sepulchral Vest",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-serpent-armor",
+      "n": "Serpent Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-serpent-veil",
+      "n": "Serpent Veil",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shackles-of-silence",
+      "n": "Shackles of Silence",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shadow-maniple",
+      "n": "Shadow Maniple",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shadow-veil",
+      "n": "Shadow Veil",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Body",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-shadowstrike",
+      "n": "Shadowstrike",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shard-of-the-sun-relic",
+      "n": "Shard of the Sun [Relic]",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-shattermantle",
+      "n": "Shattermantle",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "shd-mic-shield-of-mercy",
+      "n": "Shield of Mercy",
+      "t": "Shield",
+      "c": "Specific Shield",
+      "s": "Off-Hand/Shield",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "shd-mic-shield-of-the-resolute-relic",
+      "n": "Shield of the Resolute [Relic]",
+      "t": "Shield",
+      "c": "Specific Shield",
+      "s": "Off-Hand/Shield",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "shd-mic-shield-of-the-severed-hand-relic",
+      "n": "Shield of the Severed Hand [Relic]",
+      "t": "Shield",
+      "c": "Specific Shield",
+      "s": "Off-Hand/Shield",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "shd-mic-shield-of-vigor",
+      "n": "Shield of Vigor",
+      "t": "Shield",
+      "c": "Specific Shield",
+      "s": "Off-Hand/Shield",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-shielding",
+      "n": "Shielding",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shiftweave",
+      "n": "Shiftweave",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-angels",
+      "n": "Shirt of Angels",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-bone",
+      "n": "Shirt of Bone",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-chains",
+      "n": "Shirt of Chains",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-demonskin",
+      "n": "Shirt of Demonskin",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-ironskin",
+      "n": "Shirt of Ironskin",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-resilience",
+      "n": "Shirt of Resilience",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-slaadskin",
+      "n": "Shirt of Slaadskin",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-the-fey",
+      "n": "Shirt of the Fey",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-the-inevitable",
+      "n": "Shirt of the Inevitable",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-the-leech",
+      "n": "Shirt of the Leech",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-the-moon",
+      "n": "Shirt of the Moon",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-the-treant",
+      "n": "Shirt of the Treant",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shirt-of-wraith-stalking",
+      "n": "Shirt of Wraith Stalking",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-shroud-of-scales",
+      "n": "Shroud of Scales",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Body",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-silkslick-belt",
+      "n": "Silkslick Belt",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-sizing",
+      "n": "Sizing",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-skewer-of-gnomes-relic",
+      "n": "Skewer-of-Gnomes [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-skill-shard",
+      "n": "Skill Shard",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-skirmisher-boots",
+      "n": "Skirmisher Boots",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-skull-plaque",
+      "n": "Skull Plaque",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-slashing-sand",
+      "n": "Slashing Sand",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-sleeping-spike",
+      "n": "Sleeping Spike",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-slow-burst",
+      "n": "Slow Burst",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-snakeblood-tooth",
+      "n": "Snakeblood Tooth",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-soul-anchor",
+      "n": "Soul Anchor",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-soulbound",
+      "n": "Soulbound",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-soulbound-weapon",
+      "n": "Soulbound",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-soulbound-greater-synergy",
+      "n": "Soulbound, Greater [Synergy]",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-soulbound-greater-synergy-weapon",
+      "n": "Soulbound, Greater [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-soulbreaker-synergy",
+      "n": "Soulbreaker [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-souldrinking-synergy",
+      "n": "Souldrinking [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-soulsmite-gauntlets",
+      "n": "Soulsmite Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-soulstone",
+      "n": "Soulstone",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-soulvoid-orb",
+      "n": "Soulvoid Orb",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-spare-hand",
+      "n": "Spare Hand",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Waist",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-spear-of-retribution-relic",
+      "n": "Spear of Retribution [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-spearblock",
+      "n": "Spearblock",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-spectral-dagger",
+      "n": "Spectral Dagger",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-speed",
+      "n": "Speed",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-spellmight-bracers",
+      "n": "Spellmight Bracers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-spellsight-spectacles",
+      "n": "Spellsight Spectacles",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-spellsink-scarab",
+      "n": "Spellsink Scarab",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-spellstrike",
+      "n": "Spellstrike",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-sphere-of-awakening",
+      "n": "Sphere of Awakening",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-spider-fang",
+      "n": "Spider Fang",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-spider-rod",
+      "n": "Spider Rod",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-spool-of-endless-rope",
+      "n": "Spool of Endless Rope",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-staff-of-the-unyielding-oak-relic",
+      "n": "Staff of the Unyielding Oak [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-stamina",
+      "n": "Stamina",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-stamina-greater-synergy",
+      "n": "Stamina, Greater [Synergy]",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-stamina-improved-synergy",
+      "n": "Stamina, Improved [Synergy]",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-standard-of-valor",
+      "n": "Standard of Valor",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-steadfast-boots",
+      "n": "Steadfast Boots",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-stench-stone",
+      "n": "Stench Stone",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-stonereaver",
+      "n": "Stonereaver",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-storm-gauntlets",
+      "n": "Storm Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-stormfire-ring",
+      "n": "Stormfire Ring",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Ring",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-strand-of-acid-pearls",
+      "n": "Strand of Acid Pearls",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-strand-of-lightning",
+      "n": "Strand of Lightning",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-strongarm-bracers",
+      "n": "Strongarm Bracers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-stunning-synergy",
+      "n": "Stunning [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-stunning-spike",
+      "n": "Stunning Spike",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-stunning-surge",
+      "n": "Stunning Surge",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-stunshot-sling",
+      "n": "Stunshot Sling",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-stygian",
+      "n": "Stygian",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-styptic",
+      "n": "Styptic",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-summoner-s-totem",
+      "n": "Summoner's Totem",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-sundering",
+      "n": "Sundering",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-surcoat-of-valor",
+      "n": "Surcoat of Valor",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-surge-crystal",
+      "n": "Surge Crystal",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-survival-pouch",
+      "n": "Survival Pouch",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-sweeping",
+      "n": "Sweeping",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-sword-of-mighty-thews-relic",
+      "n": "Sword of Mighty Thews [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-sword-of-virtue-beyond-reproach-relic",
+      "n": "Sword of Virtue Beyond Reproach [Relic]",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-swordbow",
+      "n": "Swordbow",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-symbol-of-transfiguration",
+      "n": "Symbol of Transfiguration",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-tabard-of-the-disembodied-relic",
+      "n": "Tabard of the Disembodied [Relic]",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-tabard-of-the-great-crusade-relic",
+      "n": "Tabard of the Great Crusade [Relic]",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-talisman-of-the-disk",
+      "n": "Talisman of the Disk",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-talisman-of-undead-mastery",
+      "n": "Talisman of Undead Mastery",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-talisman-of-undying-fortitude",
+      "n": "Talisman of Undying Fortitude",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-talon-scepter",
+      "n": "Talon Scepter",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-tanglepatch",
+      "n": "Tanglepatch",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-tentacle-rod",
+      "n": "Tentacle Rod",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-tentacle-rod-greater",
+      "n": "Tentacle Rod, Greater",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-terran",
+      "n": "Terran",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-the-fist",
+      "n": "The Fist",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-aware",
+      "n": "Third Eye Aware",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-clarity",
+      "n": "Third Eye Clarity",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-conceal",
+      "n": "Third Eye Conceal",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-concentrate",
+      "n": "Third Eye Concentrate",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-dampening",
+      "n": "Third Eye Dampening",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-dominate",
+      "n": "Third Eye Dominate",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-expose",
+      "n": "Third Eye Expose",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-freedom",
+      "n": "Third Eye Freedom",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-gather",
+      "n": "Third Eye Gather",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-improvisation",
+      "n": "Third Eye Improvisation",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-penetrate",
+      "n": "Third Eye Penetrate",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-powerthieve",
+      "n": "Third Eye Powerthieve",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-repudiate",
+      "n": "Third Eye Repudiate",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-sense",
+      "n": "Third Eye Sense",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-third-eye-surge",
+      "n": "Third Eye Surge",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-thorn-pouch",
+      "n": "Thorn Pouch",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-tigerskin-armor",
+      "n": "Tigerskin Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-time-buttress",
+      "n": "Time Buttress",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-tome-of-ancient-lore-relic",
+      "n": "Tome of Ancient Lore [Relic]",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-tome-of-the-stilled-tongue-relic",
+      "n": "Tome of the Stilled Tongue [Relic]",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-tome-of-worldly-memory",
+      "n": "Tome of Worldly Memory",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-tomebound-eye-of-boccob",
+      "n": "Tomebound Eye of Boccob",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-torc-of-displacement",
+      "n": "Torc of Displacement",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-torc-of-heroic-sacrifice",
+      "n": "Torc of Heroic Sacrifice",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-torc-of-power-preservation",
+      "n": "Torc of Power Preservation",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-torc-of-the-titans",
+      "n": "Torc of the Titans",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-toxic-gloves",
+      "n": "Toxic Gloves",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-transmuting",
+      "n": "Transmuting",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-transposer-cloak",
+      "n": "Transposer Cloak",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-trident-of-serenity",
+      "n": "Trident of Serenity",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-troll-gut-rope",
+      "n": "Troll Gut Rope",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-true-strike-gauntlets",
+      "n": "True Strike Gauntlets",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Hands",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-truedeath-crystal-greater",
+      "n": "Truedeath Crystal, Greater",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-truedeath-crystal-least",
+      "n": "Truedeath Crystal, Least",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-truedeath-crystal-lesser",
+      "n": "Truedeath Crystal, Lesser",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-truelight-lantern",
+      "n": "Truelight Lantern",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Held",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-tunic-of-steady-spellcasting",
+      "n": "Tunic of Steady Spellcasting",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-turquoise-veil",
+      "n": "Turquoise Veil",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-twilight",
+      "n": "Twilight",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-unholy-surge-synergy",
+      "n": "Unholy Surge [Synergy]",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-unicorn-pendant",
+      "n": "Unicorn Pendant",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-vambraces-of-warding",
+      "n": "Vambraces of Warding",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-vampire-hide-armor",
+      "n": "Vampire Hide Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-vampire-torc",
+      "n": "Vampire Torc",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-vampiric",
+      "n": "Vampiric",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-vanguard-treads",
+      "n": "Vanguard Treads",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Feet",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-vanisher-cloak",
+      "n": "Vanisher Cloak",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-vanishing",
+      "n": "Vanishing",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-vanishing-weapon",
+      "n": "Vanishing",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-variable",
+      "n": "Variable",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-veil-of-allure",
+      "n": "Veil of Allure",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-veil-of-doors",
+      "n": "Veil of Doors",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-veil-of-storms",
+      "n": "Veil of Storms",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-veil-of-whispers",
+      "n": "Veil of Whispers",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Eyes",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-venomous",
+      "n": "Venomous",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-vest-of-defense",
+      "n": "Vest of Defense",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-vest-of-free-movement",
+      "n": "Vest of Free Movement",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-vest-of-resistance",
+      "n": "Vest of Resistance",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-vest-of-the-archmagi",
+      "n": "Vest of the Archmagi",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-vest-of-the-master-evoker",
+      "n": "Vest of the Master Evoker",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-vestments-of-ebonsilk-relic",
+      "n": "Vestments of Ebonsilk [Relic]",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-viperblade",
+      "n": "Viperblade",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-wand-bracelet",
+      "n": "Wand Bracelet",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Wrists",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-war-wizard-cloak",
+      "n": "War Wizard Cloak",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "rod-mic-warlock-s-scepter",
+      "n": "Warlock's Scepter",
+      "t": "MagicItem",
+      "c": "Rod",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-warning",
+      "n": "Warning",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-watch-lamp",
+      "n": "Watch Lamp",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Head",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-water-cloak",
+      "n": "Water Cloak",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-water-whip",
+      "n": "Water Whip",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-weakening",
+      "n": "Weakening",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "wpn-mic-whip-of-webs",
+      "n": "Whip of Webs",
+      "t": "Weapon",
+      "c": "Specific Weapon",
+      "s": "Main Hand",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-whirling",
+      "n": "Whirling",
+      "t": "Enhancement",
+      "c": "Weapon Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-white-cloak-of-the-spider",
+      "n": "White Cloak of the Spider",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Shoulders",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-wight-armor",
+      "n": "Wight Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "shd-mic-wight-hide-shield",
+      "n": "Wight Hide Shield",
+      "t": "Shield",
+      "c": "Specific Shield",
+      "s": "Off-Hand/Shield",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-wilding-clasp",
+      "n": "Wilding Clasp",
+      "t": "MagicItem",
+      "c": "Tool",
+      "s": "Slotless",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-winged-vest",
+      "n": "Winged Vest",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Torso",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-wink-brooch",
+      "n": "Wink Brooch",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "crys-witchlight-reservoir",
+      "n": "Witchlight Reservoir",
+      "t": "AugmentationCrystal",
+      "c": "Augmentation Crystal",
+      "s": "Weapon Crystal",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "enh-woodwalk",
+      "n": "Woodwalk",
+      "t": "Enhancement",
+      "c": "Armor Enhancement",
+      "s": "None",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "shd-mic-wrapped-tower",
+      "n": "Wrapped Tower",
+      "t": "Shield",
+      "c": "Specific Shield",
+      "s": "Off-Hand/Shield",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "mi-mic-wyrmfang-amulet",
+      "n": "Wyrmfang Amulet",
+      "t": "MagicItem",
+      "c": "Wondrous",
+      "s": "Neck",
+      "f": "mic_compendium.json"
+    },
+    {
+      "id": "arm-mic-zombie-hide-armor",
+      "n": "Zombie Hide Armor",
+      "t": "Armor",
+      "c": "Specific Armor",
+      "s": "Armor",
+      "f": "mic_compendium.json"
     }
   ]
 }
