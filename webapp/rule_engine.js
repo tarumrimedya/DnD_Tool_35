@@ -923,7 +923,7 @@ const RuleEngine = {
 
   // Resolve bonus stacking according to D&D 3.5e RAW rules
   resolveBonusStacking(bonusList) {
-    const stackingTypes = ['dodge', 'untyped', 'circumstance', 'synergy', 'racial'];
+    const stackingTypes = ['dodge', 'untyped', 'circumstance', 'synergy', 'racial', 'template'];
     const buckets = {};
     let total = 0;
 
@@ -2272,6 +2272,46 @@ const RuleEngine = {
     return entries;
   },
 
+  // Canonical V2 Active Character Templates Harvester (`srd_templates.json` + Master DB)
+  getCharacterActiveTemplateEntries(character = null) {
+    if (!character) return [];
+    const rawList = Array.isArray(character.templates)
+      ? character.templates
+      : (character.template ? [character.template] : []);
+    if (rawList.length === 0) return [];
+
+    const seenIds = new Set();
+    const resolved = [];
+
+    rawList.forEach(item => {
+      if (!item) return;
+      if (typeof item === 'object' && item.active === false) return;
+      const query = typeof item === 'object' ? (item.id || item.name || '') : String(item).trim();
+      if (!query) return;
+
+      let tmpl = null;
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getTemplate === 'function') {
+        tmpl = window.SrdCompendium.getTemplate(query);
+      } else if (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.getTemplate === 'function') {
+        tmpl = SrdCompendium.getTemplate(query);
+      }
+      if (!tmpl) {
+        tmpl = this.getMasterDbEntry(item, 'Template') || this.getMasterDbEntry(query, 'Template');
+      }
+      if (!tmpl && typeof item === 'object' && Array.isArray(item.modifiers)) {
+        tmpl = this.ensureV2Entry(item);
+      }
+      if (!tmpl) return;
+
+      const key = String(tmpl.id || tmpl.name || query).toLowerCase();
+      if (seenIds.has(key)) return;
+      seenIds.add(key);
+      resolved.push(tmpl);
+    });
+
+    return resolved;
+  },
+
   // Canonical V2 Turn/Rebuke Undead, Elemental Turning & Cleric Domain Active Powers Resolver
   getTurnUndeadAndDomainPowers(character = null) {
     if (!character) return { hasTurnUndead: false, activeDomainPowers: [], elementalTurningPools: [] };
@@ -3042,11 +3082,13 @@ const RuleEngine = {
           } else if (acSub === 'deflection' || mTypeLower === 'deflection') {
             deflectionBonuses.push({ val, source: sourceName, type: 'Deflection' });
           } else if (acSub === 'natural' || mTypeLower === 'natural' || mTypeLower === 'natural_armor_ench' || mTypeLower === 'natural_enhancement') {
-            const natType = (mTypeLower.includes('ench') || sourceName.toLowerCase().includes('barkskin') || sourceName.toLowerCase().includes('amulet of natural armor'))
-              ? 'Natural_Armor_Ench'
-              : 'Natural';
+            const natType = sourceCategory === 'template'
+              ? 'template'
+              : ((mTypeLower.includes('ench') || sourceName.toLowerCase().includes('barkskin') || sourceName.toLowerCase().includes('amulet of natural armor'))
+                ? 'Natural_Armor_Ench'
+                : 'Natural');
             naturalBonuses.push({ val, source: sourceName, type: natType });
-          } else if (acSub === 'dodge' || mTypeLower === 'dodge' || mTypeLower === 'haste' || mTypeLower === 'insight' || mTypeLower === 'luck' || mTypeLower === 'sacred' || mTypeLower === 'profane') {
+          } else if (acSub === 'dodge' || mTypeLower === 'dodge' || mTypeLower === 'haste' || mTypeLower === 'insight' || mTypeLower === 'luck' || mTypeLower === 'sacred' || mTypeLower === 'profane' || mTypeLower === 'divine') {
             dodgeBonuses.push({ val, source: sourceName, type: mTypeLower === 'dodge' ? 'Dodge' : mType });
           } else {
             armorBonuses.push({ val, source: sourceName, type: 'Armor' });
@@ -3102,8 +3144,8 @@ const RuleEngine = {
           return;
         }
 
-        // Psionic Power Points (`psionic.powerPoints`, `psionic`)
-        if (target === 'psionic.powerpoints' || target === 'psionic') {
+        // Psionic Power Points (`psionic.powerPoints`, `psionic`, `powerpoints`)
+        if (target === 'psionic.powerpoints' || target === 'psionic' || target === 'powerpoints') {
           bonusPowerPoints += val;
           return;
         }
@@ -3409,6 +3451,98 @@ const RuleEngine = {
         }
       }
     }
+
+    // 3.92. Collect Character Template Modifiers (Canonical V2 `srd_templates.json`)
+    const activeTemplateEntries = this.getCharacterActiveTemplateEntries(character);
+    let totalLevelAdjustment = Number(this.getMasterDbEntry(character.race, 'Race')?.levelAdjustment) || 0;
+    const templateSummary = {
+      activeCount: activeTemplateEntries.length,
+      names: [],
+      ids: [],
+      levelAdjustment: 0,
+      crIncrease: 0,
+      creatureType: null,
+      hitDieOverride: null,
+      dr: [],
+      sr: 0,
+      fastHealing: 0,
+      turnResistance: 0,
+      vision: [],
+      immunities: [],
+      resistances: [],
+      specialAttacks: [],
+      specialQualities: [],
+      bonusFeats: [],
+      damageParts: []
+    };
+
+    if (activeTemplateEntries.length > 0) {
+      // Pre-compute template ability score adjustments so @chaMod in template modifiers (e.g. Ghost Deflection AC) reflects the new score
+      let preCha = Number(character.baseAbilities?.cha || 10) + this.resolveBonusStacking(abilityBuckets.cha);
+      activeTemplateEntries.forEach(tmpl => {
+        if (!Array.isArray(tmpl?.modifiers)) return;
+        tmpl.modifiers.forEach(m => {
+          const t = String(m?.target || '').toLowerCase().trim();
+          if ((t === 'ability.cha' || t === 'cha') && !m.condition) {
+            preCha += Number(m.value) || 0;
+          }
+        });
+      });
+      const tmplEvalCtx = { ...evalContext, chaMod: this.getAbilityMod(preCha) };
+
+      activeTemplateEntries.forEach(tmpl => {
+        if (!tmpl) return;
+        const tmplLabel = `${tmpl.name} (Template)`;
+        templateSummary.names.push(tmpl.name);
+        if (tmpl.id) templateSummary.ids.push(tmpl.id);
+        const la = Number(tmpl.levelAdjustment ?? tmpl.ruleFlags?.levelAdjustment) || 0;
+        const cr = Number(tmpl.crIncrease ?? tmpl.ruleFlags?.crIncrease) || 0;
+        templateSummary.levelAdjustment += la;
+        templateSummary.crIncrease += cr;
+        totalLevelAdjustment += la;
+        if (tmpl.creatureType) templateSummary.creatureType = tmpl.creatureType;
+        if (tmpl.hitDieOverride) templateSummary.hitDieOverride = tmpl.hitDieOverride;
+        if (tmpl.dr && !templateSummary.dr.includes(tmpl.dr)) templateSummary.dr.push(tmpl.dr);
+        if (tmpl.sr || tmpl.ruleFlags?.srFormula) {
+          const srExpr = tmpl.ruleFlags?.srFormula || tmpl.sr;
+          const srVal = Number(this.evaluateFormula(srExpr, tmplEvalCtx)) || parseInt(srExpr, 10) || 0;
+          if (srVal > templateSummary.sr) templateSummary.sr = srVal;
+        }
+        if (Number(tmpl.fastHealing) > templateSummary.fastHealing) {
+          templateSummary.fastHealing = Number(tmpl.fastHealing);
+        }
+        if (Number(tmpl.turnResistance) > 0) {
+          templateSummary.turnResistance += Number(tmpl.turnResistance);
+        }
+        if (Array.isArray(tmpl.vision)) {
+          tmpl.vision.forEach(v => { if (v && !templateSummary.vision.includes(v)) templateSummary.vision.push(v); });
+        }
+        if (Array.isArray(tmpl.immunities)) {
+          tmpl.immunities.forEach(im => { if (im && !templateSummary.immunities.includes(im)) templateSummary.immunities.push(im); });
+        }
+        if (Array.isArray(tmpl.resistances)) {
+          tmpl.resistances.forEach(rs => { if (rs && !templateSummary.resistances.includes(rs)) templateSummary.resistances.push(rs); });
+        }
+        if (Array.isArray(tmpl.specialAttacks)) {
+          tmpl.specialAttacks.forEach(sa => { if (sa && !templateSummary.specialAttacks.includes(sa)) templateSummary.specialAttacks.push(sa); });
+        }
+        if (Array.isArray(tmpl.specialQualities)) {
+          tmpl.specialQualities.forEach(sq => { if (sq && !templateSummary.specialQualities.includes(sq)) templateSummary.specialQualities.push(sq); });
+        }
+        if (Array.isArray(tmpl.bonusFeats)) {
+          tmpl.bonusFeats.forEach(bf => { if (bf && !templateSummary.bonusFeats.includes(bf)) templateSummary.bonusFeats.push(bf); });
+        }
+        if (Array.isArray(tmpl.damageParts)) {
+          tmpl.damageParts.forEach(dp => { if (dp) templateSummary.damageParts.push(dp); });
+        }
+        if (Array.isArray(tmpl.modifiers) && tmpl.modifiers.length > 0) {
+          applyV2Modifiers(tmpl.modifiers, tmplLabel, 'template', tmplEvalCtx);
+        }
+      });
+    }
+    character.levelAdjustment = totalLevelAdjustment;
+    character.ecl = charLvl + totalLevelAdjustment;
+    character.templateSummary = templateSummary;
 
     // 3.95. Collect Active Cleric Domain Modifiers (Canonical V2 `srd_domains.json`)
     const activeDomainEntries = this.getCharacterActiveDomainEntries(character);
@@ -4211,6 +4345,20 @@ const RuleEngine = {
       }
     });
 
+    // Active Character Templates V2 Attack Modifiers
+    const activeTemplatesForAtk = this.getCharacterActiveTemplateEntries(character);
+    activeTemplatesForAtk.forEach(tmpl => {
+      if (!tmpl || !Array.isArray(tmpl.modifiers)) return;
+      tmpl.modifiers.forEach(mod => {
+        if (!mod || !mod.target || mod.condition) return;
+        const t = String(mod.target).toLowerCase();
+        if (isAtkTargetMatch(t)) {
+          const v = evalModExpr(mod, evalCtx);
+          if (v !== 0) attackBonusItems.push({ type: mod.type || 'template', val: v, source: `${tmpl.name} (Template)` });
+        }
+      });
+    });
+
     // Active Buffs & Conditions V2 Attack Modifiers
     if (Array.isArray(character.buffs)) {
       character.buffs.forEach(rawBuff => {
@@ -4356,6 +4504,20 @@ const RuleEngine = {
       } else if (m.bonusDmg) {
         damageBonusItems.push({ type: m.bonusType || 'untyped', val: m.bonusDmg, source: m.name });
       }
+    });
+
+    // Active Character Templates V2 Damage Modifiers
+    const activeTemplatesForDmg = this.getCharacterActiveTemplateEntries(character);
+    activeTemplatesForDmg.forEach(tmpl => {
+      if (!tmpl || !Array.isArray(tmpl.modifiers)) return;
+      tmpl.modifiers.forEach(mod => {
+        if (!mod || !mod.target || mod.condition) return;
+        const t = String(mod.target).toLowerCase();
+        if (isDmgTargetMatch(t)) {
+          const v = evalModExpr(mod, evalCtx);
+          if (v !== 0) damageBonusItems.push({ type: mod.type || 'template', val: v, source: `${tmpl.name} (Template)` });
+        }
+      });
     });
 
     // Active Buffs & Conditions V2 Damage Modifiers
@@ -4808,6 +4970,14 @@ const RuleEngine = {
         matchSkillModifiers(raceObj.modifiers, `${raceObj.name || character.race} (Race)`, 'racial', evalCtx);
       }
     }
+
+    // 5.2. Character Template Skill Modifiers from Canonical V2 Template entries (e.g. Lich/Vampire/Ghost +8 Hide/Listen/Spot/Search/Sense Motive/Move Silently)
+    const activeTemplates = this.getCharacterActiveTemplateEntries(character);
+    activeTemplates.forEach(tmpl => {
+      if (tmpl && Array.isArray(tmpl.modifiers)) {
+        matchSkillModifiers(tmpl.modifiers, `${tmpl.name} (Template)`, 'racial', evalCtx);
+      }
+    });
 
     // 5.5. Cleric Domain Skill Modifiers from Canonical V2 Domain entries (e.g. Artifice +4 Craft, Community +2 Diplomacy, Mind +2 Bluff/Diplomacy/Sense Motive)
     const activeDomains = this.getCharacterActiveDomainEntries(character);

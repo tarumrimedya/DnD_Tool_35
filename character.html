@@ -100,7 +100,8 @@
                   <span id="char-name-display">Loading...</span>
                   <span id="core-name" class="hidden">Loading...</span>
                 </h1>
-                <span id="core-race" class="h-6 px-2 rounded bg-slate-800 text-slate-300 border border-slate-700 text-[10px] font-bold uppercase tracking-wider inline-flex items-center">--</span>
+                <span id="core-race" onclick="openProfileEditModal('identity')" class="h-6 px-2 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 hover:border-purple-500/60 text-[10px] font-bold uppercase tracking-wider inline-flex items-center transition cursor-pointer" title="Click to edit Race &amp; Character Templates">--</span>
+                <button id="core-template-badge" type="button" onclick="openProfileEditModal('template')" class="hidden h-6 px-2 rounded bg-purple-950/90 hover:bg-purple-900 text-purple-200 border border-purple-500/70 text-[10px] font-bold uppercase tracking-wider inline-flex items-center gap-1 transition cursor-pointer" title="Active Character Template(s) &amp; Level Adjustment — Click to manage">🧬 --</button>
                 <button id="btn-header-level-up" onclick="openLevelUpModal()" class="ui-btn-sm h-7 px-2.5 sm:px-3 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Add a new level, select HP/BAB/Saves and Feats">
                   <span>⬆️</span>
                   <span>Level Up</span>
@@ -1469,6 +1470,7 @@
                 <div class="flex flex-wrap items-center gap-2">
                   <h2 id="core-profile-name" class="text-base font-extrabold text-white tracking-wide">Loading...</h2>
                   <span id="core-profile-race-badge" class="badge bg-indigo-950 text-indigo-300 border border-indigo-700/70 text-[10px] font-bold">--</span>
+                  <span id="core-profile-template-badge" onclick="openProfileEditModal('template')" class="hidden badge bg-purple-950 hover:bg-purple-900 text-purple-200 border border-purple-500/70 text-[10px] font-bold cursor-pointer transition" title="Active Character Template(s) &amp; Effective Character Level (ECL)">🧬 --</span>
                   <span id="core-profile-level-badge" class="badge bg-emerald-950 text-emerald-300 border border-emerald-700/70 text-[10px] font-bold">--</span>
                 </div>
                 <div class="text-xs text-slate-300 flex items-center gap-2 mt-0.5">
@@ -1479,6 +1481,10 @@
               </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
+              <button onclick="openProfileEditModal('template')" class="h-8 bg-slate-900 hover:bg-purple-950/80 text-purple-200 hover:text-white border border-purple-500/60 font-bold text-xs px-3 rounded-lg shadow inline-flex items-center justify-center gap-1.5 transition cursor-pointer whitespace-nowrap" title="Apply or manage D&amp;D 3.5e Character Templates (Half-Dragon, Half-Celestial, Lich, Vampire, Lycanthrope, etc.)">
+                <span>🧬</span>
+                <span>Templates</span>
+              </button>
               <button onclick="openProfileEditModal()" class="w-40 h-8 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs px-3 rounded-lg shadow inline-flex items-center justify-center gap-1.5 transition cursor-pointer whitespace-nowrap" title="Edit character identity, race, alignment, and profile">
                 <span>📜</span>
                 <span>Character Profile</span>
@@ -1512,6 +1518,11 @@
               <span class="text-[10px] text-slate-400 uppercase font-bold block">Height & Weight</span>
               <span id="core-profile-height-weight" class="text-slate-200 font-semibold">178 cm, 72 kg</span>
             </div>
+          </div>
+
+          <!-- Active Character Templates Summary Card (Shown when 1+ templates are applied) -->
+          <div id="core-profile-template-summary-bar" class="hidden mt-2.5 bg-gradient-to-r from-purple-950/50 via-slate-950 to-slate-950 border border-purple-500/50 rounded-xl p-2.5 text-xs space-y-1.5 shadow-inner">
+            <!-- Dynamically populated by renderProfileOverview() -->
           </div>
         </div>
 

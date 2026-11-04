@@ -117,11 +117,9 @@
 * [x] `srd_monsters.json` (645 yaratık) ile sıfır veri kopyası üreten dinamik şablon hesaplayıcısının (`SrdCompendium.calculateCompanionStats`) kurulması.
 * [x] **3 Arayüz Entegrasyonu:** `Char` sekmesinde 3-4 satırlık özet kartı, `Combat` sekmesinde `🐾 Companion & Mount Attacks` çekmecesi, `Inventory` sekmesinde `🐾 Companion` 5 yuvalı ekipman görünümü.
 
-### [ ] Faz 9.E (Seçenek E): Karakter Şablonları — Templates (`database/srd_classes_races.json` veya `database/srd_templates.json`) [PLANLANDI]
-* **Mevcut Durum:** Sadece temel ırklar (Base Races) seçilebiliyor; şablon (Template) katmanı yok.
-* **Kapsam & Teslimatlar:**
-  * [ ] **7 Resmi SRD Şablonu:** *Half-Dragon (+8 Str, +2 Con, +2 Int, +2 Cha, +4 Nat AC, Breath Weapon, Immunity), Half-Celestial, Half-Fiend, Lich, Vampire, Lycanthrope (Werewolf / Werebear / Wererat / Weretiger / Wereboar), Ghost*.
-  * [ ] Karakter kurgusunda **Level Adjustment (LA)**, tip değişimi, doğal zırh, yetenek skoru artışları (`modifiers`), DR/SR ve özel saldırıların (`damageParts`) `RuleEngine` üzerinden otomatik karaktere giydirilmesi.
+### [x] Faz 9.E (Seçenek E): Karakter Şablonları — Templates (`database/srd_templates.json`) [TAMAMLANDI]
+* [x] **39 Resmi D&D 3.5e Şablonu (`database/srd_templates.json`):** *Half-Dragon (Red, Gold, Silver, Blue, Black, Green, White, Brass, Bronze, Copper), Half-Celestial, Half-Fiend, Celestial, Fiendish, Lich, Vampire, Ghost, Demilich, Skeleton, Zombie, Lycanthrope (Werewolf, Werebear, Wererat, Weretiger, Wereboar, Dire Werewolf, Dire Wereboar + Hybrid/Animal Form), Phrenic, Psionic, Shadow Creature, Paragon, Pseudonatural, Worm that Walks, Petitioner, Divine Rank 0/1* kayıtlarının %100 Kanonik V2 (`schemaVersion: 2`, `modifiers[]`, `damageParts[]`, `levelAdjustment`, `crIncrease`, `dr`, `sr`, `immunities`, `resistances`, `specialAttacks`, `specialQualities`) formatında oluşturulması ve `srd_index.json` + `SrdCompendium.getAllTemplates()` / `getTemplate()` içine bağlanması.
+* [x] **`RuleEngine` & Simetrik UI/UX Entegrasyonu:** Karakter kurgusunda **Level Adjustment (LA)** ve **Effective Character Level (ECL)**, yaratık tipi değişimi, doğal zırh iyileştirmesi (`type: 'template'`), yetenek skoru/beceri/saldırı artışları (`modifiers`), DR/SR/Fast Healing/Turn Resistance ve özel saldırıların (`damageParts`) `RuleEngine.recalculateCharacter` + `evaluateSkillBonus` + `calculateAttackStats` üzerinden otomatik uygulanması; Üst HUD, Karakter Profil Kartı ve Karakter Profil Modalı (`panel-stat-dist-identity`) içine Spotlight Şablon Seçicisinin eklenmesi.
 
 ### [ ] Faz 9.F (Seçenek F): Epic Level Handbook — Epic Feats, Epic Spells & +6..+10 Efsunlar [PLANLANDI]
 * **Mevcut Durum:** Sistem 1–20 seviye SRD ve MIC kurallarını kapsıyor.

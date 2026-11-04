@@ -25,7 +25,8 @@
     'srd_maneuvers.json',
     'mic_compendium.json',
     'srd_domains.json',
-    'srd_companions.json'
+    'srd_companions.json',
+    'srd_templates.json'
   ];
 
   const LAZY_CHUNKS = [
@@ -178,6 +179,16 @@
         }
         const tKey = `${String(rec.type || '').toLowerCase()}:${nKey}`;
         _byTypeAndName.set(tKey, rec);
+      }
+      if (Array.isArray(rec.aliases)) {
+        for (const al of rec.aliases) {
+          const aKey = normalizeNameKey(al);
+          if (aKey) {
+            if (!_byName.has(aKey)) _byName.set(aKey, rec);
+            const atKey = `${String(rec.type || '').toLowerCase()}:${aKey}`;
+            if (!_byTypeAndName.has(atKey)) _byTypeAndName.set(atKey, rec);
+          }
+        }
       }
     }
     if (typeof global !== 'undefined') {
@@ -653,6 +664,57 @@
       const bySlug = this.getById(`dom-${raw.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`);
       if (bySlug && bySlug.type === 'Domain') return bySlug;
       return this.getByName(raw, 'Domain');
+    },
+
+    getAllTemplates() {
+      let list = this.getAllLoaded('Template');
+      if (list.length === 0 && typeof require !== 'undefined') {
+        try {
+          const fs = require('fs');
+          const path = require('path');
+          const p = path.resolve(__dirname, 'database/srd_templates.json');
+          if (fs.existsSync(p)) {
+            const records = JSON.parse(fs.readFileSync(p, 'utf8'));
+            registerEntries(records);
+            list = this.getAllLoaded('Template');
+          }
+        } catch (_) {}
+      }
+      if (typeof window !== 'undefined' && Array.isArray(window.masterDb)) {
+        const seenIds = new Set(list.map(t => t && t.id));
+        const seenNames = new Set(list.map(t => normalizeNameKey(t && t.name)));
+        for (const entry of window.masterDb) {
+          if (entry && (entry.type === 'Template' || String(entry.category || '').toLowerCase().includes('template'))) {
+            const nKey = normalizeNameKey(entry.name);
+            if (!seenIds.has(entry.id) && !seenNames.has(nKey)) {
+              list.push(entry);
+              if (entry.id) seenIds.add(entry.id);
+              if (nKey) seenNames.add(nKey);
+            }
+          }
+        }
+      }
+      return list;
+    },
+
+    getTemplate(idOrName) {
+      if (!idOrName) return null;
+      const list = this.getAllTemplates();
+      const raw = String(typeof idOrName === 'object' ? (idOrName.id || idOrName.name || '') : idOrName).trim();
+      if (!raw) return null;
+      const byId = this.getById(raw);
+      if (byId && byId.type === 'Template') return byId;
+      const cleanSlug = raw.toLowerCase().replace(/\s*\(template\)\s*$/i, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+      const bySlug = this.getById(`tmpl-${cleanSlug}`);
+      if (bySlug && bySlug.type === 'Template') return bySlug;
+      const byName = this.getByName(raw, 'Template') || this.getByName(raw.replace(/\s*\(template\)\s*$/i, ''), 'Template');
+      if (byName) return byName;
+      const nKey = normalizeNameKey(raw.replace(/\s*\(template\)\s*$/i, ''));
+      return list.find(t => t && (
+        t.id === raw ||
+        normalizeNameKey(t.name) === nKey ||
+        (Array.isArray(t.aliases) && t.aliases.some(a => normalizeNameKey(a) === nKey || normalizeNameKey(a) === normalizeNameKey(raw)))
+      )) || null;
     },
 
     getAllClasses() {

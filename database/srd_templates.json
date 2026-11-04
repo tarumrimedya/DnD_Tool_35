@@ -1,0 +1,3934 @@
+[
+  {
+    "id": "tmpl-half-dragon-red",
+    "schemaVersion": 2,
+    "name": "Half-Dragon (Red)",
+    "aliases": [
+      "Half Dragon (Red) (Template)",
+      "Half-Dragon (Red) (Template)",
+      "Half Dragon (Red)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.146",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Dragon (Augmented)",
+    "hitDieOverride": "+1 die step (max d12)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Low-Light Vision"
+    ],
+    "immunities": [
+      "Sleep",
+      "Paralysis",
+      "Fire"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Breath Weapon (30-ft. cone, 6d8 Fire, 1/day, Reflex DC 10 + 1/2 HD + CON mod half)",
+      "Natural Weapons: Bite (1d6) and 2 Claws (1d4)"
+    ],
+    "specialQualities": [
+      "Dragon Type (Darkvision 60 ft., Low-Light Vision)",
+      "Immunity to Sleep, Paralysis, and Fire",
+      "Wings (Fly speed = 2x base land speed, average, if Large or larger)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "6d8",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Breath Weapon (30-ft. cone, 1/day)"
+      }
+    ],
+    "shortDescription": "+8 STR, +2 CON, +2 INT, +2 CHA, +4 Natural Armor, Darkvision 60 ft., Immune to Sleep, Paralysis & Fire, 6d8 Fire Breath Weapon (30-ft. cone). LA +3.",
+    "description": "<p><b>Half-Dragon (Red)</b> (Inherited Template, MM p.146): Creature type becomes <b>Dragon</b>. Racial Hit Dice increase by one die size (to a maximum of d12). Natural armor improves by <b>+4</b>. Gains bite and 2 claw attacks, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and <b>fire</b>, and a <b>6d8 fire breath weapon</b> (30-ft. cone, 1/day, Reflex DC 10 + 1/2 racial HD + CON modifier for half). Ability adjustments: <b>+8 Str, +2 Con, +2 Int, +2 Cha</b>. Alignment: Always Chaotic Evil. <b>CR +2, Level Adjustment +3.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "dragon",
+      "red",
+      "fire"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "lowLightVision": true,
+      "creatureTypeOverride": "Dragon",
+      "energyImmunity": [
+        "Fire"
+      ]
+    }
+  },
+  {
+    "id": "tmpl-half-dragon-gold",
+    "schemaVersion": 2,
+    "name": "Half-Dragon (Gold)",
+    "aliases": [
+      "Half Dragon (Gold) (Template)",
+      "Half-Dragon (Gold) (Template)",
+      "Half Dragon (Gold)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.146",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Dragon (Augmented)",
+    "hitDieOverride": "+1 die step (max d12)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Low-Light Vision"
+    ],
+    "immunities": [
+      "Sleep",
+      "Paralysis",
+      "Fire"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Breath Weapon (30-ft. cone, 6d8 Fire, 1/day, Reflex DC 10 + 1/2 HD + CON mod half)",
+      "Natural Weapons: Bite (1d6) and 2 Claws (1d4)"
+    ],
+    "specialQualities": [
+      "Dragon Type (Darkvision 60 ft., Low-Light Vision)",
+      "Immunity to Sleep, Paralysis, and Fire",
+      "Wings (Fly speed = 2x base land speed, average, if Large or larger)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "6d8",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Breath Weapon (30-ft. cone, 1/day)"
+      }
+    ],
+    "shortDescription": "+8 STR, +2 CON, +2 INT, +2 CHA, +4 Natural Armor, Darkvision 60 ft., Immune to Sleep, Paralysis & Fire, 6d8 Fire Breath Weapon (30-ft. cone). LA +3.",
+    "description": "<p><b>Half-Dragon (Gold)</b> (Inherited Template, MM p.146): Creature type becomes <b>Dragon</b>. Racial Hit Dice increase by one die size (to a maximum of d12). Natural armor improves by <b>+4</b>. Gains bite and 2 claw attacks, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and <b>fire</b>, and a <b>6d8 fire breath weapon</b> (30-ft. cone, 1/day, Reflex DC 10 + 1/2 racial HD + CON modifier for half). Ability adjustments: <b>+8 Str, +2 Con, +2 Int, +2 Cha</b>. Alignment: Always Lawful Good. <b>CR +2, Level Adjustment +3.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "dragon",
+      "gold",
+      "fire"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "lowLightVision": true,
+      "creatureTypeOverride": "Dragon",
+      "energyImmunity": [
+        "Fire"
+      ]
+    }
+  },
+  {
+    "id": "tmpl-half-dragon-silver",
+    "schemaVersion": 2,
+    "name": "Half-Dragon (Silver)",
+    "aliases": [
+      "Half Dragon (Silver) (Template)",
+      "Half-Dragon (Silver) (Template)",
+      "Half Dragon (Silver)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.146",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Dragon (Augmented)",
+    "hitDieOverride": "+1 die step (max d12)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Low-Light Vision"
+    ],
+    "immunities": [
+      "Sleep",
+      "Paralysis",
+      "Cold"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Breath Weapon (30-ft. cone, 6d8 Cold, 1/day, Reflex DC 10 + 1/2 HD + CON mod half)",
+      "Natural Weapons: Bite (1d6) and 2 Claws (1d4)"
+    ],
+    "specialQualities": [
+      "Dragon Type (Darkvision 60 ft., Low-Light Vision)",
+      "Immunity to Sleep, Paralysis, and Cold",
+      "Wings (Fly speed = 2x base land speed, average, if Large or larger)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "6d8",
+        "bonus": 0,
+        "type": "Cold",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Breath Weapon (30-ft. cone, 1/day)"
+      }
+    ],
+    "shortDescription": "+8 STR, +2 CON, +2 INT, +2 CHA, +4 Natural Armor, Darkvision 60 ft., Immune to Sleep, Paralysis & Cold, 6d8 Cold Breath Weapon (30-ft. cone). LA +3.",
+    "description": "<p><b>Half-Dragon (Silver)</b> (Inherited Template, MM p.146): Creature type becomes <b>Dragon</b>. Racial Hit Dice increase by one die size (to a maximum of d12). Natural armor improves by <b>+4</b>. Gains bite and 2 claw attacks, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and <b>cold</b>, and a <b>6d8 cold breath weapon</b> (30-ft. cone, 1/day, Reflex DC 10 + 1/2 racial HD + CON modifier for half). Ability adjustments: <b>+8 Str, +2 Con, +2 Int, +2 Cha</b>. Alignment: Always Lawful Good. <b>CR +2, Level Adjustment +3.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "dragon",
+      "silver",
+      "cold"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "lowLightVision": true,
+      "creatureTypeOverride": "Dragon",
+      "energyImmunity": [
+        "Cold"
+      ]
+    }
+  },
+  {
+    "id": "tmpl-half-dragon-blue",
+    "schemaVersion": 2,
+    "name": "Half-Dragon (Blue)",
+    "aliases": [
+      "Half Dragon (Blue) (Template)",
+      "Half-Dragon (Blue) (Template)",
+      "Half Dragon (Blue)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.146",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Dragon (Augmented)",
+    "hitDieOverride": "+1 die step (max d12)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Low-Light Vision"
+    ],
+    "immunities": [
+      "Sleep",
+      "Paralysis",
+      "Electricity"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Breath Weapon (60-ft. line, 6d8 Electricity, 1/day, Reflex DC 10 + 1/2 HD + CON mod half)",
+      "Natural Weapons: Bite (1d6) and 2 Claws (1d4)"
+    ],
+    "specialQualities": [
+      "Dragon Type (Darkvision 60 ft., Low-Light Vision)",
+      "Immunity to Sleep, Paralysis, and Electricity",
+      "Wings (Fly speed = 2x base land speed, average, if Large or larger)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "6d8",
+        "bonus": 0,
+        "type": "Electricity",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Breath Weapon (60-ft. line, 1/day)"
+      }
+    ],
+    "shortDescription": "+8 STR, +2 CON, +2 INT, +2 CHA, +4 Natural Armor, Darkvision 60 ft., Immune to Sleep, Paralysis & Electricity, 6d8 Electricity Breath Weapon (60-ft. line). LA +3.",
+    "description": "<p><b>Half-Dragon (Blue)</b> (Inherited Template, MM p.146): Creature type becomes <b>Dragon</b>. Racial Hit Dice increase by one die size (to a maximum of d12). Natural armor improves by <b>+4</b>. Gains bite and 2 claw attacks, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and <b>electricity</b>, and a <b>6d8 electricity breath weapon</b> (60-ft. line, 1/day, Reflex DC 10 + 1/2 racial HD + CON modifier for half). Ability adjustments: <b>+8 Str, +2 Con, +2 Int, +2 Cha</b>. Alignment: Always Lawful Evil. <b>CR +2, Level Adjustment +3.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "dragon",
+      "blue",
+      "electricity"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "lowLightVision": true,
+      "creatureTypeOverride": "Dragon",
+      "energyImmunity": [
+        "Electricity"
+      ]
+    }
+  },
+  {
+    "id": "tmpl-half-dragon-black",
+    "schemaVersion": 2,
+    "name": "Half-Dragon (Black)",
+    "aliases": [
+      "Half Dragon (Black) (Template)",
+      "Half-Dragon (Black) (Template)",
+      "Half Dragon (Black)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.146",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Dragon (Augmented)",
+    "hitDieOverride": "+1 die step (max d12)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Low-Light Vision"
+    ],
+    "immunities": [
+      "Sleep",
+      "Paralysis",
+      "Acid"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Breath Weapon (60-ft. line, 6d8 Acid, 1/day, Reflex DC 10 + 1/2 HD + CON mod half)",
+      "Natural Weapons: Bite (1d6) and 2 Claws (1d4)"
+    ],
+    "specialQualities": [
+      "Dragon Type (Darkvision 60 ft., Low-Light Vision)",
+      "Immunity to Sleep, Paralysis, and Acid",
+      "Wings (Fly speed = 2x base land speed, average, if Large or larger)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "6d8",
+        "bonus": 0,
+        "type": "Acid",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Breath Weapon (60-ft. line, 1/day)"
+      }
+    ],
+    "shortDescription": "+8 STR, +2 CON, +2 INT, +2 CHA, +4 Natural Armor, Darkvision 60 ft., Immune to Sleep, Paralysis & Acid, 6d8 Acid Breath Weapon (60-ft. line). LA +3.",
+    "description": "<p><b>Half-Dragon (Black)</b> (Inherited Template, MM p.146): Creature type becomes <b>Dragon</b>. Racial Hit Dice increase by one die size (to a maximum of d12). Natural armor improves by <b>+4</b>. Gains bite and 2 claw attacks, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and <b>acid</b>, and a <b>6d8 acid breath weapon</b> (60-ft. line, 1/day, Reflex DC 10 + 1/2 racial HD + CON modifier for half). Ability adjustments: <b>+8 Str, +2 Con, +2 Int, +2 Cha</b>. Alignment: Always Chaotic Evil. <b>CR +2, Level Adjustment +3.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "dragon",
+      "black",
+      "acid"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "lowLightVision": true,
+      "creatureTypeOverride": "Dragon",
+      "energyImmunity": [
+        "Acid"
+      ]
+    }
+  },
+  {
+    "id": "tmpl-half-dragon-green",
+    "schemaVersion": 2,
+    "name": "Half-Dragon (Green)",
+    "aliases": [
+      "Half Dragon (Green) (Template)",
+      "Half-Dragon (Green) (Template)",
+      "Half Dragon (Green)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.146",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Dragon (Augmented)",
+    "hitDieOverride": "+1 die step (max d12)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Low-Light Vision"
+    ],
+    "immunities": [
+      "Sleep",
+      "Paralysis",
+      "Acid"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Breath Weapon (30-ft. cone, 6d8 Acid, 1/day, Reflex DC 10 + 1/2 HD + CON mod half)",
+      "Natural Weapons: Bite (1d6) and 2 Claws (1d4)"
+    ],
+    "specialQualities": [
+      "Dragon Type (Darkvision 60 ft., Low-Light Vision)",
+      "Immunity to Sleep, Paralysis, and Acid",
+      "Wings (Fly speed = 2x base land speed, average, if Large or larger)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "6d8",
+        "bonus": 0,
+        "type": "Acid",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Breath Weapon (30-ft. cone, 1/day)"
+      }
+    ],
+    "shortDescription": "+8 STR, +2 CON, +2 INT, +2 CHA, +4 Natural Armor, Darkvision 60 ft., Immune to Sleep, Paralysis & Acid, 6d8 Acid Breath Weapon (30-ft. cone). LA +3.",
+    "description": "<p><b>Half-Dragon (Green)</b> (Inherited Template, MM p.146): Creature type becomes <b>Dragon</b>. Racial Hit Dice increase by one die size (to a maximum of d12). Natural armor improves by <b>+4</b>. Gains bite and 2 claw attacks, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and <b>acid</b>, and a <b>6d8 acid breath weapon</b> (30-ft. cone, 1/day, Reflex DC 10 + 1/2 racial HD + CON modifier for half). Ability adjustments: <b>+8 Str, +2 Con, +2 Int, +2 Cha</b>. Alignment: Always Lawful Evil. <b>CR +2, Level Adjustment +3.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "dragon",
+      "green",
+      "acid"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "lowLightVision": true,
+      "creatureTypeOverride": "Dragon",
+      "energyImmunity": [
+        "Acid"
+      ]
+    }
+  },
+  {
+    "id": "tmpl-half-dragon-white",
+    "schemaVersion": 2,
+    "name": "Half-Dragon (White)",
+    "aliases": [
+      "Half Dragon (White) (Template)",
+      "Half-Dragon (White) (Template)",
+      "Half Dragon (White)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.146",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Dragon (Augmented)",
+    "hitDieOverride": "+1 die step (max d12)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Low-Light Vision"
+    ],
+    "immunities": [
+      "Sleep",
+      "Paralysis",
+      "Cold"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Breath Weapon (30-ft. cone, 6d8 Cold, 1/day, Reflex DC 10 + 1/2 HD + CON mod half)",
+      "Natural Weapons: Bite (1d6) and 2 Claws (1d4)"
+    ],
+    "specialQualities": [
+      "Dragon Type (Darkvision 60 ft., Low-Light Vision)",
+      "Immunity to Sleep, Paralysis, and Cold",
+      "Wings (Fly speed = 2x base land speed, average, if Large or larger)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "6d8",
+        "bonus": 0,
+        "type": "Cold",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Breath Weapon (30-ft. cone, 1/day)"
+      }
+    ],
+    "shortDescription": "+8 STR, +2 CON, +2 INT, +2 CHA, +4 Natural Armor, Darkvision 60 ft., Immune to Sleep, Paralysis & Cold, 6d8 Cold Breath Weapon (30-ft. cone). LA +3.",
+    "description": "<p><b>Half-Dragon (White)</b> (Inherited Template, MM p.146): Creature type becomes <b>Dragon</b>. Racial Hit Dice increase by one die size (to a maximum of d12). Natural armor improves by <b>+4</b>. Gains bite and 2 claw attacks, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and <b>cold</b>, and a <b>6d8 cold breath weapon</b> (30-ft. cone, 1/day, Reflex DC 10 + 1/2 racial HD + CON modifier for half). Ability adjustments: <b>+8 Str, +2 Con, +2 Int, +2 Cha</b>. Alignment: Always Chaotic Evil. <b>CR +2, Level Adjustment +3.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "dragon",
+      "white",
+      "cold"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "lowLightVision": true,
+      "creatureTypeOverride": "Dragon",
+      "energyImmunity": [
+        "Cold"
+      ]
+    }
+  },
+  {
+    "id": "tmpl-half-dragon-brass",
+    "schemaVersion": 2,
+    "name": "Half-Dragon (Brass)",
+    "aliases": [
+      "Half Dragon (Brass) (Template)",
+      "Half-Dragon (Brass) (Template)",
+      "Half Dragon (Brass)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.146",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Dragon (Augmented)",
+    "hitDieOverride": "+1 die step (max d12)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Low-Light Vision"
+    ],
+    "immunities": [
+      "Sleep",
+      "Paralysis",
+      "Fire"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Breath Weapon (60-ft. line, 6d8 Fire, 1/day, Reflex DC 10 + 1/2 HD + CON mod half)",
+      "Natural Weapons: Bite (1d6) and 2 Claws (1d4)"
+    ],
+    "specialQualities": [
+      "Dragon Type (Darkvision 60 ft., Low-Light Vision)",
+      "Immunity to Sleep, Paralysis, and Fire",
+      "Wings (Fly speed = 2x base land speed, average, if Large or larger)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "6d8",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Breath Weapon (60-ft. line, 1/day)"
+      }
+    ],
+    "shortDescription": "+8 STR, +2 CON, +2 INT, +2 CHA, +4 Natural Armor, Darkvision 60 ft., Immune to Sleep, Paralysis & Fire, 6d8 Fire Breath Weapon (60-ft. line). LA +3.",
+    "description": "<p><b>Half-Dragon (Brass)</b> (Inherited Template, MM p.146): Creature type becomes <b>Dragon</b>. Racial Hit Dice increase by one die size (to a maximum of d12). Natural armor improves by <b>+4</b>. Gains bite and 2 claw attacks, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and <b>fire</b>, and a <b>6d8 fire breath weapon</b> (60-ft. line, 1/day, Reflex DC 10 + 1/2 racial HD + CON modifier for half). Ability adjustments: <b>+8 Str, +2 Con, +2 Int, +2 Cha</b>. Alignment: Always Chaotic Good. <b>CR +2, Level Adjustment +3.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "dragon",
+      "brass",
+      "fire"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "lowLightVision": true,
+      "creatureTypeOverride": "Dragon",
+      "energyImmunity": [
+        "Fire"
+      ]
+    }
+  },
+  {
+    "id": "tmpl-half-dragon-bronze",
+    "schemaVersion": 2,
+    "name": "Half-Dragon (Bronze)",
+    "aliases": [
+      "Half Dragon (Bronze) (Template)",
+      "Half-Dragon (Bronze) (Template)",
+      "Half Dragon (Bronze)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.146",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Dragon (Augmented)",
+    "hitDieOverride": "+1 die step (max d12)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Low-Light Vision"
+    ],
+    "immunities": [
+      "Sleep",
+      "Paralysis",
+      "Electricity"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Breath Weapon (60-ft. line, 6d8 Electricity, 1/day, Reflex DC 10 + 1/2 HD + CON mod half)",
+      "Natural Weapons: Bite (1d6) and 2 Claws (1d4)"
+    ],
+    "specialQualities": [
+      "Dragon Type (Darkvision 60 ft., Low-Light Vision)",
+      "Immunity to Sleep, Paralysis, and Electricity",
+      "Wings (Fly speed = 2x base land speed, average, if Large or larger)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "6d8",
+        "bonus": 0,
+        "type": "Electricity",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Breath Weapon (60-ft. line, 1/day)"
+      }
+    ],
+    "shortDescription": "+8 STR, +2 CON, +2 INT, +2 CHA, +4 Natural Armor, Darkvision 60 ft., Immune to Sleep, Paralysis & Electricity, 6d8 Electricity Breath Weapon (60-ft. line). LA +3.",
+    "description": "<p><b>Half-Dragon (Bronze)</b> (Inherited Template, MM p.146): Creature type becomes <b>Dragon</b>. Racial Hit Dice increase by one die size (to a maximum of d12). Natural armor improves by <b>+4</b>. Gains bite and 2 claw attacks, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and <b>electricity</b>, and a <b>6d8 electricity breath weapon</b> (60-ft. line, 1/day, Reflex DC 10 + 1/2 racial HD + CON modifier for half). Ability adjustments: <b>+8 Str, +2 Con, +2 Int, +2 Cha</b>. Alignment: Always Lawful Good. <b>CR +2, Level Adjustment +3.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "dragon",
+      "bronze",
+      "electricity"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "lowLightVision": true,
+      "creatureTypeOverride": "Dragon",
+      "energyImmunity": [
+        "Electricity"
+      ]
+    }
+  },
+  {
+    "id": "tmpl-half-dragon-copper",
+    "schemaVersion": 2,
+    "name": "Half-Dragon (Copper)",
+    "aliases": [
+      "Half Dragon (Copper) (Template)",
+      "Half-Dragon (Copper) (Template)",
+      "Half Dragon (Copper)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.146",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Dragon (Augmented)",
+    "hitDieOverride": "+1 die step (max d12)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Low-Light Vision"
+    ],
+    "immunities": [
+      "Sleep",
+      "Paralysis",
+      "Acid"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Breath Weapon (60-ft. line, 6d8 Acid, 1/day, Reflex DC 10 + 1/2 HD + CON mod half)",
+      "Natural Weapons: Bite (1d6) and 2 Claws (1d4)"
+    ],
+    "specialQualities": [
+      "Dragon Type (Darkvision 60 ft., Low-Light Vision)",
+      "Immunity to Sleep, Paralysis, and Acid",
+      "Wings (Fly speed = 2x base land speed, average, if Large or larger)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "6d8",
+        "bonus": 0,
+        "type": "Acid",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Breath Weapon (60-ft. line, 1/day)"
+      }
+    ],
+    "shortDescription": "+8 STR, +2 CON, +2 INT, +2 CHA, +4 Natural Armor, Darkvision 60 ft., Immune to Sleep, Paralysis & Acid, 6d8 Acid Breath Weapon (60-ft. line). LA +3.",
+    "description": "<p><b>Half-Dragon (Copper)</b> (Inherited Template, MM p.146): Creature type becomes <b>Dragon</b>. Racial Hit Dice increase by one die size (to a maximum of d12). Natural armor improves by <b>+4</b>. Gains bite and 2 claw attacks, Darkvision 60 ft., Low-Light Vision, immunity to sleep, paralysis, and <b>acid</b>, and a <b>6d8 acid breath weapon</b> (60-ft. line, 1/day, Reflex DC 10 + 1/2 racial HD + CON modifier for half). Ability adjustments: <b>+8 Str, +2 Con, +2 Int, +2 Cha</b>. Alignment: Always Chaotic Good. <b>CR +2, Level Adjustment +3.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "dragon",
+      "copper",
+      "acid"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "lowLightVision": true,
+      "creatureTypeOverride": "Dragon",
+      "energyImmunity": [
+        "Acid"
+      ]
+    }
+  },
+  {
+    "id": "tmpl-half-celestial",
+    "schemaVersion": 2,
+    "name": "Half-Celestial",
+    "aliases": [
+      "Half Celestial (Template)",
+      "Half-Celestial (Template)",
+      "Half Celestial"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.144",
+    "crIncrease": 2,
+    "levelAdjustment": 4,
+    "creatureType": "Outsider (Augmented, Native)",
+    "hitDieOverride": null,
+    "dr": "5/magic (1–11 HD) or 10/magic (12+ HD)",
+    "sr": "min(35, 10 + @level)",
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [
+      "Disease"
+    ],
+    "resistances": [
+      "Acid 10",
+      "Cold 10",
+      "Electricity 10"
+    ],
+    "specialAttacks": [
+      "Smite Evil 1/day (+CHA to attack, +HD to damage vs. evil)",
+      "Daylight (Su) at will",
+      "Spell-Like Abilities by HD (Protection from Evil 3/day, Bless, Aid, Cure Serious Wounds, Holy Smite, Holy Aura, Resurrection)"
+    ],
+    "specialQualities": [
+      "Outsider (Native) Type & Darkvision 60 ft.",
+      "Feathered Wings (Fly speed = 2x base land speed, good maneuverability)",
+      "Immunity to Disease & +4 Racial Bonus on Fortitude Saves vs. Poison",
+      "Resistance to Acid 10, Cold 10, and Electricity 10",
+      "Damage Reduction 5/magic (1–11 HD) or 10/magic (12+ HD)",
+      "Spell Resistance equal to HD + 10 (maximum 35)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.wis",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 1,
+        "formula": "1",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "save.fort",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": "vs. Poison"
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+4 STR, +2 DEX, +4 CON, +2 INT, +4 WIS, +4 CHA, +1 Natural Armor, Fly 2x speed (good), Darkvision 60 ft., Immune Disease, Resist Acid/Cold/Elec 10, DR 5–10/magic, SR 10+HD, Smite Evil. LA +4.",
+    "description": "<p><b>Half-Celestial</b> (Inherited Template, MM p.144): Creature type becomes <b>Outsider (Native)</b>. Gains feathered wings (Fly 2x land speed, good), <b>+1 natural armor</b>, Darkvision 60 ft., immunity to disease, <b>Acid/Cold/Electricity Resistance 10</b>, <b>DR 5/magic</b> (or 10/magic at 12+ HD), <b>SR 10 + HD (max 35)</b>, +4 racial bonus on Fortitude saves against poison, <b>Daylight</b> at will, <b>Smite Evil</b> 1/day, and scaling celestial spell-like abilities. Ability adjustments: <b>+4 Str, +2 Dex, +4 Con, +2 Int, +4 Wis, +4 Cha</b>. <b>CR +2 (1–5 HD), +3 (6–10 HD), +4 (11+ HD); Level Adjustment +4.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "outsider",
+      "celestial",
+      "good"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 4,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "creatureTypeOverride": "Outsider (Native)",
+      "srFormula": "min(35, 10 + @level)"
+    }
+  },
+  {
+    "id": "tmpl-half-fiend",
+    "schemaVersion": 2,
+    "name": "Half-Fiend",
+    "aliases": [
+      "Half Fiend (Template)",
+      "Half-Fiend (Template)",
+      "Half Fiend"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.147",
+    "crIncrease": 2,
+    "levelAdjustment": 4,
+    "creatureType": "Outsider (Augmented, Native)",
+    "hitDieOverride": null,
+    "dr": "5/magic (1–11 HD) or 10/magic (12+ HD)",
+    "sr": "min(35, 10 + @level)",
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [
+      "Poison"
+    ],
+    "resistances": [
+      "Acid 10",
+      "Cold 10",
+      "Electricity 10",
+      "Fire 10"
+    ],
+    "specialAttacks": [
+      "Smite Good 1/day (+HD damage vs. good)",
+      "Natural Weapons: Bite (1d6) and 2 Claws (1d4)",
+      "Spell-Like Abilities by HD (Darkness 3/day, Desecrate, Unholy Blight, Poison 3/day, Contagion, Blasphemy, Unholy Aura, Destruction)"
+    ],
+    "specialQualities": [
+      "Outsider (Native) Type & Darkvision 60 ft.",
+      "Batlike Wings (Fly speed = base land speed, average maneuverability)",
+      "Immunity to Poison",
+      "Resistance to Acid 10, Cold 10, Electricity 10, and Fire 10",
+      "Damage Reduction 5/magic (1–11 HD) or 10/magic (12+ HD)",
+      "Spell Resistance equal to HD + 10 (maximum 35)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 1,
+        "formula": "1",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+4 STR, +4 DEX, +2 CON, +4 INT, +2 CHA, +1 Natural Armor, Bat Wings, Bite/2 Claws, Darkvision 60 ft., Immune Poison, Resist Acid/Cold/Elec/Fire 10, DR 5–10/magic, SR 10+HD, Smite Good. LA +4.",
+    "description": "<p><b>Half-Fiend</b> (Inherited Template, MM p.147): Creature type becomes <b>Outsider (Native)</b>. Gains batlike wings (Fly equal to land speed, average), <b>+1 natural armor</b>, bite and 2 claw attacks, Darkvision 60 ft., immunity to poison, <b>Acid/Cold/Electricity/Fire Resistance 10</b>, <b>DR 5/magic</b> (or 10/magic at 12+ HD), <b>SR 10 + HD (max 35)</b>, <b>Smite Good</b> 1/day, and scaling fiendish spell-like abilities. Ability adjustments: <b>+4 Str, +4 Dex, +2 Con, +4 Int, +2 Cha</b>. <b>CR +2 (1–4 HD), +3 (5–10 HD), +4 (11+ HD); Level Adjustment +4.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "outsider",
+      "fiend",
+      "evil"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 4,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "creatureTypeOverride": "Outsider (Native)",
+      "srFormula": "min(35, 10 + @level)"
+    }
+  },
+  {
+    "id": "tmpl-celestial",
+    "schemaVersion": 2,
+    "name": "Celestial Creature",
+    "aliases": [
+      "Celestial (Template)",
+      "Celestial",
+      "Celestial Creature (Template)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.31",
+    "crIncrease": 1,
+    "levelAdjustment": 2,
+    "creatureType": "Magical Beast / Extraplanar (Augmented)",
+    "hitDieOverride": null,
+    "dr": "5/magic (4–11 HD) or 10/magic (12+ HD)",
+    "sr": "min(25, 5 + @level)",
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [],
+    "resistances": [
+      "Acid 5 (10 at 8+ HD)",
+      "Cold 5 (10 at 8+ HD)",
+      "Electricity 5 (10 at 8+ HD)"
+    ],
+    "specialAttacks": [
+      "Smite Evil 1/day (+HD damage vs. evil, max +20)"
+    ],
+    "specialQualities": [
+      "Darkvision 60 ft.",
+      "Resistance to Acid, Cold, and Electricity 5 (or 10 at 8+ HD)",
+      "Damage Reduction 5/magic (4–11 HD) or 10/magic (12+ HD)",
+      "Spell Resistance equal to HD + 5 (maximum 25)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [],
+    "damageParts": [],
+    "shortDescription": "Darkvision 60 ft., Smite Evil 1/day (+HD dmg), Resist Acid/Cold/Electricity 5–10, DR 5–10/magic (4+ HD), SR 5+HD (max 25), min INT 3. LA +2.",
+    "description": "<p><b>Celestial Creature</b> (Inherited Template, MM p.31): Inhabitants of the Upper Planes gain Darkvision 60 ft., <b>Smite Evil</b> 1/day (+HD damage, max +20), resistance to <b>acid, cold, and electricity 5</b> (10 at 8+ HD), <b>DR 5/magic</b> at 4–11 HD (10/magic at 12+ HD), <b>SR 5 + HD (max 25)</b>, and minimum Intelligence 3. <b>CR +0 (1–3 HD), +1 (4–7 HD), +2 (8+ HD); Level Adjustment +2.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "celestial",
+      "good"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 2,
+      "crIncrease": 1,
+      "darkvision": 60,
+      "srFormula": "min(25, 5 + @level)"
+    }
+  },
+  {
+    "id": "tmpl-fiendish",
+    "schemaVersion": 2,
+    "name": "Fiendish Creature",
+    "aliases": [
+      "Fiendish (Template)",
+      "Fiendish",
+      "Fiendish Creature (Template)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Monster Manual p.107",
+    "crIncrease": 1,
+    "levelAdjustment": 2,
+    "creatureType": "Magical Beast / Extraplanar (Augmented)",
+    "hitDieOverride": null,
+    "dr": "5/magic (4–11 HD) or 10/magic (12+ HD)",
+    "sr": "min(25, 5 + @level)",
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [],
+    "resistances": [
+      "Cold 5 (10 at 8+ HD)",
+      "Fire 5 (10 at 8+ HD)"
+    ],
+    "specialAttacks": [
+      "Smite Good 1/day (+HD damage vs. good, max +20)"
+    ],
+    "specialQualities": [
+      "Darkvision 60 ft.",
+      "Resistance to Cold and Fire 5 (or 10 at 8+ HD)",
+      "Damage Reduction 5/magic (4–11 HD) or 10/magic (12+ HD)",
+      "Spell Resistance equal to HD + 5 (maximum 25)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [],
+    "damageParts": [],
+    "shortDescription": "Darkvision 60 ft., Smite Good 1/day (+HD dmg), Resist Cold/Fire 5–10, DR 5–10/magic (4+ HD), SR 5+HD (max 25), min INT 3. LA +2.",
+    "description": "<p><b>Fiendish Creature</b> (Inherited Template, MM p.107): Denizens of the Lower Planes gain Darkvision 60 ft., <b>Smite Good</b> 1/day (+HD damage, max +20), resistance to <b>cold and fire 5</b> (10 at 8+ HD), <b>DR 5/magic</b> at 4–11 HD (10/magic at 12+ HD), <b>SR 5 + HD (max 25)</b>, and minimum Intelligence 3. <b>CR +0 (1–3 HD), +1 (4–7 HD), +2 (8+ HD); Level Adjustment +2.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "fiendish",
+      "evil"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 2,
+      "crIncrease": 1,
+      "darkvision": 60,
+      "srFormula": "min(25, 5 + @level)"
+    }
+  },
+  {
+    "id": "tmpl-lich",
+    "schemaVersion": 2,
+    "name": "Lich",
+    "aliases": [
+      "Lich (Template)"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Monster Manual p.166",
+    "crIncrease": 2,
+    "levelAdjustment": 4,
+    "creatureType": "Undead (Augmented)",
+    "hitDieOverride": "d12 (all current and future Hit Dice become d12; no CON score)",
+    "dr": "15/bludgeoning and magic",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 4,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [
+      "Cold",
+      "Electricity",
+      "Polymorph",
+      "Mind-Affecting",
+      "Poison",
+      "Sleep",
+      "Paralysis",
+      "Stunning",
+      "Disease",
+      "Death Effects",
+      "Critical Hits",
+      "Ability Drain",
+      "Energy Drain"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Touch Attack (1d8+5 negative energy damage, Will DC 10 + 1/2 HD + CHA mod half)",
+      "Paralyzing Touch (Su) (Permanent paralysis on touch hit, Fortitude DC 10 + 1/2 HD + CHA mod negates)",
+      "Fear Aura (Su) (60-ft. radius, creatures with <5 HD must succeed on Will DC 10 + 1/2 HD + CHA mod or be affected as by Fear)"
+    ],
+    "specialQualities": [
+      "Undead Type (d12 Hit Dice, Darkvision 60 ft., full Undead Immunities)",
+      "Turn Resistance +4",
+      "Damage Reduction 15/bludgeoning and magic",
+      "Immunity to Cold, Electricity, Polymorph, and Mind-Affecting Attacks",
+      "Phylactery Rejuvenation (1d10 days unless phylactery is destroyed)",
+      "+8 Racial Bonus on Hide, Listen, Move Silently, Search, Sense Motive, and Spot"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 5,
+        "formula": "5",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "skill.hide",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.listen",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.move_silently",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.search",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.sense_motive",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.spot",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 5,
+        "type": "Negative Energy",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Lich Paralyzing Touch"
+      }
+    ],
+    "shortDescription": "+2 INT, +2 WIS, +2 CHA, +5 Natural Armor, Undead (d12 HD), DR 15/bludgeoning & magic, Turn Resistance +4, Immune Cold/Electricity/Polymorph/Undead, Paralyzing Touch, Fear Aura, +8 to 6 skills. LA +4.",
+    "description": "<p><b>Lich</b> (Acquired Template, MM p.166): An undead spellcaster (CL 11+ with Craft Wondrous Item and a phylactery). Type becomes <b>Undead</b> (all current and future HD become d12). Natural armor improves by <b>+5</b>. Gains <b>+2 Int, +2 Wis, +2 Cha</b>, <b>Turn Resistance +4</b>, <b>DR 15/bludgeoning and magic</b>, immunity to cold, electricity, polymorph, and all undead immunities, a <b>1d8+5 negative energy Paralyzing Touch</b> (permanent paralysis, Fort negates), a 60-ft. <b>Fear Aura</b>, and a <b>+8 racial bonus</b> on Hide, Listen, Move Silently, Search, Sense Motive, and Spot checks. <b>CR +2, Level Adjustment +4.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "acquired",
+      "undead",
+      "lich",
+      "spellcaster"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 4,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "creatureTypeOverride": "Undead",
+      "hitDieOverride": 12,
+      "turnResistance": 4,
+      "dr": "15/bludgeoning and magic"
+    }
+  },
+  {
+    "id": "tmpl-vampire",
+    "schemaVersion": 2,
+    "name": "Vampire",
+    "aliases": [
+      "Vampire (Template)"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Monster Manual p.250",
+    "crIncrease": 2,
+    "levelAdjustment": 8,
+    "creatureType": "Undead (Augmented)",
+    "hitDieOverride": "d12 (all current and future Hit Dice become d12; no CON score)",
+    "dr": "10/silver and magic",
+    "sr": null,
+    "fastHealing": 5,
+    "turnResistance": 4,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [
+      "Mind-Affecting",
+      "Poison",
+      "Sleep",
+      "Paralysis",
+      "Stunning",
+      "Disease",
+      "Death Effects",
+      "Critical Hits",
+      "Ability Drain",
+      "Energy Drain"
+    ],
+    "resistances": [
+      "Cold 10",
+      "Electricity 10"
+    ],
+    "specialAttacks": [
+      "Blood Drain (Ex) (1d4 Constitution drain per round when pinning a grappled foe; +5 Temp HP)",
+      "Children of the Night (Su) (Summon rats, bats, or wolves 1/day)",
+      "Dominate (Su) (As Dominate Person at CL 12th via gaze, 30 ft., Will DC 10 + 1/2 HD + CHA mod)",
+      "Create Spawn (Su)",
+      "Energy Drain (Su) (Slam or natural weapon bestows 2 negative levels, 1/round, Fort DC 10 + 1/2 HD + CHA mod)",
+      "Slam Attack (1d6 for Medium)"
+    ],
+    "specialQualities": [
+      "Undead Type (d12 Hit Dice, Darkvision 60 ft., full Undead Immunities)",
+      "Damage Reduction 10/silver and magic",
+      "Fast Healing 5 & Gaseous Form at 0 HP / at will",
+      "Resistance to Cold 10 and Electricity 10",
+      "Turn Resistance +4 & Spider Climb (Ex) (continuous)",
+      "Alternate Form (Su) (Bat, Dire Bat, Wolf, or Dire Wolf)",
+      "+8 Racial Bonus on Bluff, Hide, Listen, Move Silently, Search, Sense Motive, and Spot"
+    ],
+    "bonusFeats": [
+      "Alertness",
+      "Combat Reflexes",
+      "Dodge",
+      "Improved Initiative",
+      "Lightning Reflexes"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 6,
+        "formula": "6",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 6,
+        "formula": "6",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "skill.bluff",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.hide",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.listen",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.move_silently",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.search",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.sense_motive",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.spot",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+6 STR, +4 DEX, +2 INT, +2 WIS, +4 CHA, +6 Natural Armor, Undead (d12 HD), DR 10/silver & magic, Fast Healing 5, Resist Cold/Elec 10, Turn Res +4, Energy Drain (2 neg lvls), Dominate, 5 Bonus Feats, +8 to 7 skills. LA +8.",
+    "description": "<p><b>Vampire</b> (Acquired Template, MM p.250): Type becomes <b>Undead</b> (all current and future HD become d12). Natural armor improves by <b>+6</b>. Gains <b>+6 Str, +4 Dex, +2 Int, +2 Wis, +4 Cha</b>, <b>DR 10/silver and magic</b>, <b>Fast Healing 5</b>, <b>Turn Resistance +4</b>, <b>Cold and Electricity Resistance 10</b>, Spider Climb, Gaseous Form, Alternate Form, Blood Drain, Dominate gaze, Energy Drain (2 negative levels on slam), 5 bonus feats (<i>Alertness, Combat Reflexes, Dodge, Improved Initiative, Lightning Reflexes</i>), and a <b>+8 racial bonus</b> on Bluff, Hide, Listen, Move Silently, Search, Sense Motive, and Spot checks. <b>CR +2, Level Adjustment +8.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "acquired",
+      "undead",
+      "vampire"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 8,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "creatureTypeOverride": "Undead",
+      "hitDieOverride": 12,
+      "turnResistance": 4,
+      "fastHealing": 5,
+      "dr": "10/silver and magic"
+    }
+  },
+  {
+    "id": "tmpl-ghost",
+    "schemaVersion": 2,
+    "name": "Ghost",
+    "aliases": [
+      "Ghost (Template)"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Monster Manual p.116",
+    "crIncrease": 2,
+    "levelAdjustment": 5,
+    "creatureType": "Undead (Augmented, Incorporeal)",
+    "hitDieOverride": "d12 (all current and future Hit Dice become d12; no CON score)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 4,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [
+      "Nonmagical Attacks (Incorporeal)",
+      "Mind-Affecting",
+      "Poison",
+      "Sleep",
+      "Paralysis",
+      "Stunning",
+      "Disease",
+      "Death Effects",
+      "Critical Hits",
+      "Ability Drain",
+      "Energy Drain"
+    ],
+    "resistances": [
+      "50% Incorporeal Miss Chance vs. Non-Force Magic"
+    ],
+    "specialAttacks": [
+      "Manifestation (Su) (Exists on Ethereal Plane; can manifest onto Material Plane)",
+      "1–3 Ghost Special Attacks: Corrupting Gaze (2d10 + 1d4 CHA), Corrupting Touch (1d6), Draining Touch (1d4 any ability), Frightful Moan (Panicked), Horrific Appearance (1d4 STR/DEX/CON), Malevolence (Magic Jar), Telekinesis (CL 12th)"
+    ],
+    "specialQualities": [
+      "Undead (Incorporeal) Type (d12 Hit Dice, Fly 30 ft. [perfect], Deflection AC = max(1, CHA mod))",
+      "Turn Resistance +4",
+      "Rejuvenation (Su) (Returns in 2d4 days)",
+      "+8 Racial Bonus on Hide, Listen, Search, and Spot"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.cha",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.deflection",
+        "value": 0,
+        "formula": "max(1, @chaMod)",
+        "type": "deflection",
+        "condition": null
+      },
+      {
+        "target": "skill.hide",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.listen",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.search",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.spot",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Incorporeal Touch",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Ghost Corrupting Touch"
+      }
+    ],
+    "shortDescription": "+4 CHA, Deflection AC = max(1, CHA mod), Undead (Incorporeal, d12 HD), Fly 30 ft. (perfect), Turn Resistance +4, Rejuvenation, Manifestation, 1–3 Ghost Powers, +8 Hide/Listen/Search/Spot. LA +5.",
+    "description": "<p><b>Ghost</b> (Acquired Template, MM p.116): Type becomes <b>Undead (Incorporeal)</b> (all HD become d12). Gains <b>+4 Charisma</b>, Fly 30 ft. (perfect), a <b>deflection bonus to AC equal to its Charisma modifier (minimum +1)</b> when manifested, <b>Turn Resistance +4</b>, Rejuvenation (2d4 days), Manifestation, 1d3 Ghost Special Attacks (Corrupting Touch, Draining Touch, Horrific Appearance, Malevolence, Telekinesis, etc.), and a <b>+8 racial bonus</b> on Hide, Listen, Search, and Spot checks. <b>CR +2, Level Adjustment +5.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "acquired",
+      "undead",
+      "incorporeal",
+      "ghost"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 5,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "creatureTypeOverride": "Undead (Incorporeal)",
+      "hitDieOverride": 12,
+      "turnResistance": 4,
+      "incorporeal": true
+    }
+  },
+  {
+    "id": "tmpl-demilich",
+    "schemaVersion": 2,
+    "name": "Demilich",
+    "aliases": [
+      "Demilich (Template)"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Epic Level Handbook p.175",
+    "crIncrease": 6,
+    "levelAdjustment": 6,
+    "creatureType": "Undead (Augmented)",
+    "hitDieOverride": "d12 (Maximum HP per Hit Die)",
+    "dr": "15/Epic and Bludgeoning",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 20,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [
+      "Magic (Spell Immunity except Shatter, Dispel Evil, Holy Smite)",
+      "Cold",
+      "Electricity",
+      "Polymorph",
+      "Mind-Affecting",
+      "Undead Immunities"
+    ],
+    "resistances": [
+      "Acid 20",
+      "Fire 20",
+      "Sonic 20"
+    ],
+    "specialAttacks": [
+      "Trap the Soul (Su) (Up to 8 Soul Gems, Fort DC 10 + 1/2 HD + CHA mod)",
+      "Fear Aura (Su) (As Lich, +10 DC)",
+      "Paralyzing Touch (Su) (10d6+20 negative energy + permanent paralysis)",
+      "At-Will Spell-Like Abilities (Alter Self, Astral Projection, Create Greater Undead, Death Knell, Enervation, Greater Dispel Magic, Harm, Telekinesis, Weird)"
+    ],
+    "specialQualities": [
+      "Magic Immunity (Ex) (Immune to almost all spells and supernatural magic)",
+      "Turn Resistance +20, DR 15/Epic and Bludgeoning, Acid/Fire/Sonic Resistance 20",
+      "Insight Bonus to AC equal to Hit Dice",
+      "Phylactery Transference & Automatic Still/Silent Spell"
+    ],
+    "bonusFeats": [
+      "Blinding Speed",
+      "Tenacious Magic",
+      "Automatic Quicken Spell"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.int",
+        "value": 10,
+        "formula": "10",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.wis",
+        "value": 10,
+        "formula": "10",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 10,
+        "formula": "10",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.dodge",
+        "value": 0,
+        "formula": "@level",
+        "type": "insight",
+        "condition": null
+      },
+      {
+        "target": "skill.hide",
+        "value": 20,
+        "formula": "20",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.listen",
+        "value": 20,
+        "formula": "20",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.move_silently",
+        "value": 20,
+        "formula": "20",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.search",
+        "value": 20,
+        "formula": "20",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.sense_motive",
+        "value": 20,
+        "formula": "20",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.spot",
+        "value": 20,
+        "formula": "20",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "10d6",
+        "bonus": 20,
+        "type": "Negative Energy",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Demilich Paralyzing Touch"
+      }
+    ],
+    "shortDescription": "+10 INT, +10 WIS, +10 CHA, Insight AC = HD, Turn Resistance +20, DR 15/Epic & Bludgeoning, Magic Immunity, Resist Acid/Fire/Sonic 20, Trap the Soul, +20 to 6 skills. CR +6, LA +6 (on Lich).",
+    "description": "<p><b>Demilich</b> (Epic Acquired Template, ELH p.175): An epic lich (21+ caster level) whose body has transcended into a jewel-encrusted skull or bone. Gains <b>+10 Int, +10 Wis, +10 Cha</b>, an <b>insight bonus to AC equal to its Hit Dice</b>, <b>Turn Resistance +20</b>, <b>DR 15/Epic and Bludgeoning</b>, <b>Acid/Fire/Sonic Resistance 20</b>, <b>Magic Immunity</b>, <b>Trap the Soul</b> (8 soul gems), and +20 racial bonuses on Hide, Listen, Move Silently, Search, Sense Motive, and Spot. <b>CR +6, Level Adjustment +6 (beyond Lich).</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "acquired",
+      "epic",
+      "undead",
+      "demilich"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 6,
+      "crIncrease": 6,
+      "darkvision": 60,
+      "creatureTypeOverride": "Undead",
+      "hitDieOverride": 12,
+      "turnResistance": 20,
+      "dr": "15/Epic and Bludgeoning"
+    }
+  },
+  {
+    "id": "tmpl-skeleton",
+    "schemaVersion": 2,
+    "name": "Skeleton",
+    "aliases": [
+      "Skeleton (Template)"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Monster Manual p.225",
+    "crIncrease": 0,
+    "levelAdjustment": 0,
+    "creatureType": "Undead",
+    "hitDieOverride": "d12 (Class HD dropped; racial HD become d12)",
+    "dr": "5/bludgeoning",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [
+      "Cold",
+      "Mind-Affecting",
+      "Undead Immunities"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Claw or Weapon Attack"
+    ],
+    "specialQualities": [
+      "Undead Type (d12 HD, Darkvision 60 ft., mindless)",
+      "Damage Reduction 5/bludgeoning",
+      "Immunity to Cold"
+    ],
+    "bonusFeats": [
+      "Improved Initiative"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.dex",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "initiative",
+        "value": 4,
+        "formula": "4",
+        "type": "untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+2 DEX, +2 Natural Armor (Medium), Undead (d12 HD), DR 5/bludgeoning, Immunity to Cold, Improved Initiative (+4 Init). Mindless NPC/Monster Template.",
+    "description": "<p><b>Skeleton</b> (Acquired Undead Template, MM p.225): Mindless animated bones. Type becomes <b>Undead</b> (d12 HD), Dexterity increases by <b>+2</b>, natural armor becomes <b>+2</b> (for Medium), gains <b>DR 5/bludgeoning</b>, <b>immunity to cold</b>, and <b>Improved Initiative</b> as a bonus feat.</p>",
+    "tags": [
+      "srd",
+      "template",
+      "acquired",
+      "undead",
+      "skeleton"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 0,
+      "crIncrease": 0,
+      "darkvision": 60,
+      "creatureTypeOverride": "Undead",
+      "hitDieOverride": 12,
+      "dr": "5/bludgeoning"
+    }
+  },
+  {
+    "id": "tmpl-zombie",
+    "schemaVersion": 2,
+    "name": "Zombie",
+    "aliases": [
+      "Zombie (Template)"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Monster Manual p.265",
+    "crIncrease": 0,
+    "levelAdjustment": 0,
+    "creatureType": "Undead",
+    "hitDieOverride": "d12 (Racial HD doubled and become d12)",
+    "dr": "5/slashing",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [
+      "Mind-Affecting",
+      "Undead Immunities"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Slam Attack (1d6 for Medium)"
+    ],
+    "specialQualities": [
+      "Undead Type (d12 HD, Darkvision 60 ft., mindless)",
+      "Damage Reduction 5/slashing",
+      "Single Actions Only (Ex) (Can perform only a single move or attack action each round)"
+    ],
+    "bonusFeats": [
+      "Toughness"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": -2,
+        "formula": "-2",
+        "type": "penalty",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+2 STR, -2 DEX, +2 Natural Armor (Medium), Undead (2x d12 HD), DR 5/slashing, Single Actions Only, Toughness. Mindless NPC/Monster Template.",
+    "description": "<p><b>Zombie</b> (Acquired Undead Template, MM p.265): Mindless animated corpse. Type becomes <b>Undead</b> (2x racial HD as d12), <b>+2 Str, -2 Dex</b>, natural armor <b>+2</b> (Medium), <b>DR 5/slashing</b>, <b>Single Actions Only (Ex)</b>, and <b>Toughness</b> as a bonus feat.</p>",
+    "tags": [
+      "srd",
+      "template",
+      "acquired",
+      "undead",
+      "zombie"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 0,
+      "crIncrease": 0,
+      "darkvision": 60,
+      "creatureTypeOverride": "Undead",
+      "hitDieOverride": 12,
+      "dr": "5/slashing"
+    }
+  },
+  {
+    "id": "tmpl-werewolf",
+    "schemaVersion": 2,
+    "name": "Werewolf (Lycanthrope)",
+    "aliases": [
+      "Werewolf (Template)",
+      "Werewolf (Lycanthrope) (Template)",
+      "Wolf"
+    ],
+    "type": "Template",
+    "category": "Inherited / Acquired Template",
+    "templateAcquisition": "Inherited or Acquired",
+    "source": "SRD 3.5e / Monster Manual p.175",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Humanoid / Giant (Shapechanger)",
+    "hitDieOverride": null,
+    "dr": "10/silver (Animal or Hybrid form)",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Low-Light Vision",
+      "Scent"
+    ],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [
+      "Curse of Lycanthropy (Fortitude DC 15 negates on natural bite in animal/hybrid form)",
+      "Bite (1d6 + Trip) and 2 Claws (1d4) in Hybrid Form"
+    ],
+    "specialQualities": [
+      "Alternate Form (Humanoid, Wolf, and Hybrid form)",
+      "Wolf Empathy (+4 racial bonus on Diplomacy/Wild Empathy with related animals)",
+      "Low-Light Vision & Scent",
+      "Damage Reduction 10/silver (in animal or hybrid form; 5/silver if afflicted)"
+    ],
+    "bonusFeats": [
+      "Iron Will",
+      "Track",
+      "Weapon Focus (Bite)"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "ability.str",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      },
+      {
+        "target": "ability.dex",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      },
+      {
+        "target": "ability.con",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+2 WIS, +2 Natural Armor in all forms (Hybrid/Animal: +2 STR, +4 DEX, +4 CON, +2 Nat AC, DR 10/silver), Scent, Low-Light Vision, Iron Will. LA +3.",
+    "description": "<p><b>Werewolf (Lycanthrope)</b> (Inherited or Acquired Lycanthrope Template, MM p.175): Gains the <b>Shapechanger</b> subtype, <b>+2 Wisdom</b>, and <b>+2 natural armor</b> in all forms (or the base animal's +2 natural armor in hybrid/animal form), Low-Light Vision, Scent, Lycanthropic Empathy (+4 racial bonus), and <b>Iron Will</b> as a bonus feat. In hybrid or wolf form, physical abilities adjust by <b>+2 Str, +4 Dex, +4 Con</b> and the lycanthrope gains <b>DR 10/silver</b> (natural) or <b>DR 5/silver</b> (afflicted). Alignment shifts toward Chaotic Evil. <b>CR +2, Level Adjustment +3 (+2 if afflicted).</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "lycanthrope",
+      "shapechanger"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "lowLightVision": true,
+      "scent": true,
+      "dr": "10/silver"
+    }
+  },
+  {
+    "id": "tmpl-werebear",
+    "schemaVersion": 2,
+    "name": "Werebear (Lycanthrope)",
+    "aliases": [
+      "Werebear (Template)",
+      "Werebear (Lycanthrope) (Template)",
+      "Brown Bear"
+    ],
+    "type": "Template",
+    "category": "Inherited / Acquired Template",
+    "templateAcquisition": "Inherited or Acquired",
+    "source": "SRD 3.5e / Monster Manual p.175",
+    "crIncrease": 4,
+    "levelAdjustment": 3,
+    "creatureType": "Humanoid / Giant (Shapechanger)",
+    "hitDieOverride": null,
+    "dr": "10/silver (Animal or Hybrid form)",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Low-Light Vision",
+      "Scent"
+    ],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [
+      "Curse of Lycanthropy (Fortitude DC 15 negates on natural bite in animal/hybrid form)",
+      "2 Claws (1d8 + Improved Grab) and Bite (2d6) in Hybrid Form"
+    ],
+    "specialQualities": [
+      "Alternate Form (Humanoid, Brown Bear, and Hybrid form)",
+      "Brown Bear Empathy (+4 racial bonus on Diplomacy/Wild Empathy with related animals)",
+      "Low-Light Vision & Scent",
+      "Damage Reduction 10/silver (in animal or hybrid form; 5/silver if afflicted)"
+    ],
+    "bonusFeats": [
+      "Iron Will",
+      "Endurance",
+      "Run",
+      "Track"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "ability.str",
+        "value": 16,
+        "formula": "16",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      },
+      {
+        "target": "ability.dex",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      },
+      {
+        "target": "ability.con",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+2 WIS, +2 Natural Armor in all forms (Hybrid/Animal: +16 STR, +2 DEX, +8 CON, +5 Nat AC, DR 10/silver), Scent, Low-Light Vision, Iron Will. LA +3.",
+    "description": "<p><b>Werebear (Lycanthrope)</b> (Inherited or Acquired Lycanthrope Template, MM p.175): Gains the <b>Shapechanger</b> subtype, <b>+2 Wisdom</b>, and <b>+2 natural armor</b> in all forms (or the base animal's +5 natural armor in hybrid/animal form), Low-Light Vision, Scent, Lycanthropic Empathy (+4 racial bonus), and <b>Iron Will</b> as a bonus feat. In hybrid or brown bear form, physical abilities adjust by <b>+16 Str, +2 Dex, +8 Con</b> and the lycanthrope gains <b>DR 10/silver</b> (natural) or <b>DR 5/silver</b> (afflicted). Alignment shifts toward Lawful Good. <b>CR +4, Level Adjustment +3 (+2 if afflicted).</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "lycanthrope",
+      "shapechanger"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 4,
+      "lowLightVision": true,
+      "scent": true,
+      "dr": "10/silver"
+    }
+  },
+  {
+    "id": "tmpl-wererat",
+    "schemaVersion": 2,
+    "name": "Wererat (Lycanthrope)",
+    "aliases": [
+      "Wererat (Template)",
+      "Wererat (Lycanthrope) (Template)",
+      "Dire Rat"
+    ],
+    "type": "Template",
+    "category": "Inherited / Acquired Template",
+    "templateAcquisition": "Inherited or Acquired",
+    "source": "SRD 3.5e / Monster Manual p.175",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Humanoid / Giant (Shapechanger)",
+    "hitDieOverride": null,
+    "dr": "10/silver (Animal or Hybrid form)",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Low-Light Vision",
+      "Scent"
+    ],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [
+      "Curse of Lycanthropy (Fortitude DC 15 negates on natural bite in animal/hybrid form)",
+      "Bite (1d4 + Filth Fever) in Hybrid/Animal Form"
+    ],
+    "specialQualities": [
+      "Alternate Form (Humanoid, Dire Rat, and Hybrid form)",
+      "Dire Rat Empathy (+4 racial bonus on Diplomacy/Wild Empathy with related animals)",
+      "Low-Light Vision & Scent",
+      "Damage Reduction 10/silver (in animal or hybrid form; 5/silver if afflicted)"
+    ],
+    "bonusFeats": [
+      "Iron Will",
+      "Alertness",
+      "Weapon Finesse"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": 6,
+        "formula": "6",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+2 WIS, +2 Natural Armor in all forms (Hybrid/Animal: +0 STR, +6 DEX, +2 CON, +3 Nat AC, DR 10/silver), Scent, Low-Light Vision, Iron Will. LA +3.",
+    "description": "<p><b>Wererat (Lycanthrope)</b> (Inherited or Acquired Lycanthrope Template, MM p.175): Gains the <b>Shapechanger</b> subtype, <b>+2 Wisdom</b>, and <b>+2 natural armor</b> in all forms (or the base animal's +3 natural armor in hybrid/animal form), Low-Light Vision, Scent, Lycanthropic Empathy (+4 racial bonus), and <b>Iron Will</b> as a bonus feat. In hybrid or dire rat form, physical abilities adjust by <b>+0 Str, +6 Dex, +2 Con</b> and the lycanthrope gains <b>DR 10/silver</b> (natural) or <b>DR 5/silver</b> (afflicted). Alignment shifts toward Lawful Evil. <b>CR +2, Level Adjustment +3 (+2 if afflicted).</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "lycanthrope",
+      "shapechanger"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "lowLightVision": true,
+      "scent": true,
+      "dr": "10/silver"
+    }
+  },
+  {
+    "id": "tmpl-weretiger",
+    "schemaVersion": 2,
+    "name": "Weretiger (Lycanthrope)",
+    "aliases": [
+      "Weretiger (Template)",
+      "Weretiger (Lycanthrope) (Template)",
+      "Tiger"
+    ],
+    "type": "Template",
+    "category": "Inherited / Acquired Template",
+    "templateAcquisition": "Inherited or Acquired",
+    "source": "SRD 3.5e / Monster Manual p.175",
+    "crIncrease": 4,
+    "levelAdjustment": 3,
+    "creatureType": "Humanoid / Giant (Shapechanger)",
+    "hitDieOverride": null,
+    "dr": "10/silver (Animal or Hybrid form)",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Low-Light Vision",
+      "Scent"
+    ],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [
+      "Curse of Lycanthropy (Fortitude DC 15 negates on natural bite in animal/hybrid form)",
+      "2 Claws (1d8 + Improved Grab), Bite (2d6), Pounce & Rake in Animal/Hybrid Form"
+    ],
+    "specialQualities": [
+      "Alternate Form (Humanoid, Tiger, and Hybrid form)",
+      "Tiger Empathy (+4 racial bonus on Diplomacy/Wild Empathy with related animals)",
+      "Low-Light Vision & Scent",
+      "Damage Reduction 10/silver (in animal or hybrid form; 5/silver if afflicted)"
+    ],
+    "bonusFeats": [
+      "Iron Will",
+      "Alertness",
+      "Improved Natural Attack"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "ability.str",
+        "value": 12,
+        "formula": "12",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      },
+      {
+        "target": "ability.dex",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      },
+      {
+        "target": "ability.con",
+        "value": 6,
+        "formula": "6",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+2 WIS, +2 Natural Armor in all forms (Hybrid/Animal: +12 STR, +4 DEX, +6 CON, +3 Nat AC, DR 10/silver), Scent, Low-Light Vision, Iron Will. LA +3.",
+    "description": "<p><b>Weretiger (Lycanthrope)</b> (Inherited or Acquired Lycanthrope Template, MM p.175): Gains the <b>Shapechanger</b> subtype, <b>+2 Wisdom</b>, and <b>+2 natural armor</b> in all forms (or the base animal's +3 natural armor in hybrid/animal form), Low-Light Vision, Scent, Lycanthropic Empathy (+4 racial bonus), and <b>Iron Will</b> as a bonus feat. In hybrid or tiger form, physical abilities adjust by <b>+12 Str, +4 Dex, +6 Con</b> and the lycanthrope gains <b>DR 10/silver</b> (natural) or <b>DR 5/silver</b> (afflicted). Alignment shifts toward True Neutral. <b>CR +4, Level Adjustment +3 (+2 if afflicted).</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "lycanthrope",
+      "shapechanger"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 4,
+      "lowLightVision": true,
+      "scent": true,
+      "dr": "10/silver"
+    }
+  },
+  {
+    "id": "tmpl-wereboar",
+    "schemaVersion": 2,
+    "name": "Wereboar (Lycanthrope)",
+    "aliases": [
+      "Wereboar (Template)",
+      "Wereboar (Lycanthrope) (Template)",
+      "Boar"
+    ],
+    "type": "Template",
+    "category": "Inherited / Acquired Template",
+    "templateAcquisition": "Inherited or Acquired",
+    "source": "SRD 3.5e / Monster Manual p.175",
+    "crIncrease": 3,
+    "levelAdjustment": 3,
+    "creatureType": "Humanoid / Giant (Shapechanger)",
+    "hitDieOverride": null,
+    "dr": "10/silver (Animal or Hybrid form)",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Low-Light Vision",
+      "Scent"
+    ],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [
+      "Curse of Lycanthropy (Fortitude DC 15 negates on natural bite in animal/hybrid form)",
+      "Gore (1d8) and Ferocity (Ex) in Hybrid/Animal Form"
+    ],
+    "specialQualities": [
+      "Alternate Form (Humanoid, Boar, and Hybrid form)",
+      "Boar Empathy (+4 racial bonus on Diplomacy/Wild Empathy with related animals)",
+      "Low-Light Vision & Scent",
+      "Damage Reduction 10/silver (in animal or hybrid form; 5/silver if afflicted)"
+    ],
+    "bonusFeats": [
+      "Iron Will",
+      "Alertness",
+      "Toughness"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "ability.str",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      },
+      {
+        "target": "ability.con",
+        "value": 6,
+        "formula": "6",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+2 WIS, +2 Natural Armor in all forms (Hybrid/Animal: +4 STR, +0 DEX, +6 CON, +6 Nat AC, DR 10/silver), Scent, Low-Light Vision, Iron Will. LA +3.",
+    "description": "<p><b>Wereboar (Lycanthrope)</b> (Inherited or Acquired Lycanthrope Template, MM p.175): Gains the <b>Shapechanger</b> subtype, <b>+2 Wisdom</b>, and <b>+2 natural armor</b> in all forms (or the base animal's +6 natural armor in hybrid/animal form), Low-Light Vision, Scent, Lycanthropic Empathy (+4 racial bonus), and <b>Iron Will</b> as a bonus feat. In hybrid or boar form, physical abilities adjust by <b>+4 Str, +0 Dex, +6 Con</b> and the lycanthrope gains <b>DR 10/silver</b> (natural) or <b>DR 5/silver</b> (afflicted). Alignment shifts toward True Neutral. <b>CR +3, Level Adjustment +3 (+2 if afflicted).</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "lycanthrope",
+      "shapechanger"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 3,
+      "lowLightVision": true,
+      "scent": true,
+      "dr": "10/silver"
+    }
+  },
+  {
+    "id": "tmpl-dire-werewolf",
+    "schemaVersion": 2,
+    "name": "Dire Werewolf (Lycanthrope)",
+    "aliases": [
+      "Dire Werewolf (Template)",
+      "Dire Werewolf (Lycanthrope) (Template)",
+      "Dire Wolf"
+    ],
+    "type": "Template",
+    "category": "Inherited / Acquired Template",
+    "templateAcquisition": "Inherited or Acquired",
+    "source": "SRD 3.5e / Monster Manual p.175",
+    "crIncrease": 4,
+    "levelAdjustment": 3,
+    "creatureType": "Humanoid / Giant (Shapechanger)",
+    "hitDieOverride": null,
+    "dr": "10/silver (Animal or Hybrid form)",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Low-Light Vision",
+      "Scent"
+    ],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [
+      "Curse of Lycanthropy (Fortitude DC 15 negates on natural bite in animal/hybrid form)",
+      "Bite (1d8 + Trip) and 2 Claws (1d6) in Hybrid Form"
+    ],
+    "specialQualities": [
+      "Alternate Form (Humanoid, Dire Wolf, and Hybrid form)",
+      "Dire Wolf Empathy (+4 racial bonus on Diplomacy/Wild Empathy with related animals)",
+      "Low-Light Vision & Scent",
+      "Damage Reduction 10/silver (in animal or hybrid form; 5/silver if afflicted)"
+    ],
+    "bonusFeats": [
+      "Iron Will",
+      "Alertness",
+      "Run",
+      "Track",
+      "Weapon Focus (Bite)"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "ability.str",
+        "value": 14,
+        "formula": "14",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      },
+      {
+        "target": "ability.dex",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      },
+      {
+        "target": "ability.con",
+        "value": 6,
+        "formula": "6",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+2 WIS, +2 Natural Armor in all forms (Hybrid/Animal: +14 STR, +4 DEX, +6 CON, +3 Nat AC, DR 10/silver), Scent, Low-Light Vision, Iron Will. LA +3.",
+    "description": "<p><b>Dire Werewolf (Lycanthrope)</b> (Inherited or Acquired Lycanthrope Template, MM p.175): Gains the <b>Shapechanger</b> subtype, <b>+2 Wisdom</b>, and <b>+2 natural armor</b> in all forms (or the base animal's +3 natural armor in hybrid/animal form), Low-Light Vision, Scent, Lycanthropic Empathy (+4 racial bonus), and <b>Iron Will</b> as a bonus feat. In hybrid or dire wolf form, physical abilities adjust by <b>+14 Str, +4 Dex, +6 Con</b> and the lycanthrope gains <b>DR 10/silver</b> (natural) or <b>DR 5/silver</b> (afflicted). Alignment shifts toward Chaotic Evil. <b>CR +4, Level Adjustment +3 (+2 if afflicted).</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "lycanthrope",
+      "shapechanger"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 4,
+      "lowLightVision": true,
+      "scent": true,
+      "dr": "10/silver"
+    }
+  },
+  {
+    "id": "tmpl-dire-wereboar",
+    "schemaVersion": 2,
+    "name": "Dire Wereboar (Lycanthrope)",
+    "aliases": [
+      "Dire Wereboar (Template)",
+      "Dire Wereboar (Lycanthrope) (Template)",
+      "Dire Boar"
+    ],
+    "type": "Template",
+    "category": "Inherited / Acquired Template",
+    "templateAcquisition": "Inherited or Acquired",
+    "source": "SRD 3.5e / Monster Manual p.175",
+    "crIncrease": 4,
+    "levelAdjustment": 3,
+    "creatureType": "Humanoid / Giant (Shapechanger)",
+    "hitDieOverride": null,
+    "dr": "10/silver (Animal or Hybrid form)",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Low-Light Vision",
+      "Scent"
+    ],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [
+      "Curse of Lycanthropy (Fortitude DC 15 negates on natural bite in animal/hybrid form)",
+      "Gore (1d8) and Ferocity (Ex) in Hybrid/Animal Form"
+    ],
+    "specialQualities": [
+      "Alternate Form (Humanoid, Dire Boar, and Hybrid form)",
+      "Dire Boar Empathy (+4 racial bonus on Diplomacy/Wild Empathy with related animals)",
+      "Low-Light Vision & Scent",
+      "Damage Reduction 10/silver (in animal or hybrid form; 5/silver if afflicted)"
+    ],
+    "bonusFeats": [
+      "Iron Will",
+      "Alertness",
+      "Endurance"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "ability.str",
+        "value": 16,
+        "formula": "16",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      },
+      {
+        "target": "ability.con",
+        "value": 6,
+        "formula": "6",
+        "type": "racial",
+        "condition": "Hybrid / Animal Form"
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+2 WIS, +2 Natural Armor in all forms (Hybrid/Animal: +16 STR, +0 DEX, +6 CON, +6 Nat AC, DR 10/silver), Scent, Low-Light Vision, Iron Will. LA +3.",
+    "description": "<p><b>Dire Wereboar (Lycanthrope)</b> (Inherited or Acquired Lycanthrope Template, MM p.175): Gains the <b>Shapechanger</b> subtype, <b>+2 Wisdom</b>, and <b>+2 natural armor</b> in all forms (or the base animal's +6 natural armor in hybrid/animal form), Low-Light Vision, Scent, Lycanthropic Empathy (+4 racial bonus), and <b>Iron Will</b> as a bonus feat. In hybrid or dire boar form, physical abilities adjust by <b>+16 Str, +0 Dex, +6 Con</b> and the lycanthrope gains <b>DR 10/silver</b> (natural) or <b>DR 5/silver</b> (afflicted). Alignment shifts toward True Neutral. <b>CR +4, Level Adjustment +3 (+2 if afflicted).</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "lycanthrope",
+      "shapechanger"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 4,
+      "lowLightVision": true,
+      "scent": true,
+      "dr": "10/silver"
+    }
+  },
+  {
+    "id": "tmpl-lycanthrope",
+    "schemaVersion": 2,
+    "name": "Lycanthrope (Humanoid Form Base)",
+    "aliases": [
+      "Lycanthrope (Template)",
+      "Lycanthrope (Humanoid Form Base) (Template)",
+      "Predatory Animal"
+    ],
+    "type": "Template",
+    "category": "Inherited / Acquired Template",
+    "templateAcquisition": "Inherited or Acquired",
+    "source": "SRD 3.5e / Monster Manual p.175",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Humanoid / Giant (Shapechanger)",
+    "hitDieOverride": null,
+    "dr": "10/silver (Animal or Hybrid form)",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Low-Light Vision",
+      "Scent"
+    ],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [
+      "Curse of Lycanthropy (Fortitude DC 15 negates on natural bite in animal/hybrid form)",
+      "Alternate Form (Humanoid, Animal, Hybrid)"
+    ],
+    "specialQualities": [
+      "Alternate Form (Humanoid, Predatory Animal, and Hybrid form)",
+      "Predatory Animal Empathy (+4 racial bonus on Diplomacy/Wild Empathy with related animals)",
+      "Low-Light Vision & Scent",
+      "Damage Reduction 10/silver (in animal or hybrid form; 5/silver if afflicted)"
+    ],
+    "bonusFeats": [
+      "Iron Will"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+2 WIS, +2 Natural Armor in all forms (Hybrid/Animal: +0 STR, +0 DEX, +0 CON, +2 Nat AC, DR 10/silver), Scent, Low-Light Vision, Iron Will. LA +3.",
+    "description": "<p><b>Lycanthrope (Humanoid Form Base)</b> (Inherited or Acquired Lycanthrope Template, MM p.175): Gains the <b>Shapechanger</b> subtype, <b>+2 Wisdom</b>, and <b>+2 natural armor</b> in all forms (or the base animal's +2 natural armor in hybrid/animal form), Low-Light Vision, Scent, Lycanthropic Empathy (+4 racial bonus), and <b>Iron Will</b> as a bonus feat. In hybrid or predatory animal form, physical abilities adjust by <b>+0 Str, +0 Dex, +0 Con</b> and the lycanthrope gains <b>DR 10/silver</b> (natural) or <b>DR 5/silver</b> (afflicted). Alignment shifts toward Varies by Animal. <b>CR +2, Level Adjustment +3 (+2 if afflicted).</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "lycanthrope",
+      "shapechanger"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "lowLightVision": true,
+      "scent": true,
+      "dr": "10/silver"
+    }
+  },
+  {
+    "id": "tmpl-lycanthrope-hybrid-form",
+    "schemaVersion": 2,
+    "name": "Lycanthrope (Active Hybrid Form)",
+    "aliases": [
+      "Lycanthrope (Hybrid Form) (Template)",
+      "Lycanthrope Hybrid Form"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Monster Manual p.176",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Humanoid / Giant (Shapechanger)",
+    "hitDieOverride": null,
+    "dr": "10/silver (or 5/silver if afflicted)",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Low-Light Vision",
+      "Scent"
+    ],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [
+      "Curse of Lycanthropy (Fortitude DC 15 negates on bite)",
+      "Bite and 2 Claws (Hybrid Form)"
+    ],
+    "specialQualities": [
+      "Damage Reduction 10/silver (Natural) or 5/silver (Afflicted)",
+      "Low-Light Vision & Scent",
+      "Lycanthropic Empathy (+4 racial bonus)"
+    ],
+    "bonusFeats": [
+      "Iron Will"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "Active Hybrid Form (Werewolf baseline): +2 STR, +4 DEX, +4 CON, +2 WIS, +2 Natural Armor, DR 10/silver, Bite & 2 Claws, Curse of Lycanthropy, Scent, Iron Will. LA +3.",
+    "description": "<p><b>Lycanthrope (Active Hybrid Form)</b> (MM p.176): Applies the active physical ability adjustments of a Werewolf Hybrid form directly to your character sheet: <b>+2 Str, +4 Dex, +4 Con, +2 Wis, +2 Natural Armor</b>, <b>DR 10/silver</b>, Low-Light Vision, Scent, and Bite/2 Claws.</p>",
+    "tags": [
+      "srd",
+      "template",
+      "lycanthrope",
+      "hybrid"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "lowLightVision": true,
+      "scent": true,
+      "dr": "10/silver"
+    }
+  },
+  {
+    "id": "tmpl-lycanthrope-animal-form",
+    "schemaVersion": 2,
+    "name": "Lycanthrope (Active Animal Form)",
+    "aliases": [
+      "Lycanthrope (Animal Form) (Template)",
+      "Lycanthrope Animal Form"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Monster Manual p.176",
+    "crIncrease": 2,
+    "levelAdjustment": 3,
+    "creatureType": "Humanoid / Giant (Shapechanger)",
+    "hitDieOverride": null,
+    "dr": "10/silver (or 5/silver if afflicted)",
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Low-Light Vision",
+      "Scent"
+    ],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [
+      "Curse of Lycanthropy (Fortitude DC 15 negates on bite)",
+      "Bite + Trip (Animal Form)"
+    ],
+    "specialQualities": [
+      "Damage Reduction 10/silver (Natural) or 5/silver (Afflicted)",
+      "Animal Movement Speed (50 ft.)",
+      "Low-Light Vision & Scent"
+    ],
+    "bonusFeats": [
+      "Iron Will"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "speed.land",
+        "value": 20,
+        "formula": "20",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "Active Animal Form (Wolf baseline): +2 STR, +4 DEX, +4 CON, +2 WIS, +2 Natural Armor, +20 ft. Speed, DR 10/silver, Bite + Trip, Scent. LA +3.",
+    "description": "<p><b>Lycanthrope (Active Animal Form)</b> (MM p.176): Applies the active physical ability adjustments and movement of a Werewolf Animal form: <b>+2 Str, +4 Dex, +4 Con, +2 Wis, +2 Natural Armor, +20 ft. Land Speed</b>, and <b>DR 10/silver</b>.</p>",
+    "tags": [
+      "srd",
+      "template",
+      "lycanthrope",
+      "animal"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 2,
+      "lowLightVision": true,
+      "scent": true,
+      "dr": "10/silver"
+    }
+  },
+  {
+    "id": "tmpl-phrenic",
+    "schemaVersion": 2,
+    "name": "Phrenic Creature",
+    "aliases": [
+      "Phrenic (Template)",
+      "Phrenic",
+      "Phrenic Creature (Template)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Expanded Psionics Handbook p.205",
+    "crIncrease": 1,
+    "levelAdjustment": 2,
+    "creatureType": "Psionic Subtype (Augmented)",
+    "hitDieOverride": null,
+    "dr": null,
+    "sr": "10 + @level",
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [
+      "Psi-Like Abilities by HD (Defensive Precognition, Force Screen, Empty Mind, Mind Thrust, Body Adjustment, Brain Lock, Aversion, Blast, Intellect Fortress, Psychic Crush, Ultrablast)"
+    ],
+    "specialQualities": [
+      "Psionic Subtype (+1 natural Power Point reserve)",
+      "Power Resistance equal to HD + 10"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.int",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.wis",
+        "value": 2,
+        "formula": "2",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 4,
+        "formula": "4",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "powerpoints",
+        "value": 1,
+        "formula": "1",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+2 INT, +2 WIS, +4 CHA, +1 Power Point, Power Resistance (10 + HD), Scaling Psi-Like Abilities (ML = HD). CR +1–3, LA +2.",
+    "description": "<p><b>Phrenic Creature</b> (Inherited Psionic Template, XPH p.205): Gains the <b>Psionic</b> subtype, <b>+2 Int, +2 Wis, +4 Cha</b>, <b>+1 bonus Power Point</b>, <b>Power Resistance equal to 10 + HD</b>, and scaling Psi-Like Abilities (Manifester Level = HD, Save DC 10 + power level + CHA mod). <b>CR +1 (1–5 HD), +2 (6–10 HD), +3 (11+ HD); Level Adjustment +2.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "psionic",
+      "phrenic"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 2,
+      "crIncrease": 1,
+      "srFormula": "10 + @level"
+    }
+  },
+  {
+    "id": "tmpl-psionic",
+    "schemaVersion": 2,
+    "name": "Psionic Creature (Subtype Template)",
+    "aliases": [
+      "Psionic (Template)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Expanded Psionics Handbook",
+    "crIncrease": 0,
+    "levelAdjustment": 0,
+    "creatureType": "Psionic Subtype",
+    "hitDieOverride": null,
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [],
+    "immunities": [],
+    "resistances": [],
+    "specialAttacks": [],
+    "specialQualities": [
+      "Psionic Subtype & Psionic Focus eligibility (+1 Power Point)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "powerpoints",
+        "value": 1,
+        "formula": "1",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "Grants the Psionic subtype and +1 natural Power Point reserve, enabling Psionic Focus and Psionic Feats. LA +0.",
+    "description": "<p><b>Psionic Creature</b> (XPH): Grants the <b>Psionic</b> subtype and a natural <b>1 Power Point</b> reserve, allowing the character to become psionically focused and qualify for psionic feats.</p>",
+    "tags": [
+      "srd",
+      "template",
+      "psionic"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 0,
+      "crIncrease": 0
+    }
+  },
+  {
+    "id": "tmpl-shadow-creature",
+    "schemaVersion": 2,
+    "name": "Shadow Creature",
+    "aliases": [
+      "Shadow Creature (Template)",
+      "Shadow (Template)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "Lords of Madness p.167 / Manual of the Planes p.190",
+    "crIncrease": 1,
+    "levelAdjustment": 2,
+    "creatureType": "Magical Beast / Extraplanar (Augmented)",
+    "hitDieOverride": null,
+    "dr": null,
+    "sr": null,
+    "fastHealing": 2,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Low-Light Vision"
+    ],
+    "immunities": [],
+    "resistances": [
+      "Cold 5 + 1 per HD (max 15)"
+    ],
+    "specialAttacks": [],
+    "specialQualities": [
+      "Shadow Blend (Su) (Total concealment [50% miss chance] in any illumination other than full daylight)",
+      "Speed +50% (+15 ft. to a 30-ft. base speed)",
+      "Cold Resistance 5 + 1 per HD (max 15)",
+      "+6 Racial Bonus on Move Silently",
+      "1 Shadow Power per 4 HD (Cause Fear, Damage Reduction 5/magic, Evasion, Fast Healing 2, Mirror Image, Plane Shift, +2 Luck Bonus on All Saves)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "speed.land",
+        "value": 15,
+        "formula": "15",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.move_silently",
+        "value": 6,
+        "formula": "6",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "save.all",
+        "value": 2,
+        "formula": "2",
+        "type": "luck",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+15 ft. Speed (+50%), +6 Move Silently, +2 Luck on All Saves, Shadow Blend (Total Concealment in non-daylight), Darkvision 60 ft., Low-Light Vision, Cold Resist 5+HD, Fast Healing 2. LA +2.",
+    "description": "<p><b>Shadow Creature</b> (Inherited Template, LoM p.167 / MotP p.190): Denizens of the Plane of Shadow gain <b>+50% movement speed (+15 ft.)</b>, Darkvision 60 ft., Low-Light Vision, <b>Cold Resistance 5 + 1/HD (max 15)</b>, <b>Shadow Blend (Su)</b> (total concealment in any light other than full daylight), a <b>+6 racial bonus on Move Silently</b>, and 1 special shadow quality per 4 HD (including <b>+2 luck bonus on all saving throws</b> and <b>Fast Healing 2</b>). <b>CR +1, Level Adjustment +2.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "shadow",
+      "stealth"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 2,
+      "crIncrease": 1,
+      "darkvision": 60,
+      "lowLightVision": true,
+      "fastHealing": 2
+    }
+  },
+  {
+    "id": "tmpl-paragon",
+    "schemaVersion": 2,
+    "name": "Paragon Creature",
+    "aliases": [
+      "Paragon (Template)",
+      "Paragon",
+      "Paragon Creature (Template)"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Epic Level Handbook p.208",
+    "crIncrease": 15,
+    "levelAdjustment": 15,
+    "creatureType": "Same as Base Creature (Paragon)",
+    "hitDieOverride": "Maximum HP per Hit Die + 12 bonus HP per HD",
+    "dr": "10/epic",
+    "sr": "25 + @level",
+    "fastHealing": 20,
+    "turnResistance": 0,
+    "vision": [],
+    "immunities": [],
+    "resistances": [
+      "Cold 10",
+      "Fire 10"
+    ],
+    "specialAttacks": [
+      "+25 Luck Bonus on All Attack Rolls & +20 Luck Bonus on All Damage Rolls",
+      "+13 Insight Bonus on Special Attack DCs & Caster Level +15 for Spell-Like Abilities (Greater Dispel Magic, Haste, See Invisibility 3/day at CL 15th)"
+    ],
+    "specialQualities": [
+      "+12 Insight Bonus & +12 Luck Bonus to AC, +10 Insight Bonus on All Saving Throws",
+      "Triple Movement Speed (+60 ft.), Damage Reduction 10/epic, Fast Healing 20",
+      "Spell Resistance equal to CR + 25, Cold & Fire Resistance 10",
+      "+10 Competence Bonus on All Skill Checks"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 15,
+        "formula": "15",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": 15,
+        "formula": "15",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 15,
+        "formula": "15",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.int",
+        "value": 15,
+        "formula": "15",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.wis",
+        "value": 15,
+        "formula": "15",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.cha",
+        "value": 15,
+        "formula": "15",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.dodge",
+        "value": 12,
+        "formula": "12",
+        "type": "insight",
+        "condition": null
+      },
+      {
+        "target": "ac.dodge",
+        "value": 12,
+        "formula": "12",
+        "type": "luck",
+        "condition": null
+      },
+      {
+        "target": "save.all",
+        "value": 10,
+        "formula": "10",
+        "type": "insight",
+        "condition": null
+      },
+      {
+        "target": "attack.all",
+        "value": 25,
+        "formula": "25",
+        "type": "luck",
+        "condition": null
+      },
+      {
+        "target": "damage.all",
+        "value": 20,
+        "formula": "20",
+        "type": "luck",
+        "condition": null
+      },
+      {
+        "target": "skill.all",
+        "value": 10,
+        "formula": "10",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "speed.land",
+        "value": 60,
+        "formula": "60",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+15 to ALL 6 Ability Scores, +12 Insight & +12 Luck AC, +25 Luck Attack, +20 Luck Damage, +10 Insight Saves, +10 Competence Skills, +60 ft. Speed, DR 10/epic, Fast Healing 20, SR 25+CR. CR +15, LA +15.",
+    "description": "<p><b>Paragon Creature</b> (Epic Inherited Template, ELH p.208): The supreme exemplar of its species. Gains <b>+15 to all six ability scores</b>, <b>+12 insight and +12 luck bonuses to AC</b>, <b>+25 luck bonus on attack rolls</b>, <b>+20 luck bonus on damage rolls</b>, <b>+10 insight bonus on all saving throws</b>, <b>+10 competence bonus on all skill checks</b>, triple speed, maximum HP per HD + 12 HP/HD, <b>Fast Healing 20</b>, <b>DR 10/epic</b>, <b>Cold/Fire Resistance 10</b>, and <b>SR 25 + CR</b>. <b>CR +15, Level Adjustment +15.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "epic",
+      "paragon"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 15,
+      "crIncrease": 15,
+      "fastHealing": 20,
+      "dr": "10/epic",
+      "srFormula": "25 + @level"
+    }
+  },
+  {
+    "id": "tmpl-pseudonatural",
+    "schemaVersion": 2,
+    "name": "Pseudonatural Creature (Epic)",
+    "aliases": [
+      "Pseudonatural (Template)",
+      "Pseudonatural"
+    ],
+    "type": "Template",
+    "category": "Inherited Template",
+    "templateAcquisition": "Inherited",
+    "source": "SRD 3.5e / Epic Level Handbook p.212",
+    "crIncrease": 10,
+    "levelAdjustment": 16,
+    "creatureType": "Outsider (Augmented, Extraplanar)",
+    "hitDieOverride": "Maximum HP per Hit Die",
+    "dr": "15/epic",
+    "sr": "5 * @level",
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [],
+    "resistances": [
+      "Acid 25",
+      "Electricity 25"
+    ],
+    "specialAttacks": [
+      "Constant Insight (Su) (+15 Insight Bonus on All Attack Rolls)",
+      "Rotting Constriction (Ex) (2d4 CON drain on grapple)",
+      "Tentacle Rake Attacks & Spell-Like Abilities (Blur, Dimension Door, Shield, Unholy Blight at will at CL 20th)"
+    ],
+    "specialQualities": [
+      "+35 Natural Armor Bonus, DR 15/epic, SR 5x HD",
+      "Acid and Electricity Resistance 25",
+      "Alternate Form (Grotesque Tentacled Mass, -1 morale penalty to enemy attacks)"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 22,
+        "formula": "22",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 10,
+        "formula": "10",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": 10,
+        "formula": "10",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ability.wis",
+        "value": 10,
+        "formula": "10",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "ac.natural",
+        "value": 35,
+        "formula": "35",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "attack.all",
+        "value": 15,
+        "formula": "15",
+        "type": "insight",
+        "condition": null
+      },
+      {
+        "target": "speed.land",
+        "value": 30,
+        "formula": "30",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+22 STR, +10 DEX, +10 CON, +10 WIS, +35 Natural Armor, +15 Insight Attack, +30 ft. Speed, DR 15/epic, SR 5xHD, Resist Acid/Electricity 25. LA +16.",
+    "description": "<p><b>Pseudonatural Creature (Epic)</b> (Inherited Template, ELH p.212): Far Realm entities gain <b>+22 Str, +10 Dex, +10 Con, +10 Wis</b>, <b>+35 natural armor</b>, <b>Constant Insight (+15 insight bonus on all attack rolls)</b>, double movement speed, <b>DR 15/epic</b>, <b>Acid/Electricity Resistance 25</b>, and <b>SR 5 x HD</b>. <b>CR +10, Level Adjustment +16.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "inherited",
+      "epic",
+      "pseudonatural",
+      "outsider"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 16,
+      "crIncrease": 10,
+      "darkvision": 60,
+      "creatureTypeOverride": "Outsider (Extraplanar)",
+      "dr": "15/epic",
+      "srFormula": "5 * @level"
+    }
+  },
+  {
+    "id": "tmpl-worm-that-walks",
+    "schemaVersion": 2,
+    "name": "Worm that Walks",
+    "aliases": [
+      "Worm that Walks (Template)"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Epic Level Handbook p.228",
+    "crIncrease": 3,
+    "levelAdjustment": 3,
+    "creatureType": "Aberration (Augmented)",
+    "hitDieOverride": null,
+    "dr": null,
+    "sr": "10 + @level",
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Blindsight 300 ft."
+    ],
+    "immunities": [
+      "Critical Hits",
+      "Flanking",
+      "Single-Target Physical Weapon Effects (Swarm Anatomy)"
+    ],
+    "resistances": [],
+    "specialAttacks": [
+      "Engulf (Ex) (100+ magic-infused worms swarm target)",
+      "Spell-Like Abilities (Animal Growth,Animal Messenger, Animal Shapes, Animal Trance, Creeping Doom, Giant Vermin, Summon Swarm)"
+    ],
+    "specialQualities": [
+      "+20 Insight Bonus to AC (replaces natural armor)",
+      "Blindsight 300 ft., Spell Resistance 10 + CL",
+      "Discorporate (Ex) (Dissolve into swarm of worms as free action)",
+      "Frightful Presence (Su) (30-ft. radius)",
+      "+20 Racial Bonus on Hide, Listen, Move Silently, and Spot"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ac.dodge",
+        "value": 20,
+        "formula": "20",
+        "type": "insight",
+        "condition": null
+      },
+      {
+        "target": "skill.hide",
+        "value": 20,
+        "formula": "20",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.listen",
+        "value": 20,
+        "formula": "20",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.move_silently",
+        "value": 20,
+        "formula": "20",
+        "type": "racial",
+        "condition": null
+      },
+      {
+        "target": "skill.spot",
+        "value": 20,
+        "formula": "20",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "+20 Insight AC, Blindsight 300 ft., SR 10+CL, Immune Critical Hits & Flanking, Engulf, Discorporate, +20 Hide/Listen/Move Silently/Spot. CR +3, LA +3.",
+    "description": "<p><b>Worm that Walks</b> (Epic Acquired Template, ELH p.228): A deceased evil spellcaster whose consciousness persists in a writhing mass of worms. Gains <b>+20 insight bonus to AC</b>, <b>Blindsight 300 ft.</b>, <b>SR 10 + CL</b>, immunity to critical hits and flanking, <b>Engulf</b>, <b>Discorporate</b>, Frightful Presence, and <b>+20 racial bonuses</b> on Hide, Listen, Move Silently, and Spot. <b>CR +3, Level Adjustment +3.</b></p>",
+    "tags": [
+      "srd",
+      "template",
+      "acquired",
+      "epic",
+      "aberration"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 3,
+      "crIncrease": 3,
+      "creatureTypeOverride": "Aberration",
+      "srFormula": "10 + @level"
+    }
+  },
+  {
+    "id": "tmpl-petitioner",
+    "schemaVersion": 2,
+    "name": "Petitioner",
+    "aliases": [
+      "Petitioner (Template)"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Manual of the Planes p.198",
+    "crIncrease": 0,
+    "levelAdjustment": 0,
+    "creatureType": "Outsider (Extraplanar)",
+    "hitDieOverride": "2d8 (Planar soul)",
+    "dr": null,
+    "sr": null,
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [
+      "Mind-Affecting",
+      "Planar Home Environmental Hazards"
+    ],
+    "resistances": [
+      "Planar Energy Resistance 10"
+    ],
+    "specialAttacks": [],
+    "specialQualities": [
+      "Outsider Type & Darkvision 60 ft.",
+      "Immunity to Mind-Affecting Effects",
+      "Planar Adaptation & Energy Resistance 10"
+    ],
+    "bonusFeats": [],
+    "modifiers": [],
+    "damageParts": [],
+    "shortDescription": "Planar soul template: Outsider type, Darkvision 60 ft., Immunity to Mind-Affecting effects, Planar Energy Resistance 10. LA +0.",
+    "description": "<p><b>Petitioner</b> (Acquired Planar Template, MotP p.198): The soul of a mortal reshaped on its Outer Plane of destination. Gains the <b>Outsider</b> type, Darkvision 60 ft., <b>immunity to mind-affecting effects</b>, and planar resistances.</p>",
+    "tags": [
+      "srd",
+      "template",
+      "acquired",
+      "planar",
+      "petitioner"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 0,
+      "crIncrease": 0,
+      "darkvision": 60,
+      "creatureTypeOverride": "Outsider"
+    }
+  },
+  {
+    "id": "tmpl-divine-rank",
+    "schemaVersion": 2,
+    "name": "Divine Rank 0 (Quasi-Deity / Hero-Deity)",
+    "aliases": [
+      "Divine Rank (Template)"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Deities and Demigods p.25",
+    "crIncrease": 2,
+    "levelAdjustment": 0,
+    "creatureType": "Outsider (Divine)",
+    "hitDieOverride": "Maximum HP per Hit Die",
+    "dr": "10/epic",
+    "sr": "32",
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft."
+    ],
+    "immunities": [
+      "Transmutation (Polymorph/Petrification)",
+      "Energy Drain",
+      "Ability Drain",
+      "Ability Damage",
+      "Mind-Affecting",
+      "Electricity",
+      "Cold",
+      "Acid"
+    ],
+    "resistances": [
+      "Fire 5"
+    ],
+    "specialAttacks": [],
+    "specialQualities": [
+      "Immortal & Maximum Hit Points per Hit Die",
+      "Deflection Bonus to AC equal to CHA modifier",
+      "Speed 60 ft. (Medium), DR 10/epic, SR 32",
+      "Immunity to Polymorph, Petrification, Energy Drain, Ability Drain/Damage, Mind-Affecting, Acid, Cold, Electricity, and Fire Resistance 5"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ac.deflection",
+        "value": 0,
+        "formula": "max(1, @chaMod)",
+        "type": "deflection",
+        "condition": null
+      },
+      {
+        "target": "speed.land",
+        "value": 30,
+        "formula": "30",
+        "type": "divine",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "Quasi-Deity (Divine Rank 0): Deflection AC = CHA mod, +30 ft. Speed, DR 10/epic, SR 32, Fire Resist 5, Immune Acid/Cold/Elec, Energy/Ability Drain, Polymorph & Mind-Affecting.",
+    "description": "<p><b>Divine Rank 0 (Quasi-Deity / Hero-Deity)</b> (Deities and Demigods p.25): Immortal creatures with a spark of divinity. Gains maximum HP per HD, <b>Deflection AC bonus equal to Charisma modifier</b>, +30 ft. base speed, <b>DR 10/epic</b>, <b>SR 32</b>, <b>Fire Resistance 5</b>, and immunity to acid, cold, electricity, polymorph, petrification, energy drain, ability drain/damage, and mind-affecting effects.</p>",
+    "tags": [
+      "srd",
+      "template",
+      "acquired",
+      "divine",
+      "epic"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 0,
+      "crIncrease": 2,
+      "darkvision": 60,
+      "dr": "10/epic",
+      "srFormula": "32"
+    }
+  },
+  {
+    "id": "tmpl-innate-divine-rank",
+    "schemaVersion": 2,
+    "name": "Divine Rank 1 (Demigod)",
+    "aliases": [
+      "Innate Divine Rank (Template)"
+    ],
+    "type": "Template",
+    "category": "Acquired Template",
+    "templateAcquisition": "Acquired",
+    "source": "SRD 3.5e / Deities and Demigods p.26",
+    "crIncrease": 4,
+    "levelAdjustment": 0,
+    "creatureType": "Outsider (Divine)",
+    "hitDieOverride": "Maximum HP per Hit Die",
+    "dr": "15/epic",
+    "sr": "33",
+    "fastHealing": 0,
+    "turnResistance": 0,
+    "vision": [
+      "Darkvision 60 ft.",
+      "Remote Sensing (1 mile)"
+    ],
+    "immunities": [
+      "Transmutation",
+      "Energy Drain",
+      "Ability Drain",
+      "Ability Damage",
+      "Mind-Affecting",
+      "Electricity",
+      "Cold",
+      "Acid",
+      "Disease",
+      "Poison",
+      "Sleep",
+      "Paralysis",
+      "Stunning",
+      "Death Effects"
+    ],
+    "resistances": [
+      "Fire 6"
+    ],
+    "specialAttacks": [
+      "+1 Divine Bonus on All Attack Rolls, Domain Spells at will, Salient Divine Ability (1)"
+    ],
+    "specialQualities": [
+      "+1 Divine Bonus to AC, All Saving Throws, and All Skill Checks; Deflection AC = CHA mod; Natural Armor +1",
+      "DR 15/epic, SR 33, Fire Resistance 6, Divine Aura (10 ft.), Grant Spells, Portfolio Sense"
+    ],
+    "bonusFeats": [],
+    "modifiers": [
+      {
+        "target": "ac.natural",
+        "value": 1,
+        "formula": "1",
+        "type": "natural",
+        "condition": null
+      },
+      {
+        "target": "ac.dodge",
+        "value": 1,
+        "formula": "1",
+        "type": "divine",
+        "condition": null
+      },
+      {
+        "target": "ac.deflection",
+        "value": 0,
+        "formula": "max(1, @chaMod)",
+        "type": "deflection",
+        "condition": null
+      },
+      {
+        "target": "attack.all",
+        "value": 1,
+        "formula": "1",
+        "type": "divine",
+        "condition": null
+      },
+      {
+        "target": "save.all",
+        "value": 1,
+        "formula": "1",
+        "type": "divine",
+        "condition": null
+      },
+      {
+        "target": "skill.all",
+        "value": 1,
+        "formula": "1",
+        "type": "divine",
+        "condition": null
+      },
+      {
+        "target": "speed.land",
+        "value": 30,
+        "formula": "30",
+        "type": "divine",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "shortDescription": "Demigod (Divine Rank 1): +1 Divine Bonus to AC/Attacks/Saves/Skills, +1 Nat AC, Deflection AC = CHA mod, +30 ft. Speed, DR 15/epic, SR 33, Full Divine Immunities, 1 Salient Divine Ability.",
+    "description": "<p><b>Divine Rank 1 (Demigod)</b> (Deities and Demigods p.26): A true deity with Divine Rank 1. Gains a <b>+1 divine bonus</b> on AC, attack rolls, saving throws, and skill checks, <b>+1 natural armor</b>, <b>Deflection AC = Charisma modifier</b>, <b>DR 15/epic</b>, <b>SR 33</b>, <b>Fire Resistance 6</b>, full divine immunities, Domain Powers/Spells at will, and 1 Salient Divine Ability.</p>",
+    "tags": [
+      "srd",
+      "template",
+      "acquired",
+      "divine",
+      "demigod"
+    ],
+    "ruleFlags": {
+      "levelAdjustment": 0,
+      "crIncrease": 4,
+      "darkvision": 60,
+      "dr": "15/epic",
+      "srFormula": "33"
+    }
+  }
+]

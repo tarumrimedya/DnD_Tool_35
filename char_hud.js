@@ -2399,6 +2399,27 @@
       const babEl = document.getElementById('char-bab-display');
       if (babEl) babEl.textContent = '+' + (character.bab || 0);
 
+      // Update Top Hero Bar Character Template Badge
+      const topTmplBadge = document.getElementById('core-template-badge');
+      if (topTmplBadge) {
+        const activeTmpls = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getCharacterActiveTemplateEntries === 'function')
+          ? RuleEngine.getCharacterActiveTemplateEntries(character)
+          : [];
+        if (activeTmpls.length > 0) {
+          const charLevel = (character.levelProgression || []).filter(p => p.active !== false).length || Number(character.level) || 1;
+          const totalLa = Number(character.levelAdjustment) || activeTmpls.reduce((acc, t) => acc + (Number(t.levelAdjustment) || 0), 0);
+          const ecl = charLevel + totalLa;
+          const labelText = activeTmpls.length === 1
+            ? activeTmpls[0].name
+            : `${activeTmpls.map(t => t.name).join(' + ')}`;
+          topTmplBadge.textContent = `🧬 ${labelText}${totalLa > 0 ? ` • LA +${totalLa} (ECL ${ecl})` : ''}`;
+          topTmplBadge.title = `Active Character Template(s): ${activeTmpls.map(t => `${t.name} (LA +${t.levelAdjustment || 0})`).join(', ')} | Effective Character Level (ECL): ${ecl} — Click to manage templates`;
+          topTmplBadge.classList.remove('hidden');
+        } else {
+          topTmplBadge.classList.add('hidden');
+        }
+      }
+
       // Toggle Level Up vs NPC Statblock button (Edit Statblock only active when DM Mode is active on the campaign)
       const lvlUpBtn = document.getElementById('btn-header-level-up');
       const npcStatBtn = document.getElementById('btn-header-npc-statblock');
@@ -3471,18 +3492,81 @@
       const raceBadge = document.getElementById('core-profile-race-badge');
       if (raceBadge) raceBadge.textContent = race;
 
-      const lvlBadge = document.getElementById('core-profile-level-badge');
+      const activeTmpls = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getCharacterActiveTemplateEntries === 'function')
+        ? RuleEngine.getCharacterActiveTemplateEntries(character)
+        : [];
+      const totalLa = Number(character.levelAdjustment) || activeTmpls.reduce((acc, t) => acc + (Number(t.levelAdjustment) || 0), 0);
       const charLevel = (character.levelProgression || []).filter(p => p.active !== false).length || Number(character.level) || 1;
+      const ecl = charLevel + totalLa;
+
+      const profTmplBadge = document.getElementById('core-profile-template-badge');
+      if (profTmplBadge) {
+        if (activeTmpls.length > 0) {
+          profTmplBadge.textContent = `🧬 ${activeTmpls.map(t => t.name).join(' + ')}${totalLa > 0 ? ` (LA +${totalLa})` : ''}`;
+          profTmplBadge.classList.remove('hidden');
+        } else {
+          profTmplBadge.classList.add('hidden');
+        }
+      }
+
+      const lvlBadge = document.getElementById('core-profile-level-badge');
       if (lvlBadge) {
         if (character.isNpc && character.cr) {
           lvlBadge.textContent = `CR ${character.cr}`;
           lvlBadge.className = "badge bg-rose-950 text-rose-300 border border-rose-700/70 text-[10px] font-bold";
         } else if (character.isNpc) {
-          lvlBadge.textContent = `NPC • Lvl ${charLevel}`;
+          lvlBadge.textContent = `NPC • Lvl ${charLevel}${totalLa > 0 ? ` (ECL ${ecl})` : ''}`;
           lvlBadge.className = "badge bg-amber-950 text-amber-300 border border-amber-700/70 text-[10px] font-bold";
         } else {
-          lvlBadge.textContent = `Level ${charLevel}`;
+          lvlBadge.textContent = totalLa > 0 ? `Level ${charLevel} • ECL ${ecl}` : `Level ${charLevel}`;
           lvlBadge.className = "badge bg-emerald-950 text-emerald-300 border border-emerald-700/70 text-[10px] font-bold";
+        }
+      }
+
+      const tmplSummaryBar = document.getElementById('core-profile-template-summary-bar');
+      if (tmplSummaryBar) {
+        if (activeTmpls.length > 0) {
+          const tSum = character.templateSummary || {};
+          const pills = [];
+          if (tSum.creatureType) pills.push(`<span class="px-1.5 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-700/60 font-semibold">Type: ${escapeRaceHtml(tSum.creatureType)}</span>`);
+          if (Array.isArray(tSum.dr) && tSum.dr.length > 0) pills.push(`<span class="px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-700/60 font-semibold">🛡️ DR ${escapeRaceHtml(tSum.dr.join(' • '))}</span>`);
+          if (Number(tSum.sr) > 0) pills.push(`<span class="px-1.5 py-0.5 rounded bg-purple-950/80 text-purple-200 border border-purple-700/60 font-semibold">🔮 SR ${tSum.sr}</span>`);
+          if (Number(tSum.fastHealing) > 0) pills.push(`<span class="px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/60 font-semibold">💚 Fast Healing ${tSum.fastHealing}</span>`);
+          if (Number(tSum.turnResistance) > 0) pills.push(`<span class="px-1.5 py-0.5 rounded bg-slate-900 text-slate-200 border border-slate-700 font-semibold">☀️ Turn Res +${tSum.turnResistance}</span>`);
+          if (Array.isArray(tSum.immunities) && tSum.immunities.length > 0) pills.push(`<span class="px-1.5 py-0.5 rounded bg-sky-950/80 text-sky-300 border border-sky-700/60 font-semibold">Immunities: ${escapeRaceHtml(tSum.immunities.slice(0, 5).join(', '))}${tSum.immunities.length > 5 ? ` (+${tSum.immunities.length - 5})` : ''}</span>`);
+          if (Array.isArray(tSum.resistances) && tSum.resistances.length > 0) pills.push(`<span class="px-1.5 py-0.5 rounded bg-teal-950/80 text-teal-300 border border-teal-700/60 font-semibold">Resist: ${escapeRaceHtml(tSum.resistances.join(', '))}</span>`);
+          if (Array.isArray(tSum.damageParts) && tSum.damageParts.length > 0) {
+            tSum.damageParts.forEach(dp => {
+              pills.push(`<span class="px-1.5 py-0.5 rounded bg-rose-950/80 text-rose-300 border border-rose-700/60 font-semibold">🔥 ${escapeRaceHtml(dp.source || 'Attack')}: ${escapeRaceHtml(dp.dice)}${dp.bonus ? `+${dp.bonus}` : ''} ${escapeRaceHtml(dp.type || '')}</span>`);
+            });
+          }
+
+          tmplSummaryBar.innerHTML = `
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span class="text-[10px] font-black uppercase tracking-wider text-purple-300 flex items-center gap-1">
+                  <span>🧬</span>
+                  <span>Active Templates:</span>
+                </span>
+                ${activeTmpls.map(t => `
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-900/60 text-white border border-purple-500/70 font-bold text-[11px] shadow-sm">
+                    <span>${escapeRaceHtml(t.name)}</span>
+                    <span class="text-[9px] font-mono text-purple-200 bg-purple-950/80 px-1 rounded">LA +${Number(t.levelAdjustment) || 0}</span>
+                    <button type="button" onclick="quickRemoveCharacterTemplate('${escapeRaceHtml(t.id)}')" class="text-purple-300 hover:text-rose-400 font-black ml-0.5 cursor-pointer" title="Remove ${escapeRaceHtml(t.name)}">✕</button>
+                  </span>
+                `).join('')}
+              </div>
+              <div class="flex items-center gap-2 text-[10px] font-mono">
+                <span class="px-2 py-0.5 rounded bg-slate-900 text-amber-300 border border-amber-500/40 font-bold">Total LA: +${totalLa} • ECL: ${ecl}</span>
+                <button type="button" onclick="openProfileEditModal('template')" class="text-purple-300 hover:text-white font-sans font-bold underline cursor-pointer">Manage ➔</button>
+              </div>
+            </div>
+            ${pills.length > 0 ? `<div class="flex flex-wrap items-center gap-1.5 text-[10px] pt-1 border-t border-purple-900/40">${pills.join('')}</div>` : ''}
+          `;
+          tmplSummaryBar.classList.remove('hidden');
+        } else {
+          tmplSummaryBar.classList.add('hidden');
+          tmplSummaryBar.innerHTML = '';
         }
       }
 
@@ -3542,10 +3626,22 @@
       applyPortraitSettings();
       applyWallpaperSettings();
       onProfileRaceChange(character.race || '');
+      initModalTemplatesFromCharacter();
     }
 
-    function openProfileEditModal() {
+    function openProfileEditModal(focusSection = 'identity') {
       openStatDistributionModal('identity');
+      if (focusSection === 'template') {
+        setTimeout(() => {
+          const container = document.getElementById('template-custom-dropdown-container');
+          if (container && typeof container.scrollIntoView === 'function') {
+            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          if (typeof openTemplateSpotlightDropdown === 'function') {
+            openTemplateSpotlightDropdown();
+          }
+        }, 60);
+      }
     }
 
     function closeProfileEditModal() {
@@ -4027,10 +4123,384 @@
       }
     }
 
+    // =========================================================================
+    // 🧬 D&D 3.5E CHARACTER TEMPLATES SPOTLIGHT ENGINE (`srd_templates.json`)
+    // =========================================================================
+    let _templateSpotlightOpen = false;
+    let _modalSelectedTemplates = [];
+
+    function getAllTemplatesForSpotlight() {
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getAllTemplates === 'function') {
+        return window.SrdCompendium.getAllTemplates();
+      }
+      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
+        ? window.BUNDLED_SRD_CORE_CATALOG
+        : [];
+      return catalog.filter(item => item && item.type === 'Template');
+    }
+
+    function resolveTemplateEntry(idOrName) {
+      if (!idOrName) return null;
+      if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getTemplate === 'function') {
+        const found = window.SrdCompendium.getTemplate(idOrName);
+        if (found) return found;
+      }
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getMasterDbEntry === 'function') {
+        return RuleEngine.getMasterDbEntry(idOrName, 'Template');
+      }
+      return null;
+    }
+
+    function initModalTemplatesFromCharacter() {
+      const activeEntries = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getCharacterActiveTemplateEntries === 'function')
+        ? RuleEngine.getCharacterActiveTemplateEntries(character)
+        : [];
+      _modalSelectedTemplates = activeEntries.map(t => t.id || t.name).filter(Boolean);
+      updateTemplateSpotlightTrigger();
+      renderModalTemplateTraitsCard();
+    }
+
+    function formatTemplateModifierPills(tmpl) {
+      if (!tmpl) return [];
+      const pills = [];
+      if (Array.isArray(tmpl.modifiers)) {
+        tmpl.modifiers.forEach(m => {
+          if (!m || !m.target) return;
+          const t = String(m.target).toLowerCase();
+          const val = Number(m.value) || 0;
+          if (t.startsWith('ability.') || ['str', 'dex', 'con', 'int', 'wis', 'cha'].includes(t)) {
+            if (val === 0) return;
+            const stat = t.replace('ability.', '').toUpperCase();
+            const cond = m.condition ? ` (${m.condition})` : '';
+            pills.push(`${val > 0 ? '+' : ''}${val} ${stat}${cond}`);
+          } else if (t === 'ac.natural' || t === 'natural') {
+            if (val !== 0) pills.push(`${val > 0 ? '+' : ''}${val} Nat AC`);
+          } else if (t === 'ac.deflection') {
+            pills.push(`Defl AC = ${m.formula && String(m.formula).includes('@chaMod') ? 'CHA Mod' : `+${val}`}`);
+          } else if (t === 'ac.dodge' && val > 0) {
+            pills.push(`+${val} ${m.type ? (m.type.charAt(0).toUpperCase() + m.type.slice(1) + ' ') : ''}AC`);
+          } else if (t === 'save.all' && val > 0) {
+            pills.push(`+${val} All Saves`);
+          } else if (t === 'attack.all' && val > 0) {
+            pills.push(`+${val} Attack`);
+          } else if (t === 'speed.land' && val > 0) {
+            pills.push(`+${val} ft. Speed`);
+          } else if (t === 'powerpoints' && val > 0) {
+            pills.push(`+${val} PP`);
+          }
+        });
+      }
+      if (tmpl.dr) pills.push(`DR ${tmpl.dr}`);
+      if (tmpl.sr) pills.push(`SR ${String(tmpl.sr).includes('@level') ? tmpl.sr.replace('@level', 'HD') : tmpl.sr}`);
+      if (Number(tmpl.fastHealing) > 0) pills.push(`Fast Healing ${tmpl.fastHealing}`);
+      if (Number(tmpl.turnResistance) > 0) pills.push(`Turn Res +${tmpl.turnResistance}`);
+      return pills;
+    }
+
+    function updateTemplateSpotlightTrigger() {
+      const labelEl = document.getElementById('template-trigger-label');
+      const badgeEl = document.getElementById('template-active-summary-badge');
+      const entries = _modalSelectedTemplates.map(id => resolveTemplateEntry(id)).filter(Boolean);
+      const totalLa = entries.reduce((acc, t) => acc + (Number(t.levelAdjustment) || 0), 0);
+      const charLevel = (character?.levelProgression || []).filter(p => p.active !== false).length || Number(character?.level) || 1;
+      const ecl = charLevel + totalLa;
+
+      if (entries.length > 0) {
+        if (labelEl) {
+          labelEl.textContent = `${entries.map(t => t.name).join(' + ')} (Click to add/remove templates)`;
+          labelEl.className = 'text-xs truncate text-purple-200 font-extrabold';
+        }
+        if (badgeEl) {
+          badgeEl.textContent = `${entries.length} Active • LA +${totalLa} • ECL ${ecl}`;
+          badgeEl.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-purple-950 text-purple-200 border border-purple-500/70';
+        }
+      } else {
+        if (labelEl) {
+          labelEl.textContent = 'Add or Manage D&D 3.5e Templates (Half-Dragon, Half-Celestial, Lich, Vampire, Lycanthrope...)';
+          labelEl.className = 'text-xs truncate text-slate-300';
+        }
+        if (badgeEl) {
+          badgeEl.textContent = 'No Template (LA +0)';
+          badgeEl.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800';
+        }
+      }
+    }
+
+    function toggleTemplateSpotlightDropdown() {
+      if (_templateSpotlightOpen) closeTemplateSpotlightDropdown();
+      else openTemplateSpotlightDropdown();
+    }
+
+    function openTemplateSpotlightDropdown() {
+      const dropdown = document.getElementById('template-spotlight-dropdown');
+      const chevron = document.getElementById('template-trigger-chevron');
+      const searchInput = document.getElementById('template-spotlight-search');
+      if (!dropdown) return;
+      _templateSpotlightOpen = true;
+      dropdown.classList.remove('hidden');
+      if (chevron) chevron.style.transform = 'rotate(180deg)';
+      renderTemplateSpotlightItems();
+      setTimeout(() => {
+        if (searchInput) searchInput.focus();
+      }, 25);
+    }
+
+    function closeTemplateSpotlightDropdown() {
+      const dropdown = document.getElementById('template-spotlight-dropdown');
+      const chevron = document.getElementById('template-trigger-chevron');
+      _templateSpotlightOpen = false;
+      if (dropdown) dropdown.classList.add('hidden');
+      if (chevron) chevron.style.transform = 'rotate(0deg)';
+    }
+
+    function onTemplateSpotlightFilter(query) {
+      const clearBtn = document.getElementById('template-spotlight-clear-btn');
+      if (clearBtn) {
+        if (query && query.trim().length > 0) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+      }
+      renderTemplateSpotlightItems();
+    }
+
+    function clearTemplateSpotlightFilter() {
+      const searchInput = document.getElementById('template-spotlight-search');
+      const clearBtn = document.getElementById('template-spotlight-clear-btn');
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+      if (clearBtn) clearBtn.classList.add('hidden');
+      renderTemplateSpotlightItems();
+    }
+
+    function renderTemplateSpotlightItems() {
+      const listEl = document.getElementById('template-spotlight-list');
+      if (!listEl) return;
+      const query = (document.getElementById('template-spotlight-search')?.value || '').toLowerCase().trim();
+      const catFilter = (document.getElementById('template-spotlight-cat-filter')?.value || 'all').toLowerCase();
+
+      const allTemplates = getAllTemplatesForSpotlight();
+      const filtered = allTemplates.filter(t => {
+        if (!t) return false;
+        const tags = Array.isArray(t.tags) ? t.tags.map(x => String(x).toLowerCase()) : [];
+        const cat = String(t.category || '').toLowerCase();
+        if (catFilter === 'inherited' && !cat.includes('inherited')) return false;
+        if (catFilter === 'acquired' && !cat.includes('acquired')) return false;
+        if (catFilter === 'lycanthrope' && !tags.includes('lycanthrope')) return false;
+        if (catFilter === 'epic' && !tags.includes('epic') && !tags.includes('psionic') && !tags.includes('planar') && !tags.includes('shadow') && !tags.includes('divine')) return false;
+
+        if (!query) return true;
+        const hay = `${t.name} ${t.category || ''} ${t.source || ''} ${t.shortDescription || ''} ${tags.join(' ')}`.toLowerCase();
+        return hay.includes(query);
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="p-3 text-center text-slate-400 italic">No matching D&amp;D 3.5e templates found for "${escapeRaceHtml(query)}".</div>`;
+        return;
+      }
+
+      const selectedSet = new Set(_modalSelectedTemplates.map(x => String(x).toLowerCase()));
+      listEl.innerHTML = filtered.map(t => {
+        const isSelected = selectedSet.has(String(t.id).toLowerCase()) || selectedSet.has(String(t.name).toLowerCase());
+        const pills = formatTemplateModifierPills(t).slice(0, 6);
+        const la = Number(t.levelAdjustment) || 0;
+        const cr = Number(t.crIncrease) || 0;
+        const acq = t.templateAcquisition || (String(t.category || '').includes('Inherited') ? 'Inherited' : 'Acquired');
+
+        return `
+          <button type="button" onclick="toggleModalTemplateItem('${escapeRaceHtml(t.id)}')" class="w-full text-left p-2 rounded-lg border transition flex flex-col gap-1 cursor-pointer ${isSelected ? 'bg-purple-950/80 border-purple-400 text-white shadow-md' : 'bg-slate-900/80 hover:bg-slate-800/90 border-slate-800 hover:border-purple-500/50 text-slate-200'}">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="text-sm shrink-0">${isSelected ? '✅' : '🧬'}</span>
+                <span class="font-extrabold text-xs truncate ${isSelected ? 'text-purple-200' : 'text-white'}">${escapeRaceHtml(t.name)}</span>
+                <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-slate-950 text-slate-300 border border-slate-700 shrink-0">${escapeRaceHtml(acq)}</span>
+              </div>
+              <div class="flex items-center gap-1 shrink-0 font-mono text-[10px]">
+                <span class="px-1.5 py-0.5 rounded bg-purple-950 text-purple-200 border border-purple-600/60 font-bold">LA +${la}</span>
+                ${cr > 0 ? `<span class="px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-700/60 font-bold">CR +${cr}</span>` : ''}
+              </div>
+            </div>
+            ${pills.length > 0 ? `<div class="flex flex-wrap items-center gap-1 text-[10px] font-mono">${pills.map(p => `<span class="px-1.5 py-0.2 rounded bg-slate-950/90 text-emerald-300 border border-slate-800">${escapeRaceHtml(p)}</span>`).join('')}</div>` : ''}
+            <div class="text-[10px] text-slate-400 line-clamp-1">${escapeRaceHtml(t.shortDescription || '')}</div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleModalTemplateItem(templateId) {
+      if (!templateId) return;
+      const idx = _modalSelectedTemplates.findIndex(x => String(x).toLowerCase() === String(templateId).toLowerCase());
+      if (idx >= 0) {
+        _modalSelectedTemplates.splice(idx, 1);
+      } else {
+        _modalSelectedTemplates.push(templateId);
+      }
+      updateTemplateSpotlightTrigger();
+      renderTemplateSpotlightItems();
+      renderModalTemplateTraitsCard();
+      renderStatDistPreviewRow();
+    }
+
+    function removeModalTemplateItem(templateId) {
+      _modalSelectedTemplates = _modalSelectedTemplates.filter(x => String(x).toLowerCase() !== String(templateId).toLowerCase());
+      updateTemplateSpotlightTrigger();
+      renderTemplateSpotlightItems();
+      renderModalTemplateTraitsCard();
+      renderStatDistPreviewRow();
+    }
+
+    function clearAllModalTemplates() {
+      _modalSelectedTemplates = [];
+      updateTemplateSpotlightTrigger();
+      renderTemplateSpotlightItems();
+      renderModalTemplateTraitsCard();
+      renderStatDistPreviewRow();
+    }
+
+    function renderModalTemplateTraitsCard() {
+      const cardEl = document.getElementById('profile-template-traits-card');
+      if (!cardEl) return;
+      const entries = _modalSelectedTemplates.map(id => resolveTemplateEntry(id)).filter(Boolean);
+      if (entries.length === 0) {
+        cardEl.classList.add('hidden');
+        cardEl.innerHTML = '';
+        return;
+      }
+
+      cardEl.classList.remove('hidden');
+      cardEl.innerHTML = entries.map(t => {
+        const pills = formatTemplateModifierPills(t);
+        const la = Number(t.levelAdjustment) || 0;
+        const cr = Number(t.crIncrease) || 0;
+        const imm = Array.isArray(t.immunities) && t.immunities.length > 0 ? t.immunities.join(', ') : '';
+        const res = Array.isArray(t.resistances) && t.resistances.length > 0 ? t.resistances.join(', ') : '';
+        const vis = Array.isArray(t.vision) && t.vision.length > 0 ? t.vision.join(', ') : '';
+        const attacks = Array.isArray(t.specialAttacks) ? t.specialAttacks : [];
+        const qualities = Array.isArray(t.specialQualities) ? t.specialQualities : [];
+        const feats = Array.isArray(t.bonusFeats) ? t.bonusFeats : [];
+
+        return `
+          <div class="bg-slate-900/95 border border-purple-500/50 rounded-xl p-2.5 space-y-2 shadow">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-1.5">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-sm">🧬</span>
+                <span class="font-extrabold text-white text-xs">${escapeRaceHtml(t.name)}</span>
+                <span class="text-[10px] px-1.5 py-0.2 rounded bg-purple-950 text-purple-200 border border-purple-700/60 font-mono font-bold">LA +${la}</span>
+                ${cr > 0 ? `<span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-700/60 font-mono font-bold">CR +${cr}</span>` : ''}
+                ${t.creatureType ? `<span class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 font-semibold">${escapeRaceHtml(t.creatureType)}</span>` : ''}
+                <span class="text-[10px] text-slate-400 font-mono">(${escapeRaceHtml(t.source || 'SRD 3.5e')})</span>
+              </div>
+              <button type="button" onclick="removeModalTemplateItem('${escapeRaceHtml(t.id)}')" class="px-2 py-0.5 rounded bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-700/60 text-[10px] font-bold transition cursor-pointer">✕ Remove</button>
+            </div>
+
+            ${pills.length > 0 ? `
+              <div class="flex flex-wrap items-center gap-1 text-[10px] font-mono">
+                ${pills.map(p => `<span class="px-1.5 py-0.5 rounded bg-emerald-950/70 text-emerald-300 border border-emerald-700/50 font-bold">${escapeRaceHtml(p)}</span>`).join('')}
+              </div>
+            ` : ''}
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-[11px] text-slate-300">
+              ${vis ? `<div class="bg-slate-950/70 px-2 py-1 rounded border border-slate-800"><strong class="text-sky-300">Senses:</strong> ${escapeRaceHtml(vis)}</div>` : ''}
+              ${imm ? `<div class="bg-slate-950/70 px-2 py-1 rounded border border-slate-800"><strong class="text-amber-300">Immunities:</strong> ${escapeRaceHtml(imm)}</div>` : ''}
+              ${res ? `<div class="bg-slate-950/70 px-2 py-1 rounded border border-slate-800"><strong class="text-teal-300">Resistances:</strong> ${escapeRaceHtml(res)}</div>` : ''}
+              ${feats.length > 0 ? `<div class="bg-slate-950/70 px-2 py-1 rounded border border-slate-800"><strong class="text-purple-300">Bonus Feats:</strong> ${escapeRaceHtml(feats.join(', '))}</div>` : ''}
+            </div>
+
+            ${attacks.length > 0 ? `
+              <div class="text-[11px] text-slate-300 bg-slate-950/60 p-2 rounded-lg border border-slate-800/80 space-y-0.5">
+                <div class="text-[10px] font-bold text-rose-300 uppercase">⚔️ Special Attacks &amp; Breath Weapon</div>
+                ${attacks.map(a => `<div class="text-[11px] text-slate-200">• ${escapeRaceHtml(a)}</div>`).join('')}
+              </div>
+            ` : ''}
+
+            ${qualities.length > 0 ? `
+              <div class="text-[11px] text-slate-300 bg-slate-950/60 p-2 rounded-lg border border-slate-800/80 space-y-0.5">
+                <div class="text-[10px] font-bold text-indigo-300 uppercase">🛡️ Special Qualities</div>
+                ${qualities.map(q => `<div class="text-[11px] text-slate-200">• ${escapeRaceHtml(q)}</div>`).join('')}
+              </div>
+            ` : ''}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function syncCharacterTemplateAbilities() {
+      if (!character) return;
+      if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+
+      // Remove old template-granted traits
+      character.specialAbilities = character.specialAbilities.filter(a => {
+        if (!a || typeof a !== 'object') return true;
+        if (a.isTemplateTrait) return false;
+        const src = String(a.source || '').toLowerCase();
+        return !src.endsWith('template');
+      });
+
+      const activeEntries = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getCharacterActiveTemplateEntries === 'function')
+        ? RuleEngine.getCharacterActiveTemplateEntries(character)
+        : [];
+
+      activeEntries.forEach(t => {
+        if (!t) return;
+        const srcLabel = `${t.name} Template`;
+        const traitsToPush = [
+          ...(Array.isArray(t.specialAttacks) ? t.specialAttacks.map(sa => ({ text: sa, action: 'Standard / Attack' })) : []),
+          ...(Array.isArray(t.specialQualities) ? t.specialQualities.map(sq => ({ text: sq, action: 'Passive' })) : [])
+        ];
+        traitsToPush.forEach(item => {
+          const rawText = String(item.text || '').trim();
+          if (!rawText) return;
+          const shortTitle = rawText.split('(')[0].trim() || rawText;
+          const fullTitle = `${shortTitle} (${t.name})`;
+          const exists = character.specialAbilities.some(a => {
+            const an = String(typeof a === 'string' ? a : (a.name || '')).toLowerCase();
+            return an === fullTitle.toLowerCase();
+          });
+          if (!exists) {
+            character.specialAbilities.push({
+              name: fullTitle,
+              source: srcLabel,
+              category: 'Special Ability',
+              benefit: rawText,
+              action: item.action,
+              duration: 'Continuous',
+              active: true,
+              isTemplateTrait: true,
+              templateId: t.id
+            });
+          }
+        });
+      });
+    }
+
+    function quickRemoveCharacterTemplate(templateId) {
+      if (!character || !templateId) return;
+      const tmpl = resolveTemplateEntry(templateId);
+      character.templates = (Array.isArray(character.templates) ? character.templates : []).filter(t => {
+        const id = typeof t === 'object' ? (t.id || t.name) : t;
+        return String(id).toLowerCase() !== String(templateId).toLowerCase() &&
+               (!tmpl || String(id).toLowerCase() !== String(tmpl.name).toLowerCase());
+      });
+      syncCharacterTemplateAbilities();
+      saveStateToStorage(true);
+      renderAll();
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '🧬',
+          title: `Template Removed: ${tmpl ? tmpl.name : templateId}`,
+          breakdown: 'All ability, AC, DR, SR, and skill modifiers have been recalculated by the rule engine.'
+        });
+      }
+    }
+
     document.addEventListener('click', (e) => {
       const container = document.getElementById('race-custom-dropdown-container');
       if (_raceSpotlightOpen && container && !container.contains(e.target)) {
         closeRaceSpotlightDropdown();
+      }
+      const tmplContainer = document.getElementById('template-custom-dropdown-container');
+      if (_templateSpotlightOpen && tmplContainer && !tmplContainer.contains(e.target)) {
+        closeTemplateSpotlightDropdown();
       }
       const deityContainer = document.getElementById('deity-custom-dropdown-container');
       if (_deitySpotlightOpen && deityContainer && !deityContainer.contains(e.target)) {
@@ -6157,14 +6627,41 @@ function renderManualStatsPanel() {
       const raceObj = (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function' ? window.SrdCompendium.getByName(rawSelectedRace, 'Race') : null)
         || catalog.find(item => item && item.type === 'Race' && (item.name || '').toLowerCase().trim() === curSelectedRace);
 
+      // Resolve selected template objects for accurate preview
+      const selectedTmplEntries = (Array.isArray(_modalSelectedTemplates) ? _modalSelectedTemplates : [])
+        .map(id => resolveTemplateEntry(id))
+        .filter(Boolean);
+
       previewContainer.innerHTML = STAT_KEYS.map(s => {
         const baseScore = Number(statDistState.workingAbilities[s.key]) || 10;
-        const racialMod = (raceObj && raceObj[`${s.key}Bonus`]) ? Number(raceObj[`${s.key}Bonus`]) : 0;
+        let racialMod = (raceObj && raceObj[`${s.key}Bonus`]) ? Number(raceObj[`${s.key}Bonus`]) : 0;
+        if (racialMod === 0 && raceObj && Array.isArray(raceObj.modifiers)) {
+          raceObj.modifiers.forEach(m => {
+            if (!m || m.condition) return;
+            const t = String(m.target || '').toLowerCase();
+            if (t === `ability.${s.key}` || t === s.key) racialMod += Number(m.value) || 0;
+          });
+        }
+
+        let templateMod = 0;
+        selectedTmplEntries.forEach(tmpl => {
+          if (!tmpl || !Array.isArray(tmpl.modifiers)) return;
+          tmpl.modifiers.forEach(m => {
+            if (!m || m.condition) return;
+            const t = String(m.target || '').toLowerCase();
+            if (t === `ability.${s.key}` || t === s.key) templateMod += Number(m.value) || 0;
+          });
+        });
         
-        // Ekipman & Buff bonus farkını hesapla (Irksal hariç ekipman/buff bonusları)
+        // Calculate Equipment & Buff bonus difference (excluding Racial and Template ability modifiers)
         let itemBuffBonus = 0;
         if (typeof RuleEngine !== 'undefined' && RuleEngine.resolveBonusStacking && character.abilitySources?.[s.key]) {
-          const nonRacialSources = (character.abilitySources[s.key] || []).filter(src => src && (src.type || '').toLowerCase() !== 'racial');
+          const nonRacialSources = (character.abilitySources[s.key] || []).filter(src => {
+            if (!src) return false;
+            const st = String(src.type || '').toLowerCase();
+            const ss = String(src.source || '').toLowerCase();
+            return st !== 'racial' && st !== 'template' && !ss.includes('(template)') && !ss.includes('(race)');
+          });
           itemBuffBonus = RuleEngine.resolveBonusStacking(nonRacialSources);
         } else {
           const currentTotal = Number(character.abilities?.[s.key]) || baseScore;
@@ -6172,7 +6669,7 @@ function renderManualStatsPanel() {
           itemBuffBonus = currentTotal - currentBase;
         }
 
-        const finalScore = baseScore + racialMod + itemBuffBonus;
+        const finalScore = baseScore + racialMod + templateMod + itemBuffBonus;
         const mod = Math.floor((finalScore - 10) / 2);
         const modStr = (mod >= 0 ? '+' : '') + mod;
         sumMods += mod;
@@ -6184,8 +6681,9 @@ function renderManualStatsPanel() {
             <span class="text-[10px] font-bold ${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${modStr}</span>
             <div class="text-[8px] text-slate-500 font-mono mt-0.5">
               <span>T:${baseScore}</span>
-              ${racialMod !== 0 ? `<span class="${racialMod > 0 ? 'text-emerald-400' : 'text-rose-400'} ml-0.5">${racialMod > 0 ? '+' + racialMod : racialMod}</span>` : ''}
-              ${itemBuffBonus !== 0 ? `<span class="text-purple-400 ml-0.5">${itemBuffBonus > 0 ? '+' + itemBuffBonus : itemBuffBonus}</span>` : ''}
+              ${racialMod !== 0 ? `<span class="${racialMod > 0 ? 'text-emerald-400' : 'text-rose-400'} ml-0.5" title="Racial Ability Adjustment">${racialMod > 0 ? '+' + racialMod : racialMod}</span>` : ''}
+              ${templateMod !== 0 ? `<span class="${templateMod > 0 ? 'text-sky-400' : 'text-rose-400'} ml-0.5" title="Template Ability Adjustment">${templateMod > 0 ? '+' + templateMod : templateMod}</span>` : ''}
+              ${itemBuffBonus !== 0 ? `<span class="text-purple-400 ml-0.5" title="Gear &amp; Active Buffs">${itemBuffBonus > 0 ? '+' + itemBuffBonus : itemBuffBonus}</span>` : ''}
             </div>
           </div>
         `;
@@ -6258,6 +6756,12 @@ function renderManualStatsPanel() {
 
           // Racial ability modifiers are handled dynamically and automatically by RuleEngine.recalculateCharacter()
         }
+      }
+
+      // 1.5. Persist Selected Character Templates & Sync Template Special Abilities
+      character.templates = Array.isArray(_modalSelectedTemplates) ? [..._modalSelectedTemplates] : [];
+      if (typeof syncCharacterTemplateAbilities === 'function') {
+        syncCharacterTemplateAbilities();
       }
 
       const newAlign = getVal('profile-edit-alignment');

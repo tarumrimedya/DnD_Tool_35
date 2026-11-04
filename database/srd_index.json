@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "16f628a2c4f38f79",
+  "compendiumHash": "b0babde41beb5f17",
   "generatedAt": "2026-11-04T15:37:19.474Z",
-  "totalEntries": 4781,
+  "totalEntries": 4820,
   "chunks": {
     "srd_equipment.json": {
       "count": 1021,
@@ -64,6 +64,12 @@
       "bytes": 12603,
       "hash": "8760b06c5e1146a0",
       "eagerLoad": true
+    },
+    "srd_templates.json": {
+      "count": 39,
+      "sha256": "",
+      "description": "D&D 3.5e Character & Creature Templates (Half-Dragon, Half-Celestial, Half-Fiend, Lich, Vampire, Ghost, Lycanthrope, Phrenic, Shadow, Paragon)",
+      "hash": "a62b54527e352028"
     }
   },
   "index": [
@@ -40379,6 +40385,279 @@
       "c": "Prestige",
       "s": "None",
       "f": "srd_classes_races.json"
+    },
+    {
+      "id": "tmpl-half-dragon-red",
+      "name": "Half-Dragon (Red)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-half-dragon-gold",
+      "name": "Half-Dragon (Gold)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-half-dragon-silver",
+      "name": "Half-Dragon (Silver)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-half-dragon-blue",
+      "name": "Half-Dragon (Blue)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-half-dragon-black",
+      "name": "Half-Dragon (Black)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-half-dragon-green",
+      "name": "Half-Dragon (Green)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-half-dragon-white",
+      "name": "Half-Dragon (White)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-half-dragon-brass",
+      "name": "Half-Dragon (Brass)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-half-dragon-bronze",
+      "name": "Half-Dragon (Bronze)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-half-dragon-copper",
+      "name": "Half-Dragon (Copper)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-half-celestial",
+      "name": "Half-Celestial",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-half-fiend",
+      "name": "Half-Fiend",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-celestial",
+      "name": "Celestial Creature",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-fiendish",
+      "name": "Fiendish Creature",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-lich",
+      "name": "Lich",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-vampire",
+      "name": "Vampire",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-ghost",
+      "name": "Ghost",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-demilich",
+      "name": "Demilich",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-skeleton",
+      "name": "Skeleton",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-zombie",
+      "name": "Zombie",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-werewolf",
+      "name": "Werewolf (Lycanthrope)",
+      "type": "Template",
+      "category": "Inherited / Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-werebear",
+      "name": "Werebear (Lycanthrope)",
+      "type": "Template",
+      "category": "Inherited / Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-wererat",
+      "name": "Wererat (Lycanthrope)",
+      "type": "Template",
+      "category": "Inherited / Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-weretiger",
+      "name": "Weretiger (Lycanthrope)",
+      "type": "Template",
+      "category": "Inherited / Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-wereboar",
+      "name": "Wereboar (Lycanthrope)",
+      "type": "Template",
+      "category": "Inherited / Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-dire-werewolf",
+      "name": "Dire Werewolf (Lycanthrope)",
+      "type": "Template",
+      "category": "Inherited / Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-dire-wereboar",
+      "name": "Dire Wereboar (Lycanthrope)",
+      "type": "Template",
+      "category": "Inherited / Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-lycanthrope",
+      "name": "Lycanthrope (Humanoid Form Base)",
+      "type": "Template",
+      "category": "Inherited / Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-lycanthrope-hybrid-form",
+      "name": "Lycanthrope (Active Hybrid Form)",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-lycanthrope-animal-form",
+      "name": "Lycanthrope (Active Animal Form)",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-phrenic",
+      "name": "Phrenic Creature",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-psionic",
+      "name": "Psionic Creature (Subtype Template)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-shadow-creature",
+      "name": "Shadow Creature",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-paragon",
+      "name": "Paragon Creature",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-pseudonatural",
+      "name": "Pseudonatural Creature (Epic)",
+      "type": "Template",
+      "category": "Inherited Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-worm-that-walks",
+      "name": "Worm that Walks",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-petitioner",
+      "name": "Petitioner",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-divine-rank",
+      "name": "Divine Rank 0 (Quasi-Deity / Hero-Deity)",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
+    },
+    {
+      "id": "tmpl-innate-divine-rank",
+      "name": "Divine Rank 1 (Demigod)",
+      "type": "Template",
+      "category": "Acquired Template",
+      "chunk": "srd_templates.json"
     }
   ]
 }
