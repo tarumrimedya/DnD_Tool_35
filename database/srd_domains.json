@@ -146,7 +146,7 @@
       },
       {
         "level": 9,
-        "id": "pwr-shapechange",
+        "id": "spl-shapechange",
         "name": "Shapechange"
       }
     ],
@@ -374,7 +374,7 @@
       },
       {
         "level": 7,
-        "id": "pwr-disintegrate",
+        "id": "spl-disintegrate",
         "name": "Disintegrate"
       },
       {
@@ -456,7 +456,7 @@
       },
       {
         "level": 8,
-        "id": "pwr-iron-body",
+        "id": "spl-iron-body",
         "name": "Iron Body"
       },
       {
@@ -838,22 +838,22 @@
       },
       {
         "level": 2,
-        "id": "pwr-detect-thoughts",
+        "id": "spl-detect-thoughts",
         "name": "Detect Thoughts"
       },
       {
         "level": 3,
-        "id": "pwr-clairaudience-clairvoyance",
+        "id": "spl-clairaudience-clairvoyance",
         "name": "Clairaudience/Clairvoyance"
       },
       {
         "level": 4,
-        "id": "pwr-divination",
+        "id": "spl-divination",
         "name": "Divination"
       },
       {
         "level": 5,
-        "id": "pwr-true-seeing",
+        "id": "spl-true-seeing",
         "name": "True Seeing"
       },
       {
@@ -873,7 +873,7 @@
       },
       {
         "level": 9,
-        "id": "pwr-foresight",
+        "id": "spl-foresight",
         "name": "Foresight"
       }
     ],
@@ -1016,7 +1016,7 @@
       },
       {
         "level": 4,
-        "id": "pwr-freedom-of-movement",
+        "id": "spl-freedom-of-movement",
         "name": "Freedom of Movement"
       },
       {
@@ -1083,7 +1083,7 @@
       },
       {
         "level": 2,
-        "id": "pwr-identify",
+        "id": "spl-identify",
         "name": "Identify"
       },
       {
@@ -1269,7 +1269,7 @@
       },
       {
         "level": 8,
-        "id": "pwr-mind-blank",
+        "id": "spl-mind-blank",
         "name": "Mind Blank"
       },
       {
@@ -1477,17 +1477,17 @@
       },
       {
         "level": 3,
-        "id": "pwr-fly",
+        "id": "spl-fly",
         "name": "Fly"
       },
       {
         "level": 4,
-        "id": "pwr-dimension-door",
+        "id": "spl-dimension-door",
         "name": "Dimension Door"
       },
       {
         "level": 5,
-        "id": "pwr-teleport",
+        "id": "spl-teleport",
         "name": "Teleport"
       },
       {
@@ -1502,12 +1502,12 @@
       },
       {
         "level": 8,
-        "id": "pwr-phase-door",
+        "id": "spl-phase-door",
         "name": "Phase Door"
       },
       {
         "level": 9,
-        "id": "pwr-astral-projection",
+        "id": "spl-astral-projection",
         "name": "Astral Projection"
       }
     ],
@@ -1553,12 +1553,12 @@
       },
       {
         "level": 2,
-        "id": "pwr-invisibility",
+        "id": "spl-invisibility",
         "name": "Invisibility"
       },
       {
         "level": 3,
-        "id": "pwr-nondetection",
+        "id": "spl-nondetection",
         "name": "Nondetection"
       },
       {
@@ -1796,17 +1796,17 @@
       },
       {
         "level": 4,
-        "id": "pwr-minor-creation",
+        "id": "spl-minor-creation",
         "name": "Minor Creation"
       },
       {
         "level": 5,
-        "id": "pwr-fabricate",
+        "id": "spl-fabricate",
         "name": "Fabricate"
       },
       {
         "level": 6,
-        "id": "pwr-major-creation",
+        "id": "spl-major-creation",
         "name": "Major Creation"
       },
       {
@@ -1816,7 +1816,7 @@
       },
       {
         "level": 8,
-        "id": "pwr-true-creation",
+        "id": "spl-true-creation",
         "name": "True Creation"
       },
       {
@@ -1869,7 +1869,7 @@
     "spells": [
       {
         "level": 1,
-        "id": "pwr-charm-person",
+        "id": "spl-charm-person",
         "name": "Charm Person"
       },
       {
@@ -1879,7 +1879,7 @@
       },
       {
         "level": 3,
-        "id": "pwr-suggestion",
+        "id": "spl-suggestion",
         "name": "Suggestion"
       },
       {
@@ -1889,7 +1889,7 @@
       },
       {
         "level": 5,
-        "id": "pwr-charm-monster",
+        "id": "spl-charm-monster",
         "name": "Charm Monster"
       },
       {
@@ -1899,7 +1899,7 @@
       },
       {
         "level": 7,
-        "id": "pwr-insanity",
+        "id": "spl-insanity",
         "name": "Insanity"
       },
       {
@@ -2044,17 +2044,17 @@
       },
       {
         "level": 3,
-        "id": "pwr-create-food-and-water",
+        "id": "spl-create-food-and-water",
         "name": "Create Food and Water"
       },
       {
         "level": 4,
-        "id": "pwr-minor-creation",
+        "id": "spl-minor-creation",
         "name": "Minor Creation"
       },
       {
         "level": 5,
-        "id": "pwr-major-creation",
+        "id": "spl-major-creation",
         "name": "Major Creation"
       },
       {
@@ -2069,12 +2069,12 @@
       },
       {
         "level": 8,
-        "id": "pwr-true-creation",
+        "id": "spl-true-creation",
         "name": "True Creation"
       },
       {
         "level": 9,
-        "id": "pwr-genesis",
+        "id": "spl-genesis",
         "name": "Genesis"
       }
     ],
@@ -2303,7 +2303,7 @@
       },
       {
         "level": 4,
-        "id": "pwr-freedom-of-movement",
+        "id": "spl-freedom-of-movement",
         "name": "Freedom of Movement"
       },
       {
@@ -2323,7 +2323,7 @@
       },
       {
         "level": 8,
-        "id": "pwr-mind-blank",
+        "id": "spl-mind-blank",
         "name": "Mind Blank"
       },
       {
@@ -2400,7 +2400,7 @@
       },
       {
         "level": 7,
-        "id": "pwr-insanity",
+        "id": "spl-insanity",
         "name": "Insanity"
       },
       {
@@ -2729,7 +2729,7 @@
       },
       {
         "level": 9,
-        "id": "pwr-shapechange",
+        "id": "spl-shapechange",
         "name": "Shapechange"
       }
     ],
@@ -2848,13 +2848,13 @@
       },
       {
         "level": 2,
-        "id": "pwr-detect-thoughts",
+        "id": "spl-detect-thoughts",
         "name": "Detect Thoughts"
       },
       {
         "level": 3,
-        "id": "pwr-mindlink",
-        "name": "Mindlink"
+        "id": "spl-telepathic-bond-lesser",
+        "name": "Telepathic Bond, Lesser"
       },
       {
         "level": 4,
@@ -2878,7 +2878,7 @@
       },
       {
         "level": 8,
-        "id": "pwr-mind-blank",
+        "id": "spl-mind-blank",
         "name": "Mind Blank"
       },
       {
