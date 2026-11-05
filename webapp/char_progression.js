@@ -1680,11 +1680,15 @@
         };
         const rows = await RuleMaster.fetchSingleAiRuleRows(query, categoryHint, apiKey, statusProxy);
         if (rows && rows.length > 0) {
-          const topRow = rows[0];
-          const featName = topRow[0] || query;
-          const featType = topRow[1] || 'Feat';
-          const featSource = topRow[4] || 'D&D 3.5e';
-          const featBenefit = topRow[5] || '';
+          const rawTop = rows[0];
+          const v2Entry = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.ensureV2 === 'function')
+            ? RuleMaster.ensureV2(Array.isArray(rawTop) ? RuleMaster.normalizeEntry(rawTop, true) : rawTop)
+            : rawTop;
+          const featName = (Array.isArray(rawTop) ? rawTop[0] : v2Entry?.name) || query;
+          const featType = (Array.isArray(rawTop) ? rawTop[1] : v2Entry?.type) || 'Feat';
+          const featPrereq = (Array.isArray(rawTop) ? rawTop[2] : v2Entry?.prereq) || '-';
+          const featSource = (Array.isArray(rawTop) ? rawTop[4] : v2Entry?.source) || 'D&D 3.5e';
+          const featBenefit = (Array.isArray(rawTop) ? rawTop[5] : (v2Entry?.benefit || v2Entry?.description)) || '';
 
           if (nameInput) nameInput.value = featName;
           if (benefitInput) benefitInput.value = featBenefit;
@@ -1699,15 +1703,31 @@
           if (Array.isArray(masterDb)) {
             const clean = featName.toLowerCase().trim();
             if (!masterDb.some(m => (m.name || '').toLowerCase().trim() === clean)) {
-              masterDb.push({
+              masterDb.push(v2Entry && typeof v2Entry === 'object' && !Array.isArray(v2Entry) ? {
+                ...v2Entry,
+                schemaVersion: 2,
+                name: featName,
+                type: featType,
+                slot: v2Entry.slot || 'None',
+                prereq: featPrereq,
+                source: featSource,
+                benefit: featBenefit,
+                description: v2Entry.description || featBenefit
+              } : {
+                schemaVersion: 2,
+                id: 'feat_' + clean.replace(/[^a-z0-9]+/g, '_'),
                 name: featName,
                 type: featType,
                 slot: 'None',
-                prereq: topRow[2] || '-',
+                prereq: featPrereq,
                 source: featSource,
                 benefit: featBenefit,
-                description: featBenefit
+                description: featBenefit,
+                modifiers: [],
+                damageParts: [],
+                modes: []
               });
+              saveStateToStorage();
             }
           }
 
@@ -1956,10 +1976,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 if (Array.isArray(masterDb)) {
                   const inDb = masterDb.find(m => m && (m.name || '').toLowerCase() === cName.toLowerCase() && (m.type === 'Class' || m.category === 'Class'));
                   if (!inDb) {
+                    const summaryText = parsed.featuresSummary || `${cName} (${newClassDef.source})`;
                     masterDb.push({
+                      schemaVersion: 2,
+                      id: 'cls_' + cName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, ''),
                       name: cName,
                       type: 'Class',
                       category: 'Class',
+                      slot: 'None',
                       hd: newClassDef.hd,
                       bab: newClassDef.bab,
                       fort: newClassDef.fort,
@@ -1967,7 +1991,12 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                       will: newClassDef.will,
                       skills: newClassDef.skills,
                       source: newClassDef.source,
-                      desc: parsed.featuresSummary || `${cName} (${newClassDef.source})`
+                      benefit: summaryText,
+                      description: summaryText,
+                      desc: summaryText,
+                      modifiers: [],
+                      damageParts: [],
+                      modes: []
                     });
                   }
                 }
@@ -1977,7 +2006,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 populateChangeClassSelect(cName);
                 onChangeClassSelectChange();
 
-                const babDisplay = newClassDef.bab === 1.0 ? 'Tam BAB (+1/lvl)' : (newClassDef.bab === 0.75 ? '3/4 BAB (+0.75/lvl)' : '1/2 BAB (+0.5/lvl)');
+                const babDisplay = newClassDef.bab === 1.0 ? 'Full BAB (+1/lvl)' : (newClassDef.bab === 0.75 ? '3/4 BAB (+0.75/lvl)' : '1/2 BAB (+0.5/lvl)');
                 if (statusEl) {
                   statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
                   statusEl.innerHTML = `<span>✨</span> Fetched and added <b>${cName}</b> via Rule Master (AI) with D&D 3.5e RAW stats! (HD: d${newClassDef.hd} • ${babDisplay} • Source: ${newClassDef.source})`;
@@ -3419,24 +3448,42 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             throw new Error(`No D&D 3.5e rule entry found for "${query}".`);
           }
 
-          const topRow = rows[0];
-          const featName = topRow[0] || query;
-          const featType = topRow[1] || 'Feat';
-          const featPrereq = topRow[2] || '-';
-          const featSource = topRow[4] || 'D&D 3.5e';
-          const featBenefit = topRow[5] || '';
+          const rawTop = rows[0];
+          const v2Entry = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.ensureV2 === 'function')
+            ? RuleMaster.ensureV2(Array.isArray(rawTop) ? RuleMaster.normalizeEntry(rawTop, true) : rawTop)
+            : rawTop;
+          const featName = (Array.isArray(rawTop) ? rawTop[0] : v2Entry?.name) || query;
+          const featType = (Array.isArray(rawTop) ? rawTop[1] : v2Entry?.type) || 'Feat';
+          const featPrereq = (Array.isArray(rawTop) ? rawTop[2] : v2Entry?.prereq) || '-';
+          const featSource = (Array.isArray(rawTop) ? rawTop[4] : v2Entry?.source) || 'D&D 3.5e';
+          const featBenefit = (Array.isArray(rawTop) ? rawTop[5] : (v2Entry?.benefit || v2Entry?.description)) || '';
 
           if (Array.isArray(masterDb)) {
             const clean = featName.toLowerCase().trim();
             if (!masterDb.some(m => (m.name || '').toLowerCase().trim() === clean)) {
-              masterDb.push({
+              masterDb.push(v2Entry && typeof v2Entry === 'object' && !Array.isArray(v2Entry) ? {
+                ...v2Entry,
+                schemaVersion: 2,
+                name: featName,
+                type: featType,
+                slot: v2Entry.slot || 'None',
+                prereq: featPrereq,
+                source: featSource,
+                benefit: featBenefit,
+                description: v2Entry.description || featBenefit
+              } : {
+                schemaVersion: 2,
+                id: 'feat_' + clean.replace(/[^a-z0-9]+/g, '_'),
                 name: featName,
                 type: featType,
                 slot: 'None',
                 prereq: featPrereq,
                 source: featSource,
                 benefit: featBenefit,
-                description: featBenefit
+                description: featBenefit,
+                modifiers: [],
+                damageParts: [],
+                modes: []
               });
               saveStateToStorage();
             }
@@ -4466,34 +4513,34 @@ STRICT D&D 3.5E RAW ONLY (ZERO TOLERANCE FOR FORUMS / HOMEBREW / 5E / PATHFINDER
    - If "${q}" is not an official D&D 3.5e RAW class, DO NOT invent or fabricate it.
 
 STRICT OUTPUT FORMAT:
-You MUST output ONLY a single valid JSON object with NO markdown formatting, NO backticks, NO commentary.
+You MUST output ONLY a single valid JSON object with NO markdown formatting, NO backticks, NO commentary. Use 100% official D&D 3.5e RAW English terminology.
 Format:
 {
   "name": "Exact Official Class Name in English",
   "type": "Prestige Class" or "Base Class",
   "maxLevel": 5 or 10 or 20,
   "source": "Official 3.5e Book Name (e.g. Complete Scoundrel, Complete Mage, DMG)",
-  "role": "Role summary in Turkish (e.g. Gish / Arcane Melee Channeler)",
+  "role": "Role summary in English (e.g. Gish / Arcane Melee Channeler)",
   "hd": 4 or 6 or 8 or 10 or 12,
   "bab": 1.0 or 0.75 or 0.5,
   "fort": "good" or "poor",
   "ref": "good" or "poor",
   "will": "good" or "poor",
   "skills": 2 or 4 or 6 or 8,
-  "description": "Short informative Turkish description explaining what the class specializes in and its playstyle.",
+  "description": "Short informative English description explaining what the class specializes in and its playstyle.",
   "prerequisites": [
-    { "text": "Turkish explanation of prereq (e.g. Base Attack Bonus: +5)", "key": "bab", "min": 5 },
+    { "text": "Official English prerequisite (e.g. Base Attack Bonus +5)", "key": "bab", "min": 5 },
     { "text": "Feat: Combat Casting", "key": "feat", "name": "Combat Casting" }
   ],
   "features": {
-    "1": [{ "name": "Feature Name (Ex/Su/Sp)", "summary": "Turkish explanation" }],
-    "2": [{ "name": "Feature Name (Ex/Su/Sp)", "summary": "Turkish explanation" }]
+    "1": [{ "name": "Feature Name (Ex/Su/Sp)", "summary": "Concise mechanical summary in English" }],
+    "2": [{ "name": "Feature Name (Ex/Su/Sp)", "summary": "Concise mechanical summary in English" }]
   }
 }
 STRICT RULE: Do NOT include standard 6-sided dice emoji (U+1F3B2) anywhere in any field. Use plain notation like "d10 HD", "1d6", "2d8".`;
 
       const userPrompt = `Extract the exact official D&D 3.5e RAW class parameters for: "${q}". (If the query contains typos such as "bloodstarm blade" for "Bloodstorm Blade", automatically correct to the official D&D 3.5e class name).
-Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit die, bab, fort, ref, will, skill points per level, prerequisites, description in Turkish, and level-by-level features for every level from 1 up to maxLevel (keys "1", "2", ...). If a level grants spell advancement e.g. "+1 level of existing spellcasting class" or bonus feats, list that in the level's features.`;
+Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit die, bab, fort, ref, will, skill points per level, prerequisites, description in English, and level-by-level features for every level from 1 up to maxLevel (keys "1", "2", ...). If a level grants spell advancement e.g. "+1 level of existing spellcasting class" or bonus feats, list that in the level's features.`;
 
       let modelsToTry = [];
       if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function') {

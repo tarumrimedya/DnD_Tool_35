@@ -1535,7 +1535,10 @@ const RuleMaster = {
    - Absolutely NO 5e mechanics (No Advantage/Disadvantage, No Bonus Action, No Finesse adding Dex to damage, No -5/+10 GWM, No Short Rest, No Concentration slots).
    - Absolutely NO Pathfinder / PF1e / Starfinder rules.
 4. STRICT NON-EXISTENCE / NO-HALLUCINATION POLICY:
-   - If the queried element is NOT an official D&D 3.5e RAW entity, DO NOT adapt, balance, or fabricate it. Return an empty array: {"entries": []}.`,
+   - If the queried element is NOT an official D&D 3.5e RAW entity, DO NOT adapt, balance, or fabricate it. Return an empty array: {"entries": []}.
+5. OFFICIAL 3.5E ENGLISH & NO DICE EMOJI (U+1F3B2):
+   - Output 100% official D&D 3.5e RAW English terminology in all fields.
+   - NEVER include the 6-sided die emoji (U+1F3B2) anywhere in any string.`,
 
   getAiModelMode() {
     return localStorage.getItem('dnd35_ai_model_mode') || 'auto';
@@ -1549,25 +1552,25 @@ const RuleMaster = {
     }
   },
 
-  // 3 Temel AI Kullanım Alanı İçin Dinamik Model Çözümleyicisi (3 Kademeli / 9 Yuvalı Dayanıklılık Matrisi)
+  // 3-Tier / 9-Slot Resilience Matrix for Core D&D 3.5e AI Tasks
   AI_TASK_ROUTING: {
-    // 1. Hızlı Arama & Seviye Atlama (1. Asıl: Lite 2.0, 2. Yedek: Flash 2.0, 3. Kalkan: Flash 1.5)
+    // 1. Quick Search & Level-Up Copilot (Low latency, high RPM)
     QUICK_SEARCH: {
-      primary: 'gemini-2.0-flash-lite',
-      fallback: 'gemini-2.0-flash',
-      tertiary: 'gemini-1.5-flash'
+      primary: 'gemini-2.5-flash-lite',
+      fallback: 'gemini-2.0-flash-lite',
+      tertiary: 'gemini-2.0-flash'
     },
-    // 2. Kütüphane & Kural Denetimi (En Yüksek Kararlı Pro Muhakeme Motoru)
+    // 2. Compendium & RAW Rule Audit (Deep reasoning)
     RULE_AUDIT: {
-      primary: 'gemini-1.5-pro',
-      fallback: 'gemini-2.0-flash',
-      tertiary: 'gemini-1.5-flash'
+      primary: 'gemini-2.5-pro',
+      fallback: 'gemini-2.5-flash',
+      tertiary: 'gemini-2.0-flash'
     },
-    // 3. Toplu İçe Aktarım & Serbest Metin Ayrıştırma (Yapısal JSON)
+    // 3. Batch Import & Free-Text Structured JSON Parsing
     IMPORT_BATCH: {
-      primary: 'gemini-2.0-flash-lite',
+      primary: 'gemini-2.5-flash',
       fallback: 'gemini-2.0-flash',
-      tertiary: 'gemini-1.5-pro'
+      tertiary: 'gemini-2.0-flash-lite'
     }
   },
 
@@ -2444,7 +2447,7 @@ Schema:
     return this.ensureV2(cloned);
   },
 
-  // Dinamik Hedefli AI Prompt Üreticisi (Kanonik V2 JSON Şeması)
+  // Dynamic Targeted AI Prompt Builder (Canonical V2 JSON Schema)
   buildTargetedAiPrompt(cleanQuery, effectiveCategory) {
     return `You are a master D&D 3.5e Rule Arbiter.
 Target query: "${cleanQuery}" (Category: "${effectiveCategory}").
@@ -2453,12 +2456,20 @@ ${this.DND35_RAW_GUARDRAIL}
 
 CRITICAL CANONICAL V2 SCHEMA RULES:
 1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, or official WotC 3.5e publications. If entity does not exist in official 3.5e, return {"entries": []}.
-2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to the official D&D 3.5e name.
+2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to the official D&D 3.5e English name.
 3. ZERO LEGACY COLUMNS & ZERO SEPARATE CHILD ROWS:
    - NEVER use legacy flat bonus columns (strBonus, acBonus, attBonus, extraDmg, isChild, parent).
-   - Put all stat/roll bonuses inside "modifiers": [{"target": "ac.deflection"|"ability.str"|"attack.melee"|"save.all"|"skill.move_silently" etc., "value": 2, "type": "Deflection"|"Enhancement"|"Competence"|"Resistance"|"Dodge"|"Untyped", "condition": null}].
-   - Put all weapon/spell/maneuver dice inside "damageParts": [{"dice": "1d8", "bonus": 0, "type": "Slashing"|"Fire"|"Untyped", "multiplyOnCrit": true|false, "onCritOnly": false, "source": "Base"}].
+   - Put all stat/roll bonuses inside "modifiers": [{"target": "ac.deflection"|"ac.armor"|"ac.shield"|"ac.natural"|"ac.dodge"|"ability.str"|"ability.dex"|"ability.con"|"ability.int"|"ability.wis"|"ability.cha"|"attack.all"|"attack.melee"|"attack.ranged"|"damage.all"|"damage.melee"|"save.all"|"save.fort"|"save.ref"|"save.will"|"init"|"speed.land"|"hp"|"casterLevel"|"skill.all"|"skill.<key>", "value": 2, "formula": null, "type": "Deflection"|"Enhancement"|"Armor"|"Shield"|"Natural Armor"|"Resistance"|"Morale"|"Luck"|"Insight"|"Sacred"|"Profane"|"Competence"|"Circumstance"|"Alchemical"|"Racial"|"Size"|"Dodge"|"Inherent"|"Untyped"|"Penalty", "condition": null}].
+   - Put all weapon/spell/maneuver/crystal dice inside "damageParts": [{"dice": "1d8", "bonus": 0, "type": "Slashing"|"Piercing"|"Bludgeoning"|"Fire"|"Cold"|"Electricity"|"Acid"|"Sonic"|"Force"|"Positive Energy"|"Negative Energy"|"Holy"|"Unholy"|"Untyped", "multiplyOnCrit": true|false, "onCritOnly": false, "source": "Base"}].
    - If the spell, weapon, or item has conditional sub-modes or secondary powers (e.g. Searing Light vs Undead, Blade of Blood sacrifice, Two-Handed grip, Flametongue 1/day ray), embed them inside "modes": [{"id": "vs_undead", "name": "Undead (1d6/CL)", "actionType": "standard", "benefit": "...", "damageParts": [...], "modifiers": [...]}].
+4. CATEGORY-SPECIFIC V2 FIELDS:
+   - Weapon: populate "weaponMeta" ({"proficiency": "Simple"|"Martial"|"Exotic", "handedness": "Unarmed"|"Light"|"One-Handed"|"Two-Handed"|"Ranged", "damageDice": "1d8", "critMin": 19, "critMult": 2, "damageType": "Slashing", "rangeIncrement": 0, "isDoubleWeapon": false, "isFinessable": false}) AND "weaponStats".
+   - Armor / Shield: populate "armorMeta" ({"category": "Light"|"Medium"|"Heavy"|"Shield", "armorBonus": 4, "maxDex": 4, "acp": -2, "asf": 20, "speed30": 30, "speed20": 20}) AND "armorStats".
+   - Augment Crystal (MIC): set "type": "Augment Crystal", "crystalTier": "Least"|"Lesser"|"Greater", "crystalSlot": "Weapon"|"Armor"|"Shield".
+   - Deity: set "type": "Deity", "alignment": "LG"|"NG"|"CG"|"LN"|"N"|"CN"|"LE"|"NE"|"CE", "favoredWeapon": "Official weapon name", "domains": ["Domain1", "Domain2", ...].
+   - Domain: set "type": "Domain", "grantedPower": "Official granted power text", "domainSpells": [{"level": 1, "name": "Spell Name"}, ...].
+   - Race: set "type": "Race", "size": "Small"|"Medium"|"Large", "baseSpeed": 30, "vision": "Normal"|"Low-Light Vision"|"Darkvision 60 ft.", "favoredClass": "Any"|"Class Name", "traits": [{"name": "Trait", "desc": "..."}].
+   - Template: set "type": "Template", "templateType": "Inherited"|"Acquired", "levelAdjustment": 2, "crAdjustment": 1.
 
 OUTPUT JSON SCHEMA:
 Return valid JSON only matching:
@@ -2467,15 +2478,16 @@ Return valid JSON only matching:
     {
       "schemaVersion": 2,
       "id": "unique_slug_id",
+      "baseItemId": null,
       "name": "Official 3.5e Name",
-      "type": "${effectiveCategory === 'ALL' ? 'Feat|Spell|Weapon|Armor|Shield|Wondrous Item|Ring|Maneuver|Stance|Race|Deity' : (effectiveCategory === 'Item' || effectiveCategory === 'Magic Item' ? 'Wondrous Item' : effectiveCategory)}",
-      "slot": "None|Main Hand|Two-Handed|Off-Hand/Shield|Armor|Head|Neck|Shoulders|Belt|Ring|Feet|Hands|Arms|Torso",
+      "type": "${effectiveCategory === 'ALL' ? 'Feat|Spell|Power|Weapon|Armor|Shield|Wondrous Item|Ring|Potion|Scroll|Wand|Consumable|Augment Crystal|Maneuver|Stance|Race|Deity|Domain|Template|Class' : (effectiveCategory === 'Item' || effectiveCategory === 'Magic Item' ? 'Wondrous Item' : effectiveCategory)}",
+      "slot": "None|Main Hand|Two Hands|Off-Hand/Shield|Armor|Head|Face|Throat|Shoulders|Body|Torso|Waist|Belt|Ring|Feet|Hands|Arms",
       "source": "Official 3.5e book and page",
       "prereq": "Prerequisites or '-'",
-      "benefit": "Concise mechanical summary",
-      "description": "Full official RAW description",
-      "action": "Passive|Standard Action|Swift Action|Immediate Action|Full-Round Action|Free Action",
-      "actionType": "passive|standard|swift|immediate|full_round|free",
+      "benefit": "Concise mechanical summary in English",
+      "description": "Full official RAW description in English",
+      "action": "Passive|Standard Action|Move Action|Swift Action|Immediate Action|Full-Round Action|Free Action",
+      "actionType": "passive|standard|move|swift|immediate|full_round|free",
       "duration": "Continuous|Instantaneous|1 round/level",
       "range": "Personal|Touch|Close|Medium|Long",
       "school": "Spell school if Spell",
@@ -2484,9 +2496,27 @@ Return valid JSON only matching:
       "cost": 0,
       "weight": 0,
       "isFighterBonusFeat": false,
+      "requiresEnergyChoice": false,
+      "dailyCharges": null,
+      "crystalTier": null,
+      "crystalSlot": null,
+      "alignment": null,
+      "favoredWeapon": null,
+      "domains": [],
+      "grantedPower": null,
+      "domainSpells": [],
+      "size": null,
+      "baseSpeed": null,
+      "vision": null,
+      "favoredClass": null,
+      "traits": [],
+      "levelAdjustment": null,
+      "crAdjustment": null,
       "modifiers": [],
       "damageParts": [],
       "modes": [],
+      "weaponMeta": null,
+      "armorMeta": null,
       "weaponStats": null,
       "armorStats": null,
       "spellStats": null,
@@ -2865,9 +2895,9 @@ Return valid JSON only matching:
     }
     const deityEntry = entries.find(e => e && (e.type === 'Deity' || String(e.type).toLowerCase() === 'deity')) || entries[0];
     deityEntry.type = 'Deity';
-    if (!deityEntry.alignment) deityEntry.alignment = 'Neutral';
-    if (!deityEntry.favoredWeapon) deityEntry.favoredWeapon = 'Quarterstaff';
-    if (!Array.isArray(deityEntry.domains)) deityEntry.domains = ['Magic', 'Knowledge'];
+    if (!deityEntry.alignment || !Array.isArray(deityEntry.domains) || deityEntry.domains.length === 0) {
+      throw new Error(`Incomplete D&D 3.5e RAW deity data returned for "${deityName}" (missing alignment or domains).`);
+    }
     return deityEntry;
   },
 
@@ -5229,12 +5259,13 @@ ${this.DND35_RAW_GUARDRAIL}
 TASK:
 Analyze and parse this free-form text completely into Canonical V2 JSON entries (schemaVersion: 2).
 CRITICAL RULES:
-1. STRICT REAL RAW 3.5E RULES ONLY.
+1. STRICT REAL RAW 3.5E RULES ONLY (100% official English terminology, zero U+1F3B2 dice emoji).
 2. EMBEDDED MODES (NO SEPARATE '↳' CHILD ROWS):
    If the item or spell has multiple distinct powers or sub-modes (e.g. Flametongue 1/day 4d6 fire ray, or Searing Light vs Undead), embed them inside the parent entry's "modes" array.
 3. UNIVERSAL MODIFIERS & DAMAGE PARTS:
    - Stat/roll bonuses go into "modifiers": [{"target": "ac.dodge"|"attack.all"|"ability.str"|"save.ref"|"speed.land", "value": 1, "type": "Dodge"|"Enhancement"|"Untyped", "condition": null}].
    - Dice expressions go into "damageParts": [{"dice": "1d8", "bonus": 1, "type": "Slashing", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base Weapon"}, {"dice": "1d6", "bonus": 0, "type": "Fire", "multiplyOnCrit": false, "onCritOnly": false, "source": "Flaming"}].
+   - Weapons MUST include "weaponMeta" (with "proficiency": "Simple"|"Martial"|"Exotic", "handedness", "damageDice", "critMin", "critMult", "damageType", "isDoubleWeapon", "isFinessable") and Armors/Shields MUST include "armorMeta" ("category", "armorBonus", "maxDex", "acp", "asf").
 
 OUTPUT REQUIREMENT:
 Return valid JSON only matching:
@@ -5244,20 +5275,27 @@ Return valid JSON only matching:
       "schemaVersion": 2,
       "id": "unique_slug_id",
       "name": "Entry Name",
-      "type": "Feat|Weapon|Armor|Shield|Ring|Wondrous Item|Spell|Potion|Maneuver|Stance",
-      "slot": "None|Main Hand|Two-Handed|Armor|Off-Hand/Shield|Ring|Belt|Shoulders|Neck|Head|Feet|Hands|Arms",
+      "type": "Feat|Weapon|Armor|Shield|Ring|Wondrous Item|Augment Crystal|Spell|Power|Potion|Scroll|Wand|Consumable|Maneuver|Stance|Template|Race|Deity|Domain",
+      "slot": "None|Main Hand|Two Hands|Armor|Off-Hand/Shield|Ring|Belt|Waist|Shoulders|Neck|Throat|Head|Face|Body|Torso|Feet|Hands|Arms",
       "source": "PHB p.92 / DMG p.224",
       "prereq": "-",
-      "benefit": "Concise mechanical summary",
-      "description": "Full text",
-      "action": "Passive|Standard Action|Swift Action|Immediate Action|Full-Round Action",
-      "actionType": "passive|standard|swift|immediate|full_round",
+      "benefit": "Concise mechanical summary in English",
+      "description": "Full RAW text in English",
+      "action": "Passive|Standard Action|Move Action|Swift Action|Immediate Action|Full-Round Action|Free Action",
+      "actionType": "passive|standard|move|swift|immediate|full_round|free",
       "duration": "Continuous|Instantaneous|1 round/level",
       "weight": 0,
       "cost": 0,
+      "isFighterBonusFeat": false,
+      "requiresEnergyChoice": false,
+      "dailyCharges": null,
+      "crystalTier": null,
+      "crystalSlot": null,
       "modifiers": [],
       "damageParts": [],
       "modes": [],
+      "weaponMeta": null,
+      "armorMeta": null,
       "weaponStats": null,
       "armorStats": null,
       "spellStats": null,

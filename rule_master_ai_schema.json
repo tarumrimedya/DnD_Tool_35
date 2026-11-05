@@ -1,13 +1,13 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "RuleMasterAiResponseSchemaV2",
-  "description": "D&D 3.5e Rule Master AI (Gemini) sorgu çıktısı için Kanonik V2 JSON yanıt şeması (schemaVersion: 2). Tüm yanıtlar 'entries' dizisi içinde döndürülmelidir. Eski sabit bonus sütunları (strBonus, acBonus vb.) veya ayrı '↳' alt satırları kullanılmaz; tüm etkiler 'modifiers', 'damageParts' ve 'modes' dizilerinde tanımlanır.",
+  "description": "Canonical V2 JSON response schema (schemaVersion: 2) for D&D 3.5e Rule Master AI (Gemini) queries. All responses must be returned inside the 'entries' array. Legacy flat bonus columns (strBonus, acBonus, etc.) or separate child rows are forbidden; all mechanical effects must be defined inside 'modifiers', 'damageParts', and 'modes'.",
   "type": "object",
   "required": ["entries"],
   "properties": {
     "entries": {
       "type": "array",
-      "description": "Sorgulanan kural, büyü, eşya veya varlığın Kanonik V2 nesne listesi.",
+      "description": "List of Canonical V2 objects for the queried D&D 3.5e rule, spell, feat, item, or entity.",
       "items": {
         "$ref": "#/definitions/RuleMasterEntryV2"
       }
@@ -20,15 +20,15 @@
       "properties": {
         "target": {
           "type": "string",
-          "description": "Hedeflenen stat veya mekanik anahtarı (örn: 'ability.str', 'ability.dex', 'ability.con', 'ability.int', 'ability.wis', 'ability.cha', 'ac', 'ac.armor', 'ac.shield', 'ac.deflection', 'ac.natural', 'ac.dodge', 'attack.all', 'attack.melee', 'attack.ranged', 'damage.all', 'damage.melee', 'save.all', 'save.fort', 'save.ref', 'save.will', 'init', 'speed.land', 'hp', 'casterLevel', 'skill.all', 'skill.tumble')."
+          "description": "Target stat or mechanic key (e.g. 'ability.str', 'ability.dex', 'ability.con', 'ability.int', 'ability.wis', 'ability.cha', 'ac', 'ac.armor', 'ac.shield', 'ac.deflection', 'ac.natural', 'ac.dodge', 'attack.all', 'attack.melee', 'attack.ranged', 'damage.all', 'damage.melee', 'save.all', 'save.fort', 'save.ref', 'save.will', 'init', 'speed.land', 'hp', 'casterLevel', 'skill.all', 'skill.tumble')."
         },
         "value": {
           "type": "number",
-          "description": "Sabit sayısal bonus veya ceza değeri."
+          "description": "Static numeric bonus or penalty value."
         },
         "formula": {
           "type": "string",
-          "description": "Dinamik ölçeklenen bonus formülü (örn: 'min(5, 2 + floor(casterLevel / 6))'). Sabit 'value' yerine kullanılabilir."
+          "description": "Dynamic scaling bonus formula (e.g. 'min(5, 2 + floor(casterLevel / 6))'). Used instead of static 'value'."
         },
         "type": {
           "type": "string",
@@ -55,12 +55,12 @@
             "Penalty"
           ],
           "default": "Untyped",
-          "description": "D&D 3.5e resmi bonus tipi (Dodge, Circumstance ve Untyped hariç aynı tipteki bonuslar birbiriyle toplanmaz, en yükseği alınır)."
+          "description": "Official D&D 3.5e bonus type (bonuses of the same type do not stack except Dodge, Circumstance, and Untyped)."
         },
         "condition": {
           "type": ["string", "null"],
           "default": null,
-          "description": "Varsa durumsal koşul (örn: 'vs evil', 'while charging', null)."
+          "description": "Optional situational condition (e.g. 'vs evil', 'while charging', or null)."
         }
       }
     },
@@ -70,31 +70,31 @@
       "properties": {
         "dice": {
           "type": "string",
-          "description": "Hasar veya iyileştirme zar formülü (örn: '1d8', '2d6', 'min(10, casterLevel)d6'). Tavla zarı sembolü kesinlikle içermez."
+          "description": "Damage or healing dice formula (e.g. '1d8', '2d6', 'min(10, casterLevel)d6'). Never include the 6-sided die emoji (U+1F3B2)."
         },
         "bonus": {
           "type": "number",
           "default": 0,
-          "description": "Zara eklenen sabit sayısal hasar bonusu."
+          "description": "Flat numeric damage bonus added to the dice."
         },
         "type": {
           "type": "string",
           "default": "Untyped",
-          "description": "Hasar tipi (Slashing, Piercing, Bludgeoning, Fire, Cold, Electricity, Acid, Sonic, Force, Positive Energy, Negative Energy, Holy, Unholy, Untyped / Divine Light)."
+          "description": "Damage type (Slashing, Piercing, Bludgeoning, Fire, Cold, Electricity, Acid, Sonic, Force, Positive Energy, Negative Energy, Holy, Unholy, Untyped / Divine Light)."
         },
         "multiplyOnCrit": {
           "type": "boolean",
           "default": false,
-          "description": "Kritik vuruşta bu zarın çarpanla çarpılıp çarpılmayacağı (Temel silah hasarı için true, Flaming gibi ekstra enerji zarları için false)."
+          "description": "Whether this dice expression multiplies on a critical hit (true for base weapon damage, false for bonus energy dice such as Flaming)."
         },
         "onCritOnly": {
           "type": "boolean",
           "default": false,
-          "description": "Sadece kritik vuruş gerçekleştiğinde tetiklenen ekstra zar olup olmadığı (örn: Flaming Burst +1d10)."
+          "description": "Whether this extra dice triggers only on a confirmed critical hit (e.g. Flaming Burst +1d10)."
         },
         "source": {
           "type": "string",
-          "description": "Hasar parçasının kaynağı (örn: 'Base Weapon', 'Flaming', 'Mountain Hammer')."
+          "description": "Origin of the damage part (e.g. 'Base Weapon', 'Flaming', 'Mountain Hammer')."
         }
       }
     },
@@ -104,11 +104,11 @@
       "properties": {
         "id": {
           "type": "string",
-          "description": "Modun benzersiz slug kimliği (örn: 'vs_undead', 'two_handed', 'sacrifice_4_hp')."
+          "description": "Unique slug identifier for the mode (e.g. 'vs_undead', 'two_handed', 'sacrifice_4_hp')."
         },
         "name": {
           "type": "string",
-          "description": "Arayüzde mod butonunda gösterilecek kısa etiket (örn: 'Undead (1d6/CL)', 'Two-Handed', 'Sacrifice 4 HP (+2d6)')."
+          "description": "Short UI pill label for the mode (e.g. 'Undead (1d6/CL)', 'Two-Handed', 'Sacrifice 4 HP (+2d6)')."
         },
         "actionType": {
           "type": "string",
@@ -129,7 +129,7 @@
         },
         "benefit": {
           "type": "string",
-          "description": "Bu modun veya ikincil gücün kısa mekanik açıklaması."
+          "description": "Concise mechanical description of this sub-mode or secondary power."
         },
         "damageParts": {
           "type": "array",
@@ -159,21 +159,21 @@
           "type": "integer",
           "enum": [2],
           "default": 2,
-          "description": "Kanonik V2 şema sürümü (her zaman 2)."
+          "description": "Canonical V2 schema version (always 2)."
         },
         "id": {
           "type": "string",
-          "description": "Değişmez benzersiz slug kimliği (örn: 'item_ring_of_protection_2', 'spell_searing_light', 'feat_power_attack').",
+          "description": "Immutable unique slug identifier (e.g. 'item_ring_of_protection_2', 'spell_searing_light', 'feat_power_attack').",
           "example": "item_ring_of_protection_2"
         },
         "baseItemId": {
           "type": ["string", "null"],
           "default": null,
-          "description": "Bileşik silah veya zırhlar için temel SRD eşya kimliği (örn: 'wpn_longsword', 'arm_mithral_shirt')."
+          "description": "Base SRD item ID for composite weapons or armors (e.g. 'wpn_longsword', 'arm_mithral_shirt')."
         },
         "name": {
           "type": "string",
-          "description": "Varlığın resmi D&D 3.5e adı. Alt güçler ayrı satır olarak değil, bu varlığın 'modes' dizisi içinde tanımlanır.",
+          "description": "Official D&D 3.5e English name of the entity. Sub-powers must be embedded inside 'modes', never as separate rows.",
           "example": "Ring of Protection +2"
         },
         "type": {
@@ -181,6 +181,7 @@
           "enum": [
             "Feat",
             "Spell",
+            "Power",
             "Weapon",
             "Armor",
             "Shield",
@@ -190,13 +191,16 @@
             "Scroll",
             "Wand",
             "Consumable",
+            "Augment Crystal",
             "Maneuver",
             "Stance",
             "Race",
             "Deity",
-            "Domain"
+            "Domain",
+            "Template",
+            "Class"
           ],
-          "description": "Varlığın kural kategorisi."
+          "description": "Primary rule category of the entity."
         },
         "slot": {
           "type": "string",
@@ -220,7 +224,7 @@
             "Belt"
           ],
           "default": "None",
-          "description": "Eşyanın vücut yuvası (Slot). Feat, büyü veya ırklar için 'None'."
+          "description": "Equipment body slot ('None' for Feats, Spells, Races, Deities, Domains, Templates, and Classes)."
         },
         "role": {
           "type": "string",
@@ -235,71 +239,97 @@
             "Tactical / Boost"
           ],
           "default": "General",
-          "description": "Arayüzde kartın aksiyon rolü."
+          "description": "Tactical UI role of the card."
         },
         "source": {
           "type": "string",
-          "description": "Resmi D&D 3.5e kitap adı ve sayfa numarası.",
+          "description": "Official D&D 3.5e sourcebook name and page number.",
           "example": "Dungeon Master's Guide v.3.5, p. 232"
         },
         "benefit": {
           "type": "string",
-          "description": "Mekanik özet ve temel kural faydası."
+          "description": "Concise mechanical summary and rule benefit in English."
         },
         "description": {
           "type": "string",
-          "description": "Resmi kural kitabındaki tam metin."
+          "description": "Full official D&D 3.5e RAW rulebook text in English."
         },
         "prereq": {
           "type": "string",
           "default": "-",
-          "description": "Feat veya manevra için resmi 3.5e önkoşulları (Pre-requisites)."
+          "description": "Official D&D 3.5e prerequisites for Feats, Maneuvers, or Prestige Classes."
         },
         "action": {
           "type": "string",
           "default": "Passive",
-          "description": "Aksiyon maliyeti (Standard Action, Move Action, Swift Action, Immediate Action, Free Action, Full-Round Action, Passive)."
+          "description": "Action economy cost (Standard Action, Move Action, Swift Action, Immediate Action, Free Action, Full-Round Action, Passive)."
         },
         "actionType": {
           "type": "string",
           "enum": ["passive", "standard", "move", "swift", "immediate", "full_round", "free"],
           "default": "passive",
-          "description": "Kural motoru için normalleştirilmiş aksiyon tipi anahtarı."
+          "description": "Normalized action type key for RuleEngine."
         },
         "duration": {
           "type": "string",
           "default": "Continuous",
-          "description": "Etki süresi (Instantaneous, 1 round/level, 10 min./level, 24 hours, Continuous)."
+          "description": "Effect duration (Instantaneous, 1 round/level, 10 min./level, 24 hours, Continuous)."
         },
         "cost": {
           "type": "number",
           "default": 0,
-          "description": "Altın (gp) cinsinden piyasa değeri."
+          "description": "Market price in gold pieces (gp)."
         },
         "weight": {
           "type": "number",
           "default": 0,
-          "description": "Pound (lb) cinsinden ağırlık."
+          "description": "Weight in pounds (lb)."
         },
         "material": {
           "type": ["string", "null"],
           "default": null,
-          "description": "Özel materyal kimliği (örn: 'mat_mithral', 'mat_adamantine', 'mat_cold_iron', 'mat_alchemical_silver' veya null)."
+          "description": "Special material identifier (e.g. 'mat_mithral', 'mat_adamantine', 'mat_cold_iron', 'mat_alchemical_silver', or null)."
         },
         "enhancementBonus": {
           "type": "integer",
           "default": 0,
-          "description": "Silah veya zırhın temel büyüsel geliştirme bonusu (+1..+5)."
+          "description": "Base magical enhancement bonus (+1 to +5) for weapons, armor, or shields."
         },
         "enhancements": {
           "type": "array",
           "items": { "type": "string" },
           "default": [],
-          "description": "Silah veya zırha eklenen özel yetenek kimlikleri (örn: ['enh_keen', 'enh_flaming'])."
+          "description": "Special ability identifiers applied to a weapon or armor (e.g. ['enh_keen', 'enh_flaming'])."
+        },
+        "requiresEnergyChoice": {
+          "type": "boolean",
+          "default": false,
+          "description": "True if the spell or buff requires selecting an energy type on activation (e.g. Resist Energy, Protection from Energy)."
+        },
+        "dailyCharges": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Daily charge pool for MIC/DMG charged magic items (e.g. Belt of Battle).",
+          "properties": {
+            "max": { "type": "integer", "default": 3 },
+            "recharge": { "type": "string", "default": "dawn" }
+          }
+        },
+        "crystalTier": {
+          "type": ["string", "null"],
+          "enum": ["Least", "Lesser", "Greater", null],
+          "default": null,
+          "description": "MIC Augment Crystal tier."
+        },
+        "crystalSlot": {
+          "type": ["string", "null"],
+          "enum": ["Weapon", "Armor", "Shield", null],
+          "default": null,
+          "description": "MIC Augment Crystal attachment target."
         },
         "modifiers": {
           "type": "array",
-          "description": "Varlığın sağladığı tüm sayısal veya formül tabanlı stat/zar etkileri.",
+          "description": "All numeric or formula-based stat and roll modifiers granted by this entry.",
           "items": {
             "$ref": "#/definitions/ModifierEntryV2"
           },
@@ -307,7 +337,7 @@
         },
         "damageParts": {
           "type": "array",
-          "description": "Silah, büyü veya manevranın yapısal hasar zarları dizisi.",
+          "description": "Structured damage dice parts for weapons, spells, maneuvers, or crystals.",
           "items": {
             "$ref": "#/definitions/DamagePartEntryV2"
           },
@@ -315,16 +345,46 @@
         },
         "modes": {
           "type": "array",
-          "description": "Büyü, silah veya eşyanın gömülü alt modları / koşullu varyantları / ikincil güçleri.",
+          "description": "Embedded sub-modes, conditional variants, or secondary powers of the spell, weapon, or item.",
           "items": {
             "$ref": "#/definitions/ModeEntryV2"
           },
           "default": []
         },
+        "weaponMeta": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Canonical V2 weapon metadata required for Weapon entries and proficiency checks.",
+          "properties": {
+            "proficiency": { "type": "string", "enum": ["Simple", "Martial", "Exotic"] },
+            "handedness": { "type": "string", "enum": ["Unarmed", "Light", "One-Handed", "Two-Handed", "Ranged"] },
+            "damageDice": { "type": "string", "example": "1d8" },
+            "critMin": { "type": "integer", "default": 20 },
+            "critMult": { "type": "integer", "default": 2 },
+            "damageType": { "type": "string", "example": "Slashing" },
+            "rangeIncrement": { "type": "number", "default": 0 },
+            "isDoubleWeapon": { "type": "boolean", "default": false },
+            "isFinessable": { "type": "boolean", "default": false }
+          }
+        },
+        "armorMeta": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Canonical V2 armor/shield metadata required for Armor or Shield entries and proficiency checks.",
+          "properties": {
+            "category": { "type": "string", "enum": ["Light", "Medium", "Heavy", "Shield"] },
+            "armorBonus": { "type": "integer", "default": 0 },
+            "maxDex": { "type": ["integer", "null"], "default": null },
+            "acp": { "type": "integer", "default": 0 },
+            "asf": { "type": "integer", "default": 0 },
+            "speed30": { "type": "integer", "default": 30 },
+            "speed20": { "type": "integer", "default": 20 }
+          }
+        },
         "weaponStats": {
           "type": ["object", "null"],
           "default": null,
-          "description": "Yalnızca Weapon kategorisi için yapısal silah nitelikleri.",
+          "description": "Structured weapon attributes for Weapon category entries.",
           "properties": {
             "category": { "type": "string", "enum": ["Simple", "Martial", "Exotic"] },
             "handedness": { "type": "string", "enum": ["Unarmed", "Light", "One-Handed", "Two-Handed", "Ranged"] },
@@ -340,7 +400,7 @@
         "armorStats": {
           "type": ["object", "null"],
           "default": null,
-          "description": "Yalnızca Armor veya Shield kategorisi için yapısal zırh nitelikleri.",
+          "description": "Structured armor attributes for Armor or Shield category entries.",
           "properties": {
             "category": { "type": "string", "enum": ["Light", "Medium", "Heavy", "Shield"] },
             "baseAc": { "type": "integer", "default": 0 },
@@ -354,7 +414,7 @@
         "spellStats": {
           "type": ["object", "null"],
           "default": null,
-          "description": "Yalnızca Spell veya Maneuver kategorisi için yapısal büyü/manevra nitelikleri.",
+          "description": "Structured spell or maneuver attributes.",
           "properties": {
             "school": { "type": "string" },
             "discipline": { "type": "string" },
@@ -370,46 +430,66 @@
         },
         "range": {
           "type": "string",
-          "description": "Menzil (Personal, Touch, Close [25 ft. + 5 ft./2 levels], Medium [100 ft. + 10 ft./level], Long [400 ft. + 40 ft./level])."
+          "description": "Spell, maneuver, or weapon range (Personal, Touch, Close [25 ft. + 5 ft./2 levels], Medium [100 ft. + 10 ft./level], Long [400 ft. + 40 ft./level])."
         },
         "school": {
           "type": "string",
-          "description": "Büyü okulu (Abjuration, Conjuration, Divination, Enchantment, Evocation, Illusion, Necromancy, Transmutation, Universal)."
+          "description": "Spell school (Abjuration, Conjuration, Divination, Enchantment, Evocation, Illusion, Necromancy, Transmutation, Universal)."
         },
         "level": {
           "type": ["integer", "string"],
-          "description": "Büyü veya manevra seviyesi (0-9)."
+          "description": "Spell, power, or maneuver level (0-9)."
         },
         "discipline": {
           "type": "string",
-          "description": "Tome of Battle disiplini."
+          "description": "Tome of Battle Sublime Way discipline."
         },
         "isFighterBonusFeat": {
           "type": "boolean",
           "default": false,
-          "description": "Savaşçı (Fighter) bonus hüneri olarak seçilip seçilemeyeceği (PHB Tablo 5-1)."
+          "description": "Whether this feat can be selected as a Fighter bonus feat (PHB Table 5-1)."
         },
         "featType": {
           "type": "string",
-          "enum": ["General", "Item Creation", "Metamagic", "Special", "Tactical", "Fighter"],
+          "enum": ["General", "Item Creation", "Metamagic", "Special", "Tactical", "Fighter", "Divine", "Reserve", "Psionic", "Epic"],
           "default": "General"
         },
         "ruleFlags": {
           "type": "object",
           "default": {},
-          "description": "Kural motoru deklaratif bayrakları (örn: {'ignoresHardness': true, 'touchAttack': true, 'keen': true, 'hasteExtraAttack': true})."
+          "description": "Declarative RuleEngine flags (e.g. {'ignoresHardness': true, 'touchAttack': true, 'keen': true, 'hasteExtraAttack': true})."
         },
         "tacticalBadges": {
           "type": "array",
           "items": { "type": "string" },
           "default": [],
-          "description": "Arayüzde gösterilecek pasif/durumsal taktiksel rozetler (örn: ['Bypass DR/Hardness', 'Ranged Touch', 'Fortification 25%'])."
+          "description": "Passive or situational tactical badges rendered on UI cards (e.g. ['Bypass DR/Hardness', 'Ranged Touch', 'Fortification 25%'])."
         },
         "tags": {
           "type": "array",
           "items": { "type": "string" },
           "default": [],
-          "description": "Katalog ve arama filtreleme etiketleri."
+          "description": "Search and catalog filter tags."
+        },
+        "size": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Creature size category for Race entries (Fine, Diminutive, Tiny, Small, Medium, Large, Huge, Gargantuan, Colossal)."
+        },
+        "baseSpeed": {
+          "type": ["number", "null"],
+          "default": null,
+          "description": "Base land speed in feet for Race entries."
+        },
+        "vision": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Racial vision trait (Normal, Low-Light Vision, Darkvision 60 ft., Darkvision 120 ft.)."
+        },
+        "favoredClass": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Favored class for Race entries (e.g. 'Any', 'Fighter', 'Wizard')."
         },
         "traits": {
           "type": "array",
@@ -422,16 +502,55 @@
             }
           }
         },
+        "alignment": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Deity alignment code (LG, NG, CG, LN, N, CN, LE, NE, CE)."
+        },
+        "favoredWeapon": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Deity favored weapon name."
+        },
         "domains": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "description": "Cleric domains granted by a Deity."
+        },
+        "grantedPower": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Official granted power text for a Cleric Domain."
+        },
+        "domainSpells": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["level", "name"],
+            "properties": {
+              "level": { "type": "integer" },
+              "id": { "type": "string" },
+              "name": { "type": "string" }
+            }
+          },
+          "description": "Levels 1-9 spell list for a Cleric Domain."
+        },
+        "levelAdjustment": {
+          "type": ["integer", "null"],
+          "default": null,
+          "description": "Level Adjustment (LA) for Race or Template entries."
+        },
+        "crAdjustment": {
+          "type": ["integer", "null"],
+          "default": null,
+          "description": "Challenge Rating (CR) adjustment for Template entries."
         }
       }
     }
   },
   "canonicalExamples": [
     {
-      "category": "Magic Item / Ring (Kanonik V2 Yüzük Örneği)",
+      "category": "Magic Item / Ring (Canonical V2 Ring Example)",
       "payload": {
         "entries": [
           {
@@ -467,7 +586,7 @@
       }
     },
     {
-      "category": "Spell with Embedded Modes (Gömülü Modlu Kanonik V2 Büyü Örneği)",
+      "category": "Spell with Embedded Modes (Canonical V2 Spell Example)",
       "payload": {
         "entries": [
           {
@@ -559,7 +678,7 @@
       }
     },
     {
-      "category": "Weapon (Kanonik V2 Bileşik Silah Örneği)",
+      "category": "Weapon (Canonical V2 Composite Weapon Example)",
       "payload": {
         "entries": [
           {
@@ -641,6 +760,17 @@
                 "modifiers": []
               }
             ],
+            "weaponMeta": {
+              "proficiency": "Martial",
+              "handedness": "One-Handed",
+              "damageDice": "1d8",
+              "critMin": 19,
+              "critMult": 2,
+              "damageType": "Slashing",
+              "rangeIncrement": 0,
+              "isDoubleWeapon": false,
+              "isFinessable": false
+            },
             "weaponStats": {
               "category": "Martial",
               "handedness": "One-Handed",
