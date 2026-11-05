@@ -288,7 +288,7 @@ const RuleEngine = {
 
     const clean = rawName.toLowerCase();
     if (!clean) return null;
-    const db = (typeof window !== 'undefined' && (window.masterDb || window.MASTER_DB_DATA || window.BUNDLED_MASTER_DB)) || (typeof masterDb !== 'undefined' ? masterDb : []);
+    const db = (typeof window !== 'undefined' && window.masterDb) || (typeof masterDb !== 'undefined' ? masterDb : []);
     let found = Array.isArray(db) && db.length > 0
       ? db.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean)))
       : null;
@@ -4840,7 +4840,7 @@ const RuleEngine = {
     const isMerged = character?.settings?.mergeSkills !== false;
     if (isMerged) {
       let mapping = null;
-      const masterList = (typeof window !== 'undefined' && (window.masterDb || window.BUNDLED_MASTER_DB)) || [];
+      const masterList = (typeof window !== 'undefined' && window.masterDb) || [];
       if (Array.isArray(masterList)) {
         const ruleObj = masterList.find(m => m && (m.name || '').toLowerCase().includes('skilleri birleştir') || (m.name || '').toLowerCase().includes('skill consolidation'));
         if (ruleObj && ruleObj.skillMapping && typeof ruleObj.skillMapping === 'object') {

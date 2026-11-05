@@ -7073,7 +7073,7 @@
         });
 
         if (newEntriesAdded > 0) {
-          localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+          saveStateToStorage();
           if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.renderTable === 'function') {
             RuleMaster.renderTable();
           }
@@ -7354,7 +7354,7 @@
       }
 
       if (dbAdded > 0) {
-        localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+        saveStateToStorage();
         if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.renderTable === 'function') {
           RuleMaster.renderTable();
         }

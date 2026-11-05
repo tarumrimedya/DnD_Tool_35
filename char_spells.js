@@ -4707,7 +4707,7 @@
 
       function renderSpellRow(s, originalIdx, lvl) {
         const dc = getSpellDc(s.level !== undefined ? s.level : lvl);
-        const spellCl = getSpellEffectiveCl(s, cl);
+        const spellCl = getSpellEffectiveCl(s, spontCl);
         const dmgExpr = resolveSpellEffectiveFormula(s, spellCl);
         const slotObj = (character?.spellcasting?.slots || []).find(sl => Number(sl.level) === lvl);
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
@@ -6209,7 +6209,7 @@
           }
         });
 
-        localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+        saveStateToStorage();
         renderSpellPickerResults();
         showDiceTopToast({
           icon: '✨',

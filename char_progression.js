@@ -3438,7 +3438,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 benefit: featBenefit,
                 description: featBenefit
               });
-              localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
+              saveStateToStorage();
             }
           }
 

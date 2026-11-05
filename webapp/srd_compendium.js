@@ -445,23 +445,10 @@
     },
 
     /**
-     * Reads the user's dynamic Master DB (`master_db.json` / `localStorage`) and ensures V2 shape.
+     * Returns the active character's customDb (`window.masterDb` per ADR-011).
      */
     getMasterDb() {
-      try {
-        if (global.RuleMaster && typeof global.RuleMaster.getDatabase === 'function') {
-          const db = global.RuleMaster.getDatabase();
-          if (Array.isArray(db)) return db;
-        }
-        const raw = typeof localStorage !== 'undefined' ? localStorage.getItem('dnd35_master_db') : null;
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) return parsed;
-        }
-      } catch (_) {
-        // Ignore parse error
-      }
-      return [];
+      return Array.isArray(global.masterDb) ? global.masterDb : [];
     },
 
     /**

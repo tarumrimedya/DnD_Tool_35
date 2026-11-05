@@ -6,21 +6,21 @@
   <title>D&D 3.5e Character & Campaign Command Center (Hub)</title>
   <link rel="stylesheet" href="tailwind_compiled.css?v=20261104_2019">
   <script src="bundled_monsters.js"></script>
-  <script src="srd_compendium.js?v=20261102_2322"></script>
-  <script src="rule_engine.js?v=20261102_2322"></script>
-  <script src="rule_master.js?v=20261030_0103"></script>
-  <script src="ui_shared.js?v=20261101_2318"></script>
-  <script src="gdrive_sync.js?v=20261023_16"></script>
+  <script src="srd_compendium.js?v=20261105_2355"></script>
+  <script src="rule_engine.js?v=20261105_2355"></script>
+  <script src="rule_master.js?v=20261105_2355"></script>
+  <script src="ui_shared.js?v=20261105_2355"></script>
+  <script src="gdrive_sync.js?v=20261105_2355"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js?v=20261025_01"></script>
   <!-- Prefetch Character Sheet & Domain Modules during Hub Idle Time -->
   <link rel="prefetch" href="index.html">
-  <link rel="prefetch" href="char_modals.js?v=20261102_2342">
-  <link rel="prefetch" href="char_hud.js?v=20261102_2322">
-  <link rel="prefetch" href="char_combat.js?v=20261102_2322">
-  <link rel="prefetch" href="char_spells.js?v=20261102_2322">
-  <link rel="prefetch" href="char_progression.js?v=20261102_2322">
-  <link rel="prefetch" href="char_inventory.js?v=20261102_2322">
+  <link rel="prefetch" href="char_modals.js?v=20261105_2355">
+  <link rel="prefetch" href="char_hud.js?v=20261105_2355">
+  <link rel="prefetch" href="char_combat.js?v=20261105_2355">
+  <link rel="prefetch" href="char_spells.js?v=20261105_2355">
+  <link rel="prefetch" href="char_progression.js?v=20261105_2355">
+  <link rel="prefetch" href="char_inventory.js?v=20261105_2355">
   <!-- Three.js & 3D Dice Roller Engine -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -28,7 +28,7 @@
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="dice3d.js?v=20261025_2338"></script>
   <script src="hub_dice.js"></script>
-  <script src="hub_notes.js?v=20261029_2348"></script>
+  <script src="hub_notes.js?v=20261105_2355"></script>
   <style>
     body {
       font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -1249,17 +1249,8 @@
 
       if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.recalculateCharacter === 'function') {
         try {
-          let masterDb = window.MASTER_DB_DATA;
-          if (!Array.isArray(masterDb) || masterDb.length === 0) {
-            try {
-              const raw = localStorage.getItem('dnd35_master_db');
-              if (raw) masterDb = JSON.parse(raw);
-            } catch (e) {}
-          }
-          if (!Array.isArray(masterDb) || masterDb.length === 0) {
-            masterDb = window.BUNDLED_MASTER_DB || [];
-          }
-          RuleEngine.recalculateCharacter(data, masterDb);
+          const customDb = Array.isArray(data.customDb) ? data.customDb : [];
+          RuleEngine.recalculateCharacter(data, customDb);
         } catch (e) {
           console.warn('RuleEngine recalculate error for ' + c.name, e);
         }
@@ -3421,16 +3412,9 @@ CRITICAL RULES:
     }
 
     function syncMonsterToMasterDb(monster) {
+      const masterDb = [];
       try {
         normalizeMonsterData(monster);
-        let masterDb = [];
-        const raw = localStorage.getItem('dnd35_master_db');
-        if (raw) {
-          try { masterDb = JSON.parse(raw); } catch (e) {}
-        }
-        if (!Array.isArray(masterDb) || masterDb.length === 0) {
-          masterDb = (window.MASTER_DB || []).slice();
-        }
 
         const addOrUpdate = (entry) => {
           if (!entry || !entry.name) return;
@@ -3508,20 +3492,16 @@ CRITICAL RULES:
             source: s.source || 'Spell-Like Ability'
           });
         });
-
-        localStorage.setItem('dnd35_master_db', JSON.stringify(masterDb));
-        if (window.RuleMaster && Array.isArray(window.RuleMaster.masterDb)) {
-          window.RuleMaster.masterDb = masterDb;
-        }
       } catch (err) {
-        console.warn('Could not sync monster to master_db:', err);
+        console.warn('Could not build monster customDb entries:', err);
       }
+      return masterDb;
     }
 
     function convertMonsterToCharacter(monster, customName, campaignId) {
-      // 1. Normalize monster and sync every weapon, feat, ability, and spell into Master DB
+      // 1. Normalize monster and build character-scoped customDb entries (ADR-011)
       normalizeMonsterData(monster);
-      syncMonsterToMasterDb(monster);
+      const monsterCustomDb = syncMonsterToMasterDb(monster);
 
       const charId = 'char_' + Date.now();
       const name = customName || monster.name;
@@ -3712,6 +3692,7 @@ CRITICAL RULES:
         notes: `[CR ${monster.cr}] ${monster.size} ${monster.type}\nHit Dice: ${monster.hitDice}\n\n${String(monster.description || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}`,
         smartNotes: [],
         notesList: [],
+        customDb: monsterCustomDb,
         settings: {
           pinDrawerLimit: 5
         }
@@ -4853,24 +4834,19 @@ CRITICAL RULES:
               color: 'amber'
             });
           } else {
-            // Save custom/assembled item to Master DB so any character in the campaign can equip it
+            // Save custom/assembled item into campaign characters' customDb (ADR-011)
             try {
-              const raw = localStorage.getItem('dnd35_master_db');
-              const db = raw ? JSON.parse(raw) : [];
               const v2Entry = (window.RuleMaster && typeof window.RuleMaster.normalizeEntry === 'function')
                 ? window.RuleMaster.normalizeEntry(entry)
                 : entry;
-              if (!db.some(m => m && (m.id === v2Entry.id || (m.name || '').toLowerCase() === (v2Entry.name || '').toLowerCase()))) {
-                db.push(v2Entry);
-                localStorage.setItem('dnd35_master_db', JSON.stringify(db));
-              }
+              mergeEntriesIntoHubCharacters([v2Entry], preferredCampaignId);
               showHubDiceToast({
-                title: '⚒️ Campaign Master DB Updated',
-                text: `"${v2Entry.name}" added to the campaign library!`,
+                title: '⚒️ Custom DB Updated',
+                text: `"${v2Entry.name}" added to campaign character custom databases!`,
                 color: 'indigo'
               });
             } catch (e) {
-              console.warn('Hub Master DB add warning:', e);
+              console.warn('Hub Custom DB add warning:', e);
             }
           }
         }
@@ -6022,9 +5998,74 @@ CRITICAL RULES:
       a.remove();
     }
 
+    function mergeEntriesIntoHubCharacters(entries, campaignId = null) {
+      if (!Array.isArray(entries) || entries.length === 0) return 0;
+      const targetCamp = campaignId || ((state.activeCampaignId && state.activeCampaignId !== 'all' && state.activeCampaignId !== 'unassigned')
+        ? state.activeCampaignId
+        : null);
+      let targets = Array.isArray(state.characters) ? state.characters : [];
+      if (targetCamp) {
+        const filtered = targets.filter(c => c && c.campaignId === targetCamp);
+        if (filtered.length > 0) targets = filtered;
+      }
+      let addedCount = 0;
+      targets.forEach(c => {
+        if (!c) return;
+        const data = c.fullData || c;
+        if (!Array.isArray(data.customDb)) data.customDb = [];
+        entries.forEach(rawEntry => {
+          if (!rawEntry || !rawEntry.name) return;
+          const cleanName = String(rawEntry.name).toLowerCase().trim();
+          const exIdx = data.customDb.findIndex(m => m && ((rawEntry.id && m.id === rawEntry.id) || String(m.name || '').toLowerCase().trim() === cleanName));
+          if (exIdx >= 0) {
+            data.customDb[exIdx] = { ...data.customDb[exIdx], ...JSON.parse(JSON.stringify(rawEntry)) };
+          } else {
+            data.customDb.push(JSON.parse(JSON.stringify(rawEntry)));
+            addedCount++;
+          }
+        });
+      });
+      try {
+        const activeRaw = localStorage.getItem('dnd35_character');
+        if (activeRaw) {
+          const activeChar = JSON.parse(activeRaw);
+          if (activeChar && typeof activeChar === 'object') {
+            if (!Array.isArray(activeChar.customDb)) activeChar.customDb = [];
+            entries.forEach(rawEntry => {
+              if (!rawEntry || !rawEntry.name) return;
+              const cleanName = String(rawEntry.name).toLowerCase().trim();
+              const exIdx = activeChar.customDb.findIndex(m => m && ((rawEntry.id && m.id === rawEntry.id) || String(m.name || '').toLowerCase().trim() === cleanName));
+              if (exIdx >= 0) {
+                activeChar.customDb[exIdx] = { ...activeChar.customDb[exIdx], ...JSON.parse(JSON.stringify(rawEntry)) };
+              } else {
+                activeChar.customDb.push(JSON.parse(JSON.stringify(rawEntry)));
+              }
+            });
+            localStorage.setItem('dnd35_character', JSON.stringify(activeChar));
+          }
+        }
+      } catch (e) {}
+      saveHubStorage();
+      return addedCount;
+    }
+
     function exportMasterDbJson() {
-      const raw = localStorage.getItem('dnd35_master_db') || JSON.stringify(window.BUNDLED_MASTER_DB || []);
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(raw);
+      const seen = new Set();
+      const combined = [];
+      (Array.isArray(state.characters) ? state.characters : []).forEach(c => {
+        const db = (c && c.fullData && Array.isArray(c.fullData.customDb))
+          ? c.fullData.customDb
+          : (c && Array.isArray(c.customDb) ? c.customDb : []);
+        db.forEach(entry => {
+          if (!entry || !entry.name) return;
+          const k = entry.id || String(entry.name).toLowerCase().trim();
+          if (!seen.has(k)) {
+            seen.add(k);
+            combined.push(entry);
+          }
+        });
+      });
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(combined, null, 2));
       const a = document.createElement('a');
       a.href = dataStr;
       a.download = `dnd35_master_db_${new Date().toISOString().slice(0, 10)}.json`;
@@ -6064,8 +6105,9 @@ CRITICAL RULES:
             alert(`✅ Character "${parsed.name}" imported successfully!`);
           } else if (Array.isArray(parsed)) {
             if (parsed.length > 0 && parsed[0].benefit !== undefined) {
-              localStorage.setItem('dnd35_master_db', JSON.stringify(parsed));
-              alert(`✅ Master DB library updated (${parsed.length} entries)!`);
+              mergeEntriesIntoHubCharacters(parsed);
+              renderHub();
+              alert(`✅ Custom DB library merged into characters (${parsed.length} entries)!`);
             } else {
               parsed.forEach(c => {
                 if (c && c.id && !state.characters.some(it => it.id === c.id)) {

@@ -488,8 +488,8 @@ const CloudSync = {
       }
     }
 
-    // 2. Bind Master DB strictly to active character's customDb (Character-Scoped DB)
-    if (typeof character !== 'undefined' && character) {
+    // 2. Bind Master DB strictly to active character's customDb ONLY when remote changes were applied
+    if (applied && typeof character !== 'undefined' && character) {
       if (!Array.isArray(character.customDb)) {
         character.customDb = [];
       }
@@ -504,7 +504,6 @@ const CloudSync = {
       if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
         try { RuleMaster.renderTable(); } catch (e) { console.warn('RuleMaster.renderTable error:', e); }
       }
-      applied = true;
     }
 
     if (applied && typeof renderAll === 'function') {

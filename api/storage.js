@@ -104,11 +104,6 @@ module.exports = async function handler(req, res) {
   const hasKv = Boolean(kvUrl && kvToken);
   const clientPin = safeDecodePin(req.headers['x-app-pin'] || (req.query && req.query.pin) || '');
 
-  // Detect any storage-related env key names for diagnostics (never expose values)
-  const detectedStorageEnvKeys = Object.keys(process.env || {}).filter(k =>
-    /KV|REDIS|UPSTASH|BLOB|STORAGE|POSTGRES|DATABASE|APP_PIN/i.test(k)
-  );
-
   // Resolve active PIN: 1) Env var APP_PIN if defined, 2) Otherwise check Upstash KV `dnd35_vault_pin_v1`
   let activePin = safeDecodePin(process.env.APP_PIN || process.env.APP_PASSWORD || '');
   let pinSource = activePin ? 'env' : 'none';
@@ -142,8 +137,7 @@ module.exports = async function handler(req, res) {
       provider: hasKv ? 'vercel-upstash-kv' : 'unconfigured',
       pinRequired,
       pinSource,
-      authenticated,
-      detectedStorageEnvKeys
+      authenticated
     });
   }
 
@@ -154,12 +148,21 @@ module.exports = async function handler(req, res) {
       configured: false,
       pinRequired,
       authenticated,
-      detectedStorageEnvKeys,
       error: 'Vercel veritabanı henüz bağlanmamış veya veritabanı bağlandıktan sonra Redeploy yapılmamış.'
     });
   }
 
-  // 3. Set or Update Personal PIN directly from the Web App Settings Modal (POST /api/storage?action=setPin)
+  // 3. Enforce Personal PIN / Password Protection before any read or write (including setPin when a PIN already exists)
+  if (pinRequired && !authenticated) {
+    return res.status(401).json({
+      ok: false,
+      pinRequired: true,
+      authenticated: false,
+      error: 'Bu uygulama özeldir. Erişim için geçerli Uygulama Şifresi (APP_PIN) gereklidir.'
+    });
+  }
+
+  // 4. Set or Update Personal PIN directly from the Web App Settings Modal (POST /api/storage?action=setPin)
   if (req.method === 'POST' && req.query && req.query.action === 'setPin') {
     if (pinSource === 'env') {
       return res.status(400).json({
@@ -187,16 +190,6 @@ module.exports = async function handler(req, res) {
     } catch (err) {
       return res.status(500).json({ ok: false, error: err.message });
     }
-  }
-
-  // 4. Enforce Personal PIN / Password Protection
-  if (pinRequired && !authenticated) {
-    return res.status(401).json({
-      ok: false,
-      pinRequired: true,
-      authenticated: false,
-      error: 'Bu uygulama özeldir. Erişim için geçerli Uygulama Şifresi (APP_PIN) gereklidir.'
-    });
   }
 
   try {
@@ -261,7 +254,10 @@ module.exports = async function handler(req, res) {
         version: 2,
         lastModified: body.lastModified || new Date().toISOString(),
         character: body.character || null,
-        masterDb: Array.isArray(body.masterDb) ? body.masterDb : null
+        masterDb: Array.isArray(body.masterDb) ? body.masterDb : null,
+        hubDb: (body.hubDb && typeof body.hubDb === 'object') ? body.hubDb : null,
+        latestDmEvent: (body.latestDmEvent && typeof body.latestDmEvent === 'object') ? body.latestDmEvent : null,
+        tombstones: Array.isArray(body.tombstones) ? body.tombstones : []
       };
 
       await kvSet(kvUrl, kvToken, STORAGE_KEY, JSON.stringify(payloadToStore));

@@ -930,14 +930,28 @@
       }
 
       // 2. Load Character-Scoped Custom DB (character.customDb <-> masterDb)
-      try {
-        localStorage.removeItem('dnd35_master_db');
-      } catch (e) {}
-
       if (character) {
         if (!Array.isArray(character.customDb)) {
           character.customDb = [];
         }
+        try {
+          const legacyRaw = localStorage.getItem('dnd35_master_db');
+          if (legacyRaw) {
+            const legacyParsed = JSON.parse(legacyRaw);
+            if (Array.isArray(legacyParsed) && legacyParsed.length > 0) {
+              const existingKeys = new Set(character.customDb.map(m => m && (m.id || (m.name || '').toLowerCase().trim())).filter(Boolean));
+              legacyParsed.forEach(item => {
+                if (!item || typeof item !== 'object' || !item.name) return;
+                const k = item.id || item.name.toLowerCase().trim();
+                if (!existingKeys.has(k)) {
+                  existingKeys.add(k);
+                  character.customDb.push(item);
+                }
+              });
+            }
+          }
+          localStorage.removeItem('dnd35_master_db');
+        } catch (e) {}
         try {
           let rawList = character.customDb.filter(m => m && typeof m === 'object' && m.name);
           rawList = rawList.map(item => {
@@ -2086,9 +2100,18 @@
     }
     window.renderTabIfNeeded = renderTabIfNeeded;
 
+    function scrollMobileTabIntoView(tabId) {
+      const target = document.getElementById(tabId);
+      if (!target || !window.matchMedia('(max-width: 767px)').matches) return;
+      const tabTop = Math.max(0, Math.round(target.getBoundingClientRect().top + window.scrollY - 8));
+      const savedY = parseInt(localStorage.getItem('dnd35_scroll_' + tabId), 10) || 0;
+      window.scrollTo({ top: Math.max(tabTop, savedY), left: 0, behavior: 'instant' });
+    }
+
     function switchTab(tabId, isRestoration = false) {
+      let prevTab = null;
       try {
-        const prevTab = localStorage.getItem('dnd35_active_tab') || 'tab-combat';
+        prevTab = localStorage.getItem('dnd35_active_tab') || 'tab-combat';
         if (!isRestoration && prevTab && prevTab !== tabId) {
           const curY = window.scrollY || document.documentElement.scrollTop || 0;
           localStorage.setItem('dnd35_scroll_' + prevTab, curY);
@@ -2125,6 +2148,8 @@
 
       // Render target tab immediately if marked dirty
       renderTabIfNeeded(tabId, false);
+
+      if (!isRestoration && prevTab !== tabId) scrollMobileTabIntoView(tabId);
     }
 
     function restoreActiveTabAndScroll() {
