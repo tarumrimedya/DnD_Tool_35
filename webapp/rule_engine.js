@@ -423,14 +423,16 @@ const RuleEngine = {
     if (!name || name === 'yok' || name === '-' || name === 'none' || name === 'boş') return false;
 
     if (typeof weapon === 'object') {
-      if (weapon.proficiency === 'Exotic' || weapon.category === 'Exotic' || (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'exotic'))) {
+      const wProf = weapon.proficiency || weapon.weaponMeta?.proficiency || weapon.category;
+      if (wProf === 'Exotic' || (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'exotic'))) {
         return true;
       }
     }
 
     const db = this.getMasterDbEntry(weapon);
     if (db) {
-      if (db.proficiency === 'Exotic' || db.category === 'Exotic' || (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'exotic'))) {
+      const dbProf = db.proficiency || db.weaponMeta?.proficiency || db.category;
+      if (dbProf === 'Exotic' || (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'exotic'))) {
         return true;
       }
     }
@@ -580,14 +582,16 @@ const RuleEngine = {
     if (this.isExoticWeapon(weapon)) return false;
 
     if (typeof weapon === 'object') {
-      if (weapon.proficiency === 'Martial' || weapon.category === 'Martial' || (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'martial')) || (weapon.weaponType && weapon.weaponType.toLowerCase().includes('martial'))) {
+      const wProf = weapon.proficiency || weapon.weaponMeta?.proficiency || weapon.category;
+      if (wProf === 'Martial' || (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'martial')) || (weapon.weaponType && weapon.weaponType.toLowerCase().includes('martial'))) {
         return true;
       }
     }
 
     const db = this.getMasterDbEntry(weapon);
     if (db) {
-      if (db.proficiency === 'Martial' || db.category === 'Martial' || (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'martial')) || (db.weaponType && db.weaponType.toLowerCase().includes('martial'))) {
+      const dbProf = db.proficiency || db.weaponMeta?.proficiency || db.category;
+      if (dbProf === 'Martial' || (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'martial')) || (db.weaponType && db.weaponType.toLowerCase().includes('martial'))) {
         return true;
       }
     }
@@ -612,14 +616,16 @@ const RuleEngine = {
     if (this.isExoticWeapon(weapon) || this.isMartialWeapon(weapon)) return false;
 
     if (typeof weapon === 'object') {
-      if (weapon.proficiency === 'Simple' || weapon.category === 'Simple' || (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'simple')) || (weapon.weaponType && weapon.weaponType.toLowerCase().includes('simple'))) {
+      const wProf = weapon.proficiency || weapon.weaponMeta?.proficiency || weapon.category;
+      if (wProf === 'Simple' || (Array.isArray(weapon.tags) && weapon.tags.some(t => String(t).toLowerCase() === 'simple')) || (weapon.weaponType && weapon.weaponType.toLowerCase().includes('simple'))) {
         return true;
       }
     }
 
     const db = this.getMasterDbEntry(weapon);
     if (db) {
-      if (db.proficiency === 'Simple' || db.category === 'Simple' || (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'simple')) || (db.weaponType && db.weaponType.toLowerCase().includes('simple'))) {
+      const dbProf = db.proficiency || db.weaponMeta?.proficiency || db.category;
+      if (dbProf === 'Simple' || (Array.isArray(db.tags) && db.tags.some(t => String(t).toLowerCase() === 'simple')) || (db.weaponType && db.weaponType.toLowerCase().includes('simple'))) {
         return true;
       }
     }
@@ -841,7 +847,14 @@ const RuleEngine = {
 
     // 2. Check Exotic
     if (this.isExoticWeapon(weapon)) {
-      return Boolean(prof.weapons.exoticAll);
+      if (prof.weapons.exoticAll) return true;
+      // Bastard sword / Dwarven waraxe RAW exception (PHB p. 121): Martial when wielded Two-Handed
+      const isHandAndAHalf = baseWepName.includes('bastard sword') || baseWepName.includes('dwarven waraxe');
+      const gripStr = (typeof weapon === 'object' ? String(weapon.grip || '') : '').toLowerCase();
+      if (isHandAndAHalf && (gripStr.includes('2-hand') || gripStr.includes('two-hand') || gripStr.includes('çift el'))) {
+        if (prof.weapons.martial) return true;
+      }
+      return false;
     }
 
     // 3. Check Martial
@@ -870,7 +883,19 @@ const RuleEngine = {
     if (!name || name === '-' || name === 'none' || name === 'yok' || name === 'boş') return true;
 
     const mods = this.parseItemModifiers(armor, (typeof masterDb !== 'undefined' ? masterDb : []));
-    let cat = (mods && mods.effectiveArmorCategory) || (typeof armor === 'object' ? (armor.effectiveArmorCategory || armor.armorCategory || armor.type) : null);
+    const dbArmor = (typeof armor === 'object' && !armor.armorMeta && !armor.armorCategory) ? this.getMasterDbEntry(armor) : null;
+    const validWeightCats = ['light', 'medium', 'heavy', 'none'];
+    const rawCatCandidates = [
+      mods && mods.effectiveArmorCategory,
+      typeof armor === 'object' ? armor.effectiveArmorCategory : null,
+      typeof armor === 'object' ? armor.armorCategory : null,
+      typeof armor === 'object' ? armor.armorMeta?.category : null,
+      dbArmor ? dbArmor.effectiveArmorCategory : null,
+      dbArmor ? dbArmor.armorCategory : null,
+      dbArmor ? dbArmor.armorMeta?.category : null,
+      typeof armor === 'object' ? armor.type : null
+    ];
+    let cat = rawCatCandidates.find(c => c && validWeightCats.includes(String(c).toLowerCase().trim())) || null;
 
     if (!cat) {
       for (const [key, val] of Object.entries(this.SRD_ARMORS)) {
@@ -881,7 +906,7 @@ const RuleEngine = {
       }
     }
 
-    if (!cat || cat === 'None') return true; // Robes / unarmored
+    if (!cat || String(cat).toLowerCase() === 'none') return true; // Robes / unarmored
 
     const prof = this.getCharacterProficiencies(character, targetLevelIdx);
     const catLower = cat.toLowerCase();

@@ -3502,7 +3502,13 @@
               <div>${def.name}</div>
               ${conflictNotice}
             </td>
-            <td class="py-2.5 px-3 align-middle font-bold ${isOccupied ? 'text-white' : 'text-slate-500 italic'}">${isOccupied ? slotData.name : '(Empty Slot)'}</td>
+            <td class="py-2.5 px-3 align-middle font-bold ${isOccupied ? 'text-white' : 'text-slate-500 italic'}">
+              ${(() => {
+                if (!isOccupied) return '(Empty Slot)';
+                const pw = getEquipmentProficiencyWarning(slotData);
+                return `<div class="flex items-center gap-1.5"><span>${slotData.name}</span>${pw ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${pw.tooltip}">⚠️</span>` : ''}</div>`;
+              })()}
+            </td>
             <td class="py-2.5 px-3 align-middle text-slate-300 text-xs">
               ${isOccupied ? renderGearItemStatsBadgesHtml(slotData, { compact: true }) : ''}
               <div>${slotData.desc || '-'}</div>
@@ -4568,8 +4574,9 @@
                       `;
                     })()}
                   </div>
-                  <div class="text-xs font-bold text-white truncate group-hover:text-amber-300 transition" title="${slotData.name}">
-                    ${slotData.name}
+                  <div class="text-xs font-bold text-white truncate group-hover:text-amber-300 transition flex items-center gap-1" title="${slotData.name}">
+                    <span class="truncate">${slotData.name}</span>
+                    ${(() => { const pw = getEquipmentProficiencyWarning(slotData); return pw ? `<span class="text-rose-400 text-[11px] shrink-0" title="${pw.tooltip}">⚠️</span>` : ''; })()}
                   </div>
                   ${renderGearItemStatsBadgesHtml(slotData, { compact: true, minimal: true })}
                   <div class="text-[9px] sm:text-[10px] text-slate-400 truncate flex items-center gap-2">
@@ -5577,6 +5584,18 @@
         if (!item.material && ref.material) {
           item.material = ref.material;
         }
+        if (!item.proficiency && (ref.proficiency || ref.weaponMeta?.proficiency)) {
+          item.proficiency = ref.proficiency || ref.weaponMeta?.proficiency;
+        }
+        if (!item.weaponMeta && ref.weaponMeta) {
+          item.weaponMeta = JSON.parse(JSON.stringify(ref.weaponMeta));
+        }
+        if (!item.armorMeta && ref.armorMeta) {
+          item.armorMeta = JSON.parse(JSON.stringify(ref.armorMeta));
+        }
+        if (!item.armorCategory && (ref.armorCategory || ref.armorMeta?.category)) {
+          item.armorCategory = ref.armorCategory || ref.armorMeta?.category;
+        }
       }
 
       if (isArmorOrShield) {
@@ -5604,6 +5623,61 @@
       return item;
     }
 
+    function getEquipmentProficiencyWarning(item) {
+      if (!item || typeof item !== 'object' || !item.name || item.name === '-' || typeof RuleEngine === 'undefined' || typeof character === 'undefined' || !character) {
+        return null;
+      }
+      hydrateGearItemStats(item);
+      const cat = (item.category && item.category !== 'Other')
+        ? item.category
+        : (typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(item) : (item.type || 'Other'));
+      const isWeapon = cat === 'Weapon' || item.type === 'Weapon';
+      const isArmor = cat === 'Armor' || item.type === 'Armor';
+      const isShield = cat === 'Shield' || item.type === 'Shield';
+
+      if (isWeapon && typeof RuleEngine.isProficientWithWeapon === 'function') {
+        if (!RuleEngine.isProficientWithWeapon(character, item)) {
+          const isExotic = RuleEngine.isExoticWeapon && RuleEngine.isExoticWeapon(item);
+          const isMartial = !isExotic && RuleEngine.isMartialWeapon && RuleEngine.isMartialWeapon(item);
+          const profType = isExotic ? 'Exotic' : (isMartial ? 'Martial' : 'Simple');
+          return {
+            isNonProficient: true,
+            category: 'Weapon',
+            profType,
+            shortLabel: 'Non-Proficient (-4 Atk)',
+            minimalLabel: 'Non-Prof. (-4 Atk)',
+            tooltip: `Non-Proficient (${profType} Weapon): -4 penalty on attack rolls per D&D 3.5e RAW.`
+          };
+        }
+      } else if (isArmor && typeof RuleEngine.isProficientWithArmor === 'function') {
+        if (!RuleEngine.isProficientWithArmor(character, item)) {
+          const armorCat = item.effectiveArmorCategory || item.armorCategory || item.armorMeta?.category || 'Armor';
+          return {
+            isNonProficient: true,
+            category: 'Armor',
+            profType: armorCat,
+            shortLabel: 'Non-Proficient (ACP to Atk)',
+            minimalLabel: 'Non-Prof. (ACP)',
+            tooltip: `Non-Proficient (${armorCat} Armor): Armor Check Penalty applies to attack rolls and all STR/DEX checks per D&D 3.5e RAW.`
+          };
+        }
+      } else if (isShield && typeof RuleEngine.isProficientWithShield === 'function') {
+        if (!RuleEngine.isProficientWithShield(character, item)) {
+          const isTower = RuleEngine.isTowerShield && RuleEngine.isTowerShield(item);
+          const shieldType = isTower ? 'Tower Shield' : 'Shield';
+          return {
+            isNonProficient: true,
+            category: 'Shield',
+            profType: shieldType,
+            shortLabel: 'Non-Proficient (ACP to Atk)',
+            minimalLabel: 'Non-Prof. (ACP)',
+            tooltip: `Non-Proficient (${shieldType}): Armor Check Penalty applies to attack rolls and all STR/DEX checks per D&D 3.5e RAW.`
+          };
+        }
+      }
+      return null;
+    }
+
     function renderGearItemStatsBadgesHtml(item, options = {}) {
       if (!item || typeof item !== 'object' || !item.name || item.name === '-') return '';
       hydrateGearItemStats(item);
@@ -5620,6 +5694,12 @@
 
       const coreParts = [];
       const propParts = [];
+
+      const profWarn = getEquipmentProficiencyWarning(item);
+      if (profWarn) {
+        const warnText = minimal ? profWarn.minimalLabel : profWarn.shortLabel;
+        coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-rose-950/90 text-rose-300 border-rose-500/80 shadow-sm" title="${profWarn.tooltip}"><span>⚠️ ${warnText}</span></span>`);
+      }
 
       if (isWeapon) {
         // 1. Damage Parts Badges (with polyhedral SVG dice icons)
@@ -5823,13 +5903,15 @@
 
       filtered.forEach(item => {
         const statsBadgesHtml = renderGearItemStatsBadgesHtml(item, { compact: true });
+        const profWarn = getEquipmentProficiencyWarning(item);
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-900/60 transition border-b border-slate-800/80';
         tr.innerHTML = `
           <td class="py-2 px-3 align-middle font-semibold text-purple-400">${item.category}</td>
           <td class="py-2 px-3 align-middle font-bold text-white">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5">
               <span>${item.name}</span>
+              ${profWarn ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${profWarn.tooltip}">⚠️</span>` : ''}
             </div>
           </td>
           <td class="py-2 px-3 align-middle text-slate-300 text-xs">
@@ -6673,9 +6755,8 @@
       }
       const desc = item._cleanDescCache;
       const inInv = isSearchMode ? isItemInInventory(item.name, ownedSet) : false;
-      if (typeof item._badgesHtmlCache !== 'string') {
-        item._badgesHtmlCache = renderGearItemStatsBadgesHtml(item, { compact: true });
-      }
+      item._badgesHtmlCache = renderGearItemStatsBadgesHtml(item, { compact: true });
+      const profWarn = getEquipmentProficiencyWarning(item);
       const btnId = isSearchMode ? `btn-add-search-${idx}` : `btn-add-pool-${idx}`;
 
       return `
@@ -6684,6 +6765,7 @@
             <div class="flex items-center gap-1.5 min-w-0 flex-1">
               <span class="text-base shrink-0">${icon}</span>
               <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
+              ${profWarn ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${profWarn.tooltip}">⚠️</span>` : ''}
               ${inInv ? `<span class="text-[9px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.2 rounded font-semibold shrink-0">✓ Owned</span>` : ''}
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
