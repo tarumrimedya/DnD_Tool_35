@@ -366,11 +366,16 @@
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}`);
         }
+        const data = await res.json().catch(() => ({}));
+        const liveList = (data.models || [])
+          .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes('generateContent'))
+          .map(m => String(m.name || '').replace(/^models\//, ''))
+          .filter(Boolean);
         const models = window.RuleMaster
           ? await RuleMaster.getAvailableGeminiModels(apiKey, forceRefresh)
-          : ['gemini-2.0-flash-lite', 'gemini-2.0-flash'];
+          : liveList;
         _geminiVerifiedState = 'connected';
-        _geminiVerifiedModel = models && models[0] ? models[0] : 'gemini-2.0-flash-lite';
+        _geminiVerifiedModel = (models && models[0]) || liveList[0] || 'Dynamic AI Ready';
 
         if (liveBadge) {
           liveBadge.innerHTML = `<span class="text-emerald-400 font-bold">🟢 Gemini AI Active & Online (${_geminiVerifiedModel})</span>`;

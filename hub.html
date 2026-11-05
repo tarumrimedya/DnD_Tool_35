@@ -3069,7 +3069,12 @@ CRITICAL RULES:
 
       const userPrompt = `Query: "${query}". Look up the official D&D 3.5e RAW statistics for this monster or NPC and return the exact JSON object.`;
 
-      const models = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function') ? await RuleMaster.getAvailableGeminiModels(apiKey, false, 'IMPORT_BATCH') : ['gemini-2.0-flash-lite', 'gemini-2.0-flash'];
+      const models = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function')
+        ? await RuleMaster.getAvailableGeminiModels(apiKey, false, 'IMPORT_BATCH')
+        : [];
+      if (!models.length) {
+        throw new Error('Could not discover active Gemini models from API.');
+      }
       let lastErr = null;
       let monsterData = null;
 

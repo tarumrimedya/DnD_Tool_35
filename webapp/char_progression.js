@@ -4551,7 +4551,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         }
       }
       if (!Array.isArray(modelsToTry) || modelsToTry.length === 0) {
-        modelsToTry = ['gemini-2.0-flash-lite', 'gemini-2.0-flash'];
+        if (statusBox) statusBox.classList.add('hidden');
+        if (fetchBtn) {
+          fetchBtn.disabled = false;
+          fetchBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+        alert('⚠️ Could not discover active Gemini models for your API key. Please check your internet connection and API key in Settings.');
+        return;
       }
 
       let classData = null;

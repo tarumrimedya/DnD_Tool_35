@@ -6509,18 +6509,27 @@
       if (typeof item._isGearCache === 'boolean') return item._isGearCache;
       const type = String(item.type || '').toLowerCase().trim();
       const cat = String(item.category || '').toLowerCase().trim();
+      const id = String(item.id || '').toLowerCase().trim();
 
-      // STRICT EXCLUSIONS: Feats, Spells, Maneuvers, Races, Classes, Invocations, Special Abilities are NEVER equipment!
+      // STRICT EXCLUSIONS: Feats, Spells, Maneuvers, Races, Classes, Invocations, Special Abilities, Enhancements, and Special Materials are NEVER standalone equipment!
       const nonGearTypes = [
         'feat', 'special ability', 'spell', 'maneuver', 'stance', 
         'warlock invocation', 'invocation', 'race', 'class', 'prestige class',
-        'domain', 'skill', 'trait', 'flaw', 'template', 'psionic power', 'monster'
+        'domain', 'skill', 'trait', 'flaw', 'template', 'psionic power', 'monster',
+        'enhancement', 'weapon enhancement', 'armor enhancement', 'shield enhancement', 'misc enhancement',
+        'material', 'special material'
       ];
       if (nonGearTypes.includes(type) || nonGearTypes.includes(cat)) {
         item._isGearCache = false;
         return false;
       }
-      if (type.includes('feat') || type.includes('spell') || type.includes('maneuver') || type.includes('ability')) {
+      if (type.includes('feat') || type.includes('spell') || type.includes('maneuver') || type.includes('ability') ||
+          type.includes('enhancement') || cat.includes('enhancement') || type === 'material' || cat === 'special material') {
+        item._isGearCache = false;
+        return false;
+      }
+      // Exclude non-standalone SRD table multiplier rules / services (Barding templates, Stabling)
+      if (id === 'gear-barding-medium-creature' || id === 'gear-barding-large-creature' || id === 'gear-stabling') {
         item._isGearCache = false;
         return false;
       }

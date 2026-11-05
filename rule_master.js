@@ -1552,29 +1552,41 @@ const RuleMaster = {
     }
   },
 
-  // 3-Tier / 9-Slot Resilience Matrix for Core D&D 3.5e AI Tasks
-  AI_TASK_ROUTING: {
-    // 1. Quick Search & Level-Up Copilot (Low latency, high RPM)
-    QUICK_SEARCH: {
-      primary: 'gemini-2.5-flash-lite',
-      fallback: 'gemini-2.0-flash-lite',
-      tertiary: 'gemini-2.0-flash'
-    },
-    // 2. Compendium & RAW Rule Audit (Deep reasoning)
-    RULE_AUDIT: {
-      primary: 'gemini-2.5-pro',
-      fallback: 'gemini-2.5-flash',
-      tertiary: 'gemini-2.0-flash'
-    },
-    // 3. Batch Import & Free-Text Structured JSON Parsing
-    IMPORT_BATCH: {
-      primary: 'gemini-2.5-flash',
-      fallback: 'gemini-2.0-flash',
-      tertiary: 'gemini-2.0-flash-lite'
+  // Dynamically builds the 3-tier / 9-slot routing matrix from live discovered API models
+  buildDynamicRoutingFromModels(apiModels = []) {
+    function parseVer(name) {
+      const match = (name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
+      return match ? parseFloat(match[1]) : 0.0;
     }
+    const sorted = (Array.isArray(apiModels) ? apiModels.slice() : []).sort((a, b) => parseVer(b) - parseVer(a));
+    const liteModels = sorted.filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'));
+    const flashModels = sorted.filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'));
+    const proModels = sorted.filter(m => m.toLowerCase().includes('pro'));
+    const anyModel = sorted[0] || '';
+
+    const pick3 = (candidates) => {
+      const uniq = [];
+      candidates.forEach(m => {
+        if (m && !uniq.includes(m)) uniq.push(m);
+      });
+      sorted.forEach(m => {
+        if (uniq.length < 3 && m && !uniq.includes(m)) uniq.push(m);
+      });
+      return {
+        primary: uniq[0] || anyModel,
+        fallback: uniq[1] || uniq[0] || anyModel,
+        tertiary: uniq[2] || uniq[1] || uniq[0] || anyModel
+      };
+    };
+
+    return {
+      QUICK_SEARCH: pick3([liteModels[0], flashModels[0], liteModels[1], flashModels[1]]),
+      RULE_AUDIT: pick3([proModels[0], flashModels[0], proModels[1], liteModels[0]]),
+      IMPORT_BATCH: pick3([liteModels[0], flashModels[0], proModels[0], flashModels[1]])
+    };
   },
 
-  // Dinamik olarak kaydedilmiş AI model yönlendirme matrisini döndürür; yoksa varsayılanı kullanır
+  // Returns the dynamically discovered/AI-optimized routing matrix from live API models
   getActiveTaskRouting() {
     try {
       const saved = localStorage.getItem('dnd35_gemini_routing_matrix');
@@ -1584,33 +1596,24 @@ const RuleMaster = {
           return parsed;
         }
       }
+      const discoveredRaw = this._discoveredApiModels || JSON.parse(localStorage.getItem('dnd35_gemini_discovered_models') || 'null');
+      if (Array.isArray(discoveredRaw) && discoveredRaw.length > 0) {
+        return this.buildDynamicRoutingFromModels(discoveredRaw);
+      }
     } catch (e) {}
-    return this.AI_TASK_ROUTING;
+    return this.buildDynamicRoutingFromModels([]);
   },
 
   getModelsForTask(taskType = 'DEFAULT') {
     const routing = this.getActiveTaskRouting();
     const userPref = this.getAiModelMode();
-    if (userPref === 'pro') {
-      const cfg = routing.RULE_AUDIT;
-      return [cfg.primary, cfg.fallback, cfg.tertiary];
+    let cfg = routing.QUICK_SEARCH;
+    if (userPref === 'pro' || (userPref === 'auto' && (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL'))) {
+      cfg = routing.RULE_AUDIT;
+    } else if (userPref === 'auto' && taskType === 'IMPORT_BATCH') {
+      cfg = routing.IMPORT_BATCH;
     }
-    if (userPref === 'flash') {
-      const cfg = routing.QUICK_SEARCH;
-      return [cfg.primary, cfg.fallback, cfg.tertiary];
-    }
-    // 'auto' (Smart Task Router):
-    if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL') {
-      const cfg = routing.RULE_AUDIT;
-      return [cfg.primary, cfg.fallback, cfg.tertiary];
-    }
-    if (taskType === 'IMPORT_BATCH') {
-      const cfg = routing.IMPORT_BATCH;
-      return [cfg.primary, cfg.fallback, cfg.tertiary];
-    }
-    // Default fast retrieval (QUICK_SEARCH, LEVEL_UP, etc.)
-    const cfg = routing.QUICK_SEARCH;
-    return [cfg.primary, cfg.fallback, cfg.tertiary];
+    return [cfg.primary, cfg.fallback, cfg.tertiary].filter(Boolean);
   },
 
   // Sanal Flash Ailesi Çözümleyicisi: Canlı modeller arasından en güncel ve kararlı Flash modelini dinamik seçer
@@ -1644,7 +1647,7 @@ const RuleMaster = {
       // 4. Listenin ilk modeli
       return apiModels[0];
     }
-    return 'gemini-2.0-flash';
+    return '';
   },
 
   // Canlı modelleri Gemini Flash ile analiz edip D&D 3.5e görevlerine en uygun 3 kademeli matrisi üreten AI Optimizatörü
@@ -1837,94 +1840,21 @@ Schema:
       }
 
       if (apiModels && apiModels.length > 0) {
-        function parseVersion(name) {
-          const match = (name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
-          return match ? parseFloat(match[1]) : 0.0;
+        const dynamicRouting = this.buildDynamicRoutingFromModels(apiModels);
+        if (!localStorage.getItem('dnd35_gemini_routing_matrix')) {
+          try {
+            localStorage.setItem('dnd35_gemini_routing_matrix', JSON.stringify(dynamicRouting));
+          } catch (e) {}
+          this.optimizeModelsWithAi(apiKey, apiModels).catch(() => {});
         }
-
-        const isPro = (this.getAiModelMode() === 'pro') || 
-          (this.getAiModelMode() === 'auto' && (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL'));
-
-        // 1. Hızlı Arama & Seviye Atlama: 3 Kademeli Havuz
-        if (taskType === 'QUICK_SEARCH' || taskType === 'DEFAULT') {
-          const liteModels = apiModels
-            .filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'))
-            .sort((a, b) => parseVersion(b) - parseVersion(a));
-          const standardFlashModels = apiModels
-            .filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'))
-            .sort((a, b) => parseVersion(b) - parseVersion(a));
-
-          const primary = liteModels[0] || standardFlashModels[0] || defaultList[0];
-          const fallback = standardFlashModels[1] || liteModels[1] || standardFlashModels[0] || defaultList[1];
-          const tertiary = standardFlashModels[0] || liteModels[2] || defaultList[2];
-
-          const resultList = [];
-          [primary, fallback, tertiary].forEach(m => {
-            if (m && !resultList.includes(m)) resultList.push(m);
-          });
-          while (resultList.length < 3 && defaultList[resultList.length]) {
-            const defM = defaultList[resultList.length];
-            if (!resultList.includes(defM)) resultList.push(defM);
-            else break;
-          }
-
-          if (!this._cachedTaskModels) this._cachedTaskModels = {};
-          this._cachedTaskModels[cacheKey] = resultList;
-          return resultList;
+        const userPref = this.getAiModelMode();
+        let cfg = dynamicRouting.QUICK_SEARCH;
+        if (userPref === 'pro' || (userPref === 'auto' && (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL'))) {
+          cfg = dynamicRouting.RULE_AUDIT;
+        } else if (userPref === 'auto' && taskType === 'IMPORT_BATCH') {
+          cfg = dynamicRouting.IMPORT_BATCH;
         }
-
-        // 3. Toplu İçe Aktarım: Lite Asıl, Standart Flash Yedek, Pro Kalkan
-        if (taskType === 'IMPORT_BATCH' && this.getAiModelMode() === 'auto') {
-          const liteModels = apiModels
-            .filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'))
-            .sort((a, b) => parseVersion(b) - parseVersion(a));
-          const standardFlashModels = apiModels
-            .filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'))
-            .sort((a, b) => parseVersion(b) - parseVersion(a));
-          const proModels = apiModels
-            .filter(m => m.toLowerCase().includes('pro'))
-            .sort((a, b) => parseVersion(b) - parseVersion(a));
-
-          const primary = liteModels[0] || standardFlashModels[0] || defaultList[0];
-          const fallback = standardFlashModels[0] || proModels[0] || defaultList[1];
-          const tertiary = proModels[0] || defaultList[2];
-
-          const resultList = [];
-          [primary, fallback, tertiary].forEach(m => {
-            if (m && !resultList.includes(m)) resultList.push(m);
-          });
-          while (resultList.length < 3 && defaultList[resultList.length]) {
-            const defM = defaultList[resultList.length];
-            if (!resultList.includes(defM)) resultList.push(defM);
-            else break;
-          }
-
-          if (!this._cachedTaskModels) this._cachedTaskModels = {};
-          this._cachedTaskModels[cacheKey] = resultList;
-          return resultList;
-        }
-
-        // 2. Kütüphane & RAW Kural Denetimi: Pro Modelleri + Hızlı Kalkan
-        const relevant = isPro
-          ? apiModels.filter(m => m.toLowerCase().includes('pro'))
-          : apiModels.filter(m => m.toLowerCase().includes('flash'));
-
-        relevant.sort((a, b) => parseVersion(b) - parseVersion(a));
-
-        const primary = relevant[0] || defaultList[0];
-        const fallback = relevant[1] || defaultList[1];
-        const tertiary = relevant[2] || defaultList[2];
-
-        const resultList = [];
-        [primary, fallback, tertiary].forEach(m => {
-          if (m && !resultList.includes(m)) resultList.push(m);
-        });
-        while (resultList.length < 3 && defaultList[resultList.length]) {
-          const defM = defaultList[resultList.length];
-          if (!resultList.includes(defM)) resultList.push(defM);
-          else break;
-        }
-
+        const resultList = [cfg.primary, cfg.fallback, cfg.tertiary].filter(Boolean);
         if (!this._cachedTaskModels) this._cachedTaskModels = {};
         this._cachedTaskModels[cacheKey] = resultList;
         return resultList;
@@ -1953,6 +1883,7 @@ Schema:
       optResult = await this.optimizeModelsWithAi(key, apiModels);
     }
 
+    const dynFallback = this.buildDynamicRoutingFromModels(apiModels);
     const quickModels = await this.getAvailableGeminiModels(key, false, 'QUICK_SEARCH');
     const auditModels = await this.getAvailableGeminiModels(key, false, 'RULE_AUDIT');
     const batchModels = await this.getAvailableGeminiModels(key, false, 'IMPORT_BATCH');
@@ -1965,21 +1896,21 @@ Schema:
       tasks: {
         quickSearch: {
           title: 'Quick Search & Level-Up Copilot (Flash-Lite / High Quota)',
-          primary: quickModels[0] || this.AI_TASK_ROUTING.QUICK_SEARCH.primary,
-          fallback: quickModels[1] || this.AI_TASK_ROUTING.QUICK_SEARCH.fallback,
-          tertiary: quickModels[2] || this.AI_TASK_ROUTING.QUICK_SEARCH.tertiary
+          primary: quickModels[0] || dynFallback.QUICK_SEARCH.primary,
+          fallback: quickModels[1] || dynFallback.QUICK_SEARCH.fallback,
+          tertiary: quickModels[2] || dynFallback.QUICK_SEARCH.tertiary
         },
         ruleAudit: {
           title: 'Compendium & RAW Rule Audit (Pro Deep Reasoning)',
-          primary: auditModels[0] || this.AI_TASK_ROUTING.RULE_AUDIT.primary,
-          fallback: auditModels[1] || this.AI_TASK_ROUTING.RULE_AUDIT.fallback,
-          tertiary: auditModels[2] || this.AI_TASK_ROUTING.RULE_AUDIT.tertiary
+          primary: auditModels[0] || dynFallback.RULE_AUDIT.primary,
+          fallback: auditModels[1] || dynFallback.RULE_AUDIT.fallback,
+          tertiary: auditModels[2] || dynFallback.RULE_AUDIT.tertiary
         },
         importBatch: {
           title: 'Batch Import & Free-Text Parsing (Lite/Pro Hybrid)',
-          primary: batchModels[0] || this.AI_TASK_ROUTING.IMPORT_BATCH.primary,
-          fallback: batchModels[1] || this.AI_TASK_ROUTING.IMPORT_BATCH.fallback,
-          tertiary: batchModels[2] || this.AI_TASK_ROUTING.IMPORT_BATCH.tertiary
+          primary: batchModels[0] || dynFallback.IMPORT_BATCH.primary,
+          fallback: batchModels[1] || dynFallback.IMPORT_BATCH.fallback,
+          tertiary: batchModels[2] || dynFallback.IMPORT_BATCH.tertiary
         }
       }
     };
@@ -5980,7 +5911,7 @@ Return valid JSON strictly matching:
 Allowed status values: "APPROVED" | "WARNING" | "HOMEBREW".
 Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
 
-      const models = this.getModelsForTask('RULE_AUDIT');
+      const models = await this.getAvailableGeminiModels(apiKey, false, 'RULE_AUDIT');
       let auditJson = null;
 
       for (const model of models) {
