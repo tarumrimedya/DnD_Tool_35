@@ -1906,16 +1906,16 @@
             
             <!-- View Mode Switcher Toggle (Liste vs Silüet vs Companion) -->
             <div class="flex items-center gap-2 w-full sm:w-auto">
-              <div class="h-8 w-full sm:w-auto grid grid-cols-3 items-center p-0.5 bg-slate-950 border border-slate-700/80 rounded-lg text-xs font-bold shadow-inner">
-                <button id="btn-body-view-list" onclick="setBodySlotsView('list')" type="button" class="w-full sm:w-28 md:w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap" title="Traditional List / Table View">
+              <div class="h-auto sm:h-8 w-full sm:w-auto grid grid-cols-1 sm:grid-cols-3 gap-1 sm:gap-0 items-center p-1 sm:p-0.5 bg-slate-950 border border-slate-700/80 rounded-lg text-xs font-bold shadow-inner">
+                <button id="btn-body-view-list" onclick="setBodySlotsView('list')" type="button" class="w-full sm:w-28 md:w-32 h-8 sm:h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap" title="Traditional List / Table View">
                   <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
                   <span>List View</span>
                 </button>
-                <button id="btn-body-view-silhouette" onclick="setBodySlotsView('silhouette')" type="button" class="w-full sm:w-28 md:w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap" title="Interactive Figure & Silhouette View">
+                <button id="btn-body-view-silhouette" onclick="setBodySlotsView('silhouette')" type="button" class="w-full sm:w-28 md:w-32 h-8 sm:h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap" title="Interactive Figure & Silhouette View">
                   <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                   <span>Silhouette View</span>
                 </button>
-                <button id="btn-body-view-companion" onclick="setBodySlotsView('companion')" type="button" class="w-full sm:w-28 md:w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap" title="Animal Companion / Mount / Familiar Gear">
+                <button id="btn-body-view-companion" onclick="setBodySlotsView('companion')" type="button" class="w-full sm:w-28 md:w-32 h-8 sm:h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap" title="Animal Companion / Mount / Familiar Gear">
                   <span>🐾</span>
                   <span>Companion Gear</span>
                 </button>

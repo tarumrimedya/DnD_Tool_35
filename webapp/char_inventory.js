@@ -3547,8 +3547,8 @@
       const btnSil = document.getElementById('btn-body-view-silhouette');
       const btnComp = document.getElementById('btn-body-view-companion');
 
-      const activeBtnClass = 'w-full sm:w-28 md:w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
-      const inactiveBtnClass = 'w-full sm:w-28 md:w-32 h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
+      const activeBtnClass = 'w-full sm:w-28 md:w-32 h-8 sm:h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
+      const inactiveBtnClass = 'w-full sm:w-28 md:w-32 h-8 sm:h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
 
       if (currentBodySlotsView === 'companion') {
         if (listView) listView.classList.add('hidden');
