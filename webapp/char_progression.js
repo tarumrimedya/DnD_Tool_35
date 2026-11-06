@@ -1792,6 +1792,7 @@
       if (matchedKey) {
         populateChangeClassSelect(matchedKey);
         onChangeClassSelectChange();
+        if (typeof filterChangeClassSearch === 'function') filterChangeClassSearch();
         if (statusEl) {
           statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
           statusEl.innerHTML = `<span>✅</span> Found and selected <b>${matchedKey}</b> in your class list!`;
@@ -1855,6 +1856,7 @@
         saveStateToStorage(true);
         populateChangeClassSelect(extraName);
         onChangeClassSelectChange();
+        if (typeof filterChangeClassSearch === 'function') filterChangeClassSearch();
 
         const babDisplay = foundExtra.bab === 1.0 ? 'Full BAB (+1/lvl)' : (foundExtra.bab === 0.75 ? '3/4 BAB (+0.75/lvl)' : '1/2 BAB (+0.5/lvl)');
         if (statusEl) {
@@ -3945,10 +3947,22 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           info = met ? '(Spellcaster Eligible)' : (isDual ? '(Requires Arcane & Divine)' : '(Requires Spellcasting)');
         } else if (req.key === 'alignment') {
           if (alignStr) {
+            const ALIGN_CODE_MAP = {
+              'LAWFUL GOOD': 'LG', 'NEUTRAL GOOD': 'NG', 'CHAOTIC GOOD': 'CG',
+              'LAWFUL NEUTRAL': 'LN', 'TRUE NEUTRAL': 'TN', 'NEUTRAL': 'TN', 'N': 'TN', 'CHAOTIC NEUTRAL': 'CN',
+              'LAWFUL EVIL': 'LE', 'NEUTRAL EVIL': 'NE', 'CHAOTIC EVIL': 'CE'
+            };
+            const userAbbr = ALIGN_CODE_MAP[alignStr] || alignStr;
             if (Array.isArray(req.allowed) && req.allowed.length > 0) {
-              met = req.allowed.includes(alignStr);
+              met = req.allowed.some(a => {
+                const code = String(a).toUpperCase().trim();
+                return code === userAbbr || code === alignStr || ALIGN_CODE_MAP[code] === userAbbr || (code === 'N' && userAbbr === 'TN') || (code === 'TN' && userAbbr === 'N');
+              });
             } else if (Array.isArray(req.forbidden) && req.forbidden.length > 0) {
-              met = !req.forbidden.includes(alignStr);
+              met = !req.forbidden.some(f => {
+                const code = String(f).toUpperCase().trim();
+                return code === userAbbr || code === alignStr || ALIGN_CODE_MAP[code] === userAbbr || (code === 'N' && userAbbr === 'TN') || (code === 'TN' && userAbbr === 'N');
+              });
             }
             info = met ? `(${alignStr} Eligible)` : `(Current: ${alignStr})`;
           }
@@ -4162,6 +4176,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         _expandedClassProgressions.add(className);
       }
       filterLevelUpClassSearch();
+      if (typeof filterChangeClassSearch === 'function') {
+        filterChangeClassSearch();
+      }
     }
 
     function filterLevelUpClassSearch() {
@@ -5346,8 +5363,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (subtitle) subtitle.textContent = `${row.className} (Level ${row.level}) • Permanent +1 Ability Score`;
 
       const currentStat = getLevelStatIncrease(row);
+      const statOptions = (typeof STAT_KEYS_TWO_COL !== 'undefined' && Array.isArray(STAT_KEYS_TWO_COL))
+        ? STAT_KEYS_TWO_COL
+        : [STAT_KEYS[0], STAT_KEYS[3], STAT_KEYS[1], STAT_KEYS[4], STAT_KEYS[2], STAT_KEYS[5]];
 
-      grid.innerHTML = STAT_KEYS.map(s => {
+      grid.innerHTML = statOptions.map(s => {
         const isSelected = (currentStat === s.key);
         const baseScore = Number(character.baseAbilities?.[s.key]) || 10;
         const totalScore = Number(character.abilities?.[s.key]) || baseScore;
@@ -5473,6 +5493,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     }
 
     function openChangeLevelClassModal(idx) {
+      if (typeof window.ensureModalsMounted === 'function') window.ensureModalsMounted();
       const prog = character.levelProgression || [];
       if (idx < 0 || idx >= prog.length) return;
       currentChangeClassLevelIndex = idx;
@@ -5536,6 +5557,19 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const searchStat = document.getElementById('change-class-search-status');
       if (searchStat) { searchStat.classList.add('hidden'); searchStat.innerHTML = ''; }
 
+      currentChangeClassFilterTab = 'all';
+      ['all', 'base', 'prestige', 'custom'].forEach(t => {
+        const btn = document.getElementById(`change-class-filter-tab-${t}`);
+        if (btn) {
+          if (t === 'all') {
+            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-amber-500/20 text-amber-200 border border-amber-400/50 shadow-sm cursor-pointer';
+          } else {
+            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer';
+          }
+        }
+      });
+
+      filterChangeClassSearch();
       onChangeClassSelectChange(false);
       modal.classList.remove('hidden');
     }
@@ -5545,6 +5579,307 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (modal) modal.classList.add('hidden');
       currentChangeClassLevelIndex = null;
     }
+
+    let currentChangeClassFilterTab = 'all';
+
+    function setChangeClassFilterTab(tab) {
+      currentChangeClassFilterTab = tab;
+      ['all', 'base', 'prestige', 'custom'].forEach(t => {
+        const btn = document.getElementById(`change-class-filter-tab-${t}`);
+        if (btn) {
+          if (t === tab) {
+            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-amber-500/20 text-amber-200 border border-amber-400/50 shadow-sm cursor-pointer';
+          } else {
+            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer';
+          }
+        }
+      });
+      filterChangeClassSearch();
+    }
+
+    function selectChangeClassFromSearch(className) {
+      const select = document.getElementById('change-class-select');
+      if (!select) return;
+
+      let found = false;
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value.toLowerCase() === className.toLowerCase()) {
+          select.selectedIndex = i;
+          found = true;
+          break;
+        }
+      }
+
+      if (!found) {
+        const opt = document.createElement('option');
+        opt.value = className;
+        opt.textContent = className;
+        opt.selected = true;
+        select.appendChild(opt);
+      }
+
+      onChangeClassSelectChange(true);
+      filterChangeClassSearch();
+
+      const preview = document.getElementById('change-class-preview-card');
+      if (preview) {
+        preview.classList.add('ring-2', 'ring-amber-400');
+        setTimeout(() => preview.classList.remove('ring-2', 'ring-amber-400'), 1500);
+        preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      if (typeof showToast === 'function') {
+        showToast(`🎯 Class Selected: ${className}. Level parameters updated.`, 'success');
+      }
+    }
+
+    function filterChangeClassSearch() {
+      const resultsContainer = document.getElementById('change-class-search-results');
+      const countBadge = document.getElementById('change-class-count-badge');
+      if (!resultsContainer) return;
+      const prevScroll = resultsContainer.scrollTop;
+
+      const q = (document.getElementById('change-class-search-input')?.value || '').trim().toLowerCase();
+      const allDefs = getAvailableClassDefs();
+      const selectedClass = document.getElementById('change-class-select')?.value || '';
+
+      const matched = [];
+
+      Object.keys(allDefs).forEach(cName => {
+        const def = allDefs[cName];
+        const isPrestige = def.type === 'Prestige Class';
+        const isCustom = def.isCustom === true;
+        const isBase = !isPrestige && !isCustom;
+
+        // Filter tab
+        if (currentChangeClassFilterTab === 'base' && !isBase) return;
+        if (currentChangeClassFilterTab === 'prestige' && !isPrestige) return;
+        if (currentChangeClassFilterTab === 'custom' && !isCustom) return;
+
+        // Search text
+        if (q) {
+          const matchName = cName.toLowerCase().includes(q);
+          const matchSource = (def.source || '').toLowerCase().includes(q);
+          const matchRole = (def.role || '').toLowerCase().includes(q);
+          const matchDesc = (def.description || '').toLowerCase().includes(q);
+          const matchPrereq = Array.isArray(def.prerequisites) && def.prerequisites.some(p => (p.text || '').toLowerCase().includes(q));
+          if (!matchName && !matchSource && !matchRole && !matchDesc && !matchPrereq) {
+            return;
+          }
+        }
+
+        const prereqResult = checkClassPrerequisites(cName, def);
+
+        let priority = 1;
+        if (isPrestige) {
+          priority = (prereqResult.hasPrereqs && !prereqResult.allMet) ? 3 : 2;
+        }
+
+        matched.push({ 
+          name: cName, 
+          def, 
+          isPrestige, 
+          isCustom, 
+          prereqResult, 
+          priority 
+        });
+      });
+
+      // Sort: Priority 1 (Base) -> Priority 2 (Eligible Prestige) -> Priority 3 (Ineligible Prestige)
+      matched.sort((a, b) => {
+        if (a.priority !== b.priority) {
+          return a.priority - b.priority;
+        }
+        const aSelected = (a.name.toLowerCase() === selectedClass.toLowerCase());
+        const bSelected = (b.name.toLowerCase() === selectedClass.toLowerCase());
+        if (aSelected && !bSelected) return -1;
+        if (!aSelected && bSelected) return 1;
+        return a.name.localeCompare(b.name);
+      });
+
+      if (countBadge) {
+        countBadge.textContent = `${matched.length} Classes`;
+      }
+
+      if (matched.length === 0) {
+        if (q) {
+          resultsContainer.innerHTML = `
+            <div class="p-3.5 text-center space-y-2.5 bg-slate-950/80 rounded-xl border border-amber-500/40 shadow-xl">
+              <div class="text-slate-200 text-xs font-semibold">
+                🔍 Class &quot;<span class="text-amber-300 font-bold">${q}</span>&quot; not found in local compendium.
+              </div>
+              <p class="text-[10px] text-slate-400 max-w-md mx-auto leading-relaxed">
+                Scan official D&D 3.5e RAW sourcebooks (PHB, Complete series, Tome of Battle, DMG, etc.) to automatically fetch this class and save it to Master DB.
+              </p>
+              <div class="pt-1 flex items-center justify-center gap-2">
+                <button type="button" onclick="searchOrAddClassWithRuleMaster()" class="bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-amber-400/40">
+                  <span>✨</span>
+                  <span>Fetch from D&D 3.5e Sourcebooks via Rule Master (AI)</span>
+                </button>
+              </div>
+            </div>
+          `;
+        } else {
+          resultsContainer.innerHTML = `
+            <div class="p-4 text-center text-slate-500 bg-slate-950/60 rounded-xl border border-slate-800">
+              🔍 No classes matched your search. You can create a custom base or prestige class using the <strong>"Add Custom Class"</strong> button above.
+            </div>
+          `;
+        }
+        return;
+      }
+
+      let lastPriority = null;
+      let htmlOutput = '';
+
+      matched.forEach(item => {
+        const cName = item.name;
+        const def = item.def;
+        const isSelected = (cName.toLowerCase() === selectedClass.toLowerCase());
+        const isPrestige = item.isPrestige;
+        const isCustom = item.isCustom;
+        const isProgExpanded = _expandedClassProgressions.has(cName);
+        const prereqResult = item.prereqResult;
+
+        // Group Header Divider
+        if (item.priority !== lastPriority) {
+          lastPriority = item.priority;
+          let headerTitle = '';
+          if (item.priority === 1) {
+            const count = matched.filter(m => m.priority === 1).length;
+            headerTitle = `
+              <div class="flex items-center justify-between py-1.5 px-2 text-[11px] font-bold text-slate-300 border-b border-amber-500/30 sticky top-0 bg-slate-950/95 z-10 backdrop-blur-sm shadow-sm rounded-lg mb-1">
+                <span class="flex items-center gap-1.5 text-amber-300">
+                  <span>🛡️</span>
+                  <span>Base Classes</span>
+                </span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-700/50">${count} Classes</span>
+              </div>
+            `;
+          } else if (item.priority === 2) {
+            const count = matched.filter(m => m.priority === 2).length;
+            headerTitle = `
+              <div class="flex items-center justify-between py-1.5 px-2 text-[11px] font-bold text-emerald-300 border-b border-emerald-500/30 sticky top-0 bg-slate-950/95 z-10 backdrop-blur-sm shadow-sm rounded-lg mt-2.5 mb-1">
+                <span class="flex items-center gap-1.5 text-emerald-300">
+                  <span>👑</span>
+                  <span>Prestige Classes (Prerequisites Met)</span>
+                </span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/50">${count} Classes</span>
+              </div>
+            `;
+          } else if (item.priority === 3) {
+            const count = matched.filter(m => m.priority === 3).length;
+            headerTitle = `
+              <div class="flex items-center justify-between py-1.5 px-2 text-[11px] font-bold text-amber-400 border-b border-amber-600/40 sticky top-0 bg-slate-950/95 z-10 backdrop-blur-sm shadow-sm rounded-lg mt-2.5 mb-1">
+                <span class="flex items-center gap-1.5 text-amber-400">
+                  <span>🔒</span>
+                  <span>Other Prestige Classes (Prerequisites Not Met)</span>
+                </span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-700/60">${count} Classes</span>
+              </div>
+            `;
+          }
+          htmlOutput += headerTitle;
+        }
+
+        const typeBadge = isPrestige
+          ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/50">👑 Prestige Class</span>'
+          : (isCustom 
+              ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-600/50">⚙️ Custom</span>'
+              : '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/50">🛡️ Base Class</span>');
+
+        const babText = def.bab === 1.0 ? 'Full BAB (+1.0)' : (def.bab === 0.75 ? '3/4 BAB (+0.75)' : '1/2 BAB (+0.5)');
+        const goodSaves = [];
+        if (def.fort === 'good') goodSaves.push('Fort');
+        if (def.ref === 'good') goodSaves.push('Ref');
+        if (def.will === 'good') goodSaves.push('Will');
+        const savesText = goodSaves.length === 3 ? 'All Good Saves' : (goodSaves.length > 0 ? `Good: ${goodSaves.join('/')}` : 'Poor Saves');
+
+        const safeName = cName.replace(/'/g, "\\'");
+
+        let prereqHtml = '';
+        if (prereqResult.hasPrereqs) {
+          const prereqPills = prereqResult.checks.map(c => `
+            <span class="inline-flex items-center gap-1 text-[10px] px-1.5 py-0.5 rounded bg-slate-900 border ${c.met ? 'border-emerald-600/40 text-emerald-300' : 'border-amber-600/40 text-amber-300'}">
+              <span>${c.met ? '✅' : '⚠️'}</span>
+              <span>${c.text}</span>
+              ${c.info ? `<span class="text-[9px] text-slate-400 font-mono">${c.info}</span>` : ''}
+            </span>
+          `).join('');
+
+          prereqHtml = `
+            <div class="mt-1 pt-1 border-t border-slate-800/80 space-y-1">
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="font-bold text-slate-400">Prerequisites:</span>
+                <span class="${prereqResult.allMet ? 'text-emerald-400 font-bold' : 'text-amber-400 font-semibold'} text-[9px]">
+                  ${prereqResult.allMet ? '✅ Qualified' : '⚠️ Prereqs Missing'}
+                </span>
+              </div>
+              <div class="flex flex-wrap gap-1">
+                ${prereqPills}
+              </div>
+            </div>
+          `;
+        }
+
+        const cleanDesc = (def.description || def.shortDescription || '').replace(/<img[^>]*>/gi, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+
+        htmlOutput += `
+          <div onclick="selectChangeClassFromSearch('${safeName}')" class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-amber-500 ring-1 ring-amber-500/50 bg-amber-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
+            <div class="flex flex-wrap items-center justify-between gap-1.5">
+              <div class="flex items-center gap-2">
+                <span class="text-base">${isPrestige ? '👑' : (isCustom ? '⚙️' : '🛡️')}</span>
+                <div>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="font-bold text-white text-xs group-hover:text-amber-300 transition">${cName}</span>
+                    ${typeBadge}
+                    ${def.source ? `<span class="text-[9px] text-slate-400 bg-slate-900 px-1.5 py-0.2 rounded border border-slate-800 font-mono">${def.source}</span>` : ''}
+                  </div>
+                  ${def.role ? `<div class="text-[10px] text-indigo-300">${def.role}</div>` : ''}
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
+                <button type="button" onclick="toggleClassProgression('${safeName}')" class="px-2.5 py-1 rounded-lg ${isProgExpanded ? 'bg-indigo-900 border-indigo-400 text-white ring-1 ring-indigo-400/50' : 'bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/50 text-indigo-200 hover:text-white'} font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Show / hide ${cName} level progression table">
+                  <span>📜</span>
+                  <span>${isProgExpanded ? 'Hide Progression' : 'Show Progression'}</span>
+                </button>
+                ${isSelected ? `
+                  <span class="text-[11px] font-bold text-amber-400 bg-amber-950/90 border border-amber-600/70 px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm select-none">
+                    <span>✓</span>
+                    <span>Selected Class</span>
+                  </span>
+                ` : `
+                  <button type="button" onclick="selectChangeClassFromSearch('${safeName}')" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
+                    <span>🎯</span>
+                    <span>Select Class</span>
+                  </button>
+                `}
+              </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-300 pt-0.5 font-mono">
+              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-amber-300 font-bold">d${def.hd} HD</span>
+              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-sky-300">${babText}</span>
+              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-emerald-300">${savesText}</span>
+              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-purple-300">${def.skills || 2}+INT Skills</span>
+            </div>
+
+            ${cleanDesc ? `<p class="text-[10px] text-slate-400 leading-relaxed">${cleanDesc.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+            ${prereqHtml}
+            ${isProgExpanded ? `<div onclick="event.stopPropagation()">${generateClassProgressionHtml(cName, def)}</div>` : ''}
+          </div>
+        `;
+      });
+
+      resultsContainer.innerHTML = htmlOutput;
+      resultsContainer.scrollTop = prevScroll;
+    }
+
+    window.setChangeClassFilterTab = setChangeClassFilterTab;
+    window.selectChangeClassFromSearch = selectChangeClassFromSearch;
+    window.filterChangeClassSearch = filterChangeClassSearch;
 
     function rollChangeClassHp(mode = 'avg') {
       const sel = document.getElementById('change-class-select');
