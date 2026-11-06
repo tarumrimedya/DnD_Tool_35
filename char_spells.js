@@ -1331,6 +1331,10 @@
         }
       }
 
+      if (prevBuff && prevBuff.pinnedToCombat) {
+        buffObj.pinnedToCombat = true;
+      }
+
       if (existingIdx !== -1) {
         character.buffs[existingIdx] = buffObj;
       } else {

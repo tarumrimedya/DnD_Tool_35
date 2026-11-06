@@ -9686,17 +9686,28 @@
       // 6. Populate Combat Active Spell & Tactical Buffs Strip (#cockpit-active-buffs-card)
       if (buffsCard && buffsList) {
         const allBuffs = Array.isArray(character.buffs) ? character.buffs : [];
-        const activeBuffEntries = allBuffs
+        const visibleBuffEntries = allBuffs
           .map((b, idx) => ({ b, idx }))
-          .filter(entry => entry.b && entry.b.active !== false);
+          .filter(entry => entry.b && (entry.b.active !== false || entry.b.pinnedToCombat));
 
-        if (activeBuffEntries.length === 0) {
+        if (visibleBuffEntries.length === 0) {
           buffsCard.classList.add('hidden');
         } else {
           buffsCard.classList.remove('hidden');
-          if (buffsCount) buffsCount.textContent = `${activeBuffEntries.length}`;
+          const activeCount = visibleBuffEntries.filter(e => e.b.active !== false).length;
+          if (buffsCount) {
+            buffsCount.textContent = activeCount === visibleBuffEntries.length
+              ? `${activeCount}`
+              : `${activeCount}/${visibleBuffEntries.length}`;
+          }
 
-          buffsList.innerHTML = activeBuffEntries.map(({ b, idx }) => {
+          buffsList.innerHTML = visibleBuffEntries.map(({ b, idx }) => {
+            if (!b.id) {
+              b.id = 'buff_' + String(b.name || idx).toLowerCase().replace(/[^a-z0-9]+/g, '_');
+            }
+            const isAct = b.active !== false;
+            const isPinned = Boolean(b.pinnedToCombat);
+            const safeBuffId = String(b.id || idx).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
             const rawBCl = Number(b.casterLevel || b.cl || character.level) || 1;
             const minDomainCl = (typeof RuleEngine !== 'undefined' && RuleEngine.getSpellEffectiveCasterLevel)
               ? RuleEngine.getSpellEffectiveCasterLevel(b, character, Number(character.level) || 1)
@@ -9705,8 +9716,8 @@
             const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
               ? RuleEngine.resolveSpellBuffSpec(b, character, bCl)
               : null;
-            const summaryText = b.summary || spec?.summaryText || b.description || 'Active Buff';
-            const durText = (bCl > rawBCl && spec?.durationText) ? spec.durationText : (b.duration || spec?.durationText || '');
+            const summaryText = b.summary || spec?.summaryText || b.notes || b.description || 'Active Buff';
+            const durText = (bCl > rawBCl && spec?.durationText) ? spec.durationText : (b.durationText || b.duration || spec?.durationText || '');
             const clBonusInfo = (typeof RuleEngine !== 'undefined' && RuleEngine.getSpellCasterLevelBonus)
               ? RuleEngine.getSpellCasterLevelBonus(b, character)
               : { bonus: 0, sources: [] };
@@ -9719,23 +9730,35 @@
             const energyBadge = b.chosenEnergy
               ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-sky-950/90 text-sky-300 border border-sky-600/50">${b.chosenEnergy}</span>`
               : '';
+            const pinBtnClasses = isPinned
+              ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.45)] hover:bg-emerald-900 hover:border-emerald-400 ring-1 ring-emerald-500/40'
+              : 'bg-slate-900/50 text-slate-500 hover:text-slate-200 border-slate-700/60 hover:border-slate-500 opacity-50 hover:opacity-100 hover:bg-slate-800';
+            const pinBtnTitle = isPinned
+              ? `📌 Pinned to Combat Cockpit (${b.name}) - Click to unpin`
+              : `📌 Pin to Combat Cockpit (${b.name}) - Keep visible when inactive`;
+            const pinIconSvg = isPinned
+              ? `<svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`
+              : `<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
 
             return `
-              <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg border transition bg-slate-900/90 border-emerald-500/40">
-                <button type="button" onclick="toggleCombatBuffActive(${idx})" class="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer" title="Click to toggle buff Off">
-                  <span class="w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] font-black border shrink-0 bg-emerald-600 border-emerald-400 text-white">✓</span>
+              <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg border transition ${isAct ? 'bg-slate-900/90 border-emerald-500/40' : 'bg-slate-950/60 border-slate-800/80 opacity-75 hover:opacity-100'}">
+                <button type="button" onclick="toggleCombatBuffActive(${idx})" class="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer" title="${isAct ? 'Click to toggle buff Off' : 'Click to toggle buff On'}">
+                  <span class="w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] font-black border shrink-0 ${isAct ? 'bg-emerald-600 border-emerald-400 text-white' : 'bg-slate-900 border-slate-600 text-transparent'}">✓</span>
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 flex-wrap">
-                      <span class="text-[11px] font-bold text-emerald-300 truncate">${b.name || 'Buff'}</span>
+                      <span class="text-[11px] font-bold ${isAct ? 'text-emerald-300' : 'text-slate-300'} truncate">${b.name || 'Buff'}</span>
                       ${wepBadge}
                       ${energyBadge}
                       ${clBadge}
                       ${durText ? `<span class="text-[9px] font-mono text-slate-400 bg-slate-950 px-1 py-0.2 rounded border border-slate-800">${durText}</span>` : ''}
                     </div>
-                    <div class="text-[10px] text-amber-300/90 truncate">${summaryText}</div>
+                    <div class="text-[10px] ${isAct ? 'text-amber-300/90' : 'text-slate-400'} truncate">${summaryText}</div>
                   </div>
                 </button>
-                <button type="button" onclick="removeCombatBuff(${idx})" class="text-[10px] font-bold text-slate-500 hover:text-rose-400 px-1.5 py-0.5 rounded hover:bg-rose-950/40 transition shrink-0 cursor-pointer" title="Dismiss / Remove Buff">✕</button>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button type="button" onclick="event.stopPropagation(); toggleBuffCombatPin('${safeBuffId}')" class="w-5 h-5 inline-flex items-center justify-center rounded border transition-all cursor-pointer ${pinBtnClasses}" title="${pinBtnTitle}">${pinIconSvg}</button>
+                  <button type="button" onclick="removeCombatBuff(${idx})" class="text-[10px] font-bold text-slate-500 hover:text-rose-400 px-1.5 py-0.5 rounded hover:bg-rose-950/40 transition shrink-0 cursor-pointer" title="Dismiss / Remove Buff">✕</button>
+                </div>
               </div>
             `;
           }).join('');

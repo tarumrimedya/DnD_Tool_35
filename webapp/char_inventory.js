@@ -813,7 +813,10 @@
         if (m) activeShieldVal = m.shield;
       }
 
-      sortedBuffs.forEach(buff => {
+      sortedBuffs.forEach((buff, sIdx) => {
+        if (!buff.id) {
+          buff.id = 'buff_' + String(buff.name || sIdx).toLowerCase().replace(/[^a-z0-9]+/g, '_');
+        }
         const isAct = buff.active;
         const isDebuff = buff.isDebuff || buff.category === 'Debuff';
 
@@ -941,6 +944,19 @@
           `;
         }
 
+        const isPinned = Boolean(buff.pinnedToCombat);
+        const safeBuffId = String(buff.id || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const pinBtnClasses = isPinned
+          ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.45)] hover:bg-emerald-900 hover:border-emerald-400 ring-1 ring-emerald-500/40'
+          : 'bg-slate-900/50 text-slate-500 hover:text-slate-200 border-slate-700/60 hover:border-slate-500 opacity-50 hover:opacity-100 hover:bg-slate-800';
+        const pinBtnTitle = isPinned
+          ? `📌 Combat Cockpit: Pinned to Active Spell & Tactical Buffs (${buff.name}) - Click to unpin`
+          : `📌 Pin to Combat Cockpit (${buff.name})`;
+        const pinIconSvg = isPinned
+          ? `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`
+          : `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
+        const buffPinBtnHtml = `<button type="button" onclick="event.stopPropagation(); toggleBuffCombatPin('${safeBuffId}')" class="w-6 h-6 inline-flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${pinBtnClasses}" title="${pinBtnTitle}">${pinIconSvg}</button>`;
+
         if (viewMode === 'list') {
           // --- LISTE GÖRÜNÜMÜ (COMPACT LIST VIEW) ---
           const row = document.createElement('div');
@@ -962,7 +978,7 @@
                 ${badges.join(' ')}
               </div>
 
-              <!-- Sağ: Süre / Tur Sayaç Butonları + Sil -->
+              <!-- Sağ: Süre / Tur Sayaç Butonları + Pin + Sil -->
               <div class="flex items-center gap-2 shrink-0 ml-auto">
                 <div class="text-[10px] font-mono text-slate-400 hidden md:inline">
                   ${buffDurDisplay}
@@ -974,6 +990,7 @@
                     <button type="button" onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Add 1 Round">+</button>
                   ` : `<span class="text-[10px] text-slate-500 italic px-2">${buffDurDisplay}</span>`}
                 </div>
+                ${buffPinBtnHtml}
                 <button type="button" onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-1 text-xs transition cursor-pointer" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
               </div>
             </div>
@@ -1001,6 +1018,7 @@
                 </label>
                 <div class="flex items-center gap-1">
                   <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
+                  ${buffPinBtnHtml}
                   <button onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
                 </div>
               </div>
@@ -1070,6 +1088,33 @@
         renderAll();
       }
     }
+
+    function toggleBuffCombatPin(buffId) {
+      if (!character || !Array.isArray(character.buffs)) return;
+      const buff = character.buffs.find((b, idx) => b && (b.id === buffId || String(idx) === String(buffId) || b.name === buffId));
+      if (!buff) return;
+      buff.pinnedToCombat = !buff.pinnedToCombat;
+      saveStateToStorage(true);
+      renderAll();
+      if (typeof showDiceTopToast === 'function') {
+        if (buff.pinnedToCombat) {
+          showDiceTopToast({
+            icon: '📌',
+            title: 'Pinned to Combat Cockpit!',
+            breakdown: `"${buff.name}" added to Active Spell & Tactical Buffs on the Combat page.`,
+            total: 'Pinned'
+          });
+        } else {
+          showDiceTopToast({
+            icon: '📌',
+            title: 'Unpinned from Combat',
+            breakdown: `"${buff.name}" removed from Combat Cockpit pins.`,
+            total: 'Unpinned'
+          });
+        }
+      }
+    }
+    window.toggleBuffCombatPin = toggleBuffCombatPin;
 
     function adjustBuffRounds(buffId, delta) {
       const buff = (character.buffs || []).find(b => b.id === buffId);
@@ -3341,6 +3386,10 @@
         const curTempWithoutPrev = Math.max(0, (Number(character.hp.temp) || 0) - prevGrantedTemp);
         character.hp.temp = curTempWithoutPrev + grantedTempHp;
         markPlayerHpChanged();
+      }
+
+      if (prevBuff && prevBuff.pinnedToCombat) {
+        newBuff.pinnedToCombat = true;
       }
 
       if (existingBuffIdx >= 0) {
