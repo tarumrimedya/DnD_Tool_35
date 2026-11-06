@@ -4525,19 +4525,23 @@
 
     document.addEventListener('click', (e) => {
       const container = document.getElementById('race-custom-dropdown-container');
-      if (_raceSpotlightOpen && container && !container.contains(e.target)) {
+      const raceDropdown = document.getElementById('race-spotlight-dropdown');
+      if (_raceSpotlightOpen && container && !container.contains(e.target) && (!raceDropdown || !raceDropdown.contains(e.target))) {
         closeRaceSpotlightDropdown();
       }
       const tmplContainer = document.getElementById('template-custom-dropdown-container');
-      if (_templateSpotlightOpen && tmplContainer && !tmplContainer.contains(e.target)) {
+      const tmplDropdown = document.getElementById('template-spotlight-dropdown');
+      if (_templateSpotlightOpen && tmplContainer && !tmplContainer.contains(e.target) && (!tmplDropdown || !tmplDropdown.contains(e.target))) {
         closeTemplateSpotlightDropdown();
       }
       const deityContainer = document.getElementById('deity-custom-dropdown-container');
-      if (_deitySpotlightOpen && deityContainer && !deityContainer.contains(e.target)) {
+      const deityDropdown = document.getElementById('deity-spotlight-dropdown');
+      if (_deitySpotlightOpen && deityContainer && !deityContainer.contains(e.target) && (!deityDropdown || !deityDropdown.contains(e.target))) {
         closeDeitySpotlightDropdown();
       }
       const alignContainer = document.getElementById('alignment-custom-dropdown-container');
-      if (_alignmentDropdownOpen && alignContainer && !alignContainer.contains(e.target)) {
+      const alignDropdown = document.getElementById('alignment-custom-dropdown');
+      if (_alignmentDropdownOpen && alignContainer && !alignContainer.contains(e.target) && (!alignDropdown || !alignDropdown.contains(e.target))) {
         closeAlignmentDropdown();
       }
       const sizeContainer = document.getElementById('size-custom-dropdown-container');
@@ -4547,6 +4551,10 @@
       const lvlupClassContainer = document.getElementById('lvlup-class-custom-dropdown-container');
       if (_lvlupClassSpotlightOpen && lvlupClassContainer && !lvlupClassContainer.contains(e.target)) {
         closeLevelUpClassSpotlightDropdown();
+      }
+      const domainSpotlightModal = document.getElementById('modal-domain-field-spotlight');
+      if (domainSpotlightModal && !domainSpotlightModal.classList.contains('hidden') && e.target === domainSpotlightModal) {
+        closeDomainFieldSpotlight();
       }
     });
 
@@ -5484,39 +5492,44 @@
         `).join('');
       }
 
-      // 2. Populate Favored Weapon Select
+      // 2. Populate Favored Weapon Select (Cached on window._cachedDeityWeaponOptionsHtml for 0ms re-open)
       const weaponSelect = document.getElementById('custom-deity-weapon');
       if (weaponSelect) {
-        let weaponNames = [];
-        if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
-          const eqs = window.SrdCompendium.getAllLoaded('Equipment');
-          if (Array.isArray(eqs) && eqs.length) {
-            weaponNames = eqs.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
+        if (window._cachedDeityWeaponOptionsHtml) {
+          weaponSelect.innerHTML = window._cachedDeityWeaponOptionsHtml;
+        } else {
+          let weaponNames = [];
+          if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+            const eqs = window.SrdCompendium.getAllLoaded('Equipment');
+            if (Array.isArray(eqs) && eqs.length) {
+              weaponNames = eqs.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
+            }
           }
+          if (!weaponNames.length && typeof window.BUNDLED_SRD_EQUIPMENT !== 'undefined' && Array.isArray(window.BUNDLED_SRD_EQUIPMENT)) {
+            weaponNames = window.BUNDLED_SRD_EQUIPMENT.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
+          }
+          if (!weaponNames.length && typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+            weaponNames = window.BUNDLED_SRD_CORE_CATALOG.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
+          }
+          const naturalWeapons = ['Bite', 'Claw', 'Slam', 'Gore', 'Tentacle', 'Unarmed Strike'];
+          const fallbackWeapons = [
+            'Battleaxe', 'Club', 'Dagger', 'Falchion', 'Flail', 'Greataxe', 'Greatclub',
+            'Greatsword', 'Halberd', 'Handaxe', 'Heavy Crossbow', 'Heavy Flail', 'Heavy Mace',
+            'Heavy Pick', 'Javelin', 'Kama', 'Kukri', 'Lance', 'Light Crossbow', 'Light Flail',
+            'Light Hammer', 'Light Mace', 'Light Pick', 'Longbow', 'Longspear', 'Longsword',
+            'Morningstar', 'Net', 'Nunchaku', 'Quarterstaff', 'Rapier', 'Scimitar', 'Scythe',
+            'Shortbow', 'Shortspear', 'Short Sword', 'Siangham', 'Sickle', 'Sling', 'Spear',
+            'Trident', 'Warhammer', 'Whip'
+          ];
+          weaponNames = Array.from(new Set(['-', ...naturalWeapons, ...weaponNames, ...fallbackWeapons])).filter(Boolean);
+          weaponNames.sort((a, b) => {
+            if (a === '-') return -1;
+            if (b === '-') return 1;
+            return a.localeCompare(b);
+          });
+          window._cachedDeityWeaponOptionsHtml = weaponNames.map(w => `<option value="${escapeDeityHtml(w)}">${escapeDeityHtml(w)}</option>`).join('');
+          weaponSelect.innerHTML = window._cachedDeityWeaponOptionsHtml;
         }
-        if (!weaponNames.length && typeof window.BUNDLED_SRD_EQUIPMENT !== 'undefined' && Array.isArray(window.BUNDLED_SRD_EQUIPMENT)) {
-          weaponNames = window.BUNDLED_SRD_EQUIPMENT.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
-        }
-        if (!weaponNames.length && typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-          weaponNames = window.BUNDLED_SRD_CORE_CATALOG.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
-        }
-        const naturalWeapons = ['Bite', 'Claw', 'Slam', 'Gore', 'Tentacle', 'Unarmed Strike'];
-        const fallbackWeapons = [
-          'Battleaxe', 'Club', 'Dagger', 'Falchion', 'Flail', 'Greataxe', 'Greatclub',
-          'Greatsword', 'Halberd', 'Handaxe', 'Heavy Crossbow', 'Heavy Flail', 'Heavy Mace',
-          'Heavy Pick', 'Javelin', 'Kama', 'Kukri', 'Lance', 'Light Crossbow', 'Light Flail',
-          'Light Hammer', 'Light Mace', 'Light Pick', 'Longbow', 'Longspear', 'Longsword',
-          'Morningstar', 'Net', 'Nunchaku', 'Quarterstaff', 'Rapier', 'Scimitar', 'Scythe',
-          'Shortbow', 'Shortspear', 'Short Sword', 'Siangham', 'Sickle', 'Sling', 'Spear',
-          'Trident', 'Warhammer', 'Whip'
-        ];
-        weaponNames = Array.from(new Set(['-', ...naturalWeapons, ...weaponNames, ...fallbackWeapons])).filter(Boolean);
-        weaponNames.sort((a, b) => {
-          if (a === '-') return -1;
-          if (b === '-') return 1;
-          return a.localeCompare(b);
-        });
-        weaponSelect.innerHTML = weaponNames.map(w => `<option value="${escapeDeityHtml(w)}">${escapeDeityHtml(w)}</option>`).join('');
       }
 
       // 3. Populate Domains Grid
@@ -5738,10 +5751,27 @@
 
       closeDeitySpotlightDropdown();
 
+      // 0ms IMMEDIATE OPEN: Open editor right away with search term
+      openCustomDeityEditorModal({ name: q });
+
+      // Show prominent animated loading banner inside editor
+      const statusBanner = document.getElementById('deity-editor-ai-status-banner');
+      if (statusBanner) {
+        statusBanner.className = 'p-3 rounded-xl bg-purple-950/80 border border-purple-500/70 text-purple-200 text-xs flex items-center justify-between gap-2 shadow-lg mb-2 animate-pulse';
+        statusBanner.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-base animate-spin">⚡</span>
+            <span>Rule Master AI fetching D&amp;D 3.5e data for "<strong>${escapeDeityHtml(q)}</strong>"...</span>
+          </div>
+          <span class="text-[10px] font-mono text-purple-400">Live AI Search</span>
+        `;
+        statusBanner.classList.remove('hidden');
+      }
+
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           title: 'Rule Master AI',
-          breakdown: `Searching "${escapeDeityHtml(q)}" across official D&D 3.5e sourcebooks...`,
+          breakdown: `Rule Master AI fetching D&D 3.5e data for "${escapeDeityHtml(q)}"...`,
           icon: '⚡'
         });
       }
@@ -5771,8 +5801,21 @@
         deityObj.type = 'Deity';
         if (!deityObj.favoredWeapon && deityObj.weapon) deityObj.favoredWeapon = deityObj.weapon;
 
-        // Open editor pre-filled for user review & customization
+        // Re-populate editor fields live
         openCustomDeityEditorModal(deityObj);
+
+        // Update banner to success emerald
+        if (statusBanner) {
+          statusBanner.className = 'p-3 rounded-xl bg-emerald-950/90 border border-emerald-500/70 text-emerald-200 text-xs flex items-center justify-between gap-2 shadow-lg mb-2';
+          statusBanner.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="text-base">✅</span>
+              <span>Rule Master AI populated fields for "<strong>${escapeDeityHtml(deityObj.name)}</strong>". Review &amp; click Save.</span>
+            </div>
+            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-emerald-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
+          `;
+          statusBanner.classList.remove('hidden');
+        }
 
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
@@ -5784,14 +5827,24 @@
       } catch (err) {
         console.warn('AI Deity lookup warning / fallback:', err);
         const errMsg = (err && err.message) ? err.message : 'AI lookup unavailable';
+        if (statusBanner) {
+          statusBanner.className = 'p-3 rounded-xl bg-amber-950/90 border border-amber-600/70 text-amber-200 text-xs flex items-center justify-between gap-2 shadow-lg mb-2';
+          statusBanner.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="text-base">⚠️</span>
+              <span>${escapeDeityHtml(errMsg)} — ready for manual setup.</span>
+            </div>
+            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-amber-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
+          `;
+          statusBanner.classList.remove('hidden');
+        }
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
             title: 'AI Lookup Notice',
-            breakdown: `${errMsg} — opened Editor for manual setup.`,
+            breakdown: `${errMsg} — ready for manual setup.`,
             icon: '⚡'
           });
         }
-        openCustomDeityEditorModal({ name: q });
       }
     }
 
@@ -5849,35 +5902,7 @@
         document.body.appendChild(modal);
       }
 
-      // 1. Populate Feats Datalist
-      const featsDatalist = document.getElementById('custom-domain-feats-datalist');
-      if (featsDatalist) {
-        let featNames = [];
-        if (window.SrdCompendium && typeof window.SrdCompendium.getAllFeats === 'function') {
-          const fList = window.SrdCompendium.getAllFeats();
-          if (Array.isArray(fList)) featNames = fList.map(f => typeof f === 'string' ? f : f?.name).filter(Boolean);
-        }
-        if (!featNames.length && typeof window.BUNDLED_SRD_FEATS !== 'undefined') {
-          featNames = Object.keys(window.BUNDLED_SRD_FEATS);
-        }
-        featNames = Array.from(new Set(featNames)).sort();
-        featsDatalist.innerHTML = featNames.map(f => `<option value="${escapeDeityHtml(f)}"></option>`).join('');
-      }
-
-      // 2. Populate Spells Datalist
-      const spellsDatalist = document.getElementById('custom-domain-spells-datalist');
-      if (spellsDatalist) {
-        let spellNames = [];
-        if (window.SrdCompendium && typeof window.SrdCompendium.getAllSpells === 'function') {
-          const sList = window.SrdCompendium.getAllSpells();
-          if (Array.isArray(sList)) spellNames = sList.map(s => typeof s === 'string' ? s : s?.name).filter(Boolean);
-        }
-        if (!spellNames.length && typeof window.BUNDLED_SRD_SPELLS !== 'undefined') {
-          spellNames = Object.keys(window.BUNDLED_SRD_SPELLS);
-        }
-        spellNames = Array.from(new Set(spellNames)).sort();
-        spellsDatalist.innerHTML = spellNames.map(s => `<option value="${escapeDeityHtml(s)}"></option>`).join('');
-      }
+      // Interactive pickers handle search on demand (Zero datalist bottleneck)
 
       // 3. Render Skill Chips
       const skillsGrid = document.getElementById('custom-domain-skills-grid');
@@ -5953,6 +5978,7 @@
 
       modal.classList.remove('hidden');
       modal.style.display = 'flex';
+      updateAllDomainBadges();
       if (nameInput && !initialData.name) {
         setTimeout(() => nameInput.focus(), 100);
       }
@@ -5966,9 +5992,9 @@
       }
     }
 
-    async function autofillDomainEditorViaAi() {
+    async function autofillDomainEditorViaAi(domainName = null) {
       const nameInput = document.getElementById('custom-domain-name');
-      const q = nameInput ? nameInput.value.trim() : '';
+      const q = domainName || (nameInput ? nameInput.value.trim() : '');
       if (!q) {
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
@@ -5981,6 +6007,22 @@
         }
         if (nameInput) nameInput.focus();
         return;
+      }
+
+      // 0ms IMMEDIATE OPEN
+      openCustomDomainEditorModal({ name: q });
+
+      const statusBanner = document.getElementById('domain-editor-ai-status-banner');
+      if (statusBanner) {
+        statusBanner.className = 'p-3 rounded-xl bg-purple-950/80 border border-purple-500/70 text-purple-200 text-xs flex items-center justify-between gap-2 shadow-lg mb-2 animate-pulse';
+        statusBanner.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-base animate-spin">⚡</span>
+            <span>Rule Master AI fetching official D&amp;D 3.5e data for "<strong>${escapeDeityHtml(q)}</strong>" Domain...</span>
+          </div>
+          <span class="text-[10px] font-mono text-purple-400">Live AI Search</span>
+        `;
+        statusBanner.classList.remove('hidden');
       }
 
       if (typeof showDiceTopToast === 'function') {
@@ -6011,7 +6053,20 @@
           throw new Error(`No official D&D 3.5e domain found for "${q}".`);
         }
 
+        // Live update fields
         openCustomDomainEditorModal(domainObj);
+
+        if (statusBanner) {
+          statusBanner.className = 'p-3 rounded-xl bg-emerald-950/90 border border-emerald-500/70 text-emerald-200 text-xs flex items-center justify-between gap-2 shadow-lg mb-2';
+          statusBanner.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="text-base">✅</span>
+              <span>Rule Master AI populated official fields for "<strong>${escapeDeityHtml(domainObj.name)}</strong>" Domain. Review &amp; click Save.</span>
+            </div>
+            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-emerald-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
+          `;
+          statusBanner.classList.remove('hidden');
+        }
 
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
@@ -6023,14 +6078,390 @@
       } catch (err) {
         console.warn('AI Domain lookup warning:', err);
         const errMsg = (err && err.message) ? err.message : 'AI lookup unavailable';
+        if (statusBanner) {
+          statusBanner.className = 'p-3 rounded-xl bg-amber-950/90 border border-amber-600/70 text-amber-200 text-xs flex items-center justify-between gap-2 shadow-lg mb-2';
+          statusBanner.innerHTML = `
+            <div class="flex items-center gap-2">
+              <span class="text-base">⚠️</span>
+              <span>${escapeDeityHtml(errMsg)} — ready for manual setup.</span>
+            </div>
+            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-amber-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
+          `;
+          statusBanner.classList.remove('hidden');
+        }
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
             title: 'AI Lookup Notice',
-            breakdown: `${errMsg} — opened Editor for manual setup.`,
+            breakdown: `${errMsg} — ready for manual setup.`,
             icon: '⚡'
           });
         }
       }
+    }
+
+    // =========================================================================
+    // ⚜️ DOMAIN PICKER HELPERS & SPOTLIGHT CONTROLLERS
+    // =========================================================================
+    const CANONICAL_DOMAIN_SLAS = [
+      { name: 'Turn Undead', uses: '3 + Cha mod/day', desc: 'Turn or destroy undead as a good cleric.' },
+      { name: 'Rebuke Undead', uses: '3 + Cha mod/day', desc: 'Rebuke or command undead as an evil cleric.' },
+      { name: 'Smite', uses: '1/day', desc: 'Add Cha bonus to attack and +1 dmg/level against designated foes.' },
+      { name: 'Speak with Animals', uses: '1/day', desc: 'Spell-like ability to communicate with natural animals.' },
+      { name: 'Protective Ward', uses: '1/day', desc: 'Grant touched creature sacred resistance bonus equal to cleric level.' },
+      { name: 'Death Touch', uses: '1/day', desc: 'Roll 1d6 per cleric level; if exceeds victim HP, target dies instantly.' },
+      { name: 'Strength Surge', uses: '1/day', desc: 'Perform a feat of strength as an enhancement bonus equal to cleric level.' },
+      { name: 'Inspire Allies', uses: '1/day', desc: 'Grant +2 morale bonus on saves against fear and charm.' },
+      { name: 'Lightning Stroke', uses: '1/day', desc: 'Call down a stroke of electricity dealing 1d6 electricity damage.' },
+      { name: 'Water Breathing', uses: 'At will', desc: 'Breathe freely underwater as a continuous natural ability.' },
+      { name: 'Turn Fire Creatures', uses: '3 + Cha mod/day', desc: 'Turn or destroy water creatures; rebuke or command fire creatures.' },
+      { name: 'Turn Water Creatures', uses: '3 + Cha mod/day', desc: 'Turn or destroy fire creatures; rebuke or command water creatures.' },
+      { name: 'Turn Earth Creatures', uses: '3 + Cha mod/day', desc: 'Turn or destroy air creatures; rebuke or command earth creatures.' },
+      { name: 'Turn Air Creatures', uses: '3 + Cha mod/day', desc: 'Turn or destroy earth creatures; rebuke or command air creatures.' },
+      { name: 'Free Metamagic', uses: '1/day', desc: 'Apply Extend Spell, Enlarge Spell, or Empower Spell without higher slot.' }
+    ];
+
+    function getAllFeatsFromCompendiumAndCustom() {
+      let feats = [];
+      if (window.SrdCompendium && typeof window.SrdCompendium.getAllFeats === 'function') {
+        const fList = window.SrdCompendium.getAllFeats();
+        if (Array.isArray(fList)) feats.push(...fList);
+      }
+      if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+        feats.push(...character.customDb.filter(e => e && (e.type === 'Feat' || e.category === 'Feat')));
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        feats.push(...masterDb.filter(e => e && (e.type === 'Feat' || e.category === 'Feat')));
+      }
+      const map = new Map();
+      feats.forEach(f => {
+        const name = typeof f === 'string' ? f : (f.name || '');
+        if (name && !map.has(name.toLowerCase())) {
+          map.set(name.toLowerCase(), typeof f === 'string' ? { name: f, category: 'General' } : f);
+        }
+      });
+      return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    function getAllSpellsFromCompendiumAndCustom() {
+      let spells = [];
+      if (window.SrdCompendium && typeof window.SrdCompendium.getAllSpells === 'function') {
+        const sList = window.SrdCompendium.getAllSpells();
+        if (Array.isArray(sList)) spells.push(...sList);
+      }
+      if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+        spells.push(...character.customDb.filter(e => e && (e.type === 'Spell' || e.category === 'Spell')));
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        spells.push(...masterDb.filter(e => e && (e.type === 'Spell' || e.category === 'Spell')));
+      }
+      const map = new Map();
+      spells.forEach(s => {
+        const name = typeof s === 'string' ? s : (s.name || '');
+        if (name && !map.has(name.toLowerCase())) {
+          map.set(name.toLowerCase(), typeof s === 'string' ? { name: s, school: 'Universal' } : s);
+        }
+      });
+      return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    function isFeatInDb(featName) {
+      if (!featName) return false;
+      const clean = featName.trim().toLowerCase();
+      if (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+        const item = window.SrdCompendium.getByName(featName);
+        if (item && (item.type === 'Feat' || item.category === 'Feat')) return true;
+      }
+      if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+        if (character.customDb.some(e => e && String(e.name || '').toLowerCase() === clean && (e.type === 'Feat' || e.category === 'Feat'))) return true;
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        if (masterDb.some(e => e && String(e.name || '').toLowerCase() === clean && (e.type === 'Feat' || e.category === 'Feat'))) return true;
+      }
+      if (typeof window.BUNDLED_SRD_FEATS !== 'undefined' && window.BUNDLED_SRD_FEATS[featName]) return true;
+      return false;
+    }
+
+    function isSpellInDb(spellName) {
+      if (!spellName) return false;
+      const clean = spellName.trim().toLowerCase();
+      if (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+        const item = window.SrdCompendium.getByName(spellName);
+        if (item && (item.type === 'Spell' || item.category === 'Spell')) return true;
+      }
+      if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+        if (character.customDb.some(e => e && String(e.name || '').toLowerCase() === clean && (e.type === 'Spell' || e.category === 'Spell'))) return true;
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        if (masterDb.some(e => e && String(e.name || '').toLowerCase() === clean && (e.type === 'Spell' || e.category === 'Spell'))) return true;
+      }
+      if (typeof window.BUNDLED_SRD_SPELLS !== 'undefined' && window.BUNDLED_SRD_SPELLS[spellName]) return true;
+      return false;
+    }
+
+    function updateDomainFeatBadge(featName) {
+      const badgeEl = document.getElementById('custom-domain-feat-badge');
+      if (!badgeEl) return;
+      const clean = (featName || '').trim();
+      if (!clean) {
+        badgeEl.innerHTML = '';
+        return;
+      }
+      const inDb = isFeatInDb(clean);
+      if (inDb) {
+        badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
+      } else {
+        const safe = clean.replace(/'/g, "\\'");
+        badgeEl.innerHTML = `<button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Feat', '${safe}')" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch feat via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
+      }
+    }
+
+    function updateDomainSpellBadge(lvl, spellName) {
+      const badgeEl = document.getElementById(`custom-domain-spell-badge-${lvl}`);
+      if (!badgeEl) return;
+      const clean = (spellName || '').trim();
+      if (!clean) {
+        badgeEl.innerHTML = '';
+        return;
+      }
+      const inDb = isSpellInDb(clean);
+      if (inDb) {
+        badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1 py-0.5">✓ DB</span>';
+      } else {
+        const safe = clean.replace(/'/g, "\\'");
+        badgeEl.innerHTML = `<button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Spell', '${safe}', ${lvl})" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1 py-0.5 transition cursor-pointer active:scale-95" title="Not in DB — Click to fetch via Rule Master AI & add to Master DB">➕ AI</button>`;
+      }
+    }
+
+    function updateAllDomainBadges() {
+      const featInput = document.getElementById('custom-domain-feat');
+      if (featInput) updateDomainFeatBadge(featInput.value);
+      for (let lvl = 1; lvl <= 9; lvl++) {
+        const spInput = document.getElementById(`custom-domain-spell-${lvl}`);
+        if (spInput) updateDomainSpellBadge(lvl, spInput.value);
+      }
+    }
+
+    async function fetchAndAddMissingDomainEntryViaAi(type, name, lvl = null) {
+      const clean = (name || '').trim();
+      if (!clean) return;
+
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          title: 'Rule Master AI',
+          breakdown: `Fetching ${type} "${clean}" across D&D 3.5e rulebooks...`,
+          icon: '⚡'
+        });
+      }
+
+      try {
+        let entry = null;
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchSingleAiRuleObjects === 'function') {
+          const key = RuleMaster.getApiKey();
+          if (!key) {
+            RuleMaster.promptApiKey();
+            throw new Error('Gemini API key not configured.');
+          }
+          const results = await RuleMaster.fetchSingleAiRuleObjects(clean, type, key);
+          if (results && results.length) {
+            entry = results.find(e => e && String(e.type || '').toLowerCase() === type.toLowerCase()) || results[0];
+          }
+        }
+        if (!entry || !entry.name) {
+          throw new Error(`AI could not locate official D&D 3.5e data for ${type} "${clean}".`);
+        }
+
+        entry.type = type;
+        entry.isCustom = true;
+        entry.addedAt = new Date().toISOString();
+
+        if (typeof character !== 'undefined') {
+          if (!Array.isArray(character.customDb)) character.customDb = [];
+          const idx = character.customDb.findIndex(e => e && String(e.name || '').toLowerCase() === clean.toLowerCase() && String(e.type || '').toLowerCase() === type.toLowerCase());
+          if (idx >= 0) character.customDb[idx] = entry;
+          else character.customDb.push(entry);
+        }
+        if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+          const mIdx = masterDb.findIndex(e => e && String(e.name || '').toLowerCase() === clean.toLowerCase() && String(e.type || '').toLowerCase() === type.toLowerCase());
+          if (mIdx >= 0) masterDb[mIdx] = entry;
+          else masterDb.push(entry);
+        }
+
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.saveEntryToMasterDb === 'function') {
+          RuleMaster.saveEntryToMasterDb(entry);
+        }
+
+        if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+
+        if (type === 'Feat') {
+          updateDomainFeatBadge(clean);
+        } else if (type === 'Spell' && lvl !== null) {
+          updateDomainSpellBadge(lvl, clean);
+        }
+
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: `${type} Added to Master DB`,
+            breakdown: `"${entry.name}" has been verified and stored in Master DB.`,
+            icon: '✅'
+          });
+        }
+      } catch (err) {
+        console.warn('Failed to fetch missing domain entry:', err);
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Fetch Notice',
+            breakdown: err.message || 'AI fetch unavailable.',
+            icon: '⚠️'
+          });
+        }
+      }
+    }
+
+    let _activeDomainSpotlightCtx = { mode: 'feat', targetLvl: null, items: [] };
+
+    function openDomainFieldSpotlight(mode, targetLvl = null) {
+      if (typeof window.ensureModalsMounted === 'function') window.ensureModalsMounted();
+      const modal = document.getElementById('modal-domain-field-spotlight');
+      if (!modal) return;
+      if (modal.parentElement !== document.body) document.body.appendChild(modal);
+
+      _activeDomainSpotlightCtx = { mode, targetLvl, items: [] };
+
+      const titleEl = document.getElementById('domain-spotlight-field-title');
+      const iconEl = document.getElementById('domain-spotlight-icon');
+      const searchInput = document.getElementById('domain-spotlight-search');
+
+      if (mode === 'feat') {
+        if (titleEl) titleEl.textContent = 'Select Granted Bonus Feat (Compendium + Master DB)';
+        if (iconEl) iconEl.textContent = '⚔️';
+        if (searchInput) searchInput.placeholder = 'Search feats (e.g., Extend Spell, Blind-Fight)...';
+        _activeDomainSpotlightCtx.items = getAllFeatsFromCompendiumAndCustom();
+      } else if (mode === 'sla') {
+        if (titleEl) titleEl.textContent = 'Select Domain Active SLA / Power';
+        if (iconEl) iconEl.textContent = '⚡';
+        if (searchInput) searchInput.placeholder = 'Search domain powers (e.g., Smite, Ward, Turn Undead)...';
+        _activeDomainSpotlightCtx.items = CANONICAL_DOMAIN_SLAS;
+      } else if (mode === 'spell') {
+        if (titleEl) titleEl.textContent = `Select Domain Spell Level ${targetLvl} (Compendium + Master DB)`;
+        if (iconEl) iconEl.textContent = '📜';
+        if (searchInput) searchInput.placeholder = `Search level ${targetLvl} spells (e.g., Haste, Bless)...`;
+        const allSpells = getAllSpellsFromCompendiumAndCustom();
+        _activeDomainSpotlightCtx.items = allSpells.sort((a, b) => {
+          const aLvl = a.level !== undefined ? Number(a.level) : 99;
+          const bLvl = b.level !== undefined ? Number(b.level) : 99;
+          const aIsLvl = aLvl === targetLvl ? 0 : 1;
+          const bIsLvl = bLvl === targetLvl ? 0 : 1;
+          if (aIsLvl !== bIsLvl) return aIsLvl - bIsLvl;
+          return a.name.localeCompare(b.name);
+        });
+      }
+
+      modal.classList.remove('hidden');
+      modal.style.display = 'flex';
+      if (searchInput) {
+        searchInput.value = '';
+        setTimeout(() => { searchInput.focus(); }, 50);
+      }
+      renderDomainSpotlightResults('');
+    }
+
+    function closeDomainFieldSpotlight() {
+      const modal = document.getElementById('modal-domain-field-spotlight');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
+    }
+
+    function onDomainSpotlightFilter(val) {
+      renderDomainSpotlightResults(val);
+    }
+
+    function renderDomainSpotlightResults(query = '') {
+      const resultsEl = document.getElementById('domain-spotlight-results');
+      const countEl = document.getElementById('domain-spotlight-count');
+      if (!resultsEl) return;
+
+      const q = (query || '').toLowerCase().trim();
+      const ctx = _activeDomainSpotlightCtx;
+      const filtered = q
+        ? ctx.items.filter(item => {
+            const name = (item.name || '').toLowerCase();
+            const desc = (item.description || item.desc || item.benefit || '').toLowerCase();
+            const cat = (item.category || item.school || item.discipline || '').toLowerCase();
+            return name.includes(q) || desc.includes(q) || cat.includes(q);
+          })
+        : ctx.items;
+
+      if (countEl) countEl.textContent = `${filtered.length} matches`;
+
+      if (filtered.length === 0) {
+        resultsEl.innerHTML = `
+          <div class="p-6 text-center text-slate-400 space-y-2">
+            <span class="text-2xl block">🔍</span>
+            <p class="text-xs text-slate-300">No match found for "<strong>${escapeDeityHtml(query)}</strong>".</p>
+            ${ctx.mode === 'spell' ? `
+              <button type="button" onclick="selectDomainSpotlightCustom('${escapeDeityHtml(query).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-lg shadow transition cursor-pointer active:scale-95">
+                Use "${escapeDeityHtml(query)}" (Custom Spell)
+              </button>
+            ` : (ctx.mode === 'feat' ? `
+              <button type="button" onclick="selectDomainSpotlightCustom('${escapeDeityHtml(query).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-slate-950 font-black text-xs rounded-lg shadow transition cursor-pointer active:scale-95">
+                Use "${escapeDeityHtml(query)}" (Custom Feat)
+              </button>
+            ` : '')}
+          </div>
+        `;
+        return;
+      }
+
+      const display = filtered.slice(0, 30);
+      resultsEl.innerHTML = display.map(item => {
+        const name = item.name || '';
+        const safeName = name.replace(/'/g, "\\'");
+        const meta1 = ctx.mode === 'spell' ? (item.school || 'Spell') : (item.category || item.source || '');
+        const meta2 = ctx.mode === 'spell' ? (item.level !== undefined ? `Level ${item.level}` : '') : (item.uses || '');
+        const desc = item.benefit || item.shortDescription || item.description || item.desc || '';
+
+        return `
+          <button type="button" onclick="selectDomainSpotlightItem('${safeName}')" class="w-full text-left p-2 rounded-xl bg-slate-900/60 hover:bg-purple-950/70 border border-slate-800/80 hover:border-purple-500/60 transition flex items-start justify-between gap-3 group cursor-pointer active:scale-[0.99]">
+            <div class="space-y-0.5 flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-bold text-white text-xs group-hover:text-purple-200">${escapeDeityHtml(name)}</span>
+                ${meta1 ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 border border-slate-800 text-purple-300 font-mono">${escapeDeityHtml(meta1)}</span>` : ''}
+                ${meta2 ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-950/80 border border-amber-700 text-amber-300 font-bold font-mono">${escapeDeityHtml(meta2)}</span>` : ''}
+              </div>
+              ${desc ? `<p class="text-[10px] text-slate-400 line-clamp-1">${escapeDeityHtml(desc)}</p>` : ''}
+            </div>
+            <span class="text-xs text-purple-400 group-hover:translate-x-0.5 transition-transform shrink-0 pt-1 font-bold">Select ➔</span>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectDomainSpotlightItem(name) {
+      const ctx = _activeDomainSpotlightCtx;
+      if (ctx.mode === 'feat') {
+        const featInput = document.getElementById('custom-domain-feat');
+        if (featInput) featInput.value = name;
+        updateDomainFeatBadge(name);
+      } else if (ctx.mode === 'sla') {
+        const slaInput = document.getElementById('custom-domain-sla-name');
+        if (slaInput) slaInput.value = name;
+        const found = CANONICAL_DOMAIN_SLAS.find(s => s.name.toLowerCase() === name.toLowerCase());
+        if (found && found.uses) {
+          const usesSelect = document.getElementById('custom-domain-sla-uses');
+          if (usesSelect) usesSelect.value = found.uses;
+        }
+      } else if (ctx.mode === 'spell' && ctx.targetLvl !== null) {
+        const spInput = document.getElementById(`custom-domain-spell-${ctx.targetLvl}`);
+        if (spInput) spInput.value = name;
+        updateDomainSpellBadge(ctx.targetLvl, name);
+      }
+      closeDomainFieldSpotlight();
+    }
+
+    function selectDomainSpotlightCustom(customName) {
+      selectDomainSpotlightItem(customName);
     }
 
     function saveCustomDomainFromEditor() {
@@ -6082,6 +6513,44 @@
           });
         }
       }
+
+      // Auto-register any missing feat or spell in character.customDb & masterDb
+      if (feat && !isFeatInDb(feat)) {
+        const featSlug = feat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'feat';
+        const autoFeat = {
+          schemaVersion: 2,
+          id: 'feat-' + featSlug,
+          type: 'Feat',
+          category: 'General',
+          name: feat,
+          source: srcInput?.value || 'Domain Bonus',
+          benefit: `Granted bonus feat from ${name} Domain.`,
+          isCustom: true,
+          addedAt: new Date().toISOString()
+        };
+        if (typeof character !== 'undefined' && Array.isArray(character.customDb)) character.customDb.push(autoFeat);
+        if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) masterDb.push(autoFeat);
+      }
+
+      spellsList.forEach(sp => {
+        if (sp.name && !isSpellInDb(sp.name)) {
+          const autoSpell = {
+            schemaVersion: 2,
+            id: sp.id,
+            type: 'Spell',
+            category: 'Spell',
+            name: sp.name,
+            level: sp.level,
+            school: 'Universal',
+            source: srcInput?.value || 'Domain Spell',
+            description: `Domain spell from ${name} Domain (Level ${sp.level}).`,
+            isCustom: true,
+            addedAt: new Date().toISOString()
+          };
+          if (typeof character !== 'undefined' && Array.isArray(character.customDb)) character.customDb.push(autoSpell);
+          if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) masterDb.push(autoSpell);
+        }
+      });
 
       const grantedPower = {
         description: powerDesc,
@@ -6196,6 +6665,14 @@
     window.autofillDomainEditorViaAi = autofillDomainEditorViaAi;
     window.saveCustomDomainFromEditor = saveCustomDomainFromEditor;
     window.getAllDomainsWithCustom = getAllDomainsWithCustom;
+    window.openDomainFieldSpotlight = openDomainFieldSpotlight;
+    window.closeDomainFieldSpotlight = closeDomainFieldSpotlight;
+    window.onDomainSpotlightFilter = onDomainSpotlightFilter;
+    window.selectDomainSpotlightItem = selectDomainSpotlightItem;
+    window.selectDomainSpotlightCustom = selectDomainSpotlightCustom;
+    window.updateDomainFeatBadge = updateDomainFeatBadge;
+    window.updateDomainSpellBadge = updateDomainSpellBadge;
+    window.fetchAndAddMissingDomainEntryViaAi = fetchAndAddMissingDomainEntryViaAi;
 
     function onProfileRaceChange(raceName) {
       const card = document.getElementById('profile-race-traits-card');
@@ -6268,7 +6745,7 @@
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-[9px] uppercase font-bold text-slate-400">Irksal Statlar:</span>
+          <span class="text-[9px] uppercase font-bold text-slate-400">Racial Ability Adjustments:</span>
           ${statBadges}
         </div>
 

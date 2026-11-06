@@ -5731,14 +5731,18 @@
       if (matches.length === 0) {
         container.innerHTML = `
           <div class="p-6 text-center text-slate-400 space-y-2">
-            <div class="text-3xl">\uD83D\uDD0D</div>
+            <div class="text-3xl">&#x1F50D;</div>
             <p class="text-xs">No matching ${type === 'Spell' ? 'spell' : (type === 'Maneuver' ? 'maneuver' : 'stance')} found in Master DB.</p>
             <p class="text-[11px] text-slate-500">Click the <strong>Rule Master AI</strong> button below to fetch it directly from the 3.5e rulebooks.</p>
           </div>
         `;
         return;
       }
-      matches.forEach(item => {
+
+      const totalMatches = matches.length;
+      const displayMatches = (!query && totalMatches > 60) ? matches.slice(0, 60) : matches;
+
+      displayMatches.forEach(item => {
         const cleanName = (item.name || '').toLowerCase().trim();
         let alreadyKnown = false;
 
@@ -5894,6 +5898,13 @@
         `;
         container.appendChild(card);
       });
+
+      if (!query && totalMatches > 60) {
+        const foot = document.createElement('div');
+        foot.className = 'p-3 text-center text-xs text-slate-400 bg-slate-900/60 border border-slate-800 rounded-xl my-2 font-mono';
+        foot.textContent = `Showing top 60 of ${totalMatches} entries — use search or filters above to narrow results`;
+        container.appendChild(foot);
+      }
     }
 
     function addMasterDbItemToCharacter(escapedName) {

@@ -180,7 +180,10 @@
         return;
       }
 
-      filtered.forEach(f => {
+      const totalFiltered = filtered.length;
+      const displayFiltered = (!query && totalFiltered > 60) ? filtered.slice(0, 60) : filtered;
+
+      displayFiltered.forEach(f => {
         const isOwned = ownedSet.has(f.name.toLowerCase().trim());
         const pEval = typeof checkFeatPrerequisites === 'function' ? checkFeatPrerequisites(f) : { allMet: true, isAlreadyKnownFromClass: false };
         const isClassKnown = Boolean(pEval && pEval.isAlreadyKnownFromClass);
@@ -217,6 +220,13 @@
         `;
         listEl.appendChild(itemDiv);
       });
+
+      if (!query && totalFiltered > 60) {
+        const foot = document.createElement('div');
+        foot.className = 'p-3 text-center text-xs text-slate-400 bg-slate-950/60 border border-slate-800 rounded-xl my-2 font-mono';
+        foot.textContent = `Showing top 60 of ${totalFiltered} entries — use search or filters above to narrow results`;
+        listEl.appendChild(foot);
+      }
     }
 
     function selectFeatFromPicker(featName) {
