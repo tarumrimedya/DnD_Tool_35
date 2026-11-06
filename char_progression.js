@@ -7692,12 +7692,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           <div id="cleric-domain-deity-banner" class="px-3.5 py-2 bg-slate-950/90 border-b border-slate-800 text-[11px] flex flex-wrap items-center justify-between gap-2"></div>
           <div class="p-3 border-b border-slate-800 bg-slate-950/60 flex flex-wrap items-center justify-between gap-2">
             <div class="relative flex-1 min-w-[200px]">
-              <input id="cleric-domain-search-input" type="text" oninput="renderClericDomainPickerList()" placeholder="Search 36 domains, granted powers, or domain spells..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white font-bold focus:border-yellow-500 focus:outline-none placeholder-slate-500">
+              <input id="cleric-domain-search-input" type="text" oninput="renderClericDomainPickerList()" placeholder="Search domains, granted powers, or domain spells..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white font-bold focus:border-yellow-500 focus:outline-none placeholder-slate-500">
               <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
             </div>
+            <button type="button" onclick="if(typeof openCustomDomainEditorModal==='function') openCustomDomainEditorModal();" class="text-xs bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-600/70 font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+              <span>⚜️</span>
+              <span>+ Create / AI Fetch Domain</span>
+            </button>
             <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-300 cursor-pointer select-none bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700 hover:border-yellow-600/60" title="Allow selecting domains outside your Deity's portfolio or Alignment restrictions (House Rule / DM Override)">
               <input id="cleric-domain-dm-override" type="checkbox" onchange="window._clericDomainDmOverride = this.checked; renderClericDomainPickerList();" class="accent-amber-500 rounded cursor-pointer">
-              <span>DM Override (Unlock All 36)</span>
+              <span>DM Override (Unlock All)</span>
             </label>
             <div id="cleric-domain-current-summary" class="text-[11px] text-yellow-300 font-bold"></div>
           </div>
@@ -7792,9 +7796,35 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
 
       const query = (document.getElementById('cleric-domain-search-input')?.value || '').toLowerCase().trim();
-      const allDomains = (window.SrdCompendium && typeof window.SrdCompendium.getAllDomains === 'function')
+      
+      // Load Compendium + Custom Domains (character.customDb, masterDb, localStorage)
+      let customDomainsList = [];
+      if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+        customDomainsList.push(...character.customDb.filter(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain')));
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        customDomainsList.push(...masterDb.filter(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain')));
+      }
+      try {
+        const stored = localStorage.getItem('dnd35_custom_domains');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) customDomainsList.push(...parsed);
+        }
+      } catch (e) {}
+
+      const compendiumDomains = (window.SrdCompendium && typeof window.SrdCompendium.getAllDomains === 'function')
         ? window.SrdCompendium.getAllDomains()
         : [];
+
+      const domainMap = new Map();
+      compendiumDomains.forEach(d => {
+        if (d && d.name) domainMap.set(d.name.toLowerCase(), d);
+      });
+      customDomainsList.forEach(d => {
+        if (d && d.name) domainMap.set(d.name.toLowerCase(), d);
+      });
+      const allDomains = Array.from(domainMap.values());
       const domainSpellsMap = getDomainSpellsByDomainMap();
 
       const entries = allDomains.filter(d => {
@@ -7808,13 +7838,29 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const meta = {
           grantedPower: d.grantedPower?.description || d.description || '',
           classSkills: d.grantedPower?.classSkills || d.classSkills || [],
-          spells: d.spells || []
+          spells: d.spells || [],
+          source: d.source || (d.isCustom ? 'Custom Domain' : 'PHB / SRD')
         };
         const elig = (typeof checkClericDomainEligibility === 'function')
           ? checkClericDomainEligibility(domName, character)
           : { eligible: true, alignmentBlocked: false, deityBlocked: false, inDeityPortfolio: false, reason: '' };
         return { domName, meta, elig };
       });
+
+      if (entries.length === 0) {
+        const safeQ = query.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+        listEl.innerHTML = `
+          <div class="py-10 text-center space-y-3">
+            <span class="text-3xl block">⚜️</span>
+            <p class="text-xs text-slate-300">No domain matching "<strong>${query}</strong>" found in compendium.</p>
+            <button type="button" onclick="if(typeof openCustomDomainEditorModal==='function') openCustomDomainEditorModal({ name: '${safeQ}' });" class="px-4 py-2 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-xl shadow-lg transition inline-flex items-center gap-2 cursor-pointer active:scale-95">
+              <span>🔮</span>
+              <span>Create / AI Fetch "${query}" Domain</span>
+            </button>
+          </div>
+        `;
+        return;
+      }
 
       // Sort: 1. Currently selected in this slot, 2. Eligible & in Deity Portfolio, 3. Eligible, 4. Restricted
       entries.sort((a, b) => {
@@ -7866,7 +7912,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             <div class="space-y-1.5 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-xs font-extrabold text-yellow-300 flex items-center gap-1">⚜️ ${domName} Domain</span>
-                <span class="text-[10px] text-slate-500 font-mono">PHB / SRD</span>
+                <span class="text-[10px] text-slate-500 font-mono">${meta.source || 'PHB / SRD'}</span>
                 ${statusBadges}
               </div>
               <p class="text-[11px] text-slate-200"><strong class="text-amber-300">Granted Power:</strong> ${meta.grantedPower}</p>
@@ -7887,7 +7933,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const deityMeta = (typeof getCharacterDeityMeta === 'function') ? getCharacterDeityMeta(character) : null;
       const favWeapon = (deityMeta && deityMeta.weapon && deityMeta.weapon !== '-') ? deityMeta.weapon : "Deity's Favored Weapon";
 
-      // Domain-granted bonus feats (War -> Weapon Focus & Martial Weapon Proficiency; Darkness -> Blind-Fight; Rune -> Scribe Scroll)
+      // Domain-granted bonus feats (War -> Weapon Focus & Martial Weapon Proficiency; Darkness -> Blind-Fight; Rune -> Scribe Scroll; or custom domain grantedFeats)
       const domainGrantedFeats = [];
       if (chosen.includes('War')) {
         domainGrantedFeats.push(`[Domain Bonus] Martial Weapon Proficiency (${favWeapon})`);
@@ -7899,6 +7945,33 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (chosen.includes('Rune')) {
         domainGrantedFeats.push(`[Domain Bonus] Scribe Scroll`);
       }
+
+      // Check dynamic domain definitions for granted bonus feats (e.g., Planning -> Extend Spell, Undeath -> Extra Turning)
+      chosen.forEach(domName => {
+        let dDef = null;
+        if (window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function') {
+          dDef = window.SrdCompendium.getDomain(domName);
+        }
+        if (!dDef && typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+          dDef = character.customDb.find(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase() === String(domName || '').toLowerCase());
+        }
+        if (!dDef && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+          dDef = masterDb.find(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase() === String(domName || '').toLowerCase());
+        }
+        if (dDef) {
+          const gFeats = dDef.grantedPower?.grantedFeats || dDef.grantedFeats;
+          if (Array.isArray(gFeats)) {
+            gFeats.forEach(featName => {
+              if (featName && typeof featName === 'string') {
+                const badge = `[Domain Bonus] ${featName}`;
+                if (!domainGrantedFeats.includes(badge)) {
+                  domainGrantedFeats.push(badge);
+                }
+              }
+            });
+          }
+        }
+      });
 
       // Update specialAbilities on Cleric 1 row and character.specialAbilities
       if (Array.isArray(character.levelProgression)) {
@@ -7934,9 +8007,15 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         return !/^⚜️\s*Domain:/i.test(n) && !/\bDomain\s*\(Granted Power\)/i.test(n);
       });
       chosen.forEach(d => {
-        const meta = (window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
+        let meta = (window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
           ? window.SrdCompendium.getDomain(d)
           : (typeof DND35_CLERIC_DOMAINS === 'object' ? DND35_CLERIC_DOMAINS[d] : null);
+        if (!meta && typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+          meta = character.customDb.find(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase() === String(d || '').toLowerCase());
+        }
+        if (!meta && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+          meta = masterDb.find(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase() === String(d || '').toLowerCase());
+        }
         const benefitText = (d === 'War' && favWeapon)
           ? `Free Martial Weapon Proficiency (${favWeapon}) and Weapon Focus (${favWeapon}).`
           : (meta?.grantedPower?.description || meta?.grantedPower || meta?.description || `${d} Domain Granted Power`);

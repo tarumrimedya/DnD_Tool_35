@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "cd8fdd23aaaad98e",
+  "compendiumHash": "027d7d6ff900201b",
   "generatedAt": "2026-11-04T15:37:19.474Z",
   "totalEntries": 4995,
   "chunks": {
@@ -56,7 +56,7 @@
     "srd_domains.json": {
       "count": 36,
       "bytes": 75842,
-      "hash": "6d0dc8e768daac52",
+      "hash": "19c974cf6646172d",
       "eagerLoad": true
     },
     "srd_companions.json": {

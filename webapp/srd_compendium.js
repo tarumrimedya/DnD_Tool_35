@@ -674,18 +674,58 @@
           }
         } catch (_) {}
       }
-      return list;
+
+      const merged = [...list];
+      const seen = new Set(list.map((d) => String(d.name || '').toLowerCase().trim()));
+
+      // 1. Merge Custom Domains from character.customDb
+      if (typeof window !== 'undefined' && window.character && Array.isArray(window.character.customDb)) {
+        window.character.customDb.forEach((entry) => {
+          if (entry && String(entry.type || '').toLowerCase() === 'domain' && entry.name) {
+            const key = entry.name.toLowerCase().trim();
+            if (!seen.has(key)) {
+              seen.add(key);
+              merged.push(entry);
+            }
+          }
+        });
+      }
+
+      // 2. Merge Custom Domains cached in localStorage
+      if (typeof localStorage !== 'undefined') {
+        try {
+          const raw = localStorage.getItem('dnd35_custom_domains');
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              parsed.forEach((entry) => {
+                if (entry && entry.name) {
+                  const key = entry.name.toLowerCase().trim();
+                  if (!seen.has(key)) {
+                    seen.add(key);
+                    merged.push(entry);
+                  }
+                }
+              });
+            }
+          }
+        } catch (_) {}
+      }
+
+      return merged;
     },
 
     getDomain(idOrName) {
       if (!idOrName) return null;
-      this.getAllDomains();
+      const allDom = this.getAllDomains();
       const raw = String(idOrName).trim();
       const byId = this.getById(raw);
       if (byId && byId.type === 'Domain') return byId;
       const bySlug = this.getById(`dom-${raw.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`);
       if (bySlug && bySlug.type === 'Domain') return bySlug;
-      return this.getByName(raw, 'Domain');
+      const byName = this.getByName(raw, 'Domain');
+      if (byName) return byName;
+      return allDom.find((d) => d && (d.id === raw || String(d.name || '').toLowerCase() === raw.toLowerCase())) || null;
     },
 
     getAllTemplates() {

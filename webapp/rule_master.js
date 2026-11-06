@@ -2299,11 +2299,11 @@ Schema:
     }
   },
 
-  setQueryAndSearch(term, categoryHint = 'ALL') {
+  setQueryAndSearch(term, categoryHint = 'Feat') {
     const queryInput = document.getElementById('ai-rule-query');
     const catSelect = document.getElementById('ai-rule-category');
     if (queryInput) queryInput.value = term;
-    if (catSelect) catSelect.value = categoryHint;
+    if (catSelect && categoryHint && categoryHint !== 'ALL') catSelect.value = categoryHint;
     this.queryAiRule();
   },
 
@@ -2344,7 +2344,71 @@ Schema:
       if (!Array.isArray(raw) && typeof raw === 'object' && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
         const cloned = JSON.parse(JSON.stringify(raw));
         if (cloned.name) cloned.name = this.capitalizeTitle(this.cleanArrow(cloned.name));
-        return window.SchemaMigrator.upgradeEntryToV2(cloned);
+        const res = window.SchemaMigrator.upgradeEntryToV2(cloned);
+        if (cloned.type === 'Deity' || cloned.domains || cloned.portfolio || cloned.rank) {
+          if (cloned.favoredWeapon && !res.favoredWeapon) res.favoredWeapon = cloned.favoredWeapon;
+          if (cloned.weapon && !res.weapon) res.weapon = cloned.weapon;
+          if (!res.favoredWeapon && res.weapon) res.favoredWeapon = res.weapon;
+          if (!res.weapon && res.favoredWeapon) res.weapon = res.favoredWeapon;
+          if (cloned.domains && !res.domains) res.domains = cloned.domains;
+          if (cloned.alignment && !res.alignment) res.alignment = cloned.alignment;
+          if (cloned.rank && !res.rank) res.rank = cloned.rank;
+          if (cloned.portfolio && !res.portfolio) res.portfolio = cloned.portfolio;
+          if (cloned.title && !res.title) res.title = cloned.title;
+          if (cloned.icon && !res.icon) res.icon = cloned.icon;
+          if (cloned.symbol && !res.symbol) res.symbol = cloned.symbol;
+          if (cloned.category && !res.category) res.category = cloned.category;
+          if (cloned.source && !res.source) res.source = cloned.source;
+          if (cloned.description && !res.description) res.description = cloned.description;
+        }
+        if (cloned.type === 'Domain' || (cloned.category && String(cloned.category).toLowerCase().includes('domain'))) {
+          res.type = 'Domain';
+          res.category = cloned.category || res.category || 'Cleric Domain';
+          res.source = cloned.source || res.source || 'Spell Compendium';
+
+          if (cloned.grantedPower) {
+            if (typeof cloned.grantedPower === 'string') {
+              res.grantedPower = {
+                description: cloned.grantedPower,
+                classSkills: [],
+                grantedFeats: [],
+                spellLikeAbilities: []
+              };
+            } else if (typeof cloned.grantedPower === 'object') {
+              res.grantedPower = {
+                description: cloned.grantedPower.description || cloned.description || '',
+                classSkills: Array.isArray(cloned.grantedPower.classSkills) ? cloned.grantedPower.classSkills : [],
+                grantedFeats: Array.isArray(cloned.grantedPower.grantedFeats) ? cloned.grantedPower.grantedFeats : [],
+                spellLikeAbilities: Array.isArray(cloned.grantedPower.spellLikeAbilities) ? cloned.grantedPower.spellLikeAbilities : []
+              };
+            }
+          } else {
+            res.grantedPower = {
+              description: cloned.description || '',
+              classSkills: [],
+              grantedFeats: [],
+              spellLikeAbilities: []
+            };
+          }
+
+          const rawSpells = Array.isArray(cloned.spells) ? cloned.spells : (Array.isArray(cloned.domainSpells) ? cloned.domainSpells : (Array.isArray(res.spells) ? res.spells : []));
+          res.spells = rawSpells.map((s, idx) => {
+            const lvl = Number(s.level) || (idx + 1);
+            const name = String(s.name || '').trim();
+            const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const splId = s.id || (slug ? `spl-${slug}` : `spl-unknown-${lvl}`);
+            return { level: lvl, id: splId, name: name };
+          });
+
+          res.requiredAlignment = Array.isArray(cloned.requiredAlignment) ? cloned.requiredAlignment : [];
+          if (!Array.isArray(res.modifiers)) res.modifiers = Array.isArray(cloned.modifiers) ? cloned.modifiers : [];
+          if (cloned.description && !res.description) res.description = cloned.description;
+          if (!res.id || res.id.startsWith('entry_')) {
+            const domSlug = (cloned.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            res.id = `dom-${domSlug}`;
+          }
+        }
+        return res;
       }
     }
 
@@ -2375,32 +2439,62 @@ Schema:
 
     const cloned = Object.assign({}, raw);
     if (cloned.name) cloned.name = this.capitalizeTitle(this.cleanArrow(cloned.name));
+    if (cloned.type === 'Deity' || cloned.domains || cloned.portfolio || cloned.rank) {
+      if (cloned.favoredWeapon && !cloned.weapon) cloned.weapon = cloned.favoredWeapon;
+      if (cloned.weapon && !cloned.favoredWeapon) cloned.favoredWeapon = cloned.weapon;
+      if (!cloned.alignment) cloned.alignment = 'Any';
+      if (!Array.isArray(cloned.domains)) cloned.domains = [];
+    }
+    if (cloned.type === 'Domain' || (cloned.category && String(cloned.category).toLowerCase().includes('domain'))) {
+      cloned.type = 'Domain';
+      cloned.category = cloned.category || 'Cleric Domain';
+      if (!cloned.grantedPower) {
+        cloned.grantedPower = { description: cloned.description || '', classSkills: [], grantedFeats: [], spellLikeAbilities: [] };
+      } else if (typeof cloned.grantedPower === 'string') {
+        cloned.grantedPower = { description: cloned.grantedPower, classSkills: [], grantedFeats: [], spellLikeAbilities: [] };
+      }
+      const rawSpells = Array.isArray(cloned.spells) ? cloned.spells : (Array.isArray(cloned.domainSpells) ? cloned.domainSpells : []);
+      cloned.spells = rawSpells.map((s, idx) => {
+        const lvl = Number(s.level) || (idx + 1);
+        const name = String(s.name || '').trim();
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        return { level: lvl, id: s.id || `spl-${slug}`, name: name };
+      });
+      if (!Array.isArray(cloned.requiredAlignment)) cloned.requiredAlignment = [];
+      if (!cloned.id) {
+        const domSlug = (cloned.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        cloned.id = `dom-${domSlug}`;
+      }
+    }
     return this.ensureV2(cloned);
   },
 
-  // Dynamic Targeted AI Prompt Builder (Canonical V2 JSON Schema)
+  // Dynamic Targeted AI Prompt Builder (Category-Specific Micro-Prompts & Minimal V2 JSON Schema)
   buildTargetedAiPrompt(cleanQuery, effectiveCategory) {
-    return `You are a master D&D 3.5e Rule Arbiter.
-Target query: "${cleanQuery}" (Category: "${effectiveCategory}").
+    const cat = String(effectiveCategory || 'ALL').trim().toLowerCase();
+
+    // 1. DEITY / DRACONIC PATRON / CULT POWER / PHILOSOPHY
+    if (cat === 'deity' || cat === 'god' || cat === 'patron') {
+      return `You are a master D&D 3.5e Rule Arbiter.
+Target query: "${cleanQuery}" (Category: "Deity / Patron").
 
 ${this.DND35_RAW_GUARDRAIL}
 
-CRITICAL CANONICAL V2 SCHEMA RULES:
-1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, or official WotC 3.5e publications. If entity does not exist in official 3.5e, return {"entries": []}.
-2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to the official D&D 3.5e English name.
-3. ZERO LEGACY COLUMNS & ZERO SEPARATE CHILD ROWS:
-   - NEVER use legacy flat bonus columns (strBonus, acBonus, attBonus, extraDmg, isChild, parent).
-   - Put all stat/roll bonuses inside "modifiers": [{"target": "ac.deflection"|"ac.armor"|"ac.shield"|"ac.natural"|"ac.dodge"|"ability.str"|"ability.dex"|"ability.con"|"ability.int"|"ability.wis"|"ability.cha"|"attack.all"|"attack.melee"|"attack.ranged"|"damage.all"|"damage.melee"|"save.all"|"save.fort"|"save.ref"|"save.will"|"init"|"speed.land"|"hp"|"casterLevel"|"skill.all"|"skill.<key>", "value": 2, "formula": null, "type": "Deflection"|"Enhancement"|"Armor"|"Shield"|"Natural Armor"|"Resistance"|"Morale"|"Luck"|"Insight"|"Sacred"|"Profane"|"Competence"|"Circumstance"|"Alchemical"|"Racial"|"Size"|"Dodge"|"Inherent"|"Untyped"|"Penalty", "condition": null}].
-   - Put all weapon/spell/maneuver/crystal dice inside "damageParts": [{"dice": "1d8", "bonus": 0, "type": "Slashing"|"Piercing"|"Bludgeoning"|"Fire"|"Cold"|"Electricity"|"Acid"|"Sonic"|"Force"|"Positive Energy"|"Negative Energy"|"Holy"|"Unholy"|"Untyped", "multiplyOnCrit": true|false, "onCritOnly": false, "source": "Base"}].
-   - If the spell, weapon, or item has conditional sub-modes or secondary powers (e.g. Searing Light vs Undead, Blade of Blood sacrifice, Two-Handed grip, Flametongue 1/day ray), embed them inside "modes": [{"id": "vs_undead", "name": "Undead (1d6/CL)", "actionType": "standard", "benefit": "...", "damageParts": [...], "modifiers": [...]}].
-4. CATEGORY-SPECIFIC V2 FIELDS:
-   - Weapon: populate "weaponMeta" ({"proficiency": "Simple"|"Martial"|"Exotic", "handedness": "Unarmed"|"Light"|"One-Handed"|"Two-Handed"|"Ranged", "damageDice": "1d8", "critMin": 19, "critMult": 2, "damageType": "Slashing", "rangeIncrement": 0, "isDoubleWeapon": false, "isFinessable": false}) AND "weaponStats".
-   - Armor / Shield: populate "armorMeta" ({"category": "Light"|"Medium"|"Heavy"|"Shield", "armorBonus": 4, "maxDex": 4, "acp": -2, "asf": 20, "speed30": 30, "speed20": 20}) AND "armorStats".
-   - Augment Crystal (MIC): set "type": "Augment Crystal", "crystalTier": "Least"|"Lesser"|"Greater", "crystalSlot": "Weapon"|"Armor"|"Shield".
-   - Deity: set "type": "Deity", "alignment": "LG"|"NG"|"CG"|"LN"|"N"|"CN"|"LE"|"NE"|"CE", "favoredWeapon": "Official weapon name", "domains": ["Domain1", "Domain2", ...].
-   - Domain: set "type": "Domain", "grantedPower": "Official granted power text", "domainSpells": [{"level": 1, "name": "Spell Name"}, ...].
-   - Race: set "type": "Race", "size": "Small"|"Medium"|"Large", "baseSpeed": 30, "vision": "Normal"|"Low-Light Vision"|"Darkvision 60 ft.", "favoredClass": "Any"|"Class Name", "traits": [{"name": "Trait", "desc": "..."}].
-   - Template: set "type": "Template", "templateType": "Inherited"|"Acquired", "levelAdjustment": 2, "crAdjustment": 1.
+DEITY / PATRON / CULT POWER SPECIFIC RAW RULES:
+1. STRICT REAL RAW 3.5E / FORGOTTEN REALMS / GREYHAWK / EBERRON LORE:
+   - Covers official deities, draconic patrons (e.g. Bahamut, Tiamat, Sardior, Io, Falazure, Aasterinian, Chronepsis, Tamara, Garyx, Hlal, Lendys, Zorquan, Khazmil, Urshula the Black, or regional dragon rulers), archfiends, god-kings, cult powers, or cosmic philosophies.
+   - For non-standard draconic patrons, cult powers, or philosophies from official 3.5e lore (e.g. Dragons of Faerûn, Draconomicon, Champions of Ruin, Fiendish Codex, or Player's Guide to Faerûn), infer the 3 to 5 most fitting thematic D&D 3.5e Cleric domains, alignment, favored weapon, and portfolio from official lore.
+   - If entity does not exist in official 3.5e lore, return {"entries": []}.
+2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e English name.
+3. OUTPUT 100% ENGLISH D&D 3.5E RAW FIELDS:
+   - "alignment": full 3.5e alignment (e.g. "Lawful Good", "Chaotic Evil", "Neutral Good", "Lawful Evil", "True Neutral", or "Any").
+   - "rank": one of "Greater Deity", "Intermediate Deity", "Lesser Deity", "Demigod", "Hero-Deity", "Dragon Patron / Cult Power", "Philosophy / Cosmic Force".
+   - "icon": exactly 1 thematic emoji from: ☀️, ⚡, 🥊, 🏹, 🔨, 🦄, 🌾, 🐲, 📖, 🥾, 🍂, 🪓, 🕯️, 🎭, 💎, ⛓️, 💀, 👁️‍🗨️, 🩸, 👁️, 🐉, 🌀, 🔮, ✨ (NEVER use dice emoji).
+   - "favoredWeapon": official D&D 3.5e weapon name (e.g. "Longsword", "Heavy Mace", "Bite", "Claw", "Scimitar", "Dagger", "Quarterstaff", "Greatsword").
+   - "domains": array of 3 to 5 official D&D 3.5e Cleric domain names (e.g. ["Chaos", "Destruction", "Dragon", "Evil", "Water"]).
+   - "portfolio": summary of divine portfolio (e.g. "Chromatic dragons, conquest, evil, greed").
+   - "symbol": description of holy or unholy symbol.
+   - "category": pantheon or classification (e.g. "Forgotten Realms • Draconic Patrons", "Core Pantheon", "Faerûnian Pantheon", "Greyhawk Pantheon", "Draconic Pantheon").
 
 OUTPUT JSON SCHEMA:
 Return valid JSON only matching:
@@ -2408,55 +2502,380 @@ Return valid JSON only matching:
   "entries": [
     {
       "schemaVersion": 2,
-      "id": "unique_slug_id",
-      "baseItemId": null,
+      "id": "deity_unique_slug",
       "name": "Official 3.5e Name",
-      "type": "${effectiveCategory === 'ALL' ? 'Feat|Spell|Power|Weapon|Armor|Shield|Wondrous Item|Ring|Potion|Scroll|Wand|Consumable|Augment Crystal|Maneuver|Stance|Race|Deity|Domain|Template|Class' : (effectiveCategory === 'Item' || effectiveCategory === 'Magic Item' ? 'Wondrous Item' : effectiveCategory)}",
-      "slot": "None|Main Hand|Two Hands|Off-Hand/Shield|Armor|Head|Face|Throat|Shoulders|Body|Torso|Waist|Belt|Ring|Feet|Hands|Arms",
-      "source": "Official 3.5e book and page",
-      "prereq": "Prerequisites or '-'",
-      "benefit": "Concise mechanical summary in English",
-      "description": "Full official RAW description in English",
-      "action": "Passive|Standard Action|Move Action|Swift Action|Immediate Action|Full-Round Action|Free Action",
-      "actionType": "passive|standard|move|swift|immediate|full_round|free",
-      "duration": "Continuous|Instantaneous|1 round/level",
-      "range": "Personal|Touch|Close|Medium|Long",
-      "school": "Spell school if Spell",
-      "discipline": "ToB discipline if Maneuver/Stance",
-      "level": 1,
-      "cost": 0,
-      "weight": 0,
-      "isFighterBonusFeat": false,
-      "requiresEnergyChoice": false,
-      "dailyCharges": null,
-      "crystalTier": null,
-      "crystalSlot": null,
-      "alignment": null,
-      "favoredWeapon": null,
-      "domains": [],
-      "grantedPower": null,
-      "domainSpells": [],
-      "size": null,
-      "baseSpeed": null,
-      "vision": null,
-      "favoredClass": null,
-      "traits": [],
-      "levelAdjustment": null,
-      "crAdjustment": null,
-      "modifiers": [],
-      "damageParts": [],
-      "modes": [],
-      "weaponMeta": null,
-      "armorMeta": null,
-      "weaponStats": null,
-      "armorStats": null,
-      "spellStats": null,
-      "ruleFlags": {},
-      "tacticalBadges": [],
-      "tags": []
+      "type": "Deity",
+      "title": "Official Epithets / Aliases",
+      "category": "Pantheon / Classification",
+      "icon": "🐉",
+      "rank": "Lesser Deity",
+      "alignment": "Chaotic Evil",
+      "favoredWeapon": "Claw",
+      "domains": ["Chaos", "Dragon", "Evil"],
+      "portfolio": "Summary of portfolio",
+      "symbol": "Holy or unholy symbol description",
+      "source": "Official 3.5e publication and page",
+      "description": "Full official lore and description in English"
     }
   ]
 }`;
+    }
+
+    // 2. DOMAIN / CLERIC DOMAIN
+    if (cat === 'domain' || cat === 'cleric domain') {
+      return `You are a master D&D 3.5e Rule Arbiter.
+Target query: "${cleanQuery}" (Category: "Domain").
+
+${this.DND35_RAW_GUARDRAIL}
+
+CLERIC DOMAIN SPECIFIC RAW RULES:
+1. STRICT REAL RAW 3.5E ONLY:
+   - Consult official D&D 3.5e sources (Spell Compendium, Player's Handbook, Complete Divine, Frostburn, Sandstorm, Stormwrack, Book of Exalted Deeds, Fiendish Codex, etc.).
+   - If domain does not exist in official D&D 3.5e, return {"entries": []}.
+2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e English name.
+3. DOMAIN V2 SCHEMA:
+   - "type": "Domain"
+   - "category": "Cleric Domain"
+   - "source": Official 3.5e publication and page (e.g. "Spell Compendium p.272" or "Player's Handbook p.186")
+   - "description": Full RAW description of the granted power
+   - "grantedPower": structured object with:
+     * "description": full RAW granted power text
+     * "classSkills": array of skill names granted as class skills (e.g. ["Spot", "Listen"] or empty [])
+     * "grantedFeats": array of bonus feat names granted (e.g. ["Blind-Fight"] or empty [])
+     * "spellLikeAbilities": array of granted SLAs (e.g. [{"name": "Rebuke Air Creatures", "uses": "3+Cha/day", "casterLevel": "clericLevel"}] or empty [])
+   - "requiredAlignment": array of alignment restrictions (e.g. ["Good"] or empty [])
+   - "spells": exactly 9 domain spells from 1st to 9th level in order: [{"level": 1, "name": "Exact 1st-level Spell Name"}, ..., {"level": 9, "name": "Exact 9th-level Spell Name"}]
+   - "modifiers": Canonical V2 modifiers for any numerical bonuses granted by the domain (e.g. initiative, saving throws, skill bonuses): [{"target": "initiative"|"save.fort"|"skill.spot"|..., "value": 2, "type": "Untyped"|"Competence"|"Sacred"|"Profane", "condition": null}]. Leave [] if no passive flat bonus.
+
+OUTPUT JSON SCHEMA:
+Return valid JSON only matching:
+{
+  "entries": [
+    {
+      "schemaVersion": 2,
+      "id": "dom_unique_slug",
+      "name": "Official 3.5e Domain Name",
+      "type": "Domain",
+      "category": "Cleric Domain",
+      "source": "Official 3.5e book and page",
+      "description": "Full RAW granted power description in English",
+      "grantedPower": {
+        "description": "Full RAW granted power text in English",
+        "classSkills": [],
+        "grantedFeats": [],
+        "spellLikeAbilities": []
+      },
+      "requiredAlignment": [],
+      "spells": [
+        { "level": 1, "name": "1st-level domain spell" },
+        { "level": 2, "name": "2nd-level domain spell" },
+        { "level": 3, "name": "3rd-level domain spell" },
+        { "level": 4, "name": "4th-level domain spell" },
+        { "level": 5, "name": "5th-level domain spell" },
+        { "level": 6, "name": "6th-level domain spell" },
+        { "level": 7, "name": "7th-level domain spell" },
+        { "level": 8, "name": "8th-level domain spell" },
+        { "level": 9, "name": "9th-level domain spell" }
+      ],
+      "modifiers": []
+    }
+  ]
+}`;
+    }
+
+    // 3. SPELL / POWER
+    if (cat === 'spell' || cat === 'power') {
+      return `You are a master D&D 3.5e Rule Arbiter.
+Target query: "${cleanQuery}" (Category: "Spell").
+
+${this.DND35_RAW_GUARDRAIL}
+
+SPELL SPECIFIC CANONICAL V2 RULES:
+1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, Spell Compendium, PHB, or official WotC 3.5e publications. If entity does not exist in official 3.5e, return {"entries": []}.
+2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official D&D 3.5e English name.
+3. CANONICAL V2 FIELDS:
+   - "spellStats": {"castingTime": "1 standard action", "range": "Close (25 ft. + 5 ft./2 levels)", "target": "One creature", "duration": "1 round/level", "savingThrow": "Will negates", "spellResistance": "Yes"}
+   - "modifiers": put any stat, roll, or speed bonuses here: [{"target": "ac.dodge"|"attack.all"|"speed.land"|..., "value": 1, "type": "Dodge"|"Morale"|"Enhancement"|..., "condition": null}]. Leave [] if spell deals direct damage or has special effects.
+   - "damageParts": put spell damage dice here: [{"dice": "1d6", "bonus": 0, "type": "Fire"|"Cold"|"Force"|..., "multiplyOnCrit": false, "onCritOnly": false, "source": "Base"}].
+   - "modes": embed variable modes or sub-choices if applicable: [{"id": "vs_undead", "name": "Undead (1d6/CL)", "actionType": "standard", "benefit": "...", "damageParts": [...], "modifiers": [...]}].
+
+OUTPUT JSON SCHEMA:
+Return valid JSON only matching:
+{
+  "entries": [
+    {
+      "schemaVersion": 2,
+      "id": "spell_unique_slug",
+      "name": "Official 3.5e Name",
+      "type": "Spell",
+      "school": "Evocation",
+      "level": 3,
+      "spellStats": {
+        "castingTime": "1 standard action",
+        "range": "Medium (100 ft. + 10 ft./level)",
+        "target": "20-ft.-radius spread",
+        "duration": "Instantaneous",
+        "savingThrow": "Reflex half",
+        "spellResistance": "Yes"
+      },
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "source": "Official 3.5e book and page",
+      "benefit": "Concise mechanical summary in English",
+      "description": "Full official RAW description in English"
+    }
+  ]
+}`;
+    }
+
+    // 3. FEAT
+    if (cat === 'feat') {
+      return `You are a master D&D 3.5e Rule Arbiter.
+Target query: "${cleanQuery}" (Category: "Feat").
+
+${this.DND35_RAW_GUARDRAIL}
+
+FEAT SPECIFIC CANONICAL V2 RULES:
+1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, Player's Handbook, Complete Series, or official WotC 3.5e publications. If feat does not exist in official 3.5e, return {"entries": []}.
+2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e name.
+3. CANONICAL V2 FIELDS:
+   - "prereq": exact prerequisites or "-"
+   - "benefit": concise mechanical summary of the feat benefit
+   - "normal": what a character without this feat can do, or "-"
+   - "special": special notes, fighter bonus feat qualification, or "-"
+   - "modifiers": put numerical modifiers here: [{"target": "attack.melee"|"damage.all"|..., "value": 1, "type": "Untyped"|"Competence"|..., "condition": null}]. Leave [] if no passive/active flat bonus.
+   - "damageParts": put extra damage dice here if feat grants direct damage: [{"dice": "...", "bonus": 0, "type": "Untyped", "multiplyOnCrit": false, "onCritOnly": false, "source": "..."}].
+
+OUTPUT JSON SCHEMA:
+Return valid JSON only matching:
+{
+  "entries": [
+    {
+      "schemaVersion": 2,
+      "id": "feat_unique_slug",
+      "name": "Official 3.5e Name",
+      "type": "Feat",
+      "prereq": "Prerequisites or '-'",
+      "benefit": "Concise mechanical summary in English",
+      "normal": "What a character without this feat can do, or '-'",
+      "special": "Special rules or '-'",
+      "modifiers": [],
+      "damageParts": [],
+      "source": "Official 3.5e book and page",
+      "description": "Full official RAW description in English"
+    }
+  ]
+}`;
+    }
+
+    // 4. WEAPON / ARMOR / SHIELD / WONDROUS ITEM / RING / MAGIC ITEM / AUGMENT CRYSTAL
+    if (['weapon', 'armor', 'shield', 'armor / shield', 'wondrous item', 'ring', 'magic item', 'item', 'augment crystal', 'potion', 'scroll', 'wand', 'consumable'].includes(cat)) {
+      return `You are a master D&D 3.5e Rule Arbiter.
+Target query: "${cleanQuery}" (Category: "${effectiveCategory}").
+
+${this.DND35_RAW_GUARDRAIL}
+
+ITEM / EQUIPMENT SPECIFIC CANONICAL V2 RULES:
+1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, Magic Item Compendium, DMG, PHB, or official WotC 3.5e publications. If item does not exist in official 3.5e, return {"entries": []}.
+2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e name.
+3. ITEM / EQUIPMENT V2 SCHEMA:
+   - "type": "Weapon" | "Armor" | "Shield" | "Wondrous Item" | "Ring" | "Augment Crystal" | "Potion" | "Scroll" | "Wand" | "Consumable"
+   - "slot": "None" | "Main Hand" | "Two Hands" | "Off-Hand/Shield" | "Armor" | "Head" | "Face" | "Throat" | "Shoulders" | "Body" | "Torso" | "Waist" | "Ring" | "Feet" | "Hands" | "Arms"
+   - "priceGp": market price in GP (number, e.g. 15 or 8300)
+   - "weightLb": weight in lbs (number, e.g. 4 or 0.5)
+   - Weapon: populate "weaponMeta": {"proficiency": "Simple"|"Martial"|"Exotic", "handedness": "Unarmed"|"Light"|"One-Handed"|"Two-Handed"|"Ranged", "damageDice": "1d8", "critMin": 19, "critMult": 2, "damageType": "Slashing", "rangeIncrement": 0, "isDoubleWeapon": false, "isFinessable": false}. Set weapon damage in "damageParts": [{"dice": "1d8", "bonus": 0, "type": "Slashing", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base"}].
+   - Armor / Shield: populate "armorMeta": {"category": "Light"|"Medium"|"Heavy"|"Shield", "armorBonus": 4, "maxDex": 4, "acp": -2, "asf": 20, "speed30": 30, "speed20": 20}. Set AC in "modifiers": [{"target": "ac.armor"|"ac.shield", "value": 4, "type": "Armor"|"Shield", "condition": null}].
+   - Augment Crystal (MIC): set "type": "Augment Crystal", "crystalTier": "Least"|"Lesser"|"Greater", "crystalSlot": "Weapon"|"Armor"|"Shield".
+   - Wondrous Items / Rings: put all stat bonuses in "modifiers": [{"target": "ac.deflection"|"ability.str"|"save.all"|..., "value": 2, "type": "Deflection"|"Enhancement"|"Resistance"|..., "condition": null}].
+
+OUTPUT JSON SCHEMA:
+Return valid JSON only matching:
+{
+  "entries": [
+    {
+      "schemaVersion": 2,
+      "id": "item_unique_slug",
+      "name": "Official 3.5e Name",
+      "type": "${['weapon', 'armor', 'shield', 'ring', 'augment crystal'].includes(cat) ? (cat === 'armor / shield' ? 'Armor' : effectiveCategory) : 'Wondrous Item'}",
+      "slot": "None",
+      "priceGp": 0,
+      "weightLb": 0,
+      "crystalTier": null,
+      "crystalSlot": null,
+      "weaponMeta": null,
+      "armorMeta": null,
+      "modifiers": [],
+      "damageParts": [],
+      "source": "Official 3.5e book and page",
+      "benefit": "Concise mechanical summary in English",
+      "description": "Full official RAW description in English"
+    }
+  ]
+}`;
+    }
+
+    // 5. RACE
+    if (cat === 'race') {
+      return `You are a master D&D 3.5e Rule Arbiter.
+Target query: "${cleanQuery}" (Category: "Race").
+
+${this.DND35_RAW_GUARDRAIL}
+
+RACE SPECIFIC CANONICAL V2 RULES:
+1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, Monster Manual, Races of Destiny/Stone/Wild/Dragon, or official WotC 3.5e publications. If race does not exist in official 3.5e, return {"entries": []}.
+2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e name.
+3. RACE V2 SCHEMA:
+   - "size": "Fine" | "Diminutive" | "Tiny" | "Small" | "Medium" | "Large" | "Huge" | "Gargantuan" | "Colossal"
+   - "baseSpeed": base land speed in feet (number, e.g. 30)
+   - "vision": "Normal", "Low-Light Vision", "Darkvision 60 ft.", etc.
+   - "favoredClass": e.g. "Wizard", "Rogue", "Fighter", "Any"
+   - "levelAdjustment": LA number (e.g. 0, 1, 2)
+   - "modifiers": racial ability adjustments and bonuses: [{"target": "ability.dex"|"ability.con"|"save.fort"|"skill.listen"|..., "value": 2, "type": "Racial", "condition": null}].
+
+OUTPUT JSON SCHEMA:
+Return valid JSON only matching:
+{
+  "entries": [
+    {
+      "schemaVersion": 2,
+      "id": "race_unique_slug",
+      "name": "Official 3.5e Name",
+      "type": "Race",
+      "size": "Medium",
+      "baseSpeed": 30,
+      "vision": "Normal",
+      "favoredClass": "Any",
+      "levelAdjustment": 0,
+      "modifiers": [],
+      "source": "Official 3.5e book and page",
+      "benefit": "Concise summary of racial traits and ability modifiers",
+      "description": "Full official RAW description and racial lore in English"
+    }
+  ]
+}`;
+    }
+
+    // 6. MANEUVER / STANCE
+    if (cat === 'maneuver' || cat === 'stance') {
+      return `You are a master D&D 3.5e Rule Arbiter.
+Target query: "${cleanQuery}" (Category: "Maneuver / Stance").
+
+${this.DND35_RAW_GUARDRAIL}
+
+MANEUVER / STANCE SPECIFIC RULES:
+1. STRICT REAL RAW 3.5E TOME OF BATTLE ONLY: Consult Tome of Battle: The Book of Nine Swords. If maneuver/stance does not exist in official 3.5e ToB, return {"entries": []}.
+2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e name.
+3. MANEUVER / STANCE V2 SCHEMA:
+   - "discipline": "Desert Wind" | "Devoted Spirit" | "Diamond Mind" | "Iron Heart" | "Setting Sun" | "Shadow Hand" | "Stone Dragon" | "Tiger Claw" | "White Raven"
+   - "level": initiator level (1 to 9)
+   - "prereq": prerequisites or "None"
+   - "action": "Standard Action" | "Swift Action" | "Immediate Action" | "Full-Round Action"
+   - "actionType": "standard" | "swift" | "immediate" | "full_round"
+   - "duration": "Instantaneous" | "Stance" | "1 round"
+   - "modifiers": stance or maneuver numerical bonuses
+   - "damageParts": strike damage dice: [{"dice": "2d6", "bonus": 0, "type": "Untyped", "multiplyOnCrit": false, "onCritOnly": false, "source": "Base"}]
+
+OUTPUT JSON SCHEMA:
+Return valid JSON only matching:
+{
+  "entries": [
+    {
+      "schemaVersion": 2,
+      "id": "man_unique_slug",
+      "name": "Official 3.5e Name",
+      "type": "${cat === 'stance' ? 'Stance' : 'Maneuver'}",
+      "discipline": "Stone Dragon",
+      "level": 1,
+      "prereq": "None",
+      "action": "Standard Action",
+      "actionType": "standard",
+      "duration": "Instantaneous",
+      "modifiers": [],
+      "damageParts": [],
+      "source": "Tome of Battle p.XX",
+      "benefit": "Concise mechanical summary in English",
+      "description": "Full official RAW description in English"
+    }
+  ]
+}`;
+    }
+
+    // 7. CONDITION
+    if (cat === 'condition') {
+      return `You are a master D&D 3.5e Rule Arbiter.
+Target query: "${cleanQuery}" (Category: "Condition").
+
+${this.DND35_RAW_GUARDRAIL}
+
+CONDITION SPECIFIC RULES:
+1. STRICT REAL RAW 3.5E ONLY: Consult official 3.5e SRD or DMG conditions. If condition does not exist in official 3.5e, return {"entries": []}.
+2. Output standard D&D 3.5e condition penalties in "modifiers" (e.g. Blinded, Shaken, Frightened, Stunned, Fatigued, Exhausted, Entangled, Prone, Grappled, Pinned, Dazed, Sickened, Nauseated, Helpless).
+
+OUTPUT JSON SCHEMA:
+Return valid JSON only matching:
+{
+  "entries": [
+    {
+      "schemaVersion": 2,
+      "id": "cond_unique_slug",
+      "name": "Official 3.5e Name",
+      "type": "Condition",
+      "modifiers": [
+        { "target": "attack.all", "value": -2, "type": "Penalty", "condition": null }
+      ],
+      "source": "DMG / SRD 3.5e",
+      "benefit": "Concise mechanical summary of penalties and restrictions",
+      "description": "Full official RAW description in English"
+    }
+  ]
+}`;
+    }
+
+    // 8. CLASS
+    if (cat === 'class') {
+      return `You are a master D&D 3.5e Rule Arbiter.
+Target query: "${cleanQuery}" (Category: "Class").
+
+${this.DND35_RAW_GUARDRAIL}
+
+CLASS SPECIFIC RULES:
+1. STRICT REAL RAW 3.5E ONLY: Consult PHB, DMG, Complete Series, or official WotC 3.5e publications. If class does not exist in official 3.5e, return {"entries": []}.
+2. CLASS V2 SCHEMA:
+   - "hitDie": "d4" | "d6" | "d8" | "d10" | "d12"
+   - "bab": "Good" (+1/lvl) | "Medium" (+3/4 lvl) | "Poor" (+1/2 lvl)
+   - "fort": "Good" | "Poor"
+   - "ref": "Good" | "Poor"
+   - "will": "Good" | "Poor"
+   - "skillPoints": number of skill points per level (e.g. 2, 4, 6, 8)
+   - "classSkills": array of class skill names
+
+OUTPUT JSON SCHEMA:
+Return valid JSON only matching:
+{
+  "entries": [
+    {
+      "schemaVersion": 2,
+      "id": "class_unique_slug",
+      "name": "Official 3.5e Name",
+      "type": "Class",
+      "hitDie": "d8",
+      "bab": "Good",
+      "fort": "Good",
+      "ref": "Poor",
+      "will": "Poor",
+      "skillPoints": 2,
+      "classSkills": ["Climb", "Jump", "Swim"],
+      "source": "Official 3.5e book and page",
+      "benefit": "Class summary and role in English",
+      "description": "Full official RAW description in English"
+    }
+  ]
+}`;
+    }
+
+    // 10. MANDATORY CATEGORY ENFORCEMENT - RETIRE UNCONSTRAINED 'ALL'
+    throw new Error(`Rule Master AI requires a specific category (e.g., Feat, Spell, Deity, Domain, Weapon, Armor, Race, Class, Maneuver, Condition). Unconstrained '${effectiveCategory || 'ALL'}' queries are retired to ensure fast, zero-filler responses.`);
   },
 
   // Check if an entry already exists in the Site Database (Custom Master DB, SRD Compendium, or Core Catalogs)
@@ -2544,7 +2963,7 @@ Return valid JSON only matching:
   resolveLocalZeroTokenQuery(rawQuery) {
     if (!rawQuery || typeof rawQuery !== 'string') return [];
     let cleanKey = rawQuery.toLowerCase().trim();
-    const prefixMatch = cleanKey.match(/^(spell|feat|race|deity|god|weapon|armor|shield|item|magic item|maneuver|stance|class):\s*/i);
+    const prefixMatch = cleanKey.match(/^(spell|feat|race|deity|god|patron|domain|weapon|armor|shield|item|magic item|maneuver|stance|class|condition):\s*/i);
     if (prefixMatch) {
       cleanKey = cleanKey.slice(prefixMatch[0].length).trim();
     }
@@ -2574,6 +2993,12 @@ Return valid JSON only matching:
       const exactComp = window.SrdCompendium.getById(cleanKey) || window.SrdCompendium.getByName(cleanKey);
       if (exactComp) {
         return [markSiteDb(exactComp, 'Site V2 SRD Compendium')];
+      }
+      if (typeof window.SrdCompendium.getDomain === 'function') {
+        const domComp = window.SrdCompendium.getDomain(cleanKey);
+        if (domComp) {
+          return [markSiteDb(domComp, 'Site V2 SRD Compendium')];
+        }
       }
     }
 
@@ -2614,22 +3039,29 @@ Return valid JSON only matching:
   },
 
   async fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusTextEl = null) {
-    let effectiveCategory = (categoryHint && categoryHint !== 'ALL') ? categoryHint : 'ALL';
+    let effectiveCategory = (categoryHint && categoryHint !== 'ALL') ? categoryHint : null;
     let cleanQuery = (query || '').trim();
 
-    const prefixMatch = cleanQuery.match(/^(spell|feat|race|deity|god|weapon|armor|shield|item|magic item|maneuver|stance|class):\s*/i);
+    const prefixMatch = cleanQuery.match(/^(spell|feat|race|deity|god|patron|domain|weapon|armor|shield|item|magic item|maneuver|stance|class|condition):\s*/i);
     if (prefixMatch) {
       const p = prefixMatch[1].toLowerCase();
       cleanQuery = cleanQuery.slice(prefixMatch[0].length).trim();
       if (p === 'spell') effectiveCategory = 'Spell';
       else if (p === 'feat') effectiveCategory = 'Feat';
       else if (p === 'race') effectiveCategory = 'Race';
-      else if (p === 'deity' || p === 'god') effectiveCategory = 'Deity';
+      else if (p === 'deity' || p === 'god' || p === 'patron') effectiveCategory = 'Deity';
+      else if (p === 'domain') effectiveCategory = 'Domain';
       else if (p === 'weapon') effectiveCategory = 'Weapon';
       else if (p === 'armor') effectiveCategory = 'Armor';
       else if (p === 'shield') effectiveCategory = 'Shield';
       else if (p === 'item' || p === 'magic item') effectiveCategory = 'Magic Item';
       else if (p === 'maneuver' || p === 'stance') effectiveCategory = 'Maneuver';
+      else if (p === 'class') effectiveCategory = 'Class';
+      else if (p === 'condition') effectiveCategory = 'Condition';
+    }
+
+    if (!effectiveCategory || effectiveCategory === 'ALL') {
+      throw new Error('Please select a specific Rule Category (e.g., Feat, Spell, Deity, Domain, Class, Weapon) or specify a prefix (e.g. "feat: Shock Trooper" or "domain: Planning") before querying AI.');
     }
 
     // 0ms Local Resolution before calling Gemini
@@ -2662,7 +3094,7 @@ Return valid JSON only matching:
       };
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 4500);
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       try {
         const response = await fetch(url, {
@@ -2701,7 +3133,7 @@ Return valid JSON only matching:
 
               if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeArrayToV2 === 'function') {
                 const v2List = window.SchemaMigrator.upgradeArrayToV2(rawList);
-                if (v2List.length > 0) return v2List;
+                if (v2List.length > 0) return v2List.map(item => this.normalizeEntry(item));
               } else {
                 const normalizedEntries = [];
                 rawList.forEach(rawItem => {
@@ -2729,7 +3161,7 @@ Return valid JSON only matching:
       } catch (netErr) {
         clearTimeout(timeoutId);
         if (netErr && netErr.name === 'AbortError') {
-          lastError = `Timeout (4.5s) - ${model} did not respond.`;
+          lastError = `Timeout (10s) - ${model} did not respond.`;
         } else {
           lastError = `${netErr.message} (${model})`;
         }
@@ -2748,12 +3180,44 @@ Return valid JSON only matching:
     const resultsWrapper = document.getElementById('ai-results-wrapper');
     const btn = document.getElementById('ai-rule-btn');
 
-    const query = queryInput ? queryInput.value.trim() : '';
-    const categoryHint = catSelect ? catSelect.value : 'ALL';
+    let query = queryInput ? queryInput.value.trim() : '';
+    let categoryHint = catSelect ? catSelect.value : 'ALL';
 
     if (!query) {
       alert('Please enter the name of the rule, item, spell, feat, or ability you want to search.');
       if (queryInput) queryInput.focus();
+      return;
+    }
+
+    const prefixMatch = query.match(/^(spell|feat|race|deity|god|patron|domain|weapon|armor|shield|item|magic item|maneuver|stance|class|condition):\s*/i);
+    if (prefixMatch) {
+      const p = prefixMatch[1].toLowerCase();
+      let matchedCat = 'Feat';
+      if (p === 'spell') matchedCat = 'Spell';
+      else if (p === 'feat') matchedCat = 'Feat';
+      else if (p === 'race') matchedCat = 'Race';
+      else if (p === 'deity' || p === 'god' || p === 'patron') matchedCat = 'Deity';
+      else if (p === 'domain') matchedCat = 'Domain';
+      else if (p === 'weapon') matchedCat = 'Weapon';
+      else if (p === 'armor') matchedCat = 'Armor';
+      else if (p === 'shield') matchedCat = 'Shield';
+      else if (p === 'item' || p === 'magic item') matchedCat = 'Magic Item';
+      else if (p === 'maneuver' || p === 'stance') matchedCat = 'Maneuver';
+      else if (p === 'class') matchedCat = 'Class';
+      else if (p === 'condition') matchedCat = 'Condition';
+
+      categoryHint = matchedCat;
+      if (catSelect) catSelect.value = matchedCat;
+    }
+
+    if (!prefixMatch && (!categoryHint || categoryHint === 'ALL')) {
+      const msg = 'Please select a Rule Category (e.g., Feat, Spell, Deity, Domain, Class, Weapon) or type a prefix like "feat: Shock Trooper" or "domain: Planning" before searching.';
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({ title: 'Category Required', breakdown: msg, icon: '⚠️' });
+      } else {
+        alert('⚠️ ' + msg);
+      }
+      catSelect?.focus();
       return;
     }
 
@@ -2822,14 +3286,56 @@ Return valid JSON only matching:
     }
     const entries = await this.fetchSingleAiRuleObjects(deityName, 'Deity', apiKey, statusTextEl);
     if (!entries || !entries.length) {
-      throw new Error(`No official D&D 3.5e deity found for "${deityName}".`);
+      throw new Error(`No official D&D 3.5e deity or patron found for "${deityName}".`);
     }
     const deityEntry = entries.find(e => e && (e.type === 'Deity' || String(e.type).toLowerCase() === 'deity')) || entries[0];
+    if (!deityEntry || !deityEntry.name) {
+      throw new Error(`Invalid or empty deity data returned for "${deityName}".`);
+    }
     deityEntry.type = 'Deity';
-    if (!deityEntry.alignment || !Array.isArray(deityEntry.domains) || deityEntry.domains.length === 0) {
-      throw new Error(`Incomplete D&D 3.5e RAW deity data returned for "${deityName}" (missing alignment or domains).`);
+    deityEntry.alignment = deityEntry.alignment || 'Any';
+    deityEntry.domains = Array.isArray(deityEntry.domains) ? deityEntry.domains : [];
+    if (deityEntry.favoredWeapon && !deityEntry.weapon) {
+      deityEntry.weapon = deityEntry.favoredWeapon;
+    } else if (deityEntry.weapon && !deityEntry.favoredWeapon) {
+      deityEntry.favoredWeapon = deityEntry.weapon;
     }
     return deityEntry;
+  },
+
+  async fetchDomainViaAi(domainName, statusTextEl = null) {
+    const cleanName = (domainName || '').trim();
+    if (!cleanName) {
+      throw new Error('Please enter a valid domain name.');
+    }
+
+    // 1. Check local compendium first (Zero-Token resolution)
+    if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function') {
+      const localDom = window.SrdCompendium.getDomain(cleanName);
+      if (localDom) return this.normalizeEntry(localDom);
+    }
+
+    const localHits = this.resolveLocalZeroTokenQuery(cleanName);
+    const localDomain = localHits.find(e => e && String(e.type).toLowerCase() === 'domain');
+    if (localDomain) return this.normalizeEntry(localDomain);
+
+    const apiKey = this.getApiKey();
+    if (!apiKey) {
+      if (typeof this.promptApiKey === 'function') this.promptApiKey();
+      throw new Error('Gemini API key is not configured.');
+    }
+
+    const entries = await this.fetchSingleAiRuleObjects(cleanName, 'Domain', apiKey, statusTextEl);
+    if (!entries || !entries.length) {
+      throw new Error(`No official D&D 3.5e domain found for "${cleanName}".`);
+    }
+
+    const domainEntry = entries.find(e => e && (e.type === 'Domain' || String(e.type).toLowerCase() === 'domain')) || entries[0];
+    if (!domainEntry || !domainEntry.name) {
+      throw new Error(`Invalid or empty domain data returned for "${cleanName}".`);
+    }
+
+    return this.normalizeEntry(domainEntry);
   },
 
   async fetchRaceViaAi(raceName, statusTextEl = null) {
@@ -4167,11 +4673,11 @@ Return valid JSON only matching:
     if (loadingBox) loadingBox.classList.add('hidden');
   },
 
-  setInlineQueryAndSearch(term, categoryHint = 'ALL') {
+  setInlineQueryAndSearch(term, categoryHint = 'Feat') {
     const queryInput = document.getElementById('inline-ai-rule-query');
     const catSelect = document.getElementById('inline-ai-rule-category');
     if (queryInput) queryInput.value = term;
-    if (catSelect) catSelect.value = categoryHint;
+    if (catSelect && categoryHint && categoryHint !== 'ALL') catSelect.value = categoryHint;
     this.queryInlineAiRule();
   },
 
@@ -4181,6 +4687,41 @@ Return valid JSON only matching:
     if (!query) {
       alert('⚠️ Please enter the name of the rule, feat, spell, or item to search.');
       queryInput?.focus();
+      return;
+    }
+
+    const catSelect = document.getElementById('inline-ai-rule-category');
+    let categoryHint = catSelect?.value || 'ALL';
+
+    const prefixMatch = query.match(/^(spell|feat|race|deity|god|patron|domain|weapon|armor|shield|item|magic item|maneuver|stance|class|condition):\s*/i);
+    if (prefixMatch) {
+      const p = prefixMatch[1].toLowerCase();
+      let matchedCat = 'Feat';
+      if (p === 'spell') matchedCat = 'Spell';
+      else if (p === 'feat') matchedCat = 'Feat';
+      else if (p === 'race') matchedCat = 'Race';
+      else if (p === 'deity' || p === 'god' || p === 'patron') matchedCat = 'Deity';
+      else if (p === 'domain') matchedCat = 'Domain';
+      else if (p === 'weapon') matchedCat = 'Weapon';
+      else if (p === 'armor') matchedCat = 'Armor';
+      else if (p === 'shield') matchedCat = 'Shield';
+      else if (p === 'item' || p === 'magic item') matchedCat = 'Magic Item';
+      else if (p === 'maneuver' || p === 'stance') matchedCat = 'Maneuver';
+      else if (p === 'class') matchedCat = 'Class';
+      else if (p === 'condition') matchedCat = 'Condition';
+
+      categoryHint = matchedCat;
+      if (catSelect) catSelect.value = matchedCat;
+    }
+
+    if (!prefixMatch && (!categoryHint || categoryHint === 'ALL')) {
+      const msg = 'Please select a Rule Category (e.g., Feat, Spell, Deity, Domain, Class, Weapon) or type a prefix like "feat: Shock Trooper" or "domain: Planning" before searching.';
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({ title: 'Category Required', breakdown: msg, icon: '⚠️' });
+      } else {
+        alert('⚠️ ' + msg);
+      }
+      catSelect?.focus();
       return;
     }
 
@@ -4208,9 +4749,6 @@ Return valid JSON only matching:
       if (typeof openSettingsModal === 'function') openSettingsModal();
       return;
     }
-
-    const catSelect = document.getElementById('inline-ai-rule-category');
-    const categoryHint = catSelect?.value || 'ALL';
 
     const btn = document.getElementById('btn-inline-ai-search');
     const loadingBox = document.getElementById('inline-ai-loading-box');

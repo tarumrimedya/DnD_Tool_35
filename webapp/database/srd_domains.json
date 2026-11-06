@@ -2921,5 +2921,83 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
+  },
+  {
+    "id": "dom-dragon",
+    "foundryId": "rsrd_dom_dragon",
+    "schemaVersion": 2,
+    "name": "Dragon",
+    "type": "Domain",
+    "category": "Cleric Domain",
+    "slot": "None",
+    "source": "Spell Compendium / Draconomicon",
+    "description": "Add Bluff and Intimidate to your list of cleric class skills.",
+    "shortDescription": "Add Bluff and Intimidate to your list of cleric class skills.",
+    "grantedPower": {
+      "description": "Add Bluff and Intimidate to your list of cleric class skills.",
+      "classSkills": [
+        "Bluff",
+        "Intimidate"
+      ],
+      "grantedFeats": [],
+      "spellLikeAbilities": []
+    },
+    "requiredAlignment": [],
+    "spells": [
+      {
+        "level": 1,
+        "id": "spl-magic-fang",
+        "name": "Magic Fang"
+      },
+      {
+        "level": 2,
+        "id": "spl-resist-energy",
+        "name": "Resist Energy"
+      },
+      {
+        "level": 3,
+        "id": "spl-greater-magic-fang",
+        "name": "Greater Magic Fang"
+      },
+      {
+        "level": 4,
+        "id": "spl-voice-of-the-dragon",
+        "name": "Voice of the Dragon"
+      },
+      {
+        "level": 5,
+        "id": "spl-righteous-might",
+        "name": "Righteous Might"
+      },
+      {
+        "level": 6,
+        "id": "spl-stoneskin",
+        "name": "Stoneskin"
+      },
+      {
+        "level": 7,
+        "id": "spl-dragon-ally",
+        "name": "Dragon Ally"
+      },
+      {
+        "level": 8,
+        "id": "spl-mass-suggestion",
+        "name": "Mass Suggestion"
+      },
+      {
+        "level": 9,
+        "id": "spl-dominate-monster",
+        "name": "Dominate Monster"
+      }
+    ],
+    "tags": [
+      "domain",
+      "cleric",
+      "dragon"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
   }
 ]

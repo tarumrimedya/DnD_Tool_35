@@ -4953,7 +4953,36 @@
     function getAllDeitiesForSpotlight() {
       const list = [...DND35_DEITY_DEFINITIONS];
 
-      // Custom deities from localStorage
+      // 1. Character-scoped custom DB / Master DB (character.customDb / window.customMasterDb / masterDb)
+      try {
+        const customSources = [];
+        if (typeof character !== 'undefined' && Array.isArray(character.customDb)) customSources.push(...character.customDb);
+        if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) customSources.push(...masterDb);
+        if (typeof window !== 'undefined' && Array.isArray(window.customMasterDb)) customSources.push(...window.customMasterDb);
+
+        customSources.forEach(cd => {
+          if (cd && cd.name && String(cd.type || '').toLowerCase() === 'deity' && !list.some(d => d.name.toLowerCase() === cd.name.toLowerCase())) {
+            list.push({
+              name: cd.name,
+              title: cd.title || `${cd.name} (Custom / AI)`,
+              category: cd.category || 'Custom / AI-Added Deities',
+              icon: cd.icon || '🔮',
+              rank: cd.rank || 'Lesser Deity',
+              alignment: cd.alignment || 'Any',
+              weapon: cd.favoredWeapon || cd.weapon || '-',
+              favoredWeapon: cd.favoredWeapon || cd.weapon || '-',
+              domains: Array.isArray(cd.domains) ? cd.domains : [],
+              portfolio: cd.portfolio || '',
+              description: cd.description || cd.desc || '',
+              tags: Array.isArray(cd.tags) ? cd.tags : ['custom', 'masterdb', 'deity', cd.name.toLowerCase()]
+            });
+          }
+        });
+      } catch (e) {
+        console.warn('Master DB deities read error:', e);
+      }
+
+      // 2. Custom deities from localStorage
       try {
         const saved = localStorage.getItem('dnd35_custom_deities');
         if (saved) {
@@ -4964,11 +4993,15 @@
                 list.push({
                   name: cd.name,
                   title: cd.title || `${cd.name} (Custom / AI)`,
-                  category: 'Custom / AI-Added Deities',
+                  category: cd.category || 'Custom / AI-Added Deities',
                   icon: cd.icon || '🔮',
+                  rank: cd.rank || 'Lesser Deity',
                   alignment: cd.alignment || 'Any',
                   weapon: cd.favoredWeapon || cd.weapon || '-',
-                  domains: cd.domains || [],
+                  favoredWeapon: cd.favoredWeapon || cd.weapon || '-',
+                  domains: Array.isArray(cd.domains) ? cd.domains : [],
+                  portfolio: cd.portfolio || '',
+                  description: cd.description || cd.desc || '',
                   tags: ['custom', 'ai', cd.name.toLowerCase()]
                 });
               }
@@ -4979,7 +5012,7 @@
         console.warn('Custom deities read error:', e);
       }
 
-      // Catalog lookup
+      // 3. Catalog lookup
       const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
         ? window.BUNDLED_SRD_CORE_CATALOG
         : [];
@@ -4991,9 +5024,13 @@
             title: item.title || item.name,
             category: item.category || 'Custom / AI-Added Deities',
             icon: item.icon || '🔮',
+            rank: item.rank || 'Lesser Deity',
             alignment: item.alignment || 'Any',
             weapon: item.favoredWeapon || item.weapon || '-',
-            domains: item.domains || [],
+            favoredWeapon: item.favoredWeapon || item.weapon || '-',
+            domains: Array.isArray(item.domains) ? item.domains : [],
+            portfolio: item.portfolio || '',
+            description: item.description || item.desc || '',
             tags: Array.isArray(item.tags) ? item.tags : ['deity', item.name.toLowerCase()]
           });
         }
@@ -5163,14 +5200,20 @@
 
       if (filtered.length === 0) {
         listEl.innerHTML = `
-          <div class="p-3 text-center space-y-2 bg-purple-950/30 rounded-xl border border-purple-500/40 my-1">
+          <div class="p-3 text-center space-y-2.5 bg-purple-950/30 rounded-xl border border-purple-500/40 my-1">
             <span class="text-xl block">🔍</span>
             <div class="text-xs font-bold text-slate-200">"${escapeDeityHtml(filterText)}" not found in pantheon</div>
-            <p class="text-[10px] text-slate-400">You can search deities directly from Forgotten Realms, Eberron, or official D&D 3.5e sourcebooks.</p>
-            <button type="button" onclick="searchDeityViaRuleMasterAi('${escapeDeityHtml(filterText).replace(/'/g, "\\\'")}'); closeDeitySpotlightDropdown();" class="w-full py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
-              <span>🔮</span>
-              <span>Fetch Deity "${escapeDeityHtml(filterText)}" via Rule Master AI</span>
-            </button>
+            <p class="text-[10px] text-slate-400">Search official sourcebooks via AI or create a custom deity/patron directly.</p>
+            <div class="space-y-1.5 pt-1">
+              <button type="button" onclick="searchDeityViaRuleMasterAi('${escapeDeityHtml(filterText).replace(/'/g, "\'")}'); closeDeitySpotlightDropdown();" class="w-full py-2 px-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <span>🔮</span>
+                <span>Fetch "${escapeDeityHtml(filterText)}" via Rule Master AI (Auto-Fill Editor)</span>
+              </button>
+              <button type="button" onclick="openCustomDeityEditorModal({ name: '${escapeDeityHtml(filterText).replace(/'/g, "\'")}' }); closeDeitySpotlightDropdown();" class="w-full py-2 px-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-300 hover:text-white border border-slate-700 hover:border-amber-500 font-bold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+                <span>✨</span>
+                <span>Use "${escapeDeityHtml(filterText)}" as Custom Deity / Patron (Manual Editor)</span>
+              </button>
+            </div>
           </div>
         `;
         return;
@@ -5213,7 +5256,7 @@
           }
 
           html += `
-            <button type="button" data-deity-name="${escapeDeityHtml(d.name)}" onclick="selectDeityItem('${escapeDeityHtml(d.name).replace(/'/g, "\\'")}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
+            <button type="button" data-deity-name="${escapeDeityHtml(d.name)}" onclick="selectDeityItem('${escapeDeityHtml(d.name).replace(/'/g, "\'")}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
               <div class="flex items-center gap-2 min-w-0">
                 <span class="text-sm shrink-0">${d.icon || '☀️'}</span>
                 <div class="truncate">
@@ -5239,14 +5282,45 @@
         `;
       }
 
-      if (!q || 'diğer'.includes(q) || 'ai'.includes(q) || 'rule master'.includes(q)) {
+      if (q && !filtered.some(d => d.name.toLowerCase() === q)) {
         html += `
-          <div class="pt-1 border-t border-purple-900/40 mt-1">
-            <button type="button" onclick="selectDeityItem('Diğer')" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-purple-950/70 to-indigo-950/70 hover:from-purple-900/80 hover:to-indigo-900/80 border border-purple-500/40 hover:border-purple-400 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+          <div class="pt-1.5 border-t border-purple-900/40 mt-1 space-y-1">
+            <button type="button" onclick="searchDeityViaRuleMasterAi('${escapeDeityHtml(filterText).replace(/'/g, "\'")}'); closeDeitySpotlightDropdown();" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-purple-950/50 hover:bg-purple-900/70 border border-purple-500/40 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+              <div class="flex items-center gap-2">
+                <span class="text-sm shrink-0">🔮</span>
+                <span class="text-xs font-bold text-purple-200 group-hover:text-white">Fetch "${escapeDeityHtml(filterText)}" via Rule Master AI (Auto-Fill Editor)</span>
+              </div>
+              <span class="text-xs text-purple-400 group-hover:translate-x-0.5 transition-transform">➔</span>
+            </button>
+            <button type="button" onclick="openCustomDeityEditorModal({ name: '${escapeDeityHtml(filterText).replace(/'/g, "\'")}' }); closeDeitySpotlightDropdown();" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+              <div class="flex items-center gap-2">
+                <span class="text-sm shrink-0">✨</span>
+                <span class="text-xs font-bold text-amber-300 group-hover:text-white">Use "${escapeDeityHtml(filterText)}" as Custom Deity / Patron (Manual Editor)</span>
+              </div>
+              <span class="text-xs text-amber-400 group-hover:translate-x-0.5 transition-transform">➔</span>
+            </button>
+          </div>
+        `;
+      }
+
+      if (!q || 'diğer'.includes(q) || 'other'.includes(q) || 'ai'.includes(q) || 'custom'.includes(q) || 'rule master'.includes(q)) {
+        html += `
+          <div class="pt-1 border-t border-purple-900/40 mt-1 space-y-1">
+            <button type="button" onclick="openCustomDeityEditorModal(); closeDeitySpotlightDropdown();" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-amber-950/60 to-purple-950/60 hover:from-amber-900/70 hover:to-purple-900/70 border border-amber-500/50 hover:border-amber-400 text-amber-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+              <div class="flex items-center gap-2">
+                <span class="text-base shrink-0">✨</span>
+                <div>
+                  <div class="text-xs font-bold text-amber-200 group-hover:text-white">Create Custom Deity / Patron (Manual Editor)</div>
+                  <div class="text-[9px] text-amber-400/80 font-mono">Custom cult power, draconic patron, or forgotten faith</div>
+                </div>
+              </div>
+              <span class="text-xs text-amber-300 font-bold group-hover:translate-x-0.5 transition-transform">➔</span>
+            </button>
+            <button type="button" onclick="searchDeityViaRuleMasterAi(); closeDeitySpotlightDropdown();" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-purple-950/70 to-indigo-950/70 hover:from-purple-900/80 hover:to-indigo-900/80 border border-purple-500/40 hover:border-purple-400 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
               <div class="flex items-center gap-2">
                 <span class="text-base shrink-0">🔮</span>
                 <div>
-                  <div class="text-xs font-bold text-purple-200 group-hover:text-white">Other (Search Custom Deity via Rule Master AI...)</div>
+                  <div class="text-xs font-bold text-purple-200 group-hover:text-white">Other (Search Official Deity via Rule Master AI...)</div>
                   <div class="text-[9px] text-purple-400/80 font-mono">Official deities such as Kelemvor, Mystra, Tempus, Bane, Lolth, etc.</div>
                 </div>
               </div>
@@ -5260,8 +5334,8 @@
     }
 
     function selectDeityItem(deityName) {
-      if (deityName === 'Diğer') {
-        searchDeityViaRuleMasterAi();
+      if (deityName === 'Diğer' || deityName === 'Other' || deityName === 'custom_deity_create' || deityName === 'Custom Deity') {
+        openCustomDeityEditorModal();
         return;
       }
 
@@ -5296,11 +5370,339 @@
       }
     }
 
+    // =========================================================================
+    // 🔮 CUSTOM DEITY & PATRON CREATOR MODAL CONTROLLER
+    // =========================================================================
+    const CANONICAL_DEITY_ICONS = ['☀️', '⚡', '🥊', '🏹', '🔨', '🦄', '🌾', '🐲', '📖', '🥾', '🍂', '🪓', '🕯️', '🎭', '💎', '⛓️', '💀', '👁️‍🗨️', '🩸', '👁️', '🐉', '🌀', '🔮', '✨'];
+    let _customDeitySelectedDomains = new Set();
+
+    function selectCustomDeityIcon(icon) {
+      const iconInput = document.getElementById('custom-deity-icon');
+      const preview = document.getElementById('custom-deity-selected-icon-preview');
+      if (iconInput) iconInput.value = icon;
+      if (preview) preview.textContent = icon;
+
+      const grid = document.getElementById('custom-deity-icon-grid');
+      if (grid) {
+        grid.querySelectorAll('button[data-icon]').forEach(btn => {
+          const i = btn.getAttribute('data-icon');
+          if (i === icon) {
+            btn.className = 'w-8 h-8 rounded-lg flex items-center justify-center text-base border transition bg-amber-500/20 border-amber-400 text-white shadow-sm scale-110 cursor-pointer';
+          } else {
+            btn.className = 'w-8 h-8 rounded-lg flex items-center justify-center text-base border transition bg-slate-900 border-slate-700/80 hover:bg-slate-800 text-slate-300 hover:border-slate-500 cursor-pointer';
+          }
+        });
+      }
+    }
+
+    function toggleCustomDeityDomainChip(domName) {
+      if (_customDeitySelectedDomains.has(domName)) {
+        _customDeitySelectedDomains.delete(domName);
+      } else {
+        _customDeitySelectedDomains.add(domName);
+      }
+      updateCustomDeityDomainChipsUI();
+    }
+
+    function updateCustomDeityDomainChipsUI() {
+      const grid = document.getElementById('custom-deity-domains-grid');
+      const countEl = document.getElementById('custom-deity-domains-count');
+      if (countEl) countEl.textContent = `${_customDeitySelectedDomains.size} Selected`;
+      if (!grid) return;
+      const buttons = grid.querySelectorAll('button[data-domain]');
+      buttons.forEach(btn => {
+        const d = btn.getAttribute('data-domain');
+        if (_customDeitySelectedDomains.has(d)) {
+          btn.className = 'px-2 py-1 rounded-lg text-[10px] font-bold border transition text-center truncate cursor-pointer bg-purple-900/80 border-purple-400 text-white shadow-sm';
+        } else {
+          btn.className = 'px-2 py-1 rounded-lg text-[10px] font-bold border transition text-center truncate cursor-pointer bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200';
+        }
+      });
+    }
+
+    function getAllDomainsWithCustom() {
+      let domains = [];
+      if (window.SrdCompendium && typeof window.SrdCompendium.getAllDomains === 'function') {
+        const comp = window.SrdCompendium.getAllDomains();
+        if (Array.isArray(comp) && comp.length) {
+          domains.push(...comp);
+        }
+      }
+      if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+        domains.push(...character.customDb.filter(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain')));
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        domains.push(...masterDb.filter(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain')));
+      }
+      try {
+        const stored = localStorage.getItem('dnd35_custom_domains');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) domains.push(...parsed);
+        }
+      } catch (e) {}
+
+      if (!domains.length) {
+        domains = [
+          'Air', 'Animal', 'Chaos', 'Celerity', 'Cold', 'Community', 'Creation', 'Death',
+          'Destruction', 'Domination', 'Dragon', 'Earth', 'Evil', 'Fate', 'Fire', 'Force',
+          'Glory', 'Good', 'Healing', 'Inquisition', 'Knowledge', 'Law', 'Liberation', 'Luck',
+          'Madness', 'Magic', 'Mind', 'Nobility', 'Pact', 'Plant', 'Protection', 'Purification',
+          'Repose', 'Strength', 'Sun', 'Time', 'Travel', 'Trickery', 'Tyranny', 'War', 'Water', 'Wrath'
+        ].map(n => ({ name: n }));
+      }
+
+      // Deduplicate by name
+      const map = new Map();
+      domains.forEach(d => {
+        const name = typeof d === 'string' ? d : (d.name || d.id || '');
+        if (name && !map.has(name.toLowerCase())) {
+          map.set(name.toLowerCase(), typeof d === 'string' ? { name: d } : d);
+        }
+      });
+      return Array.from(map.values()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    }
+
+    function openCustomDeityEditorModal(initialData = {}) {
+      if (typeof window.ensureModalsMounted === 'function') {
+        window.ensureModalsMounted();
+      }
+
+      const modal = document.getElementById('modal-custom-deity-editor');
+      if (!modal) return;
+
+      // 1. Populate Icon Grid
+      const iconGrid = document.getElementById('custom-deity-icon-grid');
+      if (iconGrid) {
+        iconGrid.innerHTML = CANONICAL_DEITY_ICONS.map(ic => `
+          <button type="button" data-icon="${ic}" onclick="selectCustomDeityIcon('${ic}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-base border transition bg-slate-900 border-slate-700/80 hover:bg-slate-800 text-slate-300 hover:border-slate-500 cursor-pointer" title="${ic}">
+            ${ic}
+          </button>
+        `).join('');
+      }
+
+      // 2. Populate Favored Weapon Select
+      const weaponSelect = document.getElementById('custom-deity-weapon');
+      if (weaponSelect) {
+        let weaponNames = [];
+        if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+          const eqs = window.SrdCompendium.getAllLoaded('Equipment');
+          if (Array.isArray(eqs) && eqs.length) {
+            weaponNames = eqs.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
+          }
+        }
+        if (!weaponNames.length && typeof window.BUNDLED_SRD_EQUIPMENT !== 'undefined' && Array.isArray(window.BUNDLED_SRD_EQUIPMENT)) {
+          weaponNames = window.BUNDLED_SRD_EQUIPMENT.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
+        }
+        if (!weaponNames.length && typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+          weaponNames = window.BUNDLED_SRD_CORE_CATALOG.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
+        }
+        const naturalWeapons = ['Bite', 'Claw', 'Slam', 'Gore', 'Tentacle', 'Unarmed Strike'];
+        const fallbackWeapons = [
+          'Battleaxe', 'Club', 'Dagger', 'Falchion', 'Flail', 'Greataxe', 'Greatclub',
+          'Greatsword', 'Halberd', 'Handaxe', 'Heavy Crossbow', 'Heavy Flail', 'Heavy Mace',
+          'Heavy Pick', 'Javelin', 'Kama', 'Kukri', 'Lance', 'Light Crossbow', 'Light Flail',
+          'Light Hammer', 'Light Mace', 'Light Pick', 'Longbow', 'Longspear', 'Longsword',
+          'Morningstar', 'Net', 'Nunchaku', 'Quarterstaff', 'Rapier', 'Scimitar', 'Scythe',
+          'Shortbow', 'Shortspear', 'Short Sword', 'Siangham', 'Sickle', 'Sling', 'Spear',
+          'Trident', 'Warhammer', 'Whip'
+        ];
+        weaponNames = Array.from(new Set(['-', ...naturalWeapons, ...weaponNames, ...fallbackWeapons])).filter(Boolean);
+        weaponNames.sort((a, b) => {
+          if (a === '-') return -1;
+          if (b === '-') return 1;
+          return a.localeCompare(b);
+        });
+        weaponSelect.innerHTML = weaponNames.map(w => `<option value="${escapeDeityHtml(w)}">${escapeDeityHtml(w)}</option>`).join('');
+      }
+
+      // 3. Populate Domains Grid
+      const domainsGrid = document.getElementById('custom-deity-domains-grid');
+      if (domainsGrid) {
+        const allDoms = getAllDomainsWithCustom();
+        const domainNames = allDoms.map(d => d.name || d.id || '').filter(Boolean);
+        domainsGrid.innerHTML = domainNames.map(d => `
+          <button type="button" data-domain="${escapeDeityHtml(d)}" onclick="toggleCustomDeityDomainChip('${escapeDeityHtml(d).replace(/'/g, "\'")}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition text-center truncate cursor-pointer bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200" title="${escapeDeityHtml(d)}">
+            ${escapeDeityHtml(d)}
+          </button>
+        `).join('');
+      }
+
+      // 4. Fill Values
+      const nameInput = document.getElementById('custom-deity-name');
+      const titleInput = document.getElementById('custom-deity-title');
+      const rankSelect = document.getElementById('custom-deity-rank');
+      const catSelect = document.getElementById('custom-deity-category');
+      const alignSelect = document.getElementById('custom-deity-alignment');
+      const portInput = document.getElementById('custom-deity-portfolio');
+      const descInput = document.getElementById('custom-deity-desc');
+
+      if (nameInput) nameInput.value = initialData.name || '';
+      if (titleInput) titleInput.value = initialData.title || '';
+      if (rankSelect && initialData.rank) rankSelect.value = initialData.rank;
+      if (catSelect && initialData.category) catSelect.value = initialData.category;
+      if (alignSelect && initialData.alignment) alignSelect.value = initialData.alignment;
+      if (weaponSelect && (initialData.favoredWeapon || initialData.weapon)) {
+        weaponSelect.value = initialData.favoredWeapon || initialData.weapon;
+      }
+      if (portInput) portInput.value = initialData.portfolio || '';
+      if (descInput) descInput.value = initialData.description || initialData.desc || '';
+
+      // 5. Select Icon
+      const chosenIcon = initialData.icon || '☀️';
+      selectCustomDeityIcon(chosenIcon);
+
+      // 6. Select Domains
+      _customDeitySelectedDomains = new Set(Array.isArray(initialData.domains) ? initialData.domains : []);
+      updateCustomDeityDomainChipsUI();
+
+      // Show Modal
+      modal.classList.remove('hidden');
+      closeDeitySpotlightDropdown();
+      if (nameInput && !initialData.name) {
+        setTimeout(() => nameInput.focus(), 100);
+      }
+    }
+
+    function closeCustomDeityEditorModal() {
+      const modal = document.getElementById('modal-custom-deity-editor');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function autofillDeityEditorViaAi() {
+      const nameInput = document.getElementById('custom-deity-name');
+      const q = nameInput ? nameInput.value.trim() : '';
+      if (!q) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Rule Master AI',
+            breakdown: 'Please enter a deity name in the field first to auto-fill.',
+            icon: '⚠️'
+          });
+        } else {
+          alert('Please enter a deity name first.');
+        }
+        return;
+      }
+      await searchDeityViaRuleMasterAi(q);
+    }
+
+    function saveCustomDeityFromEditor() {
+      const nameInput = document.getElementById('custom-deity-name');
+      const titleInput = document.getElementById('custom-deity-title');
+      const iconInput = document.getElementById('custom-deity-icon');
+      const rankSelect = document.getElementById('custom-deity-rank');
+      const catSelect = document.getElementById('custom-deity-category');
+      const alignSelect = document.getElementById('custom-deity-alignment');
+      const weaponSelect = document.getElementById('custom-deity-weapon');
+      const portInput = document.getElementById('custom-deity-portfolio');
+      const descInput = document.getElementById('custom-deity-desc');
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      if (!name) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Required Field',
+            breakdown: 'Please enter a name for the deity or patron.',
+            icon: '⚠️'
+          });
+        } else {
+          alert('Please enter a deity name.');
+        }
+        if (nameInput) nameInput.focus();
+        return;
+      }
+
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'custom';
+      const favoredWeapon = weaponSelect ? weaponSelect.value : '-';
+      const selectedDomains = Array.from(_customDeitySelectedDomains);
+
+      const entry = {
+        schemaVersion: 2,
+        id: 'deity-' + slug,
+        type: 'Deity',
+        name: name,
+        title: titleInput ? titleInput.value.trim() : '',
+        category: catSelect ? catSelect.value : 'Custom / AI-Added Deities',
+        icon: (iconInput && iconInput.value) ? iconInput.value : '🔮',
+        rank: rankSelect ? rankSelect.value : 'Lesser Deity',
+        alignment: alignSelect ? alignSelect.value : 'True Neutral',
+        favoredWeapon: favoredWeapon,
+        weapon: favoredWeapon,
+        domains: selectedDomains,
+        portfolio: portInput ? portInput.value.trim() : '',
+        description: descInput ? descInput.value.trim() : '',
+        isCustom: true,
+        addedAt: new Date().toISOString()
+      };
+
+      // 1. Save to character.customDb & masterDb
+      if (typeof character !== 'undefined') {
+        if (!Array.isArray(character.customDb)) character.customDb = [];
+        const existingIdx = character.customDb.findIndex(e => e && String(e.type || '').toLowerCase() === 'deity' && String(e.name || '').toLowerCase() === name.toLowerCase());
+        if (existingIdx >= 0) {
+          character.customDb[existingIdx] = entry;
+        } else {
+          character.customDb.push(entry);
+        }
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const mIdx = masterDb.findIndex(e => e && String(e.type || '').toLowerCase() === 'deity' && String(e.name || '').toLowerCase() === name.toLowerCase());
+        if (mIdx >= 0) {
+          masterDb[mIdx] = entry;
+        } else {
+          masterDb.push(entry);
+        }
+      }
+
+      // 2. Save to localStorage
+      try {
+        let customDeities = [];
+        const existingSaved = localStorage.getItem('dnd35_custom_deities');
+        if (existingSaved) customDeities = JSON.parse(existingSaved) || [];
+        const idx = customDeities.findIndex(d => d.name.toLowerCase() === name.toLowerCase());
+        if (idx >= 0) customDeities[idx] = entry;
+        else customDeities.push(entry);
+        localStorage.setItem('dnd35_custom_deities', JSON.stringify(customDeities));
+      } catch (e) {
+        console.warn('Failed to cache custom deity in localStorage:', e);
+      }
+
+      // 3. Save to Master DB via RuleMaster if available
+      if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.saveEntryToMasterDb === 'function') {
+        try {
+          RuleMaster.saveEntryToMasterDb(entry);
+        } catch (e) {}
+      }
+
+      // 4. Save state to storage
+      if (typeof saveStateToStorage === 'function') {
+        saveStateToStorage(true);
+      }
+
+      // 5. Close modal & select saved deity
+      closeCustomDeityEditorModal();
+      selectDeityItem(entry.name);
+
+      // 6. Show official English toast
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          title: 'Deity Saved to Master DB',
+          breakdown: `${entry.name} saved to Master DB and selected.`,
+          icon: entry.icon || '💾'
+        });
+      }
+    }
+
     async function searchDeityViaRuleMasterAi(queryName = null) {
       let q = queryName;
       if (!q) {
         const searchInput = document.getElementById('deity-spotlight-search');
         if (searchInput && searchInput.value.trim()) q = searchInput.value.trim();
+      }
+      if (!q) {
+        const nameInput = document.getElementById('custom-deity-name');
+        if (nameInput && nameInput.value.trim()) q = nameInput.value.trim();
       }
       if (!q) {
         const entered = prompt('Enter the name of the official D&D 3.5e deity you want to search:\n(e.g., Kelemvor, Mystra, Tempus, Bane, Lolth, Asmodeus, Helm, Sune)');
@@ -5344,37 +5746,424 @@
         }
 
         deityObj.type = 'Deity';
+        if (!deityObj.favoredWeapon && deityObj.weapon) deityObj.favoredWeapon = deityObj.weapon;
 
-        // Cache in localStorage
-        try {
-          let customDeities = [];
-          const existingSaved = localStorage.getItem('dnd35_custom_deities');
-          if (existingSaved) customDeities = JSON.parse(existingSaved) || [];
-          const idx = customDeities.findIndex(d => d.name.toLowerCase() === deityObj.name.toLowerCase());
-          if (idx >= 0) customDeities[idx] = deityObj;
-          else customDeities.push(deityObj);
-          localStorage.setItem('dnd35_custom_deities', JSON.stringify(customDeities));
-        } catch (e) {
-          console.warn('Failed to cache deity in localStorage:', e);
-        }
-
-        // Set input value and update trigger
-        const hiddenInput = document.getElementById('profile-edit-deity');
-        if (hiddenInput) hiddenInput.value = deityObj.name;
-        updateDeitySpotlightTrigger(deityObj.name);
+        // Open editor pre-filled for user review & customization
+        openCustomDeityEditorModal(deityObj);
 
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
-            title: `${deityObj.name} Bulundu!`,
-            breakdown: `Alignment: ${deityObj.alignment || '-'} • Favored Weapon: ${deityObj.favoredWeapon || '-'} • Domains: ${(deityObj.domains || []).join(', ')}`,
+            title: 'Deity Found via AI',
+            breakdown: `AI populated fields for ${deityObj.name}. Review & Save to Master DB.`,
             icon: '✨'
           });
         }
       } catch (err) {
-        console.error(err);
-        alert('Deity lookup error: ' + err.message);
+        console.warn('AI Deity lookup warning / fallback:', err);
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'AI Lookup Notice',
+            breakdown: 'AI lookup timed out or unavailable — opened Custom Deity Editor for manual setup.',
+            icon: '⚡'
+          });
+        }
+        openCustomDeityEditorModal({ name: q });
       }
     }
+
+    window.openCustomDeityEditorModal = openCustomDeityEditorModal;
+    window.closeCustomDeityEditorModal = closeCustomDeityEditorModal;
+    window.autofillDeityEditorViaAi = autofillDeityEditorViaAi;
+    window.selectCustomDeityIcon = selectCustomDeityIcon;
+    window.toggleCustomDeityDomainChip = toggleCustomDeityDomainChip;
+    window.saveCustomDeityFromEditor = saveCustomDeityFromEditor;
+
+    // =========================================================================
+    // ⚜️ CUSTOM CLERIC DOMAIN CREATOR & EDITOR MODAL CONTROLLER
+    // =========================================================================
+    const CANONICAL_DOMAIN_SKILLS = [
+      'Bluff', 'Intimidate', 'Disguise', 'Hide', 'Move Silently', 'Survival', 'Spot',
+      'Listen', 'Search', 'Sense Motive', 'Knowledge (arcana)', 'Knowledge (nature)',
+      'Knowledge (religion)', 'Knowledge (the planes)', 'Knowledge (dungeoneering)',
+      'Knowledge (local)', 'Spellcraft', 'Heal', 'Diplomacy', 'Concentration',
+      'Tumble', 'Jump', 'Climb', 'Swim'
+    ];
+    let _customDomainSelectedSkills = new Set();
+
+    function toggleCustomDomainSkillChip(skillName) {
+      if (_customDomainSelectedSkills.has(skillName)) {
+        _customDomainSelectedSkills.delete(skillName);
+      } else {
+        _customDomainSelectedSkills.add(skillName);
+      }
+      updateCustomDomainSkillsUI();
+    }
+
+    function updateCustomDomainSkillsUI() {
+      const grid = document.getElementById('custom-domain-skills-grid');
+      const countEl = document.getElementById('custom-domain-skills-count');
+      if (countEl) countEl.textContent = `${_customDomainSelectedSkills.size} Selected`;
+      if (!grid) return;
+      grid.querySelectorAll('button[data-skill]').forEach(btn => {
+        const s = btn.getAttribute('data-skill');
+        if (_customDomainSelectedSkills.has(s)) {
+          btn.className = 'px-2 py-0.5 rounded text-[10px] font-bold border transition cursor-pointer bg-purple-900/80 border-purple-400 text-white shadow-sm';
+        } else {
+          btn.className = 'px-2 py-0.5 rounded text-[10px] font-medium border transition cursor-pointer bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200';
+        }
+      });
+    }
+
+    function openCustomDomainEditorModal(initialData = {}) {
+      if (typeof window.ensureModalsMounted === 'function') {
+        window.ensureModalsMounted();
+      }
+
+      const modal = document.getElementById('modal-custom-domain-editor');
+      if (!modal) return;
+
+      // 1. Populate Feats Datalist
+      const featsDatalist = document.getElementById('custom-domain-feats-datalist');
+      if (featsDatalist) {
+        let featNames = [];
+        if (window.SrdCompendium && typeof window.SrdCompendium.getAllFeats === 'function') {
+          const fList = window.SrdCompendium.getAllFeats();
+          if (Array.isArray(fList)) featNames = fList.map(f => typeof f === 'string' ? f : f?.name).filter(Boolean);
+        }
+        if (!featNames.length && typeof window.BUNDLED_SRD_FEATS !== 'undefined') {
+          featNames = Object.keys(window.BUNDLED_SRD_FEATS);
+        }
+        featNames = Array.from(new Set(featNames)).sort();
+        featsDatalist.innerHTML = featNames.map(f => `<option value="${escapeDeityHtml(f)}"></option>`).join('');
+      }
+
+      // 2. Populate Spells Datalist
+      const spellsDatalist = document.getElementById('custom-domain-spells-datalist');
+      if (spellsDatalist) {
+        let spellNames = [];
+        if (window.SrdCompendium && typeof window.SrdCompendium.getAllSpells === 'function') {
+          const sList = window.SrdCompendium.getAllSpells();
+          if (Array.isArray(sList)) spellNames = sList.map(s => typeof s === 'string' ? s : s?.name).filter(Boolean);
+        }
+        if (!spellNames.length && typeof window.BUNDLED_SRD_SPELLS !== 'undefined') {
+          spellNames = Object.keys(window.BUNDLED_SRD_SPELLS);
+        }
+        spellNames = Array.from(new Set(spellNames)).sort();
+        spellsDatalist.innerHTML = spellNames.map(s => `<option value="${escapeDeityHtml(s)}"></option>`).join('');
+      }
+
+      // 3. Render Skill Chips
+      const skillsGrid = document.getElementById('custom-domain-skills-grid');
+      if (skillsGrid) {
+        skillsGrid.innerHTML = CANONICAL_DOMAIN_SKILLS.map(sk => `
+          <button type="button" data-skill="${escapeDeityHtml(sk)}" onclick="toggleCustomDomainSkillChip('${escapeDeityHtml(sk).replace(/'/g, "\\'")}')" class="px-2 py-0.5 rounded text-[10px] font-medium border transition cursor-pointer bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200" title="${escapeDeityHtml(sk)}">
+            ${escapeDeityHtml(sk)}
+          </button>
+        `).join('');
+      }
+
+      // 4. Fill Fields
+      const nameInput = document.getElementById('custom-domain-name');
+      const srcInput = document.getElementById('custom-domain-source');
+      const alignSelect = document.getElementById('custom-domain-alignment');
+      const pDescInput = document.getElementById('custom-domain-power-desc');
+      const featInput = document.getElementById('custom-domain-feat');
+      const slaNameInput = document.getElementById('custom-domain-sla-name');
+      const slaUsesSelect = document.getElementById('custom-domain-sla-uses');
+      const modTargetSelect = document.getElementById('custom-domain-mod-target');
+      const modValInput = document.getElementById('custom-domain-mod-value');
+      const modTypeSelect = document.getElementById('custom-domain-mod-type');
+
+      if (nameInput) nameInput.value = initialData.name || '';
+      if (srcInput) srcInput.value = initialData.source || 'Spell Compendium';
+      if (alignSelect) alignSelect.value = initialData.alignment || 'Any';
+      if (pDescInput) {
+        pDescInput.value = initialData.grantedPower?.description || initialData.powerDesc || initialData.description || '';
+      }
+      if (featInput) {
+        const feat = initialData.grantedPower?.grantedFeats?.[0] || initialData.grantedFeat || initialData.bonusFeat || '';
+        featInput.value = feat;
+      }
+      if (slaNameInput) {
+        slaNameInput.value = initialData.grantedPower?.spellLikeAbilities?.[0]?.name || initialData.slaName || '';
+      }
+      if (slaUsesSelect) {
+        slaUsesSelect.value = initialData.grantedPower?.spellLikeAbilities?.[0]?.uses || initialData.slaUses || 'None';
+      }
+
+      // Modifiers
+      if (Array.isArray(initialData.modifiers) && initialData.modifiers.length > 0) {
+        const m = initialData.modifiers[0];
+        if (modTargetSelect) modTargetSelect.value = m.target || 'None';
+        if (modValInput) modValInput.value = m.value || 0;
+        if (modTypeSelect) modTypeSelect.value = m.type || 'Untyped';
+      } else {
+        if (modTargetSelect) modTargetSelect.value = 'None';
+        if (modValInput) modValInput.value = 0;
+        if (modTypeSelect) modTypeSelect.value = 'Untyped';
+      }
+
+      // Class skills
+      const initialSkills = initialData.grantedPower?.classSkills || initialData.classSkills || [];
+      _customDomainSelectedSkills = new Set(Array.isArray(initialSkills) ? initialSkills : []);
+      updateCustomDomainSkillsUI();
+
+      // Spells 1-9
+      const spells = Array.isArray(initialData.spells) ? initialData.spells : [];
+      for (let lvl = 1; lvl <= 9; lvl++) {
+        const spInput = document.getElementById(`custom-domain-spell-${lvl}`);
+        if (spInput) {
+          const found = spells.find(s => s && (s.level === lvl || s.level === String(lvl)));
+          if (found) {
+            spInput.value = found.name || '';
+          } else if (spells[lvl - 1] && (typeof spells[lvl - 1] === 'string' || spells[lvl - 1].name)) {
+            spInput.value = typeof spells[lvl - 1] === 'string' ? spells[lvl - 1] : (spells[lvl - 1].name || '');
+          } else {
+            spInput.value = '';
+          }
+        }
+      }
+
+      modal.classList.remove('hidden');
+      if (nameInput && !initialData.name) {
+        setTimeout(() => nameInput.focus(), 100);
+      }
+    }
+
+    function closeCustomDomainEditorModal() {
+      const modal = document.getElementById('modal-custom-domain-editor');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function autofillDomainEditorViaAi() {
+      const nameInput = document.getElementById('custom-domain-name');
+      const q = nameInput ? nameInput.value.trim() : '';
+      if (!q) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Rule Master AI',
+            breakdown: 'Please enter a domain name first to auto-fill.',
+            icon: '⚠️'
+          });
+        } else {
+          alert('Please enter a domain name first.');
+        }
+        if (nameInput) nameInput.focus();
+        return;
+      }
+
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          title: 'Rule Master AI',
+          breakdown: `Searching "${escapeDeityHtml(q)}" Domain across official D&D 3.5e sourcebooks...`,
+          icon: '⚡'
+        });
+      }
+
+      try {
+        let domainObj = null;
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchDomainViaAi === 'function') {
+          domainObj = await RuleMaster.fetchDomainViaAi(q);
+        } else if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchSingleAiRuleObjects === 'function') {
+          const key = RuleMaster.getApiKey();
+          if (!key) {
+            RuleMaster.promptApiKey();
+            throw new Error('Gemini API key not configured.');
+          }
+          const results = await RuleMaster.fetchSingleAiRuleObjects(q, 'Domain', key);
+          if (results && results.length) {
+            domainObj = results.find(e => e && (e.type === 'Domain' || String(e.type).toLowerCase() === 'domain')) || results[0];
+          }
+        }
+
+        if (!domainObj || !domainObj.name) {
+          throw new Error(`No official D&D 3.5e domain found for "${q}".`);
+        }
+
+        openCustomDomainEditorModal(domainObj);
+
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Domain Found via AI',
+            breakdown: `AI populated fields for ${domainObj.name} Domain. Review & Save to Master DB.`,
+            icon: '✨'
+          });
+        }
+      } catch (err) {
+        console.warn('AI Domain lookup warning:', err);
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'AI Lookup Notice',
+            breakdown: err.message || 'AI lookup unavailable — use manual entry.',
+            icon: '⚡'
+          });
+        }
+      }
+    }
+
+    function saveCustomDomainFromEditor() {
+      const nameInput = document.getElementById('custom-domain-name');
+      const srcInput = document.getElementById('custom-domain-source');
+      const alignSelect = document.getElementById('custom-domain-alignment');
+      const pDescInput = document.getElementById('custom-domain-power-desc');
+      const featInput = document.getElementById('custom-domain-feat');
+      const slaNameInput = document.getElementById('custom-domain-sla-name');
+      const slaUsesSelect = document.getElementById('custom-domain-sla-uses');
+      const modTargetSelect = document.getElementById('custom-domain-mod-target');
+      const modValInput = document.getElementById('custom-domain-mod-value');
+      const modTypeSelect = document.getElementById('custom-domain-mod-type');
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      if (!name) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: 'Required Field',
+            breakdown: 'Please enter a name for the domain.',
+            icon: '⚠️'
+          });
+        } else {
+          alert('Please enter a domain name.');
+        }
+        if (nameInput) nameInput.focus();
+        return;
+      }
+
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'custom';
+      const powerDesc = pDescInput ? pDescInput.value.trim() : '';
+      const feat = featInput ? featInput.value.trim() : '';
+      const slaName = slaNameInput ? slaNameInput.value.trim() : '';
+      const slaUses = slaUsesSelect ? slaUsesSelect.value : 'None';
+      const modTarget = modTargetSelect ? modTargetSelect.value : 'None';
+      const modVal = modValInput ? parseFloat(modValInput.value) || 0 : 0;
+      const modType = modTypeSelect ? modTypeSelect.value : 'Untyped';
+
+      const spellsList = [];
+      for (let lvl = 1; lvl <= 9; lvl++) {
+        const spEl = document.getElementById(`custom-domain-spell-${lvl}`);
+        const spName = spEl ? spEl.value.trim() : '';
+        if (spName) {
+          const spSlug = spName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          spellsList.push({
+            level: lvl,
+            id: `spl-${spSlug}`,
+            name: spName
+          });
+        }
+      }
+
+      const grantedPower = {
+        description: powerDesc,
+        classSkills: Array.from(_customDomainSelectedSkills),
+        grantedFeats: feat ? [feat] : [],
+        spellLikeAbilities: (slaName && slaUses !== 'None') ? [{ name: slaName, uses: slaUses }] : []
+      };
+
+      const modifiers = (modTarget && modTarget !== 'None' && modVal !== 0)
+        ? [{ target: modTarget, value: modVal, type: modType }]
+        : [];
+
+      const entry = {
+        schemaVersion: 2,
+        id: 'dom-' + slug,
+        type: 'Domain',
+        category: 'Cleric Domain',
+        name: name,
+        alignment: alignSelect ? alignSelect.value : 'Any',
+        source: srcInput ? (srcInput.value.trim() || 'Custom Domain') : 'Custom Domain',
+        grantedPower: grantedPower,
+        modifiers: modifiers,
+        spells: spellsList,
+        isCustom: true,
+        addedAt: new Date().toISOString()
+      };
+
+      // 1. Save to character.customDb & masterDb
+      if (typeof character !== 'undefined') {
+        if (!Array.isArray(character.customDb)) character.customDb = [];
+        const existingIdx = character.customDb.findIndex(e => e && String(e.type || '').toLowerCase() === 'domain' && String(e.name || '').toLowerCase() === name.toLowerCase());
+        if (existingIdx >= 0) {
+          character.customDb[existingIdx] = entry;
+        } else {
+          character.customDb.push(entry);
+        }
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const mIdx = masterDb.findIndex(e => e && String(e.type || '').toLowerCase() === 'domain' && String(e.name || '').toLowerCase() === name.toLowerCase());
+        if (mIdx >= 0) {
+          masterDb[mIdx] = entry;
+        } else {
+          masterDb.push(entry);
+        }
+      }
+
+      // 2. Save to localStorage
+      try {
+        let customDomains = [];
+        const existingSaved = localStorage.getItem('dnd35_custom_domains');
+        if (existingSaved) customDomains = JSON.parse(existingSaved) || [];
+        const idx = customDomains.findIndex(d => (d.name || '').toLowerCase() === name.toLowerCase());
+        if (idx >= 0) customDomains[idx] = entry;
+        else customDomains.push(entry);
+        localStorage.setItem('dnd35_custom_domains', JSON.stringify(customDomains));
+      } catch (e) {
+        console.warn('Failed to cache custom domain in localStorage:', e);
+      }
+
+      // 3. Save to Master DB via RuleMaster if available
+      if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.saveEntryToMasterDb === 'function') {
+        try {
+          RuleMaster.saveEntryToMasterDb(entry);
+        } catch (e) {}
+      }
+
+      // 4. Save state to storage
+      if (typeof saveStateToStorage === 'function') {
+        saveStateToStorage(true);
+      }
+
+      // 5. Close domain modal
+      closeCustomDomainEditorModal();
+
+      // 6. Refresh deity editor domains grid if deity editor is open
+      const deityModal = document.getElementById('modal-custom-deity-editor');
+      if (deityModal && !deityModal.classList.contains('hidden')) {
+        const dGrid = document.getElementById('custom-deity-domains-grid');
+        if (dGrid) {
+          const allDoms = getAllDomainsWithCustom();
+          const dNames = allDoms.map(d => d.name || d.id || '').filter(Boolean);
+          dGrid.innerHTML = dNames.map(d => `
+            <button type="button" data-domain="${escapeDeityHtml(d)}" onclick="toggleCustomDeityDomainChip('${escapeDeityHtml(d).replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition text-center truncate cursor-pointer bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200" title="${escapeDeityHtml(d)}">
+              ${escapeDeityHtml(d)}
+            </button>
+          `).join('');
+          if (typeof _customDeitySelectedDomains !== 'undefined') {
+            _customDeitySelectedDomains.add(entry.name);
+            updateCustomDeityDomainChipsUI();
+          }
+        }
+      }
+
+      // 7. Refresh Cleric domain picker list if open
+      if (typeof renderClericDomainPickerList === 'function') {
+        renderClericDomainPickerList();
+      }
+
+      // 8. Show official English toast
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          title: 'Domain Saved to Master DB',
+          breakdown: `${entry.name} Domain saved to Master DB.`,
+          icon: '⚜️'
+        });
+      }
+    }
+
+    window.openCustomDomainEditorModal = openCustomDomainEditorModal;
+    window.closeCustomDomainEditorModal = closeCustomDomainEditorModal;
+    window.toggleCustomDomainSkillChip = toggleCustomDomainSkillChip;
+    window.autofillDomainEditorViaAi = autofillDomainEditorViaAi;
+    window.saveCustomDomainFromEditor = saveCustomDomainFromEditor;
+    window.getAllDomainsWithCustom = getAllDomainsWithCustom;
 
     function onProfileRaceChange(raceName) {
       const card = document.getElementById('profile-race-traits-card');
@@ -6045,6 +6834,18 @@
       { key: 'cha', label: 'CHA', name: 'Charisma' }
     ];
 
+    const STAT_KEYS_TWO_COL = [
+      { key: 'str', label: 'STR', name: 'Strength' },
+      { key: 'int', label: 'INT', name: 'Intelligence' },
+      { key: 'dex', label: 'DEX', name: 'Dexterity' },
+      { key: 'wis', label: 'WIS', name: 'Wisdom' },
+      { key: 'con', label: 'CON', name: 'Constitution' },
+      { key: 'cha', label: 'CHA', name: 'Charisma' }
+    ];
+    if (typeof window !== 'undefined') {
+      window.STAT_KEYS_TWO_COL = STAT_KEYS_TWO_COL;
+    }
+
     const POINT_BUY_COST_TABLE = {
       8: 0,
       9: 1,
@@ -6225,7 +7026,7 @@ function renderManualStatsPanel() {
       const container = document.getElementById('manual-stats-container');
       if (!container) return;
 
-      container.innerHTML = STAT_KEYS.map(s => {
+      container.innerHTML = STAT_KEYS_TWO_COL.map(s => {
         const val = Number(statDistState.workingAbilities[s.key]) || 10;
         const mod = Math.floor((val - 10) / 2);
         const modStr = (mod >= 0 ? '+' : '') + mod;
@@ -6378,7 +7179,7 @@ function renderManualStatsPanel() {
       const container = document.getElementById('pointbuy-stats-container');
       if (!container) return;
 
-      container.innerHTML = STAT_KEYS.map(s => {
+      container.innerHTML = STAT_KEYS_TWO_COL.map(s => {
         const val = Number(statDistState.workingAbilities[s.key]) || 8;
         const mod = Math.floor((val - 10) / 2);
         const modStr = (mod >= 0 ? '+' : '') + mod;
@@ -6386,8 +7187,8 @@ function renderManualStatsPanel() {
         const nextCost = val < 18 ? getPointBuyCost(val + 1) - cost : 0;
 
         return `
-          <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 flex items-center justify-between">
-            <div class="flex items-center gap-3">
+          <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex items-center justify-between">
+            <div class="flex items-center gap-2">
               <span class="w-10 text-center font-black text-xs font-mono px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800 text-purple-300">${s.label}</span>
               <div>
                 <div class="flex items-center gap-2">
@@ -6397,9 +7198,9 @@ function renderManualStatsPanel() {
                 <div class="text-[10px] text-purple-300/80 font-mono">Cost: <strong class="text-amber-400">${cost} pt</strong> ${val < 18 ? `(Next +1: ${nextCost} pt)` : '(Max 18)'}</div>
               </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5">
               <button type="button" onclick="adjustPointBuyStat('${s.key}', -1)" ${val <= 8 ? 'disabled' : ''} class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">－</button>
-              <span class="w-10 text-center text-amber-400 font-mono font-black text-base">${val}</span>
+              <span class="w-8 text-center text-amber-400 font-mono font-black text-base">${val}</span>
               <button type="button" onclick="adjustPointBuyStat('${s.key}', 1)" ${val >= 18 ? 'disabled' : ''} class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">＋</button>
             </div>
           </div>
@@ -6610,7 +7411,7 @@ function renderManualStatsPanel() {
 
       const assignBox = document.getElementById('rolled-assign-container');
       if (assignBox) {
-        assignBox.innerHTML = STAT_KEYS.map(s => {
+        assignBox.innerHTML = STAT_KEYS_TWO_COL.map(s => {
           const assignedRoll = statDistState.rolledDice.find(r => r.assignedTo === s.key);
           const val = assignedRoll ? assignedRoll.total : (Number(statDistState.workingAbilities[s.key]) || 10);
           const mod = Math.floor((val - 10) / 2);

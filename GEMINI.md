@@ -1,11 +1,14 @@
 # Joyful-Fermi Project Rules (STRICT)
 
-## 1. Model Governance, Modular Codebase & Zero-Token Verification
-- **Lead Architect & PM Gatekeeper (`Gemini 4 Argon`):** Argon acts as Lead Architect and Project Manager. Every implementation task MUST follow the 3-step PM Gatekeeper Protocol:
-  1. **Pre-Flight Contract:** Define the exact V2 data source (`SrdCompendium` API), existing UI/JS pattern to follow, and legacy code/constants to be deleted. Never introduce alien patterns (`new Proxy`, ad-hoc global caches) when a project-wide pattern exists.
-  2. **Scoped Execution:** Route data/schema conversion or isolated tasks to `flash_lite` / local scripts with strict line-range and API boundaries.
-  3. **Post-Flight `git diff` Audit:** Before reporting completion, run `git diff` and `tools/verify_and_sync.js` to verify zero duplicate static catalogs remain in `char_*.js` and `database/srd_index.json` SHA-256 chunk hashes match.
-- **Zero-Token Sync & Audit (`tools/verify_and_sync.js`):** **NEVER** spawn a subagent (`invoke_subagent`) for SHA-256 parity, JS/HTML/JSON syntax, or banned emoji checks. Always run `tools/verify_and_sync.js` (**0 tokens, ~160ms**), which auto-syncs `index.html` ➔ `character.html`, `database/*.json` hashes ➔ `srd_index.json`, and all core files ➔ `webapp/`, while enforcing architectural lint rules.
+## 1. Agile CEO Governance, Parallel Subagents & 160ms Script Audit
+- **Agile CEO Orchestrator (`Gemini 4 Argon` — `.agents/skills/ceo-orchestrator/SKILL.md`):** Argon acts as the **Agile CEO & Lead Architect**, choosing the fastest execution path based on task scope to avoid subagent cold-start latency (~90s/agent):
+  1. **Fast-Track Direct Execution (`10–25s` — Questions, Proposals & 1–2 File Surgical Edits):** For conceptual/RAW questions, proposal evaluations, and targeted 1–2 file changes (30–60 line reads), Argon executes directly without spawning subagents.
+  2. **Parallel Subagent Swarm (`Multi-Module / Broad Discovery / Bulk Data`):** When a task spans 2+ independent modules or requires broad multi-file scanning, Argon dispatches multiple subagents **in parallel in the same turn**:
+     - **Discovery (`research`):** `Model: flash` for broad multi-file scanning.
+     - **Engine & 3.5e RAW Math (`worker-engine`):** `Model: pro` (or `inherit`) for `rule_engine.js`.
+     - **UI / DOM Modules (`worker-ui`):** `Model: flash` for `index.html` and `char_*.js`.
+     - **Database / V2 Schema (`worker-data`):** `Model: flash_lite` (plus local Node.js scripts) for `database/srd_*.json`.
+  3. **Zero-Token 160ms Audit (`tools/verify_and_sync.js` + `git diff`):** Never spawn a separate sequential QA subagent just to run checks. The executing agent runs `git diff` and `tools/verify_and_sync.js` (**0 tokens, ~160ms** — auto-syncing `index.html` ➔ `character.html`, `database/*.json` SHA-256 hashes ➔ `srd_index.json`, and core files ➔ `webapp/`) in the same turn before completion.
 - **Modular Character Sheet & Context Discipline:**
   - `index.html` (7,698 lines pure HTML/DOM) + 5 domain JS modules (`char_hud.js`, `char_combat.js`, `char_spells.js`, `char_progression.js`, `char_inventory.js`).
   - Read only the target module and exact 30–60 line range needed. Edit only root files; never read `character.html` or `webapp/*` copies directly.
@@ -13,7 +16,7 @@
 
 ## 2. Root-Cause Engineering & Inquiry Guardrail
 - **No Band-Aids:** Never use temporary workarounds. Always identify the root cause, anticipate cascading impacts, and implement the permanent architectural fix.
-- **No Unsolicited Edits on Questions:** When the user asks a conceptual/design question (*"mantıklı mı?"*, *"nasıl olmalı?"*, *"var mı?"*), analyze pros/cons, 3.5e RAW mechanics, and UX first; do not modify files until explicitly instructed to implement.
+- **No Unsolicited Edits on Questions:** When the user asks a conceptual/design question (*"mantıklı mı?"*, *"nasıl olmalı?"*, *"var mı?"*) or makes a proposal, analyze pros/cons, 3.5e RAW mechanics, and UX directly (using targeted 30–60 line reads or parallel `flash` research only if multi-file lookup is needed); never modify code files until explicitly instructed to implement.
 
 ## 3. Canonical V2 Data Architecture & Zero-Dummy-Data Policy
 - **No Dummy Data:** Never use placeholder/unverified data. Query local Modular SRD Compendium (`srd_index.json` + `srd_*.json`, 3,522 entries) first; do not scrape `d20srd.org` unless requested.

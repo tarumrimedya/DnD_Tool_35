@@ -16,3 +16,8 @@ example char/
 Thumbs.db
 .vscode/
 .idea/
+.claude/
+.mcp.json
+__pycache__/
+*.pyc
+
