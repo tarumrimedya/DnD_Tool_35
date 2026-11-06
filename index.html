@@ -2329,14 +2329,19 @@
                 </div>
                 <div class="flex items-center gap-2 w-full sm:w-auto min-w-0">
                   <select id="inline-ai-rule-category" class="h-8 flex-1 sm:flex-none min-w-0 bg-slate-950/95 border border-purple-500/40 rounded-lg px-2 text-xs text-purple-200 font-semibold focus:outline-none cursor-pointer truncate">
-                    <option value="ALL">✨ Auto-Detect Category</option>
+                    <option value="" disabled selected>Select Category *</option>
                     <option value="Feat">Feat</option>
+                    <option value="Spell">Spell</option>
                     <option value="Weapon">Weapon</option>
                     <option value="Armor / Shield">Armor / Shield</option>
                     <option value="Wondrous Item">Wondrous Item</option>
                     <option value="Ring">Ring</option>
-                    <option value="Spell">Spell</option>
                     <option value="Maneuver">Maneuver / Stance (ToB)</option>
+                    <option value="Deity">Deity</option>
+                    <option value="Domain">Domain</option>
+                    <option value="Race">Race</option>
+                    <option value="Class">Class</option>
+                    <option value="Condition">Condition</option>
                   </select>
                   <button id="btn-inline-ai-search" type="button" onclick="RuleMaster.queryInlineAiRule()" class="h-8 bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs px-3 sm:px-3.5 rounded-lg shadow transition flex items-center justify-center gap-1.5 whitespace-nowrap cursor-pointer shrink-0">
                     <span>⚡</span>
@@ -2346,13 +2351,14 @@
               </div>
 
               <!-- Quick Suggestions (Calmed Monochrome Chips — Highlight on Hover) -->
-              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 text-[10px]">
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('feat: Shock Trooper', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">feat: Shock Trooper</button>
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('spell: Haste', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">spell: Haste</button>
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('weapon: Dagger +2', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">weapon: Dagger +2</button>
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('item: Boots of Speed', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">item: Boots of Speed</button>
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('maneuver: Mountain Hammer', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">maneuver: Mtn Hammer</button>
-                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('deity: Kelemvor', 'ALL')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">deity: Kelemvor</button>
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-1.5 text-[10px]">
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('feat: Shock Trooper', 'Feat')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">feat: Shock Trooper</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('spell: Haste', 'Spell')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">spell: Haste</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('weapon: Dagger +2', 'Weapon')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">weapon: Dagger +2</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('item: Boots of Speed', 'Wondrous Item')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">item: Boots of Speed</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('maneuver: Mountain Hammer', 'Maneuver')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">maneuver: Mtn Hammer</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('deity: Kelemvor', 'Deity')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">deity: Kelemvor</button>
+                <button type="button" onclick="RuleMaster.setInlineQueryAndSearch('domain: Planning', 'Domain')" class="w-full bg-slate-900/90 hover:bg-purple-950/80 text-slate-300 hover:text-white px-2 py-1.5 rounded-lg border border-slate-700/80 hover:border-purple-400/60 font-mono transition truncate cursor-pointer">domain: Planning</button>
               </div>
             </div>
 
@@ -3720,7 +3726,7 @@
 
   <!-- Deferred Modals Root (Mounted on Demand / Idle via char_modals.js) -->
   <div id="deferred-modals-root"></div>
-  <script src="char_modals.js?v=20261106_2130"></script>
+  <script src="char_modals.js?v=20261106_2205"></script>
 
   <!-- SCRIPT LOGIC -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -3733,11 +3739,11 @@
   <script src="dice3d.js?v=20261025_2338"></script>
   <script src="gdrive_sync.js?v=20261105_2355"></script>
 
-  <script src="char_hud.js?v=20261106_2130"></script>
-  <script src="char_combat.js?v=20261106_2130"></script>
-  <script src="char_spells.js?v=20261106_2130"></script>
-  <script src="char_progression.js?v=20261106_2130"></script>
-  <script src="char_inventory.js?v=20261106_2130"></script>
+  <script src="char_hud.js?v=20261106_2205"></script>
+  <script src="char_combat.js?v=20261106_2205"></script>
+  <script src="char_spells.js?v=20261106_2205"></script>
+  <script src="char_progression.js?v=20261106_2205"></script>
+  <script src="char_inventory.js?v=20261106_2205"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" onclick="hideSpellHoverTooltip()" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     

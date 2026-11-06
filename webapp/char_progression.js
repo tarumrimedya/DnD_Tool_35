@@ -5503,9 +5503,19 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (!modal) return;
 
       const titleEl = document.getElementById('change-class-modal-title');
+      const targetBadge = document.getElementById('change-class-target-badge');
       const subEl = document.getElementById('change-class-modal-subtitle');
-      if (titleEl) titleEl.textContent = `Edit Level ${row.level} Class & Stats`;
-      if (subEl) subEl.textContent = `Current class: ${row.className}`;
+      if (titleEl) titleEl.textContent = 'Edit Level / Plan';
+      if (targetBadge) {
+        if (row.active === false) {
+          targetBadge.textContent = `Level ${row.level} (Planned)`;
+          targetBadge.className = 'badge bg-purple-950 text-purple-300 border border-purple-600 text-xs font-bold';
+        } else {
+          targetBadge.textContent = `Level ${row.level}`;
+          targetBadge.className = 'badge bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold';
+        }
+      }
+      if (subEl) subEl.textContent = `Current Class: ${row.className} • D&D 3.5e Class, Hit Die (HD), BAB, Saves & Ability (+1)`;
 
       populateChangeClassSelect(row.className);
 
@@ -5539,17 +5549,17 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       }
       if (statBadge) {
         if (row.level % 4 === 0) {
-          statBadge.className = 'badge text-[9px] px-2 py-0.5 font-bold bg-amber-950 text-amber-300 border border-amber-600 animate-pulse';
-          statBadge.textContent = 'Every 4th Level (+1 Ability)';
+          statBadge.className = 'badge text-[9px] px-2 py-0.5 font-bold bg-amber-950 text-amber-300 border border-amber-500 animate-pulse';
+          statBadge.textContent = `🌟 Level ${row.level}: +1 Ability Score Increase Available!`;
         } else {
           statBadge.className = 'badge text-[9px] px-2 py-0.5 font-bold bg-slate-800 text-slate-400 border border-slate-700';
-          statBadge.textContent = 'Optional / DM';
+          statBadge.textContent = 'At Levels 4, 8, 12, 16, 20';
         }
       }
       if (statHint) {
         statHint.textContent = (row.level % 4 === 0)
           ? `Level ${row.level} grants a permanent +1 ability score increase per D&D 3.5e RAW (every 4th character level).`
-          : `You may optionally assign a +1 ability score increase to this level as a DM boon.`;
+          : `D&D 3.5e RAW: At levels 4, 8, 12, 16, and 20, add +1 to one ability score (or assign as a DM boon).`;
       }
 
       const searchInp = document.getElementById('change-class-search-input');
@@ -5562,7 +5572,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const btn = document.getElementById(`change-class-filter-tab-${t}`);
         if (btn) {
           if (t === 'all') {
-            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-amber-500/20 text-amber-200 border border-amber-400/50 shadow-sm cursor-pointer';
+            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-emerald-500/20 text-emerald-200 border border-emerald-400/50 shadow-sm cursor-pointer';
           } else {
             btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer';
           }
@@ -5570,8 +5580,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       });
 
       filterChangeClassSearch();
+      const resultsBox = document.getElementById('change-class-search-results');
+      if (resultsBox) resultsBox.scrollTop = 0;
       onChangeClassSelectChange(false);
       modal.classList.remove('hidden');
+      const modalBody = modal.querySelector('.overflow-y-auto.flex-1');
+      if (modalBody) modalBody.scrollTop = 0;
     }
 
     function closeChangeLevelClassModal() {
@@ -5588,7 +5602,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const btn = document.getElementById(`change-class-filter-tab-${t}`);
         if (btn) {
           if (t === tab) {
-            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-amber-500/20 text-amber-200 border border-amber-400/50 shadow-sm cursor-pointer';
+            btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-bold transition bg-emerald-500/20 text-emerald-200 border border-emerald-400/50 shadow-sm cursor-pointer';
           } else {
             btn.className = 'px-2.5 py-1 rounded-md text-[10px] font-semibold transition bg-slate-900/80 text-slate-400 border border-slate-800 hover:text-white cursor-pointer';
           }
@@ -5623,8 +5637,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       const preview = document.getElementById('change-class-preview-card');
       if (preview) {
-        preview.classList.add('ring-2', 'ring-amber-400');
-        setTimeout(() => preview.classList.remove('ring-2', 'ring-amber-400'), 1500);
+        preview.classList.add('ring-2', 'ring-emerald-400');
+        setTimeout(() => preview.classList.remove('ring-2', 'ring-emerald-400'), 1500);
         preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
 
@@ -5704,7 +5718,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       if (matched.length === 0) {
         if (q) {
           resultsContainer.innerHTML = `
-            <div class="p-3.5 text-center space-y-2.5 bg-slate-950/80 rounded-xl border border-amber-500/40 shadow-xl">
+            <div class="p-3.5 text-center space-y-2.5 bg-slate-950/80 rounded-xl border border-purple-500/40 shadow-xl">
               <div class="text-slate-200 text-xs font-semibold">
                 🔍 Class &quot;<span class="text-amber-300 font-bold">${q}</span>&quot; not found in local compendium.
               </div>
@@ -5712,7 +5726,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                 Scan official D&D 3.5e RAW sourcebooks (PHB, Complete series, Tome of Battle, DMG, etc.) to automatically fetch this class and save it to Master DB.
               </p>
               <div class="pt-1 flex items-center justify-center gap-2">
-                <button type="button" onclick="searchOrAddClassWithRuleMaster()" class="bg-gradient-to-r from-amber-600 via-yellow-600 to-amber-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-amber-400/40">
+                <button type="button" onclick="searchOrAddClassWithRuleMaster()" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-purple-400/40">
                   <span>✨</span>
                   <span>Fetch from D&D 3.5e Sourcebooks via Rule Master (AI)</span>
                 </button>
@@ -5741,30 +5755,30 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const isProgExpanded = _expandedClassProgressions.has(cName);
         const prereqResult = item.prereqResult;
 
-        // Group Header Divider
+        // Group Header Divider (Identical to Level Up / Plan)
         if (item.priority !== lastPriority) {
           lastPriority = item.priority;
           let headerTitle = '';
           if (item.priority === 1) {
             const count = matched.filter(m => m.priority === 1).length;
             headerTitle = `
-              <div class="flex items-center justify-between py-1.5 px-2 text-[11px] font-bold text-slate-300 border-b border-amber-500/30 sticky top-0 bg-slate-950/95 z-10 backdrop-blur-sm shadow-sm rounded-lg mb-1">
-                <span class="flex items-center gap-1.5 text-amber-300">
+              <div class="flex items-center justify-between py-1.5 px-2 text-[11px] font-bold text-slate-300 border-b border-purple-500/30 sticky top-0 bg-slate-950/95 z-10 backdrop-blur-sm shadow-sm rounded-lg mb-1">
+                <span class="flex items-center gap-1.5 text-purple-300">
                   <span>🛡️</span>
                   <span>Base Classes</span>
                 </span>
-                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-700/50">${count} Classes</span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-950/80 text-purple-300 border border-purple-700/50">${count} Classes</span>
               </div>
             `;
           } else if (item.priority === 2) {
             const count = matched.filter(m => m.priority === 2).length;
             headerTitle = `
-              <div class="flex items-center justify-between py-1.5 px-2 text-[11px] font-bold text-emerald-300 border-b border-emerald-500/30 sticky top-0 bg-slate-950/95 z-10 backdrop-blur-sm shadow-sm rounded-lg mt-2.5 mb-1">
+              <div class="flex items-center justify-between py-1.5 px-2 text-[11px] font-bold text-emerald-300 border-b border-emerald-600/40 sticky top-0 bg-slate-950/95 z-10 backdrop-blur-sm shadow-sm rounded-lg mt-2.5 mb-1">
                 <span class="flex items-center gap-1.5 text-emerald-300">
                   <span>👑</span>
-                  <span>Prestige Classes (Prerequisites Met)</span>
+                  <span>Qualified Prestige Classes (Prerequisites Met)</span>
                 </span>
-                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/50">${count} Classes</span>
+                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/60">${count} Classes</span>
               </div>
             `;
           } else if (item.priority === 3) {
@@ -5825,13 +5839,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const cleanDesc = (def.description || def.shortDescription || '').replace(/<img[^>]*>/gi, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
         htmlOutput += `
-          <div onclick="selectChangeClassFromSearch('${safeName}')" class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-amber-500 ring-1 ring-amber-500/50 bg-amber-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
+          <div onclick="selectChangeClassFromSearch('${safeName}')" class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
             <div class="flex flex-wrap items-center justify-between gap-1.5">
               <div class="flex items-center gap-2">
                 <span class="text-base">${isPrestige ? '👑' : (isCustom ? '⚙️' : '🛡️')}</span>
                 <div>
                   <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="font-bold text-white text-xs group-hover:text-amber-300 transition">${cName}</span>
+                    <span class="font-bold text-white text-xs group-hover:text-emerald-300 transition">${cName}</span>
                     ${typeBadge}
                     ${def.source ? `<span class="text-[9px] text-slate-400 bg-slate-900 px-1.5 py-0.2 rounded border border-slate-800 font-mono">${def.source}</span>` : ''}
                   </div>
@@ -5845,12 +5859,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                   <span>${isProgExpanded ? 'Hide Progression' : 'Show Progression'}</span>
                 </button>
                 ${isSelected ? `
-                  <span class="text-[11px] font-bold text-amber-400 bg-amber-950/90 border border-amber-600/70 px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm select-none">
+                  <span class="text-[11px] font-bold text-emerald-400 bg-emerald-950/90 border border-emerald-600/70 px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm select-none">
                     <span>✓</span>
                     <span>Selected Class</span>
                   </span>
                 ` : `
-                  <button type="button" onclick="selectChangeClassFromSearch('${safeName}')" class="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
+                  <button type="button" onclick="selectChangeClassFromSearch('${safeName}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
                     <span>🎯</span>
                     <span>Select Class</span>
                   </button>
@@ -5965,18 +5979,31 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         : { features: [] };
       const featList = autoData.features || [];
 
+      const featBadges = featList.length > 0 
+        ? featList.map(fName => {
+            const safe = fName.replace(/'/g, "\\'");
+            const cornerBadge = typeof getFeatPinCornerBadgeHtml === 'function' ? getFeatPinCornerBadgeHtml(fName) : '';
+            return `<button type="button" onclick="showFeatDetail('${safe}')" class="relative inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600/80 hover:bg-emerald-900 transition cursor-pointer" title="View rule details"><span>✨</span><span class="pr-2">${fName}</span>${cornerBadge}</button>`;
+          }).join(' ')
+        : '<span class="text-slate-500 italic text-[10px]">No special class features or bonus feat selection.</span>';
+
+      const fortLetter = (def.fort || 'poor')[0].toUpperCase();
+      const refLetter = (def.ref || 'poor')[0].toUpperCase();
+      const willLetter = (def.will || 'poor')[0].toUpperCase();
+      const babLabel = def.bab === 1.0 ? 'Full (+1)' : (def.bab === 0.75 ? '3/4 Medium' : '1/2 Poor');
+
       preview.innerHTML = `
         <div class="flex items-center justify-between text-amber-300 font-bold border-b border-slate-800 pb-1">
           <span>${newClass} (Level ${targetClassLvl})</span>
           <span class="text-[10px] text-slate-400">HD: d${def.hd} | Skills: ${def.skills || 2}+INT</span>
         </div>
         <div class="grid grid-cols-2 gap-1.5 pt-1 text-[10px] text-slate-300">
-          <div>BAB: <strong class="text-sky-300">${def.bab === 1.0 ? 'Full (+1)' : (def.bab === 0.75 ? '3/4 Medium' : '1/2 Poor')}</strong></div>
-          <div>Saves: <strong class="text-emerald-300">F:${def.fort[0].toUpperCase()} R:${def.ref[0].toUpperCase()} W:${def.will[0].toUpperCase()}</strong></div>
+          <div>BAB: <strong class="text-sky-300">${babLabel}</strong></div>
+          <div>Saves: <strong class="text-emerald-300">F:${fortLetter} R:${refLetter} W:${willLetter}</strong></div>
         </div>
         <div class="pt-1 text-[10px]">
           <span class="text-slate-400 font-bold">Features Gained:</span>
-          <div class="text-amber-200/90 font-sans mt-0.5">${featList.length > 0 ? featList.join(', ') : 'No special class features or bonus feat selection.'}</div>
+          <div class="flex flex-wrap gap-1 mt-1">${featBadges}</div>
         </div>
       `;
 
