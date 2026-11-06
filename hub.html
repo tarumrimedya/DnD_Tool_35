@@ -260,13 +260,13 @@
           <div class="absolute -top-10 -right-10 w-24 h-24 bg-indigo-600/10 rounded-full blur-2xl pointer-events-none"></div>
 
           <!-- Başlık & Kontroller -->
-          <div class="h-10 flex items-center justify-between border-b border-slate-700/80 pb-2 shrink-0">
-            <div class="flex items-center gap-2 min-w-0">
+          <div class="h-10 flex items-center justify-between border-b border-slate-700/80 pb-2 shrink-0 gap-1.5">
+            <div class="flex items-center gap-2 min-w-0 flex-1">
               <span class="w-6 h-6 rounded-lg bg-indigo-600/20 border border-indigo-500/50 flex items-center justify-center text-indigo-400 shrink-0 shadow-inner text-xs">
                 📜
               </span>
-              <div class="min-w-0">
-                <h3 class="text-xs font-black text-white uppercase tracking-wider truncate leading-tight" id="hub-notes-panel-badge">Quest Logs</h3>
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-black text-white uppercase tracking-wider truncate leading-tight" id="hub-notes-panel-badge">Quest Logs</div>
                 <div class="text-[9px] text-slate-400 font-mono leading-tight"><span id="hub-notes-panel-count">0</span> Logs • Pinned First 📌</div>
               </div>
             </div>
@@ -2286,6 +2286,9 @@
     // Filtre Değiştiriciler
     function setCampaignFilter(campId) {
       state.activeCampaignId = campId;
+      if (window.HubNotes && typeof window.HubNotes.clearTargetOverride === 'function') {
+        window.HubNotes.clearTargetOverride();
+      }
       renderHub();
       if (typeof syncActiveCloudCampaignRealtime === 'function') {
         syncActiveCloudCampaignRealtime();

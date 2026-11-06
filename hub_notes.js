@@ -21,6 +21,10 @@
   let _selectedModalNoteId = null;
   let _activePanelTab = 'write'; // 'write' or 'list'
   let _overrideTargetKey = null; // 'campaign:<id>' or 'char:<id>'
+  try {
+    const _savedTargetKey = localStorage.getItem('hub_notes_active_target');
+    if (_savedTargetKey) _overrideTargetKey = _savedTargetKey;
+  } catch (e) {}
   let _activeModalView = 'editor'; // 'editor', 'mindmap', 'ai'
   let _selectedMindmapTag = null;
   let _lastAiGeneratedText = '';
@@ -883,6 +887,96 @@
   }
 
   /**
+   * Render inline target selector in Quest Logs panel header when multiple characters/campaigns exist
+   */
+  function updateInlineTargetSelector(badgeEl, activeTarget) {
+    if (!badgeEl) return;
+    if (!activeTarget) {
+      badgeEl.textContent = '📜 Quest Logs';
+      return;
+    }
+    if (getStandaloneCharacterInstance()) {
+      badgeEl.textContent = activeTarget.titleBadge;
+      return;
+    }
+    const state = getHubState();
+    if (!state) {
+      badgeEl.textContent = activeTarget.titleBadge;
+      return;
+    }
+
+    const allChars = Array.isArray(state.characters) ? state.characters : [];
+    const allCamps = (Array.isArray(state.campaigns) ? state.campaigns : []).filter(cp => cp && cp.id !== 'camp_default');
+
+    let scopedChars = allChars;
+    if (state.activeCampaignId === 'unassigned') {
+      scopedChars = allChars.filter(c => !c.campaignId);
+    } else if (state.activeCampaignId && state.activeCampaignId !== 'all') {
+      const subIds = allCamps.filter(cp => cp.parentId === state.activeCampaignId).map(cp => cp.id);
+      scopedChars = allChars.filter(c => c.campaignId === state.activeCampaignId || subIds.includes(c.campaignId));
+    }
+    if (scopedChars.length === 0) scopedChars = allChars;
+    const otherChars = allChars.filter(c => !scopedChars.some(sc => sc.id === c.id));
+
+    if (allChars.length <= 1 && allCamps.length === 0) {
+      badgeEl.textContent = activeTarget.titleBadge;
+      return;
+    }
+
+    const currentKey = `${activeTarget.type === 'character' ? 'char' : 'campaign'}:${activeTarget.id}`;
+    let selectHtml = `
+      <div class="relative inline-flex items-center max-w-full">
+        <select onchange="HubNotes.setTargetOverride(this.value)" title="Select Character / Campaign Logbook" class="w-full max-w-[148px] sm:max-w-[168px] appearance-none bg-slate-900/90 hover:bg-indigo-950/80 text-white font-black text-[11px] uppercase tracking-wider rounded-md pl-1.5 pr-4 py-0.5 border border-indigo-500/40 hover:border-indigo-400 focus:outline-none focus:border-indigo-400 transition cursor-pointer truncate leading-tight shadow-sm">
+    `;
+
+    const buildCharOption = (c) => {
+      const val = `char:${c.id}`;
+      let charContext = '';
+      if (c.campaignId && state.activeCampaignId === 'all') {
+        const cp = allCamps.find(camp => camp.id === c.campaignId);
+        if (cp) charContext = ` (${getCampaignHierarchyName(cp, state)})`;
+      }
+      const label = `👤 ${(c.name || 'Character')} Logs${charContext}`;
+      return `<option value="${val}" class="bg-slate-900 text-white font-sans normal-case font-semibold" ${val === currentKey ? 'selected' : ''}>${escapeHtml(label)}</option>`;
+    };
+
+    if (otherChars.length > 0 && scopedChars.length > 0) {
+      selectHtml += `<optgroup label="👤 Active View Characters" class="bg-slate-950 text-indigo-300 font-sans normal-case">`;
+      scopedChars.forEach(c => { selectHtml += buildCharOption(c); });
+      selectHtml += `</optgroup>`;
+      selectHtml += `<optgroup label="👤 Other Characters" class="bg-slate-950 text-slate-400 font-sans normal-case">`;
+      otherChars.forEach(c => { selectHtml += buildCharOption(c); });
+      selectHtml += `</optgroup>`;
+    } else if (allChars.length > 0) {
+      if (allCamps.length > 0) {
+        selectHtml += `<optgroup label="👤 Character Logbooks" class="bg-slate-950 text-indigo-300 font-sans normal-case">`;
+      }
+      allChars.forEach(c => { selectHtml += buildCharOption(c); });
+      if (allCamps.length > 0) {
+        selectHtml += `</optgroup>`;
+      }
+    }
+
+    if (allCamps.length > 0) {
+      selectHtml += `<optgroup label="🏰 Campaign Logbooks" class="bg-slate-950 text-amber-300 font-sans normal-case">`;
+      allCamps.forEach(cp => {
+        const val = `campaign:${cp.id}`;
+        const prefix = cp.isDmMode ? '👑 DM: ' : '🏰 ';
+        const hName = getCampaignHierarchyName(cp, state);
+        selectHtml += `<option value="${val}" class="bg-slate-900 text-white font-sans normal-case font-semibold" ${val === currentKey ? 'selected' : ''}>${prefix}${escapeHtml(hName)} Logs</option>`;
+      });
+      selectHtml += `</optgroup>`;
+    }
+
+    selectHtml += `
+        </select>
+        <span class="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-indigo-300">▼</span>
+      </div>
+    `;
+    badgeEl.innerHTML = selectHtml;
+  }
+
+  /**
    * Render Compact Inline Notes List
    */
   function renderInlineNotes() {
@@ -901,7 +995,7 @@
       return;
     }
 
-    if (badgeEl) badgeEl.textContent = target.titleBadge;
+    updateInlineTargetSelector(badgeEl, target);
     if (countEl) countEl.textContent = String(target.notesList.length);
     if (tabCountEl) tabCountEl.textContent = String(target.notesList.length);
 
@@ -1005,7 +1099,11 @@
   }
 
   function setTargetOverride(targetKey) {
-    saveModalNote(false);
+    const modal = document.getElementById('hub-full-notes-modal');
+    const isModalOpen = Boolean(modal && !modal.classList.contains('hidden'));
+    if (isModalOpen) {
+      saveModalNote(false);
+    }
     _overrideTargetKey = targetKey;
     try { localStorage.setItem('hub_notes_active_target', targetKey); } catch (e) {}
     const target = getActiveNotesTarget();
@@ -1014,9 +1112,17 @@
     } else {
       _selectedModalNoteId = null;
     }
-    renderFullNotesModalList();
-    loadSelectedNoteIntoEditor();
-    if (_activeModalView === 'mindmap') renderMindmap();
+    renderInlineNotes();
+    if (isModalOpen) {
+      renderFullNotesModalList();
+      loadSelectedNoteIntoEditor();
+      if (_activeModalView === 'mindmap') renderMindmap();
+    }
+  }
+
+  function clearTargetOverride() {
+    _overrideTargetKey = null;
+    try { localStorage.removeItem('hub_notes_active_target'); } catch (e) {}
   }
 
   function updateModalTargetSelector(activeTarget) {
@@ -2956,6 +3062,7 @@ RULES:
     insertTagIntoEditor,
     createNewModalNote,
     setTargetOverride,
+    clearTargetOverride,
     setTagFilter,
     handleSearchInput,
     selectAutocompleteTag,
