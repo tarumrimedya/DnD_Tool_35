@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>D&D 3.5e Character & Campaign Command Center (Hub)</title>
-  <link rel="stylesheet" href="tailwind_compiled.css?v=20261104_2019">
+  <link rel="stylesheet" href="tailwind_compiled.css?v=20261106_2000">
   <script src="srd_compendium.js?v=20261105_2355"></script>
   <script src="rule_engine.js?v=20261105_2355"></script>
   <script src="rule_master.js?v=20261105_2355"></script>
@@ -38,6 +38,16 @@
     .custom-scroll::-webkit-scrollbar-track { background: #0f172a; }
     .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
     .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
+    :root { --hub-card-h: 420px; }
+    .min-h-\[420px\] { min-height: 420px; }
+    .min-h-\[124px\] { min-height: 124px; }
+    .hub-equal-card { min-height: var(--hub-card-h, 420px); }
+    @media (min-width: 1280px) {
+      .xl\:h-\[420px\] { height: 420px; }
+      .hub-equal-card { height: var(--hub-card-h, 420px); }
+      .hub-equal-card-expandable { min-height: var(--hub-card-h, 420px); height: var(--hub-card-h, 420px); }
+      .hub-equal-card-expandable.is-expanded { height: auto; }
+    }
     /* Canonical 4-Tier UI Button & Control Design System */
     :where(.ui-btn-md, .ui-btn-sm, .ui-btn-xs, .ui-btn-icon) { display: inline-flex; }
     .ui-btn-md {
@@ -245,7 +255,7 @@
 
       <!-- Orta Bölüm: Not Defteri Paneli (Zar Masası ve Karakter Kartları ile Birebir Eşit Yükseklik ve Hiza) -->
       <aside id="hub-inline-notes-panel" class="w-full xl:w-[320px] 2xl:w-[350px] shrink-0 flex flex-col">
-        <div class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-3 sm:p-3.5 shadow-xl flex flex-col justify-between h-full min-h-[420px] xl:h-[420px] gap-2 relative overflow-hidden">
+        <div id="hub-inline-notes-card" class="hub-equal-card bg-[#131d33] border border-slate-700/80 rounded-2xl p-3 sm:p-3.5 shadow-xl flex flex-col justify-between h-full min-h-[420px] xl:h-[420px] gap-2 relative overflow-hidden">
           <!-- Üst Işıltı -->
           <div class="absolute -top-10 -right-10 w-24 h-24 bg-indigo-600/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -362,7 +372,7 @@
 
       <!-- Sağ Bölüm: Açık Zar Masası Paneli (Not Defteri ve Karakter Kartları ile Birebir Eşit Genişlik ve Yükseklik) -->
       <aside id="hub-inline-dice-panel" class="w-full xl:w-[320px] 2xl:w-[350px] shrink-0 flex flex-col">
-        <div class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-3 sm:p-3.5 shadow-xl gap-2 relative overflow-hidden flex flex-col justify-between min-h-[420px] transition-all duration-200">
+        <div id="hub-inline-dice-card" class="hub-equal-card-expandable bg-[#131d33] border border-slate-700/80 rounded-2xl p-3 sm:p-3.5 shadow-xl gap-2 relative overflow-hidden flex flex-col justify-between min-h-[420px] xl:h-[420px] transition-all duration-200">
           <!-- Üst Işıltı -->
           <div class="absolute -top-10 -right-10 w-24 h-24 bg-red-600/10 rounded-full blur-2xl pointer-events-none"></div>
 
@@ -1500,6 +1510,55 @@
       });
     }
 
+    function syncHubEqualCardHeights() {
+      const charCard = document.querySelector('[id^="hub-char-card-"]');
+      const notesCard = document.getElementById('hub-inline-notes-card') || document.querySelector('#hub-inline-notes-panel > div');
+      const diceCard = document.getElementById('hub-inline-dice-card') || document.querySelector('#hub-inline-dice-panel > div');
+      const advContent = document.getElementById('dice-advanced-content');
+      const isDiceExpanded = Boolean(advContent && !advContent.classList.contains('hidden'));
+
+      let targetH = 420;
+      if (charCard) {
+        const prevH = charCard.style.height;
+        const skillDrawer = charCard.querySelector('[id^="skills-drawer-content-"]');
+        const wasSkillOpen = Boolean(skillDrawer && !skillDrawer.classList.contains('hidden'));
+        if (wasSkillOpen) skillDrawer.classList.add('hidden');
+        charCard.style.height = 'auto';
+        const measured = Math.round(charCard.getBoundingClientRect().height);
+        charCard.style.height = prevH;
+        if (wasSkillOpen) skillDrawer.classList.remove('hidden');
+        if (measured >= 380) targetH = measured;
+      }
+
+      document.documentElement.style.setProperty('--hub-card-h', targetH + 'px');
+
+      document.querySelectorAll('[id^="hub-char-card-"], .hub-empty-create-card').forEach(el => {
+        el.style.minHeight = targetH + 'px';
+        const skillDrawer = el.querySelector('[id^="skills-drawer-content-"]');
+        const isSkillOpen = Boolean(skillDrawer && !skillDrawer.classList.contains('hidden'));
+        el.style.height = isSkillOpen ? 'auto' : (targetH + 'px');
+      });
+
+      if (notesCard) {
+        notesCard.style.minHeight = targetH + 'px';
+        notesCard.style.height = targetH + 'px';
+      }
+      if (diceCard) {
+        diceCard.style.minHeight = targetH + 'px';
+        if (isDiceExpanded) {
+          diceCard.classList.add('is-expanded');
+          diceCard.style.height = 'auto';
+        } else {
+          diceCard.classList.remove('is-expanded');
+          diceCard.style.height = targetH + 'px';
+        }
+      }
+    }
+    window.syncHubEqualCardHeights = syncHubEqualCardHeights;
+    window.addEventListener('resize', () => {
+      if (typeof syncHubEqualCardHeights === 'function') syncHubEqualCardHeights();
+    });
+
     // Ana Render
     function renderHub() {
       renderCampaignTabs();
@@ -1515,6 +1574,8 @@
       if (window.HubNotes && typeof window.HubNotes.renderInlineNotes === 'function') {
         window.HubNotes.renderInlineNotes();
       }
+      syncHubEqualCardHeights();
+      requestAnimationFrame(syncHubEqualCardHeights);
     }
 
     // Kampanya Sekmelerini Render Et (Seçenek B: Tam Simetrik Açılır Liste + Eylem Barı)
@@ -1655,7 +1716,7 @@
         .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
       return `
-        <div id="hub-char-card-${c.id}" class="group bg-[#131d33] border border-slate-700/80 hover:border-indigo-500/60 rounded-2xl p-3 sm:p-3.5 shadow-xl hover:shadow-2xl transition duration-200 flex flex-col justify-between gap-2 relative overflow-y-auto overflow-x-hidden custom-scroll h-full min-h-[420px] xl:h-[420px]">
+        <div id="hub-char-card-${c.id}" class="hub-equal-card group bg-[#131d33] border border-slate-700/80 hover:border-indigo-500/60 rounded-2xl p-3 sm:p-3.5 shadow-xl hover:shadow-2xl transition duration-200 flex flex-col justify-between gap-2 relative overflow-y-auto overflow-x-hidden custom-scroll h-full min-h-[420px] xl:h-[420px]">
           <!-- Üst Arka Plan Işıltısı -->
           <div class="absolute -top-12 -right-12 w-32 h-32 ${c.isNpc ? 'bg-rose-600/10' : 'bg-indigo-600/10'} rounded-full blur-2xl pointer-events-none"></div>
 
@@ -1863,7 +1924,7 @@
       const campParam = targetCampaignId ? `'${targetCampaignId}'` : 'null';
 
       return `
-        <div onclick="openNewCharacterModal('manual', ${campParam})" class="group h-full min-h-[420px] xl:h-[420px] border-2 border-dashed border-slate-700/80 hover:border-amber-500/80 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-900/30 hover:bg-slate-900/60 transition duration-200 shadow-inner overflow-hidden">
+        <div onclick="openNewCharacterModal('manual', ${campParam})" class="hub-empty-create-card hub-equal-card group h-full min-h-[420px] xl:h-[420px] border-2 border-dashed border-slate-700/80 hover:border-amber-500/80 rounded-2xl p-6 flex flex-col items-center justify-center text-center cursor-pointer bg-slate-900/30 hover:bg-slate-900/60 transition duration-200 shadow-inner overflow-hidden">
           <div class="w-12 h-12 rounded-xl bg-slate-800 group-hover:bg-amber-500/20 border border-slate-700 group-hover:border-amber-500/50 flex items-center justify-center text-2xl text-slate-400 group-hover:text-amber-300 transition duration-200 shadow-md">
             ${emptyIcon}
           </div>
@@ -1898,6 +1959,7 @@
         content.classList.add('hidden');
         if (icon) icon.style.transform = 'rotate(0deg)';
       }
+      if (typeof syncHubEqualCardHeights === 'function') syncHubEqualCardHeights();
     }
     window.toggleHubCardSkillsDrawer = toggleHubCardSkillsDrawer;
 

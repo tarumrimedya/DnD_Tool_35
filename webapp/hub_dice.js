@@ -205,15 +205,15 @@ function updateDicePoolDisplay() {
 
   if (summaryEl) {
     if (activeParts.length === 0) {
-      summaryEl.textContent = 'No dice selected (Click dice buttons above)';
-      summaryEl.className = 'text-sm md:text-base font-semibold text-slate-500 font-mono truncate h-6 flex items-center';
+      summaryEl.textContent = 'No dice selected';
+      summaryEl.className = 'text-[11px] font-semibold text-slate-400 font-mono truncate h-4 flex items-center';
     } else {
       let formula = activeParts.join(' + ');
       if (mod !== 0) {
         formula += ` ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`;
       }
       summaryEl.textContent = formula;
-      summaryEl.className = 'text-sm md:text-base font-extrabold text-amber-300 font-mono truncate h-6 flex items-center';
+      summaryEl.className = 'text-xs font-extrabold text-amber-300 font-mono truncate h-4 flex items-center';
     }
   }
 }
@@ -1073,6 +1073,9 @@ function toggleDiceAdvancedDrawer(forceOpen = null) {
     if (icon) icon.style.transform = 'rotate(0deg)';
     if (text) text.textContent = 'Show';
     try { localStorage.setItem('hub_dice_adv_open', '0'); } catch (e) {}
+  }
+  if (typeof window.syncHubEqualCardHeights === 'function') {
+    window.syncHubEqualCardHeights();
   }
 }
 window.toggleDiceAdvancedDrawer = toggleDiceAdvancedDrawer;

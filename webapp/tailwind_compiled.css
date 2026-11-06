@@ -232,6 +232,8 @@ input.flex-1,select.flex-1,textarea.flex-1{min-width:0}
 .min-h-\[120px\]{min-height:120px}
 .min-h-\[170px\]{min-height:170px}
 .min-h-\[20px\]{min-height:20px}
+.min-h-\[120px\]{min-height:120px}
+.min-h-\[124px\]{min-height:124px}
 .min-h-\[220px\]{min-height:220px}
 .min-h-\[24px\]{min-height:24px}
 .min-h-\[26px\]{min-height:26px}
@@ -240,6 +242,7 @@ input.flex-1,select.flex-1,textarea.flex-1{min-width:0}
 .min-h-\[30px\]{min-height:30px}
 .min-h-\[380px\]{min-height:380px}
 .min-h-\[390px\]{min-height:390px}
+.min-h-\[420px\]{min-height:420px}
 .min-h-\[40px\]{min-height:40px}
 .min-h-\[480px\]{min-height:480px}
 .min-h-\[58px\]{min-height:58px}
@@ -2708,7 +2711,8 @@ input.flex-1,select.flex-1,textarea.flex-1{min-width:0}
 .lg\:items-center{align-items:center}
 .lg\:gap-4{gap:1rem}
 }
-@media (min-width:1280px){.xl\:max-h-\[420px\]{max-height:420px}
+@media (min-width:1280px){.xl\:h-\[420px\]{height:420px}
+.xl\:max-h-\[420px\]{max-height:420px}
 .xl\:max-h-\[430px\]{max-height:430px}
 .xl\:min-h-\[400px\]{min-height:400px}
 .xl\:min-h-\[410px\]{min-height:410px}
