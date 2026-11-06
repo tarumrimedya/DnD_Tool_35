@@ -173,26 +173,58 @@
         }
       }
       const nKey = normalizeNameKey(rec.name);
+      const tLow = String(rec.type || '').toLowerCase();
+      const registerAliasKey = (aKey) => {
+        if (!aKey) return;
+        if (!_byName.has(aKey)) _byName.set(aKey, rec);
+        const atKey = `${tLow}:${aKey}`;
+        if (!_byTypeAndName.has(atKey)) _byTypeAndName.set(atKey, rec);
+      };
       if (nKey) {
         if (!_byName.has(nKey)) {
           _byName.set(nKey, rec);
         }
-        const tKey = `${String(rec.type || '').toLowerCase()}:${nKey}`;
+        const tKey = `${tLow}:${nKey}`;
         _byTypeAndName.set(tKey, rec);
+        if (nKey.includes(', ')) {
+          const [p1, p2] = nKey.split(', ');
+          if (p1 && p2) registerAliasKey(`${p2} ${p1}`);
+        } else {
+          const prefixMatch = nKey.match(/^(greater|lesser|mass|superior)\s+(.+)$/);
+          if (prefixMatch) registerAliasKey(`${prefixMatch[2]}, ${prefixMatch[1]}`);
+        }
+        if (nKey === 'primal senses') registerAliasKey('primal sense');
       }
       if (Array.isArray(rec.aliases)) {
         for (const al of rec.aliases) {
-          const aKey = normalizeNameKey(al);
-          if (aKey) {
-            if (!_byName.has(aKey)) _byName.set(aKey, rec);
-            const atKey = `${String(rec.type || '').toLowerCase()}:${aKey}`;
-            if (!_byTypeAndName.has(atKey)) _byTypeAndName.set(atKey, rec);
-          }
+          registerAliasKey(normalizeNameKey(al));
         }
       }
     }
     if (typeof global !== 'undefined') {
       global._srdCatalogVersion = (_catalogIds.size || 0);
+    }
+  }
+
+  let _nodeSyncInitialized = false;
+  function ensureNodeSyncLoaded() {
+    if (_nodeSyncInitialized || _byId.size > 0) return;
+    if (typeof require === 'function' && (typeof window === 'undefined' || typeof window.fetch !== 'function')) {
+      _nodeSyncInitialized = true;
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        for (const chunk of EAGER_CHUNKS) {
+          const p = path.resolve(__dirname, 'database', chunk);
+          if (fs.existsSync(p)) {
+            const records = JSON.parse(fs.readFileSync(p, 'utf8'));
+            if (chunk === 'srd_companions.json') _companionsData = records;
+            registerEntries(records);
+            _loadedChunks.add(chunk);
+          }
+        }
+        _ready = true;
+      } catch (_) {}
     }
   }
 
@@ -353,6 +385,7 @@
      */
     getById(id) {
       if (!id) return null;
+      ensureNodeSyncLoaded();
       const key = String(id).trim();
       if (_byId.has(key)) return _byId.get(key);
 
@@ -369,6 +402,7 @@
      */
     getByName(name, typeFilter = null) {
       if (!name) return null;
+      ensureNodeSyncLoaded();
       const raw = String(name).trim();
       if (_byId.has(raw)) return _byId.get(raw);
 
@@ -430,6 +464,7 @@
      * Returns all loaded entries matching an optional filter predicate or type.
      */
     getAllLoaded(typeFilter = null) {
+      ensureNodeSyncLoaded();
       if (!typeFilter) {
         return Array.from(_byId.values());
       }
@@ -701,7 +736,7 @@
         t.id === raw ||
         normalizeNameKey(t.name) === nKey ||
         (Array.isArray(t.aliases) && t.aliases.some(a => normalizeNameKey(a) === nKey || normalizeNameKey(a) === normalizeNameKey(raw)))
-      )) || null;
+      )) || list.find(t => t && normalizeNameKey(t.name).startsWith(nKey + ' (')) || null;
     },
 
     getAllClasses() {

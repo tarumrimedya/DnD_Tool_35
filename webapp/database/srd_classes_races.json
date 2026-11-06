@@ -109,7 +109,7 @@
     "category": "Base",
     "slot": "None",
     "source": "SRD 3.5e",
-    "hitDie": 8,
+    "hitDie": "d8",
     "babProgression": "med",
     "skillPointsPerLevel": 4,
     "savingThrows": {
@@ -119,11 +119,13 @@
     },
     "classSkills": [
       "concentration",
-      "craft",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
       "diplomacy",
       "handle_animal",
       "heal",
-      "knowledge_nature",
+      "k_nature",
       "listen",
       "profession",
       "ride",
@@ -382,7 +384,7 @@
     },
     "addedAbilities": [],
     "description": "<p><img style=\"border: none; float: right; shape-outside: polygon(0 0, 0 30%, 40% 100%, 100% 100%, 100% 0);\" src=\"systems/D35E/icons/art/druid-male.png\" alt=\"\" width=\"300\">Within the purity of the elements and the order of the wilds lingers a power beyond the marvels of civilization. Furtive yet undeniable, these primal magics are guarded over by servants of philosophical balance known as druids. Allies to beasts and manipulators of nature, these often misunderstood protectors of the wild strive to shield their lands from all who would threaten them and prove the might of the wilds to those who lock themselves behind city walls. Rewarded for their devotion with incredible powers, druids gain unparalleled shape-shifting abilities, the companionship of mighty beasts, and the power to call upon nature’s wrath. The mightiest temper powers akin to storms, earthquakes, and volcanoes with primeval wisdom long abandoned and forgotten by civilization.</p>\n<p class=\"p1\"><strong>Alignment:</strong> Neutral good, lawful neutral, neutral, chaotic neutral, or neutral evil.</p>\n<p class=\"p1\"><strong>Hit Die:</strong> d8.</p>\n<h2 class=\"p1\">Class Skills</h2>\n<p class=\"p1\">The druid’s class skills (and the key ability for each skill) are Concentration (Con), Craft (Int), Diplomacy (Cha), Handle Animal (Cha), Heal (Wis), Knowledge (nature) (Int), Listen (Wis), Profession (Wis), Ride (Dex), Spellcraft (Int), Spot (Wis), Survival (Wis), and Swim (Str).<span class=\"Apple-converted-space\"> </span></p>\n<p class=\"p1\"><strong>Skill Points at 1st Level:</strong> (4 + Int modifier) x 4.</p>\n<p class=\"p1\"><strong>Skill Points at Each Additional Level: </strong>4 + Int modifier.</p>\n<h2 class=\"p1\">Ex-Druids</h2>\n<p class=\"p1\">A druid who ceases to revere nature, changes to a prohibited alignment, or teaches the Druidic language to a nondruid loses all spells and druid abilities (including her animal companion, but not including weapon, armor, and shield proficiencies). She cannot thereafter gain levels as a druid until she atones (see the <em>atonement </em>spell description).</p>\n<p class=\"p2\" style=\"min-height: 13px;\"> </p>\n<p><br><span style=\"font-size: 13px; opacity: 0.8;\">Some description after  Pathfinder RPG Core Rulebook. © 2009, Paizo Publishing, LLC; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Daniel Comerci.</span></p>",
-    "shortDescription": "Within the purity of the elements and the order of the wilds lingers a power beyond the marvels of civilization. Furtive yet undeniable, these primal magics are guarded over by servants of philosophical balance known as druids. Allies to b…",
+    "shortDescription": "Divine guardian of nature with an Animal Companion, spontaneous summoning, and Wild Shape.",
     "tags": [
       "class",
       "base"
@@ -390,7 +392,70 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "hd": 8,
+    "bab": 0.75,
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "skills": 4,
+    "maxLevel": 20,
+    "isPrestige": false,
+    "role": "Divine / Wild Shape & Nature Caster",
+    "features": {
+      "1": [
+        {
+          "name": "Animal Companion (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Gain a loyal animal companion"
+        },
+        {
+          "name": "Nature Sense (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+2 on Knowledge (nature) and Survival checks"
+        },
+        {
+          "name": "Wild Empathy (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Improve attitude of animals"
+        }
+      ],
+      "2": [
+        {
+          "name": "Woodland Stride (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Move through natural thorns/briars at normal speed"
+        }
+      ],
+      "3": [
+        {
+          "name": "Trackless Step (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Leaves no trail in natural surroundings"
+        }
+      ],
+      "4": [
+        {
+          "name": "Resist Nature's Lure (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+4 on saves vs spell-like abilities of fey"
+        }
+      ],
+      "5": [
+        {
+          "name": "Wild Shape (1/day) (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Assume animal shape for 1 hr/level"
+        }
+      ]
+    }
   },
   {
     "id": "cls-psion-shaper",
@@ -505,7 +570,7 @@
     "category": "Prestige",
     "slot": "None",
     "source": "Dungeon Master's Guide",
-    "hitDie": 10,
+    "hitDie": "d10",
     "babProgression": "high",
     "skillPointsPerLevel": 2,
     "savingThrows": {
@@ -673,20 +738,7 @@
     "hd": 10,
     "maxLevel": 10,
     "bab": 1,
-    "skills": [
-      "concentration",
-      "craft_alchemy",
-      "craft_armor",
-      "craft_weapon",
-      "diplomacy",
-      "handle_animal",
-      "heal",
-      "hide",
-      "intimidate",
-      "knowledge_religion",
-      "profession",
-      "ride"
-    ],
+    "skills": 2,
     "fort": "good",
     "ref": "poor",
     "will": "poor",
@@ -1241,7 +1293,7 @@
     "category": "Base",
     "slot": "None",
     "source": "SRD 3.5e",
-    "hitDie": 8,
+    "hitDie": "d8",
     "babProgression": "med",
     "skillPointsPerLevel": 4,
     "savingThrows": {
@@ -1253,13 +1305,15 @@
       "balance",
       "climb",
       "concentration",
-      "craft",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
       "diplomacy",
       "escape_artist",
       "hide",
       "jump",
-      "knowledge_arcana",
-      "knowledge_religion",
+      "k_arcana",
+      "k_religion",
       "listen",
       "move_silently",
       "perform",
@@ -1278,7 +1332,7 @@
     },
     "addedAbilities": [],
     "description": "<p class=\"p1\"><img style=\"border: none; float: right; shape-outside: polygon(40% 0, 0 100%, 100% 100%, 100% 0);\" src=\"systems/D35E/icons/art/monk-male.png\" alt=\"\" width=\"300\"> For the truly exemplary, martial skill transcends the battlefield—it is a lifestyle, a doctrine, a state of mind. These warrior-artists search out methods of battle beyond swords and shields, finding weapons within themselves just as capable of crippling or killing as any blade. These monks (so called since they adhere to ancient philosophies and strict martial disciplines) elevate their bodies to become weapons of war, from battle-minded ascetics to self-taught brawlers. Monks tread the path of discipline, and those with the will to endure that path discover within themselves not what they are, but what they are meant to be.</p>\n<p class=\"p1\"><strong>Alignment:</strong> Any lawful.</p>\n<p class=\"p1\"><strong>Hit Die:</strong> d8.</p>\n<h2 class=\"p1\">Class Skills</h2>\n<p class=\"p1\">The monk’s class skills (and the key ability for each skill) are Balance (Dex), Climb (Str), Concentration (Con), Craft (Int), Diplomacy (Cha), Escape Artist (Dex), Hide (Dex), Jump (Str), Knowledge (arcana) (Int), Knowledge (religion) (Int), Listen (Wis), Move Silently (Dex), Perform (Cha), Profession (Wis), Sense Motive (Wis), Spot (Wis), Swim (Str), and Tumble (Dex).</p>\n<p class=\"p1\"><strong>Skill Points at 1st Level:</strong> (4 + Int modifier) x4.</p>\n<p class=\"p1\"><strong>Skill Points at Each Additional Level:</strong> 4 + Int modifier.</p>\n<h2 class=\"p1\">Ex-Monks</h2>\n<p class=\"p1\">A monk who becomes nonlawful cannot gain new levels as a monk but retains all monk abilities.</p>\n<p class=\"p1\">Like a member of any other class, a monk may be a multiclass character, but multiclass monks face a special restriction. A monk who gains a new class or (if already multiclass) raises another class by a level may never again raise her monk level, though she retains all her monk abilities.</p>\n<p><br><span style=\"font-size: 13px; opacity: 0.8;\">Some description after  Pathfinder RPG Core Rulebook. © 2009, Paizo Publishing, LLC; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Daniel Comerci.</span></p>",
-    "shortDescription": "For the truly exemplary, martial skill transcends the battlefield—it is a lifestyle, a doctrine, a state of mind. These warrior-artists search out methods of battle beyond swords and shields, finding weapons within themselves just as capab…",
+    "shortDescription": "Unarmed martial artist with all good saving throws, Flurry of Blows, Evasion, and high speed.",
     "tags": [
       "class",
       "base"
@@ -1301,7 +1355,104 @@
     ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "hd": 8,
+    "bab": 0.75,
+    "fort": "good",
+    "ref": "good",
+    "will": "good",
+    "skills": 4,
+    "maxLevel": 20,
+    "isPrestige": false,
+    "role": "Martial / Unarmed & Ki Striker",
+    "bonusFeatLevels": [
+      1,
+      2,
+      6
+    ],
+    "bonusFeatContracts": {
+      "1": {
+        "mode": "exact_choices",
+        "choices": [
+          "Improved Grapple",
+          "Stunning Fist"
+        ],
+        "bypassPrereqs": true,
+        "label": "Monk 1st-Level Bonus Feat"
+      },
+      "2": {
+        "mode": "exact_choices",
+        "choices": [
+          "Combat Reflexes",
+          "Deflect Arrows"
+        ],
+        "bypassPrereqs": true,
+        "label": "Monk 2nd-Level Bonus Feat"
+      },
+      "6": {
+        "mode": "exact_choices",
+        "choices": [
+          "Improved Trip",
+          "Snatch Arrows"
+        ],
+        "bypassPrereqs": true,
+        "label": "Monk 6th-Level Bonus Feat"
+      }
+    },
+    "features": {
+      "1": [
+        {
+          "name": "Flurry of Blows (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "One extra attack during full attack (-2 all attacks)"
+        },
+        {
+          "name": "Unarmed Strike",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Lethal or nonlethal unarmed strike damage without penalty"
+        }
+      ],
+      "2": [
+        {
+          "name": "Evasion (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Take no damage on successful Reflex save vs area attacks"
+        }
+      ],
+      "3": [
+        {
+          "name": "Fast Movement +10 ft (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+10 ft monk land speed bonus"
+        },
+        {
+          "name": "Still Mind (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+2 on saves vs enchantment spells/effects"
+        }
+      ],
+      "4": [
+        {
+          "name": "Ki Strike (Magic) (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Unarmed strikes overcome DR as magic weapons"
+        }
+      ],
+      "5": [
+        {
+          "name": "Purity of Body (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Immunity to all normal diseases"
+        }
+      ]
+    }
   },
   {
     "id": "cls-assassin",
@@ -1312,7 +1463,7 @@
     "category": "Prestige",
     "slot": "None",
     "source": "Dungeon Master's Guide",
-    "hitDie": 6,
+    "hitDie": "d6",
     "babProgression": "med",
     "skillPointsPerLevel": 4,
     "savingThrows": {
@@ -1614,33 +1765,7 @@
     "hd": 6,
     "maxLevel": 10,
     "bab": 0.75,
-    "skills": [
-      "balance",
-      "bluff",
-      "climb",
-      "craft_alchemy",
-      "decipher_script",
-      "diplomacy",
-      "disable_device",
-      "disguise",
-      "escape_artist",
-      "forgery",
-      "gather_information",
-      "hide",
-      "intimidate",
-      "jump",
-      "listen",
-      "move_silently",
-      "open_lock",
-      "search",
-      "sense_motive",
-      "sleight_of_hand",
-      "spot",
-      "swim",
-      "tumble",
-      "use_magic_device",
-      "use_rope"
-    ],
+    "skills": 4,
     "fort": "poor",
     "ref": "good",
     "will": "poor",
@@ -1790,7 +1915,7 @@
     "category": "Base",
     "slot": "None",
     "source": "SRD 3.5e",
-    "hitDie": 6,
+    "hitDie": "d6",
     "babProgression": "med",
     "skillPointsPerLevel": 8,
     "savingThrows": {
@@ -1803,7 +1928,9 @@
       "balance",
       "bluff",
       "climb",
-      "craft",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
       "decipher_script",
       "diplomacy",
       "disable_device",
@@ -1814,7 +1941,7 @@
       "hide",
       "intimidate",
       "jump",
-      "knowledge_local",
+      "k_local",
       "listen",
       "move_silently",
       "open_lock",
@@ -1826,7 +1953,7 @@
       "spot",
       "swim",
       "tumble",
-      "use_magic_device",
+      "umd",
       "use_rope"
     ],
     "spellcasting": {
@@ -1838,7 +1965,7 @@
     },
     "addedAbilities": [],
     "description": "<p><img style=\"border: none; float: right; shape-outside: polygon(40% 0, 0 60%, 0 100%, 100% 100%, 100% 0);\" src=\"systems/D35E/icons/art/rogue-female.png\" alt=\"\" width=\"300\">Life is an endless adventure for those who live by their wits. Ever just one step ahead of danger, rogues bank on their cunning, skill, and charm to bend fate to their favor. Never knowing what to expect, they prepare for everything, becoming masters of a wide variety of skills, training themselves to be adept manipulators, agile acrobats, shadowy stalkers, or masters of any of dozens of other professions or talents. Thieves and gamblers, fast talkers and diplomats, bandits and bounty hunters, and explorers and investigators all might be considered rogues, as well as countless other professions that rely upon wits, prowess, or luck. Although many rogues favor cities and the innumerable opportunities of civilization, some embrace lives on the road, journeying far, meeting exotic people, and facing fantastic danger in pursuit of equally fantastic riches. In the end, any who desire to shape their fates and live life on their own terms might come to be called rogues.</p>\n<p class=\"p1\"><strong>Alignment:</strong> Any.</p>\n<p class=\"p1\"><strong>Hit Die:</strong> d6.</p>\n<h2 class=\"p1\">Class Skills</h2>\n<p class=\"p1\">The rogue’s class skills (and the key ability for each skill) are Appraise (Int), Balance (Dex), Bluff (Cha), Climb (Str), Craft (Int), Decipher Script (Int), Diplomacy (Cha), Disable Device (Int), Disguise (Cha), Escape Artist (Dex), Forgery (Int), Gather Information (Cha), Hide (Dex), Intimidate (Cha), Jump (Str), Knowledge (local) (Int), Listen (Wis), Move Silently (Dex), Open Lock (Dex), Perform (Cha), Profession (Wis), Search (Int), Sense Motive (Wis), Sleight of Hand (Dex), Spot (Wis), Swim (Str), Tumble (Dex), Use Magic Device (Cha), and Use Rope (Dex).</p>\n<p class=\"p1\"><strong>Skill Points at 1st Level:</strong> (8 + Int modifier) x 4.</p>\n<p class=\"p1\"><strong>Skill Points at Each Additional Level:</strong> 8 + Int modifier.</p>\n<p><br><span style=\"font-size: 13px; opacity: 0.8;\">Some description after  Pathfinder RPG Core Rulebook. © 2009, Paizo Publishing, LLC; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Daniel Comerci.</span></p>",
-    "shortDescription": "Life is an endless adventure for those who live by their wits. Ever just one step ahead of danger, rogues bank on their cunning, skill, and charm to bend fate to their favor. Never knowing what to expect, they prepare for everything, becom…",
+    "shortDescription": "Skilled infiltrator and trapfinder who strikes vital weak points with deadly Sneak Attack dice.",
     "tags": [
       "class",
       "base"
@@ -1846,7 +1973,114 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "hd": 6,
+    "bab": 0.75,
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "skills": 8,
+    "maxLevel": 20,
+    "isPrestige": false,
+    "role": "Expert / Precision Damage",
+    "bonusFeatLevels": [
+      10,
+      13,
+      16,
+      19
+    ],
+    "features": {
+      "1": [
+        {
+          "name": "Sneak Attack +1d6",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+1d6 precision damage vs flanked or flat-footed target"
+        },
+        {
+          "name": "Trapfinding (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Can use Search skill to locate traps with DC > 20"
+        }
+      ],
+      "2": [
+        {
+          "name": "Evasion (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Take no damage on successful Reflex save against area attacks"
+        }
+      ],
+      "3": [
+        {
+          "name": "Sneak Attack +2d6",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+2d6 precision damage vs flanked or flat-footed target"
+        },
+        {
+          "name": "Trap Sense +1 (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+1 on Reflex saves and AC vs traps"
+        }
+      ],
+      "4": [
+        {
+          "name": "Uncanny Dodge (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Retain Dex bonus to AC if flat-footed"
+        }
+      ],
+      "5": [
+        {
+          "name": "Sneak Attack +3d6",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+3d6 precision damage vs flanked or flat-footed target"
+        }
+      ],
+      "6": [
+        {
+          "name": "Trap Sense +2 (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+2 on Reflex saves and AC vs traps"
+        }
+      ],
+      "7": [
+        {
+          "name": "Sneak Attack +4d6",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+4d6 precision damage vs flanked or flat-footed target"
+        }
+      ],
+      "8": [
+        {
+          "name": "Improved Uncanny Dodge (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Cannot be flanked except by rogue 4+ levels higher"
+        }
+      ],
+      "9": [
+        {
+          "name": "Sneak Attack +5d6",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+5d6 precision damage vs flanked or flat-footed target"
+        },
+        {
+          "name": "Trap Sense +3 (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+3 on Reflex saves and AC vs traps"
+        }
+      ]
+    }
   },
   {
     "id": "cls-mystic-theurge",
@@ -1857,7 +2091,7 @@
     "category": "Prestige",
     "slot": "None",
     "source": "Dungeon Master's Guide",
-    "hitDie": 4,
+    "hitDie": "d4",
     "babProgression": "low",
     "skillPointsPerLevel": 2,
     "savingThrows": {
@@ -1900,16 +2134,7 @@
     "hd": 4,
     "maxLevel": 10,
     "bab": 0.5,
-    "skills": [
-      "concentration",
-      "craft_alchemy",
-      "decipher_script",
-      "knowledge_arcana",
-      "knowledge_religion",
-      "profession",
-      "sense_motive",
-      "spellcraft"
-    ],
+    "skills": 2,
     "fort": "poor",
     "ref": "poor",
     "will": "good",
@@ -2021,7 +2246,7 @@
     "category": "Prestige",
     "slot": "None",
     "source": "Dungeon Master's Guide",
-    "hitDie": 8,
+    "hitDie": "d8",
     "babProgression": "high",
     "skillPointsPerLevel": 4,
     "savingThrows": {
@@ -2197,7 +2422,7 @@
     "category": "Base",
     "slot": "None",
     "source": "SRD 3.5e",
-    "hitDie": 4,
+    "hitDie": "d4",
     "babProgression": "low",
     "skillPointsPerLevel": 2,
     "savingThrows": {
@@ -2207,18 +2432,20 @@
     },
     "classSkills": [
       "concentration",
-      "craft",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
       "decipher_script",
-      "knowledge_arcana",
-      "knowledge_architecture",
-      "knowledge_dungeoneering",
-      "knowledge_geography",
-      "knowledge_history",
-      "knowledge_local",
-      "knowledge_nature",
-      "knowledge_nobility",
-      "knowledge_planes",
-      "knowledge_religion",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
       "profession",
       "spellcraft"
     ],
@@ -2472,7 +2699,7 @@
     },
     "addedAbilities": [],
     "description": "<p><img style=\"border: none; float: right; shape-outside: polygon(30% 0, 0 40%, 0 100%, 100% 100%, 100% 0);\" src=\"systems/D35E/icons/art/wizard-male.png\" alt=\"\" width=\"300\">Beyond the veil of the mundane hide the secrets of absolute power. The works of beings beyond mortals, the legends of realms where gods and spirits tread, the lore of creations both wondrous and terrible—such mysteries call to those with the ambition and the intellect to rise above the common folk to grasp true might. Such is the path of the wizard. These shrewd magic-users seek, collect, and covet esoteric knowledge, drawing on cultic arts to work wonders beyond the abilities of mere mortals. While some might choose a particular field of magical study and become masters of such powers, others embrace versatility, reveling in the unbounded wonders of all magic. In either case, wizards prove a cunning and potent lot, capable of smiting their foes, empowering their allies, and shaping the world to their every desire.</p>\n<p class=\"p1\"><strong>Alignment:</strong> Any.</p>\n<p class=\"p1\"><strong>Hit Die:</strong> d4.</p>\n<h2 class=\"p1\">Class Skills</h2>\n<p class=\"p1\">The wizard’s class skills (and the key ability for each skill) are Concentration (Con), Craft (Int), Decipher Script (Int), Knowledge (all skills, taken individually) (Int), Profession (Wis), and Spellcraft (Int). See Chapter 4: Skills for</p>\n<p class=\"p1\">skill descriptions.</p>\n<p class=\"p1\"><strong>Skill Points at 1st Level:</strong> (2 + Int modifier) x4.</p>\n<p class=\"p1\"><strong>Skill Points at Each Additional Level:</strong> 2 + Int modifier.</p>\n<p><br><span style=\"font-size: 13px; opacity: 0.8;\">Some description after  Pathfinder RPG Core Rulebook. © 2009, Paizo Publishing, LLC; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Daniel Comerci.</span></p>",
-    "shortDescription": "Beyond the veil of the mundane hide the secrets of absolute power. The works of beings beyond mortals, the legends of realms where gods and spirits tread, the lore of creations both wondrous and terrible—such mysteries call to those with t…",
+    "shortDescription": "Scholarly arcane spellcaster who prepares versatile spells from a spellbook to bend reality.",
     "tags": [
       "class",
       "base"
@@ -2480,7 +2707,93 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "hd": 4,
+    "bab": 0.5,
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "skills": 2,
+    "maxLevel": 20,
+    "isPrestige": false,
+    "role": "Arcane Caster (Prepared)",
+    "bonusFeatLevels": [
+      1,
+      5,
+      10,
+      15,
+      20
+    ],
+    "bonusFeatContracts": {
+      "1": {
+        "mode": "exact_choices",
+        "choices": [
+          "Scribe Scroll"
+        ],
+        "bypassPrereqs": true,
+        "label": "Wizard 1st-Level Bonus Feat"
+      },
+      "5": {
+        "mode": "category",
+        "categories": [
+          "Metamagic",
+          "Item Creation"
+        ],
+        "allowFeats": [
+          "Spell Mastery"
+        ],
+        "label": "Wizard Bonus Feat"
+      },
+      "10": {
+        "mode": "category",
+        "categories": [
+          "Metamagic",
+          "Item Creation"
+        ],
+        "allowFeats": [
+          "Spell Mastery"
+        ],
+        "label": "Wizard Bonus Feat"
+      },
+      "15": {
+        "mode": "category",
+        "categories": [
+          "Metamagic",
+          "Item Creation"
+        ],
+        "allowFeats": [
+          "Spell Mastery"
+        ],
+        "label": "Wizard Bonus Feat"
+      },
+      "20": {
+        "mode": "category",
+        "categories": [
+          "Metamagic",
+          "Item Creation"
+        ],
+        "allowFeats": [
+          "Spell Mastery"
+        ],
+        "label": "Wizard Bonus Feat"
+      }
+    },
+    "features": {
+      "1": [
+        {
+          "name": "Scribe Scroll",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Create spell scrolls"
+        },
+        {
+          "name": "Summon Familiar",
+          "category": "Special Ability",
+          "type": "Sp",
+          "summary": "Summon a magical animal companion"
+        }
+      ]
+    }
   },
   {
     "id": "cls-bard",
@@ -2491,7 +2804,7 @@
     "category": "Base",
     "slot": "None",
     "source": "SRD 3.5e",
-    "hitDie": 6,
+    "hitDie": "d6",
     "babProgression": "med",
     "skillPointsPerLevel": 6,
     "savingThrows": {
@@ -2505,7 +2818,9 @@
       "bluff",
       "climb",
       "concentration",
-      "craft",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
       "decipher_script",
       "diplomacy",
       "disguise",
@@ -2513,27 +2828,26 @@
       "gather_information",
       "hide",
       "jump",
-      "knowledge_arcana",
-      "knowledge_architecture",
-      "knowledge_dungeoneering",
-      "knowledge_geography",
-      "knowledge_history",
-      "knowledge_local",
-      "knowledge_nature",
-      "knowledge_nobility",
-      "knowledge_planes",
-      "knowledge_religion",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
       "listen",
       "move_silently",
       "perform",
       "profession",
       "sense_motive",
       "sleight_of_hand",
-      "speak_language",
       "spellcraft",
       "swim",
       "tumble",
-      "use_magic_device"
+      "umd"
     ],
     "spellcasting": {
       "type": "arcane",
@@ -3026,7 +3340,7 @@
     },
     "addedAbilities": [],
     "description": "<p><img style=\"border: none; float: right; shape-outside: polygon(40% 0, 0 100%, 100% 100%, 100% 0);\" src=\"systems/D35E/icons/art/bard-male.png\" alt=\"\" width=\"300\" height=\"300\">Untold wonders and secrets exist for those skillful enough to discover them. Through cleverness, talent, and magic, these cunning few unravel the wiles of the world, becoming adept in the arts of persuasion, manipulation, and inspiration. Typically masters of one or many forms of artistry, bards possess an uncanny ability to know more than they should and use what they learn to keep themselves and their allies ever one step ahead of danger. Bards are quick-witted and captivating, and their skills might lead them down many paths, be they gamblers or jacks-of-all-trades, scholars or performers, leaders or scoundrels, or even all of the above. For bards, every day brings its own opportunities, adventures, and challenges, and only by bucking the odds, knowing the most, and being the best might they claim the treasures of each.</p>\n<p><strong>Alignment: </strong>Any nonlawful.</p>\n<p><strong>Hit Die:</strong> d6.</p>\n<h2>Class Skills</h2>\n<p>The bard’s class skills (and the key ability for each skill) are Appraise (Int), Balance (Dex), Bluff (Cha), Climb (Str), Concentration (Con), Craft (Int), Decipher Script (Int), Diplomacy (Cha), Disguise (Cha), Escape Artist (Dex), Gather Information (Cha), Hide (Dex), Jump (Str), Knowledge (all skills, taken individually) (Int), Listen (Wis), Move Silently (Dex), Perform (Cha), Profession (Wis), Sense Motive (Wis), Sleight of Hand (Dex), Speak Language (n/a), Spellcraft (Int), Swim (Str), Tumble (Dex), and Use Magic Device (Cha).</p>\n<p><strong>Skill Points at 1st Level: </strong>(6 + Int modifier) x4.</p>\n<p><strong>Skill Points at Each Additional Level: </strong>6 + Int modifier.</p>\n<h2>Ex-Bards</h2>\n<p>A bard who becomes lawful in alignment cannot progress in levels as a bard, though he retains all his bard abilities.</p>\n<p><br><span style=\"font-size: 13px; opacity: 0.8;\">Some description after  Pathfinder RPG Core Rulebook. © 2009, Paizo Publishing, LLC; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Dean Spencer.</span></p>",
-    "shortDescription": "Untold wonders and secrets exist for those skillful enough to discover them. Through cleverness, talent, and magic, these cunning few unravel the wiles of the world, becoming adept in the arts of persuasion, manipulation, and inspiration.…",
+    "shortDescription": "Versatile performer who inspires allies with Bardic Music, Bardic Knowledge, and arcane magic.",
     "tags": [
       "class",
       "base"
@@ -3034,7 +3348,50 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "hd": 6,
+    "bab": 0.75,
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "skills": 6,
+    "maxLevel": 20,
+    "isPrestige": false,
+    "role": "Support / Arcane & Diplomat",
+    "features": {
+      "1": [
+        {
+          "name": "Bardic Music (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Perform magical songs 1/day per bard level"
+        },
+        {
+          "name": "Bardic Knowledge (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Ancient lore check (1d20 + Bard level + Int)"
+        },
+        {
+          "name": "Countersong (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Counter sonic magical attacks with perform check"
+        },
+        {
+          "name": "Fascinate (Sp)",
+          "category": "Special Ability",
+          "type": "Sp",
+          "summary": "Entrall creatures within 90 ft"
+        },
+        {
+          "name": "Inspire Courage +1 (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "+1 morale on saves vs charm/fear and attack/damage"
+        }
+      ]
+    }
   },
   {
     "id": "cls-eldritch-knight",
@@ -3045,7 +3402,7 @@
     "category": "Prestige",
     "slot": "None",
     "source": "Dungeon Master's Guide",
-    "hitDie": 6,
+    "hitDie": "d6",
     "babProgression": "high",
     "skillPointsPerLevel": 2,
     "savingThrows": {
@@ -3092,20 +3449,7 @@
     "hd": 6,
     "maxLevel": 10,
     "bab": 1,
-    "skills": [
-      "concentration",
-      "craft_alchemy",
-      "craft_armor",
-      "craft_weapon",
-      "decipher_script",
-      "jump",
-      "knowledge_arcana",
-      "knowledge_nobility",
-      "ride",
-      "sense_motive",
-      "spellcraft",
-      "swim"
-    ],
+    "skills": 2,
     "fort": "good",
     "ref": "poor",
     "will": "poor",
@@ -3133,10 +3477,10 @@
     "features": {
       "1": [
         {
-          "name": "Bonus Feat (Fighter)",
-          "category": "Bonus Feat",
+          "name": "Diverse Training (Ex)",
+          "category": "Special Ability",
           "type": "Ex",
-          "summary": "Choose a bonus feat from the Fighter bonus feat list."
+          "summary": "Levels stack with fighter and caster levels for prerequisites"
         }
       ],
       "2": [
@@ -3286,7 +3630,7 @@
     "category": "Prestige",
     "slot": "None",
     "source": "Dungeon Master's Guide",
-    "hitDie": 4,
+    "hitDie": "d4",
     "babProgression": "low",
     "skillPointsPerLevel": 4,
     "savingThrows": {
@@ -3357,44 +3701,7 @@
     "hd": 4,
     "maxLevel": 10,
     "bab": 0.5,
-    "skills": [
-      "appraise",
-      "balance",
-      "bluff",
-      "climb",
-      "concentration",
-      "craft_alchemy",
-      "decipher_script",
-      "diplomacy",
-      "disable_device",
-      "disguise",
-      "escape_artist",
-      "gather_information",
-      "hide",
-      "jump",
-      "knowledge_arcana",
-      "knowledge_architecture",
-      "knowledge_dungeoneering",
-      "knowledge_geography",
-      "knowledge_history",
-      "knowledge_local",
-      "knowledge_nature",
-      "knowledge_nobility",
-      "knowledge_planes",
-      "knowledge_religion",
-      "listen",
-      "move_silently",
-      "open_lock",
-      "profession",
-      "search",
-      "sense_motive",
-      "sleight_of_hand",
-      "spellcraft",
-      "spot",
-      "swim",
-      "tumble",
-      "use_rope"
-    ],
+    "skills": 4,
     "fort": "poor",
     "ref": "good",
     "will": "good",
@@ -3616,7 +3923,7 @@
     "category": "Base",
     "slot": "None",
     "source": "SRD 3.5e",
-    "hitDie": 10,
+    "hitDie": "d10",
     "babProgression": "high",
     "skillPointsPerLevel": 2,
     "savingThrows": {
@@ -3626,12 +3933,14 @@
     },
     "classSkills": [
       "concentration",
-      "craft",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
       "diplomacy",
       "handle_animal",
       "heal",
-      "knowledge_nobility",
-      "knowledge_religion",
+      "k_nobility",
+      "k_religion",
       "profession",
       "ride",
       "sense_motive"
@@ -3850,7 +4159,7 @@
     },
     "addedAbilities": [],
     "description": "<p class=\"p1\"><img style=\"border: none; float: right; shape-outside: polygon(40% 0, 0 30%, 0 90%, 30% 100%, 100% 100%, 100% 0);\" src=\"systems/D35E/icons/art/paladin-male.png\" alt=\"\" width=\"300\">Through a select, worthy few shines the power of the divine. Called paladins, these noble souls dedicate their swords and lives to the battle against evil. Knights, crusaders, and law-bringers, paladins seek not just to spread divine justice but to embody the teachings of the virtuous deities they serve. In pursuit of their lofty goals, they adhere to ironclad laws of morality and discipline. As reward for their righteousness, these holy champions are blessed with boons to aid them in their quests: powers to banish evil, heal the innocent, and inspire the faithful. Although their convictions might lead them into conflict with the very souls they would save, paladins weather endless challenges of faith and dark temptations, risking their lives to do right and fighting to bring about a brighter future.</p>\n<p class=\"p1\"><strong>Alignment: </strong>Lawful good.</p>\n<p class=\"p1\"><strong>Hit Die:</strong> d10.</p>\n<h2 class=\"p1\">Class Skills</h2>\n<p class=\"p1\">The paladin’s class skills (and the key ability for each skill) are Concentration (Con), Craft (Int), Diplomacy (Cha), Handle Animal (Cha), Heal (Wis), Knowledge (nobility and royalty) (Int), Knowledge (religion) (Int), Profession (Wis), Ride (Dex), and Sense Motive (Wis).</p>\n<p class=\"p1\"><strong>Skill Points at 1st Level:</strong> (2 + Int modifier) x4.</p>\n<p class=\"p1\"><strong>Skill Points at Each Additional Level:</strong> 2 + Int modifier.</p>\n<h2 class=\"p1\">Ex-Paladins</h2>\n<p class=\"p1\">A paladin who ceases to be lawful good, who willfully commits an evil act, or who grossly violates the code of conduct loses all paladin spells and abilities (including the service of the paladin’s mount, but not weapon, armor, and shield proficiencies). She may not progress any farther in levels as a paladin. She regains her abilities and advancement potential if she atones for her violations (see the <em>atonement </em>spell description), as appropriate.</p>\n<p class=\"p1\">Like a member of any other class, a paladin may be a multiclass character, but multiclass paladins face a special restriction. A paladin who gains a level in any class other than paladin may never again raise her paladin level, though she retains all her paladin abilities.</p>\n<p><br><span style=\"font-size: 13px; opacity: 0.8;\">Some description after  Pathfinder RPG Core Rulebook. © 2009, Paizo Publishing, LLC; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Daniel Comerci.</span></p>",
-    "shortDescription": "Through a select, worthy few shines the power of the divine. Called paladins, these noble souls dedicate their swords and lives to the battle against evil. Knights, crusaders, and law-bringers, paladins seek not just to spread divine justi…",
+    "shortDescription": "Holy champion of law and good gifted with Smite Evil, Divine Grace, and Lay on Hands.",
     "tags": [
       "class",
       "base"
@@ -3858,7 +4167,82 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "hd": 10,
+    "bab": 1,
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "skills": 2,
+    "maxLevel": 20,
+    "isPrestige": false,
+    "role": "Divine Champion / Tank",
+    "features": {
+      "1": [
+        {
+          "name": "Aura of Good (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Aura of good equal to paladin level"
+        },
+        {
+          "name": "Detect Evil (Sp)",
+          "category": "Special Ability",
+          "type": "Sp",
+          "summary": "At will, detect evil as the spell"
+        },
+        {
+          "name": "Smite Evil (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Add Cha bonus to attack and +1 damage per Paladin level against evil (1/day)"
+        }
+      ],
+      "2": [
+        {
+          "name": "Divine Grace (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Gain bonus equal to Charisma bonus on all saving throws"
+        },
+        {
+          "name": "Lay on Hands (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Heal each day hit points equal to Paladin level x Charisma bonus"
+        }
+      ],
+      "3": [
+        {
+          "name": "Aura of Courage (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Immune to fear; allies within 10 ft gain +4 on saves vs fear"
+        },
+        {
+          "name": "Divine Health (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Immunity to all diseases"
+        }
+      ],
+      "4": [
+        {
+          "name": "Turn Undead (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Turn undead as cleric of level - 3"
+        }
+      ],
+      "5": [
+        {
+          "name": "Special Mount (Sp)",
+          "category": "Special Ability",
+          "type": "Sp",
+          "summary": "Call an intelligent, loyal war steed"
+        }
+      ]
+    }
   },
   {
     "id": "cls-wilder",
@@ -4036,7 +4420,7 @@
     "category": "Prestige",
     "slot": "None",
     "source": "Dungeon Master's Guide",
-    "hitDie": 4,
+    "hitDie": "d4",
     "babProgression": "low",
     "skillPointsPerLevel": 2,
     "savingThrows": {
@@ -4086,23 +4470,7 @@
     "hd": 4,
     "maxLevel": 5,
     "bab": 0.5,
-    "skills": [
-      "concentration",
-      "craft_alchemy",
-      "knowledge_arcana",
-      "knowledge_architecture",
-      "knowledge_dungeoneering",
-      "knowledge_geography",
-      "knowledge_history",
-      "knowledge_local",
-      "knowledge_nature",
-      "knowledge_nobility",
-      "knowledge_planes",
-      "knowledge_religion",
-      "profession",
-      "search",
-      "spellcraft"
-    ],
+    "skills": 2,
     "fort": "poor",
     "ref": "poor",
     "will": "good",
@@ -4214,7 +4582,7 @@
     "category": "Base",
     "slot": "None",
     "source": "SRD 3.5e",
-    "hitDie": 8,
+    "hitDie": "d8",
     "babProgression": "med",
     "skillPointsPerLevel": 2,
     "savingThrows": {
@@ -4224,13 +4592,15 @@
     },
     "classSkills": [
       "concentration",
-      "craft",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
       "diplomacy",
       "heal",
-      "knowledge_arcana",
-      "knowledge_history",
-      "knowledge_planes",
-      "knowledge_religion",
+      "k_arcana",
+      "k_history",
+      "k_religion",
+      "k_planes",
       "profession",
       "spellcraft"
     ],
@@ -4484,7 +4854,7 @@
     },
     "addedAbilities": [],
     "description": "<p><img style=\"float: right; border: none; shape-outside: polygon(32% 0%, 32% 11%, 19% 25%, 18% 55%, 0% 66%, 0% 80%, 13% 94%, 19% 100%, 100% 100%, 100% 0%);\" src=\"systems/D35E/icons/art/cleric-female.png\" alt=\"\" width=\"286\" height=\"550\">In faith and the miracles of the divine, many find a greater purpose. Called to serve powers beyond most mortal understanding, all priests preach wonders and provide for the spiritual needs of their people. Clerics are more than mere priests, though; these emissaries of the divine work the will of their deities through strength of arms and the magic of their gods. Devoted to the tenets of the religions and philosophies that inspire them, these ecclesiastics quest to spread the knowledge and influence of their faith. Yet while they might share similar abilities, clerics prove as different from one another as the divinities they serve, with some offering healing and redemption, others judging law and truth, and still others spreading conflict and corruption. The ways of the cleric are varied, yet all who tread these paths walk with the mightiest of allies and bear the arms of the gods themselves.</p>\n<p><strong>Alignment: </strong>A cleric’s alignment must be within one step of his deity’s (that is, it may be one step away on either the lawful–chaotic axis or the good–evil axis, but not both). A cleric may not be neutral unless his deity’s alignment is also neutral.</p>\n<p><strong>Hit Die: </strong>d8.</p>\n<h2>Class Skills</h2>\n<p>The cleric’s class skills (and the key ability for each skill) are Concentration (Con), Craft (Int), Diplomacy (Cha), Heal (Wis), Knowledge (arcana) (Int), Knowledge (history) (Int), Knowledge (religion) (Int), Knowledge (the planes) (Int), Profession (Wis), and Spellcraft (Int). </p>\n<p><strong>Domains and Class Skills: </strong>A cleric who chooses the Animal or Plant domain adds Knowledge (nature) (Int) to the cleric class skills listed above. A cleric who chooses the Knowledge domain adds all Knowledge (Int) skills to the list. A cleric who chooses the Travel domain adds Survival (Wis) to the list. A cleric who chooses the Trickery domain adds Bluff (Cha), Disguise (Cha), and Hide (Dex) to the list. See Deity, Domains, and Domain Spells, below, for more information.</p>\n<p><strong>Skill Points at 1st Level: </strong>(2 + Int modifier) x4.</p>\n<p><strong>Skill Points at Each Additional Level:</strong> 2 + Int modifier.</p>\n<h2>Ex-Clerics</h2>\n<p>A cleric who grossly violates the code of conduct required by his god loses all spells and class features, except for armor and shield proficiencies and proficiency with simple weapons. He cannot thereafter gain levels as a cleric of that god until he atones (see the atonement spell description).</p>\n<p> </p>\n<p><span style=\"font-size: 13px; opacity: 0.8;\">Some description after Pathfinder RPG Core Rulebook. © 2009, Paizo Publishing, LLC, used according to OGL license; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Daniel Comerci.</span></p>",
-    "shortDescription": "In faith and the miracles of the divine, many find a greater purpose. Called to serve powers beyond most mortal understanding, all priests preach wonders and provide for the spiritual needs of their people. Clerics are more than mere pries…",
+    "shortDescription": "Devoted divine caster who channels positive or negative energy, turns undead, and wears heavy armor.",
     "tags": [
       "class",
       "base"
@@ -4492,7 +4862,26 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "hd": 8,
+    "bab": 0.75,
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "skills": 2,
+    "maxLevel": 20,
+    "isPrestige": false,
+    "role": "Divine Caster / Healer & Buffer",
+    "features": {
+      "1": [
+        {
+          "name": "Turn Undead (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Channel positive energy to turn or destroy undead 3+Cha times/day"
+        }
+      ]
+    }
   },
   {
     "id": "cls-dwarven-defender",
@@ -4770,7 +5159,7 @@
     "category": "Base",
     "slot": "None",
     "source": "SRD 3.5e",
-    "hitDie": 10,
+    "hitDie": "d10",
     "babProgression": "high",
     "skillPointsPerLevel": 2,
     "savingThrows": {
@@ -4780,7 +5169,9 @@
     },
     "classSkills": [
       "climb",
-      "craft",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
       "handle_animal",
       "intimidate",
       "jump",
@@ -4796,7 +5187,7 @@
     },
     "addedAbilities": [],
     "description": "<p class=\"p1\"><img style=\"border: none; float: right; shape-outside: polygon(0 0, 0 22%, 26% 56%, 30% 91%, 24% 100%, 100% 100%, 100% 0%);\" src=\"systems/D35E/icons/art/fighter-female.png\" alt=\"\" width=\"350\" height=\"426\">Some take up arms for glory, wealth, or revenge. Others do battle to prove themselves, to protect others, or because they know nothing else. Still others learn the ways of weaponcraft to hone their bodies in battle and prove their mettle in the forge of war. Lords of the battlefield, fighters are a disparate lot, training with many weapons or just one, perfecting the uses of armor, learning the fighting techniques of exotic masters, and studying the art of combat, all to shape themselves into living weapons. Far more than mere thugs, these skilled warriors reveal the true deadliness of their weapons, turning hunks of metal into arms capable of taming kingdoms, slaughtering monsters, and rousing the hearts of armies. Soldiers, knights, hunters, and artists of war, fighters are unparalleled champions, and woe to those who dare stand against them.</p>\n<p class=\"p1\"><strong>Alignment:</strong> Any.</p>\n<p class=\"p1\"><strong>Hit Die:</strong> d10.</p>\n<h2 class=\"p1\">Class Skills</h2>\n<p class=\"p1\">The fighter’s class skills (and the key ability for each skill) are Climb (Str), Craft (Int), Handle Animal (Cha), Intimidate (Cha), Jump (Str), Ride (Dex), and Swim (Str).</p>\n<p class=\"p1\"><strong>Skill Points at 1st Level:</strong> (2 + Int modifier) x4.</p>\n<p class=\"p1\"><strong>Skill Points at Each Additional Level:</strong> 2 + Int modifier.</p>\n<p><br><span style=\"font-size: 13px; opacity: 0.8;\">Some description after  Pathfinder RPG Core Rulebook. © 2009, Paizo Publishing, LLC; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Daniel Comerci.</span></p>",
-    "shortDescription": "Some take up arms for glory, wealth, or revenge. Others do battle to prove themselves, to protect others, or because they know nothing else. Still others learn the ways of weaponcraft to hone their bodies in battle and prove their mettle i…",
+    "shortDescription": "Versatile martial combatant who masters any weapon or fighting style through bonus combat feats.",
     "tags": [
       "class",
       "base"
@@ -4804,7 +5195,35 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "hd": 10,
+    "bab": 1,
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "skills": 2,
+    "maxLevel": 20,
+    "isPrestige": false,
+    "role": "Martial / Feat Specialist",
+    "bonusFeatLevels": [
+      1,
+      2,
+      4,
+      6,
+      8,
+      10,
+      12,
+      14,
+      16,
+      18,
+      20
+    ],
+    "bonusFeatContract": {
+      "mode": "tag",
+      "tag": "isFighterBonusFeat",
+      "label": "Fighter Class Bonus Feat",
+      "filter": "FIGHTER"
+    }
   },
   {
     "id": "cls-sorcerer",
@@ -4815,7 +5234,7 @@
     "category": "Base",
     "slot": "None",
     "source": "SRD 3.5e",
-    "hitDie": 4,
+    "hitDie": "d4",
     "babProgression": "low",
     "skillPointsPerLevel": 2,
     "savingThrows": {
@@ -4826,8 +5245,10 @@
     "classSkills": [
       "bluff",
       "concentration",
-      "craft",
-      "knowledge_arcana",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "k_arcana",
       "profession",
       "spellcraft"
     ],
@@ -5322,7 +5743,7 @@
     },
     "addedAbilities": [],
     "description": "<p><img style=\"border: none; float: right; shape-outside: polygon(0 0, 0 50%, 30% 100%, 100% 100%, 100% 0);\" src=\"systems/D35E/icons/art/sorcerer-male.png\" alt=\"\" width=\"300\">Scions of innately magical bloodlines, the chosen of deities, the spawn of monsters, pawns of fate and destiny, or simply flukes of fickle magic, sorcerers look within themselves for arcane prowess and draw forth might few mortals can imagine. Emboldened by lives ever threatening to be consumed by their innate powers, these magic-touched souls endlessly indulge in and refine their mysterious abilities, gradually learning how to harness their birthright and coax forth ever greater arcane feats. Just as varied as these innately powerful spellcasters' abilities and inspirations are the ways in which they choose to utilize their gifts. While some seek to control their abilities through meditation and discipline, becoming masters of their fantastic birthright, others give in to their magic, letting it rule their lives with often explosive results. Regardless, sorcerers live and breathe that which other spellcasters devote their lives to mastering, and for them magic is more than a boon or a field of study; it is life itself.</p>\n<p class=\"p1\"><strong>Alignment:</strong> Any.</p>\n<p class=\"p1\"><strong>Hit Die:</strong> d4.</p>\n<h2 class=\"p1\">Class Skills</h2>\n<p class=\"p1\">The sorcerer’s class skills (and the key ability for each skill) are Bluff (Cha), Concentration (Con), Craft (Int), Knowledge (arcana) (Int), Profession (Wis), and Spellcraft (Int).</p>\n<p class=\"p1\"><strong>Skill Points at 1st Level:</strong> (2 + Int modifier) x 4.</p>\n<p class=\"p1\"><strong>Skill Points at Each Additional Level: </strong>2 + Int modifier.</p>\n<p><br><span style=\"font-size: 13px; opacity: 0.8;\">Some description after  Pathfinder RPG Core Rulebook. © 2009, Paizo Publishing, LLC; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Dean Spencer.</span></p>",
-    "shortDescription": "Scions of innately magical bloodlines, the chosen of deities, the spawn of monsters, pawns of fate and destiny, or simply flukes of fickle magic, sorcerers look within themselves for arcane prowess and draw forth might few mortals can imag…",
+    "shortDescription": "Innate arcane spellcaster who casts spells spontaneously without advance preparation.",
     "tags": [
       "class",
       "base"
@@ -5330,7 +5751,26 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "hd": 4,
+    "bab": 0.5,
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "skills": 2,
+    "maxLevel": 20,
+    "isPrestige": false,
+    "role": "Arcane Caster (Spontaneous)",
+    "features": {
+      "1": [
+        {
+          "name": "Summon Familiar",
+          "category": "Special Ability",
+          "type": "Sp",
+          "summary": "Summon a magical animal companion"
+        }
+      ]
+    }
   },
   {
     "id": "cls-ranger",
@@ -5341,7 +5781,7 @@
     "category": "Base",
     "slot": "None",
     "source": "SRD 3.5e",
-    "hitDie": 8,
+    "hitDie": "d8",
     "babProgression": "high",
     "skillPointsPerLevel": 6,
     "savingThrows": {
@@ -5352,14 +5792,16 @@
     "classSkills": [
       "climb",
       "concentration",
-      "craft",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
       "handle_animal",
       "heal",
       "hide",
       "jump",
-      "knowledge_dungeoneering",
-      "knowledge_geography",
-      "knowledge_nature",
+      "k_dungeon",
+      "k_geo",
+      "k_nature",
       "listen",
       "move_silently",
       "profession",
@@ -5584,7 +6026,7 @@
     },
     "addedAbilities": [],
     "description": "<p class=\"p1\"><img style=\"border: none; float: right; shape-outside: polygon(40% 0, 0 30%, 0 100%, 100% 100%, 100% 0);\" src=\"systems/D35E/icons/art/ranger-female.png\" alt=\"\" width=\"300\" /></p>\n<p class=\"p1\">For those who relish the thrill of the hunt, there are only predators and prey. Be they scouts, trackers, or bounty hunters, rangers share much in common: unique mastery of specialized weapons, skill at stalking even the most elusive game, and the expertise to defeat a wide range of quarries. Knowledgeable, patient, and skilled hunters, these rangers hound man, beast, and monster alike, gaining insight into the way of the predator, skill in varied environments, and ever more lethal martial prowess. While some track man-eating creatures to protect the frontier, others pursue more cunning game&mdash;even fugitives among their own people.</p>\n<p class=\"p1\"><strong>Alignment:</strong> Any.</p>\n<p class=\"p1\"><strong>Hit Die:</strong> d8.</p>\n<h2 class=\"p1\">Class Skills</h2>\n<p class=\"p1\">The ranger&rsquo;s class skills (and the key ability for each skill) are Climb (Str), Concentration (Con), Craft (Int), Handle Animal (Cha), Heal (Wis), Hide (Dex), Jump (Str), Knowledge (dungeoneering) (Int), Knowledge (geography) (Int), Knowledge (nature) (Int), Listen (Wis), Move Silently (Dex), Profession (Wis), Ride (Dex), Search (Int), Spot (Wis), Survival (Wis), Swim (Str), and Use Rope (Dex).</p>\n<p class=\"p1\"><strong>Skill Points at 1st Level:</strong> (6 + Int modifier) x<span class=\"s1\" style=\"font-variant-numeric: normal; font-variant-east-asian: normal; font-stretch: normal; line-height: normal; font-family: Helvetica;\"></span>4.</p>\n<p class=\"p1\"><strong>Skill Points at Each Additional Level:</strong> 6 + Int modifier.</p>\n<p><br /><span style=\"font-size: 13px; opacity: 0.8;\">Some description after  Pathfinder RPG Core Rulebook. &copy; 2009, Paizo Publishing, LLC; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Daniel Comerci.</span></p>",
-    "shortDescription": "For those who relish the thrill of the hunt, there are only predators and prey. Be they scouts, trackers, or bounty hunters, rangers share much in common: unique mastery of specialized weapons, skill at stalking even the most elusive game,…",
+    "shortDescription": "Skilled hunter and tracker who excels against Favored Enemies with archery or two-weapon combat.",
     "tags": [
       "class",
       "base"
@@ -5592,7 +6034,62 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "hd": 8,
+    "bab": 1,
+    "fort": "good",
+    "ref": "good",
+    "will": "poor",
+    "skills": 6,
+    "maxLevel": 20,
+    "isPrestige": false,
+    "role": "Martial / Scout & Hunter",
+    "features": {
+      "1": [
+        {
+          "name": "1st Favored Enemy",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+2 on Bluff, Listen, Sense Motive, Spot, Survival and damage vs chosen type"
+        },
+        {
+          "name": "Track",
+          "category": "Feat",
+          "type": "Ex",
+          "summary": "Use Survival to follow tracks"
+        },
+        {
+          "name": "Wild Empathy (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Improve the attitude of an animal"
+        }
+      ],
+      "2": [
+        {
+          "name": "Combat Style (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Gain Rapid Shot or Two-Weapon Fighting"
+        }
+      ],
+      "3": [
+        {
+          "name": "Endurance",
+          "category": "Feat",
+          "type": "Ex",
+          "summary": "Gain Endurance as a bonus feat"
+        }
+      ],
+      "4": [
+        {
+          "name": "Animal Companion (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Gain an animal companion"
+        }
+      ]
+    }
   },
   {
     "id": "cls-barbarian",
@@ -5603,7 +6100,7 @@
     "category": "Base",
     "slot": "None",
     "source": "SRD 3.5e",
-    "hitDie": 12,
+    "hitDie": "d12",
     "babProgression": "high",
     "skillPointsPerLevel": 4,
     "savingThrows": {
@@ -5613,7 +6110,9 @@
     },
     "classSkills": [
       "climb",
-      "craft",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
       "handle_animal",
       "intimidate",
       "jump",
@@ -5631,7 +6130,7 @@
     },
     "addedAbilities": [],
     "description": "<p><img style=\"border: none; float: right; shape-outside: polygon(37% 2%, 16% 20%, 5% 32%, 23% 50%, 19% 67%, 8% 91%, 1% 99%, 99% 100%, 99% 1%);\" src=\"systems/D35E/icons/art/barbarian-male.png\" alt=\"\" width=\"286\" height=\"507\">\"<em>...Free</em> <em>my hands and I'll varnish this floor with your brains!</em>\"</p>\n<p><em>- </em>Conan the Barbarian</p>\n<p> </p>\n<p>For some, there is only rage. In the ways of their people, in the fury of their passion, in the howl of battle, conflict is all these brutal souls know. Savages, hired muscle, masters of vicious martial techniques, they are not soldiers or professional warriors—they are the battle possessed, creatures of slaughter and spirits of war. Known as barbarians, these warmongers know little of training, preparation, or the rules of warfare; for them, only the moment exists, with the foes that stand before them and the knowledge that the next moment might hold their death. They possess a sixth sense in regard to danger and the endurance to weather all that might entail. These brutal warriors might rise from all walks of life, both civilized and savage, though whole societies embracing such philosophies roam the wild places of the world. Within barbarians storms the primal spirit of battle, and woe to those who face their rage.</p>\n<p> </p>\n<p><strong>Alignment: </strong>Any nonlawful.</p>\n<p><strong>Hit Die: </strong>d12.</p>\n<h2>Class Skills</h2>\n<p>The barbarian’s class skills (and the key ability for each skill) are Climb (Str), Craft (Int), Handle Animal (Cha), Intimidate (Cha), Jump (Str), Listen (Wis), Ride (Dex), Survival (Wis), and Swim (Str).</p>\n<p><strong>Skill Points at 1st Level:</strong> (4 + Int modifier) x4.</p>\n<p><strong>Skill Points at Each Additional Level: </strong>4 + Int modifier.</p>\n<p> </p>\n<h2>Ex-Barbarians</h2>\n<p>A barbarian who becomes lawful loses the ability to rage and cannot gain more levels as a barbarian. He retains all the other benefits of the class (damage reduction, fast movement, trap sense, and uncanny dodge).</p>\n<p><br><span style=\"font-size: 13px; opacity: 0.8;\">Some description after  Pathfinder RPG Core Rulebook. © 2009, Paizo Publishing, LLC; Author: Jason Bulmahn, based on material by Jonathan Tweet, Monte Cook, and Skip Williams. Artwork by Daniel Comerci.</span></p>",
-    "shortDescription": "\" ...Free my hands and I'll varnish this floor with your brains! \" - Conan the Barbarian For some, there is only rage. In the ways of their people, in the fury of their passion, in the howl of battle, conflict is all these brutal souls kno…",
+    "shortDescription": "Ferocious d12 warrior who channels primal Rage for massive Strength and Constitution boosts.",
     "tags": [
       "class",
       "base"
@@ -5639,7 +6138,80 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "hd": 12,
+    "bab": 1,
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "skills": 4,
+    "maxLevel": 20,
+    "isPrestige": false,
+    "role": "Martial / Berserker",
+    "features": {
+      "1": [
+        {
+          "name": "Fast Movement (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+10 ft to base land speed in light or medium armor"
+        },
+        {
+          "name": "Rage 1/day (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+4 Str, +4 Con, +2 morale to Will saves, -2 AC for 3+Con rounds"
+        }
+      ],
+      "2": [
+        {
+          "name": "Uncanny Dodge (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Retain Dex bonus to AC if flat-footed"
+        }
+      ],
+      "3": [
+        {
+          "name": "Trap Sense +1 (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+1 on Reflex saves and AC vs traps"
+        }
+      ],
+      "4": [
+        {
+          "name": "Rage 2/day (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Can rage 2 times per day"
+        }
+      ],
+      "5": [
+        {
+          "name": "Improved Uncanny Dodge (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Can no longer be flanked unless attacker is 4+ levels higher"
+        }
+      ],
+      "6": [
+        {
+          "name": "Trap Sense +2 (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+2 on Reflex saves and AC vs traps"
+        }
+      ],
+      "7": [
+        {
+          "name": "Damage Reduction 1/- (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Ignore 1 point of damage from each melee or ranged attack"
+        }
+      ]
+    }
   },
   {
     "id": "cls-soulknife",
@@ -14614,36 +15186,13 @@
     "slot": "None",
     "source": "Dungeon Master's Guide",
     "role": "Draconic Paragon (+8 STR, +4 Nat AC, Wings & Half-Dragon)",
-    "hitDie": 12,
+    "hitDie": "d12",
     "hd": 12,
     "maxLevel": 10,
     "babProgression": "med",
     "bab": 0.75,
     "skillPointsPerLevel": 2,
-    "skills": [
-      "concentration",
-      "craft_alchemy",
-      "craft_armor",
-      "craft_weapon",
-      "diplomacy",
-      "escape_artist",
-      "gather_information",
-      "knowledge_arcana",
-      "knowledge_architecture",
-      "knowledge_dungeoneering",
-      "knowledge_geography",
-      "knowledge_history",
-      "knowledge_local",
-      "knowledge_nature",
-      "knowledge_nobility",
-      "knowledge_planes",
-      "knowledge_religion",
-      "listen",
-      "profession",
-      "search",
-      "spellcraft",
-      "spot"
-    ],
+    "skills": 2,
     "savingThrows": {
       "fort": "high",
       "ref": "low",
@@ -14868,7 +15417,7 @@
     "slot": "None",
     "source": "Dungeon Master's Guide",
     "role": "Swashbuckler / Unarmored Precision Striker (+INT to AC)",
-    "hitDie": 10,
+    "hitDie": "d10",
     "hd": 10,
     "maxLevel": 10,
     "babProgression": "high",
@@ -15030,22 +15579,13 @@
     "slot": "None",
     "source": "Dungeon Master's Guide",
     "role": "High Divine Caster (Divine Reach, Faith Healing & Spell Power)",
-    "hitDie": 8,
+    "hitDie": "d8",
     "hd": 8,
     "maxLevel": 5,
     "babProgression": "low",
     "bab": 0.5,
     "skillPointsPerLevel": 2,
-    "skills": [
-      "concentration",
-      "craft_alchemy",
-      "diplomacy",
-      "heal",
-      "knowledge_arcana",
-      "knowledge_religion",
-      "profession",
-      "spellcraft"
-    ],
+    "skills": 2,
     "savingThrows": {
       "fort": "high",
       "ref": "low",
@@ -15150,28 +15690,13 @@
     "slot": "None",
     "source": "Dungeon Master's Guide",
     "role": "Planar Explorer & Martial Ranger (Terrain & Planar Mastery)",
-    "hitDie": 8,
+    "hitDie": "d8",
     "hd": 8,
     "maxLevel": 10,
     "babProgression": "high",
     "bab": 1,
     "skillPointsPerLevel": 4,
-    "skills": [
-      "balance",
-      "climb",
-      "diplomacy",
-      "handle_animal",
-      "hide",
-      "knowledge_geography",
-      "knowledge_planes",
-      "listen",
-      "move_silently",
-      "profession",
-      "ride",
-      "spot",
-      "survival",
-      "swim"
-    ],
+    "skills": 4,
     "savingThrows": {
       "fort": "high",
       "ref": "low",
@@ -15317,35 +15842,13 @@
     "slot": "None",
     "source": "Dungeon Master's Guide",
     "role": "Scholarly Caster (10/10 Spells, Secrets, Lore & True Lore)",
-    "hitDie": 4,
+    "hitDie": "d4",
     "hd": 4,
     "maxLevel": 10,
     "babProgression": "low",
     "bab": 0.5,
     "skillPointsPerLevel": 4,
-    "skills": [
-      "appraise",
-      "concentration",
-      "craft_alchemy",
-      "decipher_script",
-      "gather_information",
-      "handle_animal",
-      "heal",
-      "knowledge_arcana",
-      "knowledge_architecture",
-      "knowledge_dungeoneering",
-      "knowledge_geography",
-      "knowledge_history",
-      "knowledge_local",
-      "knowledge_nature",
-      "knowledge_nobility",
-      "knowledge_planes",
-      "knowledge_religion",
-      "perform",
-      "profession",
-      "spellcraft",
-      "use_magic_device"
-    ],
+    "skills": 4,
     "savingThrows": {
       "fort": "low",
       "ref": "low",
@@ -15839,7 +16342,7 @@
     "slot": "None",
     "source": "Dungeon Master's Guide",
     "role": "Stealth / Hide in Plain Sight, Shadow Jump & Summon Shadow",
-    "hitDie": 8,
+    "hitDie": "d8",
     "hd": 8,
     "maxLevel": 10,
     "babProgression": "med",
@@ -17596,6 +18099,1619 @@
       "class",
       "prestige",
       "srd"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-warblade",
+    "schemaVersion": 2,
+    "name": "Warblade",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Tome of Battle",
+    "role": "Martial Adept / Tank & Striker",
+    "hd": 12,
+    "hitDie": "d12",
+    "maxLevel": 20,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "intimidate",
+      "jump",
+      "martial_lore",
+      "swim"
+    ],
+    "bonusFeatLevels": [
+      5,
+      9,
+      13,
+      17
+    ],
+    "bonusFeatContract": {
+      "mode": "exact_choices",
+      "choices": [
+        "Blind-Fight",
+        "Combat Reflexes",
+        "Diehard",
+        "Great Fortitude",
+        "Improved Critical",
+        "Improved Initiative",
+        "Iron Will",
+        "Ironheart Aura",
+        "Lightning Reflexes",
+        "Stone Power",
+        "Tiger Blooded",
+        "Unnerving Calm",
+        "White Raven Defense"
+      ],
+      "label": "Warblade Bonus Feat"
+    },
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {
+      "1": [
+        {
+          "name": "Battle Clarity (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "INT modifier to Reflex saves (max Warblade lvl)"
+        },
+        {
+          "name": "Weapon Aptitude (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Adjust weapon feats to different weapons with 1 hour practice"
+        }
+      ],
+      "2": [
+        {
+          "name": "Uncanny Dodge (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Retain Dex bonus to AC even if caught flat-footed"
+        }
+      ],
+      "3": [
+        {
+          "name": "Battle Ardor (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "INT modifier on rolls made to confirm critical hits"
+        }
+      ],
+      "6": [
+        {
+          "name": "Improved Uncanny Dodge (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Can no longer be flanked unless attacker is 4+ levels higher"
+        }
+      ],
+      "7": [
+        {
+          "name": "Battle Cunning (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "INT modifier to damage rolls against flat-footed or flanked foes"
+        }
+      ],
+      "11": [
+        {
+          "name": "Battle Skill (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "INT modifier on checks to resist combat maneuvers"
+        }
+      ],
+      "15": [
+        {
+          "name": "Battle Mastery (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "INT modifier on melee attack rolls and damage rolls on AoO"
+        }
+      ],
+      "20": [
+        {
+          "name": "Stance Mastery (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Can have two stances active simultaneously"
+        }
+      ]
+    },
+    "shortDescription": "Resilient d12 martial adept who combines tactical insight (INT) with Sublime Way maneuvers.",
+    "description": "Resilient d12 martial adept who combines tactical insight (INT) with Sublime Way maneuvers.",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-crusader",
+    "schemaVersion": 2,
+    "name": "Crusader",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Tome of Battle",
+    "role": "Martial Adept / Tank & Leader",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 20,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "intimidate",
+      "jump",
+      "k_history",
+      "k_religion",
+      "martial_lore",
+      "ride"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {
+      "1": [
+        {
+          "name": "Steely Resolve 5 (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Delayed damage pool of 5 points"
+        },
+        {
+          "name": "Furious Counterstrike (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Gain +1 to +6 morale to attack/damage from delayed damage"
+        }
+      ],
+      "2": [
+        {
+          "name": "Indomitable Soul (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Add Cha modifier as an insight bonus to Will saves"
+        }
+      ]
+    },
+    "shortDescription": "Armored martial adept who delays incoming damage via Steely Resolve and channels Devoted Spirit.",
+    "description": "Armored martial adept who delays incoming damage via Steely Resolve and channels Devoted Spirit.",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-swordsage",
+    "schemaVersion": 2,
+    "name": "Swordsage",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Tome of Battle",
+    "role": "Martial Adept / Versatile Striker",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "med",
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [
+      "balance",
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "heal",
+      "hide",
+      "intimidate",
+      "jump",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "listen",
+      "martial_lore",
+      "move_silently",
+      "profession",
+      "ride",
+      "sense_motive",
+      "swim",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {
+      "1": [
+        {
+          "name": "Quick to Act +1 (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+1 bonus on initiative checks"
+        },
+        {
+          "name": "Discipline Focus (Weapon Focus)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Weapon Focus in discipline weapons"
+        }
+      ],
+      "2": [
+        {
+          "name": "AC Bonus (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Add Wis modifier to AC in light armor"
+        }
+      ]
+    },
+    "shortDescription": "Blade-magic sage with the largest maneuver pool and Wisdom to Armor Class.",
+    "description": "Blade-magic sage with the largest maneuver pool and Wisdom to Armor Class.",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-duskblade",
+    "schemaVersion": 2,
+    "name": "Duskblade",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Player's Handbook II",
+    "role": "Gish / Arcane Melee Channeler",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 20,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "decipher_script",
+      "jump",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "profession",
+      "ride",
+      "sense_motive",
+      "spellcraft",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {
+      "1": [
+        {
+          "name": "Arcane Attunement (Sp)",
+          "category": "Special Ability",
+          "type": "Sp",
+          "summary": "Cast Dancing Lights, Detect Magic, Flare, Ghost Sound, Read Magic 3+Int/day"
+        }
+      ],
+      "2": [
+        {
+          "name": "Combat Casting",
+          "category": "Feat",
+          "type": "Ex",
+          "summary": "Gain Combat Casting as a bonus feat"
+        }
+      ],
+      "3": [
+        {
+          "name": "Arcane Channeling (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Channel touch spells through melee weapon attack"
+        }
+      ]
+    },
+    "shortDescription": "Hybrid warrior-mage who channels touch spells directly through melee weapon strikes.",
+    "description": "Hybrid warrior-mage who channels touch spells directly through melee weapon strikes.",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-abjurant-champion",
+    "schemaVersion": 2,
+    "name": "Abjurant Champion",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Complete Mage",
+    "role": "Gish (Arcane Warrior)",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 5,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "handle_animal",
+      "intimidate",
+      "jump",
+      "k_arcana",
+      "ride",
+      "spellcraft",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Feat: Combat Casting",
+        "key": "feat",
+        "name": "Combat Casting"
+      },
+      {
+        "text": "Spells: Able to cast 1st-level arcane spells (including an abjuration spell)",
+        "key": "arcane",
+        "minLvl": 1
+      },
+      {
+        "text": "Weapon: Proficient with at least one martial weapon",
+        "key": "weapon"
+      }
+    ],
+    "features": {
+      "1": [
+        {
+          "name": "Abjurant Armor (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Add Abjurant Champion level to armor/shield bonus of abjuration spells"
+        },
+        {
+          "name": "Extended Abjuration (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Abjuration spells automatically have doubled duration"
+        }
+      ],
+      "2": [
+        {
+          "name": "Swift Abjuration (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Cast abjuration spells as swift actions"
+        }
+      ],
+      "4": [
+        {
+          "name": "Arcane Boost (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Burn spell slot for swift attack, damage, AC or save bonus"
+        }
+      ],
+      "5": [
+        {
+          "name": "Martial Arcanist (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Arcane Caster Level equals Base Attack Bonus (BAB)"
+        }
+      ]
+    },
+    "shortDescription": "Arcane gish prestige class that casts enhanced abjuration spells as swift actions and scales CL to BAB.",
+    "description": "Arcane gish prestige class that casts enhanced abjuration spells as swift actions and scales CL to BAB.",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-bloodstorm-blade",
+    "schemaVersion": 2,
+    "name": "Bloodstorm Blade",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Tome of Battle",
+    "role": "Martial / Thrown Weapon Specialist",
+    "hd": 12,
+    "hitDie": "d12",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "intimidate",
+      "jump",
+      "martial_lore",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +4",
+        "key": "bab",
+        "min": 4
+      },
+      {
+        "text": "Feat: Point Blank Shot",
+        "key": "feat",
+        "name": "Point Blank Shot"
+      },
+      {
+        "text": "Martial Maneuvers: One Iron Heart strike and one Iron Heart stance",
+        "key": "maneuver"
+      },
+      {
+        "text": "Skills: Balance 4 ranks",
+        "key": "skill"
+      }
+    ],
+    "features": {
+      "1": [
+        {
+          "name": "Returning Attacks (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Thrown weapons return to your hand just before your next attack"
+        },
+        {
+          "name": "Weapon Aptitude (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Reassign weapon-specific feats to other weapons with 1 hour practice"
+        }
+      ],
+      "2": [
+        {
+          "name": "Throw Anything (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Throw any melee weapon with 10 ft range increment without penalty"
+        },
+        {
+          "name": "Iron Wind (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Swift action: hit two adjacent foes with a single thrown weapon"
+        }
+      ],
+      "3": [
+        {
+          "name": "Thunderous Throw (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Swift action: treat thrown attacks as melee attacks for Power Attack and feats"
+        }
+      ],
+      "4": [
+        {
+          "name": "Lightning Ricochet (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Thrown weapon returns immediately after attack, enabling full iterative attacks"
+        }
+      ],
+      "5": [
+        {
+          "name": "Blood Wind (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Ricochet thrown weapon to an additional foe within range"
+        }
+      ]
+    },
+    "shortDescription": "Legendary Iron Heart master who treats thrown weapons as melee strikes and ricochets blades back to hand instantly.",
+    "description": "Legendary Iron Heart master who treats thrown weapons as melee strikes and ricochets blades back to hand instantly.",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-dervish",
+    "schemaVersion": 2,
+    "name": "Dervish",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Complete Warrior",
+    "role": "Martial / Mobile Full Attack",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "escape_artist",
+      "jump",
+      "listen",
+      "perform",
+      "profession",
+      "swim",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Feats: Combat Expertise, Dodge, Mobility, Weapon Focus (any slashing melee weapon)",
+        "key": "feat",
+        "name": "Combat Expertise"
+      },
+      {
+        "text": "Skills: Perform (dance) 3 ranks, Tumble 3 ranks",
+        "key": "skill"
+      }
+    ],
+    "features": {
+      "1": [
+        {
+          "name": "Dervish Dance 1/day (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Take full attack action while moving up to speed"
+        },
+        {
+          "name": "AC Bonus +1 (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+1 dodge bonus to AC while wearing light or no armor"
+        }
+      ],
+      "2": [
+        {
+          "name": "Fast Movement +5 ft (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+5 ft speed bonus"
+        }
+      ]
+    },
+    "shortDescription": "Whirling slashing-weapon specialist who executes a full attack while moving at full speed via Dervish Dance.",
+    "description": "Whirling slashing-weapon specialist who executes a full attack while moving at full speed via Dervish Dance.",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-spellsword",
+    "schemaVersion": 2,
+    "name": "Spellsword",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Complete Warrior",
+    "role": "Gish / Ignore ASF & Spell Channeling",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "concentration",
+      "jump",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "profession",
+      "spellcraft"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +4",
+        "key": "bab",
+        "min": 4
+      },
+      {
+        "text": "Proficiency: Proficient with all simple and martial weapons and with light, medium, and heavy armor",
+        "key": "armor"
+      },
+      {
+        "text": "Spells: Able to cast 2nd-level arcane spells",
+        "key": "arcane",
+        "minLvl": 2
+      }
+    ],
+    "features": {
+      "1": [
+        {
+          "name": "Ignore Spell Failure 10% (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Reduce arcane spell failure chance of armor by 10%"
+        }
+      ],
+      "2": [
+        {
+          "name": "Multiple Spell Channeling (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Store a spell in melee weapon to release upon hit"
+        }
+      ]
+    },
+    "shortDescription": "Armored spellsword who reduces Arcane Spell Failure (ASF) and channels spells through melee weapons.",
+    "description": "Armored spellsword who reduces Arcane Spell Failure (ASF) and channels spells through melee weapons.",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-jade-phoenix-mage",
+    "schemaVersion": 2,
+    "name": "Jade Phoenix Mage",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Tome of Battle",
+    "role": "Gish (Martial Adept + Arcane)",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "concentration",
+      "diplomacy",
+      "handle_animal",
+      "intimidate",
+      "jump",
+      "martial_lore",
+      "ride",
+      "sense_motive",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Martial Maneuvers: Two maneuvers (at least one strike) and one stance",
+        "key": "maneuver"
+      },
+      {
+        "text": "Spells: Able to cast 2nd-level arcane spells",
+        "key": "arcane",
+        "minLvl": 2
+      },
+      {
+        "text": "Skills: Concentration 9 ranks, Knowledge (arcana) 4 ranks, Knowledge (history) 2 ranks",
+        "key": "skill"
+      }
+    ],
+    "features": {
+      "1": [
+        {
+          "name": "Arcane Wrath (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Expend spell slot for +4 attack and +1d10 energy damage per spell level"
+        },
+        {
+          "name": "Rite of Waking (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+2 on Knowledge checks and advance arcane CL & martial IL"
+        }
+      ],
+      "2": [
+        {
+          "name": "Mystic Phoenix Stance (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "Stance: +2 CL on fire spells, DR 2/evil, and +1 CL"
+        }
+      ]
+    },
+    "shortDescription": "Sublime arcane-martial adept who blends arcane magic with Desert Wind and Devoted Spirit maneuvers.",
+    "description": "Sublime arcane-martial adept who blends arcane magic with Desert Wind and Devoted Spirit maneuvers.",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-warlock",
+    "schemaVersion": 2,
+    "name": "Warlock",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Complete Arcane",
+    "role": "Arcane / Eldritch Blast Invocator",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "med",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "bluff",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "disguise",
+      "intimidate",
+      "jump",
+      "k_arcana",
+      "k_religion",
+      "k_planes",
+      "profession",
+      "sense_motive",
+      "spellcraft",
+      "umd"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {
+      "1": [
+        {
+          "name": "Eldritch Blast 1d6 (Sp)",
+          "category": "Special Ability",
+          "type": "Sp",
+          "summary": "At will ranged touch attack dealing 1d6 untyped magical damage"
+        },
+        {
+          "name": "Least Invocations",
+          "category": "Special Ability",
+          "type": "Sp",
+          "summary": "Cast least warlock invocations at will"
+        }
+      ],
+      "2": [
+        {
+          "name": "Detect Magic (Sp)",
+          "category": "Special Ability",
+          "type": "Sp",
+          "summary": "At will Detect Magic"
+        }
+      ],
+      "3": [
+        {
+          "name": "Damage Reduction 1/cold iron (Su)",
+          "category": "Special Ability",
+          "type": "Su",
+          "summary": "DR 1/cold iron"
+        },
+        {
+          "name": "Eldritch Blast 2d6 (Sp)",
+          "category": "Special Ability",
+          "type": "Sp",
+          "summary": "Eldritch blast damage increases to 2d6"
+        }
+      ]
+    },
+    "shortDescription": "Wielder of at-will Eldritch Blast and dark arcane invocations.",
+    "description": "Wielder of at-will Eldritch Blast and dark arcane invocations.",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-beguiler",
+    "schemaVersion": 2,
+    "name": "Beguiler",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Player's Handbook II p.6",
+    "role": "Base Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 20,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Armored Mage, Trapfinding, Cloaked Casting, Surprise Casting",
+    "description": "Key Features: Armored Mage, Trapfinding, Cloaked Casting, Surprise Casting",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-factotum",
+    "schemaVersion": 2,
+    "name": "Factotum",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Dungeonscape p.14",
+    "role": "Base Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "med",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Inspiration, Cunning Insight, Cunning Knowledge, Trapfinding",
+    "description": "Key Features: Inspiration, Cunning Insight, Cunning Knowledge, Trapfinding",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-scout",
+    "schemaVersion": 2,
+    "name": "Scout",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Complete Adventurer p.10",
+    "role": "Base Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "med",
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 8,
+    "skillPointsPerLevel": 8,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Skirmish, Trapfinding, Battle Fortitude, Uncanny Dodge, Fast Movement",
+    "description": "Key Features: Skirmish, Trapfinding, Battle Fortitude, Uncanny Dodge, Fast Movement",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-swashbuckler",
+    "schemaVersion": 2,
+    "name": "Swashbuckler",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Complete Warrior p.11",
+    "role": "Base Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 20,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Weapon Finesse, Grace, Insightful Strike, Dodge Bonus",
+    "description": "Key Features: Weapon Finesse, Grace, Insightful Strike, Dodge Bonus",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-hexblade",
+    "schemaVersion": 2,
+    "name": "Hexblade",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Complete Warrior p.5",
+    "role": "Base Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 20,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Hexblade's Curse, Arcane Resistance, Mettle, Dark Companion",
+    "description": "Key Features: Hexblade's Curse, Arcane Resistance, Mettle, Dark Companion",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-spellthief",
+    "schemaVersion": 2,
+    "name": "Spellthief",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Complete Adventurer p.13",
+    "role": "Base Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "med",
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Sneak Attack, Steal Spell, Trapfinding, Steal Spell Effect",
+    "description": "Key Features: Sneak Attack, Steal Spell, Trapfinding, Steal Spell Effect",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-warmage",
+    "schemaVersion": 2,
+    "name": "Warmage",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Complete Arcane p.10",
+    "role": "Base Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 20,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Armored Mage, Warmage Edge, Advanced Learning",
+    "description": "Key Features: Armored Mage, Warmage Edge, Advanced Learning",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-favored-soul",
+    "schemaVersion": 2,
+    "name": "Favored Soul",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Complete Divine p.6",
+    "role": "Base Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "med",
+    "fort": "good",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Deity's Weapon Focus, Energy Resistance, Wings",
+    "description": "Key Features: Deity's Weapon Focus, Energy Resistance, Wings",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-dread-necromancer",
+    "schemaVersion": 2,
+    "name": "Dread Necromancer",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Heroes of Horror p.84",
+    "role": "Base Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 20,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Charnel Touch, Rebuke Undead, Lich Body, Advanced Learning",
+    "description": "Key Features: Charnel Touch, Rebuke Undead, Lich Body, Advanced Learning",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-dragon-shaman",
+    "schemaVersion": 2,
+    "name": "Dragon Shaman",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Player's Handbook II p.11",
+    "role": "Base Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "med",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Draconic Aura, Totem Dragon, Touch of Vitality, Breath Weapon",
+    "description": "Key Features: Draconic Aura, Totem Dragon, Touch of Vitality, Breath Weapon",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-knight",
+    "schemaVersion": 2,
+    "name": "Knight",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Player's Handbook II p.24",
+    "role": "Base Class",
+    "hd": 12,
+    "hitDie": "d12",
+    "maxLevel": 20,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Knight's Challenge, Knight's Code, Shield Block, Bulwark of Defense",
+    "description": "Key Features: Knight's Challenge, Knight's Code, Shield Block, Bulwark of Defense",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-ninja",
+    "schemaVersion": 2,
+    "name": "Ninja",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Complete Adventurer p.5",
+    "role": "Base Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "med",
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Ki Power, Sudden Strike, Trapfinding, Ghost Step, Poison Use",
+    "description": "Key Features: Ki Power, Sudden Strike, Trapfinding, Ghost Step, Poison Use",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-frenzied-berserker",
+    "schemaVersion": 2,
+    "name": "Frenzied Berserker",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Complete Warrior p.34",
+    "role": "Prestige Class",
+    "hd": 12,
+    "hitDie": "d12",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Frenzy, Die Hard, Supreme Cleave, Deathless Frenzy, Greater Frenzy, Inspire Frenzy",
+    "description": "Key Features: Frenzy, Die Hard, Supreme Cleave, Deathless Frenzy, Greater Frenzy, Inspire Frenzy",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-invisible-blade",
+    "schemaVersion": 2,
+    "name": "Invisible Blade",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Complete Warrior p.44",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Dagger Sneak Attack, Uncanny Feint, Bleeding Wound, Feint Mastery",
+    "description": "Key Features: Dagger Sneak Attack, Uncanny Feint, Bleeding Wound, Feint Mastery",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "cls-ur-priest",
+    "schemaVersion": 2,
+    "name": "Ur-Priest",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Complete Divine p.70",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "med",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "shortDescription": "Fast Divine Spellcasting (up to 9th level in 10 levels), Rebuke Undead, Steal Spell-Like Ability",
+    "description": "Key Features: Fast Divine Spellcasting (up to 9th level in 10 levels), Rebuke Undead, Steal Spell-Like Ability",
+    "tags": [
+      "class",
+      "prestige"
     ],
     "modifiers": [],
     "damageParts": [],

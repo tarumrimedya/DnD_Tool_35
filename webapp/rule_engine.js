@@ -5,6 +5,10 @@
  * Armor Class evaluation (Normal, Touch, Flat-Footed), and saving throws.
  */
 
+if (typeof SrdCompendium === 'undefined' && typeof require === 'function') {
+  try { require('./srd_compendium.js'); } catch (_) {}
+}
+
 const RuleEngine = {
   // Built-in SRD Armor reference catalog
   SRD_ARMORS: {
@@ -275,13 +279,15 @@ const RuleEngine = {
     const refId = isObj ? (itemOrName.baseItemId || itemOrName.id || null) : null;
     const rawName = String(isObj ? (itemOrName.masterDbName || itemOrName.name || '') : itemOrName).trim();
 
-    if (typeof window !== 'undefined' && window.SrdCompendium) {
+    const comp = (typeof window !== 'undefined' && window.SrdCompendium)
+      || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+    if (comp) {
       if (refId) {
-        const byId = window.SrdCompendium.getById(refId);
+        const byId = comp.getById(refId);
         if (byId) return byId;
       }
       if (rawName) {
-        const byName = window.SrdCompendium.getByName(rawName, typeFilter || (isObj ? itemOrName.type : null));
+        const byName = comp.getByName(rawName, typeFilter || (isObj ? itemOrName.type : null));
         if (byName) return byName;
       }
     }
@@ -735,7 +741,7 @@ const RuleEngine = {
         if (profData.shields.tower) res.shields.tower = true;
       } else {
         // Fallback for custom or unrecognized classes using BAB/role
-        const def = (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[cName] : null) || {};
+        const def = this.getClassDef(cName) || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[cName] : null) || {};
         if (def.bab === 1.0) {
           res.weapons.simple = true;
           res.weapons.martial = true;
@@ -2008,34 +2014,8 @@ const RuleEngine = {
     return `${sign}${bType} ${tLabel}${condSuffix}`;
   },
 
-  // Built-in Canonical V2 Splatbook Buff Spells (Dragon Magic, Races of the Dragon, Spell Compendium, Complete Mage)
-  SPLATBOOK_BUFF_SPELLS: [
-    { id: 'spl-primal-hunter', schemaVersion: 2, name: 'Primal Hunter', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 1, learnedAt: { class: { Druid: 1, Ranger: 1, Sorcerer: 1, Wizard: 1 } }, source: 'Dragon Magic p.71', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '24 hours', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+5 competence bonus on Climb, Jump, and Swim checks for 24 hours.', description: 'Bestial strength floods your limbs, granting you a +5 competence bonus on Climb, Jump, and Swim checks for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).', modifiers: [{ target: 'skill.climb', value: 5, formula: '5', type: 'competence', condition: null }, { target: 'skill.jump', value: 5, formula: '5', type: 'competence', condition: null }, { target: 'skill.swim', value: 5, formula: '5', type: 'competence', condition: null }], damageParts: [], modes: [], ruleFlags: { primalSpell: true } },
-    { id: 'spl-primal-instinct', schemaVersion: 2, name: 'Primal Instinct', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 2, learnedAt: { class: { Druid: 2, Ranger: 2, Sorcerer: 2, Wizard: 2 } }, source: 'Dragon Magic p.71', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '24 hours', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+5 competence bonus on Initiative and Survival checks for 24 hours.', description: 'Primeval awareness sharpens your reflexes, granting you a +5 competence bonus on Initiative and Survival checks for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).', modifiers: [{ target: 'initiative', value: 5, formula: '5', type: 'competence', condition: null }, { target: 'skill.survival', value: 5, formula: '5', type: 'competence', condition: null }], damageParts: [], modes: [], ruleFlags: { primalSpell: true } },
-    { id: 'spl-primal-senses', schemaVersion: 2, name: 'Primal Senses', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 3, learnedAt: { class: { Druid: 3, Ranger: 3, Sorcerer: 3, Wizard: 3 } }, source: 'Dragon Magic p.71', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '24 hours', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: 'Low-light vision and +5 competence bonus on Listen and Spot checks for 24 hours.', description: 'Your senses sharpen to draconic acuity, granting you Low-Light Vision and a +5 competence bonus on Listen and Spot checks for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).', modifiers: [{ target: 'skill.listen', value: 5, formula: '5', type: 'competence', condition: null }, { target: 'skill.spot', value: 5, formula: '5', type: 'competence', condition: null }], damageParts: [], modes: [], ruleFlags: { primalSpell: true, lowLightVision: true } },
-    { id: 'spl-primal-speed', schemaVersion: 2, name: 'Primal Speed', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 4, learnedAt: { class: { Druid: 4, Ranger: 4, Sorcerer: 4, Wizard: 4 } }, source: 'Dragon Magic p.71', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '24 hours', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+5 competence bonus on Reflex saves and +10 ft. enhancement bonus to speed for 24 hours.', description: 'Raw predatory speed courses through your body, granting you a +5 competence bonus on Reflex saves and a +10-foot enhancement bonus to all modes of movement for 24 hours. If active simultaneously with another Primal spell, you gain Uncanny Dodge (or Improved Uncanny Dodge if all four Primal spells are active).', modifiers: [{ target: 'save.ref', value: 5, formula: '5', type: 'competence', condition: null }, { target: 'speed.land', value: 10, formula: '10', type: 'enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: { primalSpell: true } },
-    { id: 'spl-mighty-wallop', schemaVersion: 2, name: 'Mighty Wallop', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 1, learnedAt: { class: { Sorcerer: 1, Wizard: 1 } }, source: 'Races of the Dragon p.114', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'F'], range: 'Touch', target: 'One bludgeoning melee weapon touched', duration: '1 min./level', save: 'Will negates (harmless, object)', sr: true, buffTargetMode: 'weapon', sizeModifier: { targetType: 'weapon', targetFilter: { meleeOnly: true, allowedDmgTypes: ['Bludgeoning'] }, scaling: { type: 'flat', steps: 1 } }, shortDescription: 'Increases a bludgeoning melee weapon’s damage by 1 effective size category.', description: 'Mighty wallop increases the damage of a bludgeoning melee weapon by one effective size category without changing its dimensions or weight.', modifiers: [], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-greater-mighty-wallop', schemaVersion: 2, name: 'Greater Mighty Wallop', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 3, learnedAt: { class: { Sorcerer: 3, Wizard: 3 } }, source: 'Races of the Dragon p.115', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'F'], range: 'Touch', target: 'One bludgeoning melee weapon touched', duration: '1 hour/level', save: 'Will negates (harmless, object)', sr: true, buffTargetMode: 'weapon', sizeModifier: { targetType: 'weapon', targetFilter: { meleeOnly: true, allowedDmgTypes: ['Bludgeoning'] }, scaling: { type: 'per_caster_level', clDivisor: 4, maxSteps: 5 } }, shortDescription: 'Increases a bludgeoning melee weapon’s damage by +1 size category per 4 caster levels (max Colossal / +5 steps).', description: 'This spell functions like mighty wallop, except that it increases the bludgeoning melee weapon’s effective damage size by one category per four caster levels (maximum +5 size categories, up to Colossal) for 1 hour/level.', modifiers: [], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-conviction', schemaVersion: 2, name: 'Conviction', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 1, learnedAt: { class: { Cleric: 1, Paladin: 1 } }, source: 'Spell Compendium p.52', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Touch', target: 'Living creature touched', duration: '10 min./level', save: 'Will negates (harmless)', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains +2 morale bonus on saving throws, +1 per 6 caster levels (max +5).', description: 'This spell bolsters the mental, physical, and spiritual strength of the creature touched, granting a +2 morale bonus on saving throws, plus an additional +1 for every six caster levels you have (maximum +5 morale bonus at 18th level).', modifiers: [{ target: 'save.all', value: 0, formula: '2 + min(3, floor(@cl / 6))', type: 'morale', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-mass-conviction', schemaVersion: 2, name: 'Conviction, Mass', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 3, learnedAt: { class: { Cleric: 3 } }, source: 'Spell Compendium p.52', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Medium', target: 'Allies in a 20-ft.-radius burst', duration: '10 min./level', save: 'Will negates (harmless)', sr: true, buffTargetMode: 'party', shortDescription: 'Allies gain +2 morale bonus on saving throws, +1 per 6 caster levels (max +5).', description: 'As conviction, except it bolsters all allies in a 20-ft.-radius burst with a +2 morale bonus on all saving throws (+1 per 6 caster levels, maximum +5).', modifiers: [{ target: 'save.all', value: 0, formula: '2 + min(3, floor(@cl / 6))', type: 'morale', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-recitation', schemaVersion: 2, name: 'Recitation', type: 'Spell', category: 'Conjuration', school: 'Conjuration', level: 4, learnedAt: { class: { Cleric: 4 } }, source: 'Spell Compendium p.170', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'DF'], range: '60 ft.', target: 'Allies within a 60-ft.-radius burst centered on you', duration: '1 round/level', save: 'None', sr: true, buffTargetMode: 'party', shortDescription: 'Allies gain +2 luck bonus on attack rolls, AC, and saving throws (+3 if they worship your deity).', description: 'By reciting a sacred passage, you invoke your deity’s blessing upon yourself and your allies, granting a +2 luck bonus on attack rolls, AC, and saving throws (or +3 if they worship the same patron deity as you).', modifiers: [{ target: 'attack.all', value: 3, formula: '3', type: 'luck', condition: null }, { target: 'ac.dodge', value: 3, formula: '3', type: 'luck', condition: null }, { target: 'save.all', value: 3, formula: '3', type: 'luck', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-righteous-wrath-of-the-faithful', schemaVersion: 2, name: 'Righteous Wrath of the Faithful', type: 'Spell', category: 'Enchantment', school: 'Enchantment', level: 5, learnedAt: { class: { Cleric: 5 } }, source: 'Spell Compendium p.177', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'DF'], range: '30 ft.', target: 'Allies within a 30-ft.-radius burst centered on you', duration: '1 round/level', save: 'None', sr: true, buffTargetMode: 'party', shortDescription: 'Allies gain 1 extra melee attack at highest bonus and +3 morale bonus on melee attack, melee damage, and saves.', description: 'Allies gain one extra melee attack at their highest base attack bonus when making a full attack, plus a +3 morale bonus on melee attack rolls, melee damage rolls, and saving throws.', modifiers: [{ target: 'attack.melee', value: 3, formula: '3', type: 'morale', condition: null }, { target: 'damage.melee', value: 3, formula: '3', type: 'morale', condition: null }, { target: 'save.all', value: 3, formula: '3', type: 'morale', condition: null }], damageParts: [], modes: [], ruleFlags: { extraAttackFullAttack: true } },
-    { id: 'spl-resistance-greater', schemaVersion: 2, name: 'Resistance, Greater', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 4, learnedAt: { class: { Bard: 4, Cleric: 4, Druid: 4, Sorcerer: 4, Wizard: 4 } }, source: 'Spell Compendium p.174', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M', 'DF'], range: 'Touch', target: 'Creature touched', duration: '24 hours', save: 'Will negates (harmless)', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains +3 resistance bonus on all saving throws for 24 hours.', description: 'You grant the subject a +3 resistance bonus on all saving throws for 24 hours.', modifiers: [{ target: 'save.all', value: 3, formula: '3', type: 'resistance', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-resistance-superior', schemaVersion: 2, name: 'Resistance, Superior', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 6, learnedAt: { class: { Bard: 6, Cleric: 6, Druid: 6, Sorcerer: 6, Wizard: 6 } }, source: 'Spell Compendium p.174', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M', 'DF'], range: 'Touch', target: 'Creature touched', duration: '24 hours', save: 'Will negates (harmless)', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains +6 resistance bonus on all saving throws for 24 hours.', description: 'You grant the subject a +6 resistance bonus on all saving throws for 24 hours.', modifiers: [{ target: 'save.all', value: 6, formula: '6', type: 'resistance', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-nerveskitter', schemaVersion: 2, name: 'Nerveskitter', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 1, learnedAt: { class: { Sorcerer: 1, Wizard: 1 } }, source: 'Spell Compendium p.146', actionType: 'Immediate', castingTime: '1 immediate action', components: ['V', 'S'], range: 'Close', target: 'One creature', duration: '1 round', save: 'None', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains a +5 bonus on Initiative checks.', description: 'Cast when initiative is rolled, nerveskitter grants the subject a +5 untyped bonus on its Initiative check.', modifiers: [{ target: 'initiative', value: 5, formula: '5', type: 'untyped', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-divine-agility', schemaVersion: 2, name: 'Divine Agility', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 5, learnedAt: { class: { Cleric: 5 } }, source: 'Spell Compendium p.69', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'DF'], range: 'Touch', target: 'Living creature touched', duration: '1 round/level', save: 'Will negates (harmless)', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains +10 enhancement bonus to Dexterity and the Spring Attack feat.', description: 'You imbue the subject with divine grace and reflexes, granting a +10 enhancement bonus to Dexterity, the benefits of the Spring Attack feat, and a base Reflex save progression equal to a Rogue of the subject’s character level.', modifiers: [{ target: 'ability.dex', value: 10, formula: '10', type: 'enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-sirines-grace', schemaVersion: 2, name: "Sirine's Grace", type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 4, learnedAt: { class: { Bard: 4, Druid: 4 } }, source: 'Spell Compendium p.191', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Personal', target: 'You', duration: '1 round/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+4 enhancement to CHA and DEX, +8 on Perform, and Deflection AC bonus equal to CHA modifier.', description: 'You gain a +4 enhancement bonus to Charisma and Dexterity, a +8 untyped bonus on Perform checks, a deflection bonus to AC equal to your Charisma modifier, and a swim speed of 60 ft.', modifiers: [{ target: 'ability.cha', value: 4, formula: '4', type: 'enhancement', condition: null }, { target: 'ability.dex', value: 4, formula: '4', type: 'enhancement', condition: null }, { target: 'skill.perform', value: 8, formula: '8', type: 'untyped', condition: null }, { target: 'ac.deflection', value: 0, formula: 'max(1, @chaMod)', type: 'deflection', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-bite-of-the-werewolf', schemaVersion: 2, name: 'Bite of the Werewolf', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 3, learnedAt: { class: { Druid: 3, Sorcerer: 3, Wizard: 3 } }, source: 'Spell Compendium p.28', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Personal', target: 'You', duration: '1 round/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+2 enhancement STR, +4 DEX, +4 CON, +4 natural armor, and Blind-Fight.', description: 'You gain a +2 enhancement bonus to Strength, +4 enhancement bonus to Dexterity, +4 enhancement bonus to Constitution, +4 enhancement bonus to natural armor, and the Blind-Fight feat.', modifiers: [{ target: 'ability.str', value: 2, formula: '2', type: 'enhancement', condition: null }, { target: 'ability.dex', value: 4, formula: '4', type: 'enhancement', condition: null }, { target: 'ability.con', value: 4, formula: '4', type: 'enhancement', condition: null }, { target: 'ac.natural', value: 4, formula: '4', type: 'natural_enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-bite-of-the-weretiger', schemaVersion: 2, name: 'Bite of the Weretiger', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 5, learnedAt: { class: { Druid: 5, Sorcerer: 5, Wizard: 5 } }, source: 'Spell Compendium p.28', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Personal', target: 'You', duration: '1 round/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+12 enhancement STR, +4 DEX, +6 CON, +5 natural armor, Blind-Fight, and Power Attack.', description: 'You gain a +12 enhancement bonus to Strength, +4 enhancement bonus to Dexterity, +6 enhancement bonus to Constitution, +5 enhancement bonus to natural armor, and the Blind-Fight and Power Attack feats.', modifiers: [{ target: 'ability.str', value: 12, formula: '12', type: 'enhancement', condition: null }, { target: 'ability.dex', value: 4, formula: '4', type: 'enhancement', condition: null }, { target: 'ability.con', value: 6, formula: '6', type: 'enhancement', condition: null }, { target: 'ac.natural', value: 5, formula: '5', type: 'natural_enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-bite-of-the-werebear', schemaVersion: 2, name: 'Bite of the Werebear', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 6, learnedAt: { class: { Druid: 6, Sorcerer: 6, Wizard: 6 } }, source: 'Spell Compendium p.28', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'M'], range: 'Personal', target: 'You', duration: '1 round/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+16 enhancement STR, -2 DEX, +8 CON, +7 natural armor, Blind-Fight, and Power Attack.', description: 'You gain a +16 enhancement bonus to Strength, -2 penalty to Dexterity, +8 enhancement bonus to Constitution, +7 enhancement bonus to natural armor, and the Blind-Fight and Power Attack feats.', modifiers: [{ target: 'ability.str', value: 16, formula: '16', type: 'enhancement', condition: null }, { target: 'ability.dex', value: -2, formula: '-2', type: 'penalty', condition: null }, { target: 'ability.con', value: 8, formula: '8', type: 'enhancement', condition: null }, { target: 'ac.natural', value: 7, formula: '7', type: 'natural_enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: {} },
-    { id: 'spl-heart-of-air', schemaVersion: 2, name: 'Heart of Air', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 2, learnedAt: { class: { Druid: 2, Sorcerer: 2, Wizard: 2 } }, source: 'Complete Mage p.106', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+10 enhancement bonus on Jump checks (+10 ft. fly speed if you already have one).', description: 'You gain a +10 enhancement bonus on Jump checks and can expend this spell as an immediate action to gain Feather Fall for 1 round.', modifiers: [{ target: 'skill.jump', value: 10, formula: '10', type: 'enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: { heartSpell: true } },
-    { id: 'spl-heart-of-water', schemaVersion: 2, name: 'Heart of Water', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 3, learnedAt: { class: { Druid: 3, Sorcerer: 3, Wizard: 3 } }, source: 'Complete Mage p.107', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: 'Swim speed, water breathing, and +5 enhancement bonus on Escape Artist checks.', description: 'You gain water breathing, a swim speed equal to your land speed (+8 racial bonus on Swim checks), and a +5 enhancement bonus on Escape Artist checks. You can expend this spell as a swift action to gain Freedom of Movement for 1 round/level.', modifiers: [{ target: 'skill.escape_artist', value: 5, formula: '5', type: 'enhancement', condition: null }, { target: 'skill.swim', value: 8, formula: '8', type: 'racial', condition: null }], damageParts: [], modes: [], ruleFlags: { heartSpell: true } },
-    { id: 'spl-heart-of-earth', schemaVersion: 2, name: 'Heart of Earth', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 4, learnedAt: { class: { Druid: 4, Sorcerer: 4, Wizard: 4 } }, source: 'Complete Mage p.106', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', tempHpFormula: 'min(30, @cl * 2)', shortDescription: 'Gain 2 temporary HP per caster level (max 30) and +8 bonus to resist Bull Rush, Overrun, and Trip.', description: 'You gain temporary hit points equal to twice your caster level (maximum 30) and a +8 bonus on checks to resist being bull rushed, overrun, or tripped. You can expend this spell as a swift action to gain Stoneskin (DR 10/adamantine) for 1 round/level.', modifiers: [], damageParts: [], modes: [], ruleFlags: { heartSpell: true } },
-    { id: 'spl-heart-of-fire', schemaVersion: 2, name: 'Heart of Fire', type: 'Spell', category: 'Transmutation', school: 'Transmutation', level: 5, learnedAt: { class: { Druid: 5, Sorcerer: 5, Wizard: 5 } }, source: 'Complete Mage p.107', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Personal', target: 'You', duration: '1 hour/level', save: 'None', sr: false, buffTargetMode: 'self', shortDescription: '+10 ft. enhancement bonus to land speed and Fire Resistance 10.', description: 'You gain a +10-foot enhancement bonus to your land speed and resistance to fire 10. You can expend this spell as a swift action to activate Fire Shield (warm shield) for 1 round/level.', modifiers: [{ target: 'speed.land', value: 10, formula: '10', type: 'enhancement', condition: null }], damageParts: [], modes: [], ruleFlags: { heartSpell: true } },
-    { id: 'spl-resist-energy-mass', schemaVersion: 2, name: 'Resist Energy, Mass', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 3, learnedAt: { class: { Cleric: 3, Druid: 3, Sorcerer: 4, Wizard: 4 } }, source: 'Spell Compendium p.174', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'DF'], range: 'Close', target: 'One creature/level', duration: '10 min./level', save: 'Fortitude negates (harmless)', sr: true, buffTargetMode: 'party', shortDescription: 'Targets gain resistance 10 (20 at CL 7th, 30 at CL 11th) against chosen energy type.', description: 'This spell functions like resist energy, except that it affects multiple creatures, granting energy resistance 10 (or 20 at CL 7th, or 30 at CL 11th) against the chosen energy type (acid, cold, electricity, fire, or sonic).', modifiers: [], damageParts: [], modes: [], ruleFlags: { energyChoice: true, energyResistanceFormula: '@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)' } },
-    { id: 'spl-protection-from-energy-mass', schemaVersion: 2, name: 'Protection from Energy, Mass', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 4, learnedAt: { class: { Cleric: 4, Druid: 4, Sorcerer: 5, Wizard: 5 } }, source: 'Spell Compendium p.163', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S', 'DF'], range: 'Close', target: 'One creature/level', duration: '10 min./level', save: 'Fortitude negates (harmless)', sr: true, buffTargetMode: 'party', shortDescription: 'Absorbs 12 points/level (max 120) of damage from chosen energy type for all targets.', description: 'This spell functions like protection from energy, except that it affects multiple creatures, granting each temporary immunity to the specified energy type until it absorbs 12 points per caster level (maximum 120 points).', modifiers: [], damageParts: [], modes: [], ruleFlags: { energyChoice: true, energyProtectionPoolFormula: 'min(120, @cl * 12)' } },
-    { id: 'spl-energy-immunity', schemaVersion: 2, name: 'Energy Immunity', type: 'Spell', category: 'Abjuration', school: 'Abjuration', level: 6, learnedAt: { class: { Cleric: 6, Druid: 6, Sorcerer: 7, Wizard: 7 } }, source: 'Spell Compendium p.80', actionType: 'Standard', castingTime: '1 standard action', components: ['V', 'S'], range: 'Touch', target: 'Creature touched', duration: '24 hours', save: 'None', sr: true, buffTargetMode: 'single', shortDescription: 'Subject gains complete immunity to one chosen energy type for 24 hours.', description: 'This abjuration grants a creature complete protection against damage from whichever one of five energy types you select: acid, cold, electricity, fire, or sonic.', modifiers: [], damageParts: [], modes: [], ruleFlags: { energyChoice: true, energyImmunity: true } }
-  ],
+  // Splatbook Buff Spells migrated to database/srd_spells.json (Canonical V2 Compendium)
+  SPLATBOOK_BUFF_SPELLS: [],
 
   // Canonical V2 Spell Caster Level Bonus Resolver (Cleric Domains, Feats, Items & Buffs with `casterLevel.*` modifiers)
   getSpellCasterLevelBonus(spell, character = null) {
@@ -2131,11 +2111,13 @@ const RuleEngine = {
       creation: [{ target: 'casterLevel.creation', value: 2, type: 'untyped' }]
     };
 
+    const comp = (typeof window !== 'undefined' && window.SrdCompendium)
+      || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const candidateModifiers = [];
     domainNames.forEach(domName => {
       const domLower = domName.toLowerCase();
-      const srdDom = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
-        ? window.SrdCompendium.getDomain(domName)
+      const srdDom = (comp && typeof comp.getDomain === 'function')
+        ? comp.getDomain(domName)
         : null;
       const mods = (srdDom && Array.isArray(srdDom.modifiers) && srdDom.modifiers.length > 0)
         ? srdDom.modifiers
@@ -2238,59 +2220,20 @@ const RuleEngine = {
       });
     });
 
-    const BUILTIN_DOMAINS = {
-      air: { name: 'Air', modifiers: [], ruleFlags: { turnEarth: true, rebukeAir: true }, spellLikeAbilities: [] },
-      animal: { name: 'Animal', modifiers: [], ruleFlags: {}, spellLikeAbilities: [{ name: 'Speak with Animals', uses: '1/day', casterLevel: 'clericLevel' }] },
-      artifice: { name: 'Artifice', modifiers: [{ target: 'skill.craft', value: 4, type: 'Domain', condition: null }, { target: 'casterLevel.creation', value: 1, type: 'Domain', condition: 'Conjuration (Creation) spells' }], ruleFlags: {}, spellLikeAbilities: [] },
-      chaos: { name: 'Chaos', modifiers: [{ target: 'casterLevel.chaotic', value: 1, type: 'Domain', condition: 'Chaos spells' }], ruleFlags: {}, spellLikeAbilities: [] },
-      charm: { name: 'Charm', modifiers: [], ruleFlags: { boostChaBy4OncePerDay: true }, spellLikeAbilities: [] },
-      community: { name: 'Community', modifiers: [{ target: 'skill.diplomacy', value: 2, type: 'Competence', condition: null }], ruleFlags: {}, spellLikeAbilities: [{ name: 'Calm Emotions', uses: '1/day', casterLevel: 'clericLevel' }] },
-      creation: { name: 'Creation', modifiers: [{ target: 'casterLevel.creation', value: 2, type: 'Domain', condition: 'Conjuration (Creation) spells' }], ruleFlags: {}, spellLikeAbilities: [] },
-      darkness: { name: 'Darkness', modifiers: [], ruleFlags: {}, spellLikeAbilities: [] },
-      death: { name: 'Death', modifiers: [], ruleFlags: { deathTouch: '1/day' }, spellLikeAbilities: [] },
-      destruction: { name: 'Destruction', modifiers: [], ruleFlags: { smiteAttack: '1/day' }, spellLikeAbilities: [] },
-      earth: { name: 'Earth', modifiers: [], ruleFlags: { turnAir: true, rebukeEarth: true }, spellLikeAbilities: [] },
-      evil: { name: 'Evil', modifiers: [{ target: 'casterLevel.evil', value: 1, type: 'Domain', condition: 'Evil spells' }], ruleFlags: {}, spellLikeAbilities: [] },
-      fire: { name: 'Fire', modifiers: [], ruleFlags: { turnWater: true, rebukeFire: true }, spellLikeAbilities: [] },
-      glory: { name: 'Glory', modifiers: [{ target: 'turning.check', value: 2, type: 'Domain', condition: 'Turn undead checks' }, { target: 'turning.damageDice', value: 1, type: 'Domain', condition: 'Turn undead damage (+1d6)' }], ruleFlags: {}, spellLikeAbilities: [] },
-      good: { name: 'Good', modifiers: [{ target: 'casterLevel.good', value: 1, type: 'Domain', condition: 'Good spells' }], ruleFlags: {}, spellLikeAbilities: [] },
-      healing: { name: 'Healing', modifiers: [{ target: 'casterLevel.healing', value: 1, type: 'Domain', condition: 'Conjuration (Healing) spells' }], ruleFlags: {}, spellLikeAbilities: [] },
-      knowledge: { name: 'Knowledge', modifiers: [{ target: 'casterLevel.divination', value: 1, type: 'Domain', condition: 'Divination spells' }], ruleFlags: {}, spellLikeAbilities: [] },
-      law: { name: 'Law', modifiers: [{ target: 'casterLevel.lawful', value: 1, type: 'Domain', condition: 'Law spells' }], ruleFlags: {}, spellLikeAbilities: [] },
-      liberation: { name: 'Liberation', modifiers: [{ target: 'save.all', value: 2, type: 'Morale', condition: 'vs enchantment spells or effects' }], ruleFlags: {}, spellLikeAbilities: [] },
-      luck: { name: 'Luck', modifiers: [], ruleFlags: { goodFortuneReroll: '1/day' }, spellLikeAbilities: [] },
-      madness: { name: 'Madness', modifiers: [], ruleFlags: { insanityBonus: 'clericLevel / 2' }, spellLikeAbilities: [] },
-      magic: { name: 'Magic', modifiers: [], ruleFlags: { useWizardSpellDevices: true }, spellLikeAbilities: [] },
-      mind: { name: 'Mind', modifiers: [{ target: 'skill.bluff', value: 2, type: 'Competence', condition: null }, { target: 'skill.diplomacy', value: 2, type: 'Competence', condition: null }, { target: 'skill.senseMotive', value: 2, type: 'Competence', condition: null }, { target: 'save.will', value: 2, type: 'Competence', condition: 'vs enchantment spells and effects' }], ruleFlags: {}, spellLikeAbilities: [] },
-      nobility: { name: 'Nobility', modifiers: [], ruleFlags: {}, spellLikeAbilities: [{ name: 'Inspire Allies (+2 Morale to saves, attack, checks, damage)', uses: '1/day', duration: 'Charisma bonus rounds' }] },
-      plant: { name: 'Plant', modifiers: [], ruleFlags: { rebukePlant: true }, spellLikeAbilities: [] },
-      protection: { name: 'Protection', modifiers: [], ruleFlags: { protectiveWard: '1/day' }, spellLikeAbilities: [] },
-      repose: { name: 'Repose', modifiers: [], ruleFlags: { deathTouch: '1/day' }, spellLikeAbilities: [] },
-      rune: { name: 'Rune', modifiers: [], ruleFlags: {}, spellLikeAbilities: [] },
-      scalykind: { name: 'Scalykind', modifiers: [], ruleFlags: { rebukeScalykind: true }, spellLikeAbilities: [] },
-      strength: { name: 'Strength', modifiers: [], ruleFlags: { featOfStrength: '1/day' }, spellLikeAbilities: [] },
-      sun: { name: 'Sun', modifiers: [], ruleFlags: { greaterTurning: '1/day' }, spellLikeAbilities: [] },
-      travel: { name: 'Travel', modifiers: [], ruleFlags: { freedomOfMovementRoundsPerDay: 'clericLevel' }, spellLikeAbilities: [] },
-      trickery: { name: 'Trickery', modifiers: [], ruleFlags: {}, spellLikeAbilities: [] },
-      war: { name: 'War', modifiers: [], ruleFlags: { warDeityFavoredWeapon: true }, spellLikeAbilities: [] },
-      water: { name: 'Water', modifiers: [], ruleFlags: { turnFire: true, rebukeWater: true }, spellLikeAbilities: [] },
-      weather: { name: 'Weather', modifiers: [], ruleFlags: {}, spellLikeAbilities: [] }
-    };
-
+    const comp = (typeof window !== 'undefined' && window.SrdCompendium)
+      || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const entries = [];
     domainNames.forEach(domName => {
-      const domLower = domName.toLowerCase();
-      const srdDom = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
-        ? window.SrdCompendium.getDomain(domName)
-        : null;
-      const fallback = BUILTIN_DOMAINS[domLower] || { name: domName, modifiers: [], ruleFlags: {}, spellLikeAbilities: [] };
+      const srdDom = (comp && typeof comp.getDomain === 'function')
+        ? comp.getDomain(domName)
+        : this.getMasterDbEntry(domName, 'Domain');
       entries.push({
-        name: srdDom?.name || fallback.name || domName,
-        modifiers: (srdDom && Array.isArray(srdDom.modifiers) && srdDom.modifiers.length > 0) ? srdDom.modifiers : (fallback.modifiers || []),
-        ruleFlags: { ...(fallback.ruleFlags || {}), ...(srdDom?.ruleFlags || {}) },
-        spellLikeAbilities: (srdDom?.grantedPower?.spellLikeAbilities?.length > 0)
+        name: srdDom?.name || domName,
+        modifiers: Array.isArray(srdDom?.modifiers) ? srdDom.modifiers : [],
+        ruleFlags: { ...(srdDom?.ruleFlags || {}) },
+        spellLikeAbilities: Array.isArray(srdDom?.grantedPower?.spellLikeAbilities)
           ? srdDom.grantedPower.spellLikeAbilities
-          : (fallback.spellLikeAbilities || []),
+          : [],
         description: srdDom?.grantedPower?.description || srdDom?.description || ''
       });
     });
@@ -2659,129 +2602,7 @@ const RuleEngine = {
     let ruleFlags = { ...(dbEntry.ruleFlags || {}), ...(spell.ruleFlags || {}) };
     let targetMode = spell.buffTargetMode || dbEntry.buffTargetMode || null;
 
-    // 2. Fallback Built-in Splatbook & Core Templates if Compendium is not yet loaded in memory
-    if (modifiers.length === 0 && !sizeModifier && !tempHpFormula && Object.keys(ruleFlags).length === 0) {
-      const m = (target, formula, type = 'untyped', condition = null) => ({ target, value: typeof formula === 'number' ? formula : 0, formula: String(formula), type, condition });
-      const BUILTIN_BUFFS = {
-        "bull's strength": { targetMode: 'single', modifiers: [m('ability.str', 4, 'enhancement')] },
-        "bull's strength, mass": { targetMode: 'party', modifiers: [m('ability.str', 4, 'enhancement')] },
-        "cat's grace": { targetMode: 'single', modifiers: [m('ability.dex', 4, 'enhancement')] },
-        "cat's grace, mass": { targetMode: 'party', modifiers: [m('ability.dex', 4, 'enhancement')] },
-        "bear's endurance": { targetMode: 'single', modifiers: [m('ability.con', 4, 'enhancement')] },
-        "bear's endurance, mass": { targetMode: 'party', modifiers: [m('ability.con', 4, 'enhancement')] },
-        "fox's cunning": { targetMode: 'single', modifiers: [m('ability.int', 4, 'enhancement')] },
-        "fox's cunning, mass": { targetMode: 'party', modifiers: [m('ability.int', 4, 'enhancement')] },
-        "owl's wisdom": { targetMode: 'single', modifiers: [m('ability.wis', 4, 'enhancement')] },
-        "owl's wisdom, mass": { targetMode: 'party', modifiers: [m('ability.wis', 4, 'enhancement')] },
-        "eagle's splendor": { targetMode: 'single', modifiers: [m('ability.cha', 4, 'enhancement')] },
-        "eagle's splendor, mass": { targetMode: 'party', modifiers: [m('ability.cha', 4, 'enhancement')] },
-        "primal hunter": { targetMode: 'self', modifiers: [m('skill.climb', 5, 'competence'), m('skill.jump', 5, 'competence'), m('skill.swim', 5, 'competence')], ruleFlags: { primalSpell: true } },
-        "primal instinct": { targetMode: 'self', modifiers: [m('initiative', 5, 'competence'), m('skill.survival', 5, 'competence')], ruleFlags: { primalSpell: true } },
-        "primal senses": { targetMode: 'self', modifiers: [m('skill.listen', 5, 'competence'), m('skill.spot', 5, 'competence')], ruleFlags: { primalSpell: true, lowLightVision: true } },
-        "primal sense": { targetMode: 'self', modifiers: [m('skill.listen', 5, 'competence'), m('skill.spot', 5, 'competence')], ruleFlags: { primalSpell: true, lowLightVision: true } },
-        "primal speed": { targetMode: 'self', modifiers: [m('save.ref', 5, 'competence'), m('speed.land', 10, 'enhancement')], ruleFlags: { primalSpell: true } },
-        "mighty wallop": { targetMode: 'weapon', sizeModifier: { targetType: 'weapon', targetFilter: { meleeOnly: true, allowedDmgTypes: ['Bludgeoning'] }, scaling: { type: 'flat', steps: 1 } } },
-        "greater mighty wallop": { targetMode: 'weapon', sizeModifier: { targetType: 'weapon', targetFilter: { meleeOnly: true, allowedDmgTypes: ['Bludgeoning'] }, scaling: { type: 'per_caster_level', clDivisor: 4, maxSteps: 5 } } },
-        "mighty wallop, greater": { targetMode: 'weapon', sizeModifier: { targetType: 'weapon', targetFilter: { meleeOnly: true, allowedDmgTypes: ['Bludgeoning'] }, scaling: { type: 'per_caster_level', clDivisor: 4, maxSteps: 5 } } },
-        "shield of faith": { targetMode: 'single', modifiers: [m('ac.deflection', '2 + min(3, floor(@cl / 6))', 'deflection')] },
-        "barkskin": { targetMode: 'single', modifiers: [m('ac.natural', '2 + min(3, max(0, floor((@cl - 3) / 3)))', 'natural_enhancement')] },
-        "mage armor": { targetMode: 'single', modifiers: [m('ac.armor', 4, 'armor')] },
-        "shield": { targetMode: 'self', modifiers: [m('ac.shield', 4, 'shield')], ruleFlags: { immuneMagicMissile: true } },
-        "divine favor": { targetMode: 'self', modifiers: [m('attack.all', 'min(3, max(1, floor(@cl / 3)))', 'luck'), m('damage.weapon', 'min(3, max(1, floor(@cl / 3)))', 'luck')] },
-        "divine power": { targetMode: 'self', tempHpFormula: '@cl', modifiers: [m('ability.str', 6, 'enhancement')], ruleFlags: { babEqualsLevel: true } },
-        "righteous might": { targetMode: 'self', sizeModifier: { targetType: 'creature', scaling: { type: 'flat', steps: 1 } }, modifiers: [m('ability.str', 4, 'size'), m('ability.con', 2, 'size'), m('ac.natural', 2, 'natural_enhancement'), m('ac.total', -1, 'size'), m('attack.all', -1, 'size')], ruleFlags: { drEvilOrGood: 'min(9, floor(@cl / 4) * 3)' } },
-        "bless": { targetMode: 'party', modifiers: [m('attack.all', 1, 'morale')] },
-        "prayer": { targetMode: 'party', modifiers: [m('attack.all', 1, 'luck'), m('damage.weapon', 1, 'luck'), m('save.all', 1, 'luck'), m('skill.all', 1, 'luck')] },
-        "conviction": { targetMode: 'single', modifiers: [m('save.all', '2 + min(3, floor(@cl / 6))', 'morale')] },
-        "conviction, mass": { targetMode: 'party', modifiers: [m('save.all', '2 + min(3, floor(@cl / 6))', 'morale')] },
-        "mass conviction": { targetMode: 'party', modifiers: [m('save.all', '2 + min(3, floor(@cl / 6))', 'morale')] },
-        "recitation": { targetMode: 'party', modifiers: [m('attack.all', 3, 'luck'), m('ac.dodge', 3, 'luck'), m('save.all', 3, 'luck')] },
-        "righteous wrath of the faithful": { targetMode: 'party', modifiers: [m('attack.melee', 3, 'morale'), m('damage.melee', 3, 'morale'), m('save.all', 3, 'morale')], ruleFlags: { extraAttackFullAttack: true } },
-        "haste": { targetMode: 'party', modifiers: [m('attack.all', 1, 'haste'), m('ac.dodge', 1, 'dodge'), m('save.ref', 1, 'dodge'), m('speed.land', 30, 'enhancement')], ruleFlags: { extraAttackFullAttack: true } },
-        "heroism": { targetMode: 'single', modifiers: [m('attack.all', 2, 'morale'), m('save.all', 2, 'morale'), m('skill.all', 2, 'morale')] },
-        "heroism, greater": { targetMode: 'single', tempHpFormula: 'min(20, @cl)', modifiers: [m('attack.all', 4, 'morale'), m('save.all', 4, 'morale'), m('skill.all', 4, 'morale')] },
-        "greater heroism": { targetMode: 'single', tempHpFormula: 'min(20, @cl)', modifiers: [m('attack.all', 4, 'morale'), m('save.all', 4, 'morale'), m('skill.all', 4, 'morale')] },
-        "good hope": { targetMode: 'party', modifiers: [m('attack.all', 2, 'morale'), m('damage.weapon', 2, 'morale'), m('save.all', 2, 'morale'), m('skill.all', 2, 'morale')] },
-        "enlarge person": { targetMode: 'single', sizeModifier: { targetType: 'creature', scaling: { type: 'flat', steps: 1 } }, modifiers: [m('ability.str', 2, 'size'), m('ability.dex', -2, 'size'), m('ac.total', -1, 'size'), m('attack.all', -1, 'size')] },
-        "reduce person": { targetMode: 'single', sizeModifier: { targetType: 'creature', scaling: { type: 'flat', steps: -1 } }, modifiers: [m('ability.dex', 2, 'size'), m('ability.str', -2, 'size'), m('ac.total', 1, 'size'), m('attack.all', 1, 'size')] },
-        "magic weapon": { targetMode: 'weapon', modifiers: [m('attack.all', 1, 'enhancement'), m('damage.weapon', 1, 'enhancement')] },
-        "magic weapon, greater": { targetMode: 'weapon', modifiers: [m('attack.all', 'min(5, max(1, floor(@cl / 4)))', 'enhancement'), m('damage.weapon', 'min(5, max(1, floor(@cl / 4)))', 'enhancement')] },
-        "greater magic weapon": { targetMode: 'weapon', modifiers: [m('attack.all', 'min(5, max(1, floor(@cl / 4)))', 'enhancement'), m('damage.weapon', 'min(5, max(1, floor(@cl / 4)))', 'enhancement')] },
-        "keen edge": { targetMode: 'weapon', modifiers: [], ruleFlags: { keen: true } },
-        "magic vestment": { targetMode: 'single', modifiers: [m('ac.armor', 'min(5, max(1, floor(@cl / 4)))', 'enhancement')] },
-        "nerveskitter": { targetMode: 'single', modifiers: [m('initiative', 5, 'untyped')] },
-        "resistance": { targetMode: 'single', modifiers: [m('save.all', 1, 'resistance')] },
-        "resistance, greater": { targetMode: 'single', modifiers: [m('save.all', 3, 'resistance')] },
-        "greater resistance": { targetMode: 'single', modifiers: [m('save.all', 3, 'resistance')] },
-        "resistance, superior": { targetMode: 'single', modifiers: [m('save.all', 6, 'resistance')] },
-        "superior resistance": { targetMode: 'single', modifiers: [m('save.all', 6, 'resistance')] },
-        "protection from evil": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Evil'), m('save.all', 2, 'resistance', 'vs. Evil')], ruleFlags: { wardAlignment: 'Evil', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "protection from good": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Good'), m('save.all', 2, 'resistance', 'vs. Good')], ruleFlags: { wardAlignment: 'Good', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "protection from law": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Law'), m('save.all', 2, 'resistance', 'vs. Law')], ruleFlags: { wardAlignment: 'Law', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "protection from chaos": { targetMode: 'single', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Chaos'), m('save.all', 2, 'resistance', 'vs. Chaos')], ruleFlags: { wardAlignment: 'Chaos', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "magic circle against evil": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Evil'), m('save.all', 2, 'resistance', 'vs. Evil')], ruleFlags: { wardAlignment: 'Evil', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "magic circle against good": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Good'), m('save.all', 2, 'resistance', 'vs. Good')], ruleFlags: { wardAlignment: 'Good', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "magic circle against law": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Law'), m('save.all', 2, 'resistance', 'vs. Law')], ruleFlags: { wardAlignment: 'Law', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "magic circle against chaos": { targetMode: 'party', modifiers: [m('ac.deflection', 2, 'deflection', 'vs. Chaos'), m('save.all', 2, 'resistance', 'vs. Chaos')], ruleFlags: { wardAlignment: 'Chaos', immuneMentalControl: true, blockSummonedNaturalTouch: true } },
-        "resist energy": { targetMode: 'single', modifiers: [], ruleFlags: { energyChoice: true, energyResistanceFormula: '@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)' } },
-        "resist energy, mass": { targetMode: 'party', modifiers: [], ruleFlags: { energyChoice: true, energyResistanceFormula: '@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)' } },
-        "mass resist energy": { targetMode: 'party', modifiers: [], ruleFlags: { energyChoice: true, energyResistanceFormula: '@cl >= 11 ? 30 : (@cl >= 7 ? 20 : 10)' } },
-        "protection from energy": { targetMode: 'single', modifiers: [], ruleFlags: { energyChoice: true, energyProtectionPoolFormula: 'min(120, @cl * 12)' } },
-        "protection from energy, mass": { targetMode: 'party', modifiers: [], ruleFlags: { energyChoice: true, energyProtectionPoolFormula: 'min(120, @cl * 12)' } },
-        "mass protection from energy": { targetMode: 'party', modifiers: [], ruleFlags: { energyChoice: true, energyProtectionPoolFormula: 'min(120, @cl * 12)' } },
-        "energy immunity": { targetMode: 'single', modifiers: [], ruleFlags: { energyChoice: true, energyImmunity: true } },
-        "endure elements": { targetMode: 'single', modifiers: [], ruleFlags: { passiveDefenseLabel: 'Endure Elements (-50°F to 140°F)', passiveDefenseCategory: 'resistance' } },
-        "stoneskin": { targetMode: 'single', modifiers: [], ruleFlags: { drAdamantine: 10, drPoolFormula: 'min(150, @cl * 10)' } },
-        "protection from arrows": { targetMode: 'single', modifiers: [], ruleFlags: { drRangedMagic: 10, drPoolFormula: 'min(100, @cl * 10)' } },
-        "blur": { targetMode: 'single', modifiers: [], ruleFlags: { concealment: 20 } },
-        "displacement": { targetMode: 'single', modifiers: [], ruleFlags: { concealment: 50 } },
-        "blink": { targetMode: 'self', modifiers: [], ruleFlags: { missChance: 50, passiveDefenseLabel: 'Blink (50% Miss / 20% Own Miss)' } },
-        "mirror image": { targetMode: 'self', modifiers: [], ruleFlags: { mirrorImage: true, passiveDefenseLabel: 'Mirror Image (Figments Active)' } },
-        "entropic shield": { targetMode: 'self', modifiers: [], ruleFlags: { rangedMissChance: 20 } },
-        "invisibility": { targetMode: 'single', modifiers: [], ruleFlags: { concealment: 50, invisible: true, passiveDefenseLabel: 'Invisible (50% Concealment, +2 Atk)' } },
-        "invisibility, greater": { targetMode: 'single', modifiers: [], ruleFlags: { concealment: 50, invisible: true, passiveDefenseLabel: 'Greater Invisibility (50% Concealment, +2 Atk)' } },
-        "greater invisibility": { targetMode: 'single', modifiers: [], ruleFlags: { concealment: 50, invisible: true, passiveDefenseLabel: 'Greater Invisibility (50% Concealment, +2 Atk)' } },
-        "invisibility, mass": { targetMode: 'party', modifiers: [], ruleFlags: { concealment: 50, invisible: true, passiveDefenseLabel: 'Mass Invisibility (50% Concealment)' } },
-        "spell resistance": { targetMode: 'single', modifiers: [], ruleFlags: { srFormula: '12 + @cl' } },
-        "freedom of movement": { targetMode: 'single', modifiers: [], ruleFlags: { freedomOfMovement: true } },
-        "death ward": { targetMode: 'single', modifiers: [], ruleFlags: { immuneDeathEffects: true, immuneNegativeEnergy: true } },
-        "mind blank": { targetMode: 'single', modifiers: [], ruleFlags: { immuneMindAffecting: true, passiveDefenseLabel: 'Mind Blank (Immune: Mind-Affecting & Divination)' } },
-        "sanctuary": { targetMode: 'single', modifiers: [], ruleFlags: { sanctuary: true, passiveDefenseLabel: 'Sanctuary (Will Save Required to Attack)' } },
-        "globe of invulnerability, lesser": { targetMode: 'self', modifiers: [], ruleFlags: { spellImmunityLevel: 3, passiveDefenseLabel: 'Lesser Globe (Immune: 0-3rd Lvl Spells)' } },
-        "lesser globe of invulnerability": { targetMode: 'self', modifiers: [], ruleFlags: { spellImmunityLevel: 3, passiveDefenseLabel: 'Lesser Globe (Immune: 0-3rd Lvl Spells)' } },
-        "globe of invulnerability": { targetMode: 'self', modifiers: [], ruleFlags: { spellImmunityLevel: 4, passiveDefenseLabel: 'Globe of Invulnerability (Immune: 0-4th Lvl Spells)' } },
-        "spell immunity": { targetMode: 'single', modifiers: [], ruleFlags: { passiveDefenseLabel: 'Spell Immunity (Unbeatable SR vs Chosen Spells)' } },
-        "spell immunity, greater": { targetMode: 'single', modifiers: [], ruleFlags: { passiveDefenseLabel: 'Greater Spell Immunity (Unbeatable SR vs Chosen Spells)' } },
-        "nondetection": { targetMode: 'single', modifiers: [], ruleFlags: { passiveDefenseLabel: 'Nondetection (Divination Ward)' } },
-        "see invisibility": { targetMode: 'self', modifiers: [], ruleFlags: { seeInvisibility: true, passiveDefenseLabel: 'See Invisibility & Ethereal' } },
-        "true seeing": { targetMode: 'single', modifiers: [], ruleFlags: { trueSeeing: true, passiveDefenseLabel: 'True Seeing (120 ft.)' } },
-        "darkvision": { targetMode: 'single', modifiers: [], ruleFlags: { darkvision: 60, passiveDefenseLabel: 'Darkvision (60 ft.)' } },
-        "fly": { targetMode: 'single', modifiers: [m('speed.fly', 60, 'enhancement')], ruleFlags: { flySpeed: 60, passiveDefenseLabel: 'Fly 60 ft. (Good)' } },
-        "overland flight": { targetMode: 'self', modifiers: [m('speed.fly', 40, 'enhancement')], ruleFlags: { flySpeed: 40, passiveDefenseLabel: 'Overland Flight 40 ft. (Average)' } },
-        "air walk": { targetMode: 'single', modifiers: [], ruleFlags: { airWalk: true, passiveDefenseLabel: 'Air Walk (Walk on Air)' } },
-        "water walk": { targetMode: 'party', modifiers: [], ruleFlags: { waterWalk: true, passiveDefenseLabel: 'Water Walk (Walk on Liquid)' } },
-        "water breathing": { targetMode: 'party', modifiers: [], ruleFlags: { waterBreathing: true, passiveDefenseLabel: 'Water Breathing' } },
-        "feather fall": { targetMode: 'party', modifiers: [], ruleFlags: { passiveDefenseLabel: 'Feather Fall (Safe Descent)' } },
-        "heart of air": { targetMode: 'self', modifiers: [m('skill.jump', 10, 'enhancement')], ruleFlags: { heartSpell: true } },
-        "heart of water": { targetMode: 'self', modifiers: [m('skill.escape_artist', 5, 'enhancement'), m('skill.swim', 8, 'racial')], ruleFlags: { heartSpell: true } },
-        "heart of earth": { targetMode: 'self', tempHpFormula: 'min(30, @cl * 2)', modifiers: [], ruleFlags: { heartSpell: true } },
-        "heart of fire": { targetMode: 'self', modifiers: [m('speed.land', 10, 'enhancement')], ruleFlags: { heartSpell: true } },
-        "aid": { targetMode: 'single', tempHpFormula: '1d8 + min(10, @cl)', modifiers: [m('attack.all', 1, 'morale'), { target: 'save.all', value: 1, formula: '1', type: 'morale', condition: 'vs Fear' }] },
-        "false life": { targetMode: 'self', tempHpFormula: '1d10 + min(10, @cl)', modifiers: [] },
-        "virtue": { targetMode: 'single', tempHpFormula: '1', modifiers: [] },
-        "vigor": { targetMode: 'self', tempHpFormula: '5 * @cl', modifiers: [] }
-      };
-      const tpl = BUILTIN_BUFFS[cleanName];
-      if (tpl) {
-        modifiers = tpl.modifiers || [];
-        sizeModifier = tpl.sizeModifier || null;
-        tempHpFormula = tpl.tempHpFormula || null;
-        ruleFlags = { ...ruleFlags, ...(tpl.ruleFlags || {}) };
-        targetMode = tpl.targetMode || targetMode;
-      }
-    }
-
-    // 3. Determine Target Mode ('self', 'single', 'party', 'weapon') if not explicitly set
+    // 2.Determine Target Mode ('self', 'single', 'party', 'weapon') if not explicitly set
     const rangeRaw = String(spell.range || dbEntry.range || '').toLowerCase();
     const targetRaw = String(spell.target || dbEntry.target || spell.area || dbEntry.area || '').toLowerCase();
     if (!targetMode) {
@@ -5119,316 +4940,16 @@ const RuleEngine = {
     }
   },
 
-  // D&D 3.5e Class Definitions with Base Stats & Class Features by Level
-  DND35_CLASS_DEFS: {
-    "Warblade": {
-      hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
-      bonusFeatLevels: [5, 9, 13, 17],
-      bonusFeatContract: {
-        mode: "exact_choices",
-        choices: [
-          "Blind-Fight", "Combat Reflexes", "Diehard", "Great Fortitude",
-          "Improved Critical", "Improved Initiative", "Iron Will", "Ironheart Aura",
-          "Lightning Reflexes", "Stone Power", "Tiger Blooded", "Unnerving Calm", "White Raven Defense"
-        ],
-        label: "Warblade Bonus Feat"
-      },
-      features: {
-        1: [
-          { name: "Battle Clarity (Ex)", category: "Special Ability", type: "Ex", summary: "INT modifier to Reflex saves (max Warblade lvl)" },
-          { name: "Weapon Aptitude (Ex)", category: "Special Ability", type: "Ex", summary: "Adjust weapon feats to different weapons with 1 hour practice" }
-        ],
-        2: [{ name: "Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Retain Dex bonus to AC even if caught flat-footed" }],
-        3: [{ name: "Battle Ardor (Ex)", category: "Special Ability", type: "Ex", summary: "INT modifier on rolls made to confirm critical hits" }],
-        6: [{ name: "Improved Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Can no longer be flanked unless attacker is 4+ levels higher" }],
-        7: [{ name: "Battle Cunning (Ex)", category: "Special Ability", type: "Ex", summary: "INT modifier to damage rolls against flat-footed or flanked foes" }],
-        11: [{ name: "Battle Skill (Ex)", category: "Special Ability", type: "Ex", summary: "INT modifier on checks to resist combat maneuvers" }],
-        15: [{ name: "Battle Mastery (Ex)", category: "Special Ability", type: "Ex", summary: "INT modifier on melee attack rolls and damage rolls on AoO" }],
-        20: [{ name: "Stance Mastery (Ex)", category: "Special Ability", type: "Ex", summary: "Can have two stances active simultaneously" }]
-      }
-    },
-    "Fighter": {
-      hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
-      bonusFeatLevels: [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
-      bonusFeatContract: { mode: "tag", tag: "isFighterBonusFeat", label: "Fighter Class Bonus Feat", filter: "FIGHTER" },
-      features: {}
-    },
-    "Barbarian": {
-      hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Fast Movement (Ex)", category: "Special Ability", type: "Ex", summary: "+10 ft to base land speed in light or medium armor" },
-          { name: "Rage 1/day (Ex)", category: "Special Ability", type: "Ex", summary: "+4 Str, +4 Con, +2 morale to Will saves, -2 AC for 3+Con rounds" }
-        ],
-        2: [{ name: "Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Retain Dex bonus to AC if flat-footed" }],
-        3: [{ name: "Trap Sense +1 (Ex)", category: "Special Ability", type: "Ex", summary: "+1 on Reflex saves and AC vs traps" }],
-        4: [{ name: "Rage 2/day (Ex)", category: "Special Ability", type: "Ex", summary: "Can rage 2 times per day" }],
-        5: [{ name: "Improved Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Can no longer be flanked unless attacker is 4+ levels higher" }],
-        6: [{ name: "Trap Sense +2 (Ex)", category: "Special Ability", type: "Ex", summary: "+2 on Reflex saves and AC vs traps" }],
-        7: [{ name: "Damage Reduction 1/- (Ex)", category: "Special Ability", type: "Ex", summary: "Ignore 1 point of damage from each melee or ranged attack" }]
-      }
-    },
-    "Rogue": {
-      hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 8,
-      bonusFeatLevels: [10, 13, 16, 19],
-      features: {
-        1: [
-          { name: "Sneak Attack +1d6", category: "Special Ability", type: "Ex", summary: "+1d6 precision damage vs flanked or flat-footed target" },
-          { name: "Trapfinding (Ex)", category: "Special Ability", type: "Ex", summary: "Can use Search skill to locate traps with DC > 20" }
-        ],
-        2: [{ name: "Evasion (Ex)", category: "Special Ability", type: "Ex", summary: "Take no damage on successful Reflex save against area attacks" }],
-        3: [
-          { name: "Sneak Attack +2d6", category: "Special Ability", type: "Ex", summary: "+2d6 precision damage vs flanked or flat-footed target" },
-          { name: "Trap Sense +1 (Ex)", category: "Special Ability", type: "Ex", summary: "+1 on Reflex saves and AC vs traps" }
-        ],
-        4: [{ name: "Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Retain Dex bonus to AC if flat-footed" }],
-        5: [{ name: "Sneak Attack +3d6", category: "Special Ability", type: "Ex", summary: "+3d6 precision damage vs flanked or flat-footed target" }],
-        6: [{ name: "Trap Sense +2 (Ex)", category: "Special Ability", type: "Ex", summary: "+2 on Reflex saves and AC vs traps" }],
-        7: [{ name: "Sneak Attack +4d6", category: "Special Ability", type: "Ex", summary: "+4d6 precision damage vs flanked or flat-footed target" }],
-        8: [{ name: "Improved Uncanny Dodge (Ex)", category: "Special Ability", type: "Ex", summary: "Cannot be flanked except by rogue 4+ levels higher" }],
-        9: [
-          { name: "Sneak Attack +5d6", category: "Special Ability", type: "Ex", summary: "+5d6 precision damage vs flanked or flat-footed target" },
-          { name: "Trap Sense +3 (Ex)", category: "Special Ability", type: "Ex", summary: "+3 on Reflex saves and AC vs traps" }
-        ]
-      }
-    },
-    "Wizard": {
-      hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
-      bonusFeatLevels: [1, 5, 10, 15, 20],
-      bonusFeatContracts: {
-        1: { mode: "exact_choices", choices: ["Scribe Scroll"], bypassPrereqs: true, label: "Wizard 1st-Level Bonus Feat" },
-        5: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feat" },
-        10: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feat" },
-        15: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feat" },
-        20: { mode: "category", categories: ["Metamagic", "Item Creation"], allowFeats: ["Spell Mastery"], label: "Wizard Bonus Feat" }
-      },
-      features: {
-        1: [
-          { name: "Scribe Scroll", category: "Special Ability", type: "Ex", summary: "Create spell scrolls" },
-          { name: "Summon Familiar", category: "Special Ability", type: "Sp", summary: "Summon a magical animal companion" }
-        ]
-      }
-    },
-    "Sorcerer": {
-      hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
-      bonusFeatLevels: [],
-      features: {
-        1: [{ name: "Summon Familiar", category: "Special Ability", type: "Sp", summary: "Summon a magical animal companion" }]
-      }
-    },
-    "Cleric": {
-      hd: 8, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 2,
-      bonusFeatLevels: [],
-      features: {
-        1: [{ name: "Turn Undead (Su)", category: "Special Ability", type: "Su", summary: "Channel positive energy to turn or destroy undead 3+Cha times/day" }]
-      }
-    },
-    "Paladin": {
-      hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Aura of Good (Ex)", category: "Special Ability", type: "Ex", summary: "Aura of good equal to paladin level" },
-          { name: "Detect Evil (Sp)", category: "Special Ability", type: "Sp", summary: "At will, detect evil as the spell" },
-          { name: "Smite Evil (Su)", category: "Special Ability", type: "Su", summary: "Add Cha bonus to attack and +1 damage per Paladin level against evil (1/day)" }
-        ],
-        2: [
-          { name: "Divine Grace (Su)", category: "Special Ability", type: "Su", summary: "Gain bonus equal to Charisma bonus on all saving throws" },
-          { name: "Lay on Hands (Su)", category: "Special Ability", type: "Su", summary: "Heal each day hit points equal to Paladin level x Charisma bonus" }
-        ],
-        3: [
-          { name: "Aura of Courage (Su)", category: "Special Ability", type: "Su", summary: "Immune to fear; allies within 10 ft gain +4 on saves vs fear" },
-          { name: "Divine Health (Ex)", category: "Special Ability", type: "Ex", summary: "Immunity to all diseases" }
-        ],
-        4: [{ name: "Turn Undead (Su)", category: "Special Ability", type: "Su", summary: "Turn undead as cleric of level - 3" }],
-        5: [{ name: "Special Mount (Sp)", category: "Special Ability", type: "Sp", summary: "Call an intelligent, loyal war steed" }]
-      }
-    },
-    "Monk": {
-      hd: 8, bab: 0.75, fort: "good", ref: "good", will: "good", skills: 4,
-      bonusFeatLevels: [1, 2, 6],
-      bonusFeatContracts: {
-        1: { mode: "exact_choices", choices: ["Improved Grapple", "Stunning Fist"], bypassPrereqs: true, label: "Monk 1st-Level Bonus Feat" },
-        2: { mode: "exact_choices", choices: ["Combat Reflexes", "Deflect Arrows"], bypassPrereqs: true, label: "Monk 2nd-Level Bonus Feat" },
-        6: { mode: "exact_choices", choices: ["Improved Trip", "Snatch Arrows"], bypassPrereqs: true, label: "Monk 6th-Level Bonus Feat" }
-      },
-      features: {
-        1: [
-          { name: "Flurry of Blows (Ex)", category: "Special Ability", type: "Ex", summary: "One extra attack during full attack (-2 all attacks)" },
-          { name: "Unarmed Strike", category: "Special Ability", type: "Ex", summary: "Lethal or nonlethal unarmed strike damage without penalty" }
-        ],
-        2: [{ name: "Evasion (Ex)", category: "Special Ability", type: "Ex", summary: "Take no damage on successful Reflex save vs area attacks" }],
-        3: [
-          { name: "Fast Movement +10 ft (Ex)", category: "Special Ability", type: "Ex", summary: "+10 ft monk land speed bonus" },
-          { name: "Still Mind (Ex)", category: "Special Ability", type: "Ex", summary: "+2 on saves vs enchantment spells/effects" }
-        ],
-        4: [{ name: "Ki Strike (Magic) (Su)", category: "Special Ability", type: "Su", summary: "Unarmed strikes overcome DR as magic weapons" }],
-        5: [{ name: "Purity of Body (Ex)", category: "Special Ability", type: "Ex", summary: "Immunity to all normal diseases" }]
-      }
-    },
-    "Ranger": {
-      hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 6,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "1st Favored Enemy", category: "Special Ability", type: "Ex", summary: "+2 on Bluff, Listen, Sense Motive, Spot, Survival and damage vs chosen type" },
-          { name: "Track", category: "Feat", type: "Ex", summary: "Use Survival to follow tracks" },
-          { name: "Wild Empathy (Ex)", category: "Special Ability", type: "Ex", summary: "Improve the attitude of an animal" }
-        ],
-        2: [{ name: "Combat Style (Ex)", category: "Special Ability", type: "Ex", summary: "Gain Rapid Shot or Two-Weapon Fighting" }],
-        3: [{ name: "Endurance", category: "Feat", type: "Ex", summary: "Gain Endurance as a bonus feat" }],
-        4: [{ name: "Animal Companion (Ex)", category: "Special Ability", type: "Ex", summary: "Gain an animal companion" }]
-      }
-    },
-    "Bard": {
-      hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "good", skills: 6,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Bardic Music (Su)", category: "Special Ability", type: "Su", summary: "Perform magical songs 1/day per bard level" },
-          { name: "Bardic Knowledge (Ex)", category: "Special Ability", type: "Ex", summary: "Ancient lore check (1d20 + Bard level + Int)" },
-          { name: "Countersong (Su)", category: "Special Ability", type: "Su", summary: "Counter sonic magical attacks with perform check" },
-          { name: "Fascinate (Sp)", category: "Special Ability", type: "Sp", summary: "Entrall creatures within 90 ft" },
-          { name: "Inspire Courage +1 (Su)", category: "Special Ability", type: "Su", summary: "+1 morale on saves vs charm/fear and attack/damage" }
-        ]
-      }
-    },
-    "Druid": {
-      hd: 8, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 4,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Animal Companion (Ex)", category: "Special Ability", type: "Ex", summary: "Gain a loyal animal companion" },
-          { name: "Nature Sense (Ex)", category: "Special Ability", type: "Ex", summary: "+2 on Knowledge (nature) and Survival checks" },
-          { name: "Wild Empathy (Ex)", category: "Special Ability", type: "Ex", summary: "Improve attitude of animals" }
-        ],
-        2: [{ name: "Woodland Stride (Ex)", category: "Special Ability", type: "Ex", summary: "Move through natural thorns/briars at normal speed" }],
-        3: [{ name: "Trackless Step (Ex)", category: "Special Ability", type: "Ex", summary: "Leaves no trail in natural surroundings" }],
-        4: [{ name: "Resist Nature's Lure (Ex)", category: "Special Ability", type: "Ex", summary: "+4 on saves vs spell-like abilities of fey" }],
-        5: [{ name: "Wild Shape (1/day) (Su)", category: "Special Ability", type: "Su", summary: "Assume animal shape for 1 hr/level" }]
-      }
-    },
-    "Crusader": {
-      hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Steely Resolve 5 (Ex)", category: "Special Ability", type: "Ex", summary: "Delayed damage pool of 5 points" },
-          { name: "Furious Counterstrike (Ex)", category: "Special Ability", type: "Ex", summary: "Gain +1 to +6 morale to attack/damage from delayed damage" }
-        ],
-        2: [{ name: "Indomitable Soul (Ex)", category: "Special Ability", type: "Ex", summary: "Add Cha modifier as an insight bonus to Will saves" }]
-      }
-    },
-    "Swordsage": {
-      hd: 8, bab: 0.75, fort: "poor", ref: "good", will: "good", skills: 6,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Quick to Act +1 (Ex)", category: "Special Ability", type: "Ex", summary: "+1 bonus on initiative checks" },
-          { name: "Discipline Focus (Weapon Focus)", category: "Special Ability", type: "Ex", summary: "Weapon Focus in discipline weapons" }
-        ],
-        2: [{ name: "AC Bonus (Ex)", category: "Special Ability", type: "Ex", summary: "Add Wis modifier to AC in light armor" }]
-      }
-    },
-    "Duskblade": {
-      hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
-      bonusFeatLevels: [],
-      features: {
-        1: [{ name: "Arcane Attunement (Sp)", category: "Special Ability", type: "Sp", summary: "Cast Dancing Lights, Detect Magic, Flare, Ghost Sound, Read Magic 3+Int/day" }],
-        2: [{ name: "Combat Casting", category: "Feat", type: "Ex", summary: "Gain Combat Casting as a bonus feat" }],
-        3: [{ name: "Arcane Channeling (Su)", category: "Special Ability", type: "Su", summary: "Channel touch spells through melee weapon attack" }]
-      }
-    },
-    "Abjurant Champion": {
-      hd: 10, bab: 1.0, fort: "poor", ref: "poor", will: "good", skills: 2,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Abjurant Armor (Su)", category: "Special Ability", type: "Su", summary: "Add Abjurant Champion level to armor/shield bonus of abjuration spells" },
-          { name: "Extended Abjuration (Su)", category: "Special Ability", type: "Su", summary: "Abjuration spells automatically have doubled duration" }
-        ],
-        2: [{ name: "Swift Abjuration (Su)", category: "Special Ability", type: "Su", summary: "Cast abjuration spells as swift actions" }],
-        4: [{ name: "Arcane Boost (Su)", category: "Special Ability", type: "Su", summary: "Burn spell slot for swift attack, damage, AC or save bonus" }],
-        5: [{ name: "Martial Arcanist (Ex)", category: "Special Ability", type: "Ex", summary: "Arcane Caster Level equals Base Attack Bonus (BAB)" }]
-      }
-    },
-    "Eldritch Knight": {
-      hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
-      bonusFeatLevels: [1],
-      features: {
-        1: [{ name: "Diverse Training (Ex)", category: "Special Ability", type: "Ex", summary: "Levels stack with fighter and caster levels for prerequisites" }]
-      }
-    },
-    "Bloodstorm Blade": {
-      hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Returning Attacks (Ex)", category: "Special Ability", type: "Ex", summary: "Thrown weapons return to your hand just before your next attack" },
-          { name: "Weapon Aptitude (Ex)", category: "Special Ability", type: "Ex", summary: "Reassign weapon-specific feats to other weapons with 1 hour practice" }
-        ],
-        2: [
-          { name: "Throw Anything (Ex)", category: "Special Ability", type: "Ex", summary: "Throw any melee weapon with 10 ft range increment without penalty" },
-          { name: "Iron Wind (Ex)", category: "Special Ability", type: "Ex", summary: "Swift action: hit two adjacent foes with a single thrown weapon" }
-        ],
-        3: [{ name: "Thunderous Throw (Ex)", category: "Special Ability", type: "Ex", summary: "Swift action: treat thrown attacks as melee attacks for Power Attack and feats" }],
-        4: [{ name: "Lightning Ricochet (Ex)", category: "Special Ability", type: "Ex", summary: "Thrown weapon returns immediately after attack, enabling full iterative attacks" }],
-        5: [{ name: "Blood Wind (Ex)", category: "Special Ability", type: "Ex", summary: "Ricochet thrown weapon to an additional foe within range" }]
-      }
-    },
-    "Dervish": {
-      hd: 10, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Dervish Dance 1/day (Ex)", category: "Special Ability", type: "Ex", summary: "Take full attack action while moving up to speed" },
-          { name: "AC Bonus +1 (Ex)", category: "Special Ability", type: "Ex", summary: "+1 dodge bonus to AC while wearing light or no armor" }
-        ],
-        2: [{ name: "Fast Movement +5 ft (Ex)", category: "Special Ability", type: "Ex", summary: "+5 ft speed bonus" }]
-      }
-    },
-    "Spellsword": {
-      hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
-      bonusFeatLevels: [],
-      features: {
-        1: [{ name: "Ignore Spell Failure 10% (Ex)", category: "Special Ability", type: "Ex", summary: "Reduce arcane spell failure chance of armor by 10%" }],
-        2: [{ name: "Multiple Spell Channeling (Su)", category: "Special Ability", type: "Su", summary: "Store a spell in melee weapon to release upon hit" }]
-      }
-    },
-    "Jade Phoenix Mage": {
-      hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Arcane Wrath (Su)", category: "Special Ability", type: "Su", summary: "Expend spell slot for +4 attack and +1d10 energy damage per spell level" },
-          { name: "Rite of Waking (Ex)", category: "Special Ability", type: "Ex", summary: "+2 on Knowledge checks and advance arcane CL & martial IL" }
-        ],
-        2: [{ name: "Mystic Phoenix Stance (Su)", category: "Special Ability", type: "Su", summary: "Stance: +2 CL on fire spells, DR 2/evil, and +1 CL" }]
-      }
-    },
-    "Warlock": {
-      hd: 6, bab: 0.75, fort: "poor", ref: "poor", will: "good", skills: 2,
-      bonusFeatLevels: [],
-      features: {
-        1: [
-          { name: "Eldritch Blast 1d6 (Sp)", category: "Special Ability", type: "Sp", summary: "At will ranged touch attack dealing 1d6 untyped magical damage" },
-          { name: "Least Invocations", category: "Special Ability", type: "Sp", summary: "Cast least warlock invocations at will" }
-        ],
-        2: [{ name: "Detect Magic (Sp)", category: "Special Ability", type: "Sp", summary: "At will Detect Magic" }],
-        3: [
-          { name: "Damage Reduction 1/cold iron (Su)", category: "Special Ability", type: "Su", summary: "DR 1/cold iron" },
-          { name: "Eldritch Blast 2d6 (Sp)", category: "Special Ability", type: "Sp", summary: "Eldritch blast damage increases to 2d6" }
-        ]
-      }
-    }
-  },
+  // D&D 3.5e Class Definitions Cache (Hydrated on-demand from database/srd_classes_races.json via SrdCompendium)
+  DND35_CLASS_DEFS: {},
 
   getClassDef(className) {
     if (!className) return null;
     const localDef = this.DND35_CLASS_DEFS ? this.DND35_CLASS_DEFS[className] : null;
-    const srdClass = (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.getClass === 'function')
-      ? SrdCompendium.getClass(className)
+    const comp = (typeof window !== 'undefined' && window.SrdCompendium)
+      || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+    const srdClass = (comp && typeof comp.getClass === 'function')
+      ? comp.getClass(className)
       : null;
     if (!localDef && !srdClass) return null;
     if (!srdClass) return localDef;
@@ -5438,7 +4959,7 @@ const RuleEngine = {
     const willSave = srdClass.will || (srdClass.savingThrows?.will === 'high' ? 'good' : 'poor');
     const hdNum = Number(String(srdClass.hitDie || srdClass.hd || 8).replace(/[^0-9]/g, '')) || 8;
     const skillPts = Number(srdClass.skillPointsPerLevel || srdClass.skills) || 2;
-    return Object.assign({}, localDef || {}, {
+    const merged = Object.assign({}, localDef || {}, {
       hd: hdNum,
       bab: babRate,
       fort: fortSave,
@@ -5453,6 +4974,10 @@ const RuleEngine = {
       prerequisites: Array.isArray(srdClass.prerequisites) && srdClass.prerequisites.length > 0 ? srdClass.prerequisites : (localDef?.prerequisites || []),
       classSkills: Array.isArray(srdClass.classSkills) && srdClass.classSkills.length > 0 ? srdClass.classSkills : (localDef?.classSkills || [])
     });
+    if (this.DND35_CLASS_DEFS && srdClass.name) {
+      this.DND35_CLASS_DEFS[srdClass.name] = merged;
+    }
+    return merged;
   },
 
   // Get slot contract for bonus feats

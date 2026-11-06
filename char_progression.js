@@ -1750,47 +1750,9 @@
           statusEl.innerHTML = `<span>⚠️</span> Error: ${err.message || err}`;
         }
       }
-    }const DND35_EXTRA_CLASSES = {
-      "Duskblade": { hd: 8, bab: 1.0, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "Player's Handbook II p.19", features: "Arcane Attunement, Armored Mage (Light/Medium/Shield), Arcane Channeling, Quick Cast" },
-      "Warblade": { hd: 12, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 4, source: "Tome of Battle p.20", features: "Battle Clarity, Weapon Aptitude, Uncanny Dodge, Battle Ardor" },
-      "Crusader": { hd: 10, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 2, source: "Tome of Battle p.8", features: "Furious Counterstrike, Steely Resolve, Indomitable Soul, Zealous Surge" },
-      "Swordsage": { hd: 8, bab: 0.75, fort: 'poor', ref: 'good', will: 'good', skills: 6, source: "Tome of Battle p.15", features: "Quick to Act, AC Bonus (Wis), Discipline Focus, Sense Magic" },
-      "Beguiler": { hd: 6, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 6, source: "Player's Handbook II p.6", features: "Armored Mage, Trapfinding, Cloaked Casting, Surprise Casting" },
-      "Factotum": { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'poor', skills: 6, source: "Dungeonscape p.14", features: "Inspiration, Cunning Insight, Cunning Knowledge, Trapfinding" },
-      "Warlock": { hd: 6, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "Complete Arcane p.5", features: "Eldritch Blast, Invocations, Detect Magic, Damage Reduction" },
-      "Scout": { hd: 8, bab: 0.75, fort: 'poor', ref: 'good', will: 'poor', skills: 8, source: "Complete Adventurer p.10", features: "Skirmish, Trapfinding, Battle Fortitude, Uncanny Dodge, Fast Movement" },
-      "Swashbuckler": { hd: 10, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 4, source: "Complete Warrior p.11", features: "Weapon Finesse, Grace, Insightful Strike, Dodge Bonus" },
-      "Hexblade": { hd: 10, bab: 1.0, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "Complete Warrior p.5", features: "Hexblade's Curse, Arcane Resistance, Mettle, Dark Companion" },
-      "Spellthief": { hd: 6, bab: 0.75, fort: 'poor', ref: 'good', will: 'good', skills: 6, source: "Complete Adventurer p.13", features: "Sneak Attack, Steal Spell, Trapfinding, Steal Spell Effect" },
-      "Warmage": { hd: 6, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "Complete Arcane p.10", features: "Armored Mage, Warmage Edge, Advanced Learning" },
-      "Favored Soul": { hd: 8, bab: 0.75, fort: 'good', ref: 'good', will: 'good', skills: 2, source: "Complete Divine p.6", features: "Deity's Weapon Focus, Energy Resistance, Wings" },
-      "Dread Necromancer": { hd: 6, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "Heroes of Horror p.84", features: "Charnel Touch, Rebuke Undead, Lich Body, Advanced Learning" },
-      "Dragon Shaman": { hd: 10, bab: 0.75, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "Player's Handbook II p.11", features: "Draconic Aura, Totem Dragon, Touch of Vitality, Breath Weapon" },
-      "Knight": { hd: 12, bab: 1.0, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "Player's Handbook II p.24", features: "Knight's Challenge, Knight's Code, Shield Block, Bulwark of Defense" },
-      "Ninja": { hd: 6, bab: 0.75, fort: 'poor', ref: 'good', will: 'poor', skills: 6, source: "Complete Adventurer p.5", features: "Ki Power, Sudden Strike, Trapfinding, Ghost Step, Poison Use" },
-      "Psion": { hd: 4, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "XPH p.19", features: "Psicrystal, Psionic Feats, Powers" },
-      "Psychic Warrior": { hd: 8, bab: 0.75, fort: 'good', ref: 'poor', will: 'poor', skills: 2, source: "XPH p.24", features: "Bonus Psionic Feats, Powers" },
-      "Soulknife": { hd: 10, bab: 0.75, fort: 'poor', ref: 'good', will: 'good', skills: 4, source: "XPH p.26", features: "Mind Blade, Weapon Focus (Mind Blade), Wild Talent, Throw Mind Blade" },
-      "Wilder": { hd: 6, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4, source: "XPH p.29", features: "Wild Surge, Psychic Enervation, Elation, Volatile Mind" },
-      "Archmage": { hd: 4, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "DMG p.178", features: "High Arcana, Arcane Fire, Mastery of Counterspelling, Mastery of Elements" },
-      "Arcane Archer": { hd: 8, bab: 1.0, fort: 'good', ref: 'good', will: 'poor', skills: 4, source: "DMG p.176", features: "Enhance Arrow, Imbue Arrow, Seeker Arrow, Phase Arrow, Arrow of Death" },
-      "Arcane Trickster": { hd: 4, bab: 0.5, fort: 'poor', ref: 'good', will: 'good', skills: 4, source: "DMG p.177", features: "Ranged Legerdemain, Sneak Attack, Impromptu Sneak Attack" },
-      "Assassin": { hd: 6, bab: 0.75, fort: 'poor', ref: 'good', will: 'poor', skills: 4, source: "DMG p.180", features: "Sneak Attack, Death Attack, Poison Use, Uncanny Dodge" },
-      "Blackguard": { hd: 10, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 2, source: "DMG p.181", features: "Smite Good, Dark Blessing, Command Undead, Aura of Despair, Sneak Attack" },
-      "Dragon Disciple": { hd: 12, bab: 0.75, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "DMG p.183", features: "Natural Armor, Breath Weapon, Ability Boosts (Str/Con/Int/Cha), Wings, Dragon Apotheosis" },
-      "Duelist": { hd: 10, bab: 1.0, fort: 'poor', ref: 'good', will: 'poor', skills: 4, source: "DMG p.185", features: "Canny Defense, Improved Reaction, Enhanced Mobility, Precise Strike, Acrobatic Charge" },
-      "Eldritch Knight": { hd: 6, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 2, source: "DMG p.187", features: "Bonus Combat Feat, Spellcasting Progression" },
-      "Hierophant": { hd: 8, bab: 0.5, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "DMG p.188", features: "Special Abilities, Blast Infidel, Divine Reach, Faith Healing, Spell Power" },
-      "Horizon Walker": { hd: 8, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 4, source: "DMG p.189", features: "Terrain Mastery, Planar Terrain Mastery (Shifting: Dimension Door)" },
-      "Loremaster": { hd: 4, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 4, source: "DMG p.191", features: "Secret, Lore, Greater Lore, True Lore" },
-      "Mystic Theurge": { hd: 4, bab: 0.5, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "DMG p.192", features: "Combined Arcane and Divine Spellcasting" },
-      "Shadowdancer": { hd: 8, bab: 0.75, fort: 'poor', ref: 'good', will: 'poor', skills: 6, source: "DMG p.194", features: "Hide in Plain Sight, Evasion, Shadow Illusion, Summon Shadow, Shadow Jump, Defensive Roll" },
-      "Abjurant Champion": { hd: 10, bab: 1.0, fort: 'poor', ref: 'poor', will: 'good', skills: 2, source: "Complete Mage p.50", features: "Abjurant Armor, Extended Abjuration, Swift Abjuration, Arcane Boost, Martial Arcanist" },
-      "Dervish": { hd: 10, bab: 1.0, fort: 'poor', ref: 'good', will: 'poor', skills: 4, source: "Complete Warrior p.25", features: "Dervish Dance, Movement Mastery, Slashing Blades, Fast Movement, Spring Attack" },
-      "Frenzied Berserker": { hd: 12, bab: 1.0, fort: 'good', ref: 'poor', will: 'poor', skills: 2, source: "Complete Warrior p.34", features: "Frenzy, Die Hard, Supreme Cleave, Deathless Frenzy, Greater Frenzy, Inspire Frenzy" },
-      "Invisible Blade": { hd: 6, bab: 1.0, fort: 'poor', ref: 'good', will: 'poor', skills: 4, source: "Complete Warrior p.44", features: "Dagger Sneak Attack, Uncanny Feint, Bleeding Wound, Feint Mastery" },
-      "Ur-Priest": { hd: 8, bab: 0.75, fort: 'good', ref: 'poor', will: 'good', skills: 2, source: "Complete Divine p.70", features: "Fast Divine Spellcasting (up to 9th level in 10 levels), Rebuke Undead, Steal Spell-Like Ability" }
-    };
+    }
+    // Official D&D 3.5e Base & Prestige Classes are hydrated from database/srd_classes_races.json via SrdCompendium
+    const DND35_EXTRA_CLASSES = {};
 
     function focusChangeClassRuleMasterSearch() {
       const input = document.getElementById('change-class-search-input');
@@ -5309,21 +5271,22 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         }
       }
 
-      // Check RuleEngine class features
-      if (typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) {
-        for (const [cName, cDef] of Object.entries(RuleEngine.DND35_CLASS_DEFS)) {
-          if (cDef && cDef.features) {
-            for (const [lvl, fList] of Object.entries(cDef.features)) {
-              if (Array.isArray(fList)) {
-                const match = fList.find(f => {
-                  const n = (typeof f === 'string' ? f : f.name || '').toLowerCase();
-                  return n === lower || n.includes(lower) || lower.includes(n);
-                });
-                if (match) {
-                  const n = typeof match === 'string' ? match : match.name;
-                  const sum = (typeof match === 'object' && match.summary) ? `\nSummary: ${match.summary}` : '';
-                  return `${n} [${cName} Level ${lvl} Feature]${sum}`;
-                }
+      // Check RuleEngine / Compendium class features
+      const allClassDefs = (typeof getAvailableClassDefs === 'function')
+        ? getAvailableClassDefs()
+        : ((typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) ? RuleEngine.DND35_CLASS_DEFS : {});
+      for (const [cName, cDef] of Object.entries(allClassDefs)) {
+        if (cDef && cDef.features) {
+          for (const [lvl, fList] of Object.entries(cDef.features)) {
+            if (Array.isArray(fList)) {
+              const match = fList.find(f => {
+                const n = (typeof f === 'string' ? f : f.name || '').toLowerCase();
+                return n === lower || n.includes(lower) || lower.includes(n);
+              });
+              if (match) {
+                const n = typeof match === 'string' ? match : match.name;
+                const sum = (typeof match === 'object' && match.summary) ? `\nSummary: ${match.summary}` : '';
+                return `${n} [${cName} Level ${lvl} Feature]${sum}`;
               }
             }
           }
@@ -5790,9 +5753,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const lastClass = prog.length > 0 ? prog[prog.length - 1].className : defaultClass;
       const targetClass = chosenClass || lastClass;
 
-      const def = (typeof DND35_CLASS_DEFS !== 'undefined' && DND35_CLASS_DEFS[targetClass])
-        ? DND35_CLASS_DEFS[targetClass]
-        : { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+      const def = (typeof getAvailableClassDefs === 'function' ? getAvailableClassDefs()[targetClass] : null)
+        || (typeof RuleEngine !== 'undefined' && RuleEngine.getClassDef ? RuleEngine.getClassDef(targetClass) : null)
+        || (typeof DND35_CLASS_DEFS !== 'undefined' && DND35_CLASS_DEFS[targetClass] ? DND35_CLASS_DEFS[targetClass] : null)
+        || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
 
       const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
         ? RuleEngine.getAbilityMod(character.abilities?.con || 14)
@@ -7034,9 +6998,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           if (match) {
             const cName = match[1].trim();
             const cLvl = parseInt(match[2], 10) || 1;
-            const cDef = (typeof DND35_CLASS_DEFS !== 'undefined' && DND35_CLASS_DEFS[cName])
-              ? DND35_CLASS_DEFS[cName]
-              : { skills: 2 };
+            const cDef = (typeof getAvailableClassDefs === 'function' ? getAvailableClassDefs()[cName] : null)
+              || (typeof RuleEngine !== 'undefined' && RuleEngine.getClassDef ? RuleEngine.getClassDef(cName) : null)
+              || (typeof DND35_CLASS_DEFS !== 'undefined' && DND35_CLASS_DEFS[cName] ? DND35_CLASS_DEFS[cName] : null)
+              || { skills: 2 };
             const baseSkill = cDef.skills || 2;
 
             for (let l = 0; l < cLvl; l++) {

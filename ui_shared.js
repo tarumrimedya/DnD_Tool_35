@@ -1511,10 +1511,68 @@
     }
   }
 
-  // Export window.DnDUI
+  // Shared Modal Accessibility (role="dialog", aria-modal="true") & Global Escape Key Dismissal
+  function initSharedModalAccessibility() {
+    if (typeof document === 'undefined') return;
+    const modalSelectors = '[id$="-modal"], [id^="modal-"]';
+    document.querySelectorAll(modalSelectors).forEach((el) => {
+      if (el && !el.getAttribute('role')) {
+        el.setAttribute('role', 'dialog');
+        el.setAttribute('aria-modal', 'true');
+      }
+    });
+  }
+
   if (typeof global.addEventListener === 'function') {
     global.addEventListener('srdCompendiumReady', () => {
       populateForgeControls();
+    });
+    global.addEventListener('DOMContentLoaded', () => {
+      initSharedModalAccessibility();
+    });
+    global.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      if (typeof document === 'undefined') return;
+
+      // 1. Close SRD Compendium & Forge Drawer if open
+      const drawer = document.getElementById('dndui-compendium-drawer');
+      if (drawer && !drawer.classList.contains('hidden')) {
+        e.preventDefault();
+        closeCompendiumDrawer();
+        return;
+      }
+
+      // 2. Close topmost visible dialog modal (excluding Vault PIN Lock Modal)
+      const candidates = Array.from(
+        document.querySelectorAll('[role="dialog"]:not(.hidden), [id$="-modal"]:not(.hidden), [id^="modal-"]:not(.hidden)')
+      ).filter((el) => {
+        if (!el || el.id === 'vault-lock-modal') return false;
+        const style = global.getComputedStyle ? global.getComputedStyle(el) : null;
+        return !style || (style.display !== 'none' && style.visibility !== 'hidden');
+      });
+
+      if (candidates.length === 0) return;
+
+      // Pick topmost modal by computed z-index (ties broken by later DOM order)
+      let topModal = candidates[candidates.length - 1];
+      let bestZ = -1;
+      candidates.forEach((el) => {
+        const z = parseInt((global.getComputedStyle && global.getComputedStyle(el).zIndex) || '0', 10) || 0;
+        if (z >= bestZ) {
+          bestZ = z;
+          topModal = el;
+        }
+      });
+
+      if (topModal) {
+        e.preventDefault();
+        const closeBtn = topModal.querySelector('button[onclick^="close"], button[onclick*="CloseModal"], button[onclick*="dismiss"]');
+        if (closeBtn && typeof closeBtn.click === 'function') {
+          closeBtn.click();
+        } else {
+          topModal.classList.add('hidden');
+        }
+      }
     });
   }
 

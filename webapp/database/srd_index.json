@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "ba1bbfee320b6866",
+  "compendiumHash": "403e401cf17a9bce",
   "generatedAt": "2026-11-04T15:37:19.474Z",
-  "totalEntries": 4887,
+  "totalEntries": 4995,
   "chunks": {
     "srd_equipment.json": {
       "count": 1088,
       "bytes": 1698007,
-      "hash": "2a77a6a778eca650",
+      "hash": "2037e36b0d8cbaf4",
       "eagerLoad": true
     },
     "srd_feats.json": {
@@ -20,7 +20,7 @@
     "srd_classes_races.json": {
       "count": 256,
       "bytes": 680009,
-      "hash": "19af51df4e3a7af0",
+      "hash": "fb17321467fe9a7a",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -32,13 +32,13 @@
     "srd_spells.json": {
       "count": 1114,
       "bytes": 2179406,
-      "hash": "bc37b31b97a96724",
+      "hash": "1a258bc5b493f265",
       "eagerLoad": true
     },
     "srd_monsters.json": {
-      "count": 645,
+      "count": 649,
       "bytes": 3818735,
-      "hash": "ce80453671f62673",
+      "hash": "dd6d345fdd8ee4de",
       "eagerLoad": false
     },
     "srd_maneuvers.json": {
@@ -9561,7 +9561,7 @@
     },
     {
       "id": "spl-orders-wrath",
-      "n": "Order’s Wrath",
+      "n": "Order's Wrath",
       "t": "Spell",
       "c": "Evocation",
       "s": "None",
@@ -10974,7 +10974,7 @@
     },
     {
       "id": "pwr-psionic-lions-charge",
-      "n": "Psionic Lion’s Charge",
+      "n": "Psionic Lion's Charge",
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
@@ -14786,7 +14786,10 @@
       "c": "Undead",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 0.5
+      "l": 0.5,
+      "a": [
+        "Zombie (Human Commoner)"
+      ]
     },
     {
       "id": "mst-ankheg",
@@ -16172,7 +16175,10 @@
       "c": "Outsider",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 20
+      "l": 20,
+      "a": [
+        "Balor (Tanar'ri)"
+      ]
     },
     {
       "id": "mst-dream-larva",
@@ -16478,7 +16484,10 @@
       "c": "Outsider",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 9
+      "l": 9,
+      "a": [
+        "Vrock (Tanar'ri)"
+      ]
     },
     {
       "id": "mst-animated-object-medium",
@@ -17486,7 +17495,10 @@
       "c": "Outsider",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 17
+      "l": 17,
+      "a": [
+        "Marilith (Tanar'ri)"
+      ]
     },
     {
       "id": "mst-lamia",
@@ -18764,7 +18776,10 @@
       "c": "Outsider",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 6
+      "l": 6,
+      "a": [
+        "Babau (Tanar'ri)"
+      ]
     },
     {
       "id": "mst-brain-mole",
@@ -18899,7 +18914,10 @@
       "c": "Outsider",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 20
+      "l": 20,
+      "a": [
+        "Pit Fiend (Baatezu)"
+      ]
     },
     {
       "id": "mst-force-dragon-very-young",
@@ -18926,7 +18944,10 @@
       "c": "Outsider",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 2
+      "l": 2,
+      "a": [
+        "Dretch (Tanar'ri)"
+      ]
     },
     {
       "id": "mst-vargouille",
@@ -19250,7 +19271,10 @@
       "c": "Dragon",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 7
+      "l": 7,
+      "a": [
+        "Young Red Dragon"
+      ]
     },
     {
       "id": "mst-human-warrior-skeleton",
@@ -19259,7 +19283,10 @@
       "c": "Undead",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 0.33
+      "l": 0.33,
+      "a": [
+        "Skeleton (Human Warrior)"
+      ]
     },
     {
       "id": "mst-trumpet-archon",
@@ -19907,7 +19934,10 @@
       "c": "Outsider",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 7
+      "l": 7,
+      "a": [
+        "Succubus (Tanar'ri)"
+      ]
     },
     {
       "id": "mst-allip",
@@ -20087,7 +20117,10 @@
       "c": "Outsider",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 11
+      "l": 11,
+      "a": [
+        "Hezrou (Tanar'ri)"
+      ]
     },
     {
       "id": "mst-thoqqua",
@@ -20177,7 +20210,10 @@
       "c": "Outsider",
       "s": "None",
       "f": "srd_monsters.json",
-      "l": 13
+      "l": 13,
+      "a": [
+        "Glabrezu (Tanar'ri)"
+      ]
     },
     {
       "id": "mst-silver-dragon-great-wyrm",
@@ -38948,7 +38984,7 @@
     },
     {
       "id": "gear-artisans-tools-masterworked",
-      "n": "Artisan’s tools, masterworked",
+      "n": "Artisan's tools, masterworked",
       "t": "Tool",
       "c": "Tool",
       "s": "Slotless",
@@ -38972,7 +39008,7 @@
     },
     {
       "id": "gear-travelers-outfit",
-      "n": "Traveler’s outfit",
+      "n": "Traveler's outfit",
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
@@ -38988,7 +39024,7 @@
     },
     {
       "id": "gear-monks-outfit",
-      "n": "Monk’s outfit",
+      "n": "Monk's outfit",
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
@@ -39076,7 +39112,7 @@
     },
     {
       "id": "gear-alchemists-fire",
-      "n": "Alchemist’s fire",
+      "n": "Alchemist's fire",
       "t": "Consumable",
       "c": "Alchemical",
       "s": "Slotless",
@@ -39100,7 +39136,7 @@
     },
     {
       "id": "gear-pick-miners",
-      "n": "Pick, miner’s",
+      "n": "Pick, miner's",
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
@@ -39156,7 +39192,7 @@
     },
     {
       "id": "gear-alchemists-lab",
-      "n": "Alchemist’s lab",
+      "n": "Alchemist's lab",
       "t": "Tool",
       "c": "Tool",
       "s": "Slotless",
@@ -39220,7 +39256,7 @@
     },
     {
       "id": "gear-thieves-tools",
-      "n": "Thieves’ tools",
+      "n": "Thieves' tools",
       "t": "Tool",
       "c": "Tool",
       "s": "Slotless",
@@ -39228,7 +39264,7 @@
     },
     {
       "id": "gear-thieves-tools-masterworked",
-      "n": "Thieves’ tools masterworked",
+      "n": "Thieves' tools masterworked",
       "t": "Tool",
       "c": "Tool",
       "s": "Slotless",
@@ -39244,7 +39280,7 @@
     },
     {
       "id": "gear-healers-kit",
-      "n": "Healer’s kit",
+      "n": "Healer's kit",
       "t": "Tool",
       "c": "Tool",
       "s": "Slotless",
@@ -39252,7 +39288,7 @@
     },
     {
       "id": "gear-entertainers-outfit",
-      "n": "Entertainer’s outfit",
+      "n": "Entertainer's outfit",
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
@@ -39340,7 +39376,7 @@
     },
     {
       "id": "gear-artisans-outfit",
-      "n": "Artisan’s outfit",
+      "n": "Artisan's outfit",
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
@@ -39396,7 +39432,7 @@
     },
     {
       "id": "gear-scale-merchants",
-      "n": "Scale, merchant’s",
+      "n": "Scale, merchant's",
       "t": "Tool",
       "c": "Tool",
       "s": "Slotless",
@@ -39444,7 +39480,7 @@
     },
     {
       "id": "gear-climbers-kit",
-      "n": "Climber’s kit",
+      "n": "Climber's kit",
       "t": "Tool",
       "c": "Tool",
       "s": "Slotless",
@@ -39452,7 +39488,7 @@
     },
     {
       "id": "gear-scholars-outfit",
-      "n": "Scholar’s outfit",
+      "n": "Scholar's outfit",
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
@@ -39460,7 +39496,7 @@
     },
     {
       "id": "gear-nobles-outfit",
-      "n": "Noble’s outfit",
+      "n": "Noble's outfit",
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
@@ -39572,7 +39608,7 @@
     },
     {
       "id": "gear-explorers-outfit",
-      "n": "Explorer’s outfit",
+      "n": "Explorer's outfit",
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
@@ -39748,7 +39784,7 @@
     },
     {
       "id": "gear-peasants-outfit",
-      "n": "Peasant’s outfit",
+      "n": "Peasant's outfit",
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
@@ -39756,7 +39792,7 @@
     },
     {
       "id": "gear-clerics-vestments",
-      "n": "Cleric’s vestments",
+      "n": "Cleric's vestments",
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
@@ -39828,7 +39864,7 @@
     },
     {
       "id": "gear-artisans-tools",
-      "n": "Artisan’s tools",
+      "n": "Artisan's tools",
       "t": "Tool",
       "c": "Tool",
       "s": "Slotless",
@@ -39852,7 +39888,7 @@
     },
     {
       "id": "gear-courtiers-outfit",
-      "n": "Courtier’s outfit",
+      "n": "Courtier's outfit",
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
@@ -41194,6 +41230,901 @@
       "c": "Potion",
       "s": "Slotless",
       "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-armorsmithing",
+      "n": "Artisan's Tools (Armorsmithing)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-armorsmithing-masterwork",
+      "n": "Artisan's Tools (Armorsmithing), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-bowmaking",
+      "n": "Artisan's Tools (Bowmaking)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-bowmaking-masterwork",
+      "n": "Artisan's Tools (Bowmaking), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-blacksmithing",
+      "n": "Artisan's Tools (Blacksmithing)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-blacksmithing-masterwork",
+      "n": "Artisan's Tools (Blacksmithing), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-carpentry",
+      "n": "Artisan's Tools (Carpentry)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-carpentry-masterwork",
+      "n": "Artisan's Tools (Carpentry), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-leatherworking",
+      "n": "Artisan's Tools (Leatherworking)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-leatherworking-masterwork",
+      "n": "Artisan's Tools (Leatherworking), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-painting",
+      "n": "Artisan's Tools (Painting)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-painting-masterwork",
+      "n": "Artisan's Tools (Painting), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-pottery",
+      "n": "Artisan's Tools (Pottery)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-pottery-masterwork",
+      "n": "Artisan's Tools (Pottery), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-sculpting",
+      "n": "Artisan's Tools (Sculpting)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-sculpting-masterwork",
+      "n": "Artisan's Tools (Sculpting), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-shipmaking",
+      "n": "Artisan's Tools (Shipmaking)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-shipmaking-masterwork",
+      "n": "Artisan's Tools (Shipmaking), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-stonemasonry",
+      "n": "Artisan's Tools (Stonemasonry)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-stonemasonry-masterwork",
+      "n": "Artisan's Tools (Stonemasonry), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-trapmaking",
+      "n": "Artisan's Tools (Trapmaking)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-trapmaking-masterwork",
+      "n": "Artisan's Tools (Trapmaking), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-weaponsmithing",
+      "n": "Artisan's Tools (Weaponsmithing)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-weaponsmithing-masterwork",
+      "n": "Artisan's Tools (Weaponsmithing), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-woodworking",
+      "n": "Artisan's Tools (Woodworking)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-artisan-s-tools-woodworking-masterwork",
+      "n": "Artisan's Tools (Woodworking), Masterwork",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-bells",
+      "n": "Musical Instrument (Bells)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-bells-masterwork",
+      "n": "Musical Instrument (Bells), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-chime",
+      "n": "Musical Instrument (Chime)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-chime-masterwork",
+      "n": "Musical Instrument (Chime), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-drum",
+      "n": "Musical Instrument (Drum)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-drum-masterwork",
+      "n": "Musical Instrument (Drum), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-gong",
+      "n": "Musical Instrument (Gong)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-gong-masterwork",
+      "n": "Musical Instrument (Gong), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-fiddle",
+      "n": "Musical Instrument (Fiddle)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-fiddle-masterwork",
+      "n": "Musical Instrument (Fiddle), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-harp",
+      "n": "Musical Instrument (Harp)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-harp-masterwork",
+      "n": "Musical Instrument (Harp), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-lute",
+      "n": "Musical Instrument (Lute)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-lute-masterwork",
+      "n": "Musical Instrument (Lute), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-mandolin",
+      "n": "Musical Instrument (Mandolin)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-mandolin-masterwork",
+      "n": "Musical Instrument (Mandolin), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-flute",
+      "n": "Musical Instrument (Flute)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-flute-masterwork",
+      "n": "Musical Instrument (Flute), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-pan-pipes",
+      "n": "Musical Instrument (Pan Pipes)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-pan-pipes-masterwork",
+      "n": "Musical Instrument (Pan Pipes), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-recorder",
+      "n": "Musical Instrument (Recorder)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-recorder-masterwork",
+      "n": "Musical Instrument (Recorder), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-shawm",
+      "n": "Musical Instrument (Shawm)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-shawm-masterwork",
+      "n": "Musical Instrument (Shawm), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-trumpet",
+      "n": "Musical Instrument (Trumpet)",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-musical-instrument-trumpet-masterwork",
+      "n": "Musical Instrument (Trumpet), Masterwork",
+      "t": "Gear",
+      "c": "Musical Instrument",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-laboratory-homunculus",
+      "n": "Laboratory (Homunculus)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "tool-laboratory-shield-guardian",
+      "n": "Laboratory (Shield Guardian)",
+      "t": "Gear",
+      "c": "Skill Tool & Kit",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "spl-primal-hunter",
+      "n": "Primal Hunter",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 1
+    },
+    {
+      "id": "spl-primal-instinct",
+      "n": "Primal Instinct",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 2
+    },
+    {
+      "id": "spl-primal-senses",
+      "n": "Primal Senses",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 3
+    },
+    {
+      "id": "spl-primal-speed",
+      "n": "Primal Speed",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 4
+    },
+    {
+      "id": "spl-mighty-wallop",
+      "n": "Mighty Wallop",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 1
+    },
+    {
+      "id": "spl-greater-mighty-wallop",
+      "n": "Greater Mighty Wallop",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 3
+    },
+    {
+      "id": "spl-conviction",
+      "n": "Conviction",
+      "t": "Spell",
+      "c": "Abjuration",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 1
+    },
+    {
+      "id": "spl-mass-conviction",
+      "n": "Conviction, Mass",
+      "t": "Spell",
+      "c": "Abjuration",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 3
+    },
+    {
+      "id": "spl-recitation",
+      "n": "Recitation",
+      "t": "Spell",
+      "c": "Conjuration",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 4
+    },
+    {
+      "id": "spl-righteous-wrath-of-the-faithful",
+      "n": "Righteous Wrath of the Faithful",
+      "t": "Spell",
+      "c": "Enchantment",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 5
+    },
+    {
+      "id": "spl-resistance-greater",
+      "n": "Resistance, Greater",
+      "t": "Spell",
+      "c": "Abjuration",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 4
+    },
+    {
+      "id": "spl-resistance-superior",
+      "n": "Resistance, Superior",
+      "t": "Spell",
+      "c": "Abjuration",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 6
+    },
+    {
+      "id": "spl-nerveskitter",
+      "n": "Nerveskitter",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 1
+    },
+    {
+      "id": "spl-divine-agility",
+      "n": "Divine Agility",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 5
+    },
+    {
+      "id": "spl-sirines-grace",
+      "n": "Sirine's Grace",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 4
+    },
+    {
+      "id": "spl-bite-of-the-werewolf",
+      "n": "Bite of the Werewolf",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 3
+    },
+    {
+      "id": "spl-bite-of-the-weretiger",
+      "n": "Bite of the Weretiger",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 5
+    },
+    {
+      "id": "spl-bite-of-the-werebear",
+      "n": "Bite of the Werebear",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 6
+    },
+    {
+      "id": "spl-heart-of-air",
+      "n": "Heart of Air",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 2
+    },
+    {
+      "id": "spl-heart-of-water",
+      "n": "Heart of Water",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 3
+    },
+    {
+      "id": "spl-heart-of-earth",
+      "n": "Heart of Earth",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 4
+    },
+    {
+      "id": "spl-heart-of-fire",
+      "n": "Heart of Fire",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 5
+    },
+    {
+      "id": "spl-resist-energy-mass",
+      "n": "Resist Energy, Mass",
+      "t": "Spell",
+      "c": "Abjuration",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 3
+    },
+    {
+      "id": "spl-protection-from-energy-mass",
+      "n": "Protection from Energy, Mass",
+      "t": "Spell",
+      "c": "Abjuration",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 4
+    },
+    {
+      "id": "spl-energy-immunity",
+      "n": "Energy Immunity",
+      "t": "Spell",
+      "c": "Abjuration",
+      "s": "None",
+      "f": "srd_spells.json",
+      "l": 6
+    },
+    {
+      "id": "cls-warblade",
+      "n": "Warblade",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-crusader",
+      "n": "Crusader",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-swordsage",
+      "n": "Swordsage",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-duskblade",
+      "n": "Duskblade",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-abjurant-champion",
+      "n": "Abjurant Champion",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-bloodstorm-blade",
+      "n": "Bloodstorm Blade",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-dervish",
+      "n": "Dervish",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-spellsword",
+      "n": "Spellsword",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-jade-phoenix-mage",
+      "n": "Jade Phoenix Mage",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-warlock",
+      "n": "Warlock",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-beguiler",
+      "n": "Beguiler",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-factotum",
+      "n": "Factotum",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-scout",
+      "n": "Scout",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-swashbuckler",
+      "n": "Swashbuckler",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-hexblade",
+      "n": "Hexblade",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-spellthief",
+      "n": "Spellthief",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-warmage",
+      "n": "Warmage",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-favored-soul",
+      "n": "Favored Soul",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-dread-necromancer",
+      "n": "Dread Necromancer",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-dragon-shaman",
+      "n": "Dragon Shaman",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-knight",
+      "n": "Knight",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-ninja",
+      "n": "Ninja",
+      "t": "Class",
+      "c": "Base",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-frenzied-berserker",
+      "n": "Frenzied Berserker",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-invisible-blade",
+      "n": "Invisible Blade",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "cls-ur-priest",
+      "n": "Ur-Priest",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_races.json"
+    },
+    {
+      "id": "mst-kobold",
+      "n": "Kobold",
+      "t": "Monster",
+      "c": "Humanoid (Reptilian)",
+      "s": "CR 1/6",
+      "f": "srd_monsters.json"
+    },
+    {
+      "id": "mst-goblin",
+      "n": "Goblin",
+      "t": "Monster",
+      "c": "Humanoid (Goblinoid)",
+      "s": "CR 1/3",
+      "f": "srd_monsters.json"
+    },
+    {
+      "id": "mst-orc-warrior",
+      "n": "Orc (Warrior 1)",
+      "t": "Monster",
+      "c": "Humanoid (Orc)",
+      "s": "CR 1/2",
+      "f": "srd_monsters.json",
+      "a": [
+        "Orc"
+      ]
+    },
+    {
+      "id": "mst-mind-flayer",
+      "n": "Mind Flayer (Illithid)",
+      "t": "Monster",
+      "c": "Aberration",
+      "s": "CR 8",
+      "f": "srd_monsters.json",
+      "a": [
+        "Mind Flayer"
+      ]
     }
   ]
 }

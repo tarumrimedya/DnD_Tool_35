@@ -7141,12 +7141,14 @@
         if (cleaned) rawNames.add(cleaned);
       });
 
-      const classDefs = (typeof DND35_CLASS_DEFS !== 'undefined') ? DND35_CLASS_DEFS : DND35_BASE_CLASS_DEFS;
+      const classDefs = (typeof getAvailableClassDefs === 'function')
+        ? getAvailableClassDefs()
+        : ((typeof DND35_CLASS_DEFS !== 'undefined') ? DND35_CLASS_DEFS : DND35_BASE_CLASS_DEFS);
 
       rawNames.forEach(raw => {
         const lower = raw.toLowerCase();
         const canonical = DND35_CLASS_ALIASES[lower] || Object.keys(classDefs).find(k => k.toLowerCase() === lower) || raw;
-        const def = classDefs[canonical];
+        const def = classDefs[canonical] || (typeof RuleEngine !== 'undefined' && RuleEngine.getClassDef ? RuleEngine.getClassDef(canonical) : null);
         if (def && Array.isArray(def.classSkills)) {
           def.classSkills.forEach(sk => classSkills.add(sk));
         }
@@ -7187,197 +7189,8 @@
       char._classSkillsInitialized = true;
     }
 
-    // D&D 3.5e Class Progression Reference Table & Dynamic Class System
-    const DND35_BASE_CLASS_DEFS = {
-      "Warblade": {
-        classSkills: ["balance", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "intimidate", "jump", "martial_lore", "swim"],
-        hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
-        type: 'Base Class', source: 'Tome of Battle', role: 'Martial Adept / Tank & Striker',
-        description: 'Resilient d12 martial adept who combines tactical insight (INT) with Sublime Way maneuvers.'
-      },
-      "Fighter": {
-        classSkills: ["climb", "craft_alchemy", "craft_armor", "craft_weapon", "handle_animal", "intimidate", "jump", "ride", "swim"],
-        hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
-        type: 'Base Class', source: "Player's Handbook", role: 'Martial / Feat Specialist',
-        description: 'Versatile martial combatant who masters any weapon or fighting style through bonus combat feats.'
-      },
-      "Barbarian": {
-        classSkills: ["climb", "craft_alchemy", "craft_armor", "craft_weapon", "handle_animal", "intimidate", "jump", "listen", "ride", "survival", "swim"],
-        hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
-        type: 'Base Class', source: "Player's Handbook", role: 'Martial / Berserker',
-        description: 'Ferocious d12 warrior who channels primal Rage for massive Strength and Constitution boosts.'
-      },
-      "Rogue": {
-        classSkills: ["appraise", "balance", "bluff", "climb", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "diplomacy", "disable_device", "disguise", "escape_artist", "forgery", "gather_information", "hide", "intimidate", "jump", "k_local", "listen", "move_silently", "open_lock", "perform", "profession", "search", "sense_motive", "sleight_of_hand", "spot", "swim", "tumble", "umd", "use_rope"],
-        hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "poor", skills: 8,
-        type: 'Base Class', source: "Player's Handbook", role: 'Expert / Precision Damage',
-        description: 'Skilled infiltrator and trapfinder who strikes vital weak points with deadly Sneak Attack dice.'
-      },
-      "Wizard": {
-        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "profession", "spellcraft"],
-        hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
-        type: 'Base Class', source: "Player's Handbook", role: 'Arcane Caster (Prepared)',
-        description: 'Scholarly arcane spellcaster who prepares versatile spells from a spellbook to bend reality.'
-      },
-      "Sorcerer": {
-        classSkills: ["bluff", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "k_arcana", "profession", "spellcraft"],
-        hd: 4, bab: 0.5, fort: "poor", ref: "poor", will: "good", skills: 2,
-        type: 'Base Class', source: "Player's Handbook", role: 'Arcane Caster (Spontaneous)',
-        description: 'Innate arcane spellcaster who casts spells spontaneously without advance preparation.'
-      },
-      "Cleric": {
-        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "heal", "k_arcana", "k_history", "k_religion", "k_planes", "profession", "spellcraft"],
-        hd: 8, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 2,
-        type: 'Base Class', source: "Player's Handbook", role: 'Divine Caster / Healer & Buffer',
-        description: 'Devoted divine caster who channels positive or negative energy, turns undead, and wears heavy armor.'
-      },
-      "Paladin": {
-        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "handle_animal", "heal", "k_nobility", "k_religion", "profession", "ride", "sense_motive"],
-        hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 2,
-        type: 'Base Class', source: "Player's Handbook", role: 'Divine Champion / Tank',
-        description: 'Holy champion of law and good gifted with Smite Evil, Divine Grace, and Lay on Hands.'
-      },
-      "Ranger": {
-        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "handle_animal", "heal", "hide", "jump", "k_dungeon", "k_geo", "k_nature", "listen", "move_silently", "profession", "ride", "search", "spot", "survival", "swim", "use_rope"],
-        hd: 8, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 6,
-        type: 'Base Class', source: "Player's Handbook", role: 'Martial / Scout & Hunter',
-        description: 'Skilled hunter and tracker who excels against Favored Enemies with archery or two-weapon combat.'
-      },
-      "Monk": {
-        classSkills: ["balance", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "escape_artist", "hide", "jump", "k_arcana", "k_religion", "listen", "move_silently", "perform", "profession", "sense_motive", "spot", "swim", "tumble"],
-        hd: 8, bab: 0.75, fort: "good", ref: "good", will: "good", skills: 4,
-        type: 'Base Class', source: "Player's Handbook", role: 'Martial / Unarmed & Ki Striker',
-        description: 'Unarmed martial artist with all good saving throws, Flurry of Blows, Evasion, and high speed.'
-      },
-      "Bard": {
-        classSkills: ["appraise", "balance", "bluff", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "diplomacy", "disguise", "escape_artist", "gather_information", "hide", "jump", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "listen", "move_silently", "perform", "profession", "sense_motive", "sleight_of_hand", "spellcraft", "swim", "tumble", "umd"],
-        hd: 6, bab: 0.75, fort: "poor", ref: "good", will: "good", skills: 6,
-        type: 'Base Class', source: "Player's Handbook", role: 'Support / Arcane & Diplomat',
-        description: 'Versatile performer who inspires allies with Bardic Music, Bardic Knowledge, and arcane magic.'
-      },
-      "Druid": {
-        classSkills: ["concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "handle_animal", "heal", "k_nature", "listen", "profession", "ride", "spellcraft", "spot", "survival", "swim"],
-        hd: 8, bab: 0.75, fort: "good", ref: "poor", will: "good", skills: 4,
-        type: 'Base Class', source: "Player's Handbook", role: 'Divine / Wild Shape & Nature Caster',
-        description: 'Divine guardian of nature with an Animal Companion, spontaneous summoning, and Wild Shape.'
-      },
-      "Crusader": {
-        classSkills: ["balance", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "diplomacy", "intimidate", "jump", "k_history", "k_religion", "martial_lore", "ride"],
-        hd: 10, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
-        type: 'Base Class', source: 'Tome of Battle', role: 'Martial Adept / Tank & Leader',
-        description: 'Armored martial adept who delays incoming damage via Steely Resolve and channels Devoted Spirit.'
-      },
-      "Swordsage": {
-        classSkills: ["balance", "climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "heal", "hide", "intimidate", "jump", "k_history", "k_local", "k_nature", "k_nobility", "listen", "martial_lore", "move_silently", "profession", "ride", "sense_motive", "swim", "tumble"],
-        hd: 8, bab: 0.75, fort: "poor", ref: "good", will: "good", skills: 6,
-        type: 'Base Class', source: 'Tome of Battle', role: 'Martial Adept / Versatile Striker',
-        description: 'Blade-magic sage with the largest maneuver pool and Wisdom to Armor Class.'
-      },
-      "Duskblade": {
-        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "decipher_script", "jump", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "profession", "ride", "sense_motive", "spellcraft", "swim"],
-        hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
-        type: 'Base Class', source: "Player's Handbook II", role: 'Gish / Arcane Melee Channeler',
-        description: 'Hybrid warrior-mage who channels touch spells directly through melee weapon strikes.'
-      },
-      "Warlock": {
-        classSkills: ["bluff", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "disguise", "intimidate", "jump", "k_arcana", "k_religion", "k_planes", "profession", "sense_motive", "spellcraft", "umd"],
-        hd: 6, bab: 0.75, fort: "poor", ref: "poor", will: "good", skills: 2,
-        type: 'Base Class', source: 'Complete Arcane', role: 'Arcane / Eldritch Blast Invocator',
-        description: 'Wielder of at-will Eldritch Blast and dark arcane invocations.'
-      },
-      "Abjurant Champion": {
-        classSkills: ["climb", "concentration", "craft_alchemy", "craft_armor", "craft_weapon", "handle_animal", "intimidate", "jump", "k_arcana", "ride", "spellcraft", "swim"],
-        hd: 10, bab: 1.0, fort: "poor", ref: "poor", will: "good", skills: 2,
-        type: 'Prestige Class', isPrestige: true, maxLevel: 5, source: 'Complete Mage', role: 'Gish (Arcane Warrior)',
-        description: 'Arcane gish prestige class that casts enhanced abjuration spells as swift actions and scales CL to BAB.',
-        prerequisites: [
-          { text: "Base Attack Bonus: +5", key: "bab", min: 5 },
-          { text: "Feat: Combat Casting", key: "feat", name: "Combat Casting" },
-          { text: "Spells: Able to cast 1st-level arcane spells (including an abjuration spell)", key: "arcane", minLvl: 1 },
-          { text: "Weapon: Proficient with at least one martial weapon", key: "weapon" }
-        ]
-      },
-      "Bloodstorm Blade": {
-        classSkills: ["balance", "craft_alchemy", "craft_armor", "craft_weapon", "intimidate", "jump", "martial_lore", "tumble"],
-        hd: 12, bab: 1.0, fort: "good", ref: "poor", will: "poor", skills: 4,
-        type: 'Prestige Class', isPrestige: true, source: 'Tome of Battle', role: 'Martial / Thrown Weapon Specialist',
-        maxLevel: 10,
-        description: 'Legendary Iron Heart master who treats thrown weapons as melee strikes and ricochets blades back to hand instantly.',
-        prerequisites: [
-          { text: "Base Attack Bonus: +4", key: "bab", min: 4 },
-          { text: "Feat: Point Blank Shot", key: "feat", name: "Point Blank Shot" },
-          { text: "Martial Maneuvers: One Iron Heart strike and one Iron Heart stance", key: "maneuver" },
-          { text: "Skills: Balance 4 ranks", key: "skill" }
-        ],
-        features: {
-          "1": [
-            { name: "Returning Attacks (Ex)", summary: "Expend an Iron Heart strike to imbue thrown weapons with the Returning property" },
-            { name: "Weapon Aptitude (Ex)", summary: "Reassign weapon-specific feats to a different weapon with 1 hour of morning practice" }
-          ],
-          "2": [
-            { name: "Martial Throw (Ex)", summary: "Initiate Iron Heart strikes with thrown weapons" },
-            { name: "Thunderous Throw (Ex)", summary: "As a swift action, treat your ranged thrown attacks as melee attacks (enables Power Attack & 1.5x STR)" }
-          ],
-          "3": [
-            { name: "Bonus Feat", summary: "Select a Fighter/thrown-weapon bonus feat" }
-          ],
-          "4": [
-            { name: "Lightning Ricochet (Ex)", summary: "Thrown weapons return to your hand immediately after resolving each attack, enabling full iterative thrown attacks" }
-          ],
-          "5": [
-            { name: "Blood Wind Ricochet (Ex)", summary: "Full-round action: ricochet a single thrown weapon off multiple targets within range increments" }
-          ],
-          "6": [
-            { name: "Bonus Feat", summary: "Select a Fighter/thrown-weapon bonus feat" }
-          ],
-          "7": [
-            { name: "Eye of the Storm (Ex)", summary: "Making ranged attacks with thrown weapons no longer provokes Attacks of Opportunity" }
-          ],
-          "8": [
-            { name: "Blood Rain (Ex)", summary: "Expend an Iron Heart maneuver to inflict 1d6 bleeding damage per hit for 5 rounds" }
-          ],
-          "9": [
-            { name: "Bonus Feat", summary: "Select a Fighter/thrown-weapon bonus feat" }
-          ],
-          "10": [
-            { name: "Blade Storm (Ex)", summary: "Full-round action: make a thrown weapon attack at your highest bonus against every enemy within range" }
-          ]
-        }
-      },
-      "Dervish": {
-        classSkills: ["balance", "craft_alchemy", "craft_armor", "craft_weapon", "escape_artist", "jump", "listen", "perform", "profession", "swim", "tumble"],
-        hd: 10, bab: 1.0, fort: "good", ref: "good", will: "poor", skills: 4,
-        type: 'Prestige Class', isPrestige: true, maxLevel: 10, source: 'Complete Warrior', role: 'Martial / Mobile Full Attack',
-        description: 'Whirling slashing-weapon specialist who executes a full attack while moving at full speed via Dervish Dance.',
-        prerequisites: [
-          { text: "Base Attack Bonus: +5", key: "bab", min: 5 },
-          { text: "Feats: Combat Expertise, Dodge, Mobility, Weapon Focus (any slashing melee weapon)", key: "feat", name: "Combat Expertise" },
-          { text: "Skills: Perform (dance) 3 ranks, Tumble 3 ranks", key: "skill" }
-        ]
-      },
-      "Spellsword": {
-        classSkills: ["climb", "concentration", "jump", "k_arcana", "k_arch", "k_dungeon", "k_geo", "k_history", "k_local", "k_nature", "k_nobility", "k_religion", "k_planes", "profession", "spellcraft"],
-        hd: 8, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
-        type: 'Prestige Class', isPrestige: true, maxLevel: 10, source: 'Complete Warrior', role: 'Gish / Ignore ASF & Spell Channeling',
-        description: 'Armored spellsword who reduces Arcane Spell Failure (ASF) and channels spells through melee weapons.',
-        prerequisites: [
-          { text: "Base Attack Bonus: +4", key: "bab", min: 4 },
-          { text: "Proficiency: Proficient with all simple and martial weapons and with light, medium, and heavy armor", key: "armor" },
-          { text: "Spells: Able to cast 2nd-level arcane spells", key: "arcane", minLvl: 2 }
-        ]
-      },
-      "Jade Phoenix Mage": {
-        classSkills: ["climb", "concentration", "diplomacy", "handle_animal", "intimidate", "jump", "martial_lore", "ride", "sense_motive", "tumble"],
-        hd: 6, bab: 1.0, fort: "good", ref: "poor", will: "good", skills: 2,
-        type: 'Prestige Class', isPrestige: true, maxLevel: 10, source: 'Tome of Battle', role: 'Gish (Martial Adept + Arcane)',
-        description: 'Sublime arcane-martial adept who blends arcane magic with Desert Wind and Devoted Spirit maneuvers.',
-        prerequisites: [
-          { text: "Martial Maneuvers: Two maneuvers (at least one strike) and one stance", key: "maneuver" },
-          { text: "Spells: Able to cast 2nd-level arcane spells", key: "arcane", minLvl: 2 },
-          { text: "Skills: Concentration 9 ranks, Knowledge (arcana) 4 ranks, Knowledge (history) 2 ranks", key: "skill" }
-        ]
-      }
-    };
+    // D&D 3.5e Class Progression Reference Table & Dynamic Class System (Hydrated from database/srd_classes_races.json via SrdCompendium)
+    const DND35_BASE_CLASS_DEFS = {};
 
     let DND35_CLASS_DEFS = { ...DND35_BASE_CLASS_DEFS };
     if (typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) {

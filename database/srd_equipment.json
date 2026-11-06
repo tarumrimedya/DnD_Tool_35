@@ -8875,7 +8875,7 @@
     "casterLevel": 16,
     "requirements": "CL 16th; Craft Magic Arms and Armor, gaseous form, continual flame",
     "description": "<p>A brilliant energy weapon has its significant portion transformed into light, although this does not modify the item&rsquo;s weight. It always gives off light as a torch (20-foot radius). A brilliant energy weapon ignores nonliving matter. Armor and shield bonuses to AC (including any enhancement bonuses to that armor) do not count against it because the weapon passes through armor. (Dexterity, deflection, dodge, natural armor, and other such bonuses still apply.) A brilliant energy weapon cannot harm undead, constructs, and objects. This property can only be applied to melee weapons, thrown weapons, and ammunition.</p>",
-    "shortDescription": "A brilliant energy weapon has its significant portion transformed into light, although this does not modify the item’s weight. It always gives off light as a torch (20-foot radius). A brilliant energy weapon ignores non…",
+    "shortDescription": "A brilliant energy weapon has its significant portion transformed into light, although this does not modify the item's weight. It always gives off light as a torch (20-foot radius). A brilliant energy weapon ignores non…",
     "tags": [
       "enhancement",
       "weapon"
@@ -9003,7 +9003,7 @@
     "casterLevel": 8,
     "requirements": "CL 8th; Craft Magic Arms and Armor, creator must be a monk",
     "description": "<p>The magic weapon serves as a channel for the wielder’s ki, allowing her to use her special ki attacks through the weapon as if they were unarmed attacks. These attacks include the monk’s stunning attack, ki strike, and quivering palm, as well as the Stunning Fist feat. Only melee weapons can have the ki focus ability.</p>",
-    "shortDescription": "The magic weapon serves as a channel for the wielder’s ki, allowing her to use her special ki attacks through the weapon as if they were unarmed attacks. These attacks include the monk’s stunning attack, ki strike, and…",
+    "shortDescription": "The magic weapon serves as a channel for the wielder's ki, allowing her to use her special ki attacks through the weapon as if they were unarmed attacks. These attacks include the monk's stunning attack, ki strike, and…",
     "tags": [
       "enhancement",
       "weapon"
@@ -9141,7 +9141,7 @@
     "casterLevel": 5,
     "requirements": "CL 5th/10th/15th; Craft Magic Arms and Armor, silence",
     "description": "<p>Slick armor seems coated at all times with a slightly greasy oil, granting a +5/+10/+15 competence bonus on Escape Artist checks. (The armor&rsquo;s armor check penalty still applies normally.)</p>\n<p>Set Enhancement level from 1 to 3 to set enhancement strength:</p>\n<ol>\n<li>Standard (+5)</li>\n<li>Improved (+10)</li>\n<li>Greater (+15)</li>\n</ol>",
-    "shortDescription": "Slick armor seems coated at all times with a slightly greasy oil, granting a +5/+10/+15 competence bonus on Escape Artist checks. (The armor’s armor check penalty still applies normally.) Set Enhancement level from 1 to…",
+    "shortDescription": "Slick armor seems coated at all times with a slightly greasy oil, granting a +5/+10/+15 competence bonus on Escape Artist checks. (The armor's armor check penalty still applies normally.) Set Enhancement level from 1 to…",
     "tags": [
       "enhancement",
       "armor"
@@ -9635,7 +9635,7 @@
     "casterLevel": 0,
     "requirements": [],
     "description": "<p>A ghost touch weapon deals damage normally against incorporeal creatures, regardless of its bonus. (An incorporeal creature&rsquo;s 50% chance to avoid damage does not apply to attacks with ghost touch weapons.) The weapon can be picked up and moved by an incorporeal creature at any time. A manifesting ghost can wield the weapon against corporeal foes. Essentially, a ghost touch weapon counts as either corporeal or incorporeal at any given time, whichever is more beneficial to the wielder.</p>",
-    "shortDescription": "A ghost touch weapon deals damage normally against incorporeal creatures, regardless of its bonus. (An incorporeal creature’s 50% chance to avoid damage does not apply to attacks with ghost touch weapons.) The weapon ca…",
+    "shortDescription": "A ghost touch weapon deals damage normally against incorporeal creatures, regardless of its bonus. (An incorporeal creature's 50% chance to avoid damage does not apply to attacks with ghost touch weapons.) The weapon ca…",
     "tags": [
       "enhancement",
       "weapon"
@@ -9806,7 +9806,7 @@
     "casterLevel": 10,
     "requirements": "CL 10th; Craft Magical Arms and Armor, keen edge",
     "description": "<p>This ability doubles the threat range of a weapon. Only piercing or slashing weapons can be keen. (If you roll this property randomly for an inappropriate weapon, reroll.) This benefit doesn’t stack with any other effect that expands the threat range of a weapon (such as the keen edge spell or the Improved Critical feat).</p>",
-    "shortDescription": "This ability doubles the threat range of a weapon. Only piercing or slashing weapons can be keen. (If you roll this property randomly for an inappropriate weapon, reroll.) This benefit doesn’t stack with any other effec…",
+    "shortDescription": "This ability doubles the threat range of a weapon. Only piercing or slashing weapons can be keen. (If you roll this property randomly for an inappropriate weapon, reroll.) This benefit doesn't stack with any other effec…",
     "tags": [
       "enhancement",
       "weapon"
@@ -10346,7 +10346,7 @@
     "casterLevel": 7,
     "requirements": "CL 7th; Craft Magic Arms and Armor, telekinesis",
     "description": "<p>This special ability can only be placed on a weapon that can be thrown. A returning weapon flies through the air back to the creature that threw it. It returns to the thrower just before the creature’s next turn (and is therefore ready to use again in that turn).</p>\n<p> </p>\n<p>Catching a returning weapon when it comes back is a free action. If the character can’t catch it, or if the character has moved since throwing it, the weapon drops to the ground in the square from which it was thrown.</p>",
-    "shortDescription": "This special ability can only be placed on a weapon that can be thrown. A returning weapon flies through the air back to the creature that threw it. It returns to the thrower just before the creature’s next turn (and is…",
+    "shortDescription": "This special ability can only be placed on a weapon that can be thrown. A returning weapon flies through the air back to the creature that threw it. It returns to the thrower just before the creature's next turn (and is…",
     "tags": [
       "enhancement",
       "weapon"
@@ -10516,7 +10516,7 @@
     "casterLevel": 0,
     "requirements": "",
     "description": "<p>This property grants the armor&rsquo;s wearer spell resistance while the armor is worn. The spell resistance can be 13, 15, 17, or 19, depending on the armor.</p>\n<p>Set enhancement to:</p>\n<ol>\n<li>SR 13</li>\n<li>SR 15</li>\n<li>SR 17</li>\n<li>SR 19</li>\n</ol>",
-    "shortDescription": "This property grants the armor’s wearer spell resistance while the armor is worn. The spell resistance can be 13, 15, 17, or 19, depending on the armor. Set enhancement to: SR 13 SR 15 SR 17 SR 19",
+    "shortDescription": "This property grants the armor's wearer spell resistance while the armor is worn. The spell resistance can be 13, 15, 17, or 19, depending on the armor. Set enhancement to: SR 13 SR 15 SR 17 SR 19",
     "tags": [
       "enhancement",
       "misc"
@@ -10628,7 +10628,7 @@
     "casterLevel": 7,
     "requirements": "CL 7th; Craft Magic Arms and Armor, haste",
     "description": "<p>When making a full attack action, the wielder of a speed weapon may make one extra attack with it. The attack uses the wielder&rsquo;s full base attack bonus, plus any modifiers appropriate to the situation. (This benefit is not cumulative with similar effects, such as a haste spell.)</p>",
-    "shortDescription": "When making a full attack action, the wielder of a speed weapon may make one extra attack with it. The attack uses the wielder’s full base attack bonus, plus any modifiers appropriate to the situation. (This benefit is…",
+    "shortDescription": "When making a full attack action, the wielder of a speed weapon may make one extra attack with it. The attack uses the wielder's full base attack bonus, plus any modifiers appropriate to the situation. (This benefit is…",
     "tags": [
       "enhancement",
       "weapon"
@@ -11062,7 +11062,7 @@
     "casterLevel": 5,
     "requirements": "CL 5th/10th/15th; Craft Magic Arms and Armor, invisibility",
     "description": "<p>This armor is jet black and blurs the wearer whenever she tries to hide, granting a +5 competence bonus on Hide checks. (The armor&rsquo;s armor check penalty still applies normally.)</p>\n<p>Set Enhancement level from 1 to 3 to set enhancement strength:</p>\n<ol>\n<li>Standard</li>\n<li>Improved</li>\n<li>Greater</li>\n</ol>",
-    "shortDescription": "This armor is jet black and blurs the wearer whenever she tries to hide, granting a +5 competence bonus on Hide checks. (The armor’s armor check penalty still applies normally.) Set Enhancement level from 1 to 3 to set…",
+    "shortDescription": "This armor is jet black and blurs the wearer whenever she tries to hide, granting a +5 competence bonus on Hide checks. (The armor's armor check penalty still applies normally.) Set Enhancement level from 1 to 3 to set…",
     "tags": [
       "enhancement",
       "armor"
@@ -11159,7 +11159,7 @@
     "casterLevel": 8,
     "requirements": "CL 8th; Craft Magic Arms and Armor, shield or shield of faith",
     "description": "<p>A defending weapon allows the wielder to transfer some or all of the sword’s enhancement bonus to his AC as a bonus that stacks with all others. As a free action, the wielder chooses how to allocate the weapon’s enhancement bonus at the start of his turn before using the weapon, and the effect to AC lasts until his next turn.</p>",
-    "shortDescription": "A defending weapon allows the wielder to transfer some or all of the sword’s enhancement bonus to his AC as a bonus that stacks with all others. As a free action, the wielder chooses how to allocate the weapon’s enhance…",
+    "shortDescription": "A defending weapon allows the wielder to transfer some or all of the sword's enhancement bonus to his AC as a bonus that stacks with all others. As a free action, the wielder chooses how to allocate the weapon's enhance…",
     "tags": [
       "enhancement",
       "weapon"
@@ -11218,7 +11218,7 @@
     "casterLevel": 5,
     "requirements": "CL 5th/10th/15th; Craft Magic Arms and Armor, silence",
     "description": "<p>This armor is well oiled and magically constructed so that it not only makes little sound, but it dampens sound around it, granting a +5/+10/+15 competence bonus on Move Silently checks. (The armor’s armor check penalty still applies normally.)</p>\n<p>Set Enhancement level from 1 to 3 to set enhancement strength:</p>\n<ol>\n<li>Standard (+5)</li>\n<li>Improved (+10)</li>\n<li>Greater (+15)</li>\n</ol>",
-    "shortDescription": "This armor is well oiled and magically constructed so that it not only makes little sound, but it dampens sound around it, granting a +5/+10/+15 competence bonus on Move Silently checks. (The armor’s armor check penalty…",
+    "shortDescription": "This armor is well oiled and magically constructed so that it not only makes little sound, but it dampens sound around it, granting a +5/+10/+15 competence bonus on Move Silently checks. (The armor's armor check penalty…",
     "tags": [
       "enhancement",
       "armor"
@@ -13974,7 +13974,7 @@
     "weight": 0,
     "casterLevel": 0,
     "description": "<p><span style=\"color: #191813; font-size: 13px;\">Forces the target, if damaged by the arrow&rsquo;s attack, to make a DC 20 Fortitude save or be slain immediately. It takes one day to make an arrow of death, and the arrow only functions for the arcane archer who created it. The arrow of death lasts no longer than one year, and the archer can only have one such arrow in existence at a time.</span></p>",
-    "shortDescription": "Forces the target, if damaged by the arrow’s attack, to make a DC 20 Fortitude save or be slain immediately. It takes one day to make an arrow of death, and the arrow only functions for the arcane archer who created it.…",
+    "shortDescription": "Forces the target, if damaged by the arrow's attack, to make a DC 20 Fortitude save or be slain immediately. It takes one day to make an arrow of death, and the arrow only functions for the arcane archer who created it.…",
     "tags": [
       "magicitem",
       "wondrous",
@@ -30045,7 +30045,7 @@
     "weight": 3,
     "casterLevel": 0,
     "description": "<p>This large, leatherbound book serves as a wizard’s reference. A spellbook has 100 pages of parchment, and each spell takes up one page per spell level (one page each for 0-level spells). See Space in the Spellbook, page 179.</p>",
-    "shortDescription": "A large, leather-bound wizard’s spellbook containing 100 blank parchment pages.",
+    "shortDescription": "A large, leather-bound wizard's spellbook containing 100 blank parchment pages.",
     "tags": [
       "gear",
       "wondrous",
@@ -30062,7 +30062,7 @@
     "id": "gear-artisans-tools-masterworked",
     "foundryId": "5a5AyKFG9FZSx4k7",
     "schemaVersion": 2,
-    "name": "Artisan’s tools, masterworked",
+    "name": "Artisan's tools, masterworked",
     "type": "Tool",
     "category": "Tool",
     "slot": "Slotless",
@@ -30143,7 +30143,7 @@
     "id": "gear-travelers-outfit",
     "foundryId": "6oZL6jJG4trhSv7h",
     "schemaVersion": 2,
-    "name": "Traveler’s outfit",
+    "name": "Traveler's outfit",
     "type": "Gear",
     "category": "Wondrous",
     "slot": "Slotless",
@@ -30195,7 +30195,7 @@
     "id": "gear-monks-outfit",
     "foundryId": "7eiymGzhwkJgqhJK",
     "schemaVersion": 2,
-    "name": "Monk’s outfit",
+    "name": "Monk's outfit",
     "type": "Gear",
     "category": "Wondrous",
     "slot": "Slotless",
@@ -30204,7 +30204,7 @@
     "weight": 2,
     "casterLevel": 0,
     "description": "<p>This simple outfit includes sandals, loose breeches, and a loose shirt, and is all bound together with sashes. The outfit is designed to give you maximum mobility, and it’s made of high-quality fabric. You can hide small weapons in pockets hidden in the folds, and the sashes are strong enough to serve as short ropes.</p>",
-    "shortDescription": "This simple outfit includes sandals, loose breeches, and a loose shirt, and is all bound together with sashes. The outfit is designed to give you maximum mobility, and it’s made of high-quality fabric. You can hide smal…",
+    "shortDescription": "This simple outfit includes sandals, loose breeches, and a loose shirt, and is all bound together with sashes. The outfit is designed to give you maximum mobility, and it's made of high-quality fabric. You can hide smal…",
     "tags": [
       "gear",
       "wondrous",
@@ -30348,7 +30348,7 @@
     "weight": 0.5,
     "casterLevel": 0,
     "description": "<p>When a wall doesn&rsquo;t offer handholds and footholds, you can make your own. A piton is a steel spike with an eye through which you can loop a rope. (See the Climb skill, page 69).</p>",
-    "shortDescription": "When a wall doesn’t offer handholds and footholds, you can make your own. A piton is a steel spike with an eye through which you can loop a rope. (See the Climb skill, page 69).",
+    "shortDescription": "When a wall doesn't offer handholds and footholds, you can make your own. A piton is a steel spike with an eye through which you can loop a rope. (See the Climb skill, page 69).",
     "tags": [
       "gear",
       "wondrous",
@@ -30459,7 +30459,7 @@
     "id": "gear-alchemists-fire",
     "foundryId": "CLrtXQqD3oJ2uubQ",
     "schemaVersion": 2,
-    "name": "Alchemist’s fire",
+    "name": "Alchemist's fire",
     "type": "Consumable",
     "category": "Alchemical",
     "slot": "Slotless",
@@ -30547,7 +30547,7 @@
     "id": "gear-pick-miners",
     "foundryId": "DKRRPuV4ZqzyPYvW",
     "schemaVersion": 2,
-    "name": "Pick, miner’s",
+    "name": "Pick, miner's",
     "type": "Gear",
     "category": "Wondrous",
     "slot": "Slotless",
@@ -30628,7 +30628,7 @@
     "weight": 0.5,
     "casterLevel": 0,
     "description": "<p>This leather pouch straps to your belt. It’s good for holding small items.</p>",
-    "shortDescription": "This leather pouch straps to your belt. It’s good for holding small items.",
+    "shortDescription": "This leather pouch straps to your belt. It's good for holding small items.",
     "tags": [
       "gear",
       "wondrous",
@@ -30730,7 +30730,7 @@
     "id": "gear-alchemists-lab",
     "foundryId": "FSayt67cePY4DpwC",
     "schemaVersion": 2,
-    "name": "Alchemist’s lab",
+    "name": "Alchemist's lab",
     "type": "Tool",
     "category": "Tool",
     "slot": "Slotless",
@@ -30923,7 +30923,7 @@
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>This well-made item is the perfect tool for the job. It grants a +2 circumstance bonus on a related skill check (if any). Some examples of this sort of item from Table 7&ndash;8 include masterwork artisan&rsquo;s tools, masterwork thieves&rsquo; tools, disguise kit, climber&rsquo;s kit, healer&rsquo;s kit, and masterwork musical instrument. This entry covers just about anything else. Bonuses provided by multiple masterwork items used toward the same skill check do not stack, so masterwork pitons and a masterwork climber&rsquo;s kit do not provide a +4 bonus if used together on a Climb check.</p>",
-    "shortDescription": "This well-made item is the perfect tool for the job. It grants a +2 circumstance bonus on a related skill check (if any). Some examples of this sort of item from Table 7–8 include masterwork artisan’s tools, masterwork…",
+    "shortDescription": "This well-made item is the perfect tool for the job. It grants a +2 circumstance bonus on a related skill check (if any). Some examples of this sort of item from Table 7–8 include masterwork artisan's tools, masterwork…",
     "tags": [
       "gear",
       "wondrous",
@@ -30938,7 +30938,7 @@
     "id": "gear-thieves-tools",
     "foundryId": "JPR4dAKnUbJFsvMi",
     "schemaVersion": 2,
-    "name": "Thieves’ tools",
+    "name": "Thieves' tools",
     "type": "Tool",
     "category": "Tool",
     "slot": "Slotless",
@@ -30964,7 +30964,7 @@
     "id": "gear-thieves-tools-masterworked",
     "foundryId": "JPR4dAdnUbJFsvMi",
     "schemaVersion": 2,
-    "name": "Thieves’ tools masterworked",
+    "name": "Thieves' tools masterworked",
     "type": "Tool",
     "category": "Tool",
     "slot": "Slotless",
@@ -31025,7 +31025,7 @@
     "id": "gear-healers-kit",
     "foundryId": "K8dnv2zsyiZ2wSxp",
     "schemaVersion": 2,
-    "name": "Healer’s kit",
+    "name": "Healer's kit",
     "type": "Tool",
     "category": "Tool",
     "slot": "Slotless",
@@ -31058,7 +31058,7 @@
     "id": "gear-entertainers-outfit",
     "foundryId": "KwGeiuXAMPx5S3Gd",
     "schemaVersion": 2,
-    "name": "Entertainer’s outfit",
+    "name": "Entertainer's outfit",
     "type": "Gear",
     "category": "Wondrous",
     "slot": "Slotless",
@@ -31322,7 +31322,7 @@
     "id": "gear-artisans-outfit",
     "foundryId": "R3vYXNxsGEgDAESD",
     "schemaVersion": 2,
-    "name": "Artisan’s outfit",
+    "name": "Artisan's outfit",
     "type": "Gear",
     "category": "Wondrous",
     "slot": "Slotless",
@@ -31444,7 +31444,7 @@
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock&rsquo;s quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).</p>",
-    "shortDescription": "A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock’s quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).",
+    "shortDescription": "A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock's quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).",
     "tags": [
       "gear",
       "wondrous",
@@ -31512,7 +31512,7 @@
     "id": "gear-scale-merchants",
     "foundryId": "SoV9cuiXxis6qEwh",
     "schemaVersion": 2,
-    "name": "Scale, merchant’s",
+    "name": "Scale, merchant's",
     "type": "Tool",
     "category": "Tool",
     "slot": "Slotless",
@@ -31670,7 +31670,7 @@
     "id": "gear-climbers-kit",
     "foundryId": "YfJhoNHfyYYdRpEA",
     "schemaVersion": 2,
-    "name": "Climber’s kit",
+    "name": "Climber's kit",
     "type": "Tool",
     "category": "Tool",
     "slot": "Slotless",
@@ -31701,7 +31701,7 @@
     "id": "gear-scholars-outfit",
     "foundryId": "YksRcT2rHSEVWpKK",
     "schemaVersion": 2,
-    "name": "Scholar’s outfit",
+    "name": "Scholar's outfit",
     "type": "Gear",
     "category": "Wondrous",
     "slot": "Slotless",
@@ -31725,7 +31725,7 @@
     "id": "gear-nobles-outfit",
     "foundryId": "Yn5VKxYuEDwmez8R",
     "schemaVersion": 2,
-    "name": "Noble’s outfit",
+    "name": "Noble's outfit",
     "type": "Gear",
     "category": "Wondrous",
     "slot": "Slotless",
@@ -32040,7 +32040,7 @@
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>A pint of oil burns for 6 hours in a lantern. You can use a flask of oil as a splash weapon (see Throw Splash Weapon, page 158). Use the rules for alchemist’s fire, except that it takes a full-round action to prepare a flask with a fuse. Once it is thrown, there is a 50% chance of the flask igniting successfully. You can pour a pint of oil on the ground to cover an area 5 feet square, provided that the surface is smooth. If lit, the oil burns for 2 rounds and deals 1d3 points of fire damage to each creature in the area.</p>",
-    "shortDescription": "A pint of oil burns for 6 hours in a lantern. You can use a flask of oil as a splash weapon (see Throw Splash Weapon, page 158). Use the rules for alchemist’s fire, except that it takes a full-round action to prepare a…",
+    "shortDescription": "A pint of oil burns for 6 hours in a lantern. You can use a flask of oil as a splash weapon (see Throw Splash Weapon, page 158). Use the rules for alchemist's fire, except that it takes a full-round action to prepare a…",
     "tags": [
       "gear",
       "wondrous",
@@ -32079,7 +32079,7 @@
     "id": "gear-explorers-outfit",
     "foundryId": "fVfSqBa99ueNPtzR",
     "schemaVersion": 2,
-    "name": "Explorer’s outfit",
+    "name": "Explorer's outfit",
     "type": "Gear",
     "category": "Wondrous",
     "slot": "Slotless",
@@ -32536,7 +32536,7 @@
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock&rsquo;s quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).</p>",
-    "shortDescription": "A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock’s quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).",
+    "shortDescription": "A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock's quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).",
     "tags": [
       "gear",
       "wondrous",
@@ -32623,7 +32623,7 @@
     "id": "gear-peasants-outfit",
     "foundryId": "rTtRmEBLYuH3eBmy",
     "schemaVersion": 2,
-    "name": "Peasant’s outfit",
+    "name": "Peasant's outfit",
     "type": "Gear",
     "category": "Wondrous",
     "slot": "Slotless",
@@ -32647,7 +32647,7 @@
     "id": "gear-clerics-vestments",
     "foundryId": "rwA9xLJE4dpBsgUr",
     "schemaVersion": 2,
-    "name": "Cleric’s vestments",
+    "name": "Cleric's vestments",
     "type": "Gear",
     "category": "Wondrous",
     "slot": "Slotless",
@@ -32778,7 +32778,7 @@
     "weight": 4,
     "casterLevel": 0,
     "description": "<p>A backpack is a leather pack carried on the back, typically with straps to secure it. </p>\n<p>The masterworked backpack makes the players strength score count as if it was one higher.</p>",
-    "shortDescription": "Ergonomic frame that treats the wearer’s Strength as 1 point higher for carrying capacity.",
+    "shortDescription": "Ergonomic frame that treats the wearer's Strength as 1 point higher for carrying capacity.",
     "tags": [
       "gear",
       "wondrous",
@@ -32840,7 +32840,7 @@
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock&rsquo;s quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).</p>",
-    "shortDescription": "A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock’s quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).",
+    "shortDescription": "A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock's quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).",
     "tags": [
       "gear",
       "wondrous",
@@ -32893,7 +32893,7 @@
     "id": "gear-artisans-tools",
     "foundryId": "uzCh6mMKPydadcCz",
     "schemaVersion": 2,
-    "name": "Artisan’s tools",
+    "name": "Artisan's tools",
     "type": "Tool",
     "category": "Tool",
     "slot": "Slotless",
@@ -32967,7 +32967,7 @@
     "id": "gear-courtiers-outfit",
     "foundryId": "wAJxJmBAvhWRHowy",
     "schemaVersion": 2,
-    "name": "Courtier’s outfit",
+    "name": "Courtier's outfit",
     "type": "Gear",
     "category": "Wondrous",
     "slot": "Slotless",
@@ -33031,7 +33031,7 @@
     "weight": 5,
     "casterLevel": 0,
     "description": "<p>You never know where you’re going to sleep, and a bedroll helps you get better sleep in a hayloft or on the cold ground. A bedroll consists of bedding and a blanket thin enough to be rolled up and tied. In an emergency, it can double as a stretcher.</p>",
-    "shortDescription": "You never know where you’re going to sleep, and a bedroll helps you get better sleep in a hayloft or on the cold ground. A bedroll consists of bedding and a blanket thin enough to be rolled up and tied. In an emergency,…",
+    "shortDescription": "You never know where you're going to sleep, and a bedroll helps you get better sleep in a hayloft or on the cold ground. A bedroll consists of bedding and a blanket thin enough to be rolled up and tied. In an emergency,…",
     "tags": [
       "gear",
       "wondrous",
@@ -33199,7 +33199,7 @@
     "weight": 1,
     "casterLevel": 0,
     "description": "<p>A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock’s quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).</p>",
-    "shortDescription": "A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock’s quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).",
+    "shortDescription": "A lock is worded with a large, bulky key. The DC to open a lock with the Open Lock skill depends on the lock's quality: very simple (DC 20), average (DC 25), good (DC 30), or amazing (DC 40).",
     "tags": [
       "gear",
       "wondrous",
@@ -37163,5 +37163,1427 @@
       "durationRounds": 500,
       "spellRef": "Flame Arrow"
     }
+  },
+  {
+    "id": "tool-artisan-s-tools-armorsmithing",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Armorsmithing)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Armorsmithing)</b> (PHB p.129): Special tools needed for <b>Craft (Armorsmithing)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Armorsmithing) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-armorsmithing-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Armorsmithing), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Armorsmithing), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Armorsmithing)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Armorsmithing) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Armorsmithing) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_armorsmithing",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-bowmaking",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Bowmaking)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Bowmaking)</b> (PHB p.129): Special tools needed for <b>Craft (Bowmaking)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Bowmaking) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-bowmaking-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Bowmaking), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Bowmaking), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Bowmaking)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Bowmaking) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Bowmaking) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_bowmaking",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-blacksmithing",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Blacksmithing)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Blacksmithing)</b> (PHB p.129): Special tools needed for <b>Craft (Blacksmithing)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Blacksmithing) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-blacksmithing-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Blacksmithing), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Blacksmithing), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Blacksmithing)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Blacksmithing) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Blacksmithing) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_blacksmithing",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-carpentry",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Carpentry)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Carpentry)</b> (PHB p.129): Special tools needed for <b>Craft (Carpentry)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Carpentry) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-carpentry-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Carpentry), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Carpentry), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Carpentry)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Carpentry) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Carpentry) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_carpentry",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-leatherworking",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Leatherworking)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Leatherworking)</b> (PHB p.129): Special tools needed for <b>Craft (Leatherworking)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Leatherworking) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-leatherworking-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Leatherworking), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Leatherworking), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Leatherworking)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Leatherworking) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Leatherworking) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_leatherworking",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-painting",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Painting)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Painting)</b> (PHB p.129): Special tools needed for <b>Craft (Painting)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Painting) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-painting-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Painting), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Painting), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Painting)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Painting) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Painting) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_painting",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-pottery",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Pottery)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Pottery)</b> (PHB p.129): Special tools needed for <b>Craft (Pottery)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Pottery) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-pottery-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Pottery), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Pottery), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Pottery)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Pottery) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Pottery) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_pottery",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-sculpting",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Sculpting)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Sculpting)</b> (PHB p.129): Special tools needed for <b>Craft (Sculpting)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Sculpting) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-sculpting-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Sculpting), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Sculpting), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Sculpting)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Sculpting) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Sculpting) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_sculpting",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-shipmaking",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Shipmaking)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Shipmaking)</b> (PHB p.129): Special tools needed for <b>Craft (Shipmaking)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Shipmaking) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-shipmaking-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Shipmaking), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Shipmaking), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Shipmaking)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Shipmaking) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Shipmaking) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_shipmaking",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-stonemasonry",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Stonemasonry)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Stonemasonry)</b> (PHB p.129): Special tools needed for <b>Craft (Stonemasonry)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Stonemasonry) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-stonemasonry-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Stonemasonry), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Stonemasonry), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Stonemasonry)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Stonemasonry) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Stonemasonry) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_stonemasonry",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-trapmaking",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Trapmaking)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Trapmaking)</b> (PHB p.129): Special tools needed for <b>Craft (Trapmaking)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Trapmaking) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-trapmaking-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Trapmaking), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Trapmaking), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Trapmaking)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Trapmaking) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Trapmaking) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_trapmaking",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-weaponsmithing",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Weaponsmithing)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Weaponsmithing)</b> (PHB p.129): Special tools needed for <b>Craft (Weaponsmithing)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Weaponsmithing) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-weaponsmithing-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Weaponsmithing), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Weaponsmithing), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Weaponsmithing)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Weaponsmithing) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Weaponsmithing) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_weaponsmithing",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-woodworking",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Woodworking)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Woodworking)</b> (PHB p.129): Special tools needed for <b>Craft (Woodworking)</b> checks. Using improvised tools imposes a -2 circumstance penalty on the Craft check.</p>",
+    "shortDescription": "Standard tools required for Craft (Woodworking) checks without the -2 penalty (PHB p.129).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-artisan-s-tools-woodworking-masterwork",
+    "schemaVersion": 2,
+    "name": "Artisan's Tools (Woodworking), Masterwork",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 55,
+    "weight": 5,
+    "description": "<p><b>Artisan's Tools (Woodworking), Masterwork</b> (PHB p.129): These masterwork tools serve the same purpose as standard artisan's tools for <b>Craft (Woodworking)</b>, but they are the perfect instruments for the job, granting a <b>+2 circumstance bonus</b> on Craft (Woodworking) checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Craft (Woodworking) checks (PHB p.129).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.craft_woodworking",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-bells",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Bells)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Bells)</b> (PHB p.130): A standard common musical instrument (bells) used for Perform checks.</p>",
+    "shortDescription": "Standard common bells for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-bells-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Bells), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Bells), Masterwork</b> (PHB p.130): A finely crafted masterwork bells that grants a <b>+2 circumstance bonus</b> on <b>Perform (Percussion Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (Percussion Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_percussion_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-chime",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Chime)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Chime)</b> (PHB p.130): A standard common musical instrument (chime) used for Perform checks.</p>",
+    "shortDescription": "Standard common chime for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-chime-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Chime), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Chime), Masterwork</b> (PHB p.130): A finely crafted masterwork chime that grants a <b>+2 circumstance bonus</b> on <b>Perform (Percussion Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (Percussion Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_percussion_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-drum",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Drum)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Drum)</b> (PHB p.130): A standard common musical instrument (drum) used for Perform checks.</p>",
+    "shortDescription": "Standard common drum for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-drum-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Drum), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Drum), Masterwork</b> (PHB p.130): A finely crafted masterwork drum that grants a <b>+2 circumstance bonus</b> on <b>Perform (Percussion Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (Percussion Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_percussion_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-gong",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Gong)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Gong)</b> (PHB p.130): A standard common musical instrument (gong) used for Perform checks.</p>",
+    "shortDescription": "Standard common gong for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-gong-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Gong), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Gong), Masterwork</b> (PHB p.130): A finely crafted masterwork gong that grants a <b>+2 circumstance bonus</b> on <b>Perform (Percussion Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (Percussion Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_percussion_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-fiddle",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Fiddle)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Fiddle)</b> (PHB p.130): A standard common musical instrument (fiddle) used for Perform checks.</p>",
+    "shortDescription": "Standard common fiddle for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-fiddle-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Fiddle), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Fiddle), Masterwork</b> (PHB p.130): A finely crafted masterwork fiddle that grants a <b>+2 circumstance bonus</b> on <b>Perform (String Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (String Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_string_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-harp",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Harp)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Harp)</b> (PHB p.130): A standard common musical instrument (harp) used for Perform checks.</p>",
+    "shortDescription": "Standard common harp for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-harp-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Harp), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Harp), Masterwork</b> (PHB p.130): A finely crafted masterwork harp that grants a <b>+2 circumstance bonus</b> on <b>Perform (String Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (String Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_string_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-lute",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Lute)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Lute)</b> (PHB p.130): A standard common musical instrument (lute) used for Perform checks.</p>",
+    "shortDescription": "Standard common lute for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-lute-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Lute), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Lute), Masterwork</b> (PHB p.130): A finely crafted masterwork lute that grants a <b>+2 circumstance bonus</b> on <b>Perform (String Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (String Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_string_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-mandolin",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Mandolin)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Mandolin)</b> (PHB p.130): A standard common musical instrument (mandolin) used for Perform checks.</p>",
+    "shortDescription": "Standard common mandolin for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-mandolin-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Mandolin), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Mandolin), Masterwork</b> (PHB p.130): A finely crafted masterwork mandolin that grants a <b>+2 circumstance bonus</b> on <b>Perform (String Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (String Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_string_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-flute",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Flute)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Flute)</b> (PHB p.130): A standard common musical instrument (flute) used for Perform checks.</p>",
+    "shortDescription": "Standard common flute for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-flute-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Flute), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Flute), Masterwork</b> (PHB p.130): A finely crafted masterwork flute that grants a <b>+2 circumstance bonus</b> on <b>Perform (Wind Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (Wind Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_wind_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-pan-pipes",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Pan Pipes)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Pan Pipes)</b> (PHB p.130): A standard common musical instrument (pan pipes) used for Perform checks.</p>",
+    "shortDescription": "Standard common pan pipes for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-pan-pipes-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Pan Pipes), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Pan Pipes), Masterwork</b> (PHB p.130): A finely crafted masterwork pan pipes that grants a <b>+2 circumstance bonus</b> on <b>Perform (Wind Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (Wind Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_wind_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-recorder",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Recorder)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Recorder)</b> (PHB p.130): A standard common musical instrument (recorder) used for Perform checks.</p>",
+    "shortDescription": "Standard common recorder for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-recorder-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Recorder), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Recorder), Masterwork</b> (PHB p.130): A finely crafted masterwork recorder that grants a <b>+2 circumstance bonus</b> on <b>Perform (Wind Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (Wind Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_wind_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-shawm",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Shawm)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Shawm)</b> (PHB p.130): A standard common musical instrument (shawm) used for Perform checks.</p>",
+    "shortDescription": "Standard common shawm for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-shawm-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Shawm), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Shawm), Masterwork</b> (PHB p.130): A finely crafted masterwork shawm that grants a <b>+2 circumstance bonus</b> on <b>Perform (Wind Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (Wind Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_wind_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-trumpet",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Trumpet)",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 5,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Trumpet)</b> (PHB p.130): A standard common musical instrument (trumpet) used for Perform checks.</p>",
+    "shortDescription": "Standard common trumpet for Perform checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "musical-instrument"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-musical-instrument-trumpet-masterwork",
+    "schemaVersion": 2,
+    "name": "Musical Instrument (Trumpet), Masterwork",
+    "type": "Gear",
+    "category": "Musical Instrument",
+    "subCategory": "Masterwork Tool",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.129",
+    "cost": 100,
+    "weight": 3,
+    "description": "<p><b>Musical Instrument (Trumpet), Masterwork</b> (PHB p.130): A finely crafted masterwork trumpet that grants a <b>+2 circumstance bonus</b> on <b>Perform (Wind Instruments)</b> checks.</p>",
+    "shortDescription": "+2 Circumstance bonus on Perform (Wind Instruments) checks (PHB p.130).",
+    "tags": [
+      "srd",
+      "masterwork",
+      "tool"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.perform_wind_instruments",
+        "value": 2,
+        "formula": "2",
+        "type": "Circumstance",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-laboratory-homunculus",
+    "schemaVersion": 2,
+    "name": "Laboratory (Homunculus)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 500,
+    "weight": 40,
+    "description": "<p>Skill Tool & Kit from Core D&D 3.5e SRD (PHB Equipment).</p>",
+    "shortDescription": "Skill Tool & Kit from Core D&D 3.5e SRD (PHB Equipment).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
+  },
+  {
+    "id": "tool-laboratory-shield-guardian",
+    "schemaVersion": 2,
+    "name": "Laboratory (Shield Guardian)",
+    "type": "Gear",
+    "category": "Skill Tool & Kit",
+    "subCategory": "Tool & Kit",
+    "slot": "Slotless",
+    "source": "SRD 3.5e / PHB p.128",
+    "cost": 500,
+    "weight": 40,
+    "description": "<p>Skill Tool & Kit from Core D&D 3.5e SRD (PHB Equipment).</p>",
+    "shortDescription": "Skill Tool & Kit from Core D&D 3.5e SRD (PHB Equipment).",
+    "tags": [
+      "srd",
+      "skill-tool-kit"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {}
   }
 ]

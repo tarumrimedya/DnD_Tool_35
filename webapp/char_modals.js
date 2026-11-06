@@ -14,6 +14,12 @@
     if (!root) return false;
     window._modalsMounted = true;
     root.innerHTML = DEFERRED_MODALS_HTML;
+    Array.from(root.children).forEach(function(modalEl) {
+      if (modalEl && modalEl.nodeType === 1 && !modalEl.getAttribute('role')) {
+        modalEl.setAttribute('role', 'dialog');
+        modalEl.setAttribute('aria-modal', 'true');
+      }
+    });
     return true;
   };
 
