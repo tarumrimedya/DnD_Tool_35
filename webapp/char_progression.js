@@ -3531,25 +3531,33 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       const curCl = Number(character.spellcasting?.cl) || 0;
       const hasExistingCaster = Boolean(character.spellcasting && (curCl > 0 || (character.spellcasting.slots && character.spellcasting.slots.length > 0)));
+      const hasAnyBoon = typeof getCharacterBoonDisciplines === 'function' && getCharacterBoonDisciplines(character).length > 0;
 
-      // YalnÄ±zca BÃ¼yÃ¼ Ä°lerleten Prestij SÄ±nÄ±flarÄ±nda veya DM Boon etkinse gÃ¶sterilir
-      const shouldShow = (hasSpellProgInPrestige && hasExistingCaster) || (isBoonCl && (hasExistingCaster || ['sorcerer', 'wizard', 'cleric', 'druid', 'bard', 'warlock'].includes((className || '').toLowerCase())));
+      // Always keep the card visible in Level Up / Plan so users can toggle Multi-Caster & DM Boon disciplines for any class
+      card.classList.remove('hidden');
 
-      if (shouldShow) {
-        card.classList.remove('hidden');
-      } else {
-        card.classList.add('hidden');
+      const progControls = document.getElementById('lvlup-caster-prog-controls');
+      const hintEl = document.getElementById('lvlup-caster-hint');
+      const isBaseCaster = ['Sorcerer', 'Wizard', 'Cleric', 'Druid', 'Bard', 'Warlock', 'Duskblade', 'Beguiler', 'Warmage', 'Dread Necromancer', 'Favored Soul', 'Paladin', 'Ranger', 'Hexblade', 'Spellthief'].includes(className);
+      const showProgDropdown = isBaseCaster || (hasSpellProgInPrestige && hasExistingCaster) || isBoonCl || hasAnyBoon;
+
+      if (progControls) progControls.classList.toggle('hidden', !showProgDropdown);
+      if (hintEl) hintEl.classList.toggle('hidden', !showProgDropdown);
+
+      if (typeof renderCasterBoonUI === 'function') {
+        renderCasterBoonUI();
       }
 
       if (badge) {
-        const casterClass = character.spellcasting?.className || (['Sorcerer', 'Wizard', 'Cleric', 'Druid', 'Bard', 'Warlock'].includes(className) ? className : 'Caster');
+        const casterClass = character.spellcasting?.className || (isBaseCaster ? className : 'Caster');
         badge.textContent = `${casterClass} CL: ${curCl}`;
       }
 
       if (progSel) {
-        const isBaseCaster = ['Sorcerer', 'Wizard', 'Cleric', 'Druid', 'Bard', 'Warlock'].includes(className);
         if (isBaseCaster || hasSpellProgInPrestige) {
           progSel.value = 'primary';
+        } else if (hasAnyBoon || isBoonCl) {
+          progSel.value = 'cl_boon';
         } else {
           progSel.value = 'none';
         }
@@ -5085,20 +5093,29 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         rowFeats.push(`🔮 +1 Caster Lvl (CL: ${effCl})`);
       } else if (casterProg === 'cl_boon') {
         character.settings.clMode = 'Character Level (DM Boon)';
-        const boonDisc = (typeof classifyClassToMagicDiscipline === 'function')
-          ? (classifyClassToMagicDiscipline(className) || 'spontaneous')
-          : 'spontaneous';
-        if (boonDisc) {
-          character.settings.casterType = boonDisc;
-          character.settings.casterTypeExplicit = true;
+        const existingBoons = (typeof getCharacterBoonDisciplines === 'function')
+          ? getCharacterBoonDisciplines(character)
+          : [];
+        const classDisc = (typeof classifyClassToMagicDiscipline === 'function')
+          ? classifyClassToMagicDiscipline(className)
+          : null;
+        const boonDisc = existingBoons[0] || (classDisc && classDisc !== 'martial' ? classDisc : null) || character.settings.casterType || 'spontaneous';
+        if (!Array.isArray(character.settings.boonDisciplines)) {
+          character.settings.boonDisciplines = [...existingBoons];
+        }
+        if (boonDisc && !character.settings.boonDisciplines.includes(boonDisc)) {
+          character.settings.boonDisciplines.push(boonDisc);
         }
         if (character.spellcasting && isActive) {
           character.spellcasting.cl = nextLvl;
-          if (boonDisc === 'spontaneous' && typeof calculateSorcererSlots === 'function') {
+          const allActiveBoons = character.settings.boonDisciplines;
+          if ((boonDisc === 'spontaneous' || allActiveBoons.includes('spontaneous')) && typeof calculateSorcererSlots === 'function') {
             character.spellcasting.slots = calculateSorcererSlots(nextLvl, character.abilities?.cha || 22, character.spellcasting.slots);
-          } else if (boonDisc === 'divine' && typeof calculateDivineSlots === 'function') {
+          }
+          if ((boonDisc === 'divine' || allActiveBoons.includes('divine')) && typeof calculateDivineSlots === 'function') {
             character.spellcasting.divineSlots = calculateDivineSlots(nextLvl, character.abilities?.wis || 14, character.spellcasting.divineSlots);
-          } else if (boonDisc === 'prepared' && typeof calculateWizardSlots === 'function') {
+          }
+          if ((boonDisc === 'prepared' || allActiveBoons.includes('prepared')) && typeof calculateWizardSlots === 'function') {
             character.spellcasting.preparedSlots = calculateWizardSlots(nextLvl, character.abilities?.int || 14, character.spellcasting.preparedSlots);
           }
         }
@@ -5583,6 +5600,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const resultsBox = document.getElementById('change-class-search-results');
       if (resultsBox) resultsBox.scrollTop = 0;
       onChangeClassSelectChange(false);
+      if (typeof renderCasterBoonUI === 'function') {
+        renderCasterBoonUI();
+      }
       modal.classList.remove('hidden');
       const modalBody = modal.querySelector('.overflow-y-auto.flex-1');
       if (modalBody) modalBody.scrollTop = 0;

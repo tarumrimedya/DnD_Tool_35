@@ -6857,37 +6857,32 @@
         }).join('');
       }
 
-      // 2. Spells & Maneuvers Tab Quick Multi-Caster & DM Boon Bar (#magic-boon-quick-bar)
-      const quickBar = document.getElementById('magic-boon-quick-bar');
-      if (quickBar) {
-        quickBar.innerHTML = `
-          <div class="flex items-center gap-1.5 flex-wrap">
-            <span class="text-[10px] font-extrabold uppercase tracking-wider text-purple-300 flex items-center gap-1 mr-1" title="Toggle one or multiple DM Boon caster disciplines (CL = Character Level) alongside your character classes">
-              <span>🌟</span>
-              <span>Active Caster / Boon Disciplines:</span>
-            </span>
-            ${DISCIPLINES.map(d => {
-              const isBoon = boons.includes(d.key);
-              const hasClass = d.classLvl > 0;
-              const chipCls = isBoon
-                ? 'bg-gradient-to-r from-purple-700 to-indigo-700 border-purple-400 text-white shadow-sm'
-                : (hasClass
-                  ? 'bg-emerald-950/70 border-emerald-600/60 text-emerald-200 hover:border-purple-400'
-                  : 'bg-slate-900/90 border-slate-800 text-slate-400 hover:text-white hover:border-slate-600');
-              const stateText = isBoon
-                ? `🌟 Boon (CL ${activeLevels})`
-                : (hasClass ? `Class (${d.classLvl})` : `+ Boon`);
-              return `
-                <button type="button" onclick="toggleDisciplineDmBoon('${d.key}')" class="h-6 px-2 rounded-lg border text-[10px] font-bold transition inline-flex items-center gap-1 cursor-pointer active:scale-95 ${chipCls}" title="Click to toggle ${d.label} DM Boon (CL = Character Level ${activeLevels})">
-                  <span>${d.icon}</span>
-                  <span>${d.short}</span>
-                  <span class="font-mono text-[9px] opacity-90">[${stateText}]</span>
-                </button>
-              `;
-            }).join('')}
-          </div>
-        `;
-      }
+      // 2. Level Up / Plan & Edit Level / Plan Modal Multi-Caster & DM Boon Bars
+      ['lvlup-boon-disciplines-bar', 'change-class-boon-disciplines-bar'].forEach(barId => {
+        const modalBar = document.getElementById(barId);
+        if (!modalBar) return;
+        modalBar.innerHTML = DISCIPLINES.map(d => {
+          const isBoon = boons.includes(d.key);
+          const hasClass = d.classLvl > 0;
+          const chipCls = isBoon
+            ? 'bg-gradient-to-r from-purple-700 to-indigo-700 border-purple-400 text-white shadow-sm ring-1 ring-purple-400/50'
+            : (hasClass
+              ? 'bg-emerald-950/70 border-emerald-600/60 text-emerald-200 hover:border-purple-400'
+              : 'bg-slate-950/90 border-slate-800 text-slate-400 hover:text-white hover:border-slate-600');
+          const stateText = isBoon
+            ? `🌟 Boon (CL ${activeLevels})`
+            : (hasClass ? `Class Lvl ${d.classLvl}` : `+ Boon`);
+          return `
+            <button type="button" onclick="toggleDisciplineDmBoon('${d.key}')" class="px-2.5 py-1.5 rounded-lg border text-[10px] font-bold transition inline-flex items-center justify-between gap-1.5 cursor-pointer active:scale-95 ${chipCls}" title="Click to toggle ${d.label} DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
+              <span class="flex items-center gap-1 truncate">
+                <span>${d.icon}</span>
+                <span>${d.short}</span>
+              </span>
+              <span class="font-mono text-[9px] px-1.5 py-0.2 rounded bg-black/30 shrink-0">${stateText}</span>
+            </button>
+          `;
+        }).join('');
+      });
     }
     window.renderCasterBoonUI = renderCasterBoonUI;
 
@@ -6951,6 +6946,10 @@
       saveStateToStorage(true);
       if (typeof updateQuickFeatCategoryWarlockState === 'function') {
         updateQuickFeatCategoryWarlockState();
+      }
+      if (typeof updateLevelUpCasterProgVisibility === 'function') {
+        const curLvlupClass = document.getElementById('lvlup-class-select')?.value || '';
+        if (curLvlupClass) updateLevelUpCasterProgVisibility(curLvlupClass);
       }
       renderSpellsCockpit();
       renderSpellSlots();
