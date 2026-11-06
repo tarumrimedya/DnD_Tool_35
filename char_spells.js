@@ -93,42 +93,73 @@
       const hasMartialSlots = martialStudyCount > 0 || martialStanceCount > 0 || hasMartialDmBonus
         || (character?.isNpc && Array.isArray(character?.tomeOfBattle?.maneuversKnown) && character.tomeOfBattle.maneuversKnown.length > 0);
 
-      const clMode = character?.settings?.clMode || 'Class Level';
-      const isWarlockBoon = clMode.includes('Warlock Boon') || character?.settings?.warlockBoon === true;
-      const isDmBoonActive = (clMode === 'Character Level (DM Boon)') || isWarlockBoon;
-      let boonType = null;
-      if (isWarlockBoon) {
-        boonType = 'spontaneous';
-      } else if (isDmBoonActive) {
-        const rawCasterType = character?.settings?.casterType;
-        if (character?.settings?.casterTypeExplicit === true && rawCasterType) {
-          boonType = rawCasterType === 'warlock' ? 'spontaneous' : rawCasterType;
-        } else {
-          const discLvls = getMagicDisciplineClassLevels(character);
-          const order = ['spontaneous', 'prepared', 'divine', 'martial'];
-          let bestDisc = null;
-          let maxLvl = 0;
-          order.forEach(d => {
-            if ((discLvls[d] || 0) > maxLvl) {
-              maxLvl = discLvls[d];
-              bestDisc = d;
-            }
-          });
-          if (bestDisc && maxLvl > 0) {
-            boonType = bestDisc;
-          } else {
-            boonType = (rawCasterType === 'warlock' || !rawCasterType) ? 'spontaneous' : rawCasterType;
-          }
-        }
-      }
+      const isSpontBoon = isDisciplineDmBoon('spontaneous', character);
+      const isPrepBoon = isDisciplineDmBoon('prepared', character);
+      const isDivBoon = isDisciplineDmBoon('divine', character);
+      const isMartialBoon = isDisciplineDmBoon('martial', character);
 
-      const hasSpontaneous = classNames.some(c => classifyClassToMagicDiscipline(c) === 'spontaneous') || hasSpontaneousSlots || boonType === 'spontaneous';
-      const hasPrepared = classNames.some(c => classifyClassToMagicDiscipline(c) === 'prepared') || hasPreparedSlots || boonType === 'prepared';
-      const hasDivine = classNames.some(c => classifyClassToMagicDiscipline(c) === 'divine') || hasDivineSlots || boonType === 'divine';
-      const hasMartial = classNames.some(c => classifyClassToMagicDiscipline(c) === 'martial') || hasMartialSlots || boonType === 'martial';
+      const hasSpontaneous = classNames.some(c => classifyClassToMagicDiscipline(c) === 'spontaneous') || hasSpontaneousSlots || isSpontBoon;
+      const hasPrepared = classNames.some(c => classifyClassToMagicDiscipline(c) === 'prepared') || hasPreparedSlots || isPrepBoon;
+      const hasDivine = classNames.some(c => classifyClassToMagicDiscipline(c) === 'divine') || hasDivineSlots || isDivBoon;
+      const hasMartial = classNames.some(c => classifyClassToMagicDiscipline(c) === 'martial') || hasMartialSlots || isMartialBoon;
 
       return { hasSpontaneous, hasPrepared, hasDivine, hasMartial };
     }
+
+    function getCharacterBoonDisciplines(char = character) {
+      if (!char || !char.settings) return [];
+      const valid = ['spontaneous', 'prepared', 'divine', 'martial', 'warlock'];
+      if (Array.isArray(char.settings.boonDisciplines)) {
+        const list = char.settings.boonDisciplines
+          .map(d => String(d || '').toLowerCase().trim())
+          .filter(d => valid.includes(d));
+        if ((char.settings.warlockBoon === true || String(char.settings.clMode || '').includes('Warlock Boon')) && !list.includes('warlock')) {
+          list.push('warlock');
+        }
+        return Array.from(new Set(list));
+      }
+      const clMode = char.settings.clMode || 'Class Level';
+      const isWarlockBoon = clMode.includes('Warlock Boon') || char.settings.warlockBoon === true;
+      const isDmBoonActive = (clMode === 'Character Level (DM Boon)') || isWarlockBoon;
+      if (!isDmBoonActive) return [];
+
+      const out = [];
+      if (isWarlockBoon) out.push('warlock');
+      const rawCasterType = String(char.settings.casterType || '').toLowerCase().trim();
+      if (char.settings.casterTypeExplicit === true && valid.includes(rawCasterType)) {
+        if (!out.includes(rawCasterType)) out.push(rawCasterType);
+      } else if (clMode === 'Character Level (DM Boon)') {
+        const discLvls = getMagicDisciplineClassLevels(char);
+        const order = ['spontaneous', 'prepared', 'divine', 'martial'];
+        let bestDisc = null;
+        let maxLvl = 0;
+        order.forEach(d => {
+          if ((discLvls[d] || 0) > maxLvl) {
+            maxLvl = discLvls[d];
+            bestDisc = d;
+          }
+        });
+        const fallback = valid.includes(rawCasterType) ? rawCasterType : (bestDisc || 'spontaneous');
+        if (!out.includes(fallback)) out.push(fallback);
+      }
+      return out;
+    }
+
+    function isDisciplineDmBoon(disc, char = character) {
+      const target = String(disc || '').toLowerCase().trim();
+      if (!target) return false;
+      const boons = getCharacterBoonDisciplines(char);
+      if (target === 'spontaneous') {
+        return boons.includes('spontaneous') || boons.includes('warlock');
+      }
+      if (target === 'warlock') {
+        return boons.includes('warlock') || Boolean(char?.settings?.warlockBoon);
+      }
+      return boons.includes(target);
+    }
+
+    window.getCharacterBoonDisciplines = getCharacterBoonDisciplines;
+    window.isDisciplineDmBoon = isDisciplineDmBoon;
 
     function classifyClassToMagicDiscipline(className) {
       const c = String(className || '').toLowerCase().trim();
@@ -213,33 +244,15 @@
         }
       });
 
-      // 1. DM Boon Override:
-      // Warlock Boon always overrides to spontaneous.
-      // For 'Character Level (DM Boon)', an explicit casterType override (or non-default casterType when maxLvl === 0) overrides class levels;
-      // an uninitialized default 'spontaneous' must not override a character whose actual caster classes belong to another discipline (e.g. Lvl 4 Cleric -> divine).
-      const clMode = char.settings?.clMode || 'Class Level';
-      const isWarlockBoon = clMode.includes('Warlock Boon') || char.settings?.warlockBoon === true;
-      const isDmBoonActive = (clMode === 'Character Level (DM Boon)') || isWarlockBoon;
-      if (isWarlockBoon) {
-        return 'spontaneous';
-      }
-      if (isDmBoonActive) {
-        const boonCasterType = char.settings?.casterType;
-        if (char.settings?.casterTypeExplicit === true && boonCasterType) {
-          if (boonCasterType === 'warlock' || boonCasterType === 'spontaneous') return 'spontaneous';
-          if (['prepared', 'divine', 'martial'].includes(boonCasterType)) return boonCasterType;
-        }
-        if (['prepared', 'divine', 'martial'].includes(boonCasterType) && (!bestDisc || maxLvl === 0)) {
-          return boonCasterType;
-        }
-        if (bestDisc && maxLvl > 0) {
-          if (char.settings && (!boonCasterType || boonCasterType === 'spontaneous')) {
-            char.settings.casterType = bestDisc;
+      // 1. DM Boon Disciplines (Non-destructive: never overwrites user's casterType / boonDisciplines when a class is added)
+      const boons = getCharacterBoonDisciplines(char);
+      if (boons.length > 0) {
+        const primaryBoon = boons[0] === 'warlock' ? 'spontaneous' : boons[0];
+        if (!bestDisc || maxLvl === 0 || char.settings?.casterTypeExplicit === true) {
+          if (['spontaneous', 'prepared', 'divine', 'martial'].includes(primaryBoon)) {
+            return primaryBoon;
           }
-          return bestDisc;
         }
-        if (boonCasterType === 'warlock' || boonCasterType === 'spontaneous') return 'spontaneous';
-        if (['prepared', 'divine', 'martial'].includes(boonCasterType)) return boonCasterType;
       }
 
       // 2. Highest Caster / Martial Class Level
@@ -724,10 +737,7 @@
       const intVal = character?.stats?.INT?.value ?? character?.abilities?.int ?? 10;
       const intMod = character?.stats?.INT?.mod ?? Math.floor((intVal - 10) / 2);
       const clMode = character?.settings?.clMode || 'Class Level';
-      const cType = character?.settings?.casterType || 'spontaneous';
-      const cTypeExplicit = character?.settings?.casterTypeExplicit === true;
-      const effBoonType = resolvePreferredMagicDiscipline(character);
-      const isPrepBoon = (clMode === 'Character Level (DM Boon)' && ((cTypeExplicit && cType === 'prepared') || (!cTypeExplicit && effBoonType === 'prepared')));
+      const isPrepBoon = isDisciplineDmBoon('prepared', character);
       const prog = character?.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
       const wizLvls = getMagicDisciplineClassLevels(character).prepared;
@@ -740,17 +750,14 @@
       } else if (classesStatus.hasPrepared) {
         cl = 1;
       }
-      return { statKey: 'INT', statVal: intVal, statMod: intMod, cl, clMode, hasClass: classesStatus.hasPrepared, wizLvls };
+      return { statKey: 'INT', statVal: intVal, statMod: intMod, cl, clMode: isPrepBoon ? 'Character Level (DM Boon)' : clMode, hasClass: classesStatus.hasPrepared, wizLvls, isPrepBoon };
     }
 
     function getDivineCasterInfo() {
       const classesStatus = checkCharacterMagicClasses();
       const baseWisVal = character?.stats?.WIS?.value ?? character?.abilities?.wis ?? 10;
       const clMode = character?.settings?.clMode || 'Class Level';
-      const cType = character?.settings?.casterType || 'spontaneous';
-      const cTypeExplicit = character?.settings?.casterTypeExplicit === true;
-      const effBoonType = resolvePreferredMagicDiscipline(character);
-      const isDivBoon = (clMode === 'Character Level (DM Boon)' && ((cTypeExplicit && cType === 'divine') || (!cTypeExplicit && effBoonType === 'divine')));
+      const isDivBoon = isDisciplineDmBoon('divine', character);
       const prog = character?.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
       const divLvls = getMagicDisciplineClassLevels(character).divine;
@@ -771,7 +778,7 @@
       const wisVal = baseWisVal + insanityBonus;
       const wisMod = Math.floor((wisVal - 10) / 2);
 
-      return { statKey: 'WIS', statVal: wisVal, baseWisVal, insanityBonus, statMod: wisMod, cl, clMode, hasClass: classesStatus.hasDivine, divLvls };
+      return { statKey: 'WIS', statVal: wisVal, baseWisVal, insanityBonus, statMod: wisMod, cl, clMode: isDivBoon ? 'Character Level (DM Boon)' : clMode, hasClass: classesStatus.hasDivine, divLvls, isDivBoon };
     }
 
     function renderPreparedDisciplineView(hasPrepared) {
@@ -2560,7 +2567,13 @@
 
     function getCasterInfo() {
       const classesStatus = checkCharacterMagicClasses();
-      const primaryClass = character?.spellcasting?.primaryClass || (classesStatus.hasSpontaneous ? 'Sorcerer' : (character?.isNpc ? 'Sorcerer' : ''));
+      const isWarlockBoon = isDisciplineDmBoon('warlock', character);
+      const isSpontBoon = isDisciplineDmBoon('spontaneous', character);
+      const sorcLvls = getMagicDisciplineClassLevels(character).spontaneous;
+      const defaultSpontClass = isWarlockBoon && sorcLvls === 0
+        ? 'Warlock (DM Boon)'
+        : (isSpontBoon && sorcLvls === 0 ? 'Sorcerer (DM Boon)' : 'Sorcerer');
+      const primaryClass = character?.spellcasting?.primaryClass || (classesStatus.hasSpontaneous ? defaultSpontClass : (character?.isNpc ? 'Sorcerer' : ''));
       let statKey = 'CHA';
       if (['Wizard', 'Artificer'].includes(primaryClass)) statKey = 'INT';
       else if (['Cleric', 'Druid', 'Favored Soul'].includes(primaryClass)) statKey = 'WIS';
@@ -2569,14 +2582,12 @@
 
       const statVal = character?.stats?.[statKey]?.value ?? character?.abilities?.[statKey.toLowerCase()] ?? 10;
       const statMod = character?.stats?.[statKey]?.mod ?? Math.floor((statVal - 10) / 2);
-      const clMode = character?.settings?.clMode || 'Class Level';
-      const cType = character?.settings?.casterType || 'spontaneous';
-      const effBoonType = resolvePreferredMagicDiscipline(character);
-      const isWarlockBoon = clMode.includes('Warlock Boon') || character?.settings?.warlockBoon === true;
-      const isSpontBoon = isWarlockBoon || (clMode === 'Character Level (DM Boon)' && ((character?.settings?.casterTypeExplicit === true && (cType === 'spontaneous' || cType === 'warlock')) || effBoonType === 'spontaneous'));
+      const rawClMode = character?.settings?.clMode || 'Class Level';
+      const clMode = isSpontBoon
+        ? (isWarlockBoon ? 'Warlock Boon (CL = Char Lvl)' : 'Character Level (DM Boon)')
+        : rawClMode;
       const prog = character?.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character?.level) || 0;
-      const sorcLvls = getMagicDisciplineClassLevels(character).spontaneous;
       
       let cl = 0;
       if (character?.isNpc && (character?.spellcasting?.cl !== undefined || character?.spellcasting?.caster_level !== undefined)) {
@@ -2780,12 +2791,16 @@
       }
 
       if (!adeptClass) {
-        adeptClass = (martialStudyCount > 0 || martialStanceCount > 0) ? 'Martial Study / Stance' : 'Martial Adept';
+        adeptClass = (martialStudyCount > 0 || martialStanceCount > 0) ? 'Martial Study / Stance' : 'Martial Adept (DM Boon)';
       }
 
-      const computedIl = martialLvls > 0
-        ? (martialLvls + Math.floor(otherLvls / 2))
-        : Math.max(1, Math.floor((activeRows.length || Number(character?.level) || 1) / 2));
+      const isMartialBoon = isDisciplineDmBoon('martial', character);
+      const activeCharLvl = activeRows.length || Number(character?.level) || 1;
+      const computedIl = isMartialBoon
+        ? Math.max(1, activeCharLvl)
+        : (martialLvls > 0
+          ? (martialLvls + Math.floor(otherLvls / 2))
+          : Math.max(1, Math.floor(activeCharLvl / 2)));
       const storedIl = Number(character?.tomeOfBattle?.initiatorLevel) || 0;
       const il = Math.max(storedIl, computedIl, 1);
       if (character?.tomeOfBattle) {
@@ -2799,20 +2814,21 @@
       let baseKnownManeuvers = 0;
       let baseKnownStances = 0;
 
-      if (martialLvls > 0) {
+      const effMartialLvls = (martialLvls > 0) ? martialLvls : (isMartialBoon ? il : 0);
+      if (effMartialLvls > 0) {
         if (adeptClass === 'Swordsage') {
-          baseKnownManeuvers = 5 + martialLvls;
-          baseReadied = martialLvls >= 20 ? 10 : (martialLvls >= 18 ? 9 : (martialLvls >= 15 ? 8 : (martialLvls >= 12 ? 7 : (martialLvls >= 8 ? 6 : (martialLvls >= 4 ? 5 : 4)))));
-          baseKnownStances = martialLvls >= 20 ? 6 : (martialLvls >= 14 ? 5 : (martialLvls >= 9 ? 4 : (martialLvls >= 5 ? 3 : (martialLvls >= 2 ? 2 : 1))));
+          baseKnownManeuvers = 5 + effMartialLvls;
+          baseReadied = effMartialLvls >= 20 ? 10 : (effMartialLvls >= 18 ? 9 : (effMartialLvls >= 15 ? 8 : (effMartialLvls >= 12 ? 7 : (effMartialLvls >= 8 ? 6 : (effMartialLvls >= 4 ? 5 : 4)))));
+          baseKnownStances = effMartialLvls >= 20 ? 6 : (effMartialLvls >= 14 ? 5 : (effMartialLvls >= 9 ? 4 : (effMartialLvls >= 5 ? 3 : (effMartialLvls >= 2 ? 2 : 1))));
         } else if (adeptClass === 'Crusader') {
-          baseKnownManeuvers = 5 + Math.floor((martialLvls - 1) / 2);
-          baseReadied = martialLvls >= 20 ? 7 : (martialLvls >= 10 ? 6 : 5);
-          baseKnownStances = martialLvls >= 14 ? 4 : (martialLvls >= 8 ? 3 : (martialLvls >= 2 ? 2 : 1));
+          baseKnownManeuvers = 5 + Math.floor((effMartialLvls - 1) / 2);
+          baseReadied = effMartialLvls >= 20 ? 7 : (effMartialLvls >= 10 ? 6 : 5);
+          baseKnownStances = effMartialLvls >= 14 ? 4 : (effMartialLvls >= 8 ? 3 : (effMartialLvls >= 2 ? 2 : 1));
         } else {
           // Warblade & Default Martial Adept
-          baseKnownManeuvers = 3 + Math.floor((martialLvls - 1) / 2);
-          baseReadied = martialLvls >= 20 ? 7 : (martialLvls >= 15 ? 6 : (martialLvls >= 9 ? 5 : (martialLvls >= 4 ? 4 : 3)));
-          baseKnownStances = martialLvls >= 16 ? 4 : (martialLvls >= 10 ? 3 : (martialLvls >= 4 ? 2 : 1));
+          baseKnownManeuvers = 3 + Math.floor((effMartialLvls - 1) / 2);
+          baseReadied = effMartialLvls >= 20 ? 7 : (effMartialLvls >= 15 ? 6 : (effMartialLvls >= 9 ? 5 : (effMartialLvls >= 4 ? 4 : 3)));
+          baseKnownStances = effMartialLvls >= 16 ? 4 : (effMartialLvls >= 10 ? 3 : (effMartialLvls >= 4 ? 2 : 1));
         }
       }
 
@@ -2849,7 +2865,7 @@
     }
 
     function renderSpellsCockpit() {
-      const { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass: hasSpontaneous, sorcLvls } = getCasterInfo();
+      const { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass: hasSpontaneous, sorcLvls, isSpontBoon } = getCasterInfo();
       const classesStatus = checkCharacterMagicClasses();
 
       // Synchronize Sorcerer spell slots with effective Caster Level (CL)
@@ -2875,8 +2891,8 @@
           }
         } else {
           const curSlots = Array.isArray(character.spellcasting.slots) ? character.spellcasting.slots : [];
-          character.spellcasting.slots = (sorcLvls > 0 && cl > 0)
-            ? calculateSorcererSlots(sorcLvls, statVal, curSlots) 
+          character.spellcasting.slots = ((sorcLvls > 0 || isSpontBoon) && cl > 0)
+            ? calculateSorcererSlots(cl, statVal, curSlots) 
             : curSlots.filter(s => (Number(s.dmBonus) || 0) > 0);
         }
       }
@@ -2962,6 +2978,7 @@
 
       try { renderPreparedDisciplineView(classesStatus.hasPrepared || (character?.spellcasting?.preparedSlots || []).some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderPreparedDisciplineView error:', e); }
       try { renderDivineDisciplineView(classesStatus.hasDivine || (character?.spellcasting?.divineSlots || []).some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderDivineDisciplineView error:', e); }
+      try { renderCasterBoonUI(); } catch (e) { console.error('renderCasterBoonUI error:', e); }
 
       const titleEl = document.getElementById('spells-cockpit-class-title');
       if (titleEl) titleEl.textContent = 'Spontaneous Spells & Invocations';
@@ -6759,53 +6776,221 @@
         return;
       }
       if (!character.settings) character.settings = {};
-      const clMode = character.settings.clMode || 'Class Level';
-      const cType = character.settings.casterType || 'spontaneous';
-      const isBoon = clMode === 'Character Level (DM Boon)' || clMode.includes('Warlock Boon');
       const prog = character.levelProgression || [];
       const activeLevels = prog.filter(p => p.active !== false).length || Number(character.level) || 6;
-      const hasProg = prog.some(p => p.active !== false);
+      const discLvls = getMagicDisciplineClassLevels(character);
+      const sorcLvls = discLvls.spontaneous || 0;
+      const martialLvls = discLvls.martial || 0;
+      const otherLvls = Math.max(0, activeLevels - martialLvls);
 
-      const sorcLvls = hasProg ? prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length : ((character.classes || '').includes('Sorcerer') ? 5 : 0);
-      const martialLvls = hasProg ? prog.filter(p => ['Warblade', 'Swordsage', 'Crusader'].includes(p.className) && p.active !== false).length : ((character.classes || '').includes('Warblade') ? 1 : 0);
-      const otherLvls = activeLevels - martialLvls;
+      const isSpontBoon = isDisciplineDmBoon('spontaneous', character);
+      const isMartialBoon = isDisciplineDmBoon('martial', character);
 
       if (character.spellcasting) {
-        if (isBoon) {
-          if (cType === 'martial') {
-            character.spellcasting.cl = sorcLvls;
-          } else {
-            character.spellcasting.cl = activeLevels;
-          }
+        if (isSpontBoon) {
+          character.spellcasting.cl = Math.max(sorcLvls, activeLevels, 1);
         } else {
           character.spellcasting.cl = sorcLvls;
         }
         const chaVal = character.stats?.CHA?.value ?? character.abilities?.cha ?? 22;
-        if (sorcLvls > 0) {
-          character.spellcasting.slots = calculateSorcererSlots(sorcLvls, chaVal, character.spellcasting.slots);
+        if ((sorcLvls > 0 || isSpontBoon) && character.spellcasting.cl > 0) {
+          character.spellcasting.slots = calculateSorcererSlots(character.spellcasting.cl, chaVal, character.spellcasting.slots);
         } else {
           character.spellcasting.slots = (character.spellcasting.slots || []).filter(s => (Number(s.dmBonus) || 0) > 0);
         }
       }
 
       if (character.tomeOfBattle) {
-        if (isBoon && cType === 'martial') {
-          character.tomeOfBattle.initiatorLevel = activeLevels;
+        if (isMartialBoon) {
+          character.tomeOfBattle.initiatorLevel = Math.max(1, activeLevels);
         } else {
           character.tomeOfBattle.initiatorLevel = Math.max(1, martialLvls + Math.floor(otherLvls / 2));
         }
       }
     }
 
+    function renderCasterBoonUI() {
+      if (!character) return;
+      const boons = getCharacterBoonDisciplines(character);
+      const discLvls = getMagicDisciplineClassLevels(character);
+      const prog = character.levelProgression || [];
+      const activeLevels = prog.filter(p => p.active !== false).length || Number(character.level) || 1;
+      const hasWarlockClass = prog.some(p => p && p.active !== false && String(p.className || '').toLowerCase().includes('warlock'))
+        || String(character.classes || '').toLowerCase().includes('warlock');
+
+      const DISCIPLINES = [
+        { key: 'spontaneous', icon: '🔮', label: 'Spontaneous', short: 'Spontaneous', color: 'purple', classLvl: discLvls.spontaneous || 0 },
+        { key: 'prepared', icon: '📖', label: 'Prepared (Vancian)', short: 'Prepared', color: 'sky', classLvl: discLvls.prepared || 0 },
+        { key: 'divine', icon: '✨', label: 'Divine Prayer', short: 'Divine', color: 'amber', classLvl: discLvls.divine || 0 },
+        { key: 'martial', icon: '⚔️', label: 'Martial Maneuvers', short: 'Martial', color: 'rose', classLvl: discLvls.martial || 0 },
+        { key: 'warlock', icon: '👁️', label: 'Warlock Invocations', short: 'Warlock', color: 'indigo', classLvl: hasWarlockClass ? activeLevels : 0 }
+      ];
+
+      // 1. Settings Modal Multi-Discipline Toggle Bar (#setting-boon-disciplines-bar)
+      const settingsBar = document.getElementById('setting-boon-disciplines-bar');
+      if (settingsBar) {
+        settingsBar.innerHTML = DISCIPLINES.map(d => {
+          const isBoon = boons.includes(d.key);
+          const hasClass = d.classLvl > 0;
+          const activeClass = isBoon
+            ? 'bg-purple-950/90 border-purple-400 text-white shadow-md ring-1 ring-purple-400/50'
+            : (hasClass
+              ? 'bg-emerald-950/50 border-emerald-600/60 text-emerald-200 hover:border-purple-400'
+              : 'bg-slate-950/90 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-600');
+          const statusBadge = isBoon && hasClass
+            ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-600 text-white">🌟 Boon + Class (CL ${activeLevels})</span>`
+            : (isBoon
+              ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-600 text-white">🌟 DM Boon (CL ${activeLevels})</span>`
+              : (hasClass
+                ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-600/50">Class Lvl ${d.classLvl}</span>`
+                : `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-900 text-slate-500 border border-slate-800">+ Add Boon</span>`));
+
+          return `
+            <button type="button" onclick="toggleDisciplineDmBoon('${d.key}')" class="p-2 rounded-xl border text-left transition flex items-center justify-between gap-2 cursor-pointer active:scale-95 ${activeClass}" title="Click to toggle ${d.label} as a DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
+              <span class="flex items-center gap-1.5 text-[11px] font-bold truncate">
+                <span>${d.icon}</span>
+                <span class="truncate">${d.label}</span>
+              </span>
+              ${statusBadge}
+            </button>
+          `;
+        }).join('');
+      }
+
+      // 2. Spells & Maneuvers Tab Quick Multi-Caster & DM Boon Bar (#magic-boon-quick-bar)
+      const quickBar = document.getElementById('magic-boon-quick-bar');
+      if (quickBar) {
+        quickBar.innerHTML = `
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <span class="text-[10px] font-extrabold uppercase tracking-wider text-purple-300 flex items-center gap-1 mr-1" title="Toggle one or multiple DM Boon caster disciplines (CL = Character Level) alongside your character classes">
+              <span>🌟</span>
+              <span>Active Caster / Boon Disciplines:</span>
+            </span>
+            ${DISCIPLINES.map(d => {
+              const isBoon = boons.includes(d.key);
+              const hasClass = d.classLvl > 0;
+              const chipCls = isBoon
+                ? 'bg-gradient-to-r from-purple-700 to-indigo-700 border-purple-400 text-white shadow-sm'
+                : (hasClass
+                  ? 'bg-emerald-950/70 border-emerald-600/60 text-emerald-200 hover:border-purple-400'
+                  : 'bg-slate-900/90 border-slate-800 text-slate-400 hover:text-white hover:border-slate-600');
+              const stateText = isBoon
+                ? `🌟 Boon (CL ${activeLevels})`
+                : (hasClass ? `Class (${d.classLvl})` : `+ Boon`);
+              return `
+                <button type="button" onclick="toggleDisciplineDmBoon('${d.key}')" class="h-6 px-2 rounded-lg border text-[10px] font-bold transition inline-flex items-center gap-1 cursor-pointer active:scale-95 ${chipCls}" title="Click to toggle ${d.label} DM Boon (CL = Character Level ${activeLevels})">
+                  <span>${d.icon}</span>
+                  <span>${d.short}</span>
+                  <span class="font-mono text-[9px] opacity-90">[${stateText}]</span>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        `;
+      }
+    }
+    window.renderCasterBoonUI = renderCasterBoonUI;
+
+    function toggleDisciplineDmBoon(disc) {
+      if (!character) return;
+      if (!character.settings) character.settings = {};
+      const target = String(disc || '').toLowerCase().trim();
+      const valid = ['spontaneous', 'prepared', 'divine', 'martial', 'warlock'];
+      if (!valid.includes(target)) return;
+
+      const currentBoons = getCharacterBoonDisciplines(character);
+      let nextBoons;
+      const wasActive = currentBoons.includes(target);
+      if (wasActive) {
+        nextBoons = currentBoons.filter(d => d !== target);
+      } else {
+        nextBoons = [...currentBoons, target];
+      }
+
+      character.settings.boonDisciplines = nextBoons;
+      character.settings.warlockBoon = nextBoons.includes('warlock');
+
+      if (nextBoons.length > 0) {
+        character.settings.casterTypeExplicit = true;
+        if (!wasActive) {
+          character.settings.casterType = target;
+        } else if (!nextBoons.includes(character.settings.casterType)) {
+          character.settings.casterType = nextBoons[0];
+        }
+        if (nextBoons.length === 1 && nextBoons[0] === 'warlock') {
+          character.settings.clMode = 'Warlock Boon (Invocations & Eldritch Blast)';
+        } else {
+          character.settings.clMode = 'Character Level (DM Boon)';
+        }
+      } else {
+        character.settings.casterTypeExplicit = false;
+        character.settings.clMode = 'Class Level';
+        const autoDisc = resolvePreferredMagicDiscipline(character) || 'spontaneous';
+        character.settings.casterType = autoDisc;
+      }
+
+      const clSel = document.getElementById('setting-cl-mode');
+      if (clSel) clSel.value = character.settings.clMode;
+      const typeSel = document.getElementById('setting-caster-type');
+      if (typeSel && typeSel.querySelector(`option[value="${character.settings.casterType}"]`)) {
+        typeSel.value = character.settings.casterType;
+      }
+
+      updateCasterTypeUIState();
+      applyCasterLevelRule();
+
+      const tabTarget = target === 'warlock' ? 'spontaneous' : target;
+      if (!wasActive && ['spontaneous', 'prepared', 'divine', 'martial'].includes(tabTarget)) {
+        window._userManualMagicDiscipline = tabTarget;
+        character._preferredMagicDiscipline = tabTarget;
+        switchMagicDisciplineTab(tabTarget);
+      } else {
+        autoSelectMagicDisciplineTab(character, true);
+      }
+
+      saveStateToStorage(true);
+      if (typeof updateQuickFeatCategoryWarlockState === 'function') {
+        updateQuickFeatCategoryWarlockState();
+      }
+      renderSpellsCockpit();
+      renderSpellSlots();
+      renderKnownSpells();
+      renderManeuvers();
+      renderLevelProgression();
+
+      if (typeof showDiceTopToast === 'function') {
+        const labels = {
+          spontaneous: 'Spontaneous Arcane',
+          prepared: 'Prepared Arcane',
+          divine: 'Divine Prayer',
+          martial: 'Martial Maneuvers (IL)',
+          warlock: 'Warlock Invocations'
+        };
+        const prog = character.levelProgression || [];
+        const activeLevels = prog.filter(p => p.active !== false).length || Number(character.level) || 1;
+        showDiceTopToast({
+          icon: !wasActive ? '🌟' : 'ℹ️',
+          title: `${labels[target] || target}: ${!wasActive ? 'DM Boon Enabled' : 'DM Boon Removed'}`,
+          breakdown: !wasActive
+            ? `Active at CL = Character Level (${activeLevels}) alongside your class disciplines.`
+            : `Reverted ${labels[target] || target} to strict RAW class level progression.`,
+          total: !wasActive ? `CL ${activeLevels}` : 'RAW Class Lvl'
+        });
+      }
+    }
+    window.toggleDisciplineDmBoon = toggleDisciplineDmBoon;
+
     function updateCasterTypeUIState() {
       const clModeSel = document.getElementById('setting-cl-mode');
       const casterTypeSel = document.getElementById('setting-caster-type');
       const casterTypeWrapper = document.getElementById('setting-caster-type-wrapper');
       const casterTypeHint = document.getElementById('setting-caster-type-hint');
+      renderCasterBoonUI();
       if (!clModeSel || !casterTypeSel) return;
 
       const clMode = clModeSel.value || '';
-      const isBoon = clMode === 'Character Level (DM Boon)' || clMode.includes('Warlock Boon');
+      const boons = getCharacterBoonDisciplines(character);
+      const isBoon = clMode === 'Character Level (DM Boon)' || clMode.includes('Warlock Boon') || boons.length > 0;
 
       if (!isBoon) {
         casterTypeSel.disabled = true;
@@ -6828,12 +7013,12 @@
           casterTypeWrapper.classList.remove('opacity-60');
         }
         if (casterTypeHint) {
-          casterTypeHint.textContent = 'DM Boon Override';
-          casterTypeHint.className = 'text-[9px] font-mono text-indigo-300/70 transition';
+          casterTypeHint.textContent = boons.length > 1 ? `${boons.length} DM Boons Active` : 'DM Boon Override';
+          casterTypeHint.className = 'text-[9px] font-mono text-purple-300 font-bold transition';
         }
         const boonSelectVal = (character?.settings?.casterTypeExplicit === true && character?.settings?.casterType)
           ? character.settings.casterType
-          : (resolvePreferredMagicDiscipline(character) || character?.settings?.casterType || 'spontaneous');
+          : (boons[0] || resolvePreferredMagicDiscipline(character) || character?.settings?.casterType || 'spontaneous');
         if (boonSelectVal && casterTypeSel.querySelector(`option[value="${boonSelectVal}"]`)) {
           casterTypeSel.value = boonSelectVal;
         }
@@ -6847,22 +7032,32 @@
         character.settings.clMode = sel.value;
         const isWarlock = sel.value.includes('Warlock Boon');
         character.settings.warlockBoon = isWarlock;
+        const typeSel = document.getElementById('setting-caster-type');
 
         if (isWarlock) {
           character.settings.casterType = 'warlock';
           character.settings.casterTypeExplicit = true;
-          const typeSel = document.getElementById('setting-caster-type');
+          const boons = getCharacterBoonDisciplines(character);
+          if (!boons.includes('warlock')) boons.push('warlock');
+          character.settings.boonDisciplines = boons;
           if (typeSel) typeSel.value = 'warlock';
-        } else if (character.settings.casterType === 'warlock') {
+        } else if (sel.value === 'Character Level (DM Boon)') {
+          const chosenType = (typeSel && typeSel.value) ? typeSel.value : (character.settings.casterType || 'spontaneous');
+          const normType = chosenType === 'warlock' ? 'spontaneous' : chosenType;
+          character.settings.casterType = normType;
+          character.settings.casterTypeExplicit = true;
+          const boons = Array.isArray(character.settings.boonDisciplines)
+            ? character.settings.boonDisciplines.filter(d => d !== 'warlock')
+            : [];
+          if (!boons.includes(normType)) boons.push(normType);
+          character.settings.boonDisciplines = boons;
+          if (typeSel) typeSel.value = normType;
+        } else {
+          // Class Level (Strict RAW) or Custom
+          character.settings.boonDisciplines = [];
           character.settings.casterTypeExplicit = false;
           const autoDisc = resolvePreferredMagicDiscipline(character) || 'spontaneous';
           character.settings.casterType = autoDisc;
-          const typeSel = document.getElementById('setting-caster-type');
-          if (typeSel) typeSel.value = autoDisc;
-        } else if (sel.value === 'Character Level (DM Boon)' && !character.settings.casterTypeExplicit) {
-          const autoDisc = resolvePreferredMagicDiscipline(character) || 'spontaneous';
-          character.settings.casterType = autoDisc;
-          const typeSel = document.getElementById('setting-caster-type');
           if (typeSel) typeSel.value = autoDisc;
         }
 
@@ -6875,8 +7070,10 @@
         if (typeof updateQuickFeatCategoryWarlockState === 'function') {
           updateQuickFeatCategoryWarlockState();
         }
+        renderSpellsCockpit();
         renderSpellSlots();
         renderKnownSpells();
+        renderManeuvers();
         renderLevelProgression();
       }
     }
@@ -6890,19 +7087,27 @@
         character.settings.casterType = cType;
         character.settings.casterTypeExplicit = true;
 
+        const boons = Array.isArray(character.settings.boonDisciplines)
+          ? [...character.settings.boonDisciplines]
+          : getCharacterBoonDisciplines(character);
+        if (!boons.includes(cType)) {
+          boons.push(cType);
+        }
+        character.settings.boonDisciplines = boons;
+
         const clSel = document.getElementById('setting-cl-mode');
         if (cType === 'warlock') {
           character.settings.warlockBoon = true;
-          if (clSel && !clSel.value.includes('Warlock Boon')) {
+          if (clSel && !clSel.value.includes('Warlock Boon') && boons.length === 1) {
             clSel.value = 'Warlock Boon (Invocations & Eldritch Blast)';
             character.settings.clMode = clSel.value;
           }
         } else {
-          if (clSel && clSel.value.includes('Warlock Boon')) {
+          if (clSel && (clSel.value.includes('Warlock Boon') || clSel.value === 'Class Level')) {
             clSel.value = 'Character Level (DM Boon)';
             character.settings.clMode = clSel.value;
-            character.settings.warlockBoon = false;
           }
+          character.settings.warlockBoon = boons.includes('warlock');
         }
 
         window._userManualMagicDiscipline = null;
@@ -6914,8 +7119,10 @@
         if (typeof updateQuickFeatCategoryWarlockState === 'function') {
           updateQuickFeatCategoryWarlockState();
         }
+        renderSpellsCockpit();
         renderSpellSlots();
         renderKnownSpells();
+        renderManeuvers();
         renderLevelProgression();
       }
     }
