@@ -5571,7 +5571,15 @@
 
     async function autofillDeityEditorViaAi() {
       const nameInput = document.getElementById('custom-deity-name');
-      const q = nameInput ? nameInput.value.trim() : '';
+      const titleInput = document.getElementById('custom-deity-title');
+      const nameVal = nameInput ? nameInput.value.trim() : '';
+      const titleVal = titleInput ? titleInput.value.trim() : '';
+      let q = nameVal;
+      if (!q && titleVal) {
+        q = titleVal;
+      } else if (q && titleVal && !q.toLowerCase().includes(titleVal.toLowerCase())) {
+        q = `${nameVal} (${titleVal})`;
+      }
       if (!q) {
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
@@ -5582,6 +5590,7 @@
         } else {
           alert('Please enter a deity name first.');
         }
+        if (nameInput) nameInput.focus();
         return;
       }
       await searchDeityViaRuleMasterAi(q);
@@ -5702,7 +5711,14 @@
       }
       if (!q) {
         const nameInput = document.getElementById('custom-deity-name');
-        if (nameInput && nameInput.value.trim()) q = nameInput.value.trim();
+        const titleInput = document.getElementById('custom-deity-title');
+        const nameVal = nameInput ? nameInput.value.trim() : '';
+        const titleVal = titleInput ? titleInput.value.trim() : '';
+        if (nameVal && titleVal && !nameVal.toLowerCase().includes(titleVal.toLowerCase())) {
+          q = `${nameVal} (${titleVal})`;
+        } else {
+          q = nameVal || titleVal;
+        }
       }
       if (!q) {
         const entered = prompt('Enter the name of the official D&D 3.5e deity you want to search:\n(e.g., Kelemvor, Mystra, Tempus, Bane, Lolth, Asmodeus, Helm, Sune)');
@@ -5760,10 +5776,11 @@
         }
       } catch (err) {
         console.warn('AI Deity lookup warning / fallback:', err);
+        const errMsg = (err && err.message) ? err.message : 'AI lookup unavailable';
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
             title: 'AI Lookup Notice',
-            breakdown: 'AI lookup timed out or unavailable — opened Custom Deity Editor for manual setup.',
+            breakdown: `${errMsg} — opened Editor for manual setup.`,
             icon: '⚡'
           });
         }
@@ -5991,10 +6008,11 @@
         }
       } catch (err) {
         console.warn('AI Domain lookup warning:', err);
+        const errMsg = (err && err.message) ? err.message : 'AI lookup unavailable';
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
             title: 'AI Lookup Notice',
-            breakdown: err.message || 'AI lookup unavailable — use manual entry.',
+            breakdown: `${errMsg} — opened Editor for manual setup.`,
             icon: '⚡'
           });
         }

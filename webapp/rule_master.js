@@ -1552,37 +1552,56 @@ const RuleMaster = {
     }
   },
 
+  // Helper: Sanitize and deduplicate models cascade, ensuring guaranteed fallbacks and avoiding hangs
+  _sanitizeModelList(list) {
+    let models = [...new Set([...(list || []), 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'].filter(Boolean))];
+    // If gemini-3.1-flash-lite is at index 0, move a reliable 2.5 or 2.0 flash model to index 0 so it doesn't hang
+    if (models[0] && models[0].includes('3.1-flash-lite')) {
+      const betterIdx = models.findIndex(m => m.includes('2.5-flash') && !m.includes('3.1'));
+      if (betterIdx > 0) {
+        const [better] = models.splice(betterIdx, 1);
+        models.unshift(better);
+      }
+    }
+    return models;
+  },
+
   // Dynamically builds the 3-tier / 9-slot routing matrix from live discovered API models
   buildDynamicRoutingFromModels(apiModels = []) {
     function parseVer(name) {
       const match = (name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
       return match ? parseFloat(match[1]) : 0.0;
     }
-    const sorted = (Array.isArray(apiModels) ? apiModels.slice() : []).sort((a, b) => parseVer(b) - parseVer(a));
+    // Filter out hanging or experimental models like 3.1-flash-lite from primary evaluation
+    const cleanedModels = (Array.isArray(apiModels) ? apiModels.slice() : [])
+      .filter(m => m && !m.toLowerCase().includes('3.1-flash-lite'));
+    const sorted = cleanedModels.sort((a, b) => parseVer(b) - parseVer(a));
+
+    const flash25 = sorted.find(m => m.includes('2.5-flash') && !m.includes('lite')) || 'gemini-2.5-flash';
+    const lite25 = sorted.find(m => m.includes('2.5-flash-lite')) || 'gemini-2.5-flash-lite';
+    const flash20 = sorted.find(m => m.includes('2.0-flash')) || 'gemini-2.0-flash';
+
     const liteModels = sorted.filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'));
     const flashModels = sorted.filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'));
     const proModels = sorted.filter(m => m.toLowerCase().includes('pro'));
-    const anyModel = sorted[0] || '';
 
     const pick3 = (candidates) => {
+      const pool = [...candidates, flash25, lite25, flash20, 'gemini-2.5-flash', 'gemini-2.0-flash'];
       const uniq = [];
-      candidates.forEach(m => {
+      pool.forEach(m => {
         if (m && !uniq.includes(m)) uniq.push(m);
       });
-      sorted.forEach(m => {
-        if (uniq.length < 3 && m && !uniq.includes(m)) uniq.push(m);
-      });
       return {
-        primary: uniq[0] || anyModel,
-        fallback: uniq[1] || uniq[0] || anyModel,
-        tertiary: uniq[2] || uniq[1] || uniq[0] || anyModel
+        primary: uniq[0] || 'gemini-2.5-flash',
+        fallback: uniq[1] || 'gemini-2.0-flash',
+        tertiary: uniq[2] || 'gemini-2.5-flash-lite'
       };
     };
 
     return {
-      QUICK_SEARCH: pick3([liteModels[0], flashModels[0], liteModels[1], flashModels[1]]),
-      RULE_AUDIT: pick3([proModels[0], flashModels[0], proModels[1], liteModels[0]]),
-      IMPORT_BATCH: pick3([liteModels[0], flashModels[0], proModels[0], flashModels[1]])
+      QUICK_SEARCH: pick3([flash25, lite25, flash20, ...flashModels, ...liteModels]),
+      RULE_AUDIT: pick3([proModels[0], flash25, proModels[1], lite25]),
+      IMPORT_BATCH: pick3([flash25, lite25, proModels[0], flash20])
     };
   },
 
@@ -1784,7 +1803,7 @@ Schema:
       } else if (taskType === 'IMPORT_BATCH' && this.getAiModelMode() === 'auto') {
         taskCfg = activeRouting.IMPORT_BATCH;
       }
-      const customList = [taskCfg.primary, taskCfg.fallback, taskCfg.tertiary].filter(Boolean);
+      const customList = this._sanitizeModelList([taskCfg.primary, taskCfg.fallback, taskCfg.tertiary]);
       if (customList.length > 0) {
         if (!this._cachedTaskModels) this._cachedTaskModels = {};
         this._cachedTaskModels[cacheKey] = customList;
@@ -1854,7 +1873,7 @@ Schema:
         } else if (userPref === 'auto' && taskType === 'IMPORT_BATCH') {
           cfg = dynamicRouting.IMPORT_BATCH;
         }
-        const resultList = [cfg.primary, cfg.fallback, cfg.tertiary].filter(Boolean);
+        const resultList = this._sanitizeModelList([cfg.primary, cfg.fallback, cfg.tertiary]);
         if (!this._cachedTaskModels) this._cachedTaskModels = {};
         this._cachedTaskModels[cacheKey] = resultList;
         return resultList;
@@ -1863,7 +1882,7 @@ Schema:
       console.warn('API model list discovery skipped:', e.message);
     }
 
-    return defaultList;
+    return this._sanitizeModelList(defaultList);
   },
 
   async getAiArchitectureDiagnostics(apiKey) {
@@ -2475,25 +2494,21 @@ Schema:
 
     // 1. DEITY / DRACONIC PATRON / CULT POWER / PHILOSOPHY
     if (cat === 'deity' || cat === 'god' || cat === 'patron') {
-      return `You are a master D&D 3.5e Rule Arbiter.
+      return `You are an expert D&D 3.5e Lore & Faith Architect (Deities & Demigods, Faiths and Pantheons, Dragons of Faerûn, Wyrms of the North, Champions of Ruin, Fiendish Codex).
 Target query: "${cleanQuery}" (Category: "Deity / Patron").
 
-${this.DND35_RAW_GUARDRAIL}
+CRITICAL RULE: NEVER return an empty entries array! Whether the query is an official D&D 3.5e Deity, a Forgotten Realms / Eberron / Greyhawk lore figure (such as an Ancient Dragon like Khazmil / Urshula the Black, an Archfiend, or Undead Lord), or a custom campaign Patron, you MUST ALWAYS return 1 complete Deity/Patron object in the 'entries' array. If the figure is a Dragon, Patron, or Cult Power without a standard PHB deity block, infer their exact Alignment (e.g. 'Chaotic Evil' for Black Dragons), Favored Weapon (e.g. 'Bite' or 'Claw'), Rank ('Dragon Patron / Cult Power'), Icon ('🐉'), Title, Portfolio, and 3 to 5 fitting D&D 3.5e Cleric Domains (e.g. ['Chaos', 'Destruction', 'Dragon', 'Evil', 'Water']) from D&D 3.5e lore and the query text.
 
-DEITY / PATRON / CULT POWER SPECIFIC RAW RULES:
-1. STRICT REAL RAW 3.5E / FORGOTTEN REALMS / GREYHAWK / EBERRON LORE:
-   - Covers official deities, draconic patrons (e.g. Bahamut, Tiamat, Sardior, Io, Falazure, Aasterinian, Chronepsis, Tamara, Garyx, Hlal, Lendys, Zorquan, Khazmil, Urshula the Black, or regional dragon rulers), archfiends, god-kings, cult powers, or cosmic philosophies.
-   - For non-standard draconic patrons, cult powers, or philosophies from official 3.5e lore (e.g. Dragons of Faerûn, Draconomicon, Champions of Ruin, Fiendish Codex, or Player's Guide to Faerûn), infer the 3 to 5 most fitting thematic D&D 3.5e Cleric domains, alignment, favored weapon, and portfolio from official lore.
-   - If entity does not exist in official 3.5e lore, return {"entries": []}.
-2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e English name.
-3. OUTPUT 100% ENGLISH D&D 3.5E RAW FIELDS:
+DEITY / PATRON / CULT POWER RULES:
+1. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e English names.
+2. OUTPUT 100% ENGLISH D&D 3.5E RAW FIELDS:
    - "alignment": full 3.5e alignment (e.g. "Lawful Good", "Chaotic Evil", "Neutral Good", "Lawful Evil", "True Neutral", or "Any").
    - "rank": one of "Greater Deity", "Intermediate Deity", "Lesser Deity", "Demigod", "Hero-Deity", "Dragon Patron / Cult Power", "Philosophy / Cosmic Force".
    - "icon": exactly 1 thematic emoji from: ☀️, ⚡, 🥊, 🏹, 🔨, 🦄, 🌾, 🐲, 📖, 🥾, 🍂, 🪓, 🕯️, 🎭, 💎, ⛓️, 💀, 👁️‍🗨️, 🩸, 👁️, 🐉, 🌀, 🔮, ✨ (NEVER use dice emoji).
    - "favoredWeapon": official D&D 3.5e weapon name (e.g. "Longsword", "Heavy Mace", "Bite", "Claw", "Scimitar", "Dagger", "Quarterstaff", "Greatsword").
    - "domains": array of 3 to 5 official D&D 3.5e Cleric domain names (e.g. ["Chaos", "Destruction", "Dragon", "Evil", "Water"]).
-   - "portfolio": summary of divine portfolio (e.g. "Chromatic dragons, conquest, evil, greed").
-   - "symbol": description of holy or unholy symbol.
+   - "portfolio": summary of divine/patron portfolio (e.g. "Chromatic dragons, conquest, evil, greed").
+   - "symbol": description of holy or unholy symbol or heraldry.
    - "category": pantheon or classification (e.g. "Forgotten Realms • Draconic Patrons", "Core Pantheon", "Faerûnian Pantheon", "Greyhawk Pantheon", "Draconic Pantheon").
 
 OUTPUT JSON SCHEMA:
@@ -2508,10 +2523,10 @@ Return valid JSON only matching:
       "title": "Official Epithets / Aliases",
       "category": "Pantheon / Classification",
       "icon": "🐉",
-      "rank": "Lesser Deity",
+      "rank": "Dragon Patron / Cult Power",
       "alignment": "Chaotic Evil",
-      "favoredWeapon": "Claw",
-      "domains": ["Chaos", "Dragon", "Evil"],
+      "favoredWeapon": "Bite",
+      "domains": ["Chaos", "Destruction", "Dragon", "Evil", "Water"],
       "portfolio": "Summary of portfolio",
       "symbol": "Holy or unholy symbol description",
       "source": "Official 3.5e publication and page",
@@ -2523,15 +2538,14 @@ Return valid JSON only matching:
 
     // 2. DOMAIN / CLERIC DOMAIN
     if (cat === 'domain' || cat === 'cleric domain') {
-      return `You are a master D&D 3.5e Rule Arbiter.
+      return `You are an expert D&D 3.5e Domain & Divine Magic Arbiter (Spell Compendium, Player's Handbook, Complete Divine).
 Target query: "${cleanQuery}" (Category: "Domain").
 
-${this.DND35_RAW_GUARDRAIL}
+CRITICAL RULE: NEVER return an empty entries array! You MUST ALWAYS return 1 complete Cleric Domain object in the 'entries' array matching the query. If the domain is from a splatbook, campaign setting, or thematic cult, accurately determine or infer its full 1st to 9th level spell progression and granted power from official D&D 3.5e RAW rules.
 
-CLERIC DOMAIN SPECIFIC RAW RULES:
-1. STRICT REAL RAW 3.5E ONLY:
+CLERIC DOMAIN RULES:
+1. STRICT REAL RAW 3.5E INTEGRATION:
    - Consult official D&D 3.5e sources (Spell Compendium, Player's Handbook, Complete Divine, Frostburn, Sandstorm, Stormwrack, Book of Exalted Deeds, Fiendish Codex, etc.).
-   - If domain does not exist in official D&D 3.5e, return {"entries": []}.
 2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e English name.
 3. DOMAIN V2 SCHEMA:
    - "type": "Domain"
@@ -3071,7 +3085,7 @@ Return valid JSON only matching:
     }
 
     const promptText = this.buildTargetedAiPrompt(cleanQuery, effectiveCategory);
-    const availableModels = await this.getAvailableGeminiModels(apiKey, false, 'QUICK_SEARCH');
+    const availableModels = this._sanitizeModelList(await this.getAvailableGeminiModels(apiKey, false, 'QUICK_SEARCH'));
     let lastError = null;
 
     for (const model of availableModels) {
@@ -3084,7 +3098,7 @@ Return valid JSON only matching:
         temperature: 0.1,
         responseMimeType: "application/json"
       };
-      if (model.includes('2.0') || model.includes('2.5') || model.includes('thinking')) {
+      if (model.includes('2.5')) {
         genConfig.thinkingConfig = { thinkingBudget: 0 };
       }
 
@@ -3094,7 +3108,7 @@ Return valid JSON only matching:
       };
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
 
       try {
         const response = await fetch(url, {
@@ -3161,7 +3175,7 @@ Return valid JSON only matching:
       } catch (netErr) {
         clearTimeout(timeoutId);
         if (netErr && netErr.name === 'AbortError') {
-          lastError = `Timeout (10s) - ${model} did not respond.`;
+          lastError = `Timeout (6s) - ${model} did not respond.`;
         } else {
           lastError = `${netErr.message} (${model})`;
         }
