@@ -4491,6 +4491,24 @@ const RuleEngine = {
       { type: 'untyped', val: paDmg, source: `Power Attack (${paDamageMultiplier}x)` }
     ];
 
+    // Power Attack Item Synergy (e.g. Armbands of Might MIC p.72: +2 melee damage when taking at least -2 Power Attack penalty)
+    if (!isRangedWep && effectivePA >= 2 && character && character.bodySlots && typeof character.bodySlots === 'object') {
+      Object.entries(character.bodySlots).forEach(([slotKey, slotItem]) => {
+        if (!slotItem || slotItem.active === false || !slotItem.name || slotItem.name === '-') return;
+        const dbEntry = this.getMasterDbEntry(slotItem);
+        const rf = Object.assign({}, dbEntry?.ruleFlags || {}, slotItem.ruleFlags || {});
+        const minPa = Number(rf.powerAttackMinPenalty) || 2;
+        const bonusDmg = Number(rf.powerAttackBonusDamage) || 0;
+        if (bonusDmg > 0 && effectivePA >= minPa) {
+          damageBonusItems.push({
+            type: 'untyped',
+            val: bonusDmg,
+            source: `${slotItem.name} (Power Attack Synergy)`
+          });
+        }
+      });
+    }
+
     // Weapon V2 Damage Modifiers & Enhancement Bonus
     let hasExplicitWepDmgMod = false;
     wepMods.forEach(m => {

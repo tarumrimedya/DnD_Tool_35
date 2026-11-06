@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "b49cc6316e101589",
+  "compendiumHash": "ba1bbfee320b6866",
   "generatedAt": "2026-11-04T15:37:19.474Z",
-  "totalEntries": 4820,
+  "totalEntries": 4887,
   "chunks": {
     "srd_equipment.json": {
-      "count": 1021,
-      "bytes": 1621132,
-      "hash": "f855eff68fb7a9cb",
+      "count": 1088,
+      "bytes": 1698007,
+      "hash": "2a77a6a778eca650",
       "eagerLoad": true
     },
     "srd_feats.json": {
@@ -50,7 +50,7 @@
     "mic_compendium.json": {
       "count": 953,
       "bytes": 1555179,
-      "hash": "5de0ffa8866782bb",
+      "hash": "08b1249f17d558dd",
       "eagerLoad": true
     },
     "srd_domains.json": {
@@ -40658,6 +40658,542 @@
       "type": "Template",
       "category": "Acquired Template",
       "chunk": "srd_templates.json"
+    },
+    {
+      "id": "pot-cure-minor-wounds",
+      "n": "Potion of Cure Minor Wounds",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-cure-light-wounds",
+      "n": "Potion of Cure Light Wounds",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-cure-moderate-wounds",
+      "n": "Potion of Cure Moderate Wounds",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-cure-serious-wounds",
+      "n": "Potion of Cure Serious Wounds",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-cure-critical-wounds",
+      "n": "Potion of Cure Critical Wounds",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-heal",
+      "n": "Potion of Heal",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-heal-greater",
+      "n": "Potion of Heal, Greater",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-lesser-restoration",
+      "n": "Potion of Lesser Restoration",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-remove-fear",
+      "n": "Potion of Remove Fear",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-remove-paralysis",
+      "n": "Potion of Remove Paralysis",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-remove-blindness-deafness",
+      "n": "Potion of Remove Blindness/Deafness",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-remove-curse",
+      "n": "Potion of Remove Curse",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-remove-disease",
+      "n": "Potion of Remove Disease",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-neutralize-poison",
+      "n": "Potion of Neutralize Poison",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-delay-poison",
+      "n": "Potion of Delay Poison",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-bulls-strength",
+      "n": "Potion of Bull's Strength",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-cats-grace",
+      "n": "Potion of Cat's Grace",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-bears-endurance",
+      "n": "Potion of Bear's Endurance",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-foxs-cunning",
+      "n": "Potion of Fox's Cunning",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-owls-wisdom",
+      "n": "Potion of Owl's Wisdom",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-eagles-splendor",
+      "n": "Potion of Eagle's Splendor",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-mage-armor",
+      "n": "Potion of Mage Armor",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-shield-of-faith-plus-2",
+      "n": "Potion of Shield of Faith +2",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-shield-of-faith-plus-3",
+      "n": "Potion of Shield of Faith +3",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-shield-of-faith-plus-4",
+      "n": "Potion of Shield of Faith +4",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-shield-of-faith-plus-5",
+      "n": "Potion of Shield of Faith +5",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-barkskin-plus-2",
+      "n": "Potion of Barkskin +2",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-barkskin-plus-3",
+      "n": "Potion of Barkskin +3",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-barkskin-plus-4",
+      "n": "Potion of Barkskin +4",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-barkskin-plus-5",
+      "n": "Potion of Barkskin +5",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-haste",
+      "n": "Potion of Haste",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-heroism",
+      "n": "Potion of Heroism",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-good-hope",
+      "n": "Potion of Good Hope",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-rage",
+      "n": "Potion of Rage",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-aid",
+      "n": "Potion of Aid",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-enlarge-person",
+      "n": "Potion of Enlarge Person",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-reduce-person",
+      "n": "Potion of Reduce Person",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-blur",
+      "n": "Potion of Blur",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-displacement",
+      "n": "Potion of Displacement",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-protection-from-evil",
+      "n": "Potion of Protection from Evil",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-sanctuary",
+      "n": "Potion of Sanctuary",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-endure-elements",
+      "n": "Potion of Endure Elements",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-resist-energy-10",
+      "n": "Potion of Resist Energy 10",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-resist-energy-20",
+      "n": "Potion of Resist Energy 20",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-resist-energy-30",
+      "n": "Potion of Resist Energy 30",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-protection-from-energy",
+      "n": "Potion of Protection from Energy",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-invisibility",
+      "n": "Potion of Invisibility",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-fly",
+      "n": "Potion of Fly",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-levitate",
+      "n": "Potion of Levitate",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-spider-climb",
+      "n": "Potion of Spider Climb",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-darkvision",
+      "n": "Potion of Darkvision",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-water-breathing",
+      "n": "Potion of Water Breathing",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-water-walk",
+      "n": "Potion of Water Walk",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-gaseous-form",
+      "n": "Potion of Gaseous Form",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-jump",
+      "n": "Potion of Jump",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-pass-without-trace",
+      "n": "Potion of Pass without Trace",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-tongues",
+      "n": "Potion of Tongues",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "pot-nondetection",
+      "n": "Potion of Nondetection",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "oil-magic-weapon",
+      "n": "Oil of Magic Weapon",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "oil-bless-weapon",
+      "n": "Oil of Bless Weapon",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "oil-greater-magic-weapon-plus-2",
+      "n": "Oil of Greater Magic Weapon +2",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "oil-greater-magic-weapon-plus-3",
+      "n": "Oil of Greater Magic Weapon +3",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "oil-magic-vestment-plus-1",
+      "n": "Oil of Magic Vestment +1",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "oil-magic-vestment-plus-2",
+      "n": "Oil of Magic Vestment +2",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "oil-magic-vestment-plus-3",
+      "n": "Oil of Magic Vestment +3",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "oil-keen-edge",
+      "n": "Oil of Keen Edge",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
+    },
+    {
+      "id": "oil-flame-arrow",
+      "n": "Oil of Flame Arrow",
+      "t": "Consumable",
+      "c": "Potion",
+      "s": "Slotless",
+      "f": "srd_equipment.json"
     }
   ]
 }

@@ -6509,18 +6509,27 @@
       if (typeof item._isGearCache === 'boolean') return item._isGearCache;
       const type = String(item.type || '').toLowerCase().trim();
       const cat = String(item.category || '').toLowerCase().trim();
+      const id = String(item.id || '').toLowerCase().trim();
 
-      // STRICT EXCLUSIONS: Feats, Spells, Maneuvers, Races, Classes, Invocations, Special Abilities are NEVER equipment!
+      // STRICT EXCLUSIONS: Feats, Spells, Maneuvers, Races, Classes, Invocations, Special Abilities, Enhancements, and Special Materials are NEVER standalone equipment!
       const nonGearTypes = [
         'feat', 'special ability', 'spell', 'maneuver', 'stance', 
         'warlock invocation', 'invocation', 'race', 'class', 'prestige class',
-        'domain', 'skill', 'trait', 'flaw', 'template', 'psionic power', 'monster'
+        'domain', 'skill', 'trait', 'flaw', 'template', 'psionic power', 'monster',
+        'enhancement', 'weapon enhancement', 'armor enhancement', 'shield enhancement', 'misc enhancement',
+        'material', 'special material'
       ];
       if (nonGearTypes.includes(type) || nonGearTypes.includes(cat)) {
         item._isGearCache = false;
         return false;
       }
-      if (type.includes('feat') || type.includes('spell') || type.includes('maneuver') || type.includes('ability')) {
+      if (type.includes('feat') || type.includes('spell') || type.includes('maneuver') || type.includes('ability') ||
+          type.includes('enhancement') || cat.includes('enhancement') || type === 'material' || cat === 'special material') {
+        item._isGearCache = false;
+        return false;
+      }
+      // Exclude non-standalone SRD table multiplier rules / services (Barding templates, Stabling)
+      if (id === 'gear-barding-medium-creature' || id === 'gear-barding-large-creature' || id === 'gear-stabling') {
         item._isGearCache = false;
         return false;
       }
@@ -8997,15 +9006,32 @@
         let diceCount = 1;
         let flatBonus = 1;
         let isHealSpell = false;
+        let isCureMinor = false;
 
-        if (/serious/i.test(name)) { diceCount = 3; flatBonus = 5; }
+        if (/minor/i.test(name)) { isCureMinor = true; diceCount = 0; flatBonus = 1; }
+        else if (/serious/i.test(name)) { diceCount = 3; flatBonus = 5; }
         else if (/moderate/i.test(name)) { diceCount = 2; flatBonus = 3; }
         else if (/critical/i.test(name)) { diceCount = 4; flatBonus = 7; }
         else if (/heal/i.test(name) && !/cure/i.test(name)) { isHealSpell = true; }
 
+        if (isCureMinor) {
+          const prevHp = character.hp.current;
+          character.hp.current = Math.min(character.hp.max, character.hp.current + 1);
+          saveStateToStorage(true);
+          renderAll();
+          addDiceHistoryEntry({
+            icon: '💖',
+            title: `${name}`,
+            formula: '1 HP',
+            breakdown: `Cure Minor Wounds: +1 HP • HP: ${prevHp} ➔ ${character.hp.current}/${character.hp.max} • ${remainingInfo}`,
+            total: '+1 HP'
+          });
+          return;
+        }
+
         if (isHealSpell) {
-          // D&D 3.5e Heal Spell: 110 HP or full + Cure diseases, blindness, sickness, fatigue
-          const healTotal = 110;
+          // D&D 3.5e Heal Spell: 110 HP (CL 11) or 150 HP (CL 15 Greater Heal) + Cure diseases, blindness, sickness, fatigue
+          const healTotal = /greater|mass/i.test(name) ? 150 : 110;
           const prevHp = character.hp.current;
           character.hp.current = Math.min(character.hp.max, character.hp.current + healTotal);
           const healCured = [];
@@ -9013,7 +9039,7 @@
             character.buffs.forEach(b => {
               if (!b.active) return;
               const bName = (b.name || '').toLowerCase();
-              if (bName.includes('sick') || bName.includes('nauseat') || bName.includes('blind') || bName.includes('deaf') || bName.includes('disease') || bName.includes('poison') || bName.includes('fatigue')) {
+              if (bName.includes('sick') || bName.includes('nauseat') || bName.includes('blind') || bName.includes('deaf') || bName.includes('disease') || bName.includes('poison') || bName.includes('fatigue') || bName.includes('exhaust') || bName.includes('daze') || bName.includes('stun') || bName.includes('confus')) {
                 b.active = false;
                 b.durationText = 'Cured (Heal)';
                 healCured.push(b.name);
@@ -9026,7 +9052,7 @@
           addDiceHistoryEntry({
             icon: '💖',
             title: `${name} (Heal & Cure)`,
-            formula: '110 HP',
+            formula: `${healTotal} HP`,
             breakdown: `Heal: +${healTotal} HP • HP: ${prevHp} ➔ ${character.hp.current}/${character.hp.max}${curedText} • ${remainingInfo}`,
             total: `+${healTotal} HP`
           });
@@ -9240,16 +9266,51 @@
 
       // 4. BUFF İKSİRİ VEYA DURUM KONTROLÜ
       let activatedBuff = null;
-      if (Array.isArray(character.buffs)) {
-        const match = character.buffs.find(b => {
-          const bClean = (b.name || '').toLowerCase();
-          return cleanLower.includes(bClean) || bClean.includes(cleanLower.replace(/potion of /i, '').replace(/iksir[iı]?/i, '').replace(/'s/g, '').trim());
-        });
-        if (match) {
-          match.active = true;
-          match.rounds = 30; // 30 tur
-          activatedBuff = match.name;
-        }
+      let activatedRounds = 30;
+      let activatedSummary = '';
+      if (!Array.isArray(character.buffs)) character.buffs = [];
+
+      const compendiumEntry = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function')
+        ? (window.SrdCompendium.getByName(name) || null)
+        : null;
+      const defaultRounds = Number(compendiumEntry?.ruleFlags?.durationRounds || item?.ruleFlags?.durationRounds) || 30;
+
+      const match = character.buffs.find(b => {
+        const bClean = (b.name || '').toLowerCase();
+        return cleanLower.includes(bClean) || bClean.includes(cleanLower.replace(/^(potion|oil) of /i, '').replace(/iksir[iı]?/i, '').replace(/'s/g, '').trim());
+      });
+      if (match) {
+        match.active = true;
+        match.rounds = defaultRounds;
+        activatedBuff = match.name;
+        activatedRounds = match.rounds;
+        activatedSummary = match.summary || match.notes || '';
+      } else if (compendiumEntry && ((Array.isArray(compendiumEntry.modifiers) && compendiumEntry.modifiers.length > 0) || (compendiumEntry.ruleFlags && Object.keys(compendiumEntry.ruleFlags).length > 0))) {
+        const buffLabel = String(compendiumEntry.name || name).replace(/^(Potion|Oil) of\s+/i, '').trim();
+        const v2Mods = Array.isArray(compendiumEntry.modifiers) ? JSON.parse(JSON.stringify(compendiumEntry.modifiers)) : [];
+        const v2Flags = compendiumEntry.ruleFlags ? JSON.parse(JSON.stringify(compendiumEntry.ruleFlags)) : {};
+        const durMin = Math.round(defaultRounds / 10);
+        const durText = defaultRounds >= 600 ? `${Math.round(defaultRounds / 600)} hr.` : (defaultRounds >= 10 ? `${durMin} min. (${defaultRounds} rounds)` : `${defaultRounds} rounds`);
+        const newBuff = {
+          id: 'buff_pot_' + Date.now(),
+          schemaVersion: 2,
+          name: buffLabel,
+          source: 'Potion',
+          category: 'Buff',
+          active: true,
+          rounds: defaultRounds,
+          duration: durText,
+          durationText: durText,
+          casterLevel: Number(compendiumEntry.casterLevel) || 3,
+          summary: compendiumEntry.shortDescription || buffLabel,
+          notes: `Activated via ${name}`,
+          modifiers: v2Mods,
+          ruleFlags: v2Flags
+        };
+        character.buffs.push(newBuff);
+        activatedBuff = newBuff.name;
+        activatedRounds = defaultRounds;
+        activatedSummary = newBuff.summary;
       }
 
       saveStateToStorage(true);
@@ -9259,7 +9320,7 @@
         showDiceTopToast({
           icon: '🧪',
           title: name,
-          breakdown: `Activated "${activatedBuff}" (+4 Ability Score, 30 rounds) • ${remainingInfo}`,
+          breakdown: `Activated "${activatedBuff}" (${activatedSummary || `${activatedRounds} rounds`}) • ${remainingInfo}`,
           total: 'Active'
         });
       } else if (isDaily) {

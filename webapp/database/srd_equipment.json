@@ -11795,7 +11795,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "energyResistance": "10"
+    }
   },
   {
     "id": "mi-rod-of-metamagic-silent-normal",
@@ -13055,7 +13057,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.all",
+        "value": 7,
+        "formula": "7",
+        "type": "competence",
+        "condition": "Single Chosen Skill (1 use)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -13106,7 +13116,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "energyResistance": "Immunity"
+    }
   },
   {
     "id": "mi-tome-of-understanding-plus-5",
@@ -13486,7 +13498,15 @@
       "wondrous",
       "hands"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "grapple",
+        "value": 8,
+        "formula": "8",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -15084,7 +15104,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "concealment": 20
+    }
   },
   {
     "id": "mi-dimensional-shackles",
@@ -15139,9 +15161,9 @@
     "foundryId": "BcFtLaCHxW2ZxKCs",
     "schemaVersion": 2,
     "name": "Shatterspike",
-    "type": "MagicItem",
+    "type": "Weapon",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Main Hand",
     "source": "SRD 3.5e",
     "cost": 4315,
     "weight": 4,
@@ -15153,19 +15175,44 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-longsword",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-finaldeath",
     "foundryId": "BtXhwonBwKmfV473",
     "schemaVersion": 2,
     "name": "Finaldeath",
-    "type": "MagicItem",
+    "type": "Weapon",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Main Hand",
     "source": "SRD 3.5e",
     "cost": 1790308,
     "weight": 6,
@@ -15177,10 +15224,35 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 5,
+        "formula": "5",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 5,
+        "type": "Bludgeoning & Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-morningstar",
+    "enhancementBonus": 5,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-ring-of-epic-psionics-v",
@@ -15344,7 +15416,43 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.hide",
+        "value": 10,
+        "formula": "10",
+        "type": "enhancement",
+        "condition": null
+      },
+      {
+        "target": "skill.tumble",
+        "value": 10,
+        "formula": "10",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.climb",
+        "value": 20,
+        "formula": "20",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.autohypnosis",
+        "value": 10,
+        "formula": "10",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "save.all",
+        "value": 3,
+        "formula": "3",
+        "type": "resistance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -16109,7 +16217,15 @@
       "wondrous",
       "hands"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 8,
+        "formula": "8",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -16205,7 +16321,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.ride",
+        "value": 10,
+        "formula": "10",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -16311,9 +16435,9 @@
     "foundryId": "FkxvltRuaOKVGUYy",
     "schemaVersion": 2,
     "name": "Rod of Flailing",
-    "type": "MagicItem",
+    "type": "Weapon",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Two-Hand",
     "source": "SRD 3.5e",
     "cost": 50000,
     "weight": 0,
@@ -16325,10 +16449,35 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-dire-flail",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-ring-of-feather-falling",
@@ -16660,7 +16809,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.diplomacy",
+        "value": 6,
+        "formula": "6",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -17049,7 +17206,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.all",
+        "value": 1,
+        "formula": "1",
+        "type": "competence",
+        "condition": "Single Chosen Skill (1 use)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -17061,7 +17226,7 @@
     "name": "Mantle of Spell Resistance",
     "type": "MagicItem",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Torso",
     "source": "SRD 3.5e",
     "cost": 90000,
     "weight": 0,
@@ -17076,7 +17241,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "sr": 21
+    }
   },
   {
     "id": "mi-masterwork-cold-iron-longsword",
@@ -18156,7 +18323,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "energyResistance": "10 (All)"
+    }
   },
   {
     "id": "mi-ring-of-protection-plus-6",
@@ -18428,7 +18597,7 @@
     "name": "Goggles of Night",
     "type": "MagicItem",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Eyes",
     "source": "SRD 3.5e",
     "cost": 12000,
     "weight": 0,
@@ -18443,7 +18612,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "darkvisionFt": 60
+    }
   },
   {
     "id": "mi-staff-of-evocation",
@@ -19348,9 +19519,9 @@
     "foundryId": "QQhLlPRnXS0kYh1x",
     "schemaVersion": 2,
     "name": "Holy Devastator",
-    "type": "MagicItem",
+    "type": "Weapon",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Main Hand",
     "source": "SRD 3.5e",
     "cost": 4620315,
     "weight": 4,
@@ -19362,10 +19533,43 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 3,
+        "formula": "3",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 3,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Good (vs. Evil)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Holy"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-longsword",
+    "enhancementBonus": 3,
+    "handedness": "1h",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-amulet-of-catapsi",
@@ -19904,7 +20108,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.all",
+        "value": 10,
+        "formula": "10",
+        "type": "competence",
+        "condition": "Single Chosen Skill (1 use)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -19931,7 +20143,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "evasion": true
+    }
   },
   {
     "id": "mi-bracers-of-archery-lesser",
@@ -20026,9 +20240,9 @@
     "foundryId": "SnLSgNAK3FbQHjRc",
     "schemaVersion": 2,
     "name": "Unholy Despoiler",
-    "type": "MagicItem",
+    "type": "Weapon",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Main Hand",
     "source": "SRD 3.5e",
     "cost": 4650315,
     "weight": 4,
@@ -20040,10 +20254,43 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 3,
+        "formula": "3",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 3,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Evil (vs. Good)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Unholy"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-longsword",
+    "enhancementBonus": 3,
+    "handedness": "1h",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-torc-of-leech-freedom",
@@ -20160,7 +20407,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.all",
+        "value": 6,
+        "formula": "6",
+        "type": "competence",
+        "condition": "Single Chosen Skill (1 use)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -20915,9 +21170,9 @@
     "foundryId": "V3LgR42oD3BJJFCE",
     "schemaVersion": 2,
     "name": "Rod of Python",
-    "type": "MagicItem",
+    "type": "Weapon",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Two-Hand",
     "source": "SRD 3.5e",
     "cost": 13000,
     "weight": 0,
@@ -20929,10 +21184,35 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-quarterstaff",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-lens-of-detection",
@@ -20941,7 +21221,7 @@
     "name": "Lens of Detection",
     "type": "MagicItem",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Eyes",
     "source": "SRD 3.5e",
     "cost": 3500,
     "weight": 1,
@@ -20953,7 +21233,22 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.search",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.survival",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": "When tracking"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -21001,7 +21296,15 @@
       "wondrous",
       "head"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.decipher_script",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -21327,7 +21630,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.all",
+        "value": 8,
+        "formula": "8",
+        "type": "competence",
+        "condition": "Single Chosen Skill (1 use)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -22670,7 +22981,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "energyResistance": "30"
+    }
   },
   {
     "id": "mi-broom-of-animated-attack",
@@ -22858,7 +23171,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "energyResistance": "20"
+    }
   },
   {
     "id": "mi-maul-of-the-titans",
@@ -22983,7 +23298,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "save.all",
+        "value": 1,
+        "formula": "1",
+        "type": "resistance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -23010,7 +23333,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "freedomOfMovement": true
+    }
   },
   {
     "id": "mi-elixir-of-swimming",
@@ -23555,7 +23880,7 @@
     "name": "Mantle of Epic Spell Resistance",
     "type": "MagicItem",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Torso",
     "source": "SRD 3.5e",
     "cost": 290000,
     "weight": 1,
@@ -23570,7 +23895,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "sr": 32
+    }
   },
   {
     "id": "mi-amulet-of-mighty-fists-plus-5",
@@ -24006,7 +24333,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.all",
+        "value": 9,
+        "formula": "9",
+        "type": "competence",
+        "condition": "Single Chosen Skill (1 use)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -24277,10 +24612,20 @@
       "wondrous",
       "eyes"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.spot",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "cannotBeFlanked": true
+    }
   },
   {
     "id": "mi-rod-of-enemy-detection",
@@ -24503,9 +24848,9 @@
     "foundryId": "iOMeOjoLiLEzGbPn",
     "schemaVersion": 2,
     "name": "Dwarven Thrower",
-    "type": "MagicItem",
+    "type": "Weapon",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Main Hand",
     "source": "SRD 3.5e",
     "cost": 60312,
     "weight": 5,
@@ -24517,10 +24862,35 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 2,
+        "formula": "2",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 2,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-warhammer",
+    "enhancementBonus": 2,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 3
   },
   {
     "id": "mi-cloak-of-epic-resistance-plus-10",
@@ -24860,7 +25230,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.all",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": "Single Chosen Skill (1 use)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -24956,7 +25334,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.all",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": "Single Chosen Skill (1 use)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -25573,7 +25959,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.all",
+        "value": 4,
+        "formula": "4",
+        "type": "competence",
+        "condition": "Single Chosen Skill (1 use)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -25597,7 +25991,29 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.spot",
+        "value": 10,
+        "formula": "10",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.concentration",
+        "value": 10,
+        "formula": "10",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.gather_information",
+        "value": 10,
+        "formula": "10",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -25767,9 +26183,9 @@
     "foundryId": "m1vCI2sVo58iIEes",
     "schemaVersion": 2,
     "name": "Rod of Fortification",
-    "type": "MagicItem",
+    "type": "Weapon",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Main Hand",
     "source": "SRD 3.5e",
     "cost": 465665,
     "weight": 0,
@@ -25781,10 +26197,35 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 3,
+        "formula": "3",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 3,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-light-mace",
+    "enhancementBonus": 3,
+    "handedness": "light",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-manual-of-quickness-of-action-plus-4",
@@ -25917,10 +26358,69 @@
       "wondrous",
       "head"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.bluff",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.diplomacy",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.disguise",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.gather_information",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.handle_animal",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.intimidate",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.perform",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.use_magic_device",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "charismaChecksBonus": 3
+    }
   },
   {
     "id": "mi-rod-of-lordly-might",
@@ -25951,9 +26451,9 @@
     "foundryId": "mXpMQLExVy2byHFP",
     "schemaVersion": 2,
     "name": "Staff of Fiery Power",
-    "type": "MagicItem",
+    "type": "Weapon",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Two-Hand",
     "source": "SRD 3.5e",
     "cost": 500000,
     "weight": 0,
@@ -25965,10 +26465,43 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 5,
+        "formula": "5",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 5,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Flaming"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-quarterstaff",
+    "enhancementBonus": 5,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-handy-haversack",
@@ -26128,7 +26661,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "energyResistance": "Immunity (All)"
+    }
   },
   {
     "id": "mi-horn-of-valhalla",
@@ -26552,7 +27087,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "energyResistance": "30 (All)"
+    }
   },
   {
     "id": "mi-ring-of-protection-plus-10",
@@ -27300,7 +27837,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.wilderness_lore",
+        "value": 30,
+        "formula": "30",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -27563,7 +28108,15 @@
       "wondrous",
       "shoulders"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.hide",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -27587,7 +28140,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.all",
+        "value": 2,
+        "formula": "2",
+        "type": "competence",
+        "condition": "Single Chosen Skill (1 use)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -28001,7 +28562,15 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.spellcraft",
+        "value": 10,
+        "formula": "10",
+        "type": "insight",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -28013,7 +28582,7 @@
     "name": "Mantle of Great Stealth",
     "type": "MagicItem",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Shoulders",
     "source": "SRD 3.5e",
     "cost": 242000,
     "weight": 1,
@@ -28025,10 +28594,27 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.hide",
+        "value": 30,
+        "formula": "30",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.move_silently",
+        "value": 30,
+        "formula": "30",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "concealment": 20
+    }
   },
   {
     "id": "mi-elixir-of-fire-breath",
@@ -28664,9 +29250,9 @@
     "foundryId": "xW9DZYjv13sRGQM1",
     "schemaVersion": 2,
     "name": "Stormbrand",
-    "type": "MagicItem",
+    "type": "Weapon",
     "category": "Wondrous",
-    "slot": "Slotless",
+    "slot": "Two-Hand",
     "source": "SRD 3.5e",
     "cost": 235350,
     "weight": 8,
@@ -28678,10 +29264,43 @@
       "wondrous",
       "slotless"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "2d6",
+        "bonus": 4,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Electricity",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Shock"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-greatsword",
+    "enhancementBonus": 4,
+    "handedness": "2h",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-bracers-of-armor-plus-5",
@@ -34047,6 +34666,2502 @@
       "fortDc": 24,
       "initialEffect": "1d6 Str",
       "secondaryEffect": "2d6 Str"
+    }
+  },
+  {
+    "id": "pot-cure-minor-wounds",
+    "schemaVersion": 2,
+    "name": "Potion of Cure Minor Wounds",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 25,
+    "weight": 0.1,
+    "casterLevel": 1,
+    "aura": "Faint conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "25 gp",
+    "description": "<p>When laying your hand upon a living creature (or drinking this potion), you channel positive energy that cures <strong>1 point of damage</strong>.</p>",
+    "shortDescription": "Cures 1 point of damage when imbibed (CL 1st).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "healFormula": "1",
+      "healFlat": 1,
+      "spellRef": "Cure Minor Wounds"
+    }
+  },
+  {
+    "id": "pot-cure-light-wounds",
+    "schemaVersion": 2,
+    "name": "Potion of Cure Light Wounds",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 50,
+    "weight": 0.1,
+    "casterLevel": 1,
+    "aura": "Faint conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "50 gp",
+    "description": "<p>Drinking this potion channels positive energy that cures <strong>1d8+1 points of damage</strong> (Caster Level 1st).</p>",
+    "shortDescription": "Cures 1d8+1 points of damage when imbibed (CL 1st).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "healFormula": "1d8+1",
+      "spellRef": "Cure Light Wounds"
+    }
+  },
+  {
+    "id": "pot-cure-moderate-wounds",
+    "schemaVersion": 2,
+    "name": "Potion of Cure Moderate Wounds",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>Drinking this potion channels positive energy that cures <strong>2d8+3 points of damage</strong> (Caster Level 3rd).</p>",
+    "shortDescription": "Cures 2d8+3 points of damage when imbibed (CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "healFormula": "2d8+3",
+      "spellRef": "Cure Moderate Wounds"
+    }
+  },
+  {
+    "id": "pot-cure-serious-wounds",
+    "schemaVersion": 2,
+    "name": "Potion of Cure Serious Wounds",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>Drinking this potion channels positive energy that cures <strong>3d8+5 points of damage</strong> (Caster Level 5th).</p>",
+    "shortDescription": "Cures 3d8+5 points of damage when imbibed (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "healFormula": "3d8+5",
+      "spellRef": "Cure Serious Wounds"
+    }
+  },
+  {
+    "id": "pot-cure-critical-wounds",
+    "schemaVersion": 2,
+    "name": "Potion of Cure Critical Wounds",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "D&D 3.5e Magic of Faerûn (Master Alchemist)",
+    "cost": 1400,
+    "weight": 0.1,
+    "casterLevel": 7,
+    "aura": "Moderate conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "1,400 gp",
+    "description": "<p>Brewed via the <em>Master Alchemist</em> feat (4th-level spell potion), drinking this potent draught channels positive energy that cures <strong>4d8+7 points of damage</strong> (Caster Level 7th).</p>",
+    "shortDescription": "Cures 4d8+7 points of damage when imbibed (CL 7th Master Alchemist potion).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "healFormula": "4d8+7",
+      "spellRef": "Cure Critical Wounds"
+    }
+  },
+  {
+    "id": "pot-heal",
+    "schemaVersion": 2,
+    "name": "Potion of Heal",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "D&D 3.5e Magic of Faerûn (Master Alchemist)",
+    "cost": 3300,
+    "weight": 0.1,
+    "casterLevel": 11,
+    "aura": "Strong conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "3,300 gp",
+    "description": "<p>Brewed via the <em>Master Alchemist</em> feat (6th-level spell potion, CL 11th), drinking this supreme restorative draught channels overwhelming positive energy that wipes away injury and affliction. It immediately restores <strong>110 hit points</strong> and ends any and all of the following adverse conditions: ability damage, blinded, confused, dazed, dazzled, deafened, diseased, exhausted, fatigued, feebleminded, insanity, nauseated, sickened, stunned, and poisoned.</p>",
+    "shortDescription": "Restores 110 HP and ends blindness, deafness, disease, fatigue, exhaustion, nausea, poison, and ability damage (CL 11th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "healFormula": "110",
+      "healFlat": 110,
+      "curesAllConditions": true,
+      "spellRef": "Heal"
+    }
+  },
+  {
+    "id": "pot-heal-greater",
+    "schemaVersion": 2,
+    "name": "Potion of Heal, Greater",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "D&D 3.5e Magic of Faerûn (Master Alchemist)",
+    "cost": 4500,
+    "weight": 0.1,
+    "casterLevel": 15,
+    "aura": "Strong conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "4,500 gp",
+    "description": "<p>Brewed at maximum Caster Level 15th via the <em>Master Alchemist</em> feat, this ultimate healing draught immediately restores <strong>150 hit points</strong> (virtually full health for any adventurer) and cures all ability damage, blindness, confusion, daze, dazzle, deafness, disease, exhaustion, fatigue, feeblemindedness, insanity, nausea, sickness, stun, and poison.</p>",
+    "shortDescription": "Restores 150 HP (maximum Heal cap) and ends all adverse conditions and ability damage (CL 15th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "healFormula": "150",
+      "healFlat": 150,
+      "curesAllConditions": true,
+      "spellRef": "Heal"
+    }
+  },
+  {
+    "id": "pot-lesser-restoration",
+    "schemaVersion": 2,
+    "name": "Potion of Lesser Restoration",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>Drinking this potion dispels any magical effects reducing one of your ability scores or cures 1d4 points of temporary ability damage to one of your ability scores. It also eliminates any fatigue suffered by the drinker, and improves an exhausted condition to fatigued.</p>",
+    "shortDescription": "Dispels magical ability penalty or cures 1d4 ability damage; eliminates fatigue (or reduces exhaustion to fatigue).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "curesFatigue": true,
+      "curesAbilityDamage": "1d4",
+      "spellRef": "Lesser Restoration"
+    }
+  },
+  {
+    "id": "pot-remove-fear",
+    "schemaVersion": 2,
+    "name": "Potion of Remove Fear",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 50,
+    "weight": 0.1,
+    "casterLevel": 1,
+    "aura": "Faint abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "50 gp",
+    "description": "<p>This potion instills courage in the drinker, granting a +4 morale bonus on saving throws against fear effects for 10 minutes. If the drinker is under the influence of a fear effect when receiving the potion, that effect is suppressed for the duration.</p>",
+    "shortDescription": "Grants +4 morale bonus on saves against fear for 10 minutes; suppresses active fear effects.",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "save.will",
+        "value": 4,
+        "formula": "4",
+        "type": "morale",
+        "condition": "vs. Fear"
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 100,
+      "spellRef": "Remove Fear"
+    }
+  },
+  {
+    "id": "pot-remove-paralysis",
+    "schemaVersion": 2,
+    "name": "Potion of Remove Paralysis",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>This potion frees the creature from the effects of any temporary paralysis or related magic, including a ghoul's touch or a <em>slow</em> spell.</p>",
+    "shortDescription": "Frees the drinker from any paralysis, hold, or slow effect.",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "curesParalysis": true,
+      "spellRef": "Remove Paralysis"
+    }
+  },
+  {
+    "id": "pot-remove-blindness-deafness",
+    "schemaVersion": 2,
+    "name": "Potion of Remove Blindness/Deafness",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>Drinking this potion cures either blindness or deafness, whether the effect is normal or magical in nature.</p>",
+    "shortDescription": "Cures normal or magical blindness or deafness (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "curesBlindnessDeafness": true,
+      "spellRef": "Remove Blindness/Deafness"
+    }
+  },
+  {
+    "id": "pot-remove-curse",
+    "schemaVersion": 2,
+    "name": "Potion of Remove Curse",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>Drinking this potion instantaneously removes all curses on the creature, allowing a character afflicted with any curse (or holding a cursed shield/weapon/armor) to be freed from it.</p>",
+    "shortDescription": "Instantaneously removes all curses on the drinker (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "curesCurse": true,
+      "spellRef": "Remove Curse"
+    }
+  },
+  {
+    "id": "pot-remove-disease",
+    "schemaVersion": 2,
+    "name": "Potion of Remove Disease",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>Drinking this potion cures all diseases that the subject is suffering from, including normal and supernatural diseases and parasites.</p>",
+    "shortDescription": "Cures all diseases that the drinker is suffering from (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "curesDisease": true,
+      "spellRef": "Remove Disease"
+    }
+  },
+  {
+    "id": "pot-neutralize-poison",
+    "schemaVersion": 2,
+    "name": "Potion of Neutralize Poison",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>This potion detoxifies any sort of venom in the drinker. The creature suffers no additional effects from the poison, and any temporary effects are ended. Furthermore, the drinker is immune to any poison it is exposed to during the next 50 minutes (10 min./level, CL 5th).</p>",
+    "shortDescription": "Detoxifies any sort of venom or poison in the drinker and grants temporary poison immunity for 50 minutes (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "curesPoison": true,
+      "durationRounds": 500,
+      "spellRef": "Neutralize Poison"
+    }
+  },
+  {
+    "id": "pot-delay-poison",
+    "schemaVersion": 2,
+    "name": "Potion of Delay Poison",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint conjuration (healing)",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>The drinker becomes temporarily immune to poison for 3 hours (1 hour/level, CL 3rd). Any poison in its system or any poison to which it is exposed during the spell's duration does not affect the subject until the duration has expired.</p>",
+    "shortDescription": "Renders the drinker temporarily immune to poison for 3 hours (CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 1800,
+      "spellRef": "Delay Poison"
+    }
+  },
+  {
+    "id": "pot-bulls-strength",
+    "schemaVersion": 2,
+    "name": "Potion of Bull's Strength",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>The drinker becomes stronger. The potion grants a <strong>+4 enhancement bonus to Strength</strong> for 3 minutes (30 rounds, CL 3rd), adding the usual benefits to melee attack rolls, melee damage rolls, and other uses of the Strength modifier.</p>",
+    "shortDescription": "Grants a +4 enhancement bonus to Strength for 3 minutes (30 rounds, CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 30,
+      "spellRef": "Bull's Strength"
+    }
+  },
+  {
+    "id": "pot-cats-grace",
+    "schemaVersion": 2,
+    "name": "Potion of Cat's Grace",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>The drinker becomes more graceful, agile, and coordinated. The potion grants a <strong>+4 enhancement bonus to Dexterity</strong> for 3 minutes (30 rounds, CL 3rd), adding the usual benefits to AC, Reflex saves, ranged attacks, and Dexterity-based skills.</p>",
+    "shortDescription": "Grants a +4 enhancement bonus to Dexterity for 3 minutes (30 rounds, CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.dex",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 30,
+      "spellRef": "Cat's Grace"
+    }
+  },
+  {
+    "id": "pot-bears-endurance",
+    "schemaVersion": 2,
+    "name": "Potion of Bear's Endurance",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>The drinker gains greater vitality and stamina. The potion grants a <strong>+4 enhancement bonus to Constitution</strong> for 3 minutes (30 rounds, CL 3rd), which adds +2 hit points per Hit Die and +2 to Fortitude saves.</p>",
+    "shortDescription": "Grants a +4 enhancement bonus to Constitution for 3 minutes (30 rounds, CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.con",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 30,
+      "spellRef": "Bear's Endurance"
+    }
+  },
+  {
+    "id": "pot-foxs-cunning",
+    "schemaVersion": 2,
+    "name": "Potion of Fox's Cunning",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>The drinker becomes sharper and more astute. The potion grants a <strong>+4 enhancement bonus to Intelligence</strong> for 3 minutes (30 rounds, CL 3rd), adding the usual benefits to Intelligence-based skill checks.</p>",
+    "shortDescription": "Grants a +4 enhancement bonus to Intelligence for 3 minutes (30 rounds, CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.int",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 30,
+      "spellRef": "Fox's Cunning"
+    }
+  },
+  {
+    "id": "pot-owls-wisdom",
+    "schemaVersion": 2,
+    "name": "Potion of Owl's Wisdom",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>The drinker becomes wiser. The potion grants a <strong>+4 enhancement bonus to Wisdom</strong> for 3 minutes (30 rounds, CL 3rd), adding the usual benefits to Will saves and Wisdom-based skills.</p>",
+    "shortDescription": "Grants a +4 enhancement bonus to Wisdom for 3 minutes (30 rounds, CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.wis",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 30,
+      "spellRef": "Owl's Wisdom"
+    }
+  },
+  {
+    "id": "pot-eagles-splendor",
+    "schemaVersion": 2,
+    "name": "Potion of Eagle's Splendor",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>The drinker becomes more poised, articulate, and personally forceful. The potion grants a <strong>+4 enhancement bonus to Charisma</strong> for 3 minutes (30 rounds, CL 3rd), adding the usual benefits to Charisma-based skill checks and turning checks.</p>",
+    "shortDescription": "Grants a +4 enhancement bonus to Charisma for 3 minutes (30 rounds, CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.cha",
+        "value": 4,
+        "formula": "4",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 30,
+      "spellRef": "Eagle's Splendor"
+    }
+  },
+  {
+    "id": "pot-mage-armor",
+    "schemaVersion": 2,
+    "name": "Potion of Mage Armor",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 50,
+    "weight": 0.1,
+    "casterLevel": 1,
+    "aura": "Faint conjuration (creation) [force]",
+    "activation": "Standard (manipulation)",
+    "priceText": "50 gp",
+    "description": "<p>An invisible but tangible field of force surrounds the drinker, providing a <strong>+4 armor bonus to AC</strong> for 1 hour (CL 1st). Since <em>mage armor</em> is made of force, incorporeal creatures can't bypass it the way they do normal armor.</p>",
+    "shortDescription": "Grants a +4 armor bonus to AC (including against incorporeal touch attacks) for 1 hour (CL 1st).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 4,
+        "formula": "4",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 600,
+      "forceArmor": true,
+      "spellRef": "Mage Armor"
+    }
+  },
+  {
+    "id": "pot-shield-of-faith-plus-2",
+    "schemaVersion": 2,
+    "name": "Potion of Shield of Faith +2",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 50,
+    "weight": 0.1,
+    "casterLevel": 1,
+    "aura": "Faint abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "50 gp",
+    "description": "<p>This potion creates a shimmering, magical field around the drinker that averts attacks, granting a <strong>+2 deflection bonus to AC</strong> for 1 minute (10 rounds, CL 1st).</p>",
+    "shortDescription": "Grants a +2 deflection bonus to AC for 1 minute (10 rounds, CL 1st).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.deflection",
+        "value": 2,
+        "formula": "2",
+        "type": "deflection",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 10,
+      "spellRef": "Shield of Faith"
+    }
+  },
+  {
+    "id": "pot-shield-of-faith-plus-3",
+    "schemaVersion": 2,
+    "name": "Potion of Shield of Faith +3",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 6,
+    "aura": "Faint abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>This potion creates a shimmering, magical field around the drinker that averts attacks, granting a <strong>+3 deflection bonus to AC</strong> for 6 minutes (60 rounds, CL 6th).</p>",
+    "shortDescription": "Grants a +3 deflection bonus to AC for 6 minutes (60 rounds, CL 6th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.deflection",
+        "value": 3,
+        "formula": "3",
+        "type": "deflection",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 60,
+      "spellRef": "Shield of Faith"
+    }
+  },
+  {
+    "id": "pot-shield-of-faith-plus-4",
+    "schemaVersion": 2,
+    "name": "Potion of Shield of Faith +4",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 600,
+    "weight": 0.1,
+    "casterLevel": 12,
+    "aura": "Moderate abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "600 gp",
+    "description": "<p>This potion creates a shimmering, magical field around the drinker that averts attacks, granting a <strong>+4 deflection bonus to AC</strong> for 12 minutes (120 rounds, CL 12th).</p>",
+    "shortDescription": "Grants a +4 deflection bonus to AC for 12 minutes (120 rounds, CL 12th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.deflection",
+        "value": 4,
+        "formula": "4",
+        "type": "deflection",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 120,
+      "spellRef": "Shield of Faith"
+    }
+  },
+  {
+    "id": "pot-shield-of-faith-plus-5",
+    "schemaVersion": 2,
+    "name": "Potion of Shield of Faith +5",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 900,
+    "weight": 0.1,
+    "casterLevel": 18,
+    "aura": "Strong abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "900 gp",
+    "description": "<p>This potion creates a shimmering, magical field around the drinker that averts attacks, granting a <strong>+5 deflection bonus to AC</strong> for 18 minutes (180 rounds, CL 18th).</p>",
+    "shortDescription": "Grants a +5 deflection bonus to AC for 18 minutes (180 rounds, CL 18th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.deflection",
+        "value": 5,
+        "formula": "5",
+        "type": "deflection",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 180,
+      "spellRef": "Shield of Faith"
+    }
+  },
+  {
+    "id": "pot-barkskin-plus-2",
+    "schemaVersion": 2,
+    "name": "Potion of Barkskin +2",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>Drinking this potion toughens the creature's skin, granting a <strong>+2 enhancement bonus to the creature's existing natural armor bonus</strong> for 30 minutes (CL 3rd).</p>",
+    "shortDescription": "Grants a +2 enhancement bonus to Natural Armor AC for 30 minutes (CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.natural",
+        "value": 2,
+        "formula": "2",
+        "type": "natural_enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 300,
+      "spellRef": "Barkskin"
+    }
+  },
+  {
+    "id": "pot-barkskin-plus-3",
+    "schemaVersion": 2,
+    "name": "Potion of Barkskin +3",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 600,
+    "weight": 0.1,
+    "casterLevel": 6,
+    "aura": "Moderate transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "600 gp",
+    "description": "<p>Drinking this potion toughens the creature's skin, granting a <strong>+3 enhancement bonus to the creature's existing natural armor bonus</strong> for 60 minutes (CL 6th).</p>",
+    "shortDescription": "Grants a +3 enhancement bonus to Natural Armor AC for 60 minutes (CL 6th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.natural",
+        "value": 3,
+        "formula": "3",
+        "type": "natural_enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 600,
+      "spellRef": "Barkskin"
+    }
+  },
+  {
+    "id": "pot-barkskin-plus-4",
+    "schemaVersion": 2,
+    "name": "Potion of Barkskin +4",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 900,
+    "weight": 0.1,
+    "casterLevel": 9,
+    "aura": "Moderate transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "900 gp",
+    "description": "<p>Drinking this potion toughens the creature's skin, granting a <strong>+4 enhancement bonus to the creature's existing natural armor bonus</strong> for 90 minutes (CL 9th).</p>",
+    "shortDescription": "Grants a +4 enhancement bonus to Natural Armor AC for 90 minutes (CL 9th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.natural",
+        "value": 4,
+        "formula": "4",
+        "type": "natural_enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 900,
+      "spellRef": "Barkskin"
+    }
+  },
+  {
+    "id": "pot-barkskin-plus-5",
+    "schemaVersion": 2,
+    "name": "Potion of Barkskin +5",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 1200,
+    "weight": 0.1,
+    "casterLevel": 12,
+    "aura": "Strong transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "1,200 gp",
+    "description": "<p>Drinking this potion toughens the creature's skin, granting a <strong>+5 enhancement bonus to the creature's existing natural armor bonus</strong> for 120 minutes (CL 12th).</p>",
+    "shortDescription": "Grants a +5 enhancement bonus to Natural Armor AC for 120 minutes (CL 12th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.natural",
+        "value": 5,
+        "formula": "5",
+        "type": "natural_enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 1200,
+      "spellRef": "Barkskin"
+    }
+  },
+  {
+    "id": "pot-haste",
+    "schemaVersion": 2,
+    "name": "Potion of Haste",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>The drinker moves and acts more quickly than normal for 5 rounds (CL 5th). When making a full attack action, the hasted creature may make one extra attack with any weapon he is holding at his full base attack bonus. In addition, the creature gains a <strong>+1 bonus on attack rolls</strong>, a <strong>+1 dodge bonus to AC and Reflex saves</strong>, and a <strong>+30-foot enhancement bonus to speed</strong>.</p>",
+    "shortDescription": "Grants +1 attack, +1 dodge bonus to AC and Reflex saves, +30 ft. speed, and 1 extra attack on a full attack for 5 rounds (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "attack.all",
+        "value": 1,
+        "formula": "1",
+        "type": "untyped",
+        "condition": null
+      },
+      {
+        "target": "ac.dodge",
+        "value": 1,
+        "formula": "1",
+        "type": "dodge",
+        "condition": null
+      },
+      {
+        "target": "save.ref",
+        "value": 1,
+        "formula": "1",
+        "type": "dodge",
+        "condition": null
+      },
+      {
+        "target": "speed.land",
+        "value": 30,
+        "formula": "30",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 5,
+      "haste": true,
+      "extraAttackFullAttack": 1,
+      "spellRef": "Haste"
+    }
+  },
+  {
+    "id": "pot-heroism",
+    "schemaVersion": 2,
+    "name": "Potion of Heroism",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint enchantment (compulsion) [mind-affecting]",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>This potion imbues a single creature with great bravery and morale in battle. The drinker gains a <strong>+2 morale bonus on attack rolls, saves, and skill checks</strong> for 50 minutes (10 min./level, CL 5th).</p>",
+    "shortDescription": "Grants a +2 morale bonus on attack rolls, saving throws, and skill checks for 50 minutes (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "attack.all",
+        "value": 2,
+        "formula": "2",
+        "type": "morale",
+        "condition": null
+      },
+      {
+        "target": "save.all",
+        "value": 2,
+        "formula": "2",
+        "type": "morale",
+        "condition": null
+      },
+      {
+        "target": "skill.all",
+        "value": 2,
+        "formula": "2",
+        "type": "morale",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 500,
+      "spellRef": "Heroism"
+    }
+  },
+  {
+    "id": "pot-good-hope",
+    "schemaVersion": 2,
+    "name": "Potion of Good Hope",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 1050,
+    "weight": 0.1,
+    "casterLevel": 7,
+    "aura": "Moderate enchantment (compulsion) [mind-affecting]",
+    "activation": "Standard (manipulation)",
+    "priceText": "1,050 gp",
+    "description": "<p>This potion instills powerful hope in the drinker, granting a <strong>+2 morale bonus on saving throws, attack rolls, ability checks, skill checks, and weapon damage rolls</strong> for 7 minutes (CL 7th).</p>",
+    "shortDescription": "Grants a +2 morale bonus on saving throws, attack rolls, weapon damage rolls, and skill checks for 7 minutes (CL 7th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "attack.all",
+        "value": 2,
+        "formula": "2",
+        "type": "morale",
+        "condition": null
+      },
+      {
+        "target": "damage.all",
+        "value": 2,
+        "formula": "2",
+        "type": "morale",
+        "condition": null
+      },
+      {
+        "target": "save.all",
+        "value": 2,
+        "formula": "2",
+        "type": "morale",
+        "condition": null
+      },
+      {
+        "target": "skill.all",
+        "value": 2,
+        "formula": "2",
+        "type": "morale",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 70,
+      "spellRef": "Good Hope"
+    }
+  },
+  {
+    "id": "pot-rage",
+    "schemaVersion": 2,
+    "name": "Potion of Rage",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint enchantment (compulsion) [mind-affecting]",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>The drinker gains a <strong>+2 morale bonus to Strength and Constitution</strong>, a <strong>+1 morale bonus on Will saves</strong>, and a <strong>-2 penalty to AC</strong> for 5 rounds (CL 5th). The effect is otherwise identical with a barbarian's rage except that the subject isn't fatigued at the end of the rage.</p>",
+    "shortDescription": "Grants +2 morale bonus to Strength and Constitution, +1 morale bonus on Will saves, and -2 penalty to AC for 5 rounds (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 2,
+        "formula": "2",
+        "type": "morale",
+        "condition": null
+      },
+      {
+        "target": "ability.con",
+        "value": 2,
+        "formula": "2",
+        "type": "morale",
+        "condition": null
+      },
+      {
+        "target": "save.will",
+        "value": 1,
+        "formula": "1",
+        "type": "morale",
+        "condition": null
+      },
+      {
+        "target": "ac.all",
+        "value": -2,
+        "formula": "-2",
+        "type": "penalty",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 5,
+      "spellRef": "Rage"
+    }
+  },
+  {
+    "id": "pot-aid",
+    "schemaVersion": 2,
+    "name": "Potion of Aid",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint enchantment (compulsion) [mind-affecting]",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p><em>Aid</em> grants the drinker a <strong>+1 morale bonus on attack rolls</strong> and saves against fear effects, plus <strong>1d8+3 temporary hit points</strong> for 3 minutes (30 rounds, CL 3rd).</p>",
+    "shortDescription": "Grants +1 morale bonus on attack rolls and saves vs. fear, plus 1d8+3 temporary HP for 3 minutes (CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "attack.all",
+        "value": 1,
+        "formula": "1",
+        "type": "morale",
+        "condition": null
+      },
+      {
+        "target": "hp.temp",
+        "value": 7,
+        "formula": "1d8+3",
+        "type": "untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 30,
+      "tempHpFormula": "1d8+3",
+      "spellRef": "Aid"
+    }
+  },
+  {
+    "id": "pot-enlarge-person",
+    "schemaVersion": 2,
+    "name": "Potion of Enlarge Person",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 250,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "250 gp",
+    "description": "<p>This potion causes instant growth of a humanoid creature, doubling its height and multiplying its weight by 8. The target gains a <strong>+2 size bonus to Strength</strong>, a <strong>-2 size penalty to Dexterity</strong> (to a minimum of 1), a <strong>-1 penalty on attack rolls and AC</strong> due to its increased size, and weapon damage increases by one size category for 5 minutes (CL 5th).</p>",
+    "shortDescription": "Increases humanoid size by 1 category (+2 size STR, -2 size DEX, -1 attack/AC, larger weapon dice) for 5 minutes (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.str",
+        "value": 2,
+        "formula": "2",
+        "type": "size",
+        "condition": null
+      },
+      {
+        "target": "ability.dex",
+        "value": -2,
+        "formula": "-2",
+        "type": "size",
+        "condition": null
+      },
+      {
+        "target": "attack.all",
+        "value": -1,
+        "formula": "-1",
+        "type": "size",
+        "condition": null
+      },
+      {
+        "target": "ac.size",
+        "value": -1,
+        "formula": "-1",
+        "type": "size",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 50,
+      "sizeStepChange": 1,
+      "spellRef": "Enlarge Person"
+    }
+  },
+  {
+    "id": "pot-reduce-person",
+    "schemaVersion": 2,
+    "name": "Potion of Reduce Person",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 250,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "250 gp",
+    "description": "<p>This potion causes instant diminution of a humanoid creature, halving its height and dividing its weight by 8. The target gains a <strong>+2 size bonus to Dexterity</strong>, a <strong>-2 size penalty to Strength</strong> (to a minimum of 1), and a <strong>+1 size bonus on attack rolls and AC</strong> for 5 minutes (CL 5th).</p>",
+    "shortDescription": "Decreases humanoid size by 1 category (+2 size DEX, -2 size STR, +1 attack/AC) for 5 minutes (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.dex",
+        "value": 2,
+        "formula": "2",
+        "type": "size",
+        "condition": null
+      },
+      {
+        "target": "ability.str",
+        "value": -2,
+        "formula": "-2",
+        "type": "size",
+        "condition": null
+      },
+      {
+        "target": "attack.all",
+        "value": 1,
+        "formula": "1",
+        "type": "size",
+        "condition": null
+      },
+      {
+        "target": "ac.size",
+        "value": 1,
+        "formula": "1",
+        "type": "size",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 50,
+      "sizeStepChange": -1,
+      "spellRef": "Reduce Person"
+    }
+  },
+  {
+    "id": "pot-blur",
+    "schemaVersion": 2,
+    "name": "Potion of Blur",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint illusion (glamer)",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>The drinker's outline appears blurred, shifting and wavering. This distortion grants the subject <strong>concealment (20% miss chance)</strong> for 3 minutes (30 rounds, CL 3rd).</p>",
+    "shortDescription": "Outlines the drinker in a shifting wavering form, granting 20% concealment (miss chance) for 3 minutes (CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 30,
+      "concealment": 20,
+      "spellRef": "Blur"
+    }
+  },
+  {
+    "id": "pot-displacement",
+    "schemaVersion": 2,
+    "name": "Potion of Displacement",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint illusion (glamer)",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>The drinker appears to be about 2 feet away from its true location. The creature benefits from a <strong>50% miss chance</strong> as if it had total concealment for 5 rounds (CL 5th). Unlike actual total concealment, <em>displacement</em> does not prevent enemies from targeting the creature normally.</p>",
+    "shortDescription": "Displaces the drinker's image by 2 feet, granting 50% miss chance (total concealment equivalent) for 5 rounds (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 5,
+      "concealment": 50,
+      "spellRef": "Displacement"
+    }
+  },
+  {
+    "id": "pot-protection-from-evil",
+    "schemaVersion": 2,
+    "name": "Potion of Protection from Evil",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 50,
+    "weight": 0.1,
+    "casterLevel": 1,
+    "aura": "Faint abjuration [good]",
+    "activation": "Standard (manipulation)",
+    "priceText": "50 gp",
+    "description": "<p>This potion wards the drinker from attacks by evil creatures, from mental control, and from summoned creatures for 1 minute (10 rounds, CL 1st). It grants a <strong>+2 deflection bonus to AC</strong> and a <strong>+2 resistance bonus on saves</strong> against attacks or effects created by evil creatures, and suppresses active charm/compulsion effects.</p>",
+    "shortDescription": "Grants +2 deflection AC and +2 resistance on saves vs. evil creatures, plus mind-control blocking for 1 minute (CL 1st).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.deflection",
+        "value": 2,
+        "formula": "2",
+        "type": "deflection",
+        "condition": "vs. Evil"
+      },
+      {
+        "target": "save.all",
+        "value": 2,
+        "formula": "2",
+        "type": "resistance",
+        "condition": "vs. Evil"
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 10,
+      "spellRef": "Protection from Evil"
+    }
+  },
+  {
+    "id": "pot-sanctuary",
+    "schemaVersion": 2,
+    "name": "Potion of Sanctuary",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 50,
+    "weight": 0.1,
+    "casterLevel": 1,
+    "aura": "Faint abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "50 gp",
+    "description": "<p>Any opponent attempting to strike or otherwise directly attack the warded drinker, even with a targeted spell, must attempt a Will save (DC 11). If the save succeeds, the opponent can attack normally; if it fails, the opponent can't follow through with the attack.</p>",
+    "shortDescription": "Opponents must succeed on a Will save (DC 11) to directly attack the drinker for 1 round (CL 1st).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 1,
+      "spellRef": "Sanctuary"
+    }
+  },
+  {
+    "id": "pot-endure-elements",
+    "schemaVersion": 2,
+    "name": "Potion of Endure Elements",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 50,
+    "weight": 0.1,
+    "casterLevel": 1,
+    "aura": "Faint abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "50 gp",
+    "description": "<p>A creature protected by <em>endure elements</em> suffers no harm from being in a hot or cold environment. It can exist comfortably in conditions between -50 and 140 degrees Fahrenheit without having to make Fortitude saves for 24 hours.</p>",
+    "shortDescription": "Protects the drinker from extreme hot or cold environments (-50°F to 140°F) for 24 hours.",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 14400,
+      "spellRef": "Endure Elements"
+    }
+  },
+  {
+    "id": "pot-resist-energy-10",
+    "schemaVersion": 2,
+    "name": "Potion of Resist Energy 10",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>This abjuration grants the drinker <strong>Energy Resistance 10</strong> against the energy type specified when the potion was brewed (Acid, Cold, Electricity, Fire, or Sonic) for 30 minutes (CL 3rd), absorbing the first 10 points of damage per attack of that energy type.</p>",
+    "shortDescription": "Grants Energy Resistance 10 against a specified energy type (Acid, Cold, Electricity, Fire, or Sonic) for 30 minutes (CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 300,
+      "energyResistance": "10",
+      "spellRef": "Resist Energy"
+    }
+  },
+  {
+    "id": "pot-resist-energy-20",
+    "schemaVersion": 2,
+    "name": "Potion of Resist Energy 20",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 700,
+    "weight": 0.1,
+    "casterLevel": 7,
+    "aura": "Moderate abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "700 gp",
+    "description": "<p>This abjuration grants the drinker <strong>Energy Resistance 20</strong> against the energy type specified when the potion was brewed (Acid, Cold, Electricity, Fire, or Sonic) for 70 minutes (CL 7th), absorbing the first 20 points of damage per attack of that energy type.</p>",
+    "shortDescription": "Grants Energy Resistance 20 against a specified energy type (Acid, Cold, Electricity, Fire, or Sonic) for 70 minutes (CL 7th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 700,
+      "energyResistance": "20",
+      "spellRef": "Resist Energy"
+    }
+  },
+  {
+    "id": "pot-resist-energy-30",
+    "schemaVersion": 2,
+    "name": "Potion of Resist Energy 30",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 1100,
+    "weight": 0.1,
+    "casterLevel": 11,
+    "aura": "Moderate abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "1,100 gp",
+    "description": "<p>This abjuration grants the drinker <strong>Energy Resistance 30</strong> against the energy type specified when the potion was brewed (Acid, Cold, Electricity, Fire, or Sonic) for 110 minutes (CL 11th), absorbing the first 30 points of damage per attack of that energy type.</p>",
+    "shortDescription": "Grants Energy Resistance 30 against a specified energy type (Acid, Cold, Electricity, Fire, or Sonic) for 110 minutes (CL 11th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 1100,
+      "energyResistance": "30",
+      "spellRef": "Resist Energy"
+    }
+  },
+  {
+    "id": "pot-protection-from-energy",
+    "schemaVersion": 2,
+    "name": "Potion of Protection from Energy",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p><em>Protection from energy</em> grants temporary immunity to the type of energy specified when the potion was brewed (Acid, Cold, Electricity, Fire, or Sonic). When the spell absorbs 12 points per caster level of energy damage (<strong>60 points total at CL 5th</strong>), it is discharged.</p>",
+    "shortDescription": "Grants temporary immunity to a specified energy type, absorbing up to 60 points of energy damage (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 500,
+      "energyAbsorptionPool": 60,
+      "spellRef": "Protection from Energy"
+    }
+  },
+  {
+    "id": "pot-invisibility",
+    "schemaVersion": 2,
+    "name": "Potion of Invisibility",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint illusion (glamer)",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>The drinker and all gear it carries vanish from sight for 3 minutes (30 rounds, CL 3rd). While invisible, the creature gains a <strong>+2 bonus on attack rolls</strong> against sighted opponents, ignores its opponents' Dexterity bonuses to AC, and enjoys <strong>50% total concealment</strong> (+20/+40 to Hide). The effect ends if the drinker attacks any creature.</p>",
+    "shortDescription": "Renders the drinker invisible (+2 attack, ignores target's Dex to AC, 50% concealment) for 3 minutes or until attacking (CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "attack.all",
+        "value": 2,
+        "formula": "2",
+        "type": "untyped",
+        "condition": "Invisible"
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 30,
+      "concealment": 50,
+      "invisible": true,
+      "spellRef": "Invisibility"
+    }
+  },
+  {
+    "id": "pot-fly",
+    "schemaVersion": 2,
+    "name": "Potion of Fly",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>The drinker can fly at a speed of <strong>60 feet</strong> (or 40 feet if it wears medium or heavy armor, or if it carries a medium or heavy load) with good maneuverability for 5 minutes (50 rounds, CL 5th).</p>",
+    "shortDescription": "Grants a 60-ft. fly speed (40 ft. in medium/heavy armor) with good maneuverability for 5 minutes (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "speed.fly",
+        "value": 60,
+        "formula": "60",
+        "type": "untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 50,
+      "flySpeed": 60,
+      "spellRef": "Fly"
+    }
+  },
+  {
+    "id": "pot-levitate",
+    "schemaVersion": 2,
+    "name": "Potion of Levitate",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p><em>Levitate</em> allows the drinker to move itself up and down as it wishes, mentally directing its vertical altitude by up to 20 feet each round as a move action for 3 minutes (CL 3rd).</p>",
+    "shortDescription": "Allows the drinker to move up and down vertically up to 20 feet per round for 3 minutes (CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 30,
+      "spellRef": "Levitate"
+    }
+  },
+  {
+    "id": "pot-spider-climb",
+    "schemaVersion": 2,
+    "name": "Potion of Spider Climb",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>The drinker can climb and travel on vertical surfaces or even traverse ceilings as well as a spider does, gaining a climb speed of 20 feet and a <strong>+8 racial bonus on Climb skill checks</strong> for 30 minutes (CL 3rd).</p>",
+    "shortDescription": "Grants a 20-ft. climb speed and +8 racial bonus on Climb checks on walls and ceilings for 30 minutes (CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.climb",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 300,
+      "spellRef": "Spider Climb"
+    }
+  },
+  {
+    "id": "pot-darkvision",
+    "schemaVersion": 2,
+    "name": "Potion of Darkvision",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 300,
+    "weight": 0.1,
+    "casterLevel": 3,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "300 gp",
+    "description": "<p>The drinker gains the ability to see 60 feet even in total darkness for 3 hours (CL 3rd). Darkvision is black and white only but otherwise like normal sight.</p>",
+    "shortDescription": "Grants darkvision out to 60 feet in total darkness for 3 hours (CL 3rd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 1800,
+      "darkvisionFt": 60,
+      "spellRef": "Darkvision"
+    }
+  },
+  {
+    "id": "pot-water-breathing",
+    "schemaVersion": 2,
+    "name": "Potion of Water Breathing",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>The transmuted creature can breathe water freely for 10 hours (2 hours/level, CL 5th). It retains its normal mode of respiration as well.</p>",
+    "shortDescription": "Allows the drinker to breathe underwater freely for 10 hours (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 6000,
+      "spellRef": "Water Breathing"
+    }
+  },
+  {
+    "id": "pot-water-walk",
+    "schemaVersion": 2,
+    "name": "Potion of Water Walk",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint transmutation [water]",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>The transmuted creature can tread on any liquid as if it were firm ground—mud, oil, snow, quicksand, running water, ice, and even lava—for 50 minutes (10 min./level, CL 5th).</p>",
+    "shortDescription": "Allows the drinker to tread on any liquid (water, mud, snow, quicksand) as if it were firm ground for 50 minutes (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 500,
+      "spellRef": "Water Walk"
+    }
+  },
+  {
+    "id": "pot-gaseous-form",
+    "schemaVersion": 2,
+    "name": "Potion of Gaseous Form",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>The drinker and all its gear become insubstantial, misty, and translucent for 10 minutes (2 min./level, CL 5th). It gains <strong>DR 10/magic</strong>, becomes immune to poison and critical hits, and can fly at 10 feet per round with perfect maneuverability, passing through small cracks and openings.</p>",
+    "shortDescription": "Turns the drinker and its gear into a misty cloud (DR 10/magic, immunity to poison/critical hits, 10-ft. fly speed) for 10 minutes (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 100,
+      "dr": "10/Magic",
+      "spellRef": "Gaseous Form"
+    }
+  },
+  {
+    "id": "pot-jump",
+    "schemaVersion": 2,
+    "name": "Potion of Jump",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 50,
+    "weight": 0.1,
+    "casterLevel": 1,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "50 gp",
+    "description": "<p>The drinker gets a <strong>+10 enhancement bonus on Jump checks</strong> for 1 minute (10 rounds, CL 1st).</p>",
+    "shortDescription": "Grants a +10 enhancement bonus on Jump checks for 1 minute (CL 1st).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.jump",
+        "value": 10,
+        "formula": "10",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 10,
+      "spellRef": "Jump"
+    }
+  },
+  {
+    "id": "pot-pass-without-trace",
+    "schemaVersion": 2,
+    "name": "Potion of Pass without Trace",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 50,
+    "weight": 0.1,
+    "casterLevel": 1,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "50 gp",
+    "description": "<p>The subject can move through any type of terrain and leave neither footprints nor scent for 1 hour (CL 1st). Tracking the subject is impossible by nonmagical means.</p>",
+    "shortDescription": "The drinker can move through any terrain leaving neither footprints nor scent for 1 hour (CL 1st).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 600,
+      "spellRef": "Pass without Trace"
+    }
+  },
+  {
+    "id": "pot-tongues",
+    "schemaVersion": 2,
+    "name": "Potion of Tongues",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint divination",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>This potion grants the drinker the ability to speak and understand the language of any intelligent creature for 50 minutes (10 min./level, CL 5th).</p>",
+    "shortDescription": "Grants the ability to speak and understand the language of any intelligent creature for 50 minutes (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 500,
+      "spellRef": "Tongues"
+    }
+  },
+  {
+    "id": "pot-nondetection",
+    "schemaVersion": 2,
+    "name": "Potion of Nondetection",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint abjuration",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>The warded drinker becomes difficult to detect by divination spells such as <em>clairaudience/clairvoyance</em>, <em>locate object</em>, and detection spells, as well as scrying, for 5 hours (CL 5th).</p>",
+    "shortDescription": "Shields the drinker from divination and scrying spells (caster level check DC 16 required) for 5 hours (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 3000,
+      "spellRef": "Nondetection"
+    }
+  },
+  {
+    "id": "oil-magic-weapon",
+    "schemaVersion": 2,
+    "name": "Oil of Magic Weapon",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 50,
+    "weight": 0.1,
+    "casterLevel": 1,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "50 gp",
+    "description": "<p>When smeared upon a weapon (a standard action), this magical oil gives the weapon a <strong>+1 enhancement bonus on attack and damage rolls</strong> for 1 minute (10 rounds, CL 1st), allowing it to bypass DR/magic.</p>",
+    "shortDescription": "Applies a +1 enhancement bonus on attack and damage rolls to a weapon for 1 minute (CL 1st).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 10,
+      "oilWeaponEnhancement": 1,
+      "spellRef": "Magic Weapon"
+    }
+  },
+  {
+    "id": "oil-bless-weapon",
+    "schemaVersion": 2,
+    "name": "Oil of Bless Weapon",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 100,
+    "weight": 0.1,
+    "casterLevel": 2,
+    "aura": "Faint transmutation [good]",
+    "activation": "Standard (manipulation)",
+    "priceText": "100 gp",
+    "description": "<p>This transmutation makes a weapon strike true against evil foes for 2 minutes (CL 2nd). The weapon is treated as having a +1 enhancement bonus for bypassing DR/magic and as good-aligned. In addition, all critical hit rolls against evil foes are automatically confirmed.</p>",
+    "shortDescription": "Makes a weapon good-aligned, magic for DR, and automatically confirms critical threats against evil foes for 2 minutes (CL 2nd).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 20,
+      "autoConfirmCritVsEvil": true,
+      "spellRef": "Bless Weapon"
+    }
+  },
+  {
+    "id": "oil-greater-magic-weapon-plus-2",
+    "schemaVersion": 2,
+    "name": "Oil of Greater Magic Weapon +2",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 1200,
+    "weight": 0.1,
+    "casterLevel": 8,
+    "aura": "Moderate transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "1,200 gp",
+    "description": "<p>This oil gives a weapon a <strong>+2 enhancement bonus on attack and damage rolls</strong> for 8 hours (CL 8th).</p>",
+    "shortDescription": "Gives a weapon a +2 enhancement bonus on attack and damage rolls for 8 hours (CL 8th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 4800,
+      "oilWeaponEnhancement": 2,
+      "spellRef": "Greater Magic Weapon"
+    }
+  },
+  {
+    "id": "oil-greater-magic-weapon-plus-3",
+    "schemaVersion": 2,
+    "name": "Oil of Greater Magic Weapon +3",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 1800,
+    "weight": 0.1,
+    "casterLevel": 12,
+    "aura": "Strong transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "1,800 gp",
+    "description": "<p>This oil gives a weapon a <strong>+3 enhancement bonus on attack and damage rolls</strong> for 12 hours (CL 12th).</p>",
+    "shortDescription": "Gives a weapon a +3 enhancement bonus on attack and damage rolls for 12 hours (CL 12th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 7200,
+      "oilWeaponEnhancement": 3,
+      "spellRef": "Greater Magic Weapon"
+    }
+  },
+  {
+    "id": "oil-magic-vestment-plus-1",
+    "schemaVersion": 2,
+    "name": "Oil of Magic Vestment +1",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>When applied to a suit of armor, shield, or normal clothing, this oil imbues it with a <strong>+1 enhancement bonus to AC</strong> for 5 hours (CL 5th).</p>",
+    "shortDescription": "Imbues a suit of armor, clothing, or shield with a +1 enhancement bonus to AC for 5 hours (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 3000,
+      "spellRef": "Magic Vestment"
+    }
+  },
+  {
+    "id": "oil-magic-vestment-plus-2",
+    "schemaVersion": 2,
+    "name": "Oil of Magic Vestment +2",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 1200,
+    "weight": 0.1,
+    "casterLevel": 8,
+    "aura": "Moderate transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "1,200 gp",
+    "description": "<p>When applied to a suit of armor, shield, or normal clothing, this oil imbues it with a <strong>+2 enhancement bonus to AC</strong> for 8 hours (CL 8th).</p>",
+    "shortDescription": "Imbues a suit of armor, clothing, or shield with a +2 enhancement bonus to AC for 8 hours (CL 8th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 2,
+        "formula": "2",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 4800,
+      "spellRef": "Magic Vestment"
+    }
+  },
+  {
+    "id": "oil-magic-vestment-plus-3",
+    "schemaVersion": 2,
+    "name": "Oil of Magic Vestment +3",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 1800,
+    "weight": 0.1,
+    "casterLevel": 12,
+    "aura": "Strong transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "1,800 gp",
+    "description": "<p>When applied to a suit of armor, shield, or normal clothing, this oil imbues it with a <strong>+3 enhancement bonus to AC</strong> for 12 hours (CL 12th).</p>",
+    "shortDescription": "Imbues a suit of armor, clothing, or shield with a +3 enhancement bonus to AC for 12 hours (CL 12th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 3,
+        "formula": "3",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 7200,
+      "spellRef": "Magic Vestment"
+    }
+  },
+  {
+    "id": "oil-keen-edge",
+    "schemaVersion": 2,
+    "name": "Oil of Keen Edge",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint transmutation",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>This oil makes a piercing or slashing weapon magically keen, <strong>doubling its critical threat range</strong> for 50 minutes (10 min./level, CL 5th). Multiple effects that increase a weapon's threat range (such as the <em>keen</em> edge spell and the Improved Critical feat) don't stack.</p>",
+    "shortDescription": "Doubles the threat range of a piercing or slashing weapon for 50 minutes (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 500,
+      "keen": true,
+      "spellRef": "Keen Edge"
+    }
+  },
+  {
+    "id": "oil-flame-arrow",
+    "schemaVersion": 2,
+    "name": "Oil of Flame Arrow",
+    "type": "Consumable",
+    "category": "Potion",
+    "slot": "Slotless",
+    "bodySlot": "--",
+    "source": "SRD 3.5e (DMG Table 7-17)",
+    "cost": 750,
+    "weight": 0.1,
+    "casterLevel": 5,
+    "aura": "Faint transmutation [fire]",
+    "activation": "Standard (manipulation)",
+    "priceText": "750 gp",
+    "description": "<p>When poured over up to 50 projectiles (arrows, bolts, shuriken, or stones), this oil turns them into fiery projectiles that deal an extra <strong>+1d6 points of fire damage</strong> on a hit for 50 minutes (CL 5th).</p>",
+    "shortDescription": "Turns 50 projectiles into fiery missiles that deal an extra +1d6 fire damage for 50 minutes (CL 5th).",
+    "tags": [
+      "srd",
+      "consumable",
+      "potion",
+      "slotless"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Oil of Flame Arrow"
+      }
+    ],
+    "modes": [],
+    "ruleFlags": {
+      "durationRounds": 500,
+      "spellRef": "Flame Arrow"
     }
   }
 ]

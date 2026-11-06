@@ -779,7 +779,7 @@
           name: e.name,
           label: `${e.name}`,
           cost: Number(e.enhIncrease) || 0,
-          bonusEq: e.enhIncrease ? `+${e.enhIncrease}` : (e.flatCost ? `${e.flatCost} gp` : '+0'),
+          bonusEq: e.enhIncrease ? `+${e.enhIncrease}` : ((e.flatCost || e.cost) ? `+${Number(e.flatCost || e.cost).toLocaleString('en-US')} gp` : '+0'),
           shortDescription: e.shortDescription || e.name
         }));
       }
@@ -793,16 +793,18 @@
 
     const eligibleMap = new Map(eligibleCatalog.map(e => [e.id, e]));
 
-    // Enforce Total Budget Rule: keep checked items in order only while their sum <= enhBonus
+    // Enforce Total Budget Rule: requires at least +1 base enhancement bonus, and sum of +bonus equivalents <= enhBonus
     const validCheckedSet = new Set();
     let usedBudget = 0;
-    for (let i = 0; i < rawCheckedIds.length; i++) {
-      const id = rawCheckedIds[i];
-      const def = eligibleMap.get(id);
-      if (!def) continue;
-      if (usedBudget + def.cost <= enhBonus) {
-        validCheckedSet.add(id);
-        usedBudget += def.cost;
+    if (enhBonus > 0) {
+      for (let i = 0; i < rawCheckedIds.length; i++) {
+        const id = rawCheckedIds[i];
+        const def = eligibleMap.get(id);
+        if (!def) continue;
+        if (usedBudget + def.cost <= enhBonus) {
+          validCheckedSet.add(id);
+          usedBudget += def.cost;
+        }
       }
     }
 
@@ -829,15 +831,17 @@
 
     enhGrid.innerHTML = eligibleCatalog.map(e => {
       const isChecked = validCheckedSet.has(e.id);
-      const isLocked = !isChecked && e.cost > remainingBudget;
+      const isLocked = !isChecked && (enhBonus <= 0 || e.cost > remainingBudget);
       const labelCls = isChecked
         ? 'flex items-center gap-1.5 p-1.5 rounded-lg bg-amber-950/40 border border-amber-500/70 cursor-pointer select-none shadow-sm'
         : (isLocked
             ? 'flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-950/40 border border-slate-800/60 opacity-40 cursor-not-allowed select-none'
             : 'flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-950 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none');
       const titleAttr = isLocked
-        ? `Requires +${e.cost} available Enhancement Budget (Remaining: +${remainingBudget})`
-        : `${e.label || e.name} (${e.bonusEq} Budget)`;
+        ? (enhBonus <= 0
+            ? 'Requires at least a +1 Enhancement Bonus on the base item (D&D 3.5e RAW)'
+            : `Requires +${e.cost} available Enhancement Budget (Remaining: +${remainingBudget})`)
+        : `${e.label || e.name} (${e.bonusEq} — ${e.shortDescription || ''})`;
 
       return `
         <label class="${labelCls}" title="${escapeHtml(titleAttr)}">

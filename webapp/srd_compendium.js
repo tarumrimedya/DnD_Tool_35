@@ -1353,6 +1353,11 @@
             item.modifiers.push(...safeClone(resolvedCrystal.modifiers));
           }
 
+          // Merge crystal ruleFlags if any (e.g. Iron Ward Diamond DR, Truedeath Ghost Touch)
+          if (resolvedCrystal.ruleFlags && typeof resolvedCrystal.ruleFlags === 'object') {
+            Object.assign(item.ruleFlags, safeClone(resolvedCrystal.ruleFlags));
+          }
+
           // Merge crystal damageParts if any (e.g. Energy Assault +1d6)
           if (isWeapon && Array.isArray(resolvedCrystal.damageParts) && resolvedCrystal.damageParts.length > 0) {
             item.damageParts.push(...safeClone(resolvedCrystal.damageParts));

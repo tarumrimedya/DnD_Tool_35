@@ -1246,10 +1246,42 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.climb",
+        "value": 2,
+        "formula": "2",
+        "type": "untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.jump",
+        "value": 2,
+        "formula": "2",
+        "type": "untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.swim",
+        "value": 2,
+        "formula": "2",
+        "type": "untyped",
+        "condition": null
+      },
+      {
+        "target": "ability.str_check",
+        "value": 2,
+        "formula": "2",
+        "type": "untyped",
+        "condition": "Strength Checks"
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "powerAttackBonusDamage": 2,
+      "powerAttackMinPenalty": 2
+    }
   },
   {
     "id": "arm-mic-armor-of-the-fallen-leaves-relic",
@@ -1277,12 +1309,26 @@
       "specific armor",
       "relic"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 6,
+        "formula": "6",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {
       "relic": true
-    }
+    },
+    "baseItemId": "arm-breastplate",
+    "enhancementBonus": 1,
+    "acBonus": 6,
+    "maxDex": 3,
+    "checkPenalty": -3,
+    "spellFailure": 25
   },
   {
     "id": "mi-mic-aroma-of-curdled-death",
@@ -1424,12 +1470,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d3",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-whip",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "enh-auran",
@@ -1523,13 +1593,48 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d10",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Good (vs. Evil)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Holy"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic",
+        "adamantine"
+      ],
+      "keen": true
+    },
+    "baseItemId": "wpn-dwarven-waraxe",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 19,
+    "critMult": 3,
+    "material": "mat-adamantine"
   },
   {
     "id": "wpn-mic-axe-of-the-sea-reavers",
@@ -1555,12 +1660,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d12",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-greataxe",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 3
   },
   {
     "id": "enh-axeblock",
@@ -2114,10 +2243,23 @@
       "armor",
       "specific shield"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 2,
+        "formula": "2",
+        "type": "shield",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "shd-buckler",
+    "enhancementBonus": 1,
+    "acBonus": 2,
+    "checkPenalty": 0,
+    "spellFailure": 5
   },
   {
     "id": "mi-mic-battle-bridle",
@@ -2143,7 +2285,15 @@
       "tools",
       "tool"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.ride",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -2201,10 +2351,24 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 6,
+        "formula": "6",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-breastplate",
+    "enhancementBonus": 1,
+    "acBonus": 6,
+    "maxDex": 3,
+    "checkPenalty": -3,
+    "spellFailure": 25
   },
   {
     "id": "enh-beastskin",
@@ -2496,7 +2660,15 @@
       "wondrous",
       "relic"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.strength",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {
@@ -2680,12 +2852,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d10",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-heavy-crossbow",
+    "enhancementBonus": 1,
+    "handedness": "ranged",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-mic-blast-disk",
@@ -2773,12 +2969,38 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic",
+        "silver"
+      ]
+    },
+    "baseItemId": "wpn-lance",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 3,
+    "material": "mat-alchemical-silver"
   },
   {
     "id": "enh-blessed",
@@ -2936,7 +3158,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "blindsightFt": 30
+    }
   },
   {
     "id": "mi-mic-blindhelm",
@@ -3401,7 +3625,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "dexToJump": true,
+      "standFromProneSwiftNoAoO": true
+    }
   },
   {
     "id": "mi-mic-boots-of-big-stepping",
@@ -3530,7 +3757,15 @@
       "wondrous",
       "charged"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.jump",
+        "value": 10,
+        "formula": "10",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {
@@ -3566,7 +3801,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "ignoreFallingDamageDice": 2,
+      "alwaysLandOnFeet": true
+    }
   },
   {
     "id": "mi-mic-boots-of-sidestepping",
@@ -3926,15 +4164,39 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
     },
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Transmutation"
-    ]
+    ],
+    "baseItemId": "wpn-shortbow",
+    "enhancementBonus": 1,
+    "handedness": "ranged",
+    "critRange": 20,
+    "critMult": 3
   },
   {
     "id": "wpn-mic-bow-of-the-wintermoon-relic",
@@ -3962,13 +4224,47 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Cold",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Frost"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic",
+        "silver"
+      ]
+    },
+    "baseItemId": "wpn-composite-longbow",
+    "enhancementBonus": 1,
+    "handedness": "ranged",
+    "critRange": 20,
+    "critMult": 3,
+    "material": "mat-alchemical-silver"
   },
   {
     "id": "wpn-mic-bowstaff",
@@ -3994,12 +4290,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-quarterstaff",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-mic-bracers-of-accuracy",
@@ -4059,7 +4379,22 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "attack.all",
+        "value": 1,
+        "formula": "1",
+        "type": "competence",
+        "condition": "vs. Flying Creatures / While Flying"
+      },
+      {
+        "target": "ac.dodge",
+        "value": 1,
+        "formula": "1",
+        "type": "dodge",
+        "condition": "vs. Flying Creatures"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -4241,7 +4576,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "attack.melee",
+        "value": 2,
+        "formula": "2",
+        "type": "competence",
+        "condition": "On Attacks of Opportunity"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -4485,7 +4828,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "damage.melee",
+        "value": 2,
+        "formula": "2",
+        "type": "untyped",
+        "condition": "Unarmed Strike (3/day Swift)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -4514,10 +4865,24 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 6,
+        "formula": "6",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-breastplate",
+    "enhancementBonus": 1,
+    "acBonus": 6,
+    "maxDex": 5,
+    "checkPenalty": 0,
+    "spellFailure": 15
   },
   {
     "id": "mi-mic-brooch-of-avoidance",
@@ -4543,7 +4908,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.dodge",
+        "value": 4,
+        "formula": "4",
+        "type": "dodge",
+        "condition": "vs. Attacks of Opportunity"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -5153,13 +5526,45 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "2d4",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Evil (vs. Good)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Unholy"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-spiked-chain",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "enh-changeling",
@@ -5317,7 +5722,16 @@
       "wondrous"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Eldritch",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Chasuble of Fell Power (+1d6 Lesser / +2d6 Greater)"
+      }
+    ],
     "modes": [],
     "ruleFlags": {}
   },
@@ -5436,16 +5850,64 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Bludgeoning & Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Flaming"
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Cold",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Frost"
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Electricity",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Shock"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
     },
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Divination/illusion"
-    ]
+    ],
+    "baseItemId": "wpn-morningstar",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-mic-chronocharm-of-the-celestial-wanderer",
@@ -6021,7 +6483,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "save.all",
+        "value": 3,
+        "formula": "3",
+        "type": "resistance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -6861,12 +7331,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-longsword",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-mic-crystal-mask-of-detection",
@@ -7059,7 +7553,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.knowledge",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
@@ -7235,7 +7737,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "armorHardnessBonus": 5
+    },
     "targetType": "Armor"
   },
   {
@@ -7265,7 +7769,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "weaponHardnessBonus": 10
+    },
     "targetType": "Weapon"
   },
   {
@@ -7295,7 +7801,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "weaponHardnessBonus": 2
+    },
     "targetType": "Weapon"
   },
   {
@@ -7325,7 +7833,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "weaponHardnessBonus": 5
+    },
     "targetType": "Weapon"
   },
   {
@@ -7355,7 +7865,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "endureElements": true,
+      "planarAdaptation": true
+    },
     "targetType": "Armor"
   },
   {
@@ -7382,7 +7895,15 @@
       "sets",
       "augmentation crystal"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "speed.land",
+        "value": 5,
+        "formula": "5",
+        "type": "morale",
+        "condition": "Medium or Heavy Armor"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
@@ -7415,10 +7936,21 @@
       "armor",
       "augmentation crystal"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.swim",
+        "value": 4,
+        "formula": "4",
+        "type": "competence",
+        "condition": "No Armor Check Penalty on Swim"
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "noSwimAcp": true,
+      "waterBreathing": true
+    },
     "targetType": "Armor"
   },
   {
@@ -7445,10 +7977,27 @@
       "weapons",
       "augmentation crystal"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "attack.melee",
+        "value": 1,
+        "formula": "1",
+        "type": "insight",
+        "condition": "When channeling spell through melee attack"
+      },
+      {
+        "target": "damage.melee",
+        "value": 1,
+        "formula": "1",
+        "type": "insight",
+        "condition": "When channeling spell through melee attack"
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "channeledSpellDcBonus": 1
+    },
     "targetType": "Weapon"
   },
   {
@@ -7475,7 +8024,15 @@
       "weapons",
       "augmentation crystal"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "damage.melee",
+        "value": 1,
+        "formula": "1",
+        "type": "insight",
+        "condition": "When channeling spell through melee attack"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
@@ -7505,7 +8062,22 @@
       "weapons",
       "augmentation crystal"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "attack.melee",
+        "value": 1,
+        "formula": "1",
+        "type": "insight",
+        "condition": "When channeling spell through melee attack"
+      },
+      {
+        "target": "damage.melee",
+        "value": 1,
+        "formula": "1",
+        "type": "insight",
+        "condition": "When channeling spell through melee attack"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
@@ -7535,10 +8107,21 @@
       "armor",
       "augmentation crystal"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 2,
+        "formula": "2",
+        "type": "untyped",
+        "condition": "vs. Ranged Attacks (+5 Lesser, Deflect Arrows Greater)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "rangedAcBonus": 5,
+      "deflectArrows": true
+    },
     "targetType": "Shield"
   },
   {
@@ -7568,7 +8151,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "avertGazeNoMissChance": true
+    },
     "targetType": "Shield"
   },
   {
@@ -7596,9 +8181,20 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Acid",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Acid, Greater)"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "onHitTargetAcPenalty": -1
+    },
     "targetType": "Weapon",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Conjuration or evocation (depending on the type of crystal)"
@@ -7629,7 +8225,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "0",
+        "bonus": 1,
+        "type": "Acid",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Acid, Least)"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon",
@@ -7662,7 +8267,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Acid",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Acid, Lesser)"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon",
@@ -7695,9 +8309,20 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Cold",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Cold, Greater)"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "onHitSlowFt": 10
+    },
     "targetType": "Weapon",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Conjuration or evocation (depending on the type of crystal)"
@@ -7728,7 +8353,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "0",
+        "bonus": 1,
+        "type": "Cold",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Cold, Least)"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon",
@@ -7761,7 +8395,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Cold",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Cold, Lesser)"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon",
@@ -7794,9 +8437,20 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Electricity",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Electricity, Greater)"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "onHitDazzle": true
+    },
     "targetType": "Weapon",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Conjuration or evocation (depending on the type of crystal)"
@@ -7827,7 +8481,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "0",
+        "bonus": 1,
+        "type": "Electricity",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Electricity, Least)"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon",
@@ -7860,7 +8523,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Electricity",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Electricity, Lesser)"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon",
@@ -7893,9 +8565,20 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Fire, Greater)"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "secondaryBurnDice": "1d6"
+    },
     "targetType": "Weapon",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Conjuration or evocation (depending on the type of crystal)"
@@ -7926,7 +8609,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "0",
+        "bonus": 1,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Fire, Least)"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon",
@@ -7959,7 +8651,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Crystal of Energy Assault (Fire, Lesser)"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon",
@@ -7991,7 +8692,15 @@
       "armor",
       "augmentation crystal"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "grapple",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": "To prevent grapple initiation (+2 Least / +5 Lesser / +10 Greater)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
@@ -8024,7 +8733,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "lightRadiusBrightFt": 60
+    },
     "targetType": "Weapon"
   },
   {
@@ -8054,7 +8765,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "lightRadiusBrightFt": 5
+    },
     "targetType": "Weapon"
   },
   {
@@ -8084,7 +8797,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "lightRadiusBrightFt": 20
+    },
     "targetType": "Weapon"
   },
   {
@@ -8114,7 +8829,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "lifeStealPerHit": 5,
+      "lifeStealDailyCap": 50
+    },
     "targetType": "Weapon"
   },
   {
@@ -8144,7 +8862,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "lifeStealPerHit": 1,
+      "lifeStealDailyCap": 10
+    },
     "targetType": "Weapon"
   },
   {
@@ -8174,7 +8895,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "lifeStealPerHit": 3,
+      "lifeStealDailyCap": 30
+    },
     "targetType": "Weapon"
   },
   {
@@ -8201,7 +8925,15 @@
       "armor",
       "augmentation crystal"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "save.fort",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": "vs. Death Effects, Energy Drain & Inflict (+1 Least / +3 Lesser / +5 Greater)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
@@ -8231,7 +8963,15 @@
       "armor",
       "augmentation crystal"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "save.will",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": "vs. Mind-Affecting (+1 Least / +3 Lesser / +5 Greater)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
@@ -8264,7 +9004,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "quickDraw": true,
+      "returning": true
+    },
     "targetType": "Weapon"
   },
   {
@@ -8294,7 +9037,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "quickDraw": true
+    },
     "targetType": "Weapon"
   },
   {
@@ -8324,7 +9069,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "quickDraw": true,
+      "callWeaponRangeFt": 30
+    },
     "targetType": "Weapon"
   },
   {
@@ -8354,7 +9102,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "incorporealTouchPenalty": -5
+    },
     "targetType": "Armor",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Conjuration"
@@ -8387,7 +9137,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "disarmResistBonus": 10
+    },
     "targetType": "Weapon"
   },
   {
@@ -8417,7 +9169,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "disarmResistBonus": 2
+    },
     "targetType": "Weapon"
   },
   {
@@ -8447,7 +9201,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "disarmResistBonus": 5
+    },
     "targetType": "Weapon"
   },
   {
@@ -8474,7 +9230,15 @@
       "armor",
       "augmentation crystal"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "save.fort",
+        "value": 3,
+        "formula": "3",
+        "type": "competence",
+        "condition": "vs. Disease & Poison (+1 Least / +3 Lesser / +5 Greater)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
@@ -8506,17 +9270,41 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
     },
     "errata": [
       "Official errata (MIC Errata p.291): missing Ego score 12 added to the item's statistics parenthetical.",
       "Official aura errata (MIC Errata p.295): Aura: Divination"
-    ]
+    ],
+    "baseItemId": "wpn-heavy-mace",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "enh-cursespewing",
@@ -8606,12 +9394,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-rapier",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 18,
+    "critMult": 2
   },
   {
     "id": "wpn-mic-dagger-of-denial-relic",
@@ -8639,13 +9451,45 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 1,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Evil (vs. Good)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Unholy"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-dagger",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "wpn-mic-dawnstar-relic",
@@ -8673,13 +9517,39 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 2,
+        "formula": "2",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 2,
+        "type": "Bludgeoning & Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic",
+        "adamantine"
+      ]
+    },
+    "baseItemId": "wpn-morningstar",
+    "enhancementBonus": 2,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2,
+    "material": "mat-adamantine"
   },
   {
     "id": "enh-daylight",
@@ -8802,12 +9672,38 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic",
+        "cold iron"
+      ]
+    },
+    "baseItemId": "wpn-spear",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 3,
+    "material": "mat-cold-iron"
   },
   {
     "id": "enh-death-ward",
@@ -8991,9 +9887,23 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Untyped (vs. Constructs)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Demolition Crystal"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "bypassDR": [
+        "adamantine (vs. constructs)"
+      ],
+      "critAndSneakConstructs": true
+    },
     "targetType": "Weapon"
   },
   {
@@ -9021,7 +9931,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Untyped (vs. Constructs)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Demolition Crystal"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon"
@@ -9051,9 +9970,22 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Untyped (vs. Constructs)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Demolition Crystal"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "bypassDR": [
+        "adamantine (vs. constructs)"
+      ]
+    },
     "targetType": "Weapon"
   },
   {
@@ -10066,10 +10998,24 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 9,
+        "formula": "9",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-full-plate",
+    "enhancementBonus": 1,
+    "acBonus": 9,
+    "maxDex": 1,
+    "checkPenalty": -5,
+    "spellFailure": 35
   },
   {
     "id": "mi-mic-dragonscale-cloak-relic",
@@ -10217,12 +11163,38 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d10",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic",
+        "adamantine"
+      ]
+    },
+    "baseItemId": "wpn-greatclub",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 2,
+    "material": "mat-adamantine"
   },
   {
     "id": "enh-eager",
@@ -10326,10 +11298,24 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 9,
+        "formula": "9",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-full-plate",
+    "enhancementBonus": 1,
+    "acBonus": 9,
+    "maxDex": 1,
+    "checkPenalty": -5,
+    "spellFailure": 35
   },
   {
     "id": "enh-easy-travel",
@@ -10516,10 +11502,24 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 4,
+        "formula": "4",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-hide-armor",
+    "enhancementBonus": 1,
+    "acBonus": 4,
+    "maxDex": 4,
+    "checkPenalty": -2,
+    "spellFailure": 20
   },
   {
     "id": "mi-mic-elixir-of-adamantine-blood",
@@ -11230,10 +12230,24 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 6,
+        "formula": "6",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-breastplate",
+    "enhancementBonus": 1,
+    "acBonus": 6,
+    "maxDex": 3,
+    "checkPenalty": -3,
+    "spellFailure": 25
   },
   {
     "id": "mi-mic-exploding-spike",
@@ -11290,12 +12304,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-sling",
+    "enhancementBonus": 1,
+    "handedness": "ranged",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-mic-eyes-of-expanded-vision",
@@ -11614,9 +12652,23 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Good (vs. Evil Outsiders)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Fiendslayer Crystal"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "bypassDR": [
+        "good"
+      ],
+      "dimensionalAnchorOnCrit": true
+    },
     "targetType": "Weapon"
   },
   {
@@ -11644,7 +12696,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Good (vs. Evil Outsiders)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Fiendslayer Crystal"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon"
@@ -11674,9 +12735,22 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Good (vs. Evil Outsiders)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Fiendslayer Crystal"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "bypassDR": [
+        "good"
+      ]
+    },
     "targetType": "Weapon"
   },
   {
@@ -11769,10 +12843,20 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.swim",
+        "value": 8,
+        "formula": "8",
+        "type": "racial",
+        "condition": "30-ft. Swim Speed"
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "swimSpeed": 30
+    }
   },
   {
     "id": "mi-mic-fireflower-pendant",
@@ -11999,12 +13083,38 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic",
+        "silver"
+      ]
+    },
+    "baseItemId": "wpn-lance",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 3,
+    "material": "mat-alchemical-silver"
   },
   {
     "id": "mi-mic-formless-vest",
@@ -12166,10 +13276,35 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-warhammer",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 3
   },
   {
     "id": "wpn-mic-gauntlet-of-gruumsh",
@@ -12195,14 +13330,39 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d3",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
     "errata": [
       "Official errata (MIC Errata p.292): first line substituted.",
       "Official errata (MIC Errata p.292): Activation: Standard (mental)."
-    ]
+    ],
+    "baseItemId": "wpn-gauntlet",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-mic-gauntlets-of-arrow-reflection",
@@ -12326,10 +13486,35 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-javelin",
+    "enhancementBonus": 1,
+    "handedness": "ranged",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-mic-gauntlets-of-energy-transformation",
@@ -12472,14 +13657,38 @@
       "specific weapon",
       "charged"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 3,
+        "formula": "3",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 3,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "chargesPerDay": 5
+      "chargesPerDay": 5,
+      "bypassDR": [
+        "magic"
+      ]
     },
     "charges": 5,
-    "maxCharges": 5
+    "maxCharges": 5,
+    "baseItemId": "wpn-dagger",
+    "enhancementBonus": 3,
+    "handedness": "light",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-mic-gauntlets-of-lassitude",
@@ -12601,12 +13810,36 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-spiked-gauntlet",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-mic-gauntlets-of-the-talon-relic",
@@ -12756,12 +13989,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "0",
+        "bonus": 1,
+        "type": "None",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-net",
+    "enhancementBonus": 1,
+    "handedness": "ranged",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-mic-ghost-shroud",
@@ -12925,10 +14182,24 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 3,
+        "formula": "3",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-leather-armor",
+    "enhancementBonus": 1,
+    "acBonus": 3,
+    "maxDex": 6,
+    "checkPenalty": -1,
+    "spellFailure": 10
   },
   {
     "id": "enh-gilled",
@@ -13411,7 +14682,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "grapple",
+        "value": 8,
+        "formula": "8",
+        "type": "enhancement",
+        "condition": "3/day (7 rounds)"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -13566,10 +14845,28 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.search",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.spot",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "darkvisionFt": 60,
+      "lowLightVision": true
+    }
   },
   {
     "id": "mi-mic-goggles-of-foefinding",
@@ -13659,7 +14956,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "darkvisionFt": 30
+    }
   },
   {
     "id": "mi-mic-goggles-of-the-golden-sun",
@@ -14066,7 +15365,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.hide",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -14161,7 +15468,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.knowledge",
+        "value": 4,
+        "formula": "4",
+        "type": "sacred",
+        "condition": "Bardic Knowledge & Knowledge Checks"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -14812,13 +16127,45 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Flaming"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-gnome-hooked-hammer",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 3
   },
   {
     "id": "mi-mic-horn-of-plenty",
@@ -15475,7 +16822,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "dr": "3/-"
+    },
     "targetType": "Armor",
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Abjuration"
@@ -15601,10 +16950,24 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 6,
+        "formula": "6",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-breastplate",
+    "enhancementBonus": 1,
+    "acBonus": 6,
+    "maxDex": 5,
+    "checkPenalty": 0,
+    "spellFailure": 15
   },
   {
     "id": "enh-landing",
@@ -15663,12 +17026,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d3",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-whip",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-mic-lens-of-the-desert",
@@ -15783,7 +17170,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.spot",
+        "value": 10,
+        "formula": "10",
+        "type": "circumstance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -15944,12 +17339,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "2d4",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-spiked-chain",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-mic-lockpicking-ring",
@@ -16012,7 +17431,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.knowledge",
+        "value": 2,
+        "formula": "2",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -16114,12 +17541,38 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic",
+        "adamantine"
+      ]
+    },
+    "baseItemId": "wpn-heavy-mace",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2,
+    "material": "mat-adamantine"
   },
   {
     "id": "enh-magebane",
@@ -16382,12 +17835,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "2d6",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-greatsword",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-mic-mantle-of-second-chances",
@@ -16630,7 +18107,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "save.will",
+        "value": 3,
+        "formula": "3",
+        "type": "resistance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -16720,7 +18205,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.survival",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -16782,7 +18275,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.diplomacy",
+        "value": 2,
+        "formula": "2",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -17127,15 +18628,47 @@
       "specific weapon",
       "charged"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 1,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Flaming"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "chargesPerDay": 3
+      "chargesPerDay": 3,
+      "bypassDR": [
+        "magic"
+      ]
     },
     "charges": 3,
-    "maxCharges": 3
+    "maxCharges": 3,
+    "baseItemId": "wpn-dagger",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "enh-mighty-smiting",
@@ -17196,12 +18729,26 @@
       "specific armor",
       "relic"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 6,
+        "formula": "6",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {
       "relic": true
-    }
+    },
+    "baseItemId": "arm-chainmail",
+    "enhancementBonus": 1,
+    "acBonus": 6,
+    "maxDex": 4,
+    "checkPenalty": -1,
+    "spellFailure": 20
   },
   {
     "id": "mi-mic-mind-blade-gauntlet",
@@ -17513,7 +19060,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.perform",
+        "value": 2,
+        "formula": "2",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -17542,10 +19097,24 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 5,
+        "formula": "5",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-chain-shirt",
+    "enhancementBonus": 1,
+    "acBonus": 5,
+    "maxDex": 6,
+    "checkPenalty": 0,
+    "spellFailure": 10
   },
   {
     "id": "enh-mobility",
@@ -17687,13 +19256,37 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Bludgeoning & Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-morningstar",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "enh-morphing",
@@ -18050,10 +19643,23 @@
       "armor",
       "specific shield"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 3,
+        "formula": "3",
+        "type": "shield",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "shd-heavy-steel-shield",
+    "enhancementBonus": 1,
+    "acBonus": 3,
+    "checkPenalty": -1,
+    "spellFailure": 15
   },
   {
     "id": "arm-mic-owlfeather-armor",
@@ -18461,7 +20067,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "lingeringFireDamage": 5
+    },
     "targetType": "Weapon"
   },
   {
@@ -18492,7 +20100,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "lingeringFireDamage": 1
+    },
     "targetType": "Weapon"
   },
   {
@@ -18523,7 +20133,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "lingeringFireDamage": 3
+    },
     "targetType": "Weapon"
   },
   {
@@ -18637,12 +20249,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-heavy-pick",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 4
   },
   {
     "id": "mi-mic-piercer-cloak",
@@ -19783,12 +21419,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-quarterstaff",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "enh-quick-loading",
@@ -20107,13 +21767,38 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 2,
+        "formula": "2",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 2,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ],
+      "keen": true
+    },
+    "baseItemId": "wpn-rapier",
+    "enhancementBonus": 2,
+    "handedness": "1h",
+    "critRange": 15,
+    "critMult": 2
   },
   {
     "id": "wpn-mic-rapier-of-unerring-direction-relic",
@@ -20141,13 +21826,37 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-rapier",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 18,
+    "critMult": 2
   },
   {
     "id": "wpn-mic-raptor-arrow-relic",
@@ -20175,13 +21884,37 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-longsword",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-mic-raptor-s-mask",
@@ -20207,10 +21940,20 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.spot",
+        "value": 5,
+        "formula": "5",
+        "type": "untyped",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "immuneBlindnessDazzle": true
+    }
   },
   {
     "id": "mi-mic-reach-gauntlets",
@@ -20517,7 +22260,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "sleepInArmorNoFatigue": true
+    },
     "targetType": "Armor"
   },
   {
@@ -20642,7 +22387,10 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "suppressInvisibilityOnHit": true,
+      "suppressConcealmentOnHit": true
+    },
     "targetType": "Weapon"
   },
   {
@@ -20672,7 +22420,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "revealInvisibleOnHit": true
+    },
     "targetType": "Weapon"
   },
   {
@@ -20702,7 +22452,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "suppressInvisibilityOnHit": true
+    },
     "targetType": "Weapon"
   },
   {
@@ -20758,7 +22510,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.ride",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -20848,7 +22608,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "arcaneCasterLevelBonus": 1
+    }
   },
   {
     "id": "mi-mic-ring-of-arming",
@@ -21019,7 +22781,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.diplomacy",
+        "value": 5,
+        "formula": "5",
+        "type": "enhancement",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -22204,7 +23974,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.strength",
+        "value": 4,
+        "formula": "4",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -22268,12 +24046,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-quarterstaff",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "wpn-mic-rod-of-celestial-might",
@@ -22299,12 +24101,46 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Good (vs. Evil)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Holy"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic",
+        "silver"
+      ]
+    },
+    "baseItemId": "wpn-quarterstaff",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 2,
+    "material": "mat-alchemical-silver"
   },
   {
     "id": "wpn-mic-rod-of-defiance",
@@ -22330,15 +24166,39 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
     },
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Evocation"
-    ]
+    ],
+    "baseItemId": "wpn-heavy-mace",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "wpn-mic-rod-of-enervating-strike",
@@ -22364,12 +24224,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-heavy-mace",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "rod-mic-rod-of-escape",
@@ -22457,12 +24341,38 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic",
+        "silver"
+      ]
+    },
+    "baseItemId": "wpn-heavy-mace",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2,
+    "material": "mat-alchemical-silver"
   },
   {
     "id": "rod-mic-rod-of-frost",
@@ -22708,12 +24618,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "2d4",
+        "bonus": 1,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-scythe",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 4
   },
   {
     "id": "wpn-mic-rod-of-the-recluse-relic",
@@ -22741,13 +24675,37 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 2,
+        "formula": "2",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 2,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-light-mace",
+    "enhancementBonus": 2,
+    "handedness": "light",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "rod-mic-rod-of-transposition",
@@ -22866,12 +24824,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d3",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-whip",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "wpn-mic-rogue-blade",
@@ -22897,12 +24879,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-rapier",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 18,
+    "critMult": 2
   },
   {
     "id": "mi-mic-rogue-s-vest",
@@ -23042,7 +25048,22 @@
       "armor",
       "augmentation crystal"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "damage.weapon",
+        "value": 3,
+        "formula": "3",
+        "type": "morale",
+        "condition": "When HP <= 50% (+1 Least / +3 Lesser / +5 Greater)"
+      },
+      {
+        "target": "save.will",
+        "value": 3,
+        "formula": "3",
+        "type": "morale",
+        "condition": "vs. Fear when HP <= 50%"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
@@ -23074,13 +25095,37 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 1,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-dagger",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-mic-ruby-cincture-of-immutability",
@@ -24738,12 +26783,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-kama",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "wpn-mic-scourge-of-pain",
@@ -24769,12 +26838,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-longsword",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-mic-scout-s-headband",
@@ -24941,7 +27034,15 @@
       "tool",
       "relic"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.knowledge",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {
@@ -25397,10 +27498,23 @@
       "armor",
       "specific shield"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 3,
+        "formula": "3",
+        "type": "shield",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "shd-heavy-steel-shield",
+    "enhancementBonus": 1,
+    "acBonus": 3,
+    "checkPenalty": -1,
+    "spellFailure": 15
   },
   {
     "id": "shd-mic-shield-of-the-resolute-relic",
@@ -25428,12 +27542,25 @@
       "specific shield",
       "relic"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 3,
+        "formula": "3",
+        "type": "shield",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {
       "relic": true
-    }
+    },
+    "baseItemId": "shd-heavy-steel-shield",
+    "enhancementBonus": 1,
+    "acBonus": 3,
+    "checkPenalty": -1,
+    "spellFailure": 15
   },
   {
     "id": "shd-mic-shield-of-the-severed-hand-relic",
@@ -25461,12 +27588,25 @@
       "specific shield",
       "relic"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 4,
+        "formula": "4",
+        "type": "shield",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {
       "relic": true
-    }
+    },
+    "baseItemId": "shd-heavy-wooden-shield",
+    "enhancementBonus": 2,
+    "acBonus": 4,
+    "checkPenalty": -1,
+    "spellFailure": 15
   },
   {
     "id": "shd-mic-shield-of-vigor",
@@ -25492,10 +27632,23 @@
       "armor",
       "specific shield"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 3,
+        "formula": "3",
+        "type": "shield",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "shd-heavy-steel-shield",
+    "enhancementBonus": 1,
+    "acBonus": 3,
+    "checkPenalty": -1,
+    "spellFailure": 15
   },
   {
     "id": "enh-shielding",
@@ -26011,7 +28164,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.escape_artist",
+        "value": 4,
+        "formula": "4",
+        "type": "competence",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
@@ -26078,13 +28239,45 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Evil (vs. Good)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Unholy"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-spear",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 3
   },
   {
     "id": "mi-mic-skill-shard",
@@ -26144,7 +28337,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "skirmishBonusDamage": 2
+    }
   },
   {
     "id": "mi-mic-skull-plaque",
@@ -26704,13 +28899,38 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ],
+      "keen": true
+    },
+    "baseItemId": "wpn-spear",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 19,
+    "critMult": 3
   },
   {
     "id": "enh-spearblock",
@@ -26771,12 +28991,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 1,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-dagger",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "enh-mic-speed-armor",
@@ -26864,7 +29108,22 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.spellcraft",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": null
+      },
+      {
+        "target": "skill.use_magic_device",
+        "value": 5,
+        "formula": "5",
+        "type": "competence",
+        "condition": "For Scrolls"
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -26991,12 +29250,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 1,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-dagger",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "rod-mic-spider-rod",
@@ -27086,13 +29369,37 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-quarterstaff",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "enh-stamina",
@@ -27274,10 +29581,20 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "cmd.stability",
+        "value": 4,
+        "formula": "4",
+        "type": "untyped",
+        "condition": "vs. Bull Rush, Overrun, Trip"
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "autoReadiedVsChargeTwoHanded": true
+    }
   },
   {
     "id": "mi-mic-stench-stone",
@@ -27334,12 +29651,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d12",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-greataxe",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 20,
+    "critMult": 3
   },
   {
     "id": "mi-mic-storm-gauntlets",
@@ -27619,12 +29960,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-sling",
+    "enhancementBonus": 1,
+    "handedness": "ranged",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "enh-stygian",
@@ -27909,13 +30274,37 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "2d6",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-greatsword",
+    "enhancementBonus": 1,
+    "handedness": "2h",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "wpn-mic-sword-of-virtue-beyond-reproach-relic",
@@ -27943,13 +30332,45 @@
       "specific weapon",
       "relic"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Good (vs. Evil)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Holy"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "relic": true
-    }
+      "relic": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-longsword",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "wpn-mic-swordbow",
@@ -27975,12 +30396,44 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Flaming"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-longsword",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-mic-symbol-of-transfiguration",
@@ -28201,12 +30654,44 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Flaming"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-light-mace",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "mi-mic-tanglepatch",
@@ -28264,12 +30749,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-light-mace",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "wpn-mic-tentacle-rod-greater",
@@ -28296,12 +30805,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 1,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-light-mace",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "enh-terran",
@@ -28360,12 +30893,38 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic",
+        "adamantine"
+      ]
+    },
+    "baseItemId": "wpn-spiked-gauntlet",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 20,
+    "critMult": 2,
+    "material": "mat-adamantine"
   },
   {
     "id": "mi-mic-third-eye-aware",
@@ -28725,7 +31284,9 @@
     "modifiers": [],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "spellPenetrationBonus": 2
+    }
   },
   {
     "id": "mi-mic-third-eye-powerthieve",
@@ -29344,12 +31905,38 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 1,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic",
+        "silver"
+      ]
+    },
+    "baseItemId": "wpn-trident",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2,
+    "material": "mat-alchemical-silver"
   },
   {
     "id": "mi-mic-troll-gut-rope",
@@ -29436,9 +32023,21 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Positive (vs. Undead)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Truedeath Crystal"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "ghostTouch": true,
+      "critAndSneakUndead": true
+    },
     "targetType": "Weapon"
   },
   {
@@ -29466,7 +32065,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Positive (vs. Undead)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Truedeath Crystal"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon"
@@ -29496,9 +32104,20 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Positive (vs. Undead)",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Truedeath Crystal"
+      }
+    ],
     "modes": [],
-    "ruleFlags": {},
+    "ruleFlags": {
+      "ghostTouch": true
+    },
     "targetType": "Weapon"
   },
   {
@@ -29723,7 +32342,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 1,
+        "formula": "1",
+        "type": "shield",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -29752,10 +32379,24 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 4,
+        "formula": "4",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-hide-armor",
+    "enhancementBonus": 1,
+    "acBonus": 4,
+    "maxDex": 4,
+    "checkPenalty": -2,
+    "spellFailure": 20
   },
   {
     "id": "mi-mic-vampire-torc",
@@ -29853,7 +32494,22 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "skill.survival",
+        "value": 10,
+        "formula": "10",
+        "type": "circumstance",
+        "condition": null
+      },
+      {
+        "target": "skill.search",
+        "value": 10,
+        "formula": "10",
+        "type": "circumstance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -30222,7 +32878,15 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "save.all",
+        "value": 1,
+        "formula": "1",
+        "type": "resistance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
@@ -30251,10 +32915,27 @@
       "clothing",
       "wondrous"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 8,
+        "formula": "8",
+        "type": "armor",
+        "condition": null
+      },
+      {
+        "target": "save.all",
+        "value": 5,
+        "formula": "5",
+        "type": "resistance",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {
+      "spellPenetrationBonus": 2
+    }
   },
   {
     "id": "mi-mic-vest-of-the-master-evoker",
@@ -30343,15 +33024,39 @@
       "specific weapon",
       "charged"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 1,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
       "requiresHand": true,
-      "chargesPerDay": 5
+      "chargesPerDay": 5,
+      "bypassDR": [
+        "magic"
+      ]
     },
     "charges": 5,
-    "maxCharges": 5
+    "maxCharges": 5,
+    "baseItemId": "wpn-dagger",
+    "enhancementBonus": 1,
+    "handedness": "light",
+    "critRange": 19,
+    "critMult": 2
   },
   {
     "id": "mi-mic-wand-bracelet",
@@ -30571,15 +33276,55 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d3",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Fire",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Flaming"
+      },
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Cold",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Frost"
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
     },
     "errata": [
       "Official aura errata (MIC Errata p.295): Aura: Conjuration"
-    ]
+    ],
+    "baseItemId": "wpn-whip",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "enh-weakening",
@@ -30638,12 +33383,36 @@
       "weapons",
       "specific weapon"
     ],
-    "modifiers": [],
-    "damageParts": [],
+    "modifiers": [
+      {
+        "target": "attack.weapon",
+        "value": 1,
+        "formula": "1",
+        "type": "enhancement",
+        "condition": "Weapon Enhancement"
+      }
+    ],
+    "damageParts": [
+      {
+        "dice": "1d3",
+        "bonus": 1,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false
+      }
+    ],
     "modes": [],
     "ruleFlags": {
-      "requiresHand": true
-    }
+      "requiresHand": true,
+      "bypassDR": [
+        "magic"
+      ]
+    },
+    "baseItemId": "wpn-whip",
+    "enhancementBonus": 1,
+    "handedness": "1h",
+    "critRange": 20,
+    "critMult": 2
   },
   {
     "id": "enh-whirling",
@@ -30731,10 +33500,24 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 4,
+        "formula": "4",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-hide-armor",
+    "enhancementBonus": 1,
+    "acBonus": 4,
+    "maxDex": 4,
+    "checkPenalty": -2,
+    "spellFailure": 20
   },
   {
     "id": "shd-mic-wight-hide-shield",
@@ -30760,10 +33543,23 @@
       "armor",
       "specific shield"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 2,
+        "formula": "2",
+        "type": "shield",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "shd-light-steel-shield",
+    "enhancementBonus": 1,
+    "acBonus": 2,
+    "checkPenalty": 0,
+    "spellFailure": 5
   },
   {
     "id": "mi-mic-wilding-clasp",
@@ -30878,7 +33674,16 @@
       "augmentation crystal"
     ],
     "modifiers": [],
-    "damageParts": [],
+    "damageParts": [
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Fire/Electricity",
+        "multiplyOnCrit": false,
+        "onCritOnly": false,
+        "source": "Witchlight Reservoir (5 charges)"
+      }
+    ],
     "modes": [],
     "ruleFlags": {},
     "targetType": "Weapon"
@@ -30940,13 +33745,26 @@
       "armor",
       "specific shield"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 5,
+        "formula": "5",
+        "type": "shield",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
     "errata": [
       "Official errata (MIC Errata p.291): first paragraph of the description replaced."
-    ]
+    ],
+    "baseItemId": "shd-tower-shield",
+    "enhancementBonus": 1,
+    "acBonus": 5,
+    "checkPenalty": -9,
+    "spellFailure": 50
   },
   {
     "id": "mi-mic-wyrmfang-amulet",
@@ -31001,9 +33819,23 @@
       "armor",
       "specific armor"
     ],
-    "modifiers": [],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 4,
+        "formula": "4",
+        "type": "armor",
+        "condition": null
+      }
+    ],
     "damageParts": [],
     "modes": [],
-    "ruleFlags": {}
+    "ruleFlags": {},
+    "baseItemId": "arm-hide-armor",
+    "enhancementBonus": 1,
+    "acBonus": 4,
+    "maxDex": 4,
+    "checkPenalty": -2,
+    "spellFailure": 20
   }
 ]
