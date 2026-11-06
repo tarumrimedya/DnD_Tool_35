@@ -7242,7 +7242,7 @@
             bonusFeatContracts: c.bonusFeatContracts || prev.bonusFeatContracts || null,
             prerequisites: Array.isArray(c.prerequisites) && c.prerequisites.length > 0 ? c.prerequisites : (prev.prerequisites || []),
             spellcastingProgression: c.spellcastingProgression || prev.spellcastingProgression || 'none',
-            description: (c.description && !c.description.startsWith('<p>')) ? c.description : (prev.description || c.shortDescription || ''),
+            description: (c.description && !/<[a-z][\s\S]*>/i.test(c.description)) ? c.description : (c.shortDescription || prev.description || (c.description ? c.description.replace(/<img[^>]*>/gi, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '')),
             role: c.role || prev.role || (isPrestige ? 'Prestige Class' : 'Base Class'),
             source: c.source || prev.source || 'SRD 3.5e',
             type: isPrestige ? 'Prestige Class' : 'Base Class',

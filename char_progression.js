@@ -1856,7 +1856,7 @@
         populateChangeClassSelect(extraName);
         onChangeClassSelectChange();
 
-        const babDisplay = foundExtra.bab === 1.0 ? 'Tam BAB (+1/lvl)' : (foundExtra.bab === 0.75 ? '3/4 BAB (+0.75/lvl)' : '1/2 BAB (+0.5/lvl)');
+        const babDisplay = foundExtra.bab === 1.0 ? 'Full BAB (+1/lvl)' : (foundExtra.bab === 0.75 ? '3/4 BAB (+0.75/lvl)' : '1/2 BAB (+0.5/lvl)');
         if (statusEl) {
           statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
           statusEl.innerHTML = `<span>✨</span> Added and selected <b>${extraName}</b> from D&D 3.5e compendium! (HD: d${foundExtra.hd} • ${babDisplay} • Source: ${foundExtra.source})`;
@@ -4320,12 +4320,12 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         }
 
         const typeBadge = isPrestige
-          ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/50">👑 Prestij</span>'
+          ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-600/50">👑 Prestige Class</span>'
           : (isCustom 
               ? '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-950/80 text-indigo-300 border border-indigo-600/50">⚙️ Custom</span>'
               : '<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/50">🛡️ Base Class</span>');
 
-        const babText = def.bab === 1.0 ? 'Tam BAB (+1.0)' : (def.bab === 0.75 ? '3/4 BAB (+0.75)' : '1/2 BAB (+0.5)');
+        const babText = def.bab === 1.0 ? 'Full BAB (+1.0)' : (def.bab === 0.75 ? '3/4 BAB (+0.75)' : '1/2 BAB (+0.5)');
         const goodSaves = [];
         if (def.fort === 'good') goodSaves.push('Fort');
         if (def.ref === 'good') goodSaves.push('Ref');
@@ -4358,6 +4358,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             </div>
           `;
         }
+
+        const cleanDesc = (def.description || def.shortDescription || '').replace(/<img[^>]*>/gi, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
         htmlOutput += `
           <div onclick="selectClassFromSearch('${safeName}')" class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
@@ -4401,7 +4403,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-purple-300">${def.skills || 2}+INT Skills</span>
             </div>
 
-            ${def.description ? `<p class="text-[10px] text-slate-400 leading-relaxed">${def.description}</p>` : ''}
+            ${cleanDesc ? `<p class="text-[10px] text-slate-400 leading-relaxed">${cleanDesc.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
             ${prereqHtml}
             ${isProgExpanded ? `<div onclick="event.stopPropagation()">${generateClassProgressionHtml(cName, def)}</div>` : ''}
           </div>
@@ -5115,7 +5117,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         specialAbilities: autoFeatures,
         statIncreased: statChoice || null,
         casterProg,
-        notes: notes || (autoFeatures.length > 0 ? autoFeatures.join(', ') : `${className} seviyesi eklendi`)
+        notes: notes || (autoFeatures.length > 0 ? autoFeatures.join(', ') : `${className} level added`)
       });
 
       recalculateCharacterClassSummary();
@@ -5454,7 +5456,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         opt.value = cName;
         const def = allDefs[cName];
         const hdText = `d${def.hd} HD`;
-        const babText = def.bab === 1.0 ? 'Tam BAB' : (def.bab === 0.75 ? '3/4 BAB' : '1/2 BAB');
+        const babText = def.bab === 1.0 ? 'Full BAB' : (def.bab === 0.75 ? '3/4 BAB' : '1/2 BAB');
         opt.textContent = `${cName} (${hdText} • ${babText})`;
         if (cName.toLowerCase() === targetSelected) opt.selected = true;
         if (def.isCustom) {
