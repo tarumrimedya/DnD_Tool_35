@@ -5011,7 +5011,7 @@ Return valid JSON only matching:
     if (btnManual) btnManual.className = mode === 'manual' ? activeCls : inactiveCls;
 
     if (mode === 'freetext') {
-      if (headerTitle) headerTitle.textContent = 'Rule Master (AI) Free-Text Parser';
+      if (headerTitle) headerTitle.textContent = 'Rule Master AI Free-Text Parser';
       const ta = document.getElementById('inline-ai-freetext-input');
       if (ta) ta.focus();
     } else if (mode === 'forge') {
@@ -5027,7 +5027,7 @@ Return valid JSON only matching:
       const nameIn = document.getElementById('im-name');
       if (nameIn) nameIn.focus();
     } else {
-      if (headerTitle) headerTitle.textContent = 'Rule Master (AI) & The Forge';
+      if (headerTitle) headerTitle.textContent = 'Rule Master AI & The Forge';
       const q = document.getElementById('inline-ai-rule-query');
       if (q) q.focus();
     }
@@ -6308,7 +6308,7 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
         <div class="space-y-2">
           <div class="flex items-center justify-between pb-1 border-b border-purple-500/30">
             <span class="font-bold text-purple-300 flex items-center gap-1.5">
-              <span>🧙‍♂️🤖</span><span>Rule Master (AI) Level-Up Recommendation (Level ${targetLevel})</span>
+              <span>🧙‍♂️🤖</span><span>Rule Master AI Level-Up Recommendation (Level ${targetLevel})</span>
             </span>
             <span class="badge bg-purple-950 text-purple-300 border border-purple-600 font-mono text-[9px] font-bold">Gemini RAW AI</span>
           </div>

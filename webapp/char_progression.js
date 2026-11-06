@@ -1983,7 +1983,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 const babDisplay = newClassDef.bab === 1.0 ? 'Full BAB (+1/lvl)' : (newClassDef.bab === 0.75 ? '3/4 BAB (+0.75/lvl)' : '1/2 BAB (+0.5/lvl)');
                 if (statusEl) {
                   statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
-                  statusEl.innerHTML = `<span>✨</span> Fetched and added <b>${cName}</b> via Rule Master (AI) with D&D 3.5e RAW stats! (HD: d${newClassDef.hd} • ${babDisplay} • Source: ${newClassDef.source})`;
+                  statusEl.innerHTML = `<span>✨</span> Fetched and added <b>${cName}</b> via Rule Master AI with D&D 3.5e RAW stats! (HD: d${newClassDef.hd} • ${babDisplay} • Source: ${newClassDef.source})`;
                 }
                 return;
               }
@@ -2907,7 +2907,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             <!-- Full-Width Spotlight & AI Feat Search Bar -->
             <div>
               <label class="block text-[9px] font-bold text-slate-400 uppercase mb-1 flex items-center justify-between">
-                <span>Spotlight & AI Feat Search</span>
+                <span>🔮 Spotlight &amp; Rule Master AI</span>
                 <span class="text-[9px] text-purple-300 font-normal">Compendium + 3.5e RAW Validation</span>
               </label>
               <div class="ui-spotlight-well ui-spotlight-purple rounded-xl p-1.5 flex flex-wrap sm:flex-nowrap items-center gap-1.5 sm:gap-2 border border-purple-400/75">
@@ -2929,8 +2929,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                           onclick="triggerRuleMasterForLevelUpSlot(${idx})"
                           class="flex-1 sm:flex-initial justify-center h-8 px-2.5 sm:px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow cursor-pointer"
                           title="Search Compendium or Fetch via Rule Master AI">
-                    <span>🧙‍♂️</span>
-                    <span>AI Lookup</span>
+                    <span>🔮</span>
+                    <span>Rule Master AI</span>
                   </button>
                   <button type="button"
                           onclick="toggleLevelUpFeatSearchConsole(${idx})"
@@ -4285,8 +4285,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               </p>
               <div class="pt-1 flex items-center justify-center gap-2">
                 <button type="button" onclick="fetchClassFromRuleMasterAi('${safeQuery}')" id="btn-fetch-class-ai" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-purple-400/40">
-                  <span>✨</span>
-                  <span>Fetch from D&D 3.5e Sourcebooks via Rule Master (AI)</span>
+                  <span>🔮</span>
+                  <span>Fetch "${safeQuery}" via Rule Master AI</span>
                 </button>
               </div>
             </div>
@@ -4475,7 +4475,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        alert('⚠️ 🧙‍♂️🤖 Please save a valid Google Gemini API key in Settings (⚙️) to search classes via Rule Master (AI).');
+        alert('⚠️ 🔮 Please save a valid Google Gemini API key in Settings (⚙️) to search classes via Rule Master AI.');
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -5757,8 +5757,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               </p>
               <div class="pt-1 flex items-center justify-center gap-2">
                 <button type="button" onclick="searchOrAddClassWithRuleMaster()" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-purple-400/40">
-                  <span>✨</span>
-                  <span>Fetch from D&D 3.5e Sourcebooks via Rule Master (AI)</span>
+                  <span>🔮</span>
+                  <span>Fetch "${q}" via Rule Master AI</span>
                 </button>
               </div>
             </div>
@@ -7727,7 +7727,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             </div>
             <button type="button" onclick="if(typeof openCustomDomainEditorModal==='function') openCustomDomainEditorModal();" class="text-xs bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-600/70 font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
               <span>⚜️</span>
-              <span>+ Create / AI Fetch Domain</span>
+              <span>+ Create / Rule Master AI Domain</span>
             </button>
             <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-300 cursor-pointer select-none bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700 hover:border-yellow-600/60" title="Allow selecting domains outside your Deity's portfolio or Alignment restrictions (House Rule / DM Override)">
               <input id="cleric-domain-dm-override" type="checkbox" onchange="window._clericDomainDmOverride = this.checked; renderClericDomainPickerList();" class="accent-amber-500 rounded cursor-pointer">
@@ -7885,7 +7885,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             <p class="text-xs text-slate-300">No domain matching "<strong>${query}</strong>" found in compendium.</p>
             <button type="button" onclick="if(typeof openCustomDomainEditorModal==='function') openCustomDomainEditorModal({ name: '${safeQ}' });" class="px-4 py-2 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-xl shadow-lg transition inline-flex items-center gap-2 cursor-pointer active:scale-95">
               <span>🔮</span>
-              <span>Create / AI Fetch "${query}" Domain</span>
+              <span>Create / Rule Master AI "${query}" Domain</span>
             </button>
           </div>
         `;
@@ -8362,7 +8362,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         <!-- Creature Selection & Name Controls -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Select Creature / Animal</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Select Creature / Animal</label>
+              <button type="button" onclick="toggleCompanionSpotlight(true)" class="text-[10px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer">
+                <span>🔮 Spotlight &amp; Rule Master AI</span>
+              </button>
+            </div>
             <select id="companion-select-animal" onchange="onCompanionAnimalChange(this.value)" class="ui-input-md w-full h-9 bg-slate-950 text-amber-200 border border-slate-700 rounded-lg px-2.5 text-xs font-bold cursor-pointer">
               ${allowedAnimals.map(a => {
                 const isSelected = a.id === _activeCompanionModalAnimalId;
@@ -8514,6 +8519,222 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         total: 'Dismissed'
       });
     }
+
+    function ensureCompanionSpotlightDom() {
+      let overlay = document.getElementById('companion-spotlight-overlay');
+      if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'companion-spotlight-overlay';
+        overlay.className = 'hidden';
+        Object.assign(overlay.style, {
+          position: 'fixed',
+          top: '10vh',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 'min(92vw, 640px)',
+          maxHeight: '75vh',
+          zIndex: '10060',
+          display: 'flex',
+          flexDirection: 'column',
+          background: 'rgba(15, 23, 42, 0.98)',
+          border: '1px solid rgba(245, 158, 11, 0.5)',
+          borderRadius: '1rem',
+          boxShadow: '0 25px 50px -12px rgba(0,0,0,0.85)',
+          padding: '1rem'
+        });
+        document.body.appendChild(overlay);
+
+        document.addEventListener('mousedown', (ev) => {
+          if (overlay && !overlay.classList.contains('hidden') && !overlay.contains(ev.target)) {
+            const triggerBtn = ev.target.closest('button[onclick*="toggleCompanionSpotlight"]');
+            if (!triggerBtn) overlay.classList.add('hidden');
+          }
+        });
+      }
+      return overlay;
+    }
+
+    function toggleCompanionSpotlight(forceOpen = null) {
+      const overlay = ensureCompanionSpotlightDom();
+      const isHidden = overlay.classList.contains('hidden');
+      const open = forceOpen !== null ? forceOpen : isHidden;
+      if (open) {
+        overlay.classList.remove('hidden');
+        renderCompanionSpotlightContent('');
+        const inp = overlay.querySelector('#companion-spotlight-input');
+        if (inp) inp.focus();
+      } else {
+        overlay.classList.add('hidden');
+      }
+    }
+    window.toggleCompanionSpotlight = toggleCompanionSpotlight;
+
+    function renderCompanionSpotlightContent(query = '') {
+      const overlay = ensureCompanionSpotlightDom();
+      const q = String(query || '').trim().toLowerCase();
+
+      const allowedAnimals = (window.SrdCompendium && typeof window.SrdCompendium.getAllowedAnimals === 'function')
+        ? window.SrdCompendium.getAllowedAnimals(_activeCompanionModalType)
+        : [];
+
+      // Filter matches
+      const matches = allowedAnimals.filter(a => {
+        if (!q) return true;
+        const name = (a.name || '').toLowerCase();
+        const bonus = (a.masterBonusText || '').toLowerCase();
+        return name.includes(q) || bonus.includes(q);
+      });
+
+      const typeLabel = _activeCompanionModalType === 'familiar' ? 'Familiar' : (_activeCompanionModalType === 'special_mount' ? 'Special Mount' : 'Animal Companion');
+      const icon = _activeCompanionModalType === 'familiar' ? '🦉' : (_activeCompanionModalType === 'special_mount' ? '🐎' : '🐺');
+
+      let html = `
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">${icon}</span>
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <span>${typeLabel} Spotlight</span>
+                <span class="text-[10px] text-amber-300 font-mono font-normal">Canonical RAW 3.5e</span>
+              </h3>
+              <p class="text-[10px] text-slate-400">Search SRD creatures or fetch custom splatbook beasts via Rule Master AI</p>
+            </div>
+          </div>
+          <button type="button" onclick="toggleCompanionSpotlight(false)" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-sm cursor-pointer">✕</button>
+        </div>
+
+        <div class="my-3">
+          <div class="ui-spotlight-well ui-spotlight-amber rounded-xl p-1.5 flex items-center gap-2 border border-amber-500/50 bg-slate-900/90">
+            <span class="text-amber-400 pl-2">🔍</span>
+            <input type="text" id="companion-spotlight-input" value="${safeEscapeHtml(query)}" oninput="renderCompanionSpotlightContent(this.value)" placeholder="Search companion creature, animal, or vermin..." class="flex-1 bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none py-1">
+            ${query ? `<button type="button" onclick="renderCompanionSpotlightContent('')" class="text-xs text-slate-400 hover:text-white px-2">✕</button>` : ''}
+          </div>
+        </div>
+
+        <div class="overflow-y-auto space-y-1.5 flex-1 pr-1" style="max-height: 48vh;">
+      `;
+
+      if (matches.length > 0) {
+        html += matches.map(a => {
+          const isSelected = a.id === _activeCompanionModalAnimalId;
+          const reqText = a.minLevel ? ` (Req Lvl ${a.minLevel})` : (a.levelAdj ? ` (Adj ${a.levelAdj})` : '');
+          const bonusText = a.masterBonusText ? ` • [${a.masterBonusText}]` : '';
+          return `
+            <div onclick="selectCompanionFromSpotlight('${safeEscapeHtml(a.id)}')" class="p-2.5 rounded-lg border transition cursor-pointer flex items-center justify-between gap-2 ${isSelected ? 'bg-amber-950/70 border-amber-500/60 text-white' : 'bg-slate-900/60 hover:bg-slate-850 border-slate-800 text-slate-200'}">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-amber-300 truncate">${a.name}</span>
+                  ${reqText ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-950 border border-slate-700 text-slate-400">${reqText}</span>` : ''}
+                </div>
+                ${bonusText ? `<div class="text-[10px] text-purple-300 mt-0.5 truncate">${bonusText}</div>` : ''}
+              </div>
+              <button type="button" class="shrink-0 text-[11px] font-bold px-2 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white shadow">
+                ${isSelected ? 'Selected' : 'Select'}
+              </button>
+            </div>
+          `;
+        }).join('');
+      } else {
+        html += `
+          <div class="p-6 text-center text-slate-400 bg-slate-900/60 rounded-xl border border-slate-800">
+            <div class="text-xl mb-1.5">🐾</div>
+            <div class="text-xs font-semibold text-slate-300 mb-1">No canonical creature found matching "${safeEscapeHtml(query)}".</div>
+            <div class="text-[11px] text-slate-500 mb-3">Looking for a splatbook companion, exotic mount, or homebrew familiar?</div>
+          </div>
+        `;
+      }
+
+      if (query) {
+        html += `
+          <div class="pt-2 mt-2 border-t border-slate-800 text-center">
+            <button type="button" onclick="fetchCompanionViaAi('${safeEscapeHtml(query)}')" class="w-full py-2 px-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer border border-purple-400/40">
+              <span>🔮</span>
+              <span>Fetch "${safeEscapeHtml(query)}" via Rule Master AI</span>
+            </button>
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+      overlay.innerHTML = html;
+    }
+    window.renderCompanionSpotlightContent = renderCompanionSpotlightContent;
+
+    function selectCompanionFromSpotlight(animalId) {
+      onCompanionAnimalChange(animalId);
+      toggleCompanionSpotlight(false);
+    }
+    window.selectCompanionFromSpotlight = selectCompanionFromSpotlight;
+
+    async function fetchCompanionViaAi(creatureName) {
+      const q = String(creatureName || '').trim();
+      if (!q) return;
+
+      const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
+      if (!apiKey) {
+        alert('⚠️ 🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.');
+        if (typeof openSettingsModal === 'function') openSettingsModal();
+        return;
+      }
+
+      const overlay = ensureCompanionSpotlightDom();
+      overlay.innerHTML = `
+        <div class="p-8 text-center space-y-3">
+          <div class="inline-block w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></div>
+          <div class="text-xs font-bold text-amber-300">🔮 Rule Master AI fetching D&D 3.5e RAW data for "${safeEscapeHtml(q)}"...</div>
+          <p class="text-[11px] text-slate-400">Scanning official D&D 3.5e Monster Manual, Frostburn, Sandstorm, Stormwrack, and Eberron sourcebooks...</p>
+        </div>
+      `;
+
+      try {
+        let entries = null;
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.fetchSingleAiRuleObjects === 'function') {
+          entries = await RuleMaster.fetchSingleAiRuleObjects(q, 'Race', apiKey);
+        }
+
+        const creature = (entries && entries.length > 0) ? entries[0] : null;
+        if (!creature || !creature.name) {
+          throw new Error(`Could not find D&D 3.5e creature statistics for "${q}".`);
+        }
+
+        // Add to masterDb as Monster/Companion if not already present
+        const compEntry = {
+          id: creature.id || ('mon_' + String(creature.name).toLowerCase().replace(/[^a-z0-9]+/g, '_')),
+          name: creature.name,
+          type: 'Monster',
+          category: _activeCompanionModalType,
+          description: creature.benefit || creature.description || '',
+          source: creature.source || 'Rule Master AI',
+          masterBonusText: creature.masterBonusText || null,
+          minLevel: 1
+        };
+
+        if (Array.isArray(masterDb)) {
+          const ex = masterDb.find(m => (m.name || '').toLowerCase() === creature.name.toLowerCase());
+          if (!ex) {
+            masterDb.push(compEntry);
+            saveStateToStorage();
+          }
+        }
+
+        _activeCompanionModalAnimalId = compEntry.id;
+        toggleCompanionSpotlight(false);
+        renderCompanionModalContent();
+
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '🐾',
+            title: `${creature.name} Fetched!`,
+            breakdown: `D&D 3.5e creature added via 🔮 Rule Master AI.`,
+            total: '+1 Creature'
+          });
+        }
+      } catch (err) {
+        alert(`Rule Master AI Error: ${err.message || 'Could not fetch creature.'}`);
+        renderCompanionSpotlightContent(q);
+      }
+    }
+    window.fetchCompanionViaAi = fetchCompanionViaAi;
 
     // Attach to global window
     window.isCharacterCompanionEligible = isCharacterCompanionEligible;

@@ -5606,9 +5606,20 @@
       const open = forceState !== null ? forceState : isHidden;
       if (open) {
         container.classList.remove('hidden');
+        Object.assign(container.style, {
+          position: 'fixed',
+          top: '10vh',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 'min(92vw, 640px)',
+          maxHeight: '75vh',
+          zIndex: '10050'
+        });
         if (input) {
           input.focus();
           onSrdSpotlightInput(input.value || '');
+        } else {
+          onSrdSpotlightInput('');
         }
       } else {
         container.classList.add('hidden');
@@ -5634,69 +5645,109 @@
         else clearBtn.classList.add('hidden');
       }
 
-      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
-        ? window.BUNDLED_SRD_CORE_CATALOG
-        : [];
+      // STRICTLY Inventory-Only: filter character.inventory (or fallback to gearPool if inventory is empty)
+      const invList = (character && Array.isArray(character.inventory) && character.inventory.length > 0)
+        ? character.inventory
+        : ((character && Array.isArray(character.gearPool)) ? character.gearPool : []);
 
-      // Filter catalog for weapons and shields (prioritizing weapons)
-      let matches = catalog.filter(item => {
+      const isWeaponOrShieldItem = (item) => {
         if (!item || !item.name) return false;
         const type = (item.type || '').toLowerCase();
         const cat = (item.category || '').toLowerCase();
-        if (type !== 'weapon' && cat !== 'shield' && type !== 'armor') return false;
-        if (!q) {
-          // Default popular items when search is empty
-          const pop = ['longsword', 'greatsword', 'dagger', 'shortbow', 'composite longbow', 'light crossbow', 'spiked chain', 'heavy wooden shield', 'darkwood buckler', 'rapier'];
-          return pop.some(p => item.name.toLowerCase().includes(p));
+        const slot = (item.slot || '').toLowerCase();
+        if (cat === 'consumable' || type === 'potion' || type === 'scroll' || item.isPotion || item.isScroll) return false;
+        if (type === 'weapon' || type === 'shield') return true;
+        if (cat === 'weapon' || cat === 'shield') return true;
+        if (slot.includes('hand') || slot === 'off-hand' || slot === 'main hand' || slot === 'two hands') return true;
+        if (item.weaponStats || item.weaponMeta) return true;
+        if (item.damageParts && Array.isArray(item.damageParts) && item.damageParts.length > 0) return true;
+        if (item.dice && !item.isWondrous) return true;
+        if (item.baseItemId && typeof SrdCompendium !== 'undefined' && SrdCompendium.getById) {
+          const comp = SrdCompendium.getById(item.baseItemId);
+          if (comp && ((comp.type || '').toLowerCase() === 'weapon' || (comp.type || '').toLowerCase() === 'shield' || (comp.category || '').toLowerCase() === 'weapon' || (comp.category || '').toLowerCase() === 'shield')) {
+            return true;
+          }
         }
-        const nameMatch = item.name.toLowerCase().includes(q);
-        const tagMatch = Array.isArray(item.tags) && item.tags.some(t => t.toLowerCase().includes(q));
-        const catMatch = cat.includes(q) || (item.weaponType && item.weaponType.toLowerCase().includes(q));
-        return nameMatch || tagMatch || catMatch;
+        return false;
+      };
+
+      const matches = invList.filter(item => {
+        if (!isWeaponOrShieldItem(item)) return false;
+        if (!q) return true;
+        const nameMatch = (item.name || '').toLowerCase().includes(q);
+        const typeMatch = (item.type || '').toLowerCase().includes(q);
+        const catMatch = (item.category || '').toLowerCase().includes(q);
+        const baseMatch = (item.baseItemId || '').toLowerCase().includes(q);
+        const matMatch = (item.material || '').toLowerCase().includes(q);
+        return nameMatch || typeMatch || catMatch || baseMatch || matMatch;
       });
 
       if (matches.length === 0) {
         resultsEl.innerHTML = `
-          <div class="p-3 text-center text-xs text-slate-500 italic">
-            No D&D 3.5e RAW SRD weapon or shield found matching "${query}".
+          <div class="p-6 text-center text-slate-400 bg-slate-900/90 rounded-xl border border-slate-700/60 shadow-xl">
+            <div class="text-2xl mb-2">🎒</div>
+            <div class="text-sm font-semibold text-slate-200 mb-1">No matching weapon or shield found in your Inventory.</div>
+            <div class="text-xs text-slate-400 mb-4">Only weapons and shields currently carried in your inventory can be equipped to combat slots.</div>
+            <button type="button" onclick="toggleSrdSpotlight(false); if(typeof switchMainTab==='function') switchMainTab('inventory'); if(typeof openCompendiumDrawer==='function') openCompendiumDrawer('weapon');" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs rounded-lg shadow-lg transition active:scale-95 cursor-pointer inline-flex items-center gap-1.5">
+              <span>🎒</span>
+              <span>Open Inventory Compendium to Add Weapons</span>
+            </button>
           </div>
         `;
         return;
       }
 
-      // Limit results to 15 for lightning fast DOM performance
-      const displayMatches = matches.slice(0, 15);
+      // Check if weapon is already in character.weapons
+      const isAlreadyInWeapons = (item) => {
+        if (!character || !Array.isArray(character.weapons)) return false;
+        const targetId = item.id;
+        const targetName = (item.name || '').trim().toLowerCase();
+        return character.weapons.some(w => {
+          if (!w) return false;
+          if (targetId && (w.inventoryId === targetId || w.id === targetId)) return true;
+          return (w.name || '').trim().toLowerCase() === targetName;
+        });
+      };
 
-      resultsEl.innerHTML = displayMatches.map(item => {
-        const isShield = (item.category || '').toLowerCase() === 'shield';
-        const isTwoHand = (item.weaponType || '').includes('Two-Handed') || (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon(item));
-        const diceStr = item.dice || item.damage || (isShield ? '1d3/1d4' : '1d8');
-        const critStr = item.crit || `${item.critMin || 20}/x${item.critMult || 2}`;
-        const dmgType = item.dmgType || (isShield ? 'Bludgeoning' : 'Physical');
+      resultsEl.innerHTML = matches.map((item, idx) => {
+        const isShield = (item.category || item.type || item.slot || '').toLowerCase().includes('shield');
+        const isTwoHand = (item.slot === 'Two Hands' || (item.weaponType || '').includes('Two-Handed') || (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon(item)));
+        const primaryPart = Array.isArray(item.damageParts) && item.damageParts.length > 0 ? item.damageParts[0] : null;
+        const diceStr = (primaryPart && primaryPart.dice) || item.dice || item.damage || (isShield ? '1d3' : '1d8');
+        const wMeta = item.weaponStats || item.weaponMeta || {};
+        const critStr = item.crit || `${wMeta.critMin || item.critMin || 20}/x${wMeta.critMult || item.critMult || 2}`;
+        const dmgType = (primaryPart && primaryPart.type) || item.dmgType || (isShield ? 'Bludgeoning' : 'Slashing');
+        const enh = Number(item.enhancementBonus) || 0;
+        const enhStr = enh > 0 ? `+${enh}` : '+0';
+        const mat = item.material || 'Standard';
+        const inWeapons = isAlreadyInWeapons(item);
         const badgeColor = isShield ? 'border-sky-500/40 text-sky-300 bg-sky-950/40' : (isTwoHand ? 'border-amber-500/40 text-amber-300 bg-amber-950/40' : 'border-emerald-500/40 text-emerald-300 bg-emerald-950/40');
-        const escapedName = (item.name || '').replace(/'/g, "\\'");
+        const escapedId = String(item.id || idx).replace(/'/g, "\\'");
 
         return `
-          <div class="flex items-center justify-between p-2 hover:bg-slate-800/80 rounded transition gap-2">
+          <div class="flex items-center justify-between p-2.5 hover:bg-slate-800/80 rounded-lg transition gap-2 border border-slate-800/50 mb-1">
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-xs">${isShield ? '🛡️' : (isTwoHand ? '⚔️' : '🗡️')}</span>
                 <span class="text-xs font-bold text-white truncate">${item.name}</span>
                 <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded border ${badgeColor}">
-                  ${item.weaponType || item.category || 'Weapon'}
+                  ${item.weaponType || item.category || (isShield ? 'Shield' : 'Weapon')}
                 </span>
+                ${enh > 0 ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-950/60 border border-amber-500/50 text-amber-300">${enhStr}</span>` : ''}
+                ${mat !== 'Standard' ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 border border-slate-600 text-slate-300">${mat}</span>` : ''}
               </div>
-              <div class="text-[10px] text-slate-400 font-mono mt-0.5 flex items-center gap-2">
+              <div class="text-[10px] text-slate-400 font-mono mt-1 flex items-center gap-2 flex-wrap">
                 <span>Dice: <strong class="text-amber-300 font-bold">${diceStr}</strong></span>
                 <span>Crit: <strong class="text-slate-300">${critStr}</strong></span>
                 <span>Type: <strong class="text-slate-300">${dmgType}</strong></span>
                 ${item.weight ? `<span class="text-slate-500">(${item.weight} lbs)</span>` : ''}
               </div>
             </div>
-            <div class="shrink-0">
-              <button type="button" onclick="addSrdCatalogItemToCharacter('${escapedName}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-extrabold text-[11px] rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
-                <span>➕</span>
-                <span>Add to Character</span>
+            <div class="shrink-0 flex items-center gap-1.5">
+              ${inWeapons ? `<span class="text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/40">In Combat</span>` : ''}
+              <button type="button" onclick="selectSrdSpotlightWeapon('${escapedId}')" class="px-2.5 py-1 ${inWeapons ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-emerald-600 hover:bg-emerald-500 text-white'} active:scale-95 font-extrabold text-[11px] rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
+                <span>${inWeapons ? '🔄' : '➕'}</span>
+                <span>${inWeapons ? 'Equip / Re-sync' : 'Equip to Combat'}</span>
               </button>
             </div>
           </div>
@@ -5704,93 +5755,88 @@
       }).join('');
     }
 
-    function addSrdCatalogItemToCharacter(itemName) {
+    function selectSrdSpotlightWeapon(invItemIdOrIndex) {
       if (!character) return;
-      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
-        ? window.BUNDLED_SRD_CORE_CATALOG
-        : [];
+      const invList = (Array.isArray(character.inventory) && character.inventory.length > 0)
+        ? character.inventory
+        : (Array.isArray(character.gearPool) ? character.gearPool : []);
 
-      const rawItem = catalog.find(i => i && i.name && i.name.toLowerCase().trim() === itemName.toLowerCase().trim());
-      if (!rawItem) {
-        console.warn('SRD Catalog item not found:', itemName);
+      let item = invList.find((i, idx) => i && (i.id === invItemIdOrIndex || String(i.id) === String(invItemIdOrIndex) || idx === Number(invItemIdOrIndex)));
+      if (!item) {
+        // Fallback to name search if string name was passed
+        item = invList.find(i => i && i.name && i.name.toLowerCase().trim() === String(invItemIdOrIndex).toLowerCase().trim());
+      }
+      if (!item) {
+        console.warn('Inventory item not found for ID/index/name:', invItemIdOrIndex);
         return;
       }
 
-      const item = JSON.parse(JSON.stringify(rawItem));
-      const cat = mapEntryToGearCategory(item);
-      const isBeltItem = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
-      const newId = Date.now();
+      const isShield = (item.category || item.type || item.slot || '').toLowerCase().includes('shield');
+      const isTwoHand = (item.slot === 'Two Hands' || (item.weaponType || '').includes('Two-Handed') || (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon(item)));
 
-      // 1. Add to character.gearPool
-      if (!character.gearPool) character.gearPool = [];
-      const alreadyInPool = character.gearPool.find(g => g && g.name && g.name.toLowerCase().trim() === item.name.toLowerCase().trim());
-      if (!alreadyInPool) {
-        character.gearPool.push({
-          id: newId,
-          name: item.name,
-          masterDbName: item.name,
-          category: cat,
-          slot: item.slot && item.slot !== 'None' ? item.slot : (cat === 'Shield' ? 'Off-Hand' : cat),
-          qty: 1,
-          weight: Number(item.weight) || 0,
-          cost: Number(item.cost) || 0,
-          desc: item.benefit || item.description || '',
-          isBelt: isBeltItem,
-          isEquipped: false
-        });
+      if (!character.weapons) character.weapons = [];
+
+      // Check if already in character.weapons
+      let existingWep = character.weapons.find(w => w && (w.inventoryId === item.id || (item.id && w.id === item.id) || (w.name && w.name.toLowerCase().trim() === item.name.toLowerCase().trim())));
+
+      const primaryPart = Array.isArray(item.damageParts) && item.damageParts.length > 0 ? item.damageParts[0] : null;
+      const secondaryParts = Array.isArray(item.damageParts) && item.damageParts.length > 1 ? item.damageParts.slice(1) : [];
+      const wMeta = item.weaponStats || item.weaponMeta || {};
+
+      const weaponEntry = {
+        id: item.id || ('wep_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
+        inventoryId: item.id || null,
+        baseItemId: item.baseItemId || item.id || null,
+        name: item.name,
+        enhancementBonus: Number(item.enhancementBonus) || 0,
+        material: item.material || 'Standard',
+        enhancements: Array.isArray(item.enhancements) ? JSON.parse(JSON.stringify(item.enhancements)) : [],
+        grip: isTwoHand ? '2-Hand' : '1-Hand',
+        dice: (primaryPart && primaryPart.dice) || item.dice || item.damage || (isShield ? '1d3' : '1d8'),
+        damage: (primaryPart && primaryPart.dice) || item.dice || item.damage || (isShield ? '1d3' : '1d8'),
+        range: item.range || '-',
+        type: item.type || (isShield ? 'Shield' : 'Weapon'),
+        weight: Number(item.weight) || 0,
+        damageParts: Array.isArray(item.damageParts) && item.damageParts.length > 0
+          ? JSON.parse(JSON.stringify(item.damageParts))
+          : [{ dice: item.dice || item.damage || '1d8', bonus: Number(item.dmgBonus || item.enhancementBonus) || 0, type: item.dmgType || (primaryPart && primaryPart.type) || 'Slashing', multiplyOnCrit: true }],
+        modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+        modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
+        crit: item.crit || `${wMeta.critMin || item.critMin || 20}/x${wMeta.critMult || item.critMult || 2}`,
+        critMin: Number(wMeta.critMin || item.critMin) || 20,
+        rawCritMin: Number(wMeta.critMin || item.critMin) || 20,
+        critMult: Number(wMeta.critMult || item.critMult) || 2,
+        attBonus: Number(item.enhancementBonus || item.attBonus) || 0,
+        dmgBonus: Number(item.enhancementBonus || item.dmgBonus) || 0,
+        dmgType: (primaryPart && primaryPart.type) || item.dmgType || 'Slashing',
+        bonusType: 'enhancement',
+        tags: item.tags || [],
+        elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
+        keen: Boolean((item.ruleFlags && item.ruleFlags.keen) || (Array.isArray(item.enhancements) && item.enhancements.some(e => (typeof e === 'string' && e.toLowerCase().includes('keen')) || (e && e.name && e.name.toLowerCase().includes('keen')))))
+      };
+
+      if (!existingWep) {
+        character.weapons.push(weaponEntry);
+      } else {
+        Object.assign(existingWep, weaponEntry);
       }
 
-      // 2. If Weapon, add to character.weapons
-      if (cat === 'Weapon') {
-        if (!character.weapons) character.weapons = [];
-        let existingWep = character.weapons.find(w => w && w.name && w.name.toLowerCase().trim() === item.name.toLowerCase().trim());
-        const isTwoHand = (item.weaponType || '').includes('Two-Handed') || (typeof RuleEngine !== 'undefined' && RuleEngine.isTwoHandedWeapon(item));
+      // Mark inventory item as equipped
+      item.equipped = true;
 
-        if (!existingWep) {
-          const primaryPart = Array.isArray(item.damageParts) && item.damageParts.length > 0 ? item.damageParts[0] : null;
-          const secondaryParts = Array.isArray(item.damageParts) && item.damageParts.length > 1 ? item.damageParts.slice(1) : [];
-          const wMeta = item.weaponMeta || {};
-          existingWep = {
-            id: item.id || ('wep_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
-            baseItemId: item.baseItemId || item.id || null,
-            name: item.name,
-            grip: isTwoHand ? '2-Hand' : (item.slot === 'Main Hand' ? '1-Hand' : '1-Hand'),
-            dice: (primaryPart && primaryPart.dice) || item.dice || '1d8',
-            damageParts: Array.isArray(item.damageParts) && item.damageParts.length > 0
-              ? JSON.parse(JSON.stringify(item.damageParts))
-              : [{ dice: item.dice || '1d8', bonus: Number(item.dmgBonus) || 0, type: item.dmgType || 'Slashing', multiplyOnCrit: true }],
-            modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
-            modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
-            critMin: Number(wMeta.critMin || item.critMin) || 20,
-            rawCritMin: Number(wMeta.critMin || item.critMin) || 20,
-            critMult: Number(wMeta.critMult || item.critMult) || 2,
-            attBonus: Number(item.enhancementBonus || item.attBonus) || 0,
-            dmgBonus: Number(item.enhancementBonus || item.dmgBonus) || 0,
-            dmgType: (primaryPart && primaryPart.type) || item.dmgType || 'Slashing',
-            bonusType: 'enhancement',
-            tags: item.tags || [],
-            elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
-            keen: Boolean(item.ruleFlags && item.ruleFlags.keen)
-          };
-          character.weapons.push(existingWep);
-        }
-
-        // Auto equip if character active weapon is empty or Unarmed Strike
-        ensureWeaponSetsData();
-        const curActive = character.activeWeapon;
-        if (!curActive || curActive === 'Unarmed Strike' || curActive === 'None') {
-          character.activeWeapon = item.name;
-          if (character.tactical?.weaponSets?.set1) {
-            character.tactical.weaponSets.set1.mainWeapon = item.name;
-            character.tactical.weaponSets.set1.grip = isTwoHand ? '2-Hand' : '1-Hand';
-          }
+      // Auto equip active weapon if empty or unarmed
+      ensureWeaponSetsData();
+      const curActive = character.activeWeapon;
+      if (!curActive || curActive === 'Unarmed Strike' || curActive === 'None') {
+        character.activeWeapon = item.name;
+        if (character.tactical?.weaponSets?.set1) {
+          character.tactical.weaponSets.set1.mainWeapon = item.name;
+          character.tactical.weaponSets.set1.grip = isTwoHand ? '2-Hand' : '1-Hand';
         }
       }
 
-      // 3. If Shield, make sure it's selected in set2 if set2 is empty
-      if (cat === 'Shield') {
-        ensureWeaponSetsData();
-        if (!character.tactical?.weaponSets?.set2?.mainWeapon || character.tactical?.weaponSets?.set2?.mainWeapon === 'None') {
+      if (isShield && character.tactical?.weaponSets?.set2) {
+        if (!character.tactical.weaponSets.set2.mainWeapon || character.tactical.weaponSets.set2.mainWeapon === 'None') {
           character.tactical.weaponSets.set2.mainWeapon = item.name;
         }
       }
@@ -5806,14 +5852,22 @@
       saveStateToStorage(true);
 
       if (typeof showDiceTopToast === 'function') {
-        const icon = cat === 'Shield' ? '🛡️' : (cat === 'Armor' ? '🛡️' : '⚔️');
+        const icon = isShield ? '🛡️' : '⚔️';
         showDiceTopToast({
-          title: `${item.name} Added to Character!`,
-          breakdown: `D&D 3.5e RAW SRD: "${item.name}" added to equipment pool.`,
+          title: `${item.name} Equipped!`,
+          breakdown: `Inventory item "${item.name}" equipped to active combat weapons.`,
           icon: icon
         });
       }
     }
+
+    // Aliases & window exports
+    const addSrdCatalogItemToCharacter = selectSrdSpotlightWeapon;
+    window.toggleSrdSpotlight = toggleSrdSpotlight;
+    window.clearSrdSpotlightInput = clearSrdSpotlightInput;
+    window.onSrdSpotlightInput = onSrdSpotlightInput;
+    window.selectSrdSpotlightWeapon = selectSrdSpotlightWeapon;
+    window.addSrdCatalogItemToCharacter = selectSrdSpotlightWeapon;
 
     function getWeaponOrPoolItem(itemName) {
       if (!character || !itemName || itemName === 'None') return null;

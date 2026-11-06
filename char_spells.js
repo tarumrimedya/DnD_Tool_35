@@ -6212,7 +6212,7 @@
       resultsBox.innerHTML = `
         <div class="p-5 bg-slate-950/90 border border-purple-500/50 rounded-xl text-center space-y-2.5 shadow-2xl">
           <div class="inline-block w-7 h-7 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
-          <div class="text-xs font-bold text-purple-200">🧙‍♂️🤖 Rule Master (AI) Searching D&D 3.5e Compendiums...</div>
+          <div class="text-xs font-bold text-purple-200">🔮 Rule Master AI fetching D&D 3.5e RAW data...</div>
           <div id="spell-picker-ai-status" class="text-[11px] text-slate-400 font-mono">
             "${q}" (${type}) ➔ Scanning official D&D 3.5e sourcebooks...
           </div>

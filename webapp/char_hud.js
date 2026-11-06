@@ -3733,8 +3733,8 @@
           <div class="flex items-center gap-1.5">
             <input type="text" id="race-ai-search-input" placeholder="e.g., Warforged, Goliath, Drow, Catfolk, Thri-Kreen..." onkeydown="if(event.key==='Enter') searchRaceViaRuleMasterAi();" class="flex-1 bg-slate-900 border border-purple-500/60 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-bold focus:outline-none focus:border-purple-400">
             <button type="button" id="btn-fetch-race-ai" onclick="searchRaceViaRuleMasterAi()" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center gap-1 shrink-0 cursor-pointer">
-              <span>⚡</span>
-              <span>Fetch Race</span>
+              <span>🔮</span>
+              <span>Rule Master AI</span>
             </button>
           </div>
           <div id="race-ai-status" class="hidden text-[10px] text-amber-300 font-mono flex items-center gap-1.5 pt-0.5"></div>
@@ -3799,7 +3799,7 @@
       if (btn) btn.disabled = true;
       if (statusEl) {
         statusEl.classList.remove('hidden');
-        statusEl.innerHTML = `<span class="animate-spin">⚡</span> <span>Searching and verifying "${escapeRaceHtml(q)}" across D&D 3.5e RAW compendiums...</span>`;
+        statusEl.innerHTML = `<span class="animate-spin">⚡</span> <span>🔮 Rule Master AI fetching D&D 3.5e RAW data for "${escapeRaceHtml(q)}"...</span>`;
       }
 
       try {
@@ -3862,7 +3862,7 @@
           if (!hasOpt) {
             const opt = document.createElement('option');
             opt.value = raceObj.name;
-            opt.textContent = `${raceObj.name} (AI)`;
+            opt.textContent = `${raceObj.name} (Rule Master AI)`;
             raceSel.appendChild(opt);
           }
           raceSel.value = raceObj.name;
@@ -4586,7 +4586,12 @@
       const chevron = document.getElementById('size-trigger-chevron');
       if (!dropdown) return;
 
+      if (dropdown.parentElement !== document.body) {
+        document.body.appendChild(dropdown);
+      }
+
       dropdown.classList.remove('hidden');
+      dropdown.style.display = 'flex';
       if (chevron) chevron.classList.add('rotate-180');
       _sizeDropdownOpen = true;
 
@@ -4599,6 +4604,7 @@
       if (!dropdown) return;
 
       dropdown.classList.add('hidden');
+      dropdown.style.display = 'none';
       if (chevron) chevron.classList.remove('rotate-180');
       _sizeDropdownOpen = false;
     }
@@ -4666,23 +4672,23 @@
     }
 
     // =========================================================================
-    // ⚖️ SPOTLIGHT & SYMBOL ALIGNMENT SELECTOR
+    // ⚖️ SPOTLIGHT & SYMBOL ALIGNMENT SELECTOR (3x3 RAW Interactive Matrix)
     // =========================================================================
     const DND35_ALIGNMENT_DEFINITIONS = [
-      // 1. İyilik Ekseni (Good)
-      { id: 'Lawful Good', label: 'Lawful Good (Crusader)', shortLabel: 'Lawful Good', category: 'Good Alignment Axis', icon: '⚖️', axis: 'Law & Good', desc: 'Honor, justice, righteousness, and protecting the innocent (Paladin)' },
-      { id: 'Neutral Good', label: 'Neutral Good (Benefactor)', shortLabel: 'Neutral Good', category: 'Good Alignment Axis', icon: '🕊️', axis: 'Pure Good', desc: 'Compassion, altruism, and helping others without bias for or against order' },
-      { id: 'Chaotic Good', label: 'Chaotic Good (Rebel)', shortLabel: 'Chaotic Good', category: 'Good Alignment Axis', icon: '🏹', axis: 'Freedom & Good', desc: 'Conscience, individual liberty, and kindness above rigid laws' },
+      // Row 1 (Good):
+      { id: 'Lawful Good', label: 'Lawful Good', archetype: 'Crusader', shortCode: 'LG', category: 'Good Alignment Axis', icon: '⚖️', axis: 'Law & Good', desc: 'Honor, justice, righteousness, and protecting the innocent (Paladin)' },
+      { id: 'Neutral Good', label: 'Neutral Good', archetype: 'Benefactor', shortCode: 'NG', category: 'Good Alignment Axis', icon: '🕊️', axis: 'Pure Good', desc: 'Compassion, altruism, and helping others without bias' },
+      { id: 'Chaotic Good', label: 'Chaotic Good', archetype: 'Rebel', shortCode: 'CG', category: 'Good Alignment Axis', icon: '🏹', axis: 'Freedom & Good', desc: 'Conscience, individual liberty, and kindness above laws' },
 
-      // 2. Denge & Tarafsızlık Ekseni (Neutral)
-      { id: 'Lawful Neutral', label: 'Lawful Neutral (Judge)', shortLabel: 'Lawful Neutral', category: 'Neutral Alignment Axis', icon: '📜', axis: 'Pure Order', desc: 'Rule of law, tradition, discipline, and impartial authority (Monk)' },
-      { id: 'True Neutral', label: 'True Neutral (Undecided)', shortLabel: 'True Neutral', category: 'Neutral Alignment Axis', icon: '☯️', axis: 'Cosmic Balance', desc: 'Natural balance, impartiality, and pragmatic common sense (Druid)' },
-      { id: 'Chaotic Neutral', label: 'Chaotic Neutral (Free Spirit)', shortLabel: 'Chaotic Neutral', category: 'Neutral Alignment Axis', icon: '🎭', axis: 'Pure Freedom', desc: 'Unfettered individualism and following one\'s own whims (Bard)' },
+      // Row 2 (Neutral):
+      { id: 'Lawful Neutral', label: 'Lawful Neutral', archetype: 'Judge', shortCode: 'LN', category: 'Neutral Alignment Axis', icon: '📜', axis: 'Pure Order', desc: 'Rule of law, tradition, discipline, and authority (Monk)' },
+      { id: 'True Neutral', label: 'True Neutral', archetype: 'Undecided', shortCode: 'TN', category: 'Neutral Alignment Axis', icon: '☯️', axis: 'Cosmic Balance', desc: 'Natural balance, impartiality, and pragmatism (Druid)' },
+      { id: 'Chaotic Neutral', label: 'Chaotic Neutral', archetype: 'Free Spirit', shortCode: 'CN', category: 'Neutral Alignment Axis', icon: '🎭', axis: 'Pure Freedom', desc: "Individualism and following one's own whims (Bard)" },
 
-      // 3. Kötülük Ekseni (Evil)
-      { id: 'Lawful Evil', label: 'Lawful Evil (Dominator)', shortLabel: 'Lawful Evil', category: 'Evil Alignment Axis', icon: '⛓️', axis: 'Order & Evil', desc: 'Tyranny, strict hierarchy, calculated domination, and methodical rule' },
-      { id: 'Neutral Evil', label: 'Neutral Evil (Malefactor)', shortLabel: 'Neutral Evil', category: 'Evil Alignment Axis', icon: '💀', axis: 'Pure Selfishness', desc: 'Unadulterated malice, greed, betrayal, and self-serving ambition' },
-      { id: 'Chaotic Evil', label: 'Chaotic Evil (Destroyer)', shortLabel: 'Chaotic Evil', category: 'Evil Alignment Axis', icon: '🩸', axis: 'Chaos & Destruction', desc: 'Savagery, slaughter, unbridled fury, and ruthless destruction' }
+      // Row 3 (Evil):
+      { id: 'Lawful Evil', label: 'Lawful Evil', archetype: 'Dominator', shortCode: 'LE', category: 'Evil Alignment Axis', icon: '⛓️', axis: 'Order & Evil', desc: 'Tyranny, strict hierarchy, and methodical rule' },
+      { id: 'Neutral Evil', label: 'Neutral Evil', archetype: 'Malefactor', shortCode: 'NE', category: 'Evil Alignment Axis', icon: '💀', axis: 'Pure Selfishness', desc: 'Unadulterated malice, greed, and self-serving ambition' },
+      { id: 'Chaotic Evil', label: 'Chaotic Evil', archetype: 'Destroyer', shortCode: 'CE', category: 'Evil Alignment Axis', icon: '🩸', axis: 'Chaos & Destruction', desc: 'Savagery, slaughter, and ruthless destruction' }
     ];
 
     let _alignmentDropdownOpen = false;
@@ -4695,22 +4701,18 @@
     function openAlignmentDropdown() {
       const dropdown = document.getElementById('alignment-custom-dropdown');
       const chevron = document.getElementById('alignment-trigger-chevron');
-      const searchInput = document.getElementById('alignment-spotlight-search');
       if (!dropdown) return;
 
+      if (dropdown.parentElement !== document.body) {
+        document.body.appendChild(dropdown);
+      }
+
       dropdown.classList.remove('hidden');
+      dropdown.style.display = 'flex';
       if (chevron) chevron.classList.add('rotate-180');
       _alignmentDropdownOpen = true;
 
-      const q = searchInput ? searchInput.value.trim() : '';
-      renderAlignmentItems(q);
-
-      setTimeout(() => {
-        if (searchInput) {
-          searchInput.focus();
-          searchInput.select();
-        }
-      }, 50);
+      renderAlignmentItems();
     }
 
     function closeAlignmentDropdown() {
@@ -4719,104 +4721,72 @@
       if (!dropdown) return;
 
       dropdown.classList.add('hidden');
+      dropdown.style.display = 'none';
       if (chevron) chevron.classList.remove('rotate-180');
       _alignmentDropdownOpen = false;
     }
 
     function onAlignmentFilter(val) {
-      const clearBtn = document.getElementById('alignment-clear-btn');
-      if (clearBtn) {
-        if (val && val.trim()) clearBtn.classList.remove('hidden');
-        else clearBtn.classList.add('hidden');
-      }
       renderAlignmentItems(val);
     }
 
     function clearAlignmentFilter() {
-      const searchInput = document.getElementById('alignment-spotlight-search');
-      if (searchInput) {
-        searchInput.value = '';
-        searchInput.focus();
-      }
-      onAlignmentFilter('');
+      renderAlignmentItems('');
     }
 
     function renderAlignmentItems(filterText = '') {
       const listEl = document.getElementById('alignment-options-list');
       if (!listEl) return;
 
-      const q = (filterText || '').toLowerCase().trim();
       const currentVal = (document.getElementById('profile-edit-alignment')?.value || character?.alignment || '').toLowerCase();
+      const deityMeta = typeof getCharacterDeityMeta === 'function' ? getCharacterDeityMeta() : null;
+      const isClericChar = typeof hasClericDomainCapability === 'function' ? hasClericDomainCapability(character) : false;
 
-      const filtered = q
-        ? DND35_ALIGNMENT_DEFINITIONS.filter(a => {
-            return a.id.toLowerCase().includes(q) ||
-                   a.label.toLowerCase().includes(q) ||
-                   a.category.toLowerCase().includes(q) ||
-                   a.axis.toLowerCase().includes(q) ||
-                   a.desc.toLowerCase().includes(q);
-          })
-        : DND35_ALIGNMENT_DEFINITIONS;
+      let html = '<div class="grid grid-cols-3 gap-2.5 p-1">';
 
-      if (filtered.length === 0) {
-        listEl.innerHTML = `
-          <div class="p-3 text-center text-slate-400 italic">
-            No alignment found matching "${filterText}".
-          </div>
+      DND35_ALIGNMENT_DEFINITIONS.forEach(a => {
+        const isSelected = a.id.toLowerCase() === currentVal;
+        let compatBadge = '';
+        if (deityMeta && deityMeta.found && !deityMeta.isPhilosophical && typeof checkClericDeityAlignmentCompatibility === 'function') {
+          const compat = checkClericDeityAlignmentCompatibility(a.id, deityMeta);
+          if (compat) {
+            if (compat.compatible) {
+              compatBadge = '<span class="text-[8px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 px-1 py-0.2 rounded truncate" title="' + escapeDeityHtml(compat.reason || 'Deity Compatible') + '">✓ Compatible</span>';
+            } else {
+              compatBadge = '<span class="text-[8px] font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-700/80 px-1 py-0.2 rounded truncate" title="' + escapeDeityHtml(compat.reason || 'Deity Conflict') + '">⚠️ Conflict</span>';
+            }
+          }
+        }
+
+        const selectedClasses = isSelected
+          ? 'bg-purple-950/90 border-purple-500 shadow-md ring-1 ring-purple-400 text-white'
+          : 'bg-slate-900/70 hover:bg-slate-800/90 border-slate-800 hover:border-purple-500/50 text-slate-200 shadow-sm';
+
+        html += `
+          <button type="button" onclick="selectAlignmentItem('${escapeDeityHtml(a.id)}')" class="p-2.5 rounded-xl border flex flex-col justify-between gap-1.5 transition cursor-pointer group active:scale-95 text-left ${selectedClasses}">
+            <div class="flex items-center justify-between gap-1">
+              <span class="text-lg shrink-0">${a.icon}</span>
+              <span class="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-slate-950 border border-slate-700 text-purple-300">${a.shortCode}</span>
+            </div>
+            <div class="min-w-0">
+              <div class="text-xs font-black text-white group-hover:text-purple-200 truncate">${a.label}</div>
+              <div class="text-[10px] text-purple-300/80 font-semibold truncate">${a.archetype}</div>
+            </div>
+            <div class="flex items-center justify-between gap-1 pt-0.5 border-t border-slate-800/60">
+              ${compatBadge ? compatBadge : '<span class="text-[8px] text-slate-500 font-mono">' + a.axis + '</span>'}
+              ${isSelected ? '<span class="text-[8px] font-mono font-bold text-white bg-purple-600 px-1 py-0.2 rounded shrink-0">Active</span>' : ''}
+            </div>
+          </button>
         `;
-        return;
-      }
-
-      const categories = {};
-      filtered.forEach(a => {
-        if (!categories[a.category]) categories[a.category] = [];
-        categories[a.category].push(a);
       });
 
-      let html = '';
-      for (const [catName, items] of Object.entries(categories)) {
-        html += `
-          <div class="pt-1">
-            <div class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-purple-400/90 flex items-center justify-between border-b border-purple-900/30 mb-1">
-              <span>${catName}</span>
-              <span class="text-[8px] font-mono text-slate-500">${items.length}</span>
-            </div>
-            <div class="space-y-0.5">
-        `;
-
-        items.forEach(a => {
-          const isSelected = a.id.toLowerCase() === currentVal;
-          const selectedClasses = isSelected
-            ? 'bg-purple-900/60 border border-purple-500/80 text-white font-bold'
-            : 'bg-slate-900/50 hover:bg-slate-800/80 border border-transparent hover:border-purple-500/30 text-slate-200';
-
-          html += `
-            <button type="button" onclick="selectAlignmentItem('${a.id}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
-              <div class="flex items-center gap-2 min-w-0">
-                <span class="text-sm shrink-0">${a.icon}</span>
-                <div class="truncate">
-                  <div class="text-xs font-bold flex items-center gap-1.5">
-                    <span class="truncate">${a.label}</span>
-                    ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
-                  </div>
-                  <div class="text-[9px] text-slate-400 font-mono truncate">
-                    ${a.axis} • ${a.desc}
-                  </div>
-                </div>
-              </div>
-              <span class="text-xs text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2 shrink-0">➔</span>
-            </button>
-          `;
-        });
-
-        html += `
-            </div>
-          </div>
-        `;
-      }
-
+      html += '</div>';
       listEl.innerHTML = html;
     }
+
+    const renderAlignmentSpotlightItems = renderAlignmentItems;
+    window.renderAlignmentSpotlightItems = renderAlignmentSpotlightItems;
+    window.renderAlignmentItems = renderAlignmentItems;
 
     function selectAlignmentItem(alignId) {
       updateAlignmentDropdownTrigger(alignId);
@@ -5215,7 +5185,7 @@
             <div class="space-y-1.5 pt-1">
               <button type="button" onclick="searchDeityViaRuleMasterAi('${escapeDeityHtml(filterText).replace(/'/g, "\'")}'); closeDeitySpotlightDropdown();" class="w-full py-2 px-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>🔮</span>
-                <span>Fetch "${escapeDeityHtml(filterText)}" via Rule Master AI (Auto-Fill Editor)</span>
+                <span>Fetch "${escapeDeityHtml(filterText)}" via Rule Master AI</span>
               </button>
               <button type="button" onclick="openCustomDeityEditorModal({ name: '${escapeDeityHtml(filterText).replace(/'/g, "\'")}' }); closeDeitySpotlightDropdown();" class="w-full py-2 px-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-300 hover:text-white border border-slate-700 hover:border-amber-500 font-bold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>✨</span>
@@ -5761,7 +5731,7 @@
         statusBanner.innerHTML = `
           <div class="flex items-center gap-2">
             <span class="text-base animate-spin">⚡</span>
-            <span>Rule Master AI fetching D&amp;D 3.5e data for "<strong>${escapeDeityHtml(q)}</strong>"...</span>
+            <span>🔮 Rule Master AI fetching D&amp;D 3.5e RAW data for "<strong>${escapeDeityHtml(q)}</strong>"...</span>
           </div>
           <span class="text-[10px] font-mono text-purple-400">Live AI Search</span>
         `;
@@ -5771,7 +5741,7 @@
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           title: 'Rule Master AI',
-          breakdown: `Rule Master AI fetching D&D 3.5e data for "${escapeDeityHtml(q)}"...`,
+          breakdown: `🔮 Rule Master AI fetching D&D 3.5e RAW data for "${escapeDeityHtml(q)}"...`,
           icon: '⚡'
         });
       }
@@ -5840,7 +5810,7 @@
         }
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
-            title: 'AI Lookup Notice',
+            title: 'Rule Master AI Notice',
             breakdown: `${errMsg} — ready for manual setup.`,
             icon: '⚡'
           });
@@ -6018,7 +5988,7 @@
         statusBanner.innerHTML = `
           <div class="flex items-center gap-2">
             <span class="text-base animate-spin">⚡</span>
-            <span>Rule Master AI fetching official D&amp;D 3.5e data for "<strong>${escapeDeityHtml(q)}</strong>" Domain...</span>
+            <span>🔮 Rule Master AI fetching D&amp;D 3.5e RAW data for "<strong>${escapeDeityHtml(q)}</strong>" Domain...</span>
           </div>
           <span class="text-[10px] font-mono text-purple-400">Live AI Search</span>
         `;
@@ -6091,7 +6061,7 @@
         }
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
-            title: 'AI Lookup Notice',
+            title: 'Rule Master AI Notice',
             breakdown: `${errMsg} — ready for manual setup.`,
             icon: '⚡'
           });

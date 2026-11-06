@@ -2378,10 +2378,25 @@
       const emptyBox = document.getElementById('buff-v2-preview-empty');
       if (emptyBox) emptyBox.classList.add('hidden');
 
+      Object.assign(dd.style, {
+        position: 'fixed',
+        top: '12vh',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: 'min(92vw, 640px)',
+        maxHeight: '60vh',
+        zIndex: '10060',
+        overflowY: 'auto',
+        background: 'rgba(15, 23, 42, 0.98)',
+        border: '1px solid rgba(168, 85, 247, 0.5)',
+        borderRadius: '1rem',
+        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.85)'
+      });
+
       if (!Array.isArray(_buffSpotlightResults) || _buffSpotlightResults.length === 0) {
         dd.innerHTML = `
           <div class="p-3 text-xs text-slate-400 bg-slate-950 flex items-center justify-between gap-2">
-            <span>No local SRD match. Press <b>Enter</b> or click <b>🧙‍♂️🤖 AI Fetch</b> to query 3.5e books!</span>
+            <span>No local SRD match. Press <b>Enter</b> or click <b>🔮 Rule Master AI</b> to query 3.5e books!</span>
           </div>
         `;
         dd.classList.remove('hidden');
@@ -2769,11 +2784,11 @@
           modalBadge.className = 'text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-full';
           modalBadge.textContent = 'D&D 3.5e RAW (Debuff)';
         }
-        if (modalSubtitle) modalSubtitle.textContent = 'Search 35+ SRD conditions & debuffs via Spotlight or Rule Master (AI)';
+        if (modalSubtitle) modalSubtitle.textContent = 'Search 35+ SRD conditions & debuffs via Spotlight or 🔮 Rule Master AI';
         if (rmBox) rmBox.className = 'bg-gradient-to-r from-rose-950/70 via-slate-900 to-slate-950 border border-rose-500/40 rounded-xl p-3 space-y-2.5 shadow-inner';
         if (rmTitle) {
           rmTitle.className = 'text-xs font-bold text-rose-300 flex items-center gap-1.5';
-          rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Condition Search &amp; Rule Master (AI)</span>';
+          rmTitle.innerHTML = '<span>🔮</span><span>Spotlight &amp; Rule Master AI</span>';
         }
         if (rmCountBadge) {
           rmCountBadge.className = 'text-[10px] text-rose-300 font-mono bg-rose-950/70 px-2 py-0.5 rounded border border-rose-500/40 shrink-0';
@@ -2820,11 +2835,11 @@
           modalBadge.className = 'text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 px-2 py-0.5 rounded-full';
           modalBadge.textContent = 'D&D 3.5e RAW (Buff)';
         }
-        if (modalSubtitle) modalSubtitle.textContent = 'Search 200+ V2 spells & combat buffs via Spotlight or Rule Master (AI)';
+        if (modalSubtitle) modalSubtitle.textContent = 'Search 200+ V2 spells & combat buffs via Spotlight or 🔮 Rule Master AI';
         if (rmBox) rmBox.className = 'bg-gradient-to-r from-indigo-950/70 via-slate-900 to-slate-950 border border-indigo-500/40 rounded-xl p-3 space-y-2.5 shadow-inner';
         if (rmTitle) {
           rmTitle.className = 'text-xs font-bold text-indigo-300 flex items-center gap-1.5';
-          rmTitle.innerHTML = '<span>⚡</span><span>Spotlight Buff Search &amp; Rule Master (AI)</span>';
+          rmTitle.innerHTML = '<span>🔮</span><span>Spotlight &amp; Rule Master AI</span>';
         }
         if (rmCountBadge) {
           rmCountBadge.className = 'text-[10px] text-indigo-300 font-mono bg-indigo-950/70 px-2 py-0.5 rounded border border-indigo-500/40 shrink-0';
@@ -3062,7 +3077,7 @@
 
       if (statusEl) {
         statusEl.className = 'text-xs text-indigo-300 bg-indigo-950/60 border border-indigo-800/60 p-2 rounded-lg flex items-center gap-2 block';
-        statusEl.innerHTML = '<span class="animate-spin inline-block">⏳</span><span>⚡ Searching SRD Compendium &amp; Rule Master (AI)...</span>';
+        statusEl.innerHTML = '<span class="animate-spin inline-block">⏳</span><span>🔮 Rule Master AI fetching D&D 3.5e RAW data...</span>';
       }
       if (btn) btn.disabled = true;
 
@@ -3079,7 +3094,7 @@
           return;
         }
 
-        // 2. Query Rule Master (AI) for Splatbook / Homebrew spells & conditions
+        // 2. Query Rule Master AI for Splatbook / Homebrew spells & conditions
         const apiKey = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getApiKey === 'function') 
           ? RuleMaster.getApiKey() 
           : (localStorage.getItem('gemini_api_key') || '');
@@ -3087,7 +3102,7 @@
         if (!apiKey) {
           if (statusEl) {
             statusEl.className = 'text-xs text-amber-300 bg-amber-950/60 border border-amber-800/60 p-2 rounded-lg block';
-            statusEl.innerHTML = `⚠️ "${q}" not found in local SRD Compendium. Add a free Gemini API key in Settings ⚙️ (top right) to fetch from D&D 3.5e splatbooks via Rule Master (AI).`;
+            statusEl.innerHTML = `⚠️ "${q}" not found in local SRD Compendium. Add a free Gemini API key in Settings ⚙️ (top right) to fetch from D&D 3.5e splatbooks via 🔮 Rule Master AI.`;
           }
           return;
         }
@@ -3099,12 +3114,12 @@
             const v2Entry = (typeof RuleMaster.ensureV2 === 'function')
               ? RuleMaster.ensureV2(entries[0])
               : entries[0];
-            v2Entry._spotlightKind = 'Rule Master (AI)';
+            v2Entry._spotlightKind = 'Rule Master AI';
             selectBuffSpotlightCandidate(v2Entry);
 
             if (statusEl) {
               statusEl.className = 'text-xs text-emerald-300 bg-emerald-950/60 border border-emerald-800/60 p-2 rounded-lg block';
-              statusEl.textContent = `✓ 🧙‍♂️🤖 Rule Master (AI) fetched "${v2Entry.name || q}" from D&D 3.5e sourcebooks and populated Canonical V2 mechanics!`;
+              statusEl.textContent = `✓ 🔮 Rule Master AI fetched "${v2Entry.name || q}" from D&D 3.5e sourcebooks and populated Canonical V2 mechanics!`;
             }
             return;
           }
@@ -7023,14 +7038,14 @@
               <div>
                 <h4 class="text-xs font-bold text-amber-300">"${escapedQ}" Not Found in Local SRD / Custom DB</h4>
                 <p class="text-[11px] text-slate-300 mt-0.5">
-                  Scan official D&amp;D 3.5e sourcebooks (PHB, DMG, MIC, Complete) via 🧙‍♂️🤖 Rule Master (AI) or craft a custom item in Item Forge.
+                  Scan official D&amp;D 3.5e sourcebooks (PHB, DMG, MIC, Complete) via 🔮 Rule Master AI or craft a custom item in Item Forge.
                 </p>
               </div>
             </div>
             <div class="flex flex-wrap gap-2 pt-1 border-t border-slate-800">
               <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs py-2 px-3 rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
-                <span>🧙‍♂️🤖</span>
-                <span>Search 3.5e Compendiums via Rule Master (AI)</span>
+                <span>🔮</span>
+                <span>Fetch "${escapedQ}" via Rule Master AI</span>
               </button>
               <button type="button" onclick="if(window.DnDUI && typeof window.DnDUI.switchCompendiumTab === 'function') { window.DnDUI.switchCompendiumTab('forge'); } else { openItemForgeModal(); }" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>⚒️</span>
@@ -7048,7 +7063,7 @@
         <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold px-1 mb-1">
           <span>Spotlight Results (${matches.length} items found):</span>
           <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-amber-400 hover:text-amber-300 underline flex items-center gap-1 font-semibold">
-            <span>🧙‍♂️🤖 Search Rulebooks via Rule Master (AI)</span>
+            <span>🔮 Search Rulebooks via Rule Master AI</span>
           </button>
         </div>
         <div class="space-y-2">
@@ -7056,8 +7071,8 @@
         </div>
         <div class="text-center pt-1">
           <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-xs text-amber-300 hover:text-amber-200 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 shadow">
-            <span>🧙‍♂️🤖</span>
-            <span>Not what you're looking for? Search 3.5e Compendiums via <strong>Rule Master (AI)</strong> ("${escapedQ}")</span>
+            <span>🔮</span>
+            <span>Not what you're looking for? <strong>Fetch "${escapedQ}" via Rule Master AI</strong></span>
           </button>
         </div>
       `;
@@ -7086,7 +7101,7 @@
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        alert('⚠️ 🧙‍♂️🤖 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master (AI).');
+        alert('⚠️ 🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.');
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -7095,7 +7110,7 @@
       resultsBox.innerHTML = `
         <div class="p-5 bg-slate-950/90 border border-purple-500/50 rounded-xl text-center space-y-2.5 shadow-2xl">
           <div class="inline-block w-7 h-7 border-2 border-purple-400 border-t-transparent rounded-full animate-spin"></div>
-          <div class="text-xs font-bold text-purple-200">🧙‍♂️🤖 Rule Master (AI) Searching 3.5e Compendiums...</div>
+          <div class="text-xs font-bold text-purple-200">🔮 Rule Master AI fetching D&D 3.5e RAW data...</div>
           <div id="pool-ai-status-text" class="text-[11px] text-slate-400 font-mono">
             "${q}" ➔ Scanning official D&D 3.5e sourcebooks...
           </div>
@@ -7143,7 +7158,7 @@
           <div class="p-4 bg-rose-950/50 border border-rose-800 rounded-xl space-y-2 text-rose-300">
             <div class="text-xs font-bold flex items-center gap-1.5">
               <span>⚠️</span>
-              <span>🧙‍♂️🤖 Rule Master (AI) Lookup Error</span>
+              <span>🔮 Rule Master AI Lookup Error</span>
             </div>
             <p class="text-[11px] text-rose-400">${err.message || 'No response from API.'}</p>
             <div class="pt-2 border-t border-rose-900/50 flex flex-wrap gap-2 text-xs">
@@ -7168,7 +7183,7 @@
           <div class="flex items-center justify-between">
             <span class="text-xs font-extrabold text-purple-200 flex items-center gap-1.5">
               <span>✨</span>
-              <span>🧙‍♂️🤖 Found in 3.5e Compendium via Rule Master (AI) (${entries.length} entries)</span>
+              <span>🔮 Found in 3.5e Compendium via Rule Master AI (${entries.length} entries)</span>
             </span>
             <span class="text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded-full">Added to Master DB</span>
           </div>
