@@ -5470,6 +5470,9 @@
 
       const modal = document.getElementById('modal-custom-deity-editor');
       if (!modal) return;
+      if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+      }
 
       // 1. Populate Icon Grid
       const iconGrid = document.getElementById('custom-deity-icon-grid');
@@ -5558,6 +5561,7 @@
 
       // Show Modal
       modal.classList.remove('hidden');
+      modal.style.display = 'flex';
       closeDeitySpotlightDropdown();
       if (nameInput && !initialData.name) {
         setTimeout(() => nameInput.focus(), 100);
@@ -5566,7 +5570,10 @@
 
     function closeCustomDeityEditorModal() {
       const modal = document.getElementById('modal-custom-deity-editor');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
     }
 
     async function autofillDeityEditorViaAi() {
@@ -5838,6 +5845,9 @@
 
       const modal = document.getElementById('modal-custom-domain-editor');
       if (!modal) return;
+      if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+      }
 
       // 1. Populate Feats Datalist
       const featsDatalist = document.getElementById('custom-domain-feats-datalist');
@@ -5942,6 +5952,7 @@
       }
 
       modal.classList.remove('hidden');
+      modal.style.display = 'flex';
       if (nameInput && !initialData.name) {
         setTimeout(() => nameInput.focus(), 100);
       }
@@ -5949,7 +5960,10 @@
 
     function closeCustomDomainEditorModal() {
       const modal = document.getElementById('modal-custom-domain-editor');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
     }
 
     async function autofillDomainEditorViaAi() {
