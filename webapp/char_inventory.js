@@ -5619,8 +5619,10 @@
         if ((fromAssembler || isStubWeaponFallback || !item.handedness) && (ref.handedness || ref.weaponMeta?.handedness)) {
           item.handedness = ref.handedness || ref.weaponMeta?.handedness;
         }
-        if ((fromAssembler || item.acBonus === undefined) && ref.acBonus !== undefined) {
-          item.acBonus = ref.acBonus;
+        const refAcMod = Array.isArray(ref.modifiers) ? ref.modifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield' || m.target === 'ac')) : null;
+        const refAcVal = ref.acBonus !== undefined ? ref.acBonus : (refAcMod && refAcMod.value !== undefined ? Number(refAcMod.value) : undefined);
+        if ((fromAssembler || item.acBonus === undefined) && refAcVal !== undefined) {
+          item.acBonus = refAcVal;
         }
         if ((fromAssembler || item.maxDex === undefined) && (ref.maxDex !== undefined || ref.armorMeta?.maxDex !== undefined)) {
           item.maxDex = ref.maxDex !== undefined ? ref.maxDex : ref.armorMeta?.maxDex;

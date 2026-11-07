@@ -10560,12 +10560,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -2,
-    "dexBonus": 0,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": -2,
-    "chaBonus": 2,
     "languages": [
       "Common"
     ],
@@ -10709,12 +10703,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -2,
-    "dexBonus": 2,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 2,
-    "chaBonus": -4,
     "languages": [
       "Undercommon",
       "Gnome",
@@ -10865,12 +10853,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 2,
-    "dexBonus": 2,
-    "conBonus": -2,
-    "intBonus": -2,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Elven"
@@ -10962,12 +10944,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -2,
-    "dexBonus": 2,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Halfling"
@@ -11049,12 +11025,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 0,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": -2,
     "languages": [
       "Common"
     ],
@@ -11153,12 +11123,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -2,
-    "dexBonus": 2,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": -2,
     "languages": [
       "Common",
       "Goblin"
@@ -11238,12 +11202,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 4,
-    "dexBonus": 0,
-    "conBonus": 0,
-    "intBonus": -2,
-    "wisBonus": -2,
-    "chaBonus": -2,
     "languages": [
       "Common",
       "Orc"
@@ -11334,12 +11292,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 2,
-    "conBonus": 2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 2,
     "languages": [
       "Common",
       "Aquan"
@@ -11440,12 +11392,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -2,
-    "dexBonus": 2,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Halfling"
@@ -11536,12 +11482,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 0,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Elven"
@@ -11625,12 +11565,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 0,
-    "conBonus": 2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": -2,
     "languages": [
       "Common",
       "Dwarven"
@@ -11743,12 +11677,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -2,
-    "dexBonus": 0,
-    "conBonus": 2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Gnome"
@@ -11850,12 +11778,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 2,
-    "dexBonus": -2,
-    "conBonus": 2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common"
     ],
@@ -11960,12 +11882,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -4,
-    "dexBonus": 2,
-    "conBonus": -2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Draconic"
     ],
@@ -12067,12 +11983,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 2,
-    "conBonus": 0,
-    "intBonus": -2,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Elven"
@@ -12154,12 +12064,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 0,
-    "conBonus": 2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": -2,
     "languages": [
       "Dwarven",
       "Goblin"
@@ -12277,12 +12181,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 0,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 2,
-    "chaBonus": 2,
     "languages": [
       "Common",
       "Celestial"
@@ -12390,12 +12288,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 2,
-    "conBonus": 0,
-    "intBonus": -2,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Elven"
@@ -12501,12 +12393,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -2,
-    "dexBonus": 2,
-    "conBonus": -2,
-    "intBonus": 2,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Elven"
@@ -12619,12 +12505,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 2,
-    "conBonus": -2,
-    "intBonus": 2,
-    "wisBonus": 0,
-    "chaBonus": 2,
     "languages": [
       "Common",
       "Undercommon",
@@ -12713,12 +12593,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 0,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Maenad"
@@ -12812,12 +12686,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 0,
-    "conBonus": 2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": -4,
     "languages": [
       "Common",
       "Dwarven",
@@ -12964,12 +12832,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -2,
-    "dexBonus": 0,
-    "conBonus": 0,
-    "intBonus": 2,
-    "wisBonus": 0,
-    "chaBonus": -2,
     "languages": [
       "Common",
       "Goblin"
@@ -13028,12 +12890,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 0,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common"
     ],
@@ -13113,12 +12969,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 2,
-    "conBonus": 0,
-    "intBonus": 2,
-    "wisBonus": 0,
-    "chaBonus": -2,
     "languages": [
       "Common",
       "Infernal"
@@ -13213,12 +13063,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 2,
-    "dexBonus": 0,
-    "conBonus": 0,
-    "intBonus": -2,
-    "wisBonus": 0,
-    "chaBonus": -2,
     "languages": [
       "Common",
       "Orc"
@@ -13303,12 +13147,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -2,
-    "dexBonus": 0,
-    "conBonus": 2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Gnome",
       "Elven",
@@ -13451,12 +13289,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -2,
-    "dexBonus": 2,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Halfling"
@@ -13542,12 +13374,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -2,
-    "dexBonus": 2,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Xeph"
@@ -13688,12 +13514,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": -4,
-    "dexBonus": 8,
-    "conBonus": 0,
-    "intBonus": 6,
-    "wisBonus": 4,
-    "chaBonus": 6,
     "languages": [
       "Common",
       "Sylvan"
@@ -13792,12 +13612,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 0,
-    "conBonus": 2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": -2,
     "languages": [
       "Common",
       "Dwarven"
@@ -13911,12 +13725,6 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "strBonus": 0,
-    "dexBonus": 2,
-    "conBonus": -2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "languages": [
       "Common",
       "Elven"
@@ -14787,12 +14595,6 @@
     "size": "Medium",
     "baseSpeed": 20,
     "speedNote": "Base land speed is 20 feet. Dwarves can move at this speed even when wearing medium or heavy armor or when carrying a medium or heavy load.",
-    "strBonus": 0,
-    "dexBonus": 0,
-    "conBonus": 2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": -2,
     "bonusFeats": 0,
     "bonusSkillPointsPerLevel": 0,
     "bonusSkillPointsLevel1": 0,
@@ -14886,12 +14688,6 @@
     "source": "SRD / PHB p.15",
     "size": "Medium",
     "baseSpeed": 30,
-    "strBonus": 0,
-    "dexBonus": 2,
-    "conBonus": -2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "bonusFeats": 0,
     "bonusSkillPointsPerLevel": 0,
     "bonusSkillPointsLevel1": 0,
@@ -14969,12 +14765,6 @@
     "source": "SRD / PHB p.16",
     "size": "Small",
     "baseSpeed": 20,
-    "strBonus": -2,
-    "dexBonus": 0,
-    "conBonus": 2,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "bonusFeats": 0,
     "bonusSkillPointsPerLevel": 0,
     "bonusSkillPointsLevel1": 0,
@@ -15078,12 +14868,6 @@
     "source": "SRD / PHB p.19",
     "size": "Small",
     "baseSpeed": 20,
-    "strBonus": -2,
-    "dexBonus": 2,
-    "conBonus": 0,
-    "intBonus": 0,
-    "wisBonus": 0,
-    "chaBonus": 0,
     "bonusFeats": 0,
     "bonusSkillPointsPerLevel": 0,
     "bonusSkillPointsLevel1": 0,

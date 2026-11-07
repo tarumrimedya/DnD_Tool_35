@@ -4026,7 +4026,7 @@
           const div = document.createElement('div');
 
           if (m) {
-            const dmgExpr = m.damageDice || findDiceExpression(m.notes || m.benefit);
+            const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || findDiceExpression(m.notes || m.benefit);
             div.className = `p-3.5 rounded-xl border flex flex-col justify-between transition-all shadow-md ${
               m.expended 
                 ? 'bg-slate-950/70 border-slate-800 opacity-60' 
@@ -4132,7 +4132,7 @@
 
         const renderManeuverLibRow = (m) => {
           const isReadied = readiedNames.includes((m.name || '').toLowerCase().trim());
-          const dmgExpr = m.damageDice || findDiceExpression(m.notes || m.benefit);
+          const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || findDiceExpression(m.notes || m.benefit);
           const mLvl = Number(m.level) || 1;
           const isOverLevel = mLvl > initInfo.maxManeuverLvl;
           const theme = getSpellLevelTheme(mLvl);
@@ -4218,7 +4218,7 @@
 
         const renderStanceLibRow = (st) => {
           const isActive = (character.activeStance || '').toLowerCase().trim() === (st.name || '').toLowerCase().trim();
-          const dmgExpr = st.damageDice || findDiceExpression(st.benefit);
+          const dmgExpr = (Array.isArray(st.damageParts) && st.damageParts[0]?.dice) || st.damageDice || findDiceExpression(st.benefit);
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-slate-900/60 transition bg-slate-950/30';
           tr.innerHTML = `
@@ -4359,7 +4359,7 @@
       } else {
         m.expended = true;
         if (typeof consumeActionEconomy === 'function') consumeActionEconomy(m, m.name);
-        const dmgExpr = m.damageDice || findDiceExpression(m.notes || m.benefit);
+        const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || findDiceExpression(m.notes || m.benefit);
         renderManeuvers();
         saveStateToStorage();
         if (dmgExpr) {

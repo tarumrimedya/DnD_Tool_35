@@ -13,7 +13,7 @@
   'use strict';
 
   const IDB_NAME = 'dnd35_srd_compendium_v2';
-  const IDB_VERSION = 2;
+  const IDB_VERSION = 3;
   const IDB_STORE = 'chunks';
 
   const EAGER_CHUNKS = [
@@ -1310,11 +1310,11 @@
         }
       } else if (isArmor || isShield) {
         if (enhBonus > 0) {
-          const baseAc = Number(item.acBonus) || 0;
+          const acTarget = isShield ? 'ac.shield' : 'ac.armor';
+          const acMod = item.modifiers.find((m) => m.target === acTarget || String(m.target).startsWith('ac.'));
+          const baseAc = acMod ? (Number(acMod.value) || 0) : (Number(item.acBonus) || Number(item.armorStats?.baseAc) || 0);
           const totalAc = baseAc + enhBonus;
           item.acBonus = totalAc;
-          const acTarget = isShield ? 'ac.shield' : 'ac.armor';
-          const acMod = item.modifiers.find((m) => m.target === acTarget);
           if (acMod) {
             acMod.value = totalAc;
             acMod.formula = String(totalAc);

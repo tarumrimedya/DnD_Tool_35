@@ -6900,14 +6900,27 @@
         return;
       }
 
-      // Build Stat Bonus Pill
+      // Build Stat Bonus Pill (Canonical V2 modifiers[] first, fallback to legacy V1)
       const statChanges = [];
-      if (raceObj.strBonus) statChanges.push(`${raceObj.strBonus > 0 ? '+' : ''}${raceObj.strBonus} STR`);
-      if (raceObj.dexBonus) statChanges.push(`${raceObj.dexBonus > 0 ? '+' : ''}${raceObj.dexBonus} DEX`);
-      if (raceObj.conBonus) statChanges.push(`${raceObj.conBonus > 0 ? '+' : ''}${raceObj.conBonus} CON`);
-      if (raceObj.intBonus) statChanges.push(`${raceObj.intBonus > 0 ? '+' : ''}${raceObj.intBonus} INT`);
-      if (raceObj.wisBonus) statChanges.push(`${raceObj.wisBonus > 0 ? '+' : ''}${raceObj.wisBonus} WIS`);
-      if (raceObj.chaBonus) statChanges.push(`${raceObj.chaBonus > 0 ? '+' : ''}${raceObj.chaBonus} CHA`);
+      const getRaceAbilityMod = (key, v1Prop) => {
+        if (Array.isArray(raceObj.modifiers)) {
+          const mod = raceObj.modifiers.find(m => m && (m.target === `ability.${key}` || m.target === key));
+          if (mod && mod.value !== undefined) return Number(mod.value) || 0;
+        }
+        return Number(raceObj[v1Prop]) || 0;
+      };
+      const rStr = getRaceAbilityMod('str', 'strBonus');
+      const rDex = getRaceAbilityMod('dex', 'dexBonus');
+      const rCon = getRaceAbilityMod('con', 'conBonus');
+      const rInt = getRaceAbilityMod('int', 'intBonus');
+      const rWis = getRaceAbilityMod('wis', 'wisBonus');
+      const rCha = getRaceAbilityMod('cha', 'chaBonus');
+      if (rStr) statChanges.push(`${rStr > 0 ? '+' : ''}${rStr} STR`);
+      if (rDex) statChanges.push(`${rDex > 0 ? '+' : ''}${rDex} DEX`);
+      if (rCon) statChanges.push(`${rCon > 0 ? '+' : ''}${rCon} CON`);
+      if (rInt) statChanges.push(`${rInt > 0 ? '+' : ''}${rInt} INT`);
+      if (rWis) statChanges.push(`${rWis > 0 ? '+' : ''}${rWis} WIS`);
+      if (rCha) statChanges.push(`${rCha > 0 ? '+' : ''}${rCha} CHA`);
 
       const statBadges = statChanges.length > 0
         ? statChanges.map(s => `<span class="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono text-[10px] font-bold border border-amber-500/40">${s}</span>`).join(' ')

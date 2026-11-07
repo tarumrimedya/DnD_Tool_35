@@ -6653,6 +6653,7 @@
       function getRangedWeaponDefaultDice(item, low) {
         if (item && item.dice) return item.dice;
         const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(item?.name || low) : null;
+        if (dbEntry && Array.isArray(dbEntry.damageParts) && dbEntry.damageParts[0]?.dice) return dbEntry.damageParts[0].dice;
         if (dbEntry && dbEntry.dice) return dbEntry.dice;
         if (low.includes('heavy crossbow')) return '1d10';
         if (low.includes('shortbow')) return '1d6';
@@ -6662,10 +6663,10 @@
 
       function getRangedWeaponDefaultCrit(item, low) {
         if (item && item.crit) return item.crit;
-        if (item && item.critMin) return `${item.critMin}-20 / x${item.critMult || 2}`;
+        if (item && (item.critRange || item.critMin)) return `${item.critRange || item.critMin}-20 / x${item.critMult || 2}`;
         const dbEntry = typeof findMasterItem === 'function' ? findMasterItem(item?.name || low) : null;
         if (dbEntry && dbEntry.crit) return dbEntry.crit;
-        if (dbEntry && dbEntry.critMin) return `${dbEntry.critMin}-20 / x${dbEntry.critMult || 2}`;
+        if (dbEntry && (dbEntry.critRange || dbEntry.critMin)) return `${dbEntry.critRange || dbEntry.critMin}-20 / x${dbEntry.critMult || 2}`;
         if (low.includes('crossbow') || low.includes('dagger')) return '19-20 / x2';
         if (low.includes('sling')) return '20 / x2';
         return '20 / x3';
@@ -9097,7 +9098,7 @@
           cat = 'defense';
         }
 
-        const dmgExpr = m.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(m.notes || m.benefit) : '');
+        const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(m.notes || m.benefit) : '');
         currentAutoPins.push({
           autoKey: `maneuver_${m.name.toLowerCase()}`,
           autoType: 'readied_maneuver',
@@ -9126,7 +9127,7 @@
           cat = 'defense';
         }
 
-        const dmgExpr = st.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(st.benefit) : '');
+        const dmgExpr = (Array.isArray(st.damageParts) && st.damageParts[0]?.dice) || st.damageDice || (typeof findDiceExpression === 'function' ? findDiceExpression(st.benefit) : '');
         currentAutoPins.push({
           autoKey: `stance_${st.name.toLowerCase()}`,
           autoType: 'known_stance',

@@ -1325,7 +1325,6 @@
     },
     "baseItemId": "arm-breastplate",
     "enhancementBonus": 1,
-    "acBonus": 6,
     "maxDex": 3,
     "checkPenalty": -3,
     "spellFailure": 25
@@ -2257,7 +2256,6 @@
     "ruleFlags": {},
     "baseItemId": "shd-buckler",
     "enhancementBonus": 1,
-    "acBonus": 2,
     "checkPenalty": 0,
     "spellFailure": 5
   },
@@ -2365,7 +2363,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-breastplate",
     "enhancementBonus": 1,
-    "acBonus": 6,
     "maxDex": 3,
     "checkPenalty": -3,
     "spellFailure": 25
@@ -4879,7 +4876,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-breastplate",
     "enhancementBonus": 1,
-    "acBonus": 6,
     "maxDex": 5,
     "checkPenalty": 0,
     "spellFailure": 15
@@ -11012,7 +11008,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-full-plate",
     "enhancementBonus": 1,
-    "acBonus": 9,
     "maxDex": 1,
     "checkPenalty": -5,
     "spellFailure": 35
@@ -11312,7 +11307,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-full-plate",
     "enhancementBonus": 1,
-    "acBonus": 9,
     "maxDex": 1,
     "checkPenalty": -5,
     "spellFailure": 35
@@ -11516,7 +11510,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-hide-armor",
     "enhancementBonus": 1,
-    "acBonus": 4,
     "maxDex": 4,
     "checkPenalty": -2,
     "spellFailure": 20
@@ -12244,7 +12237,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-breastplate",
     "enhancementBonus": 1,
-    "acBonus": 6,
     "maxDex": 3,
     "checkPenalty": -3,
     "spellFailure": 25
@@ -14196,7 +14188,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-leather-armor",
     "enhancementBonus": 1,
-    "acBonus": 3,
     "maxDex": 6,
     "checkPenalty": -1,
     "spellFailure": 10
@@ -16964,7 +16955,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-breastplate",
     "enhancementBonus": 1,
-    "acBonus": 6,
     "maxDex": 5,
     "checkPenalty": 0,
     "spellFailure": 15
@@ -18745,7 +18735,6 @@
     },
     "baseItemId": "arm-chainmail",
     "enhancementBonus": 1,
-    "acBonus": 6,
     "maxDex": 4,
     "checkPenalty": -1,
     "spellFailure": 20
@@ -19111,7 +19100,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-chain-shirt",
     "enhancementBonus": 1,
-    "acBonus": 5,
     "maxDex": 6,
     "checkPenalty": 0,
     "spellFailure": 10
@@ -19657,7 +19645,6 @@
     "ruleFlags": {},
     "baseItemId": "shd-heavy-steel-shield",
     "enhancementBonus": 1,
-    "acBonus": 3,
     "checkPenalty": -1,
     "spellFailure": 15
   },
@@ -27512,7 +27499,6 @@
     "ruleFlags": {},
     "baseItemId": "shd-heavy-steel-shield",
     "enhancementBonus": 1,
-    "acBonus": 3,
     "checkPenalty": -1,
     "spellFailure": 15
   },
@@ -27558,7 +27544,6 @@
     },
     "baseItemId": "shd-heavy-steel-shield",
     "enhancementBonus": 1,
-    "acBonus": 3,
     "checkPenalty": -1,
     "spellFailure": 15
   },
@@ -27604,7 +27589,6 @@
     },
     "baseItemId": "shd-heavy-wooden-shield",
     "enhancementBonus": 2,
-    "acBonus": 4,
     "checkPenalty": -1,
     "spellFailure": 15
   },
@@ -27646,7 +27630,6 @@
     "ruleFlags": {},
     "baseItemId": "shd-heavy-steel-shield",
     "enhancementBonus": 1,
-    "acBonus": 3,
     "checkPenalty": -1,
     "spellFailure": 15
   },
@@ -32393,7 +32376,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-hide-armor",
     "enhancementBonus": 1,
-    "acBonus": 4,
     "maxDex": 4,
     "checkPenalty": -2,
     "spellFailure": 20
@@ -33514,7 +33496,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-hide-armor",
     "enhancementBonus": 1,
-    "acBonus": 4,
     "maxDex": 4,
     "checkPenalty": -2,
     "spellFailure": 20
@@ -33557,7 +33538,6 @@
     "ruleFlags": {},
     "baseItemId": "shd-light-steel-shield",
     "enhancementBonus": 1,
-    "acBonus": 2,
     "checkPenalty": 0,
     "spellFailure": 5
   },
@@ -33762,7 +33742,6 @@
     ],
     "baseItemId": "shd-tower-shield",
     "enhancementBonus": 1,
-    "acBonus": 5,
     "checkPenalty": -9,
     "spellFailure": 50
   },
@@ -33833,7 +33812,6 @@
     "ruleFlags": {},
     "baseItemId": "arm-hide-armor",
     "enhancementBonus": 1,
-    "acBonus": 4,
     "maxDex": 4,
     "checkPenalty": -2,
     "spellFailure": 20

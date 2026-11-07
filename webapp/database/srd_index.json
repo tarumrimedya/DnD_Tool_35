@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "6982d20b0040b49d",
+  "compendiumHash": "c42de066f2bb7710",
   "generatedAt": "2026-11-04T15:37:19.474Z",
   "totalEntries": 4984,
   "chunks": {
     "srd_equipment.json": {
       "count": 1131,
       "bytes": 1698007,
-      "hash": "7870503d6fe4f7ac",
+      "hash": "31c3db69f6812e50",
       "eagerLoad": true
     },
     "srd_feats.json": {
@@ -20,7 +20,7 @@
     "srd_classes_races.json": {
       "count": 256,
       "bytes": 680009,
-      "hash": "4b4d6ea9d1d5b537",
+      "hash": "b1ab994631f3bdec",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -44,13 +44,13 @@
     "srd_maneuvers.json": {
       "count": 208,
       "bytes": 265371,
-      "hash": "f98f6a2f6049bb84",
+      "hash": "5f2a6d57fe49d69c",
       "eagerLoad": true
     },
     "mic_compendium.json": {
       "count": 953,
       "bytes": 1555179,
-      "hash": "08b1249f17d558dd",
+      "hash": "449ab46a37edfb9c",
       "eagerLoad": true
     },
     "srd_domains.json": {
