@@ -1266,6 +1266,22 @@
         return { item, pEval };
       });
 
+      // If the user is typing a DM Boon / Skill or Stat Grant (e.g. "dm boon ride +4", "boon, skill: +ride"), synthesize an instant V2 option at the top of the Spotlight list
+      const liveSynthBoon = query ? synthesizeDmBoonFromQuery(query, '', categoryVal) : null;
+      if (liveSynthBoon && !evaluatedItems.some(e => (e.item.name || '').toLowerCase() === liveSynthBoon.name.toLowerCase())) {
+        evaluatedItems.unshift({
+          item: liveSynthBoon,
+          pEval: {
+            allMet: true,
+            hasPrereqs: false,
+            rawPrereq: '-',
+            checks: [],
+            isAlreadyKnownFromClass: false,
+            isAlreadyTaken: false
+          }
+        });
+      }
+
       // Filter counts (excluding already known feats from class from the Qualified count)
       const countAll = evaluatedItems.length;
       const countQualified = evaluatedItems.filter(e => e.pEval.allMet && !e.pEval.isAlreadyKnownFromClass).length;
@@ -1461,6 +1477,14 @@
       }
       const catalog = getCombinedFeatCatalog();
       let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
+      if (!found) {
+        const synthMatch = synthesizeDmBoonFromQuery(featName, '', document.getElementById('quick-feat-category')?.value || '');
+        if (synthMatch) {
+          found = synthMatch;
+          window._lastQuickFeatAiV2Entry = synthMatch;
+          featName = synthMatch.name;
+        }
+      }
 
       if (!found && typeof getAllWarlockInvocations === 'function') {
         const inv = getAllWarlockInvocations().find(i => i.name.toLowerCase() === featName.toLowerCase());
@@ -1687,6 +1711,23 @@
       if (isWeaponFeat && !featName.includes('(') && targetSelect && targetSelect.value) {
         featName = `${featName} (${targetSelect.value})`;
       }
+
+      // Standardize name formatting (case, punctuation, DM Boon syntax) before saving
+      const initialCatHint = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
+      const initialBenefitHint = document.getElementById('quick-feat-benefit')?.value.trim() || '';
+      const preSynthesizedBoon = synthesizeDmBoonFromQuery(featName, initialBenefitHint, initialCatHint);
+      if (preSynthesizedBoon && preSynthesizedBoon.name) {
+        featName = preSynthesizedBoon.name;
+        window._lastQuickFeatAiV2Entry = preSynthesizedBoon;
+      } else if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.standardizeName === 'function') {
+        const exactCat = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim());
+        if (exactCat && exactCat.name) {
+          featName = exactCat.name;
+        } else {
+          featName = RuleMaster.standardizeName(featName, initialCatHint);
+        }
+      }
+      if (nameInput) nameInput.value = featName;
 
       // Defensive RAW duplicate check
       const pEvalConfirm = (typeof checkFeatPrerequisites === 'function')
@@ -1976,7 +2017,7 @@
           return {
             schemaVersion: 2,
             id: `boon_skill_${sk.slug}_${Math.abs(val)}`,
-            name: /^dm\s*boon/i.test(q) && /\d/.test(q) ? q : `DM Boon: ${sk.label} (${signStr})`,
+            name: `DM Boon: ${sk.label} (${signStr})`,
             type: 'Feat',
             category: 'DM Boon',
             prereq: '-',
@@ -1990,22 +2031,31 @@
       }
 
       const statMap = [
+        { target: 'ability.str', label: 'Strength', rx: /\b(str|strength)\b/i },
+        { target: 'ability.dex', label: 'Dexterity', rx: /\b(dex|dexterity)\b/i },
+        { target: 'ability.con', label: 'Constitution', rx: /\b(con|constitution)\b/i },
+        { target: 'ability.int', label: 'Intelligence', rx: /\b(int|intelligence)\b/i },
+        { target: 'ability.wis', label: 'Wisdom', rx: /\b(wis|wisdom)\b/i },
+        { target: 'ability.cha', label: 'Charisma', rx: /\b(cha|charisma)\b/i },
         { target: 'save.fort', label: 'Fortitude Save', rx: /\bfort(itude)?\b/i },
         { target: 'save.ref', label: 'Reflex Save', rx: /\bref(lex)?\b/i },
-        { target: 'save.will', label: 'Will Save', rx: /\bwill\s*save\b/i },
+        { target: 'save.will', label: 'Will Save', rx: /\bwill(\s*save)?\b/i },
         { target: 'save.all', label: 'All Saving Throws', rx: /\ball\s*saves\b/i },
         { target: 'initiative', label: 'Initiative', rx: /\binit(iative)?\b/i },
         { target: 'ac.natural', label: 'Natural Armor AC', rx: /\bnatural\s*armor\b/i },
         { target: 'ac.deflection', label: 'Deflection AC', rx: /\bdeflection\b/i },
+        { target: 'ac', label: 'Armor Class (AC)', rx: /\b(armor\s*class|ac)\b/i },
         { target: 'attack.all', label: 'Attack Rolls', rx: /\battack(\s*rolls?)?\b/i },
-        { target: 'damage.all', label: 'Weapon Damage', rx: /\bdamage(\s*rolls?)?\b/i }
+        { target: 'damage.all', label: 'Weapon Damage', rx: /\bdamage(\s*rolls?)?\b/i },
+        { target: 'hp', label: 'Hit Points (HP)', rx: /\b(hit\s*points|hp)\b/i },
+        { target: 'casterLevel', label: 'Caster Level (CL)', rx: /\b(caster\s*level|cl)\b/i }
       ];
       for (const st of statMap) {
-        if (st.rx.test(combined)) {
+        if (st.rx.test(combined) && !/=/.test(q)) {
           return {
             schemaVersion: 2,
             id: `boon_${st.target.replace(/\./g, '_')}_${Math.abs(val)}`,
-            name: /^dm\s*boon/i.test(q) && /\d/.test(q) ? q : `DM Boon: ${st.label} (${signStr})`,
+            name: `DM Boon: ${st.label} (${signStr})`,
             type: 'Feat',
             category: 'DM Boon',
             prereq: '-',
@@ -2020,6 +2070,7 @@
 
       return null;
     }
+    window.synthesizeDmBoonFromQuery = synthesizeDmBoonFromQuery;
 
     function findInLocalCatalogsOrMasterDb(query) {
       if (!query) return null;
@@ -2113,19 +2164,22 @@
         statusEl.innerHTML = `<span>⏳</span> <span>Searching "${query}"...</span>`;
       }
 
-      // 0. Check if query is a direct DM Boon / Skill or Stat Grant (e.g. "boon, skill: +ride" or "DM Boon: +4 Ride")
+      // 0. Check if query is a direct DM Boon / Skill or Stat Grant (e.g. "boon, skill: +ride" or "dm boon ride +4")
       const instantBoon = synthesizeDmBoonFromQuery(query, benefitInput?.value || '', catSel?.value || '');
       if (instantBoon) {
         window._lastQuickFeatAiV2Entry = instantBoon;
         if (nameInput) nameInput.value = instantBoon.name;
         if (benefitInput) benefitInput.value = instantBoon.benefit;
         if (catSel) catSel.value = 'DM Boon';
+        quickFeatSearchQuery = instantBoon.name;
         updateQuickFeatTargetSelector(instantBoon.name);
         updateQuickFeatPrereqBadge();
-        if (statusEl) {
+        renderQuickFeatSearchResults();
+        const refreshedStatusEl = document.getElementById('quick-feat-ai-status') || statusEl;
+        if (refreshedStatusEl) {
           const modSummary = (instantBoon.modifiers || []).map(m => `${m.target} ${m.value >= 0 ? '+' : ''}${m.value}`).join(', ');
-          statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
-          statusEl.innerHTML = `<span>🌟</span> Synthesized Canonical V2 DM Boon: <b>${instantBoon.name}</b> <span class="font-mono text-amber-300">[${modSummary}]</span> (Tip: you can adjust the +bonus number in Name/Benefit before clicking Add).`;
+          refreshedStatusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
+          refreshedStatusEl.innerHTML = `<span>🌟</span> Standardized &amp; Synthesized Canonical V2 DM Boon: <b>${instantBoon.name}</b> <span class="font-mono text-amber-300">[${modSummary}]</span>`;
         }
         return;
       }
@@ -2188,7 +2242,10 @@
           const v2Entry = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.ensureV2 === 'function')
             ? RuleMaster.ensureV2(Array.isArray(rawTop) ? RuleMaster.normalizeEntry(rawTop, true) : rawTop)
             : rawTop;
-          const featName = (Array.isArray(rawTop) ? rawTop[0] : v2Entry?.name) || query;
+          const rawFeatName = (Array.isArray(rawTop) ? rawTop[0] : v2Entry?.name) || query;
+          const featName = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.standardizeName === 'function')
+            ? RuleMaster.standardizeName(rawFeatName, categoryHint)
+            : rawFeatName;
           const featType = (Array.isArray(rawTop) ? rawTop[1] : v2Entry?.type) || 'Feat';
           const featPrereq = (Array.isArray(rawTop) ? rawTop[2] : v2Entry?.prereq) || '-';
           const featSource = (Array.isArray(rawTop) ? rawTop[4] : v2Entry?.source) || 'D&D 3.5e';
@@ -2239,12 +2296,15 @@
             }
           }
 
+          quickFeatSearchQuery = featName;
           updateQuickFeatTargetSelector(featName);
           updateQuickFeatPrereqBadge();
+          renderQuickFeatSearchResults();
 
-          if (statusEl) {
-            statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
-            statusEl.innerHTML = `<span>✨</span> Fetched <b>${featName}</b> [${featSource}] via Rule Master AI!`;
+          const refreshedStatusEl = document.getElementById('quick-feat-ai-status') || statusEl;
+          if (refreshedStatusEl) {
+            refreshedStatusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
+            refreshedStatusEl.innerHTML = `<span>✨</span> Standardized &amp; Fetched <b>${featName}</b> [${featSource}] via Rule Master AI!`;
           }
         } else {
           if (statusEl) {

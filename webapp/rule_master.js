@@ -116,14 +116,137 @@ const RuleMaster = {
     return str.replace(/(^|[\s\/\(\[\-])([a-zğüşıöç])/gi, (match, sep, ch) => sep + ch.toUpperCase());
   },
 
-  capitalizeTitle(val) {
+  // Standardizes any rule, feat, class, item, or DM Boon name into canonical D&D 3.5e Title Case & punctuation
+  standardizeName(val, categoryHint = '') {
     if (!val || typeof val !== 'string') return val;
-    const str = val.trim();
+    let str = val.trim();
     if (!str) return str;
+
     const prefix = str.startsWith('↳') ? '↳ ' : '';
-    const cleanStr = str.replace(/^↳\s*/, '');
-    const capitalized = cleanStr.replace(/(^|[\s\/\(\[\-])([a-zğüşıöç])/gi, (match, sep, ch) => sep + ch.toUpperCase());
-    return prefix + capitalized;
+    let cleanStr = str.replace(/^↳\s*/, '').trim();
+
+    // 1. Strip leading/trailing ellipses, stray dashes, colons, commas
+    cleanStr = cleanStr
+      .replace(/^[\s\-–—:;,\.…]+/, '')
+      .replace(/[\s\-–—:;,\.…]+$/, '')
+      .replace(/\.{2,}|…+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!cleanStr) return prefix;
+
+    // 2. Check if this is a DM Boon / Grant that can be synthesized deterministically
+    const isBoonQuery = String(categoryHint || '').toLowerCase().includes('boon')
+      || /^(?:dm\s*boon|dm\s*grant|boon|grant)\b/i.test(cleanStr)
+      || /\bskill\s*:/i.test(cleanStr);
+
+    if (isBoonQuery && typeof window !== 'undefined' && typeof window.synthesizeDmBoonFromQuery === 'function') {
+      const synth = window.synthesizeDmBoonFromQuery(cleanStr, '', 'DM Boon');
+      if (synth && synth.name && !/^dm\s*boon$/i.test(synth.name.trim())) {
+        return prefix + synth.name;
+      }
+    }
+
+    // 3. Targetable Weapon / Skill Feat punctuation normalization (e.g. "weapon focus - longsword" -> "Weapon Focus (Longsword)")
+    const targetFeatMatch = cleanStr.match(/^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency|martial weapon proficiency|skill focus)\s*[-–—:,\.]+\s*([^\(\)]+)$/i);
+    if (targetFeatMatch) {
+      cleanStr = `${targetFeatMatch[1].trim()} (${targetFeatMatch[2].trim()})`;
+    }
+
+    // 4. Class Variant normalization (e.g. "rogue - adventurer variant" or "rogue, adventurer" -> "Rogue (Adventurer Variant)")
+    const classVarMatch = cleanStr.match(/^(barbarian|bard|cleric|druid|fighter|monk|paladin|ranger|rogue|sorcerer|wizard|warblade|swordsage|crusader|warlock|scout|swashbuckler|duskblade|beguiler|factotum)\s*[-–—:,]+\s*([a-z\s]+?)(?:\s+variant)?$/i);
+    if (classVarMatch && (String(categoryHint || '').toLowerCase().includes('class') || /adventurer|thug|cloistered|urban|martial|wildshape|whirling/i.test(classVarMatch[2]))) {
+      const baseCls = classVarMatch[1].trim();
+      const varPart = classVarMatch[2].trim();
+      cleanStr = `${baseCls} (${varPart}${/variant|cleric/i.test(varPart) ? '' : ' Variant'})`;
+    }
+
+    // 5. Extract and normalize DM Boon prefix if present
+    let boonPrefix = '';
+    if (isBoonQuery) {
+      cleanStr = cleanStr
+        .replace(/^(?:dm\s*boon|dm\s*grant|boon|grant)[\s:\-–—,\.]*/i, '')
+        .replace(/^(?:skill|stat|ability|save)[\s:\-–—,\.]*/i, '')
+        .trim();
+      boonPrefix = 'DM Boon: ';
+      // Convert trailing bare "+4" or "-2" (when not after "=") into "(+4)"
+      if (!cleanStr.includes('(') && !cleanStr.includes('=')) {
+        const trailingSign = cleanStr.match(/^([a-z\s]+?)\s*([+-]\d+)$/i);
+        const leadingSign = cleanStr.match(/^([+-]\d+)\s+([a-z\s]+?)$/i);
+        if (trailingSign) {
+          cleanStr = `${trailingSign[1].trim()} (${trailingSign[2]})`;
+        } else if (leadingSign) {
+          cleanStr = `${leadingSign[2].trim()} (${leadingSign[1]})`;
+        }
+      }
+    }
+
+    // 6. Normalize spaced hyphens/colons ("flaw - shaky" -> "Flaw: Shaky")
+    cleanStr = cleanStr.replace(/^(flaw|trait|acf|variant)\s*[-–—:]+\s*/i, (_, tag) => `${tag}: `);
+    cleanStr = cleanStr.replace(/\s+[-–—]+\s+/g, ' — ');
+
+    const ACRONYMS = {
+      'dm': 'DM', 'pc': 'PC', 'npc': 'NPC', 'ac': 'AC', 'hp': 'HP', 'xp': 'XP',
+      'cl': 'CL', 'dc': 'DC', 'sr': 'SR', 'dr': 'DR', 'bab': 'BAB',
+      'str': 'STR', 'dex': 'DEX', 'con': 'CON', 'int': 'INT', 'wis': 'WIS', 'cha': 'CHA',
+      'fort': 'Fort', 'ref': 'Ref', 'will': 'Will', 'hd': 'HD', 'la': 'LA', 'cr': 'CR',
+      'acf': 'ACF', 'ua': 'UA', 'phb': 'PHB', 'dmg': 'DMG', 'mm': 'MM', 'tob': 'ToB',
+      'mic': 'MIC', 'spc': 'SpC', 'twf': 'TWF', 'aoo': 'AoO', 'raw': 'RAW', 'sla': 'SLA', 'umd': 'UMD',
+      'i': 'I', 'ii': 'II', 'iii': 'III', 'iv': 'IV', 'v': 'V',
+      'vi': 'VI', 'vii': 'VII', 'viii': 'VIII', 'ix': 'IX', 'x': 'X'
+    };
+    const LOWER_WORDS = new Set(['of', 'the', 'and', 'in', 'on', 'to', 'for', 'with', 'from', 'by', 'at', 'or', 'into', 'upon', 'vs', 'vs.']);
+    const ABILITY_TAGS = { 'ex': 'Ex', 'su': 'Su', 'sp': 'Sp', 'ps': 'Ps' };
+
+    const formatSingleWord = (w, isFirstWord) => {
+      if (!w) return w;
+      const low = w.toLowerCase();
+      // Dice notation like 1d6, 2d8+4
+      if (/^\d+d\d+(?:[+-]\d+)?$/i.test(w)) return low;
+      // Signed numbers like +4, -2
+      if (/^[+-]\d+$/.test(w)) return w;
+      // Units like ft.
+      if (/^ft\.?$/i.test(w)) return 'ft.';
+      // Ability type tags like Ex, Su, Sp
+      if (ABILITY_TAGS[low]) return ABILITY_TAGS[low];
+      // Official D&D 3.5e acronyms
+      if (ACRONYMS[low]) return ACRONYMS[low];
+      // Lowercase articles/prepositions in mid-title
+      if (!isFirstWord && LOWER_WORDS.has(low)) return low;
+      // Standard Title Case
+      return low.charAt(0).toUpperCase() + low.slice(1);
+    };
+
+    const tokens = cleanStr.split(' ');
+    const formattedTokens = tokens.map((token, idx) => {
+      const prevToken = idx > 0 ? tokens[idx - 1] : '';
+      const followsBreak = idx === 0 || /[:\(\[—\/]$/.test(prevToken) || prevToken === '—' || prevToken === '=';
+
+      // Preserve leading/trailing brackets/parentheses/punctuation around the token
+      return token.replace(/^([\(\[\+"']*)([a-zA-Z0-9ğüşıöçĞÜŞİÖÇ\/\-]+)([\)\]\.,:;!"']*)$/, (m, lead, core, trail) => {
+        const lowCore = core.toLowerCase();
+        // Inside parentheses e.g. (ex) -> (Ex)
+        if (lead.includes('(') && trail.includes(')') && ABILITY_TAGS[lowCore]) {
+          return `${lead}${ABILITY_TAGS[lowCore]}${trail}`;
+        }
+        // Handle slash-separated or hyphen-separated compounds (e.g. "Two-Weapon", "1/Day", "Half-Orc")
+        if (core.includes('-')) {
+          const parts = core.split('-').map((p, pIdx) => formatSingleWord(p, followsBreak || pIdx === 0 || !LOWER_WORDS.has(p.toLowerCase())));
+          return `${lead}${parts.join('-')}${trail}`;
+        }
+        if (core.includes('/')) {
+          const parts = core.split('/').map(p => formatSingleWord(p, true));
+          return `${lead}${parts.join('/')}${trail}`;
+        }
+        return `${lead}${formatSingleWord(core, followsBreak || Boolean(lead))}${trail}`;
+      });
+    });
+
+    const finalBody = formattedTokens.join(' ').replace(/\s+/g, ' ').trim();
+    return prefix + boonPrefix + finalBody;
+  },
+
+  capitalizeTitle(val, categoryHint = '') {
+    return this.standardizeName(val, categoryHint);
   },
 
   // Default Item Schema (Canonical V2 Master_DB Schema with modifiers, damageParts, modes, ruleFlags)
@@ -1817,8 +1940,12 @@ const RuleMaster = {
 3. ZERO 5E / 4E / PATHFINDER MECHANICS:
    - Absolutely NO 5e mechanics (No Advantage/Disadvantage, No Bonus Action, No Finesse adding Dex to damage, No -5/+10 GWM, No Short Rest, No Concentration slots).
    - Absolutely NO Pathfinder / PF1e / Starfinder rules or DandWiki forum inventions unless explicitly requested as a DM Boon/Custom rule.
-4. OFFICIAL 3.5E ENGLISH & NO DICE EMOJI (U+1F3B2):
+4. OFFICIAL 3.5E ENGLISH, NAME STANDARDIZATION & NO DICE EMOJI (U+1F3B2):
    - Output 100% official D&D 3.5e RAW English terminology in all fields.
+   - STANDARDIZE ALL NAMES ("name" field): Always convert messy user input (lowercase, ALL CAPS, stray dashes '-', ellipses '...', colons) into clean, canonical D&D 3.5e Title Case:
+     * DM Boons / Grants -> "DM Boon: Ride (+4)", "DM Boon: Initiative (+2)", "DM Boon: CL = Level 1"
+     * Targetable Feats -> "Weapon Focus (Longsword)", "Skill Focus (Spot)"
+     * Class Variants -> "Rogue (Adventurer Variant)", "Cleric (Cloistered Cleric)"
    - NEVER output placeholder names like "Non-Existent Class" or "Unknown".
    - NEVER include the 6-sided die emoji (U+1F3B2) anywhere in any string.`,
 
@@ -2644,8 +2771,9 @@ Schema:
       }
       if (!Array.isArray(raw) && typeof raw === 'object' && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
         const cloned = JSON.parse(JSON.stringify(raw));
-        if (cloned.name) cloned.name = this.capitalizeTitle(this.cleanArrow(cloned.name));
+        if (cloned.name) cloned.name = this.standardizeName(this.cleanArrow(cloned.name), cloned.category || cloned.type || '');
         const res = window.SchemaMigrator.upgradeEntryToV2(cloned);
+        if (res && res.name) res.name = this.standardizeName(this.cleanArrow(res.name), res.category || res.type || '');
         if (cloned.type === 'Deity' || cloned.domains || cloned.portfolio || cloned.rank) {
           if (cloned.favoredWeapon && !res.favoredWeapon) res.favoredWeapon = cloned.favoredWeapon;
           if (cloned.weapon && !res.weapon) res.weapon = cloned.weapon;
@@ -3285,6 +3413,14 @@ Return valid JSON only matching:
       v2._localSourceLabel = label;
       return v2;
     };
+
+    // 0. Check if query is a DM Boon / Skill or Stat Grant (e.g. "dm boon ride +4", "boon, skill: +ride")
+    if (typeof window !== 'undefined' && typeof window.synthesizeDmBoonFromQuery === 'function') {
+      const synthBoon = window.synthesizeDmBoonFromQuery(cleanKey, '', '');
+      if (synthBoon && synthBoon.name) {
+        return [this.ensureV2(synthBoon)];
+      }
+    }
 
     // 1. Check user's Master DB first
     if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {

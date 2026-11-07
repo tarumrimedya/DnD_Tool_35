@@ -7985,12 +7985,16 @@
 
     function saveNewCustomClass() {
       const nameInput = document.getElementById('custom-class-name');
-      const name = (nameInput?.value || '').trim();
-      if (!name) {
+      const rawName = (nameInput?.value || '').trim();
+      if (!rawName) {
         alert('Please enter a valid class name.');
         nameInput?.focus();
         return;
       }
+      const name = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.standardizeName === 'function')
+        ? RuleMaster.standardizeName(rawName, 'Class')
+        : rawName;
+      if (nameInput) nameInput.value = name;
 
       const classType = document.getElementById('custom-class-type')?.value || 'Base Class';
       const maxLevel = parseInt(document.getElementById('custom-class-max-level')?.value) || (classType === 'Prestige Class' ? 10 : 20);
@@ -8011,12 +8015,17 @@
         const fInp = document.getElementById(`custom-class-feat-lvl-${lvl}`);
         const rawText = (fInp?.value || '').trim();
         const levelList = rawText
-          ? rawText.split(',').map(s => s.trim()).filter(Boolean).map(s => ({
-              name: s,
-              category: /bonus\s*feat/i.test(s) ? 'Bonus Feat' : 'Special Ability',
-              type: 'Ex',
-              summary: s
-            }))
+          ? rawText.split(',').map(s => s.trim()).filter(Boolean).map(s => {
+              const stdFeatName = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.standardizeName === 'function')
+                ? RuleMaster.standardizeName(s, 'Special Ability')
+                : s;
+              return {
+                name: stdFeatName,
+                category: /bonus\s*feat/i.test(stdFeatName) ? 'Bonus Feat' : 'Special Ability',
+                type: 'Ex',
+                summary: stdFeatName
+              };
+            })
           : [];
         if (bChk && bChk.checked) {
           bonusFeatLevels.push(lvl);
