@@ -167,7 +167,7 @@
       if (['wizard', 'artificer', 'archivist', 'wu jen', "sha'ir", 'büyücü', 'archmage', 'loremaster', 'incantatrix', 'red wizard', 'pale master', 'eldritch knight', 'arcane trickster', 'abjurant champion'].some(k => c.includes(k))) return 'prepared';
       if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'spirit shaman', 'shugenja', 'healer', 'adept', 'rahip', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
       if (['sorcerer', 'bard', 'favored soul', 'warlock', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'dragonfire adept', 'spellthief'].some(k => c.includes(k))) return 'spontaneous';
-      if (['warblade', 'swordsage', 'crusader', 'bloodstorm blade', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) return 'martial';
+      if (['warblade', 'swordsage', 'crusader', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) return 'martial';
       return null;
     }
 
@@ -2735,9 +2735,10 @@
       let otherLvls = 0;
       let adeptClass = null;
 
+      const MANEUVER_ADEPT_CLASSES = ['warblade', 'swordsage', 'crusader', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'];
       activeRows.forEach(p => {
         const c = (p.className || p.class || '').toLowerCase();
-        if (['warblade', 'swordsage', 'crusader', 'bloodstorm blade', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) {
+        if (MANEUVER_ADEPT_CLASSES.some(k => c.includes(k))) {
           martialLvls++;
           if (c.includes('swordsage')) adeptClass = 'Swordsage';
           else if (c.includes('crusader') || c.includes('ruby knight')) adeptClass = 'Crusader';
@@ -2807,7 +2808,7 @@
         character.tomeOfBattle.initiatorLevel = il;
       }
 
-      const maxManeuverLvl = Math.min(9, Math.max(1, Math.ceil(il / 2)));
+      const rawMaxManeuverLvl = Math.min(9, Math.max(1, Math.ceil(il / 2)));
       const readiedList = character?.tomeOfBattle?.readiedManeuvers || [];
 
       let baseReadied = 0;
@@ -2832,18 +2833,7 @@
         }
       }
 
-      const maxKnownManeuvers = Math.max(0, baseKnownManeuvers + martialStudyCount + dmKnownBonus);
-      const maxReadied = Math.max(0, baseReadied + (martialLvls === 0 && martialStudyCount > 0 ? 1 : 0) + dmReadiedBonus);
-      const maxKnownStances = Math.max(0, baseKnownStances + martialStanceCount + dmStanceBonus);
-      const classDisciplines = adeptClass === 'Crusader'
-        ? ['Devoted Spirit', 'Stone Dragon', 'White Raven']
-        : (adeptClass === 'Swordsage'
-          ? ['Desert Wind', 'Diamond Mind', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw']
-          : (adeptClass === 'Warblade'
-            ? ['Diamond Mind', 'Iron Heart', 'Stone Dragon', 'Tiger Claw', 'White Raven']
-            : ['Desert Wind', 'Devoted Spirit', 'Diamond Mind', 'Iron Heart', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw', 'White Raven']));
-
-      // D&D 3.5e Tome of Battle RAW (pp. 10, 16, 21, 39): Progressive Level-by-Level Slot Ceilings
+      // D&D 3.5e Tome of Battle RAW (pp. 10, 16, 21, 39, 105-126): Progressive Level-by-Level Slot Ceilings
       const maneuverSlotCeilings = [];
       const stanceSlotCeilings = [];
       const swapLowestManeuverSlot = (newMaxLvl) => {
@@ -2859,59 +2849,169 @@
         if (minIdx >= 0) maneuverSlotCeilings[minIdx] = newMaxLvl;
       };
 
+      let adeptIl = il;
       if (activeRows.length > 0 && martialLvls > 0) {
         let simMartial = 0;
         let simOther = 0;
         let simWb = 0;
         let simSs = 0;
         let simCr = 0;
+        let simDs = 0;
+        let simEb = 0;
+        let simJpm = 0;
+        let simMon = 0;
+        let simRkv = 0;
+        let simSsn = 0;
+        let simReadied = 0;
+        let simClassManeuvers = 0;
+        let simClassStances = 0;
+        let lastManeuverGrantIl = 1;
+
         activeRows.forEach(p => {
           const c = (p.className || p.class || '').toLowerCase();
-          const isM = ['warblade', 'swordsage', 'crusader', 'bloodstorm blade', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k));
+          const isM = MANEUVER_ADEPT_CLASSES.some(k => c.includes(k));
           if (isM) simMartial++;
           else simOther++;
           const stepIl = isMartialBoon ? (simMartial + simOther) : (simMartial > 0 ? (simMartial + Math.floor(simOther / 2)) : Math.max(1, Math.floor((simMartial + simOther) / 2)));
           const stepMaxLvl = Math.min(9, Math.max(1, Math.ceil(Math.max(1, stepIl) / 2)));
 
           if (isM) {
+            lastManeuverGrantIl = stepIl;
             if (c.includes('swordsage')) {
               simSs++;
               if (simSs === 1) {
                 for (let k = 0; k < 6; k++) maneuverSlotCeilings.push(stepMaxLvl);
+                simClassManeuvers += 6;
+                simReadied += 4;
               } else {
                 maneuverSlotCeilings.push(stepMaxLvl);
+                simClassManeuvers += 1;
+                if ([4, 8, 12, 15, 18, 20].includes(simSs)) simReadied += 1;
               }
               if (simSs >= 4 && simSs % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
-              if ([1, 2, 5, 9, 14, 20].includes(simSs)) stanceSlotCeilings.push(stepMaxLvl);
-            } else if (c.includes('crusader') || c.includes('ruby knight')) {
+              if ([1, 2, 5, 9, 14, 20].includes(simSs)) {
+                stanceSlotCeilings.push(stepMaxLvl);
+                simClassStances += 1;
+              }
+            } else if (c.includes('crusader')) {
               simCr++;
               if (simCr === 1) {
                 for (let k = 0; k < 5; k++) maneuverSlotCeilings.push(stepMaxLvl);
-              } else if (simCr >= 3 && simCr % 2 === 1) {
-                maneuverSlotCeilings.push(stepMaxLvl);
+                simClassManeuvers += 5;
+                simReadied += 5;
+              } else {
+                if (simCr >= 3 && simCr % 2 === 1) {
+                  maneuverSlotCeilings.push(stepMaxLvl);
+                  simClassManeuvers += 1;
+                }
+                if ([10, 20].includes(simCr)) simReadied += 1;
               }
               if (simCr >= 4 && simCr % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
-              if ([1, 2, 8, 14].includes(simCr)) stanceSlotCeilings.push(stepMaxLvl);
+              if ([1, 2, 8, 14].includes(simCr)) {
+                stanceSlotCeilings.push(stepMaxLvl);
+                simClassStances += 1;
+              }
+            } else if (c.includes('deepstone sentinel')) {
+              simDs++;
+              if (simDs % 2 === 1) {
+                maneuverSlotCeilings.push(stepMaxLvl);
+                simClassManeuvers += 1;
+              }
+              if (simDs === 3) simReadied += 1;
+            } else if (c.includes('eternal blade')) {
+              simEb++;
+              if (simEb % 2 === 1) {
+                maneuverSlotCeilings.push(stepMaxLvl);
+                simClassManeuvers += 1;
+              }
+              if (simEb === 5) {
+                stanceSlotCeilings.push(stepMaxLvl);
+                simClassStances += 1;
+              }
+              if ([3, 6, 9].includes(simEb)) simReadied += 1;
+            } else if (c.includes('jade phoenix mage')) {
+              simJpm++;
+              if (simJpm % 2 === 1) {
+                maneuverSlotCeilings.push(stepMaxLvl);
+                simClassManeuvers += 1;
+              }
+              if (simJpm === 5) {
+                stanceSlotCeilings.push(stepMaxLvl);
+                simClassStances += 1;
+              }
+              if ([3, 6, 9].includes(simJpm)) simReadied += 1;
+            } else if (c.includes('master of nine')) {
+              simMon++;
+              const addM = (simMon % 2 === 1) ? 2 : 1;
+              for (let k = 0; k < addM; k++) maneuverSlotCeilings.push(stepMaxLvl);
+              simClassManeuvers += addM;
+              if ([2, 4].includes(simMon)) {
+                stanceSlotCeilings.push(stepMaxLvl);
+                simClassStances += 1;
+              }
+              simReadied += 1;
+            } else if (c.includes('ruby knight')) {
+              simRkv++;
+              if (simRkv % 2 === 0) {
+                maneuverSlotCeilings.push(stepMaxLvl);
+                simClassManeuvers += 1;
+              }
+              if ([5, 10].includes(simRkv)) {
+                stanceSlotCeilings.push(stepMaxLvl);
+                simClassStances += 1;
+              }
+              if ([3, 6, 9].includes(simRkv)) simReadied += 1;
+            } else if (c.includes('shadow sun ninja')) {
+              simSsn++;
+              if (simSsn % 2 === 1) {
+                maneuverSlotCeilings.push(stepMaxLvl);
+                simClassManeuvers += 1;
+              }
+              if (simSsn === 5) {
+                stanceSlotCeilings.push(stepMaxLvl);
+                simClassStances += 1;
+              }
+              if ([3, 6, 9].includes(simSsn)) simReadied += 1;
             } else {
               simWb++;
               if (simWb === 1) {
                 for (let k = 0; k < 3; k++) maneuverSlotCeilings.push(stepMaxLvl);
-              } else if (simWb === 2 || (simWb >= 3 && simWb % 2 === 1)) {
-                maneuverSlotCeilings.push(stepMaxLvl);
+                simClassManeuvers += 3;
+                simReadied += 3;
+              } else {
+                if (simWb === 2 || (simWb >= 3 && simWb % 2 === 1)) {
+                  maneuverSlotCeilings.push(stepMaxLvl);
+                  simClassManeuvers += 1;
+                }
+                if ([4, 9, 15, 20].includes(simWb)) simReadied += 1;
               }
               if (simWb >= 4 && simWb % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
-              if ([1, 4, 10, 16].includes(simWb)) stanceSlotCeilings.push(stepMaxLvl);
+              if ([1, 4, 10, 16].includes(simWb)) {
+                stanceSlotCeilings.push(stepMaxLvl);
+                simClassStances += 1;
+              }
             }
           }
 
           if (Array.isArray(p.feats)) {
             p.feats.forEach(f => {
               const fLow = String(f || '').toLowerCase();
-              if (fLow.includes('martial study')) maneuverSlotCeilings.push(stepMaxLvl);
-              if (fLow.includes('martial stance')) stanceSlotCeilings.push(stepMaxLvl);
+              if (fLow.includes('martial study')) {
+                maneuverSlotCeilings.push(stepMaxLvl);
+                lastManeuverGrantIl = Math.max(lastManeuverGrantIl, stepIl);
+              }
+              if (fLow.includes('martial stance')) {
+                stanceSlotCeilings.push(stepMaxLvl);
+                lastManeuverGrantIl = Math.max(lastManeuverGrantIl, stepIl);
+              }
             });
           }
         });
+
+        baseKnownManeuvers = simClassManeuvers;
+        baseKnownStances = simClassStances;
+        baseReadied = simReadied;
+        adeptIl = lastManeuverGrantIl;
       } else if (effMartialLvls > 0) {
         for (let step = 1; step <= effMartialLvls; step++) {
           const stepMaxLvl = Math.min(9, Math.max(1, Math.ceil(step / 2)));
@@ -2934,8 +3034,19 @@
         }
       }
 
+      const maxKnownManeuvers = Math.max(0, baseKnownManeuvers + martialStudyCount + dmKnownBonus);
+      const maxReadied = Math.max(0, baseReadied + (martialLvls === 0 && martialStudyCount > 0 ? 1 : 0) + dmReadiedBonus);
+      const maxKnownStances = Math.max(0, baseKnownStances + martialStanceCount + dmStanceBonus);
+      const classDisciplines = adeptClass === 'Crusader'
+        ? ['Devoted Spirit', 'Stone Dragon', 'White Raven']
+        : (adeptClass === 'Swordsage'
+          ? ['Desert Wind', 'Diamond Mind', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw']
+          : (adeptClass === 'Warblade'
+            ? ['Diamond Mind', 'Iron Heart', 'Stone Dragon', 'Tiger Claw', 'White Raven']
+            : ['Desert Wind', 'Devoted Spirit', 'Diamond Mind', 'Iron Heart', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw', 'White Raven']));
+
       while (maneuverSlotCeilings.length < maxKnownManeuvers) {
-        maneuverSlotCeilings.push(maxManeuverLvl);
+        maneuverSlotCeilings.push(rawMaxManeuverLvl);
       }
       if (maneuverSlotCeilings.length > maxKnownManeuvers) {
         maneuverSlotCeilings.sort((a, b) => a - b);
@@ -2944,7 +3055,7 @@
       maneuverSlotCeilings.sort((a, b) => a - b);
 
       while (stanceSlotCeilings.length < maxKnownStances) {
-        stanceSlotCeilings.push(maxManeuverLvl);
+        stanceSlotCeilings.push(rawMaxManeuverLvl);
       }
       if (stanceSlotCeilings.length > maxKnownStances) {
         stanceSlotCeilings.sort((a, b) => a - b);
@@ -2952,9 +3063,18 @@
       }
       stanceSlotCeilings.sort((a, b) => a - b);
 
+      const maxManeuverLvl = maneuverSlotCeilings.length > 0
+        ? Math.max(...maneuverSlotCeilings)
+        : rawMaxManeuverLvl;
+      const maxStanceLvl = stanceSlotCeilings.length > 0
+        ? Math.max(...stanceSlotCeilings)
+        : maxManeuverLvl;
+
       return {
         il,
+        adeptIl,
         maxManeuverLvl,
+        maxStanceLvl,
         maneuverSlotCeilings,
         stanceSlotCeilings,
         readiedCount: readiedList.length,
@@ -3175,8 +3295,9 @@
       }
       const ilBadgeEl = document.getElementById('maneuvers-il-badge');
       if (ilBadgeEl) {
-        ilBadgeEl.textContent = `IL: ${initInfo.il}`;
-        ilBadgeEl.title = `Initiator Level: ${initInfo.il} (${initInfo.martialLvls} Martial + ⌊${initInfo.otherLvls} Other / 2⌋)`;
+        const effIl = initInfo.adeptIl || initInfo.il;
+        ilBadgeEl.textContent = `IL: ${effIl}`;
+        ilBadgeEl.title = `Adept Initiator Level: ${effIl} (Total IL: ${initInfo.il} • ${initInfo.martialLvls} Martial + ⌊${initInfo.otherLvls} Other / 2⌋)`;
       }
       const maxLvlBadgeEl = document.getElementById('maneuvers-maxlvl-badge');
       if (maxLvlBadgeEl) {
@@ -3184,7 +3305,8 @@
       }
       const adeptSubEl = document.getElementById('maneuvers-hud-subtitle');
       if (adeptSubEl) {
-        adeptSubEl.textContent = `Tome of Battle: ${initInfo.martialLvls} ${initInfo.adeptClass} + ⌊${initInfo.otherLvls} Other Classes / 2⌋ = IL ${initInfo.il} • Known Quota: ${initInfo.maxKnownManeuvers} Maneuvers, ${initInfo.maxKnownStances} Stances`;
+        const effIl = initInfo.adeptIl || initInfo.il;
+        adeptSubEl.textContent = `Tome of Battle: ${initInfo.martialLvls} ${initInfo.adeptClass}${initInfo.otherLvls > 0 ? ` (+${initInfo.otherLvls} Non-Adept)` : ''} • Adept IL ${effIl} (Max Lvl ${initInfo.maxManeuverLvl}) • Known Quota: ${initInfo.maxKnownManeuvers} Maneuvers, ${initInfo.maxKnownStances} Stances`;
       }
       const quotaBadge = document.getElementById('readied-quota-badge');
       if (quotaBadge) {
@@ -7965,6 +8087,12 @@
         character.customClasses.forEach(c => {
           if (c && c.name) {
             const baseExisting = all[c.name] || {};
+            const mergedFeatures = Object.assign({}, baseExisting.features || {});
+            if (c.features && typeof c.features === 'object') {
+              Object.entries(c.features).forEach(([k, v]) => {
+                if (Array.isArray(v) && v.length > 0) mergedFeatures[k] = v;
+              });
+            }
             all[c.name] = {
               hd: Number(c.hd) || baseExisting.hd || 8,
               bab: Number(c.bab) || baseExisting.bab || 0.75,
@@ -7974,7 +8102,7 @@
               skills: Number(c.skills) || baseExisting.skills || 2,
               maxLevel: Number(c.maxLevel) || baseExisting.maxLevel || (c.type === 'Prestige Class' ? 10 : 20),
               classSkills: Array.isArray(c.classSkills) && c.classSkills.length > 0 ? c.classSkills : (baseExisting.classSkills || []),
-              features: Object.assign({}, baseExisting.features || {}, c.features || {}),
+              features: mergedFeatures,
               bonusFeatLevels: (Array.isArray(c.bonusFeatLevels) && c.bonusFeatLevels.length > 0) ? c.bonusFeatLevels : (baseExisting.bonusFeatLevels || []),
               bonusFeatContract: c.bonusFeatContract || baseExisting.bonusFeatContract || null,
               prerequisites: (Array.isArray(c.prerequisites) && c.prerequisites.length > 0) ? c.prerequisites : (baseExisting.prerequisites || []),
