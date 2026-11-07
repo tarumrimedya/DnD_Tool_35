@@ -14010,7 +14010,7 @@
     "slot": "None",
     "slotDiff": 1,
     "action": "Passive",
-    "prerequisites": "1st level only, base Fortitude save bonus +0 or +1",
+    "prerequisites": "1st level only",
     "shortDescription": "-1 Hit Point per Hit Die (minimum 1 HP gained per level). Grants +1 Bonus Feat.",
     "description": "Subtract 1 from the number of hit points you gain at each level. This flaw can reduce the number of hit points you gain at any level to 1, but not below. Taking this flaw at 1st level grants 1 extra bonus feat.",
     "modifiers": [],

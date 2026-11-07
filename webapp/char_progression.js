@@ -628,6 +628,20 @@
       return false;
     }
 
+    function isFlawFeat(f) {
+      if (!f) return false;
+      if (typeof f === 'string') return isFlawFeatString(f);
+      const name = String(f.name || '').trim().toLowerCase();
+      const rawName = name.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+      if (CANONICAL_UA_FLAW_NAMES.has(name) || CANONICAL_UA_FLAW_NAMES.has(rawName)) return true;
+      const cat = String(f.category || '').toLowerCase();
+      const type = String(f.type || '').toLowerCase();
+      if (cat === 'flaw' || type === 'flaw' || name.startsWith('flaw:')) return true;
+      if (f.ruleFlags && f.ruleFlags.isFlaw) return true;
+      if (Number(f.slotDiff) === 1 && (cat === 'flaw' || type === 'flaw')) return true;
+      return false;
+    }
+
     function openQuickFeatPickerForLevel(levelIdx, preferredCategory = null, isTargetLocked = null) {
       activeQuickLevelIndex = Number(levelIdx);
       const modal = document.getElementById('quick-level-feat-modal');
@@ -968,7 +982,7 @@
         const maxTier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(warlockClassLvl) : 'Least';
         const tierHierarchy = ['Least', 'Lesser', 'Greater', 'Dark'];
         const maxIdx = tierHierarchy.indexOf(maxTier);
-        invocationsList = getAllWarlockInvocations().filter(inv => {
+        invocationsList = (typeof getAllWarlockInvocations === 'function' ? getAllWarlockInvocations() : []).filter(inv => {
           const invIdx = tierHierarchy.indexOf(inv.tier);
           return invIdx !== -1 && invIdx <= maxIdx;
         }).map(inv => ({
@@ -1149,10 +1163,10 @@
           const allowUnqualifiedOverride = (categoryVal === 'DM Boon');
           const buttonHtml = isAlreadyKnown
             ? `<button disabled type="button"
-                       title="${(pEval.alreadyKnownReason || 'Zaten Sahipsiniz').replace(/"/g, '&quot;')}"
+                       title="${(pEval.alreadyKnownReason || 'Already Owned').replace(/"/g, '&quot;')}"
                        class="px-2.5 py-1 rounded text-[11px] font-bold shadow shrink-0 opacity-50 cursor-not-allowed bg-slate-800 text-slate-400 flex items-center gap-1">
                  <span>🔒</span>
-                 <span>Zaten Sahipsiniz</span>
+                 <span>Already Owned</span>
                </button>`
             : ((!isQualified && !allowUnqualifiedOverride)
               ? `<button disabled type="button"
@@ -1261,7 +1275,7 @@
       const catalog = getCombinedFeatCatalog();
       let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
 
-      if (!found) {
+      if (!found && typeof getAllWarlockInvocations === 'function') {
         const inv = getAllWarlockInvocations().find(i => i.name.toLowerCase() === featName.toLowerCase());
         if (inv) {
           found = {
@@ -1303,12 +1317,12 @@
       if (benefitInput) benefitInput.value = found ? (found.benefit || '') : '';
 
       const catSel = document.getElementById('quick-feat-category');
-      if (catSel && found) {
+      if (catSel) {
         // If locked to a specific target slot, preserve target category so it fills the right slot!
-        if (isFlawFeat(found) || CANONICAL_UA_FLAW_NAMES.has(String(found.name || '').toLowerCase().trim())) {
+        if ((found && isFlawFeat(found)) || CANONICAL_UA_FLAW_NAMES.has(String(featName || '').toLowerCase().trim())) {
           // A Flaw must NEVER consume a Regular Feat, Human Bonus Feat, or Class Bonus Feat slot!
           catSel.value = 'Flaw';
-        } else if (!isQuickFeatTargetLocked) {
+        } else if (!isQuickFeatTargetLocked && found) {
           if (found.category === 'Warlock Invocation') {
             catSel.value = 'Warlock Invocation';
           } else if (found.category === 'DM Boon' || found.category === 'DM Grant') {
@@ -1367,7 +1381,7 @@
         found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
       }
 
-      if (!found) {
+      if (!found && typeof getAllWarlockInvocations === 'function') {
         const inv = getAllWarlockInvocations().find(i => i.name.toLowerCase() === featName.toLowerCase());
         if (inv) {
           found = {
@@ -1521,7 +1535,9 @@
         }
       }
 
-      const isInvEntry = getAllWarlockInvocations().some(i => (i.name || '').toLowerCase() === featName.toLowerCase());
+      const isInvEntry = (typeof getAllWarlockInvocations === 'function')
+        ? getAllWarlockInvocations().some(i => (i.name || '').toLowerCase() === featName.toLowerCase())
+        : false;
       if (isInvEntry && category !== 'Warlock Invocation' && category !== 'DM Boon') {
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
@@ -2656,9 +2672,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             if (saveMatch[3] !== undefined) {
               const val2 = parseInt(saveMatch[3], 10);
               const minVal = Math.min(val1, val2);
-              const maxVal = Math.max(val1, val2);
-              met = curSave >= minVal && curSave <= maxVal;
-              info = met ? `(Base ${saveName}: +${curSave} [Allowed: +${minVal} or +${maxVal}])` : `(Base ${saveName}: +${curSave}, Req: +${minVal} or +${maxVal})`;
+              const isFrailFeat = Boolean(resolvedFeat.name && resolvedFeat.name.toLowerCase().includes('frail'));
+              met = isFrailFeat ? true : (curSave >= minVal);
+              info = met ? `(Base ${saveName}: +${curSave} ≥ +${minVal})` : `(Base ${saveName}: +${curSave}, Req: +${minVal})`;
             } else {
               met = curSave >= val1;
               info = met ? `(Base ${saveName}: +${curSave} ≥ +${val1})` : `(Base ${saveName}: +${curSave}, Req: +${val1})`;
@@ -3461,7 +3477,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       function selectFeatForLevelUpSlot(idx, featName) {
         if (!levelUpModalFeatSlots[idx]) return;
         const slotCat = levelUpModalFeatSlots[idx].category || 'Regular Feat';
-        const isInvEntry = getAllWarlockInvocations().some(i => (i.name || '').toLowerCase() === featName.toLowerCase());
+        const isInvEntry = (typeof getAllWarlockInvocations === 'function')
+        ? getAllWarlockInvocations().some(i => (i.name || '').toLowerCase() === featName.toLowerCase())
+        : false;
         if (isInvEntry && slotCat !== 'Warlock Invocation' && slotCat !== 'DM Boon') {
           if (typeof showDiceTopToast === 'function') {
             showDiceTopToast({
@@ -7180,10 +7198,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         lvl.will = rowWill;
 
         tr.innerHTML = `
-          <td class="py-2 px-1.5 align-top text-center w-11">
+          <td class="py-2 px-1 align-top text-center w-9">
             <div class="h-6 flex items-center justify-center font-bold text-amber-400 text-xs">${lvl.level}</div>
           </td>
-          <td class="py-2 px-1.5 align-top text-center w-24">
+          <td class="py-2 px-1 align-top text-center w-20">
             <div class="h-6 flex items-center justify-center">
               <label class="inline-flex items-center gap-1 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
                 <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
@@ -7193,46 +7211,46 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               </label>
             </div>
           </td>
-          <td class="py-2 px-2 align-top text-left w-32">
+          <td class="py-2 px-1.5 align-top text-left w-24">
             <div class="h-6 flex items-center font-sans font-bold text-white text-xs truncate" title="${lvl.className}-${classLevelSoFar}">${lvl.className}-${classLevelSoFar}</div>
           </td>
-          <td class="py-2 px-1.5 align-top text-center w-14">
+          <td class="py-2 px-1 align-top text-center w-10">
             <div class="h-6 flex items-center justify-center text-slate-400 font-bold text-xs">${lvl.hd}</div>
           </td>
-          <td class="py-2 px-1.5 align-top text-center w-14">
+          <td class="py-2 px-1 align-top text-center w-10">
             <div class="h-6 flex items-center justify-center text-emerald-400 font-bold text-xs" title="Level Hit Die: +${lvl.hpGain} | Con: ${conModStr} (This Level: +${Math.max(1, (Number(lvl.hpGain) || 0) + conMod)})">+${lvl.hpGain}</div>
           </td>
-          <td class="py-2 px-1.5 align-top text-center w-14">
+          <td class="py-2 px-1 align-top text-center w-10">
             <div class="h-6 flex items-center justify-center text-sky-400 font-bold text-xs">+${rowBab}</div>
           </td>
-          <td class="py-2 px-1.5 align-top text-center w-14">
+          <td class="py-2 px-1 align-top text-center w-10">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowFort}</div>
           </td>
-          <td class="py-2 px-1.5 align-top text-center w-14">
+          <td class="py-2 px-1 align-top text-center w-10">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowRef}</div>
           </td>
-          <td class="py-2 px-1.5 align-top text-center w-14">
+          <td class="py-2 px-1 align-top text-center w-10">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowWill}</div>
           </td>
-          <td class="py-2 px-1.5 align-top text-center w-14">
+          <td class="py-2 px-1 align-top text-center w-10">
             <div class="h-6 flex items-center justify-center text-indigo-300 font-bold text-xs">${lvl.skillPts || 4}</div>
           </td>
-          <td class="py-2 px-1.5 font-sans align-top text-center w-[144px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
+          <td class="py-2 px-1.5 font-sans align-top text-center w-[120px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full mx-auto min-w-0">
               ${(abilityBadgeItems.length > 0 || classBonusBadgeItems.length > 0 || pendingClassBonusButtons.length > 0) ? (abilityBadgeItems.join('') + classBonusBadgeItems.join('') + pendingClassBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1.5 font-sans align-top text-center w-[144px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
+          <td class="py-2 px-1.5 font-sans align-top text-center w-[120px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full mx-auto min-w-0">
               ${(regularFeatBadgeItems.length > 0 || regularPromptButtons.length > 0) ? (regularFeatBadgeItems.join('') + regularPromptButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1.5 font-sans align-top text-center w-[144px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
+          <td class="py-2 px-1.5 font-sans align-top text-center w-[120px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full mx-auto min-w-0">
               ${(statBadgeItem || otherBonusBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + otherBonusBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1.5 align-top text-center w-[60px] whitespace-nowrap shrink-0">
+          <td class="py-2 px-1 align-top text-center w-14 whitespace-nowrap shrink-0">
             <div class="h-6 flex items-center justify-center gap-0.5">
               <button onclick="openQuickFeatPickerForLevel(${idx})" class="text-emerald-400 hover:text-emerald-300 p-0.5 text-xs transition font-bold" title="Add Feat, Ability, Invocation, or Bonus to this level">
                 ➕
