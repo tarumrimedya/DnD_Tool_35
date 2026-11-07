@@ -7963,47 +7963,107 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const deityMeta = (typeof getCharacterDeityMeta === 'function') ? getCharacterDeityMeta(character) : null;
       const favWeapon = (deityMeta && deityMeta.weapon && deityMeta.weapon !== '-') ? deityMeta.weapon : "Deity's Favored Weapon";
 
-      // Domain-granted bonus feats (War -> Weapon Focus & Martial Weapon Proficiency; Darkness -> Blind-Fight; Rune -> Scribe Scroll; or custom domain grantedFeats)
-      const domainGrantedFeats = [];
-      if (chosen.includes('War')) {
-        domainGrantedFeats.push(`[Domain Bonus] Martial Weapon Proficiency (${favWeapon})`);
-        domainGrantedFeats.push(`[Domain Bonus] Weapon Focus (${favWeapon})`);
-      }
-      if (chosen.includes('Darkness')) {
-        domainGrantedFeats.push(`[Domain Bonus] Blind-Fight`);
-      }
-      if (chosen.includes('Rune')) {
-        domainGrantedFeats.push(`[Domain Bonus] Scribe Scroll`);
-      }
-
-      // Check dynamic domain definitions for granted bonus feats (e.g., Planning -> Extend Spell, Undeath -> Extra Turning)
-      chosen.forEach(domName => {
+      const resolveDomainDef = (domName) => {
+        if (!domName) return null;
+        const lower = String(domName).toLowerCase().trim();
         let dDef = null;
-        if (window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function') {
-          dDef = window.SrdCompendium.getDomain(domName);
+        if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+          dDef = masterDb.find(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase().trim() === lower);
         }
         if (!dDef && typeof character !== 'undefined' && Array.isArray(character.customDb)) {
-          dDef = character.customDb.find(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase() === String(domName || '').toLowerCase());
+          dDef = character.customDb.find(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase().trim() === lower);
         }
-        if (!dDef && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-          dDef = masterDb.find(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase() === String(domName || '').toLowerCase());
+        if (!dDef && window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function') {
+          dDef = window.SrdCompendium.getDomain(domName);
         }
+        if (!dDef && typeof DND35_CLERIC_DOMAINS === 'object') {
+          dDef = DND35_CLERIC_DOMAINS[domName];
+        }
+        return dDef;
+      };
+
+      const resolveFeatDef = (featName) => {
+        if (!featName) return null;
+        const cleanFull = String(featName).replace(/^\[Domain Bonus\]\s*/i, '').trim();
+        const baseName = cleanFull.replace(/\s*\([^)]*\)$/, '').trim();
+        const fullLow = cleanFull.toLowerCase();
+        const baseLow = baseName.toLowerCase();
+
+        if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+          const m = masterDb.find(e => e && (e.type === 'Feat' || e.category === 'Feat') && (String(e.name || '').toLowerCase() === fullLow || String(e.name || '').toLowerCase() === baseLow));
+          if (m) return m;
+        }
+        if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+          const c = character.customDb.find(e => e && (e.type === 'Feat' || e.category === 'Feat') && (String(e.name || '').toLowerCase() === fullLow || String(e.name || '').toLowerCase() === baseLow));
+          if (c) return c;
+        }
+        if (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+          const s = window.SrdCompendium.getByName(cleanFull, 'Feat') || window.SrdCompendium.getByName(baseName, 'Feat');
+          if (s) return s;
+        }
+        if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+          const b = window.BUNDLED_SRD_CORE_CATALOG.find(i => i && i.type === 'Feat' && (String(i.name || '').toLowerCase() === fullLow || String(i.name || '').toLowerCase() === baseLow));
+          if (b) return b;
+        }
+        return null;
+      };
+
+      // Domain-granted bonus feats (War -> Weapon Focus & Martial Weapon Proficiency; Darkness -> Blind-Fight; Rune -> Scribe Scroll; or custom domain grantedFeats)
+      const domainGrantedFeatSpecs = [];
+      const addGrantedFeatSpec = (rawFeatName, domName) => {
+        const cleanName = String(rawFeatName || '').replace(/^\[Domain Bonus\]\s*/i, '').trim();
+        if (!cleanName) return;
+        let finalName = cleanName;
+        if (/^(weapon focus|martial weapon proficiency|exotic weapon proficiency)$/i.test(cleanName) && favWeapon && favWeapon !== "Deity's Favored Weapon") {
+          finalName = `${cleanName} (${favWeapon})`;
+        }
+        if (domainGrantedFeatSpecs.some(x => x.name.toLowerCase() === finalName.toLowerCase())) return;
+        const featDef = resolveFeatDef(finalName);
+        domainGrantedFeatSpecs.push({
+          id: featDef?.id || ('feat-' + finalName.toLowerCase().replace(/[^a-z0-9]+/g, '-')),
+          name: finalName,
+          type: 'Feat',
+          category: featDef?.category || 'Domain Bonus',
+          source: `${domName} Domain (Bonus Feat)`,
+          benefit: featDef?.shortDescription || featDef?.benefit || featDef?.description || `Granted bonus feat from ${domName} Domain.`,
+          prereq: featDef?.prerequisites || featDef?.prereq || '-',
+          prerequisites: featDef?.prerequisites || featDef?.prereq || '-',
+          modifiers: Array.isArray(featDef?.modifiers) ? JSON.parse(JSON.stringify(featDef.modifiers)) : [],
+          ruleFlags: featDef?.ruleFlags ? JSON.parse(JSON.stringify(featDef.ruleFlags)) : {},
+          slotDiff: featDef?.slotDiff ?? featDef?.levelAdjustment,
+          active: true,
+          isDomainBonus: true,
+          domainSource: domName
+        });
+      };
+
+      if (chosen.includes('War')) {
+        addGrantedFeatSpec(`Martial Weapon Proficiency (${favWeapon})`, 'War');
+        addGrantedFeatSpec(`Weapon Focus (${favWeapon})`, 'War');
+      }
+      if (chosen.includes('Darkness')) {
+        addGrantedFeatSpec('Blind-Fight', 'Darkness');
+      }
+      if (chosen.includes('Rune')) {
+        addGrantedFeatSpec('Scribe Scroll', 'Rune');
+      }
+
+      // Check dynamic domain definitions for granted bonus feats (e.g., Planning -> Extend Spell, Undeath -> Extra Turning, or custom domains)
+      chosen.forEach(domName => {
+        const dDef = resolveDomainDef(domName);
         if (dDef) {
-          const gFeats = dDef.grantedPower?.grantedFeats || dDef.grantedFeats;
+          const gFeats = dDef.grantedPower?.grantedFeats || dDef.grantedFeats || (dDef.grantedFeat ? [dDef.grantedFeat] : []);
           if (Array.isArray(gFeats)) {
             gFeats.forEach(featName => {
               if (featName && typeof featName === 'string') {
-                const badge = `[Domain Bonus] ${featName}`;
-                if (!domainGrantedFeats.includes(badge)) {
-                  domainGrantedFeats.push(badge);
-                }
+                addGrantedFeatSpec(featName, domName);
               }
             });
           }
         }
       });
 
-      // Update specialAbilities on Cleric 1 row and character.specialAbilities
+      // Update specialAbilities and feats on Cleric 1 row
       if (Array.isArray(character.levelProgression)) {
         let clericSeen = 0;
         character.levelProgression.forEach(row => {
@@ -8016,46 +8076,86 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               chosen.forEach(d => {
                 row.specialAbilities.push(`⚜️ Domain: ${d}`);
               });
+              if (!Array.isArray(row.feats)) row.feats = [];
+              row.feats = row.feats.filter(f => {
+                const fn = typeof f === 'string' ? f : (f?.name || '');
+                return !fn.startsWith('[Domain Bonus]') && !(typeof f === 'object' && f?.isDomainBonus);
+              });
+              domainGrantedFeatSpecs.forEach(df => {
+                row.feats.push(`[Domain Bonus] ${df.name}`);
+              });
             }
           }
         });
       }
 
-      // Sync top-level character.feats for RuleEngine (Weapon Focus / Blind-Fight / Scribe Scroll)
+      // Sync top-level character.feats with full V2 Feat objects for RuleEngine, Metamagic, Prerequisites & Feat Cards
       if (!Array.isArray(character.feats)) character.feats = [];
       character.feats = character.feats.filter(f => {
+        if (!f) return false;
+        if (typeof f === 'object' && f.isDomainBonus) return false;
         const fName = typeof f === 'string' ? f : (f?.name || '');
         return !fName.startsWith('[Domain Bonus]');
       });
-      domainGrantedFeats.forEach(df => {
+      domainGrantedFeatSpecs.forEach(df => {
         character.feats.push(df);
       });
 
       if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
       character.specialAbilities = character.specialAbilities.filter(a => {
+        if (!a) return false;
+        if (typeof a === 'object' && a.isDomainBonus) return false;
         const n = typeof a === 'string' ? a : (a?.name || '');
-        return !/^⚜️\s*Domain:/i.test(n) && !/\bDomain\s*\(Granted Power\)/i.test(n);
+        return !/^⚜️\s*Domain:/i.test(n) && !/\bDomain\s*\(Granted Power\)/i.test(n) && !/\bDomain\s*SLA\)/i.test(n);
       });
       chosen.forEach(d => {
-        let meta = (window.SrdCompendium && typeof window.SrdCompendium.getDomain === 'function')
-          ? window.SrdCompendium.getDomain(d)
-          : (typeof DND35_CLERIC_DOMAINS === 'object' ? DND35_CLERIC_DOMAINS[d] : null);
-        if (!meta && typeof character !== 'undefined' && Array.isArray(character.customDb)) {
-          meta = character.customDb.find(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase() === String(d || '').toLowerCase());
-        }
-        if (!meta && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-          meta = masterDb.find(e => e && (e.type === 'Domain' || e.category === 'Cleric Domain') && String(e.name || '').toLowerCase() === String(d || '').toLowerCase());
-        }
+        const meta = resolveDomainDef(d);
         const benefitText = (d === 'War' && favWeapon)
           ? `Free Martial Weapon Proficiency (${favWeapon}) and Weapon Focus (${favWeapon}).`
-          : (meta?.grantedPower?.description || meta?.grantedPower || meta?.description || `${d} Domain Granted Power`);
+          : (meta?.grantedPower?.description || (typeof meta?.grantedPower === 'string' ? meta.grantedPower : '') || meta?.description || `${d} Domain Granted Power`);
         character.specialAbilities.push({
           name: `⚜️ ${d} Domain (Granted Power)`,
           source: 'Cleric Domain',
+          category: 'Special Ability',
           benefit: benefitText,
           modifiers: Array.isArray(meta?.modifiers) ? JSON.parse(JSON.stringify(meta.modifiers)) : [],
-          ruleFlags: meta?.ruleFlags ? JSON.parse(JSON.stringify(meta.ruleFlags)) : {}
+          ruleFlags: meta?.ruleFlags ? JSON.parse(JSON.stringify(meta.ruleFlags)) : {},
+          isDomainBonus: true,
+          domainSource: d,
+          active: true
         });
+
+        // Also sync any explicit Domain Active SLA / Power into character.specialAbilities with full V2 relationships
+        const slas = meta?.grantedPower?.spellLikeAbilities || meta?.spellLikeAbilities || [];
+        if (Array.isArray(slas)) {
+          slas.forEach(sla => {
+            const slaName = typeof sla === 'string' ? sla : (sla?.name || '');
+            const slaUses = (typeof sla === 'object' && sla?.uses) ? sla.uses : '1/day';
+            if (!slaName || slaUses === 'None') return;
+            let slaDef = null;
+            if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+              slaDef = masterDb.find(e => e && String(e.name || '').toLowerCase() === slaName.toLowerCase());
+            }
+            if (!slaDef && window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+              slaDef = window.SrdCompendium.getByName(slaName, 'Spell') || window.SrdCompendium.getByName(slaName, 'Feat');
+            }
+            const slaDesc = sla?.desc || slaDef?.shortDescription || slaDef?.benefit || slaDef?.description || benefitText;
+            character.specialAbilities.push({
+              name: `⚜️ ${slaName} (${d} Domain SLA)`,
+              source: `${d} Domain`,
+              category: 'Spell-Like Ability',
+              action: slaDef?.action || 'Standard Action',
+              uses: slaUses,
+              benefit: `[${slaUses}] ${slaDesc}`,
+              modifiers: Array.isArray(slaDef?.modifiers) ? JSON.parse(JSON.stringify(slaDef.modifiers)) : [],
+              damageParts: Array.isArray(slaDef?.damageParts) ? JSON.parse(JSON.stringify(slaDef.damageParts)) : [],
+              ruleFlags: slaDef?.ruleFlags ? JSON.parse(JSON.stringify(slaDef.ruleFlags)) : {},
+              isDomainBonus: true,
+              domainSource: d,
+              active: true
+            });
+          });
+        }
       });
 
       if (typeof resolveClericEnergyPolicy === 'function' && character.spellcasting) {

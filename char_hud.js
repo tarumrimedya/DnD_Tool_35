@@ -5430,11 +5430,11 @@
         ].map(n => ({ name: n }));
       }
 
-      // Deduplicate by name
+      // Deduplicate by name (later custom/Master DB entries override earlier static entries)
       const map = new Map();
       domains.forEach(d => {
         const name = typeof d === 'string' ? d : (d.name || d.id || '');
-        if (name && !map.has(name.toLowerCase())) {
+        if (name) {
           map.set(name.toLowerCase(), typeof d === 'string' ? { name: d } : d);
         }
       });
@@ -5715,9 +5715,15 @@
         saveStateToStorage(true);
       }
 
-      // 5. Close modal & select saved deity
+      // 5. Close modal & select saved deity + re-sync domain favored weapon feats
       closeCustomDeityEditorModal();
       selectDeityItem(entry.name);
+      if (typeof syncClericDomainsToCharacterSpecialAbilities === 'function') {
+        syncClericDomainsToCharacterSpecialAbilities();
+      }
+      if (typeof renderAll === 'function') {
+        renderAll();
+      }
 
       // 6. Show official English toast
       if (typeof showDiceTopToast === 'function') {
@@ -6343,6 +6349,99 @@
       }
     }
 
+    function getAllDomainSlasAndAbilitiesFromCompendiumAndCustom() {
+      const items = [];
+      const seen = new Set();
+      const pushUnique = (obj) => {
+        if (!obj || !obj.name) return;
+        const k = String(obj.name).toLowerCase().trim();
+        if (!k || seen.has(k)) return;
+        seen.add(k);
+        items.push(obj);
+      };
+
+      // 1. Canonical 3.5e Domain SLAs
+      CANONICAL_DOMAIN_SLAS.forEach(s => pushUnique({ ...s, category: 'Domain SLA' }));
+
+      // 2. Active SLAs from all SRD + Custom Domains
+      if (window.SrdCompendium && typeof window.SrdCompendium.getAllDomains === 'function') {
+        window.SrdCompendium.getAllDomains().forEach(dom => {
+          const slas = dom?.grantedPower?.spellLikeAbilities || dom?.spellLikeAbilities || [];
+          slas.forEach(sla => {
+            if (!sla || !sla.name) return;
+            pushUnique({
+              name: sla.name,
+              uses: sla.uses || '1/day',
+              category: `${dom.name} Domain`,
+              desc: sla.desc || dom?.grantedPower?.description || dom?.description || ''
+            });
+          });
+        });
+      }
+
+      // 3. Special Abilities & Feats from Master DB & Character Custom DB
+      const customPools = [
+        ...(typeof masterDb !== 'undefined' && Array.isArray(masterDb) ? masterDb : []),
+        ...(typeof character !== 'undefined' && Array.isArray(character.customDb) ? character.customDb : [])
+      ];
+      customPools.forEach(e => {
+        if (!e || !e.name) return;
+        const t = String(e.type || e.category || '').toLowerCase();
+        if (t === 'special ability' || t.includes('sla') || t === 'active power' || t === 'dm grant') {
+          pushUnique({
+            name: e.name,
+            uses: e.uses || '1/day',
+            category: e.source || 'Special Ability',
+            desc: e.shortDescription || e.benefit || e.description || e.desc || ''
+          });
+        }
+      });
+
+      // 4. All Spells from Compendium + Master DB (can be granted as Domain SLAs)
+      getAllSpellsFromCompendiumAndCustom().forEach(sp => {
+        if (!sp || !sp.name) return;
+        pushUnique({
+          name: sp.name,
+          uses: '1/day',
+          category: sp.school ? `Spell-Like (${sp.school})` : 'Spell-Like Ability',
+          desc: sp.shortDescription || sp.description || sp.benefit || sp.desc || ''
+        });
+      });
+
+      return items;
+    }
+
+    function isSlaInDb(slaName) {
+      if (!slaName) return false;
+      const clean = slaName.trim().toLowerCase();
+      if (CANONICAL_DOMAIN_SLAS.some(s => s.name.toLowerCase() === clean)) return true;
+      if (isSpellInDb(slaName) || isFeatInDb(slaName)) return true;
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        if (masterDb.some(e => e && String(e.name || '').toLowerCase() === clean)) return true;
+      }
+      if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+        if (character.customDb.some(e => e && String(e.name || '').toLowerCase() === clean)) return true;
+      }
+      return false;
+    }
+
+    function updateDomainSlaBadge(slaName) {
+      const badgeEl = document.getElementById('custom-domain-sla-badge');
+      if (!badgeEl) return;
+      const clean = (slaName || '').trim();
+      if (!clean || clean === '-' || clean.toLowerCase() === 'none') {
+        badgeEl.innerHTML = '';
+        return;
+      }
+      const inDb = isSlaInDb(clean);
+      if (inDb) {
+        badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
+      } else {
+        const safe = clean.replace(/'/g, "\\'");
+        badgeEl.innerHTML = `<button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Special Ability', '${safe}')" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch ability via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
+      }
+    }
+
     function updateDomainFeatBadge(featName) {
       const badgeEl = document.getElementById('custom-domain-feat-badge');
       if (!badgeEl) return;
@@ -6373,13 +6472,15 @@
         badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1 py-0.5">✓ DB</span>';
       } else {
         const safe = clean.replace(/'/g, "\\'");
-        badgeEl.innerHTML = `<button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Spell', '${safe}', ${lvl})" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1 py-0.5 transition cursor-pointer active:scale-95" title="Not in DB — Click to fetch via Rule Master AI & add to Master DB">➕ AI</button>`;
+        badgeEl.innerHTML = `<button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Spell', '${safe}', ${lvl})" class="text-[9px] font-bold text-emerald-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1 py-0.5 transition cursor-pointer active:scale-95" title="Not in DB — Click to fetch via Rule Master AI & add to Master DB">➕ AI</button>`;
       }
     }
 
     function updateAllDomainBadges() {
       const featInput = document.getElementById('custom-domain-feat');
       if (featInput) updateDomainFeatBadge(featInput.value);
+      const slaInput = document.getElementById('custom-domain-sla-name');
+      if (slaInput) updateDomainSlaBadge(slaInput.value);
       for (let lvl = 1; lvl <= 9; lvl++) {
         const spInput = document.getElementById(`custom-domain-spell-${lvl}`);
         if (spInput) updateDomainSpellBadge(lvl, spInput.value);
@@ -6438,14 +6539,23 @@
         if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
 
         if (type === 'Feat') {
-          updateDomainFeatBadge(clean);
+          const fInput = document.getElementById('custom-domain-feat');
+          if (fInput) fInput.value = entry.name;
+          updateDomainFeatBadge(entry.name);
+        } else if (type === 'Special Ability') {
+          const sInput = document.getElementById('custom-domain-sla-name');
+          if (sInput) sInput.value = entry.name;
+          updateDomainSlaBadge(entry.name);
         } else if (type === 'Spell' && lvl !== null) {
-          updateDomainSpellBadge(lvl, clean);
+          const spInput = document.getElementById(`custom-domain-spell-${lvl}`);
+          if (spInput) spInput.value = entry.name;
+          updateDomainSpellBadge(lvl, entry.name);
         } else if (type === 'Weapon') {
           const wInput = document.getElementById('custom-deity-weapon');
           if (wInput) wInput.value = entry.name;
           updateDeityWeaponBadge(entry.name);
         }
+        closeDomainFieldSpotlight();
 
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
@@ -6486,10 +6596,10 @@
         if (searchInput) searchInput.placeholder = 'Search feats (e.g., Extend Spell, Blind-Fight)...';
         _activeDomainSpotlightCtx.items = getAllFeatsFromCompendiumAndCustom();
       } else if (mode === 'sla') {
-        if (titleEl) titleEl.textContent = 'Select Domain Active SLA / Power';
+        if (titleEl) titleEl.textContent = 'Select Domain Active SLA / Power (Compendium + Master DB)';
         if (iconEl) iconEl.textContent = '⚡';
-        if (searchInput) searchInput.placeholder = 'Search domain powers (e.g., Smite, Ward, Turn Undead)...';
-        _activeDomainSpotlightCtx.items = CANONICAL_DOMAIN_SLAS;
+        if (searchInput) searchInput.placeholder = 'Search domain powers, SLAs, or spells (e.g., Smite, Ward, Clairvoyance)...';
+        _activeDomainSpotlightCtx.items = getAllDomainSlasAndAbilitiesFromCompendiumAndCustom();
       } else if (mode === 'weapon') {
         if (titleEl) titleEl.textContent = 'Select Deity Favored Weapon (SRD Compendium + Master DB)';
         if (iconEl) iconEl.textContent = '⚔️';
@@ -6550,35 +6660,35 @@
       if (countEl) countEl.textContent = `${filtered.length} matches`;
 
       if (filtered.length === 0) {
+        const aiType = ctx.mode === 'weapon' ? 'Weapon' : (ctx.mode === 'spell' ? 'Spell' : (ctx.mode === 'feat' ? 'Feat' : 'Special Ability'));
+        const safeQ = escapeDeityHtml(query).replace(/'/g, "\\'");
+        const lvlArg = (ctx.mode === 'spell' && ctx.targetLvl !== null) ? `, ${ctx.targetLvl}` : '';
         resultsEl.innerHTML = `
-          <div class="p-6 text-center text-slate-400 space-y-2">
+          <div class="p-6 text-center text-slate-400 space-y-2.5">
             <span class="text-2xl block">🔍</span>
-            <p class="text-xs text-slate-300">No match found for "<strong>${escapeDeityHtml(query)}</strong>".</p>
-            ${ctx.mode === 'weapon' ? `
-              <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
-                <button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Weapon', '${escapeDeityHtml(query).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-lg shadow transition cursor-pointer active:scale-95 flex items-center gap-1">
-                  <span>🔮</span> <span>Fetch "${escapeDeityHtml(query)}" via Rule Master AI</span>
-                </button>
-                <button type="button" onclick="selectDomainSpotlightCustom('${escapeDeityHtml(query).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold text-xs rounded-lg shadow transition cursor-pointer active:scale-95">
-                  Use "${escapeDeityHtml(query)}" (Custom Weapon)
-                </button>
-              </div>
-            ` : (ctx.mode === 'spell' ? `
-              <button type="button" onclick="selectDomainSpotlightCustom('${escapeDeityHtml(query).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-lg shadow transition cursor-pointer active:scale-95">
-                Use "${escapeDeityHtml(query)}" (Custom Spell)
+            <p class="text-xs text-slate-300">No match found in local DB for "<strong>${escapeDeityHtml(query)}</strong>".</p>
+            <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
+              <button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('${aiType}', '${safeQ}'${lvlArg})" class="px-3 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-lg shadow transition cursor-pointer active:scale-95 flex items-center gap-1">
+                <span>🔮</span> <span>Fetch "${escapeDeityHtml(query)}" via Rule Master AI</span>
               </button>
-            ` : (ctx.mode === 'feat' ? `
-              <button type="button" onclick="selectDomainSpotlightCustom('${escapeDeityHtml(query).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-slate-950 font-black text-xs rounded-lg shadow transition cursor-pointer active:scale-95">
-                Use "${escapeDeityHtml(query)}" (Custom Feat)
+              <button type="button" onclick="selectDomainSpotlightCustom('${safeQ}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold text-xs rounded-lg shadow transition cursor-pointer active:scale-95">
+                Use "${escapeDeityHtml(query)}" (Custom ${aiType})
               </button>
-            ` : ''))}
+            </div>
           </div>
         `;
         return;
       }
 
+      const clearBtnHtml = !q ? `
+        <button type="button" onclick="selectDomainSpotlightItem('')" class="w-full text-left p-2 rounded-xl bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800/80 hover:border-rose-500/50 transition flex items-center justify-between gap-3 group cursor-pointer">
+          <span class="font-bold text-slate-400 group-hover:text-rose-200 text-xs">— None (Clear Selection) —</span>
+          <span class="text-[10px] text-slate-500 group-hover:text-rose-300 font-mono">Clear ✕</span>
+        </button>
+      ` : '';
+
       const display = filtered.slice(0, 30);
-      resultsEl.innerHTML = display.map(item => {
+      resultsEl.innerHTML = clearBtnHtml + display.map(item => {
         const name = item.name || '';
         const safeName = name.replace(/'/g, "\\'");
         const meta1 = ctx.mode === 'spell' ? (item.school || 'Spell') : (ctx.mode === 'weapon' ? (item.category || 'Weapon') : (item.category || item.source || ''));
@@ -6603,21 +6713,37 @@
 
     function selectDomainSpotlightItem(name) {
       const ctx = _activeDomainSpotlightCtx;
+      const foundItem = name ? ctx.items.find(i => i && String(i.name || '').toLowerCase() === String(name).toLowerCase()) : null;
+      const pDescInput = document.getElementById('custom-domain-power-desc');
+
       if (ctx.mode === 'feat') {
         const featInput = document.getElementById('custom-domain-feat');
         if (featInput) featInput.value = name;
         updateDomainFeatBadge(name);
+        if (name && pDescInput && !pDescInput.value.trim()) {
+          const fDesc = foundItem?.benefit || foundItem?.shortDescription || foundItem?.description || '';
+          pDescInput.value = fDesc ? `Granted Bonus Feat: ${name} — ${fDesc}` : `You gain ${name} as a bonus feat.`;
+        }
       } else if (ctx.mode === 'weapon') {
         const weaponInput = document.getElementById('custom-deity-weapon');
-        if (weaponInput) weaponInput.value = name;
-        updateDeityWeaponBadge(name);
+        if (weaponInput) weaponInput.value = name || '-';
+        updateDeityWeaponBadge(name || '-');
       } else if (ctx.mode === 'sla') {
         const slaInput = document.getElementById('custom-domain-sla-name');
         if (slaInput) slaInput.value = name;
-        const found = CANONICAL_DOMAIN_SLAS.find(s => s.name.toLowerCase() === name.toLowerCase());
-        if (found && found.uses) {
-          const usesSelect = document.getElementById('custom-domain-sla-uses');
-          if (usesSelect) usesSelect.value = found.uses;
+        updateDomainSlaBadge(name);
+        const usesSelect = document.getElementById('custom-domain-sla-uses');
+        if (!name) {
+          if (usesSelect) usesSelect.value = 'None';
+        } else {
+          if (foundItem && foundItem.uses && usesSelect) {
+            usesSelect.value = foundItem.uses;
+          } else if (usesSelect && usesSelect.value === 'None') {
+            usesSelect.value = '1/day';
+          }
+          if (pDescInput && !pDescInput.value.trim() && foundItem?.desc) {
+            pDescInput.value = `${name} (${usesSelect?.value || '1/day'}): ${foundItem.desc}`;
+          }
         }
       } else if (ctx.mode === 'spell' && ctx.targetLvl !== null) {
         const spInput = document.getElementById(`custom-domain-spell-${ctx.targetLvl}`);
@@ -6681,7 +6807,7 @@
         }
       }
 
-      // Auto-register any missing feat or spell in character.customDb & masterDb
+      // Auto-register any missing feat, SLA, or spell in character.customDb & masterDb
       if (feat && !isFeatInDb(feat)) {
         const featSlug = feat.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'feat';
         const autoFeat = {
@@ -6691,13 +6817,37 @@
           category: 'General',
           name: feat,
           source: srcInput?.value || 'Domain Bonus',
-          benefit: `Granted bonus feat from ${name} Domain.`,
+          benefit: powerDesc || `Granted bonus feat from ${name} Domain.`,
+          modifiers: (modTarget && modTarget !== 'None' && modVal !== 0) ? [{ target: modTarget, value: modVal, type: modType }] : [],
           isCustom: true,
           addedAt: new Date().toISOString()
         };
         if (typeof character !== 'undefined' && Array.isArray(character.customDb)) character.customDb.push(autoFeat);
         if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) masterDb.push(autoFeat);
       }
+
+      if (slaName && !isSlaInDb(slaName)) {
+        const slaSlug = slaName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'sla';
+        const effectiveUses = (slaUses && slaUses !== 'None') ? slaUses : '1/day';
+        const autoSla = {
+          schemaVersion: 2,
+          id: 'abil-' + slaSlug,
+          type: 'Special Ability',
+          category: 'Special Ability',
+          name: slaName,
+          action: 'Standard Action',
+          uses: effectiveUses,
+          source: srcInput?.value || `${name} Domain`,
+          benefit: powerDesc || `${name} Domain Active Power (${effectiveUses}).`,
+          modifiers: (modTarget && modTarget !== 'None' && modVal !== 0) ? [{ target: modTarget, value: modVal, type: modType }] : [],
+          isCustom: true,
+          addedAt: new Date().toISOString()
+        };
+        if (typeof character !== 'undefined' && Array.isArray(character.customDb)) character.customDb.push(autoSla);
+        if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) masterDb.push(autoSla);
+      }
+
+      const finalSlaUses = (slaName && (!slaUses || slaUses === 'None')) ? '1/day' : slaUses;
 
       spellsList.forEach(sp => {
         if (sp.name && !isSpellInDb(sp.name)) {
@@ -6723,7 +6873,7 @@
         description: powerDesc,
         classSkills: Array.from(_customDomainSelectedSkills),
         grantedFeats: feat ? [feat] : [],
-        spellLikeAbilities: (slaName && slaUses !== 'None') ? [{ name: slaName, uses: slaUses }] : []
+        spellLikeAbilities: (slaName && finalSlaUses !== 'None') ? [{ name: slaName, uses: finalSlaUses, desc: powerDesc }] : []
       };
 
       const modifiers = (modTarget && modTarget !== 'None' && modVal !== 0)
@@ -6839,12 +6989,30 @@
         }
       }
 
-      // 7. Refresh Cleric domain picker list if open
+      // 7. Sync Character's Equipped Cleric Domains, Granted Feats, SLAs, Class Skills & Modifiers Live
+      if (typeof character !== 'undefined' && character) {
+        if (Array.isArray(character.spellcasting?.domains) && _editingDomainOriginalName && _editingDomainOriginalName.toLowerCase() !== entry.name.toLowerCase()) {
+          character.spellcasting.domains = character.spellcasting.domains.map(d =>
+            String(d || '').toLowerCase() === _editingDomainOriginalName.toLowerCase() ? entry.name : d
+          );
+        }
+        if (typeof syncClericDomainsToCharacterSpecialAbilities === 'function') {
+          syncClericDomainsToCharacterSpecialAbilities();
+        }
+        if (typeof calculateDivineSlots === 'function') {
+          calculateDivineSlots();
+        }
+        if (typeof renderAll === 'function') {
+          renderAll();
+        }
+      }
+
+      // 8. Refresh Cleric domain picker list if open
       if (typeof renderClericDomainPickerList === 'function') {
         renderClericDomainPickerList();
       }
 
-      // 8. Show official English toast
+      // 9. Show official English toast
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
           title: 'Domain Saved to Master DB',
@@ -6866,6 +7034,7 @@
     window.selectDomainSpotlightItem = selectDomainSpotlightItem;
     window.selectDomainSpotlightCustom = selectDomainSpotlightCustom;
     window.updateDomainFeatBadge = updateDomainFeatBadge;
+    window.updateDomainSlaBadge = updateDomainSlaBadge;
     window.updateDomainSpellBadge = updateDomainSpellBadge;
     window.updateDeityWeaponBadge = updateDeityWeaponBadge;
     window.getAllWeaponsFromCompendiumAndCustom = getAllWeaponsFromCompendiumAndCustom;

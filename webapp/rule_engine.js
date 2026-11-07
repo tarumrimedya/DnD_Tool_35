@@ -2215,7 +2215,8 @@ const RuleEngine = {
         ...(Array.isArray(row.feats) ? row.feats : [])
       ];
       combined.forEach(entry => {
-        const m = String(entry || '').match(/Domain:\s*([A-Za-z]+)/i);
+        const rawEntry = typeof entry === 'string' ? entry : (entry?.name || '');
+        const m = String(rawEntry || '').match(/Domain:\s*([^\n,;()]+)/i);
         if (m && m[1]) domainNames.add(m[1].trim());
       });
     });
@@ -2224,9 +2225,9 @@ const RuleEngine = {
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const entries = [];
     domainNames.forEach(domName => {
-      const srdDom = (comp && typeof comp.getDomain === 'function')
-        ? comp.getDomain(domName)
-        : this.getMasterDbEntry(domName, 'Domain');
+      const mdbDom = this.getMasterDbEntry(domName, 'Domain');
+      const compDom = (comp && typeof comp.getDomain === 'function') ? comp.getDomain(domName) : null;
+      const srdDom = mdbDom || compDom;
       entries.push({
         name: srdDom?.name || domName,
         modifiers: Array.isArray(srdDom?.modifiers) ? srdDom.modifiers : [],
@@ -2516,6 +2517,28 @@ const RuleEngine = {
       (dom.spellLikeAbilities || []).forEach(sla => {
         const slaName = String(sla?.name || '').trim();
         if (!slaName) return;
+        const usesStr = String(sla?.uses || '1/day').trim();
+        const usesLower = usesStr.toLowerCase();
+        const wisScore = Number(abilityScores?.wis?.total ?? character?.stats?.wis?.score ?? 10);
+        const wisMod = this.getAbilityModifier(wisScore);
+        let parsedMaxUses = 1;
+        let unitLabel = '/day';
+        if (usesLower.includes('at will')) {
+          parsedMaxUses = 99;
+          unitLabel = 'At Will';
+        } else if (usesLower.includes('cha')) {
+          const baseNum = parseInt(usesLower, 10) || 3;
+          parsedMaxUses = Math.max(1, baseNum + chaMod);
+        } else if (usesLower.includes('wis')) {
+          const baseNum = parseInt(usesLower, 10) || 3;
+          parsedMaxUses = Math.max(1, baseNum + wisMod);
+        } else if (usesLower.includes('level') || usesLower.includes('cleric')) {
+          parsedMaxUses = Math.max(1, domainCasterLvl);
+        } else {
+          const numM = usesLower.match(/(\d+)/);
+          if (numM) parsedMaxUses = Math.max(1, parseInt(numM[1], 10));
+        }
+
         if (domName.toLowerCase() === 'nobility' || slaName.toLowerCase().includes('inspire allies')) {
           const durRds = Math.max(1, chaMod);
           activeDomainPowers.push({
@@ -2524,7 +2547,7 @@ const RuleEngine = {
             name: 'Inspire Allies',
             icon: '👑',
             actionType: 'Standard Action',
-            maxUses: 1,
+            maxUses: parsedMaxUses,
             durationText: `${durRds} round${durRds > 1 ? 's' : ''}`,
             summary: `+2 Morale bonus on saving throws, attack rolls, ability/skill checks, and weapon damage (${durRds} rds)`,
             kind: 'buff',
@@ -2536,16 +2559,20 @@ const RuleEngine = {
             ]
           });
         } else {
+          const slaEntry = this.getMasterDbEntry(slaName, 'Special Ability') || this.getMasterDbEntry(slaName, 'Spell') || this.getMasterDbEntry(slaName, 'Feat');
           activeDomainPowers.push({
-            id: `dom_${domName.toLowerCase()}_sla_${slaName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
+            id: `dom_${domName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}_sla_${slaName.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`,
             domain: domName,
             name: `${slaName} (Sp)`,
             icon: '🔮',
-            actionType: 'Standard Action',
-            maxUses: 1,
-            durationText: `CL ${domainCasterLvl}`,
-            summary: `${domName} Domain Spell-Like Ability (1/day at CL ${domainCasterLvl})`,
-            kind: 'sla',
+            actionType: slaEntry?.action || 'Standard Action',
+            maxUses: parsedMaxUses,
+            unitLabel: unitLabel,
+            durationText: slaEntry?.duration || `CL ${domainCasterLvl}`,
+            summary: sla?.desc || slaEntry?.shortDescription || slaEntry?.benefit || slaEntry?.description || dom.description || `${domName} Domain Active Power (${usesStr} at CL ${domainCasterLvl})`,
+            kind: (Array.isArray(slaEntry?.modifiers) && slaEntry.modifiers.length > 0) ? 'buff' : 'sla',
+            modifiers: Array.isArray(slaEntry?.modifiers) ? JSON.parse(JSON.stringify(slaEntry.modifiers)) : [],
+            damageParts: Array.isArray(slaEntry?.damageParts) ? JSON.parse(JSON.stringify(slaEntry.damageParts)) : [],
             spellName: slaName
           });
         }

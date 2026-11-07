@@ -676,57 +676,59 @@
         } catch (_) {}
       }
 
-      const merged = [...list];
-      const seen = new Set(list.map((d) => String(d.name || '').toLowerCase().trim()));
+      const byKey = new Map();
+      list.forEach((d) => {
+        if (d && d.name) byKey.set(String(d.name).toLowerCase().trim(), d);
+      });
 
-      // 1. Merge Custom Domains from character.customDb
-      if (typeof window !== 'undefined' && window.character && Array.isArray(window.character.customDb)) {
-        window.character.customDb.forEach((entry) => {
-          if (entry && String(entry.type || '').toLowerCase() === 'domain' && entry.name) {
-            const key = entry.name.toLowerCase().trim();
-            if (!seen.has(key)) {
-              seen.add(key);
-              merged.push(entry);
-            }
-          }
-        });
-      }
+      const mergeDomainOverride = (entry) => {
+        if (!entry || !entry.name) return;
+        const isDom = String(entry.type || '').toLowerCase() === 'domain' || String(entry.category || '').toLowerCase().includes('domain') || String(entry.id || '').startsWith('dom-');
+        if (!isDom) return;
+        const key = String(entry.name).toLowerCase().trim();
+        byKey.set(key, entry);
+      };
 
-      // 2. Merge Custom Domains cached in localStorage
+      // 1. Merge Custom Domains cached in localStorage
       if (typeof localStorage !== 'undefined') {
         try {
           const raw = localStorage.getItem('dnd35_custom_domains');
           if (raw) {
             const parsed = JSON.parse(raw);
-            if (Array.isArray(parsed)) {
-              parsed.forEach((entry) => {
-                if (entry && entry.name) {
-                  const key = entry.name.toLowerCase().trim();
-                  if (!seen.has(key)) {
-                    seen.add(key);
-                    merged.push(entry);
-                  }
-                }
-              });
-            }
+            if (Array.isArray(parsed)) parsed.forEach(mergeDomainOverride);
           }
         } catch (_) {}
       }
 
-      return merged;
+      // 2. Merge Custom Domains from character.customDb & masterDb (takes highest precedence)
+      if (typeof window !== 'undefined') {
+        if (window.character && Array.isArray(window.character.customDb)) {
+          window.character.customDb.forEach(mergeDomainOverride);
+        }
+        if (Array.isArray(window.masterDb)) {
+          window.masterDb.forEach(mergeDomainOverride);
+        }
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        masterDb.forEach(mergeDomainOverride);
+      }
+
+      return Array.from(byKey.values());
     },
 
     getDomain(idOrName) {
       if (!idOrName) return null;
       const allDom = this.getAllDomains();
       const raw = String(idOrName).trim();
+      const rawLower = raw.toLowerCase();
+      const slug = `dom-${rawLower.replace(/[^a-z0-9]+/g, '-')}`;
+      const match = allDom.find((d) => d && (d.id === raw || d.id === slug || String(d.name || '').toLowerCase().trim() === rawLower));
+      if (match) return match;
       const byId = this.getById(raw);
       if (byId && byId.type === 'Domain') return byId;
-      const bySlug = this.getById(`dom-${raw.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`);
+      const bySlug = this.getById(slug);
       if (bySlug && bySlug.type === 'Domain') return bySlug;
-      const byName = this.getByName(raw, 'Domain');
-      if (byName) return byName;
-      return allDom.find((d) => d && (d.id === raw || String(d.name || '').toLowerCase() === raw.toLowerCase())) || null;
+      return this.getByName(raw, 'Domain') || null;
     },
 
     getAllTemplates() {
