@@ -989,7 +989,12 @@
             banner.className = 'p-2.5 rounded-xl border border-purple-500/70 bg-purple-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
             if (iconNoticeEl) iconNoticeEl.textContent = '🎖️';
             if (titleNoticeEl) titleNoticeEl.textContent = `Target Slot: Standard Feat (Level ${lvlNum})`;
-            if (descNoticeEl) descNoticeEl.textContent = `Standard character feat slot gained via D&D 3.5e RAW level progression (Levels 1, 3, 6, 9, 12, 15, 18).`;
+            const cadenceText = String(featMode).startsWith('Every 2 Levels')
+              ? 'Levels 1, 3, 5, 7, 9, 11, 13, 15, 17, 19'
+              : (String(featMode).startsWith('Every 4 Levels')
+                  ? 'Levels 1, 4, 8, 12, 16, 20'
+                  : (String(featMode).startsWith('All Free') ? 'Every Level (1–20)' : 'Levels 1, 3, 6, 9, 12, 15, 18'));
+            if (descNoticeEl) descNoticeEl.textContent = `Standard character feat slot gained via level progression (${cadenceText}).`;
           } else if (preferredCategory === 'Racial Trait') {
             banner.className = 'p-2.5 rounded-xl border border-teal-500/70 bg-teal-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
             if (iconNoticeEl) iconNoticeEl.textContent = '🧬';
@@ -7394,9 +7399,25 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       tbody.innerHTML = '';
 
       // Sync settings toolbar UI
+      if (character.settings?.featMode && String(character.settings.featMode).startsWith('Every 2 Levels')) {
+        character.settings.featMode = 'Every 2 Levels (1, 3, 5, 7, 9, 11, 13, 15, 17, 19)';
+      }
       const featModeSel = document.getElementById('setting-feat-mode');
       if (featModeSel && character.settings?.featMode) {
         featModeSel.value = character.settings.featMode;
+      }
+      const featCadenceDisplay = document.getElementById('level-prog-feat-cadence-display');
+      if (featCadenceDisplay) {
+        const curMode = String(character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)');
+        if (curMode.startsWith('Every 2 Levels')) {
+          featCadenceDisplay.textContent = '1, 3, 5, 7, 9, 11, 13, 15, 17, 19';
+        } else if (curMode.startsWith('Every 4 Levels')) {
+          featCadenceDisplay.textContent = '1, 4, 8, 12, 16, 20';
+        } else if (curMode.startsWith('All Free')) {
+          featCadenceDisplay.textContent = 'Every Level (1–20)';
+        } else {
+          featCadenceDisplay.textContent = '1, 3, 6, 9, 12, 15, 18';
+        }
       }
       const clModeSel = document.getElementById('setting-cl-mode');
       if (clModeSel) {

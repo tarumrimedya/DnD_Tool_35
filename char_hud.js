@@ -1657,6 +1657,9 @@
       updateHouseRuleSkillConsolidationUI();
 
       // Sync Feat Mode, Caster CL Mode & Ignore ASF in House Rules
+      if (character?.settings?.featMode && String(character.settings.featMode).startsWith('Every 2 Levels')) {
+        character.settings.featMode = 'Every 2 Levels (1, 3, 5, 7, 9, 11, 13, 15, 17, 19)';
+      }
       const featModeSel = document.getElementById('setting-feat-mode');
       if (featModeSel && character?.settings?.featMode) {
         featModeSel.value = character.settings.featMode;

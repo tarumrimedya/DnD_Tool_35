@@ -6648,11 +6648,12 @@
     }
 
     function isLevelQualifiesForFeat(level, mode) {
-      if (mode === 'Every 2 Levels (1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20)') {
-        return level === 1 || (level % 2 === 0);
-      } else if (mode === 'Every 4 Levels (1, 4, 8, 12, 16, 20)') {
+      const m = String(mode || '');
+      if (m.startsWith('Every 2 Levels')) {
+        return (Number(level) % 2 === 1);
+      } else if (m.startsWith('Every 4 Levels')) {
         return level === 1 || (level % 4 === 0);
-      } else if (mode === 'All Free / Custom') {
+      } else if (m.startsWith('All Free / Custom')) {
         return true;
       } else {
         // Standard 3.5e (1, 3, 6, 9, 12, 15, 18)
