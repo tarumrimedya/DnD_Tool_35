@@ -7468,7 +7468,87 @@
         });
       }
 
+      // Hydrate Canonical Unearthed Arcana (UA) Variant Base Classes (0ms local lookup)
+      if (all['Rogue'] && !all['Rogue (Adventurer Variant)']) {
+        const baseRogue = all['Rogue'];
+        const advFeatures = {};
+        const bFeatLvls = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+        for (let lvl = 1; lvl <= 20; lvl++) {
+          const rawList = Array.isArray(baseRogue.features?.[lvl]) ? baseRogue.features[lvl] : [];
+          const filtered = rawList
+            .filter(f => !/sneak\s*attack/i.test(typeof f === 'string' ? f : (f?.name || '')))
+            .map(f => typeof f === 'string' ? { name: f, category: 'Special Ability', type: 'Ex', summary: f } : Object.assign({}, f));
+          if (bFeatLvls.includes(lvl)) {
+            filtered.unshift({
+              name: 'Fighter Bonus Feat',
+              category: 'Bonus Feat',
+              type: 'Ex',
+              summary: 'Select a Fighter Bonus Feat (in place of Sneak Attack, Unearthed Arcana p.58)'
+            });
+          }
+          if (filtered.length > 0) advFeatures[lvl] = filtered;
+        }
+        all['Rogue (Adventurer Variant)'] = Object.assign({}, baseRogue, {
+          id: 'cls_rogue_adventurer_ua',
+          name: 'Rogue (Adventurer Variant)',
+          features: advFeatures,
+          bonusFeatLevels: bFeatLvls,
+          role: 'Variant Base Class • Martial Feat Rogue (Trades Sneak Attack for Fighter Bonus Feats)',
+          source: 'Unearthed Arcana p.58',
+          description: 'Martial / Adventurer Rogue variant (Unearthed Arcana p. 58). Gives up Sneak Attack progression (+1d6 at 1st, 3rd, 5th..19th level) to gain a Fighter Bonus Feat at each of those levels (1st, 3rd, 5th, 7th, 9th, 11th, 13th, 15th, 17th, and 19th), while retaining d6 HD, 8+INT skill points, Trapfinding, Evasion, Uncanny Dodge, and Rogue Special Abilities.',
+          type: 'Base Class',
+          isPrestige: false
+        });
+      }
+
+      if (all['Fighter'] && !all['Fighter (Thug Variant)']) {
+        const baseFighter = all['Fighter'];
+        const thugFeatures = {};
+        for (let lvl = 2; lvl <= 20; lvl += 2) {
+          thugFeatures[lvl] = [{ name: 'Fighter Bonus Feat', category: 'Bonus Feat', type: 'Ex', summary: 'Bonus combat feat from Fighter bonus feat list' }];
+        }
+        all['Fighter (Thug Variant)'] = Object.assign({}, baseFighter, {
+          id: 'cls_fighter_thug_ua',
+          name: 'Fighter (Thug Variant)',
+          skills: 4,
+          classSkills: Array.from(new Set([...(baseFighter.classSkills || []), 'bluff', 'gather_information', 'knowledge_local', 'sleight_of_hand'])),
+          features: thugFeatures,
+          bonusFeatLevels: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20],
+          role: 'Variant Base Class • Urban Brawler (4+INT Skills, Urban Class Skills)',
+          source: 'Unearthed Arcana p.51',
+          description: 'Thug Fighter variant (Unearthed Arcana p. 51). Gains 4+INT skill points per level and adds Bluff, Gather Information, Knowledge (local), and Sleight of Hand as class skills, trading away heavy armor/shield proficiency and the 1st-level Fighter bonus feat.',
+          type: 'Base Class',
+          isPrestige: false
+        });
+      }
+
+      if (all['Cleric'] && !all['Cleric (Cloistered Cleric)']) {
+        const baseCleric = all['Cleric'];
+        const cloisteredFeatures = JSON.parse(JSON.stringify(baseCleric.features || {}));
+        if (!Array.isArray(cloisteredFeatures[1])) cloisteredFeatures[1] = [];
+        cloisteredFeatures[1].push(
+          { name: 'Lore (Ex)', category: 'Special Ability', type: 'Ex', summary: 'Functions like Bardic Knowledge (Cleric level + INT modifier)' },
+          { name: 'Bonus Domain: Knowledge', category: 'Special Ability', type: 'Ex', summary: 'Gains the Knowledge domain as a bonus third Cleric domain' }
+        );
+        all['Cleric (Cloistered Cleric)'] = Object.assign({}, baseCleric, {
+          id: 'cls_cleric_cloistered_ua',
+          name: 'Cleric (Cloistered Cleric)',
+          hd: 6,
+          bab: 0.5,
+          skills: 6,
+          features: cloisteredFeatures,
+          role: 'Variant Base Class • Divine Scholar (d6 HD, 6+INT Skills, Lore & Bonus Knowledge Domain)',
+          source: 'Unearthed Arcana p.50',
+          description: 'Cloistered Cleric variant (Unearthed Arcana p. 50). Uses d6 Hit Die and Poor BAB (1/2), but gains 6+INT skill points per level, all Knowledge skills as class skills, the Lore ability (as Bardic Knowledge), and the Knowledge domain as a bonus third domain.',
+          type: 'Base Class',
+          isPrestige: false
+        });
+      }
+
+      // Auto-purge any bogus placeholder classes ("Non-Existent Class", "Unknown", "Null") from character.customClasses & masterDb
+      const isBogusClassName = (n) => !n || /^(null|none|unknown|non-existent|nonexistent|invalid|n\/a)/i.test(String(n).trim());
       if (Array.isArray(character?.customClasses)) {
+        character.customClasses = character.customClasses.filter(c => c && !isBogusClassName(c.name));
         character.customClasses.forEach(c => {
           if (c && c.name) {
             all[c.name] = {
@@ -7479,12 +7559,14 @@
               will: c.will || 'poor',
               skills: Number(c.skills) || 2,
               maxLevel: Number(c.maxLevel) || (c.type === 'Prestige Class' ? 10 : 20),
+              classSkills: Array.isArray(c.classSkills) ? c.classSkills : (all[c.name]?.classSkills || []),
               features: c.features || {},
-              bonusFeatLevels: c.bonusFeatLevels || [],
+              bonusFeatLevels: Array.isArray(c.bonusFeatLevels) ? c.bonusFeatLevels : [],
+              bonusFeatContract: c.bonusFeatContract || null,
               prerequisites: c.prerequisites || [],
               description: c.description || c.desc || '',
               role: c.role || '',
-              source: c.source || 'Custom / Homebrew',
+              source: c.source || 'Custom / Variant',
               type: c.type || 'Custom Class',
               isCustom: true
             };
@@ -7493,7 +7575,13 @@
       }
 
       if (Array.isArray(masterDb)) {
-        masterDb.filter(m => m && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class')).forEach(c => {
+        for (let i = masterDb.length - 1; i >= 0; i--) {
+          const m = masterDb[i];
+          if (m && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class') && isBogusClassName(m.name)) {
+            masterDb.splice(i, 1);
+          }
+        }
+        masterDb.filter(m => m && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class') && !isBogusClassName(m.name)).forEach(c => {
           if (c && c.name && !all[c.name]) {
             all[c.name] = {
               hd: Number(c.hd) || 8,
@@ -7503,8 +7591,10 @@
               will: c.will || 'poor',
               skills: Number(c.skills) || 2,
               maxLevel: Number(c.maxLevel) || (c.type === 'Prestige Class' ? 10 : 20),
+              classSkills: Array.isArray(c.classSkills) ? c.classSkills : [],
               features: c.features || {},
-              bonusFeatLevels: c.bonusFeatLevels || [],
+              bonusFeatLevels: Array.isArray(c.bonusFeatLevels) ? c.bonusFeatLevels : [],
+              bonusFeatContract: c.bonusFeatContract || null,
               prerequisites: c.prerequisites || [],
               description: c.description || c.desc || '',
               role: c.role || '',
@@ -7590,33 +7680,268 @@
       updateLevelUpClassTriggerUI(currentVal);
     }
 
-    function openCreateCustomClassModal() {
+    let _customClassClonedSkills = [];
+
+    function ensureCustomClassStudioDom() {
+      const modal = document.getElementById('create-custom-class-modal');
+      if (!modal || modal.dataset.studioUpgraded === 'true') return;
+      modal.dataset.studioUpgraded = 'true';
+
+      const card = modal.querySelector('.bg-dndCard');
+      if (card) {
+        card.style.maxWidth = '680px';
+      }
+
+      const nameInput = document.getElementById('custom-class-name');
+      const nameBlock = nameInput ? nameInput.parentElement : null;
+      if (nameBlock) {
+        const templateBar = document.createElement('div');
+        templateBar.className = 'bg-slate-950/90 border border-indigo-500/40 rounded-xl p-2.5 space-y-2 mb-2';
+        templateBar.innerHTML = `
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <label class="text-[10px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1">
+              <span>📋</span>
+              <span>Clone / Load from Existing Class Template</span>
+            </label>
+            <button type="button" onclick="applyAdventurerRoguePreset()" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-500/50 transition cursor-pointer" title="Load Rogue template with Fighter Bonus Feats at levels 1, 3, 5..19 in place of Sneak Attack">
+              ⚡ Preset: Rogue (Adventurer / Feat Variant)
+            </button>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="custom-class-template-select" onchange="loadClassTemplateIntoCustomModal(this.value)" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-300 font-bold">
+              <option value="">-- Start from Blank Custom Class --</option>
+            </select>
+            <button type="button" onclick="loadClassTemplateIntoCustomModal(document.getElementById('custom-class-template-select')?.value)" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg border border-indigo-400/40 transition cursor-pointer">
+              Load Template
+            </button>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Class Category</label>
+              <select id="custom-class-type" onchange="onCustomClassMaxLevelChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-purple-300 font-bold">
+                <option value="Base Class" selected>🛡️ Base / Variant Class</option>
+                <option value="Prestige Class">👑 Prestige Class</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Max Class Level</label>
+              <select id="custom-class-max-level" onchange="renderCustomClassLevelEditorRows()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-amber-300 font-bold">
+                <option value="20" selected>20 Levels (Standard Base)</option>
+                <option value="10">10 Levels (Prestige)</option>
+                <option value="5">5 Levels (Short Prestige)</option>
+              </select>
+            </div>
+          </div>
+        `;
+        nameBlock.parentElement.insertBefore(templateBar, nameBlock);
+      }
+
+      const notesInput = document.getElementById('custom-class-notes');
+      const notesBlock = notesInput ? notesInput.parentElement : null;
+      if (notesBlock) {
+        const levelEditorBox = document.createElement('div');
+        levelEditorBox.className = 'space-y-1.5 pt-1';
+        levelEditorBox.innerHTML = `
+          <div class="flex items-center justify-between">
+            <label class="block text-[10px] font-bold text-emerald-300 uppercase tracking-wider">
+              📊 Level-by-Level Class Features &amp; Bonus Feat Slots
+            </label>
+            <span class="text-[10px] text-slate-400">Check <b class="text-amber-300">⚔️ Bonus Feat</b> on levels that grant a selectable bonus feat</span>
+          </div>
+          <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/90" style="max-height: 230px; overflow-y: auto;">
+            <table class="w-full text-left border-collapse text-[11px]">
+              <thead>
+                <tr class="bg-slate-900 text-[10px] text-slate-400 uppercase border-b border-slate-800 sticky top-0 z-10">
+                  <th class="py-1.5 px-2 text-center" style="width: 48px;">Lvl</th>
+                  <th class="py-1.5 px-2 text-center" style="width: 110px;">⚔️ Bonus Feat</th>
+                  <th class="py-1.5 px-2">Class Features Gained (comma-separated)</th>
+                </tr>
+              </thead>
+              <tbody id="custom-class-level-editor-tbody" class="divide-y divide-slate-800/60"></tbody>
+            </table>
+          </div>
+        `;
+        notesBlock.style.display = 'none';
+        notesBlock.parentElement.insertBefore(levelEditorBox, notesBlock);
+      }
+    }
+
+    function populateCustomClassTemplateDropdown(selectedTemplate = '') {
+      const sel = document.getElementById('custom-class-template-select');
+      if (!sel) return;
+      const allDefs = getAvailableClassDefs();
+      sel.innerHTML = '<option value="">-- Start from Blank Custom Class --</option>';
+      Object.keys(allDefs).sort((a, b) => a.localeCompare(b)).forEach(cName => {
+        const opt = document.createElement('option');
+        opt.value = cName;
+        opt.textContent = `${cName} (d${allDefs[cName].hd} • ${allDefs[cName].source || '3.5e'})`;
+        if (selectedTemplate && cName.toLowerCase() === selectedTemplate.toLowerCase()) {
+          opt.selected = true;
+        }
+        sel.appendChild(opt);
+      });
+    }
+
+    function renderCustomClassLevelEditorRows(featuresMap = {}, bonusFeatLevels = []) {
+      const tbody = document.getElementById('custom-class-level-editor-tbody');
+      if (!tbody) return;
+      const maxLvl = parseInt(document.getElementById('custom-class-max-level')?.value) || 20;
+      const bSet = new Set((bonusFeatLevels || []).map(Number));
+
+      let html = '';
+      for (let lvl = 1; lvl <= maxLvl; lvl++) {
+        const rawFeats = Array.isArray(featuresMap?.[lvl]) ? featuresMap[lvl] : [];
+        const featNames = rawFeats
+          .map(f => typeof f === 'string' ? f : (f?.name || ''))
+          .filter(Boolean)
+          .join(', ');
+        const safeVal = featNames.replace(/"/g, '&quot;');
+        const isChecked = bSet.has(lvl) ? 'checked' : '';
+        html += `
+          <tr class="hover:bg-slate-900/60">
+            <td class="py-1 px-2 text-center font-mono font-bold text-amber-300">${lvl}</td>
+            <td class="py-1 px-2 text-center">
+              <label class="inline-flex items-center gap-1 cursor-pointer text-[10px] text-slate-300">
+                <input type="checkbox" id="custom-class-bfeat-lvl-${lvl}" ${isChecked} class="rounded text-amber-500">
+                <span>Bonus Feat</span>
+              </label>
+            </td>
+            <td class="py-1 px-2">
+              <input type="text" id="custom-class-feat-lvl-${lvl}" value="${safeVal}" placeholder="e.g. Trapfinding, Evasion, Uncanny Dodge..." class="w-full bg-slate-900/90 border border-slate-800 focus:border-emerald-500 rounded px-2 py-1 text-[11px] text-slate-200">
+            </td>
+          </tr>
+        `;
+      }
+      tbody.innerHTML = html;
+    }
+
+    function onCustomClassMaxLevelChange() {
+      const typeSel = document.getElementById('custom-class-type');
+      const maxSel = document.getElementById('custom-class-max-level');
+      if (typeSel && maxSel) {
+        maxSel.value = typeSel.value === 'Prestige Class' ? '10' : '20';
+      }
+      renderCustomClassLevelEditorRows();
+    }
+
+    function loadClassTemplateIntoCustomModal(templateName, isEditingExisting = false) {
+      ensureCustomClassStudioDom();
+      const tName = (templateName || '').trim();
+      if (!tName) {
+        _customClassClonedSkills = [];
+        renderCustomClassLevelEditorRows({}, []);
+        return;
+      }
+      const allDefs = getAvailableClassDefs();
+      const def = allDefs[tName];
+      if (!def) return;
+
+      _customClassClonedSkills = Array.isArray(def.classSkills) ? [...def.classSkills] : [];
+      const nameInput = document.getElementById('custom-class-name');
+      if (nameInput) {
+        nameInput.value = isEditingExisting ? tName : (def.isCustom ? tName : `${tName} (Variant)`);
+      }
+      const typeSel = document.getElementById('custom-class-type');
+      if (typeSel) {
+        typeSel.value = def.type === 'Prestige Class' ? 'Prestige Class' : 'Base Class';
+      }
+      const maxSel = document.getElementById('custom-class-max-level');
+      if (maxSel) {
+        const mLvl = Number(def.maxLevel) || (def.type === 'Prestige Class' ? 10 : 20);
+        maxSel.value = [5, 10, 20].includes(mLvl) ? String(mLvl) : '20';
+      }
+      const hdInput = document.getElementById('custom-class-hd');
+      if (hdInput) hdInput.value = String(def.hd || 8);
+      const babInput = document.getElementById('custom-class-bab');
+      if (babInput) babInput.value = String(def.bab || 0.75);
+      const fortInput = document.getElementById('custom-class-good-fort');
+      if (fortInput) fortInput.checked = (def.fort === 'good');
+      const refInput = document.getElementById('custom-class-good-ref');
+      if (refInput) refInput.checked = (def.ref === 'good');
+      const willInput = document.getElementById('custom-class-good-will');
+      if (willInput) willInput.checked = (def.will === 'good');
+      const skillsInput = document.getElementById('custom-class-skills');
+      if (skillsInput) skillsInput.value = String(def.skills || 2);
+      const sourceInput = document.getElementById('custom-class-source');
+      if (sourceInput) sourceInput.value = isEditingExisting ? (def.source || 'Custom / Variant') : `Variant of ${tName} (${def.source || '3.5e'})`;
+
+      renderCustomClassLevelEditorRows(def.features || {}, def.bonusFeatLevels || []);
+    }
+
+    function applyAdventurerRoguePreset() {
+      ensureCustomClassStudioDom();
+      populateCustomClassTemplateDropdown('Rogue (Adventurer Variant)');
+      loadClassTemplateIntoCustomModal('Rogue (Adventurer Variant)', true);
+      const nameInput = document.getElementById('custom-class-name');
+      if (nameInput) nameInput.value = 'Rogue (Adventurer Variant)';
+    }
+
+    function openCreateCustomClassModal(templateClassName = null, isEditingExisting = false) {
       const modal = document.getElementById('create-custom-class-modal');
       if (!modal) return;
-      const nameInput = document.getElementById('custom-class-name');
-      if (nameInput) nameInput.value = '';
-      const hdInput = document.getElementById('custom-class-hd');
-      if (hdInput) hdInput.value = '8';
-      const babInput = document.getElementById('custom-class-bab');
-      if (babInput) babInput.value = '0.75';
-      const fortInput = document.getElementById('custom-class-good-fort');
-      if (fortInput) fortInput.checked = false;
-      const refInput = document.getElementById('custom-class-good-ref');
-      if (refInput) refInput.checked = false;
-      const willInput = document.getElementById('custom-class-good-will');
-      if (willInput) willInput.checked = false;
-      const skillsInput = document.getElementById('custom-class-skills');
-      if (skillsInput) skillsInput.value = '2';
-      const sourceInput = document.getElementById('custom-class-source');
-      if (sourceInput) sourceInput.value = 'Custom / Homebrew';
-      const notesInput = document.getElementById('custom-class-notes');
-      if (notesInput) notesInput.value = '';
+      ensureCustomClassStudioDom();
+      populateCustomClassTemplateDropdown(templateClassName || '');
+
+      if (templateClassName) {
+        loadClassTemplateIntoCustomModal(templateClassName, isEditingExisting);
+      } else {
+        _customClassClonedSkills = [];
+        const nameInput = document.getElementById('custom-class-name');
+        if (nameInput) nameInput.value = '';
+        const typeSel = document.getElementById('custom-class-type');
+        if (typeSel) typeSel.value = 'Base Class';
+        const maxSel = document.getElementById('custom-class-max-level');
+        if (maxSel) maxSel.value = '20';
+        const hdInput = document.getElementById('custom-class-hd');
+        if (hdInput) hdInput.value = '8';
+        const babInput = document.getElementById('custom-class-bab');
+        if (babInput) babInput.value = '0.75';
+        const fortInput = document.getElementById('custom-class-good-fort');
+        if (fortInput) fortInput.checked = false;
+        const refInput = document.getElementById('custom-class-good-ref');
+        if (refInput) refInput.checked = false;
+        const willInput = document.getElementById('custom-class-good-will');
+        if (willInput) willInput.checked = false;
+        const skillsInput = document.getElementById('custom-class-skills');
+        if (skillsInput) skillsInput.value = '2';
+        const sourceInput = document.getElementById('custom-class-source');
+        if (sourceInput) sourceInput.value = 'Custom / Variant';
+        const notesInput = document.getElementById('custom-class-notes');
+        if (notesInput) notesInput.value = '';
+        renderCustomClassLevelEditorRows({}, []);
+      }
       modal.classList.remove('hidden');
     }
 
     function closeCreateCustomClassModal() {
       const modal = document.getElementById('create-custom-class-modal');
       if (modal) modal.classList.add('hidden');
+    }
+
+    function deleteCustomClass(className) {
+      const clean = String(className || '').trim().toLowerCase();
+      if (!clean) return;
+      if (Array.isArray(character?.customClasses)) {
+        character.customClasses = character.customClasses.filter(c => (c?.name || '').toLowerCase() !== clean);
+      }
+      if (Array.isArray(masterDb)) {
+        for (let i = masterDb.length - 1; i >= 0; i--) {
+          const m = masterDb[i];
+          if (m && (m.name || '').toLowerCase() === clean && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class')) {
+            masterDb.splice(i, 1);
+          }
+        }
+      }
+      if (typeof DND35_CLASS_DEFS !== 'undefined') delete DND35_CLASS_DEFS[className];
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) delete RuleEngine.DND35_CLASS_DEFS[className];
+      syncCustomClassesToRuleEngine();
+      saveStateToStorage(true);
+      populateLevelUpClassSelect();
+      if (typeof filterLevelUpClassSearch === 'function') filterLevelUpClassSearch();
+      if (typeof filterChangeClassSearch === 'function') filterChangeClassSearch();
+      if (typeof showToast === 'function') {
+        showToast(`🗑️ Deleted custom class "${className}".`, 'info');
+      }
     }
 
     function saveNewCustomClass() {
@@ -7628,26 +7953,65 @@
         return;
       }
 
+      const classType = document.getElementById('custom-class-type')?.value || 'Base Class';
+      const maxLevel = parseInt(document.getElementById('custom-class-max-level')?.value) || (classType === 'Prestige Class' ? 10 : 20);
       const hd = parseInt(document.getElementById('custom-class-hd')?.value) || 8;
       const bab = parseFloat(document.getElementById('custom-class-bab')?.value) || 0.75;
       const fort = document.getElementById('custom-class-good-fort')?.checked ? 'good' : 'poor';
       const ref = document.getElementById('custom-class-good-ref')?.checked ? 'good' : 'poor';
       const will = document.getElementById('custom-class-good-will')?.checked ? 'good' : 'poor';
       const skills = parseInt(document.getElementById('custom-class-skills')?.value) || 2;
-      const source = (document.getElementById('custom-class-source')?.value || '').trim() || 'Custom';
+      const source = (document.getElementById('custom-class-source')?.value || '').trim() || 'Custom / Variant';
       const notes = (document.getElementById('custom-class-notes')?.value || '').trim();
+
+      const features = {};
+      const bonusFeatLevels = [];
+      for (let lvl = 1; lvl <= maxLevel; lvl++) {
+        const bChk = document.getElementById(`custom-class-bfeat-lvl-${lvl}`);
+        const fInp = document.getElementById(`custom-class-feat-lvl-${lvl}`);
+        const rawText = (fInp?.value || '').trim();
+        const levelList = rawText
+          ? rawText.split(',').map(s => s.trim()).filter(Boolean).map(s => ({
+              name: s,
+              category: /bonus\s*feat/i.test(s) ? 'Bonus Feat' : 'Special Ability',
+              type: 'Ex',
+              summary: s
+            }))
+          : [];
+        if (bChk && bChk.checked) {
+          bonusFeatLevels.push(lvl);
+          if (!levelList.some(item => /bonus\s*feat/i.test(item.name))) {
+            levelList.unshift({
+              name: 'Bonus Feat',
+              category: 'Bonus Feat',
+              type: 'Ex',
+              summary: 'Selectable Class Bonus Feat'
+            });
+          }
+        }
+        if (levelList.length > 0) {
+          features[lvl] = levelList;
+        }
+      }
+      if (Object.keys(features).length === 0 && notes) {
+        features[1] = [{ name: notes, category: 'Special Ability', type: 'Ex', summary: notes }];
+      }
 
       const newClassDef = {
         name,
+        type: classType,
+        maxLevel,
         hd,
         bab,
         fort,
         ref,
         will,
         skills,
+        classSkills: Array.isArray(_customClassClonedSkills) ? [..._customClassClonedSkills] : [],
         source,
         isCustom: true,
-        features: notes ? { 1: [{ name: notes, category: 'Special Ability', type: 'Ex', summary: notes }] } : {}
+        bonusFeatLevels,
+        features
       };
 
       if (!Array.isArray(character.customClasses)) {
@@ -7662,21 +8026,28 @@
       }
 
       if (Array.isArray(masterDb)) {
-        const inDb = masterDb.find(m => m && (m.name || '').toLowerCase() === name.toLowerCase() && (m.type === 'Class' || m.category === 'Class'));
-        if (!inDb) {
-          masterDb.push({
-            name,
-            type: 'Class',
-            category: 'Class',
-            hd,
-            bab,
-            fort,
-            ref,
-            will,
-            skills,
-            source,
-            desc: notes || `${name} class (${source})`
-          });
+        const inDbIdx = masterDb.findIndex(m => m && (m.name || '').toLowerCase() === name.toLowerCase() && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class'));
+        const dbPayload = {
+          name,
+          type: classType,
+          category: 'Class',
+          maxLevel,
+          hd,
+          bab,
+          fort,
+          ref,
+          will,
+          skills,
+          classSkills: newClassDef.classSkills,
+          bonusFeatLevels,
+          features,
+          source,
+          desc: notes || `${name} (${source})`
+        };
+        if (inDbIdx >= 0) {
+          masterDb[inDbIdx] = Object.assign(masterDb[inDbIdx], dbPayload);
+        } else {
+          masterDb.push(dbPayload);
         }
       }
 
@@ -7689,14 +8060,28 @@
       if (typeof filterLevelUpClassSearch === 'function') {
         filterLevelUpClassSearch();
       }
+      if (typeof filterChangeClassSearch === 'function') {
+        filterChangeClassSearch();
+      }
 
       const changeModal = document.getElementById('change-level-class-modal');
       if (changeModal && !changeModal.classList.contains('hidden') && currentChangeClassLevelIndex !== null) {
         openChangeLevelClassModal(currentChangeClassLevelIndex);
       }
 
-      alert(`✅ Class "${name}" defined and added to the class list!`);
+      if (typeof showToast === 'function') {
+        showToast(`✅ Class "${name}" saved and selected!`, 'success');
+      } else {
+        alert(`✅ Class "${name}" defined and added to the class list!`);
+      }
     }
+
+    window.openCreateCustomClassModal = openCreateCustomClassModal;
+    window.loadClassTemplateIntoCustomModal = loadClassTemplateIntoCustomModal;
+    window.applyAdventurerRoguePreset = applyAdventurerRoguePreset;
+    window.onCustomClassMaxLevelChange = onCustomClassMaxLevelChange;
+    window.renderCustomClassLevelEditorRows = renderCustomClassLevelEditorRows;
+    window.deleteCustomClass = deleteCustomClass;
 
     // Feat Detail Popover Modal & Pin Synchronization
     let currentFeatSourceLevelIndex = null;

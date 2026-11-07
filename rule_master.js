@@ -1771,22 +1771,21 @@ const RuleMaster = {
   lastAiResults: [],
   _cachedModels: null,
 
-  DND35_RAW_GUARDRAIL: `STRICT D&D 3.5E RAW ONLY (ZERO TOLERANCE FOR FORUMS / HOMEBREW / 5E / PATHFINDER):
-1. CANONICAL D&D 3.5E SOURCES ONLY:
-   - You MUST consult and verify strictly against:
-     a) Official System Reference Document (SRD v3.5 as archived on d20srd.org)
-     b) Official D&D 3.5e Rulebooks and Splatbooks (as indexed on dndtools.net / danddtools)
-     c) Official Wizards of the Coast 3.5e Publications (Player's Handbook, Dungeon Master's Guide, Monster Manual, Complete Series, Spell Compendium, Magic Item Compendium, Tome of Battle, Frostburn, Sandstorm, Libris Mortis, Book of Exalted Deeds, Expanded Psionics Handbook, Races of Stone/Destiny/Wild/Dragon, Dungeonscape, Fiend Folio, etc.)
-2. ABSOLUTE FORUM & HOMEBREW BLACKLIST:
-   - NEVER use, cite, or draw information from DandWiki (dandwiki.com), Giant in the Playground forums (GitP), ENWorld, Reddit, or homebrew blogs/wikis.
-   - If an element only exists as homebrew, third-party content, or a forum discussion, IT DOES NOT EXIST.
+  DND35_RAW_GUARDRAIL: `D&D 3.5E RAW + SPLATBOOK / VARIANT / ACF / DM BOON ENGINE RULES:
+1. BROAD D&D 3.5E SOURCES (CORE + SPLATBOOKS + UNEARTHED ARCANA + DRAGON MAGAZINE):
+   - Because standard core rules are already in the local compendium, queries sent to Rule Master AI often target extended D&D 3.5e sources, variants, or DM Boons:
+     a) Official System Reference Document (SRD v3.5 as archived on d20srd.org) & Unearthed Arcana (Class Variants like Adventurer/Martial Rogue, Cloistered Cleric, Thug Fighter, Domain Wizard, Urban Ranger, Whirling Frenzy, Flaws, Traits, Bloodlines)
+     b) Official D&D 3.5e Rulebooks & Splatbooks (Player's Handbook I & II, DMG I & II, Monster Manual I-V, Complete Warrior/Arcane/Divine/Adventurer/Mage/Scoundrel/Champion, Spell Compendium, Magic Item Compendium, Tome of Battle, Tome of Magic, Frostburn, Sandstorm, Stormwrack, Libris Mortis, Lords of Madness, Heroes of Horror/Battle, Book of Exalted Deeds, Book of Vile Darkness, Expanded Psionics Handbook, Complete Psionic, Magic of Incarnum, Races of Stone/Destiny/the Wild/the Dragon, Dungeonscape, Cityscape, Planar Handbook, Dragon Magic, Draconomicon, Fiendish Codex I & II, Champions of Valor/Ruin, Forgotten Realms / Eberron 3.5e books)
+     c) Official Alternate Class Features (ACFs), Racial Substitution Levels, Tactical/Reserve/Regional/Heritage Feats, and Dragon Magazine Compendium / Dragon Magazine 3.5e issues.
+2. DM BOONS, SKILL/STAT GRANTS & CAMPAIGN CUSTOMIZATIONS:
+   - If the query asks for a DM Boon, Skill Bonus, Ability/Save/Attack/AC Grant, or Campaign Feature (e.g., "boon, skill: +ride", "DM Boon: +4 Ride", "+2 Initiative", "Boon: CL +1"), DO NOT reject it and NEVER force-map it to an unrelated PHB feat (such as mapping a Ride skill boon to "Mounted Combat").
+   - Instead, synthesize a clean, accurate Canonical V2 D&D 3.5e entry with exact "modifiers" (e.g. [{"target": "skill.ride", "value": 4, "type": "Untyped", "condition": null}]) and source "DM Boon / Campaign Grant".
 3. ZERO 5E / 4E / PATHFINDER MECHANICS:
    - Absolutely NO 5e mechanics (No Advantage/Disadvantage, No Bonus Action, No Finesse adding Dex to damage, No -5/+10 GWM, No Short Rest, No Concentration slots).
-   - Absolutely NO Pathfinder / PF1e / Starfinder rules.
-4. STRICT NON-EXISTENCE / NO-HALLUCINATION POLICY:
-   - If the queried element is NOT an official D&D 3.5e RAW entity, DO NOT adapt, balance, or fabricate it. Return an empty array: {"entries": []}.
-5. OFFICIAL 3.5E ENGLISH & NO DICE EMOJI (U+1F3B2):
+   - Absolutely NO Pathfinder / PF1e / Starfinder rules or DandWiki forum inventions unless explicitly requested as a DM Boon/Custom rule.
+4. OFFICIAL 3.5E ENGLISH & NO DICE EMOJI (U+1F3B2):
    - Output 100% official D&D 3.5e RAW English terminology in all fields.
+   - NEVER output placeholder names like "Non-Existent Class" or "Unknown".
    - NEVER include the 6-sided die emoji (U+1F3B2) anywhere in any string.`,
 
   getAiModelMode() {
@@ -2892,23 +2891,30 @@ Return valid JSON only matching:
 }`;
     }
 
-    // 3. FEAT
-    if (cat === 'feat') {
-      return `You are a master D&D 3.5e Rule Arbiter.
-Target query: "${cleanQuery}" (Category: "Feat").
+    // 3. FEAT / DM BOON / SPECIAL ABILITY / RACIAL TRAIT / FLAW
+    if (['feat', 'dm boon', 'boon', 'special ability', 'ability', 'racial trait', 'flaw', 'class bonus feat', 'warlock invocation'].includes(cat)) {
+      const isBoonQuery = cat === 'dm boon' || cat === 'boon' || /\b(boon|grant|custom)\b/i.test(cleanQuery) || /\bskill\s*:/i.test(cleanQuery) || /^[+-]\d+\s+[a-z]/i.test(cleanQuery);
+      return `You are a master D&D 3.5e Rule Arbiter & Canonical V2 Architect.
+Target query: "${cleanQuery}" (Category: "${effectiveCategory || 'Feat'}").
 
 ${this.DND35_RAW_GUARDRAIL}
 
-FEAT SPECIFIC CANONICAL V2 RULES:
-1. STRICT REAL RAW 3.5E ONLY: Consult d20srd.org, dndtools.net, Player's Handbook, Complete Series, or official WotC 3.5e publications. If feat does not exist in official 3.5e, return {"entries": []}.
-2. MANDATORY TYPO / FUZZY CORRECTION: Correct misspellings to official 3.5e name.
+FEAT / ABILITY / DM BOON CANONICAL V2 RULES:
+1. OFFICIAL 3.5E FEATS, ACFs, FLAWS, TRAITS & SPLATBOOKS:
+   - Consult Player's Handbook I & II, Complete Series, Tome of Battle, Unearthed Arcana (Flaws, Traits, Variant Class Features), Dragon Magazine Compendium, Races of Stone/Destiny/the Wild/the Dragon, Frostburn, Sandstorm, Stormwrack, Libris Mortis, Book of Exalted Deeds/Vile Darkness, etc.
+2. DM BOON & CUSTOM BONUS SYNTHESIS (CRITICAL — DO NOT MAP TO UNRELATED PHB FEATS!):
+   - ${isBoonQuery ? 'THIS QUERY IS A DM BOON / SKILL OR STAT BONUS REQUEST!' : 'If the query describes a DM Boon, Skill Bonus (e.g. "boon, skill: +ride", "+4 Ride"), Stat/Save/Attack/AC Bonus, or Campaign Grant:'}
+   - NEVER substitute an unrelated official feat like "Mounted Combat" or "Skill Focus" when the user asks for a direct skill/stat boon (such as "boon, skill: +ride" or "+4 Ride").
+   - Instead, create a dedicated Canonical V2 entry named clearly (e.g. "DM Boon: Ride Bonus (+4)" or "DM Boon: +4 Ride") with exact numerical "modifiers" (e.g. [{"target": "skill.ride", "value": 4, "type": "Untyped", "condition": null}]), "prereq": "-", "source": "DM Boon / Campaign Grant", and a concise English "benefit" describing the bonus. (If a skill bonus query like "boon, skill: +ride" omits the number, default to +2 or +4).
 3. CANONICAL V2 FIELDS:
    - "prereq": exact prerequisites or "-"
-   - "benefit": concise mechanical summary of the feat benefit
+   - "benefit": concise mechanical summary in English
    - "normal": what a character without this feat can do, or "-"
    - "special": special notes, fighter bonus feat qualification, or "-"
-   - "modifiers": put numerical modifiers here: [{"target": "attack.melee"|"damage.all"|..., "value": 1, "type": "Untyped"|"Competence"|..., "condition": null}]. Leave [] if no passive/active flat bonus.
-   - "damageParts": put extra damage dice here if feat grants direct damage: [{"dice": "...", "bonus": 0, "type": "Untyped", "multiplyOnCrit": false, "onCritOnly": false, "source": "..."}].
+   - "modifiers": put all numerical modifiers here:
+     * Skill bonus: {"target": "skill.ride"|"skill.spot"|"skill.hide"|"skill.tumble"|"skill.diplomacy"|"skill.all"|..., "value": 4, "type": "Untyped"|"Competence"|"Insight"|"Sacred"|"Morale"|"Circumstance", "condition": null}
+     * Ability / Save / Combat: {"target": "ability.str"|"save.fort"|"save.ref"|"save.will"|"save.all"|"attack.melee"|"attack.all"|"damage.all"|"ac.natural"|"ac.deflection"|"ac.dodge"|"initiative"|"speed.land", "value": 2, "type": "Untyped"|..., "condition": null}
+   - "damageParts": put extra damage dice here if applicable: [{"dice": "...", "bonus": 0, "type": "Untyped", "multiplyOnCrit": false, "onCritOnly": false, "source": "..."}].
 
 OUTPUT JSON SCHEMA:
 Return valid JSON only matching:
@@ -2917,16 +2923,16 @@ Return valid JSON only matching:
     {
       "schemaVersion": 2,
       "id": "feat_unique_slug",
-      "name": "Official 3.5e Name",
-      "type": "Feat",
+      "name": "Official 3.5e Name or DM Boon Title",
+      "type": "${cat === 'special ability' || cat === 'ability' ? 'Special Ability' : (cat === 'flaw' ? 'Flaw' : 'Feat')}",
       "prereq": "Prerequisites or '-'",
       "benefit": "Concise mechanical summary in English",
       "normal": "What a character without this feat can do, or '-'",
       "special": "Special rules or '-'",
       "modifiers": [],
       "damageParts": [],
-      "source": "Official 3.5e book and page",
-      "description": "Full official RAW description in English"
+      "source": "Official 3.5e book and page or 'DM Boon / Campaign Grant'",
+      "description": "Full official RAW or DM Boon description in English"
     }
   ]
 }`;
@@ -3095,15 +3101,18 @@ Return valid JSON only matching:
 }`;
     }
 
-    // 8. CLASS
+    // 8. CLASS (Base Classes, Prestige Classes, Unearthed Arcana Variants & ACFs)
     if (cat === 'class') {
       return `You are a master D&D 3.5e Rule Arbiter.
 Target query: "${cleanQuery}" (Category: "Class").
 
 ${this.DND35_RAW_GUARDRAIL}
 
-CLASS SPECIFIC RULES:
-1. STRICT REAL RAW 3.5E ONLY: Consult PHB, DMG, Complete Series, or official WotC 3.5e publications. If class does not exist in official 3.5e, return {"entries": []}.
+CLASS & VARIANT CLASS SPECIFIC RULES:
+1. BASE CLASSES, PRESTIGE CLASSES & UNEARTHED ARCANA / SPLATBOOK VARIANTS:
+   - Consult PHB I & II, DMG, Complete Series, Tome of Battle, Unearthed Arcana (Variant Character Classes p.47-70, such as "Rogue (Adventurer Variant)" / Martial Feat Rogue which trades Sneak Attack at levels 1, 3, 5..19 for Fighter Bonus Feats, "Fighter (Thug Variant)", "Cleric (Cloistered Cleric)", "Wizard (Domain Wizard)", "Ranger (Urban Ranger)", "Barbarian (Whirling Frenzy)"), Dragon Magazine Compendium, and Racial Substitution Levels.
+   - Correct typos automatically (e.g. "rogue, Adventuerer" -> "Rogue (Adventurer Variant)").
+   - NEVER return a placeholder name like "Non-Existent Class".
 2. CLASS V2 SCHEMA:
    - "hitDie": "d4" | "d6" | "d8" | "d10" | "d12"
    - "bab": "Good" (+1/lvl) | "Medium" (+3/4 lvl) | "Poor" (+1/2 lvl)
@@ -3120,7 +3129,7 @@ Return valid JSON only matching:
     {
       "schemaVersion": 2,
       "id": "class_unique_slug",
-      "name": "Official 3.5e Name",
+      "name": "Official 3.5e Class or Variant Name",
       "type": "Class",
       "hitDie": "d8",
       "bab": "Good",
@@ -3129,7 +3138,7 @@ Return valid JSON only matching:
       "will": "Poor",
       "skillPoints": 2,
       "classSkills": ["Climb", "Jump", "Swim"],
-      "source": "Official 3.5e book and page",
+      "source": "Official 3.5e book and page (e.g. Unearthed Arcana p.58)",
       "benefit": "Class summary and role in English",
       "description": "Full official RAW description in English"
     }

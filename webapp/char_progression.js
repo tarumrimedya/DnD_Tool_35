@@ -1814,22 +1814,40 @@
         row.feats.push(formattedName);
         if (!Array.isArray(character.feats)) character.feats = [];
         const existingIdx = character.feats.findIndex(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === featName.toLowerCase().trim());
+        const synthesizedBoon = synthesizeDmBoonFromQuery(featName, benefit, category);
+        const aiCached = (window._lastQuickFeatAiV2Entry && (window._lastQuickFeatAiV2Entry.name || '').toLowerCase().trim() === featName.toLowerCase().trim())
+          ? window._lastQuickFeatAiV2Entry
+          : null;
+        const resolvedModifiers = (catalogMatch && Array.isArray(catalogMatch.modifiers) && catalogMatch.modifiers.length > 0)
+          ? JSON.parse(JSON.stringify(catalogMatch.modifiers))
+          : (aiCached && Array.isArray(aiCached.modifiers) && aiCached.modifiers.length > 0
+              ? JSON.parse(JSON.stringify(aiCached.modifiers))
+              : (synthesizedBoon && Array.isArray(synthesizedBoon.modifiers) ? JSON.parse(JSON.stringify(synthesizedBoon.modifiers)) : []));
+        const resolvedDamageParts = (catalogMatch && Array.isArray(catalogMatch.damageParts) && catalogMatch.damageParts.length > 0)
+          ? JSON.parse(JSON.stringify(catalogMatch.damageParts))
+          : (aiCached && Array.isArray(aiCached.damageParts) ? JSON.parse(JSON.stringify(aiCached.damageParts)) : []);
+        const resolvedTacticalBadges = (catalogMatch && Array.isArray(catalogMatch.tacticalBadges) && catalogMatch.tacticalBadges.length > 0)
+          ? JSON.parse(JSON.stringify(catalogMatch.tacticalBadges))
+          : (aiCached && Array.isArray(aiCached.tacticalBadges) ? JSON.parse(JSON.stringify(aiCached.tacticalBadges)) : []);
         const featEntryPayload = {
           ...(catalogMatch ? {
             id: catalogMatch.id,
-            modifiers: Array.isArray(catalogMatch.modifiers) ? JSON.parse(JSON.stringify(catalogMatch.modifiers)) : [],
-            damageParts: Array.isArray(catalogMatch.damageParts) ? JSON.parse(JSON.stringify(catalogMatch.damageParts)) : [],
-            tacticalBadges: Array.isArray(catalogMatch.tacticalBadges) ? JSON.parse(JSON.stringify(catalogMatch.tacticalBadges)) : [],
             ruleFlags: catalogMatch.ruleFlags ? JSON.parse(JSON.stringify(catalogMatch.ruleFlags)) : undefined,
             slotDiff: catalogMatch.slotDiff
-          } : {}),
+          } : (aiCached ? {
+            id: aiCached.id,
+            ruleFlags: aiCached.ruleFlags ? JSON.parse(JSON.stringify(aiCached.ruleFlags)) : undefined
+          } : {})),
+          modifiers: resolvedModifiers,
+          damageParts: resolvedDamageParts,
+          tacticalBadges: resolvedTacticalBadges,
           name: featName,
           type: category === 'Flaw' ? 'Flaw' : 'Feat',
           category: category,
-          benefit: benefit || (catalogMatch ? catalogMatch.benefit : ''),
+          benefit: benefit || (catalogMatch ? catalogMatch.benefit : (synthesizedBoon ? synthesizedBoon.benefit : '')),
           source: category === 'Flaw'
             ? (catalogMatch?.source || 'Unearthed Arcana, page 91')
-            : (category === 'Flaw Bonus Feat' ? `Level ${row.level} (Flaw Bonus Feat)` : `Level ${row.level} (${row.className})`)
+            : (category === 'Flaw Bonus Feat' ? `Level ${row.level} (Flaw Bonus Feat)` : (category === 'DM Boon' ? `Level ${row.level} (DM Boon)` : `Level ${row.level} (${row.className})`))
         };
         if (existingIdx === -1) {
           character.feats.push(featEntryPayload);
@@ -1846,19 +1864,41 @@
 
       if (Array.isArray(masterDb)) {
         const clean = featName.toLowerCase().trim();
-        const inCanonical = getCombinedFeatCatalog(true).some(f => (f.name || '').toLowerCase().trim() === clean);
-        if (!inCanonical && !masterDb.some(m => (m.name || '').toLowerCase().trim() === clean)) {
-          masterDb.push({
-            name: featName,
-            type: (category === 'Special Ability') ? 'Special Ability' : (category === 'Flaw' ? 'Flaw' : 'Feat'),
-            category: category,
-            slot: 'None',
-            slotDiff: category === 'Flaw' ? 1 : 0,
-            prereq: (pEvalConfirm && pEvalConfirm.rawPrereq) ? pEvalConfirm.rawPrereq : '-',
-            source: `Level ${row.level} (${row.className})`,
-            benefit: benefit,
-            description: benefit
-          });
+        const synthesizedBoonDb = synthesizeDmBoonFromQuery(featName, benefit, category);
+        const aiCachedDb = (window._lastQuickFeatAiV2Entry && (window._lastQuickFeatAiV2Entry.name || '').toLowerCase().trim() === clean)
+          ? window._lastQuickFeatAiV2Entry
+          : null;
+        const dbModifiers = (aiCachedDb && Array.isArray(aiCachedDb.modifiers) && aiCachedDb.modifiers.length > 0)
+          ? aiCachedDb.modifiers
+          : (synthesizedBoonDb && Array.isArray(synthesizedBoonDb.modifiers) ? synthesizedBoonDb.modifiers : []);
+        const existingDbIdx = masterDb.findIndex(m => m && (m.name || '').toLowerCase().trim() === clean);
+        if (existingDbIdx >= 0) {
+          if (dbModifiers.length > 0 && (!Array.isArray(masterDb[existingDbIdx].modifiers) || masterDb[existingDbIdx].modifiers.length === 0)) {
+            masterDb[existingDbIdx].modifiers = dbModifiers;
+          }
+          if (benefit) {
+            masterDb[existingDbIdx].benefit = benefit;
+            masterDb[existingDbIdx].description = benefit;
+          }
+        } else {
+          const inCanonical = getCombinedFeatCatalog(true).some(f => (f.name || '').toLowerCase().trim() === clean);
+          if (!inCanonical) {
+            masterDb.push({
+              schemaVersion: 2,
+              id: 'feat_' + clean.replace(/[^a-z0-9]+/g, '_'),
+              name: featName,
+              type: (category === 'Special Ability') ? 'Special Ability' : (category === 'Flaw' ? 'Flaw' : 'Feat'),
+              category: category,
+              slot: 'None',
+              slotDiff: category === 'Flaw' ? 1 : 0,
+              prereq: (pEvalConfirm && pEvalConfirm.rawPrereq) ? pEvalConfirm.rawPrereq : '-',
+              source: category === 'DM Boon' ? `Level ${row.level} (DM Boon)` : `Level ${row.level} (${row.className})`,
+              benefit: benefit || (synthesizedBoonDb ? synthesizedBoonDb.benefit : ''),
+              description: benefit || (synthesizedBoonDb ? synthesizedBoonDb.benefit : ''),
+              modifiers: dbModifiers,
+              damageParts: []
+            });
+          }
         }
       }
 
@@ -1883,9 +1923,123 @@
       }
     }
 
+    function synthesizeDmBoonFromQuery(queryStr, benefitStr = '', categoryHint = '') {
+      const q = String(queryStr || '').trim();
+      const b = String(benefitStr || '').trim();
+      if (!q && !b) return null;
+
+      const isExplicitBoon = categoryHint === 'DM Boon' || /\b(dm\s*boon|boon|grant)\b/i.test(q) || /\bskill\s*:/i.test(q) || /^[+-]\d+\s+[a-z]/i.test(q);
+      if (!isExplicitBoon) return null;
+
+      const combined = `${q} ${b}`;
+      const numMatch = q.match(/([+-]?\d+)/) || b.match(/([+-]?\d+)/);
+      const val = numMatch ? (parseInt(numMatch[1], 10) || 4) : 4;
+      const signStr = val >= 0 ? `+${val}` : `${val}`;
+
+      const skillList = [
+        { slug: 'appraise', label: 'Appraise', rx: /\bappraise\b/i },
+        { slug: 'balance', label: 'Balance', rx: /\bbalance\b/i },
+        { slug: 'bluff', label: 'Bluff', rx: /\bbluff\b/i },
+        { slug: 'climb', label: 'Climb', rx: /\bclimb\b/i },
+        { slug: 'concentration', label: 'Concentration', rx: /\bconcentration\b/i },
+        { slug: 'decipher_script', label: 'Decipher Script', rx: /\bdecipher\s*script\b/i },
+        { slug: 'diplomacy', label: 'Diplomacy', rx: /\bdiplomacy\b/i },
+        { slug: 'disable_device', label: 'Disable Device', rx: /\bdisable\s*device\b/i },
+        { slug: 'disguise', label: 'Disguise', rx: /\bdisguise\b/i },
+        { slug: 'escape_artist', label: 'Escape Artist', rx: /\bescape\s*artist\b/i },
+        { slug: 'forgery', label: 'Forgery', rx: /\bforgery\b/i },
+        { slug: 'gather_information', label: 'Gather Information', rx: /\bgather\s*info(rmation)?\b/i },
+        { slug: 'handle_animal', label: 'Handle Animal', rx: /\bhandle\s*animal\b/i },
+        { slug: 'heal', label: 'Heal', rx: /\bheal\b/i },
+        { slug: 'hide', label: 'Hide', rx: /\bhide\b/i },
+        { slug: 'intimidate', label: 'Intimidate', rx: /\bintimidate\b/i },
+        { slug: 'jump', label: 'Jump', rx: /\bjump\b/i },
+        { slug: 'knowledge', label: 'Knowledge', rx: /\bknowledge\b/i },
+        { slug: 'listen', label: 'Listen', rx: /\blisten\b/i },
+        { slug: 'move_silently', label: 'Move Silently', rx: /\bmove\s*silently\b/i },
+        { slug: 'open_lock', label: 'Open Lock', rx: /\bopen\s*lock\b/i },
+        { slug: 'ride', label: 'Ride', rx: /\bride\b/i },
+        { slug: 'search', label: 'Search', rx: /\bsearch\b/i },
+        { slug: 'sense_motive', label: 'Sense Motive', rx: /\bsense\s*motive\b/i },
+        { slug: 'sleight_of_hand', label: 'Sleight of Hand', rx: /\bsleight\s*of\s*hand\b/i },
+        { slug: 'spellcraft', label: 'Spellcraft', rx: /\bspellcraft\b/i },
+        { slug: 'spot', label: 'Spot', rx: /\bspot\b/i },
+        { slug: 'survival', label: 'Survival', rx: /\bsurvival\b/i },
+        { slug: 'swim', label: 'Swim', rx: /\bswim\b/i },
+        { slug: 'tumble', label: 'Tumble', rx: /\btumble\b/i },
+        { slug: 'use_magic_device', label: 'Use Magic Device', rx: /\b(use\s*magic\s*device|umd)\b/i },
+        { slug: 'use_rope', label: 'Use Rope', rx: /\buse\s*rope\b/i }
+      ];
+
+      for (const sk of skillList) {
+        if (sk.rx.test(combined)) {
+          return {
+            schemaVersion: 2,
+            id: `boon_skill_${sk.slug}_${Math.abs(val)}`,
+            name: /^dm\s*boon/i.test(q) && /\d/.test(q) ? q : `DM Boon: ${sk.label} (${signStr})`,
+            type: 'Feat',
+            category: 'DM Boon',
+            prereq: '-',
+            source: 'DM Boon / Campaign Grant',
+            benefit: b || `Grants a ${signStr} bonus on ${sk.label} skill checks (DM Boon).`,
+            description: b || `Grants a ${signStr} bonus on ${sk.label} skill checks (DM Boon).`,
+            modifiers: [{ target: `skill.${sk.slug}`, value: val, type: 'untyped', condition: null }],
+            damageParts: []
+          };
+        }
+      }
+
+      const statMap = [
+        { target: 'save.fort', label: 'Fortitude Save', rx: /\bfort(itude)?\b/i },
+        { target: 'save.ref', label: 'Reflex Save', rx: /\bref(lex)?\b/i },
+        { target: 'save.will', label: 'Will Save', rx: /\bwill\s*save\b/i },
+        { target: 'save.all', label: 'All Saving Throws', rx: /\ball\s*saves\b/i },
+        { target: 'initiative', label: 'Initiative', rx: /\binit(iative)?\b/i },
+        { target: 'ac.natural', label: 'Natural Armor AC', rx: /\bnatural\s*armor\b/i },
+        { target: 'ac.deflection', label: 'Deflection AC', rx: /\bdeflection\b/i },
+        { target: 'attack.all', label: 'Attack Rolls', rx: /\battack(\s*rolls?)?\b/i },
+        { target: 'damage.all', label: 'Weapon Damage', rx: /\bdamage(\s*rolls?)?\b/i }
+      ];
+      for (const st of statMap) {
+        if (st.rx.test(combined)) {
+          return {
+            schemaVersion: 2,
+            id: `boon_${st.target.replace(/\./g, '_')}_${Math.abs(val)}`,
+            name: /^dm\s*boon/i.test(q) && /\d/.test(q) ? q : `DM Boon: ${st.label} (${signStr})`,
+            type: 'Feat',
+            category: 'DM Boon',
+            prereq: '-',
+            source: 'DM Boon / Campaign Grant',
+            benefit: b || `Grants a ${signStr} bonus to ${st.label} (DM Boon).`,
+            description: b || `Grants a ${signStr} bonus to ${st.label} (DM Boon).`,
+            modifiers: [{ target: st.target, value: val, type: 'untyped', condition: null }],
+            damageParts: []
+          };
+        }
+      }
+
+      return null;
+    }
+
     function findInLocalCatalogsOrMasterDb(query) {
       if (!query) return null;
       const qLower = query.toLowerCase().trim();
+      // Do not fuzzy-hijack explicit DM Boon / skill grant queries with unrelated catalog entries
+      if (/\b(dm\s*boon|boon|grant)\b/i.test(qLower) || /\bskill\s*:/i.test(qLower) || /^[+-]\d+\s+[a-z]/i.test(qLower)) {
+        if (Array.isArray(masterDb)) {
+          const exactBoon = masterDb.find(item => (item.name || '').toLowerCase().trim() === qLower);
+          if (exactBoon) {
+            return {
+              ...exactBoon,
+              name: exactBoon.name,
+              category: exactBoon.category || 'DM Boon',
+              benefit: exactBoon.benefit || exactBoon.description || '',
+              source: exactBoon.source || 'DM Boon'
+            };
+          }
+        }
+        return null;
+      }
 
       if (typeof RuleMaster !== 'undefined' && RuleMaster.canonicalDictionary) {
         let cleanKey = qLower;
@@ -1895,6 +2049,7 @@
         const entry = RuleMaster.canonicalDictionary[cleanKey];
         if (entry && typeof entry === 'object') {
           return {
+            ...entry,
             name: entry.name || cleanKey,
             category: entry.type || entry.category || 'Feat',
             benefit: entry.benefit || entry.description || '',
@@ -1908,6 +2063,7 @@
           || masterDb.find(item => (item.name || '').toLowerCase().includes(qLower));
         if (m) {
           return {
+            ...m,
             name: m.name,
             category: m.type || m.category || 'Feat',
             benefit: m.benefit || m.description || '',
@@ -1922,6 +2078,7 @@
           || cat.find(item => (item.name || '').toLowerCase().includes(qLower));
         if (f) {
           return {
+            ...f,
             name: f.name,
             category: f.category || 'Feat',
             benefit: f.benefit || '',
@@ -1956,9 +2113,27 @@
         statusEl.innerHTML = `<span>⏳</span> <span>Searching "${query}"...</span>`;
       }
 
+      // 0. Check if query is a direct DM Boon / Skill or Stat Grant (e.g. "boon, skill: +ride" or "DM Boon: +4 Ride")
+      const instantBoon = synthesizeDmBoonFromQuery(query, benefitInput?.value || '', catSel?.value || '');
+      if (instantBoon) {
+        window._lastQuickFeatAiV2Entry = instantBoon;
+        if (nameInput) nameInput.value = instantBoon.name;
+        if (benefitInput) benefitInput.value = instantBoon.benefit;
+        if (catSel) catSel.value = 'DM Boon';
+        updateQuickFeatTargetSelector(instantBoon.name);
+        updateQuickFeatPrereqBadge();
+        if (statusEl) {
+          const modSummary = (instantBoon.modifiers || []).map(m => `${m.target} ${m.value >= 0 ? '+' : ''}${m.value}`).join(', ');
+          statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
+          statusEl.innerHTML = `<span>🌟</span> Synthesized Canonical V2 DM Boon: <b>${instantBoon.name}</b> <span class="font-mono text-amber-300">[${modSummary}]</span> (Tip: you can adjust the +bonus number in Name/Benefit before clicking Add).`;
+        }
+        return;
+      }
+
       // 1. Önce yerel veritabanları ve katalogları kontrol et
       const localMatch = findInLocalCatalogsOrMasterDb(query);
       if (localMatch) {
+        window._lastQuickFeatAiV2Entry = localMatch;
         if (nameInput) nameInput.value = localMatch.name;
         if (benefitInput) benefitInput.value = localMatch.benefit || '';
         if (catSel && localMatch.category) {
@@ -1996,7 +2171,12 @@
       }
 
       try {
-        const categoryHint = (catSel?.value === 'Special Ability') ? 'Special Ability' : 'Feat';
+        const selectedCat = catSel?.value || 'Regular Feat';
+        const categoryHint = selectedCat === 'Special Ability'
+          ? 'Special Ability'
+          : (selectedCat === 'DM Boon' || /\b(boon|grant)\b/i.test(query)
+              ? 'DM Boon'
+              : (selectedCat === 'Flaw' ? 'Flaw' : (selectedCat === 'Racial Trait' ? 'Racial Trait' : 'Feat')));
         const statusProxy = {
           set textContent(val) {
             if (statusEl) statusEl.innerHTML = `<span>⏳</span> <span>${val}</span>`;
@@ -2014,10 +2194,14 @@
           const featSource = (Array.isArray(rawTop) ? rawTop[4] : v2Entry?.source) || 'D&D 3.5e';
           const featBenefit = (Array.isArray(rawTop) ? rawTop[5] : (v2Entry?.benefit || v2Entry?.description)) || '';
 
+          window._lastQuickFeatAiV2Entry = v2Entry && typeof v2Entry === 'object' ? { ...v2Entry, name: featName, benefit: featBenefit } : null;
+
           if (nameInput) nameInput.value = featName;
           if (benefitInput) benefitInput.value = featBenefit;
           if (catSel) {
-            if (featType === 'Special Ability' || categoryHint === 'Special Ability') {
+            if (categoryHint === 'DM Boon' || /dm\s*boon/i.test(featName) || /dm\s*boon/i.test(featSource)) {
+              catSel.value = 'DM Boon';
+            } else if (featType === 'Special Ability' || categoryHint === 'Special Ability') {
               catSel.value = 'Special Ability';
             } else if (catSel.value !== 'Class Bonus Feat' && catSel.value !== 'DM Boon' && catSel.value !== 'Flaw') {
               catSel.value = 'Regular Feat';
@@ -2108,10 +2292,10 @@
 
       const qLower = query.toLowerCase();
 
-      // 1. Mevcut tanımlı sınıfları kontrol et (Exact veya Contains)
+      // 1. Mevcut tanımlı sınıfları kontrol et (Exact, Multi-Token veya Fuzzy)
       const allDefs = getAvailableClassDefs();
       const matchedKey = Object.keys(allDefs).find(k => k.toLowerCase() === qLower)
-        || Object.keys(allDefs).find(k => k.toLowerCase().includes(qLower));
+        || Object.keys(allDefs).find(k => matchesClassSearchQuery(k, allDefs[k], qLower));
 
       if (matchedKey) {
         populateChangeClassSelect(matchedKey);
@@ -2190,7 +2374,7 @@
         return;
       }
 
-      // 3. Rule Master (AI / Gemini) ile resmi 3.5e kitaplarından getir
+      // 3. Rule Master (AI / Gemini) ile resmi 3.5e kitaplarından ve Unearthed Arcana varyantlarından getir
       const apiKey = (typeof RuleMaster !== 'undefined' && RuleMaster.getApiKey)
         ? RuleMaster.getApiKey()
         : (localStorage.getItem('gemini_api_key') || '');
@@ -2198,25 +2382,28 @@
       if (apiKey && typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function') {
         try {
           const availableModels = await RuleMaster.getAvailableGeminiModels(apiKey);
-          const prompt = `You are a strict D&D 3.5e RAW rules expert and database builder.
-STRICT D&D 3.5E RAW ONLY (ZERO TOLERANCE FOR FORUMS / HOMEBREW / 5E / PATHFINDER):
-- Verify strictly against official D&D 3.5e publications, d20srd.org, or dndtools.net.
-- ABSOLUTELY NEVER use DandWiki (dandwiki.com), Giant in the Playground (GitP), ENWorld, Reddit, or homebrew blogs/wikis.
-- ABSOLUTELY NO 5e / 4e / Pathfinder rules.
-- If "${query}" is not an official D&D 3.5e RAW class, return null.
+          const prompt = `You are a D&D 3.5e RAW & Variant Class expert and database builder.
+D&D 3.5E RAW + UNEARTHED ARCANA VARIANTS + SPLATBOOKS + ACFs:
+- Consult official D&D 3.5e publications (PHB I & II, DMG, Complete Series, Tome of Battle, Unearthed Arcana Variant Classes p.47-70 such as "Rogue (Adventurer Variant)" / Martial Feat Rogue which trades Sneak Attack at levels 1, 3, 5..19 for Fighter Bonus Feats, "Fighter (Thug Variant)", "Cleric (Cloistered Cleric)", "Wizard (Domain Wizard)", "Ranger (Urban Ranger)", "Barbarian (Whirling Frenzy)", Dragon Magazine Compendium, Racial Substitution Levels).
+- Correct typos and comma-separated variant queries automatically (e.g. "rogue, Adventuerer" -> "Rogue (Adventurer Variant)").
+- NEVER output placeholder names like "Non-Existent Class" or "Unknown".
 
-User wants to add this official D&D 3.5e class: "${query}".
+User wants to add this D&D 3.5e class or class variant: "${query}".
 Output ONLY a single valid JSON object strictly matching this schema:
 {
-  "name": "Canonical Class Name",
-  "hd": 8, // integer: 4, 6, 8, 10, or 12
-  "bab": 1.0, // float: 1.0 (Full BAB: +1/lvl), 0.75 (Average: 3/4), or 0.5 (Poor: 1/2)
-  "fort": "good", // "good" or "poor"
-  "ref": "poor", // "good" or "poor"
-  "will": "good", // "good" or "poor"
-  "skills": 2, // integer: 2, 4, 6, or 8 (base skill points per level)
-  "source": "Book Name and page (e.g. Complete Warrior p.10, PHB II p.19)",
-  "featuresSummary": "Key features e.g. Sneak attack, Armored mage"
+  "name": "Canonical Class or Variant Name (e.g. Rogue (Adventurer Variant))",
+  "type": "Base Class" or "Prestige Class",
+  "maxLevel": 20,
+  "hd": 6, // integer: 4, 6, 8, 10, or 12
+  "bab": 0.75, // float: 1.0 (Full BAB: +1/lvl), 0.75 (Average: 3/4), or 0.5 (Poor: 1/2)
+  "fort": "poor", // "good" or "poor"
+  "ref": "good", // "good" or "poor"
+  "will": "poor", // "good" or "poor"
+  "skills": 8, // integer: 2, 4, 6, or 8 (base skill points per level)
+  "source": "Book Name and page (e.g. Unearthed Arcana p.58, Complete Warrior p.10)",
+  "role": "Role summary in English",
+  "bonusFeatLevels": [1, 3, 5, 7, 9, 11, 13, 15, 17, 19],
+  "featuresSummary": "Key features e.g. Trapfinding, Evasion, Fighter Bonus Feats (in place of Sneak Attack)"
 }
 Output raw JSON only. Do not wrap in markdown quotes.`;
 
@@ -2239,9 +2426,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               const replyText = json.candidates?.[0]?.content?.parts?.[0]?.text;
               if (replyText) {
                 const parsed = JSON.parse(replyText);
-                const cName = parsed.name || query;
+                const cName = (parsed?.name || '').trim();
+                if (!cName || /^(null|none|unknown|non-existent|nonexistent|invalid|n\/a)/i.test(cName)) {
+                  break;
+                }
                 const newClassDef = {
                   name: cName,
+                  type: (parsed.type || '').toLowerCase().includes('prestige') ? 'Prestige Class' : 'Base Class',
+                  maxLevel: Number(parsed.maxLevel) || 20,
                   hd: Number(parsed.hd) || 8,
                   bab: Number(parsed.bab) || 0.75,
                   fort: parsed.fort === 'good' ? 'good' : 'poor',
@@ -2249,6 +2441,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   will: parsed.will === 'good' ? 'good' : 'poor',
                   skills: Number(parsed.skills) || 2,
                   source: parsed.source || 'Rule Master AI',
+                  role: parsed.role || '',
+                  bonusFeatLevels: Array.isArray(parsed.bonusFeatLevels) ? parsed.bonusFeatLevels : [],
                   isCustom: true,
                   features: parsed.featuresSummary ? { 1: [{ name: parsed.featuresSummary, category: 'Special Ability', type: 'Ex', summary: parsed.featuresSummary }] } : {}
                 };
@@ -4621,6 +4815,48 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       }
     }
 
+    function matchesClassSearchQuery(cName, def, qRaw) {
+      const q = String(qRaw || '').trim().toLowerCase();
+      if (!q) return true;
+      const nameLow = (cName || '').toLowerCase();
+      const sourceLow = (def?.source || '').toLowerCase();
+      const roleLow = (def?.role || '').toLowerCase();
+      const descLow = (def?.description || '').toLowerCase();
+      const prereqLow = Array.isArray(def?.prerequisites) ? def.prerequisites.map(p => (p.text || '').toLowerCase()).join(' ') : '';
+      const haystack = `${nameLow} ${sourceLow} ${roleLow} ${descLow} ${prereqLow}`;
+
+      if (haystack.includes(q)) return true;
+
+      // Multi-token & typo-normalized search (e.g. "rogue, Adventuerer" -> ["rogue", "adventurer"])
+      const typoMap = {
+        'adventuerer': 'adventurer',
+        'adventuer': 'adventurer',
+        'rougue': 'rogue',
+        'rouge': 'rogue',
+        'figther': 'fighter',
+        'wizzard': 'wizard',
+        'cloister': 'cloistered',
+        'martialrogue': 'adventurer',
+        'featrogue': 'adventurer'
+      };
+      const tokens = q
+        .split(/[\s,\/\(\)\-\:\;]+/)
+        .map(t => t.trim())
+        .filter(Boolean)
+        .map(t => typoMap[t] || t);
+
+      if (tokens.length === 0) return true;
+      return tokens.every(tok => {
+        if (haystack.includes(tok)) return true;
+        // 1-char prefix/substring tolerance for tokens >= 5 chars (e.g. "adventuerer" vs "adventurer")
+        if (tok.length >= 5) {
+          const prefix4 = tok.slice(0, 5);
+          if (nameLow.includes(prefix4) || roleLow.includes(prefix4)) return true;
+        }
+        return false;
+      });
+    }
+
     function filterLevelUpClassSearch() {
       const resultsContainer = document.getElementById('lvlup-class-search-results');
       const countBadge = document.getElementById('lvlup-class-count-badge');
@@ -4644,16 +4880,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         if (currentClassFilterTab === 'prestige' && !isPrestige) return;
         if (currentClassFilterTab === 'custom' && !isCustom) return;
 
-        // Search text
-        if (q) {
-          const matchName = cName.toLowerCase().includes(q);
-          const matchSource = (def.source || '').toLowerCase().includes(q);
-          const matchRole = (def.role || '').toLowerCase().includes(q);
-          const matchDesc = (def.description || '').toLowerCase().includes(q);
-          const matchPrereq = Array.isArray(def.prerequisites) && def.prerequisites.some(p => (p.text || '').toLowerCase().includes(q));
-          if (!matchName && !matchSource && !matchRole && !matchDesc && !matchPrereq) {
-            return;
-          }
+        // Search text (supports multi-word, comma-separated variants & typos)
+        if (q && !matchesClassSearchQuery(cName, def, q)) {
+          return;
         }
 
         const prereqResult = checkClassPrerequisites(cName, def);
@@ -4833,7 +5062,21 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 </div>
               </div>
 
-              <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
+              <div class="flex items-center gap-1.5 flex-wrap" onclick="event.stopPropagation()">
+                ${isCustom ? `
+                  <button type="button" onclick="openCreateCustomClassModal('${safeName}', true)" class="px-2 py-1 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-500/50 text-amber-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Edit ${cName} template & level features">
+                    <span>✏️</span>
+                    <span>Edit</span>
+                  </button>
+                  <button type="button" onclick="deleteCustomClass('${safeName}')" class="px-2 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-500/50 text-rose-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Delete custom class ${cName}">
+                    <span>🗑️</span>
+                  </button>
+                ` : `
+                  <button type="button" onclick="openCreateCustomClassModal('${safeName}', false)" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Clone ${cName} as a template and customize its level features / bonus feats">
+                    <span>📋</span>
+                    <span>Clone / Variant</span>
+                  </button>
+                `}
                 <button type="button" onclick="toggleClassProgression('${safeName}')" class="px-2.5 py-1 rounded-lg ${isProgExpanded ? 'bg-indigo-900 border-indigo-400 text-white ring-1 ring-indigo-400/50' : 'bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/50 text-indigo-200 hover:text-white'} font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Show / hide ${cName} level progression table">
                   <span>📜</span>
                   <span>${isProgExpanded ? 'Hide Progression' : 'Show Progression'}</span>
@@ -4866,6 +5109,27 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           </div>
         `;
       });
+
+      if (q) {
+        const safeQuery = q.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+        htmlOutput += `
+          <div class="mt-2 p-2.5 rounded-xl bg-slate-950/90 border border-purple-500/30 flex flex-wrap items-center justify-between gap-2">
+            <div class="text-[10px] text-slate-300">
+              <span>🔮 Looking for another splatbook / variant class matching <b class="text-amber-300">"${q}"</b>?</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" onclick="openCreateCustomClassModal()" class="bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40 font-bold text-[10px] px-2.5 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer">
+                <span>📋</span>
+                <span>Clone / Edit Class Template</span>
+              </button>
+              <button type="button" onclick="fetchClassFromRuleMasterAi('${safeQuery}')" class="bg-purple-700 hover:bg-purple-600 text-white font-bold text-[10px] px-2.5 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer border border-purple-400/40">
+                <span>🔮</span>
+                <span>Fetch "${safeQuery}" via AI</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
 
       resultsContainer.innerHTML = htmlOutput;
       resultsContainer.scrollTop = prevScroll;
@@ -4907,51 +5171,49 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       const fetchBtn = document.getElementById('btn-fetch-class-ai');
 
       if (statusBox) statusBox.classList.remove('hidden');
-      if (statusText) statusText.textContent = `Scanning D&D 3.5e Sourcebooks: "${q}"...`;
+      if (statusText) statusText.textContent = `Scanning D&D 3.5e Sourcebooks & Variants: "${q}"...`;
       if (fetchBtn) {
         fetchBtn.disabled = true;
         fetchBtn.classList.add('opacity-50', 'cursor-not-allowed');
       }
 
-      const systemPrompt = `You are Rule Master AI, the supreme D&D 3.5e RAW (Rules As Written) encyclopedia and character building engine.
-STRICT D&D 3.5E RAW ONLY (ZERO TOLERANCE FOR FORUMS / HOMEBREW / 5E / PATHFINDER):
-1. CANONICAL D&D 3.5E SOURCES ONLY:
-   You must consult ONLY official D&D 3.5e sourcebooks and canonical indexes:
+      const systemPrompt = `You are Rule Master AI, the supreme D&D 3.5e RAW (Rules As Written) & Variant Class encyclopedia and character building engine.
+D&D 3.5E RAW + UNEARTHED ARCANA VARIANTS + SPLATBOOKS + ACFs:
+1. BROAD D&D 3.5E SOURCES (CORE + SPLATBOOKS + UNEARTHED ARCANA + DRAGON MAGAZINE):
+   You must consult official D&D 3.5e sourcebooks, variant rules, and canonical indexes:
    - Official System Reference Document (SRD v3.5 as archived on d20srd.org)
-   - Official D&D 3.5e Rulebooks and Splatbooks (as indexed on dndtools.net / danddtools)
+   - Unearthed Arcana (Variant Character Classes p.47-70, such as "Rogue (Adventurer Variant)" / Martial Feat Rogue which trades Sneak Attack at levels 1, 3, 5, 7, 9, 11, 13, 15, 17, 19 for Fighter Bonus Feats; "Fighter (Thug Variant)"; "Cleric (Cloistered Cleric)"; "Wizard (Domain Wizard)"; "Ranger (Urban Ranger)"; "Barbarian (Whirling Frenzy)")
    - Official Wizards of the Coast 3.5e Publications:
      * Player's Handbook (PHB) & Player's Handbook II, Dungeon Master's Guide (DMG)
      * Complete Series (Warrior, Arcane, Divine, Adventurer, Mage, Scoundrel, Champion)
-     * Tome of Battle: The Book of Nine Swords, Tome of Magic
-     * Spell Compendium, Magic Item Compendium
-     * Frostburn, Stormwrack, Sandstorm, Libris Mortis, Book of Exalted Deeds, Book of Vile Darkness, Expanded Psionics Handbook, Races of Stone/Destiny/the Wild/the Dragon, Dungeonscape.
-2. ABSOLUTE FORUM & HOMEBREW BLACKLIST:
-   - NEVER use, cite, or draw information from DandWiki (dandwiki.com), Giant in the Playground forums (GitP), ENWorld, Reddit, or homebrew blogs/wikis.
-   - If a class only exists as homebrew, third-party content, or a forum discussion, IT DOES NOT EXIST.
+     * Tome of Battle: The Book of Nine Swords, Tome of Magic, Magic of Incarnum
+     * Frostburn, Stormwrack, Sandstorm, Libris Mortis, Lords of Madness, Heroes of Horror/Battle, Book of Exalted Deeds, Book of Vile Darkness, Expanded Psionics Handbook, Races of Stone/Destiny/the Wild/the Dragon, Dungeonscape, Cityscape, Dragon Magazine Compendium.
+   - Alternate Class Features (ACFs) and Racial Substitution Levels.
+2. TYPO & VARIANT QUERY RESOLUTION:
+   - Automatically resolve comma-separated or misspelled variant queries (e.g. "rogue, Adventuerer" or "martial rogue" -> "Rogue (Adventurer Variant)").
+   - NEVER output placeholder names like "Non-Existent Class", "Unknown Class", or "None". If a class genuinely cannot be identified as a 3.5e class or variant, set "name": "".
 3. ZERO 5E / 4E / PATHFINDER:
-   - DO NOT USE D&D 4e, D&D 5e, Pathfinder, or homebrew. If class originated in 3.0 (e.g. Sword and Fist), use official 3.5e revision (e.g. Complete Warrior).
-4. STRICT NON-EXISTENCE / NO-HALLUCINATION POLICY:
-   - If "${q}" is not an official D&D 3.5e RAW class, DO NOT invent or fabricate it.
+   - DO NOT USE D&D 4e, D&D 5e, or Pathfinder rules.
 
 STRICT OUTPUT FORMAT:
 You MUST output ONLY a single valid JSON object with NO markdown formatting, NO backticks, NO commentary. Use 100% official D&D 3.5e RAW English terminology.
 Format:
 {
-  "name": "Exact Official Class Name in English",
+  "name": "Exact Official Class or Variant Name in English (e.g. Rogue (Adventurer Variant))",
   "type": "Prestige Class" or "Base Class",
   "maxLevel": 5 or 10 or 20,
-  "source": "Official 3.5e Book Name (e.g. Complete Scoundrel, Complete Mage, DMG)",
-  "role": "Role summary in English (e.g. Gish / Arcane Melee Channeler)",
+  "source": "Official 3.5e Book Name (e.g. Unearthed Arcana p.58, Complete Scoundrel)",
+  "role": "Role summary in English (e.g. Martial Feat Rogue • Trades Sneak Attack for Fighter Bonus Feats)",
   "hd": 4 or 6 or 8 or 10 or 12,
   "bab": 1.0 or 0.75 or 0.5,
   "fort": "good" or "poor",
   "ref": "good" or "poor",
   "will": "good" or "poor",
   "skills": 2 or 4 or 6 or 8,
-  "description": "Short informative English description explaining what the class specializes in and its playstyle.",
+  "bonusFeatLevels": [1, 3, 5, 7, 9, 11, 13, 15, 17, 19],
+  "description": "Short informative English description explaining what the class or variant specializes in and its playstyle.",
   "prerequisites": [
-    { "text": "Official English prerequisite (e.g. Base Attack Bonus +5)", "key": "bab", "min": 5 },
-    { "text": "Feat: Combat Casting", "key": "feat", "name": "Combat Casting" }
+    { "text": "Official English prerequisite (e.g. Base Attack Bonus +5)", "key": "bab", "min": 5 }
   ],
   "features": {
     "1": [{ "name": "Feature Name (Ex/Su/Sp)", "summary": "Concise mechanical summary in English" }],
@@ -4960,8 +5222,8 @@ Format:
 }
 STRICT RULE: Do NOT include standard 6-sided dice emoji (U+1F3B2) anywhere in any field. Use plain notation like "d10 HD", "1d6", "2d8".`;
 
-      const userPrompt = `Extract the exact official D&D 3.5e RAW class parameters for: "${q}". (If the query contains typos such as "bloodstarm blade" for "Bloodstorm Blade", automatically correct to the official D&D 3.5e class name).
-Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit die, bab, fort, ref, will, skill points per level, prerequisites, description in English, and level-by-level features for every level from 1 up to maxLevel (keys "1", "2", ...). If a level grants spell advancement e.g. "+1 level of existing spellcasting class" or bonus feats, list that in the level's features.`;
+      const userPrompt = `Extract the exact official D&D 3.5e RAW class or class variant parameters for: "${q}". (If the query contains typos or variant keywords such as "rogue, Adventuerer" for "Rogue (Adventurer Variant)" from Unearthed Arcana p.58, or "bloodstarm blade" for "Bloodstorm Blade", automatically resolve to the canonical D&D 3.5e class or variant name).
+Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant), hit die, bab, fort, ref, will, skill points per level, bonusFeatLevels array (levels that grant a selectable bonus feat), prerequisites, description in English, and level-by-level features for every level from 1 up to maxLevel (keys "1", "2", ...).`;
 
       let modelsToTry = [];
       if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getAvailableGeminiModels === 'function') {
@@ -5013,8 +5275,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           let rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text;
           if (rawText) {
             rawText = rawText.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
-            classData = JSON.parse(rawText);
-            if (classData && classData.name) {
+            const parsed = JSON.parse(rawText);
+            const candName = String(parsed?.name || '').trim();
+            if (candName && !/^(null|none|unknown|non-existent|nonexistent|invalid|n\/a)/i.test(candName)) {
+              classData = parsed;
               break;
             }
           }
@@ -5030,8 +5294,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         fetchBtn.classList.remove('opacity-50', 'cursor-not-allowed');
       }
 
-      if (!classData || !classData.name) {
-        alert(`⚠️ Rule Master could not find class "${q}" in official D&D 3.5e sourcebooks or encountered an API error.\n${lastErr ? lastErr.message : ''}\n\nYou can define this class manually using the "Add Custom Class" button.`);
+      if (!classData || !classData.name || /^(null|none|unknown|non-existent|nonexistent|invalid|n\/a)/i.test(String(classData.name).trim())) {
+        alert(`⚠️ Rule Master could not find class "${q}" in official D&D 3.5e sourcebooks.\n${lastErr ? lastErr.message : ''}\n\nTip: You can clone an existing class template (e.g. Rogue) and customize its features using the "+ Add Custom Class" (Class Template Studio) button!`);
         return;
       }
 
@@ -6123,16 +6387,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         if (currentChangeClassFilterTab === 'prestige' && !isPrestige) return;
         if (currentChangeClassFilterTab === 'custom' && !isCustom) return;
 
-        // Search text
-        if (q) {
-          const matchName = cName.toLowerCase().includes(q);
-          const matchSource = (def.source || '').toLowerCase().includes(q);
-          const matchRole = (def.role || '').toLowerCase().includes(q);
-          const matchDesc = (def.description || '').toLowerCase().includes(q);
-          const matchPrereq = Array.isArray(def.prerequisites) && def.prerequisites.some(p => (p.text || '').toLowerCase().includes(q));
-          if (!matchName && !matchSource && !matchRole && !matchDesc && !matchPrereq) {
-            return;
-          }
+        // Search text (supports multi-word, comma-separated variants & typos)
+        if (q && !matchesClassSearchQuery(cName, def, q)) {
+          return;
         }
 
         const prereqResult = checkClassPrerequisites(cName, def);
@@ -6306,7 +6563,21 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                 </div>
               </div>
 
-              <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
+              <div class="flex items-center gap-1.5 flex-wrap" onclick="event.stopPropagation()">
+                ${isCustom ? `
+                  <button type="button" onclick="openCreateCustomClassModal('${safeName}', true)" class="px-2 py-1 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-500/50 text-amber-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Edit ${cName} template & level features">
+                    <span>✏️</span>
+                    <span>Edit</span>
+                  </button>
+                  <button type="button" onclick="deleteCustomClass('${safeName}')" class="px-2 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-500/50 text-rose-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Delete custom class ${cName}">
+                    <span>🗑️</span>
+                  </button>
+                ` : `
+                  <button type="button" onclick="openCreateCustomClassModal('${safeName}', false)" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Clone ${cName} as a template and customize its level features / bonus feats">
+                    <span>📋</span>
+                    <span>Clone / Variant</span>
+                  </button>
+                `}
                 <button type="button" onclick="toggleClassProgression('${safeName}')" class="px-2.5 py-1 rounded-lg ${isProgExpanded ? 'bg-indigo-900 border-indigo-400 text-white ring-1 ring-indigo-400/50' : 'bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/50 text-indigo-200 hover:text-white'} font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Show / hide ${cName} level progression table">
                   <span>📜</span>
                   <span>${isProgExpanded ? 'Hide Progression' : 'Show Progression'}</span>

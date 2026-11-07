@@ -4834,13 +4834,24 @@ const RuleEngine = {
       });
     }
 
-    // 4. Feats & Special Abilities (Canonical V2 modifiers + Compendium lookup)
-    const featsList = [...(character.feats || []), ...(character.specialAbilities || [])];
+    // 4. Feats & Special Abilities (Canonical V2 modifiers + Compendium lookup + Active Level Progression Boons/Feats)
+    const progFeats = Array.isArray(character.levelProgression)
+      ? character.levelProgression
+          .filter(p => p && p.active !== false)
+          .flatMap(p => [...(p.feats || []), ...(p.specialAbilities || [])])
+      : [];
+    const featsList = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats];
+    const seenFeatNames = new Set();
     featsList.forEach(rawFeat => {
       if (!rawFeat) return;
       const featObj = typeof rawFeat === 'string' ? { name: rawFeat, category: 'Feat' } : this.ensureV2Entry(rawFeat);
-      const fName = (featObj.name || '').trim();
+      const rawFName = (featObj.name || '').trim();
+      if (!rawFName) return;
+      const fName = rawFName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
       if (!fName) return;
+      const fKey = fName.toLowerCase();
+      if (seenFeatNames.has(fKey)) return;
+      seenFeatNames.add(fKey);
 
       const dbFeat = this.getMasterDbEntry(featObj) || this.getMasterDbEntry(fName);
       const mods = (Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0)
