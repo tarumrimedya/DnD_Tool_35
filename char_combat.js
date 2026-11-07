@@ -4815,6 +4815,340 @@
       };
     }
 
+    function getCharacterSpecialAttackAbilities(char) {
+      if (!char) return [];
+      const stripTag = (str) => String(str || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+      const rawPool = [];
+
+      if (Array.isArray(char.specialAbilities)) {
+        char.specialAbilities.forEach(a => {
+          if (a) rawPool.push(typeof a === 'string' ? { name: a, _src: 'specialAbilities' } : { ...a, _src: 'specialAbilities' });
+        });
+      }
+      if (Array.isArray(char.feats)) {
+        char.feats.forEach(f => {
+          if (f) rawPool.push(typeof f === 'string' ? { name: f, _src: 'feats' } : { ...f, _src: 'feats' });
+        });
+      }
+
+      const excludedNames = new Set([
+        'power attack', 'sneak attack', 'punishing stance', 'mountain hammer', 'steel wind',
+        'flurry of blows', 'two-weapon fighting', 'improved two-weapon fighting', 'greater two-weapon fighting',
+        'agile shield fighter', 'weapon specialization', 'greater weapon specialization', 'point blank shot',
+        'rapid shot', 'manyshot', 'deadly aim', 'combat expertise', 'steadfast determination'
+      ]);
+
+      const seen = new Set();
+      const result = [];
+
+      rawPool.forEach(item => {
+        const cleanName = stripTag(item.name || '');
+        if (!cleanName) return;
+        const lower = cleanName.toLowerCase();
+        if (seen.has(lower) || excludedNames.has(lower) || lower.startsWith('sneak attack')) return;
+
+        const dbMatch = (typeof masterDb !== 'undefined' && Array.isArray(masterDb))
+          ? masterDb.find(m => m && m.name && stripTag(m.name).toLowerCase() === lower)
+          : null;
+
+        let merged = Object.assign({}, dbMatch || {}, item, { name: cleanName });
+        const benText = merged.benefit || merged.desc || merged.description || '';
+
+        if (!merged.dcFormula && !merged.recharge && (!Array.isArray(merged.damageParts) || merged.damageParts.length === 0)) {
+          if (typeof window !== 'undefined' && window.RuleMaster && typeof window.RuleMaster.parseStructuredAbilityStatBlock === 'function') {
+            const parsed = window.RuleMaster.parseStructuredAbilityStatBlock(cleanName, benText, merged.category || merged.type || '');
+            if (parsed) {
+              merged = Object.assign({}, parsed, merged, {
+                name: parsed.name || cleanName,
+                damageParts: (Array.isArray(merged.damageParts) && merged.damageParts.length > 0) ? merged.damageParts : (parsed.damageParts || []),
+                save: merged.save || parsed.save || '',
+                dcFormula: merged.dcFormula || parsed.dcFormula || '',
+                range: merged.range || parsed.range || '',
+                recharge: merged.recharge || parsed.recharge || '',
+                rechargeDice: merged.rechargeDice || parsed.rechargeDice || '',
+                ruleFlags: Object.assign({}, parsed.ruleFlags || {}, merged.ruleFlags || {})
+              });
+            }
+          }
+        }
+
+        const hasDmgParts = Array.isArray(merged.damageParts) && merged.damageParts.some(dp => dp && dp.dice);
+        const hasSaveOrRecharge = Boolean(merged.dcFormula || merged.save || merged.recharge || merged.rechargeDice || merged.ruleFlags?.isStructuredAbility);
+        const isBreathOrBlast = /\b(breath weapon|breath|cone of|line of|gaze|spit|acid|fire|cold|electricity|sonic)\b/i.test(`${cleanName} ${benText}`);
+
+        if (hasDmgParts && (hasSaveOrRecharge || isBreathOrBlast || merged.range)) {
+          seen.add(lower);
+          const key = lower.replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+          result.push({
+            key,
+            name: merged.name || cleanName,
+            damageParts: merged.damageParts.filter(dp => dp && dp.dice),
+            save: merged.save || '',
+            dcFormula: merged.dcFormula || '',
+            range: merged.range || '',
+            recharge: merged.recharge || (merged.rechargeDice ? `${merged.rechargeDice} rounds` : ''),
+            rechargeDice: merged.rechargeDice || '',
+            action: merged.action || 'Standard Action',
+            benefit: benText
+          });
+        }
+      });
+
+      return result;
+    }
+    window.getCharacterSpecialAttackAbilities = getCharacterSpecialAttackAbilities;
+
+    function renderSpecialAttackAbilityCardsHtml(char) {
+      const abilities = getCharacterSpecialAttackAbilities(char);
+      if (!abilities || abilities.length === 0) return '';
+
+      if (!char.tactical) char.tactical = {};
+      if (!char.tactical.abilityCooldowns || typeof char.tactical.abilityCooldowns !== 'object') {
+        char.tactical.abilityCooldowns = {};
+      }
+      const curRound = Number(char.tactical.round) || 1;
+      const esc = (str) => String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+      return abilities.map(ab => {
+        const cdEntry = char.tactical.abilityCooldowns[ab.key];
+        const readyRound = (cdEntry && typeof cdEntry === 'object') ? Number(cdEntry.readyRound || 0) : Number(cdEntry || 0);
+        const remainingRounds = Math.max(0, readyRound - curRound);
+        const isOnCooldown = remainingRounds > 0;
+
+        const dp = ab.damageParts[0] || { dice: '1d6', bonus: 0, type: 'Damage' };
+        const bonusNum = Number(dp.bonus || 0);
+        const dmgFormula = `${dp.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
+        const dmgType = dp.type || 'Damage';
+
+        let dcBadgeHtml = '';
+        let dcSummaryStr = '';
+        if (ab.save || ab.dcFormula) {
+          const dcEval = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateAbilitySaveDc === 'function')
+            ? RuleEngine.evaluateAbilitySaveDc({ dcFormula: ab.dcFormula, benefit: ab.benefit }, char)
+            : null;
+          if (dcEval) {
+            dcBadgeHtml = `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/25 text-amber-200 border border-amber-500/50">🛡️ ${esc(ab.save || 'Save')} DC ${dcEval.dc}</span>`;
+            dcSummaryStr = `${ab.save || 'Save'} DC ${dcEval.dc} [${dcEval.breakdown}]`;
+          } else if (ab.save) {
+            dcBadgeHtml = `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-200 border border-amber-500/40">🛡️ ${esc(ab.save)}</span>`;
+            dcSummaryStr = ab.save;
+          }
+        }
+
+        const safeKey = ab.key.replace(/'/g, "\\'");
+
+        return `
+        <!-- SPECIAL ATTACK / BREATH WEAPON CARD -->
+        <div onclick="executeSpecialAttackAbilityRoll('${safeKey}')" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${isOnCooldown ? 'bg-gradient-to-r from-purple-950/50 to-slate-900/90 border-purple-500/60 text-purple-200 shadow-md' : 'bg-gradient-to-r from-emerald-950/60 to-slate-900/90 border-emerald-500/80 text-emerald-100 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-500/30 hover:border-emerald-400'}">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-xs">${isOnCooldown ? '⏳' : '🔥'}</span>
+              <span class="text-xs font-black truncate text-white">${esc(ab.name)}</span>
+              ${isOnCooldown
+                ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-purple-500/30 text-purple-200 border border-purple-400/60">⏳ COOLDOWN: ${remainingRounds} ${remainingRounds === 1 ? 'ROUND' : 'ROUNDS'} LEFT (R${readyRound})</span>`
+                : `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-emerald-500/30 text-emerald-300 border border-emerald-500/50">READY</span>`
+              }
+              ${dcBadgeHtml}
+              ${ab.range ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-sky-950/70 text-sky-300 border border-sky-500/50">📏 ${esc(ab.range)}</span>` : ''}
+            </div>
+            <!-- Row 1: Damage & Save Breakdown -->
+            <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
+              <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Damage:</span>
+              <span class="font-bold text-amber-300">${esc(dmgFormula)} ${esc(dmgType)}</span>
+              ${dcSummaryStr ? `<span class="text-slate-600">•</span><span class="text-amber-200/90 text-[9px]">${esc(dcSummaryStr)}</span>` : ''}
+            </div>
+            <!-- Row 2: Action & Recharge -->
+            <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
+              <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Action:</span>
+              <span class="text-slate-300 font-semibold">${esc(ab.action || 'Standard Action')}</span>
+              ${ab.recharge ? `<span class="text-slate-600">•</span><span class="text-purple-300">⏳ Recharge: ${esc(ab.recharge)}</span>` : ''}
+            </div>
+          </div>
+          <div class="shrink-0 flex items-center gap-1.5">
+            ${isOnCooldown ? `
+              <button type="button" onclick="event.stopPropagation(); resetSpecialAttackCooldown('${safeKey}')" class="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 border border-purple-500/50 transition cursor-pointer" title="Clear cooldown and mark Ready">
+                ↺ Ready
+              </button>
+            ` : (ab.rechargeDice ? `
+              <button type="button" onclick="event.stopPropagation(); rollSpecialAttackCooldownOnly('${safeKey}')" class="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/50 transition cursor-pointer" title="Roll Recharge Cooldown (${esc(ab.rechargeDice)}) only">
+                ⏳ ${esc(ab.rechargeDice)}
+              </button>
+            ` : '')}
+            <button type="button" onclick="event.stopPropagation(); executeSpecialAttackAbilityRoll('${safeKey}')" class="text-[10px] font-black px-2.5 py-1.5 rounded-lg ${isOnCooldown ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'} shadow transition active:scale-95 cursor-pointer flex items-center gap-1">
+              <span>🔥</span>
+              <span>Roll ${esc(dmgFormula)}</span>
+            </button>
+          </div>
+        </div>
+        `;
+      }).join('');
+    }
+    window.renderSpecialAttackAbilityCardsHtml = renderSpecialAttackAbilityCardsHtml;
+
+    function executeSpecialAttackAbilityRoll(abilityKey) {
+      if (!character) return;
+      const abilities = getCharacterSpecialAttackAbilities(character);
+      const ab = abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
+      if (!ab) return;
+
+      const dp = ab.damageParts[0] || { dice: '1d6', bonus: 0, type: 'Damage' };
+      const bonusNum = Number(dp.bonus || 0);
+      const dmgFormula = `${dp.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
+      const dmgType = dp.type || 'Damage';
+
+      if (typeof parseAndRollDiceFormula !== 'function') {
+        if (typeof executeStandardCustomFormula === 'function') executeStandardCustomFormula(dmgFormula);
+        return;
+      }
+
+      const parsedDmg = parseAndRollDiceFormula(dmgFormula);
+      if (!parsedDmg) return;
+
+      const dmgBreakdownParts = parsedDmg.diceGroups.map(g => `${g.notation}: [${g.rolls.join(', ')}]`);
+      if (parsedDmg.modifiers.length > 0) {
+        const modSum = parsedDmg.modifiers.reduce((a, b) => a + b, 0);
+        if (modSum !== 0) dmgBreakdownParts.push(`${modSum >= 0 ? '+' : ''}${modSum}`);
+      }
+
+      // Evaluate live Save DC if present
+      let dcNote = '';
+      if (ab.save || ab.dcFormula) {
+        const dcEval = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateAbilitySaveDc === 'function')
+          ? RuleEngine.evaluateAbilitySaveDc({ dcFormula: ab.dcFormula, benefit: ab.benefit }, character)
+          : null;
+        if (dcEval) {
+          dcNote = `🛡️ ${ab.save || 'Save'} DC ${dcEval.dc} [${dcEval.breakdown}]`;
+        } else if (ab.save) {
+          dcNote = `🛡️ ${ab.save}`;
+        }
+      }
+
+      // Also roll Recharge Dice automatically if present!
+      let rechargeNote = '';
+      let parsedRecharge = null;
+      if (ab.rechargeDice) {
+        parsedRecharge = parseAndRollDiceFormula(ab.rechargeDice);
+        if (parsedRecharge) {
+          const curRound = Number(character.tactical?.round) || 1;
+          const waitRounds = Math.max(1, parsedRecharge.grandTotal);
+          const readyRound = curRound + waitRounds;
+          if (!character.tactical) character.tactical = {};
+          if (!character.tactical.abilityCooldowns) character.tactical.abilityCooldowns = {};
+          character.tactical.abilityCooldowns[ab.key] = {
+            name: ab.name,
+            waitRounds,
+            readyRound,
+            rolledAtRound: curRound
+          };
+          const rRolls = parsedRecharge.diceGroups.map(g => `[${g.rolls.join(', ')}]`).join('');
+          rechargeNote = `⏳ Recharge (${ab.rechargeDice} = ${rRolls}): ${waitRounds} rounds (Ready R${readyRound})`;
+          saveStateToStorage(false);
+          renderWeaponSetsUI();
+        }
+      }
+
+      const dice3dList = [];
+      parsedDmg.diceGroups.forEach(g => {
+        if ([4, 6, 8, 10, 12, 20, 100].includes(g.sides)) {
+          g.rolls.forEach(r => {
+            if (dice3dList.length < 6) dice3dList.push({ type: 'd' + g.sides, value: r });
+          });
+        }
+      });
+      if (parsedRecharge) {
+        parsedRecharge.diceGroups.forEach(g => {
+          if ([4, 6, 8, 10, 12, 20, 100].includes(g.sides)) {
+            g.rolls.forEach(r => {
+              if (dice3dList.length < 6) dice3dList.push({ type: 'd' + g.sides, value: r });
+            });
+          }
+        });
+      }
+
+      const fullBreakdown = [
+        `${dmgBreakdownParts.join(' • ')} ${dmgType}`,
+        dcNote,
+        rechargeNote
+      ].filter(Boolean).join(' • ');
+
+      const onDone = () => {
+        if (typeof addDiceHistoryEntry === 'function') {
+          addDiceHistoryEntry({
+            title: `🔥 ${ab.name} (${dmgType})`,
+            formula: dmgFormula,
+            breakdown: fullBreakdown,
+            total: parsedDmg.grandTotal,
+            isCrit: false,
+            critDamage: null,
+            critInfo: [dcNote, rechargeNote].filter(Boolean).join(' • ')
+          });
+        }
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '🔥',
+            title: `${ab.name} — ${dmgFormula} ${dmgType}`,
+            breakdown: fullBreakdown,
+            total: `${parsedDmg.grandTotal} ${dmgType}`
+          });
+        }
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '🔥',
+            title: `${ab.name} (${dmgFormula} ${dmgType})`,
+            breakdown: `Rolling ${dmgFormula}${ab.rechargeDice ? ' + Recharge ' + ab.rechargeDice : ''}...`,
+            total: '...'
+          }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
+        }
+        try {
+          Dice3D.roll(dice3dList, onDone);
+        } catch (e) {
+          onDone();
+        }
+      } else {
+        onDone();
+      }
+    }
+    window.executeSpecialAttackAbilityRoll = executeSpecialAttackAbilityRoll;
+
+    function rollSpecialAttackCooldownOnly(abilityKey) {
+      if (!character) return;
+      const abilities = getCharacterSpecialAttackAbilities(character);
+      const ab = abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
+      if (!ab || !ab.rechargeDice || typeof parseAndRollDiceFormula !== 'function') return;
+
+      const parsed = parseAndRollDiceFormula(ab.rechargeDice);
+      if (!parsed) return;
+      const curRound = Number(character.tactical?.round) || 1;
+      const waitRounds = Math.max(1, parsed.grandTotal);
+      const readyRound = curRound + waitRounds;
+      if (!character.tactical) character.tactical = {};
+      if (!character.tactical.abilityCooldowns) character.tactical.abilityCooldowns = {};
+      character.tactical.abilityCooldowns[ab.key] = {
+        name: ab.name,
+        waitRounds,
+        readyRound,
+        rolledAtRound: curRound
+      };
+      saveStateToStorage(false);
+      renderWeaponSetsUI();
+
+      if (typeof window.rollAbilityTacticalDice === 'function') {
+        window.rollAbilityTacticalDice(ab.rechargeDice, `${ab.name} — Recharge Cooldown`, 'recharge');
+      }
+    }
+    window.rollSpecialAttackCooldownOnly = rollSpecialAttackCooldownOnly;
+
+    function resetSpecialAttackCooldown(abilityKey) {
+      if (!character || !character.tactical || !character.tactical.abilityCooldowns) return;
+      delete character.tactical.abilityCooldowns[abilityKey];
+      saveStateToStorage(false);
+      renderWeaponSetsUI();
+    }
+    window.resetSpecialAttackCooldown = resetSpecialAttackCooldown;
+
     function renderWeaponSetsUI() {
       const container = document.getElementById('weapon-sets-cards-container');
       if (!container) return;
@@ -5010,7 +5344,10 @@
         `;
       }
 
-      container.innerHTML = card1Html + card2Html;
+      const specialAttacksHtml = typeof renderSpecialAttackAbilityCardsHtml === 'function'
+        ? renderSpecialAttackAbilityCardsHtml(character)
+        : '';
+      container.innerHTML = card1Html + card2Html + specialAttacksHtml;
       populateWeaponSetsEditorDropdowns();
     } catch (err) {
       console.error('renderWeaponSetsUI execution error:', err);
@@ -6260,9 +6597,17 @@
         return false;
       };
 
+      const specialAttackNamesSet = new Set(
+        (typeof getCharacterSpecialAttackAbilities === 'function' ? getCharacterSpecialAttackAbilities(character) : [])
+          .map(sa => String(sa.name || '').toLowerCase().trim())
+          .filter(Boolean)
+      );
+
       character.activeModifiers = character.activeModifiers.filter(m => {
         if (!m || !m.name) return false;
         const n = m.name.toLowerCase().trim();
+        // Exclude standalone special attack cards (e.g. Breath Weapon) from melee weapon modifier toggles
+        if (specialAttackNamesSet.has(n) || n.includes('breath weapon')) return false;
         // Never allow Skills inside attack/damage modifier toggles
         if (m.source === 'Skill' || isSkillItemName(n)) return false;
         // Disallow spell attacks, saving throw spells, and direct ammunition from melee active modifiers
@@ -6294,13 +6639,14 @@
         return qualifiedPool.some(q => q.name.toLowerCase().trim() === n);
       });
 
-      // Also include any pinned items in offense_melee (excluding Skills) into qualifiedPool
+      // Also include any pinned items in offense_melee (excluding Skills & Standalone Special Attacks) into qualifiedPool
       if (typeof getPinsForDrawer === 'function') {
         const meleePins = getPinsForDrawer('offense_melee');
         meleePins.forEach(p => {
           if (!p || !p.name) return;
           if (p.sourceType === 'Skill' || p.type === 'Skill' || p.action === 'Check' || isSkillItemName(p.name)) return;
           const pNameLower = p.name.toLowerCase().trim();
+          if (specialAttackNamesSet.has(pNameLower) || pNameLower.includes('breath weapon')) return;
           if (!qualifiedPool.some(q => q.name.toLowerCase().trim() === pNameLower)) {
             const dmgExpr = p.badge || (typeof findDiceExpression === 'function' ? findDiceExpression(p.desc) : '');
             qualifiedPool.push({
@@ -11122,6 +11468,23 @@
         notes.push('Charge AC penalty cleared');
       }
 
+      // Advance & notify special attack ability cooldowns (e.g. Breath Weapon 1d4+1 rounds)
+      if (character.tactical.abilityCooldowns && typeof character.tactical.abilityCooldowns === 'object') {
+        const curR = Number(character.tactical.round) || 1;
+        Object.keys(character.tactical.abilityCooldowns).forEach(k => {
+          const entry = character.tactical.abilityCooldowns[k];
+          const readyR = (entry && typeof entry === 'object') ? Number(entry.readyRound || 0) : Number(entry || 0);
+          const abName = (entry && typeof entry === 'object' && entry.name) ? entry.name : k.replace(/_/g, ' ');
+          if (readyR <= curR) {
+            delete character.tactical.abilityCooldowns[k];
+            notes.push(`🔥 ${abName} Recharged & READY!`);
+          } else {
+            const rem = readyR - curR;
+            notes.push(`⏳ ${abName}: ${rem} ${rem === 1 ? 'round' : 'rounds'} left`);
+          }
+        });
+      }
+
       saveStateToStorage(false);
       renderAll();
       showDiceTopToast({
@@ -11133,6 +11496,9 @@
     }
 
     function triggerCockpitShortRest() {
+      if (character?.tactical?.abilityCooldowns) {
+        character.tactical.abilityCooldowns = {};
+      }
       if (typeof executeShortRest === 'function') {
         executeShortRest(5);
         return;
@@ -11151,6 +11517,9 @@
     }
 
     function triggerCockpitLongRest() {
+      if (character?.tactical?.abilityCooldowns) {
+        character.tactical.abilityCooldowns = {};
+      }
       if (typeof performLongRest === 'function') {
         performLongRest();
         return;
@@ -11185,6 +11554,7 @@
           character.tactical.fightingDefensively = false;
           character.tactical.totalDefense = false;
           character.tactical.shieldBlockActive = false;
+          character.tactical.abilityCooldowns = {};
           character.tactical.round = 1;
         }
         saveStateToStorage(true);
