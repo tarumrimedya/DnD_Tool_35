@@ -2913,24 +2913,33 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           selectedClassName = targetRow.className || (character.classes?.split(' ')[0]) || 'Fighter';
           def = allDefs[selectedClassName] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[selectedClassName] : null) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
 
-          prospectiveProg = prog.length > 0 ? prog.slice(0, rowIdx + 1) : [{ className: selectedClassName, hd: `d${def.hd || 8}`, hpGain: 0, active: true }];
+          prospectiveProg = prog.length > 0 ? prog.slice(0, rowIdx + 1).map(p => ({ ...p, active: true })) : [{ className: selectedClassName, hd: `d${def.hd || 8}`, hpGain: 0, active: true }];
           if (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression) {
-            const sys = character.settings?.progressionSystem || 'standard';
+            const sys = character.settings?.babSaveSystem || character.settings?.progressionSystem || 'standard';
             const isHuman = (character.race || '').toLowerCase().includes('human');
             const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
             const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
-            prospectiveBab = calc?.baseBab ?? (Number(character.bab) || 0);
-            prospectiveBaseSaves = calc?.baseSaves ?? { fort: Number(character.savingThrows?.fortitude?.base) || 0, ref: Number(character.savingThrows?.reflex?.base) || 0, will: Number(character.savingThrows?.will?.base) || 0 };
+            prospectiveBab = Math.max(calc?.baseBab ?? 0, Number(targetRow.bab) || 0);
+            prospectiveBaseSaves = {
+              fort: Math.max(calc?.baseSaves?.fort ?? 0, Number(targetRow.fort) || 0),
+              ref: Math.max(calc?.baseSaves?.ref ?? 0, Number(targetRow.ref) || 0),
+              will: Math.max(calc?.baseSaves?.will ?? 0, Number(targetRow.will) || 0)
+            };
           } else {
-            prospectiveBab = Number(character.bab) || 0;
-            prospectiveBaseSaves = { fort: Number(character.savingThrows?.fortitude?.base) || 0, ref: Number(character.savingThrows?.reflex?.base) || 0, will: Number(character.savingThrows?.will?.base) || 0 };
+            prospectiveBab = Math.max(Number(character.bab) || 0, Number(targetRow.bab) || 0);
+            prospectiveBaseSaves = {
+              fort: Math.max(Number(character.baseSaves?.fort ?? character.savingThrows?.fortitude?.base) || 0, Number(targetRow.fort) || 0),
+              ref: Math.max(Number(character.baseSaves?.ref ?? character.savingThrows?.reflex?.base) || 0, Number(targetRow.ref) || 0),
+              will: Math.max(Number(character.baseSaves?.will ?? character.savingThrows?.will?.base) || 0, Number(targetRow.will) || 0)
+            };
           }
 
           statKeys.forEach(stat => {
             let val = Number(character.baseAbilities?.[stat] ?? character.abilities?.[stat] ?? 10);
             for (let i = 0; i <= rowIdx && i < prog.length; i++) {
               const r = prog[i];
-              if (r && r.statIncrease && r.statIncrease.toLowerCase() === stat) {
+              const incStat = getLevelStatIncrease(r);
+              if (incStat && incStat.toLowerCase() === stat) {
                 val += 1;
               }
             }
@@ -2941,20 +2950,18 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           selectedClassName = document.getElementById('lvlup-class-select')?.value || defaultClass;
           def = allDefs[selectedClassName] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[selectedClassName] : null) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
 
-          prospectiveProg = [...prog, { className: selectedClassName, hd: `d${def.hd || 8}`, hpGain: 0, active: true }];
+          prospectiveProg = [...prog.map(p => ({ ...p, active: true })), { className: selectedClassName, hd: `d${def.hd || 8}`, hpGain: 0, active: true }];
           const babInputVal = parseInt(document.getElementById('lvlup-bab-input')?.value, 10);
-          if (!isNaN(babInputVal)) {
-            prospectiveBab = babInputVal;
-          } else if (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression) {
-            const sys = character.settings?.progressionSystem || 'standard';
+          if (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression) {
+            const sys = character.settings?.babSaveSystem || character.settings?.progressionSystem || 'standard';
             const isHuman = (character.race || '').toLowerCase().includes('human');
             const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
             const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
-            prospectiveBab = calc?.baseBab ?? (Number(character.bab) || 0);
-            prospectiveBaseSaves = calc?.baseSaves ?? { fort: Number(character.savingThrows?.fortitude?.base) || 0, ref: Number(character.savingThrows?.reflex?.base) || 0, will: Number(character.savingThrows?.will?.base) || 0 };
+            prospectiveBab = !isNaN(babInputVal) ? babInputVal : (calc?.baseBab ?? (Number(character.bab) || 0));
+            prospectiveBaseSaves = calc?.baseSaves ?? { fort: Number(character.baseSaves?.fort ?? character.savingThrows?.fortitude?.base) || 0, ref: Number(character.baseSaves?.ref ?? character.savingThrows?.reflex?.base) || 0, will: Number(character.baseSaves?.will ?? character.savingThrows?.will?.base) || 0 };
           } else {
-            prospectiveBab = Number(character.bab) || 0;
-            prospectiveBaseSaves = { fort: Number(character.savingThrows?.fortitude?.base) || 0, ref: Number(character.savingThrows?.reflex?.base) || 0, will: Number(character.savingThrows?.will?.base) || 0 };
+            prospectiveBab = !isNaN(babInputVal) ? babInputVal : (Number(character.bab) || 0);
+            prospectiveBaseSaves = { fort: Number(character.baseSaves?.fort ?? character.savingThrows?.fortitude?.base) || 0, ref: Number(character.baseSaves?.ref ?? character.savingThrows?.reflex?.base) || 0, will: Number(character.baseSaves?.will ?? character.savingThrows?.will?.base) || 0 };
           }
 
           const chosenStat = (document.getElementById('lvlup-stat-select')?.value || '').toLowerCase().trim();
@@ -3003,10 +3010,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           });
         }
 
-        const progSliceForFeats = isTableMode ? prog.slice(0, Number(targetLevelIdx)) : prog;
+        const progSliceForFeats = isTableMode ? prog.slice(0, Number(targetLevelIdx) + 1) : prog;
         if (Array.isArray(progSliceForFeats)) {
           progSliceForFeats.forEach(lvl => {
-            if (lvl && lvl.active !== false) {
+            if (lvl && (isTableMode || lvl.active !== false)) {
               (lvl.feats || []).forEach(f => {
                 const name = typeof f === 'string' ? f : f?.name;
                 if (name) {

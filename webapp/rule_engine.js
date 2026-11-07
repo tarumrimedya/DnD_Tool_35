@@ -5056,7 +5056,12 @@ const RuleEngine = {
 
   getClassDef(className) {
     if (!className) return null;
-    const localDef = this.DND35_CLASS_DEFS ? this.DND35_CLASS_DEFS[className] : null;
+    const availDefs = (typeof window !== 'undefined' && typeof window.getAvailableClassDefs === 'function')
+      ? window.getAvailableClassDefs()
+      : null;
+    const localDef = (this.DND35_CLASS_DEFS && this.DND35_CLASS_DEFS[className])
+      || (availDefs && availDefs[className])
+      || null;
     const comp = (typeof window !== 'undefined' && window.SrdCompendium)
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const srdClass = (comp && typeof comp.getClass === 'function')
