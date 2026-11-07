@@ -9528,10 +9528,26 @@
               entriesToMerge = parsed.customDb;
             } else if (Array.isArray(parsed.masterDb)) {
               entriesToMerge = parsed.masterDb;
+            } else if (Array.isArray(parsed.entries)) {
+              entriesToMerge = parsed.entries;
+            } else if (Array.isArray(parsed.rows)) {
+              entriesToMerge = parsed.rows;
             } else if (parsed.character && Array.isArray(parsed.character.customDb)) {
               entriesToMerge = parsed.character.customDb;
             } else if (parsed.name && parsed.type) {
               entriesToMerge = [parsed];
+            }
+            const packId = (typeof parsed.pack === 'object' && parsed.pack !== null)
+              ? String(parsed.pack.id || parsed.pack.name || '')
+              : String(parsed.pack || parsed.packId || '');
+            if (Array.isArray(entriesToMerge)) {
+              entriesToMerge = entriesToMerge.map(ent => {
+                if (!ent || typeof ent !== 'object') return ent;
+                const normPack = (typeof ent.pack === 'object' && ent.pack !== null)
+                  ? String(ent.pack.id || ent.pack.name || '')
+                  : String(ent.pack || packId || '');
+                return normPack ? Object.assign({}, ent, { pack: normPack }) : ent;
+              });
             }
           }
 
@@ -9563,7 +9579,20 @@
       reader.onload = (e) => {
         try {
           const parsed = JSON.parse(e.target.result);
-          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (parsed.character || parsed.masterDb)) {
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray(parsed.entries) && !parsed.character) {
+            const packId = (typeof parsed.pack === 'object' && parsed.pack !== null)
+              ? String(parsed.pack.id || parsed.pack.name || '')
+              : String(parsed.pack || parsed.packId || '');
+            const entriesToMerge = parsed.entries.map(ent => {
+              if (!ent || typeof ent !== 'object') return ent;
+              const normPack = (typeof ent.pack === 'object' && ent.pack !== null)
+                ? String(ent.pack.id || ent.pack.name || '')
+                : String(ent.pack || packId || '');
+              return normPack ? Object.assign({}, ent, { pack: normPack }) : ent;
+            });
+            const { added, updated } = mergeEntriesIntoCharacterCustomDb(entriesToMerge);
+            alert(`✅ DM Rule Pack merged into character!\n• Added: ${added}\n• Updated: ${updated}\n• Total Custom DB: ${masterDb.length} entries`);
+          } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (parsed.character || parsed.masterDb)) {
             if (parsed.character) character = parsed.character;
             if (!Array.isArray(character.customDb)) {
               character.customDb = Array.isArray(parsed.masterDb) ? parsed.masterDb : [];

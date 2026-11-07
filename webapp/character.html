@@ -2695,6 +2695,49 @@
                 </div>
               </div>
 
+              <!-- Row 4.5: V2.5 Universal Rule Forge (Lego Primitive Studio & Live Dry-Run) -->
+              <div id="im-v25-lego-forge-box" class="bg-slate-950/90 border border-indigo-500/40 rounded-xl p-2.5 space-y-2">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-1.5">
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs font-extrabold text-indigo-300 uppercase tracking-wider">🧩 V2.5 Universal Rule Forge (6-Primitive Lego Studio)</span>
+                    <span class="px-1.5 py-0.5 rounded bg-indigo-950/80 border border-indigo-700/60 text-[9px] font-mono text-indigo-200">Zero-Token</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <select id="im-v25-pattern-select" onchange="RuleMaster.applyLegoPatternSkeleton(this.value)" class="h-7 bg-slate-900 border border-indigo-500/50 rounded-lg px-2 text-[10px] text-indigo-200 font-semibold focus:outline-none">
+                      <option value="">✨ Clone Archetype Pattern...</option>
+                      <option value="breath_recharge">🐉 Breath Weapon (Move Action, 1d4+1 Recharge)</option>
+                      <option value="elemental_defense">🛡️ Elemental Immunity + Terrain DR/AC</option>
+                      <option value="reactive_absorb">⚡ Immediate Spell Absorb + Temp HP</option>
+                      <option value="synergy_mutator">🔗 Stage-2 Synergy Mutator (Upgrades Other Boon)</option>
+                      <option value="tier_progressive">📈 Tiered Scaling Boon (Stacks 1–3)</option>
+                      <option value="stat_substitution">🔄 Ability Mod Swap / Cap (CHA to Will / INT to AC)</option>
+                      <option value="aura_grant">👁️ Sense / Aura / SLA Grant (Darkvision + Fear Aura)</option>
+                    </select>
+                    <button type="button" onclick="RuleMaster.runInlineLegoDryRunPreview()" class="px-2.5 h-7 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/60 text-emerald-300 text-[10px] font-bold transition cursor-pointer flex items-center gap-1">
+                      <span>⚡</span><span>Dry-Run</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Step 2: 6-Primitive Quick Add Toolbar -->
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('defense')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold transition cursor-pointer">+ 🛡️ Defense</button>
+                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('resource')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 text-[10px] font-bold transition cursor-pointer">+ 🔋 Resource/Cooldown</button>
+                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('mode')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-purple-500/40 text-purple-300 text-[10px] font-bold transition cursor-pointer">+ ⚡ Mode/Reaction</button>
+                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('grant')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold transition cursor-pointer">+ 🎁 Synergy Grant</button>
+                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('choice')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-pink-500/40 text-pink-300 text-[10px] font-bold transition cursor-pointer">+ 🎯 Choice/Tier</button>
+                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('substitution')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-sky-500/40 text-sky-300 text-[10px] font-bold transition cursor-pointer">+ 🔄 Stat Swap/Cap</button>
+                </div>
+
+                <!-- Active V2.5 Primitives Pills -->
+                <div id="im-v25-primitives-pills" class="flex flex-wrap items-center gap-1 min-h-6 text-[10px] text-slate-400">
+                  <span class="italic text-slate-500">No V2.5 Lego primitives attached yet. Choose an archetype above or click a primitive button.</span>
+                </div>
+
+                <!-- Step 3: Live Dry-Run & Page Object Interaction Map Preview -->
+                <div id="im-v25-dryrun-preview" class="hidden bg-slate-900/90 border border-emerald-500/40 rounded-lg p-2 text-[10px] space-y-1"></div>
+              </div>
+
               <!-- Row 5: Description & Symmetrical 2-Column Action Bar (50% / 50%) -->
               <div class="space-y-2">
                 <textarea id="im-benefit" rows="2" placeholder="Description &amp; D&amp;D 3.5e RAW mechanical benefit..." class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-purple-400"></textarea>
@@ -2776,7 +2819,14 @@
                 <option value="Deity">Deities &amp; Patrons</option>
                 <option value="Domain">Cleric Domains</option>
                 <option value="Race">Races</option>
+                <option value="DM Boon">DM Boons (V2.5)</option>
                 <option value="DM Grant">DM Grants / Boons</option>
+              </select>
+              <select id="mdb-eligibility-filter" onchange="RuleMaster.renderTable()" class="h-8 flex-1 sm:flex-none min-w-0 bg-slate-950/95 border border-emerald-500/40 rounded-lg px-2 text-xs text-emerald-200 font-semibold focus:outline-none cursor-pointer truncate" title="Filter entries by active character eligibility and synergy prerequisites">
+                <option value="ALL">All Eligibility</option>
+                <option value="ELIGIBLE">✅ Eligible</option>
+                <option value="SYNERGY_READY">✨ Synergy Ready</option>
+                <option value="PREREQ_MISSING">🔒 Prereq Missing</option>
               </select>
               <button type="button" onclick="RuleMaster.renderTable()" class="h-8 px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 font-bold text-xs shadow transition flex items-center justify-center gap-1.5 shrink-0 cursor-pointer">
                 <span>🔍</span>
@@ -3920,10 +3970,16 @@
         <button id="btn-spotlight-terminal-undo" type="button" onclick="undoLastTerminalAction()" class="hidden px-2 py-1 rounded bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-600/60 font-mono text-[10px] font-bold shrink-0 cursor-pointer transition" title="Undo Last Terminal Command (Ctrl+Z)">↩ Undo</button>
         <button type="button" onclick="toggleSpotlightTerminal(false)" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-mono text-[10px] font-bold shrink-0 cursor-pointer">ESC</button>
       </div>
+      <!-- Real-Time Token-Chip Bar (Phase P6) -->
+      <div id="spotlight-terminal-token-bar" class="hidden px-3.5 py-1.5 bg-slate-900/80 border-b border-slate-800/80 flex items-center gap-1.5 flex-wrap text-[10px] font-mono"></div>
       <!-- Quick Syntax Grammar Pills -->
       <div class="px-3.5 py-1.5 bg-slate-950 border-b border-slate-800/80 flex items-center gap-1.5 flex-wrap text-[10px] font-mono text-slate-400">
         <span class="text-cyan-400 font-bold">Quick Grammar:</span>
         <button type="button" onclick="setSpotlightTerminalSample('lvl 5, feat: clave')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-purple-300 border border-purple-800/60 cursor-pointer">lvl 5, feat: clave</button>
+        <button type="button" onclick="setSpotlightTerminalSample('item: Cloak of Charisma +4')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-indigo-300 border border-indigo-800/60 cursor-pointer">item: Cloak of Charisma +4</button>
+        <button type="button" onclick="setSpotlightTerminalSample('spell: Haste')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-violet-300 border border-violet-800/60 cursor-pointer">spell: Haste</button>
+        <button type="button" onclick="setSpotlightTerminalSample('buff: Haste')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-pink-300 border border-pink-800/60 cursor-pointer">buff: Haste</button>
+        <button type="button" onclick="setSpotlightTerminalSample('stat: str +2')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-lime-300 border border-lime-800/60 cursor-pointer">stat: str +2</button>
         <button type="button" onclick="setSpotlightTerminalSample('boon: Dragon Breath, dmg: 4d8 Acid, range: 60ft, save: Reflex 10+@level+@conMod, recharge: 1d4+1, action: move')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-800/60 cursor-pointer">boon: Dragon Breath, dmg: 4d8 Acid...</button>
         <button type="button" onclick="setSpotlightTerminalSample('synergy:')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-800/60 cursor-pointer">synergy: Draconic Path</button>
         <button type="button" onclick="setSpotlightTerminalSample('use: ')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-rose-300 border border-rose-800/60 cursor-pointer">use: ability</button>

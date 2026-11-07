@@ -9,11 +9,13 @@ const path = require('path');
 const vm = require('vm');
 
 const rootDir = path.resolve(__dirname, '..');
+const srdCompendiumCode = fs.readFileSync(path.join(rootDir, 'srd_compendium.js'), 'utf8');
 const ruleEngineCode = fs.readFileSync(path.join(rootDir, 'rule_engine.js'), 'utf8');
 const sandbox = { window: {}, console, Math, Number, String, Array, Object, Set, Map, JSON, RegExp };
 vm.createContext(sandbox);
-vm.runInContext(`${ruleEngineCode}\nwindow.RuleEngine = RuleEngine;`, sandbox);
+vm.runInContext(`${srdCompendiumCode}\n${ruleEngineCode}\nwindow.RuleEngine = RuleEngine;`, sandbox);
 const RuleEngine = sandbox.window.RuleEngine;
+const SchemaMigrator = sandbox.window.SchemaMigrator;
 
 let passed = 0;
 let failed = 0;
@@ -525,8 +527,334 @@ function createBaseChar(overrides = {}) {
   };
   const imap = RuleEngine.getObjectInteractionMap(dragonBreathMove);
   assertEq('Interaction Map: Dragon Breath (Move, 1d4+1) connects to ActionEconomyBar, CombatSpecialAttacksPanel, and TurnClockNode',
-    ['ActionEconomyBar', 'CombatSpecialAttacksPanel', 'TurnClockNode'].every(n => imap.nodes.includes(n)), true);
+    ['ActionEconomyBar', 'CombatSpecialAttacksPanel', 'TurnClockNode'].every(n => imap.nodes.includes(n) && imap.boundUiTargets.includes(n)), true);
 }
 
-console.log(`✅ V2.5 LEGO ENGINE BENCHMARK: ${passed}/${passed + failed} assertions passed (15 Golden Set + 6 Forum Edge Cases + Interaction Map + Security Gate).`);
+// Namespace Isolation & Chained Overrides Test
+{
+  const srdPA = { id: 'srd:power_attack', name: 'Power Attack (SRD)', modifiers: [{ target: 'damage.melee', op: 'add', value: 1 }] };
+  const packAPA = { id: 'pack_a:power_attack', name: 'Power Attack (Pack A)', overrides: 'srd:power_attack', modifiers: [{ target: 'damage.melee', op: 'add', value: 2 }] };
+  const packBPA = { id: 'pack_b:power_attack', name: 'Power Attack (Pack B)', modifiers: [{ target: 'damage.melee', op: 'add', value: 4 }] };
+
+  const chCross = createBaseChar({ legoEntries: [srdPA, packAPA, packBPA] });
+  const resCross = RuleEngine.evaluateLegoCharacter(chCross);
+  const activeCrossIds = resCross.entries.map(e => e.id);
+  assertEq('Namespace Override 1: pack_a overriding srd:power_attack suppresses srd:power_attack but NOT pack_b:power_attack',
+    [!activeCrossIds.includes('srd:power_attack'), activeCrossIds.includes('pack_a:power_attack'), activeCrossIds.includes('pack_b:power_attack')],
+    [true, true, true]);
+
+  const packBChained = { id: 'pack_b:power_attack_v2', name: 'Power Attack (Pack B Chained)', overrides: 'pack_a:power_attack', modifiers: [{ target: 'damage.melee', op: 'add', value: 5 }] };
+  const chChain = createBaseChar({ legoEntries: [srdPA, packAPA, packBChained] });
+  const resChain = RuleEngine.evaluateLegoCharacter(chChain);
+  const activeChainIds = resChain.entries.map(e => e.id);
+  assertEq('Namespace Override 2: Chained override (pack_b -> pack_a -> srd) leaves only pack_b active',
+    activeChainIds, ['pack_b:power_attack_v2']);
+
+  // B1: Order-independent override when unprefixed SRD entry is paired with packA:power_attack (overrides srd:power_attack)
+  const unprefixedPA = { id: 'power_attack', name: 'Power Attack', modifiers: [{ target: 'damage.melee', op: 'add', value: 1 }] };
+  const resOrder1 = RuleEngine.evaluateLegoCharacter(createBaseChar({ legoEntries: [unprefixedPA, packAPA, packBPA] }));
+  const resOrder2 = RuleEngine.evaluateLegoCharacter(createBaseChar({ legoEntries: [packAPA, unprefixedPA, packBPA] }));
+  assertEq('Namespace Override 3 (B1): Order-independent [unprefixed, packA] vs [packA, unprefixed] both suppress unprefixed while keeping packA and packB',
+    [resOrder1.entries.map(e => e.id).sort(), resOrder2.entries.map(e => e.id).sort()],
+    [['pack_a:power_attack', 'pack_b:power_attack'], ['pack_a:power_attack', 'pack_b:power_attack']]);
+}
+
+// Unified Character Collection & Deduplication Test (collectLegoEntries)
+{
+  const dupBoon = {
+    id: 'pack_dm_draconic_boons:boon_scales',
+    name: 'Draconic Scales',
+    type: 'DM Boon',
+    modifiers: [{ target: 'ac.natural', op: 'add', value: 3, type: 'Untyped' }]
+  };
+  const dupRing = {
+    inventoryId: 'inv_ring_prot_1',
+    id: 'item_ring_prot',
+    name: 'Ring of Protection +2',
+    equipped: true,
+    modifiers: [{ target: 'ac.deflection', op: 'add', value: 2, type: 'Deflection' }]
+  };
+  const chDedup = createBaseChar({
+    legoEntries: [dupBoon],
+    feats: [dupBoon],
+    specialAbilities: [Object.assign({}, dupBoon, { id: 'boon_scales' })],
+    bodySlots: { ring1: dupRing },
+    inventory: [dupRing]
+  });
+  const collected = RuleEngine.collectLegoEntries(chDedup);
+  const evalDedup = RuleEngine.evaluateLegoCharacter(chDedup);
+  // Base AC 12 (10 + DEX 2) + 3 Untyped Natural + 2 Deflection = 17 (NOT 20 or 23 from double counting!)
+  assertEq('Deduplication: collectLegoEntries deduplicates across legoEntries/feats/specialAbilities and bodySlots/inventory',
+    [collected.length, evalDedup.ac.normal], [2, 17]);
+}
+
+// Incoming Damage Pipeline Test (B3: Immunity, Vulnerability +50% + Resistance, and Absorption)
+{
+  const chDef = createBaseChar({
+    legoEntries: [
+      {
+        id: 'boon_def_suite',
+        name: 'Elemental Matrix',
+        defenses: [
+          { kind: 'immunity', target: 'fire' },
+          { kind: 'vulnerability', target: 'cold' },
+          { kind: 'resistance', target: 'cold', value: 5 },
+          { kind: 'absorption', target: 'acid', healRatio: 0.5 }
+        ]
+      }
+    ]
+  });
+  const evalDef = RuleEngine.evaluateLegoCharacter(chDef);
+  const fireRes = RuleEngine.applyIncomingDamage(evalDef, 20, 'Fire');
+  const coldRes = RuleEngine.applyIncomingDamage(evalDef, 20, 'Cold'); // 20 * 1.5 = 30 - 5 = 25 taken (-25)
+  const acidRes = RuleEngine.applyIncomingDamage(evalDef, 15, 'Acid'); // floor(15 * 0.5) = +7 healed
+  assertEq('Incoming Damage (B3): Immunity (0), Vulnerability+Resistance (-25), and Absorption (+7)',
+    [fireRes.finalDelta, coldRes.finalDelta, acidRes.finalDelta],
+    [0, -25, 7]);
+}
+
+// SchemaMigrator V2.5 Preservation Test (m10)
+{
+  const rawV25 = {
+    name: 'Test V2.5 Boon',
+    type: 'DM Boon',
+    pack: 'pack_test',
+    overrides: 'srd:toughness',
+    requires: { all: ['srd:power_attack'] },
+    defenses: [{ kind: 'resistance', target: 'acid', value: 10 }],
+    resources: [{ id: 'res_1', maxFormula: 3 }],
+    grants: [{ grantType: 'sense', targetId: 'darkvision', value: 60 }],
+    choices: [{ id: 'ch_1', options: ['acid', 'cold'] }]
+  };
+  const upgraded = SchemaMigrator.upgradeEntryToV2(rawV25);
+  assertEq('SchemaMigrator V2.5 Preservation (m10): preserves defenses, resources, grants, choices, requires, overrides, pack',
+    [upgraded.pack, upgraded.overrides, Array.isArray(upgraded.defenses) && upgraded.defenses.length, Array.isArray(upgraded.resources) && upgraded.resources.length, Array.isArray(upgraded.grants) && upgraded.grants.length, Array.isArray(upgraded.choices) && upgraded.choices.length, Boolean(upgraded.requires)],
+    ['pack_test', 'srd:toughness', 1, 1, 1, 1, true]);
+}
+
+// Phase P2 Live Sheet Engine Unification & Parity Gate Test (recalculateCharacter vs evaluateLegoCharacter)
+{
+  const absorbMagic = {
+    id: 'boon_absorb_magic',
+    name: 'Absorb Magic',
+    type: 'DM Boon',
+    modifiers: [{ target: 'save.all', op: 'add', value: 2, type: 'Competence', when: { toggle: 'vs_targeted_spell' } }],
+    modes: [{ id: 'absorb_react', name: 'Absorb Spell', actionType: 'immediate', reactsTo: 'on_spell_targeted' }]
+  };
+  const elemAcc = {
+    id: 'boon_elemental_accustomed',
+    name: 'Elemental Accustomed',
+    type: 'DM Boon',
+    modifiers: [{ target: 'ac.natural', op: 'add', value: 3, type: 'Untyped', when: { terrain: ['swamp'] } }],
+    defenses: [{ kind: 'immunity', target: 'acid' }, { kind: 'dr', target: 'physical', value: 3, bypass: '-', when: { terrain: ['swamp'] } }]
+  };
+  const arcaneShield = {
+    id: 'boon_arcane_shield',
+    name: 'Arcane Shield',
+    type: 'DM Boon',
+    sourceCategory: 'Synergy',
+    autoUnlock: true,
+    isSynergy: true,
+    requires: { all: ['boon_absorb_magic', 'boon_elemental_accustomed'] },
+    modifiers: [{ target: 'entity.saveBonus', selector: { id: 'boon_absorb_magic' }, op: 'set', value: 4, type: 'Competence' }]
+  };
+  const forceOfPersonality = {
+    id: 'feat_force_of_personality',
+    name: 'Force of Personality',
+    type: 'Feat',
+    modifiers: [{ target: 'save.will.abilityMod', op: 'max', formula: '@chaMod' }]
+  };
+  const cannyDefense = {
+    id: 'feat_canny_defense',
+    name: 'Canny Defense (Duelist)',
+    type: 'Class Feature',
+    modifiers: [{ target: 'ac.abilityMod', op: 'add', formula: 'max(0, @intMod)', cap: '@classes.duelist.level', when: { armorCategory: ['None', 'Light'] } }]
+  };
+
+  const liveChar = {
+    level: 8,
+    bab: 6,
+    baseAbilities: { str: 14, dex: 14, con: 16, int: 14, wis: 10, cha: 18 },
+    abilities: { str: 14, dex: 14, con: 16, int: 14, wis: 10, cha: 18 },
+    baseSaves: { fort: 6, ref: 2, will: 6 },
+    classLevels: { sorcerer: 6, duelist: 2 },
+    activeToggles: { vs_targeted_spell: true },
+    activeTerrain: 'swamp',
+    wornArmorCategory: 'Light',
+    feats: [absorbMagic, elemAcc, forceOfPersonality],
+    legoEntries: [cannyDefense]
+  };
+  RuleEngine.recalculateCharacter(liveChar, [arcaneShield]);
+  const legoDirect = RuleEngine.evaluateLegoCharacter(liveChar, [arcaneShield]);
+
+  assertEq('Phase P2 Parity Gate 1: recalculateCharacter attaches legoEvaluation, evaluatedDefenses, and auto-unlocks Arcane Shield',
+    [Boolean(liveChar.legoEvaluation), liveChar.grantedCapabilities.unlockedEntities.includes('boon_arcane_shield'), liveChar.evaluatedDefenses.immunities.includes('acid')],
+    [true, true, true]);
+  assertEq('Phase P2 Parity Gate 2: recalculateCharacter AC & Saves match evaluateLegoCharacter (Stage-2 mutated +4 save, Force of Personality CHA to Will, Canny Defense INT to AC)',
+    [liveChar.acBreakdown.total, liveChar.evaluatedSaves.fort, liveChar.evaluatedSaves.ref, liveChar.evaluatedSaves.will],
+    [legoDirect.ac.normal, legoDirect.saves.fort, legoDirect.saves.ref, legoDirect.saves.will]);
+}
+
+// Phase P4 Standalone DM Boons Master DB Import Pack Validation Test
+{
+  const exportPackPath = path.join(rootDir, 'exports', 'dm_boons_master_db_import.json');
+  const exportPack = JSON.parse(fs.readFileSync(exportPackPath, 'utf8'));
+  const allValidV25 = Array.isArray(exportPack.entries)
+    && !('masterDb' in exportPack)
+    && exportPack.entries.length === 107
+    && exportPack.entries.every(e => e.schemaVersion === 2 && e.id && e.pack === 'pack_dm_draconic_boons' && Array.isArray(e.modifiers) && Array.isArray(e.defenses) && Array.isArray(e.resources) && Array.isArray(e.modes));
+  assertEq('Phase P4 Export Pack Validation (M9): exports/dm_boons_master_db_import.json contains 107 valid V2.5 entries (24 Draconic Path + 83 Lesser Boons, single entries array)',
+    [allValidV25, exportPack.pack.draconicPathCount, exportPack.pack.lesserBoonsCount],
+    [true, 24, 83]);
+}
+
+// PDCA Act Parity Fixtures (BL1, BL2, BL3, BL5)
+{
+  // Fixture 1 (BL1): Armor + Size + Charge penalty + Perform-AC (max) via recalculateCharacter
+  const performDanceAC = {
+    id: 'feat_perform_dance_ac',
+    name: 'Dervishes Dance AC',
+    type: 'Class Feature',
+    modifiers: [{ target: 'ac.total', op: 'max', value: 22, affects: ['normal', 'touch'] }]
+  };
+  const chBL1 = {
+    level: 6,
+    bab: 6,
+    size: 'Large', // -1 AC
+    acBreakdown: { size: -1 },
+    baseAbilities: { str: 14, dex: 14, con: 14, int: 10, wis: 10, cha: 16 },
+    abilities: { str: 14, dex: 14, con: 14, int: 10, wis: 10, cha: 16 },
+    baseSaves: { fort: 5, ref: 5, will: 2 },
+    bodySlots: {
+      body: { id: 'item_chain_shirt', name: 'Chain Shirt', type: 'Armor', acBonus: 4, maxDex: 4, equipped: true }
+    },
+    buffs: [
+      { id: 'buff_charge', name: 'Charging', active: true, modifiers: [{ target: 'ac', value: -2, type: 'Penalty' }] }
+    ],
+    legoEntries: [performDanceAC]
+  };
+  RuleEngine.recalculateCharacter(chBL1);
+  // Pre-penalty normal AC = 10 + 4(armor) + 2(dex) - 1(Large) = 15 -> max(15, 22) = 22 -> minus 2 penalty = 20
+  // Pre-penalty touch AC = 10 + 2(dex) - 1(Large) = 11 -> max(11, 22) = 22 -> minus 2 penalty = 20
+  // Flat-footed AC is NOT in affects ['normal', 'touch']: 10 + 4(armor) - 1(Large) - 2(penalty) = 11
+  assertEq('Parity Fixture 1 (BL1): Armor + Size + Charge penalty + Perform-AC (max) preserves penalties after replacement and respects affects[]',
+    [chBL1.acBreakdown.total, chBL1.acBreakdown.touch, chBL1.acBreakdown.flatFooted],
+    [20, 20, 11]);
+
+  // Fixture 2 (BL2): Cloak of Charisma +4 + Force of Personality (CHA to Will) via recalculateCharacter
+  const chBL2 = {
+    level: 5,
+    bab: 3,
+    baseAbilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 14 }, // base CHA 14 (+2), with Cloak +4 -> 18 (+4)
+    abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 14 },
+    baseSaves: { fort: 1, ref: 1, will: 4 },
+    bodySlots: {
+      shoulders: {
+        id: 'item_cloak_cha_4',
+        name: 'Cloak of Charisma +4',
+        equipped: true,
+        modifiers: [{ target: 'ability.cha', value: 4, type: 'Enhancement' }]
+      }
+    },
+    feats: [
+      {
+        id: 'feat_force_of_personality',
+        name: 'Force of Personality',
+        type: 'Feat',
+        modifiers: [{ target: 'save.will.abilityMod', op: 'max', formula: '@chaMod' }]
+      }
+    ]
+  };
+  RuleEngine.recalculateCharacter(chBL2);
+  // Base Will 4 + post-item CHA mod (+4) = 8 (NOT 6 from pre-item CHA 14!)
+  assertEq('Parity Fixture 2 (BL2): Item ability enhancement (+4 CHA) is reflected in Force of Personality Will save substitution (Will = 8)',
+    [chBL2.abilities.cha, chBL2.evaluatedSaves.will],
+    [18, 8]);
+
+  // Fixture 3 (BL3): Legacy buff without active property stays inactive in recalculateCharacter
+  const chBL3 = {
+    level: 5,
+    bab: 5,
+    baseAbilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    baseSaves: { fort: 2, ref: 2, will: 2 },
+    buffs: [
+      { id: 'buff_legacy_inactive', name: 'Inactive Haste', modifiers: [{ target: 'ac.dodge', value: 1, type: 'Dodge' }] }
+    ]
+  };
+  RuleEngine.recalculateCharacter(chBL3);
+  assertEq('Parity Fixture 3 (BL3): Legacy buff without active property remains inactive (AC = 10)',
+    chBL3.acBreakdown.total, 10);
+
+  // Fixture 4 (BL5): Equipped Untyped gearPool item is counted once (never doubled) in recalculateCharacter
+  const chBL5 = {
+    level: 5,
+    bab: 5,
+    baseAbilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    abilities: { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    baseSaves: { fort: 2, ref: 2, will: 2 },
+    gearPool: [
+      {
+        id: 'item_dusty_rose_ioun',
+        name: 'Dusty Rose Prism Ioun Stone',
+        equipped: true,
+        modifiers: [{ target: 'ac', value: 1, type: 'Untyped' }]
+      }
+    ]
+  };
+  RuleEngine.recalculateCharacter(chBL5);
+  assertEq('Parity Fixture 4 (BL5): Equipped Untyped gearPool item is applied once in recalculateCharacter (AC = 11, not 12)',
+    chBL5.acBreakdown.total, 11);
+
+  // Fixture 5 (BL6): RuleEngine.evaluatePredicate({ all: ["boon_absorb_magic", "boon_elemental_accustomed"] }, char) auto-derives ownedIds and normalizes namespace prefixes
+  const chBL6Partial = {
+    specialAbilities: [{ id: 'pack_dm_draconic_boons:boon_absorb_magic', name: 'Absorb Magic' }]
+  };
+  const chBL6Full = {
+    specialAbilities: [
+      { id: 'pack_dm_draconic_boons:boon_absorb_magic', name: 'Absorb Magic' },
+      { id: 'pack_dm_draconic_boons:boon_elemental_accustomed', name: 'Elemental Accustomed' }
+    ]
+  };
+  const reqPred = { all: ['boon_absorb_magic', 'boon_elemental_accustomed'] };
+  assertEq('Regression Test 45 (BL6): evaluatePredicate auto-derives normalized ownedIds from character (false with 1/2 owned, true with 2/2 owned)',
+    [RuleEngine.evaluatePredicate(reqPred, chBL6Partial), RuleEngine.evaluatePredicate(reqPred, chBL6Full)],
+    [false, true]);
+
+  // Fixture 6 (BL10): Regular feat in masterDb with requires and NO autoUnlock:true is NOT auto-granted for free, whereas synergy with autoUnlock:true IS auto-unlocked
+  const mockMasterDb = [
+    {
+      id: 'feat_cleave',
+      name: 'Cleave (Test Regular Feat)',
+      type: 'Feat',
+      requires: { all: ['feat_power_attack'] },
+      modifiers: [{ target: 'ac.natural', value: 5, type: 'Natural Armor' }]
+    },
+    {
+      id: 'syn_power_surge',
+      name: 'Power Surge (Synergy)',
+      type: 'DM Boon',
+      sourceCategory: 'Synergy',
+      autoUnlock: true,
+      isSynergy: true,
+      requires: { all: ['feat_power_attack'] },
+      modifiers: [{ target: 'ac.deflection', value: 2, type: 'Deflection' }]
+    }
+  ];
+  const chBL10 = {
+    level: 5,
+    bab: 5,
+    baseAbilities: { str: 16, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    abilities: { str: 16, dex: 10, con: 10, int: 10, wis: 10, cha: 10 },
+    baseSaves: { fort: 4, ref: 1, will: 1 },
+    feats: [{ id: 'feat_power_attack', name: 'Power Attack', type: 'Feat' }]
+  };
+  RuleEngine.recalculateCharacter(chBL10, mockMasterDb);
+  // Only syn_power_surge (+2 deflection -> AC 12) should auto-unlock; feat_cleave (+5 natural) must NOT auto-unlock!
+  assertEq('Regression Test 46 (BL10): recalculateCharacter only auto-unlocks entries with explicit autoUnlock/isSynergy (AC = 12, not 17)',
+    [chBL10.acBreakdown.total, chBL10.grantedCapabilities.unlockedEntities.includes('syn_power_surge'), chBL10.grantedCapabilities.unlockedEntities.includes('feat_cleave')],
+    [12, true, false]);
+}
+
+console.log(`✅ V2.5 LEGO ENGINE BENCHMARK: ${passed}/${passed + failed} assertions passed (15 Golden Set + 6 Forum Edge Cases + Interaction Map + Namespace/Deduplication + Damage/Migrator + P2 Parity Gate + 6 Parity/Regression Fixtures + P4 Export Pack + Security Gate).`);
 if (failed > 0) process.exit(1);

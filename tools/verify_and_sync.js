@@ -64,8 +64,7 @@ const DB_FILES = [
   'srd_domains.json',
   'srd_companions.json',
   'srd_templates.json',
-  'lego_patterns.json',
-  'dm_boons_pack.json'
+  'lego_patterns.json'
 ];
 
 function sha256(filePath) {

@@ -654,12 +654,22 @@ const CloudSync = {
 
       let charObj = {};
       if (typeof character !== 'undefined' && character) {
-        charObj = character;
+        charObj = Object.assign({}, character);
       } else {
         try {
           const rawChar = localStorage.getItem('dnd35_character');
           if (rawChar) charObj = JSON.parse(rawChar);
         } catch (e) {}
+      }
+      if (charObj && typeof charObj === 'object' && '_terminalUndoStack' in charObj) {
+        delete charObj._terminalUndoStack;
+      }
+      if (hubDb && Array.isArray(hubDb.characters)) {
+        hubDb.characters.forEach(hc => {
+          if (hc && hc.fullData && typeof hc.fullData === 'object' && '_terminalUndoStack' in hc.fullData) {
+            delete hc.fullData._terminalUndoStack;
+          }
+        });
       }
 
       let latestDmEvent = null;

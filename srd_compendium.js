@@ -13,7 +13,7 @@
   'use strict';
 
   const IDB_NAME = 'dnd35_srd_compendium_v2';
-  const IDB_VERSION = 4;
+  const IDB_VERSION = 5;
   const IDB_STORE = 'chunks';
 
   const EAGER_CHUNKS = [
@@ -27,7 +27,6 @@
     'srd_domains.json',
     'srd_companions.json',
     'srd_templates.json',
-    'dm_boons_pack.json',
     'lego_patterns.json'
   ];
 
@@ -1864,6 +1863,19 @@
       }
 
       entry.ruleFlags = entry.ruleFlags && typeof entry.ruleFlags === 'object' ? entry.ruleFlags : {};
+      if (!Array.isArray(entry.defenses)) entry.defenses = [];
+      if (!Array.isArray(entry.resources)) entry.resources = [];
+      if (!Array.isArray(entry.grants)) entry.grants = [];
+      if (!Array.isArray(entry.choices)) entry.choices = [];
+      if (rawEntry.requires !== undefined && entry.requires === undefined) entry.requires = safeClone(rawEntry.requires);
+      if (rawEntry.overrides !== undefined && entry.overrides === undefined) entry.overrides = rawEntry.overrides;
+      if (rawEntry.pack !== undefined && entry.pack === undefined) entry.pack = rawEntry.pack;
+      if (rawEntry.stacks !== undefined && entry.stacks === undefined) entry.stacks = rawEntry.stacks;
+      if (rawEntry.invested !== undefined && entry.invested === undefined) entry.invested = rawEntry.invested;
+      if (rawEntry.autoUnlock !== undefined && entry.autoUnlock === undefined) entry.autoUnlock = rawEntry.autoUnlock;
+      if (rawEntry.isSynergy !== undefined && entry.isSynergy === undefined) entry.isSynergy = rawEntry.isSynergy;
+      if (rawEntry.isSynergyGrant !== undefined && entry.isSynergyGrant === undefined) entry.isSynergyGrant = rawEntry.isSynergyGrant;
+      if (rawEntry.sourceCategory !== undefined && entry.sourceCategory === undefined) entry.sourceCategory = rawEntry.sourceCategory;
       const cleanNameLower = String(entry.name || '').toLowerCase().trim();
       if (cleanNameLower.includes('steadfast determination')) {
         entry.ruleFlags.conToWillSave = true;
