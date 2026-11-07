@@ -2802,7 +2802,7 @@
           ? (martialLvls + Math.floor(otherLvls / 2))
           : Math.max(1, Math.floor(activeCharLvl / 2)));
       const storedIl = Number(character?.tomeOfBattle?.initiatorLevel) || 0;
-      const il = Math.max(storedIl, computedIl, 1);
+      const il = character?.isNpc ? Math.max(storedIl, computedIl, 1) : Math.max(computedIl, 1);
       if (character?.tomeOfBattle) {
         character.tomeOfBattle.initiatorLevel = il;
       }
@@ -2825,8 +2825,8 @@
           baseReadied = effMartialLvls >= 20 ? 7 : (effMartialLvls >= 10 ? 6 : 5);
           baseKnownStances = effMartialLvls >= 14 ? 4 : (effMartialLvls >= 8 ? 3 : (effMartialLvls >= 2 ? 2 : 1));
         } else {
-          // Warblade & Default Martial Adept
-          baseKnownManeuvers = 3 + Math.floor((effMartialLvls - 1) / 2);
+          // Warblade & Default Martial Adept (ToB p. 21, Table 1-3: Lvl 1=3, Lvl 2=4, Lvl 3=5, Lvl 4=5, Lvl 5=6...)
+          baseKnownManeuvers = effMartialLvls === 1 ? 3 : (3 + Math.ceil(effMartialLvls / 2));
           baseReadied = effMartialLvls >= 20 ? 7 : (effMartialLvls >= 15 ? 6 : (effMartialLvls >= 9 ? 5 : (effMartialLvls >= 4 ? 4 : 3)));
           baseKnownStances = effMartialLvls >= 16 ? 4 : (effMartialLvls >= 10 ? 3 : (effMartialLvls >= 4 ? 2 : 1));
         }
@@ -2843,9 +2843,120 @@
             ? ['Diamond Mind', 'Iron Heart', 'Stone Dragon', 'Tiger Claw', 'White Raven']
             : ['Desert Wind', 'Devoted Spirit', 'Diamond Mind', 'Iron Heart', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw', 'White Raven']));
 
+      // D&D 3.5e Tome of Battle RAW (pp. 10, 16, 21, 39): Progressive Level-by-Level Slot Ceilings
+      const maneuverSlotCeilings = [];
+      const stanceSlotCeilings = [];
+      const swapLowestManeuverSlot = (newMaxLvl) => {
+        if (maneuverSlotCeilings.length === 0) return;
+        let minIdx = -1;
+        let minVal = 99;
+        for (let i = 0; i < maneuverSlotCeilings.length; i++) {
+          if (maneuverSlotCeilings[i] < newMaxLvl && maneuverSlotCeilings[i] < minVal) {
+            minVal = maneuverSlotCeilings[i];
+            minIdx = i;
+          }
+        }
+        if (minIdx >= 0) maneuverSlotCeilings[minIdx] = newMaxLvl;
+      };
+
+      if (activeRows.length > 0 && martialLvls > 0) {
+        let simMartial = 0;
+        let simOther = 0;
+        let simWb = 0;
+        let simSs = 0;
+        let simCr = 0;
+        activeRows.forEach(p => {
+          const c = (p.className || p.class || '').toLowerCase();
+          const isM = ['warblade', 'swordsage', 'crusader', 'bloodstorm blade', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k));
+          if (isM) simMartial++;
+          else simOther++;
+          const stepIl = isMartialBoon ? (simMartial + simOther) : (simMartial > 0 ? (simMartial + Math.floor(simOther / 2)) : Math.max(1, Math.floor((simMartial + simOther) / 2)));
+          const stepMaxLvl = Math.min(9, Math.max(1, Math.ceil(Math.max(1, stepIl) / 2)));
+
+          if (isM) {
+            if (c.includes('swordsage')) {
+              simSs++;
+              if (simSs === 1) {
+                for (let k = 0; k < 6; k++) maneuverSlotCeilings.push(stepMaxLvl);
+              } else {
+                maneuverSlotCeilings.push(stepMaxLvl);
+              }
+              if (simSs >= 4 && simSs % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+              if ([1, 2, 5, 9, 14, 20].includes(simSs)) stanceSlotCeilings.push(stepMaxLvl);
+            } else if (c.includes('crusader') || c.includes('ruby knight')) {
+              simCr++;
+              if (simCr === 1) {
+                for (let k = 0; k < 5; k++) maneuverSlotCeilings.push(stepMaxLvl);
+              } else if (simCr >= 3 && simCr % 2 === 1) {
+                maneuverSlotCeilings.push(stepMaxLvl);
+              }
+              if (simCr >= 4 && simCr % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+              if ([1, 2, 8, 14].includes(simCr)) stanceSlotCeilings.push(stepMaxLvl);
+            } else {
+              simWb++;
+              if (simWb === 1) {
+                for (let k = 0; k < 3; k++) maneuverSlotCeilings.push(stepMaxLvl);
+              } else if (simWb === 2 || (simWb >= 3 && simWb % 2 === 1)) {
+                maneuverSlotCeilings.push(stepMaxLvl);
+              }
+              if (simWb >= 4 && simWb % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+              if ([1, 4, 10, 16].includes(simWb)) stanceSlotCeilings.push(stepMaxLvl);
+            }
+          }
+
+          if (Array.isArray(p.feats)) {
+            p.feats.forEach(f => {
+              const fLow = String(f || '').toLowerCase();
+              if (fLow.includes('martial study')) maneuverSlotCeilings.push(stepMaxLvl);
+              if (fLow.includes('martial stance')) stanceSlotCeilings.push(stepMaxLvl);
+            });
+          }
+        });
+      } else if (effMartialLvls > 0) {
+        for (let step = 1; step <= effMartialLvls; step++) {
+          const stepMaxLvl = Math.min(9, Math.max(1, Math.ceil(step / 2)));
+          if (adeptClass === 'Swordsage') {
+            if (step === 1) { for (let k = 0; k < 6; k++) maneuverSlotCeilings.push(stepMaxLvl); }
+            else maneuverSlotCeilings.push(stepMaxLvl);
+            if (step >= 4 && step % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+            if ([1, 2, 5, 9, 14, 20].includes(step)) stanceSlotCeilings.push(stepMaxLvl);
+          } else if (adeptClass === 'Crusader') {
+            if (step === 1) { for (let k = 0; k < 5; k++) maneuverSlotCeilings.push(stepMaxLvl); }
+            else if (step >= 3 && step % 2 === 1) maneuverSlotCeilings.push(stepMaxLvl);
+            if (step >= 4 && step % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+            if ([1, 2, 8, 14].includes(step)) stanceSlotCeilings.push(stepMaxLvl);
+          } else {
+            if (step === 1) { for (let k = 0; k < 3; k++) maneuverSlotCeilings.push(stepMaxLvl); }
+            else if (step === 2 || (step >= 3 && step % 2 === 1)) maneuverSlotCeilings.push(stepMaxLvl);
+            if (step >= 4 && step % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+            if ([1, 4, 10, 16].includes(step)) stanceSlotCeilings.push(stepMaxLvl);
+          }
+        }
+      }
+
+      while (maneuverSlotCeilings.length < maxKnownManeuvers) {
+        maneuverSlotCeilings.push(maxManeuverLvl);
+      }
+      if (maneuverSlotCeilings.length > maxKnownManeuvers) {
+        maneuverSlotCeilings.sort((a, b) => a - b);
+        maneuverSlotCeilings.splice(0, maneuverSlotCeilings.length - maxKnownManeuvers);
+      }
+      maneuverSlotCeilings.sort((a, b) => a - b);
+
+      while (stanceSlotCeilings.length < maxKnownStances) {
+        stanceSlotCeilings.push(maxManeuverLvl);
+      }
+      if (stanceSlotCeilings.length > maxKnownStances) {
+        stanceSlotCeilings.sort((a, b) => a - b);
+        stanceSlotCeilings.splice(0, stanceSlotCeilings.length - maxKnownStances);
+      }
+      stanceSlotCeilings.sort((a, b) => a - b);
+
       return {
         il,
         maxManeuverLvl,
+        maneuverSlotCeilings,
+        stanceSlotCeilings,
         readiedCount: readiedList.length,
         maxReadied,
         baseReadied,
@@ -2860,7 +2971,54 @@
         classDisciplines,
         martialLvls,
         otherLvls,
+        martialStudyCount,
+        martialStanceCount,
+        isMartialBoon,
         hasClass: true
+      };
+    }
+
+    function computeRemainingMartialSlotCeilings(knownItems, slotCeilings) {
+      const avail = Array.isArray(slotCeilings) ? [...slotCeilings].sort((a, b) => a - b) : [];
+      const knownLvls = Array.isArray(knownItems)
+        ? knownItems.map(x => Number(x?.level) || 1).sort((a, b) => a - b)
+        : [];
+      knownLvls.forEach(lvl => {
+        const idx = avail.findIndex(c => c >= lvl);
+        if (idx >= 0) {
+          avail.splice(idx, 1);
+        } else if (avail.length > 0) {
+          avail.pop();
+        }
+      });
+      return avail;
+    }
+
+    function checkMartialDisciplinePrereq(item, charObj = character) {
+      const rawPrereq = String(item?.prereq || '').trim();
+      if (!rawPrereq || rawPrereq.toLowerCase() === 'none' || rawPrereq === '0') {
+        return { met: true, reqCount: 0, discipline: '', currentCount: 0 };
+      }
+      const m = rawPrereq.match(/^(\d+)\s+(.+)$/);
+      if (!m) {
+        return { met: true, reqCount: 0, discipline: rawPrereq, currentCount: 0 };
+      }
+      const reqCount = Number(m[1]) || 0;
+      const disc = m[2].replace(/\s*maneuvers?$/i, '').trim();
+      const discLow = disc.toLowerCase();
+      const itemNameLow = String(item?.name || '').toLowerCase().trim();
+      const knownM = (charObj?.tomeOfBattle?.maneuversKnown || []).filter(
+        x => String(x?.discipline || '').toLowerCase().trim() === discLow && String(x?.name || '').toLowerCase().trim() !== itemNameLow
+      ).length;
+      const knownS = (charObj?.tomeOfBattle?.stancesKnown || []).filter(
+        x => String(x?.discipline || '').toLowerCase().trim() === discLow && String(x?.name || '').toLowerCase().trim() !== itemNameLow
+      ).length;
+      const currentCount = knownM + knownS;
+      return {
+        met: currentCount >= reqCount,
+        reqCount,
+        discipline: disc,
+        currentCount
       };
     }
 
@@ -4192,7 +4350,7 @@
           libTbody.appendChild(tr);
         };
 
-        const renderEmptyManeuverLibRow = (slotNum) => {
+        const renderEmptyManeuverLibRow = (slotNum, slotCeiling = initInfo.maxManeuverLvl) => {
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-rose-950/20 transition cursor-pointer group bg-slate-950/20';
           tr.onclick = (e) => {
@@ -4200,16 +4358,16 @@
             openManeuverPickerModal('Maneuver');
           };
           tr.innerHTML = `
-            <td class="py-2.5 px-3 text-rose-400/60 font-bold font-mono text-center">≤${initInfo.maxManeuverLvl}</td>
+            <td class="py-2.5 px-3 text-rose-400/60 font-bold font-mono text-center" title="Tome of Battle RAW Slot Ceiling: Up to Level ${slotCeiling}">≤${slotCeiling}</td>
             <td class="py-2.5 px-3">
               <button type="button" onclick="openManeuverPickerModal('Maneuver')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300/80 group-hover:text-rose-100 cursor-pointer">
                 <span class="w-4 h-4 rounded border border-dashed border-rose-500/70 bg-rose-950/60 flex items-center justify-center text-[10px] text-rose-300 group-hover:bg-rose-800 transition">+</span>
-                <span class="italic">+ Select Maneuver (Empty Slot #${slotNum})</span>
+                <span class="italic">+ Select Maneuver (Empty Slot #${slotNum} • Max Lvl ${slotCeiling})</span>
               </button>
             </td>
             <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
             <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">Maneuver</td>
-            <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This maneuver slot is empty. Click to learn a maneuver up to Level ${initInfo.maxManeuverLvl}.</td>
+            <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This maneuver slot is empty. Click to learn a maneuver up to Level ${slotCeiling} (Tome of Battle progression).</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
                 <button type="button" onclick="openManeuverPickerModal('Maneuver')" class="h-7 min-w-[115px] bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-dashed border-rose-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
@@ -4267,7 +4425,7 @@
           libTbody.appendChild(tr);
         };
 
-        const renderEmptyStanceLibRow = (slotNum) => {
+        const renderEmptyStanceLibRow = (slotNum, slotCeiling = initInfo.maxManeuverLvl) => {
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-teal-950/20 transition cursor-pointer group bg-slate-950/20';
           tr.onclick = (e) => {
@@ -4275,16 +4433,16 @@
             openManeuverPickerModal('Stance');
           };
           tr.innerHTML = `
-            <td class="py-2.5 px-3 text-teal-400/60 font-bold font-mono text-center">≤${initInfo.maxManeuverLvl}</td>
+            <td class="py-2.5 px-3 text-teal-400/60 font-bold font-mono text-center" title="Tome of Battle RAW Stance Slot Ceiling: Up to Level ${slotCeiling}">≤${slotCeiling}</td>
             <td class="py-2.5 px-3">
               <button type="button" onclick="openManeuverPickerModal('Stance')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-300/80 group-hover:text-teal-100 cursor-pointer">
                 <span class="w-4 h-4 rounded border border-dashed border-teal-500/70 bg-teal-950/60 flex items-center justify-center text-[10px] text-teal-300 group-hover:bg-teal-800 transition">+</span>
-                <span class="italic">+ Select Stance (Empty Stance Slot #${slotNum})</span>
+                <span class="italic">+ Select Stance (Empty Stance Slot #${slotNum} • Max Lvl ${slotCeiling})</span>
               </button>
             </td>
             <td class="py-2.5 px-3 text-slate-500 text-[10px] italic">-</td>
             <td class="py-2.5 px-3 text-teal-500/70 text-[10px] italic">Stance</td>
-            <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This stance slot is empty. Click to learn a new martial stance.</td>
+            <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This stance slot is empty. Click to learn a martial stance up to Level ${slotCeiling} (Tome of Battle progression).</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
                 <button type="button" onclick="openManeuverPickerModal('Stance')" class="h-7 min-w-[115px] bg-teal-950/80 hover:bg-teal-900 text-teal-300 hover:text-white border border-dashed border-teal-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
@@ -4299,6 +4457,8 @@
         };
 
         const isFiltering = Boolean(searchVal || discVal !== 'all');
+        const remainingManeuverCeilings = computeRemainingMartialSlotCeilings(maneuvers, initInfo.maneuverSlotCeilings);
+        const remainingStanceCeilings = computeRemainingMartialSlotCeilings(stances, initInfo.stanceSlotCeilings);
 
         if (typeFilter === 'all' || typeFilter === 'maneuver') {
           if (isFiltering) {
@@ -4312,9 +4472,15 @@
             }).forEach(m => renderManeuverLibRow(m));
           } else {
             const totalMRows = Math.max(maxKnownManeuvers, maneuvers.length);
+            let emptyIdx = 0;
             for (let i = 0; i < totalMRows; i++) {
-              if (i < maneuvers.length) renderManeuverLibRow(maneuvers[i]);
-              else renderEmptyManeuverLibRow(i + 1);
+              if (i < maneuvers.length) {
+                renderManeuverLibRow(maneuvers[i]);
+              } else {
+                const slotCeiling = remainingManeuverCeilings[emptyIdx] ?? initInfo.maxManeuverLvl;
+                emptyIdx++;
+                renderEmptyManeuverLibRow(i + 1, slotCeiling);
+              }
             }
           }
         }
@@ -4331,9 +4497,15 @@
             }).forEach(st => renderStanceLibRow(st));
           } else {
             const totalSRows = Math.max(maxKnownStances, stances.length);
+            let emptySIdx = 0;
             for (let i = 0; i < totalSRows; i++) {
-              if (i < stances.length) renderStanceLibRow(stances[i]);
-              else renderEmptyStanceLibRow(i + 1);
+              if (i < stances.length) {
+                renderStanceLibRow(stances[i]);
+              } else {
+                const slotCeiling = remainingStanceCeilings[emptySIdx] ?? initInfo.maxManeuverLvl;
+                emptySIdx++;
+                renderEmptyStanceLibRow(i + 1, slotCeiling);
+              }
             }
           }
         }
@@ -5341,7 +5513,8 @@
               <option value="Tiger Claw">🐾 Tiger Claw</option>
               <option value="White Raven">🦅 White Raven</option>
             `;
-            sourceFilter.value = 'all';
+            const initInfoForFilter = getInitiatorInfo();
+            sourceFilter.value = (initInfoForFilter && Array.isArray(initInfoForFilter.classDisciplines) && initInfoForFilter.classDisciplines.length > 0) ? 'class' : 'all';
           }
         }
       }
@@ -5774,6 +5947,14 @@
           const discLabel = selectedSource === 'class'
             ? `\uD83E\uDD4B ${initInfo.adeptClass} Disciplines`
             : (selectedSource && selectedSource !== 'all' && selectedSource !== 'auto' ? `\u2694\uFE0F ${selectedSource}` : '\u2694\uFE0F All 9 Sublime Way Disciplines');
+          const remCeilings = type === 'Stance'
+            ? computeRemainingMartialSlotCeilings(character.tomeOfBattle?.stancesKnown || [], initInfo.stanceSlotCeilings)
+            : computeRemainingMartialSlotCeilings(character.tomeOfBattle?.maneuversKnown || [], initInfo.maneuverSlotCeilings);
+          const ceilingCounts = {};
+          remCeilings.forEach(c => { ceilingCounts[c] = (ceilingCounts[c] || 0) + 1; });
+          const slotsSummary = Object.keys(ceilingCounts).length > 0
+            ? Object.entries(ceilingCounts).map(([lvl, cnt]) => `&le;${lvl} (${cnt})`).join(', ')
+            : 'All Slots Filled';
           const adeptSummary = initInfo.hasClass
             ? `${initInfo.adeptClass} &bull; IL ${initInfo.il} (Max Lvl ${initInfo.maxManeuverLvl})`
             : `🔒 No Martial Adept Class / Feat (0 Quota)`;
@@ -5781,6 +5962,10 @@
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 text-[10px]">Martial Adept:</span>
               <span class="font-bold border px-1.5 py-0.5 rounded text-[10px] text-rose-300 bg-rose-950/80 border-rose-800">${adeptSummary}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-slate-400 text-[10px]">Open ${type} Slots:</span>
+              <span class="font-bold border px-1.5 py-0.5 rounded text-[10px] text-teal-300 bg-teal-950/70 border-teal-800" title="Tome of Battle RAW per-level slot ceilings">${slotsSummary}</span>
             </div>
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 text-[10px]">Discipline:</span>
@@ -5922,23 +6107,51 @@
           }
         } else if (type === 'Maneuver' || type === 'Stance') {
           const mLvl = Number(item.level) || 1;
-          const curKnown = type === 'Maneuver'
-            ? (character.tomeOfBattle?.maneuversKnown || []).length
-            : (character.tomeOfBattle?.stancesKnown || []).length;
+          const knownList = type === 'Maneuver'
+            ? (character.tomeOfBattle?.maneuversKnown || [])
+            : (character.tomeOfBattle?.stancesKnown || []);
+          const curKnown = knownList.length;
           const maxQuota = type === 'Maneuver'
             ? (initInfo?.maxKnownManeuvers || 0)
             : (initInfo?.maxKnownStances || 0);
+          const slotCeilings = type === 'Maneuver'
+            ? (initInfo?.maneuverSlotCeilings || [])
+            : (initInfo?.stanceSlotCeilings || []);
+          const remCeilings = computeRemainingMartialSlotCeilings(knownList, slotCeilings);
+          const maxSlotCeiling = slotCeilings.length > 0 ? Math.max(...slotCeilings) : (initInfo?.maxManeuverLvl || 0);
+          const maxOpenSlotCeiling = remCeilings.length > 0 ? Math.max(...remCeilings) : 0;
+          const itemDisc = String(item.discipline || item.school || '').trim();
+          const hasClassDisc = !initInfo?.classDisciplines || initInfo.classDisciplines.length === 0 || initInfo.classDisciplines.some(d => d.toLowerCase() === itemDisc.toLowerCase());
+          const canCrossDiscipline = (type === 'Maneuver' ? (initInfo?.martialStudyCount || 0) > 0 : (initInfo?.martialStanceCount || 0) > 0) || Boolean(initInfo?.isMartialBoon) || (type === 'Maneuver' ? (initInfo?.dmKnownBonus || 0) > 0 : (initInfo?.dmStanceBonus || 0) > 0);
+          const prereqCheck = checkMartialDisciplinePrereq(item, character);
+
           countText = `${curKnown}/${maxQuota}`;
           if (!initInfo || !initInfo.hasClass || maxQuota <= 0) {
             isMartialLocked = true;
             martialLockText = '🔒 No Martial Class';
             martialLockTitle = `Requires a Martial Adept class (Crusader, Swordsage, Warblade) or the ${type === 'Maneuver' ? 'Martial Study' : 'Martial Stance'} feat.`;
+          } else if (!hasClassDisc && !canCrossDiscipline) {
+            isMartialLocked = true;
+            martialLockText = `🔒 Non-Class Disc.`;
+            martialLockTitle = `D&D 3.5e RAW (ToB): ${itemDisc} is not a class discipline for ${initInfo.adeptClass} (${initInfo.classDisciplines.join(', ')}). Requires the ${type === 'Maneuver' ? 'Martial Study' : 'Martial Stance'} feat.`;
           } else if (mLvl > (initInfo.maxManeuverLvl || 0)) {
             isMartialLocked = true;
             martialLockText = `🔒 Req IL ${mLvl * 2 - 1}+`;
             martialLockTitle = `Level ${mLvl} ${type} requires Initiator Level ${mLvl * 2 - 1}+ (current IL: ${initInfo.il}, Max Lvl: ${initInfo.maxManeuverLvl}).`;
+          } else if (mLvl > maxSlotCeiling) {
+            isMartialLocked = true;
+            martialLockText = `🔒 Slot Max Lvl ${maxSlotCeiling}`;
+            martialLockTitle = `D&D 3.5e RAW (ToB): Your highest ${type.toLowerCase()} slot was gained at an Initiator Level that caps it at Level ${maxSlotCeiling} (stances cannot be swapped at even levels).`;
+          } else if (!prereqCheck.met) {
+            isMartialLocked = true;
+            martialLockText = `🔒 Prereq: ${prereqCheck.reqCount} ${prereqCheck.discipline} (${prereqCheck.currentCount}/${prereqCheck.reqCount})`;
+            martialLockTitle = `D&D 3.5e RAW (ToB p. 44): Requires knowing at least ${prereqCheck.reqCount} ${prereqCheck.discipline} maneuver(s) or stance(s). You currently know ${prereqCheck.currentCount}.`;
           } else if (curKnown >= maxQuota) {
             isLevelFull = true;
+          } else if (mLvl > maxOpenSlotCeiling) {
+            isMartialLocked = true;
+            martialLockText = `🚫 Lvl ${mLvl} Slot Full (Max Open ≤${maxOpenSlotCeiling})`;
+            martialLockTitle = `D&D 3.5e RAW (ToB): Your higher-level ${type.toLowerCase()} slots are already filled. Remaining open slots only accept up to Level ${maxOpenSlotCeiling}.`;
           }
         }
 
@@ -6176,12 +6389,34 @@
           });
           return;
         }
+        const itemDisc = String(item.discipline || item.school || 'Iron Heart').trim();
+        const hasClassDisc = !initInfo.classDisciplines || initInfo.classDisciplines.length === 0 || initInfo.classDisciplines.some(d => d.toLowerCase() === itemDisc.toLowerCase());
+        const canCrossDisc = (initInfo.martialStudyCount || 0) > 0 || Boolean(initInfo.isMartialBoon) || (initInfo.dmKnownBonus || 0) > 0;
+        if (!hasClassDisc && !canCrossDisc) {
+          showDiceTopToast({
+            icon: '🔒',
+            title: 'Prerequisites Not Met',
+            breakdown: `D&D 3.5e RAW (ToB): ${itemDisc} is not a class discipline for ${initInfo.adeptClass} (${initInfo.classDisciplines.join(', ')}). Requires the Martial Study feat.`,
+            total: 'Non-Class'
+          });
+          return;
+        }
         if (mLvl > (initInfo.maxManeuverLvl || 0)) {
           showDiceTopToast({
             icon: '🔒',
             title: 'Initiator Level Too Low',
             breakdown: `Level ${mLvl} maneuvers require Initiator Level ${mLvl * 2 - 1}+ (current IL: ${initInfo.il}).`,
             total: `Max Lvl ${initInfo.maxManeuverLvl}`
+          });
+          return;
+        }
+        const prereqCheck = checkMartialDisciplinePrereq(item, character);
+        if (!prereqCheck.met) {
+          showDiceTopToast({
+            icon: '🔒',
+            title: 'Prerequisites Not Met',
+            breakdown: `D&D 3.5e RAW (ToB p. 44): "${item.name}" requires ${prereqCheck.reqCount} ${prereqCheck.discipline} maneuver(s) or stance(s) known (currently ${prereqCheck.currentCount}/${prereqCheck.reqCount}).`,
+            total: `${prereqCheck.currentCount}/${prereqCheck.reqCount} ${prereqCheck.discipline}`
           });
           return;
         }
@@ -6195,6 +6430,17 @@
             title: 'Maneuver Quota Full',
             breakdown: `Maneuvers Known quota (${initInfo.maxKnownManeuvers}) is full!`,
             total: `${character.tomeOfBattle.maneuversKnown.length}/${initInfo.maxKnownManeuvers}`
+          });
+          return;
+        }
+        const remMCeilings = computeRemainingMartialSlotCeilings(character.tomeOfBattle.maneuversKnown, initInfo.maneuverSlotCeilings);
+        const maxOpenMCeiling = remMCeilings.length > 0 ? Math.max(...remMCeilings) : (initInfo.maxManeuverLvl || 0);
+        if (mLvl > maxOpenMCeiling) {
+          showDiceTopToast({
+            icon: '🚫',
+            title: `Level ${mLvl} Maneuver Slot Full`,
+            breakdown: `D&D 3.5e RAW (ToB): Your higher-level maneuver progression slots are already filled. Remaining open slots only accept up to Level ${maxOpenMCeiling}.`,
+            total: `Max Open ≤${maxOpenMCeiling}`
           });
           return;
         }
@@ -6250,12 +6496,34 @@
           });
           return;
         }
+        const itemDisc = String(item.discipline || item.school || 'Iron Heart').trim();
+        const hasClassDisc = !initInfo.classDisciplines || initInfo.classDisciplines.length === 0 || initInfo.classDisciplines.some(d => d.toLowerCase() === itemDisc.toLowerCase());
+        const canCrossDisc = (initInfo.martialStanceCount || 0) > 0 || Boolean(initInfo.isMartialBoon) || (initInfo.dmStanceBonus || 0) > 0;
+        if (!hasClassDisc && !canCrossDisc) {
+          showDiceTopToast({
+            icon: '🔒',
+            title: 'Prerequisites Not Met',
+            breakdown: `D&D 3.5e RAW (ToB): ${itemDisc} is not a class discipline for ${initInfo.adeptClass} (${initInfo.classDisciplines.join(', ')}). Requires the Martial Stance feat.`,
+            total: 'Non-Class'
+          });
+          return;
+        }
         if (sLvl > (initInfo.maxManeuverLvl || 0)) {
           showDiceTopToast({
             icon: '🔒',
             title: 'Initiator Level Too Low',
             breakdown: `Level ${sLvl} stances require Initiator Level ${sLvl * 2 - 1}+ (current IL: ${initInfo.il}).`,
             total: `Max Lvl ${initInfo.maxManeuverLvl}`
+          });
+          return;
+        }
+        const prereqCheck = checkMartialDisciplinePrereq(item, character);
+        if (!prereqCheck.met) {
+          showDiceTopToast({
+            icon: '🔒',
+            title: 'Prerequisites Not Met',
+            breakdown: `D&D 3.5e RAW (ToB p. 44): "${item.name}" requires ${prereqCheck.reqCount} ${prereqCheck.discipline} maneuver(s) or stance(s) known (currently ${prereqCheck.currentCount}/${prereqCheck.reqCount}).`,
+            total: `${prereqCheck.currentCount}/${prereqCheck.reqCount} ${prereqCheck.discipline}`
           });
           return;
         }
@@ -6268,6 +6536,17 @@
             title: 'Stance Quota Full',
             breakdown: `Stances Known quota (${initInfo.maxKnownStances}) is full!`,
             total: `${character.tomeOfBattle.stancesKnown.length}/${initInfo.maxKnownStances}`
+          });
+          return;
+        }
+        const remSCeilings = computeRemainingMartialSlotCeilings(character.tomeOfBattle.stancesKnown, initInfo.stanceSlotCeilings);
+        const maxOpenSCeiling = remSCeilings.length > 0 ? Math.max(...remSCeilings) : (initInfo.maxManeuverLvl || 0);
+        if (sLvl > maxOpenSCeiling) {
+          showDiceTopToast({
+            icon: '🚫',
+            title: `Stance Slot Capped at Level ${maxOpenSCeiling}`,
+            breakdown: `D&D 3.5e RAW (ToB): Stances are learned only at specific class levels and cannot be swapped at even levels. Your open stance slot accepts up to Level ${maxOpenSCeiling}.`,
+            total: `Max Open ≤${maxOpenSCeiling}`
           });
           return;
         }
