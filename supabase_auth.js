@@ -702,6 +702,9 @@ const SupabaseAuth = {
     const charId = characterData.id || characterData._hubId || `char_${Date.now()}`;
     characterData.id = charId;
     characterData._hubId = charId;
+    const nowIso = new Date().toISOString();
+    characterData.lastModified = nowIso;
+    characterData._cloudUpdatedAt = nowIso;
     const curHp = characterData.hp?.current ?? characterData.hp?.max ?? 10;
     const tmpHp = characterData.hp?.temp ?? 0;
 
@@ -715,7 +718,7 @@ const SupabaseAuth = {
       current_hp: curHp,
       temp_hp: tmpHp,
       last_player_update_ts: Date.now(),
-      updated_at: new Date().toISOString()
+      updated_at: nowIso
     };
 
     this.updateSyncStatusPill('syncing');
@@ -933,6 +936,9 @@ const SupabaseAuth = {
     const client = this.getClient();
     if (!client || !characterId || !fullData) return false;
 
+    const nowIso = new Date().toISOString();
+    fullData.lastModified = nowIso;
+    fullData._cloudUpdatedAt = nowIso;
     const curHp = fullData.hp?.current ?? 10;
     const tmpHp = fullData.hp?.temp ?? 0;
 
@@ -944,7 +950,7 @@ const SupabaseAuth = {
         current_hp: curHp,
         temp_hp: tmpHp,
         last_player_update_ts: Date.now(),
-        updated_at: new Date().toISOString()
+        updated_at: nowIso
       })
       .eq('id', characterId);
 

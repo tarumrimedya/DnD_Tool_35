@@ -296,6 +296,7 @@ const CloudSync = {
             const seenIds = new Set(localHub.characters.map(c => c.id).filter(Boolean));
             const seenSigs = new Set(localHub.characters.map(c => `${(c.name || '').toLowerCase().trim()}__${(c.classes || '').toLowerCase().trim()}__${c.level || 1}`));
 
+            let hubChanged = false;
             remoteChars.forEach(rc => {
               if (!rc || !rc.id || tSet.has(rc.id)) return;
               const exIdx = localHub.characters.findIndex(c => c.id === rc.id);
@@ -303,15 +304,38 @@ const CloudSync = {
                 const localC = localHub.characters[exIdx];
                 const localHpTs = Number(localC.lastHpUpdateTs) || 0;
                 const remoteHpTs = Number(rc.lastHpUpdateTs) || 0;
+                const localFdTs = Math.max(
+                  localC.fullData?.lastModified ? new Date(localC.fullData.lastModified).getTime() : 0,
+                  localC.fullData?._cloudUpdatedAt ? new Date(localC.fullData._cloudUpdatedAt).getTime() : 0,
+                  Number(localC.fullData?.hp?._lastPlayerChangeTs) || 0
+                );
+                const remoteFdTs = Math.max(
+                  rc.fullData?.lastModified ? new Date(rc.fullData.lastModified).getTime() : 0,
+                  rc.fullData?._cloudUpdatedAt ? new Date(rc.fullData._cloudUpdatedAt).getTime() : 0,
+                  Number(rc.fullData?.hp?._lastPlayerChangeTs) || 0
+                );
 
-                // Protect local character HP if local has newer DM HP update
-                if (localHpTs > remoteHpTs) {
-                  const savedCurrentHp = localC.currentHp;
-                  const savedTempHp = localC.tempHp;
-                  const savedTs = localC.lastHpUpdateTs;
-                  localHub.characters[exIdx] = { ...localC, ...rc, currentHp: savedCurrentHp, tempHp: savedTempHp, lastHpUpdateTs: savedTs };
-                } else {
-                  localHub.characters[exIdx] = { ...localC, ...rc };
+                // Only overwrite local Hub character if remote fullData is strictly newer
+                if (remoteFdTs > localFdTs + 1000) {
+                  if (localHpTs > remoteHpTs) {
+                    const savedCurrentHp = localC.currentHp;
+                    const savedTempHp = localC.tempHp;
+                    const savedTs = localC.lastHpUpdateTs;
+                    localHub.characters[exIdx] = { ...localC, ...rc, currentHp: savedCurrentHp, tempHp: savedTempHp, lastHpUpdateTs: savedTs };
+                  } else {
+                    localHub.characters[exIdx] = { ...localC, ...rc };
+                  }
+                  hubChanged = true;
+                } else if (remoteHpTs > localHpTs && rc.currentHp !== undefined) {
+                  localC.currentHp = rc.currentHp;
+                  localC.tempHp = rc.tempHp || 0;
+                  localC.lastHpUpdateTs = remoteHpTs;
+                  if (localC.fullData && localC.fullData.hp) {
+                    localC.fullData.hp.current = rc.currentHp;
+                    localC.fullData.hp.temp = rc.tempHp || 0;
+                    localC.fullData.hp._lastDmUpdateTs = remoteHpTs;
+                  }
+                  hubChanged = true;
                 }
               } else {
                 const sig = `${(rc.name || '').toLowerCase().trim()}__${(rc.classes || '').toLowerCase().trim()}__${rc.level || 1}`;
@@ -319,21 +343,23 @@ const CloudSync = {
                   seenIds.add(rc.id);
                   seenSigs.add(sig);
                   localHub.characters.push(rc);
+                  hubChanged = true;
                 }
               }
             });
 
-            localHub.lastSaved = new Date().toISOString();
-            localStorage.setItem('dnd35_hub_db', JSON.stringify(localHub));
-            applied = true;
-          }
-        }
-        if (typeof initHubStorage === 'function') {
-          try {
-            initHubStorage();
-            if (typeof renderHub === 'function') renderHub();
-          } catch (hubErr) {
-            console.warn('initHubStorage after sync notice:', hubErr);
+            if (hubChanged) {
+              localHub.lastSaved = new Date().toISOString();
+              localStorage.setItem('dnd35_hub_db', JSON.stringify(localHub));
+              if (typeof initHubStorage === 'function') {
+                try {
+                  initHubStorage();
+                  if (typeof renderHub === 'function') renderHub();
+                } catch (hubErr) {
+                  console.warn('initHubStorage after sync notice:', hubErr);
+                }
+              }
+            }
           }
         }
       } catch (e) {
@@ -364,9 +390,10 @@ const CloudSync = {
 
       // Authoritative local state timestamps
       const localModifiedTs = character.lastModified ? new Date(character.lastModified).getTime() : 0;
+      const localCloudTs = character._cloudUpdatedAt ? new Date(character._cloudUpdatedAt).getTime() : 0;
       const localPlayerHpTs = Number(character.hp?._lastPlayerChangeTs) || 0;
       const localDmTs = Number(character.hp?._lastDmUpdateTs) || 0;
-      const localEffectiveTs = Math.max(localModifiedTs, localPlayerHpTs, localDmTs);
+      const localEffectiveTs = Math.max(localModifiedTs, localCloudTs, localPlayerHpTs, localDmTs);
 
       // Check if remote payload has hubDb containing the current character
       let matchedFromHub = false;
@@ -375,27 +402,26 @@ const CloudSync = {
         if (foundInCloudHub && foundInCloudHub.fullData) {
           const cloudDmTs = Number(foundInCloudHub.lastHpUpdateTs) || 0;
           const cloudCharModifiedTs = foundInCloudHub.fullData.lastModified ? new Date(foundInCloudHub.fullData.lastModified).getTime() : 0;
+          const cloudCharCloudTs = foundInCloudHub.fullData._cloudUpdatedAt ? new Date(foundInCloudHub.fullData._cloudUpdatedAt).getTime() : 0;
           const cloudCharPlayerHpTs = Number(foundInCloudHub.fullData.hp?._lastPlayerChangeTs) || 0;
-          const cloudCharSavedTs = foundInCloudHub.lastSaved ? new Date(foundInCloudHub.lastSaved).getTime() : 0;
+          const rawCharTs = Math.max(cloudCharModifiedTs, cloudCharCloudTs, cloudCharPlayerHpTs);
           const cloudPayloadTs = remotePayload.lastModified ? new Date(remotePayload.lastModified).getTime() : 0;
-          const cloudEffectiveTs = Math.max(cloudCharModifiedTs, cloudCharPlayerHpTs, cloudCharSavedTs, cloudPayloadTs);
+          const cloudEffectiveTs = rawCharTs > 0 ? rawCharTs : cloudPayloadTs;
 
-          // CASE A: Yerel Karakter Daha Guncel (Local is strictly newer)
-          // Oyuncu dinlendi (Long/Short Rest), buyu/manevra harcadi/tazeledi veya can degistirdi.
-          // Buluttaki bayat karakter kaydi yerel karakter durumunu (HP, Buyu, Manevra, Buff) ASLA ezemez!
-          if (localEffectiveTs > cloudEffectiveTs + 500) {
+          // CASE A: Yerel Karakter Daha Guncel veya Ayni Snapshot (Local is newer or equal)
+          // Buluttaki bayat veya ayni karakter kaydi yerel karakter durumunu ASLA ezemez ve gereksiz renderAll tetiklemez!
+          if (localEffectiveTs >= cloudEffectiveTs - 1000) {
             // Sadece DM tarafindan gonderilmis yeni bir can mudahalesi varsa onu al (reconciliation)
             if (cloudDmTs > localDmTs && foundInCloudHub.currentHp !== undefined) {
               if (!character.hp) character.hp = {};
               character.hp.current = foundInCloudHub.currentHp;
               character.hp.temp = foundInCloudHub.tempHp || 0;
               character.hp._lastDmUpdateTs = cloudDmTs;
+              localStorage.setItem('dnd35_character', JSON.stringify(character));
               applied = true;
             }
-            // Yereldeki guncel durumu buluta dogru iletmek icin oto-kaydi tetikle
-            this.scheduleAutoSave();
           } else {
-            // CASE B: Bulut Karakteri Daha Guncel (Remote is newer)
+            // CASE B: Bulut Karakteri Kesin Olarak Daha Guncel (Remote is strictly newer by >1s)
             const currentHpBefore = character.hp?.current;
             const currentTempBefore = character.hp?.temp;
 
@@ -418,6 +444,7 @@ const CloudSync = {
               character.hp.temp = foundInCloudHub.tempHp || 0;
               character.hp._lastDmUpdateTs = cloudDmTs;
             }
+            localStorage.setItem('dnd35_character', JSON.stringify(character));
             applied = true;
           }
           matchedFromHub = true;
@@ -435,20 +462,21 @@ const CloudSync = {
           console.warn(`CloudSync: Cloud character (${remoteChar.name || remoteCharId}) does not match current active character (${character.name || currentCharId}). Skipping character overwrite to protect character isolation.`);
         } else {
           const cloudCharModifiedTs = remoteChar.lastModified ? new Date(remoteChar.lastModified).getTime() : (remotePayload.lastModified ? new Date(remotePayload.lastModified).getTime() : 0);
+          const cloudCharCloudTs = remoteChar._cloudUpdatedAt ? new Date(remoteChar._cloudUpdatedAt).getTime() : 0;
           const cloudCharPlayerHpTs = Number(remoteChar.hp?._lastPlayerChangeTs) || 0;
-          const cloudCharEffectiveTs = Math.max(cloudCharModifiedTs, cloudCharPlayerHpTs);
+          const cloudCharEffectiveTs = Math.max(cloudCharModifiedTs, cloudCharCloudTs, cloudCharPlayerHpTs);
           const remoteDmTs = Number(remoteChar.hp?._lastDmUpdateTs) || 0;
 
-          if (localEffectiveTs > cloudCharEffectiveTs + 500) {
-            // Local is newer! Protect local character from overwrite
+          if (localEffectiveTs >= cloudCharEffectiveTs - 1000) {
+            // Local is newer or equal! Protect local character from overwrite
             if (remoteDmTs > localDmTs && remoteChar.hp?.current !== undefined) {
               if (!character.hp) character.hp = {};
               character.hp.current = remoteChar.hp.current;
               character.hp.temp = remoteChar.hp.temp || 0;
               character.hp._lastDmUpdateTs = remoteDmTs;
+              localStorage.setItem('dnd35_character', JSON.stringify(character));
               applied = true;
             }
-            this.scheduleAutoSave();
           } else {
             const currentHpBefore = character.hp?.current;
             const currentTempBefore = character.hp?.temp;
@@ -603,13 +631,25 @@ const CloudSync = {
     try {
       const nowIso = new Date().toISOString();
       if (typeof character !== 'undefined' && character) {
-        character.lastModified = nowIso;
+        if (!silent || !character.lastModified) {
+          character.lastModified = nowIso;
+        }
       }
 
       let hubDb = null;
       try {
         const hubRaw = localStorage.getItem('dnd35_hub_db');
         if (hubRaw) hubDb = JSON.parse(hubRaw);
+        if (hubDb && Array.isArray(hubDb.characters) && typeof character !== 'undefined' && character) {
+          const cId = character._hubId || character.id;
+          const idx = cId ? hubDb.characters.findIndex(c => c.id === cId) : -1;
+          if (idx >= 0) {
+            hubDb.characters[idx].fullData = character;
+            hubDb.characters[idx].level = Number(character.level) || hubDb.characters[idx].level;
+            hubDb.characters[idx].classes = character.classes || hubDb.characters[idx].classes;
+            localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDb));
+          }
+        }
       } catch (e) {}
 
       let charObj = {};
