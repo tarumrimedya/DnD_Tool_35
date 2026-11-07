@@ -1210,7 +1210,7 @@
               🌟 DM Boon (${countBoon})
             </button>
             <button type="button" onclick="setQuickFeatSearchFilter('FLAW')" class="${filterPillClass('FLAW')}">
-              ⚠️ Kusur (${countFlaw})
+              ⚠️ Flaws (${countFlaw})
             </button>
             ${invocationsList.length > 0 ? `
               <button type="button" onclick="setQuickFeatSearchFilter('INVOCATION')" class="${filterPillClass('INVOCATION')}">
@@ -2407,6 +2407,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const statKeys = (typeof STAT_KEYS !== 'undefined' && Array.isArray(STAT_KEYS)) ? STAT_KEYS.map(s => s.key) : ['str', 'dex', 'con', 'int', 'wis', 'cha'];
 
         let prospectiveBab = 0;
+        let prospectiveBaseSaves = { fort: 0, ref: 0, will: 0 };
         let selectedClassName = '';
         let def = null;
         let prospectiveProg = [];
@@ -2425,8 +2426,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
             const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
             prospectiveBab = calc?.baseBab ?? (Number(character.bab) || 0);
+            prospectiveBaseSaves = calc?.baseSaves ?? { fort: Number(character.savingThrows?.fortitude?.base) || 0, ref: Number(character.savingThrows?.reflex?.base) || 0, will: Number(character.savingThrows?.will?.base) || 0 };
           } else {
             prospectiveBab = Number(character.bab) || 0;
+            prospectiveBaseSaves = { fort: Number(character.savingThrows?.fortitude?.base) || 0, ref: Number(character.savingThrows?.reflex?.base) || 0, will: Number(character.savingThrows?.will?.base) || 0 };
           }
 
           statKeys.forEach(stat => {
@@ -2454,8 +2457,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
             const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
             prospectiveBab = calc?.baseBab ?? (Number(character.bab) || 0);
+            prospectiveBaseSaves = calc?.baseSaves ?? { fort: Number(character.savingThrows?.fortitude?.base) || 0, ref: Number(character.savingThrows?.reflex?.base) || 0, will: Number(character.savingThrows?.will?.base) || 0 };
           } else {
             prospectiveBab = Number(character.bab) || 0;
+            prospectiveBaseSaves = { fort: Number(character.savingThrows?.fortitude?.base) || 0, ref: Number(character.savingThrows?.reflex?.base) || 0, will: Number(character.savingThrows?.will?.base) || 0 };
           }
 
           const chosenStat = (document.getElementById('lvlup-stat-select')?.value || '').toLowerCase().trim();
@@ -2621,7 +2626,16 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           let info = '';
           const partLow = part.toLowerCase().trim();
 
-          // 0) Character Level Check: e.g. "Character level 6th", "Character level 21st"
+          // 0.a) 1st Level Only / Character Creation Flaw (e.g. "1st level only", "1st-level only", "first level only")
+          if (/\b(?:1st|first)\s*-?\s*level\s*only\b/i.test(partLow) || (partLow === '1st level' && (resolvedFeat.category === 'Flaw' || resolvedFeat.type === 'Flaw'))) {
+            met = (totalCharacterLevel === 1);
+            info = met ? '(1st Level Character: Eligible)' : `(Current Level: ${totalCharacterLevel}, Req: 1st level only)`;
+            if (!met) allMet = false;
+            checks.push({ type: 'charLevel', label, met, info });
+            continue;
+          }
+
+          // 0.b) Character Level Check: e.g. "Character level 6th", "Character level 21st"
           const charLvlMatch = part.match(/character\s*level\s*(\d+)/i);
           if (charLvlMatch) {
             const reqLvl = parseInt(charLvlMatch[1], 10);
@@ -2632,8 +2646,54 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             continue;
           }
 
-          // A) BAB Check: e.g. "BAB +1", "base attack bonus +6"
-          const babMatch = part.match(/(?:bab|base attack bonus)\s*\+?(\d+)/i);
+          // 0.c) Base Saving Throw Bonus Check: e.g. "base Fortitude save bonus +0 or +1", "base Reflex save bonus +2"
+          const saveMatch = part.match(/base\s*(fortitude|fort|reflex|ref|will)\s*(?:save)?\s*(?:bonus)?\s*\+?(\d+)(?:\s*or\s*\+?(\d+))?/i);
+          if (saveMatch) {
+            const saveType = saveMatch[1].toLowerCase().startsWith('fort') ? 'fort' : (saveMatch[1].toLowerCase().startsWith('ref') ? 'ref' : 'will');
+            const saveName = saveType === 'fort' ? 'Fortitude' : (saveType === 'ref' ? 'Reflex' : 'Will');
+            const curSave = prospectiveBaseSaves[saveType] ?? 0;
+            const val1 = parseInt(saveMatch[2], 10);
+            if (saveMatch[3] !== undefined) {
+              const val2 = parseInt(saveMatch[3], 10);
+              const minVal = Math.min(val1, val2);
+              const maxVal = Math.max(val1, val2);
+              met = curSave >= minVal && curSave <= maxVal;
+              info = met ? `(Base ${saveName}: +${curSave} [Allowed: +${minVal} or +${maxVal}])` : `(Base ${saveName}: +${curSave}, Req: +${minVal} or +${maxVal})`;
+            } else {
+              met = curSave >= val1;
+              info = met ? `(Base ${saveName}: +${curSave} ≥ +${val1})` : `(Base ${saveName}: +${curSave}, Req: +${val1})`;
+            }
+            if (!met) allMet = false;
+            checks.push({ type: 'saveBonus', label, met, info });
+            continue;
+          }
+
+          // 0.d) Total Ability Modifiers Check: e.g. "total ability modifiers +3 or lower"
+          const totModMatch = part.match(/total\s*ability\s*modifiers?\s*\+?(-?\d+)\s*(?:or\s*(?:lower|less|below)|and\s*lower)/i);
+          if (totModMatch) {
+            const maxAllowed = parseInt(totModMatch[1], 10);
+            const totalAbilityMods = ['str', 'dex', 'con', 'int', 'wis', 'cha'].reduce((acc, k) => acc + Math.floor(((abilities[k] || 10) - 10) / 2), 0);
+            met = totalAbilityMods <= maxAllowed;
+            info = met ? `(Total Modifiers: +${totalAbilityMods} ≤ +${maxAllowed})` : `(Total Modifiers: +${totalAbilityMods}, Max: +${maxAllowed})`;
+            if (!met) allMet = false;
+            checks.push({ type: 'totalAbilityMods', label, met, info });
+            continue;
+          }
+
+          // 0.e) Base Land Speed Check: e.g. "base land speed at least 20 ft."
+          const speedMatch = part.match(/(?:base\s*land\s*speed|speed)\s*(?:at\s*least)?\s*(\d+)\s*(?:ft|feet)?/i);
+          if (speedMatch) {
+            const reqSpeed = parseInt(speedMatch[1], 10);
+            const curSpeed = Number(character.baseSpeed || character.speed?.base || character.speed?.land || character.speed || 30) || 30;
+            met = curSpeed >= reqSpeed;
+            info = met ? `(Speed: ${curSpeed} ft. ≥ ${reqSpeed} ft.)` : `(Current Speed: ${curSpeed} ft., Req: ${reqSpeed} ft.)`;
+            if (!met) allMet = false;
+            checks.push({ type: 'speed', label, met, info });
+            continue;
+          }
+
+          // A) BAB Check: e.g. "BAB +1", "base attack bonus +6", "melee attack bonus +1"
+          const babMatch = part.match(/(?:bab|base attack bonus|melee attack bonus)\s*\+?(\d+)/i);
           if (babMatch) {
             const reqBab = parseInt(babMatch[1], 10);
             met = prospectiveBab >= reqBab;
@@ -7244,13 +7304,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       { key: "use_rope", name: "Use Rope", stat: "dex", acp: false, untrained: true }
     ];
 
-    // Consolidated Skills House Rule Definition (7 Merged Groups)
-    const DND35_CONSOLIDATED_SKILLS = [
+    // Consolidated Skills House Rule Definition (7 Default Merged Groups)
+    const DEFAULT_CONSOLIDATED_SKILL_GROUPS = [
       {
         key: "athletics",
         name: "Athletics",
         stat: "str",
         acp: true,
+        icon: "🏃",
         components: ["climb", "jump", "swim"],
         compLabels: "Climb + Jump + Swim",
         desc: "Combines Climb, Jump, and Swim into a single physical athletics skill."
@@ -7260,6 +7321,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         name: "Stealth",
         stat: "dex",
         acp: true,
+        icon: "🥷",
         components: ["hide", "move_silently"],
         compLabels: "Hide + Move Silently",
         desc: "Combines visual concealment (Hide) and silent movement (Move Silently)."
@@ -7269,6 +7331,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         name: "Perception",
         stat: "wis",
         acp: false,
+        icon: "👁️",
         components: ["spot", "listen"],
         compLabels: "Spot + Listen",
         desc: "Combines visual awareness (Spot) and auditory awareness (Listen)."
@@ -7278,6 +7341,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         name: "Acrobatics",
         stat: "dex",
         acp: true,
+        icon: "🤸",
         components: ["tumble", "balance", "escape_artist"],
         compLabels: "Tumble + Balance + Escape Artist",
         desc: "Combines Tumble, Balance, and Escape Artist."
@@ -7287,6 +7351,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         name: "Thievery",
         stat: "dex",
         acp: false,
+        icon: "🗝️",
         components: ["open_lock", "disable_device", "sleight_of_hand"],
         compLabels: "Open Lock + Disable Device + Sleight of Hand",
         desc: "Combines lockpicking, disabling traps, and legerdemain."
@@ -7296,6 +7361,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         name: "Persuasion & Social",
         stat: "cha",
         acp: false,
+        icon: "🗣️",
         components: ["diplomacy", "gather_information"],
         compLabels: "Diplomacy + Gather Information",
         desc: "Combines social persuasion (Diplomacy) and urban rumor gathering (Gather Information)."
@@ -7305,11 +7371,25 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         name: "Linguistics",
         stat: "int",
         acp: false,
+        icon: "📜",
         components: ["decipher_script", "forgery"],
         compLabels: "Decipher Script + Forgery",
         desc: "Combines deciphering ancient scripts and creating/detecting forgeries."
       }
     ];
+
+    function getConsolidatedSkillGroups() {
+      if (character?.settings?.consolidatedSkillGroups && Array.isArray(character.settings.consolidatedSkillGroups) && character.settings.consolidatedSkillGroups.length > 0) {
+        return character.settings.consolidatedSkillGroups;
+      }
+      return JSON.parse(JSON.stringify(DEFAULT_CONSOLIDATED_SKILL_GROUPS));
+    }
+    const DND35_CONSOLIDATED_SKILLS = DEFAULT_CONSOLIDATED_SKILL_GROUPS;
+    if (typeof window !== 'undefined') {
+      window.DEFAULT_CONSOLIDATED_SKILL_GROUPS = DEFAULT_CONSOLIDATED_SKILL_GROUPS;
+      window.getConsolidatedSkillGroups = getConsolidatedSkillGroups;
+      window.DND35_CONSOLIDATED_SKILLS = DND35_CONSOLIDATED_SKILLS;
+    }
 
     let activeSkillFilter = localStorage.getItem('dnd35_skill_filter') || 'class'; // 'all' | 'class' | 'trained'
     let activeSkillStatFilter = localStorage.getItem('dnd35_skill_stat_filter') || 'all'; // 'all' | 'str' | 'dex' ...
@@ -7602,9 +7682,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       if (isMerged) {
         const handledKeys = new Set();
-        DND35_CONSOLIDATED_SKILLS.forEach(conDef => {
-          const compSkills = char.skills.filter(s => conDef.components.includes(s.key));
-          conDef.components.forEach(k => handledKeys.add(k));
+        getConsolidatedSkillGroups().forEach(conDef => {
+          const compSkills = char.skills.filter(s => (conDef.components || []).includes(s.key));
+          (conDef.components || []).forEach(k => handledKeys.add(k));
           const ranks = Math.max(0, ...compSkills.map(s => Number(s.ranks) || 0));
           const isClass = compSkills.some(s => s.isClass);
           totalSpent += ranks * (isClass ? 1 : 2);
@@ -7630,11 +7710,12 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     function toggleSkillClass(skillKey) {
       ensureAllSkills(character);
       const isMerged = character.settings?.mergeSkills !== false;
-      const consolidated = isMerged ? DND35_CONSOLIDATED_SKILLS.find(c => c.key === skillKey) : null;
+      const conGroups = getConsolidatedSkillGroups();
+      const consolidated = isMerged ? conGroups.find(c => c.key === skillKey) : null;
 
       if (consolidated) {
         // Toggle all components
-        const compSkills = (character.skills || []).filter(s => consolidated.components.includes(s.key));
+        const compSkills = (character.skills || []).filter(s => (consolidated.components || []).includes(s.key));
         const anyClass = compSkills.some(s => s.isClass);
         const newState = !anyClass;
         compSkills.forEach(s => { s.isClass = newState; });
@@ -7652,7 +7733,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
     function adjustSkillRank(skillKey, delta) {
       ensureAllSkills(character);
       const isMerged = character.settings?.mergeSkills !== false;
-      const consolidated = isMerged ? DND35_CONSOLIDATED_SKILLS.find(c => c.key === skillKey) : null;
+      const conGroups = getConsolidatedSkillGroups();
+      const consolidated = isMerged ? conGroups.find(c => c.key === skillKey) : null;
 
       const charLevel = Number(character.level) || 1;
       const maxClassRank = charLevel + 3;
@@ -7734,6 +7816,173 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
     // Open/Close/Save Skill Consolidation Modal (Master DB linked)
     let _scmSelectedMode = true;
+    let _scmWorkingGroups = [];
+
+    function _recalcConsolidatedGroupFlags(group) {
+      if (!group) return;
+      const comps = group.components || [];
+      group.acp = comps.some(k => {
+        const c = DND35_CORE_SKILLS.find(s => s.key === k);
+        return c ? Boolean(c.acp) : false;
+      });
+      const names = comps.map(k => {
+        const c = DND35_CORE_SKILLS.find(s => s.key === k);
+        return c ? c.name : k;
+      });
+      group.compLabels = names.join(' + ');
+    }
+
+    function renderConsolidatedSkillGroupsEditor() {
+      const container = document.getElementById('consolidated-groups-editor-list');
+      const countBadge = document.getElementById('scm-groups-count-badge');
+      if (countBadge) countBadge.textContent = String(_scmWorkingGroups.length);
+      if (!container) return;
+
+      if (_scmWorkingGroups.length === 0) {
+        container.innerHTML = `
+          <div class="p-4 text-center text-xs text-slate-400 bg-slate-900/60 rounded-xl border border-dashed border-slate-800">
+            No skill groups defined. Click <strong>+ Add Skill Group</strong> or <strong>Reset Defaults</strong> to create groups.
+          </div>
+        `;
+        return;
+      }
+
+      const statOptions = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+
+      container.innerHTML = _scmWorkingGroups.map((group, gIdx) => {
+        const compKeys = new Set(group.components || []);
+        const compBadges = (group.components || []).map(cKey => {
+          const core = DND35_CORE_SKILLS.find(s => s.key === cKey);
+          const name = core ? core.name : cKey;
+          return `
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 shadow-xs">
+              <span>${name}</span>
+              <button type="button" onclick="removeSkillFromConsolidatedGroup(${gIdx}, '${cKey}')" class="text-rose-400 hover:text-rose-200 font-bold ml-0.5 text-xs cursor-pointer" title="Remove ${name} from this group">&times;</button>
+            </span>
+          `;
+        }).join('');
+
+        const availableSkills = DND35_CORE_SKILLS.filter(s => !compKeys.has(s.key));
+        const selectOptions = availableSkills.map(s => {
+          const inOther = _scmWorkingGroups.findIndex((og, ogIdx) => ogIdx !== gIdx && (og.components || []).includes(s.key));
+          const hint = inOther !== -1 ? ` (in ${_scmWorkingGroups[inOther].name})` : '';
+          return `<option value="${s.key}">${s.name}${hint}</option>`;
+        }).join('');
+
+        const statSelectHtml = statOptions.map(st => `
+          <option value="${st}" ${group.stat === st ? 'selected' : ''}>${st.toUpperCase()}</option>
+        `).join('');
+
+        return `
+          <div class="p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                <span class="text-sm shrink-0 cursor-default">${group.icon || '🔗'}</span>
+                <input type="text"
+                       value="${(group.name || '').replace(/"/g, '&quot;')}"
+                       oninput="updateConsolidatedGroupName(${gIdx}, this.value)"
+                       placeholder="Group Name..."
+                       class="bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded px-2 py-0.5 text-xs text-white font-bold flex-1 min-w-[100px]" />
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <select onchange="updateConsolidatedGroupStat(${gIdx}, this.value)"
+                        class="bg-slate-950 border border-slate-700 text-amber-300 font-mono font-bold text-[10px] rounded px-1.5 py-1 focus:outline-none focus:border-amber-500 cursor-pointer">
+                  ${statSelectHtml}
+                </select>
+                <button type="button"
+                        onclick="deleteConsolidatedSkillGroup(${gIdx})"
+                        class="p-1 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-800/80 text-rose-300 hover:text-white text-xs transition cursor-pointer"
+                        title="Delete Group">
+                  🗑️
+                </button>
+              </div>
+            </div>
+
+            <!-- Member skills badges -->
+            <div class="flex flex-wrap items-center gap-1 min-h-[24px]">
+              ${compBadges || '<span class="text-[10px] text-slate-500 italic">No skills in this group. Add skills below.</span>'}
+            </div>
+
+            <!-- Add Skill dropdown -->
+            <div class="flex items-center justify-between gap-2 pt-1 border-t border-slate-800/60 text-[10px]">
+              <span class="text-slate-400">
+                ACP: <strong class="${group.acp ? 'text-rose-400' : 'text-emerald-400'}">${group.acp ? 'Yes (-ACP)' : 'No'}</strong>
+              </span>
+              <select onchange="addSkillToConsolidatedGroup(${gIdx}, this.value); this.value='';"
+                      class="bg-slate-950 border border-slate-700 hover:border-slate-600 rounded px-2 py-0.5 text-[10px] text-slate-300 font-semibold focus:outline-none cursor-pointer max-w-[190px]">
+                <option value="">+ Add Skill...</option>
+                ${selectOptions}
+              </select>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateConsolidatedGroupName(idx, val) {
+      if (_scmWorkingGroups[idx]) {
+        _scmWorkingGroups[idx].name = val.trim() || 'Custom Group';
+        _scmWorkingGroups[idx].key = val.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 32) || `group_${idx}`;
+      }
+    }
+
+    function updateConsolidatedGroupStat(idx, val) {
+      if (_scmWorkingGroups[idx]) {
+        _scmWorkingGroups[idx].stat = val.toLowerCase();
+      }
+    }
+
+    function removeSkillFromConsolidatedGroup(gIdx, skillKey) {
+      if (!_scmWorkingGroups[gIdx]) return;
+      _scmWorkingGroups[gIdx].components = (_scmWorkingGroups[gIdx].components || []).filter(k => k !== skillKey);
+      _recalcConsolidatedGroupFlags(_scmWorkingGroups[gIdx]);
+      renderConsolidatedSkillGroupsEditor();
+    }
+
+    function addSkillToConsolidatedGroup(gIdx, skillKey) {
+      if (!skillKey || !_scmWorkingGroups[gIdx]) return;
+      _scmWorkingGroups.forEach((g, idx) => {
+        if (idx !== gIdx && Array.isArray(g.components)) {
+          g.components = g.components.filter(k => k !== skillKey);
+          _recalcConsolidatedGroupFlags(g);
+        }
+      });
+      if (!Array.isArray(_scmWorkingGroups[gIdx].components)) {
+        _scmWorkingGroups[gIdx].components = [];
+      }
+      if (!_scmWorkingGroups[gIdx].components.includes(skillKey)) {
+        _scmWorkingGroups[gIdx].components.push(skillKey);
+      }
+      _recalcConsolidatedGroupFlags(_scmWorkingGroups[gIdx]);
+      renderConsolidatedSkillGroupsEditor();
+    }
+
+    function deleteConsolidatedSkillGroup(idx) {
+      _scmWorkingGroups.splice(idx, 1);
+      renderConsolidatedSkillGroupsEditor();
+    }
+
+    function addNewConsolidatedSkillGroup() {
+      const newIdx = _scmWorkingGroups.length + 1;
+      _scmWorkingGroups.push({
+        key: `custom_group_${Date.now()}`,
+        name: `Custom Group ${newIdx}`,
+        stat: "dex",
+        acp: false,
+        icon: "✨",
+        components: [],
+        compLabels: "",
+        desc: "Custom consolidated skill group."
+      });
+      renderConsolidatedSkillGroupsEditor();
+      const container = document.getElementById('consolidated-groups-editor-list');
+      if (container) container.scrollTop = container.scrollHeight;
+    }
+
+    function resetConsolidatedSkillGroupsToDefault() {
+      _scmWorkingGroups = JSON.parse(JSON.stringify(DEFAULT_CONSOLIDATED_SKILL_GROUPS));
+      renderConsolidatedSkillGroupsEditor();
+    }
 
     function setScmMode(isMerged) {
       _scmSelectedMode = !!isMerged;
@@ -7741,6 +7990,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const btnSplit = document.getElementById('scm-btn-mode-split');
       const badgeMerge = document.getElementById('scm-badge-merge');
       const badgeSplit = document.getElementById('scm-badge-split');
+      const gCount = (_scmWorkingGroups && _scmWorkingGroups.length > 0) ? _scmWorkingGroups.length : getConsolidatedSkillGroups().length;
 
       if (btnMerge && btnSplit) {
         if (_scmSelectedMode) {
@@ -7758,7 +8008,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           btnMerge.className = 'text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-slate-900 border-slate-700 hover:border-slate-500';
           btnSplit.className = 'text-left p-3 rounded-xl border-2 transition relative flex flex-col justify-between bg-sky-950/60 border-sky-500 shadow-md';
           if (badgeMerge) {
-            badgeMerge.textContent = '7 Groups';
+            badgeMerge.textContent = `${gCount} Groups`;
             badgeMerge.className = 'text-[9px] bg-slate-800 text-slate-400 font-bold px-1.5 py-0.5 rounded';
           }
           if (badgeSplit) {
@@ -7773,7 +8023,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       const modal = document.getElementById('skill-consolidation-modal');
       if (!modal) return;
       const isMerged = character?.settings?.mergeSkills !== false;
+      _scmWorkingGroups = JSON.parse(JSON.stringify(getConsolidatedSkillGroups()));
       setScmMode(isMerged);
+      renderConsolidatedSkillGroupsEditor();
       modal.classList.remove('hidden');
     }
 
@@ -7788,10 +8040,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
 
       if (!character.settings) character.settings = {};
       character.settings.mergeSkills = isEnabled;
+      character.settings.consolidatedSkillGroups = JSON.parse(JSON.stringify(_scmWorkingGroups));
+
+      const groups = _scmWorkingGroups;
+      const groupCount = groups.length;
 
       if (saveDb && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-        const ruleName = "Skill Consolidation (7 Groups)";
-        const existingIdx = masterDb.findIndex(m => (m.name || '').toLowerCase() === ruleName.toLowerCase());
+        const ruleName = `Skill Consolidation (${groupCount} Groups)`;
+        const existingIdx = masterDb.findIndex(m => (m.name || '').toLowerCase().startsWith('skill consolidation'));
         const ruleData = {
           name: ruleName,
           type: "House Rule",
@@ -7799,22 +8055,18 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           parent: "Alternative Rules",
           prereq: "-",
           source: "Unearthed Arcana / Pathfinder 1e",
-          benefit: isEnabled ? "Skills consolidated into 7 groups (Athletics, Stealth, Perception, Acrobatics, Thievery, Persuasion, Linguistics)." : "Standard 46 D&D 3.5e RAW skills active.",
+          benefit: isEnabled ? `Skills consolidated into ${groupCount} groups (${groups.map(g => g.name).join(', ')}).` : "Standard 46 D&D 3.5e RAW skills active.",
           bonusType: "Rule",
           scope: "Skills",
           action: "Passive",
           actionType: "Passive",
           role: "House Rule",
           tags: ["skills", "consolidation", "houserule"],
-          skillMapping: (typeof RuleEngine !== 'undefined' && RuleEngine.DEFAULT_SKILL_MAPPING) ? RuleEngine.DEFAULT_SKILL_MAPPING : {
-            "stealth": ["hide", "move_silently", "move silently", "movesilently", "sessiz hareket", "gizlenme"],
-            "perception": ["spot", "listen", "search", "fark etme", "dinleme", "arama"],
-            "athletics": ["climb", "jump", "swim", "tırmanma", "zıplama", "yüzme"],
-            "acrobatics": ["tumble", "balance", "escape_artist", "escape artist", "takla", "denge", "kurtulma"],
-            "thievery": ["disable_device", "disable device", "open_lock", "open lock", "sleight_of_hand", "sleight of hand", "kilit açma", "tuzak bozma"],
-            "diplomacy": ["diplomacy", "gather_information", "gather information", "sense_motive", "sense motive", "diplomasi", "bilgi toplama", "sezgi"],
-            "linguistics": ["decipher_script", "decipher script", "forgery", "speak_language", "speak language", "yazı çözme", "sahtecilik"]
-          }
+          consolidatedSkillGroups: JSON.parse(JSON.stringify(groups)),
+          skillMapping: groups.reduce((acc, g) => {
+            acc[g.key] = g.components || [];
+            return acc;
+          }, {})
         };
         if (existingIdx >= 0) {
           masterDb[existingIdx] = Object.assign({}, masterDb[existingIdx], ruleData);
@@ -7835,9 +8087,25 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
       showDiceTopToast({
         icon: '🔗',
         title: 'Skill Mode Updated',
-        breakdown: isEnabled ? 'Consolidated Skills (7 Groups) enabled!' : 'Switched back to Standard D&D 3.5e RAW (46 Skills)!',
+        breakdown: isEnabled ? `Consolidated Skills (${groupCount} Groups) enabled!` : 'Switched back to Standard D&D 3.5e RAW (46 Skills)!',
         total: isEnabled ? 'Consolidated' : 'RAW'
       });
+    }
+
+    if (typeof window !== 'undefined') {
+      window.renderConsolidatedSkillGroupsEditor = renderConsolidatedSkillGroupsEditor;
+      window.updateConsolidatedGroupName = updateConsolidatedGroupName;
+      window.updateConsolidatedGroupStat = updateConsolidatedGroupStat;
+      window.removeSkillFromConsolidatedGroup = removeSkillFromConsolidatedGroup;
+      window.addSkillToConsolidatedGroup = addSkillToConsolidatedGroup;
+      window.deleteConsolidatedSkillGroup = deleteConsolidatedSkillGroup;
+      window.addNewConsolidatedSkillGroup = addNewConsolidatedSkillGroup;
+      window.resetConsolidatedSkillGroupsToDefault = resetConsolidatedSkillGroupsToDefault;
+      window.openSkillConsolidationModal = openSkillConsolidationModal;
+      window.closeSkillConsolidationModal = closeSkillConsolidationModal;
+      window.saveSkillConsolidationSettings = saveSkillConsolidationSettings;
+      window.setScmMode = setScmMode;
+      window.toggleSkillConsolidation = toggleSkillConsolidation;
     }
 
     // ====================================================

@@ -182,10 +182,14 @@
       const maxClassRank = charLevel + 3;
       const maxCrossRank = Math.floor((charLevel + 3) / 2 * 10) / 10;
 
+      const conGroups = (typeof getConsolidatedSkillGroups === 'function')
+        ? getConsolidatedSkillGroups()
+        : (typeof window !== 'undefined' && window.getConsolidatedSkillGroups ? window.getConsolidatedSkillGroups() : (typeof DND35_CONSOLIDATED_SKILLS !== 'undefined' ? DND35_CONSOLIDATED_SKILLS : []));
+
       // Update Header Badges
       const modeBadge = document.getElementById('skills-mode-badge');
       if (modeBadge) {
-        modeBadge.textContent = isMerged ? '🔗 Consolidated Skills' : 'D&D 3.5e RAW (46 Skills)';
+        modeBadge.textContent = isMerged ? `🔗 Consolidated Skills (${conGroups.length} Groups)` : 'D&D 3.5e RAW (46 Skills)';
         modeBadge.className = isMerged 
           ? 'ui-btn-xs h-6 text-[10px] px-2.5 rounded-md font-bold bg-emerald-950 text-emerald-300 border border-emerald-700 cursor-pointer hover:border-emerald-400 transition inline-flex items-center' 
           : 'ui-btn-xs h-6 text-[10px] px-2.5 rounded-md font-bold bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer hover:border-slate-500 transition inline-flex items-center';
@@ -220,9 +224,9 @@
       if (isMerged) {
         // 1. Consolidated Skill Groups
         const mergedKeysHandled = new Set();
-        DND35_CONSOLIDATED_SKILLS.forEach(conDef => {
-          const compSkills = (character.skills || []).filter(s => conDef.components.includes(s.key));
-          conDef.components.forEach(k => mergedKeysHandled.add(k));
+        conGroups.forEach(conDef => {
+          const compSkills = (character.skills || []).filter(s => (conDef.components || []).includes(s.key));
+          (conDef.components || []).forEach(k => mergedKeysHandled.add(k));
 
           const ranks = Math.max(0, ...compSkills.map(s => Number(s.ranks) || 0));
           const isClass = compSkills.some(s => s.isClass);

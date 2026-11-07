@@ -1952,6 +1952,15 @@
       const checkRaw = document.getElementById('hr-skill-mode-raw-check');
 
       if (btnMerged && btnRaw) {
+        const conGroups = (typeof getConsolidatedSkillGroups === 'function')
+          ? getConsolidatedSkillGroups()
+          : (typeof window !== 'undefined' && window.getConsolidatedSkillGroups ? window.getConsolidatedSkillGroups() : []);
+        const gCount = (conGroups && conGroups.length > 0) ? conGroups.length : 7;
+        const mergedTitle = btnMerged.querySelector('.font-black');
+        if (mergedTitle) {
+          mergedTitle.textContent = `Consolidated Skills (${gCount} Groups)`;
+        }
+
         if (isMerged) {
           btnMerged.className = 'p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-emerald-950/70 border-emerald-500 text-emerald-300 shadow-sm cursor-pointer';
           btnRaw.className = 'p-2.5 rounded-lg border-2 text-left transition flex items-center justify-between bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 cursor-pointer';
