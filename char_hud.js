@@ -6142,9 +6142,29 @@
 
     function getAllFeatsFromCompendiumAndCustom() {
       let feats = [];
-      if (window.SrdCompendium && typeof window.SrdCompendium.getAllFeats === 'function') {
-        const fList = window.SrdCompendium.getAllFeats();
-        if (Array.isArray(fList)) feats.push(...fList);
+      if (window.SrdCompendium) {
+        if (typeof window.SrdCompendium.getAllLoaded === 'function') {
+          const loaded = window.SrdCompendium.getAllLoaded('Feat');
+          if (Array.isArray(loaded) && loaded.length) feats.push(...loaded);
+        }
+        if (!feats.length && typeof window.SrdCompendium.getAllFeats === 'function') {
+          const fList = window.SrdCompendium.getAllFeats();
+          if (Array.isArray(fList)) feats.push(...fList);
+        }
+      }
+      if (typeof getCombinedFeatCatalog === 'function') {
+        try {
+          const comb = getCombinedFeatCatalog(false);
+          if (Array.isArray(comb) && comb.length) feats.push(...comb);
+        } catch (_) {}
+      }
+      if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        feats.push(...window.BUNDLED_SRD_CORE_CATALOG.filter(e => e && e.type === 'Feat' && e.name));
+      }
+      if (window.BUNDLED_SRD_FEATS && typeof window.BUNDLED_SRD_FEATS === 'object') {
+        Object.entries(window.BUNDLED_SRD_FEATS).forEach(([k, v]) => {
+          if (v && typeof v === 'object') feats.push({ name: v.name || k, ...v });
+        });
       }
       if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
         feats.push(...character.customDb.filter(e => e && (e.type === 'Feat' || e.category === 'Feat')));
@@ -6154,9 +6174,10 @@
       }
       const map = new Map();
       feats.forEach(f => {
-        const name = typeof f === 'string' ? f : (f.name || '');
-        if (name && !map.has(name.toLowerCase())) {
-          map.set(name.toLowerCase(), typeof f === 'string' ? { name: f, category: 'General' } : f);
+        const name = (typeof f === 'string' ? f : (f?.name || '')).trim();
+        if (!name || name.startsWith('↳')) return;
+        if (!map.has(name.toLowerCase())) {
+          map.set(name.toLowerCase(), typeof f === 'string' ? { name, category: 'General' } : f);
         }
       });
       return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
@@ -6164,9 +6185,23 @@
 
     function getAllSpellsFromCompendiumAndCustom() {
       let spells = [];
-      if (window.SrdCompendium && typeof window.SrdCompendium.getAllSpells === 'function') {
-        const sList = window.SrdCompendium.getAllSpells();
-        if (Array.isArray(sList)) spells.push(...sList);
+      if (window.SrdCompendium) {
+        if (typeof window.SrdCompendium.getAllLoaded === 'function') {
+          const loaded = window.SrdCompendium.getAllLoaded('Spell');
+          if (Array.isArray(loaded) && loaded.length) spells.push(...loaded);
+        }
+        if (!spells.length && typeof window.SrdCompendium.getAllSpells === 'function') {
+          const sList = window.SrdCompendium.getAllSpells();
+          if (Array.isArray(sList)) spells.push(...sList);
+        }
+      }
+      if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        spells.push(...window.BUNDLED_SRD_CORE_CATALOG.filter(e => e && e.type === 'Spell' && e.name));
+      }
+      if (window.BUNDLED_SRD_SPELLS && typeof window.BUNDLED_SRD_SPELLS === 'object') {
+        Object.entries(window.BUNDLED_SRD_SPELLS).forEach(([k, v]) => {
+          if (v && typeof v === 'object') spells.push({ name: v.name || k, ...v });
+        });
       }
       if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
         spells.push(...character.customDb.filter(e => e && (e.type === 'Spell' || e.category === 'Spell')));
@@ -6176,9 +6211,10 @@
       }
       const map = new Map();
       spells.forEach(s => {
-        const name = typeof s === 'string' ? s : (s.name || '');
-        if (name && !map.has(name.toLowerCase())) {
-          map.set(name.toLowerCase(), typeof s === 'string' ? { name: s, school: 'Universal' } : s);
+        const name = (typeof s === 'string' ? s : (s?.name || '')).trim();
+        if (!name || name.startsWith('↳')) return;
+        if (!map.has(name.toLowerCase())) {
+          map.set(name.toLowerCase(), typeof s === 'string' ? { name, school: 'Universal' } : s);
         }
       });
       return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
@@ -6280,9 +6316,9 @@
     function getAllWeaponsFromCompendiumAndCustom() {
       let weapons = [];
       if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
-        const eqs = window.SrdCompendium.getAllLoaded('Equipment');
+        const eqs = window.SrdCompendium.getAllLoaded(['Weapon', 'Equipment']);
         if (Array.isArray(eqs) && eqs.length) {
-          weapons.push(...eqs.filter(e => e && e.type === 'Weapon' && e.name));
+          weapons.push(...eqs.filter(e => e && (e.type === 'Weapon' || e.category === 'Weapon') && e.name));
         }
       }
       if (typeof window.BUNDLED_SRD_EQUIPMENT !== 'undefined' && Array.isArray(window.BUNDLED_SRD_EQUIPMENT)) {
@@ -6627,6 +6663,31 @@
         setTimeout(() => { searchInput.focus(); }, 50);
       }
       renderDomainSpotlightResults('');
+
+      // Ensure SrdCompendium is initialized if opened before eager chunks finished loading
+      if (window.SrdCompendium && typeof window.SrdCompendium.init === 'function' && (!window.SrdCompendium.isReady || !window.SrdCompendium.isReady())) {
+        window.SrdCompendium.init().then(() => {
+          if (_activeDomainSpotlightCtx.mode === 'feat') {
+            _activeDomainSpotlightCtx.items = getAllFeatsFromCompendiumAndCustom();
+          } else if (_activeDomainSpotlightCtx.mode === 'sla') {
+            _activeDomainSpotlightCtx.items = getAllDomainSlasAndAbilitiesFromCompendiumAndCustom();
+          } else if (_activeDomainSpotlightCtx.mode === 'weapon') {
+            _activeDomainSpotlightCtx.items = getAllWeaponsFromCompendiumAndCustom();
+          } else if (_activeDomainSpotlightCtx.mode === 'spell') {
+            const allSpells = getAllSpellsFromCompendiumAndCustom();
+            const tLvl = _activeDomainSpotlightCtx.targetLvl;
+            _activeDomainSpotlightCtx.items = allSpells.sort((a, b) => {
+              const aLvl = a.level !== undefined ? Number(a.level) : 99;
+              const bLvl = b.level !== undefined ? Number(b.level) : 99;
+              const aIsLvl = aLvl === tLvl ? 0 : 1;
+              const bIsLvl = bLvl === tLvl ? 0 : 1;
+              if (aIsLvl !== bIsLvl) return aIsLvl - bIsLvl;
+              return a.name.localeCompare(b.name);
+            });
+          }
+          renderDomainSpotlightResults(searchInput ? searchInput.value : '');
+        }).catch(() => {});
+      }
     }
 
     function closeDomainFieldSpotlight() {

@@ -661,6 +661,57 @@
       });
     },
 
+    getAllFeats() {
+      let list = this.getAllLoaded('Feat');
+      if (list.length === 0 && typeof require !== 'undefined') {
+        try {
+          const fs = require('fs');
+          const path = require('path');
+          const p = path.resolve(__dirname, 'database/srd_feats.json');
+          if (fs.existsSync(p)) {
+            const records = JSON.parse(fs.readFileSync(p, 'utf8'));
+            registerEntries(records);
+            list = this.getAllLoaded('Feat');
+          }
+        } catch (_) {}
+      }
+      if (list.length === 0 && Array.isArray(_index) && _index.length > 0) {
+        return _index.filter(r => r && r.t === 'Feat').map(r => ({
+          id: r.id,
+          name: r.n,
+          type: 'Feat',
+          category: r.c || 'General'
+        }));
+      }
+      return list;
+    },
+
+    getAllSpells() {
+      let list = this.getAllLoaded('Spell');
+      if (list.length === 0 && typeof require !== 'undefined') {
+        try {
+          const fs = require('fs');
+          const path = require('path');
+          const p = path.resolve(__dirname, 'database/srd_spells.json');
+          if (fs.existsSync(p)) {
+            const records = JSON.parse(fs.readFileSync(p, 'utf8'));
+            registerEntries(records);
+            list = this.getAllLoaded('Spell');
+          }
+        } catch (_) {}
+      }
+      if (list.length === 0 && Array.isArray(_index) && _index.length > 0) {
+        return _index.filter(r => r && r.t === 'Spell').map(r => ({
+          id: r.id,
+          name: r.n,
+          type: 'Spell',
+          school: r.c || 'Universal',
+          level: r.l !== undefined ? r.l : 1
+        }));
+      }
+      return list;
+    },
+
     getAllDomains() {
       let list = this.getAllLoaded('Domain');
       if (list.length === 0 && typeof require !== 'undefined') {
