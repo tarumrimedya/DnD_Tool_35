@@ -4,6 +4,87 @@
     // ====================================================
     // 🎖️ FEAT PICKER MODAL FUNCTIONS
     // ====================================================
+    // Helper: Bounded Damerau-Levenshtein distance for typo-tolerant feat search
+    function _fuzzyWordDistance(a, b, maxDist = 1) {
+      if (a === b) return 0;
+      const la = a.length;
+      const lb = b.length;
+      if (Math.abs(la - lb) > maxDist) return 99;
+      const dp = Array.from({ length: la + 1 }, () => new Array(lb + 1).fill(0));
+      for (let i = 0; i <= la; i++) dp[i][0] = i;
+      for (let j = 0; j <= lb; j++) dp[0][j] = j;
+      for (let i = 1; i <= la; i++) {
+        let rowMin = 99;
+        for (let j = 1; j <= lb; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          let val = Math.min(
+            dp[i - 1][j] + 1,
+            dp[i][j - 1] + 1,
+            dp[i - 1][j - 1] + cost
+          );
+          if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+            val = Math.min(val, dp[i - 2][j - 2] + 1);
+          }
+          dp[i][j] = val;
+          if (val < rowMin) rowMin = val;
+        }
+        if (rowMin > maxDist) return 99;
+      }
+      return dp[la][lb] <= maxDist ? dp[la][lb] : 99;
+    }
+
+    function _getFuzzyNameMatchScore(nameStr, cleanQ) {
+      if (!nameStr || !cleanQ || cleanQ.length < 4) return 0;
+      const qTokens = cleanQ.replace(/[(),/-]/g, ' ').split(/\s+/).filter(Boolean);
+      const nameWords = nameStr.replace(/[(),/-]/g, ' ').split(/\s+/).filter(Boolean);
+      if (qTokens.length === 0 || nameWords.length === 0) return 0;
+
+      let totalDist = 0;
+      for (const qt of qTokens) {
+        if (qt.length < 4) {
+          if (!nameWords.some(nw => nw.includes(qt))) return 0;
+          continue;
+        }
+        const maxD = qt.length >= 8 ? 2 : 1;
+        let bestD = 99;
+        for (const nw of nameWords) {
+          if (nw.includes(qt)) {
+            bestD = 0;
+            break;
+          }
+          if (nw.length < 4) continue;
+          if (qt[0] !== nw[0] && qt[qt.length - 1] !== nw[nw.length - 1]) continue;
+          const dFull = _fuzzyWordDistance(qt, nw, maxD);
+          if (dFull < bestD) bestD = dFull;
+          if (nw.length > qt.length && qt.length >= 5) {
+            const dPref = _fuzzyWordDistance(qt, nw.slice(0, qt.length), 1);
+            if (dPref < bestD) bestD = dPref;
+            const dPrefPlus = _fuzzyWordDistance(qt, nw.slice(0, qt.length + 1), 1);
+            if (dPrefPlus < bestD) bestD = dPrefPlus;
+          }
+        }
+        if (bestD > maxD) return 0;
+        totalDist += bestD;
+      }
+      const wordPenalty = Math.max(0, nameWords.length - qTokens.length) * 15;
+      return Math.max(250, 750 - (totalDist * 120) - wordPenalty);
+    }
+
+    function matchesFeatSearchQuery(item, query) {
+      if (!query) return true;
+      if (!item) return false;
+      const cleanQ = String(query).toLowerCase().trim();
+      if (!cleanQ) return true;
+      const n = (item.name || '').toLowerCase();
+      const b = (item.benefit || item.desc || '').toLowerCase();
+      const s = (item.source || '').toLowerCase();
+      const p = (item.prereq || item.prerequisites || '').toLowerCase();
+      if (n.includes(cleanQ) || b.includes(cleanQ) || s.includes(cleanQ) || p.includes(cleanQ)) {
+        return true;
+      }
+      return _getFuzzyNameMatchScore(n, cleanQ) > 0;
+    }
+
     // Helper: Calculate search relevance score for feats / abilities
     function getFeatSearchRelevance(item, query) {
       if (!query || !item) return 0;
@@ -15,6 +96,8 @@
       const words = name.split(/\s+/);
       if (words.some(w => w.startsWith(cleanQ))) return 3000;
       if (name.includes(cleanQ)) return 1000;
+      const fuzzyScore = _getFuzzyNameMatchScore(name, cleanQ);
+      if (fuzzyScore > 0) return fuzzyScore;
       const benefit = (item.benefit || item.desc || '').toLowerCase();
       if (benefit.includes(cleanQ)) return 100;
       const prereq = (item.prereq || '').toLowerCase();
@@ -210,7 +293,7 @@
       ]);
 
       const filtered = catalog.filter(f => {
-        const matchQuery = !query || f.name.toLowerCase().includes(query) || (f.benefit || '').toLowerCase().includes(query) || (f.prereq || '').toLowerCase().includes(query);
+        const matchQuery = !query || matchesFeatSearchQuery(f, query);
         const matchCat = cat === 'All' || (f.category || '').toLowerCase().includes(cat.toLowerCase());
         return matchQuery && matchCat;
       });
@@ -1324,16 +1407,10 @@
         baseList = combined;
       }
 
-      // Filter by query
+      // Filter by query (supports exact substring + fuzzy typo tolerance on feat names)
       let queryFiltered = [...baseList];
       if (query) {
-        queryFiltered = baseList.filter(f => {
-          const n = (f.name || '').toLowerCase();
-          const b = (f.benefit || f.desc || '').toLowerCase();
-          const s = (f.source || '').toLowerCase();
-          const p = (f.prereq || '').toLowerCase();
-          return n.includes(query) || b.includes(query) || s.includes(query) || p.includes(query);
-        });
+        queryFiltered = baseList.filter(f => matchesFeatSearchQuery(f, query));
 
         // Dynamic exotic weapon suggestion if query matches an exotic weapon
         const exoticWeapons = getAvailableExoticWeapons();
@@ -1389,10 +1466,13 @@
       const countFlaw = evaluatedItems.filter(e => isFlawFeat(e.item)).length;
       const countInvocation = evaluatedItems.filter(e => e.item.category === 'Warlock Invocation').length;
 
-      // Apply active filter pill
+      // Apply active filter pill (if user typed a search query and QUALIFIED has 0 matches while ALL has matches, show ALL matches with their prerequisite badges so existing compendium feats never appear missing)
       let filteredItems = evaluatedItems;
       if (activeFilter === 'QUALIFIED') {
         filteredItems = evaluatedItems.filter(e => e.pEval.allMet && !e.pEval.isAlreadyKnownFromClass);
+        if (query && filteredItems.length === 0 && evaluatedItems.length > 0) {
+          filteredItems = evaluatedItems;
+        }
       } else if (activeFilter === 'FIGHTER') {
         filteredItems = evaluatedItems.filter(e => isFighterFeat(e.item));
       } else if (activeFilter === 'BOON') {
@@ -3908,16 +3988,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           baseList = combined;
         }
 
-        // 2. Filter by search query
+        // 2. Filter by search query (supports exact substring + fuzzy typo tolerance on feat names)
         let queryFiltered = [...baseList];
         if (query) {
-          queryFiltered = baseList.filter(f => {
-            const n = (f.name || '').toLowerCase();
-            const b = (f.benefit || '').toLowerCase();
-            const s = (f.source || '').toLowerCase();
-            const p = (f.prereq || '').toLowerCase();
-            return n.includes(query) || b.includes(query) || s.includes(query) || p.includes(query);
-          });
+          queryFiltered = baseList.filter(f => matchesFeatSearchQuery(f, query));
 
           // Dynamic exotic weapon suggestion if query matches an exotic weapon
           const exoticWeapons = (typeof getAvailableExoticWeapons === 'function') ? getAvailableExoticWeapons() : [];
@@ -3955,6 +4029,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         let filteredItems = evaluatedItems;
         if (activeFilter === 'QUALIFIED') {
           filteredItems = evaluatedItems.filter(e => e.pEval.allMet && !e.pEval.isAlreadyKnownFromClass);
+          if (query && filteredItems.length === 0 && evaluatedItems.length > 0) {
+            filteredItems = evaluatedItems;
+          }
         } else if (activeFilter === 'FIGHTER') {
           filteredItems = evaluatedItems.filter(e => isFighterFeat(e.item));
         } else if (activeFilter === 'BOON') {

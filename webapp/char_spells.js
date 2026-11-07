@@ -3036,6 +3036,16 @@
       if (readiedCounter) {
         readiedCounter.textContent = `${readyManeuvers} / ${totalReadied} Readied`;
       }
+      const knownManeuversBadge = document.getElementById('known-maneuvers-quota-badge');
+      if (knownManeuversBadge) {
+        const curKnownM = (character?.tomeOfBattle?.maneuversKnown || []).length;
+        knownManeuversBadge.textContent = `${curKnownM} / ${initInfo.maxKnownManeuvers || 0} Maneuvers`;
+      }
+      const knownStancesBadge = document.getElementById('known-stances-quota-badge');
+      if (knownStancesBadge) {
+        const curKnownS = (character?.tomeOfBattle?.stancesKnown || []).length;
+        knownStancesBadge.textContent = `${curKnownS} / ${initInfo.maxKnownStances || 0} Stances`;
+      }
 
       // Populate Active Stance Select Box
       const stanceSelect = document.getElementById('active-stance-select');
@@ -3054,7 +3064,7 @@
 
         const noneOpt = document.createElement('option');
         noneOpt.value = 'None';
-        noneOpt.textContent = 'None (No Active Stance)';
+        noneOpt.textContent = stances.length > 0 ? 'None (No Active Stance)' : 'None (Add Stances to Known Pool First)';
         if (curStance === 'None' || !stances.some(st => st.name === curStance)) noneOpt.selected = true;
         stanceSelect.appendChild(noneOpt);
       }
@@ -3064,8 +3074,10 @@
       if (stanceBenefitEl) {
         if (activeStanceObj) {
           stanceBenefitEl.textContent = activeStanceObj.benefit || 'Active Stance Benefit';
+        } else if ((character?.tomeOfBattle?.stancesKnown || []).length === 0) {
+          stanceBenefitEl.textContent = 'No stances in Known Pool yet — learn a stance in Pool: Maneuvers & Stances Known below, then enter it.';
         } else {
-          stanceBenefitEl.textContent = 'No martial stance currently active.';
+          stanceBenefitEl.textContent = 'No martial stance currently active — select a known stance from the dropdown or click Enter Stance in your pool below.';
         }
       }
 
@@ -4075,7 +4087,7 @@
             div.className = 'p-3.5 rounded-xl border border-dashed border-rose-500/40 bg-slate-950/40 hover:bg-rose-950/20 flex flex-col justify-between transition-all cursor-pointer group';
             div.onclick = (e) => {
               if (e.target.closest('button')) return;
-              openManeuverPickerModal('Maneuver');
+              openReadyManeuverFromPoolModal(slotIdx);
             };
             div.innerHTML = `
               <div class="space-y-1.5 mb-3">
@@ -4084,12 +4096,12 @@
                   <span class="badge bg-slate-900 text-rose-300/70 border border-rose-900/50 text-[10px]">Empty Slot</span>
                 </div>
                 <h4 class="text-xs font-bold text-rose-300/80 group-hover:text-rose-200 italic">+ Ready Maneuver for Combat</h4>
-                <p class="text-[11px] text-slate-500">Ready a maneuver from your known pool below or click to learn a new maneuver.</p>
+                <p class="text-[11px] text-slate-500">Equip a known maneuver from your Pool: Maneuvers &amp; Stances Known into this readied slot.</p>
               </div>
               <div class="pt-2 border-t border-slate-800/60 flex items-center justify-end">
-                <button type="button" onclick="openManeuverPickerModal('Maneuver')" class="w-full bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-dashed border-rose-500/60 text-xs font-bold py-1 px-2.5 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer">
-                  <span>⚔️</span>
-                  <span>+ Select / Ready Maneuver</span>
+                <button type="button" onclick="openReadyManeuverFromPoolModal(${slotIdx})" class="w-full bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-dashed border-rose-500/60 text-xs font-bold py-1 px-2.5 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer">
+                  <span>⚡</span>
+                  <span>+ Ready from Known Pool</span>
                 </button>
               </div>
             `;
@@ -4124,11 +4136,6 @@
 
         const maneuvers = character.tomeOfBattle.maneuversKnown || [];
         const stances = character.tomeOfBattle.stancesKnown || [];
-
-        if (maneuvers.length === 0 && stances.length === 0) {
-          libTbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500 text-xs italic bg-slate-950/40">No known maneuvers or stances added yet.</td></tr>`;
-          return;
-        }
 
         const renderManeuverLibRow = (m) => {
           const isReadied = readiedNames.includes((m.name || '').toLowerCase().trim());
@@ -4243,9 +4250,9 @@
                   </button>
                 ` : ''}
                 ${isActive ? `
-                  <span class="h-7 min-w-[115px] rounded-lg bg-teal-950 text-teal-300 border border-teal-600 text-xs font-bold px-2.5 inline-flex items-center justify-center whitespace-nowrap">
-                    🥋 Active Stance
-                  </span>
+                  <button onclick="selectStanceDirectly('None')" class="h-7 min-w-[115px] rounded-lg bg-teal-950 hover:bg-rose-950 text-teal-300 hover:text-rose-300 border border-teal-600 hover:border-rose-600 text-xs font-bold px-2.5 transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap" title="Click to exit active stance">
+                    ✓ Active Stance
+                  </button>
                 ` : `
                   <button onclick="selectStanceDirectly('${escape(st.name)}')" class="h-7 min-w-[115px] bg-slate-800 hover:bg-teal-900 text-teal-300 border border-slate-700 hover:border-teal-600 text-xs font-bold px-2.5 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
                     Enter Stance
@@ -4330,6 +4337,10 @@
             }
           }
         }
+
+        if (libTbody.children.length === 0) {
+          libTbody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-500 text-xs italic bg-slate-950/40">No matching maneuvers or stances found in your known pool.</td></tr>`;
+        }
       }
     }
 
@@ -4341,6 +4352,116 @@
     function openManeuverPickerModal(type = 'Maneuver') {
       window._spellPickerTargetPool = 'martial';
       openSpellManeuverPickerModal(type, 'all');
+    }
+
+    function openReadyManeuverFromPoolModal(slotIdx = 0) {
+      let modal = document.getElementById('maneuver-ready-pool-modal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'maneuver-ready-pool-modal';
+        modal.className = 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto hidden';
+        modal.onclick = (e) => {
+          if (e.target === modal) closeReadyManeuverFromPoolModal();
+        };
+        document.body.appendChild(modal);
+      }
+
+      const initInfo = getInitiatorInfo();
+      const maxReadied = initInfo.maxReadied || 3;
+      const readied = character?.tomeOfBattle?.readiedManeuvers || [];
+      const readiedNames = readied.map(m => (m.name || '').toLowerCase().trim());
+      const known = (character?.tomeOfBattle?.maneuversKnown || []).slice().sort((a, b) => {
+        const lA = Number(a.level) || 1;
+        const lB = Number(b.level) || 1;
+        if (lA !== lB) return lA - lB;
+        return String(a.name || '').localeCompare(String(b.name || ''));
+      });
+      const unreadied = known.filter(m => !readiedNames.includes((m.name || '').toLowerCase().trim()));
+
+      let bodyHtml = '';
+      if (unreadied.length === 0) {
+        bodyHtml = `
+          <div class="py-6 text-center space-y-3">
+            <div class="text-3xl">📚</div>
+            <p class="text-xs text-slate-300 font-bold">
+              ${known.length === 0
+                ? 'No maneuvers found in your Maneuvers &amp; Stances Known Pool yet.'
+                : 'All maneuvers in your Known Pool are already readied in your combat deck.'}
+            </p>
+            <p class="text-[11px] text-slate-400">
+              First learn maneuvers into your <strong>Pool: Maneuvers &amp; Stances Known</strong>, then ready them into your active combat slots.
+            </p>
+            <div class="pt-2 flex flex-wrap items-center justify-center gap-2">
+              <button type="button" onclick="closeReadyManeuverFromPoolModal(); openManeuverPickerModal('Maneuver');" class="px-3.5 py-2 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold transition shadow border border-rose-500 cursor-pointer inline-flex items-center gap-1.5">
+                <span>⚔️</span>
+                <span>+ Learn New Maneuver to Known Pool (${known.length}/${initInfo.maxKnownManeuvers || 0})</span>
+              </button>
+            </div>
+          </div>
+        `;
+      } else {
+        bodyHtml = unreadied.map(m => {
+          const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || findDiceExpression(m.notes || m.benefit);
+          const mLvl = Number(m.level) || 1;
+          return `
+            <div class="p-3 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 hover:border-rose-500/60 transition flex items-center justify-between gap-3">
+              <div class="min-w-0 flex-1 space-y-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[10px] font-bold font-mono">Lvl ${mLvl}</span>
+                  <span class="text-xs font-extrabold text-white">${m.name}</span>
+                  <span class="badge bg-slate-950 text-rose-300 border border-rose-800/70 text-[10px] font-semibold">${m.discipline || 'Iron Heart'}</span>
+                  <span class="text-[10px] text-amber-300 font-semibold">${m.action || 'Standard Action'}</span>
+                  ${dmgExpr ? `<span class="badge bg-amber-950/90 text-amber-300 border border-amber-700/70 text-[10px] font-mono font-bold">${dmgExpr}</span>` : ''}
+                </div>
+                <div class="text-[11px] text-slate-300 line-clamp-2">${m.notes || m.benefit || '-'}</div>
+              </div>
+              <div class="shrink-0">
+                <button type="button" onclick="readyKnownManeuverFromModal('${escape(m.name)}')" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold border border-rose-500 transition shadow flex items-center gap-1 cursor-pointer whitespace-nowrap">
+                  <span>⚡</span>
+                  <span>Ready</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      modal.innerHTML = `
+        <div class="bg-slate-950 border border-rose-500/70 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+          <div class="bg-gradient-to-r from-rose-950/80 via-slate-900 to-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-rose-900/70 border border-rose-500/60 flex items-center justify-center text-base">⚡</div>
+              <div>
+                <h3 class="text-xs md:text-sm font-extrabold text-white">Ready Maneuver: Slot #${slotIdx + 1}</h3>
+                <p class="text-[11px] text-slate-400">Select from your Known Maneuver Pool (${readied.length} / ${maxReadied} Readied)</p>
+              </div>
+            </div>
+            <button type="button" onclick="closeReadyManeuverFromPoolModal()" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex items-center justify-center text-xs cursor-pointer">✕</button>
+          </div>
+          <div class="p-4 space-y-2.5 overflow-y-auto flex-1">
+            ${bodyHtml}
+          </div>
+          <div class="bg-slate-900/90 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between gap-2">
+            <button type="button" onclick="closeReadyManeuverFromPoolModal(); openManeuverPickerModal('Maneuver');" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-rose-300 hover:text-white border border-rose-800/60 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+              <span>📚</span>
+              <span>+ Learn New Maneuver to Pool (${known.length}/${initInfo.maxKnownManeuvers || 0})</span>
+            </button>
+            <button type="button" onclick="closeReadyManeuverFromPoolModal()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold transition cursor-pointer">Close</button>
+          </div>
+        </div>
+      `;
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeReadyManeuverFromPoolModal() {
+      const modal = document.getElementById('maneuver-ready-pool-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function readyKnownManeuverFromModal(escapedName) {
+      toggleManeuverReadied(escapedName);
+      closeReadyManeuverFromPoolModal();
     }
 
     function useOrRecoverManeuver(idx) {
@@ -4463,9 +4584,9 @@
       saveStateToStorage();
       showDiceTopToast({
         icon: '🥋',
-        title: 'Stance Changed',
-        breakdown: `"${name}" is now your active martial stance`,
-        total: 'Active'
+        title: (!name || name === 'None') ? 'Stance Exited' : 'Stance Changed',
+        breakdown: (!name || name === 'None') ? 'Exited active martial stance (No stance active)' : `"${name}" is now your active martial stance`,
+        total: (!name || name === 'None') ? 'None' : 'Active'
       });
     }
 
@@ -6108,19 +6229,14 @@
 
         character.tomeOfBattle.maneuversKnown.push(newManeuver);
 
-        const { maxReadied } = getInitiatorInfo();
-        if (character.tomeOfBattle.readiedManeuvers.length < maxReadied) {
-          character.tomeOfBattle.readiedManeuvers.push({ ...newManeuver });
-        }
-
         saveStateToStorage(true);
         renderAll();
         renderSpellPickerResults();
         showDiceTopToast({
           icon: '⚔️',
-          title: 'Maneuver Learned',
-          breakdown: `"${item.name}" (${newManeuver.discipline} ${newManeuver.level}) added to your maneuver pool`,
-          total: '+1 Maneuver'
+          title: 'Maneuver Added to Known Pool',
+          breakdown: `"${item.name}" (${newManeuver.discipline} ${newManeuver.level}) added to Pool: Maneuvers & Stances Known — click + Ready to add it to your combat deck`,
+          total: '+1 Known'
         });
       } else if (type === 'Stance') {
         const initInfo = getInitiatorInfo();
