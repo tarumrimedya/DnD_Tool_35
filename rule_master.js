@@ -1177,8 +1177,108 @@ const RuleMaster = {
       this._changeAndAddOriginalSnapshot = this.getComparableEntrySignature(this.buildInlineManualV2Entry());
     }
 
-    const panel = document.getElementById('inline-ai-adder-panel');
-    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (options && options.inlineOnly) {
+      const panel = document.getElementById('inline-ai-adder-panel');
+      if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      this.openMasterDbEditorModal('manual', v2);
+    }
+  },
+
+  getMasterDbModalHeaderMeta(mode, entry) {
+    if (mode === 'forge') {
+      return {
+        icon: '⚒️',
+        title: 'The Forge — Modular Item Editor • D&D 3.5e RAW',
+        subtitle: entry?.name
+          ? `Editing "${entry.name}" • Base Item, Material, Enhancement & Crystals`
+          : 'Canonical V2 Modular Weapon, Armor & Shield Assembler'
+      };
+    }
+    const rawType = String(entry?.type || document.getElementById('im-type')?.value || 'Feat').trim();
+    const tLow = rawType.toLowerCase();
+    let icon = '✏️';
+    let label = 'Custom Rule & Item';
+    if (tLow === 'feat') { icon = '🎖️'; label = 'Feat'; }
+    else if (tLow === 'flaw') { icon = '⚠️'; label = 'Character Flaw'; }
+    else if (tLow === 'special ability' || tLow === 'dm grant') { icon = '✨'; label = 'Special Ability & Boon'; }
+    else if (tLow === 'spell') { icon = '🔮'; label = 'Spell'; }
+    else if (tLow === 'maneuver' || tLow === 'stance') { icon = '⚔️'; label = 'Martial Maneuver & Stance'; }
+    else if (tLow === 'weapon') { icon = '🗡️'; label = 'Weapon'; }
+    else if (tLow === 'armor' || tLow === 'shield') { icon = '🛡️'; label = 'Armor & Shield'; }
+    else if (['wondrous item', 'ring', 'potion', 'slotless item'].includes(tLow)) { icon = '👑'; label = 'Magic Item'; }
+    else if (tLow === 'race') { icon = '🧬'; label = 'Race'; }
+
+    const itemName = (entry?.name || document.getElementById('im-name')?.value || '').trim();
+    return {
+      icon,
+      title: `${label} Editor • D&D 3.5e RAW`,
+      subtitle: itemName
+        ? `Editing "${itemName}" • Canonical V2 Modifiers, Combat Effects & RAW Description`
+        : 'Canonical V2 Schema • Modifiers, Combat Effects & RAW Description'
+    };
+  },
+
+  openMasterDbEditorModal(mode = 'manual', entry = null) {
+    const modal = document.getElementById('modal-master-db-editor');
+    const body = document.getElementById('modal-master-db-editor-body');
+    const targetId = mode === 'forge' ? 'inline-mode-forge' : 'inline-mode-manual';
+    const targetPanel = document.getElementById(targetId);
+    if (!modal || !body || !targetPanel) return;
+
+    // First restore any previously mounted panel back to inline dock
+    this._dockPanelsBackToInline();
+
+    // Move target editor panel into modal body
+    body.appendChild(targetPanel);
+    targetPanel.classList.remove('hidden');
+
+    // Keep the background inline panel cleanly on Search tab so the page doesn't collapse
+    const searchPanel = document.getElementById('inline-mode-search');
+    if (searchPanel) searchPanel.classList.remove('hidden');
+
+    const meta = this.getMasterDbModalHeaderMeta(mode, entry);
+    const iconEl = document.getElementById('modal-mdb-editor-icon');
+    const titleEl = document.getElementById('modal-mdb-editor-title');
+    const subEl = document.getElementById('modal-mdb-editor-subtitle');
+    if (iconEl) iconEl.textContent = meta.icon;
+    if (titleEl) titleEl.textContent = meta.title;
+    if (subEl) subEl.textContent = meta.subtitle;
+
+    modal.classList.remove('hidden');
+  },
+
+  _dockPanelsBackToInline() {
+    const inlineHost = document.getElementById('inline-ai-adder-panel');
+    const loadingBox = document.getElementById('inline-ai-loading-box');
+    const forgePanel = document.getElementById('inline-mode-forge');
+    const manualPanel = document.getElementById('inline-mode-manual');
+    if (!inlineHost) return;
+
+    if (forgePanel && forgePanel.parentElement !== inlineHost) {
+      if (loadingBox && loadingBox.parentElement === inlineHost) {
+        inlineHost.insertBefore(forgePanel, loadingBox);
+      } else {
+        inlineHost.appendChild(forgePanel);
+      }
+      forgePanel.classList.add('hidden');
+    }
+    if (manualPanel && manualPanel.parentElement !== inlineHost) {
+      if (loadingBox && loadingBox.parentElement === inlineHost) {
+        inlineHost.insertBefore(manualPanel, loadingBox);
+      } else {
+        inlineHost.appendChild(manualPanel);
+      }
+      manualPanel.classList.add('hidden');
+    }
+  },
+
+  closeMasterDbEditorModal() {
+    const modal = document.getElementById('modal-master-db-editor');
+    this._dockPanelsBackToInline();
+    if (modal) modal.classList.add('hidden');
+    this._editingForgeMasterDbIndex = -1;
+    this.switchInlineMode('search');
   },
 
   submitModal(alsoEquip = false) {
@@ -1187,6 +1287,7 @@ const RuleMaster = {
 
   closeModal() {
     this.resetInlineManualForm();
+    this.closeMasterDbEditorModal();
   },
 
   onTypeChange() {
@@ -5137,6 +5238,13 @@ Return valid JSON only matching:
   // SERBEST METİN (FREE-TEXT) AI & THE FORGE INLINE ENGINE (CANONICAL V2)
   // ====================================================
   switchInlineMode(mode) {
+    // If modal was open and user clicks an inline mode tab directly, dock panels back to inline first
+    const modal = document.getElementById('modal-master-db-editor');
+    if (modal && !modal.classList.contains('hidden')) {
+      this._dockPanelsBackToInline();
+      modal.classList.add('hidden');
+    }
+
     const searchPanel = document.getElementById('inline-mode-search');
     const freetextPanel = document.getElementById('inline-mode-freetext');
     const forgePanel = document.getElementById('inline-mode-forge');
@@ -5272,15 +5380,29 @@ Return valid JSON only matching:
     // If user manually switches Category dropdown to Deity or Domain, launch its dedicated editor modal
     if (typeVal === 'Deity' && typeof window.openCustomDeityEditorModal === 'function') {
       const currentName = (document.getElementById('im-name')?.value || '').trim();
+      const idx = this.selectedEntryIndex;
       if (typeEl) typeEl.value = 'Feat';
-      window.openCustomDeityEditorModal({ name: currentName }, this.selectedEntryIndex);
+      this.closeMasterDbEditorModal();
+      window.openCustomDeityEditorModal({ name: currentName }, idx);
       return;
     }
     if (typeVal === 'Domain' && typeof window.openCustomDomainEditorModal === 'function') {
       const currentName = (document.getElementById('im-name')?.value || '').trim();
+      const idx = this.selectedEntryIndex;
       if (typeEl) typeEl.value = 'Feat';
-      window.openCustomDomainEditorModal({ name: currentName }, this.selectedEntryIndex);
+      this.closeMasterDbEditorModal();
+      window.openCustomDomainEditorModal({ name: currentName }, idx);
       return;
+    }
+
+    // Update modal header dynamically if #modal-master-db-editor is currently open
+    const mdbModal = document.getElementById('modal-master-db-editor');
+    if (mdbModal && !mdbModal.classList.contains('hidden')) {
+      const meta = this.getMasterDbModalHeaderMeta('manual', { type: typeVal, name: document.getElementById('im-name')?.value });
+      const iconEl = document.getElementById('modal-mdb-editor-icon');
+      const titleEl = document.getElementById('modal-mdb-editor-title');
+      if (iconEl) iconEl.textContent = meta.icon;
+      if (titleEl) titleEl.textContent = meta.title;
     }
 
     const slotEl = document.getElementById('im-slot');
@@ -5550,6 +5672,11 @@ Return valid JSON only matching:
     if (saveEqLbl) saveEqLbl.textContent = 'Save & Equip to Character';
 
     this.onInlineManualTypeChange(true);
+
+    const mdbModal = document.getElementById('modal-master-db-editor');
+    if (mdbModal && !mdbModal.classList.contains('hidden')) {
+      this.closeMasterDbEditorModal();
+    }
   },
 
   saveInlineManualEntry(alsoEquip = false) {
@@ -5772,8 +5899,7 @@ Return valid JSON only matching:
     this.syncInlineForgeSubControls(enhIds, crysId);
     this.updateInlineForgePreview();
 
-    const panel = document.getElementById('inline-ai-adder-panel');
-    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    this.openMasterDbEditorModal('forge', entry);
   },
 
   async populateInlineForgeControls() {
@@ -5911,6 +6037,10 @@ Return valid JSON only matching:
 
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
+    const mdbModal = document.getElementById('modal-master-db-editor');
+    if (mdbModal && !mdbModal.classList.contains('hidden')) {
+      this.closeMasterDbEditorModal();
+    }
     if (!alsoEquip) {
       alert(`✅ "${item.name}" saved to Character Custom DB!`);
     }

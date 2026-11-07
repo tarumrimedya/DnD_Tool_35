@@ -3849,5 +3849,27 @@
       Description
     </div>
   </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: MASTER DB ENTRY EDITOR (Feat, Spell, Item, Forge) -->
+  <!-- ==================================================== -->
+  <div id="modal-master-db-editor" onclick="if(event.target === this) RuleMaster.closeMasterDbEditorModal()" class="hidden fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto" style="position: fixed; inset: 0; z-index: 9995; background: rgba(2, 6, 23, 0.85); backdrop-filter: blur(6px);">
+    <div class="bg-dndCard border border-purple-500/80 rounded-2xl w-full shadow-2xl overflow-hidden my-auto flex flex-col" style="max-height: 92vh; overflow-y: auto; width: 100%; max-width: 54rem;">
+      <!-- Header -->
+      <div class="bg-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <span id="modal-mdb-editor-icon" class="text-xl shrink-0">🎖️</span>
+          <div class="min-w-0">
+            <h3 id="modal-mdb-editor-title" class="text-sm md:text-base font-extrabold text-white truncate">Master DB Entry Editor • D&amp;D 3.5e RAW</h3>
+            <p id="modal-mdb-editor-subtitle" class="text-[10px] text-purple-300 font-mono truncate">Canonical V2 Schema • Modifiers, Combat Effects &amp; Description</p>
+          </div>
+        </div>
+        <button type="button" onclick="RuleMaster.closeMasterDbEditorModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer shrink-0">&times; Close</button>
+      </div>
+
+      <!-- Body (Dynamically hosts #inline-mode-manual or #inline-mode-forge when editing) -->
+      <div id="modal-master-db-editor-body" class="p-4 space-y-3 text-xs overflow-y-auto flex-1"></div>
+    </div>
+  </div>
 </body>
 </html>
