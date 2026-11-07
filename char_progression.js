@@ -444,13 +444,34 @@
         "Orc Double Axe", "Gnome Hooked Hammer", "Bolas", "Hand Crossbow", "Repeating Heavy Crossbow", 
         "Repeating Light Crossbow", "Shuriken", "Net", "Jovar", "Kusari-Gama", "Kama", "Nunchaku", "Sai", "Siangham"
       ]);
+      const filterFn = (typeof isBaseMundaneWeaponEntry === 'function')
+        ? isBaseMundaneWeaponEntry
+        : (window.isBaseMundaneWeaponEntry || (() => true));
+      const resolveFn = (typeof resolveBaseWeaponName === 'function')
+        ? resolveBaseWeaponName
+        : (window.resolveBaseWeaponName || (w => (w.name || '').replace(/^↳\s*/, '').replace(/\(.*?\)/g, '').trim()));
+
+      if (window.SrdCompendium && typeof window.SrdCompendium.getByType === 'function') {
+        window.SrdCompendium.getByType('Weapon').forEach(item => {
+          if (item && filterFn(item)) {
+            const cat = String(item.category || '').toLowerCase();
+            const sub = String(item.subcategory || item.proficiency || '').toLowerCase();
+            if (cat === 'exotic' || sub.includes('exotic')) {
+              const baseName = resolveFn(item);
+              if (baseName && filterFn(baseName)) set.add(baseName);
+            }
+          }
+        });
+      }
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         masterDb.forEach(item => {
-          if (item && (item.type === 'Weapon' || item.category === 'Weapon')) {
+          if (item && (item.type === 'Weapon' || item.category === 'Weapon') && filterFn(item)) {
             const sub = (item.subcategory || item.proficiency || item.slot || '').toLowerCase();
             const desc = (item.desc || item.description || item.benefit || '').toLowerCase();
-            if (sub.includes('exotic') || desc.includes('exotic weapon')) {
-              set.add(item.name.replace(/^↳\s*/, '').replace(/\(.*?\)/g, '').trim());
+            const cat = String(item.category || '').toLowerCase();
+            if (cat === 'exotic' || sub.includes('exotic') || desc.includes('exotic weapon')) {
+              const baseName = resolveFn(item);
+              if (baseName && filterFn(baseName)) set.add(baseName);
             }
           }
         });
@@ -460,11 +481,22 @@
 
     function getAvailableTargetWeapons(isExoticOnly = false) {
       if (isExoticOnly) return getAvailableExoticWeapons();
-      const set = new Set(getSrdWeaponNames());
+      const getSrdFn = (typeof getSrdWeaponNames === 'function')
+        ? getSrdWeaponNames
+        : (window.getSrdWeaponNames || (() => []));
+      const filterFn = (typeof isBaseMundaneWeaponEntry === 'function')
+        ? isBaseMundaneWeaponEntry
+        : (window.isBaseMundaneWeaponEntry || (() => true));
+      const resolveFn = (typeof resolveBaseWeaponName === 'function')
+        ? resolveBaseWeaponName
+        : (window.resolveBaseWeaponName || (w => (w.name || '').replace(/^↳\s*/, '').replace(/\(.*?\)/g, '').trim()));
+
+      const set = new Set(getSrdFn());
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         masterDb.forEach(item => {
-          if (item && (item.type === 'Weapon' || item.category === 'Weapon')) {
-            set.add(item.name.replace(/^↳\s*/, '').replace(/\(.*?\)/g, '').trim());
+          if (item && (item.type === 'Weapon' || item.category === 'Weapon') && filterFn(item)) {
+            const baseName = resolveFn(item);
+            if (baseName && filterFn(baseName)) set.add(baseName);
           }
         });
       }
@@ -480,7 +512,7 @@
 
       const t = String(featName || '').trim();
       const lower = t.toLowerCase();
-      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency)/i.test(lower);
+      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency|martial weapon proficiency)/i.test(lower);
 
       if (!isWeaponFeat) {
         container.classList.add('hidden');
@@ -496,9 +528,13 @@
 
       select.innerHTML = '<option value="">-- Select a Weapon --</option>';
 
+      const resolveFn = (typeof resolveBaseWeaponName === 'function')
+        ? resolveBaseWeaponName
+        : (window.resolveBaseWeaponName || (w => (w.name || '').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim()));
+
       if (isExotic) {
         const exoticWeapons = getAvailableExoticWeapons();
-        const charWeps = (character.weapons || []).map(w => (w.name || '').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim()).filter(Boolean);
+        const charWeps = (character.weapons || []).map(w => resolveFn(w)).filter(Boolean);
         const charExotics = charWeps.filter(cw => exoticWeapons.some(ew => ew.toLowerCase() === cw.toLowerCase()));
         if (charExotics.length > 0) {
           const grpChar = document.createElement('optgroup');
@@ -524,7 +560,7 @@
         });
         select.appendChild(grpAll);
       } else {
-        const charWeps = (character.weapons || []).map(w => (w.name || '').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim()).filter(Boolean);
+        const charWeps = (character.weapons || []).map(w => resolveFn(w)).filter(Boolean);
         const uniqueCharWeps = [...new Set(charWeps)];
         if (uniqueCharWeps.length > 0) {
           const grpChar = document.createElement('optgroup');
@@ -7198,10 +7234,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         lvl.will = rowWill;
 
         tr.innerHTML = `
-          <td class="py-2 px-1 align-top text-center w-9">
+          <td class="py-2 pl-3 pr-1 align-top text-center w-[46px]">
             <div class="h-6 flex items-center justify-center font-bold text-amber-400 text-xs">${lvl.level}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-20">
+          <td class="py-2 px-1.5 align-top text-center w-[88px]">
             <div class="h-6 flex items-center justify-center">
               <label class="inline-flex items-center gap-1 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
                 <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
@@ -7211,46 +7247,46 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               </label>
             </div>
           </td>
-          <td class="py-2 px-1.5 align-top text-left w-24">
+          <td class="py-2 px-2 align-top text-left w-[108px]">
             <div class="h-6 flex items-center font-sans font-bold text-white text-xs truncate" title="${lvl.className}-${classLevelSoFar}">${lvl.className}-${classLevelSoFar}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-10">
+          <td class="py-2 px-1 align-top text-center w-[48px]">
             <div class="h-6 flex items-center justify-center text-slate-400 font-bold text-xs">${lvl.hd}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-10">
+          <td class="py-2 px-1 align-top text-center w-[48px]">
             <div class="h-6 flex items-center justify-center text-emerald-400 font-bold text-xs" title="Level Hit Die: +${lvl.hpGain} | Con: ${conModStr} (This Level: +${Math.max(1, (Number(lvl.hpGain) || 0) + conMod)})">+${lvl.hpGain}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-10">
+          <td class="py-2 px-1 align-top text-center w-[48px]">
             <div class="h-6 flex items-center justify-center text-sky-400 font-bold text-xs">+${rowBab}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-10">
+          <td class="py-2 px-1 align-top text-center w-[48px]">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowFort}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-10">
+          <td class="py-2 px-1 align-top text-center w-[48px]">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowRef}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-10">
+          <td class="py-2 px-1 align-top text-center w-[48px]">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowWill}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-10">
+          <td class="py-2 px-1 align-top text-center w-[48px]">
             <div class="h-6 flex items-center justify-center text-indigo-300 font-bold text-xs">${lvl.skillPts || 4}</div>
           </td>
-          <td class="py-2 px-1.5 font-sans align-top text-center w-[140px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
+          <td class="py-2 px-1 font-sans align-top text-center w-[184px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full max-w-[178px] mx-auto min-w-0">
               ${(abilityBadgeItems.length > 0 || classBonusBadgeItems.length > 0 || pendingClassBonusButtons.length > 0) ? (abilityBadgeItems.join('') + classBonusBadgeItems.join('') + pendingClassBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1.5 font-sans align-top text-center w-[140px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
+          <td class="py-2 px-1 font-sans align-top text-center w-[184px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full max-w-[178px] mx-auto min-w-0">
               ${(regularFeatBadgeItems.length > 0 || regularPromptButtons.length > 0) ? (regularFeatBadgeItems.join('') + regularPromptButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1.5 font-sans align-top text-center w-[140px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
+          <td class="py-2 px-1 font-sans align-top text-center w-[184px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full max-w-[178px] mx-auto min-w-0">
               ${(statBadgeItem || otherBonusBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + otherBonusBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-14 whitespace-nowrap shrink-0">
+          <td class="py-2 px-1 align-top text-center w-[56px] whitespace-nowrap shrink-0">
             <div class="h-6 flex items-center justify-center gap-0.5">
               <button onclick="openQuickFeatPickerForLevel(${idx})" class="text-emerald-400 hover:text-emerald-300 p-0.5 text-xs transition font-bold" title="Add Feat, Ability, Invocation, or Bonus to this level">
                 ➕

@@ -7812,6 +7812,80 @@
       updateFeatModalPinButton();
     }
 
+    // ====================================================
+    // D&D 3.5e RAW Mundane Base Weapon Filter & Resolver (PHB p.102 & p.113)
+    // Feats like Weapon Focus, Improved Critical, and Weapon Proficiency apply ONLY
+    // to base weapon types, never specific magic weapons, relics, or (+1..+4) bow variants.
+    // ====================================================
+    function isBaseMundaneWeaponEntry(w) {
+      if (!w) return false;
+      if (typeof w === 'string') {
+        const s = w.trim();
+        if (!s) return false;
+        if (/\[relic\]/i.test(s)) return false;
+        if (/\(\+\d+\)/.test(s)) return false;
+        if (/^\+\d+/.test(s)) return false;
+        if (/^(bow of |chain of |chromatic rod|crystal echoblade|cudgel that never|axe of |mace of |sword of |staff of |rod of |dagger of )/i.test(s)) {
+          return false;
+        }
+        return true;
+      }
+      const name = String(w.name || '').trim();
+      if (!name) return false;
+      if (/\[relic\]/i.test(name)) return false;
+      if (w.isRelic || w.relic) return false;
+      if (/\(\+\d+\)/.test(name)) return false;
+      if (/^\+\d+/.test(name)) return false;
+      if (w.enhancementBonus && Number(w.enhancementBonus) > 0) return false;
+      if (w.isMagic === true || w.magic === true) return false;
+      if (w.baseItemId && String(w.baseItemId).trim() !== '' && w.baseItemId !== w.id) return false;
+      const cat = String(w.category || '').toLowerCase().trim();
+      const subcat = String(w.subcategory || '').toLowerCase().trim();
+      if (cat === 'specific weapon' || cat === 'specific magic weapon' || cat === 'wondrous' || cat === 'relic' || cat === 'artifact') return false;
+      if (subcat === 'specific weapon' || subcat === 'relic' || subcat === 'artifact') return false;
+      if (typeof w.cost === 'number' && w.cost >= 1000) return false;
+      return true;
+    }
+    window.isBaseMundaneWeaponEntry = isBaseMundaneWeaponEntry;
+
+    function resolveBaseWeaponName(w) {
+      if (!w) return '';
+      if (typeof w === 'string') w = { name: w };
+      if (w.baseItemId && window.SrdCompendium && typeof window.SrdCompendium.getById === 'function') {
+        const b = window.SrdCompendium.getById(w.baseItemId);
+        if (b && b.name) return b.name;
+      }
+      if (w.baseItemId && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        const b = masterDb.find(i => i.id === w.baseItemId);
+        if (b && b.name) return b.name;
+      }
+      if (w.baseType) return w.baseType;
+      if (w.baseWeapon) return w.baseWeapon;
+
+      let s = String(w.name || '').trim();
+      if (!s) return '';
+      s = s.replace(/\[.*?\]/g, '').trim();
+      s = s.replace(/\(.*?\)/g, '').trim();
+      s = s.replace(/^[↳\s*•\-]+/, '').trim();
+      s = s.replace(/^\+\d+\s+/, '').trim();
+      s = s.replace(/\s+\+\d+$/, '').trim();
+
+      const knownBases = (typeof getSrdWeaponNames === 'function') ? getSrdWeaponNames() : [];
+      if (knownBases.length > 0) {
+        const lowerS = s.toLowerCase();
+        const exact = knownBases.find(b => b.toLowerCase() === lowerS);
+        if (exact) return exact;
+        const sortedBases = [...knownBases].sort((a, b) => b.length - a.length);
+        for (const base of sortedBases) {
+          const lowerBase = base.toLowerCase();
+          if (lowerS.endsWith(lowerBase) || lowerS === lowerBase) return base;
+        }
+      }
+      s = s.replace(/^(masterwork|mwk|adamantine|mithral|cold iron|alchemical silver|silver|darkwood|keen|flaming|frost|shock|ghost touch|holy|unholy|vicious|speed|defending|anarchic|axiomatic|disrupting|wounding|bane|throwing|returning|merciful|spell storing)\s+/i, '').trim();
+      return s;
+    }
+    window.resolveBaseWeaponName = resolveBaseWeaponName;
+
     // D&D 3.5e Standard SRD Weapons Dynamic Helper (Sourced from window.BUNDLED_SRD_CORE_CATALOG & masterDb per Rule #5)
     function getSrdWeaponNames() {
       const set = new Set();
@@ -7819,15 +7893,22 @@
         ? window.SrdCompendium.getByType('Weapon')
         : (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG) ? window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Weapon') : []);
       weapons.forEach(w => {
-        if (w && w.name) set.add(w.name);
+        if (w && isBaseMundaneWeaponEntry(w)) {
+          const clean = String(w.name || '').replace(/^[↳\s*•\-]+/, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+          if (clean) set.add(clean);
+        }
       });
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-        masterDb.filter(i => i && i.type === 'Weapon').forEach(w => {
-          if (w.name) set.add(w.name);
+        masterDb.filter(i => i && (i.type === 'Weapon' || i.category === 'Weapon')).forEach(w => {
+          if (w && isBaseMundaneWeaponEntry(w)) {
+            const clean = String(w.name || '').replace(/^[↳\s*•\-]+/, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').trim();
+            if (clean) set.add(clean);
+          }
         });
       }
-      return Array.from(set).sort();
+      return Array.from(set).sort((a, b) => a.localeCompare(b));
     }
+    window.getSrdWeaponNames = getSrdWeaponNames;
 
     const DND35_SPELL_SCHOOLS = [
       "Abjuration", "Conjuration", "Divination", "Enchantment", 
@@ -7854,7 +7935,7 @@
       const lower = t.toLowerCase();
 
       // Check weapon feats
-      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency)/i.test(lower);
+      const isWeaponFeat = /^(weapon focus|greater weapon focus|weapon specialization|greater weapon specialization|improved critical|exotic weapon proficiency|martial weapon proficiency)/i.test(lower);
       // Check spell focus
       const isSpellFocus = /^(spell focus|greater spell focus)/i.test(lower);
       // Check skill focus
@@ -7888,8 +7969,8 @@
         defOpt.textContent = '-- Select a Weapon --';
         select.appendChild(defOpt);
 
-        // Group 1: Character's inventory & equipped weapons
-        const charWeps = (character.weapons || []).map(w => (w.name || '').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim()).filter(Boolean);
+        // Group 1: Character's inventory & equipped weapons (resolved to clean base weapon type names)
+        const charWeps = (character.weapons || []).map(w => resolveBaseWeaponName(w)).filter(Boolean);
         const uniqueCharWeps = [...new Set(charWeps)];
         if (uniqueCharWeps.length > 0) {
           const grpChar = document.createElement('optgroup');
