@@ -6396,6 +6396,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22, character.spellcasting.slots);
       }
 
+      if (typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
+        window.pruneOrphanedLevelAbilitiesAndFeats(character, last);
+      }
       recalculateCharacterClassSummary();
       saveStateToStorage(true);
       renderAll();
@@ -6444,6 +6447,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       }
 
       sanitizeLevelProgressionActiveGaps();
+      if (prog[idx] && prog[idx].active === false && typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
+        window.pruneOrphanedLevelAbilitiesAndFeats(character, prog[idx]);
+      }
       recalculateCharacterClassSummary();
       saveStateToStorage(true);
       renderLevelProgression();
@@ -6460,10 +6466,19 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const row = prog[idx];
       if (!confirm(`Are you sure you want to delete Level ${row.level} (${row.className})?`)) return;
 
+      // Revert stat increase if recorded on an active level row
+      const statToRevert = getLevelStatIncrease(row);
+      if (statToRevert && row.active !== false && character.baseAbilities && character.baseAbilities[statToRevert] !== undefined) {
+        character.baseAbilities[statToRevert] = Math.max(1, Number(character.baseAbilities[statToRevert]) - 1);
+      }
+
       prog.splice(idx, 1);
       // Re-number levels
       prog.forEach((p, i) => { p.level = i + 1; });
 
+      if (typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
+        window.pruneOrphanedLevelAbilitiesAndFeats(character, row);
+      }
       recalculateCharacterClassSummary();
       saveStateToStorage(true);
       renderLevelProgression();
@@ -7292,6 +7307,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const newHp = (!isNaN(manualHp) && manualHp > 0) ? manualHp : fallbackHp;
       const hpDiff = newHp - oldHp;
 
+      const oldClass = prog[idx].className || '';
+      const oldSpecialAbilities = Array.isArray(prog[idx].specialAbilities) ? [...prog[idx].specialAbilities] : [];
+
       prog[idx].className = newClass;
       prog[idx].hd = `d${def.hd}`;
       prog[idx].hpGain = newHp;
@@ -7311,8 +7329,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         character.hp.current = Math.min(character.hp.max, Math.max(1, (Number(character.hp.current) || 1) + hpDiff));
       }
 
-      // Update features if auto is checked
-      if (autoChk && autoChk.checked) {
+      // Update features if auto is checked or if class changed
+      if ((autoChk && autoChk.checked) || oldClass !== newClass) {
         let classLvlCount = 0;
         for (let i = 0; i <= idx; i++) {
           if (prog[i].className === newClass) classLvlCount++;
@@ -7352,6 +7370,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       }
 
       closeChangeLevelClassModal();
+      if (typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
+        window.pruneOrphanedLevelAbilitiesAndFeats(character, { specialAbilities: oldSpecialAbilities });
+      }
       recalculateCharacterClassSummary();
       saveStateToStorage(true);
       renderLevelProgression();
@@ -7493,6 +7514,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (!character) {
         container.innerHTML = '';
         return;
+      }
+      if (typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
+        window.pruneOrphanedLevelAbilitiesAndFeats(character);
       }
 
       // Collect all feats

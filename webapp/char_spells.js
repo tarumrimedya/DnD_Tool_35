@@ -7721,9 +7721,176 @@
       });
     }
 
+    function pruneOrphanedLevelAbilitiesAndFeats(char, removedRowItems = null) {
+      if (!char || !Array.isArray(char.levelProgression) || char.levelProgression.length === 0) return false;
+      const stripTag = (str) => String(str || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+      const activeRows = char.levelProgression.filter(p => p && p.active !== false);
+
+      // 1. Build active class counts (lowercased class name -> active level count)
+      const activeClassCounts = {};
+      activeRows.forEach(r => {
+        const cn = String(r.className || '').trim().toLowerCase();
+        if (cn) activeClassCounts[cn] = (activeClassCounts[cn] || 0) + 1;
+      });
+
+      // 2. Collect all feat/ability names present on active levelProgression rows
+      const activeRowEntryNames = new Set();
+      activeRows.forEach(r => {
+        [...(r.feats || []), ...(r.specialAbilities || []), ...(r.classFeatures || [])].forEach(item => {
+          const n = stripTag(typeof item === 'string' ? item : (item?.name || '')).toLowerCase();
+          if (n) {
+            activeRowEntryNames.add(n);
+            activeRowEntryNames.add(n.replace(/\s*\+\d+d\d+.*$/, '').trim());
+          }
+        });
+      });
+
+      // Also collect auto class features granted by active classes at or below their active level count
+      const allDefs = (typeof getAvailableClassDefs === 'function')
+        ? getAvailableClassDefs()
+        : ((typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) ? RuleEngine.DND35_CLASS_DEFS : {});
+      if (allDefs && typeof allDefs === 'object') {
+        Object.entries(allDefs).forEach(([cName, cDef]) => {
+          const activeCnt = activeClassCounts[String(cName).toLowerCase()] || 0;
+          if (activeCnt > 0 && cDef && cDef.features) {
+            for (let lvl = 1; lvl <= activeCnt; lvl++) {
+              const fList = cDef.features[lvl] || cDef.features[String(lvl)] || [];
+              if (Array.isArray(fList)) {
+                fList.forEach(f => {
+                  const fn = stripTag(typeof f === 'string' ? f : (f?.name || '')).toLowerCase();
+                  if (fn) {
+                    activeRowEntryNames.add(fn);
+                    activeRowEntryNames.add(fn.replace(/\s*\+\d+d\d+.*$/, '').trim());
+                  }
+                });
+              }
+            }
+          }
+        });
+      }
+
+      // 3. Collect explicit removed items from a deleted/deactivated/changed level row
+      const explicitRemovedSet = new Set();
+      if (removedRowItems) {
+        [...(removedRowItems.feats || []), ...(removedRowItems.specialAbilities || []), ...(removedRowItems.classFeatures || [])].forEach(item => {
+          const n = stripTag(typeof item === 'string' ? item : (item?.name || '')).toLowerCase();
+          if (n && !activeRowEntryNames.has(n)) {
+            explicitRemovedSet.add(n);
+            explicitRemovedSet.add(n.replace(/\s*\+\d+d\d+.*$/, '').trim());
+          }
+        });
+      }
+
+      const sneakClasses = ['rogue', 'ninja', 'assassin', 'scout', 'arcane trickster', 'blackguard', 'nightsong enfiltrator', 'unseen seer', 'spellwarp sniper', 'daggerspell mage', 'daggerspell shaper', 'shadowbane stalker'];
+      const hasActiveSneakClass = Object.keys(activeClassCounts).some(cn => {
+        if (cn.includes('adventurer')) return false;
+        return sneakClasses.some(sc => cn.includes(sc));
+      });
+
+      const isOrphanedClassSource = (srcStr, benefitStr) => {
+        const s = String(srcStr || '').trim();
+        const b = String(benefitStr || '').trim();
+        const srcMatch = s.match(/^([A-Za-z][A-Za-z\s'()-]+?)\s+Level\s+(\d+)$/i);
+        if (srcMatch) {
+          const cls = srcMatch[1].trim().toLowerCase();
+          const reqLvl = parseInt(srcMatch[2], 10) || 1;
+          if (cls !== 'character' && cls !== 'level' && !cls.includes('campaign') && !cls.includes('boon')) {
+            if ((activeClassCounts[cls] || 0) < reqLvl) return true;
+          }
+        }
+        const benMatch = b.match(/Class feature automatically gained at\s+(.+?)\s+Level\s+(\d+)/i);
+        if (benMatch) {
+          const cls = benMatch[1].trim().toLowerCase();
+          const reqLvl = parseInt(benMatch[2], 10) || 1;
+          if ((activeClassCounts[cls] || 0) < reqLvl) return true;
+        }
+        return false;
+      };
+
+      let changed = false;
+
+      if (Array.isArray(char.specialAbilities)) {
+        const beforeLen = char.specialAbilities.length;
+        char.specialAbilities = char.specialAbilities.filter(a => {
+          if (!a) return false;
+          const rawName = typeof a === 'string' ? a : (a.name || '');
+          const clean = stripTag(rawName).toLowerCase();
+          const baseClean = clean.replace(/\s*\+\d+d\d+.*$/, '').trim();
+          const src = typeof a === 'object' ? (a.source || '') : '';
+          const cat = typeof a === 'object' ? (a.category || a.type || '') : '';
+          const ben = typeof a === 'object' ? (a.benefit || a.desc || '') : '';
+
+          if (explicitRemovedSet.has(clean) || (baseClean && explicitRemovedSet.has(baseClean))) return false;
+          if (isOrphanedClassSource(src, ben) && !activeRowEntryNames.has(clean)) return false;
+          if ((cat === 'Class Feature' || /^Class feature (?:automatically )?gained/i.test(ben)) && !activeRowEntryNames.has(clean) && !activeRowEntryNames.has(baseClean)) {
+            return false;
+          }
+          if ((clean === 'sneak attack' || baseClean === 'sneak attack' || clean === 'trapfinding') && !hasActiveSneakClass && !activeRowEntryNames.has(clean) && !activeRowEntryNames.has(baseClean)) {
+            const isBoonOrRacial = /boon|grant|racial|race/i.test(cat) || /boon|grant|racial|race/i.test(src);
+            if (!isBoonOrRacial) return false;
+          }
+          return true;
+        });
+        if (char.specialAbilities.length !== beforeLen) changed = true;
+      }
+
+      if (Array.isArray(char.feats)) {
+        const beforeLen = char.feats.length;
+        char.feats = char.feats.filter(f => {
+          if (!f) return false;
+          const rawName = typeof f === 'string' ? f : (f.name || '');
+          const clean = stripTag(rawName).toLowerCase();
+          const baseClean = clean.replace(/\s*\+\d+d\d+.*$/, '').trim();
+          const src = typeof f === 'object' ? (f.source || '') : '';
+          const cat = typeof f === 'object' ? (f.category || f.type || '') : '';
+          const ben = typeof f === 'object' ? (f.benefit || f.desc || '') : '';
+
+          if (explicitRemovedSet.has(clean) || (baseClean && explicitRemovedSet.has(baseClean))) return false;
+          if (isOrphanedClassSource(src, ben) && !activeRowEntryNames.has(clean)) return false;
+          if ((clean === 'sneak attack' || baseClean === 'sneak attack') && !hasActiveSneakClass && !activeRowEntryNames.has(clean) && !activeRowEntryNames.has(baseClean)) {
+            const isBoonOrRacial = /boon|grant|racial|race/i.test(cat) || /boon|grant|racial|race/i.test(src);
+            if (!isBoonOrRacial) return false;
+          }
+          return true;
+        });
+        if (char.feats.length !== beforeLen) changed = true;
+      }
+
+      // Also clean up orphaned Sneak Attack from activeModifiers & combatPins if character no longer has Sneak Attack
+      if (!hasActiveSneakClass && !activeRowEntryNames.has('sneak attack')) {
+        const stillHasSa = [...(char.specialAbilities || []), ...(char.feats || [])].some(x => {
+          const n = stripTag(typeof x === 'string' ? x : (x?.name || '')).toLowerCase();
+          return n.includes('sneak attack');
+        });
+        if (!stillHasSa) {
+          if (Array.isArray(char.activeModifiers)) {
+            const prevModLen = char.activeModifiers.length;
+            char.activeModifiers = char.activeModifiers.filter(m => !m || !String(m.name || '').toLowerCase().includes('sneak attack'));
+            if (char.activeModifiers.length !== prevModLen) changed = true;
+          }
+          if (char.combatPins && typeof char.combatPins === 'object') {
+            Object.keys(char.combatPins).forEach(drawerKey => {
+              if (Array.isArray(char.combatPins[drawerKey])) {
+                const prevPinLen = char.combatPins[drawerKey].length;
+                char.combatPins[drawerKey] = char.combatPins[drawerKey].filter(p => !p || !String(p.name || '').toLowerCase().includes('sneak attack'));
+                if (char.combatPins[drawerKey].length !== prevPinLen) changed = true;
+              }
+            });
+          }
+        }
+      }
+
+      if (changed && typeof saveStateToStorage === 'function') {
+        saveStateToStorage(false);
+      }
+      return changed;
+    }
+    window.pruneOrphanedLevelAbilitiesAndFeats = pruneOrphanedLevelAbilitiesAndFeats;
+
     function recalculateCharacterClassSummary() {
       if (!character) return;
       sanitizeLevelProgressionActiveGaps();
+      pruneOrphanedLevelAbilitiesAndFeats(character);
       const prog = character.levelProgression || [];
 
       // D&D 3.5e RAW: 1. Seviye her zaman sınıfının tam (maksimum) can zarını alır (PHB s. 22)

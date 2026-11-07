@@ -6161,20 +6161,33 @@
 
     function characterHasSneakAttack(char) {
       if (!char) return false;
+      if (typeof window !== 'undefined' && typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
+        window.pruneOrphanedLevelAbilitiesAndFeats(char);
+      }
       if (characterHasFeat(char, 'sneak attack') || characterHasSpecialAbility(char, 'sneak attack')) return true;
+      const isSneakClassName = (nameStr) => {
+        const n = String(nameStr || '').toLowerCase();
+        if (n.includes('adventurer')) return false;
+        return n.includes('rogue') || n.includes('ninja') || n.includes('assassin') || n.includes('scout')
+          || n.includes('arcane trickster') || n.includes('blackguard') || n.includes('nightsong enfiltrator')
+          || n.includes('unseen seer') || n.includes('spellwarp sniper') || n.includes('daggerspell');
+      };
+      if (Array.isArray(char.levelProgression) && char.levelProgression.length > 0) {
+        return char.levelProgression.some(p => p && p.active !== false && isSneakClassName(p.className));
+      }
       const classes = typeof char.classes === 'string' ? char.classes.toLowerCase() : '';
-      if (classes.includes('rogue') || classes.includes('ninja') || classes.includes('assassin') || classes.includes('scout')) return true;
+      if (isSneakClassName(classes)) return true;
       if (Array.isArray(char.classes)) {
-        if (char.classes.some(c => {
-          const n = (typeof c === 'string' ? c : (c.name || '')).toLowerCase();
-          return n.includes('rogue') || n.includes('ninja') || n.includes('assassin') || n.includes('scout');
-        })) return true;
+        if (char.classes.some(c => isSneakClassName(typeof c === 'string' ? c : (c.name || '')))) return true;
       }
       return false;
     }
 
     function ensureActiveModifiersPool() {
       if (!character) return;
+      if (typeof window !== 'undefined' && typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
+        window.pruneOrphanedLevelAbilitiesAndFeats(character);
+      }
       if (!Array.isArray(character.activeModifiers)) {
         character.activeModifiers = [];
       }
@@ -7281,10 +7294,7 @@
         const n = (typeof s === 'string' ? s : s.name || '').toLowerCase();
         return n.includes('enhance arrow') || (Array.isArray(s.tags) && s.tags.includes('enhance arrow'));
       });
-      const hasSneak = specials.some(s => {
-        const n = (typeof s === 'string' ? s : s.name || '').toLowerCase();
-        return n.includes('sneak attack') || (Array.isArray(s.tags) && s.tags.includes('sneak attack'));
-      });
+      const hasSneak = characterHasSneakAttack(character);
 
       const knownSpells = character.spellcasting?.knownSpells || [];
       const hasTrueStrike = knownSpells.some(s => {
