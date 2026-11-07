@@ -2157,13 +2157,69 @@
       const b = String(benefitStr || '').trim();
       if (!q && !b) return null;
 
-      const isExplicitBoon = categoryHint === 'DM Boon' || /\b(dm\s*boon|boon|grant)\b/i.test(q) || /\bskill\s*:/i.test(q) || /^[+-]\d+\s+[a-z]/i.test(q);
+      const isExplicitBoon = categoryHint === 'DM Boon'
+        || /\b(dm\s*boon|boon|grant)\b/i.test(q)
+        || /\bskill\s*:/i.test(q)
+        || /^[+-]\d+\s+[a-z]/i.test(q)
+        || /([+-]?\d+)\s*(?:\/|\bper\b|\bevery\b)\s*(\d+)?\s*(?:lvl|level|cl)s?\b/i.test(`${q} ${b}`);
       if (!isExplicitBoon) return null;
 
       const combined = `${q} ${b}`;
+
+      // Detect level-scaling pattern (e.g. "+2 +1/4lvl", "+2 + 1 per 4 levels", "+1/2 lvl")
+      let baseVal = null;
+      let scaleNumer = 0;
+      let scaleDenom = 0;
+      const dualScaleMatch = combined.match(/([+-]?\d+)\s*(?:[+,]\s*|\s+)([+-]?\d+)\s*(?:\/|\bper\b|\bevery\b)\s*(\d+)?\s*(?:lvl|level|cl)s?\b/i);
+      const singleScaleMatch = !dualScaleMatch
+        ? combined.match(/([+-]?\d+)\s*(?:\/|\bper\b|\bevery\b)\s*(\d+)?\s*(?:lvl|level|cl)s?\b/i)
+        : null;
+
+      if (dualScaleMatch) {
+        baseVal = parseInt(dualScaleMatch[1], 10) || 0;
+        scaleNumer = parseInt(dualScaleMatch[2], 10) || 1;
+        scaleDenom = Math.max(1, parseInt(dualScaleMatch[3], 10) || 1);
+      } else if (singleScaleMatch) {
+        const beforePart = combined.slice(0, singleScaleMatch.index);
+        const leadingNum = beforePart.match(/([+-]?\d+)\s*$/);
+        if (leadingNum) {
+          baseVal = parseInt(leadingNum[1], 10) || 0;
+        } else {
+          baseVal = 0;
+        }
+        scaleNumer = parseInt(singleScaleMatch[1], 10) || 1;
+        scaleDenom = Math.max(1, parseInt(singleScaleMatch[2], 10) || 1);
+      }
+
       const numMatch = q.match(/([+-]?\d+)/) || b.match(/([+-]?\d+)/);
-      const val = numMatch ? (parseInt(numMatch[1], 10) || 4) : 4;
-      const signStr = val >= 0 ? `+${val}` : `${val}`;
+      const val = baseVal !== null ? baseVal : (numMatch ? (parseInt(numMatch[1], 10) || 4) : 4);
+      const hasScaling = scaleNumer !== 0 && scaleDenom > 0;
+      const scaleTermExpr = hasScaling
+        ? (scaleDenom === 1
+            ? (Math.abs(scaleNumer) === 1 ? '@level' : `${Math.abs(scaleNumer)} * @level`)
+            : (Math.abs(scaleNumer) === 1 ? `floor(@level / ${scaleDenom})` : `${Math.abs(scaleNumer)} * floor(@level / ${scaleDenom})`))
+        : '';
+      const scaleSignOp = scaleNumer < 0 ? '-' : '+';
+      const formulaStr = hasScaling
+        ? (val !== 0 ? `${val} ${scaleSignOp} ${scaleTermExpr}` : (scaleNumer < 0 ? `-${scaleTermExpr}` : scaleTermExpr))
+        : undefined;
+      const scaleLabelPart = hasScaling
+        ? `${scaleNumer >= 0 ? '+' : ''}${scaleNumer}/${scaleDenom > 1 ? scaleDenom + ' ' : ''}Lvl`
+        : '';
+      const signStr = hasScaling
+        ? (val !== 0 ? `${val >= 0 ? '+' + val : val} (${scaleLabelPart})` : `${scaleLabelPart}`)
+        : (val >= 0 ? `+${val}` : `${val}`);
+      const benefitDesc = hasScaling
+        ? (val !== 0
+            ? `${val >= 0 ? '+' + val : val} base bonus, plus ${scaleNumer >= 0 ? '+' + scaleNumer : scaleNumer} per ${scaleDenom > 1 ? scaleDenom + ' character levels' : 'character level'}`
+            : `${scaleNumer >= 0 ? '+' + scaleNumer : scaleNumer} per ${scaleDenom > 1 ? scaleDenom + ' character levels' : 'character level'}`)
+        : signStr;
+
+      const buildModifierObj = (targetKey, modType = 'untyped') => {
+        const mod = { target: targetKey, value: val, type: modType, condition: null };
+        if (formulaStr) mod.formula = formulaStr;
+        return mod;
+      };
 
       const skillList = [
         { slug: 'appraise', label: 'Appraise', rx: /\bappraise\b/i },
@@ -2204,15 +2260,15 @@
         if (sk.rx.test(combined)) {
           return {
             schemaVersion: 2,
-            id: `boon_skill_${sk.slug}_${Math.abs(val)}`,
+            id: `boon_skill_${sk.slug}_${Math.abs(val)}${hasScaling ? '_scale_' + scaleDenom : ''}`,
             name: `DM Boon: ${sk.label} (${signStr})`,
             type: 'Feat',
             category: 'DM Boon',
             prereq: '-',
             source: 'DM Boon / Campaign Grant',
-            benefit: b || `Grants a ${signStr} bonus on ${sk.label} skill checks (DM Boon).`,
-            description: b || `Grants a ${signStr} bonus on ${sk.label} skill checks (DM Boon).`,
-            modifiers: [{ target: `skill.${sk.slug}`, value: val, type: 'untyped', condition: null }],
+            benefit: b || `Grants ${benefitDesc} on ${sk.label} skill checks (DM Boon).`,
+            description: b || `Grants ${benefitDesc} on ${sk.label} skill checks (DM Boon).`,
+            modifiers: [buildModifierObj(`skill.${sk.slug}`, 'untyped')],
             damageParts: []
           };
         }
@@ -2230,11 +2286,12 @@
         { target: 'save.will', label: 'Will Save', rx: /\bwill(\s*save)?\b/i },
         { target: 'save.all', label: 'All Saving Throws', rx: /\ball\s*saves\b/i },
         { target: 'initiative', label: 'Initiative', rx: /\binit(iative)?\b/i },
-        { target: 'ac.natural', label: 'Natural Armor AC', rx: /\bnatural\s*armor\b/i },
-        { target: 'ac.deflection', label: 'Deflection AC', rx: /\bdeflection\b/i },
+        { target: 'ac.natural', label: 'Natural Armor AC', rx: /\b(natural\s*armor(\s*ac)?|nat\.?\s*ac|nat\.?\s*armor)\b/i },
+        { target: 'ac.deflection', label: 'Deflection AC', rx: /\b(deflection(\s*ac)?|defl\.?\s*ac)\b/i },
+        { target: 'ac.dodge', label: 'Dodge AC', rx: /\bdodge(\s*ac)?\b/i },
         { target: 'ac', label: 'Armor Class (AC)', rx: /\b(armor\s*class|ac)\b/i },
-        { target: 'attack.all', label: 'Attack Rolls', rx: /\battack(\s*rolls?)?\b/i },
-        { target: 'damage.all', label: 'Weapon Damage', rx: /\bdamage(\s*rolls?)?\b/i },
+        { target: 'attack.all', label: 'Attack Rolls', rx: /\b(attack(\s*rolls?)?|atk)\b/i },
+        { target: 'damage.all', label: 'Weapon Damage', rx: /\b(damage(\s*rolls?)?|dmg)\b/i },
         { target: 'hp', label: 'Hit Points (HP)', rx: /\b(hit\s*points|hp)\b/i },
         { target: 'casterLevel', label: 'Caster Level (CL)', rx: /\b(caster\s*level|cl)\b/i }
       ];
@@ -2242,15 +2299,15 @@
         if (st.rx.test(combined) && !/=/.test(q)) {
           return {
             schemaVersion: 2,
-            id: `boon_${st.target.replace(/\./g, '_')}_${Math.abs(val)}`,
+            id: `boon_${st.target.replace(/\./g, '_')}_${Math.abs(val)}${hasScaling ? '_scale_' + scaleDenom : ''}`,
             name: `DM Boon: ${st.label} (${signStr})`,
             type: 'Feat',
             category: 'DM Boon',
             prereq: '-',
             source: 'DM Boon / Campaign Grant',
-            benefit: b || `Grants a ${signStr} bonus to ${st.label} (DM Boon).`,
-            description: b || `Grants a ${signStr} bonus to ${st.label} (DM Boon).`,
-            modifiers: [{ target: st.target, value: val, type: 'untyped', condition: null }],
+            benefit: b || `Grants ${benefitDesc} to ${st.label} (DM Boon).`,
+            description: b || `Grants ${benefitDesc} to ${st.label} (DM Boon).`,
+            modifiers: [buildModifierObj(st.target, 'untyped')],
             damageParts: []
           };
         }
@@ -2365,7 +2422,7 @@
         renderQuickFeatSearchResults();
         const refreshedStatusEl = document.getElementById('quick-feat-ai-status') || statusEl;
         if (refreshedStatusEl) {
-          const modSummary = (instantBoon.modifiers || []).map(m => `${m.target} ${m.value >= 0 ? '+' : ''}${m.value}`).join(', ');
+          const modSummary = (instantBoon.modifiers || []).map(m => m.formula ? `${m.target} = ${m.formula}` : `${m.target} ${m.value >= 0 ? '+' : ''}${m.value}`).join(', ');
           refreshedStatusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
           refreshedStatusEl.innerHTML = `<span>🌟</span> Standardized &amp; Synthesized Canonical V2 DM Boon: <b>${instantBoon.name}</b> <span class="font-mono text-amber-300">[${modSummary}]</span>`;
         }
@@ -4018,6 +4075,21 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           return { item, pEval };
         });
 
+        const liveSynthLvlBoon = query ? synthesizeDmBoonFromQuery(query, '', slot.category || '') : null;
+        if (liveSynthLvlBoon && !evaluatedItems.some(e => (e.item.name || '').toLowerCase() === liveSynthLvlBoon.name.toLowerCase())) {
+          evaluatedItems.unshift({
+            item: liveSynthLvlBoon,
+            pEval: {
+              allMet: true,
+              hasPrereqs: false,
+              rawPrereq: '-',
+              checks: [],
+              isAlreadyKnownFromClass: false,
+              isAlreadyTaken: false
+            }
+          });
+        }
+
         // Counts for filter pills (excluding already known feats from class from the Qualified count)
         const countAll = evaluatedItems.length;
         const countQualified = evaluatedItems.filter(e => e.pEval.allMet && !e.pEval.isAlreadyKnownFromClass).length;
@@ -4230,7 +4302,17 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         }
         const catalog = getCombinedFeatCatalog();
         const baseName = featName.replace(/\(.*?\)/g, '').trim();
-        const found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase()) || catalog.find(f => f.name.toLowerCase() === baseName.toLowerCase());
+        let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase()) || catalog.find(f => f.name.toLowerCase() === baseName.toLowerCase());
+        if (!found) {
+          const synthSlotMatch = synthesizeDmBoonFromQuery(featName, '', levelUpModalFeatSlots[idx]?.category || '');
+          if (synthSlotMatch) {
+            found = synthSlotMatch;
+            featName = synthSlotMatch.name;
+            if (Array.isArray(masterDb) && !masterDb.some(m => (m.name || '').toLowerCase().trim() === featName.toLowerCase().trim())) {
+              masterDb.push({ ...synthSlotMatch, schemaVersion: 2 });
+            }
+          }
+        }
 
         levelUpModalFeatSlots[idx].name = featName;
         levelUpModalFeatSlots[idx].benefit = found ? (found.benefit || '') : '';

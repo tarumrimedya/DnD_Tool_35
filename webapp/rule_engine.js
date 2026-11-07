@@ -3290,8 +3290,11 @@ const RuleEngine = {
         ? featObj.modifiers
         : (dbEntry && Array.isArray(dbEntry.modifiers) ? dbEntry.modifiers : []);
 
-      // Auto-hydrate legacy DM Boon entries (e.g. "DM Boon: HP +20", "DM Boon: Ride +4") if saved without V2 modifiers
-      if (featMods.length === 0 && (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))) {
+      // Auto-hydrate legacy DM Boon entries (e.g. "DM Boon: HP +20", "DM Boon: Ride +4", "DM Boon: Natural Armor AC (+2 (+1/4 Lvl))") if saved without V2 modifiers or missing scaling formula
+      const needsScalingFormulaHydration = (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))
+        && /([+-]?\d+)\s*(?:\/|\bper\b|\bevery\b)\s*(\d+)?\s*(?:lvl|level|cl)s?\b/i.test(`${cleanName} ${featObj.benefit || featObj.description || ''}`)
+        && !featMods.some(m => m && m.formula);
+      if ((featMods.length === 0 || needsScalingFormulaHydration) && (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))) {
         if (typeof window !== 'undefined' && typeof window.synthesizeDmBoonFromQuery === 'function') {
           const synth = window.synthesizeDmBoonFromQuery(cleanName, featObj.benefit || featObj.description || '', 'DM Boon');
           if (synth && Array.isArray(synth.modifiers) && synth.modifiers.length > 0) {
