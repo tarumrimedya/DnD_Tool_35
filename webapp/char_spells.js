@@ -7917,6 +7917,142 @@
 
     window.currentFeatTargetConfig = null;
 
+    function renderFeatModalTargetSpotlightResults(filterText = '', currentTarget = '') {
+      const resultsEl = document.getElementById('feat-modal-target-spotlight-results');
+      const badgeContainer = document.getElementById('feat-modal-target-active-badge-container');
+      if (!resultsEl) return;
+
+      const q = String(filterText || '').toLowerCase().trim();
+      const resolveFn = (typeof resolveBaseWeaponName === 'function')
+        ? resolveBaseWeaponName
+        : (window.resolveBaseWeaponName || (w => (w.name || '').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim()));
+      const metaFn = (typeof getWeaponDisplayMeta === 'function')
+        ? getWeaponDisplayMeta
+        : (window.getWeaponDisplayMeta || (() => ''));
+
+      const allWeapons = (typeof getSrdWeaponNames === 'function') ? getSrdWeaponNames() : [];
+      const charWeps = (character.weapons || []).map(w => resolveFn(w)).filter(Boolean);
+      const equippedWeapons = [...new Set(charWeps.filter(cw => allWeapons.some(aw => aw.toLowerCase() === cw.toLowerCase())))];
+      const compendiumWeapons = allWeapons.filter(aw => !equippedWeapons.some(ew => ew.toLowerCase() === aw.toLowerCase()));
+
+      const filteredEquipped = q ? equippedWeapons.filter(w => w.toLowerCase().includes(q)) : equippedWeapons;
+      const filteredCompendium = q ? compendiumWeapons.filter(w => w.toLowerCase().includes(q)) : compendiumWeapons;
+
+      if (badgeContainer) {
+        if (currentTarget) {
+          const meta = metaFn(currentTarget);
+          badgeContainer.innerHTML = `
+            <div class="flex items-center justify-between px-2.5 py-1.5 bg-amber-950/70 border border-amber-600/70 rounded-lg text-xs text-amber-200 shadow-sm">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="text-amber-400 font-bold text-[10px] uppercase tracking-wide">Selected:</span>
+                <span class="font-extrabold text-white truncate">${currentTarget}</span>
+                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-900/80 text-amber-300 font-mono">${meta}</span>` : ''}
+              </div>
+              <button type="button" onclick="window.clearFeatModalTargetSelection()" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
+            </div>
+          `;
+        } else {
+          badgeContainer.innerHTML = `
+            <div class="px-2 py-1 text-[10px] text-amber-400/80 italic flex items-center gap-1">
+              <span>⚠️</span>
+              <span>Please pick a weapon below to apply this feat to.</span>
+            </div>
+          `;
+        }
+      }
+
+      if (filteredEquipped.length === 0 && filteredCompendium.length === 0) {
+        resultsEl.innerHTML = `
+          <div class="p-3 text-center text-slate-400 text-xs">
+            No matching base weapon found for "<strong>${q}</strong>".
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+
+      if (filteredEquipped.length > 0) {
+        html += `
+          <div class="px-2 py-1 text-[9px] font-bold text-amber-300 uppercase tracking-wider flex items-center justify-between bg-slate-900/90 rounded">
+            <span>⚔️ Equipped / Inventory Weapons</span>
+            <span class="text-slate-400 font-mono">${filteredEquipped.length}</span>
+          </div>
+        `;
+        filteredEquipped.forEach(w => {
+          const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
+          const meta = metaFn(w);
+          const safeW = w.replace(/'/g, "\\'");
+          html += `
+            <button type="button" onclick="window.selectFeatModalTargetWeapon('${safeW}')" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent hover:border-amber-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="font-bold text-white text-xs group-hover:text-amber-200 truncate">${w}</span>
+                <span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold shrink-0">Equipped</span>
+                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+              </div>
+              ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-amber-300 font-bold shrink-0">Select ➔</span>'}
+            </button>
+          `;
+        });
+      }
+
+      if (filteredCompendium.length > 0) {
+        html += `
+          <div class="px-2 py-1 text-[9px] font-bold text-purple-300 uppercase tracking-wider flex items-center justify-between bg-slate-900/90 rounded mt-1">
+            <span>📚 All D&D 3.5e Base Weapons</span>
+            <span class="text-slate-400 font-mono">${filteredCompendium.length}</span>
+          </div>
+        `;
+        filteredCompendium.forEach(w => {
+          const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
+          const meta = metaFn(w);
+          const safeW = w.replace(/'/g, "\\'");
+          html += `
+            <button type="button" onclick="window.selectFeatModalTargetWeapon('${safeW}')" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="font-bold text-white text-xs group-hover:text-purple-200 truncate">${w}</span>
+                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+              </div>
+              ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-purple-300 font-bold shrink-0">Select ➔</span>'}
+            </button>
+          `;
+        });
+      }
+
+      resultsEl.innerHTML = html;
+    }
+    window.renderFeatModalTargetSpotlightResults = renderFeatModalTargetSpotlightResults;
+
+    window.selectFeatModalTargetWeapon = function(wName) {
+      const select = document.getElementById('feat-modal-target-select');
+      if (select) {
+        let opt = Array.from(select.options).find(o => o.value.toLowerCase() === (wName || '').toLowerCase());
+        if (!opt && wName) {
+          opt = document.createElement('option');
+          opt.value = wName;
+          opt.textContent = wName;
+          select.appendChild(opt);
+        }
+        select.value = wName || '';
+      }
+      const clearBtn = document.getElementById('feat-modal-target-spotlight-clear-btn');
+      if (clearBtn) clearBtn.classList.toggle('hidden', !wName);
+
+      onFeatTargetSelectChanged();
+
+      const searchInput = document.getElementById('feat-modal-target-spotlight-input');
+      renderFeatModalTargetSpotlightResults(searchInput ? searchInput.value : '', wName);
+    };
+
+    window.clearFeatModalTargetSelection = function() {
+      window.selectFeatModalTargetWeapon('');
+      const searchInput = document.getElementById('feat-modal-target-spotlight-input');
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+    };
+
     function setupFeatTargetSelector(featTitle) {
       const container = document.getElementById('feat-modal-target-container');
       const select = document.getElementById('feat-modal-target-select');
@@ -7959,80 +8095,111 @@
 
       select.innerHTML = '';
 
+      let spotlightWrapper = document.getElementById('feat-modal-target-spotlight-wrapper');
+
       if (isWeaponFeat) {
-        if (titleEl) titleEl.textContent = 'Select Target Weapon';
+        if (titleEl) titleEl.textContent = 'Spotlight: Select Target Weapon';
         if (iconEl) iconEl.textContent = '⚔️';
         if (helpEl) helpEl.textContent = 'Rule Engine automatically applies the feat bonus when wielding this weapon.';
+
+        // Hide legacy select while keeping options populated
+        select.style.display = 'none';
+        select.classList.add('hidden');
 
         const defOpt = document.createElement('option');
         defOpt.value = '';
         defOpt.textContent = '-- Select a Weapon --';
         select.appendChild(defOpt);
 
-        // Group 1: Character's inventory & equipped weapons (resolved to clean base weapon type names)
-        const charWeps = (character.weapons || []).map(w => resolveBaseWeaponName(w)).filter(Boolean);
-        const uniqueCharWeps = [...new Set(charWeps)];
-        if (uniqueCharWeps.length > 0) {
-          const grpChar = document.createElement('optgroup');
-          grpChar.label = '⚔️ Equipped / Inventory Weapons';
-          uniqueCharWeps.forEach(w => {
-            const opt = document.createElement('option');
-            opt.value = w;
-            opt.textContent = `${w} (Equipped)`;
-            if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
-            grpChar.appendChild(opt);
-          });
-          select.appendChild(grpChar);
-        }
-
-        // Group 2: All Standard D&D 3.5e SRD Weapons
-        const grpSrd = document.createElement('optgroup');
-        grpSrd.label = '📚 All D&D 3.5e SRD Weapons';
         getSrdWeaponNames().forEach(w => {
           const opt = document.createElement('option');
           opt.value = w;
           opt.textContent = w;
-          if (!select.value && currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
-          grpSrd.appendChild(opt);
-        });
-        select.appendChild(grpSrd);
-
-      } else if (isSpellFocus) {
-        if (titleEl) titleEl.textContent = 'Select Target Spell School';
-        if (iconEl) iconEl.textContent = '🔮';
-        if (helpEl) helpEl.textContent = 'Increases Saving Throw DC for spells of the selected school.';
-
-        const defOpt = document.createElement('option');
-        defOpt.value = '';
-        defOpt.textContent = '-- Select a Spell School --';
-        select.appendChild(defOpt);
-
-        DND35_SPELL_SCHOOLS.forEach(s => {
-          const opt = document.createElement('option');
-          opt.value = s;
-          opt.textContent = s;
-          if (currentTarget.toLowerCase() === s.toLowerCase()) opt.selected = true;
+          if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
           select.appendChild(opt);
         });
+        select.value = currentTarget;
 
-      } else if (isSkillFocus) {
-        if (titleEl) titleEl.textContent = 'Select Target Skill';
-        if (iconEl) iconEl.textContent = '🎯';
-        if (helpEl) helpEl.textContent = 'Grants a +3 bonus on all checks involving the selected skill.';
+        if (!spotlightWrapper) {
+          spotlightWrapper = document.createElement('div');
+          spotlightWrapper.id = 'feat-modal-target-spotlight-wrapper';
+          spotlightWrapper.className = 'space-y-2 mt-1.5';
+          container.appendChild(spotlightWrapper);
+        }
+        spotlightWrapper.style.display = 'block';
 
-        const defOpt = document.createElement('option');
-        defOpt.value = '';
-        defOpt.textContent = '-- Select a Skill --';
-        select.appendChild(defOpt);
+        spotlightWrapper.innerHTML = `
+          <div class="relative flex items-center">
+            <span class="absolute left-2.5 text-slate-400 text-xs pointer-events-none">🔍</span>
+            <input type="text" id="feat-modal-target-spotlight-input"
+              placeholder="Type weapon name (e.g. Longsword, Greatsword, Scimitar)..."
+              class="w-full bg-slate-950 border border-amber-500/70 focus:border-amber-400 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-400 font-medium transition"
+              autocomplete="off">
+            <button type="button" id="feat-modal-target-spotlight-clear-btn" onclick="window.clearFeatModalTargetSelection()" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold transition cursor-pointer ${currentTarget ? '' : 'hidden'}" title="Clear selection">&times;</button>
+          </div>
+          <div id="feat-modal-target-active-badge-container"></div>
+          <div id="feat-modal-target-spotlight-results" class="max-h-52 overflow-y-auto space-y-1 p-1 bg-slate-950/70 border border-slate-800 rounded-lg custom-scroll text-xs"></div>
+        `;
 
-        const skills = (character.skills || []).map(sk => sk.name).filter(Boolean);
-        skills.forEach(sk => {
-          const opt = document.createElement('option');
-          opt.value = sk;
-          opt.textContent = sk;
-          if (currentTarget.toLowerCase() === sk.toLowerCase()) opt.selected = true;
-          select.appendChild(opt);
-        });
+        const searchInput = document.getElementById('feat-modal-target-spotlight-input');
+        if (searchInput) {
+          searchInput.addEventListener('input', (e) => {
+            renderFeatModalTargetSpotlightResults(e.target.value, select.value);
+          });
+          searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              const firstBtn = document.querySelector('#feat-modal-target-spotlight-results button');
+              if (firstBtn) firstBtn.click();
+            }
+          });
+        }
+
+        renderFeatModalTargetSpotlightResults('', currentTarget);
+
+      } else {
+        // Non-weapon feats (Spell Focus, Skill Focus) use standard select
+        select.style.display = '';
+        select.classList.remove('hidden');
+        if (spotlightWrapper) spotlightWrapper.style.display = 'none';
+
+        if (isSpellFocus) {
+          if (titleEl) titleEl.textContent = 'Select Target Spell School';
+          if (iconEl) iconEl.textContent = '🔮';
+          if (helpEl) helpEl.textContent = 'Increases Saving Throw DC for spells of the selected school.';
+
+          const defOpt = document.createElement('option');
+          defOpt.value = '';
+          defOpt.textContent = '-- Select a Spell School --';
+          select.appendChild(defOpt);
+
+          DND35_SPELL_SCHOOLS.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s;
+            if (currentTarget.toLowerCase() === s.toLowerCase()) opt.selected = true;
+            select.appendChild(opt);
+          });
+
+        } else if (isSkillFocus) {
+          if (titleEl) titleEl.textContent = 'Select Target Skill';
+          if (iconEl) iconEl.textContent = '🎯';
+          if (helpEl) helpEl.textContent = 'Grants a +3 bonus on all checks involving the selected skill.';
+
+          const defOpt = document.createElement('option');
+          defOpt.value = '';
+          defOpt.textContent = '-- Select a Skill --';
+          select.appendChild(defOpt);
+
+          const skills = (character.skills || []).map(sk => sk.name).filter(Boolean);
+          skills.forEach(sk => {
+            const opt = document.createElement('option');
+            opt.value = sk;
+            opt.textContent = sk;
+            if (currentTarget.toLowerCase() === sk.toLowerCase()) opt.selected = true;
+            select.appendChild(opt);
+          });
+        }
       }
 
       container.classList.remove('hidden');

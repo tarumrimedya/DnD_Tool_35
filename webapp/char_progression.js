@@ -503,6 +503,167 @@
       return Array.from(set).sort((a, b) => a.localeCompare(b));
     }
 
+    function getWeaponDisplayMeta(wName) {
+      if (!wName) return '';
+      const lower = String(wName).toLowerCase().trim();
+      let found = null;
+      if (window.SrdCompendium && typeof window.SrdCompendium.getByType === 'function') {
+        const list = window.SrdCompendium.getByType('Weapon') || [];
+        found = list.find(w => w && String(w.name || '').toLowerCase().trim() === lower);
+      }
+      if (!found && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        found = window.BUNDLED_SRD_CORE_CATALOG.find(w => w && w.type === 'Weapon' && String(w.name || '').toLowerCase().trim() === lower);
+      }
+      if (!found && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        found = masterDb.find(w => w && (w.type === 'Weapon' || w.category === 'Weapon') && String(w.name || '').toLowerCase().trim() === lower);
+      }
+      if (!found) return '';
+      const parts = [];
+      if (found.category) parts.push(found.category);
+      const dmg = found.damage || (found.damageParts && found.damageParts[0] && found.damageParts[0].dice);
+      if (dmg) parts.push(dmg);
+      const critR = found.critRange && found.critRange < 20 ? `${found.critRange}-20` : '20';
+      const critM = found.critMult ? `x${found.critMult}` : 'x2';
+      if (found.critRange || found.critMult) parts.push(`${critR}/${critM}`);
+      return parts.join(' • ');
+    }
+    window.getWeaponDisplayMeta = getWeaponDisplayMeta;
+
+    function renderQuickFeatTargetSpotlightResults(filterText = '', isExotic = false, currentTarget = '') {
+      const resultsEl = document.getElementById('quick-feat-target-spotlight-results');
+      const badgeContainer = document.getElementById('quick-feat-target-active-badge-container');
+      if (!resultsEl) return;
+
+      const q = String(filterText || '').toLowerCase().trim();
+      const resolveFn = (typeof resolveBaseWeaponName === 'function')
+        ? resolveBaseWeaponName
+        : (window.resolveBaseWeaponName || (w => (w.name || '').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim()));
+
+      const allWeapons = isExotic ? getAvailableExoticWeapons() : getAvailableTargetWeapons(false);
+      const charWeps = (character.weapons || []).map(w => resolveFn(w)).filter(Boolean);
+      const equippedWeapons = [...new Set(charWeps.filter(cw => allWeapons.some(aw => aw.toLowerCase() === cw.toLowerCase())))];
+      const compendiumWeapons = allWeapons.filter(aw => !equippedWeapons.some(ew => ew.toLowerCase() === aw.toLowerCase()));
+
+      const filteredEquipped = q ? equippedWeapons.filter(w => w.toLowerCase().includes(q)) : equippedWeapons;
+      const filteredCompendium = q ? compendiumWeapons.filter(w => w.toLowerCase().includes(q)) : compendiumWeapons;
+
+      // Render Selected Weapon Badge
+      if (badgeContainer) {
+        if (currentTarget) {
+          const meta = getWeaponDisplayMeta(currentTarget);
+          badgeContainer.innerHTML = `
+            <div class="flex items-center justify-between px-2.5 py-1.5 bg-amber-950/70 border border-amber-600/70 rounded-lg text-xs text-amber-200 shadow-sm">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="text-amber-400 font-bold text-[10px] uppercase tracking-wide">Selected:</span>
+                <span class="font-extrabold text-white truncate">${currentTarget}</span>
+                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-900/80 text-amber-300 font-mono">${meta}</span>` : ''}
+              </div>
+              <button type="button" onclick="window.clearQuickFeatTargetSelection()" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
+            </div>
+          `;
+        } else {
+          badgeContainer.innerHTML = `
+            <div class="px-2 py-1 text-[10px] text-amber-400/80 italic flex items-center gap-1">
+              <span>⚠️</span>
+              <span>Please pick a weapon below to apply this feat to.</span>
+            </div>
+          `;
+        }
+      }
+
+      if (filteredEquipped.length === 0 && filteredCompendium.length === 0) {
+        resultsEl.innerHTML = `
+          <div class="p-3 text-center text-slate-400 text-xs">
+            No matching base weapon found for "<strong>${q}</strong>".
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+
+      if (filteredEquipped.length > 0) {
+        html += `
+          <div class="px-2 py-1 text-[9px] font-bold text-amber-300 uppercase tracking-wider flex items-center justify-between bg-slate-900/90 rounded">
+            <span>⚔️ Equipped / Inventory Weapons</span>
+            <span class="text-slate-400 font-mono">${filteredEquipped.length}</span>
+          </div>
+        `;
+        filteredEquipped.forEach(w => {
+          const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
+          const meta = getWeaponDisplayMeta(w);
+          const safeW = w.replace(/'/g, "\\'");
+          html += `
+            <button type="button" onclick="window.selectQuickFeatTargetWeapon('${safeW}')" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent hover:border-amber-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="font-bold text-white text-xs group-hover:text-amber-200 truncate">${w}</span>
+                <span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold shrink-0">Equipped</span>
+                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+              </div>
+              ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-amber-300 font-bold shrink-0">Select ➔</span>'}
+            </button>
+          `;
+        });
+      }
+
+      if (filteredCompendium.length > 0) {
+        html += `
+          <div class="px-2 py-1 text-[9px] font-bold text-purple-300 uppercase tracking-wider flex items-center justify-between bg-slate-900/90 rounded mt-1">
+            <span>${isExotic ? '🗡️ D&D 3.5e Exotic Weapon Compendium' : '📚 All D&D 3.5e Base Weapons'}</span>
+            <span class="text-slate-400 font-mono">${filteredCompendium.length}</span>
+          </div>
+        `;
+        filteredCompendium.forEach(w => {
+          const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
+          const meta = getWeaponDisplayMeta(w);
+          const safeW = w.replace(/'/g, "\\'");
+          html += `
+            <button type="button" onclick="window.selectQuickFeatTargetWeapon('${safeW}')" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+              <div class="flex items-center gap-1.5 min-w-0">
+                <span class="font-bold text-white text-xs group-hover:text-purple-200 truncate">${w}</span>
+                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+              </div>
+              ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-purple-300 font-bold shrink-0">Select ➔</span>'}
+            </button>
+          `;
+        });
+      }
+
+      resultsEl.innerHTML = html;
+    }
+    window.renderQuickFeatTargetSpotlightResults = renderQuickFeatTargetSpotlightResults;
+
+    window.selectQuickFeatTargetWeapon = function(wName) {
+      const select = document.getElementById('quick-feat-target-select');
+      if (select) {
+        let opt = Array.from(select.options).find(o => o.value.toLowerCase() === (wName || '').toLowerCase());
+        if (!opt && wName) {
+          opt = document.createElement('option');
+          opt.value = wName;
+          opt.textContent = wName;
+          select.appendChild(opt);
+        }
+        select.value = wName || '';
+      }
+      const clearBtn = document.getElementById('quick-feat-target-spotlight-clear-btn');
+      if (clearBtn) clearBtn.classList.toggle('hidden', !wName);
+
+      onQuickFeatTargetSelectChange(wName);
+
+      const isExotic = /exotic weapon proficiency/i.test(document.getElementById('quick-feat-name')?.value || '');
+      const searchInput = document.getElementById('quick-feat-target-spotlight-input');
+      renderQuickFeatTargetSpotlightResults(searchInput ? searchInput.value : '', isExotic, wName);
+    };
+
+    window.clearQuickFeatTargetSelection = function() {
+      window.selectQuickFeatTargetWeapon('');
+      const searchInput = document.getElementById('quick-feat-target-spotlight-input');
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+    };
+
     function updateQuickFeatTargetSelector(featName) {
       const container = document.getElementById('quick-feat-target-container');
       const select = document.getElementById('quick-feat-target-select');
@@ -521,73 +682,63 @@
 
       const isExotic = /exotic weapon proficiency/i.test(lower);
       const match = t.match(/\((.*?)\)/);
-      const currentTarget = match ? match[1].trim() : '';
+      const currentTarget = match ? match[1].trim() : (select.value || '');
 
-      if (titleEl) titleEl.textContent = isExotic ? 'Select Exotic Weapon' : 'Select Target Weapon';
+      if (titleEl) titleEl.textContent = isExotic ? 'Spotlight: Select Exotic Weapon' : 'Spotlight: Select Target Weapon';
       if (iconEl) iconEl.textContent = isExotic ? '🗡️' : '⚔️';
 
+      // Hide legacy select while keeping options populated for 100% backward compatibility
+      select.style.display = 'none';
+      select.classList.add('hidden');
       select.innerHTML = '<option value="">-- Select a Weapon --</option>';
 
-      const resolveFn = (typeof resolveBaseWeaponName === 'function')
-        ? resolveBaseWeaponName
-        : (window.resolveBaseWeaponName || (w => (w.name || '').replace(/\+\d+/g, '').replace(/\(.*?\)/g, '').trim()));
+      const allWeapons = isExotic ? getAvailableExoticWeapons() : getAvailableTargetWeapons(false);
+      allWeapons.forEach(w => {
+        const opt = document.createElement('option');
+        opt.value = w;
+        opt.textContent = w;
+        if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
+        select.appendChild(opt);
+      });
+      select.value = currentTarget;
 
-      if (isExotic) {
-        const exoticWeapons = getAvailableExoticWeapons();
-        const charWeps = (character.weapons || []).map(w => resolveFn(w)).filter(Boolean);
-        const charExotics = charWeps.filter(cw => exoticWeapons.some(ew => ew.toLowerCase() === cw.toLowerCase()));
-        if (charExotics.length > 0) {
-          const grpChar = document.createElement('optgroup');
-          grpChar.label = '⚔️ Equipped / Inventory Exotic Weapons';
-          [...new Set(charExotics)].forEach(w => {
-            const opt = document.createElement('option');
-            opt.value = w;
-            opt.textContent = `${w} (Equipped)`;
-            if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
-            grpChar.appendChild(opt);
-          });
-          select.appendChild(grpChar);
-        }
-
-        const grpAll = document.createElement('optgroup');
-        grpAll.label = '🗡️ D&D 3.5e Exotic Weapon Compendium';
-        exoticWeapons.forEach(w => {
-          const opt = document.createElement('option');
-          opt.value = w;
-          opt.textContent = w;
-          if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
-          grpAll.appendChild(opt);
-        });
-        select.appendChild(grpAll);
-      } else {
-        const charWeps = (character.weapons || []).map(w => resolveFn(w)).filter(Boolean);
-        const uniqueCharWeps = [...new Set(charWeps)];
-        if (uniqueCharWeps.length > 0) {
-          const grpChar = document.createElement('optgroup');
-          grpChar.label = '⚔️ Equipped / Inventory Weapons';
-          uniqueCharWeps.forEach(w => {
-            const opt = document.createElement('option');
-            opt.value = w;
-            opt.textContent = `${w} (Equipped)`;
-            if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
-            grpChar.appendChild(opt);
-          });
-          select.appendChild(grpChar);
-        }
-
-        const allWeapons = getAvailableTargetWeapons(false);
-        const grpAll = document.createElement('optgroup');
-        grpAll.label = '📚 All D&D 3.5e Weapons';
-        allWeapons.forEach(w => {
-          const opt = document.createElement('option');
-          opt.value = w;
-          opt.textContent = w;
-          if (currentTarget.toLowerCase() === w.toLowerCase()) opt.selected = true;
-          grpAll.appendChild(opt);
-        });
-        select.appendChild(grpAll);
+      // Mount or update Spotlight search UI inside container
+      let spotlightWrapper = document.getElementById('quick-feat-target-spotlight-wrapper');
+      if (!spotlightWrapper) {
+        spotlightWrapper = document.createElement('div');
+        spotlightWrapper.id = 'quick-feat-target-spotlight-wrapper';
+        spotlightWrapper.className = 'space-y-2 mt-1.5';
+        container.appendChild(spotlightWrapper);
       }
 
+      spotlightWrapper.innerHTML = `
+        <div class="relative flex items-center">
+          <span class="absolute left-2.5 text-slate-400 text-xs pointer-events-none">🔍</span>
+          <input type="text" id="quick-feat-target-spotlight-input"
+            placeholder="Type weapon name (e.g. Longsword, Greatsword, Scimitar)..."
+            class="w-full bg-slate-950 border border-amber-500/70 focus:border-amber-400 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-400 font-medium transition"
+            autocomplete="off">
+          <button type="button" id="quick-feat-target-spotlight-clear-btn" onclick="window.clearQuickFeatTargetSelection()" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold transition cursor-pointer ${currentTarget ? '' : 'hidden'}" title="Clear selection">&times;</button>
+        </div>
+        <div id="quick-feat-target-active-badge-container"></div>
+        <div id="quick-feat-target-spotlight-results" class="max-h-52 overflow-y-auto space-y-1 p-1 bg-slate-950/70 border border-slate-800 rounded-lg custom-scroll text-xs"></div>
+      `;
+
+      const searchInput = document.getElementById('quick-feat-target-spotlight-input');
+      if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+          renderQuickFeatTargetSpotlightResults(e.target.value, isExotic, select.value);
+        });
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            const firstBtn = document.querySelector('#quick-feat-target-spotlight-results button');
+            if (firstBtn) firstBtn.click();
+          }
+        });
+      }
+
+      renderQuickFeatTargetSpotlightResults('', isExotic, currentTarget);
       container.classList.remove('hidden');
     }
 
@@ -1386,8 +1537,16 @@
       if (needsTargetSelection) {
         // Needs target weapon selection: keep modal open and highlight target selector
         closeQuickFeatCatalogConsole();
-        const targetSelect = document.getElementById('quick-feat-target-select');
-        if (targetSelect) targetSelect.focus();
+        const spotlightInput = document.getElementById('quick-feat-target-spotlight-input');
+        if (spotlightInput) {
+          setTimeout(() => {
+            spotlightInput.focus();
+            spotlightInput.select();
+          }, 60);
+        } else {
+          const targetSelect = document.getElementById('quick-feat-target-select');
+          if (targetSelect) targetSelect.focus();
+        }
         const targetContainer = document.getElementById('quick-feat-target-container');
         if (targetContainer) {
           targetContainer.classList.add('ring-2', 'ring-amber-400');
@@ -6966,9 +7125,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         let statBadgeItem = '';
         if (currentStatKey) {
           const sDef = STAT_KEYS.find(k => k.key === currentStatKey) || { key: currentStatKey, label: currentStatKey.toUpperCase(), name: currentStatKey.toUpperCase() };
-          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-sky-600/70 shadow-sm transition text-left cursor-pointer" title="Level ${lvl.level} Ability Score Increase: +1 ${sDef.name}. Click to change or remove."><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+1 Stat: ${sDef.label}</span></button>`;
+          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-sky-600/70 shadow-sm transition text-left cursor-pointer" title="Level ${lvl.level} Ability Score Increase: +1 ${sDef.name}. Click to change or remove."><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+1 Stat: ${sDef.label}</span></button>`;
         } else if (isStatInterval) {
-          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/90 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-dashed border-sky-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select +1 Ability Score Increase for Level ${lvl.level}"><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Ability (+1)</span></button>`;
+          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/90 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-dashed border-sky-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select +1 Ability Score Increase for Level ${lvl.level}"><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+ Select Ability (+1)</span></button>`;
         }
 
         // Filtered and partitioned feats for 3-column split:
@@ -7018,7 +7177,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const safeTip = tip.replace(/"/g, '&quot;');
           const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+/, '').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" title="${safeTip}" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         const classBonusBadgeItems = classBonusFeats.map(fStr => {
@@ -7029,7 +7188,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const safeTip = tip.replace(/"/g, '&quot;');
           const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').replace(/^\[Extra Bonus\]/i, '[Bonus]').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚔️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚔️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         let classLevelSoFar = 0;
@@ -7066,11 +7225,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
                 ? 'bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border-yellow-500/80'
                 : 'bg-rose-950/90 hover:bg-rose-900 text-rose-200 border-rose-500/80';
               classBonusBadgeItems.push(
-                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${badgeColorCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${elig.eligible ? '⚜️' : '⚠️'}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">Domain: ${domName}${warSuffix}</span></button>`
+                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" title="${safeTip}" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${badgeColorCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${elig.eligible ? '⚜️' : '⚠️'}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">Domain: ${domName}${warSuffix}</span></button>`
               );
             } else {
               pendingClassBonusButtons.push(
-                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border border-dashed border-yellow-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Cleric Domain (${dSlot + 1}/2) — Grants a Domain Power and +1 Domain Spell Slot per spell level (1st–9th)"><span class="shrink-0">⚜️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+ Select Cleric Domain (${dSlot + 1}/2)</span></button>`
+                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border border-dashed border-yellow-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Cleric Domain (${dSlot + 1}/2) — Grants a Domain Power and +1 Domain Spell Slot per spell level (1st–9th)"><span class="shrink-0">⚜️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+ Select Cleric Domain (${dSlot + 1}/2)</span></button>`
               );
             }
           }
@@ -7082,10 +7241,24 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           let btnText = '+ Select Bonus Feat';
           let btnIcon = '⚔️';
           let btnCls = 'bg-amber-950/90 hover:bg-amber-900 text-amber-300 border-amber-500';
+          let btnTitle = `Select ${lvl.className} Bonus Feat for this level`;
           if (contract && contract.mode === 'exact_choices') {
-            btnText = `+ ${lvl.className} Feat (${contract.choices.join(' / ')})`;
-            btnIcon = '🥋';
-            btnCls = 'bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border-emerald-500';
+            if (Array.isArray(contract.choices) && contract.choices.length > 2) {
+              btnText = `+ ${lvl.className} Bonus Feat`;
+              btnIcon = '⚔️';
+              btnCls = 'bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border-emerald-500';
+              btnTitle = `Select ${lvl.className} Bonus Feat (${contract.choices.join(', ')})`;
+            } else if (Array.isArray(contract.choices) && contract.choices.length > 0) {
+              btnText = `+ ${lvl.className} Feat (${contract.choices.join(' / ')})`;
+              btnIcon = '🥋';
+              btnCls = 'bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border-emerald-500';
+              btnTitle = `Select ${lvl.className} Bonus Feat (${contract.choices.join(' / ')})`;
+            } else {
+              btnText = `+ ${lvl.className} Bonus Feat`;
+              btnIcon = '⚔️';
+              btnCls = 'bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border-emerald-500';
+              btnTitle = `Select ${lvl.className} Bonus Feat for this level`;
+            }
           } else if (lvl.className === 'Monk') {
             btnText = '+ Monk Bonus Feat';
             btnIcon = '🥋';
@@ -7095,7 +7268,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
             btnIcon = '🔮';
             btnCls = 'bg-indigo-950/90 hover:bg-indigo-900 text-indigo-300 border-indigo-500';
           }
-          pendingClassBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${btnCls} border border-dashed shadow-sm animate-pulse transition text-left cursor-pointer" title="Select ${lvl.className} Bonus Feat for this level"><span class="shrink-0">${btnIcon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">${btnText}</span></button>`);
+          pendingClassBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat', true)" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${btnCls} border border-dashed shadow-sm animate-pulse transition text-left cursor-pointer" title="${btnTitle.replace(/"/g, '&quot;')}"><span class="shrink-0">${btnIcon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">${btnText}</span></button>`);
         }
 
         // 2. Beceriler (Regular Feats) badges
@@ -7107,7 +7280,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const safeTip = tip.replace(/"/g, '&quot;');
           const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[Extra\]\s*)?/i, '').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         // Check regular feat eligibility
@@ -7116,7 +7289,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const hasSlotRegularFeat = regularFeats.some(f => !String(f).includes('[Extra]'));
         const regularPromptButtons = [];
         if (qualifiesForRegularFeat && !hasSlotRegularFeat) {
-          regularPromptButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Character Feat for this level"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Select Feat</span></button>`);
+          regularPromptButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat', true)" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Character Feat for this level"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Select Feat</span></button>`);
         }
 
         // 3. Bonus badges (DM Boons, Invocations, Flaws, Racial, CL Boons)
@@ -7153,14 +7326,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           }
           const cleanStr = labelText;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         const qualifiesForHumanBonus = (lvl.level === 1 && isHuman);
         const hasSlotRacialBonus = otherBonusFeats.some(f => String(f).includes('[Racial]'));
         const pendingBonusButtons = [];
         if (qualifiesForHumanBonus && !hasSlotRacialBonus) {
-          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Racial Trait', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Human racial bonus feat (1st-Level RAW: Extra bonus feat)"><span class="shrink-0">🧬</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Human Bonus Feat</span></button>`);
+          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Racial Trait', true)" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Human racial bonus feat (1st-Level RAW: Extra bonus feat)"><span class="shrink-0">🧬</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Human Bonus Feat</span></button>`);
         }
 
         // D&D 3.5e Unearthed Arcana (p. 91) RAW: Each Flaw at this level grants +1 Bonus Feat slot
@@ -7168,7 +7341,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         for (let fbIdx = 0; fbIdx < unfilledFlawBonusSlots; fbIdx++) {
           const flawRaw = String(flawsAtLevel[flawBonusFeatsAtLevel.length + fbIdx] || 'Flaw').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
           const safeFlawRaw = flawRaw.replace(/"/g, '&quot;');
-          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Flaw Bonus Feat', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-dashed border-emerald-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Bonus Feat granted by Flaw: ${safeFlawRaw} (Unearthed Arcana p. 91)"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Flaw Bonus Feat (${safeFlawRaw})</span></button>`);
+          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Flaw Bonus Feat', true)" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-dashed border-emerald-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Bonus Feat granted by Flaw: ${safeFlawRaw} (Unearthed Arcana p. 91)"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Flaw Bonus Feat (${safeFlawRaw})</span></button>`);
         }
 
         // Warlock Invocation Progression Check (Warlock Boon or Warlock Class Level)
@@ -7180,7 +7353,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const hasInvocation = otherBonusFeats.some(f => (String(f).includes('[Invocation]') || (String(f).toLowerCase().includes('invocation') && !String(f).includes('[Extra Invocation]'))));
           if (!hasInvocation) {
             const tier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(lvl.level) : 'Least';
-            pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Warlock Invocation', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Level ${lvl.level} Warlock Invocation (${tier})"><span class="shrink-0">🔮</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Invocation (${tier})</span></button>`);
+            pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Warlock Invocation', true)" style="width: 168px; min-width: 168px; max-width: 168px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Level ${lvl.level} Warlock Invocation (${tier})"><span class="shrink-0">🔮</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Select Invocation (${tier})</span></button>`);
           }
         }
 
@@ -7234,10 +7407,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         lvl.will = rowWill;
 
         tr.innerHTML = `
-          <td class="py-2 pl-3 pr-1 align-top text-center w-[46px]">
+          <td class="py-2 pl-3 pr-1 align-top text-center" style="width: 5%;">
             <div class="h-6 flex items-center justify-center font-bold text-amber-400 text-xs">${lvl.level}</div>
           </td>
-          <td class="py-2 px-1.5 align-top text-center w-[88px]">
+          <td class="py-2 px-1.5 align-top text-center" style="width: 8.5%;">
             <div class="h-6 flex items-center justify-center">
               <label class="inline-flex items-center gap-1 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
                 <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
@@ -7247,46 +7420,46 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
               </label>
             </div>
           </td>
-          <td class="py-2 px-2 align-top text-left w-[108px]">
+          <td class="py-2 px-2 align-top text-left whitespace-nowrap" style="width: 11.5%;">
             <div class="h-6 flex items-center font-sans font-bold text-white text-xs truncate" title="${lvl.className}-${classLevelSoFar}">${lvl.className}-${classLevelSoFar}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-[48px]">
+          <td class="py-2 px-1 align-top text-center" style="width: 5%;">
             <div class="h-6 flex items-center justify-center text-slate-400 font-bold text-xs">${lvl.hd}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-[48px]">
+          <td class="py-2 px-1 align-top text-center" style="width: 5%;">
             <div class="h-6 flex items-center justify-center text-emerald-400 font-bold text-xs" title="Level Hit Die: +${lvl.hpGain} | Con: ${conModStr} (This Level: +${Math.max(1, (Number(lvl.hpGain) || 0) + conMod)})">+${lvl.hpGain}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-[48px]">
+          <td class="py-2 px-1 align-top text-center" style="width: 5%;">
             <div class="h-6 flex items-center justify-center text-sky-400 font-bold text-xs">+${rowBab}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-[48px]">
+          <td class="py-2 px-1 align-top text-center" style="width: 5%;">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowFort}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-[48px]">
+          <td class="py-2 px-1 align-top text-center" style="width: 5%;">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowRef}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-[48px]">
+          <td class="py-2 px-1 align-top text-center" style="width: 5%;">
             <div class="h-6 flex items-center justify-center text-slate-300 font-bold text-xs">+${rowWill}</div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-[48px]">
+          <td class="py-2 px-1 align-top text-center" style="width: 5%;">
             <div class="h-6 flex items-center justify-center text-indigo-300 font-bold text-xs">${lvl.skillPts || 4}</div>
           </td>
-          <td class="py-2 px-1 font-sans align-top text-center w-[184px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full max-w-[178px] mx-auto min-w-0">
+          <td class="py-2 font-sans align-top text-center" style="width: 176px; min-width: 176px; max-width: 176px; padding-left: 4px; padding-right: 4px;">
+            <div class="flex flex-col gap-1.5 items-stretch mx-auto min-w-0" style="width: 168px; min-width: 168px; max-width: 168px;">
               ${(abilityBadgeItems.length > 0 || classBonusBadgeItems.length > 0 || pendingClassBonusButtons.length > 0) ? (abilityBadgeItems.join('') + classBonusBadgeItems.join('') + pendingClassBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1 font-sans align-top text-center w-[184px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full max-w-[178px] mx-auto min-w-0">
+          <td class="py-2 font-sans align-top text-center" style="width: 176px; min-width: 176px; max-width: 176px; padding-left: 4px; padding-right: 4px;">
+            <div class="flex flex-col gap-1.5 items-stretch mx-auto min-w-0" style="width: 168px; min-width: 168px; max-width: 168px;">
               ${(regularFeatBadgeItems.length > 0 || regularPromptButtons.length > 0) ? (regularFeatBadgeItems.join('') + regularPromptButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1 font-sans align-top text-center w-[184px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full max-w-[178px] mx-auto min-w-0">
+          <td class="py-2 font-sans align-top text-center" style="width: 176px; min-width: 176px; max-width: 176px; padding-left: 4px; padding-right: 4px;">
+            <div class="flex flex-col gap-1.5 items-stretch mx-auto min-w-0" style="width: 168px; min-width: 168px; max-width: 168px;">
               ${(statBadgeItem || otherBonusBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + otherBonusBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1 align-top text-center w-[56px] whitespace-nowrap shrink-0">
+          <td class="py-2 align-top text-center whitespace-nowrap shrink-0" style="width: 56px; min-width: 56px; max-width: 56px; padding-left: 4px; padding-right: 4px;">
             <div class="h-6 flex items-center justify-center gap-0.5">
               <button onclick="openQuickFeatPickerForLevel(${idx})" class="text-emerald-400 hover:text-emerald-300 p-0.5 text-xs transition font-bold" title="Add Feat, Ability, Invocation, or Bonus to this level">
                 ➕
