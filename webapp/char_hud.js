@@ -3670,6 +3670,7 @@
       const rawGender = String(character.gender || '').trim();
       const cleanGender = /^(female|kad[ıi]n|f)$/i.test(rawGender) ? 'Female' : 'Male';
       setVal('profile-edit-gender', cleanGender);
+      updateGenderDropdownTrigger(cleanGender);
       setVal('profile-edit-age', character.age || '');
       setVal('profile-edit-height', character.height || '');
       setVal('profile-edit-weight', character.weight || '');
@@ -4571,6 +4572,11 @@
       if (_sizeDropdownOpen && sizeContainer && !sizeContainer.contains(e.target)) {
         closeSizeDropdown();
       }
+      const genderContainer = document.getElementById('gender-custom-dropdown-container');
+      const genderDropdown = document.getElementById('gender-custom-dropdown');
+      if (_genderDropdownOpen && genderContainer && !genderContainer.contains(e.target) && (!genderDropdown || !genderDropdown.contains(e.target))) {
+        closeGenderDropdown();
+      }
       const lvlupClassContainer = document.getElementById('lvlup-class-custom-dropdown-container');
       if (_lvlupClassSpotlightOpen && lvlupClassContainer && !lvlupClassContainer.contains(e.target)) {
         closeLevelUpClassSpotlightDropdown();
@@ -4691,6 +4697,95 @@
       } else {
         if (labelEl) labelEl.textContent = 'Medium';
         if (iconEl) iconEl.textContent = '👤';
+      }
+    }
+
+    // =========================================================================
+    // ⚧️ CUSTOM GENDER SELECTOR (Male / Female)
+    // =========================================================================
+    const DND35_GENDER_DEFINITIONS = [
+      { id: 'Male', label: 'Male', icon: '♂️', iconClass: 'text-sky-400' },
+      { id: 'Female', label: 'Female', icon: '♀️', iconClass: 'text-pink-400' }
+    ];
+
+    let _genderDropdownOpen = false;
+
+    function toggleGenderDropdown() {
+      if (_genderDropdownOpen) closeGenderDropdown();
+      else openGenderDropdown();
+    }
+
+    function openGenderDropdown() {
+      const dropdown = document.getElementById('gender-custom-dropdown');
+      const chevron = document.getElementById('gender-trigger-chevron');
+      if (!dropdown) return;
+
+      dropdown.classList.remove('hidden');
+      if (chevron) chevron.classList.add('rotate-180');
+      _genderDropdownOpen = true;
+
+      renderGenderItems();
+    }
+
+    function closeGenderDropdown() {
+      const dropdown = document.getElementById('gender-custom-dropdown');
+      const chevron = document.getElementById('gender-trigger-chevron');
+      if (!dropdown) return;
+
+      dropdown.classList.add('hidden');
+      if (chevron) chevron.classList.remove('rotate-180');
+      _genderDropdownOpen = false;
+    }
+
+    function renderGenderItems() {
+      const listEl = document.getElementById('gender-options-list');
+      if (!listEl) return;
+
+      const rawVal = document.getElementById('profile-edit-gender')?.value || character?.gender || 'Male';
+      const currentVal = /^(female|kad[ıi]n|f)$/i.test(String(rawVal).trim()) ? 'female' : 'male';
+
+      let html = '';
+      DND35_GENDER_DEFINITIONS.forEach(g => {
+        const isSelected = g.id.toLowerCase() === currentVal;
+        const selectedClasses = isSelected
+          ? 'bg-purple-900/60 border border-purple-500/80 text-white font-bold'
+          : 'bg-slate-900/50 hover:bg-slate-800/80 border border-transparent hover:border-purple-500/30 text-slate-200';
+
+        html += `
+          <button type="button" onclick="selectGenderItem('${g.id}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="text-xs font-bold shrink-0 ${g.iconClass}">${g.icon}</span>
+              <span class="text-xs font-bold truncate">${g.label}</span>
+              ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
+            </div>
+            <span class="text-xs text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity ml-1 shrink-0">➔</span>
+          </button>
+        `;
+      });
+
+      listEl.innerHTML = html;
+    }
+
+    function selectGenderItem(genderId) {
+      updateGenderDropdownTrigger(genderId);
+      closeGenderDropdown();
+      if (typeof updateProfileModalAvatar === 'function') {
+        updateProfileModalAvatar();
+      }
+    }
+
+    function updateGenderDropdownTrigger(genderId) {
+      const clean = /^(female|kad[ıi]n|f)$/i.test(String(genderId || '').trim()) ? 'Female' : 'Male';
+      const labelEl = document.getElementById('gender-trigger-label');
+      const iconEl = document.getElementById('gender-trigger-icon');
+      const hiddenInput = document.getElementById('profile-edit-gender');
+      if (hiddenInput) hiddenInput.value = clean;
+
+      const found = DND35_GENDER_DEFINITIONS.find(g => g.id === clean) || DND35_GENDER_DEFINITIONS[0];
+      if (labelEl) labelEl.textContent = found.label;
+      if (iconEl) {
+        iconEl.textContent = found.icon;
+        iconEl.className = 'text-xs font-bold ' + found.iconClass;
       }
     }
 
