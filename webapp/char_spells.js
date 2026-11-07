@@ -7423,7 +7423,20 @@
       Object.assign(DND35_CLASS_DEFS, RuleEngine.DND35_CLASS_DEFS);
     }
 
-    function getAvailableClassDefs() {
+    let _cachedAvailableClassDefs = null;
+    let _cachedAvailableClassDefsKey = '';
+
+    function getAvailableClassDefs(forceRefresh = false) {
+      const srdLoaded = (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.getAllClasses === 'function')
+        ? (SrdCompendium.getAllClasses()?.length || 0)
+        : 0;
+      const customLen = Array.isArray(character?.customClasses) ? character.customClasses.length : 0;
+      const dbLen = Array.isArray(masterDb) ? masterDb.length : 0;
+      const cacheKey = `${srdLoaded}_${window._srdCatalogVersion || 0}_${customLen}_${dbLen}_${window._customClassCacheVer || 0}`;
+      if (!forceRefresh && _cachedAvailableClassDefs && _cachedAvailableClassDefsKey === cacheKey) {
+        return _cachedAvailableClassDefs;
+      }
+
       const all = {};
       Object.assign(all, DND35_BASE_CLASS_DEFS);
       if (typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) {
@@ -7612,16 +7625,26 @@
         });
       }
 
+      Object.keys(all).forEach(k => {
+        if (all[k] && typeof all[k] === 'object') {
+          all[k]._v2Hydrated = true;
+        }
+      });
+
       Object.assign(DND35_CLASS_DEFS, all);
       if (typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) {
         Object.assign(RuleEngine.DND35_CLASS_DEFS, all);
       }
 
+      _cachedAvailableClassDefs = all;
+      _cachedAvailableClassDefsKey = cacheKey;
+
       return all;
     }
 
     function syncCustomClassesToRuleEngine() {
-      const all = getAvailableClassDefs();
+      window._customClassCacheVer = (window._customClassCacheVer || 0) + 1;
+      const all = getAvailableClassDefs(true);
       Object.assign(DND35_CLASS_DEFS, all);
       if (typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) {
         Object.assign(RuleEngine.DND35_CLASS_DEFS, all);

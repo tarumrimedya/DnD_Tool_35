@@ -24,7 +24,23 @@
       return 10;
     }
 
+    let _cachedFeatCatalogNoInv = null;
+    let _cachedFeatCatalogWithInv = null;
+    let _cachedFeatCatalogKey = '';
+
     function getCombinedFeatCatalog(includeInvocations = false) {
+      const srdReady = Boolean(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready);
+      const dbLen = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb.length : 0;
+      const cacheKey = `${srdReady ? 1 : 0}_${(typeof window !== 'undefined' && window._srdCatalogVersion) || 0}_${dbLen}_${(typeof window !== 'undefined' && window._featCatalogCacheVer) || 0}`;
+      if (_cachedFeatCatalogKey === cacheKey) {
+        if (includeInvocations && _cachedFeatCatalogWithInv) return _cachedFeatCatalogWithInv;
+        if (!includeInvocations && _cachedFeatCatalogNoInv) return _cachedFeatCatalogNoInv;
+      } else {
+        _cachedFeatCatalogNoInv = null;
+        _cachedFeatCatalogWithInv = null;
+        _cachedFeatCatalogKey = cacheKey;
+      }
+
       const map = new Map();
       const skipPlaceholders = new Set([
         'weapon proficiency (no weapon selected)',
@@ -136,7 +152,13 @@
           }
         });
       }
-      return Array.from(map.values());
+      const resultArr = Array.from(map.values());
+      if (includeInvocations) {
+        _cachedFeatCatalogWithInv = resultArr;
+      } else {
+        _cachedFeatCatalogNoInv = resultArr;
+      }
+      return resultArr;
     }
 
     function openFeatPickerModal(forLevelUp = false) {
@@ -2667,6 +2689,19 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       return String(str).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
     }
 
+    let _prereqTurnCache = new Map();
+    let _prereqTurnClearScheduled = false;
+    function _getPrereqTurnBucket(key) {
+      if (!_prereqTurnClearScheduled) {
+        _prereqTurnClearScheduled = true;
+        Promise.resolve().then(() => {
+          _prereqTurnCache.clear();
+          _prereqTurnClearScheduled = false;
+        });
+      }
+      return _prereqTurnCache.get(key);
+    }
+
     function isFeatAlreadyTakenByCharacter(featName, excludeContext = {}) {
       if (!featName) return { isTaken: false, reason: '' };
 
@@ -2680,47 +2715,54 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         return { isTaken: false, reason: '' };
       }
 
-      // 2. Collect all taken feats across build
-      const takenFullSet = new Set();
-      const takenBaseSet = new Set();
+      // 2. Collect all taken feats across build (memoized per synchronous turn)
+      const takenKey = `taken_${excludeContext.levelIdx ?? 'none'}_${excludeContext.featIdx ?? 'none'}_${excludeContext.slotIdx ?? 'none'}`;
+      let cachedSets = _getPrereqTurnBucket(takenKey);
+      if (!cachedSets) {
+        const takenFullSet = new Set();
+        const takenBaseSet = new Set();
 
-      // From character.feats
-      if (typeof character !== 'undefined' && Array.isArray(character.feats)) {
-        character.feats.forEach(f => {
-          const raw = typeof f === 'string' ? f : (f?.name || '');
-          const c = cleanFeatNameString(raw);
-          if (!c || c.startsWith('+1 Stat') || c.includes('Stat:') || c.includes('Primary CL')) return;
-          takenFullSet.add(c.toLowerCase());
-          takenBaseSet.add(c.replace(/\(.*?\)/g, '').trim().toLowerCase());
-        });
-      }
-
-      // From character.levelProgression
-      if (typeof character !== 'undefined' && Array.isArray(character.levelProgression)) {
-        character.levelProgression.forEach((lvl, lIdx) => {
-          if (!lvl || lvl.active === false || !Array.isArray(lvl.feats)) return;
-          lvl.feats.forEach((fStr, fIdx) => {
-            if (excludeContext.levelIdx !== undefined && excludeContext.levelIdx === lIdx && excludeContext.featIdx !== undefined && excludeContext.featIdx === fIdx) {
-              return;
-            }
-            const c = cleanFeatNameString(fStr);
-            if (!c || c.startsWith('+1 Stat') || c.includes('Stat:') || c.includes('Primary CL') || c.includes('Caster Lvl')) return;
+        // From character.feats
+        if (typeof character !== 'undefined' && Array.isArray(character.feats)) {
+          character.feats.forEach(f => {
+            const raw = typeof f === 'string' ? f : (f?.name || '');
+            const c = cleanFeatNameString(raw);
+            if (!c || c.startsWith('+1 Stat') || c.includes('Stat:') || c.includes('Primary CL')) return;
             takenFullSet.add(c.toLowerCase());
             takenBaseSet.add(c.replace(/\(.*?\)/g, '').trim().toLowerCase());
           });
-        });
-      }
+        }
 
-      // From Level-Up Wizard active slots
-      if (typeof levelUpModalFeatSlots !== 'undefined' && Array.isArray(levelUpModalFeatSlots)) {
-        levelUpModalFeatSlots.forEach((slot, sIdx) => {
-          if (excludeContext.slotIdx !== undefined && excludeContext.slotIdx === sIdx) return;
-          const c = cleanFeatNameString(slot.name || '');
-          if (!c) return;
-          takenFullSet.add(c.toLowerCase());
-          takenBaseSet.add(c.replace(/\(.*?\)/g, '').trim().toLowerCase());
-        });
+        // From character.levelProgression
+        if (typeof character !== 'undefined' && Array.isArray(character.levelProgression)) {
+          character.levelProgression.forEach((lvl, lIdx) => {
+            if (!lvl || lvl.active === false || !Array.isArray(lvl.feats)) return;
+            lvl.feats.forEach((fStr, fIdx) => {
+              if (excludeContext.levelIdx !== undefined && excludeContext.levelIdx === lIdx && excludeContext.featIdx !== undefined && excludeContext.featIdx === fIdx) {
+                return;
+              }
+              const c = cleanFeatNameString(fStr);
+              if (!c || c.startsWith('+1 Stat') || c.includes('Stat:') || c.includes('Primary CL') || c.includes('Caster Lvl')) return;
+              takenFullSet.add(c.toLowerCase());
+              takenBaseSet.add(c.replace(/\(.*?\)/g, '').trim().toLowerCase());
+            });
+          });
+        }
+
+        // From Level-Up Wizard active slots
+        if (typeof levelUpModalFeatSlots !== 'undefined' && Array.isArray(levelUpModalFeatSlots)) {
+          levelUpModalFeatSlots.forEach((slot, sIdx) => {
+            if (excludeContext.slotIdx !== undefined && excludeContext.slotIdx === sIdx) return;
+            const c = cleanFeatNameString(slot.name || '');
+            if (!c) return;
+            takenFullSet.add(c.toLowerCase());
+            takenBaseSet.add(c.replace(/\(.*?\)/g, '').trim().toLowerCase());
+          });
+        }
+        cachedSets = { takenFullSet, takenBaseSet };
+        _prereqTurnCache.set(takenKey, cachedSets);
       }
+      const { takenFullSet, takenBaseSet } = cachedSets;
 
       // 3. Targeted repeatable feats (e.g. Weapon Focus, Spell Focus)
       if (TARGETED_REPEATABLE_FEATS.has(candBase)) {
@@ -2784,16 +2826,20 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         let alreadyKnownReason = '';
         let isAlreadyTaken = false;
 
-        // 1. Unified D&D 3.5e Proficiencies lookup via RuleEngine
-        let prof = null;
-        if (typeof RuleEngine !== 'undefined' && RuleEngine.getCharacterProficiencies) {
-          prof = RuleEngine.getCharacterProficiencies(character, targetLevelIdx);
-        } else {
-          prof = {
-            weapons: { simple: true, martial: false, exoticAll: false, specific: new Set() },
-            armors: { light: true, medium: false, heavy: false },
-            shields: { shield: false, tower: false }
-          };
+        // 1. Unified D&D 3.5e Proficiencies lookup via RuleEngine (memoized per turn)
+        const profCacheKey = `prof_${targetLevelIdx ?? 'all'}`;
+        let prof = _getPrereqTurnBucket(profCacheKey);
+        if (!prof) {
+          if (typeof RuleEngine !== 'undefined' && RuleEngine.getCharacterProficiencies) {
+            prof = RuleEngine.getCharacterProficiencies(character, targetLevelIdx);
+          } else {
+            prof = {
+              weapons: { simple: true, martial: false, exoticAll: false, specific: new Set() },
+              armors: { light: true, medium: false, heavy: false },
+              shields: { shield: false, tower: false }
+            };
+          }
+          _prereqTurnCache.set(profCacheKey, prof);
         }
 
         if (featNameNorm.includes('armorproficiencyheavy') || featNameNorm.includes('heavyarmorproficiency')) {
@@ -2894,227 +2940,274 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           };
         }
 
-        // 4. Compute Character Progression State up to targetLevelIdx (or upcoming Level-Up Wizard level)
-        const isTableMode = (targetLevelIdx !== null && targetLevelIdx !== undefined);
-        const prog = character.levelProgression || [];
-        const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
-        const statKeys = (typeof STAT_KEYS !== 'undefined' && Array.isArray(STAT_KEYS)) ? STAT_KEYS.map(s => s.key) : ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+        // 4-6. Compute Character Progression State up to targetLevelIdx (memoized per synchronous turn)
+        const stateCacheKey = `state_${slotIdx}_${targetLevelIdx ?? 'wiz'}`;
+        let charStateSnap = _getPrereqTurnBucket(stateCacheKey);
+        if (!charStateSnap) {
+          const isTableMode = (targetLevelIdx !== null && targetLevelIdx !== undefined);
+          const prog = character.levelProgression || [];
+          const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
+          const statKeys = (typeof STAT_KEYS !== 'undefined' && Array.isArray(STAT_KEYS)) ? STAT_KEYS.map(s => s.key) : ['str', 'dex', 'con', 'int', 'wis', 'cha'];
 
-        let prospectiveBab = 0;
-        let prospectiveBaseSaves = { fort: 0, ref: 0, will: 0 };
-        let selectedClassName = '';
-        let def = null;
-        let prospectiveProg = [];
-        const abilities = {};
+          let prospectiveBab = 0;
+          let prospectiveBaseSaves = { fort: 0, ref: 0, will: 0 };
+          let selectedClassName = '';
+          let def = null;
+          let prospectiveProg = [];
+          const abilities = {};
 
-        if (isTableMode) {
-          const rowIdx = Math.max(0, Math.min(Number(targetLevelIdx), Math.max(0, prog.length - 1)));
-          const targetRow = prog[rowIdx] || {};
-          selectedClassName = targetRow.className || (character.classes?.split(' ')[0]) || 'Fighter';
-          def = allDefs[selectedClassName] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[selectedClassName] : null) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+          if (isTableMode) {
+            const rowIdx = Math.max(0, Math.min(Number(targetLevelIdx), Math.max(0, prog.length - 1)));
+            const targetRow = prog[rowIdx] || {};
+            selectedClassName = targetRow.className || (character.classes?.split(' ')[0]) || 'Fighter';
+            def = allDefs[selectedClassName] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[selectedClassName] : null) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
 
-          prospectiveProg = prog.length > 0 ? prog.slice(0, rowIdx + 1).map(p => ({ ...p, active: true })) : [{ className: selectedClassName, hd: `d${def.hd || 8}`, hpGain: 0, active: true }];
-          if (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression) {
-            const sys = character.settings?.babSaveSystem || character.settings?.progressionSystem || 'standard';
-            const isHuman = (character.race || '').toLowerCase().includes('human');
-            const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
-            const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
-            prospectiveBab = Math.max(calc?.baseBab ?? 0, Number(targetRow.bab) || 0);
-            prospectiveBaseSaves = {
-              fort: Math.max(calc?.baseSaves?.fort ?? 0, Number(targetRow.fort) || 0),
-              ref: Math.max(calc?.baseSaves?.ref ?? 0, Number(targetRow.ref) || 0),
-              will: Math.max(calc?.baseSaves?.will ?? 0, Number(targetRow.will) || 0)
-            };
+            prospectiveProg = prog.length > 0 ? prog.slice(0, rowIdx + 1).map(p => ({ ...p, active: true })) : [{ className: selectedClassName, hd: `d${def.hd || 8}`, hpGain: 0, active: true }];
+            if (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression) {
+              const sys = character.settings?.babSaveSystem || character.settings?.progressionSystem || 'standard';
+              const isHuman = (character.race || '').toLowerCase().includes('human');
+              const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
+              const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
+              prospectiveBab = Math.max(calc?.baseBab ?? 0, Number(targetRow.bab) || 0);
+              prospectiveBaseSaves = {
+                fort: Math.max(calc?.baseSaves?.fort ?? 0, Number(targetRow.fort) || 0),
+                ref: Math.max(calc?.baseSaves?.ref ?? 0, Number(targetRow.ref) || 0),
+                will: Math.max(calc?.baseSaves?.will ?? 0, Number(targetRow.will) || 0)
+              };
+            } else {
+              prospectiveBab = Math.max(Number(character.bab) || 0, Number(targetRow.bab) || 0);
+              prospectiveBaseSaves = {
+                fort: Math.max(Number(character.baseSaves?.fort ?? character.savingThrows?.fortitude?.base) || 0, Number(targetRow.fort) || 0),
+                ref: Math.max(Number(character.baseSaves?.ref ?? character.savingThrows?.reflex?.base) || 0, Number(targetRow.ref) || 0),
+                will: Math.max(Number(character.baseSaves?.will ?? character.savingThrows?.will?.base) || 0, Number(targetRow.will) || 0)
+              };
+            }
+
+            statKeys.forEach(stat => {
+              let val = Number(character.baseAbilities?.[stat] ?? character.abilities?.[stat] ?? 10);
+              for (let i = 0; i <= rowIdx && i < prog.length; i++) {
+                const r = prog[i];
+                const incStat = getLevelStatIncrease(r);
+                if (incStat && incStat.toLowerCase() === stat) {
+                  val += 1;
+                }
+              }
+              abilities[stat] = val;
+            });
           } else {
-            prospectiveBab = Math.max(Number(character.bab) || 0, Number(targetRow.bab) || 0);
-            prospectiveBaseSaves = {
-              fort: Math.max(Number(character.baseSaves?.fort ?? character.savingThrows?.fortitude?.base) || 0, Number(targetRow.fort) || 0),
-              ref: Math.max(Number(character.baseSaves?.ref ?? character.savingThrows?.reflex?.base) || 0, Number(targetRow.ref) || 0),
-              will: Math.max(Number(character.baseSaves?.will ?? character.savingThrows?.will?.base) || 0, Number(targetRow.will) || 0)
-            };
+            const defaultClass = (character.classes?.split(' ')[0]) || (prog[0]?.className) || 'Fighter';
+            selectedClassName = document.getElementById('lvlup-class-select')?.value || defaultClass;
+            def = allDefs[selectedClassName] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[selectedClassName] : null) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
+
+            prospectiveProg = [...prog.map(p => ({ ...p, active: true })), { className: selectedClassName, hd: `d${def.hd || 8}`, hpGain: 0, active: true }];
+            const babInputVal = parseInt(document.getElementById('lvlup-bab-input')?.value, 10);
+            if (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression) {
+              const sys = character.settings?.babSaveSystem || character.settings?.progressionSystem || 'standard';
+              const isHuman = (character.race || '').toLowerCase().includes('human');
+              const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
+              const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
+              prospectiveBab = !isNaN(babInputVal) ? babInputVal : (calc?.baseBab ?? (Number(character.bab) || 0));
+              prospectiveBaseSaves = calc?.baseSaves ?? { fort: Number(character.baseSaves?.fort ?? character.savingThrows?.fortitude?.base) || 0, ref: Number(character.baseSaves?.ref ?? character.savingThrows?.reflex?.base) || 0, will: Number(character.baseSaves?.will ?? character.savingThrows?.will?.base) || 0 };
+            } else {
+              prospectiveBab = !isNaN(babInputVal) ? babInputVal : (Number(character.bab) || 0);
+              prospectiveBaseSaves = { fort: Number(character.baseSaves?.fort ?? character.savingThrows?.fortitude?.base) || 0, ref: Number(character.baseSaves?.ref ?? character.savingThrows?.reflex?.base) || 0, will: Number(character.baseSaves?.will ?? character.savingThrows?.will?.base) || 0 };
+            }
+
+            const chosenStat = (document.getElementById('lvlup-stat-select')?.value || '').toLowerCase().trim();
+            statKeys.forEach(stat => {
+              let base = Number(character.abilities?.[stat] ?? character.baseAbilities?.[stat] ?? 10);
+              if (chosenStat === stat) base += 1;
+              abilities[stat] = base;
+            });
           }
 
-          statKeys.forEach(stat => {
-            let val = Number(character.baseAbilities?.[stat] ?? character.abilities?.[stat] ?? 10);
-            for (let i = 0; i <= rowIdx && i < prog.length; i++) {
-              const r = prog[i];
-              const incStat = getLevelStatIncrease(r);
-              if (incStat && incStat.toLowerCase() === stat) {
-                val += 1;
+          // Count active levels per class & total character level
+          const classCounts = {};
+          let totalCharacterLevel = 0;
+          prospectiveProg.forEach(r => {
+            if (!r || r.active === false) return;
+            const cKey = String(r.className || selectedClassName || 'Fighter').trim().toLowerCase();
+            classCounts[cKey] = (classCounts[cKey] || 0) + 1;
+            totalCharacterLevel++;
+          });
+          if (totalCharacterLevel === 0) {
+            totalCharacterLevel = Math.max(1, Number(character.level) || 1);
+            const cKey = String(selectedClassName || 'Fighter').trim().toLowerCase();
+            classCounts[cKey] = totalCharacterLevel;
+          }
+
+          // 5. Known Feats & Special Abilities Set
+          const knownFeats = new Set();
+          const normalizeFeatName = str => (str || '').toLowerCase().replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').replace(/[^a-z0-9]/g, '');
+
+          if (Array.isArray(character.feats)) {
+            character.feats.forEach(f => {
+              const name = typeof f === 'string' ? f : f?.name;
+              if (name) {
+                knownFeats.add(normalizeFeatName(name));
+                knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
+              }
+            });
+          }
+          if (Array.isArray(character.specialAbilities)) {
+            character.specialAbilities.forEach(s => {
+              const name = typeof s === 'string' ? s : s?.name;
+              if (name) {
+                knownFeats.add(normalizeFeatName(name));
+                knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
+              }
+            });
+          }
+
+          const progSliceForFeats = isTableMode ? prog.slice(0, Number(targetLevelIdx) + 1) : prog;
+          if (Array.isArray(progSliceForFeats)) {
+            progSliceForFeats.forEach(lvl => {
+              if (lvl && (isTableMode || lvl.active !== false)) {
+                (lvl.feats || []).forEach(f => {
+                  const name = typeof f === 'string' ? f : f?.name;
+                  if (name) {
+                    knownFeats.add(normalizeFeatName(name));
+                    knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
+                  }
+                });
+                (lvl.specialAbilities || []).forEach(s => {
+                  const name = typeof s === 'string' ? s : s?.name;
+                  if (name) {
+                    knownFeats.add(normalizeFeatName(name));
+                    knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
+                  }
+                });
+              }
+            });
+          }
+          if (!isTableMode && Array.isArray(levelUpModalFeatSlots)) {
+            for (let i = 0; i < slotIdx; i++) {
+              const priorSlot = levelUpModalFeatSlots[i];
+              if (priorSlot && priorSlot.name) {
+                knownFeats.add(normalizeFeatName(priorSlot.name));
+                knownFeats.add(normalizeFeatName(priorSlot.name.replace(/\(.*?\)/g, '')));
               }
             }
-            abilities[stat] = val;
-          });
-        } else {
-          const defaultClass = (character.classes?.split(' ')[0]) || (prog[0]?.className) || 'Fighter';
-          selectedClassName = document.getElementById('lvlup-class-select')?.value || defaultClass;
-          def = allDefs[selectedClassName] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[selectedClassName] : null) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'good', skills: 4 };
-
-          prospectiveProg = [...prog.map(p => ({ ...p, active: true })), { className: selectedClassName, hd: `d${def.hd || 8}`, hpGain: 0, active: true }];
-          const babInputVal = parseInt(document.getElementById('lvlup-bab-input')?.value, 10);
-          if (typeof RuleEngine !== 'undefined' && RuleEngine.calculateProgression) {
-            const sys = character.settings?.babSaveSystem || character.settings?.progressionSystem || 'standard';
-            const isHuman = (character.race || '').toLowerCase().includes('human');
-            const intMod = (typeof RuleEngine.getAbilityMod === 'function') ? RuleEngine.getAbilityMod(character.abilities?.int || 10) : Math.floor(((character.abilities?.int || 10) - 10) / 2);
-            const calc = RuleEngine.calculateProgression(prospectiveProg, { system: sys, isHuman, intMod });
-            prospectiveBab = !isNaN(babInputVal) ? babInputVal : (calc?.baseBab ?? (Number(character.bab) || 0));
-            prospectiveBaseSaves = calc?.baseSaves ?? { fort: Number(character.baseSaves?.fort ?? character.savingThrows?.fortitude?.base) || 0, ref: Number(character.baseSaves?.ref ?? character.savingThrows?.reflex?.base) || 0, will: Number(character.baseSaves?.will ?? character.savingThrows?.will?.base) || 0 };
-          } else {
-            prospectiveBab = !isNaN(babInputVal) ? babInputVal : (Number(character.bab) || 0);
-            prospectiveBaseSaves = { fort: Number(character.baseSaves?.fort ?? character.savingThrows?.fortitude?.base) || 0, ref: Number(character.baseSaves?.ref ?? character.savingThrows?.reflex?.base) || 0, will: Number(character.baseSaves?.will ?? character.savingThrows?.will?.base) || 0 };
           }
 
-          const chosenStat = (document.getElementById('lvlup-stat-select')?.value || '').toLowerCase().trim();
-          statKeys.forEach(stat => {
-            let base = Number(character.abilities?.[stat] ?? character.baseAbilities?.[stat] ?? 10);
-            if (chosenStat === stat) base += 1;
-            abilities[stat] = base;
-          });
-        }
+          // 6. Strict D&D 3.5e RAW Spellcasting, Warlock, SLA, Psionic & Class Feature Capabilities
+          const FULL_CASTER_CLASSES = new Set([
+            'wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'duskblade',
+            'warmage', 'beguiler', 'dread necromancer', 'favored soul',
+            'spirit shaman', 'archivist', 'wu jen', 'shugenja', 'healer', 'adept'
+          ]);
+          const HALF_CASTER_MIN4_CLASSES = new Set(['paladin', 'ranger', 'hexblade', 'spellthief', 'sohei']);
+          const PRESTIGE_CASTER_CLASSES = new Set([
+            'abjurant champion', 'eldritch knight', 'arcane archer', 'mystic theurge',
+            'spellsword', 'jade phoenix mage', 'archmage', 'hierophant', 'loremaster',
+            'thaumaturgist', 'red wizard', 'assassin', 'blackguard'
+          ]);
+          const PSIONIC_CLASSES = new Set([
+            'psion', 'psychic warrior', 'soulknife', 'wilder', 'erudite', 'ardent', 'lurk', 'divine mind'
+          ]);
+          const MARTIAL_ADEPT_CLASSES = new Set(['crusader', 'swordsage', 'warblade', 'bloodstorm blade', 'jade phoenix mage']);
 
-        // Count active levels per class & total character level
-        const classCounts = {};
-        let totalCharacterLevel = 0;
-        prospectiveProg.forEach(r => {
-          if (!r || r.active === false) return;
-          const cKey = String(r.className || selectedClassName || 'Fighter').trim().toLowerCase();
-          classCounts[cKey] = (classCounts[cKey] || 0) + 1;
-          totalCharacterLevel++;
-        });
-        if (totalCharacterLevel === 0) {
-          totalCharacterLevel = Math.max(1, Number(character.level) || 1);
-          const cKey = String(selectedClassName || 'Fighter').trim().toLowerCase();
-          classCounts[cKey] = totalCharacterLevel;
-        }
+          let calculatedCasterLevel = 0;
+          let hasTrueSpellcastingClass = false;
+          let calculatedManifesterLevel = 0;
+          let hasPsionicClass = false;
 
-        // 5. Known Feats & Special Abilities Set
-        const knownFeats = new Set();
-        const normalizeFeatName = str => (str || '').toLowerCase().replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').replace(/[^a-z0-9]/g, '');
-
-        if (Array.isArray(character.feats)) {
-          character.feats.forEach(f => {
-            const name = typeof f === 'string' ? f : f?.name;
-            if (name) {
-              knownFeats.add(normalizeFeatName(name));
-              knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
-            }
-          });
-        }
-        if (Array.isArray(character.specialAbilities)) {
-          character.specialAbilities.forEach(s => {
-            const name = typeof s === 'string' ? s : s?.name;
-            if (name) {
-              knownFeats.add(normalizeFeatName(name));
-              knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
-            }
-          });
-        }
-
-        const progSliceForFeats = isTableMode ? prog.slice(0, Number(targetLevelIdx) + 1) : prog;
-        if (Array.isArray(progSliceForFeats)) {
-          progSliceForFeats.forEach(lvl => {
-            if (lvl && (isTableMode || lvl.active !== false)) {
-              (lvl.feats || []).forEach(f => {
-                const name = typeof f === 'string' ? f : f?.name;
-                if (name) {
-                  knownFeats.add(normalizeFeatName(name));
-                  knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
-                }
-              });
-              (lvl.specialAbilities || []).forEach(s => {
-                const name = typeof s === 'string' ? s : s?.name;
-                if (name) {
-                  knownFeats.add(normalizeFeatName(name));
-                  knownFeats.add(normalizeFeatName(name.replace(/\(.*?\)/g, '')));
-                }
-              });
-            }
-          });
-        }
-        if (!isTableMode && Array.isArray(levelUpModalFeatSlots)) {
-          for (let i = 0; i < slotIdx; i++) {
-            const priorSlot = levelUpModalFeatSlots[i];
-            if (priorSlot && priorSlot.name) {
-              knownFeats.add(normalizeFeatName(priorSlot.name));
-              knownFeats.add(normalizeFeatName(priorSlot.name.replace(/\(.*?\)/g, '')));
-            }
-          }
-        }
-
-        // 6. Strict D&D 3.5e RAW Spellcasting, Warlock, SLA, Psionic & Class Feature Capabilities
-        const FULL_CASTER_CLASSES = new Set([
-          'wizard', 'sorcerer', 'cleric', 'druid', 'bard', 'duskblade',
-          'warmage', 'beguiler', 'dread necromancer', 'favored soul',
-          'spirit shaman', 'archivist', 'wu jen', 'shugenja', 'healer', 'adept'
-        ]);
-        const HALF_CASTER_MIN4_CLASSES = new Set(['paladin', 'ranger', 'hexblade', 'spellthief', 'sohei']);
-        const PRESTIGE_CASTER_CLASSES = new Set([
-          'abjurant champion', 'eldritch knight', 'arcane archer', 'mystic theurge',
-          'spellsword', 'jade phoenix mage', 'archmage', 'hierophant', 'loremaster',
-          'thaumaturgist', 'red wizard', 'assassin', 'blackguard'
-        ]);
-        const PSIONIC_CLASSES = new Set([
-          'psion', 'psychic warrior', 'soulknife', 'wilder', 'erudite', 'ardent', 'lurk', 'divine mind'
-        ]);
-        const MARTIAL_ADEPT_CLASSES = new Set(['crusader', 'swordsage', 'warblade', 'bloodstorm blade', 'jade phoenix mage']);
-
-        let calculatedCasterLevel = 0;
-        let hasTrueSpellcastingClass = false;
-        let calculatedManifesterLevel = 0;
-        let hasPsionicClass = false;
-
-        Object.entries(classCounts).forEach(([cName, cLvl]) => {
-          if (FULL_CASTER_CLASSES.has(cName) || PRESTIGE_CASTER_CLASSES.has(cName)) {
-            hasTrueSpellcastingClass = true;
-            calculatedCasterLevel += cLvl;
-          } else if (HALF_CASTER_MIN4_CLASSES.has(cName) && cLvl >= 4) {
-            hasTrueSpellcastingClass = true;
-            calculatedCasterLevel += Math.max(1, Math.floor(cLvl / 2));
-          } else if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getClassSpellSlots === 'function') {
-            const slotCheck = RuleEngine.getClassSpellSlots(cName, cLvl, 20);
-            if (slotCheck && slotCheck.hasSpellcasting) {
+          Object.entries(classCounts).forEach(([cName, cLvl]) => {
+            if (FULL_CASTER_CLASSES.has(cName) || PRESTIGE_CASTER_CLASSES.has(cName)) {
               hasTrueSpellcastingClass = true;
               calculatedCasterLevel += cLvl;
+            } else if (HALF_CASTER_MIN4_CLASSES.has(cName) && cLvl >= 4) {
+              hasTrueSpellcastingClass = true;
+              calculatedCasterLevel += Math.max(1, Math.floor(cLvl / 2));
+            } else if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getClassSpellSlots === 'function') {
+              const slotCheck = RuleEngine.getClassSpellSlots(cName, cLvl, 20);
+              if (slotCheck && slotCheck.hasSpellcasting) {
+                hasTrueSpellcastingClass = true;
+                calculatedCasterLevel += cLvl;
+              }
             }
-          }
-          if (PSIONIC_CLASSES.has(cName)) {
-            hasPsionicClass = true;
-            calculatedManifesterLevel += cLvl;
-          }
-        });
+            if (PSIONIC_CLASSES.has(cName)) {
+              hasPsionicClass = true;
+              calculatedManifesterLevel += cLvl;
+            }
+          });
 
-        const explicitCl = Number(character.spellcasting?.cl) || 0;
-        const hasCharacterSpells = Array.isArray(character.spells) && character.spells.length > 0;
-        const isCaster = hasTrueSpellcastingClass || (explicitCl > 0 && hasCharacterSpells);
-        const effectiveCasterLevel = isCaster ? Math.max(calculatedCasterLevel, explicitCl, 1) : 0;
+          const explicitCl = Number(character.spellcasting?.cl) || 0;
+          const hasCharacterSpells = Array.isArray(character.spells) && character.spells.length > 0;
+          const isCaster = hasTrueSpellcastingClass || (explicitCl > 0 && hasCharacterSpells);
+          const effectiveCasterLevel = isCaster ? Math.max(calculatedCasterLevel, explicitCl, 1) : 0;
 
-        // Warlock & Eldritch Blast capability
-        const warlockBoonEnabled = (typeof isWarlockEnabledForLevel === 'function') ? isWarlockEnabledForLevel(targetLevelIdx) : false;
-        const warlockLevel = (classCounts['warlock'] || 0) > 0
-          ? classCounts['warlock']
-          : (warlockBoonEnabled ? totalCharacterLevel : 0);
-        const isWarlock = warlockLevel > 0;
-        const hasEldritchBlast = isWarlock || knownFeats.has('eldritchblast');
+          // Warlock & Eldritch Blast capability
+          const warlockBoonEnabled = (typeof isWarlockEnabledForLevel === 'function') ? isWarlockEnabledForLevel(targetLevelIdx) : false;
+          const warlockLevel = (classCounts['warlock'] || 0) > 0
+            ? classCounts['warlock']
+            : (warlockBoonEnabled ? totalCharacterLevel : 0);
+          const isWarlock = warlockLevel > 0;
+          const hasEldritchBlast = isWarlock || knownFeats.has('eldritchblast');
 
-        // Spell-Like Ability (SLA) capability
-        const raceLow = String(character.race || '').toLowerCase();
-        const hasRacialSla = ['gnome', 'drow', 'tiefling', 'aasimar', 'duergar', 'svirfneblin'].some(r => raceLow.includes(r));
-        const hasAbilitySla = Array.isArray(character.specialAbilities) && character.specialAbilities.some(a => {
-          const n = String(typeof a === 'string' ? a : (a?.name || '')).toLowerCase();
-          return n.includes('(sp)') || n.includes('spell-like') || n.includes('invocation');
-        });
-        const hasSpellLikeAbility = isWarlock || isCaster || hasRacialSla || hasAbilitySla;
-        const slaCasterLevel = hasSpellLikeAbility ? Math.max(effectiveCasterLevel, warlockLevel, totalCharacterLevel) : 0;
+          // Spell-Like Ability (SLA) capability
+          const raceLow = String(character.race || '').toLowerCase();
+          const hasRacialSla = ['gnome', 'drow', 'tiefling', 'aasimar', 'duergar', 'svirfneblin'].some(r => raceLow.includes(r));
+          const hasAbilitySla = Array.isArray(character.specialAbilities) && character.specialAbilities.some(a => {
+            const n = String(typeof a === 'string' ? a : (a?.name || '')).toLowerCase();
+            return n.includes('(sp)') || n.includes('spell-like') || n.includes('invocation');
+          });
+          const hasSpellLikeAbility = isWarlock || isCaster || hasRacialSla || hasAbilitySla;
+          const slaCasterLevel = hasSpellLikeAbility ? Math.max(effectiveCasterLevel, warlockLevel, totalCharacterLevel) : 0;
 
-        // Psionics capability
-        const isPsionic = hasPsionicClass || knownFeats.has('wildtalent') || knownFeats.has('hiddentalent');
-        const effectiveManifesterLevel = isPsionic ? Math.max(calculatedManifesterLevel, 1) : 0;
+          // Psionics capability
+          const isPsionic = hasPsionicClass || knownFeats.has('wildtalent') || knownFeats.has('hiddentalent');
+          const effectiveManifesterLevel = isPsionic ? Math.max(calculatedManifesterLevel, 1) : 0;
 
-        // Martial Adept capability
-        const isMartialAdept = Object.keys(classCounts).some(c => MARTIAL_ADEPT_CLASSES.has(c)) || knownFeats.has('martialstudy');
+          // Martial Adept capability
+          const isMartialAdept = Object.keys(classCounts).some(c => MARTIAL_ADEPT_CLASSES.has(c)) || knownFeats.has('martialstudy');
 
-        // Skills list
-        const skillsList = Array.isArray(character.skills) ? character.skills : [];
+          // Skills list
+          const skillsList = Array.isArray(character.skills) ? character.skills : [];
+
+          charStateSnap = {
+            prospectiveBab,
+            prospectiveBaseSaves,
+            abilities,
+            classCounts,
+            totalCharacterLevel,
+            knownFeats,
+            normalizeFeatName,
+            isCaster,
+            effectiveCasterLevel,
+            warlockLevel,
+            isWarlock,
+            hasEldritchBlast,
+            hasSpellLikeAbility,
+            slaCasterLevel,
+            isPsionic,
+            effectiveManifesterLevel,
+            isMartialAdept,
+            skillsList
+          };
+          _prereqTurnCache.set(stateCacheKey, charStateSnap);
+        }
+
+        const {
+          prospectiveBab,
+          prospectiveBaseSaves,
+          abilities,
+          classCounts,
+          totalCharacterLevel,
+          knownFeats,
+          normalizeFeatName,
+          isCaster,
+          effectiveCasterLevel,
+          warlockLevel,
+          isWarlock,
+          hasEldritchBlast,
+          hasSpellLikeAbility,
+          slaCasterLevel,
+          isPsionic,
+          effectiveManifesterLevel,
+          isMartialAdept,
+          skillsList
+        } = charStateSnap;
 
         // Split prereq string into comma or semicolon separated parts
         const parts = rawPrereq.split(/[,;]+/).map(p => p.trim()).filter(Boolean);

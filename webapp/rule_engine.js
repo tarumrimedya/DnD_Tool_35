@@ -5056,19 +5056,27 @@ const RuleEngine = {
 
   getClassDef(className) {
     if (!className) return null;
-    const availDefs = (typeof window !== 'undefined' && typeof window.getAvailableClassDefs === 'function')
-      ? window.getAvailableClassDefs()
-      : null;
-    const localDef = (this.DND35_CLASS_DEFS && this.DND35_CLASS_DEFS[className])
-      || (availDefs && availDefs[className])
-      || null;
+    if (this.DND35_CLASS_DEFS && this.DND35_CLASS_DEFS[className] && this.DND35_CLASS_DEFS[className]._v2Hydrated) {
+      return this.DND35_CLASS_DEFS[className];
+    }
     const comp = (typeof window !== 'undefined' && window.SrdCompendium)
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const srdClass = (comp && typeof comp.getClass === 'function')
       ? comp.getClass(className)
       : null;
+    let localDef = (this.DND35_CLASS_DEFS && this.DND35_CLASS_DEFS[className]) || null;
+    if (!localDef && !srdClass && typeof window !== 'undefined' && typeof window.getAvailableClassDefs === 'function') {
+      const availDefs = window.getAvailableClassDefs();
+      if (availDefs && availDefs[className]) {
+        localDef = availDefs[className];
+      }
+    }
     if (!localDef && !srdClass) return null;
-    if (!srdClass) return localDef;
+    if (!srdClass) {
+      localDef._v2Hydrated = true;
+      if (this.DND35_CLASS_DEFS) this.DND35_CLASS_DEFS[className] = localDef;
+      return localDef;
+    }
     const babRate = Number(srdClass.bab) || (srdClass.babProgression === 'high' ? 1.0 : (srdClass.babProgression === 'med' || srdClass.babProgression === 'medium' ? 0.75 : 0.5));
     const fortSave = srdClass.fort || (srdClass.savingThrows?.fort === 'high' ? 'good' : 'poor');
     const refSave = srdClass.ref || (srdClass.savingThrows?.ref === 'high' ? 'good' : 'poor');
@@ -5076,6 +5084,7 @@ const RuleEngine = {
     const hdNum = Number(String(srdClass.hitDie || srdClass.hd || 8).replace(/[^0-9]/g, '')) || 8;
     const skillPts = Number(srdClass.skillPointsPerLevel || srdClass.skills) || 2;
     const merged = Object.assign({}, localDef || {}, {
+      _v2Hydrated: true,
       hd: hdNum,
       bab: babRate,
       fort: fortSave,
@@ -5092,6 +5101,9 @@ const RuleEngine = {
     });
     if (this.DND35_CLASS_DEFS && srdClass.name) {
       this.DND35_CLASS_DEFS[srdClass.name] = merged;
+    }
+    if (this.DND35_CLASS_DEFS) {
+      this.DND35_CLASS_DEFS[className] = merged;
     }
     return merged;
   },
