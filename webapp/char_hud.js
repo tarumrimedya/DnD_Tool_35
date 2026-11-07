@@ -3667,8 +3667,8 @@
       const cleanSize = String(character.size || 'Medium').replace(/\s*\(Orta\)\s*/i, '').trim() || 'Medium';
       setVal('profile-edit-size', cleanSize);
       updateSizeDropdownTrigger(cleanSize);
-      const rawGender = character.gender || '';
-      const cleanGender = /^erkek$/i.test(String(rawGender).trim()) ? 'Male' : (/^kad[ıi]n$/i.test(String(rawGender).trim()) ? 'Female' : rawGender);
+      const rawGender = String(character.gender || '').trim();
+      const cleanGender = /^(female|kad[ıi]n|f)$/i.test(rawGender) ? 'Female' : 'Male';
       setVal('profile-edit-gender', cleanGender);
       setVal('profile-edit-age', character.age || '');
       setVal('profile-edit-height', character.height || '');
