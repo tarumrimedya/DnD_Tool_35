@@ -7080,7 +7080,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const hasSlotRegularFeat = regularFeats.some(f => !String(f).includes('[Extra]'));
         const regularPromptButtons = [];
         if (qualifiesForRegularFeat && !hasSlotRegularFeat) {
-          regularPromptButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Character Feat for this level"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Feat</span></button>`);
+          regularPromptButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Character Feat for this level"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Select Feat</span></button>`);
         }
 
         // 3. Bonus badges (DM Boons, Invocations, Flaws, Racial, CL Boons)
@@ -7235,18 +7235,18 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           <td class="py-2 px-1 align-top text-center w-10">
             <div class="h-6 flex items-center justify-center text-indigo-300 font-bold text-xs">${lvl.skillPts || 4}</div>
           </td>
-          <td class="py-2 px-1.5 font-sans align-top text-center w-[120px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full mx-auto min-w-0">
+          <td class="py-2 px-1.5 font-sans align-top text-center w-[140px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
               ${(abilityBadgeItems.length > 0 || classBonusBadgeItems.length > 0 || pendingClassBonusButtons.length > 0) ? (abilityBadgeItems.join('') + classBonusBadgeItems.join('') + pendingClassBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1.5 font-sans align-top text-center w-[120px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full mx-auto min-w-0">
+          <td class="py-2 px-1.5 font-sans align-top text-center w-[140px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
               ${(regularFeatBadgeItems.length > 0 || regularPromptButtons.length > 0) ? (regularFeatBadgeItems.join('') + regularPromptButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>
-          <td class="py-2 px-1.5 font-sans align-top text-center w-[120px] min-w-0">
-            <div class="flex flex-col gap-1.5 items-center w-full mx-auto min-w-0">
+          <td class="py-2 px-1.5 font-sans align-top text-center w-[140px] min-w-0">
+            <div class="flex flex-col gap-1.5 items-center w-full max-w-[134px] mx-auto min-w-0">
               ${(statBadgeItem || otherBonusBadgeItems.length > 0 || pendingBonusButtons.length > 0) ? ((statBadgeItem || '') + otherBonusBadgeItems.join('') + pendingBonusButtons.join('')) : '<span class="text-slate-600 text-[10px] italic leading-none py-1">-</span>'}
             </div>
           </td>

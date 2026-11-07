@@ -17,8 +17,9 @@
   - Workers read only the target module and exact 30–60 line range needed. Edit only root files; never read `character.html` or `webapp/*` copies directly.
   - `HANDOVER_TO_CHARACTER_SHEET.md` is frozen archive — never read or update it.
 
-## 2. Root-Cause Engineering & Inquiry Guardrail
+## 2. Root-Cause Engineering, Inquiry Guardrail & Strict UI Preservation
 - **No Band-Aids:** Never use temporary workarounds. Always identify the root cause, anticipate cascading impacts, and implement the permanent architectural fix.
+- **Strict Visual & Design Preservation (Zero Unrequested UI Changes):** **NEVER** alter existing visual designs, badge/button dimensions, column widths, colors, or layout structures on your own initiative. Only modify the exact UI element explicitly requested by the user, preserving all surrounding component dimensions and styles 100% intact.
 - **No Unsolicited Edits on Questions:** When the user asks a conceptual/design question (*"mantıklı mı?"*, *"nasıl olmalı?"*, *"var mı?"*) or makes a proposal, analyze pros/cons, 3.5e RAW mechanics, and UX directly (using targeted 30–60 line reads or parallel `flash` research only if multi-file lookup is needed); never modify code files until explicitly instructed to implement.
 
 ## 3. Canonical V2 Data Architecture & Zero-Dummy-Data Policy
