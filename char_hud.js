@@ -567,6 +567,14 @@
           } catch (e) { return null; }
         })();
 
+        // Protect real character name against accidental 'New Character' placeholder overwrite
+        const isSameCharId = Boolean(localSaved && (localSaved.id === matchedCloud.id || localSaved._hubId === matchedCloud.id));
+        if ((!cloudFd.name || cloudFd.name === 'New Character') && matchedCloud.name && matchedCloud.name !== 'New Character') {
+          cloudFd.name = matchedCloud.name;
+        } else if ((!cloudFd.name || cloudFd.name === 'New Character') && isSameCharId && localSaved.name && localSaved.name !== 'New Character') {
+          cloudFd.name = localSaved.name;
+        }
+
         const cloudLvl = Number(cloudFd.level) || (Array.isArray(cloudFd.progression) ? cloudFd.progression.length : 0);
         const localLvl = localSaved ? (Number(localSaved.level) || (Array.isArray(localSaved.progression) ? localSaved.progression.length : 0)) : 0;
         const cloudRowTs = new Date(matchedCloud.updated_at || 0).getTime();
@@ -644,7 +652,13 @@
                 hubDbPre.characters[hIdx].notesList = cloudFd.smartNotes;
                 if (cloudFd._notesUpdatedAt) hubDbPre.characters[hIdx]._notesUpdatedAt = cloudFd._notesUpdatedAt;
               }
-              hubDbPre.characters[hIdx].name = matchedCloud.name || cloudFd.name || hubDbPre.characters[hIdx].name;
+              const bestCloudName = (cloudFd.name && cloudFd.name !== 'New Character')
+                ? cloudFd.name
+                : ((matchedCloud.name && matchedCloud.name !== 'New Character') ? matchedCloud.name : (hubDbPre.characters[hIdx].name || cloudFd.name));
+              hubDbPre.characters[hIdx].name = bestCloudName;
+              if (bestCloudName && (!cloudFd.name || cloudFd.name === 'New Character')) {
+                cloudFd.name = bestCloudName;
+              }
               hubDbPre.characters[hIdx].classes = cloudFd.classes || hubDbPre.characters[hIdx].classes;
               hubDbPre.characters[hIdx].level = Number(cloudFd.level) || hubDbPre.characters[hIdx].level;
               hubDbPre.characters[hIdx].maxHp = cloudFd.hp?.max || hubDbPre.characters[hIdx].maxHp;
@@ -697,7 +711,11 @@
             if (found.fullData) {
               character = found.fullData;
               character._hubId = reqId;
-              if (found.name && character.name !== found.name) {
+              const isFoundDefaultName = !found.name || found.name === 'New Character';
+              const isCharRealName = Boolean(character.name && character.name !== 'New Character');
+              if (isFoundDefaultName && isCharRealName) {
+                found.name = character.name;
+              } else if (found.name && !isFoundDefaultName && character.name !== found.name) {
                 character.name = found.name;
               }
               if (found.isNpc !== undefined && character.isNpc === undefined) {
@@ -761,18 +779,23 @@
 
       if (!loadedFromHub) {
         if (queryId && parsedSaved && parsedSaved.id !== queryId && parsedSaved._hubId !== queryId) {
-          character = createCleanDnd35Character({ id: queryId, name: 'New Character' });
-          character._hubId = queryId;
+          // Do not immediately overwrite with a blank 'New Character' before giving Cloud a chance to hydrate queryId
+          character = null;
         } else if (parsedSaved) {
           character = parsedSaved;
         }
       }
 
-      // If local storage was completely empty, await cloud once; otherwise revalidate non-blocking in background
+      // If local storage did not have the requested character, await cloud once; otherwise revalidate non-blocking in background
       if (!character && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
         await revalidateCharacterFromCloudInBackground(reqId);
       } else if (window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
         setTimeout(() => { revalidateCharacterFromCloudInBackground(reqId); }, 150);
+      }
+
+      if (!character && queryId) {
+        character = createCleanDnd35Character({ id: queryId, name: 'New Character' });
+        character._hubId = queryId;
       }
 
       // Reconcile HP with already-parsed Hub DB if available
