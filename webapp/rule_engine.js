@@ -3926,6 +3926,7 @@ const RuleEngine = {
     const feats = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats]
       .map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
     const hasSteadfast = feats.some(f => f.includes('steadfast determination'));
+    const hasAgileShield = feats.some(f => f.includes('agile shield fighter') || f.includes('agile shiled fighter'));
 
     const flags = {
       allowFlatFootedAoO: feats.some(f => f.includes('combat reflexes')),
@@ -3942,6 +3943,7 @@ const RuleEngine = {
       hasSteadfastDetermination: hasSteadfast,
       conToWillSave: hasSteadfast,
       noAutoFailFortSaveOnNat1: hasSteadfast,
+      agileShieldFighter: hasAgileShield,
       loseDexToAC: false,
       effectiveDexZero: false,
       halfSpeed: false,

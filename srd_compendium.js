@@ -1857,6 +1857,19 @@
         entry.ruleFlags.conToWillSave = true;
         entry.ruleFlags.noAutoFailFortSaveOnNat1 = true;
       }
+      if (cleanNameLower.includes('agile shield fighter') || cleanNameLower.includes('agile shiled fighter')) {
+        entry.name = 'Agile Shield Fighter';
+        entry.type = 'Feat';
+        entry.category = 'Fighter';
+        entry.isFighterBonusFeat = true;
+        entry.source = "Player's Handbook II, p. 74";
+        entry.prereq = 'Shield Proficiency, Improved Shield Bash, Shield Specialization';
+        entry.prerequisites = 'Shield Proficiency, Improved Shield Bash, Shield Specialization';
+        entry.benefit = 'When making a shield bash and armed strike attack as part of a full attack action, you take a -2 penalty on each attack. These penalties replace the normal ones you incur for fighting with two weapons.';
+        entry.description = 'You are skilled in combining your shield bash attack with an armed strike. When you use your shield in unison with a weapon, your training allows you to score telling blows with both.\n\nPrerequisites: Proficiency with shields, Improved Shield Bash, Shield Specialization.\n\nBenefit: When making a shield bash and armed strike attack as part of a full attack action, you take a -2 penalty on each attack. These penalties replace the normal ones you incur for fighting with two weapons.\n\nSpecial: A fighter can select Agile Shield Fighter as one of his fighter bonus feats.';
+        entry.special = 'A fighter can select Agile Shield Fighter as one of his fighter bonus feats.';
+        entry.ruleFlags.agileShieldFighter = true;
+      }
       delete entry.isChild;
       delete entry.parent;
 

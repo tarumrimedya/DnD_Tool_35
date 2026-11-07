@@ -475,7 +475,7 @@
             benefit: entry.benefit || '',
             modifiers: Array.isArray(entry.modifiers) ? JSON.parse(JSON.stringify(entry.modifiers)) : [],
             damageParts: Array.isArray(entry.damageParts) ? JSON.parse(JSON.stringify(entry.damageParts)) : [],
-            ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('steadfast determination') ? { conToWillSave: true, noAutoFailFortSaveOnNat1: true } : {}),
+            ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('steadfast determination') ? { conToWillSave: true, noAutoFailFortSaveOnNat1: true } : (clean.includes('agile shield fighter') ? { agileShieldFighter: true } : {})),
             tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
           });
           // Toughness immediate +3 HP support
@@ -505,7 +505,7 @@
             role: 'Offense / Feat',
             modifiers: Array.isArray(entry.modifiers) ? JSON.parse(JSON.stringify(entry.modifiers)) : [],
             damageParts: Array.isArray(entry.damageParts) ? JSON.parse(JSON.stringify(entry.damageParts)) : [],
-            ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('steadfast determination') ? { conToWillSave: true, noAutoFailFortSaveOnNat1: true } : {}),
+            ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('steadfast determination') ? { conToWillSave: true, noAutoFailFortSaveOnNat1: true } : (clean.includes('agile shield fighter') ? { agileShieldFighter: true } : {})),
             tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
           });
         }

@@ -1031,6 +1031,23 @@
           console.warn('Canonical V2 character.customDb sync warning:', syncErr);
         }
         masterDb = character.customDb;
+        if (Array.isArray(character.feats)) {
+          character.feats = character.feats.map(f => {
+            if (!f || typeof f !== 'object') return f;
+            const fn = String(f.name || '').toLowerCase().trim();
+            if (fn.includes('agile shield fighter') || fn.includes('agile shiled fighter')) {
+              return {
+                ...f,
+                name: 'Agile Shield Fighter',
+                source: "Player's Handbook II, p. 74",
+                prereq: 'Shield Proficiency, Improved Shield Bash, Shield Specialization',
+                benefit: 'When making a shield bash and armed strike attack as part of a full attack action, you take a -2 penalty on each attack. These penalties replace the normal ones you incur for fighting with two weapons.',
+                ruleFlags: { ...(f.ruleFlags || {}), agileShieldFighter: true }
+              };
+            }
+            return f;
+          });
+        }
       } else {
         masterDb = [];
       }

@@ -7832,18 +7832,47 @@
         customModifiers: nonChainMods
       });
 
-      const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : (f?.name || '')).toLowerCase());
+      const stripFeatPrefix = (rawStr) => String(rawStr || '')
+        .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️🥋🛡️⚡\s]+/, '')
+        .replace(/^\[.*?\]\s*/, '')
+        .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️🥋🛡️⚡\s]+/, '')
+        .trim();
+      const rawAllFeats = [
+        ...(character.feats || []).map(f => typeof f === 'string' ? f : (f?.name || '')),
+        ...(character.specialAbilities || []).map(a => typeof a === 'string' ? a : (a?.name || '')),
+        ...((character.levelProgression || []).filter(p => p && p.active !== false).flatMap(p => [
+          ...(p.feats || []).map(f => typeof f === 'string' ? f : (f?.name || '')),
+          ...(p.specialAbilities || []).map(s => typeof s === 'string' ? s : (s?.name || ''))
+        ]))
+      ];
+      const feats = rawAllFeats.map(f => stripFeatPrefix(f).toLowerCase()).filter(Boolean);
       const hasTWF = feats.some(f => f.includes('two-weapon fighting') && !f.includes('oversized') && !f.includes('shield'));
       const hasITWF = feats.some(f => f.includes('improved two-weapon fighting'));
       const hasGTWF = feats.some(f => f.includes('greater two-weapon fighting'));
       const hasOversized = feats.some(f => f.includes('oversized two-weapon fighting'));
+      const hasAgileShieldFighter = Boolean(character.ruleFlags?.agileShieldFighter) || feats.some(f => f.includes('agile shield fighter') || f.includes('agile shiled fighter'));
+
+      const isOffHandShieldBash = Boolean(
+        offHandWep && (
+          offHandWep.isShield ||
+          offHandWep.category === 'Shield' ||
+          offHandWep.type === 'Shield' ||
+          String(offHandWep.name || '').toLowerCase().includes('shield') ||
+          (typeof isShieldItem === 'function' && isShieldItem(offHandWep))
+        ) && !(typeof isBucklerItem === 'function' && isBucklerItem(offHandWep.name || offHandWep))
+      );
 
       const isOffHandLight = offHandWep ? Boolean(offHandWep.isLight || (RuleEngine && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(offHandWep)) || hasOversized) : false;
 
       let twfMainPenalty = 0;
       let twfOffPenalty = 0;
       if (isTWF && grip !== '2-Hand' && offHandWep) {
-        if (hasTWF) {
+        if (hasAgileShieldFighter && isOffHandShieldBash) {
+          // D&D 3.5e RAW (PHB II, p. 74): When making a shield bash and armed strike attack as part of a full attack action,
+          // you take a -2 penalty on each attack, replacing the normal Two-Weapon Fighting penalties (even with a heavy shield or without TWF).
+          twfMainPenalty = -2;
+          twfOffPenalty = -2;
+        } else if (hasTWF) {
           twfMainPenalty = isOffHandLight ? -2 : -4;
           twfOffPenalty = isOffHandLight ? -2 : -4;
         } else {
@@ -10094,9 +10123,12 @@
           const offHandItem = character.bodySlots?.offHand;
           const isShield = offHandItem && offHandItem.name === currentVal && (offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield')));
           const hasImpShieldBash = (character.feats || []).some(f => (typeof f === 'string' ? f : f.name).toLowerCase().includes('improved shield bash'));
+          const hasAgileShield = Boolean(character.ruleFlags?.agileShieldFighter) || (character.feats || []).some(f => (typeof f === 'string' ? f : f.name).toLowerCase().includes('agile shield fighter'));
           let shieldWarning = '';
           if (isShield && !hasImpShieldBash) {
             shieldWarning = ' • ⚠️ Shield AC temporarily suppressed this round when bashing (RAW PHB p.125)';
+          } else if (isShield && hasAgileShield) {
+            shieldWarning = ' • 🛡️ Agile Shield Fighter (-2 / -2 Shield Bash + Weapon)';
           }
           twfBadge.innerHTML = `⚔️ Two-Weapon Fighting Active: Main Hand (Gold) • Off-Hand (Cyan)${shieldWarning}`;
         } else {
