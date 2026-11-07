@@ -1103,11 +1103,15 @@
       const benefitInput = document.getElementById('quick-feat-benefit');
       if (benefitInput) benefitInput.value = '';
 
-      updateQuickFeatTargetSelector('');
-      updateQuickFeatPrereqBadge();
-      openQuickFeatCatalogConsole();
-
       modal.classList.remove('hidden');
+
+      try {
+        updateQuickFeatTargetSelector('');
+        updateQuickFeatPrereqBadge();
+        openQuickFeatCatalogConsole();
+      } catch (err) {
+        console.error('openQuickFeatPickerForLevel console init error:', err);
+      }
     }
 
     let quickFeatSearchFilter = 'ALL';
@@ -3221,6 +3225,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           charStateSnap = {
             prospectiveBab,
             prospectiveBaseSaves,
+            selectedClassName,
             abilities,
             classCounts,
             totalCharacterLevel,
@@ -3244,6 +3249,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const {
           prospectiveBab,
           prospectiveBaseSaves,
+          selectedClassName,
           abilities,
           classCounts,
           totalCharacterLevel,
@@ -3568,9 +3574,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           // F) Class Option Check (e.g. "Crusader, Swordsage veya Warblade 1")
           if (part.includes('veya') || part.includes(' or ')) {
             const options = part.split(/\s*(?:veya|or)\s*/i);
+            const selClsLow = String(selectedClassName || '').toLowerCase();
             met = options.some(opt => {
               const optClean = opt.toLowerCase().replace(/\d+/g, '').trim();
-              return Boolean(classCounts[optClean]) || selectedClassName.toLowerCase().includes(optClean);
+              return Boolean(classCounts[optClean]) || (optClean && selClsLow.includes(optClean));
             });
             info = met ? '(Class Eligible)' : '(Missing Required Class)';
             if (!met) allMet = false;
