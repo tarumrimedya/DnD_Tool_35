@@ -167,7 +167,7 @@
       if (['wizard', 'artificer', 'archivist', 'wu jen', "sha'ir", 'büyücü', 'archmage', 'loremaster', 'incantatrix', 'red wizard', 'pale master', 'eldritch knight', 'arcane trickster', 'abjurant champion'].some(k => c.includes(k))) return 'prepared';
       if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'spirit shaman', 'shugenja', 'healer', 'adept', 'rahip', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
       if (['sorcerer', 'bard', 'favored soul', 'warlock', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'dragonfire adept', 'spellthief'].some(k => c.includes(k))) return 'spontaneous';
-      if (['warblade', 'swordsage', 'crusader', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) return 'martial';
+      if (['warblade', 'swordsage', 'crusader', 'bloodclaw master', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) return 'martial';
       return null;
     }
 
@@ -2735,7 +2735,7 @@
       let otherLvls = 0;
       let adeptClass = null;
 
-      const MANEUVER_ADEPT_CLASSES = ['warblade', 'swordsage', 'crusader', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'];
+      const MANEUVER_ADEPT_CLASSES = ['warblade', 'swordsage', 'crusader', 'bloodclaw master', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'];
       activeRows.forEach(p => {
         const c = (p.className || p.class || '').toLowerCase();
         if (MANEUVER_ADEPT_CLASSES.some(k => c.includes(k))) {
@@ -2856,6 +2856,7 @@
         let simWb = 0;
         let simSs = 0;
         let simCr = 0;
+        let simBcm = 0;
         let simDs = 0;
         let simEb = 0;
         let simJpm = 0;
@@ -2911,6 +2912,13 @@
                 stanceSlotCeilings.push(stepMaxLvl);
                 simClassStances += 1;
               }
+            } else if (c.includes('bloodclaw master')) {
+              simBcm++;
+              if (simBcm % 2 === 1) {
+                maneuverSlotCeilings.push(stepMaxLvl);
+                simClassManeuvers += 1;
+              }
+              if (simBcm === 3) simReadied += 1;
             } else if (c.includes('deepstone sentinel')) {
               simDs++;
               if (simDs % 2 === 1) {
@@ -3037,13 +3045,30 @@
       const maxKnownManeuvers = Math.max(0, baseKnownManeuvers + martialStudyCount + dmKnownBonus);
       const maxReadied = Math.max(0, baseReadied + (martialLvls === 0 && martialStudyCount > 0 ? 1 : 0) + dmReadiedBonus);
       const maxKnownStances = Math.max(0, baseKnownStances + martialStanceCount + dmStanceBonus);
-      const classDisciplines = adeptClass === 'Crusader'
-        ? ['Devoted Spirit', 'Stone Dragon', 'White Raven']
-        : (adeptClass === 'Swordsage'
-          ? ['Desert Wind', 'Diamond Mind', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw']
-          : (adeptClass === 'Warblade'
-            ? ['Diamond Mind', 'Iron Heart', 'Stone Dragon', 'Tiger Claw', 'White Raven']
-            : ['Desert Wind', 'Devoted Spirit', 'Diamond Mind', 'Iron Heart', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw', 'White Raven']));
+      const discSet = new Set();
+      const addDiscs = (arr) => arr.forEach(d => discSet.add(d));
+      activeRows.forEach(p => {
+        const c = (p.className || p.class || '').toLowerCase();
+        if (c.includes('crusader')) addDiscs(['Devoted Spirit', 'Stone Dragon', 'White Raven']);
+        if (c.includes('swordsage')) addDiscs(['Desert Wind', 'Diamond Mind', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw']);
+        if (c.includes('warblade')) addDiscs(['Diamond Mind', 'Iron Heart', 'Stone Dragon', 'Tiger Claw', 'White Raven']);
+        if (c.includes('bloodclaw master')) addDiscs(['Tiger Claw']);
+        if (c.includes('deepstone sentinel')) addDiscs(['Stone Dragon']);
+        if (c.includes('eternal blade')) addDiscs(['Devoted Spirit', 'Diamond Mind', 'Iron Heart', 'White Raven']);
+        if (c.includes('jade phoenix mage')) addDiscs(['Desert Wind', 'Devoted Spirit']);
+        if (c.includes('master of nine')) addDiscs(['Desert Wind', 'Devoted Spirit', 'Diamond Mind', 'Iron Heart', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw', 'White Raven']);
+        if (c.includes('ruby knight')) addDiscs(['Devoted Spirit', 'Shadow Hand', 'Stone Dragon', 'White Raven']);
+        if (c.includes('shadow sun ninja')) addDiscs(['Setting Sun', 'Shadow Hand']);
+      });
+      const classDisciplines = discSet.size > 0
+        ? Array.from(discSet)
+        : (adeptClass === 'Crusader'
+          ? ['Devoted Spirit', 'Stone Dragon', 'White Raven']
+          : (adeptClass === 'Swordsage'
+            ? ['Desert Wind', 'Diamond Mind', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw']
+            : (adeptClass === 'Warblade'
+              ? ['Diamond Mind', 'Iron Heart', 'Stone Dragon', 'Tiger Claw', 'White Raven']
+              : ['Desert Wind', 'Devoted Spirit', 'Diamond Mind', 'Iron Heart', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw', 'White Raven'])));
 
       while (maneuverSlotCeilings.length < maxKnownManeuvers) {
         maneuverSlotCeilings.push(rawMaxManeuverLvl);
