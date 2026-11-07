@@ -7681,10 +7681,14 @@
     }
 
     let _customClassClonedSkills = [];
+    let _editingClassMasterDbIndex = -1;
+    let _editingClassOriginalName = '';
 
     function ensureCustomClassStudioDom() {
       const modal = document.getElementById('create-custom-class-modal');
-      if (!modal || modal.dataset.studioUpgraded === 'true') return;
+      if (!modal) return;
+      modal.style.zIndex = '10090';
+      if (modal.dataset.studioUpgraded === 'true') return;
       modal.dataset.studioUpgraded = 'true';
 
       const card = modal.querySelector('.bg-dndCard');
@@ -7876,14 +7880,44 @@
       if (nameInput) nameInput.value = 'Rogue (Adventurer Variant)';
     }
 
-    function openCreateCustomClassModal(templateClassName = null, isEditingExisting = false) {
+    function openCreateCustomClassModal(templateClassName = null, isEditingExisting = false, rawEntryObj = null, editMasterDbIdx = -1) {
       const modal = document.getElementById('create-custom-class-modal');
       if (!modal) return;
       ensureCustomClassStudioDom();
-      populateCustomClassTemplateDropdown(templateClassName || '');
+      _editingClassMasterDbIndex = (typeof editMasterDbIdx === 'number' && editMasterDbIdx >= 0) ? editMasterDbIdx : -1;
+      _editingClassOriginalName = (isEditingExisting && (rawEntryObj?.name || templateClassName)) ? String(rawEntryObj?.name || templateClassName).trim() : '';
 
-      if (templateClassName) {
+      populateCustomClassTemplateDropdown(templateClassName || rawEntryObj?.name || '');
+
+      if (templateClassName && getAvailableClassDefs()[templateClassName]) {
         loadClassTemplateIntoCustomModal(templateClassName, isEditingExisting);
+      } else if (rawEntryObj && typeof rawEntryObj === 'object') {
+        _customClassClonedSkills = Array.isArray(rawEntryObj.classSkills) ? [...rawEntryObj.classSkills] : [];
+        const nameInput = document.getElementById('custom-class-name');
+        if (nameInput) nameInput.value = rawEntryObj.name || '';
+        const typeSel = document.getElementById('custom-class-type');
+        const cType = rawEntryObj.classType || (String(rawEntryObj.type || '').toLowerCase().includes('prestige') ? 'Prestige Class' : 'Base Class');
+        if (typeSel) typeSel.value = cType;
+        const maxSel = document.getElementById('custom-class-max-level');
+        const mLvl = Number(rawEntryObj.maxLevel) || (cType === 'Prestige Class' ? 10 : 20);
+        if (maxSel) maxSel.value = [5, 10, 20].includes(mLvl) ? String(mLvl) : '20';
+        const hdNum = Number(String(rawEntryObj.hd || rawEntryObj.hitDie || 8).replace(/\D/g, '')) || 8;
+        const hdInput = document.getElementById('custom-class-hd');
+        if (hdInput) hdInput.value = String(hdNum);
+        const babVal = Number(rawEntryObj.bab) || (String(rawEntryObj.bab || '').toLowerCase() === 'good' ? 1.0 : (String(rawEntryObj.bab || '').toLowerCase() === 'poor' ? 0.5 : 0.75));
+        const babInput = document.getElementById('custom-class-bab');
+        if (babInput) babInput.value = String(babVal);
+        const fortInput = document.getElementById('custom-class-good-fort');
+        if (fortInput) fortInput.checked = String(rawEntryObj.fort || '').toLowerCase() === 'good';
+        const refInput = document.getElementById('custom-class-good-ref');
+        if (refInput) refInput.checked = String(rawEntryObj.ref || '').toLowerCase() === 'good';
+        const willInput = document.getElementById('custom-class-good-will');
+        if (willInput) willInput.checked = String(rawEntryObj.will || '').toLowerCase() === 'good';
+        const skillsInput = document.getElementById('custom-class-skills');
+        if (skillsInput) skillsInput.value = String(rawEntryObj.skills || rawEntryObj.skillPoints || 2);
+        const sourceInput = document.getElementById('custom-class-source');
+        if (sourceInput) sourceInput.value = rawEntryObj.source || 'Custom / Variant';
+        renderCustomClassLevelEditorRows(rawEntryObj.features || {}, rawEntryObj.bonusFeatLevels || []);
       } else {
         _customClassClonedSkills = [];
         const nameInput = document.getElementById('custom-class-name');
@@ -7916,6 +7950,8 @@
     function closeCreateCustomClassModal() {
       const modal = document.getElementById('create-custom-class-modal');
       if (modal) modal.classList.add('hidden');
+      _editingClassMasterDbIndex = -1;
+      _editingClassOriginalName = '';
     }
 
     function deleteCustomClass(className) {
@@ -7927,7 +7963,7 @@
       if (Array.isArray(masterDb)) {
         for (let i = masterDb.length - 1; i >= 0; i--) {
           const m = masterDb[i];
-          if (m && (m.name || '').toLowerCase() === clean && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class')) {
+          if (m && (m.name || '').toLowerCase() === clean && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class' || m.type === 'Base Class')) {
             masterDb.splice(i, 1);
           }
         }
@@ -7939,6 +7975,9 @@
       populateLevelUpClassSelect();
       if (typeof filterLevelUpClassSearch === 'function') filterLevelUpClassSearch();
       if (typeof filterChangeClassSearch === 'function') filterChangeClassSearch();
+      if (window.RuleMaster && typeof window.RuleMaster.renderTable === 'function') {
+        window.RuleMaster.renderTable();
+      }
       if (typeof showToast === 'function') {
         showToast(`🗑️ Deleted custom class "${className}".`, 'info');
       }
@@ -7966,6 +8005,7 @@
 
       const features = {};
       const bonusFeatLevels = [];
+      const summaryFeatureNames = [];
       for (let lvl = 1; lvl <= maxLevel; lvl++) {
         const bChk = document.getElementById(`custom-class-bfeat-lvl-${lvl}`);
         const fInp = document.getElementById(`custom-class-feat-lvl-${lvl}`);
@@ -7991,11 +8031,18 @@
         }
         if (levelList.length > 0) {
           features[lvl] = levelList;
+          if (summaryFeatureNames.length < 6) {
+            summaryFeatureNames.push(`L${lvl}: ${levelList.map(x => x.name).join(', ')}`);
+          }
         }
       }
       if (Object.keys(features).length === 0 && notes) {
         features[1] = [{ name: notes, category: 'Special Ability', type: 'Ex', summary: notes }];
       }
+
+      const featureSummaryText = summaryFeatureNames.length > 0
+        ? summaryFeatureNames.join(' • ')
+        : (notes || `${name} (${classType}, d${hd} HD, ${skills}+INT skills, ${source})`);
 
       const newClassDef = {
         name,
@@ -8009,6 +8056,7 @@
         skills,
         classSkills: Array.isArray(_customClassClonedSkills) ? [..._customClassClonedSkills] : [],
         source,
+        description: featureSummaryText,
         isCustom: true,
         bonusFeatLevels,
         features
@@ -8018,7 +8066,11 @@
         character.customClasses = [];
       }
 
-      const existingIdx = character.customClasses.findIndex(c => c.name.toLowerCase() === name.toLowerCase());
+      const origLower = (_editingClassOriginalName || '').toLowerCase();
+      const existingIdx = character.customClasses.findIndex(c => {
+        const cn = (c?.name || '').toLowerCase();
+        return cn === name.toLowerCase() || (origLower && cn === origLower);
+      });
       if (existingIdx >= 0) {
         character.customClasses[existingIdx] = newClassDef;
       } else {
@@ -8026,11 +8078,15 @@
       }
 
       if (Array.isArray(masterDb)) {
-        const inDbIdx = masterDb.findIndex(m => m && (m.name || '').toLowerCase() === name.toLowerCase() && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class'));
+        const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
         const dbPayload = {
+          schemaVersion: 2,
+          id: `cls_${slug}`,
           name,
-          type: classType,
+          type: 'Class',
+          classType,
           category: 'Class',
+          slot: 'None',
           maxLevel,
           hd,
           bab,
@@ -8042,10 +8098,17 @@
           bonusFeatLevels,
           features,
           source,
-          desc: notes || `${name} (${source})`
+          benefit: featureSummaryText,
+          description: featureSummaryText,
+          desc: featureSummaryText,
+          modifiers: [],
+          damageParts: []
         };
-        if (inDbIdx >= 0) {
-          masterDb[inDbIdx] = Object.assign(masterDb[inDbIdx], dbPayload);
+        const targetDbIdx = (_editingClassMasterDbIndex >= 0 && masterDb[_editingClassMasterDbIndex])
+          ? _editingClassMasterDbIndex
+          : masterDb.findIndex(m => m && ((m.name || '').toLowerCase() === name.toLowerCase() || (origLower && (m.name || '').toLowerCase() === origLower)) && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class' || m.type === 'Base Class'));
+        if (targetDbIdx >= 0) {
+          masterDb[targetDbIdx] = Object.assign(masterDb[targetDbIdx], dbPayload);
         } else {
           masterDb.push(dbPayload);
         }
@@ -8063,6 +8126,9 @@
       if (typeof filterChangeClassSearch === 'function') {
         filterChangeClassSearch();
       }
+      if (window.RuleMaster && typeof window.RuleMaster.renderTable === 'function') {
+        window.RuleMaster.renderTable();
+      }
 
       const changeModal = document.getElementById('change-level-class-modal');
       if (changeModal && !changeModal.classList.contains('hidden') && currentChangeClassLevelIndex !== null) {
@@ -8070,9 +8136,9 @@
       }
 
       if (typeof showToast === 'function') {
-        showToast(`✅ Class "${name}" saved and selected!`, 'success');
+        showToast(`✅ Class "${name}" saved to Master DB & Class List!`, 'success');
       } else {
-        alert(`✅ Class "${name}" defined and added to the class list!`);
+        alert(`✅ Class "${name}" defined and added to Master DB & Class List!`);
       }
     }
 

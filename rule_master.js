@@ -807,7 +807,7 @@ const RuleMaster = {
         (Array.isArray(item.domains) && item.domains.join(' ').toLowerCase().includes(query)) ||
         (item.source && item.source.toLowerCase().includes(query)) ||
         (item.discipline && item.discipline.toLowerCase().includes(query));
-      const matchCat = cat === 'ALL' || item.type === cat;
+      const matchCat = cat === 'ALL' || item.type === cat || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
       const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
       const matchBonus = bonusFilter === 'ALL' || itemBonusType === bonusFilter;
       const matchScope = scopeFilter === 'ALL' || (item.scope || 'None / General') === scopeFilter;
@@ -1028,6 +1028,22 @@ const RuleMaster = {
       if (rawType === 'domain' || rawType === 'cleric domain' || rawId.startsWith('dom-')) {
         if (typeof window.openCustomDomainEditorModal === 'function') {
           window.openCustomDomainEditorModal(entry, editIndex);
+          return;
+        }
+      }
+
+      // 2.5. Class / Prestige Class / Variant Class -> Dedicated Class Template Studio Modal
+      if (
+        rawType === 'class' ||
+        rawType === 'base class' ||
+        rawType === 'prestige class' ||
+        rawType === 'custom class' ||
+        String(entry.category || '').trim().toLowerCase() === 'class' ||
+        rawId.startsWith('class_') ||
+        rawId.startsWith('cls_')
+      ) {
+        if (typeof window.openCreateCustomClassModal === 'function') {
+          window.openCreateCustomClassModal(entry.name || '', true, entry, editIndex);
           return;
         }
       }
@@ -1532,7 +1548,7 @@ const RuleMaster = {
         (item.source && item.source.toLowerCase().includes(query)) ||
         (item.discipline && item.discipline.toLowerCase().includes(query));
 
-      const matchCat = cat === 'ALL' || item.type === cat;
+      const matchCat = cat === 'ALL' || item.type === cat || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
       const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
       const matchBonus = bonusFilter === 'ALL' || itemBonusType === bonusFilter;
       const matchScope = scopeFilter === 'ALL' || (item.scope || 'None / General') === scopeFilter;
@@ -1582,6 +1598,7 @@ const RuleMaster = {
       const isDeity = lowType === 'deity' || String(item.id || '').startsWith('deity-');
       const isDomain = lowType === 'domain' || lowType === 'cleric domain' || String(item.id || '').startsWith('dom-');
       const isRace = lowType === 'race';
+      const isClass = lowType === 'class' || lowType === 'base class' || lowType === 'prestige class' || lowType === 'custom class' || String(item.category || '').toLowerCase() === 'class';
       const primaryBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : (item.type === 'Armor' ? 'Armor' : (item.type === 'Shield' ? 'Shield' : 'Untyped')));
 
       let slotCellHtml = `
@@ -1624,6 +1641,19 @@ const RuleMaster = {
           <div class="text-xs font-semibold text-emerald-200">Racial Traits</div>
           <div class="text-[10px] text-slate-400">${item.favoredClass ? `Favored: ${item.favoredClass}` : 'Character Race'}</div>
         `;
+      } else if (isClass) {
+        const hdVal = item.hd || String(item.hitDie || 8).replace(/\D/g, '') || 8;
+        const babNum = Number(item.bab) || 0.75;
+        const babLbl = babNum === 1 ? 'Full BAB (+1)' : (babNum === 0.75 ? '3/4 BAB' : '1/2 BAB');
+        slotCellHtml = `
+          <div class="font-bold text-emerald-300">d${hdVal} HD • ${item.maxLevel || 20} Lvls</div>
+          <div class="text-[10px] text-slate-400">${item.classType || (lowType === 'prestige class' ? 'Prestige Class' : 'Base / Variant Class')}</div>
+        `;
+        bonusScopeCellHtml = `
+          <div class="text-xs font-semibold text-sky-300">${babLbl}</div>
+          <div class="text-[10px] text-purple-300">${item.skills || item.skillPoints || 2}+INT Skills</div>
+        `;
+        descText = item.description || item.desc || item.benefit || item.role || '-';
       } else if (lowType === 'flaw' || String(item.category || '').toLowerCase() === 'flaw') {
         slotCellHtml = `
           <div class="font-bold text-rose-300">1st Level</div>
@@ -1668,7 +1698,7 @@ const RuleMaster = {
         </td>
         <td class="py-2.5 px-3 text-center">
           <div class="flex items-center justify-center gap-1">
-            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="${isDeity ? 'Edit in Deity Editor' : (isDomain ? 'Edit in Domain Editor' : 'Edit')}">
+            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="${isDeity ? 'Edit in Deity Editor' : (isDomain ? 'Edit in Domain Editor' : (isClass ? 'Edit in Class Template Studio' : 'Edit'))}">
               ✏️
             </button>
             ${isDeity ? `
@@ -1702,6 +1732,10 @@ const RuleMaster = {
       case 'Deity': return 'bg-amber-950 text-amber-200 border border-amber-500';
       case 'Domain': return 'bg-purple-950 text-purple-200 border border-purple-500';
       case 'Race': return 'bg-emerald-950 text-emerald-200 border border-emerald-500';
+      case 'Class':
+      case 'Base Class':
+      case 'Prestige Class':
+      case 'Custom Class': return 'bg-indigo-950 text-indigo-200 border border-indigo-500';
       case 'Potion': return 'bg-emerald-950 text-emerald-300 border border-emerald-700';
       case 'Wondrous Item':
       case 'Ring': return 'bg-teal-950 text-teal-300 border border-teal-700';
