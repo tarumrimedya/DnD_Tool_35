@@ -2886,6 +2886,7 @@ const RuleEngine = {
     const initBonusBuckets = [];
 
     let hasSteadfastDetermination = false;
+    let hasShieldWard = false;
     let minMaxDex = null;
     let totalAcp = 0;
     let resistBonus = 0;
@@ -2938,6 +2939,30 @@ const RuleEngine = {
         // Armor Class (both `ac.*` and `ac` / `armor` / `shield` / `natural` / `deflection` / `dodge`)
         const acSub = target.startsWith('ac.') ? target.slice(3) : target;
         if (target === 'ac' || target.startsWith('ac.') || ['armor', 'shield', 'natural', 'deflection', 'dodge'].includes(acSub)) {
+          if (sourceCategory === 'feat' && (acSub === 'shield' || mTypeLower === 'shield')) {
+            const baseShield = shieldBonuses.find(b => (b.type || '').toLowerCase() === 'shield');
+            const cleanSrc = sourceName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim() || sourceName;
+            const targetMatch = cleanSrc.toLowerCase().match(/\((.*?)\)/);
+            const targetShield = targetMatch ? targetMatch[1].trim().toLowerCase() : '';
+            const baseSrcLower = baseShield ? String(baseShield.source || '').toLowerCase() : '';
+            const shieldTypeMatches = Boolean(baseShield) && (
+              !targetShield ||
+              baseSrcLower.includes(targetShield) ||
+              (targetShield.includes('heavy') && baseSrcLower.includes('heavy')) ||
+              (targetShield.includes('light') && baseSrcLower.includes('light')) ||
+              (targetShield.includes('buckler') && baseSrcLower.includes('buckler'))
+            );
+            if (shieldTypeMatches && (!mod.condition || /shield|buckler|wield/i.test(String(mod.condition)))) {
+              const normSrc = cleanSrc.toLowerCase().startsWith('shield specialization') ? 'Shield Specialization' : cleanSrc;
+              if (!shieldBonuses.some(b => b.source && b.source.toLowerCase() === normSrc.toLowerCase())) {
+                shieldBonuses.push({ val, source: normSrc, type: 'untyped' });
+              }
+              return;
+            }
+            if (!mod.condition) {
+              return;
+            }
+          }
           if (mod.condition) {
             const acTypeLabel = acSub === 'deflection' || mTypeLower === 'deflection'
               ? 'Deflection'
@@ -3326,6 +3351,32 @@ const RuleEngine = {
           });
         }
       }
+      if (rf.shieldSpecialization || cleanName.startsWith('shield specialization')) {
+        const baseShield = shieldBonuses.find(b => (b.type || '').toLowerCase() === 'shield');
+        if (baseShield) {
+          const targetMatch = cleanName.match(/\((.*?)\)/);
+          const targetShield = targetMatch ? targetMatch[1].trim().toLowerCase() : '';
+          const baseSrcLower = String(baseShield.source || '').toLowerCase();
+          const isMatch = !targetShield
+            || baseSrcLower.includes(targetShield)
+            || (targetShield.includes('heavy') && baseSrcLower.includes('heavy'))
+            || (targetShield.includes('light') && baseSrcLower.includes('light'))
+            || (targetShield.includes('buckler') && baseSrcLower.includes('buckler'));
+          if (isMatch && !shieldBonuses.some(b => b.source && b.source.toLowerCase().includes('shield specialization'))) {
+            shieldBonuses.push({ val: 1, source: 'Shield Specialization', type: 'untyped' });
+          }
+          if (isMatch) {
+            for (let i = conditionalAcBonuses.length - 1; i >= 0; i--) {
+              if ((conditionalAcBonuses[i].source || '').toLowerCase().includes('shield specialization')) {
+                conditionalAcBonuses.splice(i, 1);
+              }
+            }
+          }
+        }
+      }
+      if (rf.shieldToTouchAc || cleanName.startsWith('shield ward')) {
+        hasShieldWard = true;
+      }
 
       // Dynamic scaling natural armor boons (e.g. "Nat AC 2+1/4lvl") if not already in V2 modifiers
       if (featMods.length === 0 && (cleanName.includes('nat ac') || cleanName.includes('natural armor') || cleanName.includes('doğal zırh'))) {
@@ -3600,7 +3651,7 @@ const RuleEngine = {
     const sizeBonus = character.acBreakdown?.size || 0;
 
     const totalAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + effectiveDex + effectiveDodge - totalPenalty;
-    const touchAC = baseAC + effectiveDeflection + sizeBonus + effectiveDex + effectiveDodge - totalPenalty;
+    const touchAC = baseAC + (hasShieldWard ? effectiveShield : 0) + effectiveDeflection + sizeBonus + effectiveDex + effectiveDodge - totalPenalty;
 
     // Flat-footed AC (RAW: retain negative Dex penalty even when flat-footed; retain Dex & Dodge if Uncanny Dodge unless immobilized/helpless)
     const hasUncannyDodge = !conditionEffectiveDexZero && (

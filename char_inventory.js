@@ -460,8 +460,10 @@
         ? ` <span class="text-[10px] text-sky-400 font-normal">(${bd.sources.armor[0].source})</span>`
         : (bd.armorCategory && bd.armorCategory !== 'None' ? ` <span class="text-[10px] text-sky-500 font-normal">(${bd.armorCategory})</span>` : '');
 
-      const shieldSourceStr = (Array.isArray(bd.sources?.shield) && bd.sources.shield.length > 0 && bd.sources.shield[0].source)
-        ? ` <span class="text-[10px] text-sky-400 font-normal">(${bd.sources.shield[0].source})</span>`
+      const shieldSourceStr = (Array.isArray(bd.sources?.shield) && bd.sources.shield.length > 0)
+        ? (bd.sources.shield.length > 1
+            ? ` <span class="text-[10px] text-sky-400 font-normal">(${bd.sources.shield.map(s => `${s.source} +${s.val}`).join(', ')})</span>`
+            : (bd.sources.shield[0].source ? ` <span class="text-[10px] text-sky-400 font-normal">(${bd.sources.shield[0].source})</span>` : ''))
         : '';
 
       const deflSourceStr = (Array.isArray(bd.sources?.deflection) && bd.sources.deflection.length > 0 && bd.sources.deflection[0].source)
@@ -527,9 +529,13 @@
       const baseWill = character.baseSaves?.will || 0;
       const resist = character.saveBonuses?.resistance || 0;
 
+      const useConForWill = Boolean(saves.hasSteadfastDetermination || character.ruleFlags?.conToWillSave);
+      const willStatMod = useConForWill ? conMod : wisMod;
+      const willStatLabel = useConForWill ? 'Con [Steadfast Determination]' : 'Wis';
+
       const bonusFort = saves.bonusFort ?? (saves.fort - (baseFort + conMod + resist));
       const bonusRef = saves.bonusRef ?? (saves.ref - (baseRef + dexMod + resist));
-      const bonusWill = saves.bonusWill ?? (saves.will - (baseWill + wisMod + resist));
+      const bonusWill = saves.bonusWill ?? (saves.will - (baseWill + willStatMod + resist));
 
       const formatBonusText = (b) => {
         if (b > 0) return ` <span class="text-amber-300 font-bold">+ ${b} (Bonus)</span>`;
@@ -584,7 +590,11 @@
       });
 
       // 3. Feats contributing to saves
-      const charFeats = (character.feats || []).map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
+      const progFeats = Array.isArray(character.levelProgression)
+        ? character.levelProgression.filter(r => r && r.active !== false).flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])])
+        : [];
+      const charFeats = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats]
+        .map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
       if (charFeats.some(f => f.includes('great fortitude'))) {
         bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Great Fortitude: +2 feat bonus on Fortitude saving throws.</div>`);
       }
@@ -597,7 +607,7 @@
       if (charFeats.some(f => f.includes('save magic') || f.includes('draconic save'))) {
         bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Draconic Aura: +1 bonus on saving throws against spells.</div>`);
       }
-      if (charFeats.some(f => f.includes('steadfast determination'))) {
+      if (useConForWill || charFeats.some(f => f.includes('steadfast determination'))) {
         bonusNotes.push(`<div class="py-0.5 text-slate-300">✨ Steadfast Determination: Uses CON modifier instead of WIS on Will saves; Natural 1 on Fortitude saves is not an automatic failure.</div>`);
       }
 
@@ -699,7 +709,7 @@
           <span class="text-purple-400 font-bold w-7 sm:w-9 text-right shrink-0">${saves.will >= 0 ? '+' : ''}${saves.will}</span>
           <span class="text-slate-500 font-bold px-1 sm:px-2 shrink-0">:</span>
           <span class="text-white flex-1 min-w-0 text-[11px] sm:text-xs break-words">
-            ${baseWill} (Base) + ${wisMod} (Wis) + ${resist} (Resist)${formatBonusText(bonusWill)}
+            ${baseWill} (Base) + ${willStatMod} (${willStatLabel}) + ${resist} (Resist)${formatBonusText(bonusWill)}
           </span>
         </div>
         <div class="pt-1 space-y-0.5 text-[10px] text-indigo-300 font-sans border-t border-slate-800/60 mt-0.5">

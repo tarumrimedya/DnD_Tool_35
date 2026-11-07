@@ -87,6 +87,21 @@
           }
         });
       }
+      // 2.5. Canonical V2 Splatbook / ToB Feats from RuleMaster.canonicalDictionary
+      if (typeof window !== 'undefined' && window.RuleMaster && window.RuleMaster.canonicalDictionary) {
+        Object.values(window.RuleMaster.canonicalDictionary).forEach(f => {
+          if (!f || typeof f !== 'object' || !f.name) return;
+          if (f.type !== 'Feat' && f.type !== 'Flaw') return;
+          const k = f.name.toLowerCase().trim();
+          if (!k || skipPlaceholders.has(k) || map.has(k)) return;
+          map.set(k, {
+            ...f,
+            prereq: f.prerequisites || f.prereq || '-',
+            benefit: f.shortDescription || f.benefit || f.description || '',
+            prereqStruct: f.prereqStruct || {}
+          });
+        });
+      }
       (masterDb || []).forEach(m => {
         if (!m || !m.name) return;
         const nameStr = String(m.name).trim();
@@ -370,10 +385,15 @@
         const exists = character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === clean);
         if (!exists) {
           character.feats.push({
+            ...(entry.id ? { id: entry.id } : {}),
             name: entry.name,
             source: entry.source || 'D&D 3.5e',
             category: entry.category || 'General',
-            benefit: entry.benefit || ''
+            benefit: entry.benefit || '',
+            modifiers: Array.isArray(entry.modifiers) ? JSON.parse(JSON.stringify(entry.modifiers)) : [],
+            damageParts: Array.isArray(entry.damageParts) ? JSON.parse(JSON.stringify(entry.damageParts)) : [],
+            ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('steadfast determination') ? { conToWillSave: true, noAutoFailFortSaveOnNat1: true } : {}),
+            tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
           });
           // Toughness immediate +3 HP support
           if (clean === 'toughness' && character.hp) {
@@ -390,6 +410,8 @@
         const inDb = masterDb.some(m => (m.name || '').toLowerCase().trim() === clean);
         if (!inDb) {
           masterDb.push({
+            schemaVersion: 2,
+            ...(entry.id ? { id: entry.id } : {}),
             name: entry.name,
             type: (entry.category === 'Special Ability') ? 'Special Ability' : 'Feat',
             slot: 'None',
@@ -397,7 +419,11 @@
             source: entry.source || 'D&D 3.5e',
             benefit: entry.benefit || '',
             bonusType: 'Untyped',
-            role: 'Offense / Feat'
+            role: 'Offense / Feat',
+            modifiers: Array.isArray(entry.modifiers) ? JSON.parse(JSON.stringify(entry.modifiers)) : [],
+            damageParts: Array.isArray(entry.damageParts) ? JSON.parse(JSON.stringify(entry.damageParts)) : [],
+            ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('steadfast determination') ? { conToWillSave: true, noAutoFailFortSaveOnNat1: true } : {}),
+            tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
           });
         }
       }

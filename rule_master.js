@@ -338,6 +338,11 @@ const RuleMaster = {
       v2.ruleFlags.isFlaw = true;
       v2.ruleFlags.grantsBonusFeat = 1;
     }
+    if (cleanName.includes('steadfast determination')) {
+      if (!v2.ruleFlags || typeof v2.ruleFlags !== 'object') v2.ruleFlags = {};
+      v2.ruleFlags.conToWillSave = true;
+      v2.ruleFlags.noAutoFailFortSaveOnNat1 = true;
+    }
     return v2;
   },
 
@@ -2668,6 +2673,30 @@ Schema:
       modes: [],
       ruleFlags: { leapAttack: true },
       tacticalBadges: ['x3 Two-Handed PA on Jump Charge'],
+      weight: 0,
+      cost: 0
+    },
+    'steadfast determination': {
+      schemaVersion: 2,
+      id: 'feat_steadfast_determination',
+      name: 'Steadfast Determination',
+      type: 'Feat',
+      slot: 'None',
+      source: "Player's Handbook II, p. 83",
+      prereq: 'Endurance.',
+      benefit: 'You can use your Constitution modifier in place of your Wisdom modifier on Will saves. You do not automatically fail Fortitude saves on a roll of natural 1.',
+      description: 'Your sheer force of will and physical toughness allow you to shrug off mental assaults and physical hardships alike. You can use your Constitution modifier in place of your Wisdom modifier on Will saves, and you do not automatically fail Fortitude saves on a roll of natural 1.',
+      scope: 'None / General',
+      action: 'Passive',
+      actionType: 'passive',
+      duration: 'Continuous',
+      role: 'General',
+      isFighterBonusFeat: true,
+      modifiers: [],
+      damageParts: [],
+      modes: [],
+      ruleFlags: { conToWillSave: true, noAutoFailFortSaveOnNat1: true },
+      tacticalBadges: ['CON to Will Saves', 'No Auto-Fail on Fort Nat 1'],
       weight: 0,
       cost: 0
     },

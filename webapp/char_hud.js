@@ -2714,10 +2714,14 @@
         const cMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod) ? RuleEngine.getAbilityMod(character.abilities?.con || 10) : 0;
         const dMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod) ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 0;
         const wMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod) ? RuleEngine.getAbilityMod(character.abilities?.wis || 10) : 0;
+        const hasSd = Boolean(character.ruleFlags?.conToWillSave || character.ruleFlags?.hasSteadfastDetermination);
         saves = character.evaluatedSaves || {
           fort: (character.baseSaves?.fort || 0) + cMod,
           ref: (character.baseSaves?.ref || 0) + dMod,
-          will: (character.baseSaves?.will || 0) + wMod
+          will: (character.baseSaves?.will || 0) + (hasSd ? cMod : wMod),
+          hasSteadfastDetermination: hasSd,
+          willAbility: hasSd ? 'CON' : 'WIS',
+          willAbilityMod: hasSd ? cMod : wMod
         };
       }
       const saveFortVal = (character.isNpc && character.saves?.fort?.total !== undefined) ? character.saves.fort.total : ((saves && typeof saves.fort === 'number' && !isNaN(saves.fort)) ? saves.fort : (character.saves?.fort?.total ?? 7));
@@ -2751,7 +2755,10 @@
       }
       const btnWill = saveWillEl?.closest('button');
       if (btnWill) {
-        btnWill.title = `🧠 Will: Base ${baseWill} + WIS (${wisMod >= 0 ? '+' : ''}${wisMod})${resBonus ? ` + Resist (+${resBonus})` : ''}${saves.bonusWill ? ` + Misc (+${saves.bonusWill})` : ''} = ${saves.will >= 0 ? '+' : ''}${saves.will}`;
+        const useConForWill = Boolean(saves.hasSteadfastDetermination || character.ruleFlags?.conToWillSave);
+        const willAbilLabel = useConForWill ? 'CON' : 'WIS';
+        const willAbilMod = useConForWill ? conMod : wisMod;
+        btnWill.title = `🧠 Will: Base ${baseWill} + ${willAbilLabel} (${willAbilMod >= 0 ? '+' : ''}${willAbilMod})${useConForWill ? ' [Steadfast Determination]' : ''}${resBonus ? ` + Resist (+${resBonus})` : ''}${saves.bonusWill ? ` + Misc (+${saves.bonusWill})` : ''} = ${saves.will >= 0 ? '+' : ''}${saves.will}`;
       }
 
       const savesSubtitle = document.getElementById('saves-subtitle-notes');

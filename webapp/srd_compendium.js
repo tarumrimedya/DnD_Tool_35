@@ -1852,6 +1852,11 @@
       }
 
       entry.ruleFlags = entry.ruleFlags && typeof entry.ruleFlags === 'object' ? entry.ruleFlags : {};
+      const cleanNameLower = String(entry.name || '').toLowerCase().trim();
+      if (cleanNameLower.includes('steadfast determination')) {
+        entry.ruleFlags.conToWillSave = true;
+        entry.ruleFlags.noAutoFailFortSaveOnNat1 = true;
+      }
       delete entry.isChild;
       delete entry.parent;
 

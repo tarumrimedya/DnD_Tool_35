@@ -2886,6 +2886,7 @@ const RuleEngine = {
     const initBonusBuckets = [];
 
     let hasSteadfastDetermination = false;
+    let hasShieldWard = false;
     let minMaxDex = null;
     let totalAcp = 0;
     let resistBonus = 0;
@@ -2938,6 +2939,30 @@ const RuleEngine = {
         // Armor Class (both `ac.*` and `ac` / `armor` / `shield` / `natural` / `deflection` / `dodge`)
         const acSub = target.startsWith('ac.') ? target.slice(3) : target;
         if (target === 'ac' || target.startsWith('ac.') || ['armor', 'shield', 'natural', 'deflection', 'dodge'].includes(acSub)) {
+          if (sourceCategory === 'feat' && (acSub === 'shield' || mTypeLower === 'shield')) {
+            const baseShield = shieldBonuses.find(b => (b.type || '').toLowerCase() === 'shield');
+            const cleanSrc = sourceName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim() || sourceName;
+            const targetMatch = cleanSrc.toLowerCase().match(/\((.*?)\)/);
+            const targetShield = targetMatch ? targetMatch[1].trim().toLowerCase() : '';
+            const baseSrcLower = baseShield ? String(baseShield.source || '').toLowerCase() : '';
+            const shieldTypeMatches = Boolean(baseShield) && (
+              !targetShield ||
+              baseSrcLower.includes(targetShield) ||
+              (targetShield.includes('heavy') && baseSrcLower.includes('heavy')) ||
+              (targetShield.includes('light') && baseSrcLower.includes('light')) ||
+              (targetShield.includes('buckler') && baseSrcLower.includes('buckler'))
+            );
+            if (shieldTypeMatches && (!mod.condition || /shield|buckler|wield/i.test(String(mod.condition)))) {
+              const normSrc = cleanSrc.toLowerCase().startsWith('shield specialization') ? 'Shield Specialization' : cleanSrc;
+              if (!shieldBonuses.some(b => b.source && b.source.toLowerCase() === normSrc.toLowerCase())) {
+                shieldBonuses.push({ val, source: normSrc, type: 'untyped' });
+              }
+              return;
+            }
+            if (!mod.condition) {
+              return;
+            }
+          }
           if (mod.condition) {
             const acTypeLabel = acSub === 'deflection' || mTypeLower === 'deflection'
               ? 'Deflection'
@@ -3297,7 +3322,8 @@ const RuleEngine = {
       applyV2Modifiers(modsToApply, rawName, 'feat', evalContext);
 
       const rf = { ...(dbEntry?.ruleFlags || {}), ...(featObj.ruleFlags || {}) };
-      if (rf.conToWillSave || cleanName.includes('steadfast determination')) {
+      const featTextLower = `${cleanName} ${featObj.benefit || featObj.description || dbEntry?.benefit || dbEntry?.description || ''}`.toLowerCase();
+      if (rf.conToWillSave || cleanName.includes('steadfast determination') || (featTextLower.includes('constitution modifier') && featTextLower.includes('will save') && featTextLower.includes('instead of') && featTextLower.includes('wisdom'))) {
         hasSteadfastDetermination = true;
       }
       if ((rf.hpPerLevel || cleanName.includes('draconic toughness')) && !featMods.some(m => m && ['hp', 'hp.max'].includes(String(m.target || '').toLowerCase()))) {
@@ -3324,6 +3350,32 @@ const RuleEngine = {
             source: 'Mobility'
           });
         }
+      }
+      if (rf.shieldSpecialization || cleanName.startsWith('shield specialization')) {
+        const baseShield = shieldBonuses.find(b => (b.type || '').toLowerCase() === 'shield');
+        if (baseShield) {
+          const targetMatch = cleanName.match(/\((.*?)\)/);
+          const targetShield = targetMatch ? targetMatch[1].trim().toLowerCase() : '';
+          const baseSrcLower = String(baseShield.source || '').toLowerCase();
+          const isMatch = !targetShield
+            || baseSrcLower.includes(targetShield)
+            || (targetShield.includes('heavy') && baseSrcLower.includes('heavy'))
+            || (targetShield.includes('light') && baseSrcLower.includes('light'))
+            || (targetShield.includes('buckler') && baseSrcLower.includes('buckler'));
+          if (isMatch && !shieldBonuses.some(b => b.source && b.source.toLowerCase().includes('shield specialization'))) {
+            shieldBonuses.push({ val: 1, source: 'Shield Specialization', type: 'untyped' });
+          }
+          if (isMatch) {
+            for (let i = conditionalAcBonuses.length - 1; i >= 0; i--) {
+              if ((conditionalAcBonuses[i].source || '').toLowerCase().includes('shield specialization')) {
+                conditionalAcBonuses.splice(i, 1);
+              }
+            }
+          }
+        }
+      }
+      if (rf.shieldToTouchAc || cleanName.startsWith('shield ward')) {
+        hasShieldWard = true;
       }
 
       // Dynamic scaling natural armor boons (e.g. "Nat AC 2+1/4lvl") if not already in V2 modifiers
@@ -3599,7 +3651,7 @@ const RuleEngine = {
     const sizeBonus = character.acBreakdown?.size || 0;
 
     const totalAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + effectiveDex + effectiveDodge - totalPenalty;
-    const touchAC = baseAC + effectiveDeflection + sizeBonus + effectiveDex + effectiveDodge - totalPenalty;
+    const touchAC = baseAC + (hasShieldWard ? effectiveShield : 0) + effectiveDeflection + sizeBonus + effectiveDex + effectiveDodge - totalPenalty;
 
     // Flat-footed AC (RAW: retain negative Dex penalty even when flat-footed; retain Dex & Dodge if Uncanny Dodge unless immobilized/helpless)
     const hasUncannyDodge = !conditionEffectiveDexZero && (
@@ -3690,6 +3742,10 @@ const RuleEngine = {
     const netBonusRef = this.resolveBonusStacking(saveBonusBuckets.ref) + battleClarityBonus;
     const netBonusWill = this.resolveBonusStacking(saveBonusBuckets.will);
 
+    if (charFeatNames.some(f => f.includes('steadfast determination'))) {
+      hasSteadfastDetermination = true;
+    }
+
     const willStatMod = hasSteadfastDetermination ? conMod : wisMod;
 
     const finalFort = baseFort + conMod + netBonusFort;
@@ -3703,10 +3759,18 @@ const RuleEngine = {
       bonusFort: netBonusFort,
       bonusRef: netBonusRef,
       bonusWill: netBonusWill,
-      battleClarityBonus: battleClarityBonus
+      battleClarityBonus: battleClarityBonus,
+      hasSteadfastDetermination: hasSteadfastDetermination,
+      willAbility: hasSteadfastDetermination ? 'CON' : 'WIS',
+      willAbilityMod: willStatMod
     };
 
-    if (character.isNpc && character.saves) {
+    if (!character.isNpc) {
+      if (!character.saves || typeof character.saves !== 'object') character.saves = {};
+      character.saves.fort = { ...(character.saves.fort || {}), base: baseFort, ability: conMod, magic: resistBonus, misc: netBonusFort - resistBonus, total: finalFort };
+      character.saves.ref = { ...(character.saves.ref || {}), base: baseRef, ability: dexMod, magic: resistBonus, misc: netBonusRef - resistBonus, total: finalRef };
+      character.saves.will = { ...(character.saves.will || {}), base: baseWill, ability: willStatMod, abilityKey: hasSteadfastDetermination ? 'con' : 'wis', magic: resistBonus, misc: netBonusWill - resistBonus, total: finalWill };
+    } else if (character.saves) {
       if (character.saves.fort?.total !== undefined) character.evaluatedSaves.fort = character.saves.fort.total;
       if (character.saves.ref?.total !== undefined) character.evaluatedSaves.ref = character.saves.ref.total;
       if (character.saves.will?.total !== undefined) character.evaluatedSaves.will = character.saves.will.total;
@@ -3856,7 +3920,12 @@ const RuleEngine = {
   // Evaluate Passive / Rule Flags across feats, abilities and buffs (Canonical V2)
   evaluateRuleFlags(character) {
     if (!character) return {};
-    const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
+    const progFeats = Array.isArray(character.levelProgression)
+      ? character.levelProgression.filter(r => r && r.active !== false).flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])])
+      : [];
+    const feats = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats]
+      .map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
+    const hasSteadfast = feats.some(f => f.includes('steadfast determination'));
 
     const flags = {
       allowFlatFootedAoO: feats.some(f => f.includes('combat reflexes')),
@@ -3870,6 +3939,9 @@ const RuleEngine = {
       hasSpiritedCharge: feats.some(f => f.includes('spirited charge')),
       hasRideByAttack: feats.some(f => f.includes('ride-by attack') || f.includes('ride by attack')),
       hasMountedCombat: feats.some(f => f.includes('mounted combat')),
+      hasSteadfastDetermination: hasSteadfast,
+      conToWillSave: hasSteadfast,
+      noAutoFailFortSaveOnNat1: hasSteadfast,
       loseDexToAC: false,
       effectiveDexZero: false,
       halfSpeed: false,
@@ -3997,11 +4069,9 @@ const RuleEngine = {
 
   // Calculate Saving Throws
   evaluateSaves(character) {
-    if (!character) return { fort: 0, ref: 0, will: 0, bonusFort: 0, bonusRef: 0, bonusWill: 0, battleClarityBonus: 0 };
-    if (!character.evaluatedSaves) {
-      this.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []));
-    }
-    return character.evaluatedSaves || { fort: 0, ref: 0, will: 0, bonusFort: 0, bonusRef: 0, bonusWill: 0, battleClarityBonus: 0 };
+    if (!character) return { fort: 0, ref: 0, will: 0, bonusFort: 0, bonusRef: 0, bonusWill: 0, battleClarityBonus: 0, hasSteadfastDetermination: false, willAbility: 'WIS', willAbilityMod: 0 };
+    this.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []));
+    return character.evaluatedSaves || { fort: 0, ref: 0, will: 0, bonusFort: 0, bonusRef: 0, bonusWill: 0, battleClarityBonus: 0, hasSteadfastDetermination: false, willAbility: 'WIS', willAbilityMod: 0 };
   },
 
   // D&D 3.5e RAW Damage Dice Stepping Progression (DMG p. 28, FAQ & Rules Compendium)

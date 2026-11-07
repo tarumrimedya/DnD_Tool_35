@@ -457,7 +457,7 @@
         "ruleFlags": {
           "type": "object",
           "default": {},
-          "description": "Declarative RuleEngine flags (e.g. {'ignoresHardness': true, 'touchAttack': true, 'keen': true, 'hasteExtraAttack': true, 'powerAttackBonusDamage': 2, 'powerAttackMinPenalty': 2, 'concealment': 20, 'sr': 21, 'dr': '3/-', 'energyResistance': '10', 'darkvisionFt': 60})."
+          "description": "Declarative RuleEngine flags (e.g. {'conToWillSave': true, 'noAutoFailFortSaveOnNat1': true, 'ignoresHardness': true, 'touchAttack': true, 'keen': true, 'hasteExtraAttack': true, 'powerAttackBonusDamage': 2, 'powerAttackMinPenalty': 2, 'concealment': 20, 'sr': 21, 'dr': '3/-', 'energyResistance': '10', 'darkvisionFt': 60})."
         },
         "tacticalBadges": {
           "type": "array",

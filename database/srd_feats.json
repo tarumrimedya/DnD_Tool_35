@@ -14314,5 +14314,41 @@
       "-1 AC"
     ],
     "schemaVersion": 2
+  },
+  {
+    "id": "feat-shield-specialization",
+    "schemaVersion": 2,
+    "name": "Shield Specialization",
+    "type": "Feat",
+    "category": "Fighter",
+    "isFighterBonusFeat": true,
+    "prereq": "Shield Proficiency",
+    "prerequisites": "Shield Proficiency",
+    "benefit": "Choose a specific type of shield (heavy steel shield, light steel shield, heavy wooden shield, light wooden shield, or buckler). When you are wielding the chosen type of shield, its shield bonus to AC increases by 1.",
+    "description": "Choose a specific type of shield (heavy steel shield, light steel shield, heavy wooden shield, light wooden shield, or buckler). When you are wielding the chosen type of shield, its shield bonus to AC increases by 1.",
+    "source": "Player's Handbook II, p. 82",
+    "modifiers": [],
+    "damageParts": [],
+    "ruleFlags": {
+      "shieldSpecialization": true
+    }
+  },
+  {
+    "id": "feat-shield-ward",
+    "schemaVersion": 2,
+    "name": "Shield Ward",
+    "type": "Feat",
+    "category": "Fighter",
+    "isFighterBonusFeat": true,
+    "prereq": "Shield Proficiency, Shield Specialization",
+    "prerequisites": "Shield Proficiency, Shield Specialization",
+    "benefit": "You apply your shield bonus to AC against touch attacks and on checks or grapple rolls to resist bull rush, disarm, grapple, overrun, or trip attempts.",
+    "description": "You apply your shield bonus to AC against touch attacks and on checks or grapple rolls to resist bull rush, disarm, grapple, overrun, or trip attempts.",
+    "source": "Player's Handbook II, p. 82",
+    "modifiers": [],
+    "damageParts": [],
+    "ruleFlags": {
+      "shieldToTouchAc": true
+    }
   }
 ]

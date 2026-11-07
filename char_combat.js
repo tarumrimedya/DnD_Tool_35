@@ -13631,12 +13631,19 @@
       const mod = saveName === 'Fortitude' ? saves.fort : (saveName === 'Reflex' ? saves.ref : saves.will);
       const d20 = Math.floor(Math.random() * 20) + 1;
       const total = d20 + mod;
+      const hasSteadfast = Boolean(saves.hasSteadfastDetermination || character?.ruleFlags?.conToWillSave || character?.ruleFlags?.noAutoFailFortSaveOnNat1);
+      const steadfastFortNat1Note = (saveName === 'Fortitude' && d20 === 1 && hasSteadfast)
+        ? ' • Steadfast Determination: Nat 1 is NOT an auto-fail!'
+        : '';
+      const steadfastWillNote = (saveName === 'Will' && hasSteadfast)
+        ? ' (CON via Steadfast Determination)'
+        : '';
 
       const showResult = () => {
         addDiceHistoryEntry({
           title: `⚡ ${saveName} Saving Throw`,
           formula: `1d20 ${mod >= 0 ? '+' : '-'}${Math.abs(mod)}`,
-          breakdown: `1d20 [${d20}] ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`,
+          breakdown: `1d20 [${d20}] ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}${steadfastWillNote}${steadfastFortNat1Note}`,
           total: total,
           isCrit: d20 === 20
         });
