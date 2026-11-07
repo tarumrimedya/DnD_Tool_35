@@ -26,7 +26,9 @@
     'mic_compendium.json',
     'srd_domains.json',
     'srd_companions.json',
-    'srd_templates.json'
+    'srd_templates.json',
+    'dm_boons_pack.json',
+    'lego_patterns.json'
   ];
 
   const LAZY_CHUNKS = [
@@ -150,6 +152,16 @@
   const _catalogIds = new Set();
 
   function registerEntries(records) {
+    if (records && typeof records === 'object' && !Array.isArray(records)) {
+      if (Array.isArray(records.entries)) {
+        records = records.entries;
+      } else if (Array.isArray(records.patterns)) {
+        global.LEGO_PATTERNS_CATALOG = records.patterns;
+        return;
+      } else {
+        return;
+      }
+    }
     if (!Array.isArray(records)) return;
     if (!Array.isArray(global.BUNDLED_SRD_CORE_CATALOG)) {
       global.BUNDLED_SRD_CORE_CATALOG = [];

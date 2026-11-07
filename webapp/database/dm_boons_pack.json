@@ -1,0 +1,396 @@
+{
+  "schemaVersion": 2,
+  "pack": {
+    "id": "pack_dm_draconic_boons",
+    "name": "DM Draconic Path, Synergies & Lesser Boons",
+    "author": "Dungeon Master",
+    "version": "2.5.0"
+  },
+  "entries": [
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_draconic_nat_ac",
+      "name": "Draconic Natural Armor (2 + 1/4 Lvl)",
+      "type": "DM Boon",
+      "source": "DM Boon Sheet (A5)",
+      "benefit": "Natural Armor bonus equal to 2 + 1 per 4 character levels.",
+      "description": "Grants a scaling Natural Armor bonus of 2 + floor(Character Level / 4).",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        { "target": "ac.natural", "op": "add", "formula": "2 + floor(@level / 4)", "type": "Natural Armor" }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": ["draconic", "natural_armor", "dm_boon"]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_breath_weapon_acid",
+      "name": "Dragon Breath Weapon (Acid)",
+      "type": "Special Ability",
+      "source": "DM Boon Sheet (A11)",
+      "benefit": "Move Action: 60 ft. Acid Breath deals 4d8 Acid damage (Reflex DC 10 + Level + CON mod half; recharge 1d4+1 rounds).",
+      "description": "Exhale a 60-foot line of acid as a Move Action (DM Override), dealing 4d8 Acid damage. Reflex save (DC 10 + Level + CON modifier) for half damage. Recharges in 1d4+1 rounds.",
+      "action": "Move Action",
+      "actionType": "move",
+      "range": "60 ft.",
+      "save": "Reflex half",
+      "dcFormula": "10 + @level + @conMod",
+      "recharge": "1d4+1 rounds",
+      "rechargeDice": "1d4+1",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [
+        {
+          "id": "res_dragon_breath_cd",
+          "name": "Breath Weapon Recharge",
+          "kind": "consume",
+          "maxFormula": 1,
+          "recharge": { "period": "rounds", "dice": "1d4+1" }
+        }
+      ],
+      "damageParts": [
+        { "dice": "4d8", "bonus": 0, "type": "Acid", "multiplyOnCrit": false, "onCritOnly": false, "source": "Dragon Breath" }
+      ],
+      "modes": [
+        {
+          "id": "breath_acid_move",
+          "name": "Acid Breath (Move)",
+          "actionType": "move",
+          "area": "60 ft. line",
+          "resourceCost": [{ "resourceId": "res_dragon_breath_cd", "amount": 1 }],
+          "save": { "type": "Reflex", "dcFormula": "10 + @level + @conMod", "onSave": "half" },
+          "damageParts": [
+            { "dice": "4d8", "bonus": 0, "type": "Acid", "multiplyOnCrit": false, "onCritOnly": false, "source": "Dragon Breath" }
+          ],
+          "modifiers": [],
+          "defenses": []
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": ["breath_weapon", "draconic", "acid", "dm_boon"]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_acid_resist_scaling",
+      "name": "Draconic Acid Resistance (Lvl x 2)",
+      "type": "DM Boon",
+      "source": "DM Boon Sheet (A32)",
+      "benefit": "Acid Resistance equal to Character Level x 2.",
+      "description": "Grants Acid Resistance equal to twice your character level.",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [
+        { "kind": "resistance", "target": "acid", "formula": "@level * 2" }
+      ],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": ["draconic", "acid", "resistance", "dm_boon"]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_draconic_toughness",
+      "name": "Draconic Toughness (+Lvl HP)",
+      "type": "DM Boon",
+      "source": "DM Boon Sheet (A62)",
+      "benefit": "Gain bonus Hit Points equal to your Character Level.",
+      "description": "Your draconic resilience grants +1 hit point per character level.",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        { "target": "hp", "op": "add", "formula": "@level", "type": "Untyped" }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": ["draconic", "hp", "dm_boon"]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_draconic_core",
+      "name": "Draconic Core (1 hr/day)",
+      "type": "DM Boon",
+      "source": "DM Boon Sheet (A41)",
+      "benefit": "1 hour/day: Gain Acid Immunity and deal 2x Breath Weapon damage.",
+      "description": "Once per day for 1 hour, you gain full immunity to Acid and your Breath Weapon deals double damage (x2).",
+      "action": "Standard Action",
+      "actionType": "standard",
+      "modifiers": [
+        {
+          "target": "entity.damageMultiplier",
+          "selector": { "tag": "breath_weapon" },
+          "op": "multiply",
+          "value": 2,
+          "when": { "toggle": "draconic_core_active" }
+        }
+      ],
+      "defenses": [
+        { "kind": "immunity", "target": "acid", "when": { "toggle": "draconic_core_active" } }
+      ],
+      "resources": [
+        { "id": "res_draconic_core", "name": "Draconic Core (1 hr/day)", "kind": "consume", "maxFormula": 1, "recharge": { "period": "day" } }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": ["draconic", "acid", "breath_weapon", "dm_boon"]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_absorb_magic",
+      "name": "Absorb Magic",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Path (A77)",
+      "benefit": "Immediate Action: +2 Competence save vs targeted spell. If saved, gain 10 Temp HP per spell level (EONT) and inflict Slowed (Ref), Sickened (Fort), or Confused (Will) on caster.",
+      "description": "Gain +2 competence bonus on saves vs a spell that targets you. If saved, gain 10 temporary HP for each spell level dispelled this way (EONT). Caster of the saved spell gets (EONT): if Reflex spell: Slowed; if Fort spell: Sickened; if Will spell: Confused.",
+      "action": "Immediate Action",
+      "actionType": "immediate",
+      "modifiers": [
+        { "target": "save.all", "op": "add", "value": 2, "type": "Competence", "when": { "toggle": "vs_targeted_spell" } }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [
+        {
+          "id": "absorb_spell_save",
+          "name": "Absorb Saved Spell (Temp HP)",
+          "actionType": "immediate",
+          "reactsTo": "on_spell_targeted",
+          "inputs": [
+            { "id": "spellLevel", "label": "Saved Spell Level", "type": "int", "min": 1, "max": 9, "default": 3 }
+          ],
+          "spawnsBuff": {
+            "id": "buff_absorb_magic_temp_hp",
+            "name": "Absorb Magic (EONT)",
+            "durationRounds": 1,
+            "tempHpFormula": "10 * @input.spellLevel",
+            "modifiers": [],
+            "defenses": []
+          },
+          "damageParts": [],
+          "modifiers": []
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": ["draconic", "defence_path", "immediate", "dm_boon"]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_elemental_accustomed",
+      "name": "Elemental Accustomed",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Path (A89)",
+      "benefit": "Full Acid Immunity. In Marsh/Bog/Swamp: ignore difficult terrain, +10 Outdoorsman & Stealth, +3 Natural Armor, and DR 3/-.",
+      "description": "Gain full immunity to ancestral element (Acid). Ancestral terrain (Marsh, Bog, Swamp) is favored terrain: ignore difficult terrain, gain +10 Outdoorsman and Stealth, +3 Natural Armor, and DR 3/-.",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        { "target": "ac.natural", "op": "add", "value": 3, "type": "Untyped", "when": { "terrain": ["marsh", "bog", "swamp"] } }
+      ],
+      "defenses": [
+        { "kind": "immunity", "target": "acid" },
+        { "kind": "dr", "target": "physical", "value": 3, "bypass": "-", "when": { "terrain": ["marsh", "bog", "swamp"] } }
+      ],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": ["draconic", "defence_path", "acid", "dm_boon"]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_arcane_shield",
+      "name": "Arcane Shield (Synergy: Absorb Magic + Elemental Accustomed)",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Synergy (A92)",
+      "benefit": "Synergy Unlock: Upgrades Absorb Magic save bonus from +2 to +4 Competence. When saved with Absorb Magic, gain Improved Evasion, Mettle, and +Sacred AC per spell level (EONT).",
+      "description": "Requires Absorb Magic + Elemental Accustomed. When saved with Absorb Magic, gain Improved Evasion, Mettle, and +AC (Sacred) for each spell level dispelled this way (EONT). Absorb Magic's competence bonus becomes +4 instead of +2.",
+      "action": "Passive",
+      "actionType": "passive",
+      "requires": {
+        "all": ["boon_absorb_magic", "boon_elemental_accustomed"]
+      },
+      "modifiers": [
+        {
+          "target": "entity.saveBonus",
+          "selector": { "id": "boon_absorb_magic" },
+          "op": "set",
+          "value": 4,
+          "type": "Competence"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": ["draconic", "synergy", "defence_path", "dm_boon"]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_master_of_deferment",
+      "name": "Master of Deferment",
+      "type": "DM Boon",
+      "source": "DM Boon Sheet (A83)",
+      "benefit": "Postponed Fate (Immediate, 1/hr): Delay a failed emotion/mind/condition save effect by 3 rounds. Eyes of the Oracle (Immediate, 1/hr): Intervene as a readied action after seeing an enemy action.",
+      "description": "Postponed Fate (Immediate Action, 1/hour): When you fail a save against emotion control, mind control, or a condition (Blind, Slowed, etc.), delay the effect for 3 rounds. Eyes of the Oracle (1/hour): React to an enemy action as if you had readied an action.",
+      "action": "Immediate Action",
+      "actionType": "immediate",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [
+        { "id": "res_postponed_fate", "name": "Postponed Fate (1/hr)", "kind": "consume", "maxFormula": 1, "recharge": { "period": "hour" } },
+        { "id": "res_eyes_of_oracle", "name": "Eyes of the Oracle (1/hr)", "kind": "consume", "maxFormula": 1, "recharge": { "period": "hour" } }
+      ],
+      "damageParts": [],
+      "modes": [
+        {
+          "id": "postponed_fate",
+          "name": "Postponed Fate (Delay 3 Rds)",
+          "actionType": "immediate",
+          "reactsTo": "save_failed",
+          "resourceCost": [{ "resourceId": "res_postponed_fate", "amount": 1 }],
+          "spawnsBuff": {
+            "id": "timer_postponed_fate",
+            "name": "Postponed Fate (Delayed Condition)",
+            "durationRounds": 3,
+            "note": "Failed save effect takes effect when this 3-round countdown expires."
+          },
+          "damageParts": [],
+          "modifiers": []
+        },
+        {
+          "id": "eyes_of_oracle",
+          "name": "Eyes of the Oracle (Retroactive Ready)",
+          "actionType": "immediate",
+          "reactsTo": "turn_start",
+          "resourceCost": [{ "resourceId": "res_eyes_of_oracle", "amount": 1 }],
+          "damageParts": [],
+          "modifiers": []
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": ["draconic", "immediate", "reaction", "dm_boon"]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_draconic_scales",
+      "name": "Draconic Scales",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Path",
+      "benefit": "Standard Action (1/day for 1 min): Gain DR (Level + floor(Level/4))/magic.",
+      "description": "Once per day as a Standard Action for 1 minute, gain Damage Reduction equal to Level + Level/4 bypassed by magic.",
+      "action": "Standard Action",
+      "actionType": "standard",
+      "modifiers": [],
+      "defenses": [
+        { "kind": "dr", "target": "physical", "formula": "@level + floor(@level / 4)", "bypass": "magic", "when": { "toggle": "draconic_scales_active" } }
+      ],
+      "resources": [
+        { "id": "res_draconic_scales", "name": "Draconic Scales (1/day)", "kind": "consume", "maxFormula": 1, "recharge": { "period": "day" } }
+      ],
+      "damageParts": [],
+      "modes": [
+        {
+          "id": "activate_scales",
+          "name": "Activate Draconic Scales (10 Rds)",
+          "actionType": "standard",
+          "resourceCost": [{ "resourceId": "res_draconic_scales", "amount": 1 }],
+          "spawnsBuff": {
+            "id": "buff_draconic_scales",
+            "name": "Draconic Scales (Active)",
+            "durationRounds": 10,
+            "defenses": [
+              { "kind": "dr", "target": "physical", "formula": "@level + floor(@level / 4)", "bypass": "magic" }
+            ]
+          },
+          "damageParts": [],
+          "modifiers": []
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": ["draconic", "defence_path", "dr", "dm_boon"]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_grand_scales",
+      "name": "Grand Scales (Synergy: Absorb Magic + Draconic Scales)",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Synergy",
+      "benefit": "Synergy Unlock: Draconic Scales also grants SR (11 + Level) and Immunity to Critical Hits.",
+      "description": "Requires Absorb Magic + Draconic Scales. While Draconic Scales is active, also gain Spell Resistance (11 + Character Level) and Immunity to Critical Hits.",
+      "action": "Passive",
+      "actionType": "passive",
+      "requires": {
+        "all": ["boon_absorb_magic", "boon_draconic_scales"]
+      },
+      "modifiers": [],
+      "defenses": [
+        { "kind": "sr", "target": "magic", "formula": "11 + @level", "when": { "toggle": "draconic_scales_active" } },
+        { "kind": "fortification", "target": "crit", "value": 100, "when": { "toggle": "draconic_scales_active" } }
+      ],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": ["draconic", "synergy", "defence_path", "dm_boon"]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_elemental_supremacy",
+      "name": "Elemental Supremacy (Synergy: Draconic Scales + Elemental Accustomed)",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Synergy",
+      "benefit": "Synergy Unlock: Acid damage heals you (100% absorption). At-Will (Std Action): Acid Aura deals 2d12 + CON mod Acid on touch and heals 1 + CON mod per round.",
+      "description": "Requires Draconic Scales + Elemental Accustomed. Acid damage heals you. At Will (Standard Action): Cover your body with acid; touch deals 2d12 + CON mod Acid damage, Swarm Resist 10, and you heal 1 + CON mod HP each turn.",
+      "action": "Standard Action",
+      "actionType": "standard",
+      "requires": {
+        "all": ["boon_draconic_scales", "boon_elemental_accustomed"]
+      },
+      "modifiers": [],
+      "defenses": [
+        { "kind": "absorption", "target": "acid", "healRatio": 1.0 }
+      ],
+      "resources": [],
+      "damageParts": [
+        { "dice": "2d12", "bonus": 0, "type": "Acid", "multiplyOnCrit": false, "onCritOnly": false, "source": "Elemental Supremacy Touch" }
+      ],
+      "modes": [
+        {
+          "id": "acid_body_touch",
+          "name": "Acid Body Touch (2d12+CON)",
+          "actionType": "standard",
+          "damageParts": [
+            { "dice": "2d12", "bonus": 0, "type": "Acid" }
+          ],
+          "modifiers": []
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": ["draconic", "synergy", "defence_path", "acid", "dm_boon"]
+    }
+  ]
+}

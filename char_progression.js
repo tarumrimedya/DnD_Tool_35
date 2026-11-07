@@ -140,16 +140,18 @@
         }
       });
 
-      // 1. Canonical V2 SrdCompendium (464 SRD Feats & UA Flaws with structured prerequisites)
+      // 1. Canonical V2 SrdCompendium (464 SRD Feats, UA Flaws & DM Boons with structured prerequisites)
       if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
-        window.SrdCompendium.getAllLoaded(['Feat', 'Flaw']).forEach(f => {
+        window.SrdCompendium.getAllLoaded(['Feat', 'Flaw', 'DM Boon', 'Special Ability']).forEach(f => {
           if (!f || !f.name) return;
           const k = f.name.toLowerCase().trim();
           if (!k || skipPlaceholders.has(k)) return;
           if (f.category === 'Warlock Invocation' || invocationByName.has(k)) return;
+          const isBoonType = (f.type === 'DM Boon' || f.type === 'Special Ability' || f.category === 'DM Boon' || (f.id && String(f.id).startsWith('pack_')));
           map.set(k, {
             ...f,
-            prereq: f.prerequisites || f.prereq || '-',
+            category: f.category || (f.type === 'DM Boon' ? 'DM Boon' : (f.type === 'Special Ability' ? 'Special Ability' : 'General')),
+            prereq: f.prerequisites || f.prereq || (isBoonType && f.requires && Array.isArray(f.requires.feats) ? f.requires.feats.join(', ') : '-'),
             benefit: f.shortDescription || f.benefit || f.description || '',
             prereqStruct: f.prereqStruct || {}
           });
@@ -462,7 +464,14 @@
         ...(entry.dcFormula ? { dcFormula: entry.dcFormula } : {}),
         ...(entry.recharge ? { recharge: entry.recharge } : {}),
         ...(entry.rechargeDice ? { rechargeDice: entry.rechargeDice } : {}),
+        ...(entry.pack ? { pack: JSON.parse(JSON.stringify(entry.pack)) } : {}),
+        ...(entry.requires ? { requires: JSON.parse(JSON.stringify(entry.requires)) } : {}),
         modifiers: Array.isArray(entry.modifiers) ? JSON.parse(JSON.stringify(entry.modifiers)) : [],
+        defenses: Array.isArray(entry.defenses) ? JSON.parse(JSON.stringify(entry.defenses)) : [],
+        resources: Array.isArray(entry.resources) ? JSON.parse(JSON.stringify(entry.resources)) : [],
+        modes: Array.isArray(entry.modes) ? JSON.parse(JSON.stringify(entry.modes)) : [],
+        grants: Array.isArray(entry.grants) ? JSON.parse(JSON.stringify(entry.grants)) : [],
+        choices: Array.isArray(entry.choices) ? JSON.parse(JSON.stringify(entry.choices)) : [],
         damageParts: Array.isArray(entry.damageParts) ? JSON.parse(JSON.stringify(entry.damageParts)) : [],
         ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('steadfast determination') ? { conToWillSave: true, noAutoFailFortSaveOnNat1: true } : (clean.includes('agile shield fighter') ? { agileShieldFighter: true } : {})),
         tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
@@ -2063,6 +2072,13 @@
         ...(v2SourceObj?.recharge ? { recharge: v2SourceObj.recharge } : {}),
         ...(v2SourceObj?.rechargeDice ? { rechargeDice: v2SourceObj.rechargeDice } : {}),
         ...(v2SourceObj?.ruleFlags ? { ruleFlags: JSON.parse(JSON.stringify(v2SourceObj.ruleFlags)) } : {}),
+        ...(v2SourceObj?.pack ? { pack: JSON.parse(JSON.stringify(v2SourceObj.pack)) } : {}),
+        ...(v2SourceObj?.requires ? { requires: JSON.parse(JSON.stringify(v2SourceObj.requires)) } : {}),
+        ...(Array.isArray(v2SourceObj?.defenses) && v2SourceObj.defenses.length > 0 ? { defenses: JSON.parse(JSON.stringify(v2SourceObj.defenses)) } : {}),
+        ...(Array.isArray(v2SourceObj?.resources) && v2SourceObj.resources.length > 0 ? { resources: JSON.parse(JSON.stringify(v2SourceObj.resources)) } : {}),
+        ...(Array.isArray(v2SourceObj?.modes) && v2SourceObj.modes.length > 0 ? { modes: JSON.parse(JSON.stringify(v2SourceObj.modes)) } : {}),
+        ...(Array.isArray(v2SourceObj?.grants) && v2SourceObj.grants.length > 0 ? { grants: JSON.parse(JSON.stringify(v2SourceObj.grants)) } : {}),
+        ...(Array.isArray(v2SourceObj?.choices) && v2SourceObj.choices.length > 0 ? { choices: JSON.parse(JSON.stringify(v2SourceObj.choices)) } : {}),
         ...(catalogMatch?.slotDiff !== undefined ? { slotDiff: catalogMatch.slotDiff } : {}),
         modifiers: resolvedModifiers,
         damageParts: resolvedDamageParts,

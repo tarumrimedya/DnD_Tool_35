@@ -119,6 +119,11 @@
                   <span>⚡</span>
                   <span>Edit Statblock</span>
                 </button>
+                <button id="btn-header-cmd-terminal" type="button" onclick="toggleSpotlightTerminal()" class="ui-btn-sm h-7 px-2.5 sm:px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-cyan-300 hover:text-cyan-200 border border-cyan-500/50 hover:border-cyan-400 font-mono font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Open Rule Master Command Terminal (Ctrl+K or /)">
+                  <span>⌘</span>
+                  <span>Terminal</span>
+                  <span class="hidden sm:inline px-1 py-0.5 rounded bg-slate-950 text-[9px] text-cyan-400 border border-slate-700">Ctrl+K</span>
+                </button>
               </div>
               
               <!-- Satır 2: Karakter Sınıfları & Seviyeleri -->
@@ -3896,6 +3901,47 @@
 
       <!-- Body (Dynamically hosts #inline-mode-manual or #inline-mode-forge when editing) -->
       <div id="modal-master-db-editor-body" class="p-4 space-y-3 text-xs overflow-y-auto flex-1"></div>
+    </div>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- MODAL: SPOTLIGHT IDE COMMAND TERMINAL (Ctrl+K / /)   -->
+  <!-- ==================================================== -->
+  <div id="modal-spotlight-terminal" onclick="if(event.target === this) toggleSpotlightTerminal(false)" class="hidden fixed inset-0 z-50 flex items-start justify-center p-3 sm:p-4 overflow-y-auto" style="position: fixed; inset: 0; z-index: 10060; background: rgba(2, 6, 23, 0.82); backdrop-filter: blur(6px); padding-top: 8vh;">
+    <div class="bg-slate-950 border border-cyan-500/80 rounded-2xl w-full shadow-2xl overflow-hidden flex flex-col" style="max-width: 48rem; max-height: 82vh;">
+      <!-- Top Terminal Input Bar -->
+      <div class="px-3.5 py-2.5 bg-slate-900/95 border-b border-slate-800 flex items-center gap-2.5">
+        <span class="text-cyan-400 font-mono font-black text-sm shrink-0">&gt;_</span>
+        <input id="spotlight-terminal-input" type="text" autocomplete="off" spellcheck="false"
+               oninput="onSpotlightTerminalInput(this.value)"
+               onkeydown="onSpotlightTerminalKeydown(event)"
+               placeholder="Type command: lvl 5, feat: clave | boon: Dragon Breath, dmg: 4d8 Acid, range: 60ft, action: move | use: breath | nr"
+               class="w-full bg-transparent text-white font-mono text-xs sm:text-sm focus:outline-none placeholder-slate-500" />
+        <button id="btn-spotlight-terminal-undo" type="button" onclick="undoLastTerminalAction()" class="hidden px-2 py-1 rounded bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-600/60 font-mono text-[10px] font-bold shrink-0 cursor-pointer transition" title="Undo Last Terminal Command (Ctrl+Z)">↩ Undo</button>
+        <button type="button" onclick="toggleSpotlightTerminal(false)" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-mono text-[10px] font-bold shrink-0 cursor-pointer">ESC</button>
+      </div>
+      <!-- Quick Syntax Grammar Pills -->
+      <div class="px-3.5 py-1.5 bg-slate-950 border-b border-slate-800/80 flex items-center gap-1.5 flex-wrap text-[10px] font-mono text-slate-400">
+        <span class="text-cyan-400 font-bold">Quick Grammar:</span>
+        <button type="button" onclick="setSpotlightTerminalSample('lvl 5, feat: clave')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-purple-300 border border-purple-800/60 cursor-pointer">lvl 5, feat: clave</button>
+        <button type="button" onclick="setSpotlightTerminalSample('boon: Dragon Breath, dmg: 4d8 Acid, range: 60ft, save: Reflex 10+@level+@conMod, recharge: 1d4+1, action: move')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-amber-300 border border-amber-800/60 cursor-pointer">boon: Dragon Breath, dmg: 4d8 Acid...</button>
+        <button type="button" onclick="setSpotlightTerminalSample('synergy:')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-800/60 cursor-pointer">synergy: Draconic Path</button>
+        <button type="button" onclick="setSpotlightTerminalSample('use: ')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-rose-300 border border-rose-800/60 cursor-pointer">use: ability</button>
+        <button type="button" onclick="setSpotlightTerminalSample('hp: -15 acid')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-sky-300 border border-sky-800/60 cursor-pointer">hp: -15 acid</button>
+        <button type="button" onclick="setSpotlightTerminalSample('nr')" class="px-1.5 py-0.5 rounded bg-slate-900 hover:bg-slate-800 text-teal-300 border border-teal-800/60 cursor-pointer">nr (Next Round)</button>
+      </div>
+      <!-- Intellisense Results & Live Dry-Run Object Interaction Map -->
+      <div id="spotlight-terminal-results" class="p-3 space-y-2 overflow-y-auto flex-1 text-xs font-sans"></div>
+      <!-- Footer Keyboard Legend -->
+      <div class="px-3.5 py-2 bg-slate-900/90 border-t border-slate-800 flex items-center justify-between text-[10px] font-mono text-slate-400">
+        <div class="flex items-center gap-3">
+          <span><strong class="text-cyan-300">↑↓</strong> Navigate</span>
+          <span><strong class="text-cyan-300">Tab</strong> Autocomplete</span>
+          <span><strong class="text-emerald-300">Enter</strong> Execute</span>
+          <span><strong class="text-amber-300">Ctrl+Z</strong> Undo</span>
+        </div>
+        <span class="text-slate-500">V2.5 Lego Engine • Desktop IDE Terminal</span>
+      </div>
     </div>
   </div>
 </body>
