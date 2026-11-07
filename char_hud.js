@@ -5462,44 +5462,11 @@
         `).join('');
       }
 
-      // 2. Populate Favored Weapon Select (Cached on window._cachedDeityWeaponOptionsHtml for 0ms re-open)
-      const weaponSelect = document.getElementById('custom-deity-weapon');
-      if (weaponSelect) {
-        if (window._cachedDeityWeaponOptionsHtml) {
-          weaponSelect.innerHTML = window._cachedDeityWeaponOptionsHtml;
-        } else {
-          let weaponNames = [];
-          if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
-            const eqs = window.SrdCompendium.getAllLoaded('Equipment');
-            if (Array.isArray(eqs) && eqs.length) {
-              weaponNames = eqs.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
-            }
-          }
-          if (!weaponNames.length && typeof window.BUNDLED_SRD_EQUIPMENT !== 'undefined' && Array.isArray(window.BUNDLED_SRD_EQUIPMENT)) {
-            weaponNames = window.BUNDLED_SRD_EQUIPMENT.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
-          }
-          if (!weaponNames.length && typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-            weaponNames = window.BUNDLED_SRD_CORE_CATALOG.filter(e => e && e.type === 'Weapon' && e.name).map(e => e.name);
-          }
-          const naturalWeapons = ['Bite', 'Claw', 'Slam', 'Gore', 'Tentacle', 'Unarmed Strike'];
-          const fallbackWeapons = [
-            'Battleaxe', 'Club', 'Dagger', 'Falchion', 'Flail', 'Greataxe', 'Greatclub',
-            'Greatsword', 'Halberd', 'Handaxe', 'Heavy Crossbow', 'Heavy Flail', 'Heavy Mace',
-            'Heavy Pick', 'Javelin', 'Kama', 'Kukri', 'Lance', 'Light Crossbow', 'Light Flail',
-            'Light Hammer', 'Light Mace', 'Light Pick', 'Longbow', 'Longspear', 'Longsword',
-            'Morningstar', 'Net', 'Nunchaku', 'Quarterstaff', 'Rapier', 'Scimitar', 'Scythe',
-            'Shortbow', 'Shortspear', 'Short Sword', 'Siangham', 'Sickle', 'Sling', 'Spear',
-            'Trident', 'Warhammer', 'Whip'
-          ];
-          weaponNames = Array.from(new Set(['-', ...naturalWeapons, ...weaponNames, ...fallbackWeapons])).filter(Boolean);
-          weaponNames.sort((a, b) => {
-            if (a === '-') return -1;
-            if (b === '-') return 1;
-            return a.localeCompare(b);
-          });
-          window._cachedDeityWeaponOptionsHtml = weaponNames.map(w => `<option value="${escapeDeityHtml(w)}">${escapeDeityHtml(w)}</option>`).join('');
-          weaponSelect.innerHTML = window._cachedDeityWeaponOptionsHtml;
-        }
+      // 2. Initialize Favored Weapon input & DB badge
+      const weaponInput = document.getElementById('custom-deity-weapon');
+      if (weaponInput) {
+        weaponInput.value = initialData.favoredWeapon || initialData.weapon || '';
+        updateDeityWeaponBadge(weaponInput.value);
       }
 
       // 3. Populate Domains Grid
@@ -5528,8 +5495,9 @@
       if (rankSelect && initialData.rank) rankSelect.value = initialData.rank;
       if (catSelect && initialData.category) catSelect.value = initialData.category;
       if (alignSelect && initialData.alignment) alignSelect.value = initialData.alignment;
-      if (weaponSelect && (initialData.favoredWeapon || initialData.weapon)) {
-        weaponSelect.value = initialData.favoredWeapon || initialData.weapon;
+      if (weaponInput && (initialData.favoredWeapon || initialData.weapon)) {
+        weaponInput.value = initialData.favoredWeapon || initialData.weapon;
+        updateDeityWeaponBadge(weaponInput.value);
       }
       if (portInput) portInput.value = initialData.portfolio || '';
       if (descInput) descInput.value = initialData.description || initialData.desc || '';
@@ -5593,7 +5561,7 @@
       const rankSelect = document.getElementById('custom-deity-rank');
       const catSelect = document.getElementById('custom-deity-category');
       const alignSelect = document.getElementById('custom-deity-alignment');
-      const weaponSelect = document.getElementById('custom-deity-weapon');
+      const weaponInput = document.getElementById('custom-deity-weapon');
       const portInput = document.getElementById('custom-deity-portfolio');
       const descInput = document.getElementById('custom-deity-desc');
 
@@ -5613,7 +5581,7 @@
       }
 
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'custom';
-      const favoredWeapon = weaponSelect ? weaponSelect.value : '-';
+      const favoredWeapon = weaponInput ? weaponInput.value.trim() : '-';
       const selectedDomains = Array.from(_customDeitySelectedDomains);
 
       const entry = {
@@ -5634,6 +5602,24 @@
         isCustom: true,
         addedAt: new Date().toISOString()
       };
+
+      // Auto-register unknown custom weapon in character.customDb & masterDb
+      if (favoredWeapon && favoredWeapon !== '-' && favoredWeapon.toLowerCase() !== 'none' && !isWeaponInDb(favoredWeapon)) {
+        const weaponSlug = favoredWeapon.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'weapon';
+        const autoWeapon = {
+          schemaVersion: 2,
+          id: 'wpn-' + weaponSlug,
+          type: 'Weapon',
+          category: 'Weapon',
+          name: favoredWeapon,
+          source: `${name} Deity Favored Weapon`,
+          damageParts: [{ dice: '1d8', bonus: 0, type: 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: favoredWeapon }],
+          isCustom: true,
+          addedAt: new Date().toISOString()
+        };
+        if (typeof character !== 'undefined' && Array.isArray(character.customDb)) character.customDb.push(autoWeapon);
+        if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) masterDb.push(autoWeapon);
+      }
 
       // 1. Save to character.customDb & masterDb
       if (typeof character !== 'undefined') {
@@ -6168,6 +6154,134 @@
       return false;
     }
 
+    const CANONICAL_NATURAL_WEAPONS = [
+      { name: 'Unarmed Strike', category: 'Natural Weapon', damage: '1d3', critical: '20/x2', damageType: 'Bludgeoning', desc: 'Standard monk or natural attack.' },
+      { name: 'Bite', category: 'Natural Weapon', damage: 'Varies by size', critical: '20/x2', damageType: 'Piercing/Slashing/Bludgeoning', desc: 'Primary or secondary natural weapon.' },
+      { name: 'Claw', category: 'Natural Weapon', damage: 'Varies by size', critical: '20/x2', damageType: 'Slashing/Piercing', desc: 'Natural weapon for paws, hands, or talons.' },
+      { name: 'Slam', category: 'Natural Weapon', damage: 'Varies by size', critical: '20/x2', damageType: 'Bludgeoning', desc: 'Natural bludgeoning attack using limbs or whole body.' },
+      { name: 'Gore', category: 'Natural Weapon', damage: 'Varies by size', critical: '20/x2', damageType: 'Piercing', desc: 'Natural attack using horns or tusks.' },
+      { name: 'Tail Slap', category: 'Natural Weapon', damage: 'Varies by size', critical: '20/x2', damageType: 'Bludgeoning', desc: 'Secondary natural sweep attack.' },
+      { name: 'Wing', category: 'Natural Weapon', damage: 'Varies by size', critical: '20/x2', damageType: 'Bludgeoning', desc: 'Secondary natural wing buffet.' },
+      { name: 'Tentacle', category: 'Natural Weapon', damage: 'Varies by size', critical: '20/x2', damageType: 'Bludgeoning', desc: 'Natural limb with grab potential.' },
+      { name: 'Talon', category: 'Natural Weapon', damage: 'Varies by size', critical: '20/x2', damageType: 'Slashing/Piercing', desc: 'Avian or raptor foot claw attack.' },
+      { name: 'Sting', category: 'Natural Weapon', damage: 'Varies by size', critical: '20/x2', damageType: 'Piercing', desc: 'Piercing stinger often carrying venom.' }
+    ];
+
+    const FALLBACK_SRD_WEAPONS = [
+      { name: 'Battleaxe', category: 'Martial One-Handed', damage: '1d8', critical: 'x3', damageType: 'Slashing' },
+      { name: 'Club', category: 'Simple One-Handed', damage: '1d6', critical: 'x2', damageType: 'Bludgeoning' },
+      { name: 'Dagger', category: 'Simple Light', damage: '1d4', critical: '19-20/x2', damageType: 'Piercing or Slashing' },
+      { name: 'Falchion', category: 'Martial Two-Handed', damage: '2d4', critical: '18-20/x2', damageType: 'Slashing' },
+      { name: 'Flail', category: 'Martial One-Handed', damage: '1d8', critical: 'x2', damageType: 'Bludgeoning' },
+      { name: 'Greataxe', category: 'Martial Two-Handed', damage: '1d12', critical: 'x3', damageType: 'Slashing' },
+      { name: 'Greatclub', category: 'Martial Two-Handed', damage: '1d10', critical: 'x2', damageType: 'Bludgeoning' },
+      { name: 'Greatsword', category: 'Martial Two-Handed', damage: '2d6', critical: '19-20/x2', damageType: 'Slashing' },
+      { name: 'Halberd', category: 'Martial Two-Handed', damage: '1d10', critical: 'x3', damageType: 'Piercing or Slashing' },
+      { name: 'Handaxe', category: 'Martial Light', damage: '1d6', critical: 'x3', damageType: 'Slashing' },
+      { name: 'Heavy Crossbow', category: 'Simple Ranged', damage: '1d10', critical: '19-20/x2', damageType: 'Piercing' },
+      { name: 'Heavy Flail', category: 'Martial Two-Handed', damage: '1d10', critical: '19-20/x2', damageType: 'Bludgeoning' },
+      { name: 'Heavy Mace', category: 'Simple One-Handed', damage: '1d8', critical: 'x2', damageType: 'Bludgeoning' },
+      { name: 'Heavy Pick', category: 'Martial One-Handed', damage: '1d6', critical: 'x4', damageType: 'Piercing' },
+      { name: 'Javelin', category: 'Simple Ranged', damage: '1d6', critical: 'x2', damageType: 'Piercing' },
+      { name: 'Kama', category: 'Exotic Light', damage: '1d6', critical: 'x2', damageType: 'Slashing' },
+      { name: 'Kukri', category: 'Exotic Light', damage: '1d4', critical: '18-20/x2', damageType: 'Slashing' },
+      { name: 'Lance', category: 'Martial Two-Handed', damage: '1d8', critical: 'x3', damageType: 'Piercing' },
+      { name: 'Light Crossbow', category: 'Simple Ranged', damage: '1d8', critical: '19-20/x2', damageType: 'Piercing' },
+      { name: 'Light Flail', category: 'Martial One-Handed', damage: '1d8', critical: 'x2', damageType: 'Bludgeoning' },
+      { name: 'Light Hammer', category: 'Martial Light', damage: '1d4', critical: 'x2', damageType: 'Bludgeoning' },
+      { name: 'Light Mace', category: 'Simple Light', damage: '1d6', critical: 'x2', damageType: 'Bludgeoning' },
+      { name: 'Light Pick', category: 'Martial Light', damage: '1d4', critical: 'x4', damageType: 'Piercing' },
+      { name: 'Longbow', category: 'Martial Ranged', damage: '1d8', critical: 'x3', damageType: 'Piercing' },
+      { name: 'Longspear', category: 'Martial Two-Handed', damage: '1d8', critical: 'x3', damageType: 'Piercing' },
+      { name: 'Longsword', category: 'Martial One-Handed', damage: '1d8', critical: '19-20/x2', damageType: 'Slashing' },
+      { name: 'Morningstar', category: 'Simple One-Handed', damage: '1d8', critical: 'x2', damageType: 'Bludgeoning and Piercing' },
+      { name: 'Net', category: 'Exotic Ranged', damage: '-', critical: '-', damageType: '-' },
+      { name: 'Nunchaku', category: 'Exotic Light', damage: '1d6', critical: 'x2', damageType: 'Bludgeoning' },
+      { name: 'Quarterstaff', category: 'Simple Two-Handed', damage: '1d6/1d6', critical: 'x2', damageType: 'Bludgeoning' },
+      { name: 'Rapier', category: 'Martial One-Handed', damage: '1d6', critical: '18-20/x2', damageType: 'Piercing' },
+      { name: 'Scimitar', category: 'Martial One-Handed', damage: '1d6', critical: '18-20/x2', damageType: 'Slashing' },
+      { name: 'Scythe', category: 'Martial Two-Handed', damage: '2d4', critical: 'x4', damageType: 'Piercing or Slashing' },
+      { name: 'Shortbow', category: 'Martial Ranged', damage: '1d6', critical: 'x3', damageType: 'Piercing' },
+      { name: 'Shortspear', category: 'Simple One-Handed', damage: '1d6', critical: 'x2', damageType: 'Piercing' },
+      { name: 'Short Sword', category: 'Martial Light', damage: '1d6', critical: '19-20/x2', damageType: 'Piercing' },
+      { name: 'Siangham', category: 'Exotic Light', damage: '1d6', critical: 'x2', damageType: 'Piercing' },
+      { name: 'Sickle', category: 'Simple Light', damage: '1d6', critical: 'x2', damageType: 'Slashing' },
+      { name: 'Sling', category: 'Simple Ranged', damage: '1d4', critical: 'x2', damageType: 'Bludgeoning' },
+      { name: 'Spear', category: 'Simple Two-Handed', damage: '1d8', critical: 'x3', damageType: 'Piercing' },
+      { name: 'Trident', category: 'Martial One-Handed', damage: '1d8', critical: 'x2', damageType: 'Piercing' },
+      { name: 'Warhammer', category: 'Martial One-Handed', damage: '1d8', critical: 'x3', damageType: 'Bludgeoning' },
+      { name: 'Whip', category: 'Exotic One-Handed', damage: '1d3', critical: 'x2', damageType: 'Slashing' }
+    ];
+
+    function getAllWeaponsFromCompendiumAndCustom() {
+      let weapons = [];
+      if (window.SrdCompendium && typeof window.SrdCompendium.getAllLoaded === 'function') {
+        const eqs = window.SrdCompendium.getAllLoaded('Equipment');
+        if (Array.isArray(eqs) && eqs.length) {
+          weapons.push(...eqs.filter(e => e && e.type === 'Weapon' && e.name));
+        }
+      }
+      if (typeof window.BUNDLED_SRD_EQUIPMENT !== 'undefined' && Array.isArray(window.BUNDLED_SRD_EQUIPMENT)) {
+        weapons.push(...window.BUNDLED_SRD_EQUIPMENT.filter(e => e && e.type === 'Weapon' && e.name));
+      }
+      if (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
+        weapons.push(...window.BUNDLED_SRD_CORE_CATALOG.filter(e => e && e.type === 'Weapon' && e.name));
+      }
+      if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+        weapons.push(...character.customDb.filter(e => e && (e.type === 'Weapon' || e.category === 'Weapon')));
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        weapons.push(...masterDb.filter(e => e && (e.type === 'Weapon' || e.category === 'Weapon')));
+      }
+      weapons.push(...CANONICAL_NATURAL_WEAPONS);
+      weapons.push(...FALLBACK_SRD_WEAPONS);
+
+      const map = new Map();
+      weapons.forEach(w => {
+        const name = typeof w === 'string' ? w : (w.name || '');
+        if (name && !map.has(name.toLowerCase())) {
+          map.set(name.toLowerCase(), typeof w === 'string' ? { name: w, category: 'Weapon' } : w);
+        }
+      });
+      return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    function isWeaponInDb(weaponName) {
+      if (!weaponName) return false;
+      const clean = weaponName.trim().toLowerCase();
+      if (clean === '-' || clean === 'none') return true;
+      if (CANONICAL_NATURAL_WEAPONS.some(w => w.name.toLowerCase() === clean)) return true;
+      if (FALLBACK_SRD_WEAPONS.some(w => w.name.toLowerCase() === clean)) return true;
+      if (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
+        const item = window.SrdCompendium.getByName(weaponName);
+        if (item && (item.type === 'Weapon' || item.category === 'Weapon')) return true;
+      }
+      if (typeof character !== 'undefined' && Array.isArray(character.customDb)) {
+        if (character.customDb.some(e => e && String(e.name || '').toLowerCase() === clean && (e.type === 'Weapon' || e.category === 'Weapon'))) return true;
+      }
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        if (masterDb.some(e => e && String(e.name || '').toLowerCase() === clean && (e.type === 'Weapon' || e.category === 'Weapon'))) return true;
+      }
+      return false;
+    }
+
+    function updateDeityWeaponBadge(weaponName) {
+      const badgeEl = document.getElementById('custom-deity-weapon-badge');
+      if (!badgeEl) return;
+      const clean = (weaponName || '').trim();
+      if (!clean || clean === '-' || clean.toLowerCase() === 'none') {
+        badgeEl.innerHTML = '';
+        return;
+      }
+      const inDb = isWeaponInDb(clean);
+      if (inDb) {
+        badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
+      } else {
+        const safe = clean.replace(/'/g, "\\'");
+        badgeEl.innerHTML = `<button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Weapon', '${safe}')" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch weapon via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
+      }
+    }
+
     function updateDomainFeatBadge(featName) {
       const badgeEl = document.getElementById('custom-domain-feat-badge');
       if (!badgeEl) return;
@@ -6266,6 +6380,10 @@
           updateDomainFeatBadge(clean);
         } else if (type === 'Spell' && lvl !== null) {
           updateDomainSpellBadge(lvl, clean);
+        } else if (type === 'Weapon') {
+          const wInput = document.getElementById('custom-deity-weapon');
+          if (wInput) wInput.value = entry.name;
+          updateDeityWeaponBadge(entry.name);
         }
 
         if (typeof showDiceTopToast === 'function') {
@@ -6311,6 +6429,11 @@
         if (iconEl) iconEl.textContent = '⚡';
         if (searchInput) searchInput.placeholder = 'Search domain powers (e.g., Smite, Ward, Turn Undead)...';
         _activeDomainSpotlightCtx.items = CANONICAL_DOMAIN_SLAS;
+      } else if (mode === 'weapon') {
+        if (titleEl) titleEl.textContent = 'Select Deity Favored Weapon (SRD Compendium + Master DB)';
+        if (iconEl) iconEl.textContent = '⚔️';
+        if (searchInput) searchInput.placeholder = 'Search weapons (e.g., Greatsword, Warhammer, Scimitar, Claw, Bite)...';
+        _activeDomainSpotlightCtx.items = getAllWeaponsFromCompendiumAndCustom();
       } else if (mode === 'spell') {
         if (titleEl) titleEl.textContent = `Select Domain Spell Level ${targetLvl} (Compendium + Master DB)`;
         if (iconEl) iconEl.textContent = '📜';
@@ -6370,7 +6493,16 @@
           <div class="p-6 text-center text-slate-400 space-y-2">
             <span class="text-2xl block">🔍</span>
             <p class="text-xs text-slate-300">No match found for "<strong>${escapeDeityHtml(query)}</strong>".</p>
-            ${ctx.mode === 'spell' ? `
+            ${ctx.mode === 'weapon' ? `
+              <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
+                <button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Weapon', '${escapeDeityHtml(query).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-lg shadow transition cursor-pointer active:scale-95 flex items-center gap-1">
+                  <span>🔮</span> <span>Fetch "${escapeDeityHtml(query)}" via Rule Master AI</span>
+                </button>
+                <button type="button" onclick="selectDomainSpotlightCustom('${escapeDeityHtml(query).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold text-xs rounded-lg shadow transition cursor-pointer active:scale-95">
+                  Use "${escapeDeityHtml(query)}" (Custom Weapon)
+                </button>
+              </div>
+            ` : (ctx.mode === 'spell' ? `
               <button type="button" onclick="selectDomainSpotlightCustom('${escapeDeityHtml(query).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-lg shadow transition cursor-pointer active:scale-95">
                 Use "${escapeDeityHtml(query)}" (Custom Spell)
               </button>
@@ -6378,7 +6510,7 @@
               <button type="button" onclick="selectDomainSpotlightCustom('${escapeDeityHtml(query).replace(/'/g, "\\'")}')" class="px-3 py-1.5 bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-slate-950 font-black text-xs rounded-lg shadow transition cursor-pointer active:scale-95">
                 Use "${escapeDeityHtml(query)}" (Custom Feat)
               </button>
-            ` : '')}
+            ` : ''))}
           </div>
         `;
         return;
@@ -6388,8 +6520,8 @@
       resultsEl.innerHTML = display.map(item => {
         const name = item.name || '';
         const safeName = name.replace(/'/g, "\\'");
-        const meta1 = ctx.mode === 'spell' ? (item.school || 'Spell') : (item.category || item.source || '');
-        const meta2 = ctx.mode === 'spell' ? (item.level !== undefined ? `Level ${item.level}` : '') : (item.uses || '');
+        const meta1 = ctx.mode === 'spell' ? (item.school || 'Spell') : (ctx.mode === 'weapon' ? (item.category || 'Weapon') : (item.category || item.source || ''));
+        const meta2 = ctx.mode === 'spell' ? (item.level !== undefined ? `Level ${item.level}` : '') : (ctx.mode === 'weapon' ? (item.damage ? `${item.damage}${item.critical ? ' (' + item.critical + ')' : ''}` : '') : (item.uses || ''));
         const desc = item.benefit || item.shortDescription || item.description || item.desc || '';
 
         return `
@@ -6414,6 +6546,10 @@
         const featInput = document.getElementById('custom-domain-feat');
         if (featInput) featInput.value = name;
         updateDomainFeatBadge(name);
+      } else if (ctx.mode === 'weapon') {
+        const weaponInput = document.getElementById('custom-deity-weapon');
+        if (weaponInput) weaponInput.value = name;
+        updateDeityWeaponBadge(name);
       } else if (ctx.mode === 'sla') {
         const slaInput = document.getElementById('custom-domain-sla-name');
         if (slaInput) slaInput.value = name;
@@ -6642,6 +6778,9 @@
     window.selectDomainSpotlightCustom = selectDomainSpotlightCustom;
     window.updateDomainFeatBadge = updateDomainFeatBadge;
     window.updateDomainSpellBadge = updateDomainSpellBadge;
+    window.updateDeityWeaponBadge = updateDeityWeaponBadge;
+    window.getAllWeaponsFromCompendiumAndCustom = getAllWeaponsFromCompendiumAndCustom;
+    window.isWeaponInDb = isWeaponInDb;
     window.fetchAndAddMissingDomainEntryViaAi = fetchAndAddMissingDomainEntryViaAi;
 
     function onProfileRaceChange(raceName) {
