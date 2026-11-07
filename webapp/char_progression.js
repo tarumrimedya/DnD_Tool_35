@@ -1071,6 +1071,8 @@
       const nameInput = document.getElementById('quick-feat-name');
       if (nameInput) nameInput.value = '';
       quickFeatSearchQuery = '';
+      _quickFeatModalPrereqCache.clear();
+      _quickFeatShowAll = false;
 
       const benefitInput = document.getElementById('quick-feat-benefit');
       if (benefitInput) benefitInput.value = '';
@@ -1085,6 +1087,13 @@
     let quickFeatSearchFilter = 'ALL';
     let quickFeatSearchQuery = '';
     let isQuickFeatCatalogOpen = false;
+    let _quickFeatModalPrereqCache = new Map();
+    let _quickFeatShowAll = false;
+
+    window.expandAllQuickFeatResults = function() {
+      _quickFeatShowAll = true;
+      renderQuickFeatSearchResults();
+    };
 
     function openQuickAbilityPickerForLevel(levelIdx) {
       openQuickFeatPickerForLevel(levelIdx, 'Special Ability');
@@ -1102,6 +1111,8 @@
       if (modal) modal.classList.add('hidden');
       activeQuickLevelIndex = null;
       isFeatPickerForQuickLevel = false;
+      _quickFeatModalPrereqCache.clear();
+      _quickFeatShowAll = false;
       closeQuickFeatCatalogConsole();
     }
 
@@ -1132,6 +1143,7 @@
 
     function onQuickFeatSearchInput(val) {
       quickFeatSearchQuery = (val || '').trim();
+      _quickFeatShowAll = false;
       updateQuickFeatTargetSelector(val);
       if (!isQuickFeatCatalogOpen) {
         openQuickFeatCatalogConsole();
@@ -1143,6 +1155,7 @@
 
     function setQuickFeatSearchFilter(filterType) {
       quickFeatSearchFilter = filterType;
+      _quickFeatShowAll = false;
       if (!isQuickFeatTargetLocked) {
         const catSel = document.getElementById('quick-feat-category');
         if (catSel) {
@@ -1311,9 +1324,14 @@
         });
       }
 
-      // Prerequisite evaluation with targetLevelIdx
+      // Prerequisite evaluation with targetLevelIdx (memoized per modal session)
       const evaluatedItems = queryFiltered.map(item => {
-        const pEval = checkFeatPrerequisites(item, 0, activeQuickLevelIndex);
+        const cacheKey = `${activeQuickLevelIndex ?? 'none'}::${item.name || ''}`;
+        let pEval = _quickFeatModalPrereqCache.get(cacheKey);
+        if (!pEval) {
+          pEval = checkFeatPrerequisites(item, 0, activeQuickLevelIndex);
+          _quickFeatModalPrereqCache.set(cacheKey, pEval);
+        }
         return { item, pEval };
       });
 
@@ -1387,7 +1405,9 @@
           </div>
         `;
       } else {
-        listHtml = filteredItems.map(({ item, pEval }) => {
+        const MAX_VISIBLE = _quickFeatShowAll ? filteredItems.length : 60;
+        const visibleItems = filteredItems.slice(0, MAX_VISIBLE);
+        listHtml = visibleItems.map(({ item, pEval }) => {
           const isAlreadyKnown = Boolean(pEval.isAlreadyKnownFromClass);
           const isQualified = pEval.allMet && !isAlreadyKnown;
           const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
@@ -1459,6 +1479,13 @@
             </div>
           `;
         }).join('');
+        if (filteredItems.length > MAX_VISIBLE) {
+          listHtml += `
+            <button type="button" onclick="window.expandAllQuickFeatResults()" class="w-full py-2 px-3 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-purple-200 hover:text-white font-bold text-xs border border-purple-500/40 transition cursor-pointer">
+              Show All ${filteredItems.length} Matching Feats (${filteredItems.length - MAX_VISIBLE} more) ▼
+            </button>
+          `;
+        }
       }
 
       consoleEl.innerHTML = `

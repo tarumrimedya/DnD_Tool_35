@@ -301,6 +301,15 @@ const RuleEngine = {
     if (!found && !(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
       found = window.BUNDLED_SRD_CORE_CATALOG.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) || null;
     }
+    if (!found && typeof window !== 'undefined' && window.RuleMaster && window.RuleMaster.canonicalDictionary) {
+      let dictKey = clean;
+      if (typeof window.RuleMaster.canonicalDictionary[dictKey] === 'string') {
+        dictKey = window.RuleMaster.canonicalDictionary[dictKey];
+      }
+      if (window.RuleMaster.canonicalDictionary[dictKey] && typeof window.RuleMaster.canonicalDictionary[dictKey] === 'object') {
+        found = window.RuleMaster.canonicalDictionary[dictKey];
+      }
+    }
     if (!found && Array.isArray(this.SPLATBOOK_BUFF_SPELLS)) {
       found = this.SPLATBOOK_BUFF_SPELLS.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean))) || null;
     }
@@ -3214,11 +3223,14 @@ const RuleEngine = {
     const inactiveProgRows = Array.isArray(character.levelProgression)
       ? character.levelProgression.filter(r => r && r.active === false)
       : [];
-    const stripFeatTag = (s) => String(s || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
-    const activeProgFeatSet = new Set(activeProgRows.flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])].map(stripFeatTag)).filter(Boolean));
+    const stripFeatTag = (s) => String(s || '')
+      .replace(/^(?:[\u2600-\u27BF\uD83C-\uDBFF\uDC00-\uDFFF\uFE0F\s]+|\[.*?\]\s*)+/g, '')
+      .toLowerCase()
+      .trim();
+    const activeProgFeatSet = new Set(activeProgRows.flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])].map(f => stripFeatTag(typeof f === 'string' ? f : (f?.name || '')))).filter(Boolean));
     const inactiveOnlyFeatSet = new Set(
       inactiveProgRows
-        .flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])].map(stripFeatTag))
+        .flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])].map(f => stripFeatTag(typeof f === 'string' ? f : (f?.name || ''))))
         .filter(n => n && !activeProgFeatSet.has(n))
     );
 
@@ -3228,7 +3240,7 @@ const RuleEngine = {
     ];
     const existingFeatNames = new Set(allAbilitiesAndFeats.map(f => stripFeatTag(typeof f === 'string' ? f : (f?.name || ''))).filter(Boolean));
     activeProgRows.forEach(r => {
-      (r.feats || []).forEach(fStr => {
+      [...(r.feats || []), ...(r.specialAbilities || [])].forEach(fStr => {
         const clean = stripFeatTag(typeof fStr === 'string' ? fStr : (fStr?.name || ''));
         if (!clean || clean.startsWith('+1 stat') || clean.includes('stat:') || clean.includes('cl = level')) return;
         if (!existingFeatNames.has(clean)) {
@@ -3285,7 +3297,8 @@ const RuleEngine = {
       applyV2Modifiers(modsToApply, rawName, 'feat', evalContext);
 
       const rf = { ...(dbEntry?.ruleFlags || {}), ...(featObj.ruleFlags || {}) };
-      if (rf.conToWillSave || cleanName.includes('steadfast determination')) {
+      const featTextLower = `${cleanName} ${featObj.benefit || featObj.description || dbEntry?.benefit || dbEntry?.description || ''}`.toLowerCase();
+      if (rf.conToWillSave || cleanName.includes('steadfast determination') || (featTextLower.includes('constitution modifier') && featTextLower.includes('will save') && featTextLower.includes('instead of') && featTextLower.includes('wisdom'))) {
         hasSteadfastDetermination = true;
       }
       if ((rf.hpPerLevel || cleanName.includes('draconic toughness')) && !featMods.some(m => m && ['hp', 'hp.max'].includes(String(m.target || '').toLowerCase()))) {
@@ -3678,6 +3691,10 @@ const RuleEngine = {
     const netBonusRef = this.resolveBonusStacking(saveBonusBuckets.ref) + battleClarityBonus;
     const netBonusWill = this.resolveBonusStacking(saveBonusBuckets.will);
 
+    if (charFeatNames.some(f => f.includes('steadfast determination'))) {
+      hasSteadfastDetermination = true;
+    }
+
     const willStatMod = hasSteadfastDetermination ? conMod : wisMod;
 
     const finalFort = baseFort + conMod + netBonusFort;
@@ -3691,10 +3708,18 @@ const RuleEngine = {
       bonusFort: netBonusFort,
       bonusRef: netBonusRef,
       bonusWill: netBonusWill,
-      battleClarityBonus: battleClarityBonus
+      battleClarityBonus: battleClarityBonus,
+      hasSteadfastDetermination: hasSteadfastDetermination,
+      willAbility: hasSteadfastDetermination ? 'CON' : 'WIS',
+      willAbilityMod: willStatMod
     };
 
-    if (character.isNpc && character.saves) {
+    if (!character.isNpc) {
+      if (!character.saves || typeof character.saves !== 'object') character.saves = {};
+      character.saves.fort = { ...(character.saves.fort || {}), base: baseFort, ability: conMod, magic: resistBonus, misc: netBonusFort - resistBonus, total: finalFort };
+      character.saves.ref = { ...(character.saves.ref || {}), base: baseRef, ability: dexMod, magic: resistBonus, misc: netBonusRef - resistBonus, total: finalRef };
+      character.saves.will = { ...(character.saves.will || {}), base: baseWill, ability: willStatMod, abilityKey: hasSteadfastDetermination ? 'con' : 'wis', magic: resistBonus, misc: netBonusWill - resistBonus, total: finalWill };
+    } else if (character.saves) {
       if (character.saves.fort?.total !== undefined) character.evaluatedSaves.fort = character.saves.fort.total;
       if (character.saves.ref?.total !== undefined) character.evaluatedSaves.ref = character.saves.ref.total;
       if (character.saves.will?.total !== undefined) character.evaluatedSaves.will = character.saves.will.total;
@@ -3844,7 +3869,12 @@ const RuleEngine = {
   // Evaluate Passive / Rule Flags across feats, abilities and buffs (Canonical V2)
   evaluateRuleFlags(character) {
     if (!character) return {};
-    const feats = (character.feats || []).map(f => (typeof f === 'string' ? f : f.name || '').toLowerCase());
+    const progFeats = Array.isArray(character.levelProgression)
+      ? character.levelProgression.filter(r => r && r.active !== false).flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])])
+      : [];
+    const feats = [...(character.feats || []), ...(character.specialAbilities || []), ...progFeats]
+      .map(f => (typeof f === 'string' ? f : f?.name || '').toLowerCase());
+    const hasSteadfast = feats.some(f => f.includes('steadfast determination'));
 
     const flags = {
       allowFlatFootedAoO: feats.some(f => f.includes('combat reflexes')),
@@ -3858,6 +3888,9 @@ const RuleEngine = {
       hasSpiritedCharge: feats.some(f => f.includes('spirited charge')),
       hasRideByAttack: feats.some(f => f.includes('ride-by attack') || f.includes('ride by attack')),
       hasMountedCombat: feats.some(f => f.includes('mounted combat')),
+      hasSteadfastDetermination: hasSteadfast,
+      conToWillSave: hasSteadfast,
+      noAutoFailFortSaveOnNat1: hasSteadfast,
       loseDexToAC: false,
       effectiveDexZero: false,
       halfSpeed: false,
@@ -3985,11 +4018,9 @@ const RuleEngine = {
 
   // Calculate Saving Throws
   evaluateSaves(character) {
-    if (!character) return { fort: 0, ref: 0, will: 0, bonusFort: 0, bonusRef: 0, bonusWill: 0, battleClarityBonus: 0 };
-    if (!character.evaluatedSaves) {
-      this.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []));
-    }
-    return character.evaluatedSaves || { fort: 0, ref: 0, will: 0, bonusFort: 0, bonusRef: 0, bonusWill: 0, battleClarityBonus: 0 };
+    if (!character) return { fort: 0, ref: 0, will: 0, bonusFort: 0, bonusRef: 0, bonusWill: 0, battleClarityBonus: 0, hasSteadfastDetermination: false, willAbility: 'WIS', willAbilityMod: 0 };
+    this.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []));
+    return character.evaluatedSaves || { fort: 0, ref: 0, will: 0, bonusFort: 0, bonusRef: 0, bonusWill: 0, battleClarityBonus: 0, hasSteadfastDetermination: false, willAbility: 'WIS', willAbilityMod: 0 };
   },
 
   // D&D 3.5e RAW Damage Dice Stepping Progression (DMG p. 28, FAQ & Rules Compendium)
@@ -5056,25 +5087,33 @@ const RuleEngine = {
 
   getClassDef(className) {
     if (!className) return null;
-    if (this.DND35_CLASS_DEFS && this.DND35_CLASS_DEFS[className] && this.DND35_CLASS_DEFS[className]._v2Hydrated) {
-      return this.DND35_CLASS_DEFS[className];
+    const lowerKey = String(className).toLowerCase().trim();
+    if (this.DND35_CLASS_DEFS) {
+      const cached = this.DND35_CLASS_DEFS[className] || this.DND35_CLASS_DEFS[lowerKey];
+      if (cached && cached._v2Hydrated) {
+        return cached;
+      }
     }
     const comp = (typeof window !== 'undefined' && window.SrdCompendium)
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const srdClass = (comp && typeof comp.getClass === 'function')
       ? comp.getClass(className)
       : null;
-    let localDef = (this.DND35_CLASS_DEFS && this.DND35_CLASS_DEFS[className]) || null;
+    let localDef = (this.DND35_CLASS_DEFS && (this.DND35_CLASS_DEFS[className] || this.DND35_CLASS_DEFS[lowerKey])) || null;
     if (!localDef && !srdClass && typeof window !== 'undefined' && typeof window.getAvailableClassDefs === 'function') {
       const availDefs = window.getAvailableClassDefs();
-      if (availDefs && availDefs[className]) {
-        localDef = availDefs[className];
+      if (availDefs) {
+        const matchedAvailKey = availDefs[className] ? className : Object.keys(availDefs).find(k => k.toLowerCase().trim() === lowerKey);
+        if (matchedAvailKey) localDef = availDefs[matchedAvailKey];
       }
     }
     if (!localDef && !srdClass) return null;
     if (!srdClass) {
       localDef._v2Hydrated = true;
-      if (this.DND35_CLASS_DEFS) this.DND35_CLASS_DEFS[className] = localDef;
+      if (this.DND35_CLASS_DEFS) {
+        this.DND35_CLASS_DEFS[className] = localDef;
+        this.DND35_CLASS_DEFS[lowerKey] = localDef;
+      }
       return localDef;
     }
     const babRate = Number(srdClass.bab) || (srdClass.babProgression === 'high' ? 1.0 : (srdClass.babProgression === 'med' || srdClass.babProgression === 'medium' ? 0.75 : 0.5));
@@ -5101,9 +5140,11 @@ const RuleEngine = {
     });
     if (this.DND35_CLASS_DEFS && srdClass.name) {
       this.DND35_CLASS_DEFS[srdClass.name] = merged;
+      this.DND35_CLASS_DEFS[String(srdClass.name).toLowerCase().trim()] = merged;
     }
     if (this.DND35_CLASS_DEFS) {
       this.DND35_CLASS_DEFS[className] = merged;
+      this.DND35_CLASS_DEFS[lowerKey] = merged;
     }
     return merged;
   },

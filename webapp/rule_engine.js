@@ -301,6 +301,15 @@ const RuleEngine = {
     if (!found && !(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
       found = window.BUNDLED_SRD_CORE_CATALOG.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean))) || null;
     }
+    if (!found && typeof window !== 'undefined' && window.RuleMaster && window.RuleMaster.canonicalDictionary) {
+      let dictKey = clean;
+      if (typeof window.RuleMaster.canonicalDictionary[dictKey] === 'string') {
+        dictKey = window.RuleMaster.canonicalDictionary[dictKey];
+      }
+      if (window.RuleMaster.canonicalDictionary[dictKey] && typeof window.RuleMaster.canonicalDictionary[dictKey] === 'object') {
+        found = window.RuleMaster.canonicalDictionary[dictKey];
+      }
+    }
     if (!found && Array.isArray(this.SPLATBOOK_BUFF_SPELLS)) {
       found = this.SPLATBOOK_BUFF_SPELLS.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean))) || null;
     }
@@ -3214,11 +3223,14 @@ const RuleEngine = {
     const inactiveProgRows = Array.isArray(character.levelProgression)
       ? character.levelProgression.filter(r => r && r.active === false)
       : [];
-    const stripFeatTag = (s) => String(s || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
-    const activeProgFeatSet = new Set(activeProgRows.flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])].map(stripFeatTag)).filter(Boolean));
+    const stripFeatTag = (s) => String(s || '')
+      .replace(/^(?:[\u2600-\u27BF\uD83C-\uDBFF\uDC00-\uDFFF\uFE0F\s]+|\[.*?\]\s*)+/g, '')
+      .toLowerCase()
+      .trim();
+    const activeProgFeatSet = new Set(activeProgRows.flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])].map(f => stripFeatTag(typeof f === 'string' ? f : (f?.name || '')))).filter(Boolean));
     const inactiveOnlyFeatSet = new Set(
       inactiveProgRows
-        .flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])].map(stripFeatTag))
+        .flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])].map(f => stripFeatTag(typeof f === 'string' ? f : (f?.name || ''))))
         .filter(n => n && !activeProgFeatSet.has(n))
     );
 
@@ -3228,7 +3240,7 @@ const RuleEngine = {
     ];
     const existingFeatNames = new Set(allAbilitiesAndFeats.map(f => stripFeatTag(typeof f === 'string' ? f : (f?.name || ''))).filter(Boolean));
     activeProgRows.forEach(r => {
-      (r.feats || []).forEach(fStr => {
+      [...(r.feats || []), ...(r.specialAbilities || [])].forEach(fStr => {
         const clean = stripFeatTag(typeof fStr === 'string' ? fStr : (fStr?.name || ''));
         if (!clean || clean.startsWith('+1 stat') || clean.includes('stat:') || clean.includes('cl = level')) return;
         if (!existingFeatNames.has(clean)) {
@@ -5056,25 +5068,33 @@ const RuleEngine = {
 
   getClassDef(className) {
     if (!className) return null;
-    if (this.DND35_CLASS_DEFS && this.DND35_CLASS_DEFS[className] && this.DND35_CLASS_DEFS[className]._v2Hydrated) {
-      return this.DND35_CLASS_DEFS[className];
+    const lowerKey = String(className).toLowerCase().trim();
+    if (this.DND35_CLASS_DEFS) {
+      const cached = this.DND35_CLASS_DEFS[className] || this.DND35_CLASS_DEFS[lowerKey];
+      if (cached && cached._v2Hydrated) {
+        return cached;
+      }
     }
     const comp = (typeof window !== 'undefined' && window.SrdCompendium)
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
     const srdClass = (comp && typeof comp.getClass === 'function')
       ? comp.getClass(className)
       : null;
-    let localDef = (this.DND35_CLASS_DEFS && this.DND35_CLASS_DEFS[className]) || null;
+    let localDef = (this.DND35_CLASS_DEFS && (this.DND35_CLASS_DEFS[className] || this.DND35_CLASS_DEFS[lowerKey])) || null;
     if (!localDef && !srdClass && typeof window !== 'undefined' && typeof window.getAvailableClassDefs === 'function') {
       const availDefs = window.getAvailableClassDefs();
-      if (availDefs && availDefs[className]) {
-        localDef = availDefs[className];
+      if (availDefs) {
+        const matchedAvailKey = availDefs[className] ? className : Object.keys(availDefs).find(k => k.toLowerCase().trim() === lowerKey);
+        if (matchedAvailKey) localDef = availDefs[matchedAvailKey];
       }
     }
     if (!localDef && !srdClass) return null;
     if (!srdClass) {
       localDef._v2Hydrated = true;
-      if (this.DND35_CLASS_DEFS) this.DND35_CLASS_DEFS[className] = localDef;
+      if (this.DND35_CLASS_DEFS) {
+        this.DND35_CLASS_DEFS[className] = localDef;
+        this.DND35_CLASS_DEFS[lowerKey] = localDef;
+      }
       return localDef;
     }
     const babRate = Number(srdClass.bab) || (srdClass.babProgression === 'high' ? 1.0 : (srdClass.babProgression === 'med' || srdClass.babProgression === 'medium' ? 0.75 : 0.5));
@@ -5101,9 +5121,11 @@ const RuleEngine = {
     });
     if (this.DND35_CLASS_DEFS && srdClass.name) {
       this.DND35_CLASS_DEFS[srdClass.name] = merged;
+      this.DND35_CLASS_DEFS[String(srdClass.name).toLowerCase().trim()] = merged;
     }
     if (this.DND35_CLASS_DEFS) {
       this.DND35_CLASS_DEFS[className] = merged;
+      this.DND35_CLASS_DEFS[lowerKey] = merged;
     }
     return merged;
   },
