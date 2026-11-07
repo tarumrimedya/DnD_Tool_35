@@ -7516,15 +7516,54 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           }
         });
 
+        // Group & sort feats within the same level for clean, deterministic visual organization
+        const extractFeatSortName = (s) => String(s || '')
+          .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/i, '')
+          .replace(/^DM\s*Boon:\s*/i, '')
+          .replace(/^Flaw:\s*/i, '')
+          .trim()
+          .toLowerCase();
+
+        const getOtherBonusGroupRank = (s) => {
+          const str = String(s || '');
+          if (str.includes('[Racial]') || str.includes('[Extra Racial]') || str.includes('[Human Bonus]')) return 1; // 1. Human / Racial Bonus
+          if (isFlawFeatString(str) && !str.includes('[Flaw Bonus]')) return 2; // 2. Character Flaws
+          if (str.includes('[Flaw Bonus]')) return 3; // 3. Flaw Bonus Feats
+          if (str.includes('[Invocation]') || str.includes('[Extra Invocation]') || str.includes('Invocation') || str.includes('🔮')) return 4; // 4. Warlock Invocations
+          if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant') || str.includes('Caster Lvl') || str.includes('+1 Primary CL')) return 5; // 5. DM Boons & Campaign Grants
+          return 6;
+        };
+
+        regularFeats.sort((a, b) => {
+          const aExtra = String(a).includes('[Extra]') ? 1 : 0;
+          const bExtra = String(b).includes('[Extra]') ? 1 : 0;
+          if (aExtra !== bExtra) return aExtra - bExtra;
+          return extractFeatSortName(a).localeCompare(extractFeatSortName(b));
+        });
+
+        classBonusFeats.sort((a, b) => {
+          const aExtra = String(a).includes('[Extra') ? 1 : 0;
+          const bExtra = String(b).includes('[Extra') ? 1 : 0;
+          if (aExtra !== bExtra) return aExtra - bExtra;
+          return extractFeatSortName(a).localeCompare(extractFeatSortName(b));
+        });
+
+        otherBonusFeats.sort((a, b) => {
+          const gA = getOtherBonusGroupRank(a);
+          const gB = getOtherBonusGroupRank(b);
+          if (gA !== gB) return gA - gB;
+          return extractFeatSortName(a).localeCompare(extractFeatSortName(b));
+        });
+
         // 1. Sınıf Özellikleri (Core Class Abilities + Class Bonus Feats)
-        const abilityBadgeItems = (lvl.specialAbilities || []).filter(aStr => {
+        const abilityBadgeItems = [...(lvl.specialAbilities || [])].filter(aStr => {
           const str = String(aStr).trim();
           // Hide generic "Domains (2)" or "[Domain: ...]" strings on Cleric 1 because we render dedicated interactive Domain badges
           if ( /^(\[[^\]]+\]\s*)?Domains\s*\(2\)/i.test(str) || /^⚜️\s*Domain:/i.test(str) || /^\[Domain:/i.test(str) ) {
             return false;
           }
           return true;
-        }).map(aStr => {
+        }).sort((a, b) => extractFeatSortName(a).localeCompare(extractFeatSortName(b))).map(aStr => {
           const str = String(aStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
           const safeA = rawName.replace(/'/g, "\\'");
@@ -7669,6 +7708,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           } else if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
             bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
             icon = '🌟';
+            const boonCore = labelText
+              .replace(/^\[DM\s*Boon\]\s*/i, '')
+              .replace(/^DM\s*Boon:\s*/i, '')
+              .trim();
+            labelText = `DM Boon: ${boonCore}`;
           } else if (str.includes('[Invocation]') || str.includes('[Extra Invocation]') || str.includes('Invocation') || str.includes('🔮')) {
             bgCls = 'bg-purple-950/80 hover:bg-purple-900 text-purple-300 border-purple-600/70';
             icon = '🔮';
