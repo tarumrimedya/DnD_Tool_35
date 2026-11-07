@@ -7244,8 +7244,8 @@
 
         let toughnessCount = 0;
         (character.feats || []).forEach(f => {
-          const fn = (typeof f === 'string' ? f : (f?.name || '')).toLowerCase();
-          if (fn === 'toughness' || fn.includes('toughness')) toughnessCount++;
+          const fn = String(typeof f === 'string' ? f : (f?.name || '')).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
+          if (fn === 'toughness') toughnessCount++;
         });
 
         const conMod = (typeof RuleEngine !== 'undefined' && RuleEngine.getAbilityMod)
@@ -7278,12 +7278,11 @@
           const baseProgHp = (summary && summary.baseHp) ? summary.baseHp : 32;
           character.hp.baseMax = baseProgHp + (toughnessCount * 3);
           character.hp.conBonusHp = character.level * conMod;
-          
-          let calculatedMax = character.hp.baseMax + character.hp.conBonusHp;
-          // Guard: Toplam HP (Max HP) can NEVER drop when character level increases or stays same
-          if (calculatedMax < oldMax && character.level >= 6) {
-            calculatedMax = oldMax;
-          }
+          const bonusFeatHp = Number(character.hp.bonusFeatHp) || 0;
+          const flawHpPenalty = Number(character.hp.flawHpPenalty) || 0;
+          const debuffHpPenalty = Number(character.hp.debuffHpPenalty) || 0;
+
+          let calculatedMax = Math.max(1, character.hp.baseMax + character.hp.conBonusHp + bonusFeatHp - flawHpPenalty - debuffHpPenalty);
           character.hp.max = calculatedMax;
 
           // Strict User Rule: "o anki hp sabit kalsın" (Current HP must remain constant unless at full health!)
@@ -7306,6 +7305,11 @@
           const chaVal = character.stats?.CHA?.value ?? character.abilities?.cha ?? 22;
           character.spellcasting.slots = calculateSorcererSlots(sorcLvls, chaVal, character.spellcasting.slots);
         }
+      }
+      if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
+        try {
+          RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []));
+        } catch (e) {}
       }
       if (typeof autoSyncCharacterClassSkills === 'function') {
         autoSyncCharacterClassSkills(character);

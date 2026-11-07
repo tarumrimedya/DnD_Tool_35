@@ -7437,8 +7437,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (hud && summary) {
         const isFrac = (sys === 'fractional');
         const totalConHp = summary.activeLevels * conMod;
-        const totalMaxHp = Math.max(summary.activeLevels, summary.baseHp + totalConHp);
+        const bonusFeatHp = (Number(character.hp?.bonusFeatHp) || 0) + Math.max(0, (Number(character.hp?.baseMax) || summary.baseHp) - summary.baseHp);
+        const flawHpPen = Number(character.hp?.flawHpPenalty) || 0;
+        const netBonusHp = bonusFeatHp - flawHpPen;
+        const totalMaxHp = Number(character.hp?.max) || Math.max(1, summary.baseHp + totalConHp + netBonusHp);
         const conSignStr = totalConHp >= 0 ? `+${totalConHp}` : `${totalConHp}`;
+        const bonusSignStr = netBonusHp !== 0 ? (netBonusHp > 0 ? ` +${netBonusHp} Bonus` : ` ${netBonusHp} Flaw`) : '';
+        const hpTooltip = `Base Hit Dice: ${summary.baseHp} + CON Bonus: ${conSignStr} (${summary.activeLevels} Levels x ${conModStr})${bonusFeatHp > 0 ? ` + Feat/Boon: +${bonusFeatHp}` : ''}${flawHpPen > 0 ? ` - Flaw Penalty: -${flawHpPen}` : ''} = Total ${totalMaxHp} HP`;
         hud.innerHTML = `
           <div class="flex items-center gap-3">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-600/80 text-emerald-300 font-bold">
@@ -7454,7 +7459,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             </span>
           </div>
           <div class="flex flex-wrap items-center gap-3 font-mono text-[11px]">
-            <span class="text-emerald-400 font-bold" title="Base Hit Dice: ${summary.baseHp} + CON Bonus: ${conSignStr} (${summary.activeLevels} Levels x ${conModStr}) = Total ${totalMaxHp} HP">HP: +${summary.baseHp} <span class="text-emerald-300/90 font-medium text-[10px]">(${conSignStr} Con = ${totalMaxHp})</span></span>
+            <span class="text-emerald-400 font-bold" title="${hpTooltip}">HP: +${summary.baseHp} <span class="text-emerald-300/90 font-medium text-[10px]">(${conSignStr} Con${bonusSignStr} = ${totalMaxHp})</span></span>
             <span class="text-slate-600">•</span>
             <span class="text-sky-400 font-bold">BAB: +${summary.baseBab}${isFrac && summary.fractional ? ` (${summary.fractional.bab.toFixed(2)})` : ''}</span>
             <span class="text-slate-600">•</span>

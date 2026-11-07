@@ -2526,8 +2526,11 @@
       if (maxHpEl) {
         maxHpEl.textContent = maxHp;
         const conBonus = Number(character.hp?.conBonusHp) || 0;
-        if (conBonus !== 0) {
-          maxHpEl.title = `Max HP: ${maxHp} (Base: ${Number(character.hp?.baseMax) || (maxHp - conBonus)} ${conBonus >= 0 ? '+' : ''}${conBonus} CON)`;
+        const bonusFeatHp = Number(character.hp?.bonusFeatHp) || 0;
+        const flawHpPen = Number(character.hp?.flawHpPenalty) || 0;
+        if (conBonus !== 0 || bonusFeatHp !== 0 || flawHpPen !== 0) {
+          const baseVal = Number(character.hp?.baseMax) || (maxHp - conBonus - bonusFeatHp + flawHpPen);
+          maxHpEl.title = `Max HP: ${maxHp} (Base: ${baseVal} ${conBonus >= 0 ? '+' : ''}${conBonus} CON${bonusFeatHp !== 0 ? ` ${bonusFeatHp >= 0 ? '+' : ''}${bonusFeatHp} Boon/Feat` : ''}${flawHpPen !== 0 ? ` -${flawHpPen} Flaw` : ''})`;
         } else {
           maxHpEl.title = `Max HP: ${maxHp}`;
         }

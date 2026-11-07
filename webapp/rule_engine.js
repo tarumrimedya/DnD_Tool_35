@@ -3208,10 +3208,35 @@ const RuleEngine = {
       : (activeHeartCount >= 2 ? `Light Fortification 25% (${activeHeartCount}/4 Heart Spells)` : null);
 
     // 3.5. Evaluate Feats, Special Abilities & DM Boons (Canonical V2)
+    const activeProgRows = Array.isArray(character.levelProgression)
+      ? character.levelProgression.filter(r => r && r.active !== false)
+      : [];
+    const inactiveProgRows = Array.isArray(character.levelProgression)
+      ? character.levelProgression.filter(r => r && r.active === false)
+      : [];
+    const stripFeatTag = (s) => String(s || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
+    const activeProgFeatSet = new Set(activeProgRows.flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])].map(stripFeatTag)).filter(Boolean));
+    const inactiveOnlyFeatSet = new Set(
+      inactiveProgRows
+        .flatMap(r => [...(r.feats || []), ...(r.specialAbilities || [])].map(stripFeatTag))
+        .filter(n => n && !activeProgFeatSet.has(n))
+    );
+
     const allAbilitiesAndFeats = [
       ...(character.feats || []),
       ...(character.specialAbilities || [])
     ];
+    const existingFeatNames = new Set(allAbilitiesAndFeats.map(f => stripFeatTag(typeof f === 'string' ? f : (f?.name || ''))).filter(Boolean));
+    activeProgRows.forEach(r => {
+      (r.feats || []).forEach(fStr => {
+        const clean = stripFeatTag(typeof fStr === 'string' ? fStr : (fStr?.name || ''));
+        if (!clean || clean.startsWith('+1 stat') || clean.includes('stat:') || clean.includes('cl = level')) return;
+        if (!existingFeatNames.has(clean)) {
+          existingFeatNames.add(clean);
+          allAbilitiesAndFeats.push(typeof fStr === 'string' ? { name: fStr, category: String(fStr).includes('Boon') ? 'DM Boon' : 'Feat' } : fStr);
+        }
+      });
+    });
 
     allAbilitiesAndFeats.forEach(rawFeat => {
       if (!rawFeat) return;
@@ -3219,21 +3244,52 @@ const RuleEngine = {
       const rawName = String(featObj.name || '').trim();
       if (!rawName || rawName.startsWith('↳')) return;
 
-      const cleanName = rawName.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
+      const cleanName = stripFeatTag(rawName);
+      if (inactiveOnlyFeatSet.has(cleanName)) return;
       const dbEntry = this.getMasterDbEntry(featObj) || this.getMasterDbEntry(cleanName);
 
       // Apply V2 modifiers from feat object or compendium entry
-      const featMods = (Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0)
+      let featMods = (Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0)
         ? featObj.modifiers
         : (dbEntry && Array.isArray(dbEntry.modifiers) ? dbEntry.modifiers : []);
-      applyV2Modifiers(featMods, rawName, 'feat', evalContext);
+
+      // Auto-hydrate legacy DM Boon entries (e.g. "DM Boon: HP +20", "DM Boon: Ride +4") if saved without V2 modifiers
+      if (featMods.length === 0 && (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))) {
+        if (typeof window !== 'undefined' && typeof window.synthesizeDmBoonFromQuery === 'function') {
+          const synth = window.synthesizeDmBoonFromQuery(cleanName, featObj.benefit || featObj.description || '', 'DM Boon');
+          if (synth && Array.isArray(synth.modifiers) && synth.modifiers.length > 0) {
+            featMods = synth.modifiers;
+          }
+        }
+        if (featMods.length === 0) {
+          const hpBoonMatch = `${cleanName} ${featObj.benefit || ''}`.match(/\b(?:hit\s*points|hp)\b.*?([+-]?\d+)|([+-]?\d+)\s*(?:bonus\s*)?(?:hit\s*points|hp)\b/i);
+          if (hpBoonMatch && !/=/.test(cleanName)) {
+            const hpVal = parseInt(hpBoonMatch[1] || hpBoonMatch[2], 10);
+            if (!isNaN(hpVal) && hpVal !== 0) {
+              featMods = [{ target: 'hp', value: hpVal, type: 'untyped', condition: null }];
+            }
+          }
+        }
+        if (featMods.length > 0) {
+          if (typeof rawFeat === 'object') rawFeat.modifiers = featMods;
+          if (dbEntry && (!Array.isArray(dbEntry.modifiers) || dbEntry.modifiers.length === 0)) {
+            dbEntry.modifiers = featMods;
+          }
+        }
+      }
+
+      // Avoid double-counting standard Toughness (+3 HP) when levelProgression already includes Toughness in character.hp.baseMax
+      const modsToApply = (cleanName === 'toughness' && activeProgRows.length > 0)
+        ? featMods.filter(m => !m || !['hp', 'hp.max'].includes(String(m.target || '').toLowerCase()))
+        : featMods;
+      applyV2Modifiers(modsToApply, rawName, 'feat', evalContext);
 
       const rf = { ...(dbEntry?.ruleFlags || {}), ...(featObj.ruleFlags || {}) };
       if (rf.conToWillSave || cleanName.includes('steadfast determination')) {
         hasSteadfastDetermination = true;
       }
-      if (rf.hpPerLevel || cleanName.includes('draconic toughness')) {
-        draconicToughnessHp = Math.max(draconicToughnessHp, charLvl);
+      if ((rf.hpPerLevel || cleanName.includes('draconic toughness')) && !featMods.some(m => m && ['hp', 'hp.max'].includes(String(m.target || '').toLowerCase()))) {
+        draconicToughnessHp += charLvl;
       }
       if (rf.dodgeBonus || cleanName === 'dodge') {
         if (!conditionalAcBonuses.some(c => (c.source || '').toLowerCase() === 'dodge')) {
@@ -3435,10 +3491,15 @@ const RuleEngine = {
       character.abilities[stat] = base + netBonus;
     });
 
-    // 4.5. Resolve Dynamic Hit Points (HP) based on Constitution Changes and Debuff Penalties
-    const charFeatNames = (character.feats || []).map(f => (typeof f === 'string' ? f : (f.name || '')).toLowerCase().trim());
-    const totalHD = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.length : 1);
-    const hasFrail = charFeatNames.some(f => f.includes('flaw: frail') || f === 'frail');
+    // 4.5. Resolve Dynamic Hit Points (HP) based on Constitution Changes, Feats/Boons, Flaws, and Debuff Penalties
+    const charFeatNames = [
+      ...(character.feats || [])
+        .map(f => stripFeatTag(typeof f === 'string' ? f : (f.name || '')))
+        .filter(n => n && !inactiveOnlyFeatSet.has(n)),
+      ...Array.from(activeProgFeatSet)
+    ];
+    const totalHD = Number(character.level) || (activeProgRows.length > 0 ? activeProgRows.length : 1);
+    const hasFrail = charFeatNames.some(f => f.includes('flaw: frail') || f.includes('[flaw] frail') || f === 'frail' || f.endsWith(' frail'));
     const flawHpPenalty = hasFrail ? totalHD : 0;
 
     if (character.hp) {
@@ -3446,23 +3507,35 @@ const RuleEngine = {
       const newConBonusHp = effectiveConMod * totalHD;
 
       if (character.hp.baseMax === undefined || character.hp.baseMax === null) {
-        character.hp.baseMax = Math.max(1, (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0) + flawHpPenalty + (Number(character.hp.debuffHpPenalty) || 0));
+        character.hp.baseMax = Math.max(1, (Number(character.hp.max) || 45) - (Number(character.hp.conBonusHp) || 0) - (Number(character.hp.bonusFeatHp) || 0) + flawHpPenalty + (Number(character.hp.debuffHpPenalty) || 0));
       }
       if (character.hp.conBonusHp === undefined || character.hp.conBonusHp === null) {
         character.hp.conBonusHp = newConBonusHp;
       }
 
-      const prevConBonusHp = Number(character.hp.conBonusHp);
+      const prevConBonusHp = Number(character.hp.conBonusHp) || 0;
       const prevDebuffHp = Number(character.hp.debuffHpPenalty) || 0;
+      const prevBonusHp = Number(character.hp.bonusFeatHp) || 0;
+      const prevFlawPenalty = Number(character.hp.flawHpPenalty) || 0;
       const conHpDiff = newConBonusHp - prevConBonusHp;
       const debuffHpDiff = debuffHpPenalty - prevDebuffHp;
+      const bonusHpDiff = draconicToughnessHp - prevBonusHp;
+      const flawHpDiff = flawHpPenalty - prevFlawPenalty;
+      const expectedMax = Math.max(1, Number(character.hp.baseMax) + newConBonusHp + draconicToughnessHp - flawHpPenalty - debuffHpPenalty);
 
-      if (conHpDiff !== 0 || debuffHpDiff !== 0 || character.hp._appliedFrail !== hasFrail || character.hp.max === undefined) {
+      if (conHpDiff !== 0 || debuffHpDiff !== 0 || bonusHpDiff !== 0 || flawHpDiff !== 0 || character.hp._appliedFrail !== hasFrail || character.hp.max !== expectedMax) {
+        const wasAtFullHp = (character.hp.max !== undefined && Number(character.hp.current) >= Number(character.hp.max));
         character.hp.conBonusHp = newConBonusHp;
         character.hp.debuffHpPenalty = debuffHpPenalty;
+        character.hp.bonusFeatHp = draconicToughnessHp;
+        character.hp.flawHpPenalty = flawHpPenalty;
         character.hp._appliedFrail = hasFrail;
-        character.hp.max = Math.max(1, Number(character.hp.baseMax) + newConBonusHp + draconicToughnessHp - flawHpPenalty - debuffHpPenalty);
-        character.hp.current = Math.min(character.hp.max, (Number(character.hp.current) || character.hp.max) + conHpDiff - debuffHpDiff);
+        character.hp.max = expectedMax;
+        if (wasAtFullHp && bonusHpDiff > 0 && conHpDiff === 0 && debuffHpDiff === 0 && flawHpDiff === 0) {
+          character.hp.current = character.hp.max;
+        } else {
+          character.hp.current = Math.min(character.hp.max, (Number(character.hp.current) || character.hp.max) + conHpDiff + bonusHpDiff - flawHpDiff - debuffHpDiff);
+        }
         if (character.hp.current < -10) {
           character.hp.current = -10;
         }
