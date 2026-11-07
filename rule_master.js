@@ -183,21 +183,38 @@ const RuleMaster = {
   // Helper: Ensure any entry is upgraded to Canonical V2
   ensureV2(entry) {
     if (!entry || typeof entry !== 'object') return entry;
+    const CANONICAL_UA_FLAWS = new Set([
+      'feeble', 'frail', 'inattentive', 'meager fortitude', 'murky-eyed',
+      'noncombatant', 'pathetic', 'poor reflexes', 'shaky', 'slow',
+      'unreactive', 'vulnerable'
+    ]);
+    let v2 = entry;
     if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
-      return window.SchemaMigrator.upgradeEntryToV2(entry);
+      v2 = window.SchemaMigrator.upgradeEntryToV2(entry);
+    } else if (!(entry.schemaVersion === 2 && Array.isArray(entry.modifiers) && Array.isArray(entry.damageParts) && Array.isArray(entry.modes))) {
+      v2 = Object.assign({}, entry, { schemaVersion: 2 });
+      if (!v2.id) {
+        v2.id = `entry_${String(v2.name || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
+      }
+      if (!Array.isArray(v2.modifiers)) v2.modifiers = [];
+      if (!Array.isArray(v2.damageParts)) v2.damageParts = [];
+      if (!Array.isArray(v2.modes)) v2.modes = [];
+      if (!v2.ruleFlags || typeof v2.ruleFlags !== 'object') v2.ruleFlags = {};
+      if (!Array.isArray(v2.tacticalBadges)) v2.tacticalBadges = [];
     }
-    if (entry.schemaVersion === 2 && Array.isArray(entry.modifiers) && Array.isArray(entry.damageParts) && Array.isArray(entry.modes)) {
-      return entry;
+    const cleanName = String(v2.name || '').replace(/^flaw:\s*/i, '').trim().toLowerCase();
+    const isFlaw = String(v2.type || '').toLowerCase() === 'flaw'
+      || String(v2.category || '').toLowerCase() === 'flaw'
+      || Boolean(v2.ruleFlags && v2.ruleFlags.isFlaw)
+      || CANONICAL_UA_FLAWS.has(cleanName);
+    if (isFlaw) {
+      v2.type = 'Flaw';
+      v2.category = 'Flaw';
+      if (v2.slotDiff === undefined || Number(v2.slotDiff) <= 0) v2.slotDiff = 1;
+      if (!v2.ruleFlags || typeof v2.ruleFlags !== 'object') v2.ruleFlags = {};
+      v2.ruleFlags.isFlaw = true;
+      v2.ruleFlags.grantsBonusFeat = 1;
     }
-    const v2 = Object.assign({}, entry, { schemaVersion: 2 });
-    if (!v2.id) {
-      v2.id = `entry_${String(v2.name || 'item').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`;
-    }
-    if (!Array.isArray(v2.modifiers)) v2.modifiers = [];
-    if (!Array.isArray(v2.damageParts)) v2.damageParts = [];
-    if (!Array.isArray(v2.modes)) v2.modes = [];
-    if (!v2.ruleFlags || typeof v2.ruleFlags !== 'object') v2.ruleFlags = {};
-    if (!Array.isArray(v2.tacticalBadges)) v2.tacticalBadges = [];
     return v2;
   },
 
@@ -1606,6 +1623,15 @@ const RuleMaster = {
         bonusScopeCellHtml = `
           <div class="text-xs font-semibold text-emerald-200">Racial Traits</div>
           <div class="text-[10px] text-slate-400">${item.favoredClass ? `Favored: ${item.favoredClass}` : 'Character Race'}</div>
+        `;
+      } else if (lowType === 'flaw' || String(item.category || '').toLowerCase() === 'flaw') {
+        slotCellHtml = `
+          <div class="font-bold text-rose-300">1st Level</div>
+          <div class="text-[10px] text-slate-400">Max 2 Flaws</div>
+        `;
+        bonusScopeCellHtml = `
+          <div class="text-xs font-semibold text-amber-300">🎖️ +1 Bonus Feat</div>
+          <div class="text-[10px] text-rose-300/90">Character Flaw (UA p.91)</div>
         `;
       }
 
@@ -4121,21 +4147,45 @@ Return valid JSON only matching:
         if (!proceed) return;
       }
       if (!character.feats) character.feats = [];
-      const cleanName = item.name.trim();
-      if (!character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === cleanName.toLowerCase())) {
-        character.feats.push({
-          schemaVersion: 2,
-          id: item.id,
-          name: cleanName,
-          category: 'Flaw',
-          source: item.source || 'Unearthed Arcana',
-          benefit: item.benefit || 'Grants 1 bonus feat in exchange for this flaw.',
-          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : []
+      const cleanName = item.name.replace(/^flaw:\s*/i, '').trim();
+      const existingFlawIdx = character.feats.findIndex(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === cleanName.toLowerCase());
+      const flawObj = {
+        schemaVersion: 2,
+        id: item.id,
+        name: cleanName,
+        type: 'Flaw',
+        category: 'Flaw',
+        slotDiff: 1,
+        source: item.source || 'Unearthed Arcana, p. 91',
+        benefit: item.benefit || item.description || 'Grants 1 bonus feat in exchange for this flaw.',
+        modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
+        ruleFlags: Object.assign({ isFlaw: true, grantsBonusFeat: 1 }, item.ruleFlags || {})
+      };
+      if (existingFlawIdx >= 0) {
+        character.feats[existingFlawIdx] = flawObj;
+      } else {
+        character.feats.push(flawObj);
+      }
+      if (Array.isArray(character.levelProgression) && character.levelProgression[0]) {
+        const row0 = character.levelProgression[0];
+        if (!Array.isArray(row0.feats)) row0.feats = [];
+        row0.feats = row0.feats.filter(fStr => {
+          const rName = String(fStr).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+          return rName !== cleanName.toLowerCase();
+        });
+        row0.feats.push(`⚠️ [Flaw] ${cleanName}`);
+      }
+      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      if (typeof renderAll === 'function') renderAll();
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '⚠️',
+          title: `Flaw Added: ${cleanName}`,
+          breakdown: '🎖️ +1 Flaw Bonus Feat slot unlocked! Select your bonus feat now.'
         });
       }
-      alert(`⚠️ Flaw "${item.name}" added to character!\n\n🎖️ Per D&D 3.5e Unearthed Arcana rules, you have gained 1 EXTRA BONUS FEAT!`);
-      if (typeof openFeatPickerModal === 'function') {
-        setTimeout(() => openFeatPickerModal(false), 200);
+      if (typeof openQuickFeatPickerForLevel === 'function') {
+        setTimeout(() => openQuickFeatPickerForLevel(0, 'Flaw Bonus Feat', true), 180);
       }
     } else if (type === 'racial trait' || cat.toLowerCase() === 'racial trait' || (item.category && item.category.toLowerCase().includes('racial'))) {
       if (character.level > 1) {

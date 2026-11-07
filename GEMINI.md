@@ -1,17 +1,19 @@
 # Joyful-Fermi Project Rules (STRICT)
 
-## 1. Agile CEO Governance, Parallel Subagents & 160ms Script Audit
-- **Agile CEO Orchestrator (`Gemini 4 Argon` — `.agents/skills/ceo-orchestrator/SKILL.md`):** Argon acts as the **Agile CEO & Lead Architect**, choosing the fastest execution path based on task scope to avoid subagent cold-start latency (~90s/agent):
-  1. **Fast-Track Direct Execution (`10–25s` — Questions, Proposals & 1–2 File Surgical Edits):** For conceptual/RAW questions, proposal evaluations, and targeted 1–2 file changes (30–60 line reads), Argon executes directly without spawning subagents.
-  2. **Parallel Subagent Swarm (`Multi-Module / Broad Discovery / Bulk Data`):** When a task spans 2+ independent modules or requires broad multi-file scanning, Argon dispatches multiple subagents **in parallel in the same turn**:
-     - **Discovery (`research`):** `Model: flash` for broad multi-file scanning.
-     - **Engine & 3.5e RAW Math (`worker-engine`):** `Model: pro` (or `inherit`) for `rule_engine.js`.
-     - **UI / DOM Modules (`worker-ui`):** `Model: flash` for `index.html` and `char_*.js`.
-     - **Database / V2 Schema (`worker-data`):** `Model: flash_lite` (plus local Node.js scripts) for `database/srd_*.json`.
-  3. **Zero-Token 160ms Audit (`tools/verify_and_sync.js` + `git diff`):** Never spawn a separate sequential QA subagent just to run checks. The executing agent runs `git diff` and `tools/verify_and_sync.js` (**0 tokens, ~160ms** — auto-syncing `index.html` ➔ `character.html`, `database/*.json` SHA-256 hashes ➔ `srd_index.json`, and core files ➔ `webapp/`) in the same turn before completion.
+## 1. Pure Big-Picture CEO Governance, End-to-End Department Workers & 160ms Script Audit
+- **Pure Big-Picture CEO (`Gemini 4 Argon` — `.agents/skills/ceo-orchestrator/SKILL.md`):** Argon acts exclusively as the **Big-Picture CEO & Lead Architect**, keeping its context window 100% clean of low-level DOM/HTML/regex clutter:
+  1. **Zero Low-Level Code Pollution in CEO Context:** Argon **NEVER** runs `Select-String`/`grep` across code files (`*.js`, `*.html`) and **NEVER** reads or edits UI/engine/database code files directly. Argon only reads architectural docs (`GEMINI.md`, Obsidian `00-Dashboard.md`, ADRs) and executive summaries from subagents.
+  2. **Direct CEO Response ONLY for Conceptual / 3.5e RAW / Architecture Questions:** For design discussions, proposals, and D&D 3.5e RAW analysis, Argon answers directly from architectural principles (or dispatches a fast `flash` `research` subagent if codebase lookup is required).
+  3. **Single-Pass End-to-End Department Subagents (No Sequential Chains):** For ALL code/data tasks (even 1-file surgical edits), Argon formulates a clear **Architectural Task Contract** (root-cause goal, 3.5e RAW & V2 invariants, cross-module guardrails) and delegates to the responsible department subagent(s) (**in parallel** if multi-module):
+     - **Discovery (`research`):** `Model: flash` for codebase inspection when answering questions.
+     - **Engine & 3.5e RAW Math (`worker-engine`):** `Model: pro` (or `inherit`) for `rule_engine.js` and `rule_master.js`.
+     - **UI / DOM Modules (`worker-ui`):** `Model: flash` for `index.html`, `char_*.js`, and `hub.html`.
+     - **Database / V2 Schema (`worker-data`):** `Model: flash_lite` (plus local Node.js scripts) for `database/srd_*.json` and `master_db.json`.
+  4. **Reuse Live Department Subagents (`send_message`):** Once a department worker (`worker-ui`, `worker-engine`, `worker-data`) is spawned in a conversation, reuse its `conversationId` via `send_message` for subsequent tasks in that domain to avoid cold-start overhead and preserve module memory.
+  5. **Mandatory Worker Self-Verification (`tools/verify_and_sync.js` + `git diff`):** Never spawn a separate sequential QA subagent. Every department worker MUST locate the target lines, implement the root-cause fix, and run `node tools/verify_and_sync.js` (**0 tokens, ~160ms**) + `git diff` **inside its own turn** before returning a concise **5–10 line Executive Summary** to the CEO.
 - **Modular Character Sheet & Context Discipline:**
-  - `index.html` (7,698 lines pure HTML/DOM) + 5 domain JS modules (`char_hud.js`, `char_combat.js`, `char_spells.js`, `char_progression.js`, `char_inventory.js`).
-  - Read only the target module and exact 30–60 line range needed. Edit only root files; never read `character.html` or `webapp/*` copies directly.
+  - `index.html` (7,698 lines pure HTML/DOM) + 5 domain JS modules (`char_hud.js`, `char_combat.js`, `char_spells.js`, `char_progression.js`, `char_inventory.js`). Never scan `char_modals.js` (minified bundle) with broad regexes.
+  - Workers read only the target module and exact 30–60 line range needed. Edit only root files; never read `character.html` or `webapp/*` copies directly.
   - `HANDOVER_TO_CHARACTER_SHEET.md` is frozen archive — never read or update it.
 
 ## 2. Root-Cause Engineering & Inquiry Guardrail
@@ -41,5 +43,5 @@
 - **NEVER** use the standard 6-sided die emoji (`U+1F3B2` / `\uD83C\uDFB2`) anywhere in code, UI, logs, or docs. Use polyhedral SVG helpers (`getDiceIconSvg`, `getFormulaDiceIconSvg`) or thematic icons (`⚔️`, `🔮`, `✨`, `⚡`, `🩸`, `💚`, `🛡️`).
 
 ## 7. Obsidian Knowledge Base (`D:\Obsidian\dndtools35\`)
-- **Structure:** `00-Dashboard.md`, `01-Architecture/`, `02-Data-Contracts/`, `03-Decisions/`, `04-DevLogs/`.
-- **Token Discipline:** Export to Obsidian (`04-DevLogs/YYYY-MM-DD-[Topic].md` + relevant ADR/Architecture cards with `[[00-Dashboard]]` wikilinks) **only at major phase completions or right before starting a New Chat** when triggered by *"obsidian a aktar"* / *"obsidian devlog"*. In new chats, read `00-Dashboard.md` and the latest DevLog for instant low-token context.
+- **Structure:** `00-Dashboard.md`, `01-Architecture/UI-UX Design System and Do-Dont Master Guide.md` (mandatory reference for UI/UX & Do/Don't rules), `02-Data-Contracts/`, `03-Decisions/`, `04-DevLogs/`.
+- **Token Discipline:** Export to Obsidian (`04-DevLogs/YYYY-MM-DD-[Topic].md` + relevant ADR/Architecture cards with `[[00-Dashboard]]` wikilinks) **only at major phase completions or right before starting a New Chat** when triggered by *"obsidian a aktar"* / *"obsidian devlog"*. In new chats or design/history inquiries, read `00-Dashboard.md`, `01-Architecture/UI-UX Design System and Do-Dont Master Guide.md`, and the latest DevLog for instant low-token context.

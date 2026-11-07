@@ -13,7 +13,7 @@
   'use strict';
 
   const IDB_NAME = 'dnd35_srd_compendium_v2';
-  const IDB_VERSION = 3;
+  const IDB_VERSION = 4;
   const IDB_STORE = 'chunks';
 
   const EAGER_CHUNKS = [
@@ -662,7 +662,7 @@
     },
 
     getAllFeats() {
-      let list = this.getAllLoaded('Feat');
+      let list = this.getAllLoaded(['Feat', 'Flaw']);
       if (list.length === 0 && typeof require !== 'undefined') {
         try {
           const fs = require('fs');
@@ -671,16 +671,16 @@
           if (fs.existsSync(p)) {
             const records = JSON.parse(fs.readFileSync(p, 'utf8'));
             registerEntries(records);
-            list = this.getAllLoaded('Feat');
+            list = this.getAllLoaded(['Feat', 'Flaw']);
           }
         } catch (_) {}
       }
       if (list.length === 0 && Array.isArray(_index) && _index.length > 0) {
-        return _index.filter(r => r && r.t === 'Feat').map(r => ({
+        return _index.filter(r => r && (r.t === 'Feat' || r.t === 'Flaw')).map(r => ({
           id: r.id,
           name: r.n,
-          type: 'Feat',
-          category: r.c || 'General'
+          type: r.t || 'Feat',
+          category: r.c || (r.t === 'Flaw' ? 'Flaw' : 'General')
         }));
       }
       return list;

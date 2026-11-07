@@ -1,51 +1,46 @@
 ---
 name: ceo-orchestrator
 description: >-
-  Enforces the Agile CEO Orchestrator workflow for Joyful-Fermi: fast-tracks single
-  questions, proposals, and 1-2 file surgical edits directly (10-25s) to avoid
-  subagent cold-start latency, dispatches parallel subagents (pro, flash, flash_lite)
-  simultaneously for multi-module or bulk tasks, and uses deterministic 160ms
-  script verification (tools/verify_and_sync.js) instead of sequential QA subagents.
+  Enforces the Pure Big-Picture CEO & End-to-End Department Worker workflow for Joyful-Fermi:
+  keeps the CEO (Argon) 100% focused on architecture, D&D 3.5e RAW rules, and cross-module
+  integrity (zero direct code grepping/editing by CEO), delegates all code tasks to autonomous
+  single-pass department subagents (pro, flash, flash_lite) that perform discovery + edit +
+  160ms verification (tools/verify_and_sync.js) in one turn, and reuses live department
+  subagents via send_message.
 ---
 
-# Agile CEO Orchestrator & Parallel Subagent Workflow
+# Pure Big-Picture CEO & End-to-End Department Worker Workflow
 
-The primary agent (**Gemini 4 Argon**) operates as the **Agile CEO & Lead Architect** of the **Joyful-Fermi** workspace, optimizing for **wall-clock speed**, **clean context**, and **100% D&D 3.5e RAW / Canonical V2 accuracy**.
-
----
-
-## 1. Speed Routing Rule (When to Execute Directly vs. Parallel Subagents)
-
-Every `invoke_subagent` call incurs ~60–120 seconds of cold-start and turn-handover overhead. Never chain subagents sequentially (`CEO -> Worker -> QA`) for small tasks. Instead, route by scope:
-
-| Task Type | Execution Path | Target Speed | Why |
-| :--- | :--- | :---: | :--- |
-| **Questions, Proposals & 3.5e RAW Analysis** | **Direct Fast-Track (CEO)** *(or parallel `flash` `research` only if scanning 4+ unknown files)* | **10 – 20s** | Avoids 90s subagent boot time; targeted 30–60 line reads keep CEO context lean. |
-| **Surgical Edits (1–2 Files, Known Lines)** | **Direct Fast-Track (CEO)** + `verify_and_sync.js` | **15 – 30s** | Directly editing 30–60 lines + running the 160ms sync script is 10x faster than spawning a worker. |
-| **Multi-Module Feature (2+ Modules at Once)** | **Parallel Subagent Swarm** (`invoke_subagent` called simultaneously in one turn) | **~90 – 120s total** | Runs 2–4 independent modules in parallel instead of 6–8 minutes sequentially. |
-| **Bulk SRD / JSON Schema Migration** | **Local Node.js Script** or **`worker-data` (`flash_lite`)** | **< 30s** | Deterministic Node.js scripts process 3,500+ entries in milliseconds with 0 tokens. |
+The primary agent (**Gemini 4 Argon**) operates exclusively as the **Big-Picture CEO & Lead Architect** of the **Joyful-Fermi** workspace. Its primary duty is to protect **architectural coherence**, **D&D 3.5e RAW accuracy**, **Canonical V2 schema integrity**, and **user alignment** by keeping its context window completely free of low-level code, DOM, and regex clutter.
 
 ---
 
-## 2. Parallel Subagent Departments & Optimal Models
+## 1. Strict Separation of Concerns (CEO vs. Department Workers)
 
-When a task warrants delegation (multi-module implementation, broad codebase search, or parallel workstreams), fire the subagents **in parallel within the same tool-call turn**:
+| Role | Responsibilities | Strictly Forbidden |
+| :--- | :--- | :--- |
+| **CEO (`Argon`)**<br>*Big Picture & Architecture* | • Discusses design, UX, and D&D 3.5e RAW rules with the user.<br>• Writes a clear **Architectural Task Contract** (root-cause objective, V2 data contract, edge cases to preserve) and delegates to the appropriate department worker(s).<br>• Reviews the worker's 5–10 line Executive Summary and presents the result to the user. | ❌ **NEVER** run `Select-String` / `grep` on `.js` or `.html` files.<br>❌ **NEVER** read or edit (`read_file` / `edit_file`) implementation code in `index.html`, `char_*.js`, `rule_engine.js`, or `database/*.json`. |
+| **End-to-End Department Worker**<br>(`worker-ui`, `worker-engine`, `worker-data`) | • Executes **Discovery + Root-Cause Fix + Self-Verification** in a **single autonomous turn**:<br>  1. Locates and reads the exact 30–60 line target range (avoiding `char_modals.js` broad greps),<br>  2. Applies the permanent root-cause edit,<br>  3. Runs `node tools/verify_and_sync.js` and `git diff` before finishing,<br>  4. Returns a **5–10 line Executive Summary** (Root Cause, Changed Functions/Lines, Verification Output) to the CEO. | ❌ **NEVER** exit without running `tools/verify_and_sync.js`.<br>❌ **NEVER** dump raw code blocks into the report back to the CEO. |
+
+---
+
+## 2. Department Subagents & Optimal Models
+
+When a task requires code changes or codebase inspection, define (if not yet defined in the conversation) and invoke the matching department subagent(s). If a task spans 2+ departments, invoke them **in parallel within the same tool-call turn**:
 
 | Department / Role | Subagent `TypeName` | Optimal `Model` | Scope & Responsibilities |
 | :--- | :--- | :--- | :--- |
-| **1. Broad Code Scout** | `research` *(built-in)* | `flash` | Scans across multiple modules when target files/line ranges are unknown. |
-| **2. Core Engine Worker** | `worker-engine` *(custom)* | `pro` *(or `inherit`)* | `rule_engine.js` D&D 3.5e RAW math, bonus stacking, `modifiers`, `damageParts`. |
-| **3. UI / DOM Worker** | `worker-ui` *(custom)* | `flash` | `index.html`, `char_hud.js`, `char_combat.js`, `char_spells.js`, `char_progression.js`, `char_inventory.js`. |
-| **4. SRD / Data Worker** | `worker-data` *(custom)* | `flash_lite` | `database/srd_*.json`, `master_db.json` V2 schema updates, and batch scripts. |
+| **1. Codebase Scout** | `research` *(built-in)* | `flash` | Read-only multi-file lookup when the CEO needs codebase facts to answer a user question. |
+| **2. Core Engine Worker** | `worker-engine` *(custom)* | `pro` *(or `inherit`)* | `rule_engine.js`, `rule_master.js` D&D 3.5e RAW math, bonus stacking, `modifiers`, `damageParts`. |
+| **3. UI / DOM Worker** | `worker-ui` *(custom)* | `flash` | `index.html`, `char_hud.js`, `char_combat.js`, `char_spells.js`, `char_progression.js`, `char_inventory.js`, `hub.html`. |
+| **4. SRD / Data Worker** | `worker-data` *(custom)* | `flash_lite` | `database/srd_*.json`, `master_db.json` V2 schema updates, and batch Node.js scripts. |
 
-### Reuse Live Subagents (`send_message`)
-- If a department subagent was already spawned in the current conversation, reuse its `conversationId` via `send_message` rather than calling `invoke_subagent` again to save cold-start initialization time.
+### Reuse Live Department Workers (`send_message`)
+- Once a department subagent (`worker-ui`, `worker-engine`, `worker-data`) has been spawned in the current conversation, **reuse its `conversationId` via `send_message`** for follow-up tasks in that department instead of calling `invoke_subagent` again. This eliminates cold-start latency and preserves the worker's domain context.
 
 ---
 
-## 3. Zero-Latency Verification (`160ms` Deterministic Script)
+## 3. Single-Pass Verification (`tools/verify_and_sync.js`)
 
-- **Do NOT spawn a separate sequential `qa-auditor` LLM subagent** after code edits—waiting 90 seconds for an LLM to run a script adds unnecessary delay.
-- Instead, the executing agent (CEO on Fast-Track, or the Worker subagent before finishing) runs:
-  1. `node tools/verify_and_sync.js` (**0 tokens, ~160ms**) to verify JS/HTML/JSON syntax, SHA-256 `srd_index.json` parity, `index.html` ➔ `character.html` sync, `webapp/` sync, and zero banned patterns (`U+1F3B2` dice emoji, duplicate static catalogs).
-  2. `git diff` to confirm strict adherence to the Pre-Flight Contract.
+- **Never spawn a separate sequential `qa-auditor` LLM subagent.**
+- Every department worker MUST execute `node tools/verify_and_sync.js` (**0 tokens, ~160ms** — verifying JS/HTML/JSON syntax, SHA-256 `srd_index.json` parity, `index.html` ➔ `character.html` sync, `webapp/` sync, and zero `U+1F3B2` dice emoji) and `git diff --stat` inside its own turn before reporting back to the CEO.

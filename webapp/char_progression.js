@@ -41,9 +41,9 @@
         }
       });
 
-      // 1. Canonical V2 SrdCompendium (452 SRD Feats with structured prerequisites)
+      // 1. Canonical V2 SrdCompendium (464 SRD Feats & UA Flaws with structured prerequisites)
       if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
-        window.SrdCompendium.getAllLoaded('Feat').forEach(f => {
+        window.SrdCompendium.getAllLoaded(['Feat', 'Flaw']).forEach(f => {
           if (!f || !f.name) return;
           const k = f.name.toLowerCase().trim();
           if (!k || skipPlaceholders.has(k)) return;
@@ -58,7 +58,7 @@
       }
       // 2. Fallback from BUNDLED_SRD_CORE_CATALOG only if SrdCompendium is not ready
       if (!(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) && typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
-        window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && i.type === 'Feat').forEach(f => {
+        window.BUNDLED_SRD_CORE_CATALOG.filter(i => i && (i.type === 'Feat' || i.type === 'Flaw')).forEach(f => {
           const k = (f.name || '').toLowerCase().trim();
           if (k && !skipPlaceholders.has(k) && f.category !== 'Warlock Invocation' && !invocationByName.has(k)) {
             const existing = map.get(k);
@@ -109,12 +109,15 @@
             return;
           }
           const canonicalInv = invocationByName.get(key);
+          const isKnownFlaw = t === 'flaw' || String(m.category || '').toLowerCase() === 'flaw' || Boolean(m.ruleFlags && m.ruleFlags.isFlaw) || Number(m.slotDiff) > 0;
           map.set(key, {
             ...m,
             name: m.name,
+            type: isKnownFlaw ? 'Flaw' : (m.type || 'Feat'),
             category: isInv
               ? 'Warlock Invocation'
-              : (t === 'special ability' ? 'Special Ability' : (t === 'dm grant' ? 'DM Boon' : (t === 'flaw' ? 'Flaw' : (m.category || 'General')))),
+              : (t === 'special ability' ? 'Special Ability' : (t === 'dm grant' ? 'DM Boon' : (isKnownFlaw ? 'Flaw' : (m.category || 'General')))),
+            slotDiff: isKnownFlaw ? (Number(m.slotDiff) || 1) : (m.slotDiff || 0),
             prereq: (canonicalInv ? (canonicalInv.prerequisites || canonicalInv.prereq || `Warlock Level ${canonicalInv.minLevel || 1}`) : null) || m.prerequisites || m.prereq || '-',
             source: m.source || 'Master DB',
             benefit: m.shortDescription || m.benefit || m.description || ''
@@ -603,6 +606,28 @@
       }
     }
 
+    const CANONICAL_UA_FLAW_NAMES = new Set([
+      'feeble', 'frail', 'inattentive', 'meager fortitude', 'murky-eyed',
+      'noncombatant', 'pathetic', 'poor reflexes', 'shaky', 'slow',
+      'unreactive', 'vulnerable'
+    ]);
+
+    function isFlawFeatString(fStr) {
+      const str = String(fStr || '');
+      if (str.includes('[Flaw Bonus]')) return false;
+      if (str.includes('[Flaw]') || str.includes('Flaw:')) return true;
+      const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+      if (!rawName) return false;
+      if (CANONICAL_UA_FLAW_NAMES.has(rawName)) return true;
+      if (Array.isArray(masterDb)) {
+        const m = masterDb.find(e => (e.name || '').toLowerCase().trim() === rawName);
+        if (m && (String(m.type || '').toLowerCase() === 'flaw' || String(m.category || '').toLowerCase() === 'flaw' || Number(m.slotDiff) === 1 || m.ruleFlags?.isFlaw)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     function openQuickFeatPickerForLevel(levelIdx, preferredCategory = null, isTargetLocked = null) {
       activeQuickLevelIndex = Number(levelIdx);
       const modal = document.getElementById('quick-level-feat-modal');
@@ -641,16 +666,23 @@
       const regularFeats = [];
       const classBonusFeats = [];
       const otherBonusFeats = [];
+      const flawsAtLevel = [];
+      const flawBonusFeatsAtLevel = [];
       ((lvlObj && lvlObj.feats) || []).forEach(fStr => {
         const str = String(fStr);
         if (str.includes('+1 Stat') || str.includes('Stat:')) return;
-        if (str.includes('[Bonus]') || str.includes('Bonus')) {
+        if (str.includes('[Flaw Bonus]')) {
+          otherBonusFeats.push(fStr);
+          flawBonusFeatsAtLevel.push(fStr);
+        } else if (isFlawFeatString(fStr)) {
+          otherBonusFeats.push(fStr);
+          flawsAtLevel.push(fStr);
+        } else if (str.includes('[Bonus]') || str.includes('[Extra Bonus]') || str.includes('Bonus')) {
           classBonusFeats.push(fStr);
         } else if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
           otherBonusFeats.push(fStr);
-        } else if (str.includes('[Flaw]') || str.includes('Flaw:') ||
-            str.includes('[Racial]') ||
-            str.includes('[Invocation]') || str.includes('Invocation') ||
+        } else if (str.includes('[Racial]') || str.includes('[Extra Racial]') ||
+            str.includes('[Invocation]') || str.includes('[Extra Invocation]') || str.includes('Invocation') ||
             str.includes('Caster Lvl') || str.includes('+1 Primary CL') || str.includes('🔮')) {
           otherBonusFeats.push(fStr);
         } else {
@@ -662,30 +694,23 @@
       const qualifiesForRegularFeat = isLevelQualifiesForFeat(lvlNum, featMode);
       const isHuman = (character.race || '').toLowerCase().includes('human');
       const qualifiesForHumanBonus = (lvlNum === 1 && isHuman);
+      const hasSlotRegularFeat = regularFeats.some(f => !String(f).includes('[Extra]'));
+      const hasSlotClassBonusFeat = classBonusFeats.some(f => !String(f).includes('[Extra'));
       const hasRacialBonus = otherBonusFeats.some(f => String(f).includes('[Racial]'));
+      const unfilledFlawBonusCount = Math.max(0, flawsAtLevel.length - flawBonusFeatsAtLevel.length);
 
-      // If preferredCategory is not explicitly passed (e.g. from general row ➕ button), auto-detect first unfilled slot:
+      // If preferredCategory is not explicitly passed (from the row ➕ button), open in Extra Addition mode
+      // so unselected level feat slots (+ Select Feat, + Human Bonus Feat, + Class Bonus Feat) remain untouched:
       if (!preferredCategory) {
-        if (qualifiesForClassBonus && classBonusFeats.length === 0) {
-          preferredCategory = 'Class Bonus Feat';
-          if (isTargetLocked === null) isTargetLocked = true;
-        } else if (qualifiesForRegularFeat && regularFeats.length === 0) {
-          preferredCategory = 'Regular Feat';
-          if (isTargetLocked === null) isTargetLocked = true;
-        } else if (qualifiesForHumanBonus && !hasRacialBonus) {
-          preferredCategory = 'Racial Trait';
-          if (isTargetLocked === null) isTargetLocked = true;
-        } else {
-          // All standard slots for this level are already filled -> DM Boon / Campaign Grant
-          preferredCategory = 'DM Boon';
-          if (isTargetLocked === null) isTargetLocked = false;
-        }
+        preferredCategory = 'Regular Feat';
+        if (isTargetLocked === null) isTargetLocked = false;
+        activeQuickFeatTargetSlot = null;
       } else {
         if (isTargetLocked === null) isTargetLocked = true;
+        activeQuickFeatTargetSlot = isTargetLocked ? preferredCategory : null;
       }
 
       isQuickFeatTargetLocked = Boolean(isTargetLocked);
-      activeQuickFeatTargetSlot = preferredCategory;
 
       const catSel = document.getElementById('quick-feat-category');
       if (catSel) {
@@ -699,17 +724,23 @@
         const optRegular = document.getElementById('quick-feat-opt-regular');
         const optClass = document.getElementById('quick-feat-opt-class');
         const optRacial = document.getElementById('quick-feat-opt-racial');
+        const optFlawBonus = document.getElementById('quick-feat-opt-flaw-bonus');
 
         if (optRegular) {
-          const isRegFull = qualifiesForRegularFeat && regularFeats.length > 0;
+          const isRegFull = qualifiesForRegularFeat && hasSlotRegularFeat;
           optRegular.textContent = isRegFull ? '🎖️ Regular Feat (Slot Filled at This Level)' : '🎖️ Regular Feat';
         }
         if (optClass) {
-          const isClassFull = qualifiesForClassBonus && classBonusFeats.length > 0;
+          const isClassFull = qualifiesForClassBonus && hasSlotClassBonusFeat;
           optClass.textContent = isClassFull ? `⚔️ ${className} Bonus Feat (Slot Filled at This Level)` : `⚔️ ${className} Bonus Feat (Class Bonus Feat)`;
         }
         if (optRacial) {
           optRacial.textContent = hasRacialBonus ? '🧬 Human Bonus Feat (Slot Filled at This Level)' : '🧬 Human Bonus Feat (Racial Bonus)';
+        }
+        if (optFlawBonus) {
+          optFlawBonus.textContent = unfilledFlawBonusCount > 0
+            ? `🎖️ Flaw Bonus Feat (${unfilledFlawBonusCount} Open Slot${unfilledFlawBonusCount > 1 ? 's' : ''} Granted by Flaw)`
+            : '🎖️ Flaw Bonus Feat (Granted by Flaw)';
         }
 
         if (isQuickFeatTargetLocked) {
@@ -751,6 +782,11 @@
             if (iconNoticeEl) iconNoticeEl.textContent = '🧬';
             if (titleNoticeEl) titleNoticeEl.textContent = `Target Slot: Human Racial Bonus Feat`;
             if (descNoticeEl) descNoticeEl.textContent = `Bonus feat slot granted to Humans at 1st level (any feat for which you meet the prerequisites).`;
+          } else if (preferredCategory === 'Flaw Bonus Feat') {
+            banner.className = 'p-2.5 rounded-xl border border-emerald-500/70 bg-emerald-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
+            if (iconNoticeEl) iconNoticeEl.textContent = '🎖️';
+            if (titleNoticeEl) titleNoticeEl.textContent = `Target Slot: Flaw Bonus Feat (Unearthed Arcana p. 91)`;
+            if (descNoticeEl) descNoticeEl.textContent = `Bonus feat slot granted by taking a Character Flaw at 1st level (select any feat for which you meet the prerequisites).`;
           } else if (preferredCategory === 'Warlock Invocation') {
             banner.className = 'p-2.5 rounded-xl border border-indigo-500/70 bg-indigo-950/70 text-xs flex items-center justify-between gap-2 shadow-md transition';
             if (iconNoticeEl) iconNoticeEl.textContent = '🔮';
@@ -768,16 +804,16 @@
             if (descNoticeEl) descNoticeEl.textContent = `Special campaign boon or bonus feat granted by the DM.`;
           }
         } else {
-          // Free mode
-          banner.className = 'p-2 rounded-xl border border-slate-700/80 bg-slate-900/60 text-xs flex items-center justify-between gap-2 shadow-sm transition';
-          if (iconNoticeEl) iconNoticeEl.textContent = '🔓';
-          if (titleNoticeEl) titleNoticeEl.textContent = 'Free Category Mode (Unlocked)';
-          if (descNoticeEl) descNoticeEl.textContent = 'Select any category from the dropdown below to add to this level.';
+          // Extra Feat / Free Addition Mode (from ➕ button or unlocked)
+          banner.className = 'p-2.5 rounded-xl border border-emerald-500/60 bg-emerald-950/50 text-xs flex items-center justify-between gap-2 shadow-sm transition';
+          if (iconNoticeEl) iconNoticeEl.textContent = '➕';
+          if (titleNoticeEl) titleNoticeEl.textContent = `Extra Feat / Bonus Addition (Level ${lvlNum} — Unselected Slots Preserved)`;
+          if (descNoticeEl) descNoticeEl.textContent = 'Adds a separate feat, boon, flaw, or ability to this level without consuming any unselected level feat slots.';
           if (unlockBtn) unlockBtn.classList.add('hidden');
         }
       }
 
-      // Initial filter based on preferredCategory (default to QUALIFIED for Regular & Human Bonus Feats)
+      // Initial filter based on preferredCategory (default to QUALIFIED for Regular, Human Bonus & Flaw Bonus Feats)
       if (preferredCategory === 'Class Bonus Feat') {
         quickFeatSearchFilter = 'FIGHTER';
       } else if (preferredCategory === 'DM Boon') {
@@ -786,7 +822,7 @@
         quickFeatSearchFilter = 'FLAW';
       } else if (preferredCategory === 'Warlock Invocation') {
         quickFeatSearchFilter = 'INVOCATION';
-      } else if (preferredCategory === 'Regular Feat' || preferredCategory === 'Racial Trait') {
+      } else if (preferredCategory === 'Regular Feat' || preferredCategory === 'Racial Trait' || preferredCategory === 'Flaw Bonus Feat') {
         quickFeatSearchFilter = 'QUALIFIED';
       } else {
         quickFeatSearchFilter = 'ALL';
@@ -912,9 +948,9 @@
       const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || (f.source && f.source.toLowerCase().includes('campaign')));
       const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
-      // Warlock Invocations are ONLY allowed when the slot is explicitly 'Warlock Invocation' or 'DM Boon' (NEVER in Regular Feat, Human Bonus Feat / Racial Trait, or Class Bonus Feat)
+      // Warlock Invocations are ONLY allowed when the slot is explicitly 'Warlock Invocation' or 'DM Boon' (NEVER in Regular Feat, Human Bonus Feat / Racial Trait, Flaw Bonus Feat, or Class Bonus Feat)
       let invocationsList = [];
-      const isStandardFeatSlot = ['Regular Feat', 'Racial Trait', 'Class Bonus Feat', 'Flaw'].includes(categoryVal);
+      const isStandardFeatSlot = ['Regular Feat', 'Racial Trait', 'Flaw Bonus Feat', 'Class Bonus Feat', 'Flaw'].includes(categoryVal);
       const warlockAllowedHere = !isStandardFeatSlot && ((typeof isWarlockEnabledForLevel === 'function') ? isWarlockEnabledForLevel(activeQuickLevelIndex) : false);
       if (warlockAllowedHere) {
         const prog = character.levelProgression || [];
@@ -952,9 +988,11 @@
       if (categoryVal === 'Warlock Invocation' || activeFilter === 'INVOCATION') {
         baseList = invocationsList.length > 0 ? invocationsList : combined;
       } else if (categoryVal === 'DM Boon') {
-        baseList = combined.filter(isBoonFeat);
+        baseList = (activeFilter === 'BOON') ? combined.filter(isBoonFeat) : combined;
       } else if (categoryVal === 'Flaw') {
         baseList = combined.filter(isFlawFeat);
+      } else if (categoryVal === 'Flaw Bonus Feat') {
+        baseList = (activeFilter === 'FLAW') ? combined.filter(isFlawFeat) : combined.filter(f => !isFlawFeat(f));
       } else if (categoryVal === 'Class Bonus Feat') {
         if (activeQuickFeatSlotContract && activeQuickFeatSlotContract.mode === 'exact_choices') {
           const choiceSet = new Set(activeQuickFeatSlotContract.choices.map(c => c.toLowerCase()));
@@ -1267,7 +1305,10 @@
       const catSel = document.getElementById('quick-feat-category');
       if (catSel && found) {
         // If locked to a specific target slot, preserve target category so it fills the right slot!
-        if (!isQuickFeatTargetLocked) {
+        if (isFlawFeat(found) || CANONICAL_UA_FLAW_NAMES.has(String(found.name || '').toLowerCase().trim())) {
+          // A Flaw must NEVER consume a Regular Feat, Human Bonus Feat, or Class Bonus Feat slot!
+          catSel.value = 'Flaw';
+        } else if (!isQuickFeatTargetLocked) {
           if (found.category === 'Warlock Invocation') {
             catSel.value = 'Warlock Invocation';
           } else if (found.category === 'DM Boon' || found.category === 'DM Grant') {
@@ -1455,21 +1496,43 @@
         return;
       }
 
-      const category = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
+      let category = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
       const benefit = document.getElementById('quick-feat-benefit')?.value.trim() || '';
+
+      const catalogMatch = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim());
+      if ((catalogMatch && isFlawFeat(catalogMatch)) || CANONICAL_UA_FLAW_NAMES.has(featName.toLowerCase().trim())) {
+        category = 'Flaw';
+      }
+
+      if (category === 'Flaw') {
+        // D&D 3.5e Unearthed Arcana p.91 RAW: Up to 2 Flaws max across character
+        const totalFlaws = (character.levelProgression || []).reduce((acc, lRow) => {
+          return acc + ((lRow && Array.isArray(lRow.feats)) ? lRow.feats.filter(f => isFlawFeatString(f)).length : 0);
+        }, 0);
+        if (totalFlaws >= 2) {
+          if (typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              icon: '⚠️',
+              title: 'Maximum 2 Flaws Reached (3.5e RAW)',
+              desc: 'Per Unearthed Arcana (p. 91), a character may select at most two Character Flaws.'
+            });
+          }
+          return;
+        }
+      }
 
       const isInvEntry = getAllWarlockInvocations().some(i => (i.name || '').toLowerCase() === featName.toLowerCase());
       if (isInvEntry && category !== 'Warlock Invocation' && category !== 'DM Boon') {
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
             title: 'Warlock Invocation Restricted',
-            desc: `"${featName}" is a Warlock Invocation and cannot be selected in a Human Bonus Feat, Standard Feat, or Class Bonus Feat slot.`,
+            desc: `"${featName}" is a Warlock Invocation and cannot be selected in a Human Bonus Feat, Standard Feat, Flaw Bonus Feat, or Class Bonus Feat slot.`,
             type: 'warning'
           });
         }
         return;
       }
-      if (category !== 'DM Boon' && pEvalConfirm && !pEvalConfirm.allMet) {
+      if (category !== 'DM Boon' && category !== 'Flaw' && pEvalConfirm && !pEvalConfirm.allMet) {
         if (typeof showDiceTopToast === 'function') {
           showDiceTopToast({
             title: 'Prerequisites Not Met',
@@ -1480,18 +1543,21 @@
         return;
       }
 
+      const targetLvlIdx = activeQuickLevelIndex;
       const row = character.levelProgression[activeQuickLevelIndex];
       if (!Array.isArray(row.feats)) row.feats = [];
       if (!Array.isArray(row.specialAbilities)) row.specialAbilities = [];
 
+      const isExtraAddition = !isQuickFeatTargetLocked || !activeQuickFeatTargetSlot;
       let prefix = '';
-      if (category === 'Class Bonus Feat') prefix = '⚔️ [Bonus] ';
+      if (category === 'Class Bonus Feat') prefix = isExtraAddition ? '⚔️ [Extra Bonus] ' : '⚔️ [Bonus] ';
       else if (category === 'DM Boon') prefix = '🌟 [DM Boon] ';
       else if (category === 'Flaw') prefix = '⚠️ [Flaw] ';
-      else if (category === 'Racial Trait') prefix = '🧬 [Racial] ';
+      else if (category === 'Flaw Bonus Feat') prefix = '🎖️ [Flaw Bonus] ';
+      else if (category === 'Racial Trait') prefix = isExtraAddition ? '🧬 [Extra Racial] ' : '🧬 [Racial] ';
       else if (category === 'Special Ability') prefix = '✨ ';
-      else if (category === 'Warlock Invocation') prefix = '🔮 [Invocation] ';
-      else prefix = '🎖️ ';
+      else if (category === 'Warlock Invocation') prefix = isExtraAddition ? '🔮 [Extra Invocation] ' : '🔮 [Invocation] ';
+      else prefix = isExtraAddition ? '🎖️ [Extra] ' : '🎖️ ';
 
       const formattedName = `${prefix}${featName}`;
 
@@ -1527,21 +1593,43 @@
           });
         }
       } else {
+        // If adding a Flaw, remove any stale regular-feat tag for the same flaw at this level
+        if (category === 'Flaw') {
+          row.feats = row.feats.filter(fStr => {
+            const raw = String(fStr || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+            return raw !== featName.toLowerCase().trim();
+          });
+        }
         row.feats.push(formattedName);
         if (!Array.isArray(character.feats)) character.feats = [];
-        if (!character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === featName.toLowerCase())) {
-          character.feats.push({
-            name: featName,
-            category: category,
-            benefit: benefit,
-            source: `Level ${row.level} (${row.className})`
-          });
+        const existingIdx = character.feats.findIndex(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === featName.toLowerCase().trim());
+        const featEntryPayload = {
+          ...(catalogMatch ? {
+            id: catalogMatch.id,
+            modifiers: Array.isArray(catalogMatch.modifiers) ? JSON.parse(JSON.stringify(catalogMatch.modifiers)) : [],
+            damageParts: Array.isArray(catalogMatch.damageParts) ? JSON.parse(JSON.stringify(catalogMatch.damageParts)) : [],
+            tacticalBadges: Array.isArray(catalogMatch.tacticalBadges) ? JSON.parse(JSON.stringify(catalogMatch.tacticalBadges)) : [],
+            ruleFlags: catalogMatch.ruleFlags ? JSON.parse(JSON.stringify(catalogMatch.ruleFlags)) : undefined,
+            slotDiff: catalogMatch.slotDiff
+          } : {}),
+          name: featName,
+          type: category === 'Flaw' ? 'Flaw' : 'Feat',
+          category: category,
+          benefit: benefit || (catalogMatch ? catalogMatch.benefit : ''),
+          source: category === 'Flaw'
+            ? (catalogMatch?.source || 'Unearthed Arcana, page 91')
+            : (category === 'Flaw Bonus Feat' ? `Level ${row.level} (Flaw Bonus Feat)` : `Level ${row.level} (${row.className})`)
+        };
+        if (existingIdx === -1) {
+          character.feats.push(featEntryPayload);
           if (featName.toLowerCase() === 'toughness' && character.hp) {
             if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 44) - (Number(character.hp.conBonusHp) || 0);
             character.hp.baseMax = (Number(character.hp.baseMax) || 0) + 3;
             character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
             character.hp.current = (Number(character.hp.current) || 0) + 3;
           }
+        } else if (typeof character.feats[existingIdx] === 'object') {
+          character.feats[existingIdx] = { ...character.feats[existingIdx], ...featEntryPayload };
         }
       }
 
@@ -1551,9 +1639,10 @@
         if (!inCanonical && !masterDb.some(m => (m.name || '').toLowerCase().trim() === clean)) {
           masterDb.push({
             name: featName,
-            type: (category === 'Special Ability') ? 'Special Ability' : 'Feat',
+            type: (category === 'Special Ability') ? 'Special Ability' : (category === 'Flaw' ? 'Flaw' : 'Feat'),
             category: category,
             slot: 'None',
+            slotDiff: category === 'Flaw' ? 1 : 0,
             prereq: (pEvalConfirm && pEvalConfirm.rawPrereq) ? pEvalConfirm.rawPrereq : '-',
             source: `Level ${row.level} (${row.className})`,
             benefit: benefit,
@@ -1567,6 +1656,20 @@
       saveStateToStorage(true);
       renderLevelProgression();
       renderAll();
+
+      // D&D 3.5e RAW (Unearthed Arcana p.91): Selecting a Flaw immediately grants +1 Bonus Feat!
+      if (category === 'Flaw') {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '🎖️',
+            title: `Flaw Taken: ${featName} (+1 Bonus Feat Unlocked)`,
+            desc: 'Per D&D 3.5e Unearthed Arcana (p. 91), select your bonus feat now!'
+          });
+        }
+        setTimeout(() => {
+          openQuickFeatPickerForLevel(targetLvlIdx, 'Flaw Bonus Feat', true);
+        }, 120);
+      }
     }
 
     function findInLocalCatalogsOrMasterDb(query) {
@@ -2885,6 +2988,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 <select onchange="onLevelUpSlotCategoryChange(${idx}, this.value)" class="h-7 bg-slate-900 border border-slate-700 hover:border-purple-500/60 rounded-lg px-2 text-[11px] text-amber-300 font-bold focus:outline-none focus:border-purple-500 cursor-pointer" title="Feat / Ability Category">
                   <option value="Regular Feat" ${slot.category === 'Regular Feat' ? 'selected' : ''}>🎖️ Regular Feat</option>
                   <option value="Class Bonus Feat" ${slot.category === 'Class Bonus Feat' ? 'selected' : ''}>⚔️ Class Bonus Feat</option>
+                  <option value="Flaw Bonus Feat" ${slot.category === 'Flaw Bonus Feat' ? 'selected' : ''}>🎖️ Flaw Bonus Feat</option>
                   <option value="DM Boon" ${slot.category === 'DM Boon' ? 'selected' : ''}>🌟 DM Boon</option>
                   <option value="Flaw" ${slot.category === 'Flaw' ? 'selected' : ''}>⚠️ Flaw</option>
                   <option value="Racial Trait" ${slot.category === 'Racial Trait' ? 'selected' : ''}>🧬 Racial Bonus Feat</option>
@@ -3343,10 +3447,32 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           const lcat = (found.category || '').toLowerCase();
           if (lcat.includes('boon') || lcat.includes('grant')) {
             levelUpModalFeatSlots[idx].category = 'DM Boon';
-          } else if (lcat.includes('flaw')) {
+          } else if (lcat.includes('flaw') || isFlawFeat(found) || CANONICAL_UA_FLAW_NAMES.has(String(found.name || '').toLowerCase().trim())) {
+            const prevCat = levelUpModalFeatSlots[idx].category;
             levelUpModalFeatSlots[idx].category = 'Flaw';
+            // If the user picked a Flaw inside a Regular Feat slot, preserve the Regular Feat slot AND add the Flaw Bonus Feat slot!
+            if (prevCat === 'Regular Feat' && !levelUpModalFeatSlots.some((s, i) => i !== idx && s.category === 'Regular Feat')) {
+              levelUpModalFeatSlots.push({
+                title: 'Standard Character Feat',
+                category: 'Regular Feat',
+                name: '',
+                benefit: '',
+                prereq: '-'
+              });
+            }
+            const flawCount = levelUpModalFeatSlots.filter(s => s.category === 'Flaw').length;
+            const flawBonusCount = levelUpModalFeatSlots.filter(s => s.category === 'Flaw Bonus Feat').length;
+            if (flawBonusCount < flawCount) {
+              levelUpModalFeatSlots.push({
+                title: `Flaw Bonus Feat (${ featName })`,
+                category: 'Flaw Bonus Feat',
+                name: '',
+                benefit: '',
+                prereq: '-'
+              });
+            }
           } else if (lcat.includes('fighter') || lcat.includes('martial') || found.isFighterBonusFeat === true) {
-            if (levelUpModalFeatSlots[idx].category === 'Class Bonus Feat' || levelUpModalFeatSlots[idx].category === 'Regular Feat' || levelUpModalFeatSlots[idx].category === 'Racial Trait') {
+            if (levelUpModalFeatSlots[idx].category === 'Class Bonus Feat' || levelUpModalFeatSlots[idx].category === 'Regular Feat' || levelUpModalFeatSlots[idx].category === 'Racial Trait' || levelUpModalFeatSlots[idx].category === 'Flaw Bonus Feat') {
               // Maintain slot context
             }
           } else if (lcat.includes('special')) {
@@ -3486,7 +3612,30 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       function onLevelUpSlotCategoryChange(idx, newCategory) {
         if (!levelUpModalFeatSlots[idx]) return;
+        const prevCat = levelUpModalFeatSlots[idx].category;
         levelUpModalFeatSlots[idx].category = newCategory;
+        if (newCategory === 'Flaw') {
+          if (prevCat === 'Regular Feat' && !levelUpModalFeatSlots.some((s, i) => i !== idx && s.category === 'Regular Feat')) {
+            levelUpModalFeatSlots.push({
+              title: 'Standard Character Feat',
+              category: 'Regular Feat',
+              name: '',
+              benefit: '',
+              prereq: '-'
+            });
+          }
+          const flawCount = levelUpModalFeatSlots.filter(s => s.category === 'Flaw').length;
+          const flawBonusCount = levelUpModalFeatSlots.filter(s => s.category === 'Flaw Bonus Feat').length;
+          if (flawBonusCount < flawCount) {
+            levelUpModalFeatSlots.push({
+              title: `Flaw Bonus Feat #${flawCount} (Granted by Flaw)`,
+              category: 'Flaw Bonus Feat',
+              name: '',
+              benefit: '',
+              prereq: '-'
+            });
+          }
+        }
         renderLevelUpFeatSlots();
       }
 
@@ -5020,6 +5169,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         if (slot.category === 'DM Boon') prefix = '🌟 [DM Boon] ';
         else if (slot.category === 'Class Bonus Feat') prefix = '⚔️ [Bonus] ';
         else if (slot.category === 'Flaw') { prefix = '⚠️ [Flaw] '; flawDetected = true; }
+        else if (slot.category === 'Flaw Bonus Feat') prefix = '🎖️ [Flaw Bonus] ';
         else if (slot.category === 'Racial Trait') prefix = '🧬 [Racial] ';
         else if (slot.category === 'Special Ability') prefix = '✨ [Special] ';
         else prefix = '🎖️ [Feat] ';
@@ -6714,16 +6864,23 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         const regularFeats = [];
         const classBonusFeats = [];
         const otherBonusFeats = [];
+        const flawsAtLevel = [];
+        const flawBonusFeatsAtLevel = [];
         (lvl.feats || []).forEach(fStr => {
           const str = String(fStr);
           if (str.includes('+1 Stat') || str.includes('Stat:')) return; // handled by statBadgeItem
-          if (str.includes('[Bonus]') || str.includes('Bonus')) {
+          if (str.includes('[Flaw Bonus]')) {
+            otherBonusFeats.push(fStr);
+            flawBonusFeatsAtLevel.push(fStr);
+          } else if (isFlawFeatString(fStr)) {
+            otherBonusFeats.push(fStr);
+            flawsAtLevel.push(fStr);
+          } else if (str.includes('[Bonus]') || str.includes('[Extra Bonus]') || str.includes('Bonus')) {
             classBonusFeats.push(fStr);
           } else if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
             otherBonusFeats.push(fStr);
-          } else if (str.includes('[Flaw]') || str.includes('Flaw:') ||
-              str.includes('[Racial]') ||
-              str.includes('[Invocation]') || str.includes('Invocation') ||
+          } else if (str.includes('[Racial]') || str.includes('[Extra Racial]') ||
+              str.includes('[Invocation]') || str.includes('[Extra Invocation]') || str.includes('Invocation') ||
               str.includes('Caster Lvl') || str.includes('+1 Primary CL') || str.includes('🔮')) {
             otherBonusFeats.push(fStr);
           } else {
@@ -6756,7 +6913,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const safeF = rawName.replace(/'/g, "\\'");
           const tip = getFeatTooltipText(fStr);
           const safeTip = tip.replace(/"/g, '&quot;');
-          const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').trim();
+          const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').replace(/^\[Extra Bonus\]/i, '[Bonus]').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
           return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚔️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
@@ -6805,7 +6962,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           }
         }
 
-        if (qualifiesForClassBonus && classBonusFeats.length === 0) {
+        const hasSlotClassBonusFeat = classBonusFeats.some(f => !String(f).includes('[Extra'));
+        if (qualifiesForClassBonus && !hasSlotClassBonusFeat) {
           const contract = classFeats.bonusFeatContract;
           let btnText = '+ Select Bonus Feat';
           let btnIcon = '⚔️';
@@ -6833,7 +6991,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           const safeF = rawName.replace(/'/g, "\\'");
           const tip = getFeatTooltipText(fStr);
           const safeTip = tip.replace(/"/g, '&quot;');
-          const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').trim();
+          const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[Extra\]\s*)?/i, '').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
           return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" class="relative w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
@@ -6841,9 +6999,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         // Check regular feat eligibility
         const featMode = character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)';
         const qualifiesForRegularFeat = isLevelQualifiesForFeat(lvl.level, featMode);
+        const hasSlotRegularFeat = regularFeats.some(f => !String(f).includes('[Extra]'));
         const regularPromptButtons = [];
-        if (qualifiesForRegularFeat && regularFeats.length === 0) {
-          regularPromptButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat')" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Character Feat for this level"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Feat</span></button>`);
+        if (qualifiesForRegularFeat && !hasSlotRegularFeat) {
+          regularPromptButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Character Feat for this level"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Feat</span></button>`);
         }
 
         // 3. Bonus badges (DM Boons, Invocations, Flaws, Racial, CL Boons)
@@ -6856,19 +7015,26 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           let bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
           let icon = '🌟';
           let labelText = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').trim();
-          if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
-            bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
-            icon = '🌟';
-          } else if (str.includes('[Invocation]') || str.includes('Invocation') || str.includes('🔮')) {
-            bgCls = 'bg-purple-950/80 hover:bg-purple-900 text-purple-300 border-purple-600/70';
-            icon = '🔮';
-          } else if (str.includes('[Flaw]') || str.includes('Flaw:')) {
+          if (str.includes('[Flaw Bonus]')) {
+            bgCls = 'bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border-emerald-600/70';
+            icon = '🎖️';
+          } else if (isFlawFeatString(str)) {
             bgCls = 'bg-rose-950/80 hover:bg-rose-900 text-rose-300 border-rose-600/70';
             icon = '⚠️';
-          } else if (str.includes('[Racial]')) {
+            if (!labelText.toLowerCase().includes('flaw')) {
+              labelText = `[Flaw] ${rawName}`;
+            }
+          } else if (str.includes('[DM Boon]') || str.includes('Boon') || str.includes('DM Grant')) {
+            bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
+            icon = '🌟';
+          } else if (str.includes('[Invocation]') || str.includes('[Extra Invocation]') || str.includes('Invocation') || str.includes('🔮')) {
+            bgCls = 'bg-purple-950/80 hover:bg-purple-900 text-purple-300 border-purple-600/70';
+            icon = '🔮';
+            labelText = labelText.replace(/^\[Extra Invocation\]/i, '[Invocation]');
+          } else if (str.includes('[Racial]') || str.includes('[Extra Racial]')) {
             bgCls = 'bg-teal-950/80 hover:bg-teal-900 text-teal-300 border-teal-600/70';
             icon = '🧬';
-            const featOnly = labelText.replace(/^\[Racial\]\s*/i, '').trim();
+            const featOnly = labelText.replace(/^\[(Extra\s+)?Racial\]\s*/i, '').trim();
             labelText = `[Human Bonus] ${featOnly}`;
           }
           const cleanStr = labelText;
@@ -6877,9 +7043,18 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
         });
 
         const qualifiesForHumanBonus = (lvl.level === 1 && isHuman);
+        const hasSlotRacialBonus = otherBonusFeats.some(f => String(f).includes('[Racial]'));
         const pendingBonusButtons = [];
-        if (qualifiesForHumanBonus && !otherBonusFeats.some(f => String(f).includes('[Racial]'))) {
+        if (qualifiesForHumanBonus && !hasSlotRacialBonus) {
           pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Racial Trait', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Human racial bonus feat (1st-Level RAW: Extra bonus feat)"><span class="shrink-0">🧬</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Human Bonus Feat</span></button>`);
+        }
+
+        // D&D 3.5e Unearthed Arcana (p. 91) RAW: Each Flaw at this level grants +1 Bonus Feat slot
+        const unfilledFlawBonusSlots = Math.max(0, flawsAtLevel.length - flawBonusFeatsAtLevel.length);
+        for (let fbIdx = 0; fbIdx < unfilledFlawBonusSlots; fbIdx++) {
+          const flawRaw = String(flawsAtLevel[flawBonusFeatsAtLevel.length + fbIdx] || 'Flaw').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+          const safeFlawRaw = flawRaw.replace(/"/g, '&quot;');
+          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Flaw Bonus Feat', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-dashed border-emerald-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Bonus Feat granted by Flaw: ${safeFlawRaw} (Unearthed Arcana p. 91)"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Flaw Bonus Feat (${safeFlawRaw})</span></button>`);
         }
 
         // Warlock Invocation Progression Check (Warlock Boon or Warlock Class Level)
@@ -6888,10 +7063,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class), hit d
           : Boolean(character.settings?.warlockBoon || (character.settings?.clMode && String(character.settings.clMode).includes('Warlock Boon')));
         
         if (isWarlockActive && typeof isWarlockInvocationLevel === 'function' && isWarlockInvocationLevel(lvl.level)) {
-          const hasInvocation = otherBonusFeats.some(f => String(f).includes('[Invocation]') || String(f).toLowerCase().includes('invocation'));
+          const hasInvocation = otherBonusFeats.some(f => (String(f).includes('[Invocation]') || (String(f).toLowerCase().includes('invocation') && !String(f).includes('[Extra Invocation]'))));
           if (!hasInvocation) {
             const tier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(lvl.level) : 'Least';
-            pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Warlock Invocation')" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Level ${lvl.level} Warlock Invocation (${tier})"><span class="shrink-0">🔮</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Invocation (${tier})</span></button>`);
+            pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Warlock Invocation', true)" class="w-full min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Level ${lvl.level} Warlock Invocation (${tier})"><span class="shrink-0">🔮</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight">+ Select Invocation (${tier})</span></button>`);
           }
         }
 

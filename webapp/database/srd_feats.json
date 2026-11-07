@@ -13910,5 +13910,409 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {}
+  },
+  {
+    "id": "flaw-feeble",
+    "name": "Feeble",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only",
+    "shortDescription": "-2 penalty on Strength-, Dexterity-, and Constitution-based ability checks and skill checks. Grants +1 Bonus Feat.",
+    "description": "You take a -2 penalty on Strength-, Dexterity-, and Constitution-based ability checks and skill checks. Taking this flaw at 1st level grants 1 extra bonus feat (maximum 2 flaws per character).",
+    "modifiers": [
+      {
+        "target": "skill.climb",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.jump",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.swim",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.balance",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.escape_artist",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.hide",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.move_silently",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.open_lock",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.ride",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.sleight_of_hand",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.tumble",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.use_rope",
+        "value": -2,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.concentration",
+        "value": -2,
+        "type": "Untyped"
+      }
+    ],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-2 Physical Skill Checks"
+    ],
+    "schemaVersion": 2
+  },
+  {
+    "id": "flaw-frail",
+    "name": "Frail",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only, base Fortitude save bonus +0 or +1",
+    "shortDescription": "-1 Hit Point per Hit Die (minimum 1 HP gained per level). Grants +1 Bonus Feat.",
+    "description": "Subtract 1 from the number of hit points you gain at each level. This flaw can reduce the number of hit points you gain at any level to 1, but not below. Taking this flaw at 1st level grants 1 extra bonus feat.",
+    "modifiers": [],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "frailHpPenalty": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-1 HP/Level"
+    ],
+    "schemaVersion": 2
+  },
+  {
+    "id": "flaw-inattentive",
+    "name": "Inattentive",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only",
+    "shortDescription": "-4 penalty on Listen checks and Spot checks. Grants +1 Bonus Feat.",
+    "description": "You take a -4 penalty on Listen checks and Spot checks. Taking this flaw at 1st level grants 1 extra bonus feat.",
+    "modifiers": [
+      {
+        "target": "skill.listen",
+        "value": -4,
+        "type": "Untyped"
+      },
+      {
+        "target": "skill.spot",
+        "value": -4,
+        "type": "Untyped"
+      }
+    ],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-4 Listen & Spot"
+    ],
+    "schemaVersion": 2
+  },
+  {
+    "id": "flaw-meager-fortitude",
+    "name": "Meager Fortitude",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only",
+    "shortDescription": "-3 penalty on Fortitude saves. Grants +1 Bonus Feat.",
+    "description": "You take a -3 penalty on Fortitude saves. Taking this flaw at 1st level grants 1 extra bonus feat.",
+    "modifiers": [
+      {
+        "target": "save.fort",
+        "value": -3,
+        "type": "Untyped"
+      }
+    ],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-3 Fortitude"
+    ],
+    "schemaVersion": 2
+  },
+  {
+    "id": "flaw-murky-eyed",
+    "name": "Murky-Eyed",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only",
+    "shortDescription": "Roll miss chance twice whenever attacking a target with concealment. Grants +1 Bonus Feat.",
+    "description": "In combat, every time you attack an opponent that has concealment, roll your miss chance twice. If either or both results indicate that you miss, your attack fails. Taking this flaw at 1st level grants 1 extra bonus feat.",
+    "modifiers": [],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "rollConcealmentTwice": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "2x Concealment Miss Roll"
+    ],
+    "schemaVersion": 2
+  },
+  {
+    "id": "flaw-noncombatant",
+    "name": "Noncombatant",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only",
+    "shortDescription": "-2 penalty on all melee attack rolls. Grants +1 Bonus Feat.",
+    "description": "You take a -2 penalty on all melee attack rolls. Taking this flaw at 1st level grants 1 extra bonus feat.",
+    "modifiers": [
+      {
+        "target": "attack.melee",
+        "value": -2,
+        "type": "Untyped"
+      }
+    ],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-2 Melee Atk"
+    ],
+    "schemaVersion": 2
+  },
+  {
+    "id": "flaw-pathetic",
+    "name": "Pathetic",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only, total ability modifiers +3 or lower",
+    "shortDescription": "Reduce one ability score by 2. Grants +1 Bonus Feat.",
+    "description": "Reduce one of your ability scores by 2. You cannot take this flaw if the total of your ability modifiers is +4 or higher. Taking this flaw at 1st level grants 1 extra bonus feat.",
+    "modifiers": [],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-2 Ability Score"
+    ],
+    "schemaVersion": 2
+  },
+  {
+    "id": "flaw-poor-reflexes",
+    "name": "Poor Reflexes",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only",
+    "shortDescription": "-3 penalty on Reflex saves. Grants +1 Bonus Feat.",
+    "description": "You take a -3 penalty on Reflex saves. Taking this flaw at 1st level grants 1 extra bonus feat.",
+    "modifiers": [
+      {
+        "target": "save.ref",
+        "value": -3,
+        "type": "Untyped"
+      }
+    ],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-3 Reflex"
+    ],
+    "schemaVersion": 2
+  },
+  {
+    "id": "flaw-shaky",
+    "name": "Shaky",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only",
+    "shortDescription": "-2 penalty on all ranged attack rolls. Grants +1 Bonus Feat.",
+    "description": "You take a -2 penalty on all ranged attack rolls. Taking this flaw at 1st level grants 1 extra bonus feat.",
+    "modifiers": [
+      {
+        "target": "attack.ranged",
+        "value": -2,
+        "type": "Untyped"
+      }
+    ],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-2 Ranged Atk"
+    ],
+    "schemaVersion": 2
+  },
+  {
+    "id": "flaw-slow",
+    "name": "Slow",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only, base land speed at least 20 ft.",
+    "shortDescription": "Base land speed is halved (rounded down to nearest 5-ft. interval). Grants +1 Bonus Feat.",
+    "description": "Your base land speed is halved (round down to the nearest 5-foot interval). Taking this flaw at 1st level grants 1 extra bonus feat.",
+    "modifiers": [],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "halfBaseLandSpeed": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "Half Base Speed"
+    ],
+    "schemaVersion": 2
+  },
+  {
+    "id": "flaw-unreactive",
+    "name": "Unreactive",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only",
+    "shortDescription": "-6 penalty on Initiative checks. Grants +1 Bonus Feat.",
+    "description": "You take a -6 penalty on initiative checks. Taking this flaw at 1st level grants 1 extra bonus feat.",
+    "modifiers": [
+      {
+        "target": "init",
+        "value": -6,
+        "type": "Untyped"
+      }
+    ],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-6 Initiative"
+    ],
+    "schemaVersion": 2
+  },
+  {
+    "id": "flaw-vulnerable",
+    "name": "Vulnerable",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 91",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only",
+    "shortDescription": "-1 penalty to Armor Class. Grants +1 Bonus Feat.",
+    "description": "You take a -1 penalty to Armor Class. Taking this flaw at 1st level grants 1 extra bonus feat.",
+    "modifiers": [
+      {
+        "target": "ac",
+        "value": -1,
+        "type": "Untyped"
+      }
+    ],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-1 AC"
+    ],
+    "schemaVersion": 2
   }
 ]
