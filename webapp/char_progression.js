@@ -7634,6 +7634,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const tbody = document.getElementById('level-progression-tbody');
       if (!tbody) return;
       tbody.innerHTML = '';
+      const mobileCardsContainer = document.getElementById('level-progression-mobile-cards');
+      if (mobileCardsContainer) mobileCardsContainer.innerHTML = '';
 
       // Sync settings toolbar UI
       if (character.settings?.featMode && String(character.settings.featMode).startsWith('Every 2 Levels')) {
@@ -7703,7 +7705,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const bonusSignStr = netBonusHp !== 0 ? (netBonusHp > 0 ? ` +${netBonusHp} Bonus` : ` ${netBonusHp} Flaw`) : '';
         const hpTooltip = `Base Hit Dice: ${summary.baseHp} + CON Bonus: ${conSignStr} (${summary.activeLevels} Levels x ${conModStr})${bonusFeatHp > 0 ? ` + Feat/Boon: +${bonusFeatHp}` : ''}${flawHpPen > 0 ? ` - Flaw Penalty: -${flawHpPen}` : ''} = Total ${totalMaxHp} HP`;
         hud.innerHTML = `
-          <div class="flex items-center gap-3">
+          <div class="flex flex-wrap items-center gap-2 sm:gap-3">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-600/80 text-emerald-300 font-bold">
               <span>✅ Active Level:</span>
               <strong class="text-white text-sm">${summary.activeLevels}</strong>
@@ -8161,6 +8163,77 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           </td>
         `;
         tbody.appendChild(tr);
+
+        if (mobileCardsContainer) {
+          const mCard = document.createElement('div');
+          mCard.className = isActive
+            ? 'p-2.5 space-y-2 hover:bg-slate-900/60 transition'
+            : 'p-2.5 space-y-2 opacity-60 bg-slate-950/50 italic';
+
+          const classItemsHtml = (abilityBadgeItems.length > 0 || classBonusBadgeItems.length > 0 || pendingClassBonusButtons.length > 0)
+            ? (abilityBadgeItems.join('') + classBonusBadgeItems.join('') + pendingClassBonusButtons.join(''))
+            : '';
+          const featItemsHtml = (regularFeatBadgeItems.length > 0 || regularPromptButtons.length > 0)
+            ? (regularFeatBadgeItems.join('') + regularPromptButtons.join(''))
+            : '';
+          const bonusItemsHtml = (statBadgeItem || otherBonusBadgeItems.length > 0 || pendingBonusButtons.length > 0)
+            ? ((statBadgeItem || '') + otherBonusBadgeItems.join('') + pendingBonusButtons.join(''))
+            : '';
+
+          mCard.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0 flex-1">
+                <span class="inline-flex items-center justify-center px-2 py-0.5 rounded bg-amber-950/90 border border-amber-600/80 text-amber-300 font-extrabold text-xs font-mono shrink-0">Lv.${lvl.level}</span>
+                <span class="font-sans font-bold text-white text-xs truncate" title="${lvl.className}-${classLevelSoFar}">${lvl.className}-${classLevelSoFar}</span>
+                <label class="inline-flex items-center gap-1 shrink-0 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
+                  <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
+                  <span class="badge ${isActive ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[8px] px-1 py-0.5 leading-none font-bold whitespace-nowrap">
+                    ${isActive ? 'ACTIVE' : 'PLAN'}
+                  </span>
+                </label>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button onclick="openQuickFeatPickerForLevel(${idx})" class="ui-btn-icon-sm bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/70 text-emerald-300" title="Add Feat, Ability, Invocation, or Bonus to this level">➕</button>
+                <button onclick="openChangeLevelClassModal(${idx})" class="ui-btn-icon-sm bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400" title="Edit class & stats for this level">✏️</button>
+                ${idx > 0 ? `<button onclick="deleteLevelRow(${idx})" class="ui-btn-icon-sm bg-rose-950/70 hover:bg-rose-900 border border-rose-700/70 text-rose-300" title="Delete this level">🗑️</button>` : ''}
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-2 py-1 rounded-lg bg-slate-900/90 border border-slate-800/90 font-mono text-[10px]">
+              <span class="text-slate-400 font-bold">HD: <strong class="text-slate-200">${lvl.hd}</strong></span>
+              <span class="text-slate-700">•</span>
+              <span class="text-emerald-400 font-bold" title="Level Hit Die: +${lvl.hpGain} | Con: ${conModStr}">HP: +${lvl.hpGain}</span>
+              <span class="text-slate-700">•</span>
+              <span class="text-sky-400 font-bold">BAB: +${rowBab}</span>
+              <span class="text-slate-700">•</span>
+              <span class="text-slate-300 font-bold">F/R/W: +${rowFort}/+${rowRef}/+${rowWill}</span>
+              <span class="text-slate-700">•</span>
+              <span class="text-indigo-300 font-bold">Skill: ${lvl.skillPts || 4}</span>
+            </div>
+            ${(classItemsHtml || featItemsHtml || bonusItemsHtml) ? `
+              <div class="space-y-1.5 pt-0.5 font-sans">
+                ${classItemsHtml ? `
+                  <div class="space-y-1">
+                    <div class="text-[9px] font-bold uppercase tracking-wider text-sky-400/90">Class Features</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">${classItemsHtml}</div>
+                  </div>
+                ` : ''}
+                ${featItemsHtml ? `
+                  <div class="space-y-1">
+                    <div class="text-[9px] font-bold uppercase tracking-wider text-emerald-400/90">Feats</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">${featItemsHtml}</div>
+                  </div>
+                ` : ''}
+                ${bonusItemsHtml ? `
+                  <div class="space-y-1">
+                    <div class="text-[9px] font-bold uppercase tracking-wider text-amber-400/90">Bonus &amp; Ability</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">${bonusItemsHtml}</div>
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+          `;
+          mobileCardsContainer.appendChild(mCard);
+        }
       });
     }
 
