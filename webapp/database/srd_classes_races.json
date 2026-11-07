@@ -18436,8 +18436,18 @@
       "martial_lore",
       "tumble"
     ],
-    "bonusFeatLevels": [],
-    "bonusFeatContract": null,
+    "bonusFeatLevels": [
+      3,
+      6,
+      9
+    ],
+    "bonusFeatContract": {
+      "mode": "tag",
+      "tag": "isFighterBonusFeat",
+      "filter": "FIGHTER",
+      "label": "Bloodstorm Blade Bonus Feat (Fighter List)",
+      "desc": "Select a bonus feat from the Fighter bonus feat list (Tome of Battle p. 102)."
+    },
     "bonusFeatContracts": null,
     "prerequisites": [
       {
@@ -18465,27 +18475,33 @@
           "name": "Returning Attacks (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Thrown weapons return to your hand just before your next attack"
+          "summary": "Expend an Iron Heart strike to grant thrown weapons the returning property for 1 round (Tome of Battle p. 101)"
+        },
+        {
+          "name": "Throw Anything (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Gain Throw Anything as a bonus feat; throw any proficient melee weapon with a 10 ft. range increment (Tome of Battle p. 101)"
         },
         {
           "name": "Weapon Aptitude (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Reassign weapon-specific feats to other weapons with 1 hour practice"
+          "summary": "Reassign weapon-specific feats to other weapons with 1 hour of practice; stacks with Warblade level (Tome of Battle p. 101)"
         }
       ],
       "2": [
         {
-          "name": "Throw Anything (Ex)",
+          "name": "Martial Throw (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Throw any melee weapon with 10 ft range increment without penalty"
+          "summary": "Initiate any Iron Heart strike with a thrown melee weapon at up to 1 range increment (Tome of Battle p. 101)"
         },
         {
-          "name": "Iron Wind (Ex)",
+          "name": "Thunderous Throw (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Swift action: hit two adjacent foes with a single thrown weapon"
+          "summary": "Swift action: treat ranged thrown attacks as melee attacks, adding full STR modifier to damage and allowing Power Attack (Tome of Battle p. 101)"
         }
       ],
       "3": [
@@ -18493,7 +18509,7 @@
           "name": "Thunderous Throw (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Swift action: treat thrown attacks as melee attacks for Power Attack and feats"
+          "summary": "Swift action: treat thrown attacks as melee attacks for Power Attack and feats; also gains Fighter Bonus Feat at 3rd level"
         }
       ],
       "4": [
@@ -18501,15 +18517,55 @@
           "name": "Lightning Ricochet (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Thrown weapon returns immediately after attack, enabling full iterative attacks"
+          "summary": "Thrown weapon returns immediately after each attack resolves, enabling full iterative attacks with one weapon (Tome of Battle p. 102)"
         }
       ],
       "5": [
         {
-          "name": "Blood Wind (Ex)",
+          "name": "Blood Wind Ricochet (Ex)",
           "category": "Special Ability",
           "type": "Ex",
-          "summary": "Ricochet thrown weapon to an additional foe within range"
+          "summary": "Full-round action: ricochet a single thrown weapon between multiple foes within range increments (Tome of Battle p. 102)"
+        }
+      ],
+      "6": [
+        {
+          "name": "Eye of the Storm (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "+4 dodge bonus to AC against ranged attacks, and your thrown weapon attacks do not provoke attacks of opportunity (Tome of Battle p. 102)"
+        }
+      ],
+      "7": [
+        {
+          "name": "Blood Gouge (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Free action (1/round) on thrown slashing/piercing hit: target takes 1d6 bleeding damage per round until healed (DC 15 Heal or magic) (Tome of Battle p. 102)"
+        }
+      ],
+      "8": [
+        {
+          "name": "Whirling Blade Stance (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Stance (Swift action): orbiting thrown weapon grants +2 shield bonus to AC and deals automatic weapon damage to adjacent foes at start of turn (Tome of Battle p. 102)"
+        }
+      ],
+      "9": [
+        {
+          "name": "Fighter Bonus Feat",
+          "category": "Bonus Feat",
+          "type": "Ex",
+          "summary": "Gain an additional bonus feat from the Fighter bonus feat list at 9th level (Tome of Battle p. 102)"
+        }
+      ],
+      "10": [
+        {
+          "name": "Blade Storm (Ex)",
+          "category": "Special Ability",
+          "type": "Ex",
+          "summary": "Full-round action: make a single thrown weapon attack at your highest base attack bonus against every enemy within one range increment (Tome of Battle p. 102)"
         }
       ]
     },

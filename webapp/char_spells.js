@@ -7556,24 +7556,25 @@
         character.customClasses = character.customClasses.filter(c => c && !isBogusClassName(c.name));
         character.customClasses.forEach(c => {
           if (c && c.name) {
+            const baseExisting = all[c.name] || {};
             all[c.name] = {
-              hd: Number(c.hd) || 8,
-              bab: Number(c.bab) || 0.75,
-              fort: c.fort || 'poor',
-              ref: c.ref || 'poor',
-              will: c.will || 'poor',
-              skills: Number(c.skills) || 2,
-              maxLevel: Number(c.maxLevel) || (c.type === 'Prestige Class' ? 10 : 20),
-              classSkills: Array.isArray(c.classSkills) ? c.classSkills : (all[c.name]?.classSkills || []),
-              features: c.features || {},
-              bonusFeatLevels: Array.isArray(c.bonusFeatLevels) ? c.bonusFeatLevels : [],
-              bonusFeatContract: c.bonusFeatContract || null,
-              prerequisites: c.prerequisites || [],
-              description: c.description || c.desc || '',
-              role: c.role || '',
-              source: c.source || 'Custom / Variant',
-              type: c.type || 'Custom Class',
-              isCustom: true
+              hd: Number(c.hd) || baseExisting.hd || 8,
+              bab: Number(c.bab) || baseExisting.bab || 0.75,
+              fort: c.fort || baseExisting.fort || 'poor',
+              ref: c.ref || baseExisting.ref || 'poor',
+              will: c.will || baseExisting.will || 'poor',
+              skills: Number(c.skills) || baseExisting.skills || 2,
+              maxLevel: Number(c.maxLevel) || baseExisting.maxLevel || (c.type === 'Prestige Class' ? 10 : 20),
+              classSkills: Array.isArray(c.classSkills) && c.classSkills.length > 0 ? c.classSkills : (baseExisting.classSkills || []),
+              features: Object.assign({}, baseExisting.features || {}, c.features || {}),
+              bonusFeatLevels: (Array.isArray(c.bonusFeatLevels) && c.bonusFeatLevels.length > 0) ? c.bonusFeatLevels : (baseExisting.bonusFeatLevels || []),
+              bonusFeatContract: c.bonusFeatContract || baseExisting.bonusFeatContract || null,
+              prerequisites: (Array.isArray(c.prerequisites) && c.prerequisites.length > 0) ? c.prerequisites : (baseExisting.prerequisites || []),
+              description: c.description || c.desc || baseExisting.description || '',
+              role: c.role || baseExisting.role || '',
+              source: c.source || baseExisting.source || 'Custom / Variant',
+              type: c.type || baseExisting.type || 'Custom Class',
+              isCustom: !baseExisting.id
             };
           }
         });
@@ -8836,6 +8837,31 @@
         notes = fFromDb.notes || (fFromDb.prereq && fFromDb.prereq !== '-' ? `Prerequisite: ${fFromDb.prereq}` : notes);
       }
 
+      // Also resolve class feature summaries from getAvailableClassDefs()
+      if (typeof getAvailableClassDefs === 'function') {
+        const allClassDefs = getAvailableClassDefs();
+        const lowerClean = cleanName.toLowerCase();
+        for (const [cName, cDef] of Object.entries(allClassDefs)) {
+          if (cDef && cDef.features) {
+            for (const [cLvl, fList] of Object.entries(cDef.features)) {
+              if (!Array.isArray(fList)) continue;
+              const match = fList.find(f => {
+                const n = (typeof f === 'string' ? f : (f?.name || '')).toLowerCase().trim();
+                return n === lowerClean || n.includes(lowerClean) || lowerClean.includes(n);
+              });
+              if (match) {
+                source = cDef.source ? `${cDef.source} (${cName} Level ${cLvl})` : `${cName} Level ${cLvl}`;
+                category = (typeof match === 'object' && match.category) ? match.category : 'Class Feature';
+                if (typeof match === 'object' && match.summary) {
+                  benefit = match.summary;
+                }
+                break;
+              }
+            }
+          }
+        }
+      }
+
       document.getElementById('feat-modal-title').textContent = title;
       document.getElementById('feat-modal-source').textContent = '📚 ' + source;
       document.getElementById('feat-modal-category').textContent = category;
@@ -8910,6 +8936,9 @@
             const s = String(typeof a === 'string' ? a : a.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
             return s !== cleanTarget && s !== target;
           });
+          if (row.specialAbilities.length === 0) {
+            row._abilitiesManuallyCleared = true;
+          }
         }
 
         const stillInAnyLevel = (character.levelProgression || []).some(r => {

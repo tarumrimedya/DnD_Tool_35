@@ -7589,6 +7589,38 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         });
 
         // 1. Sınıf Özellikleri (Core Class Abilities + Class Bonus Feats)
+        let classLevelSoFar = 0;
+        for (let i = 0; i <= idx; i++) {
+          if (prog[i].className === lvl.className) classLevelSoFar++;
+        }
+        const classFeats = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
+          ? RuleEngine.getClassLevelFeatures(lvl.className, classLevelSoFar)
+          : { features: [], featureObjects: [], hasBonusFeat: false };
+        const qualifiesForClassBonus = classFeats.hasBonusFeat;
+
+        // Auto-hydrate missing class features on saved progression rows (e.g., Bloodstorm Blade 6-10)
+        if ((!Array.isArray(lvl.specialAbilities) || lvl.specialAbilities.length === 0) &&
+            Array.isArray(classFeats.features) && classFeats.features.length > 0 &&
+            !lvl._abilitiesManuallyCleared) {
+          lvl.specialAbilities = [...classFeats.features];
+          if (isActive && Array.isArray(classFeats.featureObjects)) {
+            if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+            classFeats.featureObjects.forEach(fObj => {
+              const fName = typeof fObj === 'string' ? fObj : fObj.name;
+              if (!fName) return;
+              const existsInChar = character.specialAbilities.some(a => (typeof a === 'string' ? a : (a?.name || '')).toLowerCase().trim() === fName.toLowerCase().trim());
+              if (!existsInChar) {
+                character.specialAbilities.push({
+                  name: fName,
+                  source: `${lvl.className} Level ${classLevelSoFar}`,
+                  category: 'Class Feature',
+                  benefit: (typeof fObj === 'object' && fObj.summary) ? fObj.summary : `Class feature automatically gained at ${lvl.className} Level ${classLevelSoFar}.`
+                });
+              }
+            });
+          }
+        }
+
         const abilityBadgeItems = [...(lvl.specialAbilities || [])].filter(aStr => {
           const str = String(aStr).trim();
           // Hide generic "Domains (2)" or "[Domain: ...]" strings on Cleric 1 because we render dedicated interactive Domain badges
@@ -7617,15 +7649,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
           return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚔️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
-
-        let classLevelSoFar = 0;
-        for (let i = 0; i <= idx; i++) {
-          if (prog[i].className === lvl.className) classLevelSoFar++;
-        }
-        const classFeats = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
-          ? RuleEngine.getClassLevelFeatures(lvl.className, classLevelSoFar)
-          : { hasBonusFeat: false };
-        const qualifiesForClassBonus = classFeats.hasBonusFeat;
 
         const pendingClassBonusButtons = [];
 
