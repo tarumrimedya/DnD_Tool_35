@@ -944,6 +944,18 @@
             : '🎖️ Flaw Bonus Feat (Granted by Flaw)';
         }
 
+        if (catSel.parentElement) {
+          catSel.parentElement.classList.add('hidden');
+          catSel.parentElement.style.display = 'none';
+        }
+        const modalCardEl = modal.firstElementChild;
+        if (modalCardEl) {
+          modalCardEl.classList.remove('max-w-lg');
+          modalCardEl.classList.add('max-w-2xl');
+          modalCardEl.style.maxWidth = '44rem';
+          modalCardEl.style.width = '100%';
+        }
+
         if (isQuickFeatTargetLocked) {
           catSel.disabled = true;
           catSel.classList.add('opacity-60', 'cursor-not-allowed');
@@ -1104,6 +1116,18 @@
 
     function setQuickFeatSearchFilter(filterType) {
       quickFeatSearchFilter = filterType;
+      if (!isQuickFeatTargetLocked) {
+        const catSel = document.getElementById('quick-feat-category');
+        if (catSel) {
+          if (filterType === 'BOON') catSel.value = 'DM Boon';
+          else if (filterType === 'FLAW') catSel.value = 'Flaw';
+          else if (filterType === 'FIGHTER') catSel.value = 'Class Bonus Feat';
+          else if (filterType === 'INVOCATION') catSel.value = 'Warlock Invocation';
+          else if ((filterType === 'ALL' || filterType === 'QUALIFIED') && ['DM Boon', 'Flaw', 'Class Bonus Feat', 'Warlock Invocation'].includes(catSel.value)) {
+            catSel.value = 'Regular Feat';
+          }
+        }
+      }
       renderQuickFeatSearchResults();
     }
 
