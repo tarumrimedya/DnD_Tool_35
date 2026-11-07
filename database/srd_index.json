@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "027d7d6ff900201b",
+  "compendiumHash": "6982d20b0040b49d",
   "generatedAt": "2026-11-04T15:37:19.474Z",
-  "totalEntries": 4995,
+  "totalEntries": 4984,
   "chunks": {
     "srd_equipment.json": {
-      "count": 1088,
+      "count": 1131,
       "bytes": 1698007,
-      "hash": "2037e36b0d8cbaf4",
+      "hash": "7870503d6fe4f7ac",
       "eagerLoad": true
     },
     "srd_feats.json": {
@@ -39964,94 +39964,6 @@
       "t": "Gear",
       "c": "Wondrous",
       "s": "Slotless",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "wpn-sub-quarterstaff-off-hand-head",
-      "n": "↳ Quarterstaff (Off-Hand Head)",
-      "t": "Weapon",
-      "c": "Simple",
-      "s": "Off-Hand",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "wpn-sub-lance-mounted-one-handed",
-      "n": "↳ Lance (Mounted One-Handed)",
-      "t": "Weapon",
-      "c": "Martial",
-      "s": "Main Hand",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "wpn-bastard-sword-one-handed-exotic",
-      "n": "Bastard Sword (One-Handed Exotic)",
-      "t": "Weapon",
-      "c": "Exotic",
-      "s": "Main Hand",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "wpn-sub-bastard-sword-two-handed-martial",
-      "n": "↳ Bastard Sword (Two-Handed Martial)",
-      "t": "Weapon",
-      "c": "Martial",
-      "s": "Two-Handed",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "wpn-dwarven-waraxe-one-handed-exotic",
-      "n": "Dwarven Waraxe (One-Handed Exotic)",
-      "t": "Weapon",
-      "c": "Exotic",
-      "s": "Main Hand",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "wpn-sub-dwarven-waraxe-two-handed-martial",
-      "n": "↳ Dwarven Waraxe (Two-Handed Martial)",
-      "t": "Weapon",
-      "c": "Martial",
-      "s": "Two-Handed",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "wpn-sub-orc-double-axe-off-hand-head",
-      "n": "↳ Orc Double Axe (Off-Hand Head)",
-      "t": "Weapon",
-      "c": "Exotic",
-      "s": "Off-Hand",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "wpn-sub-dire-flail-off-hand-head",
-      "n": "↳ Dire Flail (Off-Hand Head)",
-      "t": "Weapon",
-      "c": "Exotic",
-      "s": "Off-Hand",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "wpn-sub-gnome-hooked-hammer-pick-off-hand",
-      "n": "↳ Gnome Hooked Hammer (Pick Off-Hand)",
-      "t": "Weapon",
-      "c": "Exotic",
-      "s": "Off-Hand",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "wpn-sub-two-bladed-sword-off-hand-head",
-      "n": "↳ Two-Bladed Sword (Off-Hand Head)",
-      "t": "Weapon",
-      "c": "Exotic",
-      "s": "Off-Hand",
-      "f": "srd_equipment.json"
-    },
-    {
-      "id": "wpn-sub-dwarven-urgrosh-spear-off-hand",
-      "n": "↳ Dwarven Urgrosh (Spear Off-Hand)",
-      "t": "Weapon",
-      "c": "Exotic",
-      "s": "Off-Hand",
       "f": "srd_equipment.json"
     },
     {

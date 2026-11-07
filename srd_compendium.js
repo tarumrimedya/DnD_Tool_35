@@ -13,7 +13,7 @@
   'use strict';
 
   const IDB_NAME = 'dnd35_srd_compendium_v2';
-  const IDB_VERSION = 1;
+  const IDB_VERSION = 2;
   const IDB_STORE = 'chunks';
 
   const EAGER_CHUNKS = [
@@ -157,6 +157,7 @@
     for (let i = 0; i < records.length; i++) {
       const rec = records[i];
       if (!rec || !rec.id) continue;
+      if (rec.isChild || rec.parent || String(rec.name || '').trim().startsWith('↳') || String(rec.id || '').includes('-sub-')) continue;
       const isNew = !_catalogIds.has(rec.id);
       _byId.set(rec.id, rec);
       if (isNew) {

@@ -1548,11 +1548,7 @@ const RuleMaster = {
               <button onclick="if(typeof selectDeityItem==='function'){selectDeityItem('${safeItemNameJs}'); if(typeof showDiceTopToast==='function') showDiceTopToast({title:'Deity Selected', breakdown:'${safeItemNameJs} set as character patron deity.', icon:'✨'});}" class="ui-btn-icon w-7 h-7 rounded-md bg-amber-950/80 hover:bg-amber-900 border border-amber-700/60 text-amber-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Select as Character Deity">
                 🙏
               </button>
-            ` : (!isDomain && !isRace ? `
-              <button onclick="RuleMaster.addChildPower(${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Add Embedded Sub-Mode (Mode)">
-                🔗
-              </button>
-            ` : '')}
+            ` : ''}
             <button onclick="RuleMaster.duplicateEntry(${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Duplicate">
               📑
             </button>

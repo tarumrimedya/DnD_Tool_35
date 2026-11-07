@@ -6296,9 +6296,12 @@
 
       const map = new Map();
       weapons.forEach(w => {
-        const name = typeof w === 'string' ? w : (w.name || '');
-        if (name && !map.has(name.toLowerCase())) {
-          map.set(name.toLowerCase(), typeof w === 'string' ? { name: w, category: 'Weapon' } : w);
+        if (!w) return;
+        if (typeof w === 'object' && (w.isChild || w.parent || String(w.id || '').includes('-sub-'))) return;
+        const name = (typeof w === 'string' ? w : (w.name || '')).trim();
+        if (!name || name.startsWith('↳')) return;
+        if (!map.has(name.toLowerCase())) {
+          map.set(name.toLowerCase(), typeof w === 'string' ? { name: name, category: 'Weapon' } : w);
         }
       });
       return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
