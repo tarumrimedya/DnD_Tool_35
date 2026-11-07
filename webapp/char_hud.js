@@ -5441,10 +5441,18 @@
       return Array.from(map.values()).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     }
 
-    function openCustomDeityEditorModal(initialData = {}) {
+    let _editingDeityMasterDbIndex = -1;
+    let _editingDeityOriginalName = '';
+    let _editingDeityOriginalId = '';
+
+    function openCustomDeityEditorModal(initialData = {}, editMasterDbIdx = -1) {
       if (typeof window.ensureModalsMounted === 'function') {
         window.ensureModalsMounted();
       }
+
+      _editingDeityMasterDbIndex = (typeof editMasterDbIdx === 'number' && editMasterDbIdx >= 0) ? editMasterDbIdx : -1;
+      _editingDeityOriginalName = initialData.name || '';
+      _editingDeityOriginalId = initialData.id || '';
 
       const modal = document.getElementById('modal-custom-deity-editor');
       if (!modal) return;
@@ -5492,15 +5500,25 @@
 
       if (nameInput) nameInput.value = initialData.name || '';
       if (titleInput) titleInput.value = initialData.title || '';
-      if (rankSelect && initialData.rank) rankSelect.value = initialData.rank;
-      if (catSelect && initialData.category) catSelect.value = initialData.category;
-      if (alignSelect && initialData.alignment) alignSelect.value = initialData.alignment;
+      if (rankSelect) rankSelect.value = initialData.rank || 'Lesser Deity';
+      if (catSelect) {
+        const catVal = initialData.category || initialData.source || 'Custom / AI-Added Deities';
+        const hasCat = Array.from(catSelect.options).some(o => o.value === catVal);
+        if (!hasCat && catVal) {
+          const opt = document.createElement('option');
+          opt.value = catVal;
+          opt.textContent = catVal;
+          catSelect.appendChild(opt);
+        }
+        catSelect.value = catVal;
+      }
+      if (alignSelect) alignSelect.value = initialData.alignment || 'True Neutral';
       if (weaponInput && (initialData.favoredWeapon || initialData.weapon)) {
         weaponInput.value = initialData.favoredWeapon || initialData.weapon;
         updateDeityWeaponBadge(weaponInput.value);
       }
       if (portInput) portInput.value = initialData.portfolio || '';
-      if (descInput) descInput.value = initialData.description || initialData.desc || '';
+      if (descInput) descInput.value = initialData.description || initialData.desc || initialData.benefit || '';
 
       // 5. Select Icon
       const chosenIcon = initialData.icon || '☀️';
@@ -5583,24 +5601,43 @@
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'custom';
       const favoredWeapon = weaponInput ? weaponInput.value.trim() : '-';
       const selectedDomains = Array.from(_customDeitySelectedDomains);
+      const catVal = catSelect ? catSelect.value : 'Custom / AI-Added Deities';
+      const portfolioVal = portInput ? portInput.value.trim() : '';
+      const descVal = descInput ? descInput.value.trim() : '';
 
       const entry = {
         schemaVersion: 2,
-        id: 'deity-' + slug,
+        id: _editingDeityOriginalId || ('deity-' + slug),
         type: 'Deity',
         name: name,
         title: titleInput ? titleInput.value.trim() : '',
-        category: catSelect ? catSelect.value : 'Custom / AI-Added Deities',
+        category: catVal,
+        source: catVal || 'Custom Deity',
         icon: (iconInput && iconInput.value) ? iconInput.value : '🔮',
         rank: rankSelect ? rankSelect.value : 'Lesser Deity',
         alignment: alignSelect ? alignSelect.value : 'True Neutral',
         favoredWeapon: favoredWeapon,
         weapon: favoredWeapon,
         domains: selectedDomains,
-        portfolio: portInput ? portInput.value.trim() : '',
-        description: descInput ? descInput.value.trim() : '',
+        portfolio: portfolioVal,
+        benefit: portfolioVal ? `Portfolio: ${portfolioVal}${selectedDomains.length ? ' • Domains: ' + selectedDomains.join(', ') : ''}` : (descVal || `Favored Weapon: ${favoredWeapon} • Domains: ${selectedDomains.join(', ')}`),
+        description: descVal,
+        modifiers: [],
+        damageParts: [],
+        modes: [],
         isCustom: true,
         addedAt: new Date().toISOString()
+      };
+
+      const matchDeityRecord = (e) => {
+        if (!e) return false;
+        const isDeity = String(e.type || '').toLowerCase() === 'deity' || String(e.id || '').startsWith('deity-');
+        if (!isDeity) return false;
+        const eName = String(e.name || '').toLowerCase();
+        const origName = String(_editingDeityOriginalName || '').toLowerCase();
+        if (_editingDeityOriginalId && e.id === _editingDeityOriginalId) return true;
+        if (origName && eName === origName) return true;
+        return eName === name.toLowerCase();
       };
 
       // Auto-register unknown custom weapon in character.customDb & masterDb
@@ -5618,25 +5655,31 @@
           addedAt: new Date().toISOString()
         };
         if (typeof character !== 'undefined' && Array.isArray(character.customDb)) character.customDb.push(autoWeapon);
-        if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) masterDb.push(autoWeapon);
+        if (typeof masterDb !== 'undefined' && Array.isArray(masterDb) && (!character || character.customDb !== masterDb)) masterDb.push(autoWeapon);
       }
 
-      // 1. Save to character.customDb & masterDb
-      if (typeof character !== 'undefined') {
-        if (!Array.isArray(character.customDb)) character.customDb = [];
-        const existingIdx = character.customDb.findIndex(e => e && String(e.type || '').toLowerCase() === 'deity' && String(e.name || '').toLowerCase() === name.toLowerCase());
-        if (existingIdx >= 0) {
-          character.customDb[existingIdx] = entry;
+      // 1. Save to character.customDb & masterDb (in-place update when editing)
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        if (_editingDeityMasterDbIndex >= 0 && _editingDeityMasterDbIndex < masterDb.length) {
+          masterDb[_editingDeityMasterDbIndex] = entry;
         } else {
-          character.customDb.push(entry);
+          const mIdx = masterDb.findIndex(matchDeityRecord);
+          if (mIdx >= 0) {
+            masterDb[mIdx] = entry;
+          } else {
+            masterDb.push(entry);
+          }
         }
       }
-      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-        const mIdx = masterDb.findIndex(e => e && String(e.type || '').toLowerCase() === 'deity' && String(e.name || '').toLowerCase() === name.toLowerCase());
-        if (mIdx >= 0) {
-          masterDb[mIdx] = entry;
-        } else {
-          masterDb.push(entry);
+      if (typeof character !== 'undefined') {
+        if (!Array.isArray(character.customDb)) character.customDb = [];
+        if (typeof masterDb === 'undefined' || character.customDb !== masterDb) {
+          const existingIdx = character.customDb.findIndex(matchDeityRecord);
+          if (existingIdx >= 0) {
+            character.customDb[existingIdx] = entry;
+          } else {
+            character.customDb.push(entry);
+          }
         }
       }
 
@@ -5645,7 +5688,11 @@
         let customDeities = [];
         const existingSaved = localStorage.getItem('dnd35_custom_deities');
         if (existingSaved) customDeities = JSON.parse(existingSaved) || [];
-        const idx = customDeities.findIndex(d => d.name.toLowerCase() === name.toLowerCase());
+        const idx = customDeities.findIndex(d => d && (
+          (_editingDeityOriginalId && d.id === _editingDeityOriginalId) ||
+          (_editingDeityOriginalName && String(d.name || '').toLowerCase() === _editingDeityOriginalName.toLowerCase()) ||
+          String(d.name || '').toLowerCase() === name.toLowerCase()
+        ));
         if (idx >= 0) customDeities[idx] = entry;
         else customDeities.push(entry);
         localStorage.setItem('dnd35_custom_deities', JSON.stringify(customDeities));
@@ -5653,11 +5700,14 @@
         console.warn('Failed to cache custom deity in localStorage:', e);
       }
 
-      // 3. Save to Master DB via RuleMaster if available
-      if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.saveEntryToMasterDb === 'function') {
-        try {
-          RuleMaster.saveEntryToMasterDb(entry);
-        } catch (e) {}
+      // 3. Save to Master DB via RuleMaster & refresh Master DB Table
+      if (typeof RuleMaster !== 'undefined') {
+        if (typeof RuleMaster.saveEntryToMasterDb === 'function') {
+          try { RuleMaster.saveEntryToMasterDb(entry); } catch (e) {}
+        }
+        if (typeof RuleMaster.renderTable === 'function') {
+          RuleMaster.renderTable();
+        }
       }
 
       // 4. Save state to storage
@@ -5847,10 +5897,18 @@
       });
     }
 
-    function openCustomDomainEditorModal(initialData = {}) {
+    let _editingDomainMasterDbIndex = -1;
+    let _editingDomainOriginalName = '';
+    let _editingDomainOriginalId = '';
+
+    function openCustomDomainEditorModal(initialData = {}, editMasterDbIdx = -1) {
       if (typeof window.ensureModalsMounted === 'function') {
         window.ensureModalsMounted();
       }
+
+      _editingDomainMasterDbIndex = (typeof editMasterDbIdx === 'number' && editMasterDbIdx >= 0) ? editMasterDbIdx : -1;
+      _editingDomainOriginalName = initialData.name || '';
+      _editingDomainOriginalId = initialData.id || '';
 
       const modal = document.getElementById('modal-custom-domain-editor');
       if (!modal) return;
@@ -5886,7 +5944,7 @@
       if (srcInput) srcInput.value = initialData.source || 'Spell Compendium';
       if (alignSelect) alignSelect.value = initialData.alignment || 'Any';
       if (pDescInput) {
-        pDescInput.value = initialData.grantedPower?.description || initialData.powerDesc || initialData.description || '';
+        pDescInput.value = initialData.grantedPower?.description || initialData.powerDesc || initialData.benefit || initialData.description || '';
       }
       if (featInput) {
         const feat = initialData.grantedPower?.grantedFeats?.[0] || initialData.grantedFeat || initialData.bonusFeat || '';
@@ -6671,35 +6729,56 @@
 
       const entry = {
         schemaVersion: 2,
-        id: 'dom-' + slug,
+        id: _editingDomainOriginalId || ('dom-' + slug),
         type: 'Domain',
         category: 'Cleric Domain',
         name: name,
         alignment: alignSelect ? alignSelect.value : 'Any',
         source: srcInput ? (srcInput.value.trim() || 'Custom Domain') : 'Custom Domain',
         grantedPower: grantedPower,
+        benefit: powerDesc || (spellsList.length ? `Domain Spells: ${spellsList.map(s => s.name).join(', ')}` : 'Cleric Domain'),
+        description: powerDesc,
         modifiers: modifiers,
+        damageParts: [],
+        modes: [],
         spells: spellsList,
         isCustom: true,
         addedAt: new Date().toISOString()
       };
 
-      // 1. Save to character.customDb & masterDb
-      if (typeof character !== 'undefined') {
-        if (!Array.isArray(character.customDb)) character.customDb = [];
-        const existingIdx = character.customDb.findIndex(e => e && String(e.type || '').toLowerCase() === 'domain' && String(e.name || '').toLowerCase() === name.toLowerCase());
-        if (existingIdx >= 0) {
-          character.customDb[existingIdx] = entry;
+      const matchDomainRecord = (e) => {
+        if (!e) return false;
+        const isDom = String(e.type || '').toLowerCase() === 'domain' || String(e.id || '').startsWith('dom-');
+        if (!isDom) return false;
+        const eName = String(e.name || '').toLowerCase();
+        const origName = String(_editingDomainOriginalName || '').toLowerCase();
+        if (_editingDomainOriginalId && e.id === _editingDomainOriginalId) return true;
+        if (origName && eName === origName) return true;
+        return eName === name.toLowerCase();
+      };
+
+      // 1. Save to character.customDb & masterDb (in-place update when editing)
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        if (_editingDomainMasterDbIndex >= 0 && _editingDomainMasterDbIndex < masterDb.length) {
+          masterDb[_editingDomainMasterDbIndex] = entry;
         } else {
-          character.customDb.push(entry);
+          const mIdx = masterDb.findIndex(matchDomainRecord);
+          if (mIdx >= 0) {
+            masterDb[mIdx] = entry;
+          } else {
+            masterDb.push(entry);
+          }
         }
       }
-      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-        const mIdx = masterDb.findIndex(e => e && String(e.type || '').toLowerCase() === 'domain' && String(e.name || '').toLowerCase() === name.toLowerCase());
-        if (mIdx >= 0) {
-          masterDb[mIdx] = entry;
-        } else {
-          masterDb.push(entry);
+      if (typeof character !== 'undefined') {
+        if (!Array.isArray(character.customDb)) character.customDb = [];
+        if (typeof masterDb === 'undefined' || character.customDb !== masterDb) {
+          const existingIdx = character.customDb.findIndex(matchDomainRecord);
+          if (existingIdx >= 0) {
+            character.customDb[existingIdx] = entry;
+          } else {
+            character.customDb.push(entry);
+          }
         }
       }
 
@@ -6708,7 +6787,11 @@
         let customDomains = [];
         const existingSaved = localStorage.getItem('dnd35_custom_domains');
         if (existingSaved) customDomains = JSON.parse(existingSaved) || [];
-        const idx = customDomains.findIndex(d => (d.name || '').toLowerCase() === name.toLowerCase());
+        const idx = customDomains.findIndex(d => d && (
+          (_editingDomainOriginalId && d.id === _editingDomainOriginalId) ||
+          (_editingDomainOriginalName && String(d.name || '').toLowerCase() === _editingDomainOriginalName.toLowerCase()) ||
+          String(d.name || '').toLowerCase() === name.toLowerCase()
+        ));
         if (idx >= 0) customDomains[idx] = entry;
         else customDomains.push(entry);
         localStorage.setItem('dnd35_custom_domains', JSON.stringify(customDomains));
@@ -6716,11 +6799,14 @@
         console.warn('Failed to cache custom domain in localStorage:', e);
       }
 
-      // 3. Save to Master DB via RuleMaster if available
-      if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.saveEntryToMasterDb === 'function') {
-        try {
-          RuleMaster.saveEntryToMasterDb(entry);
-        } catch (e) {}
+      // 3. Save to Master DB via RuleMaster & refresh Master DB Table
+      if (typeof RuleMaster !== 'undefined') {
+        if (typeof RuleMaster.saveEntryToMasterDb === 'function') {
+          try { RuleMaster.saveEntryToMasterDb(entry); } catch (e) {}
+        }
+        if (typeof RuleMaster.renderTable === 'function') {
+          RuleMaster.renderTable();
+        }
       }
 
       // 4. Save state to storage

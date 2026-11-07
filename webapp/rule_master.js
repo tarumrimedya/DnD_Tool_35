@@ -264,6 +264,30 @@ const RuleMaster = {
       pills.push(`⚡ ${modes.length} Mod`);
     }
 
+    const lowType = String(v2.type || '').toLowerCase();
+    if (lowType === 'deity') {
+      if (v2.alignment) pills.push(`⚖️ ${v2.alignment}`);
+      if (v2.favoredWeapon || v2.weapon) pills.push(`⚔️ ${v2.favoredWeapon || v2.weapon}`);
+      if (Array.isArray(v2.domains) && v2.domains.length > 0) {
+        const preview = v2.domains.slice(0, 4).join(', ');
+        pills.push(`✨ Domains: ${preview}${v2.domains.length > 4 ? ` (+${v2.domains.length - 4})` : ''}`);
+      }
+    } else if (lowType === 'domain') {
+      if (v2.grantedPower?.grantedFeats?.[0]) {
+        pills.push(`🎖️ Feat: ${v2.grantedPower.grantedFeats[0]}`);
+      }
+      if (v2.grantedPower?.spellLikeAbilities?.[0]?.name) {
+        const sla = v2.grantedPower.spellLikeAbilities[0];
+        pills.push(`⚡ ${sla.name}${sla.uses && sla.uses !== 'None' ? ` (${sla.uses})` : ''}`);
+      }
+      if (Array.isArray(v2.spells) && v2.spells.length > 0) {
+        pills.push(`📜 ${v2.spells.length} Domain Spells`);
+      }
+    } else if (lowType === 'race') {
+      if (v2.size) pills.push(`📏 ${v2.size}`);
+      if (v2.baseSpeed) pills.push(`👟 ${v2.baseSpeed} ft.`);
+    }
+
     return pills;
   },
 
@@ -759,6 +783,11 @@ const RuleMaster = {
       const matchQ = !query ||
         (item.name && item.name.toLowerCase().includes(query)) ||
         (item.benefit && item.benefit.toLowerCase().includes(query)) ||
+        (item.description && item.description.toLowerCase().includes(query)) ||
+        (item.portfolio && item.portfolio.toLowerCase().includes(query)) ||
+        (item.favoredWeapon && item.favoredWeapon.toLowerCase().includes(query)) ||
+        (item.grantedPower?.description && item.grantedPower.description.toLowerCase().includes(query)) ||
+        (Array.isArray(item.domains) && item.domains.join(' ').toLowerCase().includes(query)) ||
         (item.source && item.source.toLowerCase().includes(query)) ||
         (item.discipline && item.discipline.toLowerCase().includes(query));
       const matchCat = cat === 'ALL' || item.type === cat;
@@ -964,8 +993,43 @@ const RuleMaster = {
     alert(`🎒 "${item.name}" added to your backpack / inventory pool!`);
   },
 
-  // Open Edit / Add in Inline V2 Manual Rule Form (Replaces legacy V1 29-column modal)
+  // Open Edit / Add in Type-Specific Editor Modal or Inline V2 Manual Rule Form
   openModalWithData(entry, editIndex = -1, options = {}) {
+    if (!options?.forceManualBuilder && entry && typeof entry === 'object') {
+      const rawType = String(entry.type || entry.category || '').trim().toLowerCase();
+      const rawId = String(entry.id || '').trim().toLowerCase();
+
+      // 1. Deity -> Dedicated Deity / Patron Creator & Editor Modal
+      if (rawType === 'deity' || rawId.startsWith('deity-')) {
+        if (typeof window.openCustomDeityEditorModal === 'function') {
+          window.openCustomDeityEditorModal(entry, editIndex);
+          return;
+        }
+      }
+
+      // 2. Cleric Domain -> Dedicated Cleric Domain Creator & Editor Modal
+      if (rawType === 'domain' || rawType === 'cleric domain' || rawId.startsWith('dom-')) {
+        if (typeof window.openCustomDomainEditorModal === 'function') {
+          window.openCustomDomainEditorModal(entry, editIndex);
+          return;
+        }
+      }
+
+      // 3. Modular Assembled Equipment (Lego Forge Item) -> Open in The Forge
+      if (
+        (rawType === 'weapon' || rawType === 'armor' || rawType === 'shield') &&
+        entry.baseItemId &&
+        (Number(entry.enhancementBonus) > 0 || (Array.isArray(entry.enhancements) && entry.enhancements.length > 0) || entry.material || entry.crystal) &&
+        typeof this.openInForgeWithData === 'function' &&
+        window.SrdCompendium &&
+        typeof window.SrdCompendium.getById === 'function' &&
+        window.SrdCompendium.getById(entry.baseItemId)
+      ) {
+        this.openInForgeWithData(entry, editIndex);
+        return;
+      }
+    }
+
     this.selectedEntryIndex = editIndex;
     const v2 = this.ensureV2(entry ? JSON.parse(JSON.stringify(entry)) : this.createEmptyEntry('Weapon'));
     this._currentEditingEntry = v2;
@@ -1342,6 +1406,11 @@ const RuleMaster = {
       const matchQ = !query ||
         (item.name && item.name.toLowerCase().includes(query)) ||
         (item.benefit && item.benefit.toLowerCase().includes(query)) ||
+        (item.description && item.description.toLowerCase().includes(query)) ||
+        (item.portfolio && item.portfolio.toLowerCase().includes(query)) ||
+        (item.favoredWeapon && item.favoredWeapon.toLowerCase().includes(query)) ||
+        (item.grantedPower?.description && item.grantedPower.description.toLowerCase().includes(query)) ||
+        (Array.isArray(item.domains) && item.domains.join(' ').toLowerCase().includes(query)) ||
         (item.source && item.source.toLowerCase().includes(query)) ||
         (item.discipline && item.discipline.toLowerCase().includes(query));
 
@@ -1391,7 +1460,56 @@ const RuleMaster = {
       const statPills = this.getEntrySummaryPills(item);
       const statsSummary = statPills.length > 0 ? statPills.join(' • ') : '-';
       const modesCount = Array.isArray(item.modes) ? item.modes.length : 0;
+      const lowType = String(item.type || '').toLowerCase();
+      const isDeity = lowType === 'deity' || String(item.id || '').startsWith('deity-');
+      const isDomain = lowType === 'domain' || lowType === 'cleric domain' || String(item.id || '').startsWith('dom-');
+      const isRace = lowType === 'race';
       const primaryBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : (item.type === 'Armor' ? 'Armor' : (item.type === 'Shield' ? 'Shield' : 'Untyped')));
+
+      let slotCellHtml = `
+        <div>${item.slot ? this.capitalizeIdentifier(item.slot) : 'None'}</div>
+        ${item.level !== undefined && item.level !== '' ? `<div class="text-[10px] text-amber-400 font-bold">Level ${item.level}</div>` : ''}
+      `;
+      let bonusScopeCellHtml = `
+        <div class="text-xs font-semibold text-amber-300">${this.capitalizeIdentifier(primaryBonusType)}</div>
+        <div class="text-[10px] text-slate-400">${item.scope ? this.capitalizeIdentifier(item.scope) : 'General'}</div>
+      `;
+      let descText = item.benefit || item.description || '-';
+
+      if (isDeity) {
+        slotCellHtml = `
+          <div class="font-bold text-amber-300">${item.alignment || 'Any'}</div>
+          <div class="text-[10px] text-slate-400">${item.rank || 'Deity'}</div>
+        `;
+        bonusScopeCellHtml = `
+          <div class="text-xs font-semibold text-amber-200">⚔️ ${item.favoredWeapon || item.weapon || '-'}</div>
+          <div class="text-[10px] text-slate-400">Favored Weapon</div>
+        `;
+        descText = `${item.portfolio ? `Portfolio: ${item.portfolio}. ` : ''}${item.description || item.benefit || (Array.isArray(item.domains) && item.domains.length ? `Domains: ${item.domains.join(', ')}` : '-')}`;
+      } else if (isDomain) {
+        const spCount = Array.isArray(item.spells) ? item.spells.length : 0;
+        slotCellHtml = `
+          <div class="font-bold text-purple-300">Cleric Domain</div>
+          <div class="text-[10px] text-amber-400 font-bold">${spCount} Spells (1st–9th)</div>
+        `;
+        bonusScopeCellHtml = `
+          <div class="text-xs font-semibold text-purple-200">${item.alignment && item.alignment !== 'Any' ? item.alignment : 'Any Alignment'}</div>
+          <div class="text-[10px] text-slate-400">${item.grantedPower?.grantedFeats?.[0] ? `Feat: ${item.grantedPower.grantedFeats[0]}` : 'Granted Power'}</div>
+        `;
+        descText = item.grantedPower?.description || item.benefit || item.description || (spCount > 0 ? `Spells: ${item.spells.map(s => s.name).join(', ')}` : '-');
+      } else if (isRace) {
+        slotCellHtml = `
+          <div class="font-bold text-emerald-300">${item.size || 'Medium'} Size</div>
+          <div class="text-[10px] text-slate-400">${item.baseSpeed || 30} ft. Speed</div>
+        `;
+        bonusScopeCellHtml = `
+          <div class="text-xs font-semibold text-emerald-200">Racial Traits</div>
+          <div class="text-[10px] text-slate-400">${item.favoredClass ? `Favored: ${item.favoredClass}` : 'Character Race'}</div>
+        `;
+      }
+
+      const safeDescAttr = String(descText || '-').replace(/"/g, '&quot;');
+      const safeItemNameJs = String(item.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
       tr.innerHTML = `
         <td class="py-2.5 px-2.5 text-center">
@@ -1399,37 +1517,42 @@ const RuleMaster = {
         </td>
         <td class="py-2.5 px-3">
           <div class="font-bold text-white flex items-center gap-1.5 flex-wrap">
+            ${isDeity && item.icon ? `<span>${item.icon}</span>` : ''}
             <span>${item.name}</span>
             ${modesCount > 0 ? `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">⚡ ${modesCount} Mod</span>` : ''}
           </div>
-          <div class="text-[10px] text-slate-400 font-mono mt-0.5">${item.source || 'Custom'}</div>
+          <div class="text-[10px] text-slate-400 font-mono mt-0.5">${isDeity ? (item.title ? `${item.title} • ${item.category || 'Custom'}` : (item.category || item.source || 'Custom')) : (item.source || 'Custom')}</div>
         </td>
         <td class="py-2.5 px-3">
           <span class="badge ${typeBadgeClass}">${item.type ? this.capitalizeIdentifier(item.type) : 'Other'}</span>
           ${item.discipline && item.discipline !== '-' ? `<span class="badge bg-rose-950 text-rose-300 border border-rose-800 block mt-1 w-max">${this.capitalizeIdentifier(item.discipline)}</span>` : ''}
         </td>
         <td class="py-2.5 px-3 text-slate-300 text-xs">
-          <div>${item.slot ? this.capitalizeIdentifier(item.slot) : 'None'}</div>
-          ${item.level !== undefined && item.level !== '' ? `<div class="text-[10px] text-amber-400 font-bold">Level ${item.level}</div>` : ''}
+          ${slotCellHtml}
         </td>
         <td class="py-2.5 px-3">
-          <div class="text-xs font-semibold text-amber-300">${this.capitalizeIdentifier(primaryBonusType)}</div>
-          <div class="text-[10px] text-slate-400">${item.scope ? this.capitalizeIdentifier(item.scope) : 'General'}</div>
+          ${bonusScopeCellHtml}
         </td>
         <td class="py-2.5 px-3 font-mono text-xs font-bold text-emerald-400">
           ${statsSummary}
         </td>
         <td class="py-2.5 px-3 text-slate-300 text-[11px] max-w-xs">
-          <div class="line-clamp-2" title="${item.benefit || ''}">${item.benefit || '-'}</div>
+          <div class="line-clamp-2" title="${safeDescAttr}">${descText}</div>
         </td>
         <td class="py-2.5 px-3 text-center">
           <div class="flex items-center justify-center gap-1">
-            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Edit">
+            <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="${isDeity ? 'Edit in Deity Editor' : (isDomain ? 'Edit in Domain Editor' : 'Edit')}">
               ✏️
             </button>
-            <button onclick="RuleMaster.addChildPower(${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Add Embedded Sub-Mode (Mode)">
-              🔗
-            </button>
+            ${isDeity ? `
+              <button onclick="if(typeof selectDeityItem==='function'){selectDeityItem('${safeItemNameJs}'); if(typeof showDiceTopToast==='function') showDiceTopToast({title:'Deity Selected', breakdown:'${safeItemNameJs} set as character patron deity.', icon:'✨'});}" class="ui-btn-icon w-7 h-7 rounded-md bg-amber-950/80 hover:bg-amber-900 border border-amber-700/60 text-amber-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Select as Character Deity">
+                🙏
+              </button>
+            ` : (!isDomain && !isRace ? `
+              <button onclick="RuleMaster.addChildPower(${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-purple-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Add Embedded Sub-Mode (Mode)">
+                🔗
+              </button>
+            ` : '')}
             <button onclick="RuleMaster.duplicateEntry(${idx})" class="ui-btn-icon w-7 h-7 rounded-md bg-slate-800 hover:bg-slate-700 text-amber-300 text-xs transition inline-flex items-center justify-center cursor-pointer" title="Duplicate">
               📑
             </button>
@@ -1453,6 +1576,9 @@ const RuleMaster = {
       case 'Maneuver':
       case 'Stance': return 'bg-indigo-950 text-indigo-300 border border-indigo-700';
       case 'Feat': return 'bg-amber-950 text-amber-300 border border-amber-700';
+      case 'Deity': return 'bg-amber-950 text-amber-200 border border-amber-500';
+      case 'Domain': return 'bg-purple-950 text-purple-200 border border-purple-500';
+      case 'Race': return 'bg-emerald-950 text-emerald-200 border border-emerald-500';
       case 'Potion': return 'bg-emerald-950 text-emerald-300 border border-emerald-700';
       case 'Wondrous Item':
       case 'Ring': return 'bg-teal-950 text-teal-300 border border-teal-700';
@@ -3686,8 +3812,38 @@ Return valid JSON only matching:
     const type = (item.type || '').toLowerCase();
     const cat = item.category || item.type || 'Other';
 
-    // 1. Ensure item is placed in character.gearPool (except pure Feats/Spells/Maneuvers/Stances/Racial Traits/Flaws)
-    const isNonPhysical = ['feat', 'spell', 'maneuver', 'stance', 'flaw', 'racial trait', 'race', 'deity'].includes(type);
+    // 1. Ensure item is placed in character.gearPool (except pure Feats/Spells/Maneuvers/Stances/Racial Traits/Flaws/Deities/Domains)
+    const isNonPhysical = ['feat', 'spell', 'maneuver', 'stance', 'flaw', 'racial trait', 'race', 'deity', 'domain', 'cleric domain'].includes(type);
+    if (type === 'deity') {
+      if (typeof selectDeityItem === 'function') {
+        selectDeityItem(item.name);
+      } else {
+        character.deity = item.name;
+      }
+      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({ title: 'Deity Selected', breakdown: `${item.name} selected as character deity.`, icon: item.icon || '✨' });
+      }
+      return;
+    }
+    if (type === 'domain' || type === 'cleric domain') {
+      if (typeof window.openCustomDomainEditorModal === 'function') {
+        window.openCustomDomainEditorModal(item);
+      }
+      return;
+    }
+    if (type === 'race') {
+      if (typeof selectRaceItem === 'function') {
+        selectRaceItem(item.name);
+      } else {
+        character.race = item.name;
+      }
+      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({ title: 'Race Selected', breakdown: `${item.name} selected as character race.`, icon: '🧬' });
+      }
+      return;
+    }
     let poolExisting = null;
     if (!isNonPhysical) {
       if (!character.gearPool) character.gearPool = [];
@@ -5114,7 +5270,23 @@ Return valid JSON only matching:
   },
 
   onInlineManualTypeChange(preserveSlotAndAction = false) {
-    const typeVal = document.getElementById('im-type')?.value || 'Weapon';
+    const typeEl = document.getElementById('im-type');
+    const typeVal = typeEl?.value || 'Weapon';
+
+    // If user manually switches Category dropdown to Deity or Domain, launch its dedicated editor modal
+    if (typeVal === 'Deity' && typeof window.openCustomDeityEditorModal === 'function') {
+      const currentName = (document.getElementById('im-name')?.value || '').trim();
+      if (typeEl) typeEl.value = 'Feat';
+      window.openCustomDeityEditorModal({ name: currentName }, this.selectedEntryIndex);
+      return;
+    }
+    if (typeVal === 'Domain' && typeof window.openCustomDomainEditorModal === 'function') {
+      const currentName = (document.getElementById('im-name')?.value || '').trim();
+      if (typeEl) typeEl.value = 'Feat';
+      window.openCustomDomainEditorModal({ name: currentName }, this.selectedEntryIndex);
+      return;
+    }
+
     const slotEl = document.getElementById('im-slot');
     const actEl = document.getElementById('im-action');
     if (!preserveSlotAndAction) {
@@ -5135,10 +5307,24 @@ Return valid JSON only matching:
 
     const isArmorShield = typeVal === 'Armor' || typeVal === 'Shield';
     const isSpellManeuver = typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Stance';
+    const isWeapon = typeVal === 'Weapon';
+    const isNonPhysicalRule = ['Feat', 'Spell', 'Maneuver', 'Stance', 'Race', 'Flaw', 'Special Ability', 'DM Grant'].includes(typeVal);
+
     const pArmor = document.getElementById('im-panel-armor');
     const pSpell = document.getElementById('im-panel-spell');
+    const colCrit = document.getElementById('im-col-crit');
+    const rowWepFlags = document.getElementById('im-row-weapon-flags');
+    const colSlot = document.getElementById('im-col-slot');
+    const colPrice = document.getElementById('im-col-economy-price');
+    const colWeight = document.getElementById('im-col-economy-weight');
+
     if (pArmor) pArmor.classList.toggle('hidden', !isArmorShield);
     if (pSpell) pSpell.classList.toggle('hidden', !isSpellManeuver);
+    if (colCrit) colCrit.classList.toggle('hidden', !isWeapon);
+    if (rowWepFlags) rowWepFlags.classList.toggle('hidden', !(isWeapon || isSpellManeuver));
+    if (colSlot) colSlot.classList.toggle('opacity-50', isNonPhysicalRule);
+    if (colPrice) colPrice.classList.toggle('hidden', isNonPhysicalRule);
+    if (colWeight) colWeight.classList.toggle('hidden', isNonPhysicalRule);
   },
 
   applyInlineManualPreset(presetKey) {
@@ -5564,6 +5750,36 @@ Return valid JSON only matching:
     }
   },
 
+  async openInForgeWithData(entry, editIndex = -1) {
+    if (!entry) return;
+    this._editingForgeMasterDbIndex = editIndex;
+    this.switchInlineMode('forge');
+    await this.populateInlineForgeControls();
+
+    const nlInput = document.getElementById('mdb-forge-nl-input');
+    if (nlInput) nlInput.value = '';
+
+    const baseId = entry.baseItemId || '';
+    if (baseId) {
+      this._forgeBaseTypeFilter = 'all';
+      this.renderForgeBaseSelectOptions(baseId);
+    }
+
+    const matSel = document.getElementById('mdb-forge-material-select');
+    if (matSel) matSel.value = entry.material || '';
+
+    const enhSel = document.getElementById('mdb-forge-enh-bonus');
+    if (enhSel) enhSel.value = String(Number(entry.enhancementBonus) || 0);
+
+    const enhIds = Array.isArray(entry.enhancements) ? entry.enhancements : [];
+    const crysId = entry.crystal || '';
+    this.syncInlineForgeSubControls(enhIds, crysId);
+    this.updateInlineForgePreview();
+
+    const panel = document.getElementById('inline-ai-adder-panel');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  },
+
   async populateInlineForgeControls() {
     const baseSel = document.getElementById('mdb-forge-base-select');
     const enhGrid = document.getElementById('mdb-forge-enhancements-grid');
@@ -5656,13 +5872,19 @@ Return valid JSON only matching:
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-slate-800">
         <button type="button" onclick="RuleMaster.saveInlineForgeItem(false)" class="w-full h-10 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
           <span>📥</span>
-          <span>Save to Custom DB</span>
+          <span>${this._editingForgeMasterDbIndex >= 0 ? 'Update in Custom DB' : 'Save to Custom DB'}</span>
         </button>
         <button type="button" onclick="RuleMaster.saveInlineForgeItem(true)" class="w-full h-10 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs shadow transition cursor-pointer flex items-center justify-center gap-1.5">
           <span>⚒️</span>
-          <span>Save &amp; Equip to Character</span>
+          <span>${this._editingForgeMasterDbIndex >= 0 ? 'Update &amp; Equip to Character' : 'Save &amp; Equip to Character'}</span>
         </button>
       </div>
+      ${this._editingForgeMasterDbIndex >= 0 ? `
+        <div class="flex items-center justify-between pt-1 text-[10px] text-amber-300">
+          <span>✏️ Editing Master DB Entry #${this._editingForgeMasterDbIndex + 1} in The Forge</span>
+          <button type="button" onclick="const idx = RuleMaster._editingForgeMasterDbIndex; RuleMaster._editingForgeMasterDbIndex = -1; RuleMaster.openModalWithData(masterDb[idx], idx, { forceManualBuilder: true });" class="underline hover:text-white cursor-pointer font-bold">🛠️ Switch to Manual V2 Builder</button>
+        </div>
+      ` : ''}
     `;
   },
 
@@ -5671,11 +5893,16 @@ Return valid JSON only matching:
     if (!rawItem) return;
     const item = this.ensureV2(JSON.parse(JSON.stringify(rawItem)));
 
-    const existsIdx = masterDb.findIndex(m => (m.id && m.id === item.id) || (m.name || '').toLowerCase().trim() === (item.name || '').toLowerCase().trim());
-    if (existsIdx >= 0) {
-      masterDb[existsIdx] = item;
+    if (typeof this._editingForgeMasterDbIndex === 'number' && this._editingForgeMasterDbIndex >= 0 && this._editingForgeMasterDbIndex < masterDb.length) {
+      masterDb[this._editingForgeMasterDbIndex] = item;
+      this._editingForgeMasterDbIndex = -1;
     } else {
-      masterDb.unshift(item);
+      const existsIdx = masterDb.findIndex(m => (m.id && m.id === item.id) || (m.name || '').toLowerCase().trim() === (item.name || '').toLowerCase().trim());
+      if (existsIdx >= 0) {
+        masterDb[existsIdx] = item;
+      } else {
+        masterDb.unshift(item);
+      }
     }
 
     if (alsoEquip) {
