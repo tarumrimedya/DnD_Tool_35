@@ -190,11 +190,107 @@ const RuleEngine = {
     return Math.floor(((Number(score) || 10) - 10) / 2);
   },
 
+  // Normalize human shorthand formula tokens (e.g. "10+lvl+Con", "10 + 1/2 lvl + Cha") into Canonical V2 @tokens
+  normalizeFormulaTokens(formulaStr) {
+    if (formulaStr === null || formulaStr === undefined) return '';
+    let s = String(formulaStr).trim();
+    if (!s) return '';
+    s = s
+      .replace(/^dc\s*[:=]?\s*/i, '')
+      .replace(/\b1\s*\/\s*2\s*(?:@?level|@?lvl|@?hd)\b/gi, 'floor(@level / 2)')
+      .replace(/\bhalf\s+(?:@?level|@?lvl|@?hd)\b/gi, 'floor(@level / 2)')
+      .replace(/(?:@?level|@?lvl|@?hd)\s*\/\s*2\b/gi, 'floor(@level / 2)')
+      .replace(/(?<![a-zA-Z@])(?:lvl|level|hd)\b/gi, '@level')
+      .replace(/(?<![a-zA-Z@])(?:cl|caster\s*level)\b/gi, '@cl')
+      .replace(/(?<![a-zA-Z@])bab\b/gi, '@bab')
+      .replace(/(?<![a-zA-Z@])str(?:\s*mod)?\b/gi, '@strMod')
+      .replace(/(?<![a-zA-Z@])dex(?:\s*mod)?\b/gi, '@dexMod')
+      .replace(/(?<![a-zA-Z@])con(?:\s*mod)?\b/gi, '@conMod')
+      .replace(/(?<![a-zA-Z@])int(?:\s*mod)?\b/gi, '@intMod')
+      .replace(/(?<![a-zA-Z@])wis(?:\s*mod)?\b/gi, '@wisMod')
+      .replace(/(?<![a-zA-Z@])cha(?:\s*mod)?\b/gi, '@chaMod')
+      .replace(/\s*\+\s*/g, ' + ')
+      .replace(/\s*-\s*/g, ' - ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    return s;
+  },
+
+  // Build live formula evaluation context from a character object
+  buildFormulaContext(character) {
+    const ch = character || (typeof window !== 'undefined' ? window.character : null) || {};
+    const activeProg = Array.isArray(ch.levelProgression)
+      ? ch.levelProgression.filter(r => r && r.active !== false)
+      : [];
+    const level = activeProg.length > 0 ? activeProg.length : (Math.max(1, Number(ch.level) || 1));
+    const cl = Math.max(1, Number(ch.spellcasting?.cl) || level);
+    const bab = Number(ch.bab) || 0;
+
+    const getMod = (key) => {
+      if (ch.evaluatedAbilities && ch.evaluatedAbilities[key] && typeof ch.evaluatedAbilities[key].mod === 'number') {
+        return ch.evaluatedAbilities[key].mod;
+      }
+      const rawAbi = ch.abilities && ch.abilities[key];
+      if (rawAbi && typeof rawAbi === 'object') {
+        if (typeof rawAbi.mod === 'number') return rawAbi.mod;
+        const tot = Number(rawAbi.total ?? rawAbi.score ?? rawAbi.base ?? 10);
+        const tmp = Number(rawAbi.temp) || 0;
+        return this.getAbilityMod(tot + (rawAbi.total !== undefined ? 0 : tmp));
+      }
+      if (typeof rawAbi === 'number') return this.getAbilityMod(rawAbi);
+      if (ch.stats && typeof ch.stats[key] === 'number') return this.getAbilityMod(ch.stats[key]);
+      return 0;
+    };
+
+    return {
+      level,
+      cl,
+      casterLevel: cl,
+      bab,
+      strMod: getMod('str'),
+      dexMod: getMod('dex'),
+      conMod: getMod('con'),
+      intMod: getMod('int'),
+      wisMod: getMod('wis'),
+      chaMod: getMod('cha')
+    };
+  },
+
+  // Evaluate an ability or entry's Save DC formula against live character stats
+  evaluateAbilitySaveDc(entryOrFormula, character) {
+    const rawFormula = (entryOrFormula && typeof entryOrFormula === 'object')
+      ? (entryOrFormula.dcFormula || entryOrFormula.saveDcFormula || '')
+      : String(entryOrFormula || '');
+    const normFormula = this.normalizeFormulaTokens(rawFormula);
+    if (!normFormula) return null;
+    const ctx = this.buildFormulaContext(character);
+    const dc = Math.floor(Number(this.evaluateFormula(normFormula, ctx)) || 0);
+    if (dc <= 0) return null;
+
+    const breakdownParts = normFormula
+      .replace(/floor\(\s*@level\s*\/\s*2\s*\)/gi, `${Math.floor(ctx.level / 2)} [1/2 Lvl]`)
+      .replace(/@level\b/gi, `${ctx.level} Lvl`)
+      .replace(/@cl\b/gi, `${ctx.cl} CL`)
+      .replace(/@bab\b/gi, `${ctx.bab} BAB`)
+      .replace(/@strMod\b/gi, `${ctx.strMod} STR`)
+      .replace(/@dexMod\b/gi, `${ctx.dexMod} DEX`)
+      .replace(/@conMod\b/gi, `${ctx.conMod} CON`)
+      .replace(/@intMod\b/gi, `${ctx.intMod} INT`)
+      .replace(/@wisMod\b/gi, `${ctx.wisMod} WIS`)
+      .replace(/@chaMod\b/gi, `${ctx.chaMod} CHA`);
+
+    return {
+      dc,
+      formula: normFormula,
+      breakdown: breakdownParts
+    };
+  },
+
   // Canonical V2 Formula Evaluator (evaluates @cl, @level, @bab, @strMod..@chaMod, min, max, floor, ceil)
   evaluateFormula(formula, context = {}) {
     if (formula === null || formula === undefined || formula === '') return 0;
     if (typeof formula === 'number') return formula;
-    const raw = String(formula).trim();
+    const raw = this.normalizeFormulaTokens(String(formula).trim());
     const directNum = Number(raw);
     if (!Number.isNaN(directNum)) return directNum;
 

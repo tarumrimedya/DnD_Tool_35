@@ -452,31 +452,50 @@
     function learnFeatObject(entry) {
       if (!entry || !entry.name) return;
       const clean = entry.name.toLowerCase().trim();
+      const v2Extras = {
+        ...(entry.id ? { id: entry.id } : {}),
+        schemaVersion: 2,
+        ...(entry.action ? { action: entry.action } : {}),
+        ...(entry.actionType ? { actionType: entry.actionType } : {}),
+        ...(entry.range ? { range: entry.range } : {}),
+        ...(entry.save ? { save: entry.save } : {}),
+        ...(entry.dcFormula ? { dcFormula: entry.dcFormula } : {}),
+        ...(entry.recharge ? { recharge: entry.recharge } : {}),
+        ...(entry.rechargeDice ? { rechargeDice: entry.rechargeDice } : {}),
+        modifiers: Array.isArray(entry.modifiers) ? JSON.parse(JSON.stringify(entry.modifiers)) : [],
+        damageParts: Array.isArray(entry.damageParts) ? JSON.parse(JSON.stringify(entry.damageParts)) : [],
+        ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('steadfast determination') ? { conToWillSave: true, noAutoFailFortSaveOnNat1: true } : (clean.includes('agile shield fighter') ? { agileShieldFighter: true } : {})),
+        tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
+      };
+
       if ((entry.category || '').toLowerCase() === 'special ability') {
         if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
-        const exists = character.specialAbilities.some(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === clean);
-        if (!exists) {
-          character.specialAbilities.push({
-            name: entry.name,
-            source: entry.source || 'D&D 3.5e',
-            category: 'Special Ability',
-            benefit: entry.benefit || ''
-          });
+        const existingIdx = character.specialAbilities.findIndex(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === clean);
+        const saPayload = {
+          ...v2Extras,
+          name: entry.name,
+          type: entry.type || 'Special Ability',
+          source: entry.source || 'D&D 3.5e',
+          category: 'Special Ability',
+          benefit: entry.benefit || ''
+        };
+        if (existingIdx === -1) {
+          character.specialAbilities.push(saPayload);
+        } else {
+          character.specialAbilities[existingIdx] = typeof character.specialAbilities[existingIdx] === 'object'
+            ? { ...character.specialAbilities[existingIdx], ...saPayload }
+            : saPayload;
         }
       } else {
         if (!Array.isArray(character.feats)) character.feats = [];
         const exists = character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === clean);
         if (!exists) {
           character.feats.push({
-            ...(entry.id ? { id: entry.id } : {}),
+            ...v2Extras,
             name: entry.name,
             source: entry.source || 'D&D 3.5e',
             category: entry.category || 'General',
-            benefit: entry.benefit || '',
-            modifiers: Array.isArray(entry.modifiers) ? JSON.parse(JSON.stringify(entry.modifiers)) : [],
-            damageParts: Array.isArray(entry.damageParts) ? JSON.parse(JSON.stringify(entry.damageParts)) : [],
-            ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('steadfast determination') ? { conToWillSave: true, noAutoFailFortSaveOnNat1: true } : (clean.includes('agile shield fighter') ? { agileShieldFighter: true } : {})),
-            tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
+            benefit: entry.benefit || ''
           });
           // Toughness immediate +3 HP support
           if (clean === 'toughness' && character.hp) {
@@ -493,20 +512,16 @@
         const inDb = masterDb.some(m => (m.name || '').toLowerCase().trim() === clean);
         if (!inDb) {
           masterDb.push({
-            schemaVersion: 2,
-            ...(entry.id ? { id: entry.id } : {}),
+            ...v2Extras,
             name: entry.name,
             type: (entry.category === 'Special Ability') ? 'Special Ability' : 'Feat',
             slot: 'None',
             prereq: entry.prereq || '-',
             source: entry.source || 'D&D 3.5e',
             benefit: entry.benefit || '',
+            description: entry.description || entry.benefit || '',
             bonusType: 'Untyped',
-            role: 'Offense / Feat',
-            modifiers: Array.isArray(entry.modifiers) ? JSON.parse(JSON.stringify(entry.modifiers)) : [],
-            damageParts: Array.isArray(entry.damageParts) ? JSON.parse(JSON.stringify(entry.damageParts)) : [],
-            ruleFlags: entry.ruleFlags ? JSON.parse(JSON.stringify(entry.ruleFlags)) : (clean.includes('steadfast determination') ? { conToWillSave: true, noAutoFailFortSaveOnNat1: true } : (clean.includes('agile shield fighter') ? { agileShieldFighter: true } : {})),
-            tacticalBadges: Array.isArray(entry.tacticalBadges) ? JSON.parse(JSON.stringify(entry.tacticalBadges)) : []
+            role: (entry.category === 'Special Ability') ? 'Offense / Special Ability' : 'Offense / Feat'
           });
         }
       }
@@ -1442,20 +1457,23 @@
         return { item, pEval };
       });
 
-      // If the user is typing a DM Boon / Skill or Stat Grant (e.g. "dm boon ride +4", "boon, skill: +ride"), synthesize an instant V2 option at the top of the Spotlight list
+      // If the user is typing a Structured Ability Stat Block or DM Boon / Skill / Stat Grant, synthesize an instant V2 option at the top of the Spotlight list
       const liveSynthBoon = query ? synthesizeDmBoonFromQuery(query, '', categoryVal) : null;
-      if (liveSynthBoon && !evaluatedItems.some(e => (e.item.name || '').toLowerCase() === liveSynthBoon.name.toLowerCase())) {
-        evaluatedItems.unshift({
-          item: liveSynthBoon,
-          pEval: {
-            allMet: true,
-            hasPrereqs: false,
-            rawPrereq: '-',
-            checks: [],
-            isAlreadyKnownFromClass: false,
-            isAlreadyTaken: false
-          }
-        });
+      if (liveSynthBoon) {
+        window._lastQuickFeatAiV2Entry = liveSynthBoon;
+        if (!evaluatedItems.some(e => (e.item.name || '').toLowerCase() === liveSynthBoon.name.toLowerCase())) {
+          evaluatedItems.unshift({
+            item: liveSynthBoon,
+            pEval: {
+              allMet: true,
+              hasPrereqs: false,
+              rawPrereq: '-',
+              checks: [],
+              isAlreadyKnownFromClass: false,
+              isAlreadyTaken: false
+            }
+          });
+        }
       }
 
       // Filter counts (excluding already known feats from class from the Qualified count)
@@ -1665,6 +1683,9 @@
       }
       const catalog = getCombinedFeatCatalog();
       let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
+      if (!found && window._lastQuickFeatAiV2Entry && (window._lastQuickFeatAiV2Entry.name || '').toLowerCase().trim() === featName.toLowerCase().trim()) {
+        found = window._lastQuickFeatAiV2Entry;
+      }
       if (!found) {
         const synthMatch = synthesizeDmBoonFromQuery(featName, '', document.getElementById('quick-feat-category')?.value || '');
         if (synthMatch) {
@@ -1999,24 +2020,80 @@
       else if (category === 'Warlock Invocation') prefix = isExtraAddition ? '🔮 [Extra Invocation] ' : '🔮 [Invocation] ';
       else prefix = isExtraAddition ? '🎖️ [Extra] ' : '🎖️ ';
 
+      // Resolve structured V2 stat-block / AI cached / synthesized boon metadata for ANY category (including Special Ability!)
+      const structuredParsed = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.parseStructuredAbilityStatBlock === 'function')
+        ? RuleMaster.parseStructuredAbilityStatBlock(featName, benefit, category)
+        : null;
+      if (structuredParsed && structuredParsed.name) {
+        featName = structuredParsed.name;
+        if (!benefit || benefit.includes('\n') || /\bdc\s*[:=]/i.test(benefit)) {
+          benefit = structuredParsed.benefit || benefit;
+        }
+      }
       const formattedName = `${prefix}${featName}`;
+      const synthesizedBoon = synthesizeDmBoonFromQuery(featName, benefit, category);
+      const aiCached = (window._lastQuickFeatAiV2Entry && (window._lastQuickFeatAiV2Entry.name || '').toLowerCase().trim() === featName.toLowerCase().trim())
+        ? window._lastQuickFeatAiV2Entry
+        : null;
+      const v2SourceObj = structuredParsed || aiCached || catalogMatch || synthesizedBoon || null;
+
+      const resolvedModifiers = (catalogMatch && Array.isArray(catalogMatch.modifiers) && catalogMatch.modifiers.length > 0)
+        ? JSON.parse(JSON.stringify(catalogMatch.modifiers))
+        : (v2SourceObj && Array.isArray(v2SourceObj.modifiers) && v2SourceObj.modifiers.length > 0
+            ? JSON.parse(JSON.stringify(v2SourceObj.modifiers))
+            : []);
+      const resolvedDamageParts = (catalogMatch && Array.isArray(catalogMatch.damageParts) && catalogMatch.damageParts.length > 0)
+        ? JSON.parse(JSON.stringify(catalogMatch.damageParts))
+        : (v2SourceObj && Array.isArray(v2SourceObj.damageParts) && v2SourceObj.damageParts.length > 0
+            ? JSON.parse(JSON.stringify(v2SourceObj.damageParts))
+            : []);
+      const resolvedTacticalBadges = (catalogMatch && Array.isArray(catalogMatch.tacticalBadges) && catalogMatch.tacticalBadges.length > 0)
+        ? JSON.parse(JSON.stringify(catalogMatch.tacticalBadges))
+        : (v2SourceObj && Array.isArray(v2SourceObj.tacticalBadges) && v2SourceObj.tacticalBadges.length > 0
+            ? JSON.parse(JSON.stringify(v2SourceObj.tacticalBadges))
+            : []);
+      const resolvedExtras = {
+        ...(v2SourceObj?.id ? { id: v2SourceObj.id } : {}),
+        schemaVersion: 2,
+        ...(v2SourceObj?.action ? { action: v2SourceObj.action } : {}),
+        ...(v2SourceObj?.actionType ? { actionType: v2SourceObj.actionType } : {}),
+        ...(v2SourceObj?.range ? { range: v2SourceObj.range } : {}),
+        ...(v2SourceObj?.save ? { save: v2SourceObj.save } : {}),
+        ...(v2SourceObj?.dcFormula ? { dcFormula: v2SourceObj.dcFormula } : {}),
+        ...(v2SourceObj?.recharge ? { recharge: v2SourceObj.recharge } : {}),
+        ...(v2SourceObj?.rechargeDice ? { rechargeDice: v2SourceObj.rechargeDice } : {}),
+        ...(v2SourceObj?.ruleFlags ? { ruleFlags: JSON.parse(JSON.stringify(v2SourceObj.ruleFlags)) } : {}),
+        ...(catalogMatch?.slotDiff !== undefined ? { slotDiff: catalogMatch.slotDiff } : {}),
+        modifiers: resolvedModifiers,
+        damageParts: resolvedDamageParts,
+        tacticalBadges: resolvedTacticalBadges
+      };
 
       if (category === 'Special Ability') {
         row.specialAbilities.push(formattedName);
         if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
-        if (!character.specialAbilities.some(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === featName.toLowerCase())) {
-          character.specialAbilities.push({
-            name: featName,
-            category: 'Special Ability',
-            benefit: benefit,
-            source: `Level ${row.level} (${row.className})`
-          });
+        const existingSaIdx = character.specialAbilities.findIndex(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === featName.toLowerCase().trim());
+        const saPayload = {
+          ...resolvedExtras,
+          name: featName,
+          type: v2SourceObj?.type || 'Special Ability',
+          category: 'Special Ability',
+          benefit: benefit || v2SourceObj?.benefit || '',
+          source: `Level ${row.level} (${row.className})`
+        };
+        if (existingSaIdx === -1) {
+          character.specialAbilities.push(saPayload);
+        } else {
+          character.specialAbilities[existingSaIdx] = typeof character.specialAbilities[existingSaIdx] === 'object'
+            ? { ...character.specialAbilities[existingSaIdx], ...saPayload }
+            : saPayload;
         }
       } else if (category === 'Warlock Invocation') {
         row.feats.push(formattedName);
         if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
         if (!character.specialAbilities.some(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === featName.toLowerCase())) {
           character.specialAbilities.push({
+            ...resolvedExtras,
             name: `${featName} (Invocation)`,
             category: 'Warlock Invocation',
             benefit: benefit,
@@ -2026,6 +2103,7 @@
         if (!Array.isArray(character.feats)) character.feats = [];
         if (!character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === featName.toLowerCase())) {
           character.feats.push({
+            ...resolvedExtras,
             name: featName,
             category: 'Warlock Invocation',
             benefit: benefit,
@@ -2043,37 +2121,12 @@
         row.feats.push(formattedName);
         if (!Array.isArray(character.feats)) character.feats = [];
         const existingIdx = character.feats.findIndex(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === featName.toLowerCase().trim());
-        const synthesizedBoon = synthesizeDmBoonFromQuery(featName, benefit, category);
-        const aiCached = (window._lastQuickFeatAiV2Entry && (window._lastQuickFeatAiV2Entry.name || '').toLowerCase().trim() === featName.toLowerCase().trim())
-          ? window._lastQuickFeatAiV2Entry
-          : null;
-        const resolvedModifiers = (catalogMatch && Array.isArray(catalogMatch.modifiers) && catalogMatch.modifiers.length > 0)
-          ? JSON.parse(JSON.stringify(catalogMatch.modifiers))
-          : (aiCached && Array.isArray(aiCached.modifiers) && aiCached.modifiers.length > 0
-              ? JSON.parse(JSON.stringify(aiCached.modifiers))
-              : (synthesizedBoon && Array.isArray(synthesizedBoon.modifiers) ? JSON.parse(JSON.stringify(synthesizedBoon.modifiers)) : []));
-        const resolvedDamageParts = (catalogMatch && Array.isArray(catalogMatch.damageParts) && catalogMatch.damageParts.length > 0)
-          ? JSON.parse(JSON.stringify(catalogMatch.damageParts))
-          : (aiCached && Array.isArray(aiCached.damageParts) ? JSON.parse(JSON.stringify(aiCached.damageParts)) : []);
-        const resolvedTacticalBadges = (catalogMatch && Array.isArray(catalogMatch.tacticalBadges) && catalogMatch.tacticalBadges.length > 0)
-          ? JSON.parse(JSON.stringify(catalogMatch.tacticalBadges))
-          : (aiCached && Array.isArray(aiCached.tacticalBadges) ? JSON.parse(JSON.stringify(aiCached.tacticalBadges)) : []);
         const featEntryPayload = {
-          ...(catalogMatch ? {
-            id: catalogMatch.id,
-            ruleFlags: catalogMatch.ruleFlags ? JSON.parse(JSON.stringify(catalogMatch.ruleFlags)) : undefined,
-            slotDiff: catalogMatch.slotDiff
-          } : (aiCached ? {
-            id: aiCached.id,
-            ruleFlags: aiCached.ruleFlags ? JSON.parse(JSON.stringify(aiCached.ruleFlags)) : undefined
-          } : {})),
-          modifiers: resolvedModifiers,
-          damageParts: resolvedDamageParts,
-          tacticalBadges: resolvedTacticalBadges,
+          ...resolvedExtras,
           name: featName,
           type: category === 'Flaw' ? 'Flaw' : 'Feat',
           category: category,
-          benefit: benefit || (catalogMatch ? catalogMatch.benefit : (synthesizedBoon ? synthesizedBoon.benefit : '')),
+          benefit: benefit || (catalogMatch ? catalogMatch.benefit : (v2SourceObj ? v2SourceObj.benefit : '')),
           source: category === 'Flaw'
             ? (catalogMatch?.source || 'Unearthed Arcana, page 91')
             : (category === 'Flaw Bonus Feat' ? `Level ${row.level} (Flaw Bonus Feat)` : (category === 'DM Boon' ? `Level ${row.level} (DM Boon)` : `Level ${row.level} (${row.className})`))
@@ -2093,18 +2146,19 @@
 
       if (Array.isArray(masterDb)) {
         const clean = featName.toLowerCase().trim();
-        const synthesizedBoonDb = synthesizeDmBoonFromQuery(featName, benefit, category);
-        const aiCachedDb = (window._lastQuickFeatAiV2Entry && (window._lastQuickFeatAiV2Entry.name || '').toLowerCase().trim() === clean)
-          ? window._lastQuickFeatAiV2Entry
-          : null;
-        const dbModifiers = (aiCachedDb && Array.isArray(aiCachedDb.modifiers) && aiCachedDb.modifiers.length > 0)
-          ? aiCachedDb.modifiers
-          : (synthesizedBoonDb && Array.isArray(synthesizedBoonDb.modifiers) ? synthesizedBoonDb.modifiers : []);
         const existingDbIdx = masterDb.findIndex(m => m && (m.name || '').toLowerCase().trim() === clean);
         if (existingDbIdx >= 0) {
-          if (dbModifiers.length > 0 && (!Array.isArray(masterDb[existingDbIdx].modifiers) || masterDb[existingDbIdx].modifiers.length === 0)) {
-            masterDb[existingDbIdx].modifiers = dbModifiers;
+          if (resolvedModifiers.length > 0 && (!Array.isArray(masterDb[existingDbIdx].modifiers) || masterDb[existingDbIdx].modifiers.length === 0)) {
+            masterDb[existingDbIdx].modifiers = resolvedModifiers;
           }
+          if (resolvedDamageParts.length > 0) {
+            masterDb[existingDbIdx].damageParts = resolvedDamageParts;
+          }
+          if (resolvedExtras.save) masterDb[existingDbIdx].save = resolvedExtras.save;
+          if (resolvedExtras.dcFormula) masterDb[existingDbIdx].dcFormula = resolvedExtras.dcFormula;
+          if (resolvedExtras.range) masterDb[existingDbIdx].range = resolvedExtras.range;
+          if (resolvedExtras.recharge) masterDb[existingDbIdx].recharge = resolvedExtras.recharge;
+          if (resolvedExtras.rechargeDice) masterDb[existingDbIdx].rechargeDice = resolvedExtras.rechargeDice;
           if (benefit) {
             masterDb[existingDbIdx].benefit = benefit;
             masterDb[existingDbIdx].description = benefit;
@@ -2113,8 +2167,8 @@
           const inCanonical = getCombinedFeatCatalog(true).some(f => (f.name || '').toLowerCase().trim() === clean);
           if (!inCanonical) {
             masterDb.push({
-              schemaVersion: 2,
-              id: 'feat_' + clean.replace(/[^a-z0-9]+/g, '_'),
+              ...resolvedExtras,
+              id: resolvedExtras.id || ('feat_' + clean.replace(/[^a-z0-9]+/g, '_')),
               name: featName,
               type: (category === 'Special Ability') ? 'Special Ability' : (category === 'Flaw' ? 'Flaw' : 'Feat'),
               category: category,
@@ -2122,10 +2176,8 @@
               slotDiff: category === 'Flaw' ? 1 : 0,
               prereq: (pEvalConfirm && pEvalConfirm.rawPrereq) ? pEvalConfirm.rawPrereq : '-',
               source: category === 'DM Boon' ? `Level ${row.level} (DM Boon)` : `Level ${row.level} (${row.className})`,
-              benefit: benefit || (synthesizedBoonDb ? synthesizedBoonDb.benefit : ''),
-              description: benefit || (synthesizedBoonDb ? synthesizedBoonDb.benefit : ''),
-              modifiers: dbModifiers,
-              damageParts: []
+              benefit: benefit || (v2SourceObj ? v2SourceObj.benefit : ''),
+              description: benefit || (v2SourceObj ? v2SourceObj.benefit : '')
             });
           }
         }
@@ -2157,14 +2209,26 @@
       const b = String(benefitStr || '').trim();
       if (!q && !b) return null;
 
+      // 0. Check if input is a Structured Ability / Breath Weapon / SLA Stat Block first!
+      if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.parseStructuredAbilityStatBlock === 'function') {
+        const structuredAbility = RuleMaster.parseStructuredAbilityStatBlock(q, b, categoryHint);
+        if (structuredAbility && structuredAbility.name) {
+          return structuredAbility;
+        }
+      }
+
+      const combined = `${q} ${b}`;
+      // Guard: Never mis-parse damage dice (4d8), Save DCs (DC:10+lvl+Con), or Recharge timers as a flat numeric stat boon
+      if (/\b\d+d\d+\b/i.test(combined) || /\bdc\s*[:=]/i.test(combined) || /\b(?:recharge|cooldown)\b/i.test(combined)) {
+        return null;
+      }
+
       const isExplicitBoon = categoryHint === 'DM Boon'
         || /\b(dm\s*boon|boon|grant)\b/i.test(q)
         || /\bskill\s*:/i.test(q)
         || /^[+-]\d+\s+[a-z]/i.test(q)
-        || /([+-]?\d+)\s*(?:\/|\bper\b|\bevery\b)\s*(\d+)?\s*(?:lvl|level|cl)s?\b/i.test(`${q} ${b}`);
+        || /([+-]?\d+)\s*(?:\/|\bper\b|\bevery\b)\s*(\d+)?\s*(?:lvl|level|cl)s?\b/i.test(combined);
       if (!isExplicitBoon) return null;
-
-      const combined = `${q} ${b}`;
 
       // Detect level-scaling pattern (e.g. "+2 +1/4lvl", "+2 + 1 per 4 levels", "+1/2 lvl")
       let baseVal = null;
@@ -2409,22 +2473,45 @@
         statusEl.innerHTML = `<span>⏳</span> <span>Searching "${query}"...</span>`;
       }
 
-      // 0. Check if query is a direct DM Boon / Skill or Stat Grant (e.g. "boon, skill: +ride" or "dm boon ride +4")
+      // 0. Check if query is a Structured Ability Stat Block or direct DM Boon / Skill / Stat Grant
       const instantBoon = synthesizeDmBoonFromQuery(query, benefitInput?.value || '', catSel?.value || '');
       if (instantBoon) {
         window._lastQuickFeatAiV2Entry = instantBoon;
         if (nameInput) nameInput.value = instantBoon.name;
         if (benefitInput) benefitInput.value = instantBoon.benefit;
-        if (catSel) catSel.value = 'DM Boon';
+        const isStructuredAbility = Boolean(instantBoon.ruleFlags && instantBoon.ruleFlags.isStructuredAbility);
+        if (catSel) {
+          if (isStructuredAbility) {
+            if (catSel.value !== 'DM Boon' && catSel.value !== 'Racial Trait') {
+              catSel.value = 'Special Ability';
+            }
+          } else {
+            catSel.value = 'DM Boon';
+          }
+        }
+        if (isStructuredAbility && Array.isArray(masterDb)) {
+          const cleanName = (instantBoon.name || '').toLowerCase().trim();
+          const exIdx = masterDb.findIndex(m => m && (m.name || '').toLowerCase().trim() === cleanName);
+          if (exIdx >= 0) masterDb[exIdx] = instantBoon;
+          else masterDb.push(instantBoon);
+        }
         quickFeatSearchQuery = instantBoon.name;
         updateQuickFeatTargetSelector(instantBoon.name);
         updateQuickFeatPrereqBadge();
         renderQuickFeatSearchResults();
         const refreshedStatusEl = document.getElementById('quick-feat-ai-status') || statusEl;
         if (refreshedStatusEl) {
-          const modSummary = (instantBoon.modifiers || []).map(m => m.formula ? `${m.target} = ${m.formula}` : `${m.target} ${m.value >= 0 ? '+' : ''}${m.value}`).join(', ');
-          refreshedStatusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
-          refreshedStatusEl.innerHTML = `<span>🌟</span> Standardized &amp; Synthesized Canonical V2 DM Boon: <b>${instantBoon.name}</b> <span class="font-mono text-amber-300">[${modSummary}]</span>`;
+          if (isStructuredAbility) {
+            const pills = (typeof RuleMaster !== 'undefined' && typeof RuleMaster.getEntrySummaryPills === 'function')
+              ? RuleMaster.getEntrySummaryPills(instantBoon)
+              : [];
+            refreshedStatusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
+            refreshedStatusEl.innerHTML = `<span>✨</span> Parsed Canonical V2 Ability (0ms): <b>${instantBoon.name}</b> <span class="font-mono text-amber-300">[${pills.join(' • ') || instantBoon.benefit}]</span>`;
+          } else {
+            const modSummary = (instantBoon.modifiers || []).map(m => m.formula ? `${m.target} = ${m.formula}` : `${m.target} ${m.value >= 0 ? '+' : ''}${m.value}`).join(', ');
+            refreshedStatusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-emerald-950/80 border border-emerald-600/60 text-emerald-200 block';
+            refreshedStatusEl.innerHTML = `<span>🌟</span> Standardized &amp; Synthesized Canonical V2 DM Boon: <b>${instantBoon.name}</b> <span class="font-mono text-amber-300">[${modSummary}]</span>`;
+          }
         }
         return;
       }
@@ -6383,20 +6470,50 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       renderAll();
     }
 
-    // Level Progression Tooltip Helper (Master DB, Catalogs, Class Features)
+    // Level Progression Tooltip Helper (Character Feats/Abilities, Master DB, Catalogs, Class Features)
     function getFeatTooltipText(featName) {
       if (!featName) return '';
       const clean = String(featName).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
       const lower = clean.toLowerCase();
 
-      // Check masterDb first
+      const formatV2TacticalSuffix = (entry) => {
+        if (!entry || typeof entry !== 'object') return '';
+        const extra = [];
+        if ((entry.save || entry.dcFormula) && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateAbilitySaveDc === 'function') {
+          const dcEval = RuleEngine.evaluateAbilitySaveDc(entry, typeof character !== 'undefined' ? character : null);
+          if (dcEval) {
+            extra.push(`Save: ${entry.save || 'Saving Throw'} — DC ${dcEval.dc} [${dcEval.breakdown}]`);
+          } else if (entry.save) {
+            extra.push(`Save: ${entry.save}`);
+          }
+        }
+        if (entry.range) extra.push(`Range: ${entry.range}`);
+        if (entry.recharge) extra.push(`Recharge: ${entry.recharge}`);
+        return extra.length > 0 ? `\n${extra.join(' | ')}` : '';
+      };
+
+      // Check character.specialAbilities & character.feats first for custom/V2 entries
+      if (typeof character !== 'undefined' && character) {
+        const charEntry = [...(character.specialAbilities || []), ...(character.feats || [])].find(item => {
+          if (!item || typeof item !== 'object' || !item.name) return false;
+          const n = item.name.toLowerCase();
+          return n === lower || n.includes(lower);
+        });
+        if (charEntry && (charEntry.benefit || charEntry.desc || charEntry.dcFormula || charEntry.recharge)) {
+          const cat = charEntry.category || charEntry.type || '';
+          const desc = charEntry.benefit || charEntry.desc || '';
+          return `${charEntry.name}${cat ? ' [' + cat + ']' : ''}${desc ? '\n' + desc : ''}${formatV2TacticalSuffix(charEntry)}`;
+        }
+      }
+
+      // Check masterDb
       if (Array.isArray(masterDb)) {
         const m = masterDb.find(item => item && item.name && (item.name.toLowerCase() === lower || item.name.toLowerCase().includes(lower)));
         if (m) {
           const cat = m.category || m.type || '';
           const prereq = m.prereq && m.prereq !== '-' ? `\nPrerequisite: ${m.prereq}` : '';
           const desc = m.benefit || m.description || '';
-          return `${m.name}${cat ? ' [' + cat + ']' : ''}${prereq}${desc ? '\n' + desc : ''}`;
+          return `${m.name}${cat ? ' [' + cat + ']' : ''}${prereq}${desc ? '\n' + desc : ''}${formatV2TacticalSuffix(m)}`;
         }
       }
 
@@ -7610,7 +7727,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   <div class="flex flex-wrap gap-1.5 min-h-[40px] items-start">
                     ${featsList.length > 0 ? featsList.map(f => {
                       const safeName = f.name.replace(/'/g, "\\'");
-                      const safeTip = (f.benefit || f.source || 'View rule details').replace(/"/g, '&quot;');
+                      const safeTip = (getFeatTooltipText(f.name) || f.benefit || f.source || 'View rule details').replace(/"/g, '&quot;');
                       const catBadge = f.category && f.category !== 'Feat' ? `<span class="text-[9px] opacity-75 font-normal">(${safeEscapeHtml(f.category)})</span>` : '';
                       return `
                         <button type="button" onclick="showFeatDetail('${safeName}', null, 'feat')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-600/60 hover:border-indigo-400 shadow-sm transition active:scale-95 cursor-pointer text-left">
@@ -7641,7 +7758,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   <div class="flex flex-wrap gap-1.5 min-h-[40px] items-start">
                     ${abilitiesList.length > 0 ? abilitiesList.map(a => {
                       const safeName = a.name.replace(/'/g, "\\'");
-                      const safeTip = (a.benefit || a.source || 'View rule details').replace(/"/g, '&quot;');
+                      const safeTip = (getFeatTooltipText(a.name) || a.benefit || a.source || 'View rule details').replace(/"/g, '&quot;');
                       let typeBadge = '';
                       let borderCls = 'border-purple-600/60 hover:border-purple-400 text-purple-200 bg-purple-950/80 hover:bg-purple-900';
                       const tUpper = (a.type || '').toUpperCase();

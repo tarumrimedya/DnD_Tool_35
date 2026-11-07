@@ -198,7 +198,11 @@
             "Deity",
             "Domain",
             "Template",
-            "Class"
+            "Class",
+            "Special Ability",
+            "Racial Trait",
+            "Class Feature",
+            "DM Boon"
           ],
           "description": "Primary rule category of the entity."
         },
@@ -430,7 +434,27 @@
         },
         "range": {
           "type": "string",
-          "description": "Spell, maneuver, or weapon range (Personal, Touch, Close [25 ft. + 5 ft./2 levels], Medium [100 ft. + 10 ft./level], Long [400 ft. + 40 ft./level])."
+          "description": "Spell, maneuver, ability, or weapon range (Personal, Touch, 60 ft., Close [25 ft. + 5 ft./2 levels], Medium [100 ft. + 10 ft./level], Long [400 ft. + 40 ft./level])."
+        },
+        "save": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Saving throw type and effect for spells or special abilities (e.g. 'Reflex half', 'Fortitude negates', 'Will negates', 'None')."
+        },
+        "dcFormula": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Dynamic Save DC formula using RuleEngine tokens (e.g. '10 + @level + @conMod', '10 + floor(@level / 2) + @conMod', '15')."
+        },
+        "recharge": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Cooldown or recharge duration for special abilities such as Breath Weapon (e.g. '1d4+1 rounds', '1d4 rounds', '5 rounds'). Never place recharge dice inside damageParts."
+        },
+        "rechargeDice": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Rollable dice expression for ability recharge/cooldown timer (e.g. '1d4+1', '1d4')."
         },
         "school": {
           "type": "string",

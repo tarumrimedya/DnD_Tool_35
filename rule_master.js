@@ -419,6 +419,31 @@ const RuleMaster = {
       pills.push(`⚔️ ${dp.dice}${bonusStr}${typeStr}`);
     });
 
+    if (v2.save || v2.dcFormula) {
+      const saveLabel = v2.save && v2.save !== 'None' ? v2.save : 'Save';
+      if (v2.dcFormula) {
+        const activeChar = (typeof character !== 'undefined' && character) ? character : (typeof window !== 'undefined' ? window.character : null);
+        const dcEval = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateAbilitySaveDc === 'function')
+          ? RuleEngine.evaluateAbilitySaveDc(v2, activeChar)
+          : null;
+        if (dcEval && dcEval.dc !== null) {
+          pills.push(`🛡️ ${saveLabel} DC ${dcEval.dc} (${v2.dcFormula})`);
+        } else {
+          pills.push(`🛡️ ${saveLabel} DC: ${v2.dcFormula}`);
+        }
+      } else if (v2.save && v2.save !== 'None') {
+        pills.push(`🛡️ Save: ${v2.save}`);
+      }
+    }
+
+    if (v2.range) {
+      pills.push(`📏 ${v2.range}`);
+    }
+
+    if (v2.recharge) {
+      pills.push(`⏳ Recharge: ${v2.recharge}`);
+    }
+
     if (modes.length > 0) {
       pills.push(`⚡ ${modes.length} Mod`);
     }
@@ -448,6 +473,267 @@ const RuleMaster = {
     }
 
     return pills;
+  },
+
+  /**
+   * Deterministic 0ms Parser for Structured Ability / Breath Weapon / SLA Stat Blocks.
+   * Example input (multi-line, pipe-separated, or single-line):
+   *   Breath Weapon
+   *   4d8 Acid
+   *   Save Reflex, DC:10+lvl+Con
+   *   60ft, Recharge 1d4+1 turn
+   */
+  parseStructuredAbilityStatBlock(rawText, benefitText = '', categoryHint = '') {
+    const rawMain = String(rawText || '').trim();
+    const rawBen = String(benefitText || '').trim();
+    const combinedRaw = rawBen ? `${rawMain}\n${rawBen}` : rawMain;
+    if (!combinedRaw || combinedRaw.length < 6) return null;
+
+    let working = combinedRaw;
+    const markerIndices = [];
+    const recordMarkerIndex = (matchObj, sourceStr) => {
+      if (matchObj && typeof matchObj.index === 'number' && sourceStr === combinedRaw) {
+        markerIndices.push(matchObj.index);
+      }
+    };
+
+    // 1. EXTRACT RECHARGE / COOLDOWN FIRST (so "1d4+1" is never mistaken for damage dice!)
+    let recharge = '';
+    let rechargeDice = '';
+    const rechargeRx = /\b(?:recharge|cooldown|usable\s+every|once\s+every|wait)\s*[:=]?\s*(\d+d\d+(?:\s*[+-]\s*\d+)?|\d+)\s*(turn|turns|round|rounds|min|minute|minutes|hour|hours|day|days)?\b/i;
+    const rechargeAltRx = /\b(\d+d\d+(?:\s*[+-]\s*\d+)?)\s*(turn|turns|round|rounds)\s*(?:recharge|cooldown)\b/i;
+    const recMatch = combinedRaw.match(rechargeRx) || combinedRaw.match(rechargeAltRx);
+    if (recMatch) {
+      recordMarkerIndex(recMatch, combinedRaw);
+      const expr = String(recMatch[1] || '').replace(/\s+/g, '');
+      const rawUnit = String(recMatch[2] || 'rounds').toLowerCase();
+      let normUnit = 'rounds';
+      if (rawUnit.startsWith('min')) normUnit = 'minutes';
+      else if (rawUnit.startsWith('hour')) normUnit = 'hours';
+      else if (rawUnit.startsWith('day')) normUnit = 'days';
+      else normUnit = 'rounds';
+      recharge = `${expr} ${normUnit}`;
+      if (/\d+d\d+/i.test(expr)) {
+        rechargeDice = expr;
+      }
+      working = working.replace(recMatch[0], ' ');
+    }
+
+    // 2. EXTRACT SAVE TYPE & DC FORMULA
+    let saveType = '';
+    let dcFormula = '';
+    const saveExplicitRx = /\bsave\s*[:=]?\s*(fortitude|fort|reflex|ref|will)(?:\s*(half|negates|partial|none))?\b/i;
+    const saveReverseRx = /\b(fortitude|fort|reflex|ref|will)\s+save(?:\s*(half|negates|partial))?\b/i;
+    const saveMatch = working.match(saveExplicitRx) || working.match(saveReverseRx);
+    if (saveMatch) {
+      const idxInCombined = combinedRaw.indexOf(saveMatch[0]);
+      if (idxInCombined >= 0) markerIndices.push(idxInCombined);
+      const rawSave = saveMatch[1].toLowerCase();
+      if (rawSave.startsWith('fort')) saveType = 'Fortitude';
+      else if (rawSave.startsWith('ref')) saveType = 'Reflex';
+      else if (rawSave === 'will') saveType = 'Will';
+      working = working.replace(saveMatch[0], ' ');
+    }
+
+    const dcRx = /\bdc\s*[:=]?\s*([0-9a-zA-Z_@+\-*/().\s]+?)(?=\s*(?:[,;|•\r\n]|\b\d+\s*(?:-?\s*)?(?:ft\.?|feet|foot)\b|\b(?:range|area|recharge|cooldown|action|duration|save|reflex|fortitude|will|acid|fire|cold|electricity|electric|sonic|force|slashing|piercing|bludgeoning)\b|$))/i;
+    const dcMatch = working.match(dcRx);
+    if (dcMatch) {
+      const idxInCombined = combinedRaw.indexOf(dcMatch[0]);
+      if (idxInCombined >= 0) markerIndices.push(idxInCombined);
+      const rawDcExpr = String(dcMatch[1] || '').trim();
+      if (rawDcExpr) {
+        dcFormula = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.normalizeFormulaTokens === 'function')
+          ? RuleEngine.normalizeFormulaTokens(rawDcExpr)
+          : rawDcExpr
+              .replace(/\b(?:1\/2|half)\s*(?:lvl|level|hd)\b/gi, 'floor(@level / 2)')
+              .replace(/\b(?:lvl|level|hd)\b/gi, '@level')
+              .replace(/\bstr(?:ength)?(?:\s*mod)?\b/gi, '@strMod')
+              .replace(/\bdex(?:terity)?(?:\s*mod)?\b/gi, '@dexMod')
+              .replace(/\bcon(?:stitution)?(?:\s*mod)?\b/gi, '@conMod')
+              .replace(/\bint(?:elligence)?(?:\s*mod)?\b/gi, '@intMod')
+              .replace(/\bwis(?:dom)?(?:\s*mod)?\b/gi, '@wisMod')
+              .replace(/\bcha(?:risma)?(?:\s*mod)?\b/gi, '@chaMod')
+              .replace(/\s*([+\-*/])\s*/g, ' $1 ')
+              .replace(/\s+/g, ' ')
+              .trim();
+      }
+      working = working.replace(dcMatch[0], ' ');
+    }
+
+    // Fallback save detection if DC is present and a save name is standalone
+    if (!saveType && dcFormula) {
+      const standaloneSave = working.match(/\b(fortitude|reflex|will)\b/i);
+      if (standaloneSave) {
+        const sLow = standaloneSave[1].toLowerCase();
+        saveType = sLow === 'fortitude' ? 'Fortitude' : (sLow === 'reflex' ? 'Reflex' : 'Will');
+        working = working.replace(standaloneSave[0], ' ');
+      }
+    }
+
+    // 3. EXTRACT RANGE / AREA
+    let range = '';
+    const rangeRx = /\b(\d+)\s*(?:-?\s*)?(?:ft\.?|feet|foot)(?:\s*(cone|line|burst|emanation|spread|radius))?\b/i;
+    const rangeMatch = working.match(rangeRx);
+    if (rangeMatch) {
+      const idxInCombined = combinedRaw.indexOf(rangeMatch[0]);
+      if (idxInCombined >= 0) markerIndices.push(idxInCombined);
+      const dist = rangeMatch[1];
+      const shape = rangeMatch[2] ? ` ${rangeMatch[2].toLowerCase()}` : '';
+      range = `${dist} ft.${shape}`;
+      working = working.replace(rangeMatch[0], ' ');
+    }
+
+    // 4. EXTRACT DAMAGE DICE & ENERGY/DAMAGE TYPE (from recharge-stripped working text!)
+    const damageParts = [];
+    const dmgTypeCanonicalMap = {
+      acid: 'Acid', fire: 'Fire', cold: 'Cold',
+      electricity: 'Electricity', electric: 'Electricity', lightning: 'Electricity',
+      sonic: 'Sonic', force: 'Force',
+      'positive energy': 'Positive Energy', positive: 'Positive Energy',
+      'negative energy': 'Negative Energy', negative: 'Negative Energy',
+      divine: 'Divine', holy: 'Holy', unholy: 'Unholy',
+      slashing: 'Slashing', piercing: 'Piercing', bludgeoning: 'Bludgeoning',
+      nonlethal: 'Nonlethal', untyped: 'Untyped'
+    };
+    const dmgRx = /\b(\d+d\d+)(?:\s*([+-]\s*\d+))?\s*(acid|fire|cold|electricity|electric|lightning|sonic|force|positive(?:\s+energy)?|negative(?:\s+energy)?|divine|holy|unholy|untyped|slashing|piercing|bludgeoning|nonlethal)?(?:\s*(?:damage|dmg))?\b/gi;
+    let dmgMatch;
+    while ((dmgMatch = dmgRx.exec(working)) !== null) {
+      const fullMatched = dmgMatch[0];
+      const idxInCombined = combinedRaw.indexOf(fullMatched);
+      if (idxInCombined >= 0) markerIndices.push(idxInCombined);
+      const diceCore = dmgMatch[1].toLowerCase();
+      const bonusNum = dmgMatch[2] ? parseInt(dmgMatch[2].replace(/\s+/g, ''), 10) || 0 : 0;
+      const rawTypeKey = (dmgMatch[3] || 'untyped').toLowerCase().replace(/\s+/g, ' ').trim();
+      const normDmgType = dmgTypeCanonicalMap[rawTypeKey] || 'Untyped';
+      damageParts.push({
+        dice: diceCore,
+        bonus: bonusNum,
+        type: normDmgType,
+        multiplyOnCrit: false,
+        onCritOnly: false,
+        source: 'Ability'
+      });
+    }
+
+    // Verify we have enough structured ability markers to qualify (at least 2 markers, or Save/DC + Dice/Recharge)
+    const hasDamage = damageParts.length > 0;
+    const hasSaveOrDc = Boolean(saveType || dcFormula);
+    const hasRange = Boolean(range);
+    const hasRecharge = Boolean(recharge);
+    const markerCount = (hasDamage ? 1 : 0) + (hasSaveOrDc ? 1 : 0) + (hasRange ? 1 : 0) + (hasRecharge ? 1 : 0);
+
+    if (markerCount < 2) {
+      return null;
+    }
+
+    // 5. EXTRACT CLEAN ABILITY NAME
+    let rawTitle = '';
+    const segments = rawMain.split(/(?:\r?\n|\|)+/).map(s => s.trim()).filter(Boolean);
+    if (segments.length > 1) {
+      const firstSeg = segments[0];
+      if (!/^\d+d\d+/i.test(firstSeg) && !/^(?:save|dc|recharge|cooldown)\b/i.test(firstSeg)) {
+        rawTitle = firstSeg;
+      }
+    }
+    if (!rawTitle && markerIndices.length > 0) {
+      const earliestIdx = Math.min(...markerIndices);
+      if (earliestIdx > 0) {
+        rawTitle = combinedRaw.slice(0, earliestIdx).replace(/[\r\n|,;:\-•]+$/g, '').trim();
+      }
+    }
+    if (!rawTitle) {
+      rawTitle = working.replace(/[,;|•\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+    rawTitle = rawTitle
+      .replace(/^(?:special\s*ability|racial\s*trait|class\s*feature|feat|dm\s*boon|boon)\s*:\s*/i, '')
+      .replace(/[\r\n|,;:\-•]+$/g, '')
+      .trim();
+    if (!rawTitle || /^\d+$/.test(rawTitle)) {
+      rawTitle = 'Special Ability';
+    }
+
+    const effectiveCat = (categoryHint && ['Special Ability', 'Racial Trait', 'DM Boon', 'Class Feature', 'Feat'].includes(categoryHint))
+      ? categoryHint
+      : 'Special Ability';
+    const cleanName = this.standardizeName(rawTitle, effectiveCat === 'DM Boon' ? '' : effectiveCat);
+
+    damageParts.forEach(dp => {
+      dp.source = cleanName;
+    });
+
+    // Build concise D&D 3.5e RAW English benefit summary
+    const summarySegments = [];
+    if (damageParts.length > 0) {
+      const dmgDesc = damageParts.map(dp => {
+        const bStr = dp.bonus ? (dp.bonus > 0 ? `+${dp.bonus}` : `${dp.bonus}`) : '';
+        const tStr = dp.type && dp.type !== 'Untyped' ? ` ${dp.type}` : '';
+        return `${dp.dice}${bStr}${tStr}`;
+      }).join(' + ');
+      summarySegments.push(`Deals ${dmgDesc} damage`);
+    }
+    const metaParts = [];
+    if (range) metaParts.push(`Range: ${range}`);
+    if (saveType || dcFormula) {
+      const sPart = saveType ? `${saveType}` : 'Save';
+      const dcPart = dcFormula ? `DC: ${dcFormula}` : '';
+      metaParts.push(`Save: ${[sPart, dcPart].filter(Boolean).join(', ')}`);
+    }
+    if (recharge) metaParts.push(`Recharge: ${recharge}`);
+
+    let benefitSummary = '';
+    if (summarySegments.length > 0 && metaParts.length > 0) {
+      benefitSummary = `${summarySegments.join(', ')} (${metaParts.join(' | ')}).`;
+    } else if (summarySegments.length > 0) {
+      benefitSummary = `${summarySegments.join(', ')}.`;
+    } else {
+      benefitSummary = `${metaParts.join(' | ')}.`;
+    }
+
+    const tacticalBadges = [];
+    if (saveType || dcFormula) {
+      tacticalBadges.push({
+        label: `Save: ${saveType || 'Save'}${dcFormula ? ` (DC ${dcFormula})` : ''}`,
+        Category: 'save'
+      });
+    }
+    if (recharge) {
+      tacticalBadges.push({
+        label: `Recharge: ${recharge}`,
+        Category: 'recharge'
+      });
+    }
+
+    const slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'special_ability';
+    return this.ensureV2({
+      schemaVersion: 2,
+      id: `ability_${slug}`,
+      name: cleanName,
+      type: effectiveCat === 'DM Boon' ? 'DM Boon' : (effectiveCat === 'Racial Trait' ? 'Racial Trait' : 'Special Ability'),
+      category: effectiveCat,
+      slot: 'None',
+      prereq: '-',
+      source: effectiveCat === 'DM Boon' ? 'DM Boon / Campaign Grant' : 'D&D 3.5e Special Ability',
+      benefit: benefitSummary,
+      description: benefitSummary,
+      action: 'Standard Action',
+      actionType: 'standard',
+      duration: 'Instantaneous',
+      range: range || undefined,
+      save: saveType || undefined,
+      dcFormula: dcFormula || undefined,
+      recharge: recharge || undefined,
+      rechargeDice: rechargeDice || undefined,
+      weight: 0,
+      cost: 0,
+      role: 'Offense / Special Ability',
+      modifiers: [],
+      damageParts: damageParts,
+      modes: [],
+      ruleFlags: {
+        isStructuredAbility: true
+      },
+      tacticalBadges: tacticalBadges
+    });
   },
 
   // Helper: Bridge Canonical V2 Entry -> Modal Form Value Map (for openModalWithData)
@@ -3150,6 +3436,12 @@ FEAT / ABILITY / DM BOON CANONICAL V2 RULES:
      * Ability / Save / Combat: {"target": "ability.str"|"save.fort"|"save.ref"|"save.will"|"save.all"|"attack.melee"|"attack.all"|"damage.all"|"ac.natural"|"ac.deflection"|"ac.dodge"|"initiative"|"speed.land", "value": 2, "type": "Untyped"|..., "condition": null}
    - "damageParts": put extra damage dice here if applicable: [{"dice": "...", "bonus": 0, "type": "Untyped", "multiplyOnCrit": false, "onCritOnly": false, "source": "..."}].
 
+    - "save": saving throw type if applicable ("Fortitude" | "Reflex" | "Will" | "None")
+    - "dcFormula": dynamic Save DC formula using Canonical V2 tokens ("10 + @level + @conMod", "10 + floor(@level / 2) + @chaMod", etc.)
+    - "range": range or area if applicable (e.g. "60 ft.")
+    - "recharge": cooldown/recharge text if applicable (e.g. "1d4+1 rounds") — NEVER put Recharge/Cooldown dice into "damageParts"!
+    - "rechargeDice": rollable cooldown dice expression if applicable (e.g. "1d4+1")
+
 OUTPUT JSON SCHEMA:
 Return valid JSON only matching:
 {
@@ -3163,6 +3455,11 @@ Return valid JSON only matching:
       "benefit": "Concise mechanical summary in English",
       "normal": "What a character without this feat can do, or '-'",
       "special": "Special rules or '-'",
+      "range": "60 ft.",
+      "save": "Reflex",
+      "dcFormula": "10 + @level + @conMod",
+      "recharge": "1d4+1 rounds",
+      "rechargeDice": "1d4+1",
       "modifiers": [],
       "damageParts": [],
       "source": "Official 3.5e book and page or 'DM Boon / Campaign Grant'",
@@ -3486,7 +3783,13 @@ Return valid JSON only matching:
       return v2;
     };
 
-    // 0. Check if query is a DM Boon / Skill or Stat Grant (e.g. "dm boon ride +4", "boon, skill: +ride")
+    // 0a. Check if query is a Structured Ability / Breath Weapon / SLA Stat Block (e.g. "Breath Weapon | 4d8 Acid | Save Reflex, DC:10+lvl+Con | 60ft, Recharge 1d4+1 turn")
+    const structuredStatBlock = this.parseStructuredAbilityStatBlock(rawQuery);
+    if (structuredStatBlock && structuredStatBlock.name) {
+      return [this.ensureV2(structuredStatBlock)];
+    }
+
+    // 0b. Check if query is a DM Boon / Skill or Stat Grant (e.g. "dm boon ride +4", "boon, skill: +ride")
     if (typeof window !== 'undefined' && typeof window.synthesizeDmBoonFromQuery === 'function') {
       const synthBoon = window.synthesizeDmBoonFromQuery(cleanKey, '', '');
       if (synthBoon && synthBoon.name) {
@@ -3920,6 +4223,19 @@ Return valid JSON only matching:
       return;
     }
 
+    // Check if the entire input is a single multi-line Structured Ability Stat Block (e.g. Breath Weapon / 4d8 Acid / Save Reflex, DC:10+lvl+Con / 60ft, Recharge 1d4+1 turn)
+    const singleStatBlock = this.parseStructuredAbilityStatBlock(input.value);
+    if (singleStatBlock && singleStatBlock.name) {
+      const v2 = this.ensureV2(singleStatBlock);
+      const existsIdx = masterDb.findIndex(m => (m.id && m.id === v2.id) || (m.name || '').toLowerCase() === (v2.name || '').toLowerCase());
+      if (existsIdx >= 0) masterDb[existsIdx] = v2;
+      else masterDb.push(v2);
+      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      this.renderTable();
+      alert(`🎉 Structured Ability Parsed & Imported (0ms)!\n"${v2.name}" (${v2.benefit}) has been added to Master_DB in Canonical V2 format.`);
+      return;
+    }
+
     const rawQueries = input.value.split(/[\n,;]+/).map(s => s.trim()).filter(Boolean);
     if (!rawQueries.length) return;
 
@@ -3937,7 +4253,7 @@ Return valid JSON only matching:
       const itemQuery = items[i];
       if (statusText) statusText.textContent = `[${i + 1}/${items.length}] Scanning "${itemQuery}"...`;
       try {
-        const entries = await this.fetchSingleAiRuleEntries(itemQuery, 'ALL', apiKey, statusText);
+        const entries = await this.fetchSingleAiRuleEntries(itemQuery, 'Feat', apiKey, statusText);
         if (entries && entries.length) {
           entries.forEach(entry => {
             const v2 = this.ensureV2(entry);
@@ -5134,6 +5450,13 @@ Return valid JSON only matching:
     const raw = document.getElementById('raw-rule-input')?.value || '';
     if (!raw.trim()) {
       alert('⚠️ Please paste rule text to parse.');
+      return;
+    }
+
+    // 0. Check if raw text is a Structured Ability / Breath Weapon Stat Block (0ms deterministic V2 parse)
+    const structuredAbility = this.parseStructuredAbilityStatBlock(raw);
+    if (structuredAbility && structuredAbility.name) {
+      this.openModalWithData(structuredAbility, -1);
       return;
     }
 
@@ -6383,6 +6706,12 @@ Return valid JSON only matching:
   },
 
   async queryAiFreeTextRows(rawText, apiKey, statusTextEl = null) {
+    // 0ms Deterministic V2 Resolution for Structured Ability / Breath Weapon Stat Blocks
+    const structuredHit = this.parseStructuredAbilityStatBlock(rawText);
+    if (structuredHit && structuredHit.name) {
+      return [this.ensureV2(structuredHit)];
+    }
+
     const promptText = `You are a master D&D 3.5e Rule Arbiter and Canonical V2 Database Architect.
 The user has provided a raw, free-form text block copied from a D&D 3.5e sourcebook, PDF, SRD, or adventure:
 
@@ -6399,9 +6728,11 @@ CRITICAL RULES:
 1. STRICT REAL RAW 3.5E RULES ONLY (100% official English terminology, zero U+1F3B2 dice emoji).
 2. EMBEDDED MODES (NO SEPARATE '↳' CHILD ROWS):
    If the item or spell has multiple distinct powers or sub-modes (e.g. Flametongue 1/day 4d6 fire ray, or Searing Light vs Undead), embed them inside the parent entry's "modes" array.
-3. UNIVERSAL MODIFIERS & DAMAGE PARTS:
+3. UNIVERSAL MODIFIERS, DAMAGE PARTS & PARAMETERIZED ABILITIES:
    - Stat/roll bonuses go into "modifiers": [{"target": "ac.dodge"|"attack.all"|"ability.str"|"save.ref"|"speed.land", "value": 1, "type": "Dodge"|"Enhancement"|"Untyped", "condition": null}].
-   - Dice expressions go into "damageParts": [{"dice": "1d8", "bonus": 1, "type": "Slashing", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base Weapon"}, {"dice": "1d6", "bonus": 0, "type": "Fire", "multiplyOnCrit": false, "onCritOnly": false, "source": "Flaming"}].
+   - Attack/Breath/Ability damage dice go into "damageParts": [{"dice": "4d8", "bonus": 0, "type": "Acid", "multiplyOnCrit": false, "onCritOnly": false, "source": "Breath Weapon"}].
+   - NEVER put Recharge/Cooldown dice (such as "Recharge 1d4+1 turn") into "damageParts"! Instead, set "recharge": "1d4+1 rounds" and "rechargeDice": "1d4+1".
+   - If the ability has a Saving Throw or DC formula (e.g. "Save Reflex, DC:10+lvl+Con"), set "save": "Reflex" and normalize "dcFormula" using Canonical V2 tokens ("10 + @level + @conMod").
    - Weapons MUST include "weaponMeta" (with "proficiency": "Simple"|"Martial"|"Exotic", "handedness", "damageDice", "critMin", "critMult", "damageType", "isDoubleWeapon", "isFinessable") and Armors/Shields MUST include "armorMeta" ("category", "armorBonus", "maxDex", "acp", "asf").
 
 OUTPUT REQUIREMENT:
@@ -6412,7 +6743,7 @@ Return valid JSON only matching:
       "schemaVersion": 2,
       "id": "unique_slug_id",
       "name": "Entry Name",
-      "type": "Feat|Weapon|Armor|Shield|Ring|Wondrous Item|Augment Crystal|Spell|Power|Potion|Scroll|Wand|Consumable|Maneuver|Stance|Template|Race|Deity|Domain",
+      "type": "Feat|Special Ability|Racial Trait|Class Feature|DM Boon|Weapon|Armor|Shield|Ring|Wondrous Item|Augment Crystal|Spell|Power|Potion|Scroll|Wand|Consumable|Maneuver|Stance|Template|Race|Deity|Domain",
       "slot": "None|Main Hand|Two Hands|Armor|Off-Hand/Shield|Ring|Belt|Waist|Shoulders|Neck|Throat|Head|Face|Body|Torso|Feet|Hands|Arms",
       "source": "PHB p.92 / DMG p.224",
       "prereq": "-",
@@ -6421,6 +6752,11 @@ Return valid JSON only matching:
       "action": "Passive|Standard Action|Move Action|Swift Action|Immediate Action|Full-Round Action|Free Action",
       "actionType": "passive|standard|move|swift|immediate|full_round|free",
       "duration": "Continuous|Instantaneous|1 round/level",
+      "range": "60 ft.",
+      "save": "Reflex",
+      "dcFormula": "10 + @level + @conMod",
+      "recharge": "1d4+1 rounds",
+      "rechargeDice": "1d4+1",
       "weight": 0,
       "cost": 0,
       "isFighterBonusFeat": false,
@@ -7191,6 +7527,26 @@ if (typeof document !== 'undefined') {
     if (menu && !menu.classList.contains('hidden')) {
       if (btn && !btn.contains(e.target) && !menu.contains(e.target)) {
         menu.classList.add('hidden');
+      }
+    }
+  });
+
+  // Preserve multi-line structure when pasting multi-line ability stat blocks into single-line Rule Master search inputs
+  document.addEventListener('paste', (e) => {
+    const target = e.target;
+    if (!target || target.tagName !== 'INPUT') return;
+    const validIds = new Set(['quick-feat-name', 'ai-rule-query', 'inline-ai-rule-query']);
+    if (!validIds.has(target.id)) return;
+    const clipText = (e.clipboardData || window.clipboardData)?.getData('text');
+    if (clipText && /[\r\n]/.test(clipText)) {
+      const lines = clipText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+      if (lines.length > 1) {
+        e.preventDefault();
+        const joined = lines.join(' | ');
+        const start = typeof target.selectionStart === 'number' ? target.selectionStart : target.value.length;
+        const end = typeof target.selectionEnd === 'number' ? target.selectionEnd : target.value.length;
+        target.value = target.value.slice(0, start) + joined + target.value.slice(end);
+        target.dispatchEvent(new Event('input', { bubbles: true }));
       }
     }
   });

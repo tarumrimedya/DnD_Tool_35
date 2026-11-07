@@ -9344,6 +9344,76 @@
       });
     }
 
+    function rollAbilityTacticalDice(formula, label, mode = 'damage') {
+      const cleanFormula = String(formula || '').trim();
+      if (!cleanFormula) return;
+      if (typeof parseAndRollDiceFormula !== 'function') {
+        if (typeof executeStandardCustomFormula === 'function') executeStandardCustomFormula(cleanFormula);
+        return;
+      }
+      const parsed = parseAndRollDiceFormula(cleanFormula);
+      if (!parsed) return;
+
+      const breakdownParts = parsed.diceGroups.map(g => `${g.notation}: [${g.rolls.join(', ')}]`);
+      if (parsed.modifiers.length > 0) {
+        const modSum = parsed.modifiers.reduce((a, b) => a + b, 0);
+        if (modSum !== 0) breakdownParts.push(`${modSum >= 0 ? '+' : ''}${modSum}`);
+      }
+      const breakdownStr = breakdownParts.join(' • ');
+      const rollTitle = label || `Ability Roll (${cleanFormula})`;
+      const isRecharge = mode === 'recharge';
+      const totalLabel = isRecharge ? `${parsed.grandTotal} ${parsed.grandTotal === 1 ? 'round' : 'rounds'}` : parsed.grandTotal;
+
+      const dice3dList = [];
+      parsed.diceGroups.forEach(g => {
+        if ([4, 6, 8, 10, 12, 20, 100].includes(g.sides)) {
+          g.rolls.forEach(r => {
+            if (dice3dList.length < 6) dice3dList.push({ type: 'd' + g.sides, value: r });
+          });
+        }
+      });
+
+      const onDone = () => {
+        if (typeof addDiceHistoryEntry === 'function') {
+          addDiceHistoryEntry({
+            title: rollTitle,
+            formula: cleanFormula,
+            breakdown: isRecharge ? `${breakdownStr} • Ready in ${totalLabel}` : breakdownStr,
+            total: parsed.grandTotal,
+            isCrit: false,
+            critDamage: null,
+            critInfo: isRecharge ? `• ⏳ Cooldown: ${totalLabel}` : ''
+          });
+        } else if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: isRecharge ? '⏳' : (typeof getFormulaDiceIconSvg === 'function' ? (getFormulaDiceIconSvg(cleanFormula, 'w-6 h-6 text-amber-400') || '⚔️') : '⚔️'),
+            title: rollTitle,
+            breakdown: isRecharge ? `${breakdownStr} • Ready in ${totalLabel}` : breakdownStr,
+            total: totalLabel
+          });
+        }
+      };
+
+      if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: isRecharge ? '⏳' : (typeof getFormulaDiceIconSvg === 'function' ? (getFormulaDiceIconSvg(cleanFormula, 'w-6 h-6 text-amber-400') || '⚔️') : '⚔️'),
+            title: rollTitle,
+            breakdown: `Rolling ${cleanFormula}...`,
+            total: '...'
+          }, { toastId: 'dice-roll-active-toast', autoDismiss: false });
+        }
+        try {
+          Dice3D.roll(dice3dList, onDone);
+        } catch (e) {
+          onDone();
+        }
+      } else {
+        onDone();
+      }
+    }
+    window.rollAbilityTacticalDice = rollAbilityTacticalDice;
+
     function showFeatDetail(featName, levelIndex = null, sourceCategory = 'feat') {
       const modal = document.getElementById('feat-detail-modal');
       if (!modal) return;
@@ -9436,7 +9506,99 @@
       document.getElementById('feat-modal-title').textContent = title;
       document.getElementById('feat-modal-source').textContent = '📚 ' + source;
       document.getElementById('feat-modal-category').textContent = category;
-      document.getElementById('feat-modal-benefit').textContent = benefit;
+      const benefitEl = document.getElementById('feat-modal-benefit');
+      if (benefitEl) benefitEl.textContent = benefit;
+
+      // Merge V2 tactical ability fields (damageParts, save, dcFormula, range, recharge, rechargeDice)
+      let mergedV2 = Object.assign(
+        {},
+        (typeof fFromComp === 'object' && fFromComp) ? fFromComp : {},
+        (typeof fFromBundled === 'object' && fFromBundled) ? fFromBundled : {},
+        (typeof fFromDb === 'object' && fFromDb) ? fFromDb : {},
+        (typeof fFromChar === 'object' && fFromChar) ? fFromChar : {},
+        (typeof aFromChar === 'object' && aFromChar) ? aFromChar : {}
+      );
+      if (!mergedV2.dcFormula && !mergedV2.recharge && (!Array.isArray(mergedV2.damageParts) || mergedV2.damageParts.length === 0)) {
+        if (typeof window !== 'undefined' && window.RuleMaster && typeof window.RuleMaster.parseStructuredAbilityStatBlock === 'function') {
+          const parsedOnFly = window.RuleMaster.parseStructuredAbilityStatBlock(title, benefit, category);
+          if (parsedOnFly) {
+            mergedV2 = Object.assign({}, parsedOnFly, mergedV2);
+          }
+        }
+      }
+
+      let tacticalEl = document.getElementById('feat-modal-tactical-actions');
+      if (!tacticalEl && benefitEl && benefitEl.parentNode) {
+        tacticalEl = document.createElement('div');
+        tacticalEl.id = 'feat-modal-tactical-actions';
+        tacticalEl.className = 'mt-3 pt-2.5 border-t border-slate-800/80 space-y-2 hidden';
+        benefitEl.parentNode.insertBefore(tacticalEl, benefitEl.nextSibling);
+      }
+
+      if (tacticalEl) {
+        const hasDmg = Array.isArray(mergedV2.damageParts) && mergedV2.damageParts.length > 0;
+        const hasSave = Boolean(mergedV2.save || mergedV2.dcFormula);
+        const hasRange = Boolean(mergedV2.range);
+        const hasRecharge = Boolean(mergedV2.recharge || mergedV2.rechargeDice);
+
+        if (hasDmg || hasSave || hasRange || hasRecharge) {
+          const badgesHtml = [];
+          if (hasSave) {
+            const dcEval = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateAbilitySaveDc === 'function')
+              ? RuleEngine.evaluateAbilitySaveDc(Object.assign({}, mergedV2, { benefit }), typeof character !== 'undefined' ? character : null)
+              : null;
+            const saveLabel = mergedV2.save || 'Saving Throw';
+            if (dcEval) {
+              badgesHtml.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-950/80 text-amber-200 border border-amber-700/60">🛡️ Save: ${safeEscapeHtml(saveLabel)} — <strong class="text-amber-300 font-mono">DC ${dcEval.dc}</strong> <span class="text-[10px] text-amber-400/80 font-mono">[${safeEscapeHtml(dcEval.breakdown)}]</span></span>`);
+            } else {
+              badgesHtml.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-950/80 text-amber-200 border border-amber-700/60">🛡️ Save: ${safeEscapeHtml(saveLabel)}</span>`);
+            }
+          }
+          if (hasRange) {
+            badgesHtml.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-sky-950/80 text-sky-200 border border-sky-700/60">📏 Range: ${safeEscapeHtml(mergedV2.range)}</span>`);
+          }
+          if (hasRecharge) {
+            badgesHtml.push(`<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-purple-950/80 text-purple-200 border border-purple-700/60">⏳ Recharge: ${safeEscapeHtml(mergedV2.recharge || (mergedV2.rechargeDice + ' rounds'))}</span>`);
+          }
+
+          const buttonsHtml = [];
+          if (hasDmg) {
+            mergedV2.damageParts.forEach(dp => {
+              if (!dp || !dp.dice) return;
+              const bonusNum = Number(dp.bonus || 0);
+              const formula = `${dp.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
+              const dmgType = dp.type || 'Damage';
+              const safeFormula = formula.replace(/'/g, "\\'");
+              const safeLabel = `${title} (${dmgType} Damage)`.replace(/'/g, "\\'");
+              buttonsHtml.push(`
+                <button type="button" onclick="rollAbilityTacticalDice('${safeFormula}', '${safeLabel}', 'damage')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-950/90 hover:bg-rose-800 text-rose-100 border border-rose-600/70 shadow transition active:scale-95 cursor-pointer">
+                  <span>⚔️</span>
+                  <span>Roll ${safeEscapeHtml(formula)} ${safeEscapeHtml(dmgType)}</span>
+                </button>
+              `);
+            });
+          }
+          if (mergedV2.rechargeDice) {
+            const safeRFormula = String(mergedV2.rechargeDice).replace(/'/g, "\\'");
+            const safeRLabel = `${title} — Recharge Cooldown`.replace(/'/g, "\\'");
+            buttonsHtml.push(`
+              <button type="button" onclick="rollAbilityTacticalDice('${safeRFormula}', '${safeRLabel}', 'recharge')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-950/90 hover:bg-indigo-800 text-indigo-100 border border-indigo-600/70 shadow transition active:scale-95 cursor-pointer">
+                <span>⏳</span>
+                <span>Roll Recharge (${safeEscapeHtml(mergedV2.rechargeDice)} rounds)</span>
+              </button>
+            `);
+          }
+
+          tacticalEl.innerHTML = `
+            ${badgesHtml.length > 0 ? `<div class="flex flex-wrap gap-1.5">${badgesHtml.join('')}</div>` : ''}
+            ${buttonsHtml.length > 0 ? `<div class="flex flex-wrap gap-2 pt-1">${buttonsHtml.join('')}</div>` : ''}
+          `;
+          tacticalEl.classList.remove('hidden');
+        } else {
+          tacticalEl.innerHTML = '';
+          tacticalEl.classList.add('hidden');
+        }
+      }
       
       const notesContainer = document.getElementById('feat-modal-notes-container');
       if (notes) {
