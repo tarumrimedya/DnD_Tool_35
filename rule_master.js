@@ -583,6 +583,24 @@ const RuleMaster = {
       working = working.replace(rangeMatch[0], ' ');
     }
 
+    // 3b. EXTRACT ACTION TYPE IF SPECIFIED IN TEXT (Move, Swift, Free, Immediate, Full-Round, Standard)
+    let parsedActionLabel = 'Standard Action';
+    let parsedActionType = 'standard';
+    const actRx = /\b(move|swift|free|immediate|full[-\s]*round|standard)\s*(?:action)?\b/i;
+    const actMatch = working.match(actRx);
+    if (actMatch) {
+      const idxInCombined = combinedRaw.indexOf(actMatch[0]);
+      if (idxInCombined >= 0) markerIndices.push(idxInCombined);
+      const aLow = actMatch[1].toLowerCase().replace(/[-\s]+/g, '');
+      if (aLow === 'move') { parsedActionLabel = 'Move Action'; parsedActionType = 'move'; }
+      else if (aLow === 'swift') { parsedActionLabel = 'Swift Action'; parsedActionType = 'swift'; }
+      else if (aLow === 'free') { parsedActionLabel = 'Free Action'; parsedActionType = 'free'; }
+      else if (aLow === 'immediate') { parsedActionLabel = 'Immediate Action'; parsedActionType = 'immediate'; }
+      else if (aLow === 'fullround') { parsedActionLabel = 'Full-Round Action'; parsedActionType = 'full'; }
+      else { parsedActionLabel = 'Standard Action'; parsedActionType = 'standard'; }
+      working = working.replace(actMatch[0], ' ');
+    }
+
     // 4. EXTRACT DAMAGE DICE & ENERGY/DAMAGE TYPE (from recharge-stripped working text!)
     const damageParts = [];
     const dmgTypeCanonicalMap = {
@@ -715,8 +733,8 @@ const RuleMaster = {
       source: effectiveCat === 'DM Boon' ? 'DM Boon / Campaign Grant' : 'D&D 3.5e Special Ability',
       benefit: benefitSummary,
       description: benefitSummary,
-      action: 'Standard Action',
-      actionType: 'standard',
+      action: parsedActionLabel,
+      actionType: parsedActionType,
       duration: 'Instantaneous',
       range: range || undefined,
       save: saveType || undefined,
@@ -999,10 +1017,7 @@ const RuleMaster = {
       masterDb.unshift(v2Entry);
     }
 
-    let syncCount = 0;
-    if (oldName) {
-      syncCount = this.syncMasterDbEditToCharacter(oldName, v2Entry);
-    }
+    let syncCount = this.syncMasterDbEditToCharacter(oldName || v2Entry.name, v2Entry);
 
     if (typeof saveStateToStorage === 'function') {
       saveStateToStorage(true);
@@ -1128,28 +1143,81 @@ const RuleMaster = {
       });
     }
 
-    // 5. Sync character.feats
+    // 5. Sync character.feats & character.specialAbilities
+    const stripTag = (str) => String(str || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
     if (Array.isArray(character.feats)) {
       character.feats = character.feats.map(f => {
         if (typeof f === 'string') {
-          if (f.toLowerCase().trim() === cleanOld) {
+          if (stripTag(f) === cleanOld || stripTag(f) === cleanNew) {
             changesCount++;
             return v2.name;
           }
           return f;
         } else if (f && f.name) {
-          if (f.id === v2.id || f.name.toLowerCase().trim() === cleanOld) {
+          const fClean = stripTag(f.name);
+          if (f.id === v2.id || fClean === cleanOld || fClean === cleanNew) {
             f.id = v2.id || f.id;
             f.name = v2.name;
             f.benefit = v2.benefit || f.benefit;
-            f.actionType = v2.actionType || f.actionType;
-            f.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : [];
-            f.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : {};
+            if (v2.action) f.action = v2.action;
+            if (v2.actionType) f.actionType = v2.actionType;
+            if (Array.isArray(v2.damageParts) && v2.damageParts.length > 0) f.damageParts = JSON.parse(JSON.stringify(v2.damageParts));
+            if (v2.save) f.save = v2.save;
+            if (v2.dcFormula) f.dcFormula = v2.dcFormula;
+            if (v2.range) f.range = v2.range;
+            if (v2.recharge) f.recharge = v2.recharge;
+            if (v2.rechargeDice) f.rechargeDice = v2.rechargeDice;
+            f.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : (f.modifiers || []);
+            f.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : (f.ruleFlags || {});
             changesCount++;
           }
           return f;
         }
         return f;
+      });
+    }
+    if (Array.isArray(character.specialAbilities)) {
+      character.specialAbilities = character.specialAbilities.map(a => {
+        if (typeof a === 'string') {
+          if (stripTag(a) === cleanOld || stripTag(a) === cleanNew) {
+            changesCount++;
+            return {
+              id: v2.id,
+              name: v2.name,
+              type: v2.type || 'Special Ability',
+              benefit: v2.benefit || v2.description || '',
+              action: v2.action || 'Standard Action',
+              actionType: v2.actionType || 'standard',
+              damageParts: Array.isArray(v2.damageParts) ? JSON.parse(JSON.stringify(v2.damageParts)) : [],
+              save: v2.save || '',
+              dcFormula: v2.dcFormula || '',
+              range: v2.range || '',
+              recharge: v2.recharge || '',
+              rechargeDice: v2.rechargeDice || ''
+            };
+          }
+          return a;
+        } else if (a && a.name) {
+          const aClean = stripTag(a.name);
+          if (a.id === v2.id || aClean === cleanOld || aClean === cleanNew) {
+            a.id = v2.id || a.id;
+            a.name = v2.name;
+            a.benefit = v2.benefit || a.benefit;
+            if (v2.action) a.action = v2.action;
+            if (v2.actionType) a.actionType = v2.actionType;
+            if (Array.isArray(v2.damageParts) && v2.damageParts.length > 0) a.damageParts = JSON.parse(JSON.stringify(v2.damageParts));
+            if (v2.save) a.save = v2.save;
+            if (v2.dcFormula) a.dcFormula = v2.dcFormula;
+            if (v2.range) a.range = v2.range;
+            if (v2.recharge) a.recharge = v2.recharge;
+            if (v2.rechargeDice) a.rechargeDice = v2.rechargeDice;
+            a.modifiers = Array.isArray(v2.modifiers) ? JSON.parse(JSON.stringify(v2.modifiers)) : (a.modifiers || []);
+            a.ruleFlags = v2.ruleFlags ? JSON.parse(JSON.stringify(v2.ruleFlags)) : (a.ruleFlags || {});
+            changesCount++;
+          }
+          return a;
+        }
+        return a;
       });
     }
 
@@ -1551,8 +1619,11 @@ const RuleMaster = {
 
     const actEl = document.getElementById('im-action');
     if (actEl) {
-      const rawAct = v2.action || 'Passive';
-      let matchAct = Array.from(actEl.options).find(o => o.value.toLowerCase() === String(rawAct).toLowerCase());
+      const rawAct = String(v2.action || v2.actionType || 'Passive').trim().toLowerCase().replace(/_/g, '-');
+      let matchAct = Array.from(actEl.options).find(o => {
+        const optLow = o.value.toLowerCase();
+        return optLow === rawAct || optLow.startsWith(rawAct) || rawAct.startsWith(optLow.replace(/\s*action$/, ''));
+      });
       actEl.value = matchAct ? matchAct.value : 'Passive';
     }
 

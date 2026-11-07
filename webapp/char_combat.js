@@ -4830,6 +4830,11 @@
           if (f) rawPool.push(typeof f === 'string' ? { name: f, _src: 'feats' } : { ...f, _src: 'feats' });
         });
       }
+      if (Array.isArray(char.legoEntries)) {
+        char.legoEntries.forEach(le => {
+          if (le) rawPool.push({ ...le, _src: 'legoEntries' });
+        });
+      }
 
       const excludedNames = new Set([
         'power attack', 'sneak attack', 'punishing stance', 'mountain hammer', 'steel wind',
@@ -4849,9 +4854,9 @@
 
         const dbMatch = (typeof masterDb !== 'undefined' && Array.isArray(masterDb))
           ? masterDb.find(m => m && m.name && stripTag(m.name).toLowerCase() === lower)
-          : null;
+          : (Array.isArray(char.customDb) ? char.customDb.find(m => m && m.name && stripTag(m.name).toLowerCase() === lower) : null);
 
-        let merged = Object.assign({}, dbMatch || {}, item, { name: cleanName });
+        let merged = Object.assign({}, item, dbMatch || {}, { name: cleanName });
         const benText = merged.benefit || merged.desc || merged.description || '';
 
         if (!merged.dcFormula && !merged.recharge && (!Array.isArray(merged.damageParts) || merged.damageParts.length === 0)) {
@@ -4872,23 +4877,69 @@
           }
         }
 
-        const hasDmgParts = Array.isArray(merged.damageParts) && merged.damageParts.some(dp => dp && dp.dice);
-        const hasSaveOrRecharge = Boolean(merged.dcFormula || merged.save || merged.recharge || merged.rechargeDice || merged.ruleFlags?.isStructuredAbility);
+        // Extract V2.5 modes[] and resources[] if present so Lego entities project automatically without regex
+        const primaryMode = Array.isArray(merged.modes) && merged.modes.length > 0 ? merged.modes[0] : null;
+        const roundRes = Array.isArray(merged.resources)
+          ? merged.resources.find(r => r && r.recharge && (r.recharge.period === 'rounds' || r.recharge.dice))
+          : null;
+        const effDamageParts = (Array.isArray(merged.damageParts) && merged.damageParts.some(dp => dp && dp.dice))
+          ? merged.damageParts
+          : (primaryMode && Array.isArray(primaryMode.damageParts) ? primaryMode.damageParts : []);
+        const effSaveObj = (primaryMode && primaryMode.save && typeof primaryMode.save === 'object') ? primaryMode.save : null;
+        const effSaveStr = effSaveObj ? `${effSaveObj.type || 'Reflex'} (${effSaveObj.onSave || 'half'})` : (merged.save || (primaryMode && typeof primaryMode.save === 'string' ? primaryMode.save : ''));
+        const effDcFormula = merged.dcFormula || (effSaveObj && effSaveObj.dcFormula) || '';
+        const effRechargeDice = merged.rechargeDice || (roundRes && roundRes.recharge && roundRes.recharge.dice) || '';
+        const effRange = merged.range || (primaryMode && (primaryMode.area || primaryMode.range)) || '';
+        const dbExplicitAction = dbMatch ? (dbMatch.action || dbMatch.actionType || '') : '';
+        const itemNonDefaultAction = (item && item.actionType && !['standard', 'passive'].includes(String(item.actionType).toLowerCase()))
+          ? item.actionType
+          : ((item && item.action && !/^(standard(\s+action)?|passive)$/i.test(String(item.action).trim())) ? item.action : '');
+        const rawActionCandidate = String(
+          dbExplicitAction ||
+          itemNonDefaultAction ||
+          (primaryMode && (primaryMode.action || primaryMode.actionType)) ||
+          merged.action ||
+          merged.actionType ||
+          'Standard Action'
+        ).trim().toLowerCase();
+        let rawActionType = 'standard';
+        let effActionLabel = 'Standard Action';
+        if (rawActionCandidate.includes('move')) {
+          rawActionType = 'move';
+          effActionLabel = 'Move Action';
+        } else if (rawActionCandidate.includes('swift')) {
+          rawActionType = 'swift';
+          effActionLabel = 'Swift Action';
+        } else if (rawActionCandidate.includes('immediate') || rawActionCandidate.includes('reaction')) {
+          rawActionType = 'immediate';
+          effActionLabel = 'Immediate Action';
+        } else if (rawActionCandidate.includes('full')) {
+          rawActionType = 'full';
+          effActionLabel = 'Full-Round Action';
+        } else if (rawActionCandidate.includes('free')) {
+          rawActionType = 'free';
+          effActionLabel = 'Free Action';
+        }
+
+        const hasDmgParts = Array.isArray(effDamageParts) && effDamageParts.some(dp => dp && dp.dice);
+        const hasSaveOrRecharge = Boolean(effDcFormula || effSaveStr || merged.recharge || effRechargeDice || merged.ruleFlags?.isStructuredAbility);
         const isBreathOrBlast = /\b(breath weapon|breath|cone of|line of|gaze|spit|acid|fire|cold|electricity|sonic)\b/i.test(`${cleanName} ${benText}`);
 
-        if (hasDmgParts && (hasSaveOrRecharge || isBreathOrBlast || merged.range)) {
+        if (hasDmgParts && (hasSaveOrRecharge || isBreathOrBlast || effRange)) {
           seen.add(lower);
-          const key = lower.replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+          const key = (merged.id || lower).replace(/[^a-z0-9_:]+/gi, '_').replace(/^_|_$/g, '');
           result.push({
             key,
+            id: merged.id || key,
             name: merged.name || cleanName,
-            damageParts: merged.damageParts.filter(dp => dp && dp.dice),
-            save: merged.save || '',
-            dcFormula: merged.dcFormula || '',
-            range: merged.range || '',
-            recharge: merged.recharge || (merged.rechargeDice ? `${merged.rechargeDice} rounds` : ''),
-            rechargeDice: merged.rechargeDice || '',
-            action: merged.action || 'Standard Action',
+            damageParts: effDamageParts.filter(dp => dp && dp.dice),
+            save: effSaveStr,
+            dcFormula: effDcFormula,
+            range: effRange,
+            recharge: merged.recharge || (effRechargeDice ? `${effRechargeDice} rounds` : ''),
+            rechargeDice: effRechargeDice,
+            action: effActionLabel,
+            actionType: rawActionType,
             benefit: benText
           });
         }
@@ -4990,6 +5041,18 @@
       const abilities = getCharacterSpecialAttackAbilities(character);
       const ab = abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
       if (!ab) return;
+
+      // Save atomic undo snapshot before spending action or rolling cooldown
+      window._lastCombatActivationUndo = {
+        abilityKey: ab.key,
+        spentActions: JSON.parse(JSON.stringify(character.tactical?.spentActions || {})),
+        prevCooldown: character.tactical?.abilityCooldowns?.[ab.key] ? JSON.parse(JSON.stringify(character.tactical.abilityCooldowns[ab.key])) : null
+      };
+
+      // Wire to Action Economy Node automatically (e.g. Move Action for Dragon Breath)
+      if (typeof consumeActionEconomy === 'function') {
+        consumeActionEconomy(ab.actionType || ab.action || 'standard', ab.name);
+      }
 
       const dp = ab.damageParts[0] || { dice: '1d6', bonus: 0, type: 'Damage' };
       const bonusNum = Number(dp.bonus || 0);

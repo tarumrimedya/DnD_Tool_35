@@ -61,6 +61,178 @@
           "type": ["string", "null"],
           "default": null,
           "description": "Optional situational condition (e.g. 'vs evil', 'while charging', or null)."
+        },
+        "op": {
+          "type": "string",
+          "enum": ["add", "set", "max", "min", "replace", "multiply", "step_die"],
+          "default": "add",
+          "description": "Lego operation: 'add' (default), 'set', 'max' (may use X instead of Y), 'min', 'replace' (uses X instead of Y), 'multiply' (RAW multiplier), or 'step_die' (increase/decrease weapon damage die step)."
+        },
+        "selector": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Entity/component filter when target modifies another ability, spell, or weapon (e.g. {'id': 'boon_absorb_magic'}, {'type': 'Spell', 'maxLevel': 3, 'school': 'Evocation'}, {'type': 'Weapon', 'tag': 'crafted_by_self'}).",
+          "properties": {
+            "id": { "type": "string" },
+            "type": { "type": "string" },
+            "school": { "type": "string" },
+            "maxLevel": { "type": "integer" },
+            "minLevel": { "type": "integer" },
+            "tag": { "type": "string" },
+            "mode": { "type": "string" }
+          }
+        },
+        "cap": {
+          "type": ["number", "string", "null"],
+          "default": null,
+          "description": "Optional maximum cap value or formula (e.g. '@classes.duelist.level' for Canny Defense)."
+        },
+        "appliesTo": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Sub-scopes for scoped modifiers such as Powerful Build (e.g. ['grapple', 'bullRush', 'trip', 'overrun', 'sunder', 'weaponSize', 'opposedSize'])."
+        },
+        "affects": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["normal", "touch", "flatFooted"] },
+          "description": "Which AC variants a base/total AC replacement affects."
+        },
+        "sourceLabel": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Sub-feature origin label for multi-benefit Boons (e.g. 'Benefit 1', 'Benefit 2')."
+        },
+        "when": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Structured predicate condition ({ toggle, equipped, has, vs, terrain, armorCategory, all, any, not })."
+        }
+      }
+    },
+    "DefenseEntryV2": {
+      "type": "object",
+      "required": ["kind", "target"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["dr", "sr", "resistance", "immunity", "vulnerability", "regen", "fast_healing", "fortification", "absorption"],
+          "description": "Defense primitive type."
+        },
+        "target": {
+          "type": "string",
+          "description": "Damage, energy, or effect type (e.g. 'acid', 'fire', 'cold', 'electricity', 'sonic', 'magic', 'all', 'crit', 'mind_affecting', 'fear', 'sleep', 'paralysis', 'stun', 'slow', 'poison', 'disease')."
+        },
+        "value": {
+          "type": "number",
+          "description": "Static numeric value (e.g. 10 for Acid Resist 10, 25 for Fortification 25%)."
+        },
+        "formula": {
+          "type": "string",
+          "description": "Dynamic scaling formula (e.g. '@level * 2', '21 + @level', '@chaMod')."
+        },
+        "bypass": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "DR or Regen bypass type (e.g. '-', 'magic', 'adamantine', 'cold_iron', 'acid_or_fire')."
+        },
+        "healRatio": {
+          "type": "number",
+          "default": 1,
+          "description": "For kind='absorption', ratio of absorbed energy damage converted into healing (e.g. 1.0 for Elemental Supremacy, 0.33 for Iron Golem)."
+        },
+        "sourceLabel": {
+          "type": ["string", "null"],
+          "default": null
+        },
+        "when": {
+          "type": ["object", "null"],
+          "default": null
+        }
+      }
+    },
+    "ResourceEntryV2": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "kind": {
+          "type": "string",
+          "enum": ["consume", "allocate"],
+          "default": "consume",
+          "description": "'consume' for daily/hourly/cooldown charges; 'allocate' for reusable investment pools such as Incarnum Essentia."
+        },
+        "maxFormula": {
+          "type": ["string", "number"],
+          "default": 1,
+          "description": "Maximum pool capacity or formula (e.g. 1, 3, '1 + @wisMod', 'floor(@level / 3)')."
+        },
+        "recharge": {
+          "type": "object",
+          "properties": {
+            "period": {
+              "type": "string",
+              "enum": ["at_will", "day", "hour", "encounter", "rounds", "rest"],
+              "default": "day"
+            },
+            "dice": {
+              "type": ["string", "null"],
+              "default": null,
+              "description": "Rollable round cooldown expression when period='rounds' (e.g. '1d4+1')."
+            }
+          }
+        }
+      }
+    },
+    "GrantEntryV2": {
+      "type": "object",
+      "required": ["grantType"],
+      "properties": {
+        "grantType": {
+          "type": "string",
+          "enum": ["entity", "spell_at_will", "proficiency", "metamagic", "sense", "movement"],
+          "description": "Type of automatic grant or synergy unlock."
+        },
+        "targetId": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Granted entity ID, sense ID (e.g. 'blindsense_30', 'blindsight_120', 'scent_30', 'darkvision_60'), or proficiency group."
+        },
+        "value": {
+          "type": ["number", "string", "null"],
+          "default": null
+        },
+        "filter": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Filter for spell_at_will or metamagic grants (e.g. {'school': 'Abjuration', 'level': 1})."
+        },
+        "requires": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Synergy prerequisite predicate (e.g. {'all': ['boon_absorb_magic', 'boon_elemental_accustomed']})."
+        },
+        "sourceLabel": {
+          "type": ["string", "null"],
+          "default": null
+        }
+      }
+    },
+    "ChoiceEntryV2": {
+      "type": "object",
+      "required": ["id", "label"],
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "pickCount": { "type": "integer", "default": 1 },
+        "options": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": []
+        },
+        "bindsTo": {
+          "type": "string",
+          "description": "Variable token bound by this selection (e.g. '$chosenEnergy', '$chosenSchool', '$chosenWeapon')."
         }
       }
     },
@@ -146,7 +318,90 @@
           "default": []
         },
         "save": {
+          "type": ["string", "object", "null"],
+          "default": null,
+          "description": "Saving throw descriptor string or structured object ({ type: 'Reflex'|'Fortitude'|'Will', dcFormula: '10 + @level + @conMod', onSave: 'half'|'negate'|'partial' })."
+        },
+        "sourceLabel": {
           "type": ["string", "null"],
+          "default": null,
+          "description": "Origin sub-label for multi-benefit Boons or paths (e.g. 'Benefit 1', 'Benefit 2')."
+        },
+        "reactsTo": {
+          "type": ["string", "null"],
+          "enum": ["save_failed", "on_spell_targeted", "on_hit", "on_kill", "on_damaged", "on_crit_received", "initiative", "turn_start", null],
+          "default": null,
+          "description": "UI reaction placement hint so reactive buttons render next to Saves, HP, or Attack panels."
+        },
+        "resourceCost": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resourceId": { "type": "string" },
+              "amount": { "type": ["number", "string"], "default": 1 },
+              "level": { "type": ["number", "string", "null"], "default": null }
+            }
+          },
+          "default": []
+        },
+        "inputs": {
+          "type": "array",
+          "description": "Runtime user inputs required when activating this mode (referenced in formulas as @input.<id>).",
+          "items": {
+            "type": "object",
+            "required": ["id", "label"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" },
+              "type": { "type": "string", "enum": ["int", "slider", "select"], "default": "int" },
+              "min": { "type": ["number", "string"], "default": 0 },
+              "max": { "type": ["number", "string"], "default": 9 },
+              "default": { "type": ["number", "string"], "default": 1 }
+            }
+          },
+          "default": []
+        },
+        "area": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Area of effect shape and size (e.g. '60 ft. line', '30 ft. cone', '@level * 5 ft. radius')."
+        },
+        "defenses": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/DefenseEntryV2" },
+          "default": []
+        },
+        "spawnsBuff": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Active buff, temporary HP, or round countdown timer spawned when this mode is triggered.",
+          "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "durationRounds": { "type": ["number", "string"], "default": 1 },
+            "maxStacks": { "type": ["number", "null"], "default": null },
+            "tempHpFormula": { "type": ["string", "number", "null"], "default": null },
+            "healFormula": { "type": ["string", "number", "null"], "default": null },
+            "modifiers": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/ModifierEntryV2" },
+              "default": []
+            },
+            "defenses": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/DefenseEntryV2" },
+              "default": []
+            },
+            "note": { "type": ["string", "null"], "default": null }
+          }
+        },
+        "requires": {
+          "type": ["object", "null"],
+          "default": null
+        },
+        "when": {
+          "type": ["object", "null"],
           "default": null
         }
       }
@@ -354,6 +609,59 @@
             "$ref": "#/definitions/ModeEntryV2"
           },
           "default": []
+        },
+        "defenses": {
+          "type": "array",
+          "description": "Structured V2.5 defense primitives (DR, SR, Energy Resistance, Immunity, Vulnerability, Regeneration, Fast Healing, Fortification, Absorption).",
+          "items": {
+            "$ref": "#/definitions/DefenseEntryV2"
+          },
+          "default": []
+        },
+        "resources": {
+          "type": "array",
+          "description": "Structured V2.5 consumable or allocatable resource pools and cooldowns.",
+          "items": {
+            "$ref": "#/definitions/ResourceEntryV2"
+          },
+          "default": []
+        },
+        "grants": {
+          "type": "array",
+          "description": "Structured V2.5 synergy unlocks, automatic grants, at-will spells, senses, or proficiencies.",
+          "items": {
+            "$ref": "#/definitions/GrantEntryV2"
+          },
+          "default": []
+        },
+        "choices": {
+          "type": "array",
+          "description": "Structured V2.5 permanent character build choices.",
+          "items": {
+            "$ref": "#/definitions/ChoiceEntryV2"
+          },
+          "default": []
+        },
+        "requires": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Structured V2.5 prerequisite predicate ({ all, any, minLevel, minBab, minAbility, has }) for deterministic HUB/Character eligibility filtering."
+        },
+        "overrides": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "Optional target entity ID that this house-rule/DM pack entry overrides (e.g. 'srd:feat_power_attack')."
+        },
+        "pack": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "DM Campaign Rule Pack namespace and version metadata.",
+          "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "author": { "type": "string" },
+            "version": { "type": "string", "default": "1.0.0" }
+          }
         },
         "weaponMeta": {
           "type": ["object", "null"],

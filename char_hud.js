@@ -1892,11 +1892,13 @@
     function resetActionEconomy() {
       if (!character) return;
       if (!character.tactical) character.tactical = {};
+      const lockSwift = Boolean(character.tactical.spentActions && character.tactical.spentActions.swiftLockedNextTurn);
       character.tactical.spentActions = {
         standard: false,
         move: false,
-        swift: false,
-        immediate: false
+        swift: lockSwift,
+        immediate: false,
+        swiftLockedNextTurn: false
       };
       updateActionEconomyUI();
     }
@@ -1938,6 +1940,21 @@
         }
         spent.standard = true;
         spent.move = true;
+      } else if (kind === 'move' && spent.move && !spent.standard) {
+        // D&D 3.5e RAW (PHB p.138): A character can take a move action in place of a standard action
+        spent.standard = true;
+        alreadySpent = false;
+        spentLabel = 'Move Action (converted from Standard Action)';
+      } else if (kind === 'immediate') {
+        // D&D 3.5e RAW (PHB2 / RC): Using an Immediate Action consumes your Swift Action (or next turn's Swift if already spent)
+        alreadySpent = Boolean(spent.immediate);
+        spent.immediate = true;
+        if (!spent.swift) {
+          spent.swift = true;
+        } else {
+          spent.swiftLockedNextTurn = true;
+        }
+        spentLabel = 'Immediate Action';
       } else {
         alreadySpent = Boolean(spent[kind]);
         const cap = kind.charAt(0).toUpperCase() + kind.slice(1);
@@ -1963,6 +1980,10 @@
     window.consumeActionEconomy = consumeActionEconomy;
 
     function advanceCombatTurn() {
+      if (typeof advanceCombatRound === 'function') {
+        advanceCombatRound();
+        return;
+      }
       if (!character.tactical) character.tactical = {};
       character.tactical.round = (Number(character.tactical.round) || 1) + 1;
       character.encounterRound = character.tactical.round;

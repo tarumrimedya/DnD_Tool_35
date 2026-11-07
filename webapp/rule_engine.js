@@ -200,9 +200,9 @@ const RuleEngine = {
       .replace(/\b1\s*\/\s*2\s*(?:@?level|@?lvl|@?hd)\b/gi, 'floor(@level / 2)')
       .replace(/\bhalf\s+(?:@?level|@?lvl|@?hd)\b/gi, 'floor(@level / 2)')
       .replace(/(?:@?level|@?lvl|@?hd)\s*\/\s*2\b/gi, 'floor(@level / 2)')
-      .replace(/(?<![a-zA-Z@])(?:lvl|level|hd)\b/gi, '@level')
-      .replace(/(?<![a-zA-Z@])(?:cl|caster\s*level)\b/gi, '@cl')
-      .replace(/(?<![a-zA-Z@])bab\b/gi, '@bab')
+      .replace(/(?<![a-zA-Z@.])(?:lvl|level|hd)\b/gi, '@level')
+      .replace(/(?<![a-zA-Z@.])(?:cl|caster\s*level)\b/gi, '@cl')
+      .replace(/(?<![a-zA-Z@.])bab\b/gi, '@bab')
       .replace(/(?<![a-zA-Z@])str(?:\s*mod)?\b/gi, '@strMod')
       .replace(/(?<![a-zA-Z@])dex(?:\s*mod)?\b/gi, '@dexMod')
       .replace(/(?<![a-zA-Z@])con(?:\s*mod)?\b/gi, '@conMod')
@@ -217,14 +217,27 @@ const RuleEngine = {
   },
 
   // Build live formula evaluation context from a character object
-  buildFormulaContext(character) {
+  buildFormulaContext(character, extra = {}) {
     const ch = character || (typeof window !== 'undefined' ? window.character : null) || {};
     const activeProg = Array.isArray(ch.levelProgression)
       ? ch.levelProgression.filter(r => r && r.active !== false)
       : [];
     const level = activeProg.length > 0 ? activeProg.length : (Math.max(1, Number(ch.level) || 1));
-    const cl = Math.max(1, Number(ch.spellcasting?.cl) || level);
+    const cl = Math.max(1, Number(ch.spellcasting?.cl ?? ch.casterLevel) || level);
     const bab = Number(ch.bab) || 0;
+
+    const classLevels = Object.assign({}, ch.classLevels || {});
+    if (activeProg.length > 0) {
+      activeProg.forEach(r => {
+        const cKey = String(r.className || r.class || '').toLowerCase().trim().replace(/\s+/g, '_');
+        if (cKey) classLevels[cKey] = (classLevels[cKey] || 0) + 1;
+      });
+    } else if (Array.isArray(ch.classes)) {
+      ch.classes.forEach(c => {
+        const cKey = String(c.name || c.className || '').toLowerCase().trim().replace(/\s+/g, '_');
+        if (cKey) classLevels[cKey] = Number(c.level) || 1;
+      });
+    }
 
     const getMod = (key) => {
       if (ch.evaluatedAbilities && ch.evaluatedAbilities[key] && typeof ch.evaluatedAbilities[key].mod === 'number') {
@@ -242,7 +255,7 @@ const RuleEngine = {
       return 0;
     };
 
-    return {
+    return Object.assign({
       level,
       cl,
       casterLevel: cl,
@@ -252,14 +265,20 @@ const RuleEngine = {
       conMod: getMod('con'),
       intMod: getMod('int'),
       wisMod: getMod('wis'),
-      chaMod: getMod('cha')
-    };
+      chaMod: getMod('cha'),
+      classLevels,
+      skills: ch.skills || {},
+      state: ch.legoState || ch.state || {},
+      inputs: extra.inputs || {},
+      self: extra.self || { stacks: 1, invested: 0 },
+      spells: ch.spells || ch.spellcasting || {}
+    }, extra);
   },
 
   // Evaluate an ability or entry's Save DC formula against live character stats
   evaluateAbilitySaveDc(entryOrFormula, character) {
     const rawFormula = (entryOrFormula && typeof entryOrFormula === 'object')
-      ? (entryOrFormula.dcFormula || entryOrFormula.saveDcFormula || '')
+      ? (entryOrFormula.dcFormula || entryOrFormula.saveDcFormula || (entryOrFormula.save && entryOrFormula.save.dcFormula) || '')
       : String(entryOrFormula || '');
     const normFormula = this.normalizeFormulaTokens(rawFormula);
     if (!normFormula) return null;
@@ -286,7 +305,175 @@ const RuleEngine = {
     };
   },
 
-  // Canonical V2 Formula Evaluator (evaluates @cl, @level, @bab, @strMod..@chaMod, min, max, floor, ceil)
+  // Zero-eval recursive-descent arithmetic, comparison, ternary, and math-function evaluator
+  safeEvaluateMathExpr(exprStr) {
+    const src = String(exprStr || '').trim();
+    if (!src) return 0;
+    const tokens = [];
+    let i = 0;
+    while (i < src.length) {
+      const ch = src[i];
+      if (/\s/.test(ch)) { i++; continue; }
+      if (/[0-9]/.test(ch) || (ch === '.' && /[0-9]/.test(src[i + 1] || ''))) {
+        let num = '';
+        while (i < src.length && /[0-9.]/.test(src[i])) num += src[i++];
+        tokens.push({ type: 'num', value: Number(num) || 0 });
+        continue;
+      }
+      if (/[a-zA-Z_]/.test(ch)) {
+        let id = '';
+        while (i < src.length && /[a-zA-Z0-9_.]/.test(src[i])) id += src[i++];
+        const cleanId = id.replace(/^Math\./i, '').toLowerCase();
+        tokens.push({ type: 'id', value: cleanId });
+        continue;
+      }
+      const two = src.slice(i, i + 2);
+      if (['>=', '<=', '==', '!=', '&&', '||'].includes(two)) {
+        tokens.push({ type: 'op', value: two });
+        i += 2;
+        continue;
+      }
+      if ('+-*/%(),?:><!'.includes(ch)) {
+        tokens.push({ type: 'op', value: ch });
+        i++;
+        continue;
+      }
+      return 0;
+    }
+
+    let pos = 0;
+    const peek = () => tokens[pos] || null;
+    const consume = () => tokens[pos++] || null;
+
+    const parseTernary = () => {
+      const cond = parseOr();
+      if (peek() && peek().type === 'op' && peek().value === '?') {
+        consume();
+        const truthy = parseTernary();
+        if (peek() && peek().type === 'op' && peek().value === ':') consume();
+        const falsy = parseTernary();
+        return cond ? truthy : falsy;
+      }
+      return cond;
+    };
+
+    const parseOr = () => {
+      let left = parseAnd();
+      while (peek() && peek().type === 'op' && peek().value === '||') {
+        consume();
+        const right = parseAnd();
+        left = (left || right) ? 1 : 0;
+      }
+      return left;
+    };
+
+    const parseAnd = () => {
+      let left = parseCmp();
+      while (peek() && peek().type === 'op' && peek().value === '&&') {
+        consume();
+        const right = parseCmp();
+        left = (left && right) ? 1 : 0;
+      }
+      return left;
+    };
+
+    const parseCmp = () => {
+      let left = parseAdd();
+      while (peek() && peek().type === 'op' && ['>', '<', '>=', '<=', '==', '!='].includes(peek().value)) {
+        const op = consume().value;
+        const right = parseAdd();
+        if (op === '>') left = left > right ? 1 : 0;
+        else if (op === '<') left = left < right ? 1 : 0;
+        else if (op === '>=') left = left >= right ? 1 : 0;
+        else if (op === '<=') left = left <= right ? 1 : 0;
+        else if (op === '==') left = left === right ? 1 : 0;
+        else if (op === '!=') left = left !== right ? 1 : 0;
+      }
+      return left;
+    };
+
+    const parseAdd = () => {
+      let left = parseMul();
+      while (peek() && peek().type === 'op' && (peek().value === '+' || peek().value === '-')) {
+        const op = consume().value;
+        const right = parseMul();
+        left = op === '+' ? (left + right) : (left - right);
+      }
+      return left;
+    };
+
+    const parseMul = () => {
+      let left = parseUnary();
+      while (peek() && peek().type === 'op' && ['*', '/', '%'].includes(peek().value)) {
+        const op = consume().value;
+        const right = parseUnary();
+        if (op === '*') left *= right;
+        else if (op === '/') left = right !== 0 ? (left / right) : 0;
+        else if (op === '%') left = right !== 0 ? (left % right) : 0;
+      }
+      return left;
+    };
+
+    const parseUnary = () => {
+      if (peek() && peek().type === 'op' && (peek().value === '+' || peek().value === '-' || peek().value === '!')) {
+        const op = consume().value;
+        const val = parseUnary();
+        if (op === '-') return -val;
+        if (op === '!') return val ? 0 : 1;
+        return val;
+      }
+      return parsePrimary();
+    };
+
+    const parsePrimary = () => {
+      const tok = peek();
+      if (!tok) return 0;
+      if (tok.type === 'num') {
+        consume();
+        return tok.value;
+      }
+      if (tok.type === 'op' && tok.value === '(') {
+        consume();
+        const val = parseTernary();
+        if (peek() && peek().type === 'op' && peek().value === ')') consume();
+        return val;
+      }
+      if (tok.type === 'id') {
+        const fn = consume().value;
+        const args = [];
+        if (peek() && peek().type === 'op' && peek().value === '(') {
+          consume();
+          if (!(peek() && peek().type === 'op' && peek().value === ')')) {
+            args.push(parseTernary());
+            while (peek() && peek().type === 'op' && peek().value === ',') {
+              consume();
+              args.push(parseTernary());
+            }
+          }
+          if (peek() && peek().type === 'op' && peek().value === ')') consume();
+        }
+        if (fn === 'min') return args.length ? Math.min(...args) : 0;
+        if (fn === 'max') return args.length ? Math.max(...args) : 0;
+        if (fn === 'floor') return Math.floor(args[0] || 0);
+        if (fn === 'ceil') return Math.ceil(args[0] || 0);
+        if (fn === 'round') return Math.round(args[0] || 0);
+        if (fn === 'abs') return Math.abs(args[0] || 0);
+        if (fn === 'clamp') return Math.min(args[2] ?? 0, Math.max(args[1] ?? 0, args[0] ?? 0));
+        return 0;
+      }
+      consume();
+      return 0;
+    };
+
+    try {
+      const res = parseTernary();
+      return typeof res === 'number' && Number.isFinite(res) ? res : 0;
+    } catch (_) {
+      return 0;
+    }
+  },
+
+  // Canonical V2/V2.5 Formula Evaluator (Zero-eval, supports @level, @cl, @bab, @strMod..@chaMod, @input.*, @self.*, @state.*, @skill.*, @classes.*, @spells.maxUnspentLevel)
   evaluateFormula(formula, context = {}) {
     if (formula === null || formula === undefined || formula === '') return 0;
     if (typeof formula === 'number') return formula;
@@ -303,6 +490,7 @@ const RuleEngine = {
     let expr = raw
       .replace(/@item\.level\b/gi, String(cl))
       .replace(/@cl\b/gi, String(cl))
+      .replace(/@casterLevel\b/gi, String(cl))
       .replace(/@level\b/gi, String(level))
       .replace(/@bab\b/gi, String(bab))
       .replace(/@enhancement\b/gi, String(enh))
@@ -313,9 +501,51 @@ const RuleEngine = {
       .replace(/@intMod\b/gi, String(Number(context.intMod) || 0))
       .replace(/@wisMod\b/gi, String(Number(context.wisMod) || 0))
       .replace(/@chaMod\b/gi, String(Number(context.chaMod) || 0))
-      .replace(/@classes\.([a-z0-9_]+)\.level/gi, (_, cName) => {
-        const cLvl = (context.classLevels && context.classLevels[cName.toLowerCase()]) || level;
+      .replace(/@ability\.(str|dex|con|int|wis|cha)\.mod\b/gi, (_, a) => String(Number(context[`${a.toLowerCase()}Mod`]) || 0))
+      .replace(/@(?:classes|class)\.([a-z0-9_]+)\.level\b/gi, (_, cName) => {
+        const key = cName.toLowerCase();
+        const cLvl = (context.classLevels && typeof context.classLevels[key] === 'number') ? context.classLevels[key] : 0;
         return String(cLvl);
+      })
+      .replace(/@input\.([a-z0-9_]+)\b/gi, (_, k) => {
+        const v = context.inputs && context.inputs[k] !== undefined ? Number(context.inputs[k]) : 0;
+        return String(Number.isFinite(v) ? v : 0);
+      })
+      .replace(/@self\.([a-z0-9_]+)\b/gi, (_, k) => {
+        const v = context.self && context.self[k] !== undefined ? Number(context.self[k]) : 0;
+        return String(Number.isFinite(v) ? v : 0);
+      })
+      .replace(/@state\.([a-z0-9_]+)\b/gi, (_, k) => {
+        const v = context.state && context.state[k] !== undefined ? Number(context.state[k]) : 0;
+        return String(Number.isFinite(v) ? v : 0);
+      })
+      .replace(/@skill\.([a-z0-9_]+)\.(total|ranks|bonus)\b/gi, (_, sKey, prop) => {
+        const sk = context.skills && (context.skills[sKey] || context.skills[sKey.toLowerCase()]);
+        if (typeof sk === 'number') return String(sk);
+        if (sk && typeof sk === 'object') return String(Number(sk[prop] ?? sk.total ?? sk.bonus ?? sk.ranks) || 0);
+        return '0';
+      })
+      .replace(/@spells\.maxUnspentLevel(?:\(\s*['"]?([a-z0-9_]+)['"]?\s*\))?/gi, (_, desc) => {
+        const sp = context.spells || {};
+        if (typeof sp.maxUnspentLevel === 'number') return String(sp.maxUnspentLevel);
+        if (desc && sp.maxUnspentByDescriptor && typeof sp.maxUnspentByDescriptor[desc.toLowerCase()] === 'number') {
+          return String(sp.maxUnspentByDescriptor[desc.toLowerCase()]);
+        }
+        if (Array.isArray(sp.prepared)) {
+          const dLow = desc ? desc.toLowerCase() : null;
+          let maxL = 0;
+          sp.prepared.forEach(p => {
+            if (!p || p.spent || p.expended) return;
+            if (dLow) {
+              const tags = `${p.descriptor || ''} ${p.school || ''} ${(p.tags || []).join(' ')} ${p.name || ''}`.toLowerCase();
+              if (!tags.includes(dLow)) return;
+            }
+            const lvl = Number(p.level) || 0;
+            if (lvl > maxL) maxL = lvl;
+          });
+          return String(maxL);
+        }
+        return '0';
       });
 
     // If expression contains dice notation like "(min(10, 5))d6" or "2d8+(min(5, 10))*1", evaluate math parts
@@ -324,9 +554,13 @@ const RuleEngine = {
         const val = this.evaluateFormula(sub, context);
         return String(Math.max(1, Math.floor(Number(val) || 1)));
       });
-      // Also handle non-parenthesized min/max/floor/ceil before d\d+, e.g. "min(5, 10)d6"
       diceResolved = diceResolved.replace(/^(min|max|floor|ceil|round)\(([^()]+)\)(?=d\d+)/i, (full) => {
         const val = this.evaluateFormula(full, context);
+        return String(Math.max(1, Math.floor(Number(val) || 1)));
+      });
+      diceResolved = diceResolved.replace(/^([0-9+\-*/\s]+)(?=d\d+)/i, (prefix) => {
+        if (/^\d+$/.test(prefix.trim())) return prefix.trim();
+        const val = this.safeEvaluateMathExpr(prefix);
         return String(Math.max(1, Math.floor(Number(val) || 1)));
       });
       const tailMatch = diceResolved.match(/^(\d+d\d+)\s*([+-][\s\S]+)$/i);
@@ -338,34 +572,849 @@ const RuleEngine = {
       return diceResolved;
     }
 
-    // Safe arithmetic / Math function evaluation
-    const safeExpr = expr
-      .replace(/\bmin\s*\(/gi, 'Math.min(')
-      .replace(/\bmax\s*\(/gi, 'Math.max(')
-      .replace(/\bfloor\s*\(/gi, 'Math.floor(')
-      .replace(/\bceil\s*\(/gi, 'Math.ceil(')
-      .replace(/\bround\s*\(/gi, 'Math.round(');
-
-    if (/^[0-9+\-*/%().,?:><=\sMathminaxflorceiund]+$/.test(safeExpr)) {
-      try {
-        // eslint-disable-next-line no-new-func
-        const res = Function(`"use strict"; return (${safeExpr});`)();
-        return typeof res === 'number' && !Number.isNaN(res) ? res : 0;
-      } catch (_) {
-        return 0;
-      }
-    }
-    return 0;
+    return this.safeEvaluateMathExpr(expr);
   },
 
-  // Ensure an object is upgraded to Canonical V2 via SchemaMigrator if available
+  // Ensure an object is upgraded to Canonical V2/V2.5 via SchemaMigrator & normalizeLegoEntry
   ensureV2Entry(entry) {
     if (!entry || typeof entry !== 'object') return entry;
-    if (entry.schemaVersion === 2 && Array.isArray(entry.modifiers)) return entry;
+    if (entry.schemaVersion === 2 && Array.isArray(entry.modifiers) && Array.isArray(entry.defenses)) return entry;
+    let upgraded = entry;
     if (typeof window !== 'undefined' && window.SchemaMigrator && typeof window.SchemaMigrator.upgradeEntryToV2 === 'function') {
-      return window.SchemaMigrator.upgradeEntryToV2(entry);
+      upgraded = window.SchemaMigrator.upgradeEntryToV2(entry);
     }
-    return entry;
+    return this.normalizeLegoEntry(upgraded);
+  },
+
+  // D&D 3.5e DMG p.28 Weapon Size / Die Step Progression Table
+  WEAPON_DIE_STEPS: ['1d2', '1d3', '1d4', '1d6', '1d8', '1d10', '2d6', '3d6', '4d6', '6d6', '8d6', '12d6'],
+  WEAPON_DIE_ALT_STEPS: {
+    '1d12': { '1': '3d6', '-1': '1d10' },
+    '2d4': { '1': '2d6', '-1': '1d6' },
+    '2d8': { '1': '3d8', '-1': '1d10' }
+  },
+
+  stepWeaponDie(diceStr, steps = 1) {
+    const clean = String(diceStr || '1d6').trim().toLowerCase();
+    const stepInt = Math.trunc(Number(steps) || 0);
+    if (stepInt === 0) return clean;
+    if (this.WEAPON_DIE_ALT_STEPS[clean] && this.WEAPON_DIE_ALT_STEPS[clean][String(stepInt)]) {
+      return this.WEAPON_DIE_ALT_STEPS[clean][String(stepInt)];
+    }
+    const idx = this.WEAPON_DIE_STEPS.indexOf(clean);
+    if (idx === -1) return clean;
+    const nextIdx = Math.max(0, Math.min(this.WEAPON_DIE_STEPS.length - 1, idx + stepInt));
+    return this.WEAPON_DIE_STEPS[nextIdx];
+  },
+
+  // Upgrade any V2 entry into full V2.5 Composable Lego Entry (migrates legacy ruleFlags defenses & recharge into structured blocks)
+  normalizeLegoEntry(entry) {
+    if (!entry || typeof entry !== 'object') return entry;
+    const out = Object.assign({}, entry);
+    out.schemaVersion = 2;
+    out.modifiers = Array.isArray(out.modifiers) ? out.modifiers.map(m => Object.assign({ op: 'add', type: 'Untyped', condition: null }, m)) : [];
+    out.damageParts = Array.isArray(out.damageParts) ? out.damageParts : [];
+    out.modes = Array.isArray(out.modes) ? out.modes : [];
+    out.defenses = Array.isArray(out.defenses) ? out.defenses.slice() : [];
+    out.resources = Array.isArray(out.resources) ? out.resources.slice() : [];
+    out.grants = Array.isArray(out.grants) ? out.grants.slice() : [];
+    out.choices = Array.isArray(out.choices) ? out.choices.slice() : [];
+
+    // Migrate legacy ruleFlags defense keys into structured defenses[] if not already present
+    const rf = out.ruleFlags || {};
+    const hasDef = (kind, target) => out.defenses.some(d => d && d.kind === kind && (!target || d.target === target));
+    if (rf.sr && !hasDef('sr')) {
+      out.defenses.push(typeof rf.sr === 'number' ? { kind: 'sr', target: 'magic', value: rf.sr } : { kind: 'sr', target: 'magic', formula: String(rf.sr) });
+    }
+    if (rf.srFormula && !hasDef('sr')) {
+      out.defenses.push({ kind: 'sr', target: 'magic', formula: String(rf.srFormula) });
+    }
+    if (rf.dr && !hasDef('dr')) {
+      const drParts = String(rf.dr).split('/');
+      const drVal = Number(drParts[0]);
+      out.defenses.push(Number.isFinite(drVal)
+        ? { kind: 'dr', target: 'physical', value: drVal, bypass: drParts[1] || '-' }
+        : { kind: 'dr', target: 'physical', formula: drParts[0], bypass: drParts[1] || '-' });
+    }
+    if (rf.fortification && !hasDef('fortification')) {
+      out.defenses.push({ kind: 'fortification', target: 'crit', value: Number(rf.fortification) || 25 });
+    }
+    if (rf.conToWillSave && !out.modifiers.some(m => m.target === 'save.will.abilityMod')) {
+      out.modifiers.push({ target: 'save.will.abilityMod', op: 'max', formula: '@conMod', type: 'Untyped' });
+    }
+
+    // Migrate top-level dailyCharges / rechargeDice into structured resources[] if not already present
+    if (out.dailyCharges && typeof out.dailyCharges === 'object' && out.resources.length === 0) {
+      out.resources.push({
+        id: `${out.id || 'item'}_charges`,
+        name: 'Daily Charges',
+        kind: 'consume',
+        maxFormula: out.dailyCharges.max || 3,
+        recharge: { period: 'day', dice: null }
+      });
+    } else if ((out.rechargeDice || out.recharge) && out.resources.length === 0) {
+      out.resources.push({
+        id: `${out.id || 'ability'}_cooldown`,
+        name: 'Recharge Cooldown',
+        kind: 'consume',
+        maxFormula: 1,
+        recharge: { period: 'rounds', dice: out.rechargeDice || out.recharge }
+      });
+    }
+
+    return out;
+  },
+
+  // Evaluate structured V2.5 Predicate (when / requires) deterministically without regex guessing
+  evaluatePredicate(predicate, character, context = {}) {
+    if (!predicate) return true;
+    if (typeof predicate === 'string') {
+      const tKey = predicate.toLowerCase().trim();
+      if (!tKey) return true;
+      const toggles = (character && character.activeToggles) || context.toggles || {};
+      return toggles[tKey] !== false;
+    }
+    if (typeof predicate !== 'object') return true;
+
+    const ch = character || {};
+    const toggles = ch.activeToggles || context.toggles || {};
+    const ownedIds = context.ownedIds instanceof Set ? context.ownedIds : new Set(context.ownedIds || []);
+
+    if (Array.isArray(predicate.all)) {
+      const ok = predicate.all.every(p => typeof p === 'string' ? ownedIds.has(p) : this.evaluatePredicate(p, ch, context));
+      if (!ok) return false;
+    }
+    if (Array.isArray(predicate.any)) {
+      const ok = predicate.any.some(p => typeof p === 'string' ? ownedIds.has(p) : this.evaluatePredicate(p, ch, context));
+      if (!ok) return false;
+    }
+    if (predicate.not) {
+      if (this.evaluatePredicate(predicate.not, ch, context)) return false;
+    }
+    if (predicate.has) {
+      const reqs = Array.isArray(predicate.has) ? predicate.has : [predicate.has];
+      if (!reqs.every(id => ownedIds.has(id))) return false;
+    }
+    if (predicate.toggle) {
+      if (!toggles[predicate.toggle]) return false;
+    }
+    if (predicate.terrain) {
+      const activeTerrain = String(ch.activeTerrain || context.terrain || '').toLowerCase();
+      const allowed = Array.isArray(predicate.terrain) ? predicate.terrain.map(t => String(t).toLowerCase()) : [String(predicate.terrain).toLowerCase()];
+      if (!allowed.includes(activeTerrain)) return false;
+    }
+    if (predicate.armorCategory) {
+      const wornCat = String(ch.wornArmorCategory || context.armorCategory || 'None').toLowerCase();
+      const allowed = Array.isArray(predicate.armorCategory) ? predicate.armorCategory.map(t => String(t).toLowerCase()) : [String(predicate.armorCategory).toLowerCase()];
+      if (!allowed.includes(wornCat)) return false;
+    }
+    if (typeof predicate.minLevel === 'number') {
+      const lvl = Number(context.level ?? ch.level ?? 1);
+      if (lvl < predicate.minLevel) return false;
+    }
+    if (typeof predicate.minBab === 'number') {
+      const bab = Number(context.bab ?? ch.bab ?? 0);
+      if (bab < predicate.minBab) return false;
+    }
+    return true;
+  },
+
+  // Check if a target entity matches a ModifierEntryV2.selector filter
+  matchesEntitySelector(entry, selector) {
+    if (!entry || !selector || typeof selector !== 'object') return false;
+    if (selector.id) {
+      const localId = String(entry.id || '').split(':').pop();
+      const selLocalId = String(selector.id).split(':').pop();
+      if (entry.id !== selector.id && localId !== selLocalId) return false;
+    }
+    if (selector.type && String(entry.type || '').toLowerCase() !== String(selector.type).toLowerCase()) {
+      return false;
+    }
+    if (selector.school) {
+      const sch = String(entry.school || entry.spellStats?.school || '').toLowerCase();
+      if (sch !== String(selector.school).toLowerCase()) return false;
+    }
+    if (typeof selector.maxLevel === 'number') {
+      const lvl = Number(entry.level ?? entry.spellStats?.level);
+      if (!Number.isFinite(lvl) || lvl > selector.maxLevel) return false;
+    }
+    if (typeof selector.minLevel === 'number') {
+      const lvl = Number(entry.level ?? entry.spellStats?.level);
+      if (!Number.isFinite(lvl) || lvl < selector.minLevel) return false;
+    }
+    if (selector.tag) {
+      const tags = Array.isArray(entry.tags) ? entry.tags.map(t => String(t).toLowerCase()) : [];
+      if (!tags.includes(String(selector.tag).toLowerCase())) return false;
+    }
+    return true;
+  },
+
+  // D&D 3.5e RAW Multiplier Combiner (PHB p.304: x2 + x2 = x3)
+  combineRawMultipliers(multipliers = []) {
+    if (!Array.isArray(multipliers) || multipliers.length === 0) return 1;
+    let extra = 0;
+    multipliers.forEach(m => {
+      const num = Number(m);
+      if (Number.isFinite(num) && num > 1) extra += (num - 1);
+    });
+    return 1 + extra;
+  },
+
+  // Single Unified V2.5 Composable Lego Evaluation Pipeline
+  // Stages: 1. Grants/Synergies -> 2. Selector Modifiers -> 3. Stat/Sub-Component Modifiers -> 4. Defenses -> 5. Resources -> 6. Modes
+  evaluateLegoCharacter(character, candidatePool = []) {
+    const ch = character || {};
+    const baseEntries = Array.isArray(ch.legoEntries) ? ch.legoEntries : [];
+    const activeBuffEntries = Array.isArray(ch.activeLegoBuffs) ? ch.activeLegoBuffs : [];
+    const allInitial = [...baseEntries, ...activeBuffEntries].map(e => this.normalizeLegoEntry(e));
+
+    // Resolve House-Rule Overrides (Priority: Character-local > DM Pack > SRD)
+    const overriddenIds = new Set();
+    allInitial.forEach(e => {
+      if (e && e.overrides) {
+        overriddenIds.add(e.overrides);
+        overriddenIds.add(String(e.overrides).split(':').pop());
+      }
+    });
+    const activeEntries = allInitial.filter(e => {
+      if (!e) return false;
+      const shortId = String(e.id || '').split(':').pop();
+      if ((overriddenIds.has(e.id) || overriddenIds.has(shortId)) && !e.overrides) return false;
+      return true;
+    });
+
+    const ownedIds = new Set();
+    activeEntries.forEach(e => {
+      if (e && e.id) {
+        ownedIds.add(e.id);
+        ownedIds.add(String(e.id).split(':').pop());
+      }
+    });
+
+    const ctx = this.buildFormulaContext(ch, { ownedIds });
+
+    // STAGE 1: Synergy & Grant Resolution (auto-unlocks entries from candidatePool or embedded grants when requires predicate passes)
+    const grantedCapabilities = { spellsAtWill: [], proficiencies: [], senses: [], movements: [], unlockedEntities: [] };
+    const poolNormalized = Array.isArray(candidatePool) ? candidatePool.map(p => this.normalizeLegoEntry(p)) : [];
+
+    // Check candidate pool entries that auto-unlock via requires/grants synergy
+    poolNormalized.forEach(cand => {
+      if (!cand || ownedIds.has(cand.id) || ownedIds.has(String(cand.id).split(':').pop())) return;
+      if (cand.requires && (cand.requires.all || cand.requires.any || cand.requires.has)) {
+        if (this.evaluatePredicate(cand.requires, ch, ctx)) {
+          activeEntries.push(cand);
+          ownedIds.add(cand.id);
+          ownedIds.add(String(cand.id).split(':').pop());
+          grantedCapabilities.unlockedEntities.push(cand.id);
+        }
+      }
+    });
+
+    activeEntries.forEach(e => {
+      (e.grants || []).forEach(g => {
+        if (!this.evaluatePredicate(g.requires, ch, ctx)) return;
+        if (g.grantType === 'entity' && g.targetId && !ownedIds.has(g.targetId)) {
+          const found = poolNormalized.find(p => p.id === g.targetId || String(p.id).split(':').pop() === g.targetId);
+          if (found) {
+            activeEntries.push(found);
+            ownedIds.add(found.id);
+            grantedCapabilities.unlockedEntities.push(found.id);
+          } else {
+            ownedIds.add(g.targetId);
+            grantedCapabilities.unlockedEntities.push(g.targetId);
+          }
+        } else if (g.grantType === 'spell_at_will') {
+          grantedCapabilities.spellsAtWill.push({ source: e.id, targetId: g.targetId, filter: g.filter || null });
+        } else if (g.grantType === 'proficiency') {
+          grantedCapabilities.proficiencies.push(g.targetId || g.value);
+        } else if (g.grantType === 'sense') {
+          grantedCapabilities.senses.push({ type: g.targetId, range: g.value });
+        } else if (g.grantType === 'movement') {
+          grantedCapabilities.movements.push({ mode: g.targetId, speed: g.value });
+        }
+      });
+    });
+
+    // Deep-clone entries before Stage 2 selector mutations so base catalog objects are never mutated in place
+    const workingEntries = activeEntries.map(e => JSON.parse(JSON.stringify(e)));
+
+    // Collect all active modifiers (from top-level and passive modes)
+    const allModifiers = [];
+    workingEntries.forEach(e => {
+      const selfCtx = Object.assign({}, ctx, {
+        self: { stacks: Number(e.stacks) || 1, invested: Number(e.invested) || 0 }
+      });
+      (e.modifiers || []).forEach(m => {
+        if (this.evaluatePredicate(m.when || m.condition, ch, selfCtx)) {
+          allModifiers.push({ mod: m, sourceEntry: e, selfCtx });
+        }
+      });
+    });
+
+    // STAGE 2: Selector Modifiers (Entity-to-Entity & Category-Wide Mutations)
+    const selectorMods = allModifiers.filter(item => item.mod.selector || String(item.mod.target || '').startsWith('entity.'));
+    const statMods = allModifiers.filter(item => !item.mod.selector && !String(item.mod.target || '').startsWith('entity.'));
+
+    selectorMods.forEach(({ mod, selfCtx }) => {
+      const val = mod.formula !== undefined && mod.formula !== null
+        ? this.evaluateFormula(mod.formula, selfCtx)
+        : Number(mod.value || 0);
+      const op = mod.op || 'add';
+      const field = String(mod.target || '').replace(/^entity\./, '');
+
+      workingEntries.forEach(targetEntry => {
+        if (!this.matchesEntitySelector(targetEntry, mod.selector || {})) return;
+        targetEntry._mutated = targetEntry._mutated || {};
+
+        if (field === 'saveBonus') {
+          (targetEntry.modifiers || []).forEach(tm => {
+            if (String(tm.target || '').startsWith('save')) {
+              tm.value = op === 'set' || op === 'replace' ? val : (Number(tm.value || 0) + val);
+            }
+          });
+          (targetEntry.modes || []).forEach(mode => {
+            if (mod.selector?.mode && mode.id !== mod.selector.mode) return;
+            (mode.modifiers || []).forEach(tm => {
+              if (String(tm.target || '').startsWith('save')) {
+                tm.value = op === 'set' || op === 'replace' ? val : (Number(tm.value || 0) + val);
+              }
+            });
+          });
+        } else if (field === 'dc') {
+          targetEntry._mutated.dcBonus = (targetEntry._mutated.dcBonus || 0) + (op === 'set' ? val : val);
+        } else if (field === 'damageDice' || field === 'weaponDamageDice') {
+          if (op === 'step_die') {
+            if (targetEntry.weaponMeta?.damageDice) {
+              targetEntry.weaponMeta.damageDice = this.stepWeaponDie(targetEntry.weaponMeta.damageDice, val);
+            }
+            (targetEntry.damageParts || []).forEach(dp => {
+              dp.dice = this.stepWeaponDie(dp.dice, val);
+            });
+          }
+        } else if (field === 'damageMultiplier') {
+          targetEntry._mutated.damageMultipliers = targetEntry._mutated.damageMultipliers || [];
+          targetEntry._mutated.damageMultipliers.push(val);
+        } else if (field === 'areaMultiplier' || field === 'area') {
+          targetEntry._mutated.areaMultiplier = (targetEntry._mutated.areaMultiplier || 1) * (op === 'multiply' ? val : (1 + val));
+        } else if (field === 'durationMultiplier') {
+          targetEntry._mutated.durationMultiplier = (targetEntry._mutated.durationMultiplier || 1) * (op === 'multiply' ? val : (1 + val));
+        } else if (field === 'dispelDcBonus') {
+          targetEntry._mutated.dispelDcBonus = (targetEntry._mutated.dispelDcBonus || 0) + val;
+        } else if (field === 'actionType') {
+          targetEntry.actionType = String(mod.value || val);
+          (targetEntry.modes || []).forEach(m => {
+            if (!mod.selector?.mode || m.id === mod.selector.mode) m.actionType = String(mod.value || val);
+          });
+        }
+      });
+    });
+
+    // Re-collect stat modifiers in case a selector mutated an entry's modifier values (e.g. Arcane Shield mutating Absorb Magic from +2 to +4)
+    const refreshedStatMods = [];
+    workingEntries.forEach(e => {
+      const selfCtx = Object.assign({}, ctx, {
+        self: { stacks: Number(e.stacks) || 1, invested: Number(e.invested) || 0 }
+      });
+      (e.modifiers || []).forEach(m => {
+        if (m.selector || String(m.target || '').startsWith('entity.')) return;
+        if (this.evaluatePredicate(m.when || m.condition, ch, selfCtx)) {
+          refreshedStatMods.push({ mod: m, sourceEntry: e, selfCtx });
+        }
+      });
+    });
+
+    // STAGE 3: Character Stat & Sub-Component Substitution Pipeline with 3.5e RAW Stacking
+    const NON_STACKING_TYPES = new Set([
+      'Enhancement', 'Deflection', 'Armor', 'Shield', 'Natural Armor', 'Resistance',
+      'Morale', 'Luck', 'Insight', 'Sacred', 'Profane', 'Competence', 'Alchemical',
+      'Racial', 'Size', 'Inherent'
+    ]);
+
+    const statBuckets = {};
+    const replacements = {};
+    const multipliers = { carryingCapacity: [], spellDamage: 0, healingReceived: 0 };
+    const effectiveSizeScopes = {};
+
+    const resolveModValue = (mod, selfCtx) => {
+      let v = (mod.formula !== undefined && mod.formula !== null && mod.formula !== '')
+        ? Number(this.evaluateFormula(mod.formula, selfCtx))
+        : Number(mod.value || 0);
+      if (mod.cap !== undefined && mod.cap !== null && mod.cap !== '') {
+        const capVal = Number(this.evaluateFormula(mod.cap, selfCtx));
+        if (Number.isFinite(capVal)) v = Math.min(v, capVal);
+      }
+      return Math.floor(v);
+    };
+
+    // First apply Ability Score bonuses so derived ability modifiers (@strMod..@chaMod) update dynamically
+    const abilityKeys = ['str', 'dex', 'con', 'int', 'wis', 'cha'];
+    const abilityTotals = {};
+    abilityKeys.forEach(k => {
+      const baseScore = Number(ch.abilities?.[k]?.base ?? ch.abilities?.[k]?.score ?? ch.abilities?.[k] ?? ch.stats?.[k] ?? 10);
+      abilityTotals[k] = { base: baseScore, typed: {}, untyped: 0 };
+    });
+
+    refreshedStatMods.forEach(({ mod, selfCtx }) => {
+      const t = String(mod.target || '');
+      const m = t.match(/^ability\.(str|dex|con|int|wis|cha)$/i);
+      if (!m) return;
+      const k = m[1].toLowerCase();
+      const v = resolveModValue(mod, selfCtx);
+      const bType = mod.type || 'Untyped';
+      if (NON_STACKING_TYPES.has(bType) && v > 0) {
+        abilityTotals[k].typed[bType] = Math.max(abilityTotals[k].typed[bType] || 0, v);
+      } else {
+        abilityTotals[k].untyped += v;
+      }
+    });
+
+    const evaluatedAbilities = {};
+    abilityKeys.forEach(k => {
+      const typedSum = Object.values(abilityTotals[k].typed).reduce((a, b) => a + b, 0);
+      const score = abilityTotals[k].base + typedSum + abilityTotals[k].untyped;
+      const modVal = this.getAbilityMod(score);
+      evaluatedAbilities[k] = { score, mod: modVal };
+      ctx[`${k}Mod`] = modVal;
+    });
+
+    // Now evaluate all remaining stat, sub-component, size, and multiplier modifiers with updated ability mods
+    refreshedStatMods.forEach(({ mod, sourceEntry, selfCtx }) => {
+      const updatedCtx = Object.assign({}, selfCtx, {
+        strMod: evaluatedAbilities.str.mod,
+        dexMod: evaluatedAbilities.dex.mod,
+        conMod: evaluatedAbilities.con.mod,
+        intMod: evaluatedAbilities.int.mod,
+        wisMod: evaluatedAbilities.wis.mod,
+        chaMod: evaluatedAbilities.cha.mod
+      });
+      const t = String(mod.target || '');
+      if (/^ability\.(str|dex|con|int|wis|cha)$/i.test(t)) return;
+
+      const op = mod.op || 'add';
+      const rawVal = (mod.formula !== undefined && mod.formula !== null && mod.formula !== '')
+        ? Number(this.evaluateFormula(mod.formula, updatedCtx))
+        : Number(mod.value || 0);
+      let v = rawVal;
+      if (mod.cap !== undefined && mod.cap !== null && mod.cap !== '') {
+        const capVal = Number(this.evaluateFormula(mod.cap, updatedCtx));
+        if (Number.isFinite(capVal)) v = Math.min(v, capVal);
+      }
+
+      if (t === 'carryingCapacity.multiplier' && op === 'multiply') {
+        multipliers.carryingCapacity.push(v);
+        return;
+      }
+      if (t === 'spell.damageMultiplier') {
+        multipliers.spellDamage += v;
+        return;
+      }
+      if (t === 'healing.receivedMultiplier') {
+        multipliers.healingReceived += v;
+        return;
+      }
+      if (t === 'size.effective') {
+        const scopes = Array.isArray(mod.appliesTo) && mod.appliesTo.length > 0
+          ? mod.appliesTo
+          : ['grapple', 'bullRush', 'trip', 'overrun', 'sunder', 'weaponSize', 'opposedSize'];
+        scopes.forEach(sc => {
+          effectiveSizeScopes[sc] = (effectiveSizeScopes[sc] || 0) + Math.floor(v);
+        });
+        return;
+      }
+
+      if (op === 'replace' || op === 'max' || op === 'set') {
+        replacements[t] = replacements[t] || [];
+        replacements[t].push({ op, value: Math.floor(v), source: sourceEntry.name, affects: mod.affects || null });
+        return;
+      }
+
+      const bType = mod.type || 'Untyped';
+      const intVal = Math.floor(v);
+      const expandTargets = t === 'save.all' ? ['save.fort', 'save.ref', 'save.will'] : [t];
+      expandTargets.forEach(targetKey => {
+        statBuckets[targetKey] = statBuckets[targetKey] || { typed: {}, untyped: 0, breakdown: [] };
+        if (NON_STACKING_TYPES.has(bType) && intVal > 0) {
+          const prev = statBuckets[targetKey].typed[bType] || 0;
+          if (intVal > prev) statBuckets[targetKey].typed[bType] = intVal;
+        } else {
+          statBuckets[targetKey].untyped += intVal;
+        }
+        statBuckets[targetKey].breakdown.push({
+          value: intVal,
+          type: bType,
+          source: sourceEntry.name,
+          sourceLabel: mod.sourceLabel || null
+        });
+      });
+    });
+
+    const sumBucket = (key) => {
+      const b = statBuckets[key];
+      if (!b) return 0;
+      return Object.values(b.typed).reduce((acc, n) => acc + n, 0) + b.untyped;
+    };
+
+    // Resolve Sub-Component Ability Modifiers (e.g. save.will.abilityMod, save.ref.abilityMod, ac.abilityMod)
+    const resolveSubComponentMod = (slotKey, defaultMod) => {
+      const cands = replacements[slotKey];
+      if (!cands || cands.length === 0) return defaultMod;
+      const forced = cands.filter(c => c.op === 'replace' || c.op === 'set');
+      if (forced.length > 0) return Math.max(...forced.map(f => f.value));
+      return Math.max(defaultMod, ...cands.map(c => c.value));
+    };
+
+    const fortAbiMod = resolveSubComponentMod('save.fort.abilityMod', evaluatedAbilities.con.mod);
+    const refAbiMod = resolveSubComponentMod('save.ref.abilityMod', evaluatedAbilities.dex.mod);
+    const willAbiMod = resolveSubComponentMod('save.will.abilityMod', evaluatedAbilities.wis.mod);
+    const acAbiMod = resolveSubComponentMod('ac.abilityMod', evaluatedAbilities.dex.mod);
+
+    const baseSaves = ch.baseSaves || { fort: 0, ref: 0, will: 0 };
+    const saves = {
+      fort: (Number(baseSaves.fort) || 0) + fortAbiMod + sumBucket('save.fort'),
+      ref: (Number(baseSaves.ref) || 0) + refAbiMod + sumBucket('save.ref'),
+      will: (Number(baseSaves.will) || 0) + willAbiMod + sumBucket('save.will')
+    };
+
+    // Resolve Armor Class (Normal, Touch, Flat-Footed) & AC Replacement (e.g. Perform Dance check = AC)
+    const armorBonus = sumBucket('ac.armor');
+    const shieldBonus = sumBucket('ac.shield');
+    const natArmorBonus = sumBucket('ac.natural');
+    const deflectBonus = sumBucket('ac.deflection');
+    const dodgeBonus = sumBucket('ac.dodge');
+    const miscAcBonus = sumBucket('ac');
+
+    let normalAc = 10 + acAbiMod + armorBonus + shieldBonus + natArmorBonus + deflectBonus + dodgeBonus + miscAcBonus;
+    let touchAc = 10 + acAbiMod + deflectBonus + dodgeBonus + miscAcBonus;
+    let flatFootedAc = 10 + Math.min(0, acAbiMod) + armorBonus + shieldBonus + natArmorBonus + deflectBonus + miscAcBonus;
+
+    const acReplaces = [...(replacements['ac.base'] || []), ...(replacements['ac.total'] || [])];
+    acReplaces.forEach(rep => {
+      const aff = Array.isArray(rep.affects) ? rep.affects : ['normal', 'touch', 'flatFooted'];
+      if (rep.op === 'replace' || rep.op === 'set') {
+        if (aff.includes('normal')) normalAc = rep.value;
+        if (aff.includes('touch')) touchAc = rep.value;
+        if (aff.includes('flatFooted')) flatFootedAc = rep.value;
+      } else if (rep.op === 'max') {
+        if (aff.includes('normal')) normalAc = Math.max(normalAc, rep.value);
+        if (aff.includes('touch')) touchAc = Math.max(touchAc, rep.value);
+        if (aff.includes('flatFooted')) flatFootedAc = Math.max(flatFootedAc, rep.value);
+      }
+    });
+
+    // STAGE 4: Defenses Evaluation
+    const defenses = {
+      dr: [],
+      sr: 0,
+      resistances: {},
+      immunities: new Set(),
+      vulnerabilities: new Set(),
+      regen: 0,
+      fastHealing: 0,
+      fortification: 0,
+      absorptions: {}
+    };
+
+    workingEntries.forEach(e => {
+      const selfCtx = Object.assign({}, ctx, {
+        strMod: evaluatedAbilities.str.mod,
+        dexMod: evaluatedAbilities.dex.mod,
+        conMod: evaluatedAbilities.con.mod,
+        intMod: evaluatedAbilities.int.mod,
+        wisMod: evaluatedAbilities.wis.mod,
+        chaMod: evaluatedAbilities.cha.mod,
+        self: { stacks: Number(e.stacks) || 1, invested: Number(e.invested) || 0 }
+      });
+      (e.defenses || []).forEach(d => {
+        if (!this.evaluatePredicate(d.when, ch, selfCtx)) return;
+        const val = (d.formula !== undefined && d.formula !== null && d.formula !== '')
+          ? Math.floor(Number(this.evaluateFormula(d.formula, selfCtx)) || 0)
+          : Number(d.value || 0);
+        const tgt = String(d.target || '').toLowerCase();
+        if (d.kind === 'dr') {
+          defenses.dr.push({ value: val, bypass: d.bypass || '-', source: e.name });
+        } else if (d.kind === 'sr') {
+          defenses.sr = Math.max(defenses.sr, val);
+        } else if (d.kind === 'resistance') {
+          defenses.resistances[tgt] = Math.max(defenses.resistances[tgt] || 0, val);
+        } else if (d.kind === 'immunity') {
+          defenses.immunities.add(tgt);
+        } else if (d.kind === 'vulnerability') {
+          defenses.vulnerabilities.add(tgt);
+        } else if (d.kind === 'regen') {
+          defenses.regen = Math.max(defenses.regen, val);
+        } else if (d.kind === 'fast_healing') {
+          defenses.fastHealing = Math.max(defenses.fastHealing, val);
+        } else if (d.kind === 'fortification') {
+          defenses.fortification = Math.max(defenses.fortification, val);
+        } else if (d.kind === 'absorption') {
+          defenses.absorptions[tgt] = Math.max(defenses.absorptions[tgt] || 0, Number(d.healRatio ?? 1));
+        }
+      });
+    });
+
+    // STAGE 5: Resources & Essentia Allocation Pools
+    const resources = {};
+    workingEntries.forEach(e => {
+      (e.resources || []).forEach(r => {
+        const maxVal = Math.max(0, Math.floor(Number(this.evaluateFormula(r.maxFormula ?? 1, ctx)) || 0));
+        resources[r.id] = {
+          id: r.id,
+          name: r.name,
+          kind: r.kind || 'consume',
+          max: maxVal,
+          recharge: r.recharge || { period: 'day', dice: null },
+          source: e.id
+        };
+      });
+    });
+
+    // STAGE 6: Modes / Activities Evaluation (with post-selector mutations applied)
+    const evaluatedModes = [];
+    workingEntries.forEach(e => {
+      const mut = e._mutated || {};
+      const dmgMult = this.combineRawMultipliers(mut.damageMultipliers || []);
+      const dcBonus = Number(mut.dcBonus || 0);
+      const selfCtx = Object.assign({}, ctx, {
+        strMod: evaluatedAbilities.str.mod,
+        dexMod: evaluatedAbilities.dex.mod,
+        conMod: evaluatedAbilities.con.mod,
+        intMod: evaluatedAbilities.int.mod,
+        wisMod: evaluatedAbilities.wis.mod,
+        chaMod: evaluatedAbilities.cha.mod,
+        self: { stacks: Number(e.stacks) || 1, invested: Number(e.invested) || 0 }
+      });
+
+      (e.modes || []).forEach(m => {
+        if (m.requires && !this.evaluatePredicate(m.requires, ch, selfCtx)) return;
+        const saveObj = (m.save && typeof m.save === 'object')
+          ? m.save
+          : (e.dcFormula ? { type: m.save || e.save || 'Reflex', dcFormula: e.dcFormula, onSave: 'half' } : null);
+        const computedDc = saveObj && saveObj.dcFormula
+          ? (Math.floor(Number(this.evaluateFormula(saveObj.dcFormula, selfCtx)) || 0) + dcBonus)
+          : (dcBonus ? (10 + dcBonus) : null);
+
+        const resolvedParts = (m.damageParts || []).map(dp => {
+          const baseDice = String(this.evaluateFormula(dp.dice, selfCtx));
+          let resolvedDice = baseDice;
+          if (dmgMult > 1 && /^\d+d\d+/i.test(resolvedDice)) {
+            resolvedDice = resolvedDice.replace(/^(\d+)d(\d+)/i, (_, c, s) => `${Number(c) * dmgMult}d${s}`);
+          }
+          const flatBonus = Math.floor(Number(this.evaluateFormula(dp.bonus ?? 0, selfCtx)) || 0) * dmgMult;
+          const displayFormula = dmgMult > 1 ? `${baseDice} ×${dmgMult}` : baseDice;
+          return Object.assign({}, dp, { baseDice, dice: resolvedDice, displayFormula, bonus: flatBonus, multiplierApplied: dmgMult });
+        });
+
+        evaluatedModes.push({
+          entryId: e.id,
+          entryName: e.name,
+          modeId: m.id,
+          name: m.name,
+          sourceLabel: m.sourceLabel || null,
+          actionType: m.actionType || e.actionType || 'standard',
+          reactsTo: m.reactsTo || null,
+          area: m.area || e.range || null,
+          dc: computedDc,
+          save: saveObj,
+          damageParts: resolvedParts,
+          inputs: m.inputs || [],
+          spawnsBuff: m.spawnsBuff || null
+        });
+      });
+    });
+
+    return {
+      abilities: evaluatedAbilities,
+      saves,
+      ac: { normal: normalAc, touch: touchAc, flatFooted: flatFootedAc, naturalArmor: natArmorBonus },
+      hpBonus: sumBucket('hp'),
+      speedLandBonus: sumBucket('speed.land'),
+      defenses: {
+        dr: defenses.dr,
+        sr: defenses.sr,
+        resistances: defenses.resistances,
+        immunities: Array.from(defenses.immunities),
+        vulnerabilities: Array.from(defenses.vulnerabilities),
+        regen: defenses.regen,
+        fastHealing: defenses.fastHealing,
+        fortification: defenses.fortification,
+        absorptions: defenses.absorptions
+      },
+      multipliers: {
+        carryingCapacity: this.combineRawMultipliers(multipliers.carryingCapacity),
+        spellDamage: 1 + multipliers.spellDamage,
+        healingReceived: 1 + multipliers.healingReceived
+      },
+      effectiveSizeScopes,
+      resources,
+      grantedCapabilities,
+      modes: evaluatedModes,
+      entries: workingEntries
+    };
+  },
+
+  // Trigger an active/reactive Lego mode with runtime user inputs (@input.*) and return spawned buff / state changes
+  triggerLegoMode(character, entryId, modeId, inputValues = {}) {
+    const ch = character || {};
+    const evalState = this.evaluateLegoCharacter(ch);
+    const entry = evalState.entries.find(e => e.id === entryId || String(e.id).split(':').pop() === entryId);
+    if (!entry) return null;
+    const mode = (entry.modes || []).find(m => m.id === modeId) || (entry.modes || [])[0];
+    if (!mode) return null;
+
+    const ctx = this.buildFormulaContext(ch, {
+      inputs: inputValues,
+      strMod: evalState.abilities.str.mod,
+      dexMod: evalState.abilities.dex.mod,
+      conMod: evalState.abilities.con.mod,
+      intMod: evalState.abilities.int.mod,
+      wisMod: evalState.abilities.wis.mod,
+      chaMod: evalState.abilities.cha.mod
+    });
+
+    const result = {
+      entryId: entry.id,
+      modeId: mode.id,
+      tempHpGained: 0,
+      healedHp: 0,
+      spawnedBuff: null
+    };
+
+    if (mode.spawnsBuff) {
+      const sb = mode.spawnsBuff;
+      const dur = Math.floor(Number(this.evaluateFormula(sb.durationRounds ?? 1, ctx)) || 1);
+      const tempHp = sb.tempHpFormula ? Math.floor(Number(this.evaluateFormula(sb.tempHpFormula, ctx)) || 0) : 0;
+      const healHp = sb.healFormula ? Math.floor(Number(this.evaluateFormula(sb.healFormula, ctx)) || 0) : 0;
+      const resolvedMods = (sb.modifiers || []).map(m => Object.assign({}, m, {
+        value: m.formula ? Math.floor(Number(this.evaluateFormula(m.formula, ctx)) || 0) : Number(m.value || 0),
+        formula: undefined
+      }));
+      result.tempHpGained = tempHp;
+      result.healedHp = healHp;
+      result.spawnedBuff = {
+        id: sb.id || `buff_${entry.id}_${mode.id}`,
+        name: sb.name || `${entry.name} (${mode.name})`,
+        type: 'Special Ability',
+        durationRounds: dur,
+        maxStacks: sb.maxStacks || null,
+        stacks: 1,
+        tempHp,
+        modifiers: resolvedMods,
+        defenses: sb.defenses || [],
+        note: sb.note || null
+      };
+    }
+
+    return result;
+  },
+
+  // Dry-Run Preview: compare character stats before and after adding a candidate V2.5 Lego Entry
+  dryRunLegoEntry(character, candidateEntry, candidatePool = []) {
+    const before = this.evaluateLegoCharacter(character, candidatePool);
+    const afterChar = Object.assign({}, character, {
+      legoEntries: [...(character.legoEntries || []), candidateEntry]
+    });
+    const after = this.evaluateLegoCharacter(afterChar, candidatePool);
+    const diffs = [];
+    if (before.ac.normal !== after.ac.normal) diffs.push(`AC: ${before.ac.normal} -> ${after.ac.normal}`);
+    if (before.saves.fort !== after.saves.fort) diffs.push(`Fort: ${before.saves.fort} -> ${after.saves.fort}`);
+    if (before.saves.ref !== after.saves.ref) diffs.push(`Ref: ${before.saves.ref} -> ${after.saves.ref}`);
+    if (before.saves.will !== after.saves.will) diffs.push(`Will: ${before.saves.will} -> ${after.saves.will}`);
+    if (before.hpBonus !== after.hpBonus) diffs.push(`HP Bonus: +${before.hpBonus} -> +${after.hpBonus}`);
+    if (before.defenses.sr !== after.defenses.sr) diffs.push(`SR: ${before.defenses.sr} -> ${after.defenses.sr}`);
+    return { before, after, diffs };
+  },
+
+  // Derive the Declarative Page Object Interaction Map from an entry's Lego primitives (no entity-specific hardcoding)
+  getObjectInteractionMap(entry) {
+    const norm = this.normalizeLegoEntry(entry);
+    if (!norm) return { nodes: [], edges: [] };
+    const nodes = new Set();
+    const edges = [];
+
+    // 1. Modes -> Action Economy, Combat Offense, Saves Reaction Strip, Buff/HP Bar
+    (norm.modes || []).forEach(m => {
+      const act = String(m.actionType || norm.actionType || 'standard').toLowerCase();
+      if (act !== 'passive') {
+        nodes.add('ActionEconomyBar');
+        edges.push({ from: `mode:${m.id}.actionType(${act})`, to: 'ActionEconomyBar', effect: `Spends ${act.toUpperCase()} slot (Move spending warns on Full Attack; Standard can convert to Move; Immediate locks next turn Swift)` });
+      }
+      if ((Array.isArray(m.damageParts) && m.damageParts.length > 0) || m.save) {
+        nodes.add('CombatSpecialAttacksPanel');
+        edges.push({ from: `mode:${m.id}`, to: 'CombatSpecialAttacksPanel', effect: 'Projects interactive Roll Damage + Save DC + Recharge card into Combat tab' });
+      }
+      if (m.reactsTo) {
+        nodes.add('SavesAndReactionsStrip');
+        edges.push({ from: `mode:${m.id}.reactsTo(${m.reactsTo})`, to: 'SavesAndReactionsStrip', effect: 'Mounts quick reaction trigger next to Saves/Defense HUD' });
+      }
+      if (m.spawnsBuff) {
+        nodes.add('ActiveBuffsAndTurnClock');
+        edges.push({ from: `mode:${m.id}.spawnsBuff`, to: 'ActiveBuffsAndTurnClock', effect: `Spawns timed buff (${m.spawnsBuff.durationRounds || 1} rds) & updates HP/TempHP` });
+      }
+    });
+
+    // 2. Resources -> Turn Clock / Rest Manager
+    (norm.resources || []).forEach(r => {
+      const period = r.recharge?.period || 'day';
+      if (period === 'rounds' || r.recharge?.dice) {
+        nodes.add('TurnClockNode');
+        edges.push({ from: `resource:${r.id}.recharge(${r.recharge?.dice || 'rounds'})`, to: 'TurnClockNode', effect: 'Subscribes to Next Round clock via absolute readyRound timestamp' });
+      } else {
+        nodes.add('RestAndResourcePoolBar');
+        edges.push({ from: `resource:${r.id}(${period})`, to: 'RestAndResourcePoolBar', effect: `Tracks ${r.kind || 'consume'} pool across ${period} rest cycles` });
+      }
+    });
+
+    // 3. Defenses -> Special Defenses Strip
+    if (Array.isArray(norm.defenses) && norm.defenses.length > 0) {
+      nodes.add('CombatSpecialDefensesPanel');
+      edges.push({ from: 'defenses[]', to: 'CombatSpecialDefensesPanel', effect: 'Projects DR, SR, Energy Resistance, Immunity, and Absorption badges' });
+    }
+
+    // 4. Modifiers -> Stat / Selector Target Nodes
+    (norm.modifiers || []).forEach(mod => {
+      if (mod.selector || String(mod.target || '').startsWith('entity.')) {
+        nodes.add('EntityMutatorGraph');
+        edges.push({ from: `modifier:${mod.target}`, to: 'EntityMutatorGraph', effect: `Mutates matching entities (${JSON.stringify(mod.selector || {})}) before stat aggregation` });
+      } else {
+        nodes.add('CharacterStatHUD');
+        edges.push({ from: `modifier:${mod.target}`, to: 'CharacterStatHUD', effect: `Applies ${mod.op || 'add'} (${mod.type || 'Untyped'}) to ${mod.target}` });
+      }
+    });
+
+    return { nodes: Array.from(nodes), edges };
+  },
+
+  // Phase 3: Local Two-Tier Lego Pattern Matcher (matches input text against curated lego_patterns.json skeletons)
+  findMatchingLegoPatterns(queryText, patternsCatalog = null, maxResults = 3) {
+    const q = String(queryText || '').toLowerCase().trim();
+    if (!q) return [];
+    const catalog = patternsCatalog
+      || (typeof window !== 'undefined' && window.LEGO_PATTERNS_CATALOG ? window.LEGO_PATTERNS_CATALOG : []);
+    const list = Array.isArray(catalog) ? catalog : (Array.isArray(catalog?.patterns) ? catalog.patterns : []);
+    const scored = [];
+    list.forEach(pat => {
+      if (!pat || !Array.isArray(pat.keywords)) return;
+      let score = 0;
+      pat.keywords.forEach(kw => {
+        const k = String(kw || '').toLowerCase();
+        if (k && q.includes(k)) score += (k.includes(' ') ? 3 : 2);
+      });
+      if (score > 0) scored.push({ pattern: pat, score });
+    });
+    scored.sort((a, b) => b.score - a.score);
+    return scored.slice(0, maxResults).map(s => s.pattern);
+  },
+
+  // Build AI Lego Assembly Prompt using matched structural templates from lego_patterns.json
+  buildLegoAssemblyPrompt(userQuery, matchedPatterns = []) {
+    const templatesJson = JSON.stringify(matchedPatterns.map(p => p.template), null, 2);
+    return [
+      'You are the D&D 3.5e Rule Master Lego Assembler.',
+      'Clone and combine the provided V2.5 Composable Lego JSON templates (`modifiers`, `defenses`, `resources`, `modes`, `grants`, `choices`) and adapt only the domain parameters to match the user request.',
+      'For multi-benefit DM Boons, include both benefits active simultaneously using `sourceLabel: "Benefit 1"` and `sourceLabel: "Benefit 2"`.',
+      `Matched Structural Lego Templates:\n${templatesJson}`,
+      `User Rule / Ability Request:\n${userQuery}`
+    ].join('\n\n');
   },
 
   // Declarative Compendium & Master DB lookup helper (O(1) ID/BaseItemId priority per Rule #10.4)

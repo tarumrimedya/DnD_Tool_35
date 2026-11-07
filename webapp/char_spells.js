@@ -9511,9 +9511,12 @@
       });
     }
 
-    function rollAbilityTacticalDice(formula, label, mode = 'damage') {
+    function rollAbilityTacticalDice(formula, label, mode = 'damage', actionType = '') {
       const cleanFormula = String(formula || '').trim();
       if (!cleanFormula) return;
+      if (mode === 'damage' && typeof consumeActionEconomy === 'function') {
+        consumeActionEconomy(actionType || 'standard', label || 'Ability Roll');
+      }
       if (typeof parseAndRollDiceFormula !== 'function') {
         if (typeof executeStandardCustomFormula === 'function') executeStandardCustomFormula(cleanFormula);
         return;
@@ -9681,9 +9684,9 @@
         {},
         (typeof fFromComp === 'object' && fFromComp) ? fFromComp : {},
         (typeof fFromBundled === 'object' && fFromBundled) ? fFromBundled : {},
-        (typeof fFromDb === 'object' && fFromDb) ? fFromDb : {},
         (typeof fFromChar === 'object' && fFromChar) ? fFromChar : {},
-        (typeof aFromChar === 'object' && aFromChar) ? aFromChar : {}
+        (typeof aFromChar === 'object' && aFromChar) ? aFromChar : {},
+        (typeof fFromDb === 'object' && fFromDb) ? fFromDb : {}
       );
       if (!mergedV2.dcFormula && !mergedV2.recharge && (!Array.isArray(mergedV2.damageParts) || mergedV2.damageParts.length === 0)) {
         if (typeof window !== 'undefined' && window.RuleMaster && typeof window.RuleMaster.parseStructuredAbilityStatBlock === 'function') {
@@ -9729,6 +9732,12 @@
           }
 
           const buttonsHtml = [];
+          const safeAction = String(
+            (fFromDb && (fFromDb.action || fFromDb.actionType)) ||
+            mergedV2.action ||
+            mergedV2.actionType ||
+            'standard'
+          ).replace(/'/g, "\\'");
           if (hasDmg) {
             mergedV2.damageParts.forEach(dp => {
               if (!dp || !dp.dice) return;
@@ -9738,7 +9747,7 @@
               const safeFormula = formula.replace(/'/g, "\\'");
               const safeLabel = `${title} (${dmgType} Damage)`.replace(/'/g, "\\'");
               buttonsHtml.push(`
-                <button type="button" onclick="rollAbilityTacticalDice('${safeFormula}', '${safeLabel}', 'damage')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-950/90 hover:bg-rose-800 text-rose-100 border border-rose-600/70 shadow transition active:scale-95 cursor-pointer">
+                <button type="button" onclick="rollAbilityTacticalDice('${safeFormula}', '${safeLabel}', 'damage', '${safeAction}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-950/90 hover:bg-rose-800 text-rose-100 border border-rose-600/70 shadow transition active:scale-95 cursor-pointer">
                   <span>⚔️</span>
                   <span>Roll ${safeEscapeHtml(formula)} ${safeEscapeHtml(dmgType)}</span>
                 </button>
