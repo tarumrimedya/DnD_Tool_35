@@ -292,4 +292,5 @@ Grup rank'ı = bileşenlerin en yüksek rank'ı; class skill = bileşenlerden bi
 - Grup hedefi (`skill.perception`) bileşen zarına da ulaşır. Dökümde "(Perception)" olarak görünür.
 - **Aynı kaynak tek sayılır:** Bir kaynak aynı zara birden çok bileşen üzerinden ulaşırsa yalnızca en güçlü girdisi kalır. Örnek: Climb +2 ve Swim +2 veren bir feat Athletics'e +2 verir, +4 değil (3.5e: aynı kaynaktan gelen bonuslar yığılmaz).
 - **Varsayılan, karakterinkinden farklı:** Klasik sayfanın varsayılanında Perception = Spot + Listen ve Thievery ACP'siz. Bu karakterin kendi tanımında ise Search de Perception'da ve Thievery ACP'li. Motor varsayılanı klasik sayfanınkiyle birebir aynı tutuldu ve bu bir testle korunuyor. Karakterin tanımı her zaman önce gelir.
-- Açık nokta: Mevcut motor `racial` türündeki bonusları kendi aralarında yığıyor (RAW'a göre aynı türden bonuslar yığılmaz). Bu davranışa dokunulmadı.
+- **Racial yığılmaz (karar, 2026-11-08):** Racial adlandırılmış bir bonus türü; RAW'a göre beceri zarında yalnızca en yüksek racial bonus geçer (ırk +2 Listen + şablon +8 Listen = +8). Eski motor bunları topluyordu. Yığılan türler: untyped, circumstance, penalty.
+- Açık nokta: Motorun başka yerleri de racial'ı yığılan tür sayıyor (`rule_engine.js` genel yığılma listesi ~2469, yetenek puanları ~5196). Bu karar şimdilik yalnızca beceri bonuslarına uygulandı.

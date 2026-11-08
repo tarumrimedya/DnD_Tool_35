@@ -6678,7 +6678,8 @@ const RuleEngine = {
   /**
    * Evaluate specific skill bonus from equipped items, active buffs, feats, and race (Canonical V2 `modifiers` array).
    * Resolves D&D 3.5e stacking rules: same bonus types do not stack (take highest),
-   * while different bonus types (Competence, Insight, Luck, Morale, Circumstance, Untyped, Racial) stack.
+   * while different bonus types stack with each other. Untyped, circumstance and penalties add up;
+   * racial, like every other named type, takes the highest ([V3]).
    * Zero heuristic description regexes.
    */
   evaluateSkillBonus(character, skillKey, skillName, statName) {
@@ -6819,7 +6820,8 @@ const RuleEngine = {
     };
 
     Object.entries(buckets).forEach(([type, rawEntries]) => {
-      if (type === 'untyped' || type === 'circumstance' || type === 'penalty' || type === 'racial') {
+      // [V3] Racial is a named bonus type: per 3.5e RAW only the highest racial bonus applies.
+      if (type === 'untyped' || type === 'circumstance' || type === 'penalty') {
         oncePerSource(rawEntries, type).forEach(e => {
           total += e.val;
           breakdown.push(`${e.name}: ${e.val >= 0 ? '+' : ''}${e.val} (${type})`);

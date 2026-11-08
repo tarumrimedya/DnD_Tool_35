@@ -88,6 +88,16 @@ test('stacking: different types stack (racial +4 Climb, competence +2 Jump => +6
   ]);
   assert.equal(evalSkill(c, 'athletics', 'Athletics').total, 6);
 });
+test('stacking: racial bonuses do not stack (race +2 Listen, template +8 Listen => +8)', () => {
+  const c = makeChar([
+    { name: 'Race Probe', mods: [mod('skill.listen', 2, 'racial')] },
+    { name: 'Template Probe', mods: [mod('skill.listen', 8, 'racial')] }
+  ]);
+  const r = evalSkill(c, 'listen', 'Listen');
+  assert.equal(r.total, 8);
+  assert.deepEqual(r.breakdown, ['Template Probe: +8 (racial)']);
+  assert.equal(evalSkill(c, 'perception', 'Perception').total, 8);
+});
 test('stacking: untyped bonuses from different sources stack', () => {
   const c = makeChar([
     { name: 'A', mods: [mod('skill.climb', 2)] },
