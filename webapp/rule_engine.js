@@ -78,6 +78,16 @@ const RuleEngine = {
       armors: { light: true, medium: false, heavy: false },
       shields: { shield: false, tower: false }
     },
+    'rogue (adventurer variant)': {
+      weapons: { simple: true, martial: false, specific: ['hand crossbow', 'rapier', 'sap', 'shortbow', 'short sword'] },
+      armors: { light: true, medium: false, heavy: false },
+      shields: { shield: false, tower: false }
+    },
+    'bloodstorm blade': {
+      weapons: { simple: true, martial: true, specific: [] },
+      armors: { light: true, medium: true, heavy: false },
+      shields: { shield: true, tower: false }
+    },
     'bard': {
       weapons: { simple: true, martial: false, specific: ['longsword', 'rapier', 'sap', 'short sword', 'shortbow', 'whip'] },
       armors: { light: true, medium: false, heavy: false },
@@ -6916,9 +6926,13 @@ const RuleEngine = {
     }
     const comp = (typeof window !== 'undefined' && window.SrdCompendium)
       || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
-    const srdClass = (comp && typeof comp.getClass === 'function')
+    let srdClass = (comp && typeof comp.getClass === 'function')
       ? comp.getClass(className)
       : null;
+    if (!srdClass && comp && typeof comp.getClass === 'function' && /\([^)]+\)/.test(className)) {
+      const baseClassName = String(className).replace(/\s*\([^)]+\)\s*/g, '').trim();
+      if (baseClassName) srdClass = comp.getClass(baseClassName);
+    }
     let localDef = (this.DND35_CLASS_DEFS && (this.DND35_CLASS_DEFS[className] || this.DND35_CLASS_DEFS[lowerKey])) || null;
     if (!localDef && !srdClass && typeof window !== 'undefined' && typeof window.getAvailableClassDefs === 'function') {
       const availDefs = window.getAvailableClassDefs();
@@ -7311,6 +7325,500 @@ const RuleEngine = {
   },
 
   /**
+   * ASCII-folds English and legacy Turkish strings (`İ/ı -> i`, `ğ -> g`, `ü -> u`,
+   * `ş -> s`, `ö -> o`, `ç -> c`) for Bilingual Reader Shield matching.
+   */
+  foldTr(str) {
+    const dottedI = new RegExp(String.fromCharCode(304), 'g');
+    const dotlessI = new RegExp(String.fromCharCode(305), 'g');
+    return String(str || '')
+      .replace(dottedI, 'i')
+      .replace(dotlessI, 'i')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+  },
+
+  /**
+   * Single canonical consumable & usable item effect parser (Phase R2).
+   * Evaluates structured V2 `damageParts`, healing tiers, condition cures,
+   * offensive wands/items, and buff potions with Bilingual Reader Shield support.
+   */
+  parseConsumablePlan(itemOrName, effectDesc) {
+    const itemObj = (itemOrName && typeof itemOrName === 'object') ? itemOrName : null;
+    const rawName = itemObj ? String(itemObj.name || '') : String(itemOrName || '');
+    const rawEffect = effectDesc !== undefined
+      ? String(effectDesc || '')
+      : (itemObj ? String(itemObj.effect || itemObj.desc || '') : '');
+
+    const nameFold = this.foldTr(rawName).trim();
+    const descFold = this.foldTr(rawEffect).trim();
+    const combined = `${nameFold} ${descFold}`.trim();
+    const isPotion = /^(potion|oil|elixir|iksir)\b/i.test(nameFold) || /\b(potion|iksir)\b/i.test(nameFold);
+    const buffLabel = isPotion ? 'Potion Effect' : 'Item Effect';
+
+    const cureFlags = {
+      poison: /neutralize\s*poison|panzehir|zehir/i.test(nameFold) || /neutralize[s]?\s+poison|cures?\s+poison|removes?\s+poison|panzehir/i.test(descFold),
+      curse: /remove\s*curse|break\s*enchantment|lanet/i.test(nameFold) || /removes?\s+(?:all\s+)?curses?|breaks?\s+enchantment|lanet[a-z]*\s+(?:kaldir|boz|temizle)/i.test(descFold),
+      blindDeaf: /remove\s*blindness|remove\s*deafness|\bkor\b|korluk|\bsagir\b|sagirlik/i.test(nameFold) || /cures?\s+blindness|removes?\s+blindness|cures?\s+deafness|removes?\s+deafness/i.test(descFold),
+      paralysis: /remove\s*paralysis|felc/i.test(nameFold) || /removes?\s+paralysis|cures?\s+paralysis|felc[a-z]*\s+(?:kaldir|tedavi|gider)/i.test(descFold),
+      disease: /remove\s*disease|hastalik/i.test(nameFold) || /cures?\s+(?:all\s+)?diseases?|removes?\s+(?:all\s+)?diseases?|hastalik[a-z]*\s+(?:kaldir|tedavi|iyiles)/i.test(descFold),
+      lesserRestoration: /lesser\s+restoration|kucuk\s+restorasyon/i.test(combined),
+      fullRestoration: /\b(restoration|restorasyon)\b/i.test(combined) && !/lesser\s+restoration|kucuk\s+restorasyon/i.test(combined)
+    };
+    const hasAnyCureFlag = Object.values(cureFlags).some(Boolean);
+
+    // 1. Structured V2 `item.damageParts`
+    if (itemObj && Array.isArray(itemObj.damageParts) && itemObj.damageParts.length > 0) {
+      const dp = itemObj.damageParts[0] || {};
+      const diceStr = String(dp.dice || '').trim();
+      const dm = diceStr.match(/(\d+)d(\d+)/i);
+      const count = dm ? (parseInt(dm[1], 10) || 1) : 0;
+      const sides = dm ? (parseInt(dm[2], 10) || 6) : 0;
+      const bonus = Number(dp.bonus) || 0;
+      const dmgType = this.foldTr(dp.type || '');
+      const isPositiveHeal = dmgType.includes('positive') || dmgType.includes('heal') || itemObj.ruleFlags?.isHealing === true;
+      const formula = count > 0
+        ? `${count}d${sides}${bonus !== 0 ? (bonus > 0 ? '+' : '') + bonus : ''}`
+        : `${bonus}`;
+      if (isPositiveHeal) {
+        return {
+          kind: 'heal',
+          isHealing: true,
+          isDamage: false,
+          isCure: false,
+          count,
+          sides,
+          bonus,
+          diceCount: count,
+          diceSides: sides,
+          flatBonus: bonus,
+          formula,
+          badgeText: `${formula} HP`,
+          badgeKind: 'heal',
+          isPotion,
+          buffLabel,
+          isCureMinor: count === 0 && bonus === 1,
+          isHealSpell: count === 0 && bonus >= 100,
+          isMagicMissile: false,
+          missiles: 0,
+          type: 'positive',
+          typeName: 'Healing',
+          icon: '💖',
+          saveDesc: null,
+          cureFlags
+        };
+      }
+      return {
+        kind: 'damage',
+        isHealing: false,
+        isDamage: true,
+        isCure: false,
+        count,
+        sides,
+        bonus,
+        diceCount: count,
+        diceSides: sides,
+        flatBonus: bonus,
+        formula,
+        badgeText: `${formula} Dmg`,
+        badgeKind: 'damage',
+        isPotion,
+        buffLabel,
+        isCureMinor: false,
+        isHealSpell: false,
+        isMagicMissile: false,
+        missiles: 0,
+        type: dmgType || 'generic',
+        typeName: dp.type ? `${dp.type} Damage` : 'Damage',
+        icon: /fire|ates/.test(dmgType) ? '🔥' : (/cold|soguk/.test(dmgType) ? '❄️' : (/acid|asit/.test(dmgType) ? '🧪' : (/electric|yildirim/.test(dmgType) ? '⚡' : '💥'))),
+        saveDesc: null,
+        cureFlags
+      };
+    }
+
+    // 2. Condition Cure Detection (Neutralize Poison, Remove Curse/Blindness/Paralysis/Disease, Restoration)
+    const isHealSpellName = /\bheal\b/i.test(nameFold) && !/\bcure\b|healing/i.test(nameFold);
+    if (hasAnyCureFlag && !isHealSpellName) {
+      const isLesser = cureFlags.lesserRestoration;
+      return {
+        kind: 'cure',
+        isHealing: false,
+        isDamage: false,
+        isCure: true,
+        count: isLesser ? 1 : 0,
+        sides: isLesser ? 4 : 0,
+        bonus: 0,
+        diceCount: isLesser ? 1 : 0,
+        diceSides: isLesser ? 4 : 0,
+        flatBonus: 0,
+        formula: isLesser ? '1d4' : 'D&D 3.5e RAW',
+        badgeText: null,
+        badgeKind: null,
+        isPotion,
+        buffLabel,
+        isCureMinor: false,
+        isHealSpell: false,
+        isMagicMissile: false,
+        missiles: 0,
+        type: 'cure',
+        typeName: 'Condition Cure',
+        icon: '✨',
+        saveDesc: null,
+        cureFlags
+      };
+    }
+
+    // 3. Healing Detection (English + ASCII-folded Turkish Reader Stems)
+    const isNotOffensiveWand = !/fireball|ates\s*topu|magic\s*missile|buyulu\s*fuze|lightning|yildirim|scorching|yakici\s*isin|acid|asit|alchemist/i.test(nameFold);
+    const isHealMatch = (
+      /\b(cure|heal|healing)\b|iyilestir|iyiles|can\s*puani|can\s*iksir/i.test(nameFold) ||
+      (/\b(cure|heal|healing|heals)\b|iyilestir|iyiles|\bhp\b|can\s*puani/i.test(descFold) && isNotOffensiveWand && !/\bwand\b|asa/i.test(nameFold))
+    );
+    if (isHealMatch) {
+      if (/\bminor\b|ufak/i.test(combined)) {
+        return {
+          kind: 'heal',
+          isHealing: true,
+          isDamage: false,
+          isCure: false,
+          count: 0,
+          sides: 0,
+          bonus: 1,
+          diceCount: 0,
+          diceSides: 0,
+          flatBonus: 1,
+          formula: '1 HP',
+          badgeText: '1 HP',
+          badgeKind: 'heal',
+          isPotion,
+          buffLabel,
+          isCureMinor: true,
+          isHealSpell: false,
+          isMagicMissile: false,
+          missiles: 0,
+          type: 'positive',
+          typeName: 'Healing',
+          icon: '💖',
+          saveDesc: null,
+          cureFlags
+        };
+      }
+      if (isHealSpellName) {
+        const flatHeal = /greater|mass/i.test(nameFold) ? 150 : 110;
+        return {
+          kind: 'heal',
+          isHealing: true,
+          isDamage: false,
+          isCure: false,
+          count: 0,
+          sides: 0,
+          bonus: flatHeal,
+          diceCount: 0,
+          diceSides: 0,
+          flatBonus: flatHeal,
+          formula: `${flatHeal} HP`,
+          badgeText: `${flatHeal} HP`,
+          badgeKind: 'heal',
+          isPotion,
+          buffLabel,
+          isCureMinor: false,
+          isHealSpell: true,
+          isMagicMissile: false,
+          missiles: 0,
+          type: 'positive',
+          typeName: 'Healing',
+          icon: '💖',
+          saveDesc: null,
+          cureFlags
+        };
+      }
+
+      let count = 1;
+      let sides = 8;
+      let bonus = 1;
+      const explicitHealDice = descFold.match(/(\d+)d(\d+)(?:\s*\+\s*(\d+))?/i) || nameFold.match(/(\d+)d(\d+)(?:\s*\+\s*(\d+))?/i);
+      if (/critical|kritik/i.test(combined)) {
+        count = 4; sides = 8; bonus = 7;
+      } else if (/serious|ciddi/i.test(combined)) {
+        count = 3; sides = 8; bonus = 5;
+      } else if (/moderate|\borta\b/i.test(combined)) {
+        count = 2; sides = 8; bonus = 3;
+      } else if (explicitHealDice) {
+        count = parseInt(explicitHealDice[1], 10) || 1;
+        sides = parseInt(explicitHealDice[2], 10) || 8;
+        bonus = explicitHealDice[3] !== undefined ? (parseInt(explicitHealDice[3], 10) || 0) : 0;
+      }
+      if (explicitHealDice && !/critical|kritik|serious|ciddi|moderate|\borta\b|light|hafif/i.test(nameFold)) {
+        count = parseInt(explicitHealDice[1], 10) || count;
+        sides = parseInt(explicitHealDice[2], 10) || sides;
+        bonus = explicitHealDice[3] !== undefined ? (parseInt(explicitHealDice[3], 10) || 0) : bonus;
+      }
+
+      const formula = `${count}d${sides}${bonus !== 0 ? (bonus > 0 ? '+' : '') + bonus : ''}`;
+      return {
+        kind: 'heal',
+        isHealing: true,
+        isDamage: false,
+        isCure: false,
+        count,
+        sides,
+        bonus,
+        diceCount: count,
+        diceSides: sides,
+        flatBonus: bonus,
+        formula,
+        badgeText: `${formula} HP`,
+        badgeKind: 'heal',
+        isPotion,
+        buffLabel,
+        isCureMinor: false,
+        isHealSpell: false,
+        isMagicMissile: false,
+        missiles: 0,
+        type: 'positive',
+        typeName: 'Healing',
+        icon: '💖',
+        saveDesc: null,
+        cureFlags
+      };
+    }
+
+    // 4. Offensive / Damage Detection (Wands, Alchemical Items & Spells)
+    if (nameFold.includes('fireball') || nameFold.includes('ates topu')) {
+      const clMatch = combined.match(/cl\s*(\d+)/i);
+      const cl = clMatch ? Math.min(10, Math.max(5, parseInt(clMatch[1], 10))) : 5;
+      const diceMatch = descFold.match(/(\d+)d6/i);
+      const count = diceMatch ? parseInt(diceMatch[1], 10) : cl;
+      const formula = `${count}d6`;
+      return {
+        kind: 'damage',
+        isHealing: false,
+        isDamage: true,
+        isCure: false,
+        count,
+        sides: 6,
+        bonus: 0,
+        diceCount: count,
+        diceSides: 6,
+        flatBonus: 0,
+        formula,
+        badgeText: `${formula} Dmg`,
+        badgeKind: 'damage',
+        isPotion,
+        buffLabel,
+        isCureMinor: false,
+        isHealSpell: false,
+        isMagicMissile: false,
+        missiles: 0,
+        type: 'fire',
+        typeName: 'Fire Damage',
+        icon: '🔥',
+        saveDesc: 'Reflex DC 14 half',
+        cureFlags
+      };
+    }
+
+    if (nameFold.includes('magic missile') || nameFold.includes('buyulu fuze')) {
+      const clMatch = combined.match(/cl\s*(\d+)/i);
+      const cl = clMatch ? (parseInt(clMatch[1], 10) || 1) : 1;
+      let missiles = cl >= 9 ? 5 : (cl >= 7 ? 4 : (cl >= 5 ? 3 : (cl >= 3 ? 2 : 1)));
+      const mMatch = descFold.match(/(\d+)\s*(?:missile|fuze|adet|x)/i);
+      if (mMatch) missiles = parseInt(mMatch[1], 10) || missiles;
+      const formula = `${missiles}x(1d4+1)`;
+      return {
+        kind: 'damage',
+        isHealing: false,
+        isDamage: true,
+        isCure: false,
+        count: missiles,
+        sides: 4,
+        bonus: missiles * 1,
+        diceCount: missiles,
+        diceSides: 4,
+        flatBonus: missiles * 1,
+        formula,
+        badgeText: `${formula} Dmg`,
+        badgeKind: 'damage',
+        isPotion,
+        buffLabel,
+        isCureMinor: false,
+        isHealSpell: false,
+        isMagicMissile: true,
+        missiles,
+        type: 'force',
+        typeName: 'Force Damage',
+        icon: '⚡',
+        saveDesc: null,
+        cureFlags
+      };
+    }
+
+    if (nameFold.includes('lightning') || nameFold.includes('yildirim')) {
+      const clMatch = combined.match(/cl\s*(\d+)/i);
+      const cl = clMatch ? Math.min(10, Math.max(5, parseInt(clMatch[1], 10))) : 5;
+      const formula = `${cl}d6`;
+      return {
+        kind: 'damage',
+        isHealing: false,
+        isDamage: true,
+        isCure: false,
+        count: cl,
+        sides: 6,
+        bonus: 0,
+        diceCount: cl,
+        diceSides: 6,
+        flatBonus: 0,
+        formula,
+        badgeText: `${formula} Dmg`,
+        badgeKind: 'damage',
+        isPotion,
+        buffLabel,
+        isCureMinor: false,
+        isHealSpell: false,
+        isMagicMissile: false,
+        missiles: 0,
+        type: 'electricity',
+        typeName: 'Electricity Damage',
+        icon: '⚡',
+        saveDesc: 'Reflex DC 14 half',
+        cureFlags
+      };
+    }
+
+    if (nameFold.includes('scorching ray') || nameFold.includes('yakici isin')) {
+      return {
+        kind: 'damage',
+        isHealing: false,
+        isDamage: true,
+        isCure: false,
+        count: 4,
+        sides: 6,
+        bonus: 0,
+        diceCount: 4,
+        diceSides: 6,
+        flatBonus: 0,
+        formula: '4d6',
+        badgeText: '4d6 Dmg',
+        badgeKind: 'damage',
+        isPotion,
+        buffLabel,
+        isCureMinor: false,
+        isHealSpell: false,
+        isMagicMissile: false,
+        missiles: 0,
+        type: 'fire',
+        typeName: 'Scorching Ray (Fire)',
+        icon: '🔥',
+        saveDesc: null,
+        cureFlags
+      };
+    }
+
+    const isTempHpOrDurationDice = /temporary\s+hit\s+points|temp\s*hp|gecici\s*can|false\s+life|\baid\b/i.test(combined) && !/\b(damage|hasar)\b/i.test(combined);
+    const genMatch = !isTempHpOrDurationDice
+      ? (descFold.match(/(\d+)d(\d+)(?:\s*([+-]\s*\d+))?/i) || nameFold.match(/(\d+)d(\d+)(?:\s*([+-]\s*\d+))?/i))
+      : null;
+    if (genMatch) {
+      const count = parseInt(genMatch[1], 10) || 1;
+      const sides = parseInt(genMatch[2], 10) || 6;
+      const bonus = genMatch[3] ? parseInt(genMatch[3].replace(/\s+/g, ''), 10) : 0;
+      let typeName = 'Damage';
+      let icon = '💥';
+      let type = 'generic';
+      if (/fire|ates/i.test(combined)) { type = 'fire'; typeName = 'Fire Damage'; icon = '🔥'; }
+      else if (/cold|soguk|buz/i.test(combined)) { type = 'cold'; typeName = 'Cold Damage'; icon = '❄️'; }
+      else if (/acid|asit/i.test(combined)) { type = 'acid'; typeName = 'Acid Damage'; icon = '🧪'; }
+      else if (/electric|elektrik|yildirim/i.test(combined)) { type = 'electricity'; typeName = 'Electricity Damage'; icon = '⚡'; }
+      else if (/force|guc/i.test(combined)) { type = 'force'; typeName = 'Force Damage'; icon = '✨'; }
+      const formula = `${count}d${sides}${bonus !== 0 ? (bonus > 0 ? '+' : '') + bonus : ''}`;
+      return {
+        kind: 'damage',
+        isHealing: false,
+        isDamage: true,
+        isCure: false,
+        count,
+        sides,
+        bonus,
+        diceCount: count,
+        diceSides: sides,
+        flatBonus: bonus,
+        formula,
+        badgeText: `${formula} Dmg`,
+        badgeKind: 'damage',
+        isPotion,
+        buffLabel,
+        isCureMinor: false,
+        isHealSpell: false,
+        isMagicMissile: false,
+        missiles: 0,
+        type,
+        typeName,
+        icon,
+        saveDesc: null,
+        cureFlags
+      };
+    }
+
+    if (/\b(acid|asit|alchemist)\b/i.test(nameFold)) {
+      return {
+        kind: 'damage',
+        isHealing: false,
+        isDamage: true,
+        isCure: false,
+        count: 1,
+        sides: 6,
+        bonus: 0,
+        diceCount: 1,
+        diceSides: 6,
+        flatBonus: 0,
+        formula: '1d6',
+        badgeText: '1d6 Dmg',
+        badgeKind: 'damage',
+        isPotion,
+        buffLabel,
+        isCureMinor: false,
+        isHealSpell: false,
+        isMagicMissile: false,
+        missiles: 0,
+        type: 'acid',
+        typeName: 'Acid Damage',
+        icon: '🧪',
+        saveDesc: null,
+        cureFlags
+      };
+    }
+
+    // 5. Default Buff / Utility Plan
+    return {
+      kind: 'buff',
+      isHealing: false,
+      isDamage: false,
+      isCure: false,
+      count: 0,
+      sides: 0,
+      bonus: 0,
+      diceCount: 0,
+      diceSides: 0,
+      flatBonus: 0,
+      formula: null,
+      badgeText: null,
+      badgeKind: null,
+      isPotion,
+      buffLabel,
+      isCureMinor: false,
+      isHealSpell: false,
+      isMagicMissile: false,
+      missiles: 0,
+      type: 'buff',
+      typeName: buffLabel,
+      icon: isPotion ? '🧪' : '📦',
+      saveDesc: null,
+      cureFlags
+    };
+  },
+
+  /**
    * Purely derives the deduplicated, categorized consumables view (`allItems` & `byGroup`)
    * using the P11 shield/armor/weapon exclusion rules without mutating input items.
    */
@@ -7381,20 +7889,26 @@ const RuleEngine = {
       return null;
     };
 
-    const classifyCategory = (item) => {
-      const name = String(item.name || '').toLowerCase();
-      const desc = String(item.effect || item.desc || '').toLowerCase();
-      const combined = `${name} ${desc}`;
-      if (/cure|heal|healing/i.test(name) || (/cure|heal/i.test(desc) && !/fireball|magic missile|wand/i.test(name))) {
+    const classifyCategory = (item, plan) => {
+      const nameFold = this.foldTr(item.name || '');
+      const descFold = this.foldTr(item.effect || item.desc || '');
+      const combined = `${nameFold} ${descFold}`;
+      if (plan && plan.isHealing) {
         return 'healing';
       }
-      if (/wand|fireball|magic missile|lightning|scorching|damage|cone of cold|ice storm/i.test(name) || /(\d+)d(\d+).*damage/i.test(desc)) {
+      if (plan && plan.isDamage) {
         return 'wand_damage';
       }
-      if (item.dailyCharges || /(?:\d+\s*\/\s*day)/i.test(combined)) {
+      if (/wand|asa|fireball|ates\s*topu|magic\s*missile|buyulu\s*fuze|lightning|yildirim|scorching|damage|cone\s*of\s*cold|ice\s*storm/i.test(nameFold)) {
+        return 'wand_damage';
+      }
+      if (item.dailyCharges || /(?:\d+\s*\/\s*(?:day|gun)|gunde\s*\d+)/i.test(combined)) {
         return 'daily_charge';
       }
-      if (/potion|elixir|buff|strength|grace|endurance|cunning|wisdom|splendor|invisibility|fly|haste|shield of faith|scroll of shield|potion of shield/i.test(name)) {
+      if (plan && plan.isCure) {
+        return 'buff';
+      }
+      if (/potion|iksir|elixir|buff|strength|grace|endurance|cunning|wisdom|splendor|invisibility|fly|hiz|haste|shield\s*of\s*faith|scroll\s*of\s*shield|potion\s*of\s*shield/i.test(nameFold)) {
         return 'buff';
       }
       return 'other';
@@ -7405,7 +7919,8 @@ const RuleEngine = {
     (ch.gearPool || []).forEach(p => {
       if (!p || isExcludedPhysicalOrAbility(p)) return;
       const dc = resolveDailyCharges(p);
-      const isWand = String(p.category || '').toLowerCase() === 'wand' || /\bwand\b/i.test(String(p.name || ''));
+      const nameFold = this.foldTr(p.name || '');
+      const isWand = String(p.category || '').toLowerCase() === 'wand' || /\b(wand|asa)\b/i.test(nameFold);
       const isConsumableCat = String(p.category || '').toLowerCase() === 'consumable' || (p.isBelt && String(p.category || '').toLowerCase() !== 'weapon');
       if ((isConsumableCat || isWand || dc) && !p.isEquipped) {
         const key = String(p.name || '').toLowerCase().trim();
@@ -7418,7 +7933,9 @@ const RuleEngine = {
           sourceType: 'pool',
           poolId: p.id,
           isBelt: Boolean(p.isBelt),
-          dailyCharges: dc
+          dailyCharges: dc,
+          damageParts: Array.isArray(p.damageParts) ? p.damageParts : undefined,
+          ruleFlags: p.ruleFlags || undefined
         });
       }
     });
@@ -7437,7 +7954,9 @@ const RuleEngine = {
           sourceType: 'consumable',
           idx: cIdx,
           isBelt: false,
-          dailyCharges: dc
+          dailyCharges: dc,
+          damageParts: Array.isArray(c.damageParts) ? c.damageParts : undefined,
+          ruleFlags: c.ruleFlags || undefined
         });
       } else {
         const existing = displayMap.get(key);
@@ -7460,9 +7979,10 @@ const RuleEngine = {
         const hasExplicitCharges = Number(slotItem.dailyCharges?.max || slotItem.dailyCharges || slotItem.charges) > 0 ||
           (Array.isArray(slotItem.modes) && slotItem.modes.some(m => m && m.actionType && m.actionType !== 'passive'));
         const hasDaily = isPhysicalSlotGear ? hasExplicitCharges : Boolean(dc);
+        const slotNameFold = this.foldTr(slotItem.name || '');
         const isWandOrUse = isPhysicalSlotGear
           ? hasExplicitCharges
-          : ((slotItem.desc && /(?:cure|fireball|missile|\d+d\d+)/i.test(slotItem.desc)) || (slotItem.name && /\bwand\b/i.test(slotItem.name)));
+          : ((slotItem.desc && /(?:cure|fireball|missile|\d+d\d+)/i.test(slotItem.desc)) || /\b(wand|asa)\b/i.test(slotNameFold));
         if (hasDaily || isWandOrUse) {
           const key = String(slotItem.name || '').toLowerCase().trim();
           if (!displayMap.has(key)) {
@@ -7475,7 +7995,9 @@ const RuleEngine = {
               slotKey,
               isBelt: false,
               fromSlot: true,
-              dailyCharges: dc
+              dailyCharges: dc,
+              damageParts: Array.isArray(slotItem.damageParts) ? slotItem.damageParts : undefined,
+              ruleFlags: slotItem.ruleFlags || undefined
             });
           }
         }
@@ -7491,7 +8013,19 @@ const RuleEngine = {
       other: []
     };
     allItems.forEach(item => {
-      const cat = classifyCategory(item);
+      const isDaily = Boolean(item.dailyCharges && typeof item.dailyCharges.max === 'number');
+      item.isDaily = isDaily;
+      item.isExhausted = isDaily ? (item.dailyCharges.current <= 0) : (item.qty <= 0);
+      const plan = this.parseConsumablePlan(item, item.effect);
+      item.plan = plan;
+      item.tagBadge = plan && plan.badgeText
+        ? {
+            text: plan.badgeText,
+            variant: plan.badgeKind === 'damage' ? 'damage' : 'healing',
+            formula: plan.formula
+          }
+        : null;
+      const cat = classifyCategory(item, plan);
       if (byGroup[cat]) byGroup[cat].push(item);
       else byGroup.other.push(item);
     });
@@ -7509,22 +8043,27 @@ const RuleEngine = {
    */
   deriveSheet(inputChar, customDbOrOptions = [], tacticalOptions = {}) {
     const working = JSON.parse(JSON.stringify(inputChar || {}));
+    const fallbackDb = Array.isArray(working.customDb) ? working.customDb : [];
     let rawDb = [];
     let rawSession = null;
     let resolvedTactical = Object.assign({}, tacticalOptions || {});
 
     if (Array.isArray(customDbOrOptions)) {
-      rawDb = customDbOrOptions;
+      rawDb = customDbOrOptions.length > 0
+        ? customDbOrOptions
+        : fallbackDb;
     } else if (customDbOrOptions && typeof customDbOrOptions === 'object') {
-      rawDb = Array.isArray(customDbOrOptions.masterDb)
-        ? customDbOrOptions.masterDb
-        : (Array.isArray(working.customDb) ? working.customDb : []);
+      rawDb = Array.isArray(customDbOrOptions.customDb)
+        ? customDbOrOptions.customDb
+        : (Array.isArray(customDbOrOptions.masterDb)
+          ? customDbOrOptions.masterDb
+          : fallbackDb);
       if (customDbOrOptions.session && typeof customDbOrOptions.session === 'object') {
         rawSession = customDbOrOptions.session;
       }
       resolvedTactical = Object.assign({}, customDbOrOptions.tactical || tacticalOptions || {});
-    } else if (Array.isArray(working.customDb)) {
-      rawDb = working.customDb;
+    } else {
+      rawDb = fallbackDb;
     }
     const workingDb = JSON.parse(JSON.stringify(rawDb));
     const workingSession = rawSession ? JSON.parse(JSON.stringify(rawSession)) : null;

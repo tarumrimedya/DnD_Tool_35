@@ -13,6 +13,7 @@ const path = require('path');
 
 const RuleEngine = require('../rule_engine.js');
 const CharStore = require('../char_store.js');
+const { UI, Actions } = require('../ui_components.js');
 const SchemaMigrator = global.SchemaMigrator;
 
 const FIXTURES_DIR = path.join(__dirname, 'fixtures');
@@ -374,6 +375,276 @@ function runDeriveSheetTests() {
   check('CharStore 20-step Undo ring buffer: caps at 20 steps after 25 dispatches', counts.undo === 20 && counts.redo === 0, `got ${JSON.stringify(counts)}`);
   CharStore.unmountRegion('test_ac');
   CharStore.unmountRegion('test_hp');
+  CharStore.clearHistory();
+
+  // --------------------------------------------------------------------------
+  // Phase R2: `UI.html` XSS Auto-Escaping, Composition & `Actions` Router
+  // --------------------------------------------------------------------------
+  const xssPayload = `<script>alert("xss")</script>' " &`;
+  const escapedFragment = UI.html`<div data-name="${xssPayload}">${xssPayload}</div>`;
+  const escapedStr = escapedFragment.toString();
+  check(
+    'UI.html auto-escapes <script>, quotes, and ampersands in attributes & text nodes',
+    !escapedStr.includes('<script>') &&
+    escapedStr.includes('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;&#39; &quot; &amp;'),
+    escapedStr
+  );
+
+  const nestedList = ['Alpha', '<Beta>'].map(item => UI.html`<li>${item}</li>`);
+  const composedFragment = UI.html`<ul>${nestedList}${UI.raw('<li class="raw">Gamma</li>')}</ul>`;
+  check(
+    'UI.html composes nested UI.html arrays and UI.raw without double-escaping',
+    composedFragment.toString() === '<ul><li>Alpha</li><li>&lt;Beta&gt;</li><li class="raw">Gamma</li></ul>',
+    composedFragment.toString()
+  );
+
+  let invokedActionPayload = null;
+  Actions.register('test:ping', (_el, dataset) => {
+    invokedActionPayload = dataset;
+    return 'pong';
+  });
+  const pingRes = Actions.invoke('test:ping', { sourceType: 'pool', id: 'gear-potion-clw' });
+  check(
+    'Actions.register & Actions.invoke route delegated dataset actions cleanly',
+    pingRes === 'pong' && invokedActionPayload && invokedActionPayload.id === 'gear-potion-clw'
+  );
+
+  // --------------------------------------------------------------------------
+  // Phase R2: `renderConsumables` Pure View-Model & `data-action` Verification
+  // --------------------------------------------------------------------------
+  const mockContainer = { innerHTML: '' };
+  const f01WithSpecialId = JSON.parse(JSON.stringify(f01Raw));
+  f01WithSpecialId.gearPool.push({
+    id: `pot_quote'_"_<script>`,
+    name: `Elixir of 'Testing' <1>`,
+    category: 'Consumable',
+    qty: 1,
+    desc: 'Grants +2 morale bonus'
+  });
+  const specialView = RuleEngine.deriveSheet(f01WithSpecialId, []);
+  const renderedHtml = UI.renderConsumablesView(mockContainer, specialView.inventory.consumablesGrouped);
+  const inlineOnEventRegex = new RegExp('\\bon(click|change|input|submit)\\s*=', 'i');
+  check(
+    'UI.renderConsumablesView: emits data-action="consumable:use", zero inline event handlers, and escapes special characters in data-id & name',
+    renderedHtml.includes('data-action="consumable:use"') &&
+    !inlineOnEventRegex.test(renderedHtml) &&
+    !renderedHtml.includes('<script>') &&
+    renderedHtml.includes('pot_quote&#39;_&quot;_&lt;script&gt;') &&
+    renderedHtml.includes('1d8+1 HP'),
+    renderedHtml.slice(0, 240)
+  );
+
+  // --------------------------------------------------------------------------
+  // Phase R2: `consumable/use` Dispatch + `Ctrl+Z` Undo Verification
+  // --------------------------------------------------------------------------
+  CharStore.clearHistory();
+  CharStore.replaceDoc(f01Raw, { skipHistory: true });
+  const initialPotion = (CharStore.getDoc().consumables || [])[0];
+  check('R2 Consumable Use (Fixture 01): initial Potion of Cure Light Wounds qty === 2 & HP === 12',
+    Boolean(initialPotion && initialPotion.qty === 2 && CharStore.getSheet().hp.current === 12)
+  );
+
+  // Take 5 damage (HP: 12 -> 7)
+  CharStore.dispatch({
+    type: 'doc/mutate',
+    meta: { label: 'Take 5 Damage' },
+    payload: (doc) => { doc.hp.current = 7; }
+  });
+  check('R2 Consumable Use (Fixture 01): HP drops to 7 after taking 5 damage', CharStore.getSheet().hp.current === 7);
+
+  // Use Potion of Cure Light Wounds with deterministic d8 roll = 4 (heals 4 + 1 = 5 HP -> 12 HP, qty: 2 -> 1)
+  CharStore.dispatch({
+    type: 'consumable/use',
+    label: 'Use Potion of Cure Light Wounds',
+    payload: {
+      sourceType: 'consumable',
+      idOrIdx: 0,
+      rolls: [{ type: 'd8', value: 4 }]
+    }
+  });
+  const afterUsePotion = (CharStore.getDoc().consumables || [])[0];
+  check(
+    'R2 Consumable Use (Fixture 01): Potion of Cure Light Wounds decrements qty 2 -> 1 & heals HP 7 -> 12',
+    Boolean(afterUsePotion && afterUsePotion.qty === 1 && CharStore.getSheet().hp.current === 12),
+    `qty=${afterUsePotion?.qty}, hp=${CharStore.getSheet().hp.current}`
+  );
+
+  // Undo (Ctrl+Z) restores qty 1 -> 2 and HP 12 -> 7
+  CharStore.undo();
+  const afterUndoPotion = (CharStore.getDoc().consumables || [])[0];
+  check(
+    'R2 Consumable Undo (Fixture 01): Ctrl+Z restores Potion of Cure Light Wounds qty 1 -> 2 & HP 12 -> 7',
+    Boolean(afterUndoPotion && afterUndoPotion.qty === 2 && CharStore.getSheet().hp.current === 7),
+    `qty=${afterUndoPotion?.qty}, hp=${CharStore.getSheet().hp.current}`
+  );
+
+  // Daily-charge item on Fixture 05: Ring of Blinking (gearPool id: 'item-ring-of-blinking', dailyCharges: 3/day)
+  CharStore.clearHistory();
+  CharStore.replaceDoc(f05Raw, { skipHistory: true });
+  const getRingOfBlinking = () => (CharStore.getDoc().gearPool || []).find(p => p.id === 'item-ring-of-blinking');
+  check(
+    'R2 Daily Charge Use (Fixture 05): Ring of Blinking starts with 3/3 daily charges',
+    Boolean(getRingOfBlinking() && getRingOfBlinking().dailyCharges.current === 3)
+  );
+  CharStore.dispatch({
+    type: 'consumable/use',
+    label: 'Use Ring of Blinking',
+    payload: {
+      sourceType: 'pool',
+      idOrIdx: 'item-ring-of-blinking'
+    }
+  });
+  check(
+    'R2 Daily Charge Use (Fixture 05): Ring of Blinking decrements dailyCharges.current 3 -> 2',
+    getRingOfBlinking().dailyCharges.current === 2 &&
+    CharStore.getSheet().inventory.consumablesGrouped.byGroup.daily_charge[0].dailyCharges.current === 2
+  );
+  CharStore.undo();
+  check(
+    'R2 Daily Charge Undo (Fixture 05): Ctrl+Z restores Ring of Blinking dailyCharges.current 2 -> 3',
+    getRingOfBlinking().dailyCharges.current === 3 &&
+    CharStore.getSheet().inventory.consumablesGrouped.byGroup.daily_charge[0].dailyCharges.current === 3
+  );
+
+  // --------------------------------------------------------------------------
+  // Character-Scoped `character.customDb` (`masterDb`) Isolation Gate
+  // --------------------------------------------------------------------------
+  CharStore.clearHistory();
+  const charA = JSON.parse(JSON.stringify(f01Raw));
+  charA.customDb = [
+    { id: 'hb_valerius_blade', name: 'Valerius Family Greatsword', category: 'Weapon', schemaVersion: 2 }
+  ];
+  CharStore.replaceDoc(charA, { skipHistory: true });
+  check(
+    'Character-Scoped customDb Isolation: Character A loads its own customDb and syncs global.masterDb === doc.customDb',
+    CharStore.getCustomDb().length === 1 &&
+    CharStore.getCustomDb()[0].id === 'hb_valerius_blade' &&
+    global.masterDb === CharStore.getDoc().customDb
+  );
+
+  // Switch to Character B (with its own distinct customDb)
+  const charB = JSON.parse(JSON.stringify(f05Raw));
+  charB.customDb = [
+    { id: 'hb_kaelen_draconic_boon', name: 'Draconic Path Boon', category: 'DM Boon', schemaVersion: 2 }
+  ];
+  CharStore.replaceDoc(charB, { label: 'Switch to Kaelen' });
+  check(
+    'Character-Scoped customDb Isolation: Switching to Character B isolates customDb (zero leakage from Character A)',
+    CharStore.getCustomDb().length === 1 &&
+    !CharStore.getCustomDb().some(e => e.id === 'hb_valerius_blade') &&
+    CharStore.getCustomDb()[0].id === 'hb_kaelen_draconic_boon' &&
+    global.masterDb === CharStore.getDoc().customDb
+  );
+
+  // Undo character switch -> restores Character A's customDb
+  CharStore.undo();
+  check(
+    'Character-Scoped customDb Isolation: Undo restores Character A customDb with zero cross-character pollution',
+    CharStore.getCustomDb().length === 1 &&
+    CharStore.getCustomDb()[0].id === 'hb_valerius_blade' &&
+    global.masterDb === CharStore.getDoc().customDb
+  );
+  CharStore.clearHistory();
+
+  // --------------------------------------------------------------------------
+  // Phase R2 QA Remediation: Bilingual Turkish Consumable Parsing & Reducer + No-Op Undo Guard
+  // --------------------------------------------------------------------------
+  const trHealPlan = RuleEngine.parseConsumablePlan('İyileştirme İksiri (Ciddi)', '');
+  const trFirePlan = RuleEngine.parseConsumablePlan('Ateş Topu Asası', '');
+  const trCursePlan = RuleEngine.parseConsumablePlan('Lanet Kaldırma İksiri', '');
+  check(
+    'RuleEngine.parseConsumablePlan Bilingual Reader Shield: parses Turkish Ciddi İyileştirme (3d8+5), Ateş Topu Asası (5d6), and Lanet Kaldırma (cursed)',
+    trHealPlan.isHealing === true && trHealPlan.diceCount === 3 && trHealPlan.flatBonus === 5 &&
+    trFirePlan.isDamage === true && trFirePlan.formula === '5d6' &&
+    trCursePlan.isCure === true && trCursePlan.cureFlags.curse === true,
+    JSON.stringify({ trHealPlan, trFirePlan, trCursePlan })
+  );
+
+  // Dispatch Turkish consumables via CharStore & verify No-Op Undo Guard on exhausted / missing items
+  CharStore.clearHistory();
+  const trChar = JSON.parse(JSON.stringify(f05Raw));
+  trChar.hp.current = 1;
+  trChar.activeDebuffs = ['cursed'];
+  trChar.consumables = [
+    { name: 'İyileştirme İksiri (Ciddi)', qty: 1, effect: '' },
+    { name: 'Ateş Topu Asası', qty: 2, effect: '' },
+    { name: 'Lanet Kaldırma İksiri', qty: 1, effect: '' },
+    { name: 'Tükenmiş İksir', qty: 0, effect: 'Heals 1d8+1 HP' }
+  ];
+  CharStore.replaceDoc(trChar, { skipHistory: true });
+
+  // 1. No-op guard: dispatch on exhausted item (qty: 0) and missing item (idx: 99) -> must NOT push onto Undo stack
+  CharStore.dispatch({
+    type: 'consumable/use',
+    label: 'Use Depleted Potion',
+    payload: { sourceType: 'consumable', idOrIdx: 3 }
+  });
+  CharStore.dispatch({
+    type: 'consumable/use',
+    label: 'Use Missing Potion',
+    payload: { sourceType: 'consumable', idOrIdx: 99 }
+  });
+  check(
+    'CharStore No-Op Undo Guard: dispatching consumable/use on exhausted (qty: 0) or missing item does NOT push onto Undo stack',
+    CharStore.canUndo() === false && CharStore.getHistoryCounts().undo === 0,
+    `canUndo=${CharStore.canUndo()}, counts=${JSON.stringify(CharStore.getHistoryCounts())}`
+  );
+
+  // 2. Dispatch Turkish "İyileştirme İksiri (Ciddi)" with deterministic rolls [5, 6, 7] + 5 = +23 HP (1 -> 24)
+  CharStore.dispatch({
+    type: 'consumable/use',
+    label: 'Use İyileştirme İksiri (Ciddi)',
+    payload: {
+      sourceType: 'consumable',
+      idOrIdx: 0,
+      rolls: { healRoll: [5, 6, 7] }
+    }
+  });
+  const trHealOutcome = CharStore.getLastOutcome();
+  check(
+    'Bilingual Consumable Dispatch: "İyileştirme İksiri (Ciddi)" heals 3d8+5 (+23 HP -> 24 HP) & records outcome on CharStore.getLastOutcome()',
+    CharStore.getSheet().hp.current === 24 &&
+    trHealOutcome && trHealOutcome.status === 'healed_dice' && trHealOutcome.healTotal === 23 &&
+    CharStore.getDoc().consumables[0].qty === 0 &&
+    CharStore.canUndo() === true,
+    JSON.stringify(trHealOutcome)
+  );
+
+  // 3. Dispatch Turkish "Ateş Topu Asası" with deterministic rolls [3, 4, 5, 6, 2] = 20 Fire Damage
+  CharStore.dispatch({
+    type: 'consumable/use',
+    label: 'Use Ateş Topu Asası',
+    payload: {
+      sourceType: 'consumable',
+      idOrIdx: 1,
+      rolls: { dmgRoll: [3, 4, 5, 6, 2] }
+    }
+  });
+  const trFireOutcome = CharStore.getLastOutcome();
+  check(
+    'Bilingual Consumable Dispatch: "Ateş Topu Asası" rolls 5d6 (20 Fire Damage) & decrements qty 2 -> 1',
+    trFireOutcome && trFireOutcome.status === 'damage_roll' && trFireOutcome.totalDamage === 20 &&
+    CharStore.getDoc().consumables[1].qty === 1,
+    JSON.stringify(trFireOutcome)
+  );
+
+  // 4. Dispatch Turkish "Lanet Kaldırma İksiri" -> clears 'cursed' from activeDebuffs
+  CharStore.dispatch({
+    type: 'consumable/use',
+    label: 'Use Lanet Kaldırma İksiri',
+    payload: {
+      sourceType: 'consumable',
+      idOrIdx: 2
+    }
+  });
+  const trCurseOutcome = CharStore.getLastOutcome();
+  check(
+    'Bilingual Consumable Dispatch: "Lanet Kaldırma İksiri" clears cursed debuff',
+    trCurseOutcome && trCurseOutcome.status === 'cured_debuffs' &&
+    !CharStore.getDoc().activeDebuffs.includes('cursed') &&
+    CharStore.getDoc().consumables[2].qty === 0,
+    JSON.stringify({ trCurseOutcome, activeDebuffs: CharStore.getDoc().activeDebuffs })
+  );
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

@@ -1,0 +1,100 @@
+/**
+ * ============================================================================
+ * JOYFUL-FERMI D&D 3.5e — CANONICAL CSS DESIGN TOKENS & THEME SYSTEM (R2)
+ * ============================================================================
+ * Provides CSS Custom Properties for the dark Slate/Indigo/Emerald/Amber/
+ * Purple/Rose/Sky palette, 4-tier button dimensions, domain tab theme tokens,
+ * and Play vs. Build mode visibility rules.
+ * ============================================================================
+ */
+
+:root {
+  /* Core Surfaces & Backgrounds */
+  --bg-page: #080e1e;
+  --bg-page-wallpaper: #050811;
+  --bg-card: #0f172a;
+  --bg-card-translucent: rgba(15, 23, 42, 0.90);
+  --bg-surface: #020617;
+  --bg-elevated: #1e293b;
+  --border-subtle: #1e293b;
+  --border-default: #334155;
+  --border-strong: #475569;
+
+  /* Typography Palette */
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  /* Semantic Domain Accents */
+  --accent-indigo: #6366f1;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --accent-purple: #a855f7;
+  --accent-rose: #f43f5e;
+  --accent-sky: #0ea5e9;
+  --accent-cyan: #06b6d4;
+
+  /* Canonical 4-Tier Button & Input Dimensions */
+  --btn-md-h: 2.25rem;
+  --btn-sm-h: 1.75rem;
+  --btn-xs-h: 1.5rem;
+  --btn-icon-sm: 1.5rem;
+  --input-md-h: 2rem;
+  --input-sm-h: 1.75rem;
+
+  /* Default Domain Theme Variables */
+  --theme-accent: #6366f1;
+  --theme-border: rgba(99, 102, 241, 0.40);
+  --theme-badge-bg: #1e1b4b;
+  --theme-badge-text: #a5b4fc;
+}
+
+/* Domain Theme Scopes */
+[data-theme="combat"] {
+  --theme-accent: #f43f5e;
+  --theme-border: rgba(244, 63, 94, 0.40);
+  --theme-badge-bg: #4c0519;
+  --theme-badge-text: #fda4af;
+}
+
+[data-theme="spells"] {
+  --theme-accent: #a855f7;
+  --theme-border: rgba(168, 85, 247, 0.40);
+  --theme-badge-bg: #3b0764;
+  --theme-badge-text: #d8b4fe;
+}
+
+[data-theme="inventory"] {
+  --theme-accent: #f59e0b;
+  --theme-border: rgba(245, 158, 11, 0.40);
+  --theme-badge-bg: #451a03;
+  --theme-badge-text: #fcd34d;
+}
+
+[data-theme="char"] {
+  --theme-accent: #0ea5e9;
+  --theme-border: rgba(14, 165, 233, 0.40);
+  --theme-badge-bg: #082f49;
+  --theme-badge-text: #7dd3fc;
+}
+
+/* Sheet Mode Visibility Rules (Play vs. Build) */
+[data-sheet-mode="play"] [data-mode-only="build"] {
+  display: none !important;
+}
+
+[data-sheet-mode="build"] [data-mode-only="play"] {
+  display: none !important;
+}
+
+/* Canonical 4-Tier UI Button & Input Utility Classes (1:1 parity with index.html) */
+:where(.ui-btn-md, .ui-btn-sm, .ui-btn-xs, .ui-btn-icon, .ui-btn-icon-sm) { display: inline-flex; }
+.ui-btn-md { height: 2.25rem; padding-left: 0.75rem; padding-right: 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; align-items: center; justify-content: center; gap: 0.375rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+.ui-btn-sm { height: 1.75rem; padding-left: 0.625rem; padding-right: 0.625rem; border-radius: 0.375rem; font-size: 0.6875rem; font-weight: 700; align-items: center; justify-content: center; gap: 0.25rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+.ui-btn-xs { height: 1.5rem; padding-left: 0.5rem; padding-right: 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; font-weight: 700; align-items: center; justify-content: center; gap: 0.25rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+.ui-btn-icon { width: 1.75rem; height: 1.75rem; padding: 0; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 700; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; transition: all 0.15s ease; cursor: pointer; }
+.ui-btn-icon-sm { width: 1.5rem; height: 1.5rem; padding: 0; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 700; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; transition: all 0.15s ease; cursor: pointer; }
+.ui-input-md { height: 2rem; border-radius: 0.5rem; font-size: 0.75rem; line-height: 1; }
+.ui-input-sm { height: 1.75rem; border-radius: 0.375rem; font-size: 0.75rem; line-height: 1; }
+

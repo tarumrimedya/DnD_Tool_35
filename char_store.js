@@ -33,7 +33,8 @@
         fullRound: false,
         immediate: false
       },
-      cooldowns: {}
+      cooldowns: {},
+      lastOutcome: null
     };
   }
 
@@ -74,6 +75,7 @@
   let _sheetDirty = true;
   let _isRestoringHistory = false;
   let _lastTacticalOptions = {};
+  let _lastOutcome = null;
   const _undoStack = [];
   const _redoStack = [];
   const _regions = new Map();
@@ -95,8 +97,31 @@
       return _state.doc;
     },
 
+    getCustomDb() {
+      if (!_state.doc || typeof _state.doc !== 'object') return [];
+      if (!Array.isArray(_state.doc.customDb)) _state.doc.customDb = [];
+      return _state.doc.customDb;
+    },
+
+    replaceDoc(newDoc, meta = {}) {
+      return this.dispatch({
+        type: 'doc/replace',
+        payload: newDoc,
+        meta
+      });
+    },
+
     getSession() {
       return _state.session;
+    },
+
+    getLastOutcome() {
+      return _lastOutcome;
+    },
+
+    setLastOutcome(out) {
+      _lastOutcome = out || null;
+      return _lastOutcome;
     },
 
     getUi() {
@@ -119,6 +144,12 @@
         _state.sheet = null;
         _sheetDirty = true;
         return;
+      }
+      if (!Array.isArray(newChar.customDb)) {
+        newChar.customDb = [];
+      }
+      if (typeof root !== 'undefined') {
+        root.masterDb = newChar.customDb;
       }
       const prevId = _state.doc && (_state.doc.id || _state.doc.name);
       const nextId = newChar.id || newChar.name;
@@ -146,11 +177,16 @@
       if (!engine || typeof engine.deriveSheet !== 'function') {
         return null;
       }
-      const db = (typeof root !== 'undefined' && Array.isArray(root.masterDb))
-        ? root.masterDb
-        : (Array.isArray(_state.doc.customDb) ? _state.doc.customDb : []);
+      if (!Array.isArray(_state.doc.customDb)) {
+        _state.doc.customDb = [];
+      }
+      if (typeof root !== 'undefined') {
+        root.masterDb = _state.doc.customDb;
+      }
+      const db = _state.doc.customDb;
       const sheetView = engine.deriveSheet(_state.doc, {
         masterDb: db,
+        customDb: db,
         session: _state.session,
         tactical: _lastTacticalOptions
       }, _lastTacticalOptions);
@@ -160,6 +196,12 @@
 
       if (typeof engine.writeBackLegacyFields === 'function') {
         engine.writeBackLegacyFields(_state.doc, sheetView);
+      }
+      if (!Array.isArray(_state.doc.customDb)) {
+        _state.doc.customDb = db;
+      }
+      if (typeof root !== 'undefined') {
+        root.masterDb = _state.doc.customDb;
       }
       this.notifyRegions();
       return sheetView;
@@ -263,14 +305,17 @@
       try {
         const restoredDoc = JSON.parse(snap.docJson);
         const restoredSession = JSON.parse(snap.sessionJson);
+        if (restoredDoc && !Array.isArray(restoredDoc.customDb)) {
+          restoredDoc.customDb = [];
+        }
         _state.doc = restoredDoc;
         _state.session = restoredSession;
         saveSessionToStorage(_state.doc, _state.session);
 
-        if (typeof root !== 'undefined' && root.document) {
-          root.character = _state.doc;
-          if (Array.isArray(_state.doc.customDb)) {
-            root.masterDb = _state.doc.customDb;
+        if (typeof root !== 'undefined' && _state.doc) {
+          root.masterDb = _state.doc.customDb;
+          if (root.document) {
+            root.character = _state.doc;
           }
         }
         this.recompute(_lastTacticalOptions);
@@ -340,12 +385,18 @@
 
       if (type === 'doc/replace') {
         if (!meta.skipHistory && _state.doc) {
-          this.recordHistory(meta.label || 'Replace Character');
+          this.recordHistory(meta.label || action.label || 'Replace Character');
         }
         _state.doc = payload ? JSON.parse(JSON.stringify(payload)) : null;
+        if (_state.doc && !Array.isArray(_state.doc.customDb)) {
+          _state.doc.customDb = [];
+        }
         _state.session = loadSessionFromStorage(_state.doc);
-        if (typeof root !== 'undefined' && root.document && _state.doc) {
-          root.character = _state.doc;
+        if (typeof root !== 'undefined' && _state.doc) {
+          root.masterDb = _state.doc.customDb;
+          if (root.document) {
+            root.character = _state.doc;
+          }
         }
         docChanged = true;
       } else if (type === 'doc/mutate') {
@@ -361,7 +412,7 @@
         docChanged = true;
       } else if (type === 'session/patch') {
         if (!meta.skipHistory && _state.doc) {
-          this.recordHistory(meta.label || 'Session Update');
+          this.recordHistory(meta.label || action.label || 'Session Update');
         }
         if (typeof payload === 'function') {
           payload(_state.session);
@@ -371,12 +422,53 @@
         saveSessionToStorage(_state.doc, _state.session);
         sessionChanged = true;
       } else if (_customReducers.has(type)) {
-        if (!meta.skipHistory && _state.doc) {
-          this.recordHistory(meta.label || type);
-        }
+        if (!_state.doc) return null;
+        const engine = resolveRuleEngine();
+        const preClean = (engine && typeof engine.stripDerivedFields === 'function')
+          ? engine.stripDerivedFields(_state.doc)
+          : _state.doc;
+        const preDocJson = JSON.stringify(preClean);
+        const preSessionJson = JSON.stringify(_state.session || createDefaultSession());
+        _lastOutcome = null;
         const reducerFn = _customReducers.get(type);
-        reducerFn(_state, payload, meta);
-        docChanged = true;
+        const nextDoc = reducerFn(_state.doc, action, _state);
+        const outcome = _lastOutcome || null;
+        const isAborted = Boolean(
+          outcome && (
+            outcome.status === 'not_found' ||
+            outcome.status === 'exhausted_daily' ||
+            outcome.status === 'exhausted_qty' ||
+            outcome.status === 'exhausted_slot' ||
+            outcome.status === 'exhausted_pool' ||
+            outcome.status === 'invalid_payload'
+          )
+        );
+        if (!isAborted) {
+          if (!meta.skipHistory && !_isRestoringHistory) {
+            const top = _undoStack[_undoStack.length - 1];
+            if (!top || top.docJson !== preDocJson || top.sessionJson !== preSessionJson) {
+              _undoStack.push({
+                label: String(meta.label || action.label || type),
+                docJson: preDocJson,
+                sessionJson: preSessionJson,
+                timestamp: Date.now()
+              });
+              if (_undoStack.length > MAX_HISTORY_STEPS) {
+                _undoStack.shift();
+              }
+              _redoStack.length = 0;
+            }
+          }
+          if (nextDoc && typeof nextDoc === 'object' && nextDoc !== _state.doc && (nextDoc.abilities || nextDoc.hp || nextDoc.name)) {
+            _state.doc = nextDoc;
+            if (!Array.isArray(_state.doc.customDb)) _state.doc.customDb = [];
+            if (typeof root !== 'undefined') {
+              root.masterDb = _state.doc.customDb;
+              if (root.document) root.character = _state.doc;
+            }
+          }
+          docChanged = true;
+        }
       }
 
       if (docChanged || sessionChanged) {
@@ -432,6 +524,444 @@
       return notified;
     }
   };
+
+  // Built-in Domain Reducer: 'consumable/use' (Phase R2 Vertical Slice)
+  function extractRollList(rollsPayload, fieldKey, count, sides) {
+    let rawArr = null;
+    if (Array.isArray(rollsPayload)) {
+      rawArr = rollsPayload;
+    } else if (rollsPayload && typeof rollsPayload === 'object' && Array.isArray(rollsPayload[fieldKey])) {
+      rawArr = rollsPayload[fieldKey];
+    }
+    const resolved = [];
+    let sum = 0;
+    for (let i = 0; i < count; i++) {
+      const entry = rawArr && rawArr[i] !== undefined ? rawArr[i] : null;
+      const num = entry !== null
+        ? (typeof entry === 'object' ? Number(entry.value) : Number(entry))
+        : (Math.floor(Math.random() * sides) + 1);
+      const val = Number.isFinite(num) && num > 0 ? num : 1;
+      resolved.push(val);
+      sum += val;
+    }
+    return { values: resolved, sum };
+  }
+
+  function applyConsumableUseReducer(doc, action, stateObj) {
+    const setOutcome = (out) => {
+      _lastOutcome = out || null;
+      return _lastOutcome;
+    };
+
+    if (!doc || typeof doc !== 'object') {
+      setOutcome({ status: 'invalid_payload' });
+      return doc;
+    }
+    const payload = (action && action.payload) || {};
+    const sourceType = payload.sourceType || (payload.slotKey ? 'slot' : (payload.poolId ? 'pool' : 'consumable'));
+    const idOrIdx = payload.idOrIdx !== undefined
+      ? payload.idOrIdx
+      : (payload.id !== undefined ? payload.id : (payload.poolId !== undefined ? payload.poolId : (payload.slotKey !== undefined ? payload.slotKey : payload.idx)));
+
+    const engine = resolveRuleEngine();
+    const fold = (s) => (engine && typeof engine.foldTr === 'function')
+      ? engine.foldTr(s)
+      : String(s || '').toLowerCase();
+
+    let item = null;
+    if (sourceType === 'slot') {
+      item = doc.bodySlots ? doc.bodySlots[idOrIdx] : null;
+    } else if (sourceType === 'pool' || sourceType === true) {
+      item = (doc.gearPool || []).find(p => p && (String(p.id) === String(idOrIdx) || fold(p.name).trim() === fold(idOrIdx).trim()));
+    } else {
+      const numIdx = Number(idOrIdx);
+      item = Array.isArray(doc.consumables)
+        ? (doc.consumables[Number.isFinite(numIdx) ? numIdx : idOrIdx] || doc.consumables.find(c => c && (String(c.id) === String(idOrIdx) || fold(c.name).trim() === fold(idOrIdx).trim())))
+        : null;
+    }
+
+    if (!item) {
+      setOutcome({ status: 'not_found' });
+      return doc;
+    }
+
+    // Normalize dailyCharges if present or patterned as X/day
+    const combinedDesc = fold(`${item.name || ''} ${item.desc || ''} ${item.effect || ''}`);
+    if (typeof item.dailyCharges === 'number' && item.dailyCharges > 0) {
+      item.dailyCharges = { current: item.dailyCharges, max: item.dailyCharges, unit: 'charges', recharge: 'long_rest' };
+    } else if (!item.dailyCharges) {
+      const m = combinedDesc.match(/(\d+)\s*\/\s*(?:day|gun)|gunde\s*(\d+)/i);
+      if (m) {
+        const max = parseInt(m[1] || m[2], 10);
+        if (max > 0) item.dailyCharges = { current: max, max, unit: 'charges', recharge: 'long_rest' };
+      }
+    }
+
+    const isDaily = Boolean(item.dailyCharges && typeof item.dailyCharges.max === 'number');
+    if (isDaily) {
+      if (item.dailyCharges.current <= 0) {
+        setOutcome({ status: sourceType === 'slot' ? 'exhausted_slot' : 'exhausted_daily', item, max: item.dailyCharges.max });
+        return doc;
+      }
+      item.dailyCharges.current--;
+    } else {
+      const curQty = (item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1;
+      if (curQty <= 0) {
+        setOutcome({ status: sourceType === 'pool' ? 'exhausted_pool' : 'exhausted_qty', item });
+        return doc;
+      }
+      item.qty = Math.max(0, curQty - 1);
+    }
+
+    const name = item.name || 'Magic Item';
+    const cleanName = fold(name).trim();
+    const targetPoolId = (sourceType === 'pool' ? idOrIdx : (item.id || item.poolId));
+
+    if (Array.isArray(doc.consumables)) {
+      const cMatch = doc.consumables.find(c => c && fold(c.name).trim() === cleanName);
+      if (cMatch) {
+        if (!isDaily) cMatch.qty = item.qty;
+        if (isDaily && item.dailyCharges) cMatch.dailyCharges = JSON.parse(JSON.stringify(item.dailyCharges));
+      }
+    }
+    if (Array.isArray(doc.gearPool)) {
+      const pMatch = doc.gearPool.find(p => p && ((targetPoolId && String(p.id) === String(targetPoolId)) || fold(p.name).trim() === cleanName));
+      if (pMatch) {
+        if (!isDaily) pMatch.qty = item.qty;
+        if (isDaily && item.dailyCharges) pMatch.dailyCharges = JSON.parse(JSON.stringify(item.dailyCharges));
+      }
+    }
+
+    const remainingInfo = isDaily
+      ? `Daily Remaining: ${item.dailyCharges.current}/${item.dailyCharges.max}`
+      : `Remaining Charges/Qty: ${item.qty}`;
+
+    const plan = (engine && typeof engine.parseConsumablePlan === 'function')
+      ? engine.parseConsumablePlan(item, item.effect || item.desc)
+      : null;
+
+    // 1. Healing Items & Cure Potions
+    if (plan && plan.isHealing) {
+      if (!doc.hp || typeof doc.hp !== 'object') {
+        doc.hp = { current: 10, max: 10, temp: 0, nonlethal: 0 };
+      }
+
+      if (plan.isCureMinor) {
+        const prevHp = Number(doc.hp.current) || 0;
+        const maxHp = Number(doc.hp.max) || (prevHp + 1);
+        doc.hp.current = Math.min(maxHp, prevHp + 1);
+        setOutcome({ status: 'healed_minor', name, prevHp, newHp: doc.hp.current, maxHp, remainingInfo });
+        return doc;
+      }
+
+      if (plan.isHealSpell) {
+        const healTotal = plan.bonus || 110;
+        const prevHp = Number(doc.hp.current) || 0;
+        const maxHp = Number(doc.hp.max) || (prevHp + healTotal);
+        doc.hp.current = Math.min(maxHp, prevHp + healTotal);
+        const healCured = [];
+        if (Array.isArray(doc.buffs)) {
+          doc.buffs.forEach(b => {
+            if (!b || !b.active) return;
+            const bName = fold(b.name);
+            if (bName.includes('sick') || bName.includes('nauseat') || bName.includes('blind') || bName.includes('deaf') || bName.includes('disease') || bName.includes('poison') || bName.includes('fatigue') || bName.includes('exhaust') || bName.includes('daze') || bName.includes('stun') || bName.includes('confus') || bName.includes('kor') || bName.includes('sagir') || bName.includes('zehir') || bName.includes('hastalik') || bName.includes('yorgun')) {
+              b.active = false;
+              b.durationText = 'Cured (Heal)';
+              healCured.push(b.name);
+            }
+          });
+        }
+        setOutcome({ status: 'healed_spell', name, healTotal, prevHp, newHp: doc.hp.current, maxHp, healCured, remainingInfo });
+        return doc;
+      }
+
+      const diceCount = plan.count || 1;
+      const diceSides = plan.sides || 8;
+      const flatBonus = plan.bonus || 0;
+      const rollRes = extractRollList(payload.rolls, 'healRoll', diceCount, diceSides);
+      const resolvedRolls = rollRes.values.map(v => ({ type: `d${diceSides}`, value: v }));
+      const healTotal = rollRes.sum + flatBonus;
+      const prevHp = Number(doc.hp.current) || 0;
+      const maxHp = Number(doc.hp.max) || (prevHp + healTotal);
+      doc.hp.current = Math.min(maxHp, prevHp + healTotal);
+      setOutcome({
+        status: 'healed_dice',
+        name,
+        diceCount,
+        diceSides,
+        flatBonus,
+        rolls: resolvedRolls,
+        healTotal,
+        prevHp,
+        newHp: doc.hp.current,
+        maxHp,
+        remainingInfo
+      });
+      return doc;
+    }
+
+    // 2. Offensive / Damage Wand or Alchemical Item
+    if (plan && plan.isDamage) {
+      const diceCount = plan.count || 1;
+      const diceSides = plan.sides || 6;
+      const rollRes = extractRollList(payload.rolls, 'dmgRoll', diceCount, diceSides);
+      const totalDamage = rollRes.sum + (plan.bonus || 0);
+      setOutcome({
+        status: 'damage_roll',
+        name,
+        damagePlan: plan,
+        rolls: rollRes.values,
+        totalDamage,
+        remainingInfo
+      });
+      return doc;
+    }
+
+    // 3. Condition / Debuff Cure Items
+    if (plan && plan.isCure) {
+      const cf = plan.cureFlags || {};
+      const curedDebuffs = [];
+      let abilityHealed = 0;
+
+      if (cf.lesserRestoration || cf.fullRestoration) {
+        if (cf.lesserRestoration) {
+          const abilRoll = extractRollList(payload.rolls, 'abilityHealRoll', 1, 4);
+          abilityHealed = abilRoll.sum;
+        }
+        if (Array.isArray(doc.buffs)) {
+          doc.buffs.forEach(b => {
+            if (!b || !b.active) return;
+            const bName = fold(b.name);
+            const bNotes = fold(b.notes || b.summary || '');
+            const requiresFullRestoration = bNotes.includes('restoration gerektirir') || bNotes.includes('requires restoration') || b.ruleFlags?.requiresRestoration === true;
+            const isDrain = bName.includes('drain') || bName.includes('negative level') || bNotes.includes('negative level') || requiresFullRestoration;
+            const isExhaust = bName.includes('exhaust') || bName.includes('bitkin');
+            const isFatigue = bName.includes('fatigue') || bName.includes('yorgun');
+
+            if (cf.lesserRestoration) {
+              if (isDrain) return;
+              if (isExhaust) {
+                b.name = 'Fatigued';
+                b.durationText = 'Reduced from Exhausted (Lesser Restoration)';
+                b.summary = '-2 penalty to Strength and Dexterity; cannot run or charge.';
+                b.modifiers = [
+                  { target: 'ability.str', value: -2, type: 'Condition' },
+                  { target: 'ability.dex', value: -2, type: 'Condition' }
+                ];
+                if (b.ruleFlags && typeof b.ruleFlags === 'object') {
+                  delete b.ruleFlags.exhausted;
+                  b.ruleFlags.fatigued = true;
+                }
+                curedDebuffs.push('Exhausted -> Fatigued');
+              } else if (isFatigue) {
+                b.active = false;
+                b.durationText = 'Cured (Lesser Restoration)';
+                curedDebuffs.push(b.name);
+              }
+            } else if (cf.fullRestoration) {
+              if (isDrain || isExhaust || isFatigue) {
+                b.active = false;
+                b.durationText = 'Cured (Restoration)';
+                curedDebuffs.push(b.name);
+              }
+            }
+          });
+        }
+        if (Array.isArray(doc.activeDebuffs)) {
+          if (cf.lesserRestoration) {
+            const nextDebuffs = [];
+            doc.activeDebuffs.forEach(d => {
+              const dFold = fold(d);
+              if (dFold.includes('exhaust') || dFold.includes('bitkin')) {
+                nextDebuffs.push('Fatigued');
+                if (!curedDebuffs.includes('Exhausted -> Fatigued')) curedDebuffs.push('Exhausted -> Fatigued');
+              } else if (dFold.includes('fatigue') || dFold.includes('yorgun')) {
+                if (!curedDebuffs.includes('Fatigued')) curedDebuffs.push('Fatigued');
+              } else {
+                nextDebuffs.push(d);
+              }
+            });
+            doc.activeDebuffs = nextDebuffs;
+          } else if (cf.fullRestoration) {
+            const beforeLen = doc.activeDebuffs.length;
+            doc.activeDebuffs = doc.activeDebuffs.filter(d => !/drain|negative\s*level|exhaust|bitkin|fatigue|yorgun/i.test(fold(d)));
+            if (doc.activeDebuffs.length < beforeLen && curedDebuffs.length === 0) curedDebuffs.push('Restored');
+          }
+        }
+      }
+
+      if (cf.curse) {
+        if (Array.isArray(doc.buffs)) {
+          doc.buffs.forEach(b => {
+            if (!b || !b.active) return;
+            const bName = fold(b.name);
+            if (bName.includes('curse') || bName.includes('lanet')) {
+              b.active = false;
+              b.durationText = 'Cured (Remove Curse)';
+              curedDebuffs.push(b.name);
+            }
+          });
+        }
+        if (Array.isArray(doc.activeDebuffs)) {
+          const beforeLen = doc.activeDebuffs.length;
+          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/curse|lanet/i.test(fold(d)));
+          if (doc.activeDebuffs.length < beforeLen) curedDebuffs.push('Cursed');
+        }
+      }
+
+      if (cf.disease) {
+        if (Array.isArray(doc.buffs)) {
+          doc.buffs.forEach(b => {
+            if (!b || !b.active) return;
+            const bName = fold(b.name);
+            if (bName.includes('disease') || bName.includes('hastalik') || bName.includes('sickened') || bName.includes('nauseated')) {
+              b.active = false;
+              b.durationText = 'Cured (Remove Disease)';
+              curedDebuffs.push(b.name);
+            }
+          });
+        }
+        if (Array.isArray(doc.activeDebuffs)) {
+          const beforeLen = doc.activeDebuffs.length;
+          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/disease|hastalik|sicken|nauseat/i.test(fold(d)));
+          if (doc.activeDebuffs.length < beforeLen) curedDebuffs.push('Diseased');
+        }
+      }
+
+      if (cf.blindDeaf) {
+        if (Array.isArray(doc.buffs)) {
+          doc.buffs.forEach(b => {
+            if (!b || !b.active) return;
+            const bName = fold(b.name);
+            if (bName.includes('blind') || bName.includes('deaf') || bName.includes('kor') || bName.includes('sagir')) {
+              b.active = false;
+              b.durationText = 'Cured (Remove Blindness/Deafness)';
+              curedDebuffs.push(b.name);
+            }
+          });
+        }
+        if (Array.isArray(doc.activeDebuffs)) {
+          const beforeLen = doc.activeDebuffs.length;
+          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/blind|deaf|kor|sagir/i.test(fold(d)));
+          if (doc.activeDebuffs.length < beforeLen) curedDebuffs.push('Blinded/Deafened');
+        }
+      }
+
+      if (cf.paralysis) {
+        if (Array.isArray(doc.buffs)) {
+          doc.buffs.forEach(b => {
+            if (!b || !b.active) return;
+            const bName = fold(b.name);
+            if (bName.includes('paraly') || bName.includes('felc') || bName.includes('slow')) {
+              b.active = false;
+              b.durationText = 'Cured (Remove Paralysis)';
+              curedDebuffs.push(b.name);
+            }
+          });
+        }
+        if (Array.isArray(doc.activeDebuffs)) {
+          const beforeLen = doc.activeDebuffs.length;
+          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/paraly|felc|slow/i.test(fold(d)));
+          if (doc.activeDebuffs.length < beforeLen) curedDebuffs.push('Paralyzed');
+        }
+      }
+
+      if (cf.poison) {
+        if (Array.isArray(doc.buffs)) {
+          doc.buffs.forEach(b => {
+            if (!b || !b.active) return;
+            const bName = fold(b.name);
+            if (bName.includes('poison') || bName.includes('zehir')) {
+              b.active = false;
+              b.durationText = 'Cured (Neutralize Poison)';
+              curedDebuffs.push(b.name);
+            }
+          });
+        }
+        if (Array.isArray(doc.activeDebuffs)) {
+          const beforeLen = doc.activeDebuffs.length;
+          doc.activeDebuffs = doc.activeDebuffs.filter(d => !/poison|zehir/i.test(fold(d)));
+          if (doc.activeDebuffs.length < beforeLen) curedDebuffs.push('Poisoned');
+        }
+      }
+
+      if (curedDebuffs.length > 0) {
+        setOutcome({ status: 'cured_debuffs', name, curedDebuffs, abilityHealed, remainingInfo });
+        return doc;
+      } else if (cf.lesserRestoration || cf.fullRestoration) {
+        setOutcome({ status: 'restoration_no_effect', name, abilityHealed, remainingInfo });
+        return doc;
+      }
+    }
+
+    // 4. Buff Potion or Daily / Generic Consumable
+    let activatedBuff = null;
+    let activatedRounds = 30;
+    let activatedSummary = '';
+    if (!Array.isArray(doc.buffs)) doc.buffs = [];
+
+    const comp = (typeof root !== 'undefined' && root.SrdCompendium)
+      || (typeof SrdCompendium !== 'undefined' ? SrdCompendium : null);
+    const compendiumEntry = (comp && typeof comp.getByName === 'function')
+      ? (comp.getByName(name) || null)
+      : null;
+    const defaultRounds = Number(compendiumEntry?.ruleFlags?.durationRounds || item?.ruleFlags?.durationRounds) || 30;
+
+    const match = doc.buffs.find(b => {
+      if (!b) return false;
+      const bClean = fold(b.name);
+      const strippedItem = cleanName.replace(/^(potion|oil|elixir|iksir)\s+(of\s+)?/i, '').replace(/iksir[ii]?/i, '').replace(/'s/g, '').trim();
+      return bClean && (cleanName.includes(bClean) || (strippedItem && bClean.includes(strippedItem)));
+    });
+    if (match) {
+      match.active = true;
+      match.rounds = defaultRounds;
+      activatedBuff = match.name;
+      activatedRounds = match.rounds;
+      activatedSummary = match.summary || match.notes || '';
+    } else if (compendiumEntry && ((Array.isArray(compendiumEntry.modifiers) && compendiumEntry.modifiers.length > 0) || (compendiumEntry.ruleFlags && Object.keys(compendiumEntry.ruleFlags).length > 0))) {
+      const buffTitle = String(compendiumEntry.name || name).replace(/^(Potion|Oil|Elixir)\s+of\s+/i, '').trim();
+      const v2Mods = Array.isArray(compendiumEntry.modifiers) ? JSON.parse(JSON.stringify(compendiumEntry.modifiers)) : [];
+      const v2Flags = compendiumEntry.ruleFlags ? JSON.parse(JSON.stringify(compendiumEntry.ruleFlags)) : {};
+      const durMin = Math.round(defaultRounds / 10);
+      const durText = defaultRounds >= 600 ? `${Math.round(defaultRounds / 600)} hr.` : (defaultRounds >= 10 ? `${durMin} min. (${defaultRounds} rounds)` : `${defaultRounds} rounds`);
+      const newBuff = {
+        id: 'buff_pot_' + (payload.nowTs || Date.now()),
+        schemaVersion: 2,
+        name: buffTitle,
+        source: (plan && plan.isPotion) ? 'Potion' : 'Magic Item',
+        category: 'Buff',
+        active: true,
+        rounds: defaultRounds,
+        duration: durText,
+        durationText: durText,
+        casterLevel: Number(compendiumEntry.casterLevel) || 3,
+        summary: compendiumEntry.shortDescription || buffTitle,
+        notes: `Activated via ${name}`,
+        modifiers: v2Mods,
+        ruleFlags: v2Flags
+      };
+      doc.buffs.push(newBuff);
+      activatedBuff = newBuff.name;
+      activatedRounds = defaultRounds;
+      activatedSummary = newBuff.summary;
+    }
+
+    setOutcome({
+      status: activatedBuff ? 'buff_activated' : (isDaily ? 'daily_used' : 'generic_used'),
+      name,
+      activatedBuff,
+      activatedRounds,
+      activatedSummary,
+      isDaily,
+      dailyCharges: item.dailyCharges,
+      remainingInfo
+    });
+    return doc;
+  }
+
+  CharStore.registerReducer('consumable/use', applyConsumableUseReducer);
+  CharStore.applyConsumableUseReducer = applyConsumableUseReducer;
 
   // Global Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z Keyboard Listener (Browser Only)
   if (typeof window !== 'undefined' && window.addEventListener && typeof document !== 'undefined') {

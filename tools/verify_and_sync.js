@@ -28,6 +28,7 @@ const CORE_FILES = [
   'index.html',
   'character.html',
   'tailwind_compiled.css',
+  'design_tokens.css',
   'char_modals.js',
   'hero_silhouette_data.js',
   'char_hud.js',
@@ -39,6 +40,7 @@ const CORE_FILES = [
   'login.html',
   'rule_engine.js',
   'char_store.js',
+  'ui_components.js',
   'rule_master.js',
   'rule_master_ai_schema.json',
   'ui_shared.js',
@@ -259,6 +261,7 @@ function main() {
   const AUDIT_FILES = [
     'index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js',
     'char_progression.js', 'char_inventory.js', 'rule_engine.js',
+    'char_store.js', 'ui_components.js', 'design_tokens.css',
     'rule_master.js', 'ui_shared.js', 'hub.html', 'gdrive_sync.js',
     'supabase_auth.js', 'login.html', 'rule_master_ai_schema.json'
   ];
@@ -308,9 +311,10 @@ function main() {
     'char_combat.js':     { inlineEvents: 157, windowAssigns: 82 },
     'char_spells.js':     { inlineEvents: 86,  windowAssigns: 68 },
     'char_progression.js':{ inlineEvents: 115, windowAssigns: 47 },
-    'char_inventory.js':  { inlineEvents: 91,  windowAssigns: 41 },
+    'char_inventory.js':  { inlineEvents: 90,  windowAssigns: 41 },
     'rule_engine.js':     { inlineEvents: 0,   windowAssigns: 1 },
     'char_store.js':      { inlineEvents: 0,   windowAssigns: 1 },
+    'ui_components.js':   { inlineEvents: 0,   windowAssigns: 2 },
     'rule_master.js':     { inlineEvents: 56,  windowAssigns: 1 },
     'ui_shared.js':       { inlineEvents: 29,  windowAssigns: 0 },
     'hub.html':           { inlineEvents: 203, windowAssigns: 11 },

@@ -8654,431 +8654,184 @@
       renderAll();
     }
 
-    // Hasar / Büyü Formülü Ayrıştırıcı (Wand of Fireball, Magic Missile, Lightning vb.)
+    // Canonical Damage / Healing / Consumable Plan Wrapper (delegates to RuleEngine.parseConsumablePlan)
     function parseDamageFromItem(name, effectDesc) {
-      const cleanName = (name || '').toLowerCase();
-      const cleanDesc = (effectDesc || '').toLowerCase();
-      const combined = cleanName + ' ' + cleanDesc;
-
-      // 1. Fireball / Ateş Topu
-      if (cleanName.includes('fireball') || cleanName.includes('ateş topu')) {
-        const clMatch = combined.match(/cl\s*(\d+)/i);
-        let cl = 5;
-        if (clMatch) cl = Math.min(10, Math.max(5, parseInt(clMatch[1])));
-        const diceMatch = cleanDesc.match(/(\d+)d6/i);
-        const count = diceMatch ? parseInt(diceMatch[1]) : cl;
-        return {
-          type: 'fire',
-          typeName: 'Fire Damage',
-          icon: '🔥',
-          diceCount: count,
-          diceSides: 6,
-          flatBonus: 0,
-          formula: `${count}d6`,
-          saveDesc: 'Reflex DC 14 half'
-        };
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.parseConsumablePlan === 'function') {
+        const plan = RuleEngine.parseConsumablePlan(name, effectDesc);
+        return plan && plan.isDamage ? plan : null;
       }
-
-      // 2. Magic Missile / Büyülü Füze
-      if (cleanName.includes('magic missile') || cleanName.includes('büyülü füze')) {
-        const clMatch = combined.match(/cl\s*(\d+)/i);
-        let cl = 1;
-        if (clMatch) cl = parseInt(clMatch[1]) || 1;
-        let missiles = 1;
-        if (cl >= 9) missiles = 5;
-        else if (cl >= 7) missiles = 4;
-        else if (cl >= 5) missiles = 3;
-        else if (cl >= 3) missiles = 2;
-
-        const mMatch = cleanDesc.match(/(\d+)\s*(?:missile|füze|adet|x)/i);
-        if (mMatch) missiles = parseInt(mMatch[1]) || missiles;
-
-        return {
-          type: 'force',
-          typeName: 'Force Damage',
-          icon: '⚡',
-          diceCount: missiles,
-          diceSides: 4,
-          flatBonus: missiles * 1, // her füze 1d4+1
-          formula: `${missiles}x(1d4+1)`,
-          isMagicMissile: true,
-          missiles: missiles
-        };
-      }
-
-      // 3. Lightning Bolt / Yıldırım
-      if (cleanName.includes('lightning bolt') || cleanName.includes('yıldırım')) {
-        const clMatch = combined.match(/cl\s*(\d+)/i);
-        const cl = clMatch ? Math.min(10, Math.max(5, parseInt(clMatch[1]))) : 5;
-        return {
-          type: 'electricity',
-          typeName: 'Electricity Damage',
-          icon: '⚡',
-          diceCount: cl,
-          diceSides: 6,
-          flatBonus: 0,
-          formula: `${cl}d6`,
-          saveDesc: 'Reflex DC 14 half'
-        };
-      }
-
-      // 4. Scorching Ray / Yakıcı Işın
-      if (cleanName.includes('scorching ray')) {
-        return {
-          type: 'fire',
-          typeName: 'Scorching Ray (Fire)',
-          icon: '🔥',
-          diceCount: 4,
-          diceSides: 6,
-          flatBonus: 0,
-          formula: '4d6'
-        };
-      }
-
-      // 5. Genel Zar / Hasar Ayrıştırıcı (örn. 5d6, 3d6+3, 2d8, 1d6+2 vb.)
-      const genMatch = (effectDesc || '').match(/(\d+)d(\d+)(?:\s*([+-]\s*\d+))?/i);
-      if (genMatch) {
-        const count = parseInt(genMatch[1]) || 1;
-        const sides = parseInt(genMatch[2]) || 6;
-        const flat = genMatch[3] ? parseInt(genMatch[3].replace(/\s+/g, '')) : 0;
-        let typeName = 'Damage';
-        let icon = '💥';
-        if (/fire|ateş/i.test(combined)) { typeName = 'Fire Damage'; icon = '🔥'; }
-        else if (/cold|soğuk|buz/i.test(combined)) { typeName = 'Cold Damage'; icon = '❄️'; }
-        else if (/acid|asit/i.test(combined)) { typeName = 'Acid Damage'; icon = '🧪'; }
-        else if (/electric|elektrik|yıldırım/i.test(combined)) { typeName = 'Electricity Damage'; icon = '⚡'; }
-        else if (/force|güç/i.test(combined)) { typeName = 'Force Damage'; icon = '✨'; }
-
-        return {
-          type: 'generic',
-          typeName,
-          icon,
-          diceCount: count,
-          diceSides: sides,
-          flatBonus: flat,
-          formula: `${count}d${sides}${flat !== 0 ? (flat > 0 ? '+' : '') + flat : ''}`
-        };
-      }
-
       return null;
     }
 
-    // Eşyayı Kategoriye Ayırıcı
     function getConsumableCategory(item) {
-      const name = (item.name || '').toLowerCase();
-      const desc = (item.effect || item.desc || '').toLowerCase();
-      const combined = name + ' ' + desc;
-
-      // 1. İyileşme (En yüksek öncelik)
-      if (/cure|heal|iyileş|can iksir|healing/i.test(name) || (/cure|heal|iyileş/i.test(desc) && !/fireball|magic missile|wand/i.test(name))) {
-        return 'healing';
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.parseConsumablePlan === 'function') {
+        const plan = RuleEngine.parseConsumablePlan(item, item?.effect || item?.desc);
+        if (plan.isHealing) return 'healing';
+        if (plan.isDamage) return 'wand_damage';
+        const combined = `${item?.name || ''} ${item?.desc || ''} ${item?.effect || ''}`;
+        if (item?.dailyCharges || /(?:\d+\s*\/\s*day|\d+\s*\/\s*gün|günde\s*\d+)/i.test(combined)) {
+          return 'daily_charge';
+        }
+        if (plan.isCure || plan.isPotion || plan.kind === 'buff') return 'buff';
       }
-
-      // 2. Asalar & Hasar Veren Eşyalar
-      if (/wand|asa|fireball|magic missile|lightning|scorching|hasar|damage|cone of cold|ice storm/i.test(name) || /(\d+)d(\d+).*hasar|damage/i.test(desc)) {
-        return 'wand_damage';
-      }
-
-      // 3. Günlük Şarjlı Eşyalar (Ring of Sending 3/day vb.)
-      if (item.dailyCharges || /(?:\d+\s*\/\s*day|\d+\s*\/\s*gün|günde\s*\d+)/i.test(combined)) {
-        return 'daily_charge';
-      }
-
-      // 4. Buff & Destek İksirleri
-      if (/potion|iksir|elixir|buff|strength|grace|endurance|cunning|wisdom|splendor|invisibility|fly|hız|haste|shield of faith|scroll of shield|potion of shield/i.test(name)) {
-        return 'buff';
-      }
-
       return 'other';
     }
 
-    function renderConsumables() {
-      const container = document.getElementById('consumables-container');
-      if (!container) return;
-      container.innerHTML = '';
+    function renderConsumables(containerOverride, sheetOverride) {
+      const container = containerOverride || (typeof document !== 'undefined' ? document.getElementById('consumables-container') : null);
+      if (!container && !sheetOverride) return '';
 
-      // 0. Auto-clean: Purge non-magical weapons previously synced into character.consumables
-      if (Array.isArray(character.consumables)) {
-        const prevLen = character.consumables.length;
-        character.consumables = character.consumables.filter(c => !isWeaponWithoutMagicOrHealing(c));
-        if (character.consumables.length !== prevLen && typeof saveStateToStorage === 'function') {
-          saveStateToStorage(true);
-        }
+      const sheetView = sheetOverride
+        || (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getSheet === 'function' ? window.CharStore.getSheet() : null)
+        || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveSheet === 'function' && typeof character !== 'undefined'
+          ? RuleEngine.deriveSheet(character, typeof masterDb !== 'undefined' ? masterDb : [])
+          : null);
+      const cg = sheetView?.inventory?.consumablesGrouped
+        || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveConsumablesView === 'function' && typeof character !== 'undefined'
+          ? RuleEngine.deriveConsumablesView(character)
+          : { allItems: [], byGroup: {} });
+
+      if (typeof UI !== 'undefined' && typeof UI.renderConsumablesView === 'function') {
+        return UI.renderConsumablesView(container, cg);
       }
+      return '';
+    }
 
-      // 1. Sync character.gearPool consumables with character.consumables (excluding plain weapons)
-      if (Array.isArray(character.gearPool)) {
-        if (!Array.isArray(character.consumables)) character.consumables = [];
-        character.gearPool.forEach(p => {
-          if (isWeaponWithoutMagicOrHealing(p)) return;
-          if (p.category === 'Consumable' || (p.isBelt && p.category !== 'Weapon') || p.category === 'Wand' || (p.name || '').toLowerCase().includes('wand')) {
-            const cleanName = (p.name || '').toLowerCase().trim();
-            const existing = character.consumables.find(c => (c.name || '').toLowerCase().trim() === cleanName);
-            if (existing) {
-              existing.qty = (p.qty !== undefined && p.qty !== null) ? Number(p.qty) : (existing.qty !== undefined ? Number(existing.qty) : 1);
-              if (!existing.effect && p.desc) existing.effect = p.desc;
-              if (p.dailyCharges) existing.dailyCharges = p.dailyCharges;
-            } else if (p.category === 'Consumable' || p.category === 'Wand') {
-              character.consumables.push({
-                name: p.name,
-                qty: (p.qty !== undefined && p.qty !== null) ? Number(p.qty) : 1,
-                effect: p.desc || 'Consumable effect',
-                dailyCharges: p.dailyCharges || null
-              });
-            }
-          }
+    function emitConsumableUseFeedback(outcome) {
+      if (!outcome || !outcome.status) return;
+      const name = outcome.name || 'Magic Item';
+      const remainingInfo = outcome.remainingInfo || '';
+
+      if (outcome.status === 'healed_minor') {
+        addDiceHistoryEntry({
+          icon: '💖',
+          title: `${name}`,
+          formula: '1 HP',
+          breakdown: `Cure Minor Wounds: +1 HP • HP: ${outcome.prevHp} ➔ ${outcome.newHp}/${outcome.maxHp} • ${remainingInfo}`,
+          total: '+1 HP'
         });
-      }
-
-      // 2. Build unified list of consumables to display
-      const displayMap = new Map();
-
-      // GearPool items (Consumable, isBelt, Wand, or has daily charges) - excluding plain weapons
-      (character.gearPool || []).forEach(p => {
-        if (isWeaponWithoutMagicOrHealing(p)) return;
-        const isWand = p.category === 'Wand' || (p.name || '').toLowerCase().includes('wand');
-        const hasDaily = !!ensureItemDailyCharges(p);
-        if ((p.category === 'Consumable' || (p.isBelt && p.category !== 'Weapon') || isWand || hasDaily) && !p.isEquipped) {
-          const key = (p.name || '').toLowerCase().trim();
-          if (!key) return;
-          displayMap.set(key, {
-            name: p.name,
-            qty: (p.qty !== undefined && p.qty !== null) ? Number(p.qty) : 1,
-            effect: p.desc || 'Consumable / wand',
-            sourceType: 'pool',
-            poolId: p.id,
-            isBelt: !!p.isBelt,
-            dailyCharges: p.dailyCharges || null
-          });
-        }
-      });
-
-      // Regular consumables in character.consumables - excluding plain weapons
-      (character.consumables || []).forEach((c, cIdx) => {
-        if (isWeaponWithoutMagicOrHealing(c)) return;
-        const key = (c.name || '').toLowerCase().trim();
-        if (!key) return;
-        ensureItemDailyCharges(c);
-        if (!displayMap.has(key)) {
-          displayMap.set(key, {
-            name: c.name,
-            qty: (c.qty !== undefined && c.qty !== null) ? Number(c.qty) : 1,
-            effect: c.effect || 'Consumable effect',
-            sourceType: 'consumable',
-            idx: cIdx,
-            isBelt: false,
-            dailyCharges: c.dailyCharges || null
-          });
-        } else {
-          const existing = displayMap.get(key);
-          if (c.effect && (!existing.effect || existing.effect === 'Consumable effect' || existing.effect === 'Sarf malzemesi etkisi')) {
-            existing.effect = c.effect;
-          }
-          if (c.dailyCharges && !existing.dailyCharges) {
-            existing.dailyCharges = c.dailyCharges;
-          }
-        }
-      });
-
-      // Equipped Body Slots items that have daily charges - excluding plain weapons, armor, and shields
-      if (character.bodySlots) {
-        Object.entries(character.bodySlots).forEach(([slotKey, slotItem]) => {
-          if (slotItem && slotItem.name && slotItem.name !== '-') {
-            if (isWeaponWithoutMagicOrHealing(slotItem, slotKey)) return;
-            const slotCat = String(slotItem.category || slotItem.type || '').toLowerCase().trim();
-            const isPhysicalSlotGear = slotCat === 'weapon' || slotCat === 'armor' || slotCat === 'shield' || slotKey === 'mainHand' || slotKey === 'offHand' || slotKey === 'armor';
-            const hasCharges = Number(slotItem.dailyCharges?.max || slotItem.dailyCharges || slotItem.charges) > 0 ||
-              (Array.isArray(slotItem.modes) && slotItem.modes.some(m => m && m.actionType && m.actionType !== 'passive'));
-            const hasDaily = isPhysicalSlotGear ? hasCharges : !!ensureItemDailyCharges(slotItem);
-            const isWandOrUse = isPhysicalSlotGear
-              ? hasCharges
-              : ((slotItem.desc && /(?:cure|fireball|missile|\d+d\d+)/i.test(slotItem.desc)) || (slotItem.name && /wand|asa/i.test(slotItem.name)));
-            if (hasDaily || isWandOrUse) {
-              const key = (slotItem.name || '').toLowerCase().trim();
-              if (!displayMap.has(key)) {
-                displayMap.set(key, {
-                  name: slotItem.name,
-                  qty: Number(slotItem.qty) || 1,
-                  effect: slotItem.desc || 'Equipped magic item',
-                  sourceType: 'slot',
-                  slotKey: slotKey,
-                  isBelt: false,
-                  fromSlot: true,
-                  dailyCharges: slotItem.dailyCharges || null
-                });
-              }
-            }
-          }
-        });
-      }
-
-      const allItems = Array.from(displayMap.values());
-
-      if (allItems.length === 0) {
-        container.innerHTML = `<div class="text-center text-slate-500 italic py-4 bg-slate-900/50 rounded-xl border border-slate-800">No consumables or charged items found on belt or in bag.</div>`;
         return;
       }
 
-      // Group definitions with strict ordering: HEALING FIRST!
-      const GROUPS = [
-        {
-          key: 'healing',
-          title: '💖 HEALING ITEMS & POTIONS',
+      if (outcome.status === 'healed_spell') {
+        const curedText = Array.isArray(outcome.healCured) && outcome.healCured.length > 0
+          ? ` • Cured Conditions: ${outcome.healCured.join(', ')}`
+          : '';
+        addDiceHistoryEntry({
           icon: '💖',
-          badgeText: 'Healing',
-          badgeBg: 'bg-emerald-950 text-emerald-300 border-emerald-700',
-          cardBorder: 'border-emerald-500/40 hover:border-emerald-400',
-          btnBg: 'bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border-emerald-500/40',
-          btnIcon: '💖',
-          btnText: 'Drink / Use'
-        },
-        {
-          key: 'wand_damage',
-          title: '⚡ WANDS & OFFENSIVE ITEMS',
-          icon: '⚡',
-          badgeText: 'Wand / Damage',
-          badgeBg: 'bg-rose-950 text-rose-300 border-rose-700',
-          cardBorder: 'border-rose-500/40 hover:border-rose-400',
-          btnBg: 'bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white border-rose-500/40',
-          btnIcon: '⚡',
-          btnText: 'Activate'
-        },
-        {
-          key: 'buff',
-          title: '🧪 BUFF, CONDITION & UTILITY POTIONS',
-          icon: '🧪',
-          badgeText: 'Buff',
-          badgeBg: 'bg-purple-950 text-purple-300 border-purple-700',
-          cardBorder: 'border-purple-500/40 hover:border-purple-400',
-          btnBg: 'bg-purple-600/30 hover:bg-purple-600 text-purple-300 hover:text-white border-purple-500/40',
-          btnIcon: '🧪',
-          btnText: 'Use'
-        },
-        {
-          key: 'daily_charge',
-          title: '💍 DAILY CHARGED MAGIC ITEMS (X/DAY)',
-          icon: '💍',
-          badgeText: 'Daily Charge',
-          badgeBg: 'bg-sky-950 text-sky-300 border-sky-700',
-          cardBorder: 'border-sky-500/40 hover:border-sky-400',
-          btnBg: 'bg-sky-600/30 hover:bg-sky-600 text-sky-300 hover:text-white border-sky-500/40',
-          btnIcon: '💍',
-          btnText: 'Use'
-        },
-        {
-          key: 'other',
-          title: '📦 OTHER CONSUMABLES',
-          icon: '📦',
-          badgeText: 'Consumable',
-          badgeBg: 'bg-slate-800 text-slate-300 border-slate-600',
-          cardBorder: 'border-slate-700 hover:border-slate-500',
-          btnBg: 'bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white border-amber-500/40',
-          btnIcon: '📦',
-          btnText: 'Use'
-        }
-      ];
-
-      // Distribute items into groups
-      const groupedData = {};
-      GROUPS.forEach(g => { groupedData[g.key] = []; });
-
-      allItems.forEach(item => {
-        const cat = getConsumableCategory(item);
-        if (groupedData[cat]) {
-          groupedData[cat].push(item);
-        } else {
-          groupedData['other'].push(item);
-        }
-      });
-
-      // Render each non-empty group in order
-      GROUPS.forEach(group => {
-        const items = groupedData[group.key];
-        if (!items || items.length === 0) return;
-
-        // Sort alphabetically within category
-        items.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
-        const section = document.createElement('div');
-        section.className = 'space-y-2';
-
-        const header = document.createElement('div');
-        header.className = 'flex items-center justify-between border-b border-slate-800/80 pb-1 pt-1.5';
-        header.innerHTML = `
-          <div class="flex items-center gap-1.5 text-xs font-bold text-slate-200">
-            <span>${group.icon}</span>
-            <span>${group.title}</span>
-            <span class="badge ${group.badgeBg} text-[10px] ml-1 px-1.5 py-0.2">${items.length}</span>
-          </div>
-        `;
-        section.appendChild(header);
-
-        const grid = document.createElement('div');
-        grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-2.5';
-
-        items.forEach(item => {
-          const isDaily = item.dailyCharges && typeof item.dailyCharges.max === 'number';
-          const isExhausted = isDaily ? (item.dailyCharges.current <= 0) : (item.qty <= 0);
-
-          let chargeText = '';
-          if (isDaily) {
-            chargeText = `Daily Left: <strong class="${item.dailyCharges.current > 0 ? 'text-sky-300' : 'text-rose-400'}">${item.dailyCharges.current} / ${item.dailyCharges.max}</strong>`;
-          } else {
-            chargeText = `Qty / Charges: <strong class="${item.qty > 0 ? 'text-white' : 'text-rose-400'}">${item.qty}</strong>`;
-          }
-
-          // Damage or heal tag
-          let tagBadge = '';
-          const dmgPlan = parseDamageFromItem(item.name, item.effect);
-          if (dmgPlan) {
-            tagBadge = `<span class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[9px] font-mono">${dmgPlan.formula} Dmg</span>`;
-          } else if (/cure|heal|iyileş/i.test(item.name)) {
-            let formulaBadge = '1d8+1';
-            if (/serious/i.test(item.name)) formulaBadge = '3d8+5';
-            else if (/moderate/i.test(item.name)) formulaBadge = '2d8+3';
-            else if (/critical/i.test(item.name)) formulaBadge = '4d8+7';
-            else if (/heal/i.test(item.name)) formulaBadge = '110 HP';
-            tagBadge = `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] font-mono">${formulaBadge} HP</span>`;
-          }
-
-          const card = document.createElement('div');
-          const safePoolIdAttr = String(item.poolId ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-          card.className = `bg-slate-900/90 border ${group.cardBorder} p-3 rounded-xl flex items-center justify-between gap-3 transition shadow-sm ${isExhausted ? 'opacity-60' : ''}`;
-          card.innerHTML = `
-            <div class="min-w-0 flex-1">
-              <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
-                <span>${item.name}</span>
-                <span class="badge ${group.badgeBg} text-[9px] font-bold px-1.5 py-0.2">${group.badgeText}</span>
-                ${item.isBelt ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px]">On Belt</span>' : ''}
-                ${item.fromSlot ? '<span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[9px]">Equipped</span>' : ''}
-                ${tagBadge}
-              </div>
-              <div class="text-[10px] text-slate-300 break-words mt-1 flex items-center gap-2 flex-wrap">
-                <span>${item.effect}</span>
-                <span class="border-l border-slate-700 pl-2 font-mono text-[11px]">${chargeText}</span>
-              </div>
-            </div>
-            <button onclick="consumeItem3D('${item.sourceType}', ${item.sourceType === 'pool' ? `'${safePoolIdAttr}'` : (item.sourceType === 'slot' ? `'${item.slotKey}'` : item.idx)})" ${isExhausted ? 'disabled' : ''} class="shrink-0 whitespace-nowrap inline-flex items-center justify-center gap-1.5 ${group.btnBg} disabled:opacity-30 disabled:cursor-not-allowed border text-xs font-bold px-3 py-1.5 rounded-lg transition self-center">
-              <span>${group.btnIcon}</span>
-              <span>${isExhausted ? 'Depleted' : group.btnText}</span>
-            </button>
-          `;
-          grid.appendChild(card);
+          title: `${name} (Heal & Cure)`,
+          formula: `${outcome.healTotal} HP`,
+          breakdown: `Heal: +${outcome.healTotal} HP • HP: ${outcome.prevHp} ➔ ${outcome.newHp}/${outcome.maxHp}${curedText} • ${remainingInfo}`,
+          total: `+${outcome.healTotal} HP`
         });
+        return;
+      }
 
-        section.appendChild(grid);
-        container.appendChild(section);
+      if (outcome.status === 'healed_dice') {
+        const rollVals = Array.isArray(outcome.rolls) ? outcome.rolls.map(r => (typeof r === 'object' ? r.value : r)) : [];
+        const dSides = outcome.diceSides || 8;
+        const flatB = Number(outcome.flatBonus) || 0;
+        const bonusSuffix = flatB !== 0 ? (flatB > 0 ? `+${flatB}` : `${flatB}`) : '';
+        const bonusBreakdown = flatB !== 0 ? ` + ${flatB}` : '';
+        addDiceHistoryEntry({
+          icon: '💖',
+          title: `${name}`,
+          formula: `${outcome.diceCount}d${dSides}${bonusSuffix}`,
+          breakdown: `${outcome.diceCount}d${dSides} [${rollVals.join(' + ')}]${bonusBreakdown} • HP: ${outcome.prevHp} ➔ ${outcome.newHp}/${outcome.maxHp} • ${remainingInfo}`,
+          total: `+${outcome.healTotal} HP`
+        });
+        return;
+      }
+
+      if (outcome.status === 'damage_roll') {
+        const dp = outcome.damagePlan || {};
+        const rolls = Array.isArray(outcome.rolls) ? outcome.rolls : [];
+        const totalDamage = outcome.totalDamage || 0;
+        let breakdownText = '';
+        if (dp.isMagicMissile) {
+          breakdownText = `${dp.missiles} Missiles: [${rolls.map(v => `${v}+1`).join(' + ')}] = ${totalDamage} Force Damage • ${remainingInfo}`;
+        } else {
+          breakdownText = `${dp.formula} [${rolls.join(' + ')}]${dp.flatBonus ? ` + ${dp.flatBonus}` : ''} = ${totalDamage} ${dp.typeName}${dp.saveDesc ? ` (${dp.saveDesc})` : ''} • ${remainingInfo}`;
+        }
+        addDiceHistoryEntry({
+          icon: dp.icon || '💥',
+          title: `${name} (Damage Roll)`,
+          formula: dp.formula || 'Damage',
+          breakdown: breakdownText,
+          total: `${totalDamage} Damage`
+        });
+        return;
+      }
+
+      if (outcome.status === 'cured_debuffs') {
+        const curedList = (outcome.curedDebuffs || []).join(', ');
+        showDiceTopToast({
+          icon: '✨',
+          title: name,
+          breakdown: `Cured: Removed "${curedList}" and all associated penalties! • ${remainingInfo}`,
+          total: 'Cured'
+        });
+        addDiceHistoryEntry({
+          icon: '✨',
+          title: `${name} (Cure / Rule)`,
+          formula: 'D&D 3.5e RAW',
+          breakdown: `Used: ${name} • Cured Condition: ${curedList} • ${remainingInfo}`,
+          total: 'Cured'
+        });
+        return;
+      }
+
+      if (outcome.status === 'restoration_no_effect') {
+        showDiceTopToast({
+          icon: 'ℹ️',
+          title: name,
+          breakdown: `Used, but no active Energy Drain or Negative Level condition was found on the character. • ${remainingInfo}`,
+          total: 'No Effect'
+        });
+        return;
+      }
+
+      if (outcome.status === 'buff_activated') {
+        showDiceTopToast({
+          icon: '🧪',
+          title: name,
+          breakdown: `Activated "${outcome.activatedBuff}" (${outcome.activatedSummary || `${outcome.activatedRounds} rounds`}) • ${remainingInfo}`,
+          total: 'Active'
+        });
+        return;
+      }
+
+      if (outcome.status === 'daily_used' && outcome.dailyCharges) {
+        showDiceTopToast({
+          icon: '💍',
+          title: name,
+          breakdown: `Magic item property activated • ${remainingInfo}`,
+          total: `${outcome.dailyCharges.current}/${outcome.dailyCharges.max}`
+        });
+        return;
+      }
+
+      showDiceTopToast({
+        icon: '📦',
+        title: name,
+        breakdown: `Used • ${remainingInfo}`,
+        total: '✔'
       });
     }
 
     function consumeItem3D(sourceType, idOrIdx) {
+      const activeDoc = (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getDoc === 'function' && window.CharStore.getDoc())
+        ? window.CharStore.getDoc()
+        : character;
+
       let item = null;
       if (sourceType === 'slot') {
-        item = character.bodySlots?.[idOrIdx];
+        item = activeDoc.bodySlots?.[idOrIdx];
       } else if (sourceType === 'pool' || sourceType === true) {
-        item = (character.gearPool || []).find(p => p && String(p.id) === String(idOrIdx));
+        item = (activeDoc.gearPool || []).find(p => p && String(p.id) === String(idOrIdx));
       } else {
-        item = character.consumables?.[idOrIdx];
+        const numIdx = Number(idOrIdx);
+        item = activeDoc.consumables?.[Number.isFinite(numIdx) ? numIdx : idOrIdx];
       }
 
       if (!item) {
@@ -9091,20 +8844,32 @@
         return;
       }
 
-      ensureItemDailyCharges(item);
-      const isDaily = item.dailyCharges && typeof item.dailyCharges.max === 'number';
+      const plan = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.parseConsumablePlan === 'function')
+        ? RuleEngine.parseConsumablePlan(item, item.effect || item.desc)
+        : { kind: 'other', isHealing: false, isDamage: false, isCure: false, diceCount: 0, diceSides: 0, cureFlags: {} };
+
+      const combinedText = `${item.name || ''} ${item.desc || ''} ${item.effect || ''}`;
+      const dailyMatch = combinedText.match(/(\d+)\s*\/\s*(?:day|gün)|günde\s*(\d+)/i);
+      const maxDaily = (item.dailyCharges && typeof item.dailyCharges === 'object' && Number(item.dailyCharges.max) > 0)
+        ? Number(item.dailyCharges.max)
+        : (typeof item.dailyCharges === 'number' && item.dailyCharges > 0
+          ? item.dailyCharges
+          : (dailyMatch ? parseInt(dailyMatch[1] || dailyMatch[2], 10) : 0));
+      const isDaily = maxDaily > 0;
+      const currentDaily = (item.dailyCharges && typeof item.dailyCharges === 'object' && item.dailyCharges.current !== undefined)
+        ? Number(item.dailyCharges.current)
+        : maxDaily;
 
       if (isDaily) {
-        if (item.dailyCharges.current <= 0) {
+        if (currentDaily <= 0) {
           showDiceTopToast({
             icon: '⏳',
             title: item.name || 'Magic Item',
             breakdown: 'All daily charges expended! Resets on a Long Rest (☀️).',
-            total: `0 / ${item.dailyCharges.max}`
+            total: `0 / ${maxDaily}`
           });
           return;
         }
-        item.dailyCharges.current--;
       } else {
         const curQty = (item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1;
         if (curQty <= 0) {
@@ -9116,371 +8881,103 @@
           });
           return;
         }
-        item.qty = Math.max(0, curQty - 1);
       }
 
       const name = item.name || 'Magic Item';
-
-      // Bidirectional sync between gearPool and consumables
-      const cleanName = (name || '').toLowerCase().trim();
-      const targetPoolId = (sourceType === 'pool' ? idOrIdx : (item.id || item.poolId));
-      if (Array.isArray(character.consumables)) {
-        const cMatch = character.consumables.find(c => (c.name || '').toLowerCase().trim() === cleanName);
-        if (cMatch) {
-          if (!isDaily) cMatch.qty = item.qty;
-          if (isDaily && item.dailyCharges) cMatch.dailyCharges = item.dailyCharges;
-        }
-      }
-      if (Array.isArray(character.gearPool)) {
-        const pMatch = character.gearPool.find(p => (targetPoolId && p.id === targetPoolId) || (p.name || '').toLowerCase().trim() === cleanName);
-        if (pMatch) {
-          if (!isDaily) pMatch.qty = item.qty;
-          if (isDaily && item.dailyCharges) pMatch.dailyCharges = item.dailyCharges;
-        }
-      }
-
-      // Kalan şarj metni
-      const remainingInfo = isDaily 
-        ? `Daily Remaining: ${item.dailyCharges.current}/${item.dailyCharges.max}` 
-        : `Remaining Charges/Qty: ${item.qty}`;
-
-      // 1. İYİLEŞME ZARI KONTROLÜ (Cure / Heal vb.)
-      if (/cure|heal|iyileş/i.test(name)) {
-        let diceCount = 1;
-        let flatBonus = 1;
-        let isHealSpell = false;
-        let isCureMinor = false;
-
-        if (/minor/i.test(name)) { isCureMinor = true; diceCount = 0; flatBonus = 1; }
-        else if (/serious/i.test(name)) { diceCount = 3; flatBonus = 5; }
-        else if (/moderate/i.test(name)) { diceCount = 2; flatBonus = 3; }
-        else if (/critical/i.test(name)) { diceCount = 4; flatBonus = 7; }
-        else if (/heal/i.test(name) && !/cure/i.test(name)) { isHealSpell = true; }
-
-        if (isCureMinor) {
-          const prevHp = character.hp.current;
-          character.hp.current = Math.min(character.hp.max, character.hp.current + 1);
-          saveStateToStorage(true);
-          renderAll();
-          addDiceHistoryEntry({
-            icon: '💖',
-            title: `${name}`,
-            formula: '1 HP',
-            breakdown: `Cure Minor Wounds: +1 HP • HP: ${prevHp} ➔ ${character.hp.current}/${character.hp.max} • ${remainingInfo}`,
-            total: '+1 HP'
-          });
-          return;
-        }
-
-        if (isHealSpell) {
-          // D&D 3.5e Heal Spell: 110 HP (CL 11) or 150 HP (CL 15 Greater Heal) + Cure diseases, blindness, sickness, fatigue
-          const healTotal = /greater|mass/i.test(name) ? 150 : 110;
-          const prevHp = character.hp.current;
-          character.hp.current = Math.min(character.hp.max, character.hp.current + healTotal);
-          const healCured = [];
-          if (Array.isArray(character.buffs)) {
-            character.buffs.forEach(b => {
-              if (!b.active) return;
-              const bName = (b.name || '').toLowerCase();
-              if (bName.includes('sick') || bName.includes('nauseat') || bName.includes('blind') || bName.includes('deaf') || bName.includes('disease') || bName.includes('poison') || bName.includes('fatigue') || bName.includes('exhaust') || bName.includes('daze') || bName.includes('stun') || bName.includes('confus')) {
-                b.active = false;
-                b.durationText = 'Cured (Heal)';
-                healCured.push(b.name);
-              }
-            });
+      const dispatchUseAction = (rollsPayload) => {
+        const actionObj = {
+          type: 'consumable/use',
+          label: `Use ${name}`,
+          meta: { label: `Use ${name}` },
+          payload: {
+            sourceType,
+            idOrIdx,
+            rolls: rollsPayload || null,
+            nowTs: Date.now()
+          }
+        };
+        let outcome = null;
+        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+          if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+            window.CharStore._syncExternalCharacterRef(character);
+          }
+          window.CharStore.dispatch(actionObj);
+          if (typeof window.CharStore.getLastOutcome === 'function') {
+            outcome = window.CharStore.getLastOutcome();
+          }
+        } else if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.applyConsumableUseReducer === 'function') {
+          window.CharStore.applyConsumableUseReducer(character, actionObj);
+          if (typeof window.CharStore.getLastOutcome === 'function') {
+            outcome = window.CharStore.getLastOutcome();
           }
           saveStateToStorage(true);
-          renderAll();
-          const curedText = healCured.length > 0 ? ` • Cured Conditions: ${healCured.join(', ')}` : '';
-          addDiceHistoryEntry({
-            icon: '💖',
-            title: `${name} (Heal & Cure)`,
-            formula: `${healTotal} HP`,
-            breakdown: `Heal: +${healTotal} HP • HP: ${prevHp} ➔ ${character.hp.current}/${character.hp.max}${curedText} • ${remainingInfo}`,
-            total: `+${healTotal} HP`
-          });
-          return;
         }
+        renderAll();
+        if (outcome) {
+          emitConsumableUseFeedback(outcome);
+        }
+      };
 
-        const rolls = [];
-        let sum = 0;
+      // 1. Healing Dice Pre-Roll (if standard Cure Wounds potion/wand)
+      if (plan.isHealing && !plan.isCureMinor && !plan.isHealSpell && plan.diceCount > 0) {
+        const diceCount = plan.diceCount || 1;
+        const diceSides = plan.diceSides || 8;
+        const healRoll = [];
         for (let i = 0; i < diceCount; i++) {
-          const val = Math.floor(Math.random() * 8) + 1;
-          rolls.push({ type: 'd8', value: val });
-          sum += val;
+          const val = Math.floor(Math.random() * diceSides) + 1;
+          healRoll.push({ type: 'd' + diceSides, value: val });
         }
-        const healTotal = sum + flatBonus;
 
-        const applyHealing = () => {
-          const prevHp = character.hp.current;
-          character.hp.current = Math.min(character.hp.max, character.hp.current + healTotal);
-          saveStateToStorage(true);
-          renderAll();
-          addDiceHistoryEntry({
-            icon: '💖',
-            title: `${name}`,
-            formula: `${diceCount}d8+${flatBonus}`,
-            breakdown: `${diceCount}d8 [${rolls.map(r => r.value).join(' + ')}] + ${flatBonus} • HP: ${prevHp} ➔ ${character.hp.current}/${character.hp.max} • ${remainingInfo}`,
-            total: `+${healTotal} HP`
-          });
-        };
-
-        if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        const rollsPayload = { healRoll, dmgRoll: null, abilityHealRoll: null };
+        if (typeof window !== 'undefined' && window.Dice3D && typeof Dice3D.roll === 'function') {
           try {
-            Dice3D.roll(rolls, applyHealing);
-          } catch (err) {
-            applyHealing();
+            Dice3D.roll(healRoll, () => dispatchUseAction(rollsPayload));
+          } catch (_) {
+            dispatchUseAction(rollsPayload);
           }
         } else {
-          applyHealing();
+          dispatchUseAction(rollsPayload);
         }
         return;
       }
 
-      // 2. SALDIRI / HASAR ASASI KONTROLÜ (Wand of Fireball, Magic Missile vb.)
-      const damagePlan = parseDamageFromItem(name, item.effect || item.desc);
-      if (damagePlan) {
-        const rolls = [];
-        let sum = 0;
+      // 2. Offensive / Damage Wand Pre-Roll
+      if (plan.isDamage && plan.diceCount > 0) {
+        const dmgRoll = [];
         const dice3dList = [];
-
-        for (let i = 0; i < damagePlan.diceCount; i++) {
-          const val = Math.floor(Math.random() * damagePlan.diceSides) + 1;
-          rolls.push(val);
-          sum += val;
-          if (dice3dList.length < 6 && [4, 6, 8, 10, 12, 20, 100].includes(damagePlan.diceSides)) {
-            dice3dList.push({ type: 'd' + damagePlan.diceSides, value: val });
+        for (let i = 0; i < plan.diceCount; i++) {
+          const val = Math.floor(Math.random() * plan.diceSides) + 1;
+          dmgRoll.push(val);
+          if (dice3dList.length < 6 && [4, 6, 8, 10, 12, 20, 100].includes(plan.diceSides)) {
+            dice3dList.push({ type: 'd' + plan.diceSides, value: val });
           }
         }
-        const totalDamage = sum + (damagePlan.flatBonus || 0);
 
-        const applyDamageRoll = () => {
-          saveStateToStorage(true);
-          renderAll();
-
-          let breakdownText = '';
-          if (damagePlan.isMagicMissile) {
-            breakdownText = `${damagePlan.missiles} Missiles: [${rolls.map(v => `${v}+1`).join(' + ')}] = ${totalDamage} Force Damage • ${remainingInfo}`;
-          } else {
-            breakdownText = `${damagePlan.formula} [${rolls.join(' + ')}]${damagePlan.flatBonus ? ` + ${damagePlan.flatBonus}` : ''} = ${totalDamage} ${damagePlan.typeName}${damagePlan.saveDesc ? ` (${damagePlan.saveDesc})` : ''} • ${remainingInfo}`;
-          }
-
-          addDiceHistoryEntry({
-            icon: damagePlan.icon,
-            title: `${name} (Damage Roll)`,
-            formula: damagePlan.formula,
-            breakdown: breakdownText,
-            total: `${totalDamage} Damage`
-          });
-        };
-
-        if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
+        const rollsPayload = { healRoll: null, dmgRoll, abilityHealRoll: null };
+        if (typeof window !== 'undefined' && window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
           try {
-            Dice3D.roll(dice3dList, applyDamageRoll);
-          } catch (err) {
-            applyDamageRoll();
+            Dice3D.roll(dice3dList, () => dispatchUseAction(rollsPayload));
+          } catch (_) {
+            dispatchUseAction(rollsPayload);
           }
         } else {
-          applyDamageRoll();
+          dispatchUseAction(rollsPayload);
         }
         return;
       }
 
-      // 3. D&D 3.5e RAW TEDAVİ / DEBUFF TEMİZLEME MOTORU (Restoration, Remove Curse/Disease/Blindness/Paralysis vb.)
-      const cleanLower = (name || '').toLowerCase();
-      const curedDebuffs = [];
-
-      if (/restoration/i.test(cleanLower)) {
-        const isLesser = /lesser\s+restoration/i.test(cleanLower);
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            const bNotes = (b.notes || '').toLowerCase();
-            const isDrain = bName.includes('drain') || bName.includes('negative level') || bNotes.includes('negative level') || bNotes.includes('restoration gerektirir');
-            const isFatigue = bName.includes('fatigue') || bName.includes('exhaust') || bName.includes('yorgun');
-            
-            if (isLesser) {
-              if (isFatigue) {
-                b.active = false;
-                b.durationText = 'Cured (Lesser Restoration)';
-                curedDebuffs.push(b.name);
-              }
-            } else {
-              // Standard or Greater Restoration
-              if (isDrain || isFatigue) {
-                b.active = false;
-                b.durationText = 'Cured (Restoration)';
-                curedDebuffs.push(b.name);
-              }
-            }
-          });
-        }
-      } else if (/remove\s*curse|break\s*enchantment/i.test(cleanLower)) {
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            if (bName.includes('curse') || bName.includes('lanet')) {
-              b.active = false;
-              b.durationText = 'Cured (Remove Curse)';
-              curedDebuffs.push(b.name);
-            }
-          });
-        }
-      } else if (/remove\s*disease/i.test(cleanLower)) {
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            if (bName.includes('disease') || bName.includes('hastalık') || bName.includes('sickened') || bName.includes('nauseated')) {
-              b.active = false;
-              b.durationText = 'Cured (Remove Disease)';
-              curedDebuffs.push(b.name);
-            }
-          });
-        }
-      } else if (/remove\s*blindness|remove\s*deafness/i.test(cleanLower)) {
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            if (bName.includes('blind') || bName.includes('deaf') || bName.includes('kör') || bName.includes('sağır')) {
-              b.active = false;
-              b.durationText = 'Cured (Remove Blindness/Deafness)';
-              curedDebuffs.push(b.name);
-            }
-          });
-        }
-      } else if (/remove\s*paralysis/i.test(cleanLower)) {
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            if (bName.includes('paraly') || bName.includes('felç') || bName.includes('slow')) {
-              b.active = false;
-              b.durationText = 'Cured (Remove Paralysis)';
-              curedDebuffs.push(b.name);
-            }
-          });
-        }
-      } else if (/neutralize\s*poison/i.test(cleanLower)) {
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            if (bName.includes('poison') || bName.includes('zehir')) {
-              b.active = false;
-              b.durationText = 'Cured (Neutralize Poison)';
-              curedDebuffs.push(b.name);
-            }
-          });
-        }
-      }
-
-      if (curedDebuffs.length > 0) {
-        saveStateToStorage(true);
-        renderAll();
-        showDiceTopToast({
-          icon: '✨',
-          title: name,
-          breakdown: `Cured: Removed "${curedDebuffs.join(', ')}" and all associated penalties! • ${remainingInfo}`,
-          total: 'Cured'
-        });
-        addDiceHistoryEntry({
-          icon: '✨',
-          title: `${name} (Cure / Rule)`,
-          formula: 'D&D 3.5e RAW',
-          breakdown: `Used: ${name} • Cured Condition: ${curedDebuffs.join(', ')} • ${remainingInfo}`,
-          total: 'Cured'
-        });
-        return;
-      } else if (/restoration/i.test(cleanLower)) {
-        saveStateToStorage(true);
-        renderAll();
-        showDiceTopToast({
-          icon: 'ℹ️',
-          title: name,
-          breakdown: `Used, but no active Energy Drain or Negative Level condition was found on the character. • ${remainingInfo}`,
-          total: 'No Effect'
-        });
-        return;
-      }
-
-      // 4. BUFF İKSİRİ VEYA DURUM KONTROLÜ
-      let activatedBuff = null;
-      let activatedRounds = 30;
-      let activatedSummary = '';
-      if (!Array.isArray(character.buffs)) character.buffs = [];
-
-      const compendiumEntry = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function')
-        ? (window.SrdCompendium.getByName(name) || null)
+      // 3. Instant / Non-Dice or Lesser Restoration Consumables
+      const abilityHealRoll = (plan.isCure && plan.cureFlags && plan.cureFlags.lesserRestoration)
+        ? (Math.floor(Math.random() * 4) + 1)
         : null;
-      const defaultRounds = Number(compendiumEntry?.ruleFlags?.durationRounds || item?.ruleFlags?.durationRounds) || 30;
+      dispatchUseAction({ healRoll: null, dmgRoll: null, abilityHealRoll });
+    }
 
-      const match = character.buffs.find(b => {
-        const bClean = (b.name || '').toLowerCase();
-        return cleanLower.includes(bClean) || bClean.includes(cleanLower.replace(/^(potion|oil) of /i, '').replace(/iksir[iı]?/i, '').replace(/'s/g, '').trim());
+    if (typeof Actions !== 'undefined' && typeof Actions.register === 'function') {
+      Actions.register('consumable:use', (el, dataset) => {
+        if (!dataset) return;
+        consumeItem3D(dataset.sourceType || 'consumable', dataset.id);
       });
-      if (match) {
-        match.active = true;
-        match.rounds = defaultRounds;
-        activatedBuff = match.name;
-        activatedRounds = match.rounds;
-        activatedSummary = match.summary || match.notes || '';
-      } else if (compendiumEntry && ((Array.isArray(compendiumEntry.modifiers) && compendiumEntry.modifiers.length > 0) || (compendiumEntry.ruleFlags && Object.keys(compendiumEntry.ruleFlags).length > 0))) {
-        const buffLabel = String(compendiumEntry.name || name).replace(/^(Potion|Oil) of\s+/i, '').trim();
-        const v2Mods = Array.isArray(compendiumEntry.modifiers) ? JSON.parse(JSON.stringify(compendiumEntry.modifiers)) : [];
-        const v2Flags = compendiumEntry.ruleFlags ? JSON.parse(JSON.stringify(compendiumEntry.ruleFlags)) : {};
-        const durMin = Math.round(defaultRounds / 10);
-        const durText = defaultRounds >= 600 ? `${Math.round(defaultRounds / 600)} hr.` : (defaultRounds >= 10 ? `${durMin} min. (${defaultRounds} rounds)` : `${defaultRounds} rounds`);
-        const newBuff = {
-          id: 'buff_pot_' + Date.now(),
-          schemaVersion: 2,
-          name: buffLabel,
-          source: 'Potion',
-          category: 'Buff',
-          active: true,
-          rounds: defaultRounds,
-          duration: durText,
-          durationText: durText,
-          casterLevel: Number(compendiumEntry.casterLevel) || 3,
-          summary: compendiumEntry.shortDescription || buffLabel,
-          notes: `Activated via ${name}`,
-          modifiers: v2Mods,
-          ruleFlags: v2Flags
-        };
-        character.buffs.push(newBuff);
-        activatedBuff = newBuff.name;
-        activatedRounds = defaultRounds;
-        activatedSummary = newBuff.summary;
-      }
-
-      saveStateToStorage(true);
-      renderAll();
-
-      if (activatedBuff) {
-        showDiceTopToast({
-          icon: '🧪',
-          title: name,
-          breakdown: `Activated "${activatedBuff}" (${activatedSummary || `${activatedRounds} rounds`}) • ${remainingInfo}`,
-          total: 'Active'
-        });
-      } else if (isDaily) {
-        showDiceTopToast({
-          icon: '💍',
-          title: name,
-          breakdown: `Magic item property activated • ${remainingInfo}`,
-          total: `${item.dailyCharges.current}/${item.dailyCharges.max}`
-        });
-      } else {
-        showDiceTopToast({
-          icon: '📦',
-          title: name,
-          breakdown: `Used • ${remainingInfo}`,
-          total: '✔'
-        });
-      }
     }
 
     // Export & Import
