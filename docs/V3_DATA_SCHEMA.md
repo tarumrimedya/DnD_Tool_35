@@ -340,3 +340,17 @@ V3 Skills tablosu (`sheet/core/derive-skills.js`) klasik `renderSkills` ile ayn�
 - Değerler motorun yeniden hesapladığı kopyadan gelir (`engine-adapter.js` `deriveCharacter`): saklanan karakter değişmez.
 - Klasikteki `ensureAllSkills` karakteri yerinde değiştiriyor (eksik çekirdek beceriler, Türkçe ad temizliği). V3 bunu yapmaz, saklanan `skills` dizisini gösterir. `key` alanı olmayan beceriler varsa tablo uyarı gösterir.
 - Bilinen ve korunan klasik davranışlar: grup `misc` değeri en yüksek pozitif bileşenden gelir (negatif misc yok sayılır); trained-only beceriler eğitimsiz de toplam gösterir.
+
+### 11.6 Feats & Special Abilities vitrini: klasikten farklar (2026-11-08)
+
+V3 vitrini (`sheet/views/character/feats.js`) klasik akordeonla aynı düzeni, rozetleri ve companion kartını gösterir. Farklar:
+
+| Konu | Klasik vitrin | V3 |
+| :--- | :--- | :--- |
+| Ekrana çizerken silme | Önce `pruneOrphanedLevelAbilitiesAndFeats` çalışır: isim ve `source` metni regex'leriyle "sahipsiz" saydığı feat ve yetenekleri siler ve kaydeder | Hiçbir şey silinmez. Gerçek karakterde prune bir şey silmedi, ama her açılışta veri silebilecek bir yol |
+| Ability artışları | Seviye satırındaki "+1 Stat: INT" metinleri "Level Feat" olarak listelenir (gerçek karakterde 3 tane, başlık 30 Feats) | Listelenmez (27 Feats). Klasik seviye tablosu aynı metinleri `includes('+1 Stat') \|\| includes('Stat:')` ile zaten ayıklıyor |
+| Kimlik | Ada göre tekilleştirir: aynı adlı iki farklı kayıttan biri görünmez | `id`'ye göre listeler. Ad eşlemesi yalnızca eski string kayıtlar ve seviye satırı metinleri için kalır |
+| Tıklama ve tooltip | Rozet tıklanınca kural detayı açılır; tooltip `masterDb`/SRD metnini ve save DC'yi de arar | Rozet tıklanmaz (detay penceresi sonraki adımda). Tooltip kaydın kendi metnini, yoksa kaynağını gösterir |
+
+- Companion uygunluğu klasikteki gibi isim kontrolüyle yapılır (eski veri okuyucusu). Bağlı companion istatistikleri motor kopyasının `SrdCompendium.calculateCompanionStats` fonksiyonundan gelir; Manage ve Dismiss butonları düzenleme adımına kalır.
+- NPC "Studio" butonu ve NPC seviye tablosu bandı da sonraki adımlara (düzenleme, Level Progression) kalır.

@@ -140,3 +140,20 @@ export function skillEngine(derived) {
     classDef: (/** @type {string} */ name) => (re && typeof re.getClassDef === 'function' ? re.getClassDef(name) : null)
   };
 }
+
+/**
+ * Companion statistics from the forked compendium, or null when there is no bound companion or
+ * the compendium cannot compute them.
+ * @param {Record<string, any>} character
+ * @returns {any|null}
+ */
+export function companionStats(character) {
+  const w = g();
+  if (!character?.companion?.baseMonsterId || !w.SrdCompendium || typeof w.SrdCompendium.calculateCompanionStats !== 'function') return null;
+  try {
+    return w.SrdCompendium.calculateCompanionStats(character, character.companion) || null;
+  } catch (e) {
+    console.warn('[Sheet V3] Companion stats failed.', e);
+    return null;
+  }
+}

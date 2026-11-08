@@ -1,9 +1,10 @@
 // @ts-check
 import { html } from '../../ui/html.js';
-import { getActiveTemplates, deriveCharacter, skillEngine, getConsolidatedSkillGroups } from '../../core/engine-adapter.js';
+import { getActiveTemplates, deriveCharacter, skillEngine, getConsolidatedSkillGroups, companionStats } from '../../core/engine-adapter.js';
 import { deriveSkills } from '../../core/derive-skills.js';
 import { ProfileCard } from './profile.js';
 import { SkillsTable } from './skills.js';
+import { FeatsShowcase } from './feats.js';
 
 /**
  * Character & Logs tab (plan section 7). Sections follow the classic order (Profile, Feats &
@@ -12,7 +13,6 @@ import { SkillsTable } from './skills.js';
  */
 
 const SECTIONS = Object.freeze([
-  { id: 'feats-abilities', title: 'Feats & Special Abilities', step: 4 },
   { id: 'progression', title: 'Level Progression & Planning', step: 5 }
 ]);
 
@@ -112,6 +112,7 @@ export function CharacterTab(state) {
     <div class="space-y-4">
       ${NeedsReview(c, state.readOnly)}
       ${ProfileCard(c, getActiveTemplates(c))}
+      ${FeatsShowcase(c, { open: state.ui.featsOpen, companionStats: companionStats(c) })}
       ${SECTIONS.map(s => html`
         <section class="v3-section" data-section="${s.id}" aria-label="${s.title}">
           <div class="flex items-center justify-between gap-2">

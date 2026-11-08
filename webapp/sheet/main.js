@@ -130,6 +130,7 @@ function boot() {
       const next = data.tab || 'character';
       store.setState(s => (s.ui.activeTab === next ? s : { ...s, ui: { ...s.ui, activeTab: next } }));
     },
+    'toggle-feats': () => store.setState(s => ({ ...s, ui: { ...s.ui, featsOpen: !s.ui.featsOpen } })),
     'skill-filter': data => setSkillView({ filter: /** @type {any} */ (data.filter || 'class') }),
     'skill-search-clear': () => setSkillView({ search: '' }),
     'enable-editing': () => requestEditing(false),

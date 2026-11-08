@@ -16,7 +16,7 @@
  * @property {{ compendium: 'idle'|'loading'|'ready'|'error', ruleEngine: boolean, migrator: boolean, error?: string }} engine
  * @property {{ status: 'pending'|'done'|'error', applied: string[], notes: string[], error?: string }} migration
  *   V3 migrations. Applied in memory on load; saved with the first edit.
- * @property {{ activeTab: string, skills: import('./derive-skills.js').SkillView }} ui
+ * @property {{ activeTab: string, skills: import('./derive-skills.js').SkillView, featsOpen: boolean }} ui
  * @property {WriteState} write
  * @property {boolean} readOnly                      True unless this tab holds the writer lock and has no conflict.
  */
@@ -37,7 +37,7 @@ export function createInitialState() {
     load: { source: 'none', requestedId: null, notes: [] },
     engine: { compendium: 'idle', ruleEngine: false, migrator: false },
     migration: { status: 'pending', applied: [], notes: [] },
-    ui: { activeTab: 'character', skills: { filter: 'class', stat: 'all', search: '' } },
+    ui: { activeTab: 'character', skills: { filter: 'class', stat: 'all', search: '' }, featsOpen: false },
     write: { lock: 'idle', save: 'idle', savedAt: null, message: null },
     readOnly: true
   };
