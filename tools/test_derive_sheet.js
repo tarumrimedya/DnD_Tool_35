@@ -1168,6 +1168,440 @@ function runDeriveSheetTests() {
   );
   CharStore.clearHistory();
 
+  // ==========================================================================
+  // Phase R5: Spells & Maneuvers Tab (`sheet.spells` & 12 Pure Reducers)
+  // ==========================================================================
+  const f01Spells = derivedViews[0].spells;
+  const f02Spells = derivedViews[1].spells;
+  const f03Spells = derivedViews[2].spells;
+  const f04Spells = derivedViews[3].spells;
+  const f05Spells = derivedViews[4].spells;
+
+  check(
+    'Phase R5: deriveSheet populates pure sheet.spells (casterStatsView, slotsByLevelView, spellsByLevelView, maneuversView) across Fixtures 01-05',
+    Boolean(
+      f01Spells?.casterStatsView && f01Spells?.slotsByLevelView && f01Spells?.spellsByLevelView && f01Spells?.maneuversView &&
+      f02Spells?.casterStatsView && f03Spells?.casterStatsView && f04Spells?.casterStatsView && f05Spells?.maneuversView
+    )
+  );
+
+  // Fixture 05 (Half-Dragon Warblade 17): Initiator Level = 17, maxManeuverLvl = 9, maxReadied = 6
+  check(
+    'Phase R5 (Fixture 05 Warblade 17): sheet.spells.maneuversView computes IL 17, maxManeuverLvl 9, maxReadied 6',
+    f05Spells.maneuversView.hasClass === true &&
+    f05Spells.maneuversView.il === 17 &&
+    f05Spells.maneuversView.maxManeuverLvl === 9 &&
+    f05Spells.maneuversView.maxReadied === 6,
+    JSON.stringify({
+      hasClass: f05Spells.maneuversView.hasClass,
+      il: f05Spells.maneuversView.il,
+      maxLvl: f05Spells.maneuversView.maxManeuverLvl,
+      maxReadied: f05Spells.maneuversView.maxReadied
+    })
+  );
+
+  // Fixture 02 (Cleric 6 / Radiant Servant of Pelor 3 -> Divine CL 9) & Fixture 04 (Wizard 13 / Archmage 2 -> Prepared CL 15):
+  check(
+    'Phase R5 (Fixture 02 Cleric 9 & Fixture 04 Wizard 15): sheet.spells.casterStatsView & slotsByLevelView compute Divine (CL 9) and Prepared (CL 15) progressions',
+    Boolean(
+      f02Spells.casterStatsView.divine?.active === true &&
+      f02Spells.casterStatsView.divine?.rawCl === 9 &&
+      f04Spells.casterStatsView.prepared?.active === true &&
+      f04Spells.casterStatsView.prepared?.rawCl === 15 &&
+      Array.isArray(f02Spells.slotsByLevelView.divineArray) &&
+      f02Spells.slotsByLevelView.divineArray.length > 0 &&
+      Array.isArray(f04Spells.slotsByLevelView.preparedArray) &&
+      f04Spells.slotsByLevelView.preparedArray.length > 0
+    ),
+    JSON.stringify({
+      f02Div: f02Spells.casterStatsView.divine,
+      f04Prep: f04Spells.casterStatsView.prepared
+    })
+  );
+
+  // Test 1: 'spells/castSpell' (spontaneous, prepared, divine, clericSpontaneousConversion) + Undo/Redo
+  const r5CasterDoc = JSON.parse(JSON.stringify(f04Raw));
+  r5CasterDoc.spellcasting = {
+    cl: 12,
+    clericSpontaneousMode: 'cure',
+    slots: [{ level: 1, daily: 4, used: 1 }],
+    knownSpells: [{ id: 'spl_magic_missile', name: 'Magic Missile', level: 1, school: 'Evocation' }],
+    preparedSlots: [{ level: 3, daily: 2, used: 0 }],
+    preparedSpells: [{ id: 'spl_fireball', name: 'Fireball', level: 3, school: 'Evocation', cast: false }],
+    divineSlots: [{ level: 2, regularDaily: 2, domainDaily: 1, daily: 3, used: 0 }],
+    divineSpells: [
+      { id: 'spl_lesser_restoration', name: 'Lesser Restoration', level: 2, school: 'Conjuration', isDomainSpell: false, cast: false },
+      { id: 'spl_aid_domain', name: 'Aid', level: 2, school: 'Enchantment', isDomainSpell: true, domainSource: 'Good', cast: false }
+    ],
+    domainPowers: [{ id: 'dom_good', domain: 'Good', name: 'Good Domain Power', maxUses: 1, usesRemaining: 1 }],
+    turnPools: [{ id: 'undead', name: 'Turn Undead', maxUses: 5, usesRemaining: 5 }]
+  };
+  CharStore.replaceDoc(r5CasterDoc, { skipHistory: true });
+  CharStore.clearHistory();
+
+  // 1a. Cast spontaneous spell (Magic Missile L1 -> slots[0].used: 1 -> 2)
+  CharStore.dispatch({
+    type: 'spells/castSpell',
+    payload: { pool: 'spontaneous', spellIdx: 0 },
+    meta: { label: 'Cast Magic Missile' }
+  });
+  check(
+    'Phase R5 Reducer (spells/castSpell spontaneous): increments slots[0].used 1 -> 2 and supports Undo/Redo',
+    CharStore.getDoc().spellcasting.slots[0].used === 2 &&
+    CharStore.getLastOutcome()?.status === 'spell_cast'
+  );
+  CharStore.undo();
+  check(
+    'Phase R5 Undo (spells/castSpell spontaneous): Ctrl+Z restores slots[0].used 2 -> 1',
+    CharStore.getDoc().spellcasting.slots[0].used === 1
+  );
+  CharStore.redo();
+  check(
+    'Phase R5 Redo (spells/castSpell spontaneous): Ctrl+Y re-applies slots[0].used 1 -> 2',
+    CharStore.getDoc().spellcasting.slots[0].used === 2
+  );
+
+  // 1b. Cast prepared spell (Fireball L3 -> preparedSpells[0].cast = true, preparedSlots[0].used = 1)
+  CharStore.dispatch({
+    type: 'spells/castSpell',
+    payload: { pool: 'prepared', spellIdx: 0 },
+    meta: { label: 'Cast Prepared Spell: Fireball' }
+  });
+  check(
+    'Phase R5 Reducer (spells/castSpell prepared): marks preparedSpells[0].cast = true and updates preparedSlots[0].used = 1',
+    CharStore.getDoc().spellcasting.preparedSpells[0].cast === true &&
+    CharStore.getDoc().spellcasting.preparedSlots[0].used === 1
+  );
+
+  // 1c. No-op guard: casting already-cast prepared spell does NOT push onto Undo stack
+  const undoBeforeDupCast = CharStore.getHistoryCounts().undo;
+  CharStore.dispatch({
+    type: 'spells/castSpell',
+    payload: { pool: 'prepared', spellIdx: 0 }
+  });
+  check(
+    'Phase R5 No-Op Guard: casting already-cast prepared spell returns already_cast and does NOT push onto Undo stack',
+    CharStore.getLastOutcome()?.status === 'already_cast' &&
+    CharStore.getHistoryCounts().undo === undoBeforeDupCast
+  );
+
+  // 1d. Cleric Spontaneous Conversion (sacrificing Lesser Restoration L2 -> Cure Moderate Wounds 2d8+10)
+  CharStore.dispatch({
+    type: 'spells/castSpell',
+    payload: { pool: 'clericSpontaneousConversion', spellIdx: 0, convName: 'Cure Moderate Wounds' },
+    meta: { label: 'Spontaneous Conversion: Cure Moderate Wounds' }
+  });
+  check(
+    'Phase R5 Reducer (spells/castSpell clericSpontaneousConversion): marks non-domain divine spell cast and records convertedTo',
+    CharStore.getDoc().spellcasting.divineSpells[0].cast === true &&
+    CharStore.getDoc().spellcasting.divineSpells[0].convertedTo === 'Cure Moderate Wounds' &&
+    CharStore.getDoc().spellcasting.divineSlots[0].used === 1
+  );
+
+  // Test 2: 'spells/restoreAllSlots'
+  CharStore.dispatch({
+    type: 'spells/restoreAllSlots',
+    payload: { discipline: 'all' },
+    meta: { label: 'Restore All Spell Slots' }
+  });
+  check(
+    'Phase R5 Reducer (spells/restoreAllSlots): resets used slots and unmarks cast prepared/divine spells',
+    CharStore.getDoc().spellcasting.slots[0].used === 0 &&
+    CharStore.getDoc().spellcasting.preparedSpells[0].cast === false &&
+    CharStore.getDoc().spellcasting.divineSpells[0].cast === false
+  );
+
+  // Test 3: 'spells/toggleClericSpontaneousMode' & 'spells/useTurnOrDomainPower'
+  CharStore.dispatch({
+    type: 'spells/toggleClericSpontaneousMode',
+    payload: {},
+    meta: { label: 'Toggle Cleric Spontaneous Mode' }
+  });
+  check(
+    'Phase R5 Reducer (spells/toggleClericSpontaneousMode): switches cure -> inflict and supports Undo',
+    CharStore.getDoc().spellcasting.clericSpontaneousMode === 'inflict'
+  );
+  CharStore.undo();
+  check(
+    'Phase R5 Undo (spells/toggleClericSpontaneousMode): Ctrl+Z restores cure mode',
+    CharStore.getDoc().spellcasting.clericSpontaneousMode === 'cure'
+  );
+
+  CharStore.dispatch({
+    type: 'spells/useTurnOrDomainPower',
+    payload: { kind: 'turn', id: 'undead', maxUses: 5 },
+    meta: { label: 'Turn Undead (1/5 used)' }
+  });
+  CharStore.dispatch({
+    type: 'spells/useTurnOrDomainPower',
+    payload: { kind: 'domain', id: 'dom_good', maxUses: 1 },
+    meta: { label: 'Activate Domain Power: Good' }
+  });
+  check(
+    'Phase R5 Reducer (spells/useTurnOrDomainPower): increments Turn Undead (0 -> 1) and Domain Power (0 -> 1)',
+    CharStore.getDoc().spellcasting.turnUndeadUsed === 1 &&
+    CharStore.getDoc().spellcasting.domainPowerUses.dom_good === 1
+  );
+
+  // Test 4: Tome of Battle Maneuvers & Stances Reducers on Fixture 05 (Warblade 17)
+  const r5TobDoc = JSON.parse(JSON.stringify(f05Raw));
+  r5TobDoc.tomeOfBattle = {
+    initiatorLevel: 17,
+    activeStance: 'Punishing Stance',
+    maneuversKnown: [
+      { id: 'tob_steel_wind', name: 'Steel Wind', level: 1, discipline: 'Iron Heart', subType: 'Strike', expended: false },
+      { id: 'tob_iron_heart_surge', name: 'Iron Heart Surge', level: 3, discipline: 'Iron Heart', subType: 'Maneuver', expended: false }
+    ],
+    readiedManeuvers: [
+      { id: 'tob_steel_wind', name: 'Steel Wind', level: 1, discipline: 'Iron Heart', subType: 'Strike', expended: false },
+      { id: 'tob_iron_heart_surge', name: 'Iron Heart Surge', level: 3, discipline: 'Iron Heart', subType: 'Maneuver', expended: false }
+    ],
+    stancesKnown: [
+      { id: 'tob_punishing_stance', name: 'Punishing Stance', level: 1, discipline: 'Iron Heart' }
+    ]
+  };
+  CharStore.replaceDoc(r5TobDoc, { skipHistory: true });
+  CharStore.clearHistory();
+
+  // 4a. 'spells/expendOrRecoverManeuver' (expend idx 0 -> recover idx 0 -> recoverAll)
+  CharStore.dispatch({
+    type: 'spells/expendOrRecoverManeuver',
+    payload: { idx: 0 },
+    meta: { label: 'Initiate Maneuver #0' }
+  });
+  check(
+    'Phase R5 Reducer (spells/expendOrRecoverManeuver): expends readied maneuver #0 and supports Undo',
+    CharStore.getDoc().tomeOfBattle.readiedManeuvers[0].expended === true &&
+    CharStore.getSheet().spells.maneuversView.readiedManeuvers[0].expended === true
+  );
+  CharStore.undo();
+  check(
+    'Phase R5 Undo (spells/expendOrRecoverManeuver): Ctrl+Z recovers readied maneuver #0',
+    CharStore.getDoc().tomeOfBattle.readiedManeuvers[0].expended === false
+  );
+
+  // 4b. 'spells/toggleManeuverReadied' (unready first maneuver, then re-ready it)
+  const firstReadiedName = CharStore.getDoc().tomeOfBattle.readiedManeuvers[0].name;
+  const initialReadiedCount = CharStore.getDoc().tomeOfBattle.readiedManeuvers.length;
+  CharStore.dispatch({
+    type: 'spells/toggleManeuverReadied',
+    payload: { name: firstReadiedName },
+    meta: { label: `Unready Maneuver: ${firstReadiedName}` }
+  });
+  check(
+    'Phase R5 Reducer (spells/toggleManeuverReadied): unreadies maneuver from combat deck',
+    CharStore.getDoc().tomeOfBattle.readiedManeuvers.length === initialReadiedCount - 1
+  );
+  CharStore.dispatch({
+    type: 'spells/toggleManeuverReadied',
+    payload: { name: firstReadiedName, maxReadied: 4 },
+    meta: { label: `Ready Maneuver: ${firstReadiedName}` }
+  });
+  check(
+    'Phase R5 Reducer (spells/toggleManeuverReadied): re-readies maneuver into combat deck',
+    CharStore.getDoc().tomeOfBattle.readiedManeuvers.length === initialReadiedCount
+  );
+
+  // 4c. 'spells/selectStance' & 'spells/toggleDmBoon'
+  CharStore.dispatch({
+    type: 'spells/selectStance',
+    payload: { stanceName: '' },
+    meta: { label: 'Leave Stance' }
+  });
+  check(
+    'Phase R5 Reducer (spells/selectStance): clears activeStance and supports Undo',
+    CharStore.getDoc().tomeOfBattle.activeStance === ''
+  );
+  CharStore.undo();
+  check(
+    'Phase R5 Undo (spells/selectStance): Ctrl+Z restores activeStance',
+    Boolean(CharStore.getDoc().tomeOfBattle.activeStance)
+  );
+
+  CharStore.dispatch({
+    type: 'spells/toggleDmBoon',
+    payload: { discipline: 'spontaneous', fallbackDiscipline: 'martial' },
+    meta: { label: 'Enable DM Boon (spontaneous)' }
+  });
+  check(
+    'Phase R5 Reducer (spells/toggleDmBoon): enables spontaneous DM Boon in doc.settings.boonDisciplines',
+    Array.isArray(CharStore.getDoc().settings?.boonDisciplines) &&
+    CharStore.getDoc().settings.boonDisciplines.includes('spontaneous')
+  );
+  CharStore.undo();
+
+  // Verify all Actions.register('spells:*') handlers in char_spells.js strictly follow (el, data, event) parameter order
+  const charSpellsSrc = fs.readFileSync(path.join(__dirname, '..', 'char_spells.js'), 'utf8');
+  const spellsActionRegRegex = /Actions\.register\(\s*['"]spells:([^'"]+)['"]\s*,\s*\(([^)]*)\)\s*=>/g;
+  let spellsRegMatch;
+  let spellsRegCount = 0;
+  const badSpellsSigs = [];
+  while ((spellsRegMatch = spellsActionRegRegex.exec(charSpellsSrc)) !== null) {
+    spellsRegCount++;
+    const actionName = spellsRegMatch[1];
+    const params = spellsRegMatch[2].split(',').map(s => s.trim()).filter(Boolean);
+    if (params[0] !== 'el' || (params.length > 1 && params[1] !== 'data')) {
+      badSpellsSigs.push(`spells:${actionName}(${spellsRegMatch[2]})`);
+    }
+  }
+  check(
+    'Phase R5: All 39 Actions.register("spells:*") handlers in char_spells.js strictly follow (el, data, event) parameter order',
+    spellsRegCount >= 39 && badSpellsSigs.length === 0,
+    `count=${spellsRegCount}, bad=${badSpellsSigs.join(', ')}`
+  );
+
+  // ==========================================================================
+  // Phase R5 QA Remediation: Wrapper-Payload Contract & Outcome Guard Tests
+  // ==========================================================================
+  const qaWrapperDoc = JSON.parse(JSON.stringify(f04Raw));
+  qaWrapperDoc.spellcasting = {
+    cl: 12,
+    clericSpontaneousMode: 'cure',
+    turnUndeadUsed: 0,
+    domainPowerUses: {},
+    slots: [
+      { level: 0, daily: 6, used: 0 },
+      { level: 3, daily: 4, used: 0 }
+    ],
+    knownSpells: [
+      { id: 'spl_lightning_bolt', name: 'Lightning Bolt', level: 3, school: 'Evocation' }
+    ],
+    preparedSlots: [
+      { level: 0, daily: 4, used: 0 },
+      { level: 3, daily: 3, used: 0 }
+    ],
+    preparedSpells: [
+      { id: 'spl_fireball', name: 'Fireball', level: 3, school: 'Evocation', isCast: false }
+    ],
+    divineSlots: [
+      { level: 2, regularDaily: 2, domainDaily: 1, daily: 3, used: 0, domainUsed: 0 }
+    ],
+    divineSpells: [
+      { id: 'spl_aid_dom', name: 'Aid', level: 2, school: 'Enchantment', isDomainSpell: true, isCast: false },
+      { id: 'spl_bulls_strength', name: "Bull's Strength", level: 2, school: 'Transmutation', isDomainSpell: false, isCast: false }
+    ]
+  };
+  qaWrapperDoc.tomeOfBattle = {
+    initiatorLevel: 9,
+    maneuversKnown: [
+      { id: 'tob_steel_wind', name: 'Steel Wind', level: 1, discipline: 'Iron Heart', expended: false }
+    ],
+    readiedManeuvers: [
+      { id: 'tob_steel_wind', name: 'Steel Wind', level: 1, discipline: 'Iron Heart', expended: false }
+    ],
+    stancesKnown: []
+  };
+  CharStore.replaceDoc(qaWrapperDoc, { skipHistory: true });
+  CharStore.clearHistory();
+
+  // QA Test 1: spells/castSpell with wrapper payload { discipline: 'spontaneous', spellIndex: 0, level: 3 }
+  CharStore.dispatch({
+    type: 'spells/castSpell',
+    payload: { discipline: 'spontaneous', spellIndex: 0, level: 3 },
+    meta: { label: 'Cast Spontaneous L3' }
+  });
+  const spontSlot0 = CharStore.getDoc().spellcasting.slots.find(s => Number(s.level) === 0);
+  const spontSlot3 = CharStore.getDoc().spellcasting.slots.find(s => Number(s.level) === 3);
+  check(
+    'Phase R5 QA Wrapper Test 1: spells/castSpell { discipline: "spontaneous", spellIndex: 0, level: 3 } increments L3 slot (NOT L0)',
+    spontSlot3?.used === 1 && spontSlot0?.used === 0 && CharStore.getLastOutcome()?.status === 'spell_cast'
+  );
+
+  // QA Test 2: spells/castSpell with wrapper payload { discipline: 'prepared', spellIndex: 0, level: 3 }
+  CharStore.dispatch({
+    type: 'spells/castSpell',
+    payload: { discipline: 'prepared', spellIndex: 0, level: 3 },
+    meta: { label: 'Cast Prepared L3' }
+  });
+  const prepSlot3 = CharStore.getDoc().spellcasting.preparedSlots.find(s => Number(s.level) === 3);
+  check(
+    'Phase R5 QA Wrapper Test 2: spells/castSpell { discipline: "prepared", spellIndex: 0, level: 3 } marks preparedSpells[0].isCast === true & increments L3 prepared slot',
+    CharStore.getDoc().spellcasting.preparedSpells[0].isCast === true &&
+    prepSlot3?.used === 1 &&
+    CharStore.getLastOutcome()?.status === 'spell_cast'
+  );
+
+  // QA Test 3: spells/castSpell with { discipline: 'divine', spellIndex: 0, level: 2, isDomainSpell: true } & spontaneous conversion guards
+  CharStore.dispatch({
+    type: 'spells/castSpell',
+    payload: { discipline: 'divine', spellIndex: 0, level: 2, isDomainSpell: true },
+    meta: { label: 'Cast Domain Spell Aid' }
+  });
+  const divSlot2 = CharStore.getDoc().spellcasting.divineSlots.find(s => Number(s.level) === 2);
+  check(
+    'Phase R5 QA Wrapper Test 3a: spells/castSpell { discipline: "divine", spellIndex: 0, level: 2, isDomainSpell: true } increments domainUsed & marks isCast',
+    divSlot2?.domainUsed === 1 &&
+    divSlot2?.used === 1 &&
+    CharStore.getDoc().spellcasting.divineSpells[0].isCast === true
+  );
+
+  // Attempt spontaneous conversion on domain spell (index 0) -> rejected with domain_cannot_convert & does NOT push to Undo stack
+  const undoBeforeDomConv = CharStore.getHistoryCounts().undo;
+  CharStore.dispatch({
+    type: 'spells/castSpell',
+    payload: { discipline: 'divine', spellIndex: 0, level: 2, isSpontaneousConversion: true }
+  });
+  check(
+    'Phase R5 QA Wrapper Test 3b: spells/castSpell with isSpontaneousConversion: true rejects domain spell (domain_cannot_convert) & does not push onto Undo stack',
+    CharStore.getLastOutcome()?.status === 'invalid_payload' &&
+    CharStore.getLastOutcome()?.reason === 'domain_cannot_convert' &&
+    CharStore.getHistoryCounts().undo === undoBeforeDomConv
+  );
+
+  // Spontaneous conversion on regular divine spell (index 1: Bull's Strength) -> succeeds and marks isCast = true
+  CharStore.dispatch({
+    type: 'spells/castSpell',
+    payload: { discipline: 'divine', spellIndex: 1, level: 2, isSpontaneousConversion: true, convName: 'Cure Moderate Wounds' },
+    meta: { label: 'Spontaneous Conversion' }
+  });
+  check(
+    'Phase R5 QA Wrapper Test 3c: spells/castSpell with isSpontaneousConversion: true converts regular divine spell (isCast === true, used === 2)',
+    CharStore.getDoc().spellcasting.divineSpells[1].isCast === true &&
+    CharStore.getDoc().spellcasting.divineSpells[1].convertedTo === 'Cure Moderate Wounds' &&
+    CharStore.getDoc().spellcasting.divineSlots[0].used === 2
+  );
+
+  // QA Test 4: spells/useTurnOrDomainPower with wrapper payload { powerId: 'strength_feat_of_strength', maxUses: 1, buffPayload: {...} }
+  CharStore.dispatch({
+    type: 'spells/useTurnOrDomainPower',
+    payload: {
+      powerId: 'strength_feat_of_strength',
+      maxUses: 1,
+      buffPayload: { id: 'strength_feat_of_strength', name: 'Feat of Strength', active: true }
+    },
+    meta: { label: 'Activate Feat of Strength' }
+  });
+  check(
+    'Phase R5 QA Wrapper Test 4: spells/useTurnOrDomainPower { powerId, maxUses, buffPayload } increments domainPowerUses["strength_feat_of_strength"], leaves turnUndeadUsed === 0, and activates buff',
+    CharStore.getDoc().spellcasting.domainPowerUses['strength_feat_of_strength'] === 1 &&
+    CharStore.getDoc().spellcasting.turnUndeadUsed === 0 &&
+    CharStore.getDoc().buffs.some(b => b && b.id === 'strength_feat_of_strength' && b.active === true) &&
+    CharStore.getLastOutcome()?.status === 'power_used'
+  );
+
+  // QA Test 5: spells/expendOrRecoverManeuver with { index: 0, mode: 'expend' } and { mode: 'recoverAll' }
+  CharStore.dispatch({
+    type: 'spells/expendOrRecoverManeuver',
+    payload: { index: 0, mode: 'expend' },
+    meta: { label: 'Execute Steel Wind' }
+  });
+  check(
+    'Phase R5 QA Wrapper Test 5a: spells/expendOrRecoverManeuver { index: 0, mode: "expend" } sets readiedManeuvers[0].expended = true',
+    CharStore.getDoc().tomeOfBattle.readiedManeuvers[0].expended === true &&
+    CharStore.getLastOutcome()?.status === 'maneuver_expended'
+  );
+  CharStore.dispatch({
+    type: 'spells/expendOrRecoverManeuver',
+    payload: { mode: 'recoverAll' },
+    meta: { label: 'Recover All Maneuvers' }
+  });
+  check(
+    'Phase R5 QA Wrapper Test 5b: spells/expendOrRecoverManeuver { mode: "recoverAll" } resets readiedManeuvers[0].expended = false',
+    CharStore.getDoc().tomeOfBattle.readiedManeuvers[0].expended === false &&
+    CharStore.getLastOutcome()?.status === 'all_maneuvers_recovered'
+  );
+  CharStore.clearHistory();
+
   return { passed, elapsedMs: Date.now() - startMs };
 }
 

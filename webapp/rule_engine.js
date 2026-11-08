@@ -8699,6 +8699,936 @@ const RuleEngine = {
   },
 
   /**
+   * Pure Spells & Maneuvers view-model derivation (Phase R5 Strangler Fig).
+   * Computes `casterStatsView`, `slotsByLevelView`, `spellsByLevelView`, and `maneuversView`
+   * without mutating `w.spellcasting` or `w.tomeOfBattle`.
+   */
+  deriveSpellsView(w, workingDb = []) {
+    if (!w || typeof w !== 'object') {
+      return {
+        casterStatsView: {},
+        slotsByLevelView: { spontaneous: {}, prepared: {}, divine: {}, spontaneousArray: [], preparedArray: [], divineArray: [] },
+        spellsByLevelView: { knownSpells: [], preparedSpells: [], divineSpells: [] },
+        maneuversView: { initiatorLevel: 0, maxManeuverLevel: 0, maneuversKnown: [], readiedManeuvers: [], stancesKnown: [], activeStance: '' }
+      };
+    }
+
+    const abi = w.abilities || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+    const strMod = this.getAbilityMod(abi.str || 10);
+    const dexMod = this.getAbilityMod(abi.dex || 10);
+    const conMod = this.getAbilityMod(abi.con || 10);
+    const intVal = Number(w.stats?.INT?.value ?? abi.int ?? 10);
+    const intMod = this.getAbilityMod(intVal);
+    const baseWisVal = Number(w.stats?.WIS?.value ?? abi.wis ?? 10);
+    const chaVal = Number(w.stats?.CHA?.value ?? abi.cha ?? 10);
+    const chaMod = this.getAbilityMod(chaVal);
+
+    const classifyClass = (className) => {
+      const c = String(className || '').toLowerCase().trim();
+      if (!c) return null;
+      if (['wizard', 'artificer', 'archivist', 'wu jen', "sha'ir", 'büyücü', 'archmage', 'loremaster', 'incantatrix', 'red wizard', 'pale master', 'eldritch knight', 'arcane trickster', 'abjurant champion'].some(k => c.includes(k))) return 'prepared';
+      if (['cleric', 'creric', 'druid', 'paladin', 'ranger', 'spirit shaman', 'shugenja', 'healer', 'adept', 'rahip', 'priest', 'hierophant', 'contemplative', 'radiant servant', 'hospitaler', 'warpriest', 'divine oracle', 'church inquisitor'].some(k => c.includes(k))) return 'divine';
+      if (['sorcerer', 'bard', 'favored soul', 'warlock', 'warmage', 'duskblade', 'beguiler', 'dread necromancer', 'dragonfire adept', 'spellthief'].some(k => c.includes(k))) return 'spontaneous';
+      if (['warblade', 'swordsage', 'crusader', 'bloodclaw master', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'].some(k => c.includes(k))) return 'martial';
+      return null;
+    };
+
+    const discLevels = { spontaneous: 0, prepared: 0, divine: 0, martial: 0 };
+    const totalDiscLevels = () => discLevels.spontaneous + discLevels.prepared + discLevels.divine + discLevels.martial;
+    const allProg = Array.isArray(w.levelProgression) ? w.levelProgression.filter(Boolean) : [];
+    const activeProg = allProg.filter(p => p.active !== false);
+    activeProg.forEach(p => {
+      const d = classifyClass(p.className || p.class || p.name);
+      if (d) discLevels[d] += 1;
+    });
+    if (totalDiscLevels() === 0 && allProg.length > 0) {
+      allProg.forEach(p => {
+        const d = classifyClass(p.className || p.class || p.name);
+        if (d) discLevels[d] += 1;
+      });
+    }
+    if (totalDiscLevels() === 0 && Array.isArray(w.progression) && w.progression.length > 0) {
+      w.progression.forEach(p => {
+        const d = classifyClass(p?.className || p?.class || p?.name);
+        if (d) discLevels[d] += 1;
+      });
+    }
+    if (totalDiscLevels() === 0 && Array.isArray(w.classProgression) && w.classProgression.length > 0) {
+      w.classProgression.forEach(cp => {
+        const d = classifyClass(cp?.className || cp?.name || cp?.class);
+        if (d) discLevels[d] += (Number(cp?.level) || 1);
+      });
+    }
+    if (totalDiscLevels() === 0 && w.classLevels && typeof w.classLevels === 'object' && !Array.isArray(w.classLevels)) {
+      Object.entries(w.classLevels).forEach(([cName, cLvl]) => {
+        const d = classifyClass(cName);
+        if (d) discLevels[d] += (Number(cLvl) || 0);
+      });
+    }
+    if (totalDiscLevels() === 0 && Array.isArray(w.classes) && w.classes.length > 0) {
+      w.classes.forEach(c => {
+        const name = typeof c === 'string' ? c : (c?.name || c?.className || c?.class || '');
+        const lvl = (c && typeof c === 'object') ? (Number(c.level) || 1) : (Number(w.level) || 1);
+        const d = classifyClass(name);
+        if (d) discLevels[d] += lvl;
+      });
+    } else if (totalDiscLevels() === 0 && typeof w.classes === 'string' && w.classes.trim()) {
+      const parts = w.classes.split(/[\/,]/).map(s => s.trim()).filter(Boolean);
+      parts.forEach(part => {
+        const numMatch = part.match(/(\d+)/);
+        const lvl = numMatch ? (parseInt(numMatch[1], 10) || 1) : (parts.length === 1 ? (Number(w.level) || 1) : 1);
+        const d = classifyClass(part);
+        if (d) discLevels[d] += lvl;
+      });
+    }
+    if (totalDiscLevels() === 0) {
+      const fallbackDisc = classifyClass(w.spellcasting?.primaryClass || w.class);
+      if (fallbackDisc) discLevels[fallbackDisc] += (Number(w.spellcasting?.cl || w.level) || 1);
+    }
+
+    const getBoonDisciplines = () => {
+      if (!w.settings) return [];
+      const valid = ['spontaneous', 'prepared', 'divine', 'martial', 'warlock'];
+      if (Array.isArray(w.settings.boonDisciplines)) {
+        const list = w.settings.boonDisciplines
+          .map(d => String(d || '').toLowerCase().trim())
+          .filter(d => valid.includes(d));
+        if ((w.settings.warlockBoon === true || String(w.settings.clMode || '').includes('Warlock Boon')) && !list.includes('warlock')) {
+          list.push('warlock');
+        }
+        return Array.from(new Set(list));
+      }
+      const clMode = w.settings.clMode || 'Class Level';
+      const isWarlockBoon = clMode.includes('Warlock Boon') || w.settings.warlockBoon === true;
+      const isDmBoonActive = (clMode === 'Character Level (DM Boon)') || isWarlockBoon;
+      if (!isDmBoonActive) return [];
+      const out = [];
+      if (isWarlockBoon) out.push('warlock');
+      const rawCasterType = String(w.settings.casterType || '').toLowerCase().trim();
+      if (w.settings.casterTypeExplicit === true && valid.includes(rawCasterType)) {
+        if (!out.includes(rawCasterType)) out.push(rawCasterType);
+      } else if (clMode === 'Character Level (DM Boon)') {
+        const order = ['spontaneous', 'prepared', 'divine', 'martial'];
+        let bestDisc = null;
+        let maxLvl = 0;
+        order.forEach(d => {
+          if ((discLevels[d] || 0) > maxLvl) {
+            maxLvl = discLevels[d];
+            bestDisc = d;
+          }
+        });
+        const fallback = valid.includes(rawCasterType) ? rawCasterType : (bestDisc || 'spontaneous');
+        if (!out.includes(fallback)) out.push(fallback);
+      }
+      return out;
+    };
+
+    const boonDisciplines = getBoonDisciplines();
+    const isDiscBoon = (disc) => {
+      const target = String(disc || '').toLowerCase().trim();
+      if (target === 'spontaneous') return boonDisciplines.includes('spontaneous') || boonDisciplines.includes('warlock');
+      if (target === 'warlock') return boonDisciplines.includes('warlock') || Boolean(w.settings?.warlockBoon);
+      return boonDisciplines.includes(target);
+    };
+
+    const isSpontBoon = isDiscBoon('spontaneous');
+    const isWarlockBoon = isDiscBoon('warlock');
+    const isPrepBoon = isDiscBoon('prepared');
+    const isDivBoon = isDiscBoon('divine');
+    const isMartialBoon = isDiscBoon('martial');
+
+    let martialStudyCount = 0;
+    let martialStanceCount = 0;
+    const progFeats = [];
+    activeProg.forEach(p => {
+      (p.feats || []).forEach(f => progFeats.push(String(typeof f === 'string' ? f : (f?.name || '')).toLowerCase()));
+    });
+    if (progFeats.length > 0) {
+      martialStudyCount = progFeats.filter(f => f.includes('martial study')).length;
+      martialStanceCount = progFeats.filter(f => f.includes('martial stance')).length;
+    } else {
+      const topFeats = (w.feats || []).map(f => String(typeof f === 'string' ? f : (f?.name || '')).toLowerCase());
+      martialStudyCount = topFeats.filter(f => f.includes('martial study')).length;
+      martialStanceCount = topFeats.filter(f => f.includes('martial stance')).length;
+    }
+
+    const classNames = [];
+    if (Array.isArray(w.classes)) w.classes.forEach(c => { if (c && c.name) classNames.push(String(c.name).toLowerCase().trim()); });
+    if (typeof w.classes === 'string' && w.classes) classNames.push(w.classes.toLowerCase().trim());
+    if (typeof w.class === 'string' && w.class) classNames.push(w.class.toLowerCase().trim());
+    if (Array.isArray(w.classProgression)) w.classProgression.forEach(cp => { if (cp && cp.className) classNames.push(String(cp.className).toLowerCase().trim()); });
+    if (Array.isArray(w.levelProgression)) w.levelProgression.forEach(lp => { if (lp && lp.className) classNames.push(String(lp.className).toLowerCase().trim()); });
+    if (w.classLevels && typeof w.classLevels === 'object' && !Array.isArray(w.classLevels)) {
+      Object.entries(w.classLevels).forEach(([cName, cLvl]) => {
+        if ((Number(cLvl) || 0) > 0) classNames.push(String(cName).toLowerCase().trim());
+      });
+    }
+    if (classNames.length === 0 && w.spellcasting?.primaryClass) classNames.push(String(w.spellcasting.primaryClass).toLowerCase().trim());
+    if (w.isNpc && w.spellcasting && (w.spellcasting.cl > 0 || (w.spellcasting.slots && w.spellcasting.slots.length > 0) || (w.spellcasting.knownSpells && w.spellcasting.knownSpells.length > 0) || (w.spells && w.spells.length > 0))) {
+      classNames.push(String(w.spellcasting.primaryClass || 'sorcerer').toLowerCase());
+    }
+
+    const hasSpontSlots = (w.isNpc && Array.isArray(w.spellcasting?.slots) && w.spellcasting.slots.some(s => (Number(s.daily) || 0) > 0))
+      || (Array.isArray(w.spellcasting?.slots) && w.spellcasting.slots.some(s => (Number(s.dmBonus) || 0) > 0))
+      || (Array.isArray(w.spellcasting?.knownSpells) && w.spellcasting.knownSpells.length > 0);
+    const hasPrepSlots = (Array.isArray(w.spellcasting?.preparedSlots) && w.spellcasting.preparedSlots.some(s => (Number(s.dmBonus) || 0) > 0))
+      || (Array.isArray(w.spellcasting?.preparedSpells) && w.spellcasting.preparedSpells.length > 0);
+    const hasDivSlots = (Array.isArray(w.spellcasting?.divineSlots) && w.spellcasting.divineSlots.some(s => (Number(s.dmBonus) || 0) > 0))
+      || (Array.isArray(w.spellcasting?.divineSpells) && w.spellcasting.divineSpells.length > 0);
+    const hasMartialDmBonus = ((Number(w.tomeOfBattle?.dmReadiedBonus) || 0) > 0)
+      || ((Number(w.tomeOfBattle?.dmKnownBonus) || 0) > 0)
+      || ((Number(w.tomeOfBattle?.dmStanceBonus) || 0) > 0);
+    const hasMartialSlots = martialStudyCount > 0 || martialStanceCount > 0 || hasMartialDmBonus
+      || (w.isNpc && Array.isArray(w.tomeOfBattle?.maneuversKnown) && w.tomeOfBattle.maneuversKnown.length > 0);
+
+    const hasSpontaneous = classNames.some(c => classifyClass(c) === 'spontaneous') || hasSpontSlots || isSpontBoon
+      || (w.isNpc && Boolean(w.spellcasting?.cl || w.spellcasting?.slots?.length || w.spellcasting?.knownSpells?.length || w.spells?.length));
+    const hasPrepared = classNames.some(c => classifyClass(c) === 'prepared') || hasPrepSlots || isPrepBoon;
+    const hasDivine = classNames.some(c => classifyClass(c) === 'divine') || hasDivSlots || isDivBoon;
+    const hasMartial = classNames.some(c => classifyClass(c) === 'martial') || hasMartialSlots || isMartialBoon;
+
+    const activeLevels = activeProg.length || Number(w.level) || 0;
+    const sorcLvls = discLevels.spontaneous || 0;
+    const wizLvls = discLevels.prepared || 0;
+    const divLvls = discLevels.divine || 0;
+    const rawClMode = w.settings?.clMode || 'Class Level';
+
+    const casterLevelBonus = Number(w.ruleFlags?.casterLevelBonus) || 0;
+    const spellDcBonus = Number(w.ruleFlags?.spellDcBonus) || 0;
+
+    // 1. Spontaneous Caster Info
+    const defaultSpontClass = isWarlockBoon && sorcLvls === 0
+      ? 'Warlock (DM Boon)'
+      : (isSpontBoon && sorcLvls === 0 ? 'Sorcerer (DM Boon)' : 'Sorcerer');
+    const spontClassLabel = w.spellcasting?.primaryClass || (hasSpontaneous ? defaultSpontClass : (w.isNpc ? 'Sorcerer' : ''));
+    let spontStatKey = 'CHA';
+    if (['Wizard', 'Artificer'].includes(spontClassLabel)) spontStatKey = 'INT';
+    else if (['Cleric', 'Druid', 'Favored Soul'].includes(spontClassLabel)) spontStatKey = 'WIS';
+    else if (w.spellcasting?.statName) spontStatKey = w.spellcasting.statName;
+    else if (w.spellcasting?.ability) spontStatKey = String(w.spellcasting.ability).toUpperCase();
+    const spontStatVal = Number(w.stats?.[spontStatKey]?.value ?? abi[spontStatKey.toLowerCase()] ?? 10);
+    const spontStatMod = this.getAbilityMod(spontStatVal);
+    const spontClMode = isSpontBoon
+      ? (isWarlockBoon ? 'Warlock Boon (CL = Char Lvl)' : 'Character Level (DM Boon)')
+      : rawClMode;
+    let spontCl = 0;
+    if (w.isNpc && (w.spellcasting?.cl !== undefined || w.spellcasting?.caster_level !== undefined)) {
+      spontCl = Number(w.spellcasting.cl ?? w.spellcasting.caster_level) || 0;
+    } else if (isSpontBoon) {
+      const rawCl = w.spellcasting?.caster_level ?? w.spellcasting?.cl ?? sorcLvls;
+      spontCl = Math.max(Number(rawCl) || 1, sorcLvls, activeLevels, 1);
+    } else if (sorcLvls > 0) {
+      spontCl = sorcLvls;
+    } else if (hasSpontaneous) {
+      spontCl = 1;
+    }
+
+    // 2. Prepared Caster Info
+    let prepCl = 0;
+    if (isPrepBoon) prepCl = Math.max(wizLvls, activeLevels, 1);
+    else if (wizLvls > 0) prepCl = wizLvls;
+    else if (hasPrepared) prepCl = 1;
+    const prepClMode = isPrepBoon ? 'Character Level (DM Boon)' : rawClMode;
+
+    // 3. Divine Caster Info & Domains (pure, no mutation of w.spellcasting.domains)
+    const getPureClericDomains = () => {
+      if (Array.isArray(w.spellcasting?.domains) && w.spellcasting.domains.some(Boolean)) {
+        return w.spellcasting.domains.filter(Boolean);
+      }
+      const harvested = [];
+      activeProg.forEach(p => {
+        [...(p.specialAbilities || []), ...(p.feats || [])].forEach(str => {
+          const m = String(str || '').match(/Domain:\s*([A-Za-z]+)/i);
+          if (m && m[1] && !harvested.includes(m[1])) harvested.push(m[1]);
+        });
+      });
+      return harvested.slice(0, 2);
+    };
+    const chosenDomains = getPureClericDomains();
+    let divCl = 0;
+    if (isDivBoon) divCl = Math.max(divLvls, activeLevels, 1);
+    else if (divLvls > 0) divCl = divLvls;
+    else if (hasDivine) divCl = 1;
+    const hasMadness = chosenDomains.some(d => String(d || '').toLowerCase() === 'madness');
+    const insanityBonus = (hasMadness && (divLvls > 0 || divCl > 0)) ? Math.max(1, Math.floor((divLvls || divCl || 1) / 2)) : 0;
+    const wisVal = baseWisVal + insanityBonus;
+    const wisMod = this.getAbilityMod(wisVal);
+    const divClMode = isDivBoon ? 'Character Level (DM Boon)' : rawClMode;
+
+    const hasDomainCap = (() => {
+      const rNames = [];
+      activeProg.forEach(p => { if (p.className || p.class) rNames.push(String(p.className || p.class).toLowerCase().trim()); });
+      if (rNames.length === 0 && Array.isArray(w.classProgression)) {
+        w.classProgression.forEach(cp => { if (cp?.className || cp?.name) rNames.push(String(cp.className || cp.name).toLowerCase().trim()); });
+      }
+      if (rNames.length === 0 && typeof w.classes === 'string' && w.classes) {
+        w.classes.split(/[\/,]/).forEach(s => rNames.push(s.toLowerCase().trim()));
+      }
+      if (rNames.length === 0 && typeof w.class === 'string' && w.class) {
+        rNames.push(w.class.toLowerCase().trim());
+      }
+      if (rNames.some(c => ['cleric', 'creric', 'rahip', 'priest', 'radiant servant', 'contemplative', 'church inquisitor', 'divine oracle', 'warpriest'].some(k => c.includes(k)))) {
+        return true;
+      }
+      return chosenDomains.length > 0;
+    })();
+
+    // 4. Pure Slot Calculations
+    const calcPureSorcererSlots = (sorcLevel, chaScore, existingSlots = []) => {
+      const prevSlots = Array.isArray(existingSlots) ? existingSlots : [];
+      if (w.isNpc) {
+        if (w.spellSlots && typeof w.spellSlots === 'object') {
+          const built = [];
+          for (let lvl = 0; lvl <= 9; lvl++) {
+            const daily = Number(w.spellSlots[lvl]) || 0;
+            if (daily > 0 || lvl === 0) {
+              const found = prevSlots.find(s => Number(s.level) === lvl);
+              built.push({
+                level: lvl,
+                daily,
+                total: daily,
+                bonus: 0,
+                known: daily,
+                dmBonus: found ? (Number(found.dmBonus) || 0) : 0,
+                used: found ? Math.min(Number(found.used) || 0, daily) : 0
+              });
+            }
+          }
+          return built;
+        }
+        if (prevSlots.length > 0) return prevSlots.map(s => ({ ...s, total: Number(s.daily) || 0 }));
+      }
+      if (Number(sorcLevel) <= 0) {
+        return prevSlots.filter(s => (Number(s.dmBonus) || 0) > 0).map(s => ({ ...s, total: Number(s.daily) || 0 }));
+      }
+      const clampedLvl = Math.min(20, Math.max(1, Number(sorcLevel) || 1));
+      const cMod = Math.floor(((Number(chaScore) || 10) - 10) / 2);
+      const basePerLvl = {
+        1: [5, 3], 2: [6, 4], 3: [6, 5], 4: [6, 6, 3], 5: [6, 6, 4],
+        6: [6, 6, 5, 3], 7: [6, 6, 6, 4], 8: [6, 6, 6, 5, 3], 9: [6, 6, 6, 6, 4], 10: [6, 6, 6, 6, 5, 3],
+        11: [6, 6, 6, 6, 6, 4], 12: [6, 6, 6, 6, 6, 5, 3], 13: [6, 6, 6, 6, 6, 6, 4], 14: [6, 6, 6, 6, 6, 6, 5, 3], 15: [6, 6, 6, 6, 6, 6, 6, 4],
+        16: [6, 6, 6, 6, 6, 6, 6, 5, 3], 17: [6, 6, 6, 6, 6, 6, 6, 6, 4], 18: [6, 6, 6, 6, 6, 6, 6, 6, 5, 3], 19: [6, 6, 6, 6, 6, 6, 6, 6, 6, 4], 20: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6]
+      };
+      const knownPerLvl = {
+        1: [4, 2], 2: [5, 2], 3: [5, 3], 4: [6, 3, 1], 5: [6, 4, 2],
+        6: [7, 4, 2, 1], 7: [7, 5, 3, 2], 8: [8, 5, 3, 2, 1], 9: [8, 5, 4, 3, 2], 10: [9, 5, 4, 3, 2, 1],
+        11: [9, 5, 5, 3, 2, 2], 12: [9, 5, 5, 4, 3, 2, 1], 13: [9, 5, 5, 4, 3, 2, 2], 14: [9, 5, 5, 4, 4, 3, 2, 1], 15: [9, 5, 5, 4, 4, 3, 2, 2],
+        16: [9, 5, 5, 4, 4, 3, 3, 2, 1], 17: [9, 5, 5, 4, 4, 3, 3, 2, 2], 18: [9, 5, 5, 4, 4, 3, 3, 3, 2, 1], 19: [9, 5, 5, 4, 4, 3, 3, 3, 3, 2], 20: [9, 5, 5, 4, 4, 3, 3, 3, 3, 3]
+      };
+      const base = basePerLvl[clampedLvl] || [6, 6, 4];
+      const knownArr = knownPerLvl[clampedLvl] || [6, 4, 2];
+      const names = ['Cantrip', '1st Level', '2nd Level', '3rd Level', '4th Level', '5th Level', '6th Level', '7th Level', '8th Level', '9th Level'];
+      const result = base.map((dailyBase, spellLvl) => {
+        const bonus = (spellLvl > 0 && cMod >= spellLvl) ? (1 + Math.floor((cMod - spellLvl) / 4)) : 0;
+        const prev = prevSlots.find(s => Number(s.level) === spellLvl);
+        const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
+        const knownBonus = prev ? (Number(prev.knownBonus) || 0) : 0;
+        const dailyTotal = Math.max(0, dailyBase + bonus + dmBonus);
+        const usedVal = prev ? Math.min(dailyTotal, Math.max(0, Number(prev.used) || 0)) : 0;
+        const baseKnown = knownArr[spellLvl] ?? (spellLvl === 0 ? 4 : 1);
+        const knownTotal = Math.max(0, baseKnown + knownBonus);
+        return {
+          level: spellLvl,
+          name: names[spellLvl] || `Level ${spellLvl}`,
+          known: knownTotal,
+          knownBonus,
+          daily: dailyTotal,
+          total: dailyTotal,
+          bonus,
+          dmBonus,
+          used: usedVal
+        };
+      });
+      prevSlots.forEach(prev => {
+        if (prev && Number(prev.level) >= base.length) {
+          const dVal = Number(prev.daily) || 0;
+          result.push({
+            level: Number(prev.level),
+            name: names[prev.level] || `Level ${prev.level}`,
+            known: Number(prev.known) || dVal,
+            knownBonus: Number(prev.knownBonus) || 0,
+            daily: dVal,
+            total: dVal,
+            bonus: 0,
+            dmBonus: Number(prev.dmBonus) || 0,
+            used: Math.min(dVal, Number(prev.used) || 0)
+          });
+        }
+      });
+      return result;
+    };
+
+    const calcPureWizardSlots = (wizardLvl, intScore, existingSlots = []) => {
+      const prevSlots = Array.isArray(existingSlots) ? existingSlots : [];
+      if (Number(wizardLvl) <= 0) {
+        return prevSlots.filter(s => (Number(s.dmBonus) || 0) > 0).map(s => ({ ...s, total: Number(s.daily) || 0 }));
+      }
+      const lvl = Math.min(20, Math.max(1, Number(wizardLvl) || 1));
+      const iMod = Math.floor(((Number(intScore) || 10) - 10) / 2);
+      const wizDailyTable = [
+        [], [3, 1], [4, 2], [4, 2, 1], [4, 3, 2], [4, 3, 2, 1],
+        [4, 3, 3, 2], [4, 4, 3, 2, 1], [4, 4, 3, 3, 2], [4, 4, 4, 3, 2, 1], [4, 4, 4, 3, 3, 2],
+        [4, 4, 4, 4, 3, 2, 1], [4, 4, 4, 4, 3, 3, 2], [4, 4, 4, 4, 4, 3, 2, 1], [4, 4, 4, 4, 4, 3, 3, 2], [4, 4, 4, 4, 4, 4, 3, 2, 1],
+        [4, 4, 4, 4, 4, 4, 3, 3, 2], [4, 4, 4, 4, 4, 4, 4, 3, 2, 1], [4, 4, 4, 4, 4, 4, 4, 3, 3, 2], [4, 4, 4, 4, 4, 4, 4, 4, 3, 3], [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+      ];
+      const baseDaily = wizDailyTable[lvl] || [3, 1];
+      const result = baseDaily.map((base, spellLvl) => {
+        const bonus = (spellLvl >= 1 && iMod >= spellLvl) ? Math.floor((iMod - spellLvl) / 4) + 1 : 0;
+        const itemSlotBonus = Number(w.bonusSpellSlotsByLevel?.[spellLvl]) || 0;
+        const prev = prevSlots.find(s => Number(s.level) === spellLvl);
+        const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
+        const daily = Math.max(0, base + bonus + itemSlotBonus + dmBonus);
+        return {
+          level: spellLvl,
+          daily,
+          total: daily,
+          bonus: bonus + itemSlotBonus,
+          dmBonus,
+          used: prev ? Math.min(daily, Number(prev.used) || 0) : 0,
+          known: daily
+        };
+      });
+      prevSlots.forEach(prev => {
+        if (prev && Number(prev.level) >= baseDaily.length) {
+          const dVal = Number(prev.daily) || 0;
+          result.push({
+            level: Number(prev.level),
+            daily: dVal,
+            total: dVal,
+            bonus: 0,
+            dmBonus: Number(prev.dmBonus) || 0,
+            used: Math.min(dVal, Number(prev.used) || 0),
+            known: dVal
+          });
+        }
+      });
+      return result;
+    };
+
+    const calcPureDivineSlots = (divineLvl, wisScore, existingSlots = []) => {
+      const prevSlots = Array.isArray(existingSlots) ? existingSlots : [];
+      if (Number(divineLvl) <= 0) {
+        return prevSlots.filter(s => (Number(s.dmBonus) || 0) > 0).map(s => ({
+          ...s,
+          total: Number(s.daily) || 0,
+          domainTotal: Number(s.domainDaily) || 0
+        }));
+      }
+      const lvl = Math.min(20, Math.max(1, Number(divineLvl) || 1));
+      const wMod = Math.floor(((Number(wisScore) || 10) - 10) / 2);
+      const baseDivineTable = [
+        [], [3, 1], [4, 2], [4, 2, 1], [5, 3, 2], [5, 3, 2, 1],
+        [5, 3, 3, 2], [6, 4, 3, 2, 1], [6, 4, 3, 3, 2], [6, 4, 4, 3, 2, 1], [6, 4, 4, 3, 3, 2],
+        [6, 5, 4, 4, 3, 2, 1], [6, 5, 4, 4, 3, 3, 2], [6, 5, 5, 4, 4, 3, 2, 1], [6, 5, 5, 4, 4, 3, 3, 2], [6, 5, 5, 5, 4, 4, 3, 2, 1],
+        [6, 5, 5, 5, 4, 4, 3, 3, 2], [6, 5, 5, 5, 5, 4, 4, 3, 2, 1], [6, 5, 5, 5, 5, 4, 4, 3, 3, 2], [6, 5, 5, 5, 5, 4, 4, 4, 3, 3], [6, 5, 5, 5, 5, 5, 4, 4, 4, 4]
+      ];
+      const baseDaily = baseDivineTable[lvl] || [3, 1];
+      const result = baseDaily.map((base, spellLvl) => {
+        const bonus = (spellLvl >= 1 && wMod >= spellLvl) ? Math.floor((wMod - spellLvl) / 4) + 1 : 0;
+        const prev = prevSlots.find(s => Number(s.level) === spellLvl);
+        const dmBonus = prev ? (Number(prev.dmBonus) || 0) : 0;
+        const regularDaily = Math.max(0, base + bonus + dmBonus);
+        const domainDaily = (hasDomainCap && spellLvl >= 1 && spellLvl <= 9) ? 1 : 0;
+        const daily = regularDaily + domainDaily;
+        const domainUsed = prev ? Math.min(domainDaily, Math.max(0, Number(prev.domainUsed) || 0)) : 0;
+        const used = prev ? Math.min(daily, Math.max(domainUsed, Number(prev.used) || 0)) : 0;
+        return {
+          level: spellLvl,
+          daily,
+          total: daily,
+          regularDaily,
+          domainDaily,
+          domainTotal: domainDaily,
+          domainUsed,
+          bonus,
+          dmBonus,
+          used,
+          known: daily
+        };
+      });
+      prevSlots.forEach(prev => {
+        if (prev && Number(prev.level) >= baseDaily.length) {
+          const dVal = Number(prev.daily) || 0;
+          const domDaily = Number(prev.domainDaily) || 0;
+          result.push({
+            level: Number(prev.level),
+            daily: dVal,
+            total: dVal,
+            regularDaily: Number(prev.regularDaily ?? dVal) || 0,
+            domainDaily: domDaily,
+            domainTotal: domDaily,
+            domainUsed: Math.min(domDaily, Number(prev.domainUsed) || 0),
+            bonus: 0,
+            dmBonus: Number(prev.dmBonus) || 0,
+            used: Math.min(dVal, Number(prev.used) || 0),
+            known: dVal
+          });
+        }
+      });
+      return result;
+    };
+
+    const spontaneousArray = ((sorcLvls > 0 || isSpontBoon || w.isNpc) && spontCl > 0)
+      ? calcPureSorcererSlots(spontCl, spontStatVal, w.spellcasting?.slots)
+      : (w.spellcasting?.slots || []).filter(s => (Number(s.dmBonus) || 0) > 0).map(s => ({ ...s, total: Number(s.daily) || 0 }));
+    const preparedArray = ((wizLvls > 0 || hasPrepared) && prepCl > 0)
+      ? calcPureWizardSlots(prepCl, intVal, w.spellcasting?.preparedSlots)
+      : (w.spellcasting?.preparedSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0).map(s => ({ ...s, total: Number(s.daily) || 0 }));
+    const divineArray = ((divLvls > 0 || hasDivine) && divCl > 0)
+      ? calcPureDivineSlots(divCl, wisVal, w.spellcasting?.divineSlots)
+      : (w.spellcasting?.divineSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0).map(s => ({ ...s, total: Number(s.daily) || 0, domainTotal: Number(s.domainDaily) || 0 }));
+
+    const toLevelMap = (arr, isDiv = false) => {
+      const map = {};
+      for (let lvl = 0; lvl <= 9; lvl++) {
+        const found = arr.find(s => Number(s.level) === lvl);
+        if (found) {
+          map[lvl] = { ...found };
+        } else if (isDiv) {
+          map[lvl] = { level: lvl, total: 0, daily: 0, used: 0, domainTotal: 0, domainDaily: 0, domainUsed: 0, regularDaily: 0, dmBonus: 0 };
+        } else {
+          map[lvl] = { level: lvl, total: 0, daily: 0, used: 0, bonus: 0, known: 0, dmBonus: 0 };
+        }
+      }
+      return map;
+    };
+
+    // 5. Martial / Tome of Battle Initiator Info (pure)
+    const derivePureInitiatorInfo = () => {
+      let martialLvls = 0;
+      let otherLvls = 0;
+      let adeptClass = null;
+      const MANEUVER_ADEPT_CLASSES = ['warblade', 'swordsage', 'crusader', 'bloodclaw master', 'deepstone sentinel', 'eternal blade', 'jade phoenix mage', 'master of nine', 'ruby knight vindicator', 'shadow sun ninja'];
+      activeProg.forEach(p => {
+        const c = (p.className || p.class || '').toLowerCase();
+        if (MANEUVER_ADEPT_CLASSES.some(k => c.includes(k))) {
+          martialLvls++;
+          if (c.includes('swordsage')) adeptClass = 'Swordsage';
+          else if (c.includes('crusader') || c.includes('ruby knight')) adeptClass = 'Crusader';
+          else if (c.includes('warblade')) adeptClass = 'Warblade';
+          else if (!adeptClass) adeptClass = p.className || 'Martial Adept';
+        } else {
+          otherLvls++;
+        }
+      });
+      if (activeProg.length === 0 && w.classLevels && typeof w.classLevels === 'object' && !Array.isArray(w.classLevels)) {
+        Object.entries(w.classLevels).forEach(([cName, cLvl]) => {
+          const c = String(cName || '').toLowerCase();
+          const lvlNum = Number(cLvl) || 0;
+          if (lvlNum <= 0) return;
+          if (MANEUVER_ADEPT_CLASSES.some(k => c.includes(k))) {
+            martialLvls += lvlNum;
+            if (c.includes('swordsage')) adeptClass = 'Swordsage';
+            else if (c.includes('crusader') || c.includes('ruby knight')) adeptClass = 'Crusader';
+            else if (c.includes('warblade')) adeptClass = 'Warblade';
+            else if (!adeptClass) adeptClass = cName || 'Martial Adept';
+          } else {
+            otherLvls += lvlNum;
+          }
+        });
+      }
+      if (!adeptClass && typeof w.classes === 'string') {
+        const cStr = w.classes.toLowerCase();
+        if (cStr.includes('swordsage')) adeptClass = 'Swordsage';
+        else if (cStr.includes('crusader')) adeptClass = 'Crusader';
+        else if (cStr.includes('warblade')) adeptClass = 'Warblade';
+      }
+      const dmReadiedBonus = Number(w.tomeOfBattle?.dmReadiedBonus) || 0;
+      const dmKnownBonus = Number(w.tomeOfBattle?.dmKnownBonus) || 0;
+      const dmStanceBonus = Number(w.tomeOfBattle?.dmStanceBonus) || 0;
+      const hasMartialFeatOrBoon = martialStudyCount > 0 || martialStanceCount > 0 || dmReadiedBonus > 0 || dmKnownBonus > 0 || dmStanceBonus > 0;
+
+      if (!adeptClass && !hasMartial && !hasMartialFeatOrBoon) {
+        return {
+          adeptClass: 'No Martial Adept Class',
+          martialLvls: 0,
+          otherLvls: activeProg.length,
+          il: 0,
+          adeptIl: 0,
+          maxManeuverLvl: 0,
+          maxStanceLvl: 0,
+          maneuverSlotCeilings: [],
+          stanceSlotCeilings: [],
+          readiedCount: 0,
+          maxReadied: 0,
+          baseReadied: 0,
+          dmReadiedBonus: 0,
+          maxKnownManeuvers: 0,
+          baseKnownManeuvers: 0,
+          dmKnownBonus: 0,
+          maxKnownStances: 0,
+          baseKnownStances: 0,
+          dmStanceBonus: 0,
+          classDisciplines: [],
+          martialStudyCount,
+          martialStanceCount,
+          isMartialBoon: false,
+          hasClass: false
+        };
+      }
+      if (!adeptClass) {
+        adeptClass = (martialStudyCount > 0 || martialStanceCount > 0) ? 'Martial Study / Stance' : 'Martial Adept (DM Boon)';
+      }
+      const activeCharLvl = activeProg.length || Number(w.level) || 1;
+      const computedIl = isMartialBoon
+        ? Math.max(1, activeCharLvl)
+        : (martialLvls > 0
+          ? (martialLvls + Math.floor(otherLvls / 2))
+          : Math.max(1, Math.floor(activeCharLvl / 2)));
+      const storedIl = Number(w.tomeOfBattle?.initiatorLevel) || 0;
+      const il = w.isNpc ? Math.max(storedIl, computedIl, 1) : Math.max(computedIl, 1);
+      const rawMaxManeuverLvl = Math.min(9, Math.max(1, Math.ceil(il / 2)));
+      const readiedList = w.tomeOfBattle?.readiedManeuvers || [];
+
+      let baseReadied = 0;
+      let baseKnownManeuvers = 0;
+      let baseKnownStances = 0;
+      const effMartialLvls = (martialLvls > 0) ? martialLvls : (isMartialBoon ? il : 0);
+      if (effMartialLvls > 0) {
+        if (adeptClass === 'Swordsage') {
+          baseKnownManeuvers = 5 + effMartialLvls;
+          baseReadied = effMartialLvls >= 20 ? 10 : (effMartialLvls >= 18 ? 9 : (effMartialLvls >= 15 ? 8 : (effMartialLvls >= 12 ? 7 : (effMartialLvls >= 8 ? 6 : (effMartialLvls >= 4 ? 5 : 4)))));
+          baseKnownStances = effMartialLvls >= 20 ? 6 : (effMartialLvls >= 14 ? 5 : (effMartialLvls >= 9 ? 4 : (effMartialLvls >= 5 ? 3 : (effMartialLvls >= 2 ? 2 : 1))));
+        } else if (adeptClass === 'Crusader') {
+          baseKnownManeuvers = 5 + Math.floor((effMartialLvls - 1) / 2);
+          baseReadied = effMartialLvls >= 20 ? 7 : (effMartialLvls >= 10 ? 6 : 5);
+          baseKnownStances = effMartialLvls >= 14 ? 4 : (effMartialLvls >= 8 ? 3 : (effMartialLvls >= 2 ? 2 : 1));
+        } else {
+          baseKnownManeuvers = effMartialLvls === 1 ? 3 : (3 + Math.ceil(effMartialLvls / 2));
+          baseReadied = effMartialLvls >= 20 ? 7 : (effMartialLvls >= 15 ? 6 : (effMartialLvls >= 9 ? 5 : (effMartialLvls >= 4 ? 4 : 3)));
+          baseKnownStances = effMartialLvls >= 16 ? 4 : (effMartialLvls >= 10 ? 3 : (effMartialLvls >= 4 ? 2 : 1));
+        }
+      }
+
+      const maneuverSlotCeilings = [];
+      const stanceSlotCeilings = [];
+      const swapLowestManeuverSlot = (newMaxLvl) => {
+        if (maneuverSlotCeilings.length === 0) return;
+        let minIdx = -1;
+        let minVal = 99;
+        for (let i = 0; i < maneuverSlotCeilings.length; i++) {
+          if (maneuverSlotCeilings[i] < newMaxLvl && maneuverSlotCeilings[i] < minVal) {
+            minVal = maneuverSlotCeilings[i];
+            minIdx = i;
+          }
+        }
+        if (minIdx >= 0) maneuverSlotCeilings[minIdx] = newMaxLvl;
+      };
+
+      let adeptIl = il;
+      if (activeProg.length > 0 && martialLvls > 0) {
+        let simMartial = 0, simOther = 0, simWb = 0, simSs = 0, simCr = 0, simBcm = 0, simDs = 0, simEb = 0, simJpm = 0, simMon = 0, simRkv = 0, simSsn = 0;
+        let simReadied = 0, simClassManeuvers = 0, simClassStances = 0, lastManeuverGrantIl = 1;
+        activeProg.forEach(p => {
+          const c = (p.className || p.class || '').toLowerCase();
+          const isM = MANEUVER_ADEPT_CLASSES.some(k => c.includes(k));
+          if (isM) simMartial++; else simOther++;
+          const stepIl = isMartialBoon ? (simMartial + simOther) : (simMartial > 0 ? (simMartial + Math.floor(simOther / 2)) : Math.max(1, Math.floor((simMartial + simOther) / 2)));
+          const stepMaxLvl = Math.min(9, Math.max(1, Math.ceil(Math.max(1, stepIl) / 2)));
+          if (isM) {
+            lastManeuverGrantIl = stepIl;
+            if (c.includes('swordsage')) {
+              simSs++;
+              if (simSs === 1) { for (let k = 0; k < 6; k++) maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 6; simReadied += 4; }
+              else { maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 1; if ([4, 8, 12, 15, 18, 20].includes(simSs)) simReadied += 1; }
+              if (simSs >= 4 && simSs % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+              if ([1, 2, 5, 9, 14, 20].includes(simSs)) { stanceSlotCeilings.push(stepMaxLvl); simClassStances += 1; }
+            } else if (c.includes('crusader')) {
+              simCr++;
+              if (simCr === 1) { for (let k = 0; k < 5; k++) maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 5; simReadied += 5; }
+              else { if (simCr >= 3 && simCr % 2 === 1) { maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 1; } if ([10, 20].includes(simCr)) simReadied += 1; }
+              if (simCr >= 4 && simCr % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+              if ([1, 2, 8, 14].includes(simCr)) { stanceSlotCeilings.push(stepMaxLvl); simClassStances += 1; }
+            } else if (c.includes('bloodclaw master')) {
+              simBcm++; if (simBcm % 2 === 1) { maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 1; } if (simBcm === 3) simReadied += 1;
+            } else if (c.includes('deepstone sentinel')) {
+              simDs++; if (simDs % 2 === 1) { maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 1; } if (simDs === 3) simReadied += 1;
+            } else if (c.includes('eternal blade')) {
+              simEb++; if (simEb % 2 === 1) { maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 1; } if (simEb === 5) { stanceSlotCeilings.push(stepMaxLvl); simClassStances += 1; } if ([3, 6, 9].includes(simEb)) simReadied += 1;
+            } else if (c.includes('jade phoenix mage')) {
+              simJpm++; if (simJpm % 2 === 1) { maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 1; } if (simJpm === 5) { stanceSlotCeilings.push(stepMaxLvl); simClassStances += 1; } if ([3, 6, 9].includes(simJpm)) simReadied += 1;
+            } else if (c.includes('master of nine')) {
+              simMon++; const addM = (simMon % 2 === 1) ? 2 : 1; for (let k = 0; k < addM; k++) maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += addM; if ([2, 4].includes(simMon)) { stanceSlotCeilings.push(stepMaxLvl); simClassStances += 1; } simReadied += 1;
+            } else if (c.includes('ruby knight')) {
+              simRkv++; if (simRkv % 2 === 0) { maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 1; } if ([5, 10].includes(simRkv)) { stanceSlotCeilings.push(stepMaxLvl); simClassStances += 1; } if ([3, 6, 9].includes(simRkv)) simReadied += 1;
+            } else if (c.includes('shadow sun ninja')) {
+              simSsn++; if (simSsn % 2 === 1) { maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 1; } if (simSsn === 5) { stanceSlotCeilings.push(stepMaxLvl); simClassStances += 1; } if ([3, 6, 9].includes(simSsn)) simReadied += 1;
+            } else {
+              simWb++;
+              if (simWb === 1) { for (let k = 0; k < 3; k++) maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 3; simReadied += 3; }
+              else { if (simWb === 2 || (simWb >= 3 && simWb % 2 === 1)) { maneuverSlotCeilings.push(stepMaxLvl); simClassManeuvers += 1; } if ([4, 9, 15, 20].includes(simWb)) simReadied += 1; }
+              if (simWb >= 4 && simWb % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+              if ([1, 4, 10, 16].includes(simWb)) { stanceSlotCeilings.push(stepMaxLvl); simClassStances += 1; }
+            }
+          }
+          if (Array.isArray(p.feats)) {
+            p.feats.forEach(f => {
+              const fLow = String(f || '').toLowerCase();
+              if (fLow.includes('martial study')) { maneuverSlotCeilings.push(stepMaxLvl); lastManeuverGrantIl = Math.max(lastManeuverGrantIl, stepIl); }
+              if (fLow.includes('martial stance')) { stanceSlotCeilings.push(stepMaxLvl); lastManeuverGrantIl = Math.max(lastManeuverGrantIl, stepIl); }
+            });
+          }
+        });
+        baseKnownManeuvers = simClassManeuvers;
+        baseKnownStances = simClassStances;
+        baseReadied = simReadied;
+        adeptIl = lastManeuverGrantIl;
+      } else if (effMartialLvls > 0) {
+        for (let step = 1; step <= effMartialLvls; step++) {
+          const stepMaxLvl = Math.min(9, Math.max(1, Math.ceil(step / 2)));
+          if (adeptClass === 'Swordsage') {
+            if (step === 1) { for (let k = 0; k < 6; k++) maneuverSlotCeilings.push(stepMaxLvl); }
+            else maneuverSlotCeilings.push(stepMaxLvl);
+            if (step >= 4 && step % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+            if ([1, 2, 5, 9, 14, 20].includes(step)) stanceSlotCeilings.push(stepMaxLvl);
+          } else if (adeptClass === 'Crusader') {
+            if (step === 1) { for (let k = 0; k < 5; k++) maneuverSlotCeilings.push(stepMaxLvl); }
+            else if (step >= 3 && step % 2 === 1) maneuverSlotCeilings.push(stepMaxLvl);
+            if (step >= 4 && step % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+            if ([1, 2, 8, 14].includes(step)) stanceSlotCeilings.push(stepMaxLvl);
+          } else {
+            if (step === 1) { for (let k = 0; k < 3; k++) maneuverSlotCeilings.push(stepMaxLvl); }
+            else if (step === 2 || (step >= 3 && step % 2 === 1)) maneuverSlotCeilings.push(stepMaxLvl);
+            if (step >= 4 && step % 2 === 0) swapLowestManeuverSlot(stepMaxLvl);
+            if ([1, 4, 10, 16].includes(step)) stanceSlotCeilings.push(stepMaxLvl);
+          }
+        }
+      }
+
+      const maxKnownManeuvers = Math.max(0, baseKnownManeuvers + martialStudyCount + dmKnownBonus);
+      const maxReadied = Math.max(0, baseReadied + (martialLvls === 0 && martialStudyCount > 0 ? 1 : 0) + dmReadiedBonus);
+      const maxKnownStances = Math.max(0, baseKnownStances + martialStanceCount + dmStanceBonus);
+      const discSet = new Set();
+      const addDiscs = (arr) => arr.forEach(d => discSet.add(d));
+      activeProg.forEach(p => {
+        const c = (p.className || p.class || '').toLowerCase();
+        if (c.includes('crusader')) addDiscs(['Devoted Spirit', 'Stone Dragon', 'White Raven']);
+        if (c.includes('swordsage')) addDiscs(['Desert Wind', 'Diamond Mind', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw']);
+        if (c.includes('warblade')) addDiscs(['Diamond Mind', 'Iron Heart', 'Stone Dragon', 'Tiger Claw', 'White Raven']);
+        if (c.includes('bloodclaw master')) addDiscs(['Tiger Claw']);
+        if (c.includes('deepstone sentinel')) addDiscs(['Stone Dragon']);
+        if (c.includes('eternal blade')) addDiscs(['Devoted Spirit', 'Diamond Mind', 'Iron Heart', 'White Raven']);
+        if (c.includes('jade phoenix mage')) addDiscs(['Desert Wind', 'Devoted Spirit']);
+        if (c.includes('master of nine')) addDiscs(['Desert Wind', 'Devoted Spirit', 'Diamond Mind', 'Iron Heart', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw', 'White Raven']);
+        if (c.includes('ruby knight')) addDiscs(['Devoted Spirit', 'Shadow Hand', 'Stone Dragon', 'White Raven']);
+        if (c.includes('shadow sun ninja')) addDiscs(['Setting Sun', 'Shadow Hand']);
+      });
+      const classDisciplines = discSet.size > 0
+        ? Array.from(discSet)
+        : (adeptClass === 'Crusader'
+          ? ['Devoted Spirit', 'Stone Dragon', 'White Raven']
+          : (adeptClass === 'Swordsage'
+            ? ['Desert Wind', 'Diamond Mind', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw']
+            : (adeptClass === 'Warblade'
+              ? ['Diamond Mind', 'Iron Heart', 'Stone Dragon', 'Tiger Claw', 'White Raven']
+              : ['Desert Wind', 'Devoted Spirit', 'Diamond Mind', 'Iron Heart', 'Setting Sun', 'Shadow Hand', 'Stone Dragon', 'Tiger Claw', 'White Raven'])));
+
+      while (maneuverSlotCeilings.length < maxKnownManeuvers) maneuverSlotCeilings.push(rawMaxManeuverLvl);
+      if (maneuverSlotCeilings.length > maxKnownManeuvers) {
+        maneuverSlotCeilings.sort((a, b) => a - b);
+        maneuverSlotCeilings.splice(0, maneuverSlotCeilings.length - maxKnownManeuvers);
+      }
+      maneuverSlotCeilings.sort((a, b) => a - b);
+
+      while (stanceSlotCeilings.length < maxKnownStances) stanceSlotCeilings.push(rawMaxManeuverLvl);
+      if (stanceSlotCeilings.length > maxKnownStances) {
+        stanceSlotCeilings.sort((a, b) => a - b);
+        stanceSlotCeilings.splice(0, stanceSlotCeilings.length - maxKnownStances);
+      }
+      stanceSlotCeilings.sort((a, b) => a - b);
+
+      const maxManeuverLvl = maneuverSlotCeilings.length > 0 ? Math.max(...maneuverSlotCeilings) : rawMaxManeuverLvl;
+      const maxStanceLvl = stanceSlotCeilings.length > 0 ? Math.max(...stanceSlotCeilings) : maxManeuverLvl;
+
+      return {
+        il,
+        adeptIl,
+        maxManeuverLvl,
+        maxStanceLvl,
+        maneuverSlotCeilings,
+        stanceSlotCeilings,
+        readiedCount: readiedList.length,
+        maxReadied,
+        baseReadied,
+        dmReadiedBonus,
+        maxKnownManeuvers,
+        baseKnownManeuvers,
+        dmKnownBonus,
+        maxKnownStances,
+        baseKnownStances,
+        dmStanceBonus,
+        adeptClass,
+        classDisciplines,
+        martialLvls,
+        otherLvls,
+        martialStudyCount,
+        martialStanceCount,
+        isMartialBoon,
+        hasClass: true
+      };
+    };
+
+    const initInfo = derivePureInitiatorInfo();
+    const martialPrimaryStatLabel = initInfo.adeptClass === 'Swordsage' ? 'WIS' : (initInfo.adeptClass === 'Crusader' ? 'CHA' : 'INT');
+    const martialPrimaryMod = martialPrimaryStatLabel === 'WIS' ? wisMod : (martialPrimaryStatLabel === 'CHA' ? chaMod : intMod);
+
+    // 6. Combat Casting / Concentration / Spell Penetration / Touch Attack Bonuses
+    const skillList = Array.isArray(w.skills) ? w.skills : Object.values(w.skills || {});
+    const concSkill = skillList.find(s => s && String(s.key || s.name || '').toLowerCase().includes('concentration'));
+    const allFeatNames = [
+      ...(w.feats || []).map(f => String(typeof f === 'string' ? f : (f?.name || '')).toLowerCase()),
+      ...progFeats
+    ];
+    const hasCombatCasting = allFeatNames.some(f => f.includes('combat casting'));
+    const hasGreaterSpellPen = allFeatNames.some(f => f.includes('greater spell penetration'));
+    const hasSpellPen = allFeatNames.some(f => f.includes('spell penetration'));
+    const concentrationBonus = (Number(concSkill?.ranks) || 0) + conMod + (Number(concSkill?.misc) || 0) + (Number(w.buffSkillBonus) || 0);
+    const spellResistancePenetrationBonus = (hasGreaterSpellPen ? 4 : (hasSpellPen ? 2 : 0)) + (Number(w.ruleFlags?.spellPenetrationBonus) || 0);
+    const sizeBonus = Number(w.acBreakdown?.size) || 0;
+    const meleeTouchBonus = (Number(w.bab) || 0) + strMod + sizeBonus;
+    const rangedTouchBonus = (Number(w.bab) || 0) + dexMod + sizeBonus;
+
+    // 7. Spells By Level View (pure enrichment with originalIdx, level, isCast, isDomainSpell, saveDc, srText)
+    const rawKnownSpells = (Array.isArray(w.spellcasting?.knownSpells) && w.spellcasting.knownSpells.length > 0)
+      ? w.spellcasting.knownSpells
+      : (Array.isArray(w.spells) ? w.spells : []);
+    const rawPreparedSpells = Array.isArray(w.spellcasting?.preparedSpells) ? w.spellcasting.preparedSpells : [];
+    const rawDivineSpells = Array.isArray(w.spellcasting?.divineSpells) ? w.spellcasting.divineSpells : [];
+
+    const enrichSpellList = (list, baseDc) => list.map((s, idx) => {
+      const lvl = Number(s?.level) || 0;
+      return {
+        ...(s || {}),
+        originalIdx: idx,
+        level: lvl,
+        isCast: Boolean(s?.isCast || s?.cast),
+        isDomainSpell: Boolean(s?.isDomainSpell),
+        saveDc: baseDc + lvl,
+        srText: String(s?.sr || s?.spellResistance || 'No')
+      };
+    });
+
+    const baseSpontDc = 10 + spontStatMod + spellDcBonus;
+    const basePrepDc = 10 + intMod + spellDcBonus;
+    const baseDivDc = 10 + wisMod + spellDcBonus;
+
+    const effectiveCasterLevel = (Number(w.spellcasting?.cl || w.casterLevel || spontCl || prepCl || divCl || 1) + casterLevelBonus);
+
+    const canKeepManeuvers = initInfo.hasClass || Boolean(w.isNpc);
+
+    return {
+      casterStatsView: {
+        casterLevel: effectiveCasterLevel,
+        spontaneous: {
+          active: Boolean(hasSpontaneous),
+          classLabel: spontClassLabel || 'Sorcerer',
+          abilityKey: spontStatKey.toLowerCase(),
+          statKey: spontStatKey,
+          abilityScore: spontStatVal,
+          abilityMod: spontStatMod,
+          baseSaveDc: baseSpontDc,
+          cl: spontCl + (spontCl > 0 ? casterLevelBonus : 0),
+          rawCl: spontCl,
+          clMode: spontClMode,
+          sorcLvls,
+          isSpontBoon,
+          hasClass: Boolean(hasSpontaneous)
+        },
+        prepared: {
+          active: Boolean(hasPrepared),
+          classLabel: isPrepBoon && wizLvls === 0 ? 'Wizard (DM Boon)' : 'Wizard',
+          abilityKey: 'int',
+          statKey: 'INT',
+          abilityScore: intVal,
+          abilityMod: intMod,
+          baseSaveDc: basePrepDc,
+          cl: prepCl + (prepCl > 0 ? casterLevelBonus : 0),
+          rawCl: prepCl,
+          clMode: prepClMode,
+          wizLvls,
+          isPrepBoon,
+          hasClass: Boolean(hasPrepared)
+        },
+        divine: {
+          active: Boolean(hasDivine),
+          classLabel: isDivBoon && divLvls === 0 ? 'Cleric (DM Boon)' : 'Cleric',
+          abilityKey: 'wis',
+          statKey: 'WIS',
+          abilityScore: wisVal,
+          baseWisVal,
+          insanityBonus,
+          abilityMod: wisMod,
+          baseSaveDc: baseDivDc,
+          cl: divCl + (divCl > 0 ? casterLevelBonus : 0),
+          rawCl: divCl,
+          clMode: divClMode,
+          divLvls,
+          isDivBoon,
+          hasClass: Boolean(hasDivine),
+          clericSpontaneousMode: w.spellcasting?.clericSpontaneousMode || 'good',
+          domains: chosenDomains
+        },
+        martial: {
+          active: Boolean(initInfo.hasClass && initInfo.il > 0),
+          classLabel: initInfo.adeptClass,
+          initiatorLevel: initInfo.il,
+          adeptIl: initInfo.adeptIl,
+          maxManeuverLevel: initInfo.maxManeuverLvl,
+          maxStanceLevel: initInfo.maxStanceLvl,
+          primaryMod: martialPrimaryMod,
+          primaryStatLabel: martialPrimaryStatLabel,
+          maxKnown: initInfo.maxKnownManeuvers,
+          maxReadied: initInfo.maxReadied,
+          maxStances: initInfo.maxKnownStances,
+          maneuverSlotCeilings: initInfo.maneuverSlotCeilings,
+          stanceSlotCeilings: initInfo.stanceSlotCeilings,
+          classDisciplines: initInfo.classDisciplines,
+          martialLvls: initInfo.martialLvls,
+          otherLvls: initInfo.otherLvls,
+          martialStudyCount: initInfo.martialStudyCount,
+          martialStanceCount: initInfo.martialStanceCount,
+          isMartialBoon: initInfo.isMartialBoon,
+          hasClass: initInfo.hasClass,
+          initInfo
+        },
+        concentrationBonus,
+        combatCastingBonus: hasCombatCasting ? 4 : 0,
+        spellResistancePenetrationBonus,
+        meleeTouchBonus,
+        rangedTouchBonus,
+        classesStatus: { hasSpontaneous, hasPrepared, hasDivine, hasMartial }
+      },
+      slotsByLevelView: {
+        spontaneous: toLevelMap(spontaneousArray, false),
+        prepared: toLevelMap(preparedArray, false),
+        divine: toLevelMap(divineArray, true),
+        spontaneousArray,
+        preparedArray,
+        divineArray
+      },
+      spellsByLevelView: {
+        knownSpells: enrichSpellList(rawKnownSpells, baseSpontDc),
+        preparedSpells: enrichSpellList(rawPreparedSpells, basePrepDc),
+        divineSpells: enrichSpellList(rawDivineSpells, baseDivDc)
+      },
+      maneuversView: {
+        hasClass: initInfo.hasClass,
+        il: initInfo.il,
+        initiatorLevel: initInfo.il,
+        maxManeuverLvl: initInfo.maxManeuverLvl,
+        maxManeuverLevel: initInfo.maxManeuverLvl,
+        maxReadied: initInfo.maxReadied,
+        maxKnownManeuvers: initInfo.maxKnownManeuvers,
+        maxKnownStances: initInfo.maxKnownStances,
+        maneuversKnown: canKeepManeuvers ? (w.tomeOfBattle?.maneuversKnown || []).map(m => ({ ...m })) : [],
+        readiedManeuvers: canKeepManeuvers ? (w.tomeOfBattle?.readiedManeuvers || []).map(m => ({ ...m })) : [],
+        stancesKnown: canKeepManeuvers ? (w.tomeOfBattle?.stancesKnown || []).map(s => ({ ...s })) : [],
+        activeStance: canKeepManeuvers ? (w.tomeOfBattle?.activeStance || w.activeStance || '') : ''
+      }
+    };
+  },
+
+  /**
    * Pure, zero-mutation sheet derivation pipeline (Phase R1 Strangler Fig).
    * Accepts `(inputChar, customDb, tacticalOptions)` or `(inputChar, { masterDb, session, tactical })`.
    * Returns a self-contained `SheetView` without mutating `inputChar` or `customDb`.
@@ -8770,6 +9700,7 @@ const RuleEngine = {
 
     const consumablesGrouped = this.deriveConsumablesView(working);
     const inventoryView = this.deriveInventoryView(working);
+    const spellsView = this.deriveSpellsView(working, workingDb);
     const specialAttacks = this.deriveSpecialAttacks(working, working.legoEvaluation, workingDb);
     const activeBuffsStrip = this.deriveActiveBuffsStrip(working);
     const spent = working.tactical?.spentActions || working.actionEconomy?.spentActions || {};
@@ -8884,7 +9815,11 @@ const RuleEngine = {
         spellcasting: working.spellcasting || {},
         bonusSpellSlotsByLevel: working.bonusSpellSlotsByLevel || {},
         bonusPowerPoints: Number(working.bonusPowerPoints) || 0,
-        buffs: working.buffs || []
+        buffs: working.buffs || [],
+        casterStatsView: spellsView.casterStatsView,
+        slotsByLevelView: spellsView.slotsByLevelView,
+        spellsByLevelView: spellsView.spellsByLevelView,
+        maneuversView: spellsView.maneuversView
       },
       session: workingSession,
       warnings: working.activeConditionWarnings || [],

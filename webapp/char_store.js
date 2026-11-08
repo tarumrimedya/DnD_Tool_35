@@ -444,7 +444,13 @@
             outcome.status === 'empty_slot' ||
             outcome.status === 'no_target_slot' ||
             outcome.status === 'no_daily_charges' ||
-            outcome.status === 'charges_exhausted'
+            outcome.status === 'charges_exhausted' ||
+            outcome.status === 'no_slots_remaining' ||
+            outcome.status === 'already_cast' ||
+            outcome.status === 'already_exists' ||
+            outcome.status === 'max_readied_reached' ||
+            outcome.status === 'quota_full' ||
+            outcome.status === 'locked_mode'
           )
         );
         if (!isAborted) {
@@ -2409,6 +2415,697 @@
       });
     }
     setStoreOutcome(stateObj, { status: 'wealth_updated', wealth: Object.assign({}, doc.wealth) });
+    return doc;
+  });
+
+  // =========================================================================
+  // PHASE R5 — SPELLS & MANEUVERS REDUCERS (12 Pure Reducers)
+  // =========================================================================
+  function ensureSpellsDocStructures(doc) {
+    if (!doc || typeof doc !== 'object') return;
+    if (!doc.spellcasting || typeof doc.spellcasting !== 'object') {
+      doc.spellcasting = {};
+    }
+    if (!Array.isArray(doc.spellcasting.slots)) doc.spellcasting.slots = [];
+    if (!Array.isArray(doc.spellcasting.preparedSlots)) doc.spellcasting.preparedSlots = [];
+    if (!Array.isArray(doc.spellcasting.divineSlots)) doc.spellcasting.divineSlots = [];
+    if (!Array.isArray(doc.spellcasting.knownSpells)) {
+      doc.spellcasting.knownSpells = Array.isArray(doc.spells) ? JSON.parse(JSON.stringify(doc.spells)) : [];
+    }
+    if (!Array.isArray(doc.spellcasting.preparedSpells)) doc.spellcasting.preparedSpells = [];
+    if (!Array.isArray(doc.spellcasting.divineSpells)) doc.spellcasting.divineSpells = [];
+    if (!doc.spellcasting.domainPowerUses || typeof doc.spellcasting.domainPowerUses !== 'object') {
+      doc.spellcasting.domainPowerUses = {};
+    }
+    if (!doc.tomeOfBattle || typeof doc.tomeOfBattle !== 'object') {
+      doc.tomeOfBattle = {};
+    }
+    if (!Array.isArray(doc.tomeOfBattle.maneuversKnown)) doc.tomeOfBattle.maneuversKnown = [];
+    if (!Array.isArray(doc.tomeOfBattle.readiedManeuvers)) doc.tomeOfBattle.readiedManeuvers = [];
+    if (!Array.isArray(doc.tomeOfBattle.stancesKnown)) doc.tomeOfBattle.stancesKnown = [];
+    if (!Array.isArray(doc.buffs)) doc.buffs = [];
+  }
+
+  function ensureSlotEntryForDiscipline(doc, discipline, lvl) {
+    ensureSpellsDocStructures(doc);
+    const numLvl = Math.max(0, Number(lvl) || 0);
+    const disc = String(discipline || 'spontaneous').toLowerCase();
+    const listKey = disc === 'prepared'
+      ? 'preparedSlots'
+      : (disc === 'divine' || disc === 'clericconversion' ? 'divineSlots' : 'slots');
+    const arr = doc.spellcasting[listKey];
+    let slot = arr.find(s => s && Number(s.level) === numLvl);
+    const engine = resolveRuleEngine();
+    const derivedView = (engine && typeof engine.deriveSpellsView === 'function')
+      ? engine.deriveSpellsView(doc)
+      : null;
+    const viewDiscKey = (disc === 'divine' || disc === 'clericconversion')
+      ? 'divine'
+      : (disc === 'prepared' ? 'prepared' : 'spontaneous');
+    const derivedSlot = derivedView?.slotsByLevelView?.[viewDiscKey]?.[numLvl] || null;
+
+    if (!slot) {
+      slot = derivedSlot
+        ? Object.assign({}, derivedSlot)
+        : { level: numLvl, daily: 0, used: 0, dmBonus: 0 };
+      arr.push(slot);
+      arr.sort((a, b) => (Number(a.level) || 0) - (Number(b.level) || 0));
+    } else if (derivedSlot) {
+      if ((Number(slot.daily) || 0) === 0 && (Number(derivedSlot.daily) || 0) > 0) {
+        slot.daily = derivedSlot.daily;
+      }
+      if (slot.regularDaily === undefined && derivedSlot.regularDaily !== undefined) {
+        slot.regularDaily = derivedSlot.regularDaily;
+      }
+      if (slot.domainDaily === undefined && derivedSlot.domainDaily !== undefined) {
+        slot.domainDaily = derivedSlot.domainDaily;
+      }
+      if (slot.known === undefined && derivedSlot.known !== undefined) {
+        slot.known = derivedSlot.known;
+      }
+    }
+    return slot;
+  }
+
+  function upsertBuffEntryOnDoc(doc, buffEntry) {
+    if (!buffEntry || typeof buffEntry !== 'object') return false;
+    if (!Array.isArray(doc.buffs)) doc.buffs = [];
+    const copy = JSON.parse(JSON.stringify(buffEntry));
+    const nameKey = String(copy.name || '').toLowerCase().trim();
+    const existingIdx = doc.buffs.findIndex(b => b && (
+      (copy.id && b.id === copy.id) ||
+      (nameKey && String(b.name || '').toLowerCase().trim() === nameKey)
+    ));
+    if (existingIdx >= 0) {
+      doc.buffs[existingIdx] = Object.assign({}, doc.buffs[existingIdx], copy, { active: true });
+    } else {
+      doc.buffs.push(Object.assign({ active: true }, copy));
+    }
+    const tempHpGranted = Number(copy.tempHpGranted) || 0;
+    if (tempHpGranted > 0) {
+      if (!doc.hp || typeof doc.hp !== 'object') doc.hp = { current: 10, max: 10, temp: 0 };
+      doc.hp.temp = Math.max(Number(doc.hp.temp) || 0, tempHpGranted);
+    }
+    return true;
+  }
+
+  // 1. 'spells/castSpell' ({ discipline: 'spontaneous'|'prepared'|'divine'|'clericConversion', index, spellLevel, isDomain, buffEntry, selfHpCost, isAtWill })
+  CharStore.registerReducer('spells/castSpell', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const rawDisc = payload.isSpontaneousConversion ? 'clericconversion' : String(payload.discipline || payload.pool || 'spontaneous').toLowerCase();
+    const disc = rawDisc === 'clericspontaneousconversion' ? 'clericconversion' : rawDisc;
+    const rawIdx = payload.index ?? payload.spellIndex ?? payload.spellIdx;
+    const idx = rawIdx !== undefined && rawIdx !== null ? Number(rawIdx) : -1;
+
+    let spell = null;
+    if (disc === 'prepared' && idx >= 0) {
+      spell = doc.spellcasting.preparedSpells[idx] || null;
+    } else if ((disc === 'divine' || disc === 'clericconversion') && idx >= 0) {
+      spell = doc.spellcasting.divineSpells[idx] || null;
+    } else if (disc === 'spontaneous' && idx >= 0) {
+      spell = doc.spellcasting.knownSpells[idx] || (Array.isArray(doc.spells) ? doc.spells[idx] : null) || null;
+    }
+
+    const lvl = Math.max(0, Number(payload.spellLevel ?? payload.level ?? (spell ? spell.level : 0)) || 0);
+    const isDom = Boolean(payload.isDomain ?? payload.isDomainSpell ?? (spell && spell.isDomainSpell));
+    const isAtWill = Boolean(
+      payload.isAtWill ||
+      (spell && (
+        spell.category === 'Warlock Invocation' ||
+        /invocation|eldritch/i.test(String(spell.school || '')) ||
+        /at-will|at will/i.test(String(spell.duration || ''))
+      ))
+    );
+
+    if (disc === 'prepared') {
+      if (spell && (spell.isCast || spell.cast)) {
+        setStoreOutcome(stateObj, { status: 'already_cast', discipline: 'prepared', spellLevel: lvl });
+        return doc;
+      }
+      const slot = ensureSlotEntryForDiscipline(doc, 'prepared', lvl);
+      const daily = Number(slot.daily) || 0;
+      const used = Number(slot.used) || 0;
+      if (used >= daily) {
+        setStoreOutcome(stateObj, { status: 'no_slots_remaining', discipline: 'prepared', spellLevel: lvl });
+        return doc;
+      }
+      slot.used = used + 1;
+      if (spell && payload.markPreparedCast !== false) {
+        spell.isCast = true;
+        spell.cast = true;
+      }
+    } else if (disc === 'divine') {
+      if (spell && (spell.isCast || spell.cast)) {
+        setStoreOutcome(stateObj, { status: 'already_cast', discipline: 'divine', spellLevel: lvl });
+        return doc;
+      }
+      const slot = ensureSlotEntryForDiscipline(doc, 'divine', lvl);
+      const daily = Number(slot.daily) || 0;
+      const used = Number(slot.used) || 0;
+      const domDaily = Number(slot.domainDaily) || 0;
+      const domUsed = Number(slot.domainUsed) || 0;
+      const regDaily = slot.regularDaily !== undefined
+        ? Number(slot.regularDaily)
+        : Math.max(0, daily - domDaily);
+      const regUsed = Math.max(0, used - domUsed);
+      const canCast = used < daily && (isDom ? domUsed < domDaily : regUsed < regDaily);
+      if (!canCast) {
+        setStoreOutcome(stateObj, { status: 'no_slots_remaining', discipline: 'divine', spellLevel: lvl, isDomain: isDom });
+        return doc;
+      }
+      slot.used = used + 1;
+      if (isDom) {
+        slot.domainUsed = Math.min(domDaily, domUsed + 1);
+      }
+      if (spell && payload.markPreparedCast !== false) {
+        spell.isCast = true;
+        spell.cast = true;
+      }
+    } else if (disc === 'clericconversion') {
+      if ((spell && spell.isDomainSpell) || isDom) {
+        setStoreOutcome(stateObj, { status: 'invalid_payload', reason: 'domain_cannot_convert' });
+        return doc;
+      }
+      if (spell && (spell.isCast || spell.cast)) {
+        setStoreOutcome(stateObj, { status: 'already_cast', discipline: 'clericConversion', spellLevel: lvl });
+        return doc;
+      }
+      const slot = ensureSlotEntryForDiscipline(doc, 'divine', lvl);
+      const daily = Number(slot.daily) || 0;
+      const used = Number(slot.used) || 0;
+      const domDaily = Number(slot.domainDaily) || 0;
+      const domUsed = Number(slot.domainUsed) || 0;
+      const regDaily = slot.regularDaily !== undefined
+        ? Number(slot.regularDaily)
+        : Math.max(0, daily - domDaily);
+      const regUsed = Math.max(0, used - domUsed);
+      const regRem = Math.max(0, regDaily - regUsed);
+      if (used >= daily || regRem <= 0) {
+        setStoreOutcome(stateObj, { status: 'no_slots_remaining', discipline: 'clericConversion', spellLevel: lvl });
+        return doc;
+      }
+      slot.used = used + 1;
+      if (spell) {
+        spell.isCast = true;
+        spell.cast = true;
+        if (payload.convName) spell.convertedTo = payload.convName;
+      }
+    } else {
+      if (!isAtWill) {
+        const slot = ensureSlotEntryForDiscipline(doc, 'spontaneous', lvl);
+        const daily = Number(slot.daily) || 0;
+        const used = Number(slot.used) || 0;
+        if (used >= daily) {
+          setStoreOutcome(stateObj, { status: 'no_slots_remaining', discipline: 'spontaneous', spellLevel: lvl });
+          return doc;
+        }
+        slot.used = used + 1;
+      }
+    }
+
+    const buffActivated = upsertBuffEntryOnDoc(doc, payload.buffEntry || payload.buffPayload);
+
+    const selfHpCost = Number(payload.selfHpCost) || 0;
+    if (selfHpCost > 0 && doc.hp && typeof doc.hp === 'object') {
+      doc.hp.current = Math.max(-10, (Number(doc.hp.current) || 0) - selfHpCost);
+    }
+
+    setStoreOutcome(stateObj, {
+      status: 'spell_cast',
+      discipline: disc === 'clericconversion' ? 'clericConversion' : (payload.discipline || disc || 'spontaneous'),
+      spellLevel: lvl,
+      spellName: (spell && spell.name) || payload.spellName || '',
+      isDomain: isDom,
+      isAtWill,
+      buffActivated
+    });
+    return doc;
+  });
+
+  // 2. 'spells/adjustSlot' ({ discipline: 'spontaneous'|'prepared'|'divine', level, deltaUsed, totalOverride, isDomain, dmBonusOverride, knownBonusOverride, slotsBatch })
+  CharStore.registerReducer('spells/adjustSlot', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const disc = String(payload.discipline || 'spontaneous').toLowerCase();
+    const listKey = disc === 'prepared' ? 'preparedSlots' : (disc === 'divine' ? 'divineSlots' : 'slots');
+
+    if (Array.isArray(payload.slotsBatch)) {
+      doc.spellcasting[listKey] = JSON.parse(JSON.stringify(payload.slotsBatch));
+      setStoreOutcome(stateObj, { status: 'slot_adjusted', discipline: disc, batch: true });
+      return doc;
+    }
+
+    const lvl = Math.max(0, Number(payload.level) || 0);
+    const slot = ensureSlotEntryForDiscipline(doc, disc, lvl);
+
+    if (payload.totalOverride !== undefined && payload.totalOverride !== null) {
+      const nextTotal = Math.max(0, Number(payload.totalOverride) || 0);
+      slot.daily = nextTotal;
+      if (disc === 'divine' && slot.regularDaily !== undefined) {
+        const domD = Number(slot.domainDaily) || 0;
+        slot.regularDaily = Math.max(0, nextTotal - domD);
+      }
+    }
+    if (payload.dmBonusOverride !== undefined && payload.dmBonusOverride !== null) {
+      slot.dmBonus = Math.max(0, Number(payload.dmBonusOverride) || 0);
+    }
+    if (payload.knownBonusOverride !== undefined && payload.knownBonusOverride !== null) {
+      slot.knownBonus = Math.max(0, Number(payload.knownBonusOverride) || 0);
+    }
+
+    const daily = Math.max(0, Number(slot.daily) || 0);
+    if (payload.isDomain && disc === 'divine') {
+      const domDaily = Math.max(0, Number(slot.domainDaily) || 0);
+      const nextDomUsed = Math.min(domDaily, Math.max(0, (Number(slot.domainUsed) || 0) + (Number(payload.deltaUsed) || 0)));
+      const domDiff = nextDomUsed - (Number(slot.domainUsed) || 0);
+      slot.domainUsed = nextDomUsed;
+      slot.used = Math.min(daily, Math.max(nextDomUsed, (Number(slot.used) || 0) + domDiff));
+    } else if (payload.deltaUsed !== undefined && payload.deltaUsed !== null) {
+      const minUsed = (disc === 'divine') ? (Number(slot.domainUsed) || 0) : 0;
+      slot.used = Math.min(daily, Math.max(minUsed, (Number(slot.used) || 0) + (Number(payload.deltaUsed) || 0)));
+    } else {
+      slot.used = Math.min(daily, Math.max(0, Number(slot.used) || 0));
+    }
+
+    setStoreOutcome(stateObj, {
+      status: 'slot_adjusted',
+      discipline: disc,
+      level: lvl,
+      used: slot.used,
+      daily: slot.daily,
+      domainUsed: slot.domainUsed || 0
+    });
+    return doc;
+  });
+
+  // 3. 'spells/restoreAllSlots' ({ discipline: 'spontaneous'|'prepared'|'divine'|'all' })
+  CharStore.registerReducer('spells/restoreAllSlots', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const disc = String(payload.discipline || 'all').toLowerCase();
+
+    const resetSlots = (arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(s => {
+        if (!s) return;
+        s.used = 0;
+        if (s.domainUsed !== undefined) s.domainUsed = 0;
+      });
+    };
+
+    if (disc === 'spontaneous' || disc === 'all') {
+      resetSlots(doc.spellcasting.slots);
+    }
+    if (disc === 'prepared' || disc === 'all') {
+      resetSlots(doc.spellcasting.preparedSlots);
+      (doc.spellcasting.preparedSpells || []).forEach(sp => {
+        if (sp) { sp.isCast = false; sp.cast = false; }
+      });
+    }
+    if (disc === 'divine' || disc === 'all') {
+      resetSlots(doc.spellcasting.divineSlots);
+      (doc.spellcasting.divineSpells || []).forEach(sp => {
+        if (sp) { sp.isCast = false; sp.cast = false; delete sp.convertedTo; }
+      });
+      doc.spellcasting.turnUndeadUsed = 0;
+      doc.spellcasting.domainPowerUses = {};
+    }
+
+    setStoreOutcome(stateObj, { status: 'slots_restored', discipline: disc });
+    return doc;
+  });
+
+  // 4. 'spells/addSpell' ({ discipline: 'spontaneous'|'prepared'|'divine', spellEntry, allowDuplicate })
+  CharStore.registerReducer('spells/addSpell', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const disc = String(payload.discipline || payload.pool || 'spontaneous').toLowerCase();
+    const rawEntry = payload.spellEntry;
+    if (!rawEntry || !rawEntry.name) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const listKey = disc === 'prepared' ? 'preparedSpells' : (disc === 'divine' ? 'divineSpells' : 'knownSpells');
+    const arr = doc.spellcasting[listKey];
+    const cleanName = String(rawEntry.name || '').toLowerCase().trim();
+    const lvl = Math.max(0, Number(rawEntry.level) || 0);
+
+    if (disc === 'spontaneous' && !payload.allowDuplicate) {
+      const exists = arr.some(s => s && String(s.name || '').toLowerCase().trim() === cleanName && (Number(s.level) || 0) === lvl);
+      if (exists) {
+        setStoreOutcome(stateObj, { status: 'already_exists', spellName: rawEntry.name, level: lvl });
+        return doc;
+      }
+    }
+
+    const entryCopy = JSON.parse(JSON.stringify(rawEntry));
+    entryCopy.level = lvl;
+    arr.push(entryCopy);
+
+    setStoreOutcome(stateObj, {
+      status: 'spell_added',
+      discipline: disc,
+      spellName: entryCopy.name,
+      level: lvl,
+      isDomainSpell: Boolean(entryCopy.isDomainSpell)
+    });
+    return doc;
+  });
+
+  // 5. 'spells/removeSpell' ({ discipline: 'spontaneous'|'prepared'|'divine', index })
+  CharStore.registerReducer('spells/removeSpell', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const disc = String(payload.discipline || payload.pool || 'spontaneous').toLowerCase();
+    const rawIdx = payload.index ?? payload.spellIndex ?? payload.spellIdx;
+    const idx = Number(rawIdx);
+    const listKey = disc === 'prepared' ? 'preparedSpells' : (disc === 'divine' ? 'divineSpells' : 'knownSpells');
+    const arr = doc.spellcasting[listKey];
+
+    if (isNaN(idx) || idx < 0 || idx >= arr.length) {
+      setStoreOutcome(stateObj, { status: 'not_found', discipline: disc, index: idx });
+      return doc;
+    }
+
+    const removed = arr.splice(idx, 1)[0];
+    setStoreOutcome(stateObj, {
+      status: 'spell_removed',
+      discipline: disc,
+      spellName: (removed && removed.name) || '',
+      isDomainSpell: Boolean(removed && removed.isDomainSpell)
+    });
+    return doc;
+  });
+
+  // 6. 'spells/toggleClericSpontaneousMode' ({ mode })
+  CharStore.registerReducer('spells/toggleClericSpontaneousMode', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const cur = doc.spellcasting.clericSpontaneousMode || 'cure';
+    const nextMode = payload.mode
+      ? String(payload.mode).toLowerCase()
+      : (cur === 'cure' || cur === 'good' ? 'inflict' : 'cure');
+    doc.spellcasting.clericSpontaneousMode = nextMode;
+    setStoreOutcome(stateObj, {
+      status: 'cleric_spont_mode_updated',
+      mode: nextMode
+    });
+    return doc;
+  });
+
+  // 7. 'spells/useTurnOrDomainPower' ({ kind: 'turn'|'domain'|'setDomains', id, isReset, maxUses, buffEntry, domains })
+  CharStore.registerReducer('spells/useTurnOrDomainPower', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const id = String(payload.id || payload.powerId || payload.poolId || 'undead');
+    const kind = payload.kind
+      ? String(payload.kind).toLowerCase()
+      : (payload.powerId ? 'domain' : (payload.isTurnUndead === false ? 'domain' : (id === 'undead' ? 'turn' : 'domain')));
+
+    if (kind === 'setdomains' && Array.isArray(payload.domains)) {
+      doc.spellcasting.domains = payload.domains.filter(Boolean).slice(0, 2);
+      setStoreOutcome(stateObj, { status: 'domains_updated', domains: [...doc.spellcasting.domains] });
+      return doc;
+    }
+
+    if (payload.isReset) {
+      if (kind === 'turn' && id === 'undead') {
+        doc.spellcasting.turnUndeadUsed = 0;
+      } else {
+        doc.spellcasting.domainPowerUses[id] = 0;
+      }
+      setStoreOutcome(stateObj, { status: 'power_reset', kind, id });
+      return doc;
+    }
+
+    const maxUses = payload.maxUses !== undefined ? Math.max(1, Number(payload.maxUses) || 1) : 99;
+    const curUsed = (kind === 'turn' && id === 'undead')
+      ? Math.max(0, Number(doc.spellcasting.turnUndeadUsed) || 0)
+      : Math.max(0, Number(doc.spellcasting.domainPowerUses[id]) || 0);
+
+    if (curUsed >= maxUses) {
+      setStoreOutcome(stateObj, { status: 'exhausted_daily', kind, id, used: curUsed, maxUses });
+      return doc;
+    }
+
+    if (kind === 'turn' && id === 'undead') {
+      doc.spellcasting.turnUndeadUsed = curUsed + 1;
+    } else {
+      doc.spellcasting.domainPowerUses[id] = curUsed + 1;
+    }
+
+    if (payload.consumeTurnUndead) {
+      const curTurnUsed = Math.max(0, Number(doc.spellcasting.turnUndeadUsed) || 0);
+      const maxTurnUses = Number(payload.maxTurnUses) || 99;
+      if (curTurnUsed < maxTurnUses) {
+        doc.spellcasting.turnUndeadUsed = curTurnUsed + 1;
+      }
+    }
+
+    const buffActivated = upsertBuffEntryOnDoc(doc, payload.buffEntry || payload.buffPayload);
+
+    setStoreOutcome(stateObj, {
+      status: 'power_used',
+      kind,
+      id,
+      used: curUsed + 1,
+      maxUses,
+      buffActivated
+    });
+    return doc;
+  });
+
+  // 8. 'spells/toggleManeuverReadied' ({ name, slotIdx, maxReadied })
+  CharStore.registerReducer('spells/toggleManeuverReadied', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const readied = doc.tomeOfBattle.readiedManeuvers;
+
+    if (payload.slotIdx !== undefined && payload.slotIdx !== null && !payload.name) {
+      const sIdx = Number(payload.slotIdx);
+      if (sIdx >= 0 && sIdx < readied.length) {
+        const removed = readied.splice(sIdx, 1)[0];
+        setStoreOutcome(stateObj, { status: 'maneuver_unreadied', name: removed?.name || '' });
+        return doc;
+      }
+    }
+
+    const rawName = String(payload.name || '').trim();
+    const cleanName = rawName.toLowerCase();
+    if (!cleanName) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+
+    const existingIdx = readied.findIndex(m => m && String(m.name || '').toLowerCase().trim() === cleanName);
+    if (existingIdx >= 0) {
+      readied.splice(existingIdx, 1);
+      setStoreOutcome(stateObj, { status: 'maneuver_unreadied', name: rawName });
+      return doc;
+    }
+
+    const engine = resolveRuleEngine();
+    const derivedMax = (engine && typeof engine.deriveSpellsView === 'function')
+      ? (engine.deriveSpellsView(doc)?.casterStatsView?.martial?.maxReadied || 0)
+      : 0;
+    const maxReadied = payload.maxReadied !== undefined ? Number(payload.maxReadied) : (derivedMax || 99);
+
+    if (readied.length >= maxReadied) {
+      setStoreOutcome(stateObj, { status: 'max_readied_reached', maxReadied });
+      return doc;
+    }
+
+    const knownItem = (doc.tomeOfBattle.maneuversKnown || []).find(
+      m => m && String(m.name || '').toLowerCase().trim() === cleanName
+    );
+    if (!knownItem) {
+      setStoreOutcome(stateObj, { status: 'not_found', name: rawName });
+      return doc;
+    }
+
+    readied.push(Object.assign({}, JSON.parse(JSON.stringify(knownItem)), { expended: false }));
+    setStoreOutcome(stateObj, { status: 'maneuver_readied', name: knownItem.name });
+    return doc;
+  });
+
+  // 9. 'spells/expendOrRecoverManeuver' ({ slotIdx, recoverAll })
+  CharStore.registerReducer('spells/expendOrRecoverManeuver', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const readied = doc.tomeOfBattle.readiedManeuvers;
+
+    if (payload.recoverAll || payload.mode === 'recoverAll') {
+      readied.forEach(m => {
+        if (m) m.expended = false;
+      });
+      doc.lastModified = new Date().toISOString();
+      setStoreOutcome(stateObj, { status: 'all_maneuvers_recovered' });
+      return doc;
+    }
+
+    const rawIdx = payload.slotIdx ?? payload.index ?? payload.idx;
+    const idx = rawIdx !== undefined && rawIdx !== null ? Number(rawIdx) : NaN;
+    if (isNaN(idx) || idx < 0 || idx >= readied.length || !readied[idx]) {
+      setStoreOutcome(stateObj, { status: 'not_found', slotIdx: idx });
+      return doc;
+    }
+
+    const m = readied[idx];
+    if (payload.mode === 'recover') {
+      m.expended = false;
+    } else if (payload.mode === 'expend') {
+      m.expended = true;
+    } else {
+      m.expended = !Boolean(m.expended);
+    }
+    setStoreOutcome(stateObj, {
+      status: m.expended ? 'maneuver_expended' : 'maneuver_recovered',
+      slotIdx: idx,
+      name: m.name || '',
+      expended: m.expended
+    });
+    return doc;
+  });
+
+  // 10. 'spells/selectStance' ({ name })
+  CharStore.registerReducer('spells/selectStance', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const rawStance = payload.name !== undefined && payload.name !== null ? payload.name : payload.stanceName;
+    const nextStance = rawStance !== undefined && rawStance !== null ? String(rawStance) : 'None';
+    doc.activeStance = nextStance;
+    if (doc.tomeOfBattle) doc.tomeOfBattle.activeStance = nextStance;
+    setStoreOutcome(stateObj, { status: 'stance_selected', name: nextStance });
+    return doc;
+  });
+
+  // 11a. 'spells/addManeuverOrStance' ({ entry, isStance })
+  CharStore.registerReducer('spells/addManeuverOrStance', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const entry = payload.entry;
+    const isStance = Boolean(payload.isStance || payload.itemType === 'Stance');
+    if (!entry || !entry.name) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const cleanName = String(entry.name || '').toLowerCase().trim();
+    const targetArr = isStance ? doc.tomeOfBattle.stancesKnown : doc.tomeOfBattle.maneuversKnown;
+    if (targetArr.some(x => x && String(x.name || '').toLowerCase().trim() === cleanName)) {
+      setStoreOutcome(stateObj, { status: 'already_exists', name: entry.name, isStance });
+      return doc;
+    }
+    const copy = JSON.parse(JSON.stringify(entry));
+    targetArr.push(copy);
+
+    let autoReadied = false;
+    if (!isStance && payload.autoReadyIfOpen) {
+      const maxR = Number(payload.maxReadied) || 0;
+      if (doc.tomeOfBattle.readiedManeuvers.length < maxR) {
+        doc.tomeOfBattle.readiedManeuvers.push(Object.assign({}, JSON.parse(JSON.stringify(copy)), { expended: false }));
+        autoReadied = true;
+      }
+    }
+    if (isStance && (!doc.activeStance || doc.activeStance === 'None')) {
+      doc.activeStance = copy.name;
+    }
+
+    setStoreOutcome(stateObj, {
+      status: isStance ? 'stance_added' : 'maneuver_added',
+      name: copy.name,
+      isStance,
+      autoReadied
+    });
+    return doc;
+  });
+
+  // 11b. 'spells/removeManeuverOrStance' ({ name, isStance })
+  CharStore.registerReducer('spells/removeManeuverOrStance', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const rawName = String(payload.name || '').trim();
+    const cleanName = rawName.toLowerCase();
+    const isStance = Boolean(payload.isStance);
+
+    if (isStance) {
+      const idx = doc.tomeOfBattle.stancesKnown.findIndex(st => st && String(st.name || '').toLowerCase().trim() === cleanName);
+      if (idx < 0) {
+        setStoreOutcome(stateObj, { status: 'not_found', name: rawName, isStance: true });
+        return doc;
+      }
+      doc.tomeOfBattle.stancesKnown.splice(idx, 1);
+      if (String(doc.activeStance || '').toLowerCase().trim() === cleanName) {
+        doc.activeStance = 'None';
+      }
+    } else {
+      const idx = doc.tomeOfBattle.maneuversKnown.findIndex(m => m && String(m.name || '').toLowerCase().trim() === cleanName);
+      if (idx < 0) {
+        setStoreOutcome(stateObj, { status: 'not_found', name: rawName, isStance: false });
+        return doc;
+      }
+      doc.tomeOfBattle.maneuversKnown.splice(idx, 1);
+      const rIdx = doc.tomeOfBattle.readiedManeuvers.findIndex(m => m && String(m.name || '').toLowerCase().trim() === cleanName);
+      if (rIdx >= 0) {
+        doc.tomeOfBattle.readiedManeuvers.splice(rIdx, 1);
+      }
+    }
+
+    setStoreOutcome(stateObj, {
+      status: isStance ? 'stance_removed' : 'maneuver_removed',
+      name: rawName,
+      isStance
+    });
+    return doc;
+  });
+
+  // 12. 'spells/toggleDmBoon' ({ key })
+  CharStore.registerReducer('spells/toggleDmBoon', (doc, action, stateObj) => {
+    ensureSpellsDocStructures(doc);
+    if (!doc.settings || typeof doc.settings !== 'object') doc.settings = {};
+    const payload = (action && action.payload) || {};
+    const target = String(payload.key || payload.discipline || '').toLowerCase().trim();
+    const valid = ['spontaneous', 'prepared', 'divine', 'martial', 'warlock'];
+    if (!valid.includes(target)) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload', key: target });
+      return doc;
+    }
+
+    const currentBoons = Array.isArray(doc.settings.boonDisciplines)
+      ? doc.settings.boonDisciplines.map(d => String(d || '').toLowerCase().trim()).filter(d => valid.includes(d))
+      : [];
+    const wasActive = currentBoons.includes(target);
+    const nextBoons = wasActive
+      ? currentBoons.filter(d => d !== target)
+      : [...currentBoons, target];
+
+    doc.settings.boonDisciplines = nextBoons;
+    doc.settings.warlockBoon = nextBoons.includes('warlock');
+
+    if (nextBoons.length > 0) {
+      doc.settings.casterTypeExplicit = true;
+      if (!wasActive) {
+        doc.settings.casterType = target;
+      } else if (!nextBoons.includes(doc.settings.casterType)) {
+        doc.settings.casterType = nextBoons[0];
+      }
+      if (nextBoons.length === 1 && nextBoons[0] === 'warlock') {
+        doc.settings.clMode = 'Warlock Boon (Invocations & Eldritch Blast)';
+      } else {
+        doc.settings.clMode = 'Character Level (DM Boon)';
+      }
+    } else {
+      doc.settings.casterTypeExplicit = false;
+      doc.settings.clMode = 'Class Level';
+      doc.settings.casterType = payload.fallbackDiscipline || 'spontaneous';
+    }
+
+    setStoreOutcome(stateObj, {
+      status: 'dm_boon_toggled',
+      key: target,
+      enabled: !wasActive,
+      boonDisciplines: [...nextBoons]
+    });
     return doc;
   });
 
