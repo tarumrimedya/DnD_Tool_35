@@ -1,4 +1,4 @@
-# Sheet V3 Veri Şeması (TASLAK v0.2)
+# Sheet V3 Veri Şeması (TASLAK v0.3)
 
 Durum: **kararlar alındı (Bölüm 8)**. Kodlama bu dokümana göre yapılır. Tek açık nokta fixture verisi.
 İlgili: `docs/REDESIGN_V3_PLAN.md`, `sheet/engine/FORK.md`, ADR-011 (karaktere özel `customDb`).
@@ -92,12 +92,17 @@ Bu yüzden `type`/`category` ve isim regex'i ile yapılan her sınıflandırma k
 
 ### 2.3 Eski kayıtlar için `kind` çıkarımı (tek otorite: `entry-kind.js`)
 
-Sıra kesindir, ilk eşleşen kazanır:
+Sıra kesindir, ilk eşleşen kazanır. Id'deki paket öneki (`pack_dm_draconic_boons:boon_x` → `boon_x`) kontrolden önce ayrılır ve kayıtta `pack` alanı olarak saklanır.
 
 1. Kayıtta zaten geçerli bir `kind` varsa o kullanılır.
 2. `id` (ya da `baseItemId` / `sourceId`) SRD indeksinde varsa indeksteki `t` kullanılır.
-3. `id` öneki: `feat-`, `spl-`, `pwr-`, `wpn-`, `arm-`, `shd-`, `mi-`, `pot-`, `tob-`… (indeksteki önek tablosu) ve custom önekleri `ability_`, `feat_`. Eski `boon_` öneki → `kind: 'ability'`, `source: 'dm'`.
-4. `type` alanı yalnızca **kayıt türü değerlerinden** biriyse (`Feat`, `Spell`, `Power`, `Weapon`, `Armor`, `Shield`, `Special Ability`, `Maneuver`, `Stance`, `Flaw`…). `DM Boon` / `DM Grant` / `Boon` → `kind: 'ability'`, `source: 'dm'`. Hasar ve bonus türleri (`Piercing`, `competence`…) asla eşleşmez.
+2b. **Liste üyeliği:** Tek türlü listelerde kayıt, listenin türünü alır, ama 2–4. adımdaki açık bir sinyal bununla çelişmiyorsa. `specialAbilities` → `ability`, `feats` → `feat` (`type: 'Flaw'` ise `flaw`), `spells` → `spell` (`pwr-` ise `power`), `customClasses` → `class`. Çok türlü listeler (`gearPool`, `customDb`) için bu adım yoktur. Çelişki varsa (örneğin `gearPool` içinde `ability_` id'li kayıt) kayıt karantinaya gider.
+3. `id` öneki: `feat-`, `spl-`, `pwr-`, `wpn-`, `arm-`, `shd-`, `mi-`, `pot-`, `tob-`… (indeksteki önek tablosu) ve custom önekleri `ability_`, `feat_`, `class_`. Eski `boon_` öneki → `kind: 'ability'`, `source: 'dm'`. `cus-` öneki tür bilgisi taşımaz, 2b'ye bırakılır.
+4. `type` alanı yalnızca **kayıt türü değerlerinden** biriyse (`Feat`, `Spell`, `Power`, `Weapon`, `Armor`, `Shield`, `Special Ability`, `Maneuver`, `Stance`, `Flaw`, `Base Class`, `Deity`, `Domain`…). `DM Boon` / `DM Grant` / `Boon` → `kind: 'ability'`, `source: 'dm'`. Hasar ve bonus türleri (`Piercing`, `competence`…) asla eşleşmez.
+
+**`source: 'dm'` türden bağımsızdır.** Gerçek veride DM'in verdiği feat'ler var (`type: 'Feat'`, `category: 'DM Boon'`). Bunlar `kind: 'feat'` + `source: 'dm'` olur. `DM Boon` tipli kayıtlar ise `kind: 'ability'` + `source: 'dm'`.
+
+**Kayıt olmayan yapısal listeler:** `skills` (rank kayıtları, `key` ile tanımlanır) ve `levelProgression` (seviye satırları) `kind` almaz. Bunlar karakterin iskeletidir, kütüphane kaydı değildir.
 5. Hiçbiri tutmazsa: **karantina**. İsim regex'i kullanılmaz.
 
 ## 3. Kimlik (id) kuralları
@@ -179,7 +184,30 @@ Gerçek veri tek ve eksik olduğu için fixture'lar üç katmanlı:
 2. **Kurgu ama gerçekçi fixture'lar** (`tools/fixtures/synthetic/`): Kodda bulunan geçmiş hata durumlarını yeniden üretir. Örnekler: `gearPool` içinde feat, sayı id'li eşya, `boon_` önekli ability, aynı isimli iki homebrew, `progression` alanlı eski karakter, Türkçe fallback alanları, string ve nesne karışık `feats`. İçerik **gerçek SRD id'leri ve RAW değerlerle** kurulur (ADR-001: uydurma kural verisi yok).
 3. **Sınır durumları** (testlerin içinde): boş karakter, `null` kayıtlar, bozuk JSON.
 
+Gerçek fixture: `tools/fixtures/real/character_2026-11-08.json`. Portre ve duvar kağıdı (base64, dosyanın %40'ı) çıkarıldı, gerisi olduğu gibi.
+
 Her migration için iki test zorunlu:
 
 - **Kayıpsızlık:** Migration'dan önceki her kayıt sonrasında ya yerinde ya da `quarantine` içinde bulunur.
 - **İdempotency:** Migration ikinci kez çalıştığında hiçbir şey değişmez.
+
+## 10. Gerçek karakterde bulunanlar (2026-11-08 export)
+
+Seviye 17 karakter (Warblade 5 / Rogue (Adventurer Variant) 2 / Bloodstorm Blade 10), 94 üst düzey alan, 123 `customDb` kaydı. Salt okunur bir tarama ile şemaya karşı kontrol edildi.
+
+| # | Bulgu | Şemadaki karşılığı |
+| :--- | :--- | :--- |
+| 1 | `gearPool` içinde bir **ability** var: "Dragon Breath" (`ability_dragon_breath_damage_deals_deals`). P11'in yakaladığı bozuk kayıt; doğru hali (`ability_dragon_breath_weapon_acid`) zaten `specialAbilities` içinde | `misplaced-entries` migration'ı: karantina, önerilen hedef `specialAbilities`, "olası kopya" notu |
+| 2 | `gearPool`'daki 2 eşyanın id'si **sayı** (`1794058567076`) | `ids-to-string` migration'ı |
+| 3 | `specialAbilities` kayıtlarının 8/9'unda `type` yok, id'ler `cus-` önekli. Tür yalnızca listeden anlaşılıyor | Kural 2b (liste üyeliği) eklendi. Bu kayıtlar karantinaya **gitmez** |
+| 4 | DM Boon id'leri paket önekli: `pack_dm_draconic_boons:boon_draconic_nat_ac` | Paket öneki ayrılır, `pack` alanında saklanır |
+| 5 | DM'in verdiği feat'ler var (`type: 'Feat'`, `category: 'DM Boon'`) | `source: 'dm'` türden bağımsız hale getirildi |
+| 6 | `levelProgression[].feats` anlamı **emoji ve etiketli metinle** taşıyor: `"⚠️ [Flaw] Frail"`, `"⚔️ [Bonus] Knock-Down"`, `"🌟 DM Boon: CL = Level 1"`, `"+1 Stat: INT"` | Aşama 1: V3 bu metinleri **tek, test edilmiş bir ayrıştırıcıyla** okur (`slot: regular \| bonus \| flaw \| flawBonus \| dm \| abilityIncrease`). Metinler değişmez, çünkü klasik sayfa yazmaya devam ediyor. Aşama 2: satırlar yapısal kayda (`{ ref, slot, ability? }`) çevrilir |
+| 7 | "DM Boon: +20 HP" bir **özel sınıf** olarak tanımlanmış (`customClasses`), ama hiçbir seviyede kullanılmıyor | Dokunulmaz. Doğru model: `kind: 'ability'`, `source: 'dm'`, `modifiers: [{ target: 'hp.max', value: 20 }]`. Arayüzde "kullanılmayan özel sınıf" uyarısı |
+| 8 | `customDb` kayıtlarında arayüz önbelleği kalıntıları var: `_isGearCache`, `_originalIndex`; ayrıca "Rogue" sınıfı hem `customClasses` hem `customDb` içinde | `_` önekli alanlar oturum/iç sınıfı, hesaba girmez. Çift tanım: `customClasses` asıl, `customDb` kopyası "gölge" olarak işaretlenir |
+| 9 | Türetilmiş değerler kaydediliyor: `legoEvaluation` tek başına **37 KB**, ayrıca `acBreakdown`, `evaluated*`, `ecl`, `grappleBonus`… | Bölüm 1.2 doğrulandı |
+| 10 | `activeModifiers` (7 kayıt: TWF, stance, manevralar) combat pin listesi | Arayüz durumu + türetilmiş. Kayıt değil |
+| 11 | Portre + duvar kağıdı base64 olarak karakterin içinde: **~196 KB** (dosyanın %40'ı), her kayıtta buluta da gidiyor | Kapsam dışı not: Aşama 2'de Supabase Storage'a taşınıp karakterde yalnızca URL tutulabilir |
+| 12 | `inventory` eski alanı boş duruyor | Eski alan; okunur, silinmez |
+
+Tarama sonucunda, kural 2b ve paket öneki kurallarıyla birlikte, **bu karakterde karantinaya düşecek tek kayıt `gearPool`'daki "Dragon Breath"**. Geri kalan her kaydın türü güvenle çıkarılabiliyor.
