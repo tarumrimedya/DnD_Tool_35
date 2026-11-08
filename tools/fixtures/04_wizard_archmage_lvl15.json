@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 2,
+  "name": "Malakor the Archmage",
+  "race": "Human",
+  "size": "Medium",
+  "alignment": "Neutral",
+  "level": 15,
+  "bab": 7,
+  "baseSpeed": 30,
+  "baseAbilities": {
+    "str": 8,
+    "dex": 16,
+    "con": 16,
+    "int": 24,
+    "wis": 12,
+    "cha": 10
+  },
+  "abilities": {
+    "str": 8,
+    "dex": 16,
+    "con": 16,
+    "int": 24,
+    "wis": 12,
+    "cha": 10
+  },
+  "baseSaves": {
+    "fort": 4,
+    "ref": 4,
+    "will": 11
+  },
+  "hp": {
+    "baseMax": 42,
+    "conBonusHp": 45,
+    "max": 87,
+    "current": 87,
+    "temp": 15
+  },
+  "classLevels": {
+    "wizard": 13,
+    "archmage": 2
+  },
+  "spellcasting": {
+    "primaryClass": "Wizard",
+    "castingAbility": "int",
+    "casterLevel": 15
+  },
+  "feats": [
+    { "id": "feat-spell-focus-evocation", "name": "Spell Focus (Evocation)", "type": "Feat", "active": true },
+    { "id": "feat-spell-focus-transmutation", "name": "Spell Focus (Transmutation)", "type": "Feat", "active": true },
+    { "id": "feat-skill-focus-spellcraft", "name": "Skill Focus (Spellcraft)", "type": "Feat", "active": true },
+    { "id": "feat-quicken-spell", "name": "Quicken Spell", "type": "Feat", "active": true }
+  ],
+  "specialAbilities": [
+    {
+      "id": "sa-high-arcana-mastery-of-shaping",
+      "name": "High Arcana: Mastery of Shaping",
+      "category": "Class Feature",
+      "type": "Class Feature"
+    },
+    {
+      "id": "sa-high-arcana-arcane-reach",
+      "name": "High Arcana: Arcane Reach",
+      "category": "Class Feature",
+      "type": "Class Feature"
+    }
+  ],
+  "bodySlots": {
+    "head": {
+      "id": "item-headband-of-intellect-6",
+      "name": "Headband of Intellect +6",
+      "type": "Wondrous Item",
+      "category": "Head",
+      "slot": "Head",
+      "cost": 36000,
+      "modifiers": [
+        { "target": "ability.int", "value": 6, "type": "Enhancement" }
+      ],
+      "equipped": true
+    },
+    "bracers": {
+      "id": "item-bracers-of-armor-5",
+      "name": "Bracers of Armor +5",
+      "type": "Wondrous Item",
+      "category": "Bracers",
+      "slot": "Arms",
+      "cost": 25000,
+      "modifiers": [
+        { "target": "ac.armor", "value": 5, "type": "Armor" }
+      ],
+      "equipped": true
+    },
+    "shoulders": {
+      "id": "item-cloak-of-resistance-4",
+      "name": "Cloak of Resistance +4",
+      "type": "Wondrous Item",
+      "category": "Shoulders",
+      "slot": "Shoulders",
+      "cost": 16000,
+      "modifiers": [
+        { "target": "save.all", "value": 4, "type": "Resistance" }
+      ],
+      "equipped": true
+    },
+    "ring1": {
+      "id": "item-ring-of-sustenance",
+      "name": "Ring of Sustenance",
+      "type": "Ring",
+      "category": "Ring",
+      "slot": "Ring",
+      "cost": 2500,
+      "modifiers": [],
+      "equipped": true
+    }
+  },
+  "weapons": [],
+  "gearPool": [],
+  "buffs": [
+    {
+      "id": "spl-haste",
+      "name": "Haste",
+      "active": true,
+      "durationCategory": "round",
+      "modifiers": [
+        { "target": "ac.dodge", "value": 1, "type": "Dodge" },
+        { "target": "save.ref", "value": 1, "type": "Dodge" },
+        { "target": "attack.all", "value": 1, "type": "Untyped" }
+      ]
+    },
+    {
+      "id": "spl-greater-heroism",
+      "name": "Greater Heroism",
+      "active": true,
+      "durationCategory": "minute",
+      "tempHpFormula": "min(20, @cl)",
+      "modifiers": [
+        { "target": "attack.all", "value": 4, "type": "Morale" },
+        { "target": "save.all", "value": 4, "type": "Morale" }
+      ]
+    },
+    {
+      "id": "spl-mind-blank",
+      "name": "Mind Blank",
+      "active": true,
+      "durationCategory": "day",
+      "modifiers": []
+    }
+  ],
+  "spells": [
+    { "id": "spl-magic-missile", "name": "Magic Missile", "level": 1, "school": "Evocation", "prepared": 2 },
+    { "id": "spl-fireball", "name": "Fireball", "level": 3, "school": "Evocation", "prepared": 2 },
+    { "id": "spl-haste", "name": "Haste", "level": 3, "school": "Transmutation", "prepared": 1 },
+    { "id": "spl-dimension-door", "name": "Dimension Door", "level": 4, "school": "Conjuration", "prepared": 1 },
+    { "id": "spl-disintegrate", "name": "Disintegrate", "level": 6, "school": "Transmutation", "prepared": 1 },
+    { "id": "spl-greater-heroism", "name": "Greater Heroism", "level": 6, "school": "Enchantment", "prepared": 1 },
+    { "id": "spl-mind-blank", "name": "Mind Blank", "level": 8, "school": "Abjuration", "prepared": 1 }
+  ],
+  "skills": [
+    { "name": "Spellcraft", "ability": "int", "ranks": 18, "classSkill": true },
+    { "name": "Concentration", "ability": "con", "ranks": 18, "classSkill": true },
+    { "name": "Knowledge (Arcana)", "ability": "int", "ranks": 18, "classSkill": true }
+  ]
+}

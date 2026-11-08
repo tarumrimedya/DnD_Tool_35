@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 2,
+  "name": "Kaelen Dragon-Blooded",
+  "race": "Human",
+  "size": "Medium",
+  "alignment": "Chaotic Good",
+  "level": 17,
+  "bab": 17,
+  "baseSpeed": 30,
+  "templates": ["Half-Dragon"],
+  "baseAbilities": {
+    "str": 18,
+    "dex": 14,
+    "con": 16,
+    "int": 12,
+    "wis": 12,
+    "cha": 14
+  },
+  "abilities": {
+    "str": 18,
+    "dex": 14,
+    "con": 16,
+    "int": 12,
+    "wis": 12,
+    "cha": 14
+  },
+  "baseSaves": {
+    "fort": 10,
+    "ref": 5,
+    "will": 5
+  },
+  "hp": {
+    "baseMax": 120,
+    "conBonusHp": 68,
+    "max": 188,
+    "current": 188,
+    "temp": 0
+  },
+  "classLevels": {
+    "warblade": 17
+  },
+  "feats": [
+    { "id": "feat-power-attack", "name": "Power Attack", "type": "Feat", "active": true },
+    { "id": "feat-improved-initiative", "name": "Improved Initiative", "type": "Feat", "active": true }
+  ],
+  "specialAbilities": [
+    {
+      "id": "ability_dragon_breath_damage_deals_deals",
+      "name": "Dragon Breath",
+      "category": "Special Ability",
+      "type": "Special Ability",
+      "damageParts": [
+        { "dice": "4d8", "bonus": 0, "type": "Untyped" }
+      ]
+    },
+    {
+      "id": "ability_dragon_breath_weapon_acid",
+      "name": "Dragon Breath Weapon (Acid)",
+      "category": "DM Boon",
+      "type": "DM Boon",
+      "source": "DM Boon / Draconic Path",
+      "actionType": "move",
+      "action": "Move Action",
+      "range": "60 ft. line",
+      "save": "Reflex (half)",
+      "dcFormula": "10 + @level + @conMod",
+      "recharge": "1d4+1 rounds",
+      "rechargeDice": "1d4+1",
+      "damageParts": [
+        { "dice": "4d8", "bonus": 0, "type": "Acid", "multiplyOnCrit": false, "onCritOnly": false, "source": "Dragon Breath Weapon (Acid)" }
+      ],
+      "modes": [
+        {
+          "id": "breath_acid_line",
+          "name": "Acid Breath Line",
+          "actionType": "move",
+          "range": "60 ft. line",
+          "save": {
+            "type": "Reflex",
+            "dcFormula": "10 + @level + @conMod",
+            "onSave": "half"
+          },
+          "damageParts": [
+            { "dice": "4d8", "bonus": 0, "type": "Acid" }
+          ]
+        }
+      ],
+      "resources": [
+        {
+          "id": "res_dragon_breath",
+          "name": "Dragon Breath Cooldown",
+          "kind": "cooldown_turns",
+          "recharge": { "period": "rounds", "dice": "1d4+1" }
+        }
+      ]
+    },
+    {
+      "id": "sa_half_dragon_breath_weapon",
+      "name": "Half-Dragon Breath Weapon (Acid)",
+      "category": "Racial Trait",
+      "type": "Special Ability",
+      "source": "Monster Manual p.146 (Half-Dragon Template)",
+      "actionType": "standard",
+      "dcFormula": "10 + floor(@level / 2) + @conMod",
+      "modes": [
+        {
+          "id": "half_dragon_breath_6d8",
+          "name": "Half-Dragon Acid Breath (1/Day)",
+          "actionType": "standard",
+          "range": "60 ft. line",
+          "save": {
+            "type": "Reflex",
+            "dcFormula": "10 + floor(@level / 2) + @conMod",
+            "onSave": "half"
+          },
+          "damageParts": [
+            { "dice": "6d8", "bonus": 0, "type": "Acid" }
+          ]
+        }
+      ],
+      "resources": [
+        {
+          "id": "res_half_dragon_breath",
+          "name": "Half-Dragon Breath (1/Day)",
+          "kind": "consume",
+          "maxFormula": "1",
+          "recharge": { "period": "day" }
+        }
+      ]
+    },
+    {
+      "id": "ability_spell_reflection_ward",
+      "name": "Spell Reflection Ward",
+      "category": "DM Boon",
+      "type": "DM Boon",
+      "actionType": "immediate",
+      "modes": [
+        {
+          "id": "mode_reflect_ward",
+          "name": "Reflective Ward",
+          "actionType": "immediate",
+          "reactsTo": "incoming_spell",
+          "spawnsBuff": {
+            "id": "buff_spell_reflection_ward",
+            "name": "Spell Reflection Ward",
+            "durationRounds": 1,
+            "modifiers": [
+              { "target": "save.all", "value": 4, "type": "Insight" }
+            ]
+          }
+        }
+      ],
+      "resources": [
+        {
+          "id": "res_spell_reflection",
+          "name": "Spell Reflection Uses",
+          "kind": "consume",
+          "maxFormula": "3",
+          "recharge": { "period": "day" }
+        }
+      ]
+    }
+  ],
+  "bodySlots": {
+    "offHand": {
+      "id": "shd-inst-plus-5-greater-anchoring-synergy-bashing-adamantine-heavy-steel-shield",
+      "baseItemId": "shd-heavy-steel-shield",
+      "name": "+5 Greater Anchoring [Synergy] Bashing Adamantine Heavy Steel Shield",
+      "type": "Shield",
+      "category": "Shield",
+      "material": "mat-adamantine",
+      "acBonus": 7,
+      "enhancementBonus": 5,
+      "enhancements": ["enh-anchoring-greater-synergy", "enh-bashing"],
+      "weight": 15,
+      "cost": 65170,
+      "desc": "Shield bash deals 1d8 bludgeoning damage; +5 enhancement bonus to Shield AC.",
+      "modifiers": [
+        { "target": "ac.shield", "value": 7, "type": "Shield" }
+      ],
+      "equipped": true
+    }
+  },
+  "gearPool": [
+    {
+      "id": "item-ring-of-blinking",
+      "name": "Ring of Blinking",
+      "category": "Ring",
+      "type": "Ring",
+      "slot": "Ring",
+      "qty": 1,
+      "cost": 27000,
+      "weight": 0,
+      "desc": "3/day command word to activate Blink for 7 rounds.",
+      "dailyCharges": { "current": 3, "max": 3, "unit": "charges", "recharge": "long_rest" }
+    },
+    {
+      "id": "ability_dragon_breath_damage_deals_deals",
+      "name": "Dragon Breath",
+      "category": "Special Ability",
+      "type": "Special Ability"
+    }
+  ],
+  "consumables": [],
+  "buffs": [],
+  "skills": [
+    { "name": "Concentration", "ability": "con", "ranks": 20, "classSkill": true },
+    { "name": "Tumble", "ability": "dex", "ranks": 20, "classSkill": true }
+  ]
+}
