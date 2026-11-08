@@ -407,12 +407,22 @@
         _state.ui = Object.assign({}, _state.ui, { mode });
         if (_state.doc && typeof _state.doc === 'object') {
           _state.doc.uiMode = mode;
+          if (!_state.doc.ui || typeof _state.doc.ui !== 'object') {
+            _state.doc.ui = {};
+          }
+          _state.doc.ui.mode = mode;
           if (!_state.doc.settings || typeof _state.doc.settings !== 'object') {
             _state.doc.settings = {};
           }
           _state.doc.settings.sheetViewMode = mode;
         }
+        if (typeof localStorage !== 'undefined' && localStorage) {
+          try { localStorage.setItem('dnd_sheet_view_mode', mode); } catch (_) {}
+        }
         applySheetModeToDom(mode);
+        if (typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function' && meta.persist !== false) {
+          root.saveStateToStorage(false);
+        }
         this.notifyRegions();
         return _state.sheet;
       }
@@ -4088,13 +4098,25 @@
           return b && b.active && (b.id === 'debuff_exhausted' || String(b.name || '').toLowerCase().includes('exhausted'));
         });
         if (exhaustedBuff) {
-          exhaustedBuff.active = false;
           downgradedExhausted = true;
           const fatiguedBuff = doc.buffs.find(function (b) {
-            return b && (b.id === 'debuff_fatigued' || String(b.name || '').toLowerCase().includes('fatigued'));
+            return b && b !== exhaustedBuff && (b.id === 'debuff_fatigued' || String(b.name || '').toLowerCase().includes('fatigued'));
           });
           if (fatiguedBuff) {
+            exhaustedBuff.active = false;
             fatiguedBuff.active = true;
+          } else {
+            exhaustedBuff.id = 'debuff_fatigued';
+            exhaustedBuff.name = 'Fatigued (-2 STR/DEX)';
+            exhaustedBuff.strBonus = -2;
+            exhaustedBuff.dexBonus = -2;
+            exhaustedBuff.speedBonus = 0;
+            exhaustedBuff.modifiers = [
+              { target: 'ability.str', value: -2, type: 'untyped' },
+              { target: 'ability.dex', value: -2, type: 'untyped' }
+            ];
+            exhaustedBuff.ruleFlags = { fatigued: true };
+            exhaustedBuff.active = true;
           }
         } else {
           const fatiguedBuff = doc.buffs.find(function (b) {
@@ -4296,12 +4318,12 @@
     let refreshedDailyItems = 0;
     const resetItemCharges = function (item) {
       if (item && item.dailyCharges && typeof item.dailyCharges.max === 'number') {
-        if (item.dailyCharges.current !== item.dailyCharges.max) {
-          refreshedDailyItems++;
-        } else if (item.dailyCharges.max > 0) {
+        const max = Number(item.dailyCharges.max) || 0;
+        const cur = Number(item.dailyCharges.current) || 0;
+        if (cur < max) {
           refreshedDailyItems++;
         }
-        item.dailyCharges.current = item.dailyCharges.max;
+        item.dailyCharges.current = max;
       }
     };
     if (doc.bodySlots && typeof doc.bodySlots === 'object') {
@@ -4318,11 +4340,15 @@
     let refreshedDailyFeats = 0;
     const resetFeatCharges = function (f) {
       if (!f || typeof f !== 'object') return;
-      if (f.used) { f.used = false; refreshedDailyFeats++; }
-      if (f.expended) { f.expended = false; refreshedDailyFeats++; }
+      if (f.used === true) { f.used = false; refreshedDailyFeats++; }
+      if (f.expended === true) { f.expended = false; refreshedDailyFeats++; }
       if (f.dailyCharges && typeof f.dailyCharges.max === 'number') {
-        f.dailyCharges.current = f.dailyCharges.max;
-        refreshedDailyFeats++;
+        const max = Number(f.dailyCharges.max) || 0;
+        const cur = Number(f.dailyCharges.current) || 0;
+        if (cur < max) {
+          refreshedDailyFeats++;
+        }
+        f.dailyCharges.current = max;
       }
     };
     if (Array.isArray(doc.feats)) doc.feats.forEach(resetFeatCharges);

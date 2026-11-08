@@ -2067,6 +2067,101 @@ function runDeriveSheetTests() {
     CharStore.getHistoryCounts().undo === undoBeforeNoOps
   );
 
+  // =========================================================================
+  // Phase R7: Final Strangler Fig Gate — 0 Domain JS Inline Events & R6 Cleanups A-D
+  // =========================================================================
+  // 1. R6-Cleanup-B: hud/longRest accurate refreshedDailyItems & refreshedDailyFeats when already full vs spent
+  CharStore.dispatch({
+    type: 'doc/mutate',
+    payload: function (d) {
+      d.gearPool = [
+        { id: 'item_boots', name: 'Boots of Speed', dailyCharges: { current: 10, max: 10 } }
+      ];
+      d.feats = [
+        { name: 'Divine Might', used: false, dailyCharges: { current: 3, max: 3 } }
+      ];
+    },
+    meta: { skipHistory: true }
+  });
+  CharStore.dispatch({
+    type: 'hud/longRest',
+    payload: { isFullHeal: true },
+    meta: { label: 'Rest When Full' }
+  });
+  const restWhenFullOut = CharStore.getLastOutcome();
+  check(
+    'Phase R7 (R6-Cleanup-B): hud/longRest reports refreshedDailyItems === 0 and refreshedDailyFeats === 0 when daily items/feats are already at full charges',
+    restWhenFullOut?.refreshedDailyItems === 0 &&
+    restWhenFullOut?.refreshedDailyFeats === 0
+  );
+  CharStore.dispatch({
+    type: 'doc/mutate',
+    payload: function (d) {
+      d.gearPool[0].dailyCharges.current = 4;
+      d.feats[0].used = true;
+    },
+    meta: { skipHistory: true }
+  });
+  CharStore.dispatch({
+    type: 'hud/longRest',
+    payload: { isFullHeal: true },
+    meta: { label: 'Rest When Spent' }
+  });
+  const restWhenSpentOut = CharStore.getLastOutcome();
+  check(
+    'Phase R7 (R6-Cleanup-B): hud/longRest reports refreshedDailyItems === 1 and refreshedDailyFeats === 1 when 1 item and 1 feat had spent charges',
+    restWhenSpentOut?.refreshedDailyItems === 1 &&
+    restWhenSpentOut?.refreshedDailyFeats === 1 &&
+    CharStore.getDoc().gearPool[0].dailyCharges.current === 10 &&
+    CharStore.getDoc().feats[0].used === false
+  );
+
+  // 2. R6-Cleanup-C: hud/shortRest (60 min) in-place Exhausted -> Fatigued conversion when no separate Fatigued buff exists
+  CharStore.dispatch({
+    type: 'doc/mutate',
+    payload: function (d) {
+      d.buffs = [
+        {
+          id: 'debuff_exhausted',
+          name: 'Exhausted (-6 STR/DEX)',
+          active: true,
+          strBonus: -6,
+          dexBonus: -6,
+          ruleFlags: { exhausted: true }
+        }
+      ];
+    },
+    meta: { skipHistory: true }
+  });
+  CharStore.dispatch({
+    type: 'hud/shortRest',
+    payload: { minutes: 60 },
+    meta: { label: '1h Short Rest Exhausted -> Fatigued' }
+  });
+  const shortRestExhOut = CharStore.getLastOutcome();
+  const convertedBuff = (CharStore.getDoc().buffs || [])[0];
+  check(
+    'Phase R7 (R6-Cleanup-C): hud/shortRest (60 min) converts Exhausted buff in-place to active Fatigued (-2 STR/DEX) when no separate Fatigued entry exists',
+    shortRestExhOut?.downgradedExhausted === true &&
+    convertedBuff &&
+    convertedBuff.active === true &&
+    convertedBuff.ruleFlags?.fatigued === true &&
+    convertedBuff.strBonus === -2 &&
+    convertedBuff.dexBonus === -2
+  );
+
+  // 3. Domain JS Modules Zero Inline Events Gate (char_hud.js, char_combat.js, char_spells.js, char_progression.js, char_inventory.js)
+  const inlineEventRatchetRegex = /\bon(click|dblclick|change|input|keydown|keyup|keypress|submit|focus|blur|mousedown|mouseup|mouseover|mouseout|mouseenter|mouseleave|pointerdown|pointerup|touchstart|touchend|dragstart|dragover|dragleave|drop|wheel|scroll|contextmenu)\s*=/gi;
+  const domainModules = ['char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js'];
+  for (const modFile of domainModules) {
+    const modSrc = fs.readFileSync(path.join(__dirname, '..', modFile), 'utf8');
+    const inlineMatches = modSrc.match(inlineEventRatchetRegex) || [];
+    check(
+      `Phase R7: ${modFile} has 0 inline event handlers (actual=${inlineMatches.length})`,
+      inlineMatches.length === 0
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

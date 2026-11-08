@@ -402,7 +402,7 @@
         }
 
         return `
-          <button type="button" onclick="setCombatSpellLevelFilter(${lvl})" class="w-full h-8 rounded-lg text-xs font-mono font-bold transition cursor-pointer select-none flex items-center justify-center ${btnClass}" title="${titleTip}">
+          <button type="button" data-action="combat:set-spell-level-filter" data-level="${lvl}" class="w-full h-8 rounded-lg text-xs font-mono font-bold transition cursor-pointer select-none flex items-center justify-center ${btnClass}" title="${titleTip}">
             ${lvlLabel}
           </button>
         `;
@@ -412,7 +412,7 @@
 
       container.className = 'flex flex-col sm:flex-row gap-1.5 w-full items-stretch';
       container.innerHTML = `
-        <button type="button" onclick="setCombatSpellLevelFilter('all')" class="w-full sm:w-16 h-8 sm:h-auto py-1 sm:py-0 px-2 rounded-lg text-xs font-bold transition cursor-pointer select-none flex items-center justify-center shrink-0 ${allBtnClass}" title="Show All Spell Levels">
+        <button type="button" data-action="combat:set-spell-level-filter" data-level="all" class="w-full sm:w-16 h-8 sm:h-auto py-1 sm:py-0 px-2 rounded-lg text-xs font-bold transition cursor-pointer select-none flex items-center justify-center shrink-0 ${allBtnClass}" title="Show All Spell Levels">
           All
         </button>
         <div class="grid gap-1.5 flex-1 w-full" style="grid-template-columns: repeat(${numCols}, minmax(0, 1fr));">
@@ -477,7 +477,7 @@
           tabsContainer.innerHTML = sources.map(s => {
             const isAct = s.key === activeSource.key;
             return `
-              <button type="button" onclick="switchModalSlotSource('${s.key}')" class="text-[10px] font-bold px-2 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${isAct ? `${s.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">
+              <button type="button" data-action="combat:switch-modal-slot-source" data-source-key="${s.key}" class="text-[10px] font-bold px-2 py-1 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${isAct ? `${s.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">
                 <span>${s.icon}</span>
                 <span>${s.shortLabel}</span>
               </button>
@@ -535,9 +535,9 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <div class="flex items-center gap-0.5">
-                    <button type="button" onclick="modifyMartialReadiedQuota(-1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="Decrease Capacity by -1">-</button>
+                    <button type="button" data-action="combat:modify-martial-readied-quota" data-delta="-1" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="Decrease Capacity by -1">-</button>
                     <span class="w-8 text-center font-mono font-bold text-xs text-rose-300">${maxReadied}</span>
-                    <button type="button" onclick="modifyMartialReadiedQuota(1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="DM Bonus: Increase Capacity by +1">+</button>
+                    <button type="button" data-action="combat:modify-martial-readied-quota" data-delta="1" class="w-6 h-6 rounded bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="DM Bonus: Increase Capacity by +1">+</button>
                   </div>
                 </div>
               </div>
@@ -551,9 +551,9 @@
                   </span>
                 </div>
                 <div class="flex items-center gap-0.5">
-                  <button type="button" onclick="modifyMartialKnownQuota('maneuver', -1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="Decrease Quota by -1">-</button>
+                  <button type="button" data-action="combat:modify-martial-known-quota" data-type="maneuver" data-delta="-1" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="Decrease Quota by -1">-</button>
                   <span class="w-8 text-center font-mono font-bold text-xs text-slate-200">${initInfo.maxKnownManeuvers}</span>
-                  <button type="button" onclick="modifyMartialKnownQuota('maneuver', 1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="DM Bonus: Increase Quota by +1">+</button>
+                  <button type="button" data-action="combat:modify-martial-known-quota" data-type="maneuver" data-delta="1" class="w-6 h-6 rounded bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="DM Bonus: Increase Quota by +1">+</button>
                 </div>
               </div>
 
@@ -566,9 +566,9 @@
                   </span>
                 </div>
                 <div class="flex items-center gap-0.5">
-                  <button type="button" onclick="modifyMartialKnownQuota('stance', -1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="Decrease Quota by -1">-</button>
+                  <button type="button" data-action="combat:modify-martial-known-quota" data-type="stance" data-delta="-1" class="w-6 h-6 rounded bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="Decrease Quota by -1">-</button>
                   <span class="w-8 text-center font-mono font-bold text-xs text-teal-300">${initInfo.maxKnownStances}</span>
-                  <button type="button" onclick="modifyMartialKnownQuota('stance', 1)" class="w-6 h-6 rounded bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="DM Bonus: Increase Quota by +1">+</button>
+                  <button type="button" data-action="combat:modify-martial-known-quota" data-type="stance" data-delta="1" class="w-6 h-6 rounded bg-slate-800 hover:bg-emerald-950 text-slate-300 hover:text-emerald-300 font-bold flex items-center justify-center border border-slate-700 text-xs cursor-pointer" title="DM Bonus: Increase Quota by +1">+</button>
                 </div>
               </div>
             </div>
@@ -580,7 +580,7 @@
                   <span>⚡</span>
                   <span>Readied Maneuver Deck (${readiedCount} / ${maxReadied})</span>
                 </span>
-                <button type="button" onclick="recoverAllManeuvers(); renderSpellSlotsModalRows();" class="text-[9px] px-2 py-0.5 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 font-bold transition cursor-pointer flex items-center gap-1" title="Recover all expended maneuvers">
+                <button type="button" data-action="combat:recover-all-maneuvers-modal" class="text-[9px] px-2 py-0.5 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 font-bold transition cursor-pointer flex items-center gap-1" title="Recover all expended maneuvers">
                   <span>🔄</span>
                   <span>Recover All</span>
                 </button>
@@ -611,11 +611,11 @@
                             <span class="text-[9px] font-mono text-rose-400 font-bold px-1.5 py-0.5 rounded bg-rose-950 border border-rose-800">Expended</span>
                           ` : ''}
                           ${isReadied ? `
-                            <button type="button" onclick="toggleManeuverReadiedInModal('${escape(m.name)}')" class="px-2 py-1 rounded-lg bg-emerald-950 hover:bg-rose-950 text-emerald-300 hover:text-rose-300 border border-emerald-700 hover:border-rose-700 text-[10px] font-bold cursor-pointer transition">
+                            <button type="button" data-action="combat:toggle-maneuver-readied-modal" data-name="${escape(m.name)}" class="px-2 py-1 rounded-lg bg-emerald-950 hover:bg-rose-950 text-emerald-300 hover:text-rose-300 border border-emerald-700 hover:border-rose-700 text-[10px] font-bold cursor-pointer transition">
                               ✓ Readied
                             </button>
                           ` : `
-                            <button type="button" onclick="toggleManeuverReadiedInModal('${escape(m.name)}')" ${readiedCount >= maxReadied ? 'disabled' : ''} class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-rose-900 disabled:opacity-40 text-slate-300 hover:text-white border border-slate-700 hover:border-rose-600 text-[10px] font-bold cursor-pointer transition">
+                            <button type="button" data-action="combat:toggle-maneuver-readied-modal" data-name="${escape(m.name)}" ${readiedCount >= maxReadied ? 'disabled' : ''} class="px-2 py-1 rounded-lg bg-slate-800 hover:bg-rose-900 disabled:opacity-40 text-slate-300 hover:text-white border border-slate-700 hover:border-rose-600 text-[10px] font-bold cursor-pointer transition">
                               + Ready
                             </button>
                           `}
@@ -661,9 +661,9 @@
             secondRowHtml = `
               <div class="flex items-center gap-1.5 shrink-0">
                 <span class="text-[10px] text-purple-300 font-mono w-12 text-right shrink-0">Known:</span>
-                <button type="button" onclick="modifySpellsKnownQuota(${lvl}, -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Decrease Spells Known Quota by -1">-1</button>
+                <button type="button" data-action="combat:modify-spells-known-quota" data-level="${lvl}" data-delta="-1" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Decrease Spells Known Quota by -1">-1</button>
                 <span class="text-xs font-mono font-black text-purple-300 w-14 text-center">${curKnown} / ${quota}</span>
-                <button type="button" onclick="modifySpellsKnownQuota(${lvl}, 1)" class="w-7 h-7 rounded-lg bg-purple-950 hover:bg-purple-800 text-purple-200 font-bold flex items-center justify-center border border-purple-700 cursor-pointer text-xs transition" title="DM Bonus: Increase Spells Known Quota by +1">+1</button>
+                <button type="button" data-action="combat:modify-spells-known-quota" data-level="${lvl}" data-delta="1" class="w-7 h-7 rounded-lg bg-purple-950 hover:bg-purple-800 text-purple-200 font-bold flex items-center justify-center border border-purple-700 cursor-pointer text-xs transition" title="DM Bonus: Increase Spells Known Quota by +1">+1</button>
                 ${placeholderSpacer}
               </div>
             `;
@@ -672,9 +672,9 @@
             secondRowHtml = `
               <div class="flex items-center gap-1.5 shrink-0">
                 <span class="text-[10px] text-sky-300 font-mono w-12 text-right shrink-0">Prep:</span>
-                <button type="button" onclick="unprepareSpellForLevel(${lvl})" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Unprepare Last Spell">-1</button>
+                <button type="button" data-action="combat:unprepare-spell-level" data-level="${lvl}" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Unprepare Last Spell">-1</button>
                 <span class="text-xs font-mono font-black text-sky-300 w-14 text-center">${curPrep} / ${daily}</span>
-                <button type="button" onclick="openPreparedSpellPickerForLevel(${lvl})" class="w-7 h-7 rounded-lg bg-sky-950 hover:bg-sky-800 text-sky-200 font-bold flex items-center justify-center border border-sky-700 cursor-pointer text-xs transition" title="Prepare Spell">+1</button>
+                <button type="button" data-action="combat:open-prepared-picker-level" data-level="${lvl}" class="w-7 h-7 rounded-lg bg-sky-950 hover:bg-sky-800 text-sky-200 font-bold flex items-center justify-center border border-sky-700 cursor-pointer text-xs transition" title="Prepare Spell">+1</button>
                 ${placeholderSpacer}
               </div>
             `;
@@ -683,9 +683,9 @@
             secondRowHtml = `
               <div class="flex items-center gap-1.5 shrink-0">
                 <span class="text-[10px] text-amber-300 font-mono w-12 text-right shrink-0">Prayer:</span>
-                <button type="button" onclick="unprepareDivineSpellForLevel(${lvl})" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Unprepare Last Divine Spell">-1</button>
+                <button type="button" data-action="combat:unprepare-divine-level" data-level="${lvl}" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Unprepare Last Divine Spell">-1</button>
                 <span class="text-xs font-mono font-black text-amber-300 w-14 text-center">${curDiv} / ${daily}</span>
-                <button type="button" onclick="openDivineSpellPickerForLevel(${lvl})" class="w-7 h-7 rounded-lg bg-amber-950 hover:bg-amber-800 text-amber-200 font-bold flex items-center justify-center border border-amber-700 cursor-pointer text-xs transition" title="Prepare Divine Spell">+1</button>
+                <button type="button" data-action="combat:open-divine-picker-level" data-level="${lvl}" class="w-7 h-7 rounded-lg bg-amber-950 hover:bg-amber-800 text-amber-200 font-bold flex items-center justify-center border border-amber-700 cursor-pointer text-xs transition" title="Prepare Divine Spell">+1</button>
                 ${placeholderSpacer}
               </div>
             `;
@@ -701,11 +701,11 @@
                 <!-- 1. Slot Expenditure Row -->
                 <div class="flex items-center gap-1.5 shrink-0">
                   <span class="text-[10px] text-slate-400 font-mono w-12 text-right shrink-0">Slots:</span>
-                  <button type="button" onclick="modifySpellSlotUsed(${lvl}, 1, '${activeSource.key}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Spend 1 Slot">-1</button>
+                  <button type="button" data-action="combat:modify-spell-slot-used" data-level="${lvl}" data-delta="1" data-source-key="${activeSource.key}" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-rose-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Spend 1 Slot">-1</button>
                   <span class="text-xs font-mono font-black ${remaining > 0 ? 'text-emerald-400' : 'text-rose-400'} w-14 text-center">${remaining} / ${daily}</span>
-                  <button type="button" onclick="modifySpellSlotUsed(${lvl}, -1, '${activeSource.key}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Restore 1 Slot (+1 DM Slot if full)">+1</button>
+                  <button type="button" data-action="combat:modify-spell-slot-used" data-level="${lvl}" data-delta="-1" data-source-key="${activeSource.key}" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-300 font-bold flex items-center justify-center border border-slate-700 cursor-pointer text-xs transition" title="Restore 1 Slot (+1 DM Slot if full)">+1</button>
                   ${dmBonus > 0 ? `
-                    <button type="button" onclick="revokeSpellSlotLevel(${lvl}, '${activeSource.key}')" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 text-xs font-bold cursor-pointer transition flex items-center justify-center shrink-0" title="Remove / Lock DM Slot Level">
+                    <button type="button" data-action="combat:revoke-spell-slot-level" data-level="${lvl}" data-source-key="${activeSource.key}" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border border-slate-700 text-xs font-bold cursor-pointer transition flex items-center justify-center shrink-0" title="Remove / Lock DM Slot Level">
                       🗑️
                     </button>
                   ` : ''}
@@ -723,7 +723,7 @@
                 <span class="text-[10px] text-slate-500 font-mono mt-0.5 leading-tight">0 / 0 (Locked / None)</span>
               </div>
               <div class="flex justify-end w-full sm:w-auto shrink-0 pt-0.5 sm:pt-0">
-                <button type="button" onclick="modifySpellSlotDaily(${lvl}, 1, '${activeSource.key}')" class="px-2.5 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-700/70 text-[10px] font-bold cursor-pointer transition flex items-center gap-1" title="DM Bonus: Unlock 1 Slot for This Level">
+                <button type="button" data-action="combat:modify-spell-slot-daily" data-level="${lvl}" data-delta="1" data-source-key="${activeSource.key}" class="px-2.5 py-1 rounded-lg bg-purple-950 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-700/70 text-[10px] font-bold cursor-pointer transition flex items-center gap-1" title="DM Bonus: Unlock 1 Slot for This Level">
                   <span>+</span>
                   <span>Unlock DM Slot</span>
                 </button>
@@ -2023,10 +2023,11 @@
           }
 
           const safeName = sp.name.replace(/'/g, "\\'");
+          const attrName = String(sp.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
           const reorderControls = window.spellReorderModeActive ? `
-            <div class="flex items-center gap-1 shrink-0" onclick="event.stopPropagation()">
-              <button type="button" onclick="moveCategorySpellOrder('${activeCat}', '${safeName}', -1, event)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center justify-center text-[10px] cursor-pointer">◀</button>
-              <button type="button" onclick="moveCategorySpellOrder('${activeCat}', '${safeName}', 1, event)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center justify-center text-[10px] cursor-pointer">▶</button>
+            <div class="flex items-center gap-1 shrink-0" data-action="combat:noop-stop">
+              <button type="button" data-action="combat:move-category-spell" data-cat="${activeCat}" data-spell-name="${attrName}" data-delta="-1" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center justify-center text-[10px] cursor-pointer">◀</button>
+              <button type="button" data-action="combat:move-category-spell" data-cat="${activeCat}" data-spell-name="${attrName}" data-delta="1" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 font-bold flex items-center justify-center text-[10px] cursor-pointer">▶</button>
             </div>
           ` : '';
 
@@ -2051,17 +2052,18 @@
                 ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80'
                 : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80';
               const shortText = spontMode === 'inflict' ? `Inflict ${spontInfo.formula}` : `Cure ${spontInfo.formula}`;
-              bottomRightHtml = `<button type="button" onclick="event.stopPropagation(); castClericSpontaneousConversion('${safeName}', ${lvl})" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[8px] leading-none inline-flex items-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${sp.name}' into '${spontInfo.name}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
+              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[8px] leading-none inline-flex items-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${sp.name}' into '${spontInfo.name}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
             } else if (params.save && params.save !== 'None') {
               bottomRightHtml = `<span class="truncate shrink-0 font-mono text-[8px] text-slate-500">${params.save}</span>`;
             }
           }
 
           return `
-            <div onclick="selectCombatSpellDirect('${safeName}', '${srcKey}')"
-                 onmouseenter="showSpellHoverTooltip(event, '${safeName}', '${srcKey}')"
-                 onmouseleave="hideSpellHoverTooltip()"
-                 onmousemove="updateSpellHoverTooltipPos(event)"
+            <div data-action="combat:select-spell-direct"
+                 data-spell-name="${attrName}"
+                 data-source-key="${srcKey}"
+                 data-spell-hover-name="${attrName}"
+                 data-spell-hover-source="${srcKey}"
                  class="p-2 rounded-xl border ${activeBorder} transition flex flex-col justify-between cursor-pointer min-h-[58px] group relative select-none">
               <div class="flex items-center justify-between w-full gap-1">
                 <div class="flex items-center gap-1 min-w-0">
@@ -2577,10 +2579,9 @@
 
       // Card 1: Defensive Casting (Fixed Item 1 - Glow Card Toggle)
       const defCardHtml = `
-        <div onclick="toggleDefensiveCastingModifier()"
-             onmouseenter="showCombatModifierHoverTooltip(event, 'defensiveCast', 'spell')"
-             onmouseleave="hideCombatModifierHoverTooltip()"
-             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+        <div data-action="combat:toggle-defensive-casting"
+             data-combat-tooltip="defensiveCast"
+             data-tooltip-cat="spell"
              class="relative ${isDefensiveActive ? 'border-2 border-indigo-400 bg-indigo-950 text-white shadow-[0_0_12px_rgba(129,140,248,0.35)] ring-1 ring-indigo-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${isDefensiveActive ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Action</span>
@@ -2594,10 +2595,9 @@
 
       // Card 2: Spell Resistance Check Button (Fixed Item 2 - Aligned 64px)
       const srCardHtml = `
-        <button type="button" onclick="rollSpellResistanceCheck()"
-                onmouseenter="showCombatModifierHoverTooltip(event, 'srCheck', 'spell')"
-                onmouseleave="hideCombatModifierHoverTooltip()"
-                onmousemove="updateCombatModifierHoverTooltipPos(event)"
+        <button type="button" data-action="combat:roll-sr-check"
+                data-combat-tooltip="srCheck"
+                data-tooltip-cat="spell"
                 class="relative border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono text-purple-400 font-bold truncate max-w-[75px]">Check</span>
@@ -2635,10 +2635,9 @@
           : 'text-slate-500';
 
         channelAndDomainCards.push(`
-          <button type="button" onclick="if(typeof rollTurnUndeadCheck==='function') rollTurnUndeadCheck('undead', false)"
-                  onmouseenter="showCombatModifierHoverTooltip(event, 'turnUndead', 'spell')"
-                  onmouseleave="hideCombatModifierHoverTooltip()"
-                  onmousemove="updateCombatModifierHoverTooltipPos(event)"
+          <button type="button" data-action="combat:roll-turn-undead" data-pool-id="undead"
+                  data-combat-tooltip="turnUndead"
+                  data-tooltip-cat="spell"
                   class="relative border ${borderCls} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
             <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
               <span class="text-[8px] font-mono ${badgeCls} truncate max-w-[85px]">Channel (${turnRem}/${turnMax})</span>
@@ -2657,12 +2656,11 @@
       (turnDomainInfo.elementalTurningPools || []).forEach(ep => {
         const epUsed = Math.max(0, Number(character?.spellcasting?.domainPowerUses?.[ep.id]) || 0);
         const epRem = Math.max(0, ep.maxUses - epUsed);
-        const safePoolId = (ep.id || '').replace(/'/g, "\\'");
+        const safePoolId = String(ep.id || '').replace(/"/g, '&quot;');
         channelAndDomainCards.push(`
-          <button type="button" onclick="if(typeof rollTurnUndeadCheck==='function') rollTurnUndeadCheck('${safePoolId}', false)"
-                  onmouseenter="showCombatModifierHoverTooltip(event, 'elemTurn_${safePoolId}', 'spell')"
-                  onmouseleave="hideCombatModifierHoverTooltip()"
-                  onmousemove="updateCombatModifierHoverTooltipPos(event)"
+          <button type="button" data-action="combat:roll-turn-undead" data-pool-id="${safePoolId}"
+                  data-combat-tooltip="elemTurn_${safePoolId}"
+                  data-tooltip-cat="spell"
                   class="relative border ${epRem > 0 ? 'border-slate-800 bg-slate-900 text-slate-300 hover:border-teal-500/70' : 'border-slate-800/60 bg-slate-950/60 text-slate-500 opacity-60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
             <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
               <span class="text-[8px] font-mono ${epRem > 0 ? 'text-teal-400 font-bold' : 'text-slate-500'} truncate max-w-[85px]">${ep.domain} (${epRem}/${ep.maxUses})</span>
@@ -2682,17 +2680,16 @@
         const pwUsed = Math.max(0, Number(character?.spellcasting?.domainPowerUses?.[pw.id]) || 0);
         const pwRem = Math.max(0, pw.maxUses - pwUsed);
         const isBuffActive = pw.kind === 'buff' && (character?.buffs || []).some(b => b && b.active && b.id === pw.id);
-        const safePwId = (pw.id || '').replace(/'/g, "\\'");
+        const safePwId = String(pw.id || '').replace(/"/g, '&quot;');
         const subLabel = pw.formula ? pw.formula : (pw.durationText || '1/day');
         const activeCls = isBuffActive
           ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_12px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/30'
           : (pwRem > 0 ? 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/70' : 'border border-slate-800/60 bg-slate-950/60 text-slate-500 opacity-60');
 
         channelAndDomainCards.push(`
-          <button type="button" onclick="if(typeof activateClericDomainPower==='function') activateClericDomainPower('${safePwId}')"
-                  onmouseenter="showCombatModifierHoverTooltip(event, 'domPower_${safePwId}', 'spell')"
-                  onmouseleave="hideCombatModifierHoverTooltip()"
-                  onmousemove="updateCombatModifierHoverTooltipPos(event)"
+          <button type="button" data-action="combat:activate-domain-power" data-power-id="${safePwId}"
+                  data-combat-tooltip="domPower_${safePwId}"
+                  data-tooltip-cat="spell"
                   class="relative ${activeCls} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
             <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
               <span class="text-[8px] font-mono ${isBuffActive ? 'text-amber-300 font-bold' : (pwRem > 0 ? 'text-amber-400 font-bold' : 'text-slate-500')} truncate max-w-[85px]">${pw.domain} (${pwRem}/${pw.maxUses})</span>
@@ -2723,10 +2720,9 @@
               ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_12px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/30'
               : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/70';
             channelAndDomainCards.push(`
-              <button type="button" onclick="triggerDivineChannelingFeat('${df.key}')"
-                      onmouseenter="showCombatModifierHoverTooltip(event, 'divineFeat_${df.key}', 'spell')"
-                      onmouseleave="hideCombatModifierHoverTooltip()"
-                      onmousemove="updateCombatModifierHoverTooltipPos(event)"
+              <button type="button" data-action="combat:trigger-divine-feat" data-feat-key="${df.key}"
+                      data-combat-tooltip="divineFeat_${df.key}"
+                      data-tooltip-cat="spell"
                       class="relative ${activeCls} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
                 <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
                   <span class="text-[8px] font-mono ${isActive ? 'text-amber-300 font-bold' : 'text-amber-400 font-bold'} truncate max-w-[85px]">${isActive ? 'Active (1 Rd)' : 'Divine (-1 Turn)'}</span>
@@ -2771,13 +2767,12 @@
 
         const icon = mod.isRod ? '🪄' : (mod.isMetamagic ? '✨' : (mod.sourceType === 'Feat' ? '⚡' : '🔮'));
         const badgeLabel = mod.badge || (mod.isRod ? 'Rod' : (mod.isMetamagic ? 'Metamagic' : (mod.sourceType || 'Spell')));
-        const safeId = (mod.id || '').replace(/'/g, "\\'");
+        const safeId = String(mod.id || '').replace(/"/g, '&quot;');
 
         return `
-          <div onclick="toggleSpellCockpitModifier('${mod.id}', event)"
-               onmouseenter="showCombatModifierHoverTooltip(event, '${safeId}', 'spell')"
-               onmouseleave="hideCombatModifierHoverTooltip()"
-               onmousemove="updateCombatModifierHoverTooltipPos(event)"
+          <div data-action="combat:toggle-spell-cockpit-mod" data-mod-id="${safeId}"
+               data-combat-tooltip="${safeId}"
+               data-tooltip-cat="spell"
                class="relative ${isActive ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
             <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
               <span class="text-[8px] font-mono ${isActive ? `${badgeColor} font-bold` : 'text-slate-500'} truncate max-w-[75px]">${badgeLabel}</span>
@@ -3346,9 +3341,9 @@
 
           const isCurrentActive = character.activeWeapon === w.name;
 
-          const escapedName = (w.name || '').replace(/'/g, "\\'");
+          const escapedName = String(w.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
           return `
-            <div onclick="confirmSpellCastOnWeapon('${escapedName}')" class="p-3 rounded-xl border border-slate-700 bg-slate-900/90 hover:border-purple-500 hover:bg-purple-950/40 transition cursor-pointer flex items-center justify-between group">
+            <div data-action="combat:confirm-spell-on-weapon" data-weapon-name="${escapedName}" class="p-3 rounded-xl border border-slate-700 bg-slate-900/90 hover:border-purple-500 hover:bg-purple-950/40 transition cursor-pointer flex items-center justify-between group">
               <div class="space-y-0.5">
                 <div class="flex items-center gap-2">
                   <span class="font-bold text-white text-xs group-hover:text-purple-300 transition">${safeEscapeHtml(w.name)}</span>
@@ -6127,7 +6122,7 @@
             <div class="text-2xl mb-2">🎒</div>
             <div class="text-sm font-semibold text-slate-200 mb-1">No matching weapon or shield found in your Inventory.</div>
             <div class="text-xs text-slate-400 mb-4">Only weapons and shields currently carried in your inventory can be equipped to combat slots.</div>
-            <button type="button" onclick="toggleSrdSpotlight(false); if(typeof switchMainTab==='function') switchMainTab('inventory'); if(typeof openCompendiumDrawer==='function') openCompendiumDrawer('weapon');" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs rounded-lg shadow-lg transition active:scale-95 cursor-pointer inline-flex items-center gap-1.5">
+            <button type="button" data-action="combat:open-inventory-weapon-compendium" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs rounded-lg shadow-lg transition active:scale-95 cursor-pointer inline-flex items-center gap-1.5">
               <span>🎒</span>
               <span>Open Inventory Compendium to Add Weapons</span>
             </button>
@@ -6184,7 +6179,7 @@
             </div>
             <div class="shrink-0 flex items-center gap-1.5">
               ${inWeapons ? `<span class="text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/40">In Combat</span>` : ''}
-              <button type="button" onclick="selectSrdSpotlightWeapon('${escapedId}')" class="px-2.5 py-1 ${inWeapons ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-emerald-600 hover:bg-emerald-500 text-white'} active:scale-95 font-extrabold text-[11px] rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
+              <button type="button" data-action="combat:select-spotlight-weapon" data-weapon-id="${String(item.id || idx).replace(/"/g, '&quot;')}" class="px-2.5 py-1 ${inWeapons ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-emerald-600 hover:bg-emerald-500 text-white'} active:scale-95 font-extrabold text-[11px] rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
                 <span>${inWeapons ? '🔄' : '➕'}</span>
                 <span>${inWeapons ? 'Equip / Re-sync' : 'Equip to Combat'}</span>
               </button>
@@ -11218,13 +11213,13 @@
                   </div>
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
-                  <button type="button" onclick="castDailyRoundItem('${encodeURIComponent(item.name)}', '${slotKey || ''}')"
+                  <button type="button" data-action="combat:cast-daily-round-item" data-encoded-name="${encodeURIComponent(item.name)}" data-slot-key="${slotKey || ''}"
                           class="py-1 px-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer"
                           title="Spend 1 Round & Activate" ${dc.current <= 0 ? 'disabled' : ''}>
                     <span>✨</span>
                     <span>Cast (+1)</span>
                   </button>
-                  <button type="button" onclick="dischargeDailyRoundItem('${encodeURIComponent(item.name)}', '${slotKey || ''}')"
+                  <button type="button" data-action="combat:discharge-daily-round-item" data-encoded-name="${encodeURIComponent(item.name)}" data-slot-key="${slotKey || ''}"
                           class="py-1 px-2.5 bg-gradient-to-r from-rose-800 to-red-700 hover:from-rose-700 hover:to-red-600 text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer ${!active ? 'opacity-40 cursor-not-allowed' : ''}"
                           title="End Effect" ${!active ? 'disabled' : ''}>
                     <span>🛑</span>
@@ -11256,11 +11251,11 @@
               <div class="flex items-center gap-1 shrink-0">
                 ${isSlot ? `
                   <div class="inline-flex items-center rounded border border-slate-700 bg-slate-800 text-[10px] font-mono overflow-hidden">
-                    <button type="button" onclick="event.stopPropagation(); spendSlotCharge('${slotKey}', 1)" title="Spend 1 Charge" class="px-1.5 py-0.5 text-slate-300 hover:text-white hover:bg-slate-700 transition cursor-pointer" ${dc.current <= 0 ? 'disabled' : ''}>-</button>
-                    <button type="button" onclick="event.stopPropagation(); restoreSlotCharge('${slotKey}', 1)" title="Restore 1 Charge" class="px-1.5 py-0.5 text-slate-300 hover:text-white hover:bg-slate-700 transition cursor-pointer" ${dc.current >= dc.max ? 'disabled' : ''}>+</button>
+                    <button type="button" data-action="combat:spend-slot-charge" data-slot-key="${slotKey}" data-amount="1" title="Spend 1 Charge" class="px-1.5 py-0.5 text-slate-300 hover:text-white hover:bg-slate-700 transition cursor-pointer" ${dc.current <= 0 ? 'disabled' : ''}>-</button>
+                    <button type="button" data-action="combat:restore-slot-charge" data-slot-key="${slotKey}" data-amount="1" title="Restore 1 Charge" class="px-1.5 py-0.5 text-slate-300 hover:text-white hover:bg-slate-700 transition cursor-pointer" ${dc.current >= dc.max ? 'disabled' : ''}>+</button>
                   </div>
                 ` : ''}
-                <button type="button" onclick="consumeCockpitDailyItem('${encodeURIComponent(item.name)}', '${slotKey || ''}')"
+                <button type="button" data-action="combat:consume-cockpit-daily-item" data-encoded-name="${encodeURIComponent(item.name)}" data-slot-key="${slotKey || ''}"
                         class="py-1 px-2.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer"
                         ${dc.current <= 0 ? 'disabled' : ''}>
                   <span>${icon}</span>
@@ -11298,7 +11293,7 @@
                 </div>
                 <div class="text-[10px] text-slate-400">Qty: <strong class="text-amber-400 font-mono">${item.qty || 1}</strong> • ${item.desc ? item.desc.slice(0, 32) + '...' : ''}</div>
               </div>
-              <button onclick="consumeCockpitItem('${encodeURIComponent(item.name)}')" class="shrink-0 py-1 px-2.5 bg-gradient-to-r ${btnColor} text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer" ${(item.qty || 1) <= 0 ? 'disabled' : ''}>
+              <button type="button" data-action="combat:consume-cockpit-item" data-encoded-name="${encodeURIComponent(item.name)}" class="shrink-0 py-1 px-2.5 bg-gradient-to-r ${btnColor} text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer" ${(item.qty || 1) <= 0 ? 'disabled' : ''}>
                 <span>${icon}</span>
                 <span>${actionLabel}</span>
               </button>
@@ -11425,7 +11420,7 @@
         return `
           <div class="flex items-center justify-between bg-slate-900/60 border border-slate-800 rounded px-2 py-1 text-xs">
             <span class="font-bold text-purple-300 text-[11px]">${s.name}: <strong class="font-mono text-white">${remaining}/${s.daily}</strong></span>
-            <button onclick="spendMiniSpellSlot(${idx})" class="text-[10px] font-bold text-purple-300 hover:text-white bg-purple-950/60 hover:bg-purple-900 border border-purple-800/80 px-2 py-0.5 rounded transition" ${remaining <= 0 ? 'disabled' : ''}>
+            <button type="button" data-action="combat:spend-mini-spell-slot" data-slot-idx="${idx}" class="text-[10px] font-bold text-purple-300 hover:text-white bg-purple-950/60 hover:bg-purple-900 border border-purple-800/80 px-2 py-0.5 rounded transition" ${remaining <= 0 ? 'disabled' : ''}>
               ✨ Expend (-1)
             </button>
           </div>
@@ -11495,7 +11490,7 @@
                 <span>No Active Companion or Mount</span>
               </div>
               <p class="text-[11px] text-slate-500">Bind or summon an Animal Companion, Familiar, or Special Mount to manage attacks &amp; health in combat.</p>
-              <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-7 px-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
+              <button type="button" data-action="combat:open-companion-modal" class="ui-btn-sm h-7 px-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
                 <span>➕</span>
                 <span>Select / Summon Companion</span>
               </button>
@@ -11551,7 +11546,7 @@
             </div>
           </div>
           <div class="flex items-center gap-1 shrink-0">
-            <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-slate-300 hover:text-amber-300 bg-slate-900 hover:bg-slate-800 rounded border border-slate-700 transition flex items-center gap-1 cursor-pointer" title="Manage Companion Configuration">
+            <button type="button" data-action="combat:open-companion-modal" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-slate-300 hover:text-amber-300 bg-slate-900 hover:bg-slate-800 rounded border border-slate-700 transition flex items-center gap-1 cursor-pointer" title="Manage Companion Configuration">
               <span>⚙️</span>
               <span>Manage</span>
             </button>
@@ -11571,10 +11566,10 @@
             </div>
             <!-- Quick HP Adjusters -->
             <div class="inline-flex items-center gap-1">
-              <button type="button" onclick="adjustCompanionHp(-5)" class="h-5 px-1.5 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Damage -5">-5</button>
-              <button type="button" onclick="adjustCompanionHp(-1)" class="h-5 px-1.5 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Damage -1">-1</button>
-              <button type="button" onclick="adjustCompanionHp(1)" class="h-5 px-1.5 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Heal +1">+1</button>
-              <button type="button" onclick="adjustCompanionHp(5)" class="h-5 px-1.5 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Heal +5">+5</button>
+              <button type="button" data-action="combat:adjust-companion-hp" data-delta="-5" class="h-5 px-1.5 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Damage -5">-5</button>
+              <button type="button" data-action="combat:adjust-companion-hp" data-delta="-1" class="h-5 px-1.5 rounded bg-rose-950/80 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Damage -1">-1</button>
+              <button type="button" data-action="combat:adjust-companion-hp" data-delta="1" class="h-5 px-1.5 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Heal +1">+1</button>
+              <button type="button" data-action="combat:adjust-companion-hp" data-delta="5" class="h-5 px-1.5 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700/60 text-emerald-300 font-mono font-bold text-[10px] transition cursor-pointer" title="Heal +5">+5</button>
             </div>
           </div>
           <!-- Progress Bar -->
@@ -11612,7 +11607,7 @@
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             ${stats.attacks.map((atk, idx) => `
-              <button type="button" onclick="rollCompanionAttack(${idx})" class="w-full p-2 bg-gradient-to-r from-amber-950/60 to-slate-900 hover:from-amber-900/80 hover:to-slate-800 border border-amber-600/50 hover:border-amber-400 text-left rounded-lg transition active:scale-[0.98] shadow-sm cursor-pointer flex items-center justify-between gap-2">
+              <button type="button" data-action="combat:roll-companion-attack" data-atk-idx="${idx}" class="w-full p-2 bg-gradient-to-r from-amber-950/60 to-slate-900 hover:from-amber-900/80 hover:to-slate-800 border border-amber-600/50 hover:border-amber-400 text-left rounded-lg transition active:scale-[0.98] shadow-sm cursor-pointer flex items-center justify-between gap-2">
                 <div class="min-w-0">
                   <div class="text-xs font-black text-white flex items-center gap-1">
                     <span>⚔️</span>
@@ -11633,13 +11628,13 @@
         <!-- Tactical Actions & Special Abilities -->
         <div class="flex items-center gap-1.5 flex-wrap pt-0.5">
           ${stats.monsterFeats.some(f => /trip/i.test(f)) ? `
-            <button type="button" onclick="rollCompanionTactical('trip')" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-sky-200 bg-sky-950/80 hover:bg-sky-900 border border-sky-600/50 rounded flex items-center gap-1 cursor-pointer transition">
+            <button type="button" data-action="combat:roll-companion-tactical" data-tactical="trip" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-sky-200 bg-sky-950/80 hover:bg-sky-900 border border-sky-600/50 rounded flex items-center gap-1 cursor-pointer transition">
               <span>💥</span>
               <span>Trip Check (+${stats.abilityMods.str})</span>
             </button>
           ` : ''}
           ${stats.type === 'familiar' ? `
-            <button type="button" onclick="rollCompanionTactical('touch_spell')" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-purple-200 bg-purple-950/80 hover:bg-purple-900 border border-purple-600/50 rounded flex items-center gap-1 cursor-pointer transition">
+            <button type="button" data-action="combat:roll-companion-tactical" data-tactical="touch_spell" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-purple-200 bg-purple-950/80 hover:bg-purple-900 border border-purple-600/50 rounded flex items-center gap-1 cursor-pointer transition">
               <span>⚡</span>
               <span>Deliver Touch Spell</span>
             </button>
@@ -11937,12 +11932,12 @@
       const icon = isRanged ? '🏹' : '⚔️';
       container.innerHTML = profiles.map(prof => `
         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 hover:border-amber-500/80 text-xs text-amber-300 transition group shadow-sm select-none">
-          <button type="button" onclick="applySavedProfile('${prof.id}')" class="font-bold flex items-center gap-1 cursor-pointer text-left" title="Apply Profile: ${prof.name}">
+          <button type="button" data-action="combat:apply-saved-profile" data-profile-id="${prof.id}" class="font-bold flex items-center gap-1 cursor-pointer text-left" title="Apply Profile: ${prof.name}">
             <span>${icon}</span>
             <span class="hover:underline">${prof.name}</span>
             <span class="text-[10px] text-slate-400 font-mono">(${prof.summary || 'Mod'})</span>
           </button>
-          <button type="button" onclick="deleteSavedProfile('${prof.id}', event)" class="w-4 h-4 rounded-full bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white flex items-center justify-center text-[11px] font-bold transition ml-0.5 cursor-pointer" title="Delete Profile">×</button>
+          <button type="button" data-action="combat:delete-saved-profile" data-profile-id="${prof.id}" class="w-4 h-4 rounded-full bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white flex items-center justify-center text-[11px] font-bold transition ml-0.5 cursor-pointer" title="Delete Profile">×</button>
         </div>
       `).join('');
     }
@@ -12762,6 +12757,7 @@
     }
 
     // --- PIN DETAILS MODAL ---
+    let _currentPinModalUnpinAction = null;
     function openPinDetailsModalById(category, idx) {
       const pins = getPinsForDrawer(category);
       const pin = pins[idx] || character.combatPins?.[category]?.[idx];
@@ -12786,22 +12782,23 @@
 
       const unpinBtn = document.getElementById('pin-modal-unpin-btn');
       if (unpinBtn) {
+        unpinBtn.dataset.action = 'combat:unpin-modal-confirm';
         if (pin.autoType === 'readied_maneuver') {
           unpinBtn.textContent = 'Unready Maneuver';
-          unpinBtn.onclick = () => {
+          _currentPinModalUnpinAction = () => {
             toggleManeuverReadied(escape(pin.name));
             closePinDetailsModal();
           };
         } else if (pin.autoType === 'belt_item') {
           unpinBtn.textContent = 'Remove from Belt';
-          unpinBtn.onclick = () => {
+          _currentPinModalUnpinAction = () => {
             const bItem = (character.gearPool || []).find(g => (g.name || '').toLowerCase() === (pin.name || '').toLowerCase() && g.isBelt);
             if (bItem) togglePoolBelt(bItem.id);
             closePinDetailsModal();
           };
         } else if (pin.autoType === 'known_stance') {
           unpinBtn.textContent = 'Stance (Known)';
-          unpinBtn.onclick = () => {
+          _currentPinModalUnpinAction = () => {
             closePinDetailsModal();
             showDiceTopToast({
               icon: '🥋',
@@ -12812,7 +12809,7 @@
           };
         } else if (pin.autoType === 'equipped_item') {
           unpinBtn.textContent = 'Item (Equipped)';
-          unpinBtn.onclick = () => {
+          _currentPinModalUnpinAction = () => {
             closePinDetailsModal();
             showDiceTopToast({
               icon: '✨',
@@ -12823,7 +12820,7 @@
           };
         } else {
           unpinBtn.textContent = 'Unpin';
-          unpinBtn.onclick = () => {
+          _currentPinModalUnpinAction = () => {
             removeCombatPinByName(pin.name);
             saveStateToStorage(true);
             closePinDetailsModal();
@@ -13008,9 +13005,14 @@
       }
 
       const extraClass = options.extraClass || 'w-6 h-6';
+      const attrPinName = String(itemName || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+      const attrPinType = String(item.type || item.sourceType || 'Item').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+      const attrPinAction = String(item.action || 'Standard').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+      const attrPinDesc = String(item.desc || item.benefit || item.notes || '').replace(/\r?\n/g, ' ').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+      const attrPinBadge = String(item.badge || item.damageDice || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 
       return `
-        <button type="button" onclick="event.stopPropagation(); toggleUniversalPin({ name: '${safeName}', type: '${safeType}', action: '${safeAction}', desc: '${safeDesc}', badge: '${safeBadge}' })" class="${extraClass} inline-flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${colorClasses}" title="${tooltip}">
+        <button type="button" data-action="combat:toggle-universal-pin" data-pin-name="${attrPinName}" data-pin-type="${attrPinType}" data-pin-action="${attrPinAction}" data-pin-desc="${attrPinDesc}" data-pin-badge="${attrPinBadge}" class="${extraClass} inline-flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${colorClasses}" title="${tooltip}">
           ${iconSvg}
         </button>
       `;
@@ -13268,7 +13270,7 @@
             btn.type = 'button';
             btn.className = (act.className || 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-800 hover:bg-emerald-700 text-white border border-emerald-500 transition shadow cursor-pointer') + ' touch-manipulation active:scale-95';
             btn.innerHTML = act.label || 'Apply';
-            btn.onclick = (ev) => {
+            btn.addEventListener('click', (ev) => {
               ev.stopPropagation();
               if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
               if (typeof cleanupOutsideClick === 'function') {
@@ -13280,14 +13282,15 @@
               setTimeout(() => {
                 if (toast.parentNode) toast.remove();
               }, 200);
-              if (typeof act.onClick === 'function') {
+              const fn = act && act['onClick'];
+              if (typeof fn === 'function') {
                 try {
-                  act.onClick();
+                  fn();
                 } catch (err) {
                   console.error('Error executing toast action:', err);
                 }
               }
-            };
+            });
             actionsBar.appendChild(btn);
           });
         }
@@ -13295,14 +13298,14 @@
 
       // Click to dismiss immediately (only for informational toasts without action buttons)
       if (!hasActions) {
-        toast.onclick = () => {
+        toast.addEventListener('click', () => {
           if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
           toast.classList.remove('translate-y-0', 'opacity-100');
           toast.classList.add('-translate-y-6', 'opacity-0');
           setTimeout(() => {
             if (toast.parentNode) toast.remove();
           }, 300);
-        };
+        });
       }
 
       if (replaceTarget) {
@@ -13524,7 +13527,7 @@
                 </div>
               </div>
               ${item.formula ? `
-                <button onclick="applyFormulaTemplate('${safeFormula}'); rollCustomFormula();"
+                <button type="button" data-action="combat:reroll-formula" data-formula="${escapeFormulaHtml(item.formula)}"
                         title="Reroll this formula"
                         class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 text-xs transition active:scale-95 cursor-pointer">
                   🔄
@@ -13870,7 +13873,7 @@
         container.innerHTML = `
           <div class="text-xs text-slate-500 py-1 flex items-center gap-2">
             <span>No saved templates.</span>
-            <button type="button" onclick="resetFormulaTemplates()" class="text-indigo-400 hover:text-indigo-200 underline cursor-pointer text-xs font-medium">Restore Defaults</button>
+            <button type="button" data-action="combat:reset-formula-templates" class="text-indigo-400 hover:text-indigo-200 underline cursor-pointer text-xs font-medium">Restore Defaults</button>
           </div>
         `;
         return;
@@ -13885,10 +13888,10 @@
 
         return `
           <div class="inline-flex items-center rounded bg-slate-900 border ${badgeColor} text-xs font-mono transition group shadow-sm">
-            <button type="button" onclick="applyFormulaTemplate('${escapeFormulaHtml(t.formula)}')" class="px-2 py-1 text-left truncate hover:underline cursor-pointer" title="${escapeFormulaHtml(t.formula)}">
+            <button type="button" data-action="combat:apply-formula-template" data-formula="${escapeFormulaHtml(t.formula)}" class="px-2 py-1 text-left truncate hover:underline cursor-pointer" title="${escapeFormulaHtml(t.formula)}">
               ${escapeFormulaHtml(t.name || t.formula)}
             </button>
-            <button type="button" onclick="deleteFormulaTemplate(${idx})" class="pr-1.5 pl-0.5 text-slate-500 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition cursor-pointer text-xs font-bold" title="Delete Template">
+            <button type="button" data-action="combat:delete-formula-template" data-tpl-idx="${idx}" class="pr-1.5 pl-0.5 text-slate-500 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition cursor-pointer text-xs font-bold" title="Delete Template">
               &times;
             </button>
           </div>
@@ -14844,7 +14847,7 @@
             autocomplete: `boon: ${b.name}`
           });
           return `
-            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-cyan-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
+            <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-cyan-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-white text-xs">${_escTermHtml(b.name)}</span>
@@ -14956,7 +14959,7 @@
           ).join('');
 
           return `
-            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-3 ${idx === _spotlightTerminalActiveIndex ? 'bg-slate-900 border-cyan-400 shadow-lg' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
+            <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-3 ${idx === _spotlightTerminalActiveIndex ? 'bg-slate-900 border-cyan-400 shadow-lg' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
               <div class="min-w-0 flex-1 space-y-1">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-white text-xs">${_escTermHtml(f.name)}</span>
@@ -14968,7 +14971,7 @@
                 <p class="text-[11px] text-slate-400 truncate">${_escTermHtml(f.benefit || '')}</p>
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                ${!slotDiag.isGeneralLevel ? `<button type="button" onclick="event.stopPropagation(); executeSpotlightTerminalFeatAtLevel(${idx}, ${slotDiag.nextGeneralLvl}, 'Regular Feat')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-700/60 font-mono text-[10px] font-bold cursor-pointer" title="Add to next legal 3.5e General Feat slot (Level ${slotDiag.nextGeneralLvl})">Lvl ${slotDiag.nextGeneralLvl}</button>` : ''}
+                ${!slotDiag.isGeneralLevel ? `<button type="button" data-action="combat:exec-spotlight-feat-at-level" data-item-idx="${idx}" data-level="${slotDiag.nextGeneralLvl}" data-slot-mode="Regular Feat" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-700/60 font-mono text-[10px] font-bold cursor-pointer" title="Add to next legal 3.5e General Feat slot (Level ${slotDiag.nextGeneralLvl})">Lvl ${slotDiag.nextGeneralLvl}</button>` : ''}
                 <span class="px-2 py-1 rounded bg-cyan-950 text-cyan-300 border border-cyan-700/60 font-mono text-[10px] font-bold">Enter ↵</span>
               </div>
             </div>
@@ -15001,7 +15004,7 @@
             autocomplete: `boon: ${b.name}`
           });
           return `
-            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-amber-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
+            <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-amber-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
               <div class="min-w-0 flex-1">
                 <div class="text-xs font-bold text-white">${_escTermHtml(b.name)} <span class="text-[10px] font-mono text-amber-300">(${_escTermHtml(b.type || 'DM Boon')})</span></div>
                 <div class="text-[11px] text-slate-400 truncate">${_escTermHtml(b.benefit || b.description || '')}</div>
@@ -15044,7 +15047,7 @@
                     </div>
                     <p class="text-[11px] text-slate-300 mt-0.5">${_escTermHtml(parsedBoon.benefit)}</p>
                   </div>
-                  <button type="button" onclick="executeSpotlightTerminalItem(${synthIdx})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs shadow cursor-pointer shrink-0">➕ Bind &amp; Add (Enter ↵)</button>
+                  <button type="button" data-action="combat:exec-spotlight-item" data-item-idx="${synthIdx}" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs shadow cursor-pointer shrink-0">➕ Bind &amp; Add (Enter ↵)</button>
                 </div>
                 <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5">
                   <div class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">🗺️ Automatic Page Object Interaction Map</div>
@@ -15080,7 +15083,7 @@
             autocomplete: `boon: ${b.name}`
           });
           return `
-            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-emerald-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
+            <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-emerald-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-white text-xs">${_escTermHtml(b.name)}</span>
@@ -15105,7 +15108,7 @@
           autocomplete: 'nr'
         });
         resultsEl.innerHTML = `
-          <div onclick="executeSpotlightTerminalItem(0)" class="p-3 rounded-xl bg-slate-900 border border-teal-500/80 flex items-center justify-between cursor-pointer">
+          <div data-action="combat:exec-spotlight-item" data-item-idx="0" class="p-3 rounded-xl bg-slate-900 border border-teal-500/80 flex items-center justify-between cursor-pointer">
             <div>
               <div class="text-xs font-bold text-white">⏱️ Advance Combat Round &amp; Tick Cooldowns</div>
               <div class="text-[11px] text-slate-400">Resets Standard/Move/Swift actions (respecting Immediate Action swift-lock) and decrements active breath/ability recharge timers.</div>
@@ -15127,7 +15130,7 @@
           autocomplete: q
         });
         resultsEl.innerHTML = `
-          <div onclick="executeSpotlightTerminalItem(0)" class="p-3 rounded-xl bg-slate-900 border border-sky-500/80 flex items-center justify-between cursor-pointer">
+          <div data-action="combat:exec-spotlight-item" data-item-idx="0" class="p-3 rounded-xl bg-slate-900 border border-sky-500/80 flex items-center justify-between cursor-pointer">
             <div>
               <div class="text-xs font-bold text-white">${rawDelta < 0 ? `🩸 Apply ${Math.abs(rawDelta)} ${_escTermHtml(dmgType || 'Physical')} Damage (with V2.5 Defense/Absorption Evaluation)` : `💚 Heal +${rawDelta} HP`}</div>
               <div class="text-[11px] text-slate-400">Evaluates active Energy Resistance, Immunity, Vulnerability, DR, and Elemental Absorption before modifying HP.</div>
@@ -15159,7 +15162,7 @@
             autocomplete: `use: ${a.name}`
           });
           return `
-            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-rose-500/80' : 'bg-slate-900/50 border-slate-800'}">
+            <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-rose-500/80' : 'bg-slate-900/50 border-slate-800'}">
               <div>
                 <div class="text-xs font-bold text-white">${_escTermHtml(a.name)} <span class="text-[10px] font-mono text-amber-300">(${_escTermHtml(a.action || 'Standard')})</span></div>
                 <div class="text-[11px] text-slate-400">${a.dice ? `Damage: ${_escTermHtml(a.dice)} ${_escTermHtml(a.dmgType || '')}` : ''} ${a.dc ? `• DC ${_escTermHtml(a.dc)} ${_escTermHtml(a.save || '')}` : ''}</div>
@@ -15198,7 +15201,7 @@
         resultsEl.innerHTML = hits.slice(0, 8).map((it, idx) => {
           _spotlightTerminalItems.push({ type: 'EQUIP_ITEM', entry: it, autocomplete: `item: ${it.name}` });
           return `
-            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-indigo-500/80' : 'bg-slate-900/50 border-slate-800'}">
+            <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-indigo-500/80' : 'bg-slate-900/50 border-slate-800'}">
               <div class="min-w-0 flex-1">
                 <div class="text-xs font-bold text-white">${_escTermHtml(it.name)} <span class="text-[10px] font-mono text-indigo-300">(${_escTermHtml(it.slot || it.type || 'Item')})</span></div>
                 <div class="text-[11px] text-slate-400 truncate">${_escTermHtml(it.benefit || it.description || '')}</div>
@@ -15235,7 +15238,7 @@
         resultsEl.innerHTML = hits.slice(0, 8).map((sp, idx) => {
           _spotlightTerminalItems.push({ type: 'ADD_SPELL', entry: sp, level: parsedCmd.level, autocomplete: `spell: ${sp.name}` });
           return `
-            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-violet-500/80' : 'bg-slate-900/50 border-slate-800'}">
+            <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-violet-500/80' : 'bg-slate-900/50 border-slate-800'}">
               <div class="min-w-0 flex-1">
                 <div class="text-xs font-bold text-white">🔮 ${_escTermHtml(sp.name)} <span class="text-[10px] font-mono text-violet-300">(${_escTermHtml(sp.school || 'Spell')} • Lvl ${_escTermHtml(sp.level ?? parsedCmd.level ?? 1)})</span></div>
                 <div class="text-[11px] text-slate-400 truncate">${_escTermHtml(sp.benefit || sp.description || '')}</div>
@@ -15315,7 +15318,7 @@
           const idx = _spotlightTerminalItems.length;
           _spotlightTerminalItems.push({ type: 'TOGGLE_BUFF', buffId: b.id, buffName: b.name, autocomplete: `buff: ${b.name}` });
           combinedRows.push(`
-            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-pink-500/80' : 'bg-slate-900/50 border-slate-800'}">
+            <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-pink-500/80' : 'bg-slate-900/50 border-slate-800'}">
               <div>
                 <div class="text-xs font-bold text-white">${b.active ? '🟢' : '⚪'} ${_escTermHtml(b.name)}</div>
                 <div class="text-[11px] text-slate-400">${b.active ? 'Currently Active — Press Enter to deactivate' : 'Inactive — Press Enter to activate'}</div>
@@ -15329,7 +15332,7 @@
           const idx = _spotlightTerminalItems.length;
           _spotlightTerminalItems.push({ type: 'TOGGLE_BUFF', buffName: tpl.name, buffTemplate: tpl, autocomplete: `buff: ${tpl.name}` });
           combinedRows.push(`
-            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-pink-500/80' : 'bg-slate-900/50 border-slate-800'}">
+            <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-pink-500/80' : 'bg-slate-900/50 border-slate-800'}">
               <div>
                 <div class="text-xs font-bold text-white">✨ Add &amp; Activate Buff: ${_escTermHtml(tpl.name)}</div>
                 <div class="text-[11px] text-slate-400 line-clamp-1">${_escTermHtml(tpl.summary || 'Canonical V2 Buff')}</div>
@@ -15365,7 +15368,7 @@
         const curBase = Number(character?.baseAbilities?.[abilKey] ?? character?.abilities?.[abilKey] ?? 10);
         const nextBase = isSet ? numVal : (curBase + numVal);
         resultsEl.innerHTML = `
-          <div onclick="executeSpotlightTerminalItem(0)" class="p-3 rounded-xl bg-slate-900 border border-lime-500/80 flex items-center justify-between cursor-pointer">
+          <div data-action="combat:exec-spotlight-item" data-item-idx="0" class="p-3 rounded-xl bg-slate-900 border border-lime-500/80 flex items-center justify-between cursor-pointer">
             <div>
               <div class="text-xs font-bold text-white">💪 Adjust Base ${abilKey.toUpperCase()}: ${curBase} → <span class="text-lime-300">${nextBase}</span></div>
               <div class="text-[11px] text-slate-400">Updates base ability score and recalculates all dependent D&amp;D 3.5e modifiers, saves, and AC.</div>
@@ -15755,14 +15758,307 @@
       Actions.register('combat:pin-reorder-toggle', (el, data, _event) => {
         if (data.category) togglePinReorderMode(data.category);
       });
+      Actions.register('combat:noop-stop', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      });
+      Actions.register('combat:set-spell-level-filter', (el, data, event) => {
+        const lvl = data.level === 'all' ? 'all' : Number(data.level);
+        setCombatSpellLevelFilter(lvl);
+      });
+      Actions.register('combat:switch-modal-slot-source', (el, data, event) => {
+        if (data.sourceKey) switchModalSlotSource(data.sourceKey);
+      });
+      Actions.register('combat:modify-martial-readied-quota', (el, data, event) => {
+        modifyMartialReadiedQuota(Number(data.delta) || 0);
+      });
+      Actions.register('combat:modify-martial-known-quota', (el, data, event) => {
+        if (data.type) modifyMartialKnownQuota(data.type, Number(data.delta) || 0);
+      });
+      Actions.register('combat:recover-all-maneuvers-modal', (el, data, event) => {
+        recoverAllManeuvers();
+        renderSpellSlotsModalRows();
+      });
+      Actions.register('combat:toggle-maneuver-readied-modal', (el, data, event) => {
+        if (data.name !== undefined) toggleManeuverReadiedInModal(data.name);
+      });
+      Actions.register('combat:modify-spells-known-quota', (el, data, event) => {
+        modifySpellsKnownQuota(Number(data.level) || 0, Number(data.delta) || 0);
+      });
+      Actions.register('combat:unprepare-spell-level', (el, data, event) => {
+        unprepareSpellForLevel(Number(data.level) || 0);
+      });
+      Actions.register('combat:open-prepared-picker-level', (el, data, event) => {
+        openPreparedSpellPickerForLevel(Number(data.level) || 0);
+      });
+      Actions.register('combat:unprepare-divine-level', (el, data, event) => {
+        unprepareDivineSpellForLevel(Number(data.level) || 0);
+      });
+      Actions.register('combat:open-divine-picker-level', (el, data, event) => {
+        openDivineSpellPickerForLevel(Number(data.level) || 0);
+      });
+      Actions.register('combat:modify-spell-slot-used', (el, data, event) => {
+        modifySpellSlotUsed(Number(data.level) || 0, Number(data.delta) || 0, data.sourceKey || 'spontaneous');
+      });
+      Actions.register('combat:revoke-spell-slot-level', (el, data, event) => {
+        revokeSpellSlotLevel(Number(data.level) || 0, data.sourceKey || 'spontaneous');
+      });
+      Actions.register('combat:modify-spell-slot-daily', (el, data, event) => {
+        modifySpellSlotDaily(Number(data.level) || 0, Number(data.delta) || 0, data.sourceKey || 'spontaneous');
+      });
+      Actions.register('combat:move-category-spell', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.cat && data.spellName) {
+          moveCategorySpellOrder(data.cat, data.spellName, Number(data.delta) || 0, event);
+        }
+      });
+      Actions.register('combat:cast-cleric-spontaneous', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.spellName !== undefined) {
+          castClericSpontaneousConversion(data.spellName, Number(data.level) || 0);
+        }
+      });
+      Actions.register('combat:select-spell-direct', (el, data, event) => {
+        if (data.spellName !== undefined) {
+          selectCombatSpellDirect(data.spellName, data.sourceKey || 'spontaneous');
+        }
+      });
+      Actions.register('combat:toggle-defensive-casting', (el, data, event) => {
+        toggleDefensiveCastingModifier();
+      });
+      Actions.register('combat:roll-sr-check', (el, data, event) => {
+        rollSpellResistanceCheck();
+      });
+      Actions.register('combat:roll-turn-undead', (el, data, event) => {
+        if (typeof rollTurnUndeadCheck === 'function') {
+          rollTurnUndeadCheck(data.poolId || 'undead', false);
+        }
+      });
+      Actions.register('combat:activate-domain-power', (el, data, event) => {
+        if (data.powerId && typeof activateClericDomainPower === 'function') {
+          activateClericDomainPower(data.powerId);
+        }
+      });
+      Actions.register('combat:trigger-divine-feat', (el, data, event) => {
+        if (data.featKey) triggerDivineChannelingFeat(data.featKey);
+      });
+      Actions.register('combat:toggle-spell-cockpit-mod', (el, data, event) => {
+        if (data.modId) toggleSpellCockpitModifier(data.modId, event);
+      });
+      Actions.register('combat:confirm-spell-on-weapon', (el, data, event) => {
+        if (data.weaponName !== undefined) confirmSpellCastOnWeapon(data.weaponName);
+      });
+      Actions.register('combat:open-inventory-weapon-compendium', (el, data, event) => {
+        toggleSrdSpotlight(false);
+        if (typeof switchMainTab === 'function') switchMainTab('inventory');
+        if (typeof openCompendiumDrawer === 'function') openCompendiumDrawer('weapon');
+      });
+      Actions.register('combat:select-spotlight-weapon', (el, data, event) => {
+        if (data.weaponId !== undefined) selectSrdSpotlightWeapon(data.weaponId);
+      });
+      Actions.register('combat:cast-daily-round-item', (el, data, event) => {
+        if (data.encodedName) castDailyRoundItem(data.encodedName, data.slotKey || '');
+      });
+      Actions.register('combat:discharge-daily-round-item', (el, data, event) => {
+        if (data.encodedName) dischargeDailyRoundItem(data.encodedName, data.slotKey || '');
+      });
+      Actions.register('combat:spend-slot-charge', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.slotKey && typeof spendSlotCharge === 'function') {
+          spendSlotCharge(data.slotKey, Number(data.amount) || 1);
+        }
+      });
+      Actions.register('combat:restore-slot-charge', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.slotKey && typeof restoreSlotCharge === 'function') {
+          restoreSlotCharge(data.slotKey, Number(data.amount) || 1);
+        }
+      });
+      Actions.register('combat:consume-cockpit-daily-item', (el, data, event) => {
+        if (data.encodedName) consumeCockpitDailyItem(data.encodedName, data.slotKey || '');
+      });
+      Actions.register('combat:consume-cockpit-item', (el, data, event) => {
+        if (data.encodedName) consumeCockpitItem(data.encodedName);
+      });
+      Actions.register('combat:spend-mini-spell-slot', (el, data, event) => {
+        if (data.slotIdx !== undefined) spendMiniSpellSlot(Number(data.slotIdx));
+      });
+      Actions.register('combat:open-companion-modal', (el, data, event) => {
+        if (typeof openCompanionModal === 'function') openCompanionModal();
+      });
+      Actions.register('combat:adjust-companion-hp', (el, data, event) => {
+        if (data.delta !== undefined) adjustCompanionHp(Number(data.delta) || 0);
+      });
+      Actions.register('combat:roll-companion-attack', (el, data, event) => {
+        if (data.atkIdx !== undefined) rollCompanionAttack(Number(data.atkIdx));
+      });
+      Actions.register('combat:roll-companion-tactical', (el, data, event) => {
+        if (data.tactical) rollCompanionTactical(data.tactical);
+      });
+      Actions.register('combat:apply-saved-profile', (el, data, event) => {
+        if (data.profileId) applySavedProfile(data.profileId);
+      });
+      Actions.register('combat:delete-saved-profile', (el, data, event) => {
+        if (data.profileId) deleteSavedProfile(data.profileId, event);
+      });
+      Actions.register('combat:unpin-modal-confirm', (el, data, event) => {
+        if (typeof _currentPinModalUnpinAction === 'function') {
+          _currentPinModalUnpinAction();
+        }
+      });
+      Actions.register('combat:toggle-universal-pin', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        toggleUniversalPin({
+          name: data.pinName || '',
+          type: data.pinType || 'Item',
+          action: data.pinAction || 'Standard',
+          desc: data.pinDesc || '',
+          badge: data.pinBadge || ''
+        });
+      });
+      Actions.register('combat:reroll-formula', (el, data, event) => {
+        if (data.formula) {
+          applyFormulaTemplate(data.formula);
+          rollCustomFormula();
+        }
+      });
+      Actions.register('combat:reset-formula-templates', (el, data, event) => {
+        resetFormulaTemplates();
+      });
+      Actions.register('combat:apply-formula-template', (el, data, event) => {
+        if (data.formula !== undefined) applyFormulaTemplate(data.formula);
+      });
+      Actions.register('combat:delete-formula-template', (el, data, event) => {
+        if (data.tplIdx !== undefined) deleteFormulaTemplate(Number(data.tplIdx));
+      });
+      Actions.register('combat:exec-spotlight-item', (el, data, event) => {
+        const idx = data.itemIdx !== undefined ? Number(data.itemIdx) : _spotlightTerminalActiveIndex;
+        executeSpotlightTerminalItem(idx);
+      });
+      Actions.register('combat:exec-spotlight-feat-at-level', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.itemIdx !== undefined) {
+          executeSpotlightTerminalFeatAtLevel(Number(data.itemIdx), Number(data.level) || 1, data.slotMode || 'Regular Feat');
+        }
+      });
+      Actions.register('combat:switch-offense-mode', (el, data, event) => {
+        if (data.mode && typeof switchCombatOffenseMode === 'function') {
+          switchCombatOffenseMode(data.mode);
+        }
+      });
+      Actions.register('combat:toggle-section', (el, data, event) => {
+        if (data.section && typeof toggleCombatSection === 'function') {
+          toggleCombatSection(data.section);
+        }
+      });
+      Actions.register('combat:toggle-spell-slots-strip', (el, data, event) => {
+        if (typeof toggleCombatSpellSlotsStrip === 'function') toggleCombatSpellSlotsStrip();
+      });
+      Actions.register('combat:open-spell-slots-modal', (el, data, event) => {
+        if (typeof openSpellSlotsModal === 'function') openSpellSlotsModal();
+      });
+      Actions.register('combat:close-spell-slots-modal', (el, data, event) => {
+        if (typeof closeSpellSlotsModal === 'function') closeSpellSlotsModal();
+      });
+      Actions.register('combat:switch-spell-cat', (el, data, event) => {
+        if (data.cat && typeof switchCombatSpellCat === 'function') {
+          switchCombatSpellCat(data.cat);
+        }
+      });
+      Actions.register('combat:toggle-spell-reorder', (el, data, event) => {
+        if (typeof toggleSpellReorderMode === 'function') toggleSpellReorderMode();
+      });
+      Actions.register('combat:open-add-weapon-modal', (el, data, event) => {
+        if (typeof openAddWeaponModal === 'function') openAddWeaponModal();
+      });
+      Actions.register('combat:open-save-profile-modal', (el, data, event) => {
+        if (typeof openSaveProfileModal === 'function') openSaveProfileModal();
+      });
+      Actions.register('combat:toggle-melee-mod-reorder', (el, data, event) => {
+        if (typeof toggleMeleeModifierReorderMode === 'function') toggleMeleeModifierReorderMode();
+      });
+      Actions.register('combat:toggle-ranged-mod-reorder', (el, data, event) => {
+        if (typeof toggleRangedModifierReorderMode === 'function') toggleRangedModifierReorderMode();
+      });
+      Actions.register('combat:roll-attack-only', (el, data, event) => {
+        if (typeof rollCombatAttackOnly === 'function') rollCombatAttackOnly();
+      });
+      Actions.register('combat:roll-damage-only', (el, data, event) => {
+        if (typeof rollCombatDamageOnly === 'function') rollCombatDamageOnly();
+      });
+      Actions.register('combat:roll-attack-and-damage', (el, data, event) => {
+        if (typeof rollCombatAttackAndDamage === 'function') rollCombatAttackAndDamage();
+      });
+      Actions.register('combat:roll-spell-attack', (el, data, event) => {
+        if (typeof rollCombatSpellAttack === 'function') rollCombatSpellAttack();
+      });
+      Actions.register('combat:cast-selected-spell', (el, data, event) => {
+        if (typeof castCombatSelectedSpell === 'function') castCombatSelectedSpell();
+      });
+      Actions.register('combat:roll-maneuver-check', (el, data, event) => {
+        if (data.type && typeof rollManeuverCheck === 'function') {
+          rollManeuverCheck(data.type);
+        }
+      });
+      Actions.register('combat:die-click', (el, data, event) => {
+        if (data.sides && typeof handleDieClick === 'function') {
+          handleDieClick(Number(data.sides));
+        }
+      });
+      Actions.register('combat:reset-dice-pool', (el, data, event) => {
+        if (typeof resetDicePool === 'function') resetDicePool();
+      });
+      Actions.register('combat:roll-dice-pool', (el, data, event) => {
+        if (typeof rollDicePool === 'function') rollDicePool();
+      });
+      Actions.register('combat:update-dice-pool', (el, data, event) => {
+        if (typeof updateDicePoolDisplay === 'function') updateDicePoolDisplay();
+      });
+      Actions.register('combat:roll-custom-formula', (el, data, event) => {
+        if (typeof rollCustomFormula === 'function') rollCustomFormula();
+      });
+      Actions.register('combat:save-formula-template', (el, data, event) => {
+        if (typeof addCurrentFormulaToTemplates === 'function') addCurrentFormulaToTemplates();
+      });
+      Actions.register('combat:clear-dice-history', (el, data, event) => {
+        if (typeof clearDiceHistory === 'function') clearDiceHistory();
+      });
+      Actions.register('combat:toggle-dice-color-popover', (el, data, event) => {
+        if (typeof toggleDiceColorPopover === 'function') toggleDiceColorPopover(event);
+      });
+      Actions.register('combat:select-dice-color', (el, data, event) => {
+        const color = (data && data.color) || (el && el.value) || '#851316';
+        const name = (data && data.colorName) || 'Custom Color';
+        if (typeof selectDiceColor === 'function') selectDiceColor(color, name);
+      });
+      Actions.register('combat:spotlight-sample', (el, data, event) => {
+        if (data && data.sample && typeof setSpotlightTerminalSample === 'function') {
+          setSpotlightTerminalSample(data.sample);
+        }
+      });
+      Actions.register('combat:close-spotlight-terminal', (el, data, event) => {
+        if (typeof closeSpotlightTerminal === 'function') closeSpotlightTerminal();
+      });
     }
 
     let _combatHoverTooltipDelegatedBound = false;
     if (typeof document !== 'undefined' && !_combatHoverTooltipDelegatedBound) {
       _combatHoverTooltipDelegatedBound = true;
       let activeTooltipEl = null;
+      let activeSpellHoverEl = null;
       document.addEventListener('mouseover', (e) => {
         if (!e.target || typeof e.target.closest !== 'function') return;
+        const spellEl = e.target.closest('[data-spell-hover-name]');
+        if (spellEl) {
+          if (activeSpellHoverEl !== spellEl) {
+            activeSpellHoverEl = spellEl;
+            const sName = spellEl.getAttribute('data-spell-hover-name') || '';
+            const sSrc = spellEl.getAttribute('data-spell-hover-source') || 'spontaneous';
+            if (sName && typeof showSpellHoverTooltip === 'function') {
+              showSpellHoverTooltip(e, sName, sSrc);
+            }
+          }
+          return;
+        }
         const el = e.target.closest('[data-combat-tooltip]');
         if (!el) return;
         if (activeTooltipEl === el) return;
@@ -15774,8 +16070,16 @@
         }
       });
       document.addEventListener('mouseout', (e) => {
-        if (!activeTooltipEl) return;
         const related = e.relatedTarget;
+        if (activeSpellHoverEl) {
+          if (!related || !activeSpellHoverEl.contains(related)) {
+            activeSpellHoverEl = null;
+            if (typeof hideSpellHoverTooltip === 'function') {
+              hideSpellHoverTooltip();
+            }
+          }
+        }
+        if (!activeTooltipEl) return;
         if (related && activeTooltipEl.contains(related)) return;
         activeTooltipEl = null;
         if (typeof hideCombatModifierHoverTooltip === 'function') {
@@ -15783,6 +16087,9 @@
         }
       });
       document.addEventListener('mousemove', (e) => {
+        if (activeSpellHoverEl && typeof updateSpellHoverTooltipPos === 'function') {
+          updateSpellHoverTooltipPos(e);
+        }
         if (!activeTooltipEl) return;
         if (typeof updateCombatModifierHoverTooltipPos === 'function') {
           updateCombatModifierHoverTooltipPos(e);

@@ -194,7 +194,7 @@
           ? 'ui-btn-xs h-6 text-[10px] px-2.5 rounded-md font-bold bg-emerald-950 text-emerald-300 border border-emerald-700 cursor-pointer hover:border-emerald-400 transition inline-flex items-center' 
           : 'ui-btn-xs h-6 text-[10px] px-2.5 rounded-md font-bold bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer hover:border-slate-500 transition inline-flex items-center';
         modeBadge.title = 'Click to toggle in House Rules';
-        modeBadge.onclick = () => { if (typeof openHouseRulesModal === 'function') openHouseRulesModal(); };
+        modeBadge.dataset.action = 'inventory:open-house-rules';
       }
 
       const maxRankInfo = document.getElementById('skills-max-rank-info');
@@ -1320,16 +1320,14 @@
           meta: { label: isFullHeal ? 'Long Rest (Full Recovery)' : 'Long Rest (8h Natural Healing)' }
         });
         const out = (typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null) || {};
-        if (typeof resetActionEconomy === 'function') resetActionEconomy();
+        if (typeof renderActionEconomy === 'function') {
+          renderActionEconomy();
+        }
         if (typeof renderHUD === 'function') {
           try { renderHUD(); } catch (e) { console.warn('renderHUD immediate rest error:', e); }
         }
         try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in rest:', e); }
-        if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
-          window.CloudSync.pushImmediate();
-        } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
-          window.GDriveSync.pushToCloud(true);
-        }
+        try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in rest:', e); }
         try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in rest:', e); }
         try { if (typeof renderSpellSlots === 'function') renderSpellSlots(); } catch (e) { console.warn('renderSpellSlots error in rest:', e); }
         try { renderAll(); } catch (e) { console.warn('renderAll error in rest:', e); }
@@ -1604,16 +1602,14 @@
           meta: { label: `Short Rest (${minutes} min)` }
         });
         const out = (typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null) || {};
-        if (typeof resetActionEconomy === 'function') resetActionEconomy();
+        if (typeof renderActionEconomy === 'function') {
+          renderActionEconomy();
+        }
         if (typeof renderHUD === 'function') {
           try { renderHUD(); } catch (e) { console.warn('renderHUD immediate short rest error:', e); }
         }
         try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in short rest:', e); }
-        if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
-          window.CloudSync.pushImmediate();
-        } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
-          window.GDriveSync.pushToCloud(true);
-        }
+        try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in short rest:', e); }
         try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in short rest:', e); }
         try { renderAll(); } catch (e) { console.warn('renderAll error in short rest:', e); }
 
@@ -2167,23 +2163,23 @@
         return `
           <div class="grid grid-cols-12 gap-1.5 items-center bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
             <div class="col-span-4">
-              <select onchange="onBuffModalV2ModifierChange(${idx}, 'target', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-white font-medium focus:border-indigo-500 focus:outline-none">
+              <select data-change-action="inventory:buff-v2-mod-change" data-mod-idx="${idx}" data-field="target" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-white font-medium focus:border-indigo-500 focus:outline-none">
                 ${buildTargetOptions(mod.target)}
               </select>
             </div>
             <div class="col-span-2">
-              <input type="text" value="${formulaStr.replace(/"/g, '&quot;')}" placeholder="+2 or @cl" oninput="onBuffModalV2ModifierChange(${idx}, 'formula', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono font-bold text-amber-300 text-center focus:border-amber-400 focus:outline-none" title="Number (e.g. 4, -2) or V2 formula (e.g. 2 + min(3, floor(@cl / 6)))">
+              <input type="text" value="${formulaStr.replace(/"/g, '&quot;')}" placeholder="+2 or @cl" data-input-action="inventory:buff-v2-mod-input" data-mod-idx="${idx}" data-field="formula" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono font-bold text-amber-300 text-center focus:border-amber-400 focus:outline-none" title="Number (e.g. 4, -2) or V2 formula (e.g. 2 + min(3, floor(@cl / 6)))">
             </div>
             <div class="col-span-3">
-              <select onchange="onBuffModalV2ModifierChange(${idx}, 'type', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-indigo-200 focus:border-indigo-500 focus:outline-none">
+              <select data-change-action="inventory:buff-v2-mod-change" data-mod-idx="${idx}" data-field="type" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-indigo-200 focus:border-indigo-500 focus:outline-none">
                 ${buildTypeOptions(mod.type)}
               </select>
             </div>
             <div class="col-span-2">
-              <input type="text" value="${condStr}" placeholder="Condition" oninput="onBuffModalV2ModifierChange(${idx}, 'condition', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[10px] text-slate-300 focus:border-indigo-500 focus:outline-none" title="Optional condition (e.g., vs Evil, vs Fear)">
+              <input type="text" value="${condStr}" placeholder="Condition" data-input-action="inventory:buff-v2-mod-input" data-mod-idx="${idx}" data-field="condition" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[10px] text-slate-300 focus:border-indigo-500 focus:outline-none" title="Optional condition (e.g., vs Evil, vs Fear)">
             </div>
             <div class="col-span-1 text-right">
-              <button type="button" onclick="removeBuffModalV2ModifierRow(${idx})" class="w-6 h-6 rounded bg-rose-950/70 hover:bg-rose-800 text-rose-300 text-xs font-bold transition cursor-pointer" title="Remove Modifier">&times;</button>
+              <button type="button" data-action="inventory:remove-buff-v2-mod" data-mod-idx="${idx}" class="w-6 h-6 rounded bg-rose-950/70 hover:bg-rose-800 text-rose-300 text-xs font-bold transition cursor-pointer" title="Remove Modifier">&times;</button>
             </div>
           </div>
         `;
@@ -2243,7 +2239,7 @@
           : 'bg-indigo-600 text-white border-indigo-400 shadow';
         const idleCls = 'bg-slate-900 text-slate-400 border-slate-700 hover:text-slate-200 hover:border-slate-600';
         return `
-          <button type="button" onclick="toggleBuffModalRuleFlag('${f.key}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? activeCls : idleCls}">
+          <button type="button" data-action="inventory:toggle-buff-rule-flag" data-flag-key="${f.key}" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? activeCls : idleCls}">
             ${f.label}
           </button>
         `;
@@ -2274,7 +2270,7 @@
         : 'px-2 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-950/70 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/60 transition cursor-pointer';
 
       container.innerHTML = list.map((item, idx) => `
-        <button type="button" onclick="onBuffQuickPickClick(${idx})" class="${chipCls}">
+        <button type="button" data-action="inventory:buff-quick-pick" data-pick-idx="${idx}" class="${chipCls}">
           ${item.label}
         </button>
       `).join('');
@@ -2549,7 +2545,7 @@
           .trim();
 
         return `
-          <div data-buff-spot-idx="${idx}" onmousedown="event.preventDefault(); pickBuffSpotlightResult(${idx})" class="p-2.5 cursor-pointer transition flex flex-col gap-1 ${isSel ? 'bg-indigo-950 text-white' : 'bg-slate-950 hover:bg-slate-900 text-slate-200'}">
+          <div data-buff-spot-idx="${idx}" data-action="inventory:pick-buff-spotlight" data-spot-idx="${idx}" class="p-2.5 cursor-pointer transition flex flex-col gap-1 ${isSel ? 'bg-indigo-950 text-white' : 'bg-slate-950 hover:bg-slate-900 text-slate-200'}">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-xs text-amber-300 truncate">${item.name}</span>
               <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-[9px] font-mono text-purple-300 shrink-0">${item._spotlightKind || item.type || 'SRD 3.5e'}</span>
@@ -2808,7 +2804,7 @@
           ];
           energyBtns.innerHTML = ENERGIES.map(e => {
             const active = _selectedSpotlightEnergy === e.type;
-            return `<button type="button" onclick="selectBuffModalEnergy('${e.type}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? 'bg-amber-600 text-white border-amber-300 shadow' : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-white'}">${e.icon} ${e.type}</button>`;
+            return `<button type="button" data-action="inventory:select-buff-energy" data-energy="${e.type}" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? 'bg-amber-600 text-white border-amber-300 shadow' : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-white'}">${e.icon} ${e.type}</button>`;
           }).join('');
           energyBox.classList.remove('hidden');
         } else {
@@ -4541,9 +4537,8 @@
           // Draggable cyan card pin with pulsing halo and coordinates
           terminalMarkup = `
             <g id="sil-card-node-group-${slotKey}" class="cursor-grab select-none pointer-events-auto"
-               onmousedown="startDraggingCardNode(event, '${slotKey}')"
-               ontouchstart="startDraggingCardNode(event, '${slotKey}')"
-               onclick="event.stopPropagation()">
+               data-sil-drag-card="${slotKey}"
+               data-action="inventory:noop-stop">
               <circle cx="${cardX.toFixed(1)}" cy="${cardY.toFixed(1)}" r="18" fill="transparent" class="cursor-grab"/>
               <circle cx="${cardX.toFixed(1)}" cy="${cardY.toFixed(1)}" r="12" fill="#0284c7" fill-opacity="0.35" stroke="#38bdf8" stroke-dasharray="3,2" stroke-width="1.8" class="pointer-events-none animate-pulse"/>
               <circle id="sil-card-pin-${slotKey}" cx="${cardX.toFixed(1)}" cy="${cardY.toFixed(1)}" r="6.5" fill="#0ea5e9" stroke="#ffffff" stroke-width="2" class="cursor-grab"/>
@@ -4637,8 +4632,7 @@
           // Edit Mode: draggable handles with visual coordinate label
           nodesMarkup += `
             <g id="sil-node-group-${slotKey}" class="slot-anchor-node is-editing cursor-grab select-none pointer-events-auto"
-               onmousedown="startDraggingSlotNode(event, '${slotKey}')"
-               ontouchstart="startDraggingSlotNode(event, '${slotKey}')">
+               data-sil-drag-node="${slotKey}">
               <!-- Draggable Touch Area -->
               <circle id="sil-touch-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="20" fill="transparent" class="cursor-grab"/>
               <!-- Drag Halo -->
@@ -4669,14 +4663,7 @@
           <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(56,189,248,0.18)_0%,rgba(245,158,11,0.06)_45%,transparent_75%)] pointer-events-none"></div>
 
           <svg id="sil-main-svg" viewBox="0 0 460 520" preserveAspectRatio="none"
-               class="w-full h-full select-none ${isSilhouetteTransformActive() ? 'cursor-grab' : ''}"
-               onwheel="handleSilhouetteWheel(event)"
-               onmousedown="startSilhouettePan(event)"
-               ontouchstart="startSilhouettePan(event)"
-               onmousemove="handleSilhouetteSvgMouseMove(event)"
-               onmouseup="stopDraggingSlotNode()"
-               ontouchmove="handleSilhouetteSvgTouchMove(event)"
-               ontouchend="stopDraggingSlotNode()">
+               class="w-full h-full select-none ${isSilhouetteTransformActive() ? 'cursor-grab' : ''}">
             <image id="sil-bg-image" href="${imgSrc}" xlink:href="${imgSrc}" x="${imgX}" y="${imgY}" width="${imgW}" height="${imgH}" preserveAspectRatio="none" class="pointer-events-none filter contrast-110 brightness-105" />
 
             <g class="pointer-events-auto">
@@ -4724,8 +4711,7 @@
         if (isOccupied) {
           return `
             <div data-slot="${slotKey}"
-                 onmouseenter="highlightSlotNode('${slotKey}', true)"
-                 onmouseleave="highlightSlotNode('${slotKey}', false)"
+                 data-sil-hover-slot="${slotKey}"
                  class="group relative bg-[#0b1329]/90 hover:bg-[#0f172a] border ${slotData.active ? 'border-sky-500/60 shadow-[0_0_15px_rgba(56,189,248,0.15)]' : 'border-slate-800 opacity-70'} rounded-xl p-2 sm:p-2.5 transition flex items-center justify-between gap-2.5">
               
               <div class="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
@@ -4788,8 +4774,7 @@
           return `
             <div data-slot="${slotKey}"
                  data-action="inventory:open-slot-equip" data-slot-key="${slotKey}"
-                 onmouseenter="highlightSlotNode('${slotKey}', true)"
-                 onmouseleave="highlightSlotNode('${slotKey}', false)"
+                 data-sil-hover-slot="${slotKey}"
                  class="group relative bg-[#0b1329]/40 hover:bg-[#0b1329]/90 border border-dashed border-slate-800 hover:border-sky-500/60 rounded-xl p-2 sm:p-2.5 transition flex items-center justify-between gap-2.5 cursor-pointer">
               
               <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
@@ -4989,7 +4974,7 @@
       if (modalEl) {
         let footerUnequipBtn = document.getElementById('slot-equip-footer-unequip-btn');
         if (!footerUnequipBtn) {
-          const closeBtn = modalEl.querySelector('button[onclick="closeSlotEquipModal()"]:not(.w-7)');
+          const closeBtn = Array.from(modalEl.querySelectorAll('button:not(.w-7)')).find(b => b.textContent.trim() === 'Close');
           if (closeBtn && closeBtn.parentElement) {
             closeBtn.parentElement.className = 'bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0';
             footerUnequipBtn = document.createElement('button');
@@ -5003,10 +4988,8 @@
           if (hasEquipped) {
             footerUnequipBtn.classList.remove('hidden');
             footerUnequipBtn.innerHTML = `<span>✕</span><span>Unequip ${currentSlotData.name}</span>`;
-            footerUnequipBtn.onclick = () => {
-              unequipSlot(_currentEquipSlotKey);
-              closeSlotEquipModal();
-            };
+            footerUnequipBtn.setAttribute('data-action', 'inventory:unequip-slot-modal');
+            footerUnequipBtn.setAttribute('data-slot-key', _currentEquipSlotKey);
           } else {
             footerUnequipBtn.classList.add('hidden');
           }
@@ -5299,7 +5282,7 @@
 
           <!-- Search & Filter Controls -->
           <div class="p-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
-            <input type="text" id="companion-equip-search-input" oninput="renderCompanionEquipList()" placeholder="Filter items in gear pool..." class="ui-input-md h-8 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white placeholder-slate-500">
+            <input type="text" id="companion-equip-search-input" data-input-action="inventory:filter-companion-equip" placeholder="Filter items in gear pool..." class="ui-input-md h-8 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white placeholder-slate-500">
             <label class="flex items-center gap-1.5 text-[11px] text-slate-400 shrink-0 cursor-pointer select-none">
               <input type="checkbox" id="companion-equip-show-all" data-change-action="inventory:filter-companion-equip" class="rounded border-slate-700 text-amber-500">
               <span>Show All Items</span>
@@ -9735,4 +9718,144 @@
           deleteBuff(data.buffId);
         }
       });
+      actionsApi.register('inventory:open-house-rules', (el, data, event) => {
+        if (typeof openHouseRulesModal === 'function') openHouseRulesModal();
+      });
+      actionsApi.register('inventory:buff-v2-mod-change', (el, data, event) => {
+        if (data && data.modIdx !== undefined && data.field) {
+          onBuffModalV2ModifierChange(Number(data.modIdx), data.field, el ? el.value : '');
+        }
+      });
+      actionsApi.register('inventory:buff-v2-mod-input', (el, data, event) => {
+        if (data && data.modIdx !== undefined && data.field) {
+          onBuffModalV2ModifierChange(Number(data.modIdx), data.field, el ? el.value : '');
+        }
+      });
+      actionsApi.register('inventory:remove-buff-v2-mod', (el, data, event) => {
+        if (data && data.modIdx !== undefined) {
+          removeBuffModalV2ModifierRow(Number(data.modIdx));
+        }
+      });
+      actionsApi.register('inventory:toggle-buff-rule-flag', (el, data, event) => {
+        if (data && data.flagKey) {
+          toggleBuffModalRuleFlag(data.flagKey);
+        }
+      });
+      actionsApi.register('inventory:buff-quick-pick', (el, data, event) => {
+        if (data && data.pickIdx !== undefined) {
+          onBuffQuickPickClick(Number(data.pickIdx));
+        }
+      });
+      actionsApi.register('inventory:pick-buff-spotlight', (el, data, event) => {
+        if (event && typeof event.preventDefault === 'function') event.preventDefault();
+        if (data && data.spotIdx !== undefined) {
+          pickBuffSpotlightResult(Number(data.spotIdx));
+        }
+      });
+      actionsApi.register('inventory:select-buff-energy', (el, data, event) => {
+        if (data && data.energy) {
+          selectBuffModalEnergy(data.energy);
+        }
+      });
+      actionsApi.register('inventory:unequip-slot-modal', (el, data, event) => {
+        const key = (data && data.slotKey) || _currentEquipSlotKey;
+        if (key) {
+          unequipSlot(key);
+          closeSlotEquipModal();
+        }
+      });
+      actionsApi.register('inventory:close-slot-equip', (el, data, event) => {
+        closeSlotEquipModal();
+      });
+      actionsApi.register('inventory:noop-stop', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      });
+      actionsApi.register('inventory:switch-view', (el, data, event) => {
+        if (data && data.view && typeof switchInventoryView === 'function') {
+          switchInventoryView(data.view);
+        }
+      });
+      actionsApi.register('inventory:open-buff-modal', (el, data, event) => {
+        if (typeof openBuffModal === 'function') {
+          openBuffModal((data && data.mode) || 'buff');
+        }
+      });
+
+      function initSilhouetteDelegatedEvents() {
+        if (typeof document === 'undefined' || document._dndSilDelegatedBound) return;
+        document._dndSilDelegatedBound = true;
+
+        document.addEventListener('mousedown', (e) => {
+          const spotEl = e.target && e.target.closest ? e.target.closest('[data-action="inventory:pick-buff-spotlight"]') : null;
+          if (spotEl) {
+            e.preventDefault();
+            pickBuffSpotlightResult(Number(spotEl.dataset.spotIdx || 0));
+            return;
+          }
+          const cardPin = e.target && e.target.closest ? e.target.closest('[data-sil-drag-card]') : null;
+          if (cardPin) {
+            startDraggingCardNode(e, cardPin.dataset.silDragCard);
+            return;
+          }
+          const slotNode = e.target && e.target.closest ? e.target.closest('[data-sil-drag-node]') : null;
+          if (slotNode) {
+            startDraggingSlotNode(e, slotNode.dataset.silDragNode);
+            return;
+          }
+          const mainSvg = e.target && e.target.closest ? e.target.closest('#sil-main-svg') : null;
+          if (mainSvg) {
+            startSilhouettePan(e);
+          }
+        });
+
+        document.addEventListener('touchstart', (e) => {
+          const cardPin = e.target && e.target.closest ? e.target.closest('[data-sil-drag-card]') : null;
+          if (cardPin) {
+            startDraggingCardNode(e, cardPin.dataset.silDragCard);
+            return;
+          }
+          const slotNode = e.target && e.target.closest ? e.target.closest('[data-sil-drag-node]') : null;
+          if (slotNode) {
+            startDraggingSlotNode(e, slotNode.dataset.silDragNode);
+            return;
+          }
+          const mainSvg = e.target && e.target.closest ? e.target.closest('#sil-main-svg') : null;
+          if (mainSvg) {
+            startSilhouettePan(e);
+          }
+        }, { passive: true });
+
+        document.addEventListener('wheel', (e) => {
+          const mainSvg = e.target && e.target.closest ? e.target.closest('#sil-main-svg') : null;
+          if (mainSvg) {
+            handleSilhouetteWheel(e);
+          }
+        }, { passive: false });
+
+        document.addEventListener('mousemove', (e) => {
+          const mainSvg = e.target && e.target.closest ? e.target.closest('#sil-main-svg') : null;
+          if (mainSvg && typeof handleSilhouetteSvgMouseMove === 'function') {
+            handleSilhouetteSvgMouseMove(e);
+          }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+          const mainSvg = e.target && e.target.closest ? e.target.closest('#sil-main-svg') : null;
+          if (mainSvg && typeof handleSilhouetteSvgTouchMove === 'function') {
+            handleSilhouetteSvgTouchMove(e);
+          }
+        }, { passive: false });
+
+        let _lastHoveredSilSlot = null;
+        document.addEventListener('mouseover', (e) => {
+          const hoverCard = e.target && e.target.closest ? e.target.closest('[data-sil-hover-slot]') : null;
+          const nextSlot = hoverCard ? hoverCard.dataset.silHoverSlot : null;
+          if (nextSlot !== _lastHoveredSilSlot) {
+            if (_lastHoveredSilSlot) highlightSlotNode(_lastHoveredSilSlot, false);
+            if (nextSlot) highlightSlotNode(nextSlot, true);
+            _lastHoveredSilSlot = nextSlot;
+          }
+        });
+      }
+      initSilhouetteDelegatedEvents();
     })();

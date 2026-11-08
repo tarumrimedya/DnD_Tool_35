@@ -306,12 +306,12 @@ function main() {
     'lvl_up_gorunum.html'
   ]);
   const RATCHET_LIMITS = {
-    'index.html':         { inlineEvents: 318, windowAssigns: 0 },
+    'index.html':         { inlineEvents: 196, windowAssigns: 0 },
     'char_hud.js':        { inlineEvents: 0,   windowAssigns: 48 },
-    'char_combat.js':     { inlineEvents: 98,  windowAssigns: 82 },
+    'char_combat.js':     { inlineEvents: 0,   windowAssigns: 82 },
     'char_spells.js':     { inlineEvents: 0,   windowAssigns: 68 },
     'char_progression.js':{ inlineEvents: 0,   windowAssigns: 46 },
-    'char_inventory.js':  { inlineEvents: 27,  windowAssigns: 41 },
+    'char_inventory.js':  { inlineEvents: 0,   windowAssigns: 41 },
     'rule_engine.js':     { inlineEvents: 0,   windowAssigns: 1 },
     'char_store.js':      { inlineEvents: 0,   windowAssigns: 1 },
     'ui_components.js':   { inlineEvents: 0,   windowAssigns: 2 },
