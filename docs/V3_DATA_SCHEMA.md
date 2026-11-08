@@ -211,3 +211,45 @@ Seviye 17 karakter (Warblade 5 / Rogue (Adventurer Variant) 2 / Bloodstorm Blade
 | 12 | `inventory` eski alanı boş duruyor | Eski alan; okunur, silinmez |
 
 Tarama sonucunda, kural 2b ve paket öneki kurallarıyla birlikte, **bu karakterde karantinaya düşecek tek kayıt `gearPool`'daki "Dragon Breath"**. Geri kalan her kaydın türü güvenle çıkarılabiliyor.
+
+## 11. DM içerik örnekleri: Awaken 1 ve Boons List (2026-11-08)
+
+Kaynak: kullanıcının `Awaken 1.xlsx` (18 yetenek: Magic / Defence / Similitude, her grupta 3 temel + 3 ikili kombinasyon) ve `Boons List.xlsx` (83 "Lesser" boon, her birinde Benefit 1 + Benefit 2). Bunların hepsi gerçek karakterin `customDb`'sinde `pack_dm_draconic_boons:` paketi olarak zaten kodlanmış durumda. Tablodaki metin ile kodlanmış hal karşılaştırıldı.
+
+### 11.1 Kodlamada görülen boşluklar
+
+| Kayıt | Tablodaki metin | Kodlanmış hal | Sorun |
+| :--- | :--- | :--- | :--- |
+| Boon of Weapon Mastery Lesser | B1: silah seç, Weapon Focus + Specialization kazan. B2: Weapon Focus'lu silahla +1 AC | Yalnızca koşulsuz `ac.dodge +1` | B1 hiç yok (`choices` + `grants` gerekir). B2'nin koşulu yok, bonus her zaman uygulanıyor. Tür de metinde yok ("Dodge" uydurulmuş) |
+| Arcane Shield | Improved Evasion + Mettle + kurtarılan her büyü için AC (EONT), ayrıca Absorb Magic bonusu +2 → +4 | Yalnızca Absorb Magic'i +4'e çeken `set` | Kısmi kodlama, kalan kısımlar sessizce eksik |
+| Absorb Magic | +2 save, temp HP, **saldıranın** Slowed/Sickened/Confused olması | Save + temp HP | Saldıran tarafa etki kodlanamaz. Hatırlatma rozeti olmalı |
+| Draconic Roar | HD'ye göre kademeli sonuç (Panicked / Frightened / Shaken) | `onSave: partial` | Kademeler yok. Metindeki "5<Level<5" ifadesi de belirsiz |
+| Boon of Acid Lesser | "set object on fire", "+1d6 fire damage" | Mod adı "Acid/Fire" | Tabloda Fire boon'undan kopyala-yapıştır hatası, koda da taşınmış |
+
+### 11.2 Şemaya eklenenler
+
+1. **Parça bazlı otomasyon durumu.** Bir kayıt birden fazla etki taşıyorsa (Benefit 1 / Benefit 2, kombinasyonlar) her parça ayrı tutulur:
+   ```json
+   "parts": [
+     { "label": "Benefit 1", "text": "...", "automation": "full" },
+     { "label": "Benefit 2", "text": "...", "automation": "badge" }
+   ]
+   ```
+   `automation`: `full` (motor hesaplar) · `partial` (bir kısmı hesaplanır) · `badge` (yalnızca hatırlatma rozeti, GEMINI §3.5 "Passive Badges"). Böylece kodlanmamış bir etki sessizce kaybolmaz; arayüz "bu kısmı elle uygula" der.
+2. **Kayıtlar arası hedefleme id ile ve paket içinde çözülür.** Arcane Shield `selector: { id: "boon_absorb_magic" }` kullanıyor, ama gerçek id `pack_dm_draconic_boons:boon_absorb_magic`. Kural: paket öneki olmayan bir referans önce aynı paket içinde çözülür.
+3. **Ön koşullar yalnızca id ile.** Bugün `requires` hem id (`all: [...]`) hem isim (`feats: ["Draconic Counter", ...]`) taşıyor. V3 id'yi kullanır, isim listesini yok sayar (GEMINI §3.4).
+4. **`choices` zorunlu bir primitif.** "Bir büyü / okul / silah / element / beceri seç" kalıbı boon'ların yaklaşık %20'sinde var. Seçim karakterde saklanır (`choiceValues`), etkiler seçime göre uygulanır.
+5. **Yüzdelik ve oran etkileri** ("%25 daha az AoE hasarı", "%20 daha uzun süre", "taşıma kapasitesi x3"). Hesaplanabilenler `multipliers` ile, hesaplanamayanlar `badge` olarak kodlanır.
+
+### 11.3 Açık soru
+
+Tablolarda 3.5e dışı terimler var: **Athletics, Perception, Stealth, Outdoorsman, attune, command action**. Bunlar 3.5e becerilerine şöyle eşlenebilir (öneri):
+
+| Tablodaki | 3.5e karşılığı |
+| :--- | :--- |
+| Athletics | Climb + Jump + Swim |
+| Perception | Spot + Listen |
+| Stealth | Hide + Move Silently |
+| Outdoorsman | Survival |
+| attune (+2 item) | 3.5e'de karşılığı yok → `badge` |
+| command action | 3.5e'de karşılığı yok → `badge` |
