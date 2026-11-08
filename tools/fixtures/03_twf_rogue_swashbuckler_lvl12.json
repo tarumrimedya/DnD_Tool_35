@@ -69,13 +69,13 @@
       ]
     },
     {
-      "id": "sa-insightful-strike",
+      "id": "sa-swashbuckler-insightful-strike",
       "name": "Insightful Strike",
       "category": "Class Feature",
       "type": "Class Feature",
       "source": "Swashbuckler 3",
       "modifiers": [
-        { "target": "damage.melee", "formula": "@intMod", "value": 3, "type": "Untyped", "source": "Insightful Strike (INT)" }
+        { "target": "damage.melee", "formula": "max(0, @intMod)", "condition": "finessable_or_light", "type": "Untyped", "source": "Insightful Strike (INT)" }
       ]
     }
   ],

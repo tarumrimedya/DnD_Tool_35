@@ -119,7 +119,18 @@
     window.getFormulaDiceIconSvg = getFormulaDiceIconSvg;
 
     let character = null;
-    try { Object.defineProperty(window, 'character', { get: () => character, set: (v) => { character = v; }, configurable: true }); } catch (e) {}
+    try {
+      Object.defineProperty(window, 'character', {
+        get: () => character,
+        set: (v) => {
+          character = v;
+          if (window.CharStore && typeof window.CharStore._syncExternalCharacterRef === 'function') {
+            window.CharStore._syncExternalCharacterRef(v);
+          }
+        },
+        configurable: true
+      });
+    } catch (e) {}
     let masterDb = [];
     try { Object.defineProperty(window, 'masterDb', { get: () => masterDb, set: (v) => { masterDb = v; }, configurable: true }); } catch (e) {}
 
@@ -2462,12 +2473,20 @@
           const tdVal = character.tactical?.totalDefense !== undefined ? character.tactical.totalDefense : (document.getElementById('toggle-total-defense')?.checked || false);
           const chargeVal = character.tactical?.charge !== undefined ? character.tactical.charge : (document.getElementById('mod-charge')?.checked || false);
 
-          RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), {
+          const tacticalOpts = {
             combatExpertise: ceVal,
             fightingDefensively: fdVal,
             totalDefense: tdVal,
             charge: chargeVal
-          });
+          };
+          if (window.CharStore && typeof window.CharStore.recompute === 'function') {
+            window.CharStore._syncExternalCharacterRef(character);
+            if (!(options && options.skipRecompute)) {
+              window.CharStore.recompute(tacticalOpts);
+            }
+          } else {
+            RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), tacticalOpts);
+          }
         } catch (e) {
           console.error('recalculateCharacter error:', e);
         }

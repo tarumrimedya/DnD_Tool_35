@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 
 const RuleEngine = require('../rule_engine.js');
+const CharStore = require('../char_store.js');
 const SchemaMigrator = global.SchemaMigrator;
 
 const FIXTURES_DIR = path.join(__dirname, 'fixtures');
@@ -48,6 +49,9 @@ function verifyPureExecution(fn, inputChar, inputDb = []) {
   const frozenDb = deepFreeze(JSON.parse(JSON.stringify(inputDb)));
   const res2 = fn(frozenChar, frozenDb);
 
+  if (res1 && res2 && res1._workingSnapshot?.hp?._lastPlayerChangeTs && res2._workingSnapshot?.hp?._lastPlayerChangeTs) {
+    res2._workingSnapshot.hp._lastPlayerChangeTs = res1._workingSnapshot.hp._lastPlayerChangeTs;
+  }
   if (JSON.stringify(res1) !== JSON.stringify(res2)) {
     throw new Error('Pure execution violation (Pass 2 Determinism): frozen vs unfrozen output mismatch.');
   }
@@ -187,8 +191,8 @@ function runDeriveSheetTests() {
   check('03_twf_rogue_swashbuckler_lvl12: +1 Mithral Chain Shirt (Max Dex 6, ACP 0) caps +7 DEX at +6 -> Normal AC 21 (10 + 5 Armor + 6 Dex)', f03.ac.effectiveDex === 6 && f03.ac.total === 21 && f03.ac.acp === 0, `got ${JSON.stringify(f03.ac)}`);
   check('03_twf_rogue_swashbuckler_lvl12: Uncanny Dodge retains DEX to Flat-Footed AC (21)', f03.ac.flatFooted === 21, `got ${f03.ac.flatFooted}`);
   check('03_twf_rogue_swashbuckler_lvl12: Saves Fort +9 (7 Base + 2 CON), Ref +14 (6 Base + 7 DEX + 1 Grace), Will +3 (3 Base + 0 WIS)', f03.saves.fort === 9 && f03.saves.ref === 14 && f03.saves.will === 3, `got ${JSON.stringify(f03.saves)}`);
-  check('03_twf_rogue_swashbuckler_lvl12: Standalone Main-Hand +2 Keen Rapier uses DEX (Weapon Finesse), threat 15-20, iteratives [20, 15, 10], & +3 base weapon damage (+1 STR + 2 Enh; Insightful Strike +3 INT routed in R1 deriveSheet)', f03.weapons[0].attackStatName.includes('DEX') && f03.weapons[0].critMin === 15 && f03.weapons[0].netAttackBonus === 20 && JSON.stringify(f03.weapons[0].iteratives) === '[20,15,10]' && f03.weapons[0].netFlatDamage === 3, `got ${JSON.stringify(f03.weapons[0])}`);
-  check('03_twf_rogue_swashbuckler_lvl12: Standalone Off-Hand +1 Flaming Short Sword has +19 Attack & extra Flaming 1d6 damagePart', f03.weapons[1].extraDamagePartsCount === 1 && f03.weapons[1].netAttackBonus === 19, `got ${JSON.stringify(f03.weapons[1])}`);
+  check('03_twf_rogue_swashbuckler_lvl12: Standalone Main-Hand +2 Keen Rapier uses DEX (Weapon Finesse), threat 15-20, iteratives [20, 15, 10], & +6 damage (+1 STR + 2 Enh + 3 Insightful Strike)', f03.weapons[0].attackStatName.includes('DEX') && f03.weapons[0].critMin === 15 && f03.weapons[0].netAttackBonus === 20 && JSON.stringify(f03.weapons[0].iteratives) === '[20,15,10]' && f03.weapons[0].netFlatDamage === 6, `got ${JSON.stringify(f03.weapons[0])}`);
+  check('03_twf_rogue_swashbuckler_lvl12: Standalone Off-Hand +1 Flaming Short Sword has +19 Attack, +4 flat damage (+0 STR + 1 Enh + 3 Insightful Strike), & extra Flaming 1d6 damagePart', f03.weapons[1].extraDamagePartsCount === 1 && f03.weapons[1].netAttackBonus === 19 && f03.weapons[1].netFlatDamage === 4, `got ${JSON.stringify(f03.weapons[1])}`);
 
   // --------------------------------------------------------------------------
   // Fixture 04: Level 15 Wizard / Archmage
@@ -228,22 +232,149 @@ function runDeriveSheetTests() {
   check('verifyPureExecution: catches non-strict silent mutation in Pass 1 (Unfrozen Snapshot Diff)', caughtSilentMutation);
 
   // --------------------------------------------------------------------------
-  // Forward-Compatible `RuleEngine.deriveSheet` Two-Pass Immutability & Parity Gate
+  // `RuleEngine.deriveSheet` Two-Pass Immutability, Parity & Consumables Gate
   // --------------------------------------------------------------------------
-  if (typeof RuleEngine.deriveSheet === 'function') {
-    const allFixtures = [f01Raw, f02Raw, f03Raw, f04Raw, f05Raw];
-    for (const raw of allFixtures) {
-      const baseline = computeBaselineMetrics(raw);
-      const viewModel = verifyPureExecution(
-        (c, db) => RuleEngine.deriveSheet(c, db),
-        raw,
-        raw.customDb || []
-      );
-      check(`deriveSheet(${raw.name}): two-pass immutability & viewModel truthy`, Boolean(viewModel && viewModel.ac && viewModel.saves));
-      check(`deriveSheet(${raw.name}): AC parity`, viewModel.ac.total === baseline.ac.total && viewModel.ac.touch === baseline.ac.touch && viewModel.ac.flatFooted === baseline.ac.flatFooted);
-      check(`deriveSheet(${raw.name}): Saves parity`, viewModel.saves.fort === baseline.saves.fort && viewModel.saves.ref === baseline.saves.ref && viewModel.saves.will === baseline.saves.will);
+  check('RuleEngine.deriveSheet is defined as a function', typeof RuleEngine.deriveSheet === 'function');
+  const allFixtures = [f01Raw, f02Raw, f03Raw, f04Raw, f05Raw];
+  const derivedViews = [];
+  for (const raw of allFixtures) {
+    const baseline = computeBaselineMetrics(raw);
+    const viewModel = verifyPureExecution(
+      (c, db) => RuleEngine.deriveSheet(c, db),
+      raw,
+      raw.customDb || []
+    );
+    derivedViews.push(viewModel);
+    check(`deriveSheet(${raw.name}): two-pass immutability & viewModel truthy`, Boolean(viewModel && viewModel.ac && viewModel.saves && viewModel.combat && viewModel.inventory));
+    check(`deriveSheet(${raw.name}): AC parity`, viewModel.ac.total === baseline.ac.total && viewModel.ac.touch === baseline.ac.touch && viewModel.ac.flatFooted === baseline.ac.flatFooted);
+    check(`deriveSheet(${raw.name}): Saves parity`, viewModel.saves.fort === baseline.saves.fort && viewModel.saves.ref === baseline.saves.ref && viewModel.saves.will === baseline.saves.will);
+
+    // Full Deep-Equal Parity Gate (`recalculateCharacter` vs `deriveSheet` + `writeBackLegacyFields`)
+    const cloneA = JSON.parse(JSON.stringify(raw));
+    if (SchemaMigrator && typeof SchemaMigrator.sanitizeCharacterAbilitiesAndPool === 'function') {
+      SchemaMigrator.sanitizeCharacterAbilitiesAndPool(cloneA);
     }
+    RuleEngine.recalculateCharacter(cloneA, cloneA.customDb || []);
+
+    const cloneB = JSON.parse(JSON.stringify(raw));
+    const sheetB = RuleEngine.deriveSheet(cloneB, cloneB.customDb || []);
+    RuleEngine.writeBackLegacyFields(cloneB, sheetB);
+    const hasPlayerTsA = Boolean(cloneA.hp && cloneA.hp._lastPlayerChangeTs);
+    const hasPlayerTsB = Boolean(cloneB.hp && cloneB.hp._lastPlayerChangeTs);
+    if (hasPlayerTsA && hasPlayerTsB) {
+      cloneB.hp._lastPlayerChangeTs = cloneA.hp._lastPlayerChangeTs;
+    }
+    check(
+      `writeBackLegacyFields(${raw.name}): 100% Deep-Equal parity with recalculateCharacter`,
+      hasPlayerTsA === hasPlayerTsB && JSON.stringify(cloneB) === JSON.stringify(cloneA)
+    );
   }
+
+  // Insightful Strike Edge-Case Verification (`INT 8/10`, Medium Armor, Medium Load, Non-Finessable Greatsword)
+  const f03Int8 = JSON.parse(JSON.stringify(f03Raw));
+  f03Int8.baseAbilities.int = 8;
+  f03Int8.abilities.int = 8;
+  const v03Int8 = RuleEngine.deriveSheet(f03Int8, []);
+  const f03Int10 = JSON.parse(JSON.stringify(f03Raw));
+  f03Int10.baseAbilities.int = 10;
+  f03Int10.abilities.int = 10;
+  const v03Int10 = RuleEngine.deriveSheet(f03Int10, []);
+  check(
+    '03_twf_rogue_swashbuckler_lvl12: Insightful Strike with INT 8 (-1 mod) or INT 10 (0 mod) yields +0 bonus (netFlatDamage === 3, never falls back to value)',
+    v03Int8.combat.weapons[0].evaluated.netFlatDamage === 3 && v03Int10.combat.weapons[0].evaluated.netFlatDamage === 3,
+    `int8=${v03Int8.combat.weapons[0].evaluated.netFlatDamage}, int10=${v03Int10.combat.weapons[0].evaluated.netFlatDamage}`
+  );
+
+  const f03MedArmor = JSON.parse(JSON.stringify(f03Raw));
+  f03MedArmor.bodySlots.armor.category = 'Medium';
+  delete f03MedArmor.bodySlots.armor.material;
+  const v03MedArmor = RuleEngine.deriveSheet(f03MedArmor, []);
+  const f03MedLoad = JSON.parse(JSON.stringify(f03Raw));
+  f03MedLoad.carryingLoad = 'Medium';
+  const v03MedLoad = RuleEngine.deriveSheet(f03MedLoad, []);
+  const greatswordEval = RuleEngine.evaluateWeaponAttack(
+    v03Int10._workingSnapshot,
+    { id: 'wpn-greatsword', name: 'Greatsword', handedness: 'Two-Handed', grip: '2-Hand', dice: '2d6' },
+    { grip: '2-Hand' }
+  );
+  check(
+    '03_twf_rogue_swashbuckler_lvl12: Insightful Strike suppressed in Medium Armor, Medium Load, or with Two-Handed Greatsword',
+    v03MedArmor.combat.weapons[0].evaluated.netFlatDamage === 3 &&
+    v03MedLoad.combat.weapons[0].evaluated.netFlatDamage === 3 &&
+    greatswordEval.netFlatDamage === 1,
+    `medArmor=${v03MedArmor.combat.weapons[0].evaluated.netFlatDamage}, medLoad=${v03MedLoad.combat.weapons[0].evaluated.netFlatDamage}, greatsword=${greatswordEval.netFlatDamage}`
+  );
+
+  // Multi-Render Temp HP Stability Gate (Fixture 04 Greater Heroism)
+  CharStore.clearHistory();
+  CharStore.dispatch({ type: 'doc/replace', payload: f04Raw, meta: { skipHistory: true } });
+  const ghBuffAfterInit = (CharStore.getDoc().buffs || []).find(b => b.id === 'spl-greater-heroism');
+  check('04_wizard_archmage_lvl15: Greater Heroism sets initial Temp HP 15 & writes back _tempHpSynced=true',
+    CharStore.getSheet().hp.temp === 15 && Boolean(ghBuffAfterInit && ghBuffAfterInit._tempHpSynced === true)
+  );
+  CharStore.dispatch({
+    type: 'doc/mutate',
+    meta: { label: 'Absorb 6 Damage into Temp HP' },
+    payload: (doc) => { doc.hp.temp = 9; }
+  });
+  CharStore.recompute();
+  check('04_wizard_archmage_lvl15: Multi-render recompute preserves reduced Temp HP 9 (does NOT reset to 15)',
+    CharStore.getSheet().hp.temp === 9,
+    `got ${CharStore.getSheet().hp.temp}`
+  );
+
+  // Verify `deriveConsumablesView` grouping & P11 physical item / ability exclusion
+  const v01 = derivedViews[0];
+  check('deriveSheet(01_fighter_lvl1): Potion of Cure Light Wounds in healing group; Heavy Steel Shield excluded',
+    v01.inventory.consumablesGrouped.byGroup.healing.some(i => i.name === 'Potion of Cure Light Wounds') &&
+    !v01.inventory.consumablesGrouped.allItems.some(i => /shield|longsword|chainmail/i.test(i.name))
+  );
+  const v05 = derivedViews[4];
+  check('deriveSheet(05_dragon_blooded_boons_lvl17): Ring of Blinking in daily_charge group; Heavy Steel Shield & Dragon Breath excluded',
+    v05.inventory.consumablesGrouped.byGroup.daily_charge.some(i => i.name === 'Ring of Blinking') &&
+    !v05.inventory.consumablesGrouped.allItems.some(i => /shield|dragon breath/i.test(i.name))
+  );
+
+  // --------------------------------------------------------------------------
+  // `CharStore` Lifecycle, 20-Step Undo/Redo & Fine-Grained Region Subscriptions
+  // --------------------------------------------------------------------------
+  CharStore.clearHistory();
+  CharStore.dispatch({ type: 'doc/replace', payload: f01Raw, meta: { skipHistory: true } });
+  let acRegionFires = 0;
+  let hpRegionFires = 0;
+  CharStore.mountRegion('test_ac', (s) => s.sheet?.ac?.total, () => { acRegionFires++; });
+  CharStore.mountRegion('test_hp', (s) => s.sheet?.hp?.current, () => { hpRegionFires++; });
+
+  // Mutate HP (should fire hpRegion, NOT acRegion)
+  CharStore.dispatch({
+    type: 'doc/mutate',
+    meta: { label: 'Take 5 Damage' },
+    payload: (doc) => { doc.hp.current = 7; }
+  });
+  check('CharStore region subscription: HP mutation fires only hpRegion, not acRegion', hpRegionFires === 1 && acRegionFires === 0, `hp=${hpRegionFires}, ac=${acRegionFires}`);
+  check('CharStore undo/redo: Undo restores HP 12 -> Redo restores HP 7',
+    (() => {
+      CharStore.undo();
+      const afterUndoHp = CharStore.getSheet().hp.current;
+      CharStore.redo();
+      const afterRedoHp = CharStore.getSheet().hp.current;
+      return afterUndoHp === 12 && afterRedoHp === 7;
+    })()
+  );
+
+  // Push 25 history mutations and verify 20-step ring buffer cap
+  for (let step = 1; step <= 25; step++) {
+    CharStore.dispatch({
+      type: 'doc/mutate',
+      meta: { label: `Step ${step}` },
+      payload: (doc) => { doc.hp.temp = step; }
+    });
+  }
+  const counts = CharStore.getHistoryCounts();
+  check('CharStore 20-step Undo ring buffer: caps at 20 steps after 25 dispatches', counts.undo === 20 && counts.redo === 0, `got ${JSON.stringify(counts)}`);
+  CharStore.unmountRegion('test_ac');
+  CharStore.unmountRegion('test_hp');
+  CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };
 }

@@ -4492,8 +4492,13 @@ const RuleEngine = {
         const modWhen = mod.when || (mod.condition && typeof mod.condition === 'object' ? mod.condition : null);
         if (modWhen && !this.evaluatePredicate(modWhen, character, ctx)) return;
         const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
-        const rawExpr = hasFormula ? mod.formula : mod.value;
-        let val = Number(this.evaluateFormula(rawExpr, ctx)) || Number(mod.value) || 0;
+        let val = 0;
+        if (hasFormula) {
+          const fVal = Number(this.evaluateFormula(mod.formula, ctx));
+          val = Number.isFinite(fVal) ? fVal : (Number(mod.value) || 0);
+        } else {
+          val = Number(mod.value) || 0;
+        }
         if (mod.cap !== undefined && mod.cap !== null && mod.cap !== '') {
           const capVal = Number(this.evaluateFormula(mod.cap, ctx));
           if (!Number.isNaN(capVal)) val = Math.min(val, capVal);
@@ -4777,7 +4782,10 @@ const RuleEngine = {
       }
 
       // Ensure active buff Temp HP is synced to character.hp.temp if not yet synced
-      const buffTempHp = Number(rawBuff.grantedTempHp) || Number(buff.ruleFlags?.tempHp) || Number((buff.modifiers || []).find(m => m && String(m.target || '').toLowerCase() === 'hp.temp')?.value) || 0;
+      const evalTempFormulaVal = (buff.tempHpFormula && !/\d*d\d+/i.test(String(buff.tempHpFormula)))
+        ? Math.max(0, Number(this.evaluateFormula(buff.tempHpFormula, buffCtx)) || 0)
+        : 0;
+      const buffTempHp = Number(rawBuff.grantedTempHp) || Number(buff.ruleFlags?.tempHp) || evalTempFormulaVal || Number((buff.modifiers || []).find(m => m && String(m.target || '').toLowerCase() === 'hp.temp')?.value) || 0;
       if (buffTempHp > 0 && !rawBuff._tempHpSynced && character.hp) {
         rawBuff.grantedTempHp = buffTempHp;
         rawBuff._tempHpSynced = true;
@@ -5877,12 +5885,20 @@ const RuleEngine = {
     const bab = hasBabEqualsLevel ? Math.max(rawBab, charLvl) : rawBab;
     const strMod = this.getAbilityMod(character.abilities?.str || 10);
     const dexMod = this.getAbilityMod(character.abilities?.dex || 10);
+    const conMod = this.getAbilityMod(character.abilities?.con || 10);
+    const intMod = this.getAbilityMod(character.abilities?.int || 10);
+    const wisMod = this.getAbilityMod(character.abilities?.wis || 10);
+    const chaMod = this.getAbilityMod(character.abilities?.cha || 10);
     const evalCtx = {
       cl: charLvl,
       level: charLvl,
       bab,
       strMod,
       dexMod,
+      conMod,
+      intMod,
+      wisMod,
+      chaMod,
       enhancement: Number(weapon.enhancementBonus) || 0
     };
 
@@ -6003,7 +6019,7 @@ const RuleEngine = {
     }
 
     const isAtkTargetMatch = (t) => (
-      t === 'attack' || t === 'attack.all' ||
+      t === 'attack' || t === 'attack.all' || t === 'attack.weapon' ||
       ((t === 'meleeattack' || t === 'attack.melee') && !isRangedWep) ||
       ((t === 'rangedattack' || t === 'attack.ranged') && isRangedWep)
     );
@@ -6014,8 +6030,11 @@ const RuleEngine = {
     );
     const evalModExpr = (mObj, ctxObj) => {
       const hasFormula = mObj.formula !== undefined && mObj.formula !== null && String(mObj.formula).trim() !== '';
-      const raw = hasFormula ? mObj.formula : mObj.value;
-      return Number(this.evaluateFormula(raw, ctxObj)) || Number(mObj.value) || 0;
+      if (hasFormula) {
+        const fVal = Number(this.evaluateFormula(mObj.formula, ctxObj));
+        return Number.isFinite(fVal) ? fVal : (Number(mObj.value) || 0);
+      }
+      return Number(mObj.value) || 0;
     };
     const isBuffMatchingWeapon = (bObj) => {
       if (!bObj || !bObj.targetWeapon) return true;
@@ -6050,6 +6069,34 @@ const RuleEngine = {
     if (hasGreaterWeaponFocus) {
       attackBonusItems.push({ type: 'untyped', val: 1, source: 'Greater Weapon Focus' });
     }
+
+    // Character Special Abilities & Feats V2 Attack Modifiers
+    const isLightOrFinessableForAbility = this.isLightWeapon(weapon) || this.isFinessable(weapon);
+    const effArmorCatForAbility = character.effectiveArmorCategory || character.acBreakdown?.armorCategory || 'None';
+    const isLightOrNoArmor = effArmorCatForAbility !== 'Medium' && effArmorCatForAbility !== 'Heavy';
+    const loadCat = String(character.encumbrance || character.loadCategory || character.carryingLoad || '').toLowerCase();
+    const isMediumOrHeavyLoad = loadCat === 'medium' || loadCat === 'heavy' || loadCat === 'overloaded' || Boolean(character.ruleFlags?.mediumOrHeavyLoad);
+    const wfWsFeatIds = ['feat-weapon-focus', 'feat-greater-weapon-focus', 'feat-weapon-specialization', 'feat-greater-weapon-specialization'];
+    const charAbilityAndFeatEntries = [
+      ...(Array.isArray(character.specialAbilities) ? character.specialAbilities : []),
+      ...(Array.isArray(character.feats) ? character.feats.filter(f => f && typeof f === 'object' && f.active !== false && !wfWsFeatIds.includes(String(f.id || '').toLowerCase()) && !/weapon focus|weapon specialization/i.test(String(f.name || ''))) : [])
+    ];
+    charAbilityAndFeatEntries.forEach(entry => {
+      if (!entry || typeof entry !== 'object' || entry.active === false || !Array.isArray(entry.modifiers)) return;
+      entry.modifiers.forEach(mod => {
+        if (!mod || !mod.target) return;
+        const t = String(mod.target).toLowerCase();
+        if (!isAtkTargetMatch(t)) return;
+        const isFinessableOrLightCond = mod.condition === 'finessable_or_light' || entry.id === 'sa-swashbuckler-insightful-strike' || entry.id === 'sa-insightful-strike' || /insightful strike/i.test(String(entry.name || '') + ' ' + String(mod.source || ''));
+        if (isFinessableOrLightCond && (isRangedWep || !isLightOrFinessableForAbility || !isLightOrNoArmor || isMediumOrHeavyLoad)) return;
+        if (mod.condition && !isFinessableOrLightCond) return;
+        const rawV = evalModExpr(mod, evalCtx);
+        const v = isFinessableOrLightCond ? Math.max(0, rawV) : rawV;
+        if (v !== 0) {
+          attackBonusItems.push({ type: (mod.type || 'untyped').toLowerCase(), val: v, source: mod.source || entry.name || 'Special Ability' });
+        }
+      });
+    });
     if (flanking) {
       attackBonusItems.push({ type: 'untyped', val: 2, source: 'Flanking' });
     }
@@ -6238,6 +6285,25 @@ const RuleEngine = {
     if (hasGreaterWeaponSpec) {
       damageBonusItems.push({ type: 'untyped', val: 2, source: 'Greater Weapon Specialization' });
     }
+
+    // Character Special Abilities & Feats V2 Damage Modifiers (e.g. Swashbuckler Insightful Strike)
+    charAbilityAndFeatEntries.forEach(entry => {
+      if (!entry || typeof entry !== 'object' || entry.active === false || !Array.isArray(entry.modifiers)) return;
+      entry.modifiers.forEach(mod => {
+        if (!mod || !mod.target) return;
+        const t = String(mod.target).toLowerCase();
+        if (!isDmgTargetMatch(t)) return;
+        const isFinessableOrLightCond = mod.condition === 'finessable_or_light' || entry.id === 'sa-swashbuckler-insightful-strike' || entry.id === 'sa-insightful-strike' || /insightful strike/i.test(String(entry.name || '') + ' ' + String(mod.source || ''));
+        if (isFinessableOrLightCond && (isRangedWep || !isLightOrFinessableForAbility || !isLightOrNoArmor || isMediumOrHeavyLoad)) return;
+        if (mod.condition && !isFinessableOrLightCond) return;
+        const srcLabel = mod.source || entry.name || 'Special Ability';
+        const rawV = evalModExpr(mod, evalCtx);
+        const v = isFinessableOrLightCond ? Math.max(0, rawV) : rawV;
+        if (v !== 0) {
+          damageBonusItems.push({ type: (mod.type || 'untyped').toLowerCase(), val: v, source: srcLabel });
+        }
+      });
+    });
 
     // External custom modifiers for damage
     customModifiers.forEach(m => {
@@ -7242,6 +7308,388 @@ const RuleEngine = {
     // 6. Recalculate Character State
     this.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []));
     return summary;
+  },
+
+  /**
+   * Purely derives the deduplicated, categorized consumables view (`allItems` & `byGroup`)
+   * using the P11 shield/armor/weapon exclusion rules without mutating input items.
+   */
+  deriveConsumablesView(workingChar) {
+    const ch = workingChar || {};
+    const isExcludedPhysicalOrAbility = (item, slotKey = '') => {
+      if (!item || typeof item !== 'object') return true;
+      const name = String(item.name || '').toLowerCase().trim();
+      const desc = String(item.desc || item.effect || '').toLowerCase().trim();
+      const catLower = String(item.category || '').toLowerCase().trim();
+      const typeLower = String(item.type || '').toLowerCase().trim();
+      const effSlotKey = slotKey || item.slotKey || '';
+      const combined = `${name} ${desc}`;
+
+      if (['feat', 'special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'racial trait', 'spell', 'maneuver', 'stance'].includes(catLower)) {
+        return true;
+      }
+      if (/wand|scroll|potion|elixir|oil/i.test(name)) return false;
+
+      const hasExplicitChargesOrActiveMode = (
+        Number(item.dailyCharges?.max || item.dailyCharges) > 0 ||
+        Number(item.charges) > 0 ||
+        (Array.isArray(item.modes) && item.modes.some(m => m && m.actionType && m.actionType !== 'passive'))
+      );
+
+      const isArmorOrShield = (
+        catLower === 'armor' || catLower === 'shield' ||
+        typeLower === 'armor' || typeLower === 'shield' ||
+        effSlotKey === 'armor' ||
+        (effSlotKey === 'offHand' && /shield|kalkan|buckler/i.test(`${name} ${catLower}`))
+      );
+      if (isArmorOrShield) {
+        return !hasExplicitChargesOrActiveMode;
+      }
+
+      const isWeapon = (
+        catLower === 'weapon' || typeLower === 'weapon' ||
+        effSlotKey === 'mainHand' || effSlotKey === 'offHand' ||
+        /\b(dagger|rapier|longsword|shortsword|short sword|greatsword|scimitar|falchion|handaxe|battleaxe|greataxe|halberd|spear|longspear|mace|heavy mace|light mace|morningstar|warhammer|club|quarterstaff|flail|shortbow|longbow|crossbow|sling|javelin|shuriken|kama|nunchaku|siangham|sai|kukri|spiked chain|bastard sword|dwarven waraxe)\b/i.test(name)
+      );
+      if (isWeapon) {
+        if (hasExplicitChargesOrActiveMode) return false;
+        if (/cure|heal|healing|fireball|magic missile|scorching ray|lightning bolt|dimension door|teleport|haste|invisibility/i.test(combined)) return false;
+        return true;
+      }
+      return false;
+    };
+
+    const resolveDailyCharges = (item) => {
+      if (!item || typeof item !== 'object') return null;
+      if (item.dailyCharges && typeof item.dailyCharges === 'object' && Number(item.dailyCharges.max) > 0) {
+        return {
+          current: item.dailyCharges.current !== undefined ? Number(item.dailyCharges.current) : Number(item.dailyCharges.max),
+          max: Number(item.dailyCharges.max),
+          unit: item.dailyCharges.unit || 'charges',
+          recharge: item.dailyCharges.recharge || 'long_rest'
+        };
+      }
+      if (typeof item.dailyCharges === 'number' && item.dailyCharges > 0) {
+        return { current: item.dailyCharges, max: item.dailyCharges, unit: 'charges', recharge: 'long_rest' };
+      }
+      const combined = `${item.name || ''} ${item.desc || ''} ${item.effect || ''}`;
+      const match = combined.match(/(\d+)\s*\/\s*day/i);
+      if (match) {
+        const max = parseInt(match[1], 10);
+        if (max > 0) return { current: max, max, unit: 'charges', recharge: 'long_rest' };
+      }
+      return null;
+    };
+
+    const classifyCategory = (item) => {
+      const name = String(item.name || '').toLowerCase();
+      const desc = String(item.effect || item.desc || '').toLowerCase();
+      const combined = `${name} ${desc}`;
+      if (/cure|heal|healing/i.test(name) || (/cure|heal/i.test(desc) && !/fireball|magic missile|wand/i.test(name))) {
+        return 'healing';
+      }
+      if (/wand|fireball|magic missile|lightning|scorching|damage|cone of cold|ice storm/i.test(name) || /(\d+)d(\d+).*damage/i.test(desc)) {
+        return 'wand_damage';
+      }
+      if (item.dailyCharges || /(?:\d+\s*\/\s*day)/i.test(combined)) {
+        return 'daily_charge';
+      }
+      if (/potion|elixir|buff|strength|grace|endurance|cunning|wisdom|splendor|invisibility|fly|haste|shield of faith|scroll of shield|potion of shield/i.test(name)) {
+        return 'buff';
+      }
+      return 'other';
+    };
+
+    const displayMap = new Map();
+
+    (ch.gearPool || []).forEach(p => {
+      if (!p || isExcludedPhysicalOrAbility(p)) return;
+      const dc = resolveDailyCharges(p);
+      const isWand = String(p.category || '').toLowerCase() === 'wand' || /\bwand\b/i.test(String(p.name || ''));
+      const isConsumableCat = String(p.category || '').toLowerCase() === 'consumable' || (p.isBelt && String(p.category || '').toLowerCase() !== 'weapon');
+      if ((isConsumableCat || isWand || dc) && !p.isEquipped) {
+        const key = String(p.name || '').toLowerCase().trim();
+        if (!key) return;
+        displayMap.set(key, {
+          id: p.id || null,
+          name: p.name,
+          qty: (p.qty !== undefined && p.qty !== null) ? Number(p.qty) : 1,
+          effect: p.desc || p.effect || 'Consumable / wand',
+          sourceType: 'pool',
+          poolId: p.id,
+          isBelt: Boolean(p.isBelt),
+          dailyCharges: dc
+        });
+      }
+    });
+
+    (ch.consumables || []).forEach((c, cIdx) => {
+      if (!c || isExcludedPhysicalOrAbility(c)) return;
+      const key = String(c.name || '').toLowerCase().trim();
+      if (!key) return;
+      const dc = resolveDailyCharges(c);
+      if (!displayMap.has(key)) {
+        displayMap.set(key, {
+          id: c.id || null,
+          name: c.name,
+          qty: (c.qty !== undefined && c.qty !== null) ? Number(c.qty) : 1,
+          effect: c.effect || c.desc || 'Consumable effect',
+          sourceType: 'consumable',
+          idx: cIdx,
+          isBelt: false,
+          dailyCharges: dc
+        });
+      } else {
+        const existing = displayMap.get(key);
+        if (c.effect && (!existing.effect || existing.effect === 'Consumable effect')) {
+          existing.effect = c.effect;
+        }
+        if (dc && !existing.dailyCharges) {
+          existing.dailyCharges = dc;
+        }
+      }
+    });
+
+    if (ch.bodySlots && typeof ch.bodySlots === 'object') {
+      Object.entries(ch.bodySlots).forEach(([slotKey, slotItem]) => {
+        if (!slotItem || !slotItem.name || slotItem.name === '-') return;
+        if (isExcludedPhysicalOrAbility(slotItem, slotKey)) return;
+        const slotCat = String(slotItem.category || slotItem.type || '').toLowerCase().trim();
+        const isPhysicalSlotGear = slotCat === 'weapon' || slotCat === 'armor' || slotCat === 'shield' || slotKey === 'mainHand' || slotKey === 'offHand' || slotKey === 'armor';
+        const dc = resolveDailyCharges(slotItem);
+        const hasExplicitCharges = Number(slotItem.dailyCharges?.max || slotItem.dailyCharges || slotItem.charges) > 0 ||
+          (Array.isArray(slotItem.modes) && slotItem.modes.some(m => m && m.actionType && m.actionType !== 'passive'));
+        const hasDaily = isPhysicalSlotGear ? hasExplicitCharges : Boolean(dc);
+        const isWandOrUse = isPhysicalSlotGear
+          ? hasExplicitCharges
+          : ((slotItem.desc && /(?:cure|fireball|missile|\d+d\d+)/i.test(slotItem.desc)) || (slotItem.name && /\bwand\b/i.test(slotItem.name)));
+        if (hasDaily || isWandOrUse) {
+          const key = String(slotItem.name || '').toLowerCase().trim();
+          if (!displayMap.has(key)) {
+            displayMap.set(key, {
+              id: slotItem.id || null,
+              name: slotItem.name,
+              qty: Number(slotItem.qty) || 1,
+              effect: slotItem.desc || 'Equipped magic item',
+              sourceType: 'slot',
+              slotKey,
+              isBelt: false,
+              fromSlot: true,
+              dailyCharges: dc
+            });
+          }
+        }
+      });
+    }
+
+    const allItems = Array.from(displayMap.values());
+    const byGroup = {
+      healing: [],
+      wand_damage: [],
+      buff: [],
+      daily_charge: [],
+      other: []
+    };
+    allItems.forEach(item => {
+      const cat = classifyCategory(item);
+      if (byGroup[cat]) byGroup[cat].push(item);
+      else byGroup.other.push(item);
+    });
+    Object.values(byGroup).forEach(arr => {
+      arr.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
+    });
+
+    return { allItems, byGroup };
+  },
+
+  /**
+   * Pure, zero-mutation sheet derivation pipeline (Phase R1 Strangler Fig).
+   * Accepts `(inputChar, customDb, tacticalOptions)` or `(inputChar, { masterDb, session, tactical })`.
+   * Returns a self-contained `SheetView` without mutating `inputChar` or `customDb`.
+   */
+  deriveSheet(inputChar, customDbOrOptions = [], tacticalOptions = {}) {
+    const working = JSON.parse(JSON.stringify(inputChar || {}));
+    let rawDb = [];
+    let rawSession = null;
+    let resolvedTactical = Object.assign({}, tacticalOptions || {});
+
+    if (Array.isArray(customDbOrOptions)) {
+      rawDb = customDbOrOptions;
+    } else if (customDbOrOptions && typeof customDbOrOptions === 'object') {
+      rawDb = Array.isArray(customDbOrOptions.masterDb)
+        ? customDbOrOptions.masterDb
+        : (Array.isArray(working.customDb) ? working.customDb : []);
+      if (customDbOrOptions.session && typeof customDbOrOptions.session === 'object') {
+        rawSession = customDbOrOptions.session;
+      }
+      resolvedTactical = Object.assign({}, customDbOrOptions.tactical || tacticalOptions || {});
+    } else if (Array.isArray(working.customDb)) {
+      rawDb = working.customDb;
+    }
+    const workingDb = JSON.parse(JSON.stringify(rawDb));
+    const workingSession = rawSession ? JSON.parse(JSON.stringify(rawSession)) : null;
+    if (workingSession && workingSession.actionEconomy && !resolvedTactical.spentActions) {
+      resolvedTactical.spentActions = Object.assign({}, workingSession.actionEconomy);
+    }
+
+    const migrator = (typeof window !== 'undefined' && window.SchemaMigrator)
+      || (typeof SchemaMigrator !== 'undefined' ? SchemaMigrator : null);
+    if (migrator && typeof migrator.sanitizeCharacterAbilitiesAndPool === 'function') {
+      migrator.sanitizeCharacterAbilitiesAndPool(working);
+    }
+
+    this.recalculateCharacter(working, workingDb, resolvedTactical);
+
+    const abi = working.abilities || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+    const mods = {
+      str: this.getAbilityMod(abi.str || 10),
+      dex: this.getAbilityMod(abi.dex || 10),
+      con: this.getAbilityMod(abi.con || 10),
+      int: this.getAbilityMod(abi.int || 10),
+      wis: this.getAbilityMod(abi.wis || 10),
+      cha: this.getAbilityMod(abi.cha || 10)
+    };
+
+    const evaluatedWeapons = (working.weapons || []).map(w => {
+      const isOff = w.slot === 'offHand' || /off-?hand/i.test(String(w.grip || ''));
+      const evalRes = this.evaluateWeaponAttack(working, w, {
+        grip: isOff ? 'Off-Hand' : (w.grip || '1-Hand')
+      });
+      return {
+        ...w,
+        evaluated: evalRes
+      };
+    });
+
+    const consumablesGrouped = this.deriveConsumablesView(working);
+
+    return {
+      meta: {
+        id: working.id || null,
+        name: working.name || 'Unnamed Hero',
+        race: working.race || 'Human',
+        size: working.size || 'Medium',
+        alignment: working.alignment || 'Neutral',
+        deity: working.deity || '',
+        classes: working.classes || '',
+        level: Number(working.level) || 1,
+        ecl: Number(working.ecl) || Number(working.level) || 1,
+        levelAdjustment: Number(working.levelAdjustment) || 0,
+        templateSummary: working.templateSummary || null
+      },
+      abilities: {
+        str: abi.str,
+        dex: abi.dex,
+        con: abi.con,
+        int: abi.int,
+        wis: abi.wis,
+        cha: abi.cha,
+        mods,
+        sources: working.abilitySources || {}
+      },
+      ac: {
+        ...(working.acBreakdown || {}),
+        conditionalBonuses: working.conditionalAcBonuses || []
+      },
+      saves: {
+        ...(working.evaluatedSaves || {}),
+        detail: working.saves || {},
+        conditionalBonuses: working.conditionalSaveBonuses || []
+      },
+      hp: {
+        current: Number(working.hp?.current ?? working.hp?.max ?? 10),
+        max: Number(working.hp?.max ?? 10),
+        temp: Number(working.hp?.temp ?? 0),
+        nonlethal: Number(working.hp?.nonlethal ?? 0),
+        baseMax: Number(working.hp?.baseMax ?? 10),
+        conBonusHp: Number(working.hp?.conBonusHp ?? 0),
+        bonusFeatHp: Number(working.hp?.bonusFeatHp ?? 0),
+        flawHpPenalty: Number(working.hp?.flawHpPenalty ?? 0),
+        debuffHpPenalty: Number(working.hp?.debuffHpPenalty ?? 0),
+        periodicEffects: working.periodicHpEffects || []
+      },
+      combat: {
+        bab: Number(working.bab) || 0,
+        grapple: Number(working.grappleBonus) || 0,
+        initiative: (Number(working.buffInitiativeBonus) || 0) + mods.dex,
+        initiativeBreakdown: working.initiativeBreakdown || [],
+        speed: {
+          land: working.effectiveSpeed || working.baseSpeed || 30,
+          swim: working.swimSpeed || 0,
+          climb: working.climbSpeed || 0,
+          fly: working.flySpeed || 0
+        },
+        weapons: evaluatedWeapons,
+        modes: working.evaluatedModes || [],
+        actionEconomy: working.actionEconomy || {}
+      },
+      defenses: {
+        ...(working.evaluatedDefenses || {}),
+        ruleFlags: working.ruleFlags || {}
+      },
+      resources: working.evaluatedResources || {},
+      lego: working.legoEvaluation || { entries: [], modes: [], defenses: {}, resources: {} },
+      inventory: {
+        bodySlots: working.bodySlots || {},
+        gearPool: working.gearPool || [],
+        consumables: working.consumables || [],
+        consumablesGrouped
+      },
+      spells: {
+        spellcasting: working.spellcasting || {},
+        bonusSpellSlotsByLevel: working.bonusSpellSlotsByLevel || {},
+        bonusPowerPoints: Number(working.bonusPowerPoints) || 0,
+        buffs: working.buffs || []
+      },
+      session: workingSession,
+      warnings: working.activeConditionWarnings || [],
+      _workingSnapshot: working
+    };
+  },
+
+  /**
+   * Strangler Fig Compatibility Bridge (`R1`–`R6`):
+   * Copies all derived & sanitized fields from a deep-cloned `sheetView._workingSnapshot`
+   * back onto `targetChar` in memory so unmigrated tabs achieve 100% Deep-Equal parity.
+   */
+  writeBackLegacyFields(targetChar, sheetView) {
+    if (!targetChar || !sheetView || !sheetView._workingSnapshot) return targetChar;
+    const prevPlayerTs = targetChar.hp?._lastPlayerChangeTs;
+    const prevDmTs = targetChar.hp?._lastDmUpdateTs;
+    const clonedSnap = JSON.parse(JSON.stringify(sheetView._workingSnapshot));
+    Object.keys(clonedSnap).forEach(k => {
+      targetChar[k] = clonedSnap[k];
+    });
+    if (targetChar.hp && typeof targetChar.hp === 'object') {
+      if (targetChar.hp._lastDmUpdateTs === undefined && prevDmTs !== undefined) {
+        targetChar.hp._lastDmUpdateTs = prevDmTs;
+      }
+      if (prevPlayerTs !== undefined || targetChar.hp._lastPlayerChangeTs !== undefined) {
+        targetChar.hp._lastPlayerChangeTs = Math.max(
+          Number(prevPlayerTs) || 0,
+          Number(targetChar.hp._lastPlayerChangeTs) || 0
+        );
+      }
+    }
+    return targetChar;
+  },
+
+  /**
+   * Returns a clean clone of `charDoc` with heavy transient evaluation-only properties stripped,
+   * while preserving `abilities`, `hp`, `acBreakdown`, `evaluatedSaves`, and `saves` for `hub.html` card compatibility.
+   */
+  stripDerivedFields(charDoc) {
+    if (!charDoc || typeof charDoc !== 'object') return charDoc;
+    const clean = JSON.parse(JSON.stringify(charDoc));
+    const transientKeys = [
+      'legoEvaluation', 'evaluatedDefenses', 'evaluatedResources', 'evaluatedModes',
+      'grantedCapabilities', 'abilitySources', 'initiativeBreakdown',
+      'activeConditionWarnings', 'twoHandedConflict', '_workingSnapshot'
+    ];
+    transientKeys.forEach(k => {
+      delete clean[k];
+    });
+    return clean;
   }
 };
 
