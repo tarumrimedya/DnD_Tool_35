@@ -1,0 +1,43 @@
+name: Verify & Test
+
+# Runs the same zero-dependency checks as the local workflow (CLAUDE.md "Verification"):
+# webapp/ parity, syntax, banned dice emoji, RAW rule-engine tests, Sheet V3 tests and the Lego benchmark.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      # Syncs root -> webapp/ and character.html, then verifies parity, syntax, JSON,
+      # the U+1F3B2 ban, RuleEngine RAW tests and tools/test_sheet_v3.mjs.
+      - name: verify_and_sync
+        run: node tools/verify_and_sync.js
+
+      # verify_and_sync rewrites synced copies. Any diff means a commit forgot to run it.
+      - name: Synced copies are committed
+        run: |
+          if ! git diff --quiet; then
+            echo "::error::Root files and their synced copies (webapp/, character.html, srd_index.json hashes) differ. Run 'node tools/verify_and_sync.js' and commit the result."
+            git diff --stat
+            exit 1
+          fi
+
+      - name: V2.5 Lego engine benchmark
+        run: node tools/test_lego_engine.js
