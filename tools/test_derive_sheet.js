@@ -921,6 +921,253 @@ function runDeriveSheetTests() {
   );
   CharStore.clearHistory();
 
+  // ============================================================================
+  // Phase R4: Inventory & Gear Pool View-Models, Pure Reducers & Undo/Redo
+  // ============================================================================
+  const r4Doc = JSON.parse(JSON.stringify(f01Raw));
+  // Add a daily-charge ring and a pool item to test bodySlotsView, poolRows, and inventory/* reducers
+  if (!r4Doc.bodySlots) r4Doc.bodySlots = {};
+  r4Doc.bodySlots.ring1 = {
+    id: 'item_ring_prot_1_charged',
+    name: 'Ring of Blinking',
+    type: 'Wondrous Item',
+    slot: 'ring1',
+    weight: 0.1,
+    active: true,
+    dailyCharges: { max: 3, current: 3, recharge: 'long_rest' }
+  };
+  r4Doc.gearPool.push({
+    id: 'pool_test_cloak_res_2',
+    name: 'Cloak of Resistance +2',
+    category: 'Shoulders',
+    slot: 'shoulders',
+    weight: 1,
+    qty: 1,
+    cost: 4000,
+    modifiers: [{ target: 'saves.all', value: 2, type: 'Resistance' }]
+  });
+  CharStore.replaceDoc(r4Doc, { skipHistory: true });
+  const r4Sheet0 = CharStore.getSheet();
+
+  check(
+    'Phase R4: sheet.inventory exposes pure encumbranceView, wealthView, bodySlotsView, poolRows, weaponsView, and armorView',
+    r4Sheet0.inventory &&
+    r4Sheet0.inventory.encumbranceView &&
+    typeof r4Sheet0.inventory.encumbranceView.totalWeight === 'number' &&
+    typeof r4Sheet0.inventory.encumbranceView.equippedWeight === 'number' &&
+    typeof r4Sheet0.inventory.encumbranceView.poolWeight === 'number' &&
+    typeof r4Sheet0.inventory.encumbranceView.barPct === 'number' &&
+    r4Sheet0.inventory.wealthView &&
+    typeof r4Sheet0.inventory.wealthView.totalGpEquivalent === 'number' &&
+    r4Sheet0.inventory.bodySlotsView &&
+    Array.isArray(r4Sheet0.inventory.bodySlotsView.slotList) &&
+    r4Sheet0.inventory.bodySlotsView.slotList.length === 14 &&
+    typeof r4Sheet0.inventory.bodySlotsView.slotsByKey === 'object' &&
+    Array.isArray(r4Sheet0.inventory.poolRows) &&
+    Array.isArray(r4Sheet0.inventory.weaponsView) &&
+    Array.isArray(r4Sheet0.inventory.armorView),
+    JSON.stringify({
+      encumbranceView: r4Sheet0.inventory?.encumbranceView,
+      slotsLen: r4Sheet0.inventory?.bodySlotsView?.slotList?.length,
+      poolLen: r4Sheet0.inventory?.poolRows?.length
+    })
+  );
+
+  // Check normalized dailyCharges in bodySlotsView without mutating source doc if missing
+  const ring1SlotView = r4Sheet0.inventory.bodySlotsView.slotsByKey.ring1;
+  check(
+    'Phase R4: bodySlotsView normalizes occupied slot item and dailyCharges cleanly',
+    ring1SlotView && ring1SlotView.isOccupied === true && ring1SlotView.isActive === true &&
+    ring1SlotView.dailyCharges && ring1SlotView.dailyCharges.max === 3 && ring1SlotView.dailyCharges.current === 3
+  );
+
+  // Test inventory/adjustSlotCharge + Undo/Redo
+  CharStore.dispatch({
+    type: 'inventory/adjustSlotCharge',
+    payload: { slotKey: 'ring1', delta: -1 }
+  });
+  check(
+    'Phase R4: inventory/adjustSlotCharge decrements slot dailyCharges.current (3 -> 2)',
+    CharStore.getDoc().bodySlots.ring1.dailyCharges.current === 2 &&
+    CharStore.getSheet().inventory.bodySlotsView.slotsByKey.ring1.dailyCharges.current === 2
+  );
+  CharStore.undo();
+  check(
+    'Phase R4: CharStore.undo() restores slot dailyCharges.current (2 -> 3)',
+    CharStore.getDoc().bodySlots.ring1.dailyCharges.current === 3
+  );
+  CharStore.redo();
+  check(
+    'Phase R4: CharStore.redo() re-applies slot dailyCharges.current (3 -> 2)',
+    CharStore.getDoc().bodySlots.ring1.dailyCharges.current === 2
+  );
+
+  // Test inventory/equipPoolItem -> updates saves (+2 Resistance) & marks pool item isEquipped, then Undo/Redo
+  const fortBeforeCloak = CharStore.getSheet().saves.fort;
+  const poolWeightBeforeEquip = CharStore.getSheet().inventory.encumbranceView.poolWeight;
+  const eqWeightBeforeEquip = CharStore.getSheet().inventory.encumbranceView.equippedWeight;
+  CharStore.dispatch({
+    type: 'inventory/equipPoolItem',
+    payload: { itemId: 'pool_test_cloak_res_2', forceSlotKey: 'shoulders' }
+  });
+  const sheetAfterEquip = CharStore.getSheet();
+  const cloakInPoolAfterEquip = CharStore.getDoc().gearPool.find(i => i && i.id === 'pool_test_cloak_res_2');
+  check(
+    'Phase R4: inventory/equipPoolItem equips Cloak of Resistance +2 into shoulders, marks pool item isEquipped, shifts weight from pool to equipped, and updates saves (+2 Resistance)',
+    CharStore.getDoc().bodySlots.shoulders &&
+    CharStore.getDoc().bodySlots.shoulders.name === 'Cloak of Resistance +2' &&
+    cloakInPoolAfterEquip && cloakInPoolAfterEquip.isEquipped === true &&
+    sheetAfterEquip.saves.fort === fortBeforeCloak + 2 &&
+    sheetAfterEquip.inventory.encumbranceView.equippedWeight === Math.round((eqWeightBeforeEquip + 1) * 10) / 10 &&
+    sheetAfterEquip.inventory.encumbranceView.poolWeight === Math.round((poolWeightBeforeEquip - 1) * 10) / 10
+  );
+
+  // Test inventory/toggleSlotActive on shoulders -> deactivates Cloak bonus, Undo restores it
+  const fortWithCloak = CharStore.getSheet().saves.fort;
+  CharStore.dispatch({
+    type: 'inventory/toggleSlotActive',
+    payload: { slotKey: 'shoulders' }
+  });
+  check(
+    'Phase R4: inventory/toggleSlotActive deactivates shoulders slot and recalculates saves',
+    CharStore.getDoc().bodySlots.shoulders.active === false &&
+    CharStore.getSheet().saves.fort === fortBeforeCloak
+  );
+  CharStore.undo();
+  check(
+    'Phase R4: CharStore.undo() restores active shoulders slot and save bonus',
+    CharStore.getDoc().bodySlots.shoulders.active === true &&
+    CharStore.getSheet().saves.fort === fortWithCloak
+  );
+
+  // Test inventory/unequipSlot -> unmarks isEquipped in gearPool and resets shoulders slot
+  CharStore.dispatch({
+    type: 'inventory/unequipSlot',
+    payload: { slotKey: 'shoulders' }
+  });
+  const cloakInPoolAfterUnequip = CharStore.getDoc().gearPool.find(i => i && i.name === 'Cloak of Resistance +2');
+  check(
+    'Phase R4: inventory/unequipSlot unmarks isEquipped in gearPool and clears bodySlot',
+    CharStore.getDoc().bodySlots.shoulders.name === '-' &&
+    cloakInPoolAfterUnequip && cloakInPoolAfterUnequip.isEquipped === false &&
+    CharStore.getSheet().saves.fort === fortBeforeCloak
+  );
+
+  // Test inventory/adjustPoolQty, inventory/togglePoolBelt, inventory/deletePoolItem + Undo
+  CharStore.dispatch({
+    type: 'inventory/adjustPoolQty',
+    payload: { itemId: 'pool_test_cloak_res_2', delta: 2 }
+  });
+  CharStore.dispatch({
+    type: 'inventory/togglePoolBelt',
+    payload: { itemId: 'pool_test_cloak_res_2' }
+  });
+  const cloakAfterQtyBelt = CharStore.getDoc().gearPool.find(i => i && i.id === 'pool_test_cloak_res_2');
+  check(
+    'Phase R4: inventory/adjustPoolQty (1 -> 3) and inventory/togglePoolBelt (isBelt: true) mutate doc cleanly',
+    cloakAfterQtyBelt && cloakAfterQtyBelt.qty === 3 && cloakAfterQtyBelt.isBelt === true && cloakAfterQtyBelt.inBelt === true
+  );
+  CharStore.dispatch({
+    type: 'inventory/deletePoolItem',
+    payload: { itemId: 'pool_test_cloak_res_2' }
+  });
+  check(
+    'Phase R4: inventory/deletePoolItem removes item from gearPool and CharStore.undo() restores it',
+    !CharStore.getDoc().gearPool.some(i => i && i.id === 'pool_test_cloak_res_2')
+  );
+  CharStore.undo();
+  check(
+    'Phase R4: CharStore.undo() after inventory/deletePoolItem restores the deleted item with qty=3',
+    CharStore.getDoc().gearPool.some(i => i && i.id === 'pool_test_cloak_res_2' && i.qty === 3)
+  );
+
+  // Test inventory/updateWealth + wealthView calculation + Undo
+  CharStore.dispatch({
+    type: 'inventory/updateWealth',
+    payload: { pp: 2, gp: 150, sp: 5, cp: 5 }
+  });
+  const wv = CharStore.getSheet().inventory.wealthView;
+  check(
+    'Phase R4: inventory/updateWealth updates doc.wealth and derives totalGpEquivalent (2*10 + 150 + 0.5 + 0.05 = 170.55)',
+    wv.pp === 2 && wv.gp === 150 && wv.sp === 5 && wv.cp === 5 && wv.totalGpEquivalent === 170.55,
+    JSON.stringify(wv)
+  );
+  CharStore.undo();
+
+  // Static check: Verify every Actions.register('inventory:*', ...) handler in char_inventory.js uses (el, data, event)
+  const charInventorySrc = fs.readFileSync(path.join(__dirname, '..', 'char_inventory.js'), 'utf8');
+  const invActionRegRegex = /actionsApi\.register\(\s*['"]inventory:([^'"]+)['"]\s*,\s*\(([^)]*)\)/g;
+  let invRegMatch;
+  let invRegCount = 0;
+  const badInvSigs = [];
+  while ((invRegMatch = invActionRegRegex.exec(charInventorySrc)) !== null) {
+    invRegCount++;
+    const actionName = invRegMatch[1];
+    const params = invRegMatch[2].split(',').map(s => s.trim()).filter(Boolean);
+    if (params[0] !== 'el' || (params.length > 1 && params[1] !== 'data')) {
+      badInvSigs.push(`inventory:${actionName}(${invRegMatch[2]})`);
+    }
+  }
+  check(
+    'Phase R4: All 38 Actions.register("inventory:*") handlers in char_inventory.js strictly follow (el, data, event) parameter order',
+    invRegCount >= 35 && badInvSigs.length === 0,
+    `count=${invRegCount}, bad=${badInvSigs.join(', ')}`
+  );
+
+  // Phase R4 QA Remediation Gate:
+  // 1) syncInventoryStore is defined in char_inventory.js
+  // 2) inventory/equipCompanionItem & inventory/unequipCompanionSlot work with Undo/Redo
+  // 3) No-op inventory outcomes (empty_slot, charges_exhausted, no_daily_charges) do NOT push onto Undo stack
+  check(
+    'Phase R4 QA: syncInventoryStore helper is defined in char_inventory.js for companion equip/unequip wrappers',
+    /function\s+syncInventoryStore\s*\(/.test(charInventorySrc)
+  );
+
+  CharStore.clearHistory();
+  const compDoc = JSON.parse(JSON.stringify(r4Doc));
+  compDoc.companion = { name: 'Wolf', gear: {} };
+  CharStore.replaceDoc(compDoc, { skipHistory: true });
+  CharStore.clearHistory();
+
+  // Attempt no-op unequipCompanionSlot on empty slot -> should NOT push to Undo stack
+  CharStore.dispatch({
+    type: 'inventory/unequipCompanionSlot',
+    payload: { slotKey: 'neck' }
+  });
+  check(
+    'Phase R4 QA: No-op inventory/unequipCompanionSlot (empty_slot) does not push onto Undo stack',
+    CharStore.getLastOutcome()?.status === 'empty_slot' && CharStore.getHistoryCounts().undo === 0
+  );
+
+  // Equip Cloak of Resistance +2 onto companion neck slot -> Undo -> Redo
+  CharStore.dispatch({
+    type: 'inventory/equipCompanionItem',
+    payload: { poolItemId: 'pool_test_cloak_res_2', slotKey: 'neck' },
+    meta: { label: 'Equip Companion Item (neck)' }
+  });
+  check(
+    'Phase R4 QA: inventory/equipCompanionItem equips item into doc.companion.gear.neck and records Undo history',
+    Boolean(CharStore.getDoc().companion?.gear?.neck && CharStore.getDoc().companion.gear.neck.name === 'Cloak of Resistance +2') &&
+    CharStore.getHistoryCounts().undo === 1
+  );
+  CharStore.dispatch({
+    type: 'inventory/unequipCompanionSlot',
+    payload: { slotKey: 'neck' },
+    meta: { label: 'Unequip Companion Slot (neck)' }
+  });
+  check(
+    'Phase R4 QA: inventory/unequipCompanionSlot returns item from doc.companion.gear.neck back to doc.gearPool',
+    !CharStore.getDoc().companion?.gear?.neck &&
+    CharStore.getDoc().gearPool.some(i => i && i.name === 'Cloak of Resistance +2') &&
+    CharStore.getHistoryCounts().undo === 2
+  );
+  CharStore.undo();
+  check(
+    'Phase R4 QA: CharStore.undo() restores companion equipped item in doc.companion.gear.neck',
+    Boolean(CharStore.getDoc().companion?.gear?.neck && CharStore.getDoc().companion.gear.neck.name === 'Cloak of Resistance +2')
+  );
+  CharStore.clearHistory();
+
   return { passed, elapsedMs: Date.now() - startMs };
 }
 

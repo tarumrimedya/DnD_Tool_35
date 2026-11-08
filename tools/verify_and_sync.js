@@ -311,7 +311,7 @@ function main() {
     'char_combat.js':     { inlineEvents: 98,  windowAssigns: 82 },
     'char_spells.js':     { inlineEvents: 86,  windowAssigns: 68 },
     'char_progression.js':{ inlineEvents: 115, windowAssigns: 47 },
-    'char_inventory.js':  { inlineEvents: 90,  windowAssigns: 41 },
+    'char_inventory.js':  { inlineEvents: 27,  windowAssigns: 41 },
     'rule_engine.js':     { inlineEvents: 0,   windowAssigns: 1 },
     'char_store.js':      { inlineEvents: 0,   windowAssigns: 1 },
     'ui_components.js':   { inlineEvents: 0,   windowAssigns: 2 },

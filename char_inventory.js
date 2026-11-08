@@ -339,7 +339,8 @@
           <td class="py-2 px-2 text-center align-middle">
             <button 
               type="button" 
-              onclick="toggleSkillClass('${item.key}')" 
+              data-action="inventory:toggle-skill-class"
+              data-skill-key="${item.key}"
               title="${item.isClass ? 'Class Skill • Click to make Cross-Class' : 'Cross-Class Skill • Click to make Class Skill'}"
               class="w-6 h-6 rounded flex items-center justify-center transition ${item.isClass ? 'text-amber-400 hover:text-amber-300 font-black' : 'text-slate-600 hover:text-slate-400 font-normal'}">
               <span>${item.isClass ? '⭐' : '⚪'}</span>
@@ -372,7 +373,7 @@
           <!-- 3D Roll -->
           <td class="py-2 px-3 text-center align-middle">
             <div class="inline-flex items-center gap-1">
-              <button onclick="rollSkill3D('${safeName}', ${total}, '${safeSubtitle}')" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded-lg border border-slate-700 text-xs font-mono transition inline-flex items-center gap-1.5 justify-center shadow-sm active:scale-95" title="Roll 1d20${total >= 0 ? '+' : ''}${total} ${safeName} check">
+              <button data-action="inventory:roll-skill" data-skill-name="${safeName}" data-total="${total}" data-subtitle="${safeSubtitle}" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded-lg border border-slate-700 text-xs font-mono transition inline-flex items-center gap-1.5 justify-center shadow-sm active:scale-95" title="Roll 1d20${total >= 0 ? '+' : ''}${total} ${safeName} check">
                 ${getD20IconSvg('w-3.5 h-3.5 text-amber-400')}
                 <span>Roll</span>
               </button>
@@ -382,9 +383,9 @@
           <!-- Rank & Rank Adjustment Buttons -->
           <td class="py-2 px-2 text-center align-middle font-mono">
             <div class="inline-flex items-center gap-1">
-              <button onclick="adjustSkillRank('${item.key}', -1)" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">-</button>
+              <button data-action="inventory:adjust-skill-rank" data-skill-key="${item.key}" data-delta="-1" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">-</button>
               <span class="w-6 text-center font-bold ${isOverRank ? 'text-rose-400 animate-pulse' : (item.ranks > 0 ? 'text-sky-300' : 'text-slate-500')}">${item.ranks}</span>
-              <button onclick="adjustSkillRank('${item.key}', 1)" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">+</button>
+              <button data-action="inventory:adjust-skill-rank" data-skill-key="${item.key}" data-delta="1" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">+</button>
             </div>
             <div class="text-[9px] text-slate-500 font-mono">/ ${maxRankAllowed}</div>
           </td>
@@ -969,7 +970,7 @@
         const pinIconSvg = isPinned
           ? `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`
           : `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
-        const buffPinBtnHtml = `<button type="button" onclick="event.stopPropagation(); toggleBuffCombatPin('${safeBuffId}')" class="w-6 h-6 inline-flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${pinBtnClasses}" title="${pinBtnTitle}">${pinIconSvg}</button>`;
+        const buffPinBtnHtml = `<button type="button" data-action="inventory:toggle-buff-pin" data-buff-id="${safeBuffId}" class="w-6 h-6 inline-flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${pinBtnClasses}" title="${pinBtnTitle}">${pinIconSvg}</button>`;
 
         if (viewMode === 'list') {
           // --- LISTE GÖRÜNÜMÜ (COMPACT LIST VIEW) ---
@@ -980,7 +981,7 @@
             <div class="flex items-center justify-between gap-2.5 flex-wrap sm:flex-nowrap">
               <!-- Sol: Checkbox + İsim + Kategori Rozeti -->
               <div class="flex items-center gap-2.5 min-w-0">
-                <input type="checkbox" ${isAct ? 'checked' : ''} onchange="toggleBuffActive('${buff.id}')" class="w-4 h-4 rounded shrink-0 ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'} cursor-pointer">
+                <input type="checkbox" ${isAct ? 'checked' : ''} data-change-action="inventory:toggle-buff-active" data-buff-id="${safeBuffId}" class="w-4 h-4 rounded shrink-0 ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'} cursor-pointer">
                 <div class="min-w-0 flex items-center gap-1.5 flex-wrap">
                   <span class="font-bold text-xs truncate ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
                   <span class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
@@ -999,13 +1000,13 @@
                 </div>
                 <div class="flex items-center gap-1">
                   ${buff.rounds !== null && buff.rounds !== undefined ? `
-                    <button type="button" onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Decrease 1 Round">-</button>
+                    <button type="button" data-action="inventory:adjust-buff-rounds" data-buff-id="${safeBuffId}" data-delta="-1" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Decrease 1 Round">-</button>
                     <span class="font-mono font-bold px-1 text-xs ${buff.rounds <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-400'} min-w-[36px] text-center">${buff.rounds} Rd</span>
-                    <button type="button" onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Add 1 Round">+</button>
+                    <button type="button" data-action="inventory:adjust-buff-rounds" data-buff-id="${safeBuffId}" data-delta="1" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Add 1 Round">+</button>
                   ` : `<span class="text-[10px] text-slate-500 italic px-2">${buffDurDisplay}</span>`}
                 </div>
                 ${buffPinBtnHtml}
-                <button type="button" onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-1 text-xs transition cursor-pointer" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
+                <button type="button" data-action="inventory:delete-buff" data-buff-id="${safeBuffId}" class="text-slate-500 hover:text-rose-400 p-1 text-xs transition cursor-pointer" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
               </div>
             </div>
 
@@ -1027,13 +1028,13 @@
             <div class="space-y-1.5">
               <div class="flex items-center justify-between gap-1.5">
                 <label class="flex items-center gap-2 cursor-pointer select-none">
-                  <input type="checkbox" ${isAct ? 'checked' : ''} onchange="toggleBuffActive('${buff.id}')" class="w-4 h-4 rounded ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'}">
+                  <input type="checkbox" ${isAct ? 'checked' : ''} data-change-action="inventory:toggle-buff-active" data-buff-id="${safeBuffId}" class="w-4 h-4 rounded ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'}">
                   <span class="font-bold text-xs ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
                 </label>
                 <div class="flex items-center gap-1">
                   <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
                   ${buffPinBtnHtml}
-                  <button onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
+                  <button data-action="inventory:delete-buff" data-buff-id="${safeBuffId}" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
                 </div>
               </div>
 
@@ -1056,9 +1057,9 @@
               </div>
               <div class="flex items-center gap-1">
                 ${buff.rounds !== null && buff.rounds !== undefined ? `
-                  <button onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">-</button>
+                  <button data-action="inventory:adjust-buff-rounds" data-buff-id="${safeBuffId}" data-delta="-1" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">-</button>
                   <span class="font-mono font-bold px-1.5 ${buff.rounds <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-400'}">${buff.rounds} Rd</span>
-                  <button onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">+</button>
+                  <button data-action="inventory:adjust-buff-rounds" data-buff-id="${safeBuffId}" data-delta="1" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">+</button>
                 ` : `<span class="text-[10px] text-slate-500 italic">${buffDurDisplay}</span>`}
               </div>
             </div>
@@ -3505,27 +3506,34 @@
         }
       }
 
-      // 1. Calculate Carrying Capacity & Weights
-      const strScore = character.abilities?.str || 10;
-      const caps = RuleEngine.getCarryingCapacity(strScore);
+      // 1. Calculate Carrying Capacity & Weights (via SheetView when available)
+      const sheetInv = (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getSheet === 'function' && window.CharStore.getSheet()?.inventory)
+        || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveInventoryView === 'function' ? RuleEngine.deriveInventoryView(character) : null);
+      const encView = sheetInv?.encumbranceView || null;
+      const strScore = encView ? encView.strScore : (character.abilities?.str || 10);
+      const caps = encView ? encView.capacities : RuleEngine.getCarryingCapacity(strScore);
 
       let equippedWeight = 0;
-      Object.values(character.bodySlots).forEach(slot => {
-        if (slot && slot.active && slot.name && slot.name !== '-') {
-          equippedWeight += Number(slot.weight) || 0;
-        }
-      });
-
       let poolWeight = 0;
-      character.gearPool.forEach(item => {
-        if (!item.isEquipped) {
-          const q = (item.qty !== undefined && item.qty !== null) ? Math.max(0, Number(item.qty)) : 1;
-          poolWeight += (Number(item.weight) || 0) * q;
-        }
-      });
+      if (encView) {
+        equippedWeight = encView.equippedWeight;
+        poolWeight = encView.poolWeight;
+      } else {
+        Object.values(character.bodySlots).forEach(slot => {
+          if (slot && slot.active && slot.name && slot.name !== '-') {
+            equippedWeight += Number(slot.weight) || 0;
+          }
+        });
+        character.gearPool.forEach(item => {
+          if (!item.isEquipped) {
+            const q = (item.qty !== undefined && item.qty !== null) ? Math.max(0, Number(item.qty)) : 1;
+            poolWeight += (Number(item.weight) || 0) * q;
+          }
+        });
+      }
 
-      const totalWeight = Math.round((equippedWeight + poolWeight) * 10) / 10;
-      const load = RuleEngine.getLoadStatus(totalWeight, strScore);
+      const totalWeight = encView ? encView.totalWeight : (Math.round((equippedWeight + poolWeight) * 10) / 10);
+      const load = encView ? encView.loadStatus : RuleEngine.getLoadStatus(totalWeight, strScore);
 
       const wDisplay = document.getElementById('inv-total-weight');
       if (wDisplay) wDisplay.textContent = totalWeight + ' lbs';
@@ -3538,7 +3546,7 @@
 
       const bar = document.getElementById('inv-weight-bar');
       if (bar) {
-        const pct = Math.min(100, Math.round((totalWeight / caps.heavy) * 100));
+        const pct = encView ? encView.barPct : Math.min(100, Math.round((totalWeight / caps.heavy) * 100));
         bar.style.width = pct + '%';
         if (totalWeight <= caps.light) bar.className = 'bg-emerald-500 h-full rounded-full transition-all duration-300';
         else if (totalWeight <= caps.medium) bar.className = 'bg-amber-500 h-full rounded-full transition-all duration-300';
@@ -3559,7 +3567,8 @@
       if (slotsTbody) {
         slotsTbody.innerHTML = '';
         BODY_SLOT_DEFS.forEach(def => {
-          const slotData = character.bodySlots[def.key] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+          const rawSlot = character.bodySlots[def.key] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+          const slotData = Object.assign({}, rawSlot);
           const isOccupied = slotData.name && slotData.name !== '-';
 
           let conflictNotice = '';
@@ -3573,7 +3582,7 @@
           tr.className = 'hover:bg-slate-900/50 transition border-b border-slate-800/80';
           tr.innerHTML = `
             <td class="py-2.5 px-3 text-center align-middle">
-              <input type="checkbox" ${slotData.active ? 'checked' : ''} ${!isOccupied ? 'disabled' : ''} onchange="toggleSlotActive('${def.key}')" class="w-4 h-4 rounded text-sky-500 border-slate-700 focus:ring-0">
+              <input type="checkbox" ${slotData.active ? 'checked' : ''} ${!isOccupied ? 'disabled' : ''} data-change-action="inventory:toggle-slot-active" data-slot-key="${def.key}" class="w-4 h-4 rounded text-sky-500 border-slate-700 focus:ring-0">
             </td>
             <td class="py-2.5 px-3 text-center align-middle text-lg">${def.icon}</td>
             <td class="py-2.5 px-3 align-middle font-bold text-slate-300">
@@ -3595,8 +3604,8 @@
             <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${isOccupied ? slotData.cost + ' GP' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle">
               <div class="inline-flex items-center justify-center gap-1.5">
-                ${isOccupied && isForgeEditableItem(slotData) ? `<button onclick="openForgeForSlotItem('${def.key}')" title="Customize in Item Forge" class="w-7 h-7 bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 text-xs rounded-lg inline-flex items-center justify-center transition cursor-pointer shrink-0">⚒️</button>` : ''}
-                ${isOccupied ? `<button onclick="unequipSlot('${def.key}')" class="w-20 h-7 bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">Unequip</button>` : `<button onclick="openSlotEquipModal('${def.key}')" class="w-20 h-7 bg-sky-950/70 hover:bg-sky-900 text-sky-300 hover:text-white border border-sky-700/60 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">+ Equip</button>`}
+                ${isOccupied && isForgeEditableItem(slotData) ? `<button data-action="inventory:forge-slot-item" data-slot-key="${def.key}" title="Customize in Item Forge" class="w-7 h-7 bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 text-xs rounded-lg inline-flex items-center justify-center transition cursor-pointer shrink-0">⚒️</button>` : ''}
+                ${isOccupied ? `<button data-action="inventory:unequip-slot" data-slot-key="${def.key}" class="w-20 h-7 bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">Unequip</button>` : `<button data-action="inventory:open-slot-equip" data-slot-key="${def.key}" class="w-20 h-7 bg-sky-950/70 hover:bg-sky-900 text-sky-300 hover:text-white border border-sky-700/60 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">+ Equip</button>`}
               </div>
             </td>
           `;
@@ -4550,7 +4559,7 @@
         } else {
           // Normal Mode: clickable to equip
           nodesMarkup += `
-            <g id="sil-node-group-${slotKey}" class="slot-anchor-node cursor-pointer group pointer-events-auto" onclick="openSlotEquipModal('${slotKey}')">
+            <g id="sil-node-group-${slotKey}" class="slot-anchor-node cursor-pointer group pointer-events-auto" data-action="inventory:open-slot-equip" data-slot-key="${slotKey}">
               <circle id="sil-halo-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="9" fill="${color}" fill-opacity="0.22" stroke="${color}" stroke-opacity="0.4" stroke-width="1" class="transition-all duration-300 pointer-events-none"/>
               <circle id="sil-node-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="5" fill="${color}" stroke="#0b1329" stroke-width="1.8" class="transition-all duration-300 group-hover:scale-125"/>
               <circle id="sil-glint-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="1.5" fill="#ffffff" class="pointer-events-none"/>
@@ -4612,7 +4621,8 @@
 
       function buildCardHtml(slotKey, isRight) {
         const def = BODY_SLOT_DEFS.find(d => d.key === slotKey) || { key: slotKey, name: slotKey, trName: slotKey, icon: '⚔️' };
-        const slotData = character.bodySlots[slotKey] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+        const rawSlot = character.bodySlots[slotKey] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+        const slotData = Object.assign({}, rawSlot);
         const isOccupied = slotData.name && slotData.name !== '-';
         if (isOccupied && slotData.active) activeOccupiedCount++;
 
@@ -4624,7 +4634,7 @@
                  class="group relative bg-[#0b1329]/90 hover:bg-[#0f172a] border ${slotData.active ? 'border-sky-500/60 shadow-[0_0_15px_rgba(56,189,248,0.15)]' : 'border-slate-800 opacity-70'} rounded-xl p-2 sm:p-2.5 transition flex items-center justify-between gap-2.5">
               
               <div class="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
-                <button type="button" onclick="toggleSlotActive('${slotKey}')" title="Toggle Active / Inactive (${slotData.active ? 'Active' : 'Inactive'})" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg ${slotData.active ? 'bg-sky-950/80 border border-sky-400/60 text-sky-300 shadow-[0_0_8px_rgba(56,189,248,0.25)]' : 'bg-slate-800/80 border border-slate-700 text-slate-500 grayscale opacity-60'} flex items-center justify-center text-base sm:text-lg shrink-0 shadow-inner hover:scale-105 hover:border-sky-400 transition cursor-pointer">
+                <button type="button" data-action="inventory:toggle-slot-active" data-slot-key="${slotKey}" title="Toggle Active / Inactive (${slotData.active ? 'Active' : 'Inactive'})" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg ${slotData.active ? 'bg-sky-950/80 border border-sky-400/60 text-sky-300 shadow-[0_0_8px_rgba(56,189,248,0.25)]' : 'bg-slate-800/80 border border-slate-700 text-slate-500 grayscale opacity-60'} flex items-center justify-center text-base sm:text-lg shrink-0 shadow-inner hover:scale-105 hover:border-sky-400 transition cursor-pointer">
                   ${def.icon}
                 </button>
                 <div class="min-w-0 flex-1">
@@ -4632,18 +4642,20 @@
                     <span class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-sky-400">${def.trName || def.name}</span>
                     ${slotData.active ? '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-sky-950 text-sky-300 border border-sky-600/40">ACTIVE</span>' : '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-slate-800 text-slate-400 border border-slate-700">INACTIVE</span>'}
                     ${(() => {
-                      const dailyC = (typeof ensureItemDailyCharges === 'function') ? ensureItemDailyCharges(slotData) : slotData.dailyCharges;
+                      const dailyC = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.normalizeItemDailyCharges === 'function')
+                        ? RuleEngine.normalizeItemDailyCharges(slotData)
+                        : slotData.dailyCharges;
                       if (!dailyC) return '';
                       const isRound = (dailyC.unit === 'rounds' || dailyC.unit === 'tur' || dailyC.unit === 'turn');
                       const activeBuff = isRound && (typeof isItemBuffActive === 'function') && isItemBuffActive(slotData);
                       return `
                         <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-500/50 shadow-sm" title="Daily Remaining: ${dailyC.current}/${dailyC.max} ${dailyC.unit || 'charges'}">
                           <span>⚡ ${dailyC.current}/${dailyC.max}</span>
-                          <button type="button" onclick="event.stopPropagation(); spendSlotCharge('${slotKey}', 1)" title="Spend 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current <= 0 ? 'disabled' : ''}>-</button>
-                          <button type="button" onclick="event.stopPropagation(); restoreSlotCharge('${slotKey}', 1)" title="Restore 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current >= dailyC.max ? 'disabled' : ''}>+</button>
+                          <button type="button" data-action="inventory:spend-slot-charge" data-slot-key="${slotKey}" data-amount="1" title="Spend 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current <= 0 ? 'disabled' : ''}>-</button>
+                          <button type="button" data-action="inventory:restore-slot-charge" data-slot-key="${slotKey}" data-amount="1" title="Restore 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current >= dailyC.max ? 'disabled' : ''}>+</button>
                         </div>
                         ${isRound ? `
-                          <button type="button" onclick="event.stopPropagation(); ${activeBuff ? `dischargeDailyRoundItem('${encodeURIComponent(slotData.name)}', '${slotKey}')` : `castDailyRoundItem('${encodeURIComponent(slotData.name)}', '${slotKey}')`}"
+                          <button type="button" data-action="${activeBuff ? 'inventory:discharge-daily-round' : 'inventory:cast-daily-round'}" data-encoded-name="${encodeURIComponent(slotData.name)}" data-slot-key="${slotKey}"
                                   title="${activeBuff ? 'End Effect' : 'Spend 1 Charge & Activate'}"
                                   class="px-1.5 py-0.5 rounded text-[8px] font-bold transition flex items-center gap-0.5 cursor-pointer shadow-sm ${activeBuff ? 'bg-rose-950 text-rose-300 border border-rose-500 hover:bg-rose-900 animate-pulse' : 'bg-emerald-950 text-emerald-300 border border-emerald-600 hover:bg-emerald-900'}">
                             <span>${activeBuff ? '🛑 End' : '✨ Cast'}</span>
@@ -4667,11 +4679,11 @@
 
               <div class="flex items-center gap-1.5 shrink-0">
                 ${isForgeEditableItem(slotData) ? `
-                  <button onclick="openForgeForSlotItem('${slotKey}')" title="Customize in Item Forge" class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 transition text-xs inline-flex items-center justify-center cursor-pointer">
+                  <button data-action="inventory:forge-slot-item" data-slot-key="${slotKey}" title="Customize in Item Forge" class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 transition text-xs inline-flex items-center justify-center cursor-pointer">
                     ⚒️
                   </button>
                 ` : ''}
-                <button onclick="unequipSlot('${slotKey}')" title="Unequip (Return to Inventory)" class="w-6 h-6 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition text-xs inline-flex items-center justify-center cursor-pointer">
+                <button data-action="inventory:unequip-slot" data-slot-key="${slotKey}" title="Unequip (Return to Inventory)" class="w-6 h-6 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition text-xs inline-flex items-center justify-center cursor-pointer">
                   ❌
                 </button>
               </div>
@@ -4680,7 +4692,7 @@
         } else {
           return `
             <div data-slot="${slotKey}"
-                 onclick="openSlotEquipModal('${slotKey}')"
+                 data-action="inventory:open-slot-equip" data-slot-key="${slotKey}"
                  onmouseenter="highlightSlotNode('${slotKey}', true)"
                  onmouseleave="highlightSlotNode('${slotKey}', false)"
                  class="group relative bg-[#0b1329]/40 hover:bg-[#0b1329]/90 border border-dashed border-slate-800 hover:border-sky-500/60 rounded-xl p-2 sm:p-2.5 transition flex items-center justify-between gap-2.5 cursor-pointer">
@@ -4738,8 +4750,8 @@
 
       // Bottom Dock: Weapons & Carrying Capacity HUD
       if (bottomDock) {
-        const mh = character.bodySlots?.mainHand || {};
-        const oh = character.bodySlots?.offHand || {};
+        const mh = Object.assign({}, character.bodySlots?.mainHand || {});
+        const oh = Object.assign({}, character.bodySlots?.offHand || {});
         const mhHas = Boolean(mh.name && mh.name !== '-');
         const ohHas = Boolean(oh.name && oh.name !== '-');
         if (mhHas && typeof hydrateGearItemStats === 'function') hydrateGearItemStats(mh);
@@ -4756,7 +4768,7 @@
         if (mhIsDouble) {
           // Double Weapon occupies BOTH slots; clicking Off-Hand badge toggles TWF!
           offHandBadgeHtml = `
-            <div onclick="if(typeof activateWeaponSet==='function'){activateWeaponSet(2); renderAll();}"
+            <div data-action="inventory:activate-double-twf"
                  class="h-full min-w-0 flex flex-col justify-start gap-1.5 px-3 py-2 rounded-xl ${isDoubleTwfActive ? 'bg-sky-950/80 border border-sky-400 text-white shadow-md shadow-sky-950/60 ring-1 ring-sky-400/40' : 'bg-slate-950 border border-amber-500/60 hover:border-sky-400 text-slate-200'} text-xs cursor-pointer select-none transition"
                  title="Double Weapon occupies both hands. Click to toggle Two-Weapon Fighting (TWF)">
               <div class="flex items-center justify-between gap-2 min-w-0">
@@ -4786,15 +4798,15 @@
         } else {
           // One-Handed / Light Weapon or Empty Main Hand: normal Off-Hand slot
           offHandBadgeHtml = `
-            <div onclick="openSlotEquipModal('offHand')" class="h-full min-w-0 flex flex-col justify-start gap-1.5 pl-3 ${ohHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
+            <div data-action="inventory:open-slot-equip" data-slot-key="offHand" class="h-full min-w-0 flex flex-col justify-start gap-1.5 pl-3 ${ohHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
               <div class="flex items-center justify-between gap-2 min-w-0">
                 <div class="flex items-center gap-1.5 min-w-0 flex-1">
                   <span class="text-amber-400 font-bold text-[10px] shrink-0">OFF-HAND:</span>
                   <span class="font-bold truncate">${ohHas ? oh.name : '+ Equip Off-Hand'}</span>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
-                  ${ohHas && isForgeEditableItem(oh) ? `<button type="button" onclick="event.stopPropagation(); openForgeForSlotItem('offHand')" title="Customize Off-Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
-                  ${ohHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('offHand')" title="Unequip Off-Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
+                  ${ohHas && isForgeEditableItem(oh) ? `<button type="button" data-action="inventory:forge-slot-item" data-slot-key="offHand" title="Customize Off-Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
+                  ${ohHas ? `<button type="button" data-action="inventory:unequip-slot" data-slot-key="offHand" title="Unequip Off-Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
                 </div>
               </div>
               ${ohStatsHtml}
@@ -4812,7 +4824,7 @@
             <!-- Weapon Quick Slots (Stacked on Mobile, Side-by-Side on sm+) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 min-w-0 w-full items-stretch">
               <!-- Main Hand Badge -->
-              <div onclick="openSlotEquipModal('mainHand')" class="h-full min-w-0 flex flex-col justify-start gap-1.5 pl-3 ${mhHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
+              <div data-action="inventory:open-slot-equip" data-slot-key="mainHand" class="h-full min-w-0 flex flex-col justify-start gap-1.5 pl-3 ${mhHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
                 <div class="flex items-center justify-between gap-2 min-w-0">
                   <div class="flex items-center gap-1.5 min-w-0 flex-1">
                     <span class="text-sky-400 font-bold text-[10px] shrink-0">MAIN HAND:</span>
@@ -4820,8 +4832,8 @@
                     ${mhIsDouble ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60 shrink-0">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
                   </div>
                   <div class="flex items-center gap-1 shrink-0">
-                    ${mhHas && isForgeEditableItem(mh) ? `<button type="button" onclick="event.stopPropagation(); openForgeForSlotItem('mainHand')" title="Customize Main Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
-                    ${mhHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('mainHand')" title="Unequip Main Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
+                    ${mhHas && isForgeEditableItem(mh) ? `<button type="button" data-action="inventory:forge-slot-item" data-slot-key="mainHand" title="Customize Main Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
+                    ${mhHas ? `<button type="button" data-action="inventory:unequip-slot" data-slot-key="mainHand" title="Unequip Main Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
                   </div>
                 </div>
                 ${mhStatsHtml}
@@ -4918,12 +4930,12 @@
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
             ${isForgeEditableItem(currentSlotData) ? `
-              <button type="button" onclick="openForgeForSlotItem('${_currentEquipSlotKey}')" class="px-2.5 py-1.5 bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer" title="Customize in Item Forge">
+              <button type="button" data-action="inventory:forge-slot-item" data-slot-key="${_currentEquipSlotKey}" class="px-2.5 py-1.5 bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer" title="Customize in Item Forge">
                 <span>⚒️</span>
                 <span>Forge</span>
               </button>
             ` : ''}
-            <button type="button" onclick="unequipSlot('${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-rose-900/90 hover:bg-rose-700 border border-rose-500/70 text-rose-100 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 cursor-pointer">
+            <button type="button" data-action="inventory:unequip-slot-modal" data-slot-key="${_currentEquipSlotKey}" class="px-3 py-1.5 bg-rose-900/90 hover:bg-rose-700 border border-rose-500/70 text-rose-100 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 cursor-pointer">
               <span>✕</span>
               <span>Unequip</span>
             </button>
@@ -4964,7 +4976,7 @@
               No ${hasEquipped ? 'other ' : ''}eligible items found in your inventory pool for <strong>${def?.trName || def?.name || 'this slot'}</strong>.
             </p>
             <div class="pt-2 flex flex-wrap items-center justify-center gap-2">
-              <button onclick="closeSlotEquipModal(); openAddPoolItemModal();" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition shadow cursor-pointer">
+              <button data-action="inventory:open-add-pool-from-equip" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition shadow cursor-pointer">
                 ➕ Add New Item to Inventory
               </button>
             </div>
@@ -4974,7 +4986,7 @@
       }
 
       container.innerHTML = equippedBannerHtml + eligible.map(item => {
-        const safeIdAttr = String(item.id ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const safeIdAttr = String(item.id ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
         return `
         <div class="p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/60 transition flex items-center justify-between gap-3">
           <div class="min-w-0 flex-1">
@@ -4992,11 +5004,11 @@
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
             ${isForgeEditableItem(item) ? `
-              <button type="button" onclick="openForgeForPoolItem('${safeIdAttr}')" class="w-8 h-8 rounded-lg bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white text-xs font-bold transition shadow inline-flex items-center justify-center cursor-pointer" title="Customize in Item Forge">
+              <button type="button" data-action="inventory:forge-pool-item" data-item-id="${safeIdAttr}" class="w-8 h-8 rounded-lg bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white text-xs font-bold transition shadow inline-flex items-center justify-center cursor-pointer" title="Customize in Item Forge">
                 ⚒️
               </button>
             ` : ''}
-            <button onclick="equipPoolItem('${safeIdAttr}', '${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer">
+            <button data-action="inventory:equip-pool-item-modal" data-item-id="${safeIdAttr}" data-slot-key="${_currentEquipSlotKey}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer">
               <span>⚡ Equip</span>
             </button>
           </div>
@@ -5041,7 +5053,7 @@
               <div class="text-3xl">🐾</div>
               <h4 class="text-sm font-black text-white uppercase tracking-wider">No Active Companion or Mount</h4>
               <p class="text-xs text-slate-400">Select or summon an Animal Companion, Familiar, or Special Mount to manage equipment slots and barding.</p>
-              <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-8 px-4 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
+              <button type="button" data-action="inventory:open-companion-modal" class="ui-btn-sm h-8 px-4 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
                 <span>➕</span>
                 <span>Select / Summon Companion</span>
               </button>
@@ -5089,7 +5101,7 @@
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-8 px-3 bg-slate-900 hover:bg-slate-800 border border-amber-600/50 text-amber-300 hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+            <button type="button" data-action="inventory:open-companion-modal" class="ui-btn-sm h-8 px-3 bg-slate-900 hover:bg-slate-800 border border-amber-600/50 text-amber-300 hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
               <span>⚙️</span>
               <span>Manage Companion</span>
             </button>
@@ -5129,11 +5141,11 @@
                     </div>
                   </div>
                   <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
-                    <button type="button" onclick="openCompanionEquipModal('${slotDef.key}')" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded transition cursor-pointer">
+                    <button type="button" data-action="inventory:open-companion-equip" data-slot-key="${slotDef.key}" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded transition cursor-pointer">
                       <span>⇄</span>
                       <span>Swap</span>
                     </button>
-                    <button type="button" onclick="unequipCompanionSlot('${slotDef.key}')" class="ui-btn-xs h-6 px-2.5 text-[10px] font-bold text-rose-300 hover:text-white bg-rose-950 hover:bg-rose-900 border border-rose-700/60 rounded transition cursor-pointer">
+                    <button type="button" data-action="inventory:unequip-companion-slot" data-slot-key="${slotDef.key}" class="ui-btn-xs h-6 px-2.5 text-[10px] font-bold text-rose-300 hover:text-white bg-rose-950 hover:bg-rose-900 border border-rose-700/60 rounded transition cursor-pointer">
                       <span>✕</span>
                       <span>Unequip</span>
                     </button>
@@ -5154,7 +5166,7 @@
                     <p class="text-[10px] text-slate-500 italic min-h-[30px]">${slotDef.hint}</p>
                   </div>
                   <div class="pt-2 border-t border-slate-800/60 text-right">
-                    <button type="button" onclick="openCompanionEquipModal('${slotDef.key}')" class="ui-btn-xs h-6 px-2.5 bg-amber-600/90 hover:bg-amber-500 text-white rounded font-bold text-[10px] shadow transition cursor-pointer inline-flex items-center gap-1">
+                    <button type="button" data-action="inventory:open-companion-equip" data-slot-key="${slotDef.key}" class="ui-btn-xs h-6 px-2.5 bg-amber-600/90 hover:bg-amber-500 text-white rounded font-bold text-[10px] shadow transition cursor-pointer inline-flex items-center gap-1">
                       <span>➕</span>
                       <span>Equip</span>
                     </button>
@@ -5185,7 +5197,7 @@
                 <p id="companion-equip-modal-subtitle" class="text-[10px] text-slate-400">Select compatible item from character gear pool</p>
               </div>
             </div>
-            <button type="button" onclick="closeCompanionEquipModal()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">
+            <button type="button" data-action="inventory:close-companion-equip" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">
               ✕
             </button>
           </div>
@@ -5194,7 +5206,7 @@
           <div class="p-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
             <input type="text" id="companion-equip-search-input" oninput="renderCompanionEquipList()" placeholder="Filter items in gear pool..." class="ui-input-md h-8 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white placeholder-slate-500">
             <label class="flex items-center gap-1.5 text-[11px] text-slate-400 shrink-0 cursor-pointer select-none">
-              <input type="checkbox" id="companion-equip-show-all" onchange="renderCompanionEquipList()" class="rounded border-slate-700 text-amber-500">
+              <input type="checkbox" id="companion-equip-show-all" data-change-action="inventory:filter-companion-equip" class="rounded border-slate-700 text-amber-500">
               <span>Show All Items</span>
             </label>
           </div>
@@ -5206,7 +5218,7 @@
 
           <!-- Footer -->
           <div class="bg-slate-900/90 px-4 py-2.5 border-t border-slate-800 flex items-center justify-end shrink-0">
-            <button type="button" onclick="closeCompanionEquipModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer">
+            <button type="button" data-action="inventory:close-companion-equip" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer">
               Close
             </button>
           </div>
@@ -5288,7 +5300,7 @@
       container.innerHTML = compatibleItems.map(item => {
         const acBonus = (item.acBonus || item.armorBonus) ? `+${(item.acBonus || item.armorBonus) + (item.enhancementBonus || 0)} AC` : null;
         const enhBonus = item.enhancementBonus ? `+${item.enhancementBonus} Magic` : null;
-        const safeIdAttr = String(item.id ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const safeIdAttr = String(item.id ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 
         return `
           <div class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-amber-500/50 flex items-center justify-between gap-3 transition">
@@ -5301,7 +5313,7 @@
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5 truncate">${safeEscapeHtml(item.desc || item.benefit || '')}</div>
             </div>
-            <button type="button" onclick="equipItemToCompanion('${safeIdAttr}', '${_activeCompanionEquipSlotKey}')" class="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs rounded-lg shadow transition cursor-pointer shrink-0">
+            <button type="button" data-action="inventory:equip-companion-item" data-item-id="${safeIdAttr}" data-slot-key="${_activeCompanionEquipSlotKey}" class="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs rounded-lg shadow transition cursor-pointer shrink-0">
               ✓ Equip
             </button>
           </div>
@@ -5316,8 +5328,36 @@
       }
     }
 
+    function syncInventoryStore() {
+      if (typeof window !== 'undefined' && window.CharStore && !window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
+      }
+    }
+
     function equipItemToCompanion(itemId, slotKey) {
       if (!character || !character.companion) return;
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        syncInventoryStore();
+        window.CharStore.dispatch({
+          type: 'inventory/equipCompanionItem',
+          payload: { poolItemId: itemId, slotKey },
+          meta: { label: `Equip Companion Item (${slotKey})` }
+        });
+        const out = window.CharStore.getLastOutcome();
+        if (!out || out.status === 'not_found') {
+          alert('Item not found in Gear Pool.');
+          return;
+        }
+        closeCompanionEquipModal();
+        renderAll();
+        showDiceTopToast({
+          icon: '🐾',
+          title: 'Companion Item Equipped',
+          breakdown: `${out.itemName} equipped in ${slotKey}.`,
+          total: 'Equipped'
+        });
+        return;
+      }
       if (!Array.isArray(character.gearPool)) character.gearPool = [];
 
       const itemIdx = character.gearPool.findIndex(i => i && String(i.id) === String(itemId));
@@ -5358,6 +5398,24 @@
 
     function unequipCompanionSlot(slotKey) {
       if (!character || !character.companion || !character.companion.gear) return;
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        syncInventoryStore();
+        window.CharStore.dispatch({
+          type: 'inventory/unequipCompanionSlot',
+          payload: { slotKey },
+          meta: { label: `Unequip Companion Slot (${slotKey})` }
+        });
+        const out = window.CharStore.getLastOutcome();
+        if (!out || out.status === 'empty_slot') return;
+        renderAll();
+        showDiceTopToast({
+          icon: '🐾',
+          title: 'Companion Item Unequipped',
+          breakdown: `${out.itemName} returned to Gear Pool.`,
+          total: 'Unequipped'
+        });
+        return;
+      }
       const item = character.companion.gear[slotKey];
       if (!item || !item.name || item.name === '-') return;
 
@@ -5403,6 +5461,15 @@
             return;
           }
         }
+        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+          window.CharStore.dispatch({
+            type: 'inventory/toggleSlotActive',
+            payload: { slotKey },
+            meta: { label: `Toggle Body Slot (${slotKey})` }
+          });
+          renderAll();
+          return;
+        }
         character.bodySlots[slotKey].active = !character.bodySlots[slotKey].active;
         saveStateToStorage();
         renderAll();
@@ -5412,6 +5479,26 @@
     function unequipSlot(slotKey, silent = false) {
       const slot = character.bodySlots?.[slotKey];
       if (!slot || slot.name === '-') return;
+      const slotName = slot.name;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({
+          type: 'inventory/unequipSlot',
+          payload: { slotKey },
+          meta: { label: `Unequip ${slotName}` }
+        });
+        try { renderWeaponSetsUI(); } catch (e) {}
+        try { recalculateOffense(); } catch (e) {}
+        renderAll();
+        if (!silent && typeof showDiceTopToast === 'function') {
+          const slotDef = BODY_SLOT_DEFS.find(d => d.key === slotKey);
+          showDiceTopToast({
+            title: 'Item Unequipped',
+            breakdown: `"${slotName}" (${slotDef?.trName || slotKey}) unequipped and returned to backpack.`,
+            icon: '📦'
+          });
+        }
+        return;
+      }
 
       if (!Array.isArray(character.gearPool)) character.gearPool = [];
 
@@ -5762,8 +5849,9 @@
       return null;
     }
 
-    function renderGearItemStatsBadgesHtml(item, options = {}) {
-      if (!item || typeof item !== 'object' || !item.name || item.name === '-') return '';
+    function renderGearItemStatsBadgesHtml(rawItem, options = {}) {
+      if (!rawItem || typeof rawItem !== 'object' || !rawItem.name || rawItem.name === '-') return '';
+      const item = Object.assign({}, rawItem);
       hydrateGearItemStats(item);
 
       const compact = Boolean(options.compact);
@@ -5953,8 +6041,12 @@
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      // Auto-heal miscategorized items in gear pool (e.g. Dagger +2 labeled as 'Other')
-      (character.gearPool || []).forEach(item => {
+      const query = (document.getElementById('pool-search-input')?.value || '').toLowerCase().trim();
+      const catFilter = document.getElementById('pool-category-filter')?.value || 'All';
+
+      // Build normalized view rows without mutating character.gearPool in place
+      const poolRows = (character.gearPool || []).filter(Boolean).map(rawItem => {
+        const item = Object.assign({}, rawItem);
         if (!item.category || item.category === 'Other') {
           const autoCat = mapEntryToGearCategory(item);
           if (autoCat && autoCat !== 'Other') {
@@ -5967,12 +6059,10 @@
             }
           }
         }
+        return item;
       });
 
-      const query = (document.getElementById('pool-search-input')?.value || '').toLowerCase().trim();
-      const catFilter = document.getElementById('pool-category-filter')?.value || 'All';
-
-      const filtered = (character.gearPool || []).filter(item => {
+      const filtered = poolRows.filter(item => {
         if (item.isEquipped) return false; // Equipped items are shown in body slots
         if (typeof RuleEngine !== 'undefined' && RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(item)) return false;
         const matchesQuery = !query || item.name.toLowerCase().includes(query) || (item.desc || '').toLowerCase().includes(query);
@@ -5988,7 +6078,7 @@
       filtered.forEach(item => {
         const statsBadgesHtml = renderGearItemStatsBadgesHtml(item, { compact: true });
         const profWarn = getEquipmentProficiencyWarning(item);
-        const safeIdAttr = String(item.id ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const safeIdAttr = String(item.id ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-900/60 transition border-b border-slate-800/80';
         tr.innerHTML = `
@@ -6005,9 +6095,9 @@
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono">
             <div class="flex items-center justify-center gap-1">
-              <button onclick="adjustPoolQty('${safeIdAttr}', -1)" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">-</button>
+              <button data-action="inventory:adjust-pool-qty" data-item-id="${safeIdAttr}" data-delta="-1" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">-</button>
               <span class="w-6 text-center ${Number(item.qty) <= 0 ? 'text-rose-400 font-bold' : 'text-white font-bold'}">${(item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1}</span>
-              <button onclick="adjustPoolQty('${safeIdAttr}', 1)" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">+</button>
+              <button data-action="inventory:adjust-pool-qty" data-item-id="${safeIdAttr}" data-delta="1" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">+</button>
             </div>
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono text-slate-400">${item.weight || 0} lb</td>
@@ -6016,26 +6106,26 @@
             <div class="flex items-center justify-center gap-1.5">
               ${isConsumableOrSlotless(item) ? `
                 <div class="flex flex-col gap-1.5 w-20">
-                  <button onclick="consumeItem3D('pool', '${safeIdAttr}')" class="ui-btn-xs w-full h-6 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Consume / Activate / Use">
+                  <button data-action="inventory:use-pool-item" data-item-id="${safeIdAttr}" class="ui-btn-xs w-full h-6 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Consume / Activate / Use">
                     <span>🧪</span><span>Use</span>
                   </button>
-                  <button onclick="togglePoolBelt('${safeIdAttr}')" class="ui-btn-xs w-full h-6 ${item.isBelt ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600 shadow-sm shadow-emerald-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'} border text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="${item.isBelt ? 'Remove from Belt (Disable Quick Access)' : 'Attach to Belt (Add to Combat Quick Access)'}">
+                  <button data-action="inventory:toggle-pool-belt" data-item-id="${safeIdAttr}" class="ui-btn-xs w-full h-6 ${item.isBelt ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600 shadow-sm shadow-emerald-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'} border text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="${item.isBelt ? 'Remove from Belt (Disable Quick Access)' : 'Attach to Belt (Add to Combat Quick Access)'}">
                     <span>${item.isBelt ? '🟢' : '⚡'}</span><span>${item.isBelt ? 'On Belt' : 'Belt'}</span>
                   </button>
                 </div>
               ` : `
                 <div class="w-20 flex items-center justify-center">
-                  <button onclick="equipPoolItem('${safeIdAttr}')" class="ui-btn-sm w-full h-7 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Equip to Body Slot">
+                  <button data-action="inventory:equip-pool-item" data-item-id="${safeIdAttr}" class="ui-btn-sm w-full h-7 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Equip to Body Slot">
                     <span>⚡</span><span>Equip</span>
                   </button>
                 </div>
               `}
               ${isForgeEditableItem(item) ? `
-                <button onclick="openForgeForPoolItem('${safeIdAttr}')" class="w-7 h-7 flex items-center justify-center bg-amber-950/80 hover:bg-amber-800 border border-amber-600/60 text-amber-300 hover:text-white text-xs rounded-md transition cursor-pointer shrink-0" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
+                <button data-action="inventory:forge-pool-item" data-item-id="${safeIdAttr}" class="w-7 h-7 flex items-center justify-center bg-amber-950/80 hover:bg-amber-800 border border-amber-600/60 text-amber-300 hover:text-white text-xs rounded-md transition cursor-pointer shrink-0" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
                   ⚒️
                 </button>
               ` : ''}
-              <button onclick="deletePoolItem('${safeIdAttr}')" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded-md transition cursor-pointer shrink-0" title="Delete">
+              <button data-action="inventory:delete-pool-item" data-item-id="${safeIdAttr}" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded-md transition cursor-pointer shrink-0" title="Delete">
                 🗑️
               </button>
             </div>
@@ -6046,6 +6136,16 @@
     }
 
     function togglePoolBelt(itemId) {
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({
+          type: 'inventory/togglePoolBelt',
+          payload: { itemId },
+          meta: { label: 'Toggle Belt Quick-Access' }
+        });
+        if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
+        renderAll();
+        return;
+      }
       const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
       if (item) {
         item.isBelt = !item.isBelt;
@@ -6056,6 +6156,15 @@
     }
 
     function adjustPoolQty(itemId, delta) {
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({
+          type: 'inventory/adjustPoolQty',
+          payload: { itemId, delta },
+          meta: { label: `Adjust Item Qty (${delta > 0 ? '+' : ''}${delta})` }
+        });
+        renderAll();
+        return;
+      }
       const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
       if (item) {
         const currentQty = (item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1;
@@ -6081,6 +6190,15 @@
 
     function deletePoolItem(itemId) {
       if (confirm('Are you sure you want to delete this item from your inventory pool?')) {
+        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+          window.CharStore.dispatch({
+            type: 'inventory/deletePoolItem',
+            payload: { itemId },
+            meta: { label: 'Delete Inventory Item' }
+          });
+          renderAll();
+          return;
+        }
         const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
         if (item) {
           const cleanName = (item.name || '').toLowerCase().trim();
@@ -6112,6 +6230,7 @@
         return;
       }
 
+      const hasStore = Boolean(typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc());
       const hasOversized = RuleEngine.hasOversizedWeaponFeat(character);
       let targetSlotKey = targetSlotKeyOverride || null;
       let twoHandWarningMsg = null;
@@ -6130,7 +6249,7 @@
           const mhIsTwoHand = mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
           if (mhIsTwoHand && !hasOversized) {
             const prevMhName = mh.name;
-            unequipSlot('mainHand', true);
+            if (!hasStore) unequipSlot('mainHand', true);
             twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" to equip "${item.name}" in off-hand.`;
           }
           // If Main Hand is empty and the parent Double Weapon is in the pool unequipped, auto-equip parent in Main Hand
@@ -6158,7 +6277,7 @@
           const ohIsOffHead = oh && oh.name && oh.name !== '-' && RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(oh);
           if (oh && oh.name && oh.name !== '-' && !hasOversized && !(isDouble && ohIsOffHead)) {
             const prevOhName = oh.name;
-            unequipSlot('offHand', true);
+            if (!hasStore) unequipSlot('offHand', true);
             twoHandWarningMsg = `Unequipped off-hand "${prevOhName}" because "${item.name}" is a two-handed weapon.`;
           }
         } else if (!targetSlotKey) {
@@ -6171,7 +6290,7 @@
             const mhIsTwoHand = RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
             if (mhIsTwoHand && !hasOversized) {
               const prevMhName = mh.name;
-              unequipSlot('mainHand', true);
+              if (!hasStore) unequipSlot('mainHand', true);
               targetSlotKey = 'mainHand';
               twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" and equipped "${item.name}" in main hand.`;
             } else {
@@ -6183,7 +6302,7 @@
           const mhIsTwoHand = mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
           if (mhIsTwoHand && !hasOversized) {
             const prevMhName = mh.name;
-            unequipSlot('mainHand', true);
+            if (!hasStore) unequipSlot('mainHand', true);
             twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" to equip "${item.name}" in off-hand.`;
           }
         }
@@ -6193,7 +6312,7 @@
 
         if (mhIsTwoHand && !hasOversized) {
           const prevMhName = mh.name;
-          unequipSlot('mainHand', true);
+          if (!hasStore) unequipSlot('mainHand', true);
           twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" and equipped shield "${item.name}".`;
         }
         targetSlotKey = targetSlotKeyOverride || 'offHand';
@@ -6242,6 +6361,48 @@
           }
           return;
         }
+      }
+
+      if (hasStore) {
+        window.CharStore.dispatch({
+          type: 'inventory/equipPoolItem',
+          payload: { itemId, forceSlotKey: targetSlotKey },
+          meta: { label: `Equip ${item.name || 'Item'}` }
+        });
+        const out = window.CharStore.getLastOutcome ? window.CharStore.getLastOutcome() : null;
+        if (out && out.twoHandWarningMsg && !twoHandWarningMsg) {
+          twoHandWarningMsg = out.twoHandWarningMsg;
+        }
+        try { renderWeaponSetsUI(); } catch (e) {}
+        try { recalculateOffense(); } catch (e) {}
+        renderAll();
+        const slotDef = BODY_SLOT_DEFS.find(d => d.key === targetSlotKey);
+        const slotLabel = slotDef?.trName || targetSlotKey;
+        let toastIcon = '⚔️';
+        let toastTitle = 'Weapon Equipped';
+        if (item.category === 'Shield') {
+          toastIcon = '🛡️';
+          toastTitle = 'Shield Equipped';
+        } else if (item.category === 'Armor') {
+          toastIcon = '🛡️';
+          toastTitle = 'Armor Equipped';
+        } else if (item.category !== 'Weapon') {
+          toastIcon = '✨';
+          toastTitle = 'Item Equipped';
+        }
+        const breakdownText = twoHandWarningMsg
+          ? twoHandWarningMsg
+          : `Equipped "${item.name}" (${slotLabel}). Defense and stats updated.`;
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: toastTitle,
+            breakdown: breakdownText,
+            icon: toastIcon
+          });
+        } else {
+          alert(breakdownText);
+        }
+        return;
       }
 
       // Unequip currently equipped item in that slot if any
@@ -6830,7 +6991,7 @@
           ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/50 shadow-sm' 
           : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 hover:text-white border-slate-800 font-semibold';
         return `
-          <button type="button" onclick="renderUnaddedMasterDbItems('${t.key}')" class="px-2.5 py-1 rounded-md border text-[10px] whitespace-nowrap transition flex items-center gap-1 cursor-pointer ${activeClass}">
+          <button type="button" data-action="inventory:pool-category-tab" data-category="${t.key}" class="px-2.5 py-1 rounded-md border text-[10px] whitespace-nowrap transition flex items-center gap-1 cursor-pointer ${activeClass}">
             <span>${t.label}</span>
             <span class="text-[9px] px-1 py-0.2 rounded-full ${isActive ? 'bg-amber-500/20 text-amber-200' : 'bg-slate-950 text-slate-400'}">${t.count}</span>
           </button>
@@ -6869,11 +7030,11 @@
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               ${isForgeEditableItem(item) ? `
-                <button type="button" onclick="openForgeForSpotlightItem(${idx}, false)" class="bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white p-1.5 rounded-lg text-xs font-bold transition cursor-pointer" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
+                <button type="button" data-action="inventory:forge-spotlight-item" data-index="${idx}" data-is-ai="false" class="bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white p-1.5 rounded-lg text-xs font-bold transition cursor-pointer" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
                   ⚒️
                 </button>
               ` : ''}
-              <button id="${btnId}" type="button" onclick="addMasterDbItemDirectlyToPool(${idx}, this)" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-2.5 sm:px-3 rounded-lg shadow transition flex items-center gap-1 whitespace-nowrap cursor-pointer">
+              <button id="${btnId}" type="button" data-action="inventory:add-spotlight-item" data-index="${idx}" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-2.5 sm:px-3 rounded-lg shadow transition flex items-center gap-1 whitespace-nowrap cursor-pointer">
                 <span>➕</span>
                 <span class="sm:hidden">Add</span>
                 <span class="hidden sm:inline">Add to Inventory</span>
@@ -7087,11 +7248,11 @@
               </div>
             </div>
             <div class="flex flex-wrap gap-2 pt-1 border-t border-slate-800">
-              <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs py-2 px-3 rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+              <button type="button" data-action="inventory:search-ai-pool-item" data-query="${escapedQ}" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs py-2 px-3 rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
                 <span>🔮</span>
                 <span>Fetch "${escapedQ}" via Rule Master AI</span>
               </button>
-              <button type="button" onclick="if(window.DnDUI && typeof window.DnDUI.switchCompendiumTab === 'function') { window.DnDUI.switchCompendiumTab('forge'); } else { openItemForgeModal(); }" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <button type="button" data-action="inventory:open-item-forge" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>⚒️</span>
                 <span>Open in Item Forge</span>
               </button>
@@ -7106,7 +7267,7 @@
       let html = `
         <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold px-1 mb-1">
           <span>Spotlight Results (${matches.length} items found):</span>
-          <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-amber-400 hover:text-amber-300 underline flex items-center gap-1 font-semibold">
+          <button type="button" data-action="inventory:search-ai-pool-item" data-query="${escapedQ}" class="text-amber-400 hover:text-amber-300 underline flex items-center gap-1 font-semibold">
             <span>🔮 Search Rulebooks via Rule Master AI</span>
           </button>
         </div>
@@ -7114,7 +7275,7 @@
           ${matches.slice(0, 25).map((item, idx) => renderSpotlightItemCardHtml(item, idx, true, ownedSet)).join('')}
         </div>
         <div class="text-center pt-1">
-          <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-xs text-amber-300 hover:text-amber-200 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 shadow">
+          <button type="button" data-action="inventory:search-ai-pool-item" data-query="${escapedQ}" class="text-xs text-amber-300 hover:text-amber-200 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 shadow">
             <span>🔮</span>
             <span>Not what you're looking for? <strong>Fetch "${escapedQ}" via Rule Master AI</strong></span>
           </button>
@@ -7208,10 +7369,10 @@
             </div>
             <p class="text-[11px] text-rose-400">${err.message || 'No response from API.'}</p>
             <div class="pt-2 border-t border-rose-900/50 flex flex-wrap gap-2 text-xs">
-              <button type="button" onclick="searchAiForPoolItem('${q.replace(/'/g, "\\'")}')" class="bg-rose-900 hover:bg-rose-800 text-white font-bold py-1.5 px-3 rounded-lg transition">
+              <button type="button" data-action="inventory:search-ai-pool-item" data-query="${q.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" class="bg-rose-900 hover:bg-rose-800 text-white font-bold py-1.5 px-3 rounded-lg transition">
                 🔄 Retry
               </button>
-              <button type="button" onclick="fillPoolFormWithQueryName('${q.replace(/'/g, "\\'")}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 px-3 rounded-lg transition">
+              <button type="button" data-action="inventory:fill-pool-form-query" data-query="${q.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 px-3 rounded-lg transition">
                 ✏️ Fill Manually
               </button>
             </div>
@@ -7261,7 +7422,7 @@
                 </div>
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" onclick="addAiItemToPoolAndDb(${idx})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
+                <button type="button" data-action="inventory:add-ai-pool-item" data-index="${idx}" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
                   <span>➕</span>
                   <span>Add to Inventory</span>
                 </button>
@@ -7618,6 +7779,19 @@
     // ====================================================
     function addV2ItemToCharacterGearPool(v2Item) {
       if (!v2Item || !character) return;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({ type: 'inventory/addPoolItem', payload: { item: v2Item } });
+        renderAll();
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '⚒️',
+            title: 'Item Added to Inventory',
+            breakdown: `"${v2Item.name}" added to your Inventory.`,
+            total: `${Number(v2Item.priceGp ?? v2Item.cost ?? 0).toLocaleString('tr-TR')} gp`
+          });
+        }
+        return;
+      }
       if (!Array.isArray(character.gearPool)) character.gearPool = [];
       const cat = typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(v2Item) : (v2Item.type || 'Other');
       const isBeltItem = (v2Item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
@@ -7716,6 +7890,30 @@
 
     function applyForgedItemUpdate(originalItem, targetSlotKey, forgedV2Item) {
       if (!forgedV2Item || !character) return;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        const oldName = String(originalItem?.name || '').trim();
+        const newName = String(forgedV2Item.name || oldName || 'Forged Item').trim();
+        const newCost = Number(forgedV2Item.priceGp ?? forgedV2Item.cost) || 0;
+        window.CharStore.dispatch({
+          type: 'inventory/reforgeItem',
+          payload: {
+            targetContext: { originalItem, targetSlotKey },
+            itemData: forgedV2Item
+          }
+        });
+        renderAll();
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '⚒️',
+            title: 'Item Reforged',
+            breakdown: oldName && oldName !== newName
+              ? `"${oldName}" reforged into "${newName}".`
+              : `"${newName}" properties updated in Item Forge.`,
+            total: `${newCost.toLocaleString('en-US')} gp`
+          });
+        }
+        return;
+      }
       if (!Array.isArray(character.gearPool)) character.gearPool = [];
 
       const oldName = String(originalItem?.name || '').trim();
@@ -8214,6 +8412,30 @@
     function spendSlotCharge(slotKey, amount = 1) {
       const item = character.bodySlots?.[slotKey];
       if (!item) return;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({ type: 'inventory/adjustSlotCharge', payload: { slotKey, delta: -Math.abs(Number(amount) || 1) } });
+        const out = window.CharStore.getLastOutcome ? window.CharStore.getLastOutcome() : null;
+        if (out && out.status === 'charges_exhausted') {
+          showDiceTopToast({
+            icon: '⏳',
+            title: item.name || 'Charged Item',
+            breakdown: 'All daily charges expended! Resets on a Long Rest (☀️).',
+            total: '0 Charges'
+          });
+          return;
+        }
+        renderAll();
+        const dcNow = character.bodySlots?.[slotKey]?.dailyCharges || out?.dailyCharges;
+        if (dcNow) {
+          showDiceTopToast({
+            icon: '⚡',
+            title: item.name || 'Charge Expended',
+            breakdown: `Expended ${amount} charge(s). Remaining: ${dcNow.current}/${dcNow.max} ${dcNow.unit || 'charges'}.`,
+            total: `${dcNow.current}/${dcNow.max}`
+          });
+        }
+        return;
+      }
       const dc = ensureItemDailyCharges(item);
       if (!dc || dc.current <= 0) {
         showDiceTopToast({
@@ -8238,6 +8460,11 @@
     function restoreSlotCharge(slotKey, amount = 1) {
       const item = character.bodySlots?.[slotKey];
       if (!item) return;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({ type: 'inventory/adjustSlotCharge', payload: { slotKey, delta: Math.abs(Number(amount) || 1) } });
+        renderAll();
+        return;
+      }
       const dc = ensureItemDailyCharges(item);
       if (!dc || dc.current >= dc.max) return;
       dc.current = Math.min(dc.max, dc.current + amount);
@@ -9236,3 +9463,181 @@
       alert("✅ All local data reset to factory defaults! Reloading page...");
       window.location.reload();
     }
+
+    // =========================================================================
+    // Phase R4: Delegated Inventory, Silhouette, Pool, Skills & Buffs Actions
+    // All handlers strictly use the `(el, data, event)` parameter contract.
+    // =========================================================================
+    (function registerInventoryDelegatedActions() {
+      const actionsApi = (typeof window !== 'undefined' && (window.Actions || window.UI?.Actions))
+        || (typeof Actions !== 'undefined' ? Actions : null);
+      if (!actionsApi || typeof actionsApi.register !== 'function') return;
+
+      actionsApi.register('inventory:toggle-slot-active', (el, data, event) => {
+        if (data && data.slotKey) toggleSlotActive(data.slotKey);
+      });
+      actionsApi.register('inventory:forge-slot-item', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.slotKey) openForgeForSlotItem(data.slotKey);
+      });
+      actionsApi.register('inventory:unequip-slot', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.slotKey) unequipSlot(data.slotKey);
+      });
+      actionsApi.register('inventory:open-slot-equip', (el, data, event) => {
+        if (data && data.slotKey) openSlotEquipModal(data.slotKey);
+      });
+      actionsApi.register('inventory:spend-slot-charge', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.slotKey) spendSlotCharge(data.slotKey, Number(data.amount) || 1);
+      });
+      actionsApi.register('inventory:restore-slot-charge', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.slotKey) restoreSlotCharge(data.slotKey, Number(data.amount) || 1);
+      });
+      actionsApi.register('inventory:discharge-daily-round', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.encodedName) dischargeDailyRoundItem(data.encodedName, data.slotKey);
+      });
+      actionsApi.register('inventory:cast-daily-round', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.encodedName) castDailyRoundItem(data.encodedName, data.slotKey);
+      });
+      actionsApi.register('inventory:activate-double-twf', (el, data, event) => {
+        if (typeof activateWeaponSet === 'function') {
+          activateWeaponSet(2);
+          renderAll();
+        }
+      });
+      actionsApi.register('inventory:unequip-slot-modal', (el, data, event) => {
+        if (data && data.slotKey) {
+          unequipSlot(data.slotKey);
+          closeSlotEquipModal();
+        }
+      });
+      actionsApi.register('inventory:open-add-pool-from-equip', (el, data, event) => {
+        closeSlotEquipModal();
+        if (typeof openAddPoolItemModal === 'function') openAddPoolItemModal();
+      });
+      actionsApi.register('inventory:forge-pool-item', (el, data, event) => {
+        if (data && data.itemId !== undefined) openForgeForPoolItem(data.itemId);
+      });
+      actionsApi.register('inventory:equip-pool-item-modal', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          equipPoolItem(data.itemId, data.slotKey || null);
+          closeSlotEquipModal();
+        }
+      });
+      actionsApi.register('inventory:open-companion-modal', (el, data, event) => {
+        if (typeof openCompanionModal === 'function') openCompanionModal();
+      });
+      actionsApi.register('inventory:open-companion-equip', (el, data, event) => {
+        if (data && data.slotKey) openCompanionEquipModal(data.slotKey);
+      });
+      actionsApi.register('inventory:unequip-companion-slot', (el, data, event) => {
+        if (data && data.slotKey) unequipCompanionSlot(data.slotKey);
+      });
+      actionsApi.register('inventory:close-companion-equip', (el, data, event) => {
+        closeCompanionEquipModal();
+      });
+      actionsApi.register('inventory:filter-companion-equip', (el, data, event) => {
+        renderCompanionEquipList();
+      });
+      actionsApi.register('inventory:equip-companion-item', (el, data, event) => {
+        if (data && data.itemId !== undefined && data.slotKey) {
+          equipItemToCompanion(data.itemId, data.slotKey);
+        }
+      });
+      actionsApi.register('inventory:adjust-pool-qty', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          adjustPoolQty(data.itemId, Number(data.delta) || 0);
+        }
+      });
+      actionsApi.register('inventory:use-pool-item', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          consumeItem3D('pool', data.itemId);
+        }
+      });
+      actionsApi.register('inventory:toggle-pool-belt', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          togglePoolBelt(data.itemId);
+        }
+      });
+      actionsApi.register('inventory:equip-pool-item', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          equipPoolItem(data.itemId);
+        }
+      });
+      actionsApi.register('inventory:delete-pool-item', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          deletePoolItem(data.itemId);
+        }
+      });
+      actionsApi.register('inventory:pool-category-tab', (el, data, event) => {
+        if (data && data.category) {
+          renderUnaddedMasterDbItems(data.category);
+        }
+      });
+      actionsApi.register('inventory:forge-spotlight-item', (el, data, event) => {
+        openForgeForSpotlightItem(Number(data?.index) || 0, data?.isAi === 'true');
+      });
+      actionsApi.register('inventory:add-spotlight-item', (el, data, event) => {
+        addMasterDbItemDirectlyToPool(Number(data?.index) || 0, el);
+      });
+      actionsApi.register('inventory:search-ai-pool-item', (el, data, event) => {
+        if (data && data.query !== undefined) {
+          searchAiForPoolItem(data.query);
+        }
+      });
+      actionsApi.register('inventory:open-item-forge', (el, data, event) => {
+        if (window.DnDUI && typeof window.DnDUI.switchCompendiumTab === 'function') {
+          window.DnDUI.switchCompendiumTab('forge');
+        } else if (typeof openItemForgeModal === 'function') {
+          openItemForgeModal();
+        }
+      });
+      actionsApi.register('inventory:fill-pool-form-query', (el, data, event) => {
+        if (data && data.query !== undefined) {
+          fillPoolFormWithQueryName(data.query);
+        }
+      });
+      actionsApi.register('inventory:add-ai-pool-item', (el, data, event) => {
+        addAiItemToPoolAndDb(Number(data?.index) || 0, el);
+      });
+      actionsApi.register('inventory:toggle-skill-class', (el, data, event) => {
+        if (data && data.skillKey && typeof toggleSkillClass === 'function') {
+          toggleSkillClass(data.skillKey);
+        }
+      });
+      actionsApi.register('inventory:roll-skill', (el, data, event) => {
+        if (data && data.skillName && typeof rollSkill3D === 'function') {
+          rollSkill3D(data.skillName, Number(data.total) || 0, data.subtitle || '');
+        }
+      });
+      actionsApi.register('inventory:adjust-skill-rank', (el, data, event) => {
+        if (data && data.skillKey && typeof adjustSkillRank === 'function') {
+          adjustSkillRank(data.skillKey, Number(data.delta) || 0);
+        }
+      });
+      actionsApi.register('inventory:toggle-buff-pin', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.buffId !== undefined && typeof toggleBuffCombatPin === 'function') {
+          toggleBuffCombatPin(data.buffId);
+        }
+      });
+      actionsApi.register('inventory:toggle-buff-active', (el, data, event) => {
+        if (data && data.buffId !== undefined && typeof toggleBuffActive === 'function') {
+          toggleBuffActive(data.buffId);
+        }
+      });
+      actionsApi.register('inventory:adjust-buff-rounds', (el, data, event) => {
+        if (data && data.buffId !== undefined && typeof adjustBuffRounds === 'function') {
+          adjustBuffRounds(data.buffId, Number(data.delta) || 0);
+        }
+      });
+      actionsApi.register('inventory:delete-buff', (el, data, event) => {
+        if (data && data.buffId !== undefined && typeof deleteBuff === 'function') {
+          deleteBuff(data.buffId);
+        }
+      });
+    })();

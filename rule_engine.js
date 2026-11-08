@@ -5156,8 +5156,8 @@ const RuleEngine = {
         const itemMods = (Array.isArray(item.modifiers) && item.modifiers.length > 0)
           ? item.modifiers
           : (dbEntry && Array.isArray(dbEntry.modifiers) ? dbEntry.modifiers : []);
-        // Only apply save/ability/luck modifiers for slotless/gearPool items that aren't already in bodySlots
-        const inBodySlot = character.bodySlots && Object.values(character.bodySlots).some(s => s && s.active !== false && (s.id === item.id || s.name === item.name));
+        // Only apply save/ability/luck modifiers for slotless/gearPool items that aren't already slotted in bodySlots
+        const inBodySlot = character.bodySlots && Object.values(character.bodySlots).some(s => s && s.name && s.name !== '-' && ((item.id && s.id === item.id) || s.name === item.name));
         if (!inBodySlot && itemMods.length > 0) {
           applyV2Modifiers(itemMods, item.name, 'item', evalContext);
         }
@@ -8393,6 +8393,311 @@ const RuleEngine = {
     return result;
   },
 
+  INVENTORY_SLOT_DEFS: Object.freeze([
+    { key: 'head', alias: null, trName: 'Head / Helm', label: 'Head' },
+    { key: 'eyes', alias: 'face', trName: 'Eyes / Goggles', label: 'Eyes' },
+    { key: 'neck', alias: 'throat', trName: 'Neck / Amulet', label: 'Neck' },
+    { key: 'shoulders', alias: null, trName: 'Shoulders / Cloak', label: 'Shoulders' },
+    { key: 'armor', alias: 'body', trName: 'Body / Armor', label: 'Armor' },
+    { key: 'torso', alias: null, trName: 'Torso / Vest', label: 'Torso' },
+    { key: 'bracers', alias: 'arms', trName: 'Arms / Bracers', label: 'Bracers' },
+    { key: 'gloves', alias: 'hands', trName: 'Hands / Gloves', label: 'Gloves' },
+    { key: 'ring1', alias: null, trName: 'Left Ring', label: 'Ring 1' },
+    { key: 'ring2', alias: null, trName: 'Right Ring', label: 'Ring 2' },
+    { key: 'belt', alias: 'waist', trName: 'Waist / Belt', label: 'Belt' },
+    { key: 'boots', alias: 'feet', trName: 'Feet / Boots', label: 'Boots' },
+    { key: 'mainHand', alias: null, trName: 'Main Hand (Weapon)', label: 'Main Hand' },
+    { key: 'offHand', alias: null, trName: 'Off-Hand / Shield', label: 'Off-Hand' }
+  ]),
+
+  normalizeItemDailyCharges(item) {
+    if (!item || typeof item !== 'object') return null;
+    if (item.dailyCharges && typeof item.dailyCharges === 'object' && typeof item.dailyCharges.max === 'number' && item.dailyCharges.max > 0) {
+      const maxVal = Number(item.dailyCharges.max) || 1;
+      const curVal = item.dailyCharges.current !== undefined && item.dailyCharges.current !== null
+        ? Math.max(0, Math.min(maxVal, Number(item.dailyCharges.current)))
+        : maxVal;
+      return {
+        current: curVal,
+        max: maxVal,
+        unit: item.dailyCharges.unit || 'charges',
+        recharge: item.dailyCharges.recharge || 'long_rest'
+      };
+    }
+    if (typeof item.dailyCharges === 'number' && item.dailyCharges > 0) {
+      return { current: item.dailyCharges, max: item.dailyCharges, unit: 'charges', recharge: 'long_rest' };
+    }
+    const lowerName = String(item.name || '').toLowerCase();
+    if (lowerName.includes('healing belt')) {
+      return { current: 3, max: 3, unit: 'charges', recharge: 'long_rest' };
+    }
+    if (lowerName.includes('witchlight reservoir')) {
+      return { current: 5, max: 5, unit: 'charges', recharge: 'long_rest' };
+    }
+    if (lowerName.includes('boots of speed')) {
+      return { current: 10, max: 10, unit: 'rounds', recharge: 'long_rest' };
+    }
+    if (lowerName.includes('belt of battle')) {
+      return { current: 3, max: 3, unit: 'charges', recharge: 'long_rest' };
+    }
+    const combined = `${item.name || ''} ${item.desc || ''} ${item.effect || ''} ${item.benefit || ''}`;
+    const match = combined.match(/(?:(\d+)\s*(?:charges?|rounds?|uses?|times?|kullanım|şarj|tur|defa)?\s*(?:\/|\s*per\s*|\s*x\s*|\s*a\s*)\s*(?:day|gün|günde|günlük))|(?:(?:günde|günlük)\s*(\d+)\s*(?:şarj|kullanım|tur|round|defa)?)/i);
+    if (match) {
+      const maxVal = parseInt(match[1] || match[2], 10) || 1;
+      let unit = 'charges';
+      const matchedStr = match[0].toLowerCase();
+      if (matchedStr.includes('round') || matchedStr.includes('tur')) unit = 'rounds';
+      else if (matchedStr.includes('use') || matchedStr.includes('kullanım') || matchedStr.includes('defa')) unit = 'uses';
+      return { current: maxVal, max: maxVal, unit, recharge: 'long_rest' };
+    }
+    return null;
+  },
+
+  inferInventoryItemCategory(entry) {
+    if (!entry || typeof entry !== 'object') return 'Other';
+    if (entry.category && entry.category !== 'Other') return entry.category;
+    const type = String(entry.type || entry.subCategory || entry.category || '').toLowerCase();
+    const slot = String(entry.slot || '').toLowerCase();
+    const name = String(entry.name || '').toLowerCase();
+    if (type.includes('crystal') || slot.includes('crystal')) return 'Crystal';
+    if (type.includes('weapon') || slot.includes('main hand') || slot.includes('two hand') || slot.includes('off hand')) return 'Weapon';
+    if (type.includes('shield') || slot.includes('shield') || name.includes('shield') || name.includes('buckler')) return 'Shield';
+    if (type.includes('armor') || slot === 'armor' || slot === 'body') return 'Armor';
+    if (type.includes('potion') || type.includes('scroll') || type.includes('wand') || type.includes('consumable') || type === 'ammo' || name.startsWith('scroll of') || name.startsWith('potion of') || name.startsWith('wand of') || name.startsWith('elixir of') || name.startsWith('oil of')) return 'Consumable';
+    if (slot.includes('head') || slot.includes('helm') || type.includes('head')) return 'Head';
+    if (slot.includes('eyes') || slot.includes('face') || slot.includes('goggles')) return 'Eyes';
+    if (slot.includes('neck') || slot.includes('throat') || slot.includes('amulet') || slot.includes('periapt')) return 'Neck';
+    if (slot.includes('shoulder') || slot.includes('cloak') || slot.includes('cape')) return 'Shoulders';
+    if (slot.includes('torso') || slot.includes('vest') || slot.includes('shirt')) return 'Torso';
+    if (slot.includes('belt') || slot.includes('waist')) return 'Belt';
+    if (slot.includes('arm') || slot.includes('bracer')) return 'Bracers';
+    if (slot.includes('hand') || slot.includes('glove') || slot.includes('gauntlet')) return 'Gloves';
+    if (slot.includes('ring') || type.includes('ring') || name.startsWith('ring of')) return 'Ring';
+    if (slot.includes('feet') || slot.includes('boot')) return 'Boots';
+    if (type.includes('tool')) return 'Tool';
+    if (type.includes('rod')) return 'Rod';
+    if (type.includes('staff')) return 'Staff';
+    if (type.includes('wondrous')) return 'Wondrous';
+    if (/\b(?:dagger|sword|blade|axe|bow|crossbow|mace|spear|hammer|rapier|scimitar|flail|halberd|glaive|lance|morningstar|scythe|trident|quarterstaff|sling|dart|javelin|shuriken|kama|nunchaku|siangham|kukri|falchion|whip|club|greatclub)\b/i.test(name)) return 'Weapon';
+    if (/\b(?:plate|mail|leather|padded|hide|hauberk|cuirass)\b/i.test(name)) return 'Armor';
+    return 'Other';
+  },
+
+  /**
+   * Pure Inventory View-Model Derivation (Phase R4):
+   * Computes `encumbranceView`, `wealthView`, `bodySlotsView`, `poolRows`, `weaponsView`, and `armorView`
+   * without mutating `w.bodySlots` or `w.gearPool` during render.
+   */
+  deriveInventoryView(w) {
+    if (!w || typeof w !== 'object') {
+      const fallbackCaps = this.getCarryingCapacity(10);
+      return {
+        encumbranceView: {
+          equippedWeight: 0,
+          poolWeight: 0,
+          totalWeight: 0,
+          strScore: 10,
+          capacities: fallbackCaps,
+          loadStatus: this.getLoadStatus(0, 10),
+          barPct: 0
+        },
+        wealthView: { pp: 0, gp: 0, sp: 0, cp: 0, totalGpEquivalent: 0, gearGpValue: 0 },
+        bodySlotsView: { slotsByKey: {}, slotList: [] },
+        poolRows: [],
+        weaponsView: [],
+        armorView: []
+      };
+    }
+
+    const strScore = Number(w.abilities?.str) || 10;
+    const capacities = this.getCarryingCapacity(strScore);
+    const rawSlots = w.bodySlots || {};
+    const rawPool = Array.isArray(w.gearPool) ? w.gearPool : [];
+
+    // 1. Body Slots View (14 canonical slots + aliases)
+    const slotsByKey = {};
+    const slotList = [];
+    let equippedWeight = 0;
+    let equippedGearGpValue = 0;
+    const equippedNameToSlotKey = new Map();
+
+    this.INVENTORY_SLOT_DEFS.forEach((def) => {
+      const rawSlot = rawSlots[def.key] || (def.alias ? rawSlots[def.alias] : null) || null;
+      const cloned = rawSlot ? JSON.parse(JSON.stringify(rawSlot)) : { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+      const isOccupied = Boolean(cloned && cloned.name && cloned.name !== '-');
+      const isActive = Boolean(isOccupied && cloned.active !== false);
+      const normCat = isOccupied ? this.inferInventoryItemCategory(cloned) : 'None';
+      if (isOccupied && (!cloned.category || cloned.category === 'Other')) {
+        cloned.category = normCat;
+      }
+      const normDc = isOccupied ? this.normalizeItemDailyCharges(cloned) : null;
+      if (normDc) {
+        cloned.dailyCharges = normDc;
+      }
+      const weightVal = isOccupied ? (Number(cloned.weight ?? cloned.weightLb) || 0) : 0;
+      const costVal = isOccupied ? (Number(cloned.cost ?? cloned.priceGp) || 0) : 0;
+      if (isActive) {
+        equippedWeight += weightVal;
+      }
+      if (isOccupied) {
+        equippedGearGpValue += costVal;
+        const cleanSlotName = String(cloned.name || '').toLowerCase().trim();
+        if (cleanSlotName && !equippedNameToSlotKey.has(cleanSlotName)) {
+          equippedNameToSlotKey.set(cleanSlotName, def.key);
+        }
+      }
+      const slotEntry = Object.assign({}, cloned, {
+        slotKey: def.key,
+        aliasKey: def.alias,
+        slotLabel: def.label,
+        trName: def.trName,
+        isOccupied,
+        isActive,
+        weight: weightVal,
+        cost: costVal,
+        dailyCharges: normDc
+      });
+      slotsByKey[def.key] = slotEntry;
+      if (def.alias) {
+        slotsByKey[def.alias] = slotEntry;
+      }
+      slotList.push(slotEntry);
+    });
+
+    // 2. Pool Rows View (cloned & normalized without mutating character.gearPool)
+    const EQUIP_CATS = new Set([
+      'Weapon', 'Armor', 'Shield', 'Ring', 'Head', 'Eyes', 'Neck', 'Shoulders',
+      'Torso', 'Belt', 'Bracers', 'Gloves', 'Boots', 'Wondrous', 'Crystal'
+    ]);
+    let poolWeight = 0;
+    let poolGearGpValue = 0;
+    const poolRows = rawPool.filter(Boolean).map((rawItem, idx) => {
+      const cloned = JSON.parse(JSON.stringify(rawItem));
+      const normCat = this.inferInventoryItemCategory(cloned);
+      if (!cloned.category || cloned.category === 'Other') {
+        cloned.category = normCat;
+      }
+      if (!cloned.slot || cloned.slot === 'Other' || cloned.slot === 'None') {
+        cloned.slot = cloned.category;
+      }
+      const qty = (cloned.qty !== undefined && cloned.qty !== null) ? Math.max(0, Number(cloned.qty)) : 1;
+      const unitWeight = Number(cloned.weight ?? cloned.weightLb) || 0;
+      const unitCost = Number(cloned.cost ?? cloned.priceGp) || 0;
+      const cleanName = String(cloned.name || '').toLowerCase().trim();
+      const equippedSlotKey = equippedNameToSlotKey.get(cleanName) || (cloned.isEquipped ? (cloned.equippedSlotKey || null) : null);
+      const isEquipped = Boolean(cloned.isEquipped || equippedSlotKey);
+      if (!isEquipped) {
+        poolWeight += unitWeight * qty;
+      }
+      poolGearGpValue += unitCost * Math.max(1, qty);
+      const totalItemWeight = Math.round(unitWeight * qty * 10) / 10;
+      const normDc = this.normalizeItemDailyCharges(cloned);
+      if (normDc) {
+        cloned.dailyCharges = normDc;
+      }
+      const inBelt = Boolean(cloned.isBelt || cloned.inBelt);
+      const isEquippable = EQUIP_CATS.has(cloned.category);
+      const isConsumable = Boolean(cloned.category === 'Consumable' || inBelt || normDc);
+      return Object.assign(cloned, {
+        idx,
+        id: cloned.id !== undefined ? cloned.id : `pool_${idx}`,
+        category: cloned.category,
+        slot: cloned.slot,
+        qty,
+        weight: unitWeight,
+        totalWeight: totalItemWeight,
+        cost: unitCost,
+        charges: normDc ? normDc.current : (Number(cloned.charges) || 0),
+        dailyCharges: normDc,
+        inBelt,
+        isBelt: inBelt,
+        isEquippable,
+        isConsumable,
+        isEquipped,
+        equippedSlotKey
+      });
+    });
+
+    const totalWeight = Math.round((equippedWeight + poolWeight) * 10) / 10;
+    const loadStatus = this.getLoadStatus(totalWeight, strScore);
+    const barPct = Math.min(100, Math.round((totalWeight / Math.max(1, capacities.heavy)) * 100));
+
+    // 3. Wealth View
+    const rawWealth = w.wealth || w.currency || {};
+    const pp = Math.max(0, Number(rawWealth.pp ?? w.pp ?? 0) || 0);
+    const gp = Math.max(0, Number(rawWealth.gp ?? w.gp ?? w.gold ?? 0) || 0);
+    const sp = Math.max(0, Number(rawWealth.sp ?? w.sp ?? 0) || 0);
+    const cp = Math.max(0, Number(rawWealth.cp ?? w.cp ?? 0) || 0);
+    const totalGpEquivalent = Math.round((pp * 10 + gp + sp * 0.1 + cp * 0.01) * 100) / 100;
+    const gearGpValue = Math.round((equippedGearGpValue + poolGearGpValue) * 100) / 100;
+
+    // 4. Weapons View & Armor View
+    const weaponsView = [];
+    const seenWeaponNames = new Set();
+    ['mainHand', 'offHand'].forEach((sk) => {
+      const sEntry = slotsByKey[sk];
+      if (sEntry && sEntry.isOccupied && sEntry.category === 'Weapon') {
+        weaponsView.push(Object.assign({}, sEntry, { isEquipped: true, equippedSlotKey: sk }));
+        seenWeaponNames.add(String(sEntry.name || '').toLowerCase().trim());
+      }
+    });
+    poolRows.forEach((p) => {
+      if (p.category === 'Weapon') {
+        const key = String(p.name || '').toLowerCase().trim();
+        if (!seenWeaponNames.has(key)) {
+          weaponsView.push(p);
+          seenWeaponNames.add(key);
+        }
+      }
+    });
+
+    const armorView = [];
+    const seenArmorNames = new Set();
+    ['armor', 'offHand'].forEach((sk) => {
+      const sEntry = slotsByKey[sk];
+      if (sEntry && sEntry.isOccupied && (sEntry.category === 'Armor' || sEntry.category === 'Shield')) {
+        armorView.push(Object.assign({}, sEntry, { isEquipped: true, equippedSlotKey: sk }));
+        seenArmorNames.add(String(sEntry.name || '').toLowerCase().trim());
+      }
+    });
+    poolRows.forEach((p) => {
+      if (p.category === 'Armor' || p.category === 'Shield') {
+        const key = String(p.name || '').toLowerCase().trim();
+        if (!seenArmorNames.has(key)) {
+          armorView.push(p);
+          seenArmorNames.add(key);
+        }
+      }
+    });
+
+    return {
+      encumbranceView: {
+        equippedWeight: Math.round(equippedWeight * 10) / 10,
+        poolWeight: Math.round(poolWeight * 10) / 10,
+        totalWeight,
+        strScore,
+        capacities,
+        loadStatus,
+        barPct
+      },
+      wealthView: {
+        pp,
+        gp,
+        sp,
+        cp,
+        totalGpEquivalent,
+        gearGpValue
+      },
+      bodySlotsView: {
+        slotsByKey,
+        slotList
+      },
+      poolRows,
+      weaponsView,
+      armorView
+    };
+  },
+
   /**
    * Pure, zero-mutation sheet derivation pipeline (Phase R1 Strangler Fig).
    * Accepts `(inputChar, customDb, tacticalOptions)` or `(inputChar, { masterDb, session, tactical })`.
@@ -8464,6 +8769,7 @@ const RuleEngine = {
     });
 
     const consumablesGrouped = this.deriveConsumablesView(working);
+    const inventoryView = this.deriveInventoryView(working);
     const specialAttacks = this.deriveSpecialAttacks(working, working.legoEvaluation, workingDb);
     const activeBuffsStrip = this.deriveActiveBuffsStrip(working);
     const spent = working.tactical?.spentActions || working.actionEconomy?.spentActions || {};
@@ -8566,7 +8872,13 @@ const RuleEngine = {
         bodySlots: working.bodySlots || {},
         gearPool: working.gearPool || [],
         consumables: working.consumables || [],
-        consumablesGrouped
+        consumablesGrouped,
+        encumbranceView: inventoryView.encumbranceView,
+        wealthView: inventoryView.wealthView,
+        bodySlotsView: inventoryView.bodySlotsView,
+        poolRows: inventoryView.poolRows,
+        weaponsView: inventoryView.weaponsView,
+        armorView: inventoryView.armorView
       },
       spells: {
         spellcasting: working.spellcasting || {},

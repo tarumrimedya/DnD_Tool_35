@@ -440,7 +440,11 @@
             outcome.status === 'exhausted_qty' ||
             outcome.status === 'exhausted_slot' ||
             outcome.status === 'exhausted_pool' ||
-            outcome.status === 'invalid_payload'
+            outcome.status === 'invalid_payload' ||
+            outcome.status === 'empty_slot' ||
+            outcome.status === 'no_target_slot' ||
+            outcome.status === 'no_daily_charges' ||
+            outcome.status === 'charges_exhausted'
           )
         );
         if (!isAborted) {
@@ -1454,6 +1458,957 @@
     }
     doc.buffs.splice(idx, 1);
     setStoreOutcome(stateObj, { status: 'buff_removed', index: idx });
+    return doc;
+  });
+
+  // =========================================================================
+  // Phase R4: Pure Inventory & Gear Pool Reducers ('inventory/*')
+  // =========================================================================
+  function ensureInventoryDocStructures(doc) {
+    if (!doc || typeof doc !== 'object') return;
+    if (!doc.bodySlots || typeof doc.bodySlots !== 'object') doc.bodySlots = {};
+    if (!Array.isArray(doc.gearPool)) doc.gearPool = [];
+    if (!Array.isArray(doc.consumables)) doc.consumables = [];
+    if (!Array.isArray(doc.weapons)) doc.weapons = [];
+    if (!doc.tactical || typeof doc.tactical !== 'object') doc.tactical = {};
+    if (!doc.tactical.weaponSets || typeof doc.tactical.weaponSets !== 'object') {
+      doc.tactical.weaponSets = {
+        activeSet: 1,
+        activeSets: [1],
+        set1: { mainWeapon: doc.activeWeapon || 'None', grip: doc.activeGrip || '1-Hand' },
+        set2: { mainWeapon: doc.activeOffHand || 'None', grip: 'Off-Hand' }
+      };
+    }
+  }
+
+  function unequipSlotOnDoc(doc, slotKey) {
+    ensureInventoryDocStructures(doc);
+    const slot = doc.bodySlots[slotKey];
+    if (!slot || !slot.name || slot.name === '-') return null;
+    const engine = resolveRuleEngine();
+    const slotNameLower = String(slot.name || '').toLowerCase().trim();
+    const existingInPool = doc.gearPool.find(p => p && String(p.name || '').toLowerCase().trim() === slotNameLower);
+    if (existingInPool) {
+      existingInPool.isEquipped = false;
+    } else {
+      const cat = slot.category || (engine && typeof engine.inferInventoryItemCategory === 'function' ? engine.inferInventoryItemCategory(slot) : 'Wondrous');
+      doc.gearPool.push({
+        id: slot.id || ('pool_' + Date.now() + '_' + Math.floor(Math.random() * 1000)),
+        baseItemId: slot.baseItemId,
+        name: slot.name,
+        masterDbName: slot.masterDbName || slot.name,
+        category: cat,
+        slot: slotKey,
+        qty: 1,
+        weight: Number(slot.weight) || 0,
+        cost: Number(slot.cost) || 0,
+        desc: slot.desc || slot.description || '',
+        benefit: slot.benefit || '',
+        description: slot.description || slot.desc || '',
+        material: slot.material,
+        enhancementBonus: slot.enhancementBonus,
+        enhancements: Array.isArray(slot.enhancements) ? slot.enhancements.slice() : undefined,
+        dice: slot.dice,
+        critMin: slot.critMin,
+        critRange: slot.critRange,
+        critMult: slot.critMult,
+        handedness: slot.handedness,
+        attBonus: slot.attBonus,
+        dmgBonus: slot.dmgBonus,
+        dmgType: slot.dmgType,
+        isLight: slot.isLight,
+        acBonus: slot.acBonus,
+        bonusType: slot.bonusType,
+        maxDex: slot.maxDex,
+        checkPenalty: slot.checkPenalty,
+        spellFailure: slot.spellFailure,
+        dailyCharges: slot.dailyCharges ? JSON.parse(JSON.stringify(slot.dailyCharges)) : undefined,
+        damageParts: Array.isArray(slot.damageParts) ? JSON.parse(JSON.stringify(slot.damageParts)) : undefined,
+        modifiers: Array.isArray(slot.modifiers) ? JSON.parse(JSON.stringify(slot.modifiers)) : undefined,
+        ruleFlags: slot.ruleFlags ? JSON.parse(JSON.stringify(slot.ruleFlags)) : undefined,
+        tacticalBadges: Array.isArray(slot.tacticalBadges) ? JSON.parse(JSON.stringify(slot.tacticalBadges)) : undefined,
+        isBelt: false,
+        isEquipped: false
+      });
+    }
+    const unequippedName = slot.name;
+    doc.bodySlots[slotKey] = { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+    if (slotKey === 'mainHand') {
+      if (doc.tactical?.weaponSets?.set1) {
+        doc.tactical.weaponSets.set1.mainWeapon = 'None';
+      }
+      doc.activeWeapon = 'None';
+    } else if (slotKey === 'offHand') {
+      if (doc.tactical?.weaponSets?.set2) {
+        doc.tactical.weaponSets.set2.mainWeapon = 'None';
+      }
+      doc.activeOffHand = 'None';
+    }
+    return unequippedName;
+  }
+
+  function resolveTargetBodySlotKey(doc, item, forceSlotKey) {
+    if (forceSlotKey) return forceSlotKey;
+    const engine = resolveRuleEngine();
+    const cat = item.category || (engine && typeof engine.inferInventoryItemCategory === 'function' ? engine.inferInventoryItemCategory(item) : 'Other');
+    const slotText = String(item.slot || '').toLowerCase();
+    const map = {
+      Head: 'head',
+      Eyes: 'eyes',
+      Neck: 'neck',
+      Shoulders: 'shoulders',
+      Armor: 'armor',
+      Torso: 'torso',
+      Bracers: 'bracers',
+      Gloves: 'gloves',
+      Belt: 'belt',
+      Boots: 'boots',
+      Shield: 'offHand',
+      Weapon: 'mainHand'
+    };
+    if (map[cat]) return map[cat];
+    if (cat === 'Ring' || slotText.includes('ring')) {
+      const r1 = doc.bodySlots?.ring1;
+      const r2 = doc.bodySlots?.ring2;
+      if (!r1 || !r1.name || r1.name === '-') return 'ring1';
+      if (!r2 || !r2.name || r2.name === '-') return 'ring2';
+      return 'ring1';
+    }
+    if (slotText.includes('head') || slotText.includes('helm')) return 'head';
+    if (slotText.includes('eye') || slotText.includes('face') || slotText.includes('goggle')) return 'eyes';
+    if (slotText.includes('neck') || slotText.includes('throat') || slotText.includes('amulet')) return 'neck';
+    if (slotText.includes('shoulder') || slotText.includes('cloak') || slotText.includes('cape')) return 'shoulders';
+    if (slotText.includes('armor') || slotText === 'body') return 'armor';
+    if (slotText.includes('torso') || slotText.includes('vest') || slotText.includes('shirt')) return 'torso';
+    if (slotText.includes('arm') || slotText.includes('bracer') || slotText.includes('wrist')) return 'bracers';
+    if (slotText.includes('hand') || slotText.includes('glove') || slotText.includes('gauntlet')) return 'gloves';
+    if (slotText.includes('belt') || slotText.includes('waist')) return 'belt';
+    if (slotText.includes('feet') || slotText.includes('boot') || slotText.includes('shoe')) return 'boots';
+    if (slotText.includes('off') || slotText.includes('shield')) return 'offHand';
+    if (slotText.includes('main') || slotText.includes('weapon')) return 'mainHand';
+    return null;
+  }
+
+  // 1. 'inventory/adjustPoolQty' ({ itemId, delta })
+  CharStore.registerReducer('inventory/adjustPoolQty', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const item = doc.gearPool.find(p => p && String(p.id) === String(payload.itemId));
+    if (!item) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    const curQty = (item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1;
+    const nextQty = payload.value !== undefined
+      ? Math.max(0, Number(payload.value) || 0)
+      : Math.max(0, curQty + (Number(payload.delta) || 0));
+    item.qty = nextQty;
+    const cleanName = String(item.name || '').toLowerCase().trim();
+    const cons = doc.consumables.find(c => c && String(c.name || '').toLowerCase().trim() === cleanName);
+    if (cons) {
+      cons.qty = item.qty;
+    }
+    setStoreOutcome(stateObj, { status: 'pool_qty_adjusted', itemId: item.id, qty: item.qty, name: item.name });
+    return doc;
+  });
+
+  // 2. 'inventory/togglePoolBelt' ({ itemId })
+  CharStore.registerReducer('inventory/togglePoolBelt', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const item = doc.gearPool.find(p => p && String(p.id) === String(payload.itemId));
+    if (!item) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    item.isBelt = payload.value !== undefined ? Boolean(payload.value) : !Boolean(item.isBelt);
+    item.inBelt = item.isBelt;
+    const cleanName = String(item.name || '').toLowerCase().trim();
+    if (item.isBelt) {
+      const exists = doc.consumables.some(c => c && String(c.name || '').toLowerCase().trim() === cleanName);
+      if (!exists) {
+        doc.consumables.push({
+          name: item.name,
+          qty: (item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1,
+          effect: item.desc || item.benefit || 'Quick-use belt item'
+        });
+      }
+    } else if (item.category !== 'Consumable') {
+      doc.consumables = doc.consumables.filter(c => !c || String(c.name || '').toLowerCase().trim() !== cleanName);
+    }
+    setStoreOutcome(stateObj, { status: 'pool_belt_toggled', itemId: item.id, isBelt: item.isBelt, name: item.name });
+    return doc;
+  });
+
+  // 3. 'inventory/deletePoolItem' ({ itemId })
+  CharStore.registerReducer('inventory/deletePoolItem', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const idx = doc.gearPool.findIndex(p => p && String(p.id) === String(payload.itemId));
+    if (idx < 0) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    const item = doc.gearPool[idx];
+    const cleanName = String(item.name || '').toLowerCase().trim();
+    doc.gearPool.splice(idx, 1);
+    doc.consumables = doc.consumables.filter(c => !c || String(c.name || '').toLowerCase().trim() !== cleanName);
+    if (item.category === 'Weapon') {
+      const mhName = String(doc.bodySlots?.mainHand?.name || '').toLowerCase().trim();
+      const ohName = String(doc.bodySlots?.offHand?.name || '').toLowerCase().trim();
+      if (mhName !== cleanName && ohName !== cleanName) {
+        doc.weapons = doc.weapons.filter(w => !w || String(w.name || '').toLowerCase().trim() !== cleanName);
+      }
+    }
+    setStoreOutcome(stateObj, { status: 'pool_item_deleted', itemId: payload.itemId, name: item.name });
+    return doc;
+  });
+
+  // 4. 'inventory/equipPoolItem' ({ itemId, forceSlotKey })
+  CharStore.registerReducer('inventory/equipPoolItem', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const engine = resolveRuleEngine();
+    const item = doc.gearPool.find(p => p && (String(p.id) === String(payload.itemId) || (payload.itemName && String(p.name || '').toLowerCase().trim() === String(payload.itemName).toLowerCase().trim())));
+    if (!item) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    if (!item.category || item.category === 'Other') {
+      item.category = (engine && typeof engine.inferInventoryItemCategory === 'function')
+        ? engine.inferInventoryItemCategory(item)
+        : (item.type || 'Other');
+    }
+    const targetSlotKey = resolveTargetBodySlotKey(doc, item, payload.forceSlotKey || payload.targetSlot || null);
+    if (!targetSlotKey) {
+      setStoreOutcome(stateObj, { status: 'no_target_slot', itemId: item.id, name: item.name });
+      return doc;
+    }
+
+    let twoHandWarningMsg = '';
+    const isTwoHand = Boolean(engine && typeof engine.isTwoHandedWeapon === 'function' && engine.isTwoHandedWeapon(item));
+    if (targetSlotKey === 'mainHand' && isTwoHand) {
+      const offSlot = doc.bodySlots.offHand;
+      if (offSlot && offSlot.name && offSlot.name !== '-') {
+        const oldOffName = unequipSlotOnDoc(doc, 'offHand');
+        twoHandWarningMsg = `2-Handed Weapon Rule: "${item.name}" requires two hands, so Off-Hand item "${oldOffName}" was automatically unequipped.`;
+      }
+    } else if (targetSlotKey === 'offHand') {
+      const mainSlot = doc.bodySlots.mainHand;
+      if (mainSlot && mainSlot.name && mainSlot.name !== '-' && engine && typeof engine.isTwoHandedWeapon === 'function' && engine.isTwoHandedWeapon(mainSlot)) {
+        const oldMainName = unequipSlotOnDoc(doc, 'mainHand');
+        twoHandWarningMsg = `2-Handed Conflict: Equipping "${item.name}" in Off-Hand automatically unequipped 2-handed weapon "${oldMainName}".`;
+      }
+    }
+
+    const currentInSlot = doc.bodySlots[targetSlotKey];
+    if (currentInSlot && currentInSlot.name && currentInSlot.name !== '-' && currentInSlot.name !== item.name) {
+      unequipSlotOnDoc(doc, targetSlotKey);
+    }
+
+    const normDc = (engine && typeof engine.normalizeItemDailyCharges === 'function')
+      ? engine.normalizeItemDailyCharges(item)
+      : item.dailyCharges;
+
+    doc.bodySlots[targetSlotKey] = {
+      baseItemId: item.baseItemId,
+      name: item.name,
+      masterDbName: item.masterDbName || item.name,
+      category: item.category,
+      active: true,
+      weight: Number(item.weight) || 0,
+      cost: Number(item.cost) || 0,
+      desc: item.desc || item.description || '',
+      benefit: item.benefit || '',
+      description: item.description || item.desc || '',
+      scope: item.scope || '',
+      targetSkill: item.targetSkill || '',
+      material: item.material,
+      enhancementBonus: item.enhancementBonus,
+      enhancements: Array.isArray(item.enhancements) ? item.enhancements.slice() : undefined,
+      dice: item.dice || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : undefined),
+      critMin: item.critMin || item.critRange || item.weaponMeta?.critMin,
+      critRange: item.critRange || item.critMin || item.weaponMeta?.critMin,
+      critMult: item.critMult || item.weaponMeta?.critMult,
+      handedness: item.handedness || item.weaponMeta?.handedness,
+      attBonus: item.attBonus || item.enhancementBonus || 0,
+      dmgBonus: item.dmgBonus || item.enhancementBonus || 0,
+      dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : undefined),
+      isLight: item.isLight || Boolean(engine && typeof engine.isLightWeapon === 'function' && engine.isLightWeapon(item)),
+      parent: item.parent,
+      dailyCharges: normDc ? JSON.parse(JSON.stringify(normDc)) : undefined,
+      damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : undefined,
+      modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : undefined,
+      acBonus: item.acBonus,
+      bonusType: item.bonusType,
+      strBonus: item.strBonus,
+      dexBonus: item.dexBonus,
+      conBonus: item.conBonus,
+      intBonus: item.intBonus,
+      wisBonus: item.wisBonus,
+      chaBonus: item.chaBonus,
+      skillBonus: item.skillBonus,
+      skillBonuses: item.skillBonuses ? JSON.parse(JSON.stringify(item.skillBonuses)) : undefined,
+      fortBonus: item.fortBonus,
+      refBonus: item.refBonus,
+      willBonus: item.willBonus,
+      speedBonus: item.speedBonus,
+      clBonus: item.clBonus,
+      maxDex: item.maxDex,
+      checkPenalty: item.checkPenalty,
+      spellFailure: item.spellFailure,
+      ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : undefined,
+      tacticalBadges: Array.isArray(item.tacticalBadges) ? JSON.parse(JSON.stringify(item.tacticalBadges)) : undefined,
+      combatModifiers: item.combatModifiers ? JSON.parse(JSON.stringify(item.combatModifiers)) : undefined
+    };
+    item.isEquipped = true;
+
+    if (item.category === 'Weapon') {
+      const existingWep = doc.weapons.find(w => w && String(w.name || '').toLowerCase() === String(item.name || '').toLowerCase());
+      const targetGrip = isTwoHand ? '2-Hand' : (targetSlotKey === 'offHand' ? 'Off-Hand' : '1-Hand');
+      if (existingWep) {
+        existingWep.grip = targetGrip;
+        if (item.dice) existingWep.dice = item.dice;
+        if (item.critMin || item.critRange) existingWep.critMin = item.critMin || item.critRange;
+        if (item.critMult) existingWep.critMult = item.critMult;
+        if (item.dmgType) existingWep.dmgType = item.dmgType;
+        if (item.handedness) existingWep.handedness = item.handedness;
+        if (item.enhancementBonus !== undefined) existingWep.enhancementBonus = item.enhancementBonus;
+        if (item.attBonus !== undefined) existingWep.attBonus = item.attBonus;
+        if (item.dmgBonus !== undefined) existingWep.dmgBonus = item.dmgBonus;
+        if (item.isLight !== undefined) existingWep.isLight = item.isLight;
+        if (Array.isArray(item.damageParts) && item.damageParts.length > 0) existingWep.damageParts = JSON.parse(JSON.stringify(item.damageParts));
+        if (Array.isArray(item.modifiers) && item.modifiers.length > 0) existingWep.modifiers = JSON.parse(JSON.stringify(item.modifiers));
+      } else {
+        doc.weapons.push({
+          baseItemId: item.baseItemId,
+          name: item.name,
+          grip: targetGrip,
+          handedness: item.handedness || item.weaponMeta?.handedness,
+          dice: item.dice || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].dice : (isTwoHand ? '2d6' : '1d6')),
+          critMin: item.critMin || item.critRange || item.weaponMeta?.critMin || 20,
+          critMult: item.critMult || item.weaponMeta?.critMult || 2,
+          enhancementBonus: item.enhancementBonus || 0,
+          attBonus: item.attBonus || item.enhancementBonus || 0,
+          dmgBonus: item.dmgBonus || item.enhancementBonus || 0,
+          dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : 'Slashing'),
+          bonusType: item.bonusType || 'Enhancement',
+          isLight: item.isLight || Boolean(engine && typeof engine.isLightWeapon === 'function' && engine.isLightWeapon(item)),
+          damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : undefined,
+          modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : undefined,
+          ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : undefined,
+          tags: isTwoHand ? ['two-handed'] : (targetSlotKey === 'offHand' ? ['off-hand'] : [])
+        });
+      }
+      if (targetSlotKey === 'mainHand') {
+        doc.activeWeapon = item.name;
+      }
+    }
+
+    if (targetSlotKey === 'mainHand') {
+      const isDoubleWep = Boolean(engine && typeof engine.isDoubleWeapon === 'function' && engine.isDoubleWeapon(item));
+      if (doc.tactical?.weaponSets?.set1) {
+        doc.tactical.weaponSets.set1.mainWeapon = item.name;
+        doc.tactical.weaponSets.set1.grip = (isDoubleWep || isTwoHand) ? '2-Hand' : '1-Hand';
+      }
+      if (isDoubleWep && doc.tactical?.weaponSets?.set2) {
+        doc.tactical.weaponSets.set2.mainWeapon = item.name;
+        doc.tactical.weaponSets.set2.grip = 'Off-Hand';
+        doc.tactical.weaponSets.activeSets = [1];
+        doc.tactical.weaponSets.activeSet = 1;
+        doc.activeOffHand = 'None';
+      } else if (!isTwoHand && doc.bodySlots?.offHand?.name && doc.bodySlots.offHand.name !== '-') {
+        if (doc.tactical?.weaponSets) {
+          doc.tactical.weaponSets.set2.mainWeapon = doc.bodySlots.offHand.name;
+          doc.tactical.weaponSets.set2.grip = 'Off-Hand';
+          doc.tactical.weaponSets.activeSets = [1, 2];
+          doc.tactical.weaponSets.activeSet = 'both';
+        }
+        doc.activeOffHand = doc.bodySlots.offHand.name;
+      }
+      doc.activeWeapon = item.name;
+    } else if (targetSlotKey === 'offHand') {
+      if (doc.tactical?.weaponSets?.set1) {
+        doc.tactical.weaponSets.set1.grip = '1-Hand';
+      }
+      if (doc.tactical?.weaponSets?.set2) {
+        doc.tactical.weaponSets.set2.mainWeapon = item.name;
+        doc.tactical.weaponSets.set2.grip = 'Off-Hand';
+      }
+      if (doc.tactical?.weaponSets) {
+        if (!Array.isArray(doc.tactical.weaponSets.activeSets)) {
+          doc.tactical.weaponSets.activeSets = [1];
+        }
+        if (!doc.tactical.weaponSets.activeSets.includes(1) && doc.bodySlots?.mainHand?.name && doc.bodySlots.mainHand.name !== '-') {
+          doc.tactical.weaponSets.activeSets.unshift(1);
+        }
+        if (!doc.tactical.weaponSets.activeSets.includes(2)) {
+          doc.tactical.weaponSets.activeSets.push(2);
+        }
+        doc.tactical.weaponSets.activeSet = (doc.tactical.weaponSets.activeSets.includes(1) && doc.tactical.weaponSets.activeSets.includes(2)) ? 'both' : 2;
+      }
+      doc.activeOffHand = item.name;
+      if (item.category === 'Weapon') {
+        if (!Array.isArray(doc.activeModifiers)) doc.activeModifiers = [];
+        let twfMod = doc.activeModifiers.find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
+        if (!twfMod) {
+          doc.activeModifiers.push({
+            name: 'Two-Weapon Fighting (TWF)',
+            source: 'Combat',
+            bonusAtk: 0,
+            dice: '',
+            type: 'TWF',
+            active: true,
+            notes: 'Extra Off-Hand Attack (RAW TWF)'
+          });
+        } else {
+          twfMod.active = true;
+        }
+      }
+    }
+
+    setStoreOutcome(stateObj, {
+      status: 'item_equipped',
+      itemId: item.id,
+      itemName: item.name,
+      category: item.category,
+      slotKey: targetSlotKey,
+      twoHandWarningMsg
+    });
+    return doc;
+  });
+
+  // 5. 'inventory/unequipSlot' ({ slotKey })
+  CharStore.registerReducer('inventory/unequipSlot', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const slotKey = payload.slotKey;
+    if (!slotKey) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const unequippedName = unequipSlotOnDoc(doc, slotKey);
+    if (!unequippedName) {
+      setStoreOutcome(stateObj, { status: 'empty_slot', slotKey });
+      return doc;
+    }
+    setStoreOutcome(stateObj, { status: 'slot_unequipped', slotKey, itemName: unequippedName });
+    return doc;
+  });
+
+  // 6. 'inventory/toggleSlotActive' ({ slotKey })
+  CharStore.registerReducer('inventory/toggleSlotActive', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const slotKey = payload.slotKey;
+    const slot = slotKey ? doc.bodySlots[slotKey] : null;
+    if (!slot || !slot.name || slot.name === '-') {
+      setStoreOutcome(stateObj, { status: 'empty_slot', slotKey });
+      return doc;
+    }
+    slot.active = payload.value !== undefined ? Boolean(payload.value) : !Boolean(slot.active);
+    setStoreOutcome(stateObj, { status: 'slot_active_toggled', slotKey, active: slot.active, itemName: slot.name });
+    return doc;
+  });
+
+  // 7. 'inventory/adjustSlotCharge' ({ slotKey, delta })
+  CharStore.registerReducer('inventory/adjustSlotCharge', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const slotKey = payload.slotKey;
+    const delta = Number(payload.delta) || 0;
+    const slot = slotKey ? doc.bodySlots[slotKey] : null;
+    if (!slot || !slot.name || slot.name === '-') {
+      setStoreOutcome(stateObj, { status: 'empty_slot', slotKey });
+      return doc;
+    }
+    const engine = resolveRuleEngine();
+    const normDc = (engine && typeof engine.normalizeItemDailyCharges === 'function')
+      ? engine.normalizeItemDailyCharges(slot)
+      : slot.dailyCharges;
+    if (!normDc || typeof normDc.max !== 'number') {
+      setStoreOutcome(stateObj, { status: 'no_daily_charges', slotKey, itemName: slot.name });
+      return doc;
+    }
+    const prevCurrent = Number(normDc.current) || 0;
+    if (delta < 0 && prevCurrent <= 0) {
+      slot.dailyCharges = normDc;
+      setStoreOutcome(stateObj, { status: 'charges_exhausted', slotKey, itemName: slot.name, dailyCharges: normDc });
+      return doc;
+    }
+    normDc.current = Math.max(0, Math.min(normDc.max, prevCurrent + delta));
+    slot.dailyCharges = normDc;
+    const cleanName = String(slot.name || '').toLowerCase().trim();
+    const poolMatch = doc.gearPool.find(p => p && String(p.name || '').toLowerCase().trim() === cleanName);
+    if (poolMatch) {
+      poolMatch.dailyCharges = JSON.parse(JSON.stringify(normDc));
+    }
+    const consMatch = doc.consumables.find(c => c && String(c.name || '').toLowerCase().trim() === cleanName);
+    if (consMatch) {
+      consMatch.dailyCharges = JSON.parse(JSON.stringify(normDc));
+    }
+    setStoreOutcome(stateObj, {
+      status: 'slot_charge_adjusted',
+      slotKey,
+      itemName: slot.name,
+      dailyCharges: normDc,
+      delta
+    });
+    return doc;
+  });
+
+  // 8a. 'inventory/addPoolItem' ({ item })
+  CharStore.registerReducer('inventory/addPoolItem', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const v2Item = payload.item || payload;
+    if (!v2Item || !v2Item.name) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const engine = resolveRuleEngine();
+    const cat = v2Item.category && v2Item.category !== 'Other'
+      ? v2Item.category
+      : (engine && typeof engine.inferInventoryItemCategory === 'function' ? engine.inferInventoryItemCategory(v2Item) : (v2Item.type || 'Other'));
+    const isBeltItem = Boolean(v2Item.isBelt || v2Item.inBelt || String(v2Item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable');
+    const primaryPart = Array.isArray(v2Item.damageParts) && v2Item.damageParts[0] ? v2Item.damageParts[0] : null;
+    const armorAcMod = Array.isArray(v2Item.modifiers) ? v2Item.modifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield')) : null;
+    const qtyVal = (v2Item.qty !== undefined && v2Item.qty !== null) ? Math.max(0, Number(v2Item.qty)) : 1;
+    const newEntry = {
+      id: v2Item.id || ('item_' + Date.now() + '_' + Math.floor(Math.random() * 1000)),
+      baseItemId: v2Item.baseItemId || v2Item.id || null,
+      name: v2Item.name,
+      masterDbName: v2Item.masterDbName || v2Item.name,
+      category: cat,
+      slot: v2Item.slot && v2Item.slot !== 'None' ? v2Item.slot : cat,
+      qty: qtyVal,
+      weight: Number(v2Item.weightLb ?? v2Item.weight) || 0,
+      cost: Number(v2Item.priceGp ?? v2Item.cost) || 0,
+      desc: v2Item.desc || v2Item.benefit || v2Item.description || '',
+      material: v2Item.material || null,
+      enhancementBonus: Number(v2Item.enhancementBonus) || 0,
+      enhancements: Array.isArray(v2Item.enhancements) ? v2Item.enhancements.slice() : [],
+      modifiers: Array.isArray(v2Item.modifiers) ? JSON.parse(JSON.stringify(v2Item.modifiers)) : [],
+      damageParts: Array.isArray(v2Item.damageParts) ? JSON.parse(JSON.stringify(v2Item.damageParts)) : [],
+      modes: Array.isArray(v2Item.modes) ? JSON.parse(JSON.stringify(v2Item.modes)) : [],
+      weaponMeta: v2Item.weaponMeta ? JSON.parse(JSON.stringify(v2Item.weaponMeta)) : null,
+      armorMeta: v2Item.armorMeta ? JSON.parse(JSON.stringify(v2Item.armorMeta)) : null,
+      ruleFlags: v2Item.ruleFlags ? JSON.parse(JSON.stringify(v2Item.ruleFlags)) : {},
+      tacticalBadges: Array.isArray(v2Item.tacticalBadges) ? JSON.parse(JSON.stringify(v2Item.tacticalBadges)) : [],
+      dice: (primaryPart && primaryPart.dice) || v2Item.dice,
+      dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType,
+      critMin: Number(v2Item.critRange || v2Item.critMin || v2Item.weaponMeta?.critMin) || undefined,
+      critRange: Number(v2Item.critRange || v2Item.critMin || v2Item.weaponMeta?.critMin) || undefined,
+      critMult: Number(v2Item.critMult || v2Item.weaponMeta?.critMult) || undefined,
+      handedness: v2Item.handedness || v2Item.weaponMeta?.handedness,
+      attBonus: Number(v2Item.enhancementBonus || v2Item.attBonus) || 0,
+      dmgBonus: Number(v2Item.enhancementBonus || v2Item.dmgBonus) || 0,
+      acBonus: v2Item.acBonus !== undefined ? v2Item.acBonus : (armorAcMod ? Number(armorAcMod.value) : undefined),
+      maxDex: v2Item.maxDex !== undefined ? v2Item.maxDex : v2Item.armorMeta?.maxDex,
+      checkPenalty: v2Item.checkPenalty !== undefined ? v2Item.checkPenalty : v2Item.armorMeta?.acp,
+      spellFailure: v2Item.spellFailure !== undefined ? v2Item.spellFailure : v2Item.armorMeta?.asf,
+      isBelt: isBeltItem,
+      isEquipped: false
+    };
+    doc.gearPool.push(newEntry);
+
+    if (cat === 'Weapon' || v2Item.type === 'Weapon') {
+      const hasWep = doc.weapons.some(w => w && String(w.name || '').toLowerCase() === String(v2Item.name || '').toLowerCase());
+      if (!hasWep) {
+        const secondaryParts = Array.isArray(v2Item.damageParts) && v2Item.damageParts.length > 1 ? v2Item.damageParts.slice(1) : [];
+        const isTwoHand = Boolean(
+          String(v2Item.weaponMeta?.handedness || v2Item.handedness || '').toLowerCase().includes('two') ||
+          (engine && typeof engine.isTwoHandedWeapon === 'function' && engine.isTwoHandedWeapon(v2Item))
+        );
+        doc.weapons.push({
+          id: newEntry.id,
+          baseItemId: newEntry.baseItemId,
+          name: v2Item.name,
+          grip: isTwoHand ? '2-Hand' : '1-Hand',
+          handedness: newEntry.handedness,
+          dice: (primaryPart && primaryPart.dice) || v2Item.dice || '1d8',
+          damageParts: newEntry.damageParts.length > 0
+            ? JSON.parse(JSON.stringify(newEntry.damageParts))
+            : [{ dice: v2Item.dice || '1d8', bonus: Number(v2Item.dmgBonus) || 0, type: v2Item.dmgType || 'Slashing', multiplyOnCrit: true }],
+          modifiers: JSON.parse(JSON.stringify(newEntry.modifiers)),
+          modes: JSON.parse(JSON.stringify(newEntry.modes)),
+          weaponMeta: newEntry.weaponMeta ? JSON.parse(JSON.stringify(newEntry.weaponMeta)) : null,
+          ruleFlags: JSON.parse(JSON.stringify(newEntry.ruleFlags)),
+          tacticalBadges: JSON.parse(JSON.stringify(newEntry.tacticalBadges)),
+          critMin: Number(v2Item.weaponMeta?.critMin || v2Item.critMin) || 20,
+          rawCritMin: Number(v2Item.weaponMeta?.critMin || v2Item.critMin) || 20,
+          critMult: Number(v2Item.weaponMeta?.critMult || v2Item.critMult) || 2,
+          enhancementBonus: Number(v2Item.enhancementBonus) || 0,
+          attBonus: Number(v2Item.enhancementBonus || v2Item.attBonus) || 0,
+          dmgBonus: Number(v2Item.enhancementBonus || v2Item.dmgBonus) || 0,
+          dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType || 'Slashing',
+          bonusType: 'enhancement',
+          tags: v2Item.tags || [],
+          elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
+          keen: Boolean(v2Item.ruleFlags && v2Item.ruleFlags.keen)
+        });
+      }
+    }
+
+    if (cat === 'Consumable' || (isBeltItem && cat !== 'Weapon')) {
+      const cleanName = String(v2Item.name || '').toLowerCase().trim();
+      const hasCons = doc.consumables.some(c => c && String(c.name || '').toLowerCase().trim() === cleanName);
+      if (!hasCons) {
+        doc.consumables.push({
+          name: v2Item.name,
+          qty: qtyVal,
+          effect: newEntry.desc || 'Consumable effect'
+        });
+      }
+    }
+
+    let attachedChildCount = 0;
+    const itemModes = Array.isArray(v2Item.modes) ? v2Item.modes : [];
+    if (itemModes.length > 0) {
+      itemModes.forEach(mode => {
+        if (!mode || mode.handedness || mode.id === 'primary-head' || mode.id === 'offhand-head' || mode.id === '2h-single' || mode.ruleFlags?.doubleWeapon || mode.ruleFlags?.doubleWeaponOffHand) {
+          return;
+        }
+        const modeClean = String(mode.name || mode.label || '').replace(/^↳\s*/, '').trim();
+        if (!modeClean) return;
+        const modePart = Array.isArray(mode.damageParts) && mode.damageParts[0] ? mode.damageParts[0] : null;
+        const modeDice = (modePart && modePart.dice) || mode.dice || '';
+        if (String(mode.action || '').toLowerCase().includes('action') || (mode.duration && mode.duration !== 'Continuous')) {
+          if (!Array.isArray(doc.specialAbilities)) doc.specialAbilities = [];
+          if (!doc.specialAbilities.some(a => a && String(a.name || '').toLowerCase() === modeClean.toLowerCase())) {
+            doc.specialAbilities.push({
+              name: modeClean,
+              source: v2Item.name,
+              action: mode.action || 'Standard Action',
+              duration: mode.duration || 'Special',
+              benefit: mode.benefit || mode.description || '',
+              dice: modeDice,
+              active: false
+            });
+            attachedChildCount++;
+          }
+        }
+        if (modeDice) {
+          if (!Array.isArray(doc.activeModifiers)) doc.activeModifiers = [];
+          if (!doc.activeModifiers.some(m => m && String(m.name || '').toLowerCase() === modeClean.toLowerCase())) {
+            doc.activeModifiers.push({
+              name: modeClean,
+              source: v2Item.name,
+              bonusAtk: 0,
+              dice: modeDice,
+              type: (modePart && modePart.type) || 'Energy',
+              active: true,
+              notes: mode.benefit || mode.description || ''
+            });
+            attachedChildCount++;
+          }
+        }
+      });
+    }
+
+    setStoreOutcome(stateObj, {
+      status: 'pool_item_added',
+      item: newEntry,
+      attachedChildCount
+    });
+    return doc;
+  });
+
+  // 8b. 'inventory/reforgeItem' ({ targetContext, itemData })
+  CharStore.registerReducer('inventory/reforgeItem', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const targetContext = payload.targetContext || {};
+    const originalItem = targetContext.originalItem || payload.originalItem || {};
+    const targetSlotKey = targetContext.targetSlotKey || payload.targetSlotKey || null;
+    const forgedV2Item = payload.itemData || payload.forgedV2Item;
+    if (!forgedV2Item) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const engine = resolveRuleEngine();
+    const oldName = String(originalItem?.name || '').trim();
+    const oldNameLower = oldName.toLowerCase();
+    const newName = String(forgedV2Item.name || oldName || 'Forged Item').trim();
+    const cat = forgedV2Item.category && forgedV2Item.category !== 'Other'
+      ? forgedV2Item.category
+      : (engine && typeof engine.inferInventoryItemCategory === 'function' ? engine.inferInventoryItemCategory(forgedV2Item) : (forgedV2Item.type || originalItem?.category || 'Weapon'));
+    const newWeight = Number(forgedV2Item.weightLb ?? forgedV2Item.weight) || 0;
+    const newCost = Number(forgedV2Item.priceGp ?? forgedV2Item.cost) || 0;
+    const newDesc = forgedV2Item.benefit || forgedV2Item.description || originalItem?.desc || '';
+    const primaryPart = Array.isArray(forgedV2Item.damageParts) && forgedV2Item.damageParts[0] ? forgedV2Item.damageParts[0] : null;
+    const secondaryParts = Array.isArray(forgedV2Item.damageParts) && forgedV2Item.damageParts.length > 1 ? forgedV2Item.damageParts.slice(1) : [];
+
+    const clonedModifiers = Array.isArray(forgedV2Item.modifiers) ? JSON.parse(JSON.stringify(forgedV2Item.modifiers)) : [];
+    const clonedDamageParts = Array.isArray(forgedV2Item.damageParts) ? JSON.parse(JSON.stringify(forgedV2Item.damageParts)) : [];
+    const clonedModes = Array.isArray(forgedV2Item.modes) ? JSON.parse(JSON.stringify(forgedV2Item.modes)) : [];
+    const clonedWeaponMeta = forgedV2Item.weaponMeta ? JSON.parse(JSON.stringify(forgedV2Item.weaponMeta)) : null;
+    const clonedArmorMeta = forgedV2Item.armorMeta ? JSON.parse(JSON.stringify(forgedV2Item.armorMeta)) : null;
+    const clonedRuleFlags = forgedV2Item.ruleFlags ? JSON.parse(JSON.stringify(forgedV2Item.ruleFlags)) : {};
+    const clonedTacticalBadges = Array.isArray(forgedV2Item.tacticalBadges) ? JSON.parse(JSON.stringify(forgedV2Item.tacticalBadges)) : [];
+
+    const armorAcMod = clonedModifiers.find(m => m && (m.target === 'ac.armor' || m.target === 'ac.shield'));
+    const computedAcBonus = armorAcMod ? (Number(armorAcMod.value) || 0) : (forgedV2Item.acBonus ?? originalItem?.acBonus);
+
+    const poolItem = doc.gearPool.find(p => {
+      if (!p) return false;
+      if (originalItem?.id !== undefined && String(p.id) === String(originalItem.id)) return true;
+      return oldNameLower && String(p.name || '').toLowerCase().trim() === oldNameLower;
+    });
+    if (poolItem) {
+      poolItem.baseItemId = forgedV2Item.baseItemId || forgedV2Item.id || poolItem.baseItemId || null;
+      poolItem.name = newName;
+      poolItem.masterDbName = newName;
+      poolItem.category = cat;
+      poolItem.slot = (forgedV2Item.slot && forgedV2Item.slot !== 'None') ? forgedV2Item.slot : (poolItem.slot || cat);
+      poolItem.weight = newWeight;
+      poolItem.cost = newCost;
+      poolItem.desc = newDesc;
+      poolItem.material = forgedV2Item.material || null;
+      poolItem.enhancementBonus = Number(forgedV2Item.enhancementBonus) || 0;
+      poolItem.enhancements = Array.isArray(forgedV2Item.enhancements) ? forgedV2Item.enhancements.slice() : [];
+      poolItem.modifiers = clonedModifiers;
+      poolItem.damageParts = clonedDamageParts;
+      poolItem.modes = clonedModes;
+      poolItem.weaponMeta = clonedWeaponMeta;
+      poolItem.armorMeta = clonedArmorMeta;
+      poolItem.ruleFlags = clonedRuleFlags;
+      poolItem.tacticalBadges = clonedTacticalBadges;
+      poolItem.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || poolItem.dice;
+      poolItem.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || poolItem.critMin;
+      poolItem.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || poolItem.critMult;
+      poolItem.attBonus = Number(forgedV2Item.enhancementBonus) || 0;
+      poolItem.dmgBonus = Number(forgedV2Item.enhancementBonus) || 0;
+      poolItem.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || poolItem.dmgType;
+      if (computedAcBonus !== undefined) poolItem.acBonus = computedAcBonus;
+      if (clonedArmorMeta) {
+        poolItem.maxDex = clonedArmorMeta.maxDex;
+        poolItem.checkPenalty = clonedArmorMeta.acp;
+      }
+    }
+
+    const slotKeysToUpdate = [];
+    if (targetSlotKey && doc.bodySlots[targetSlotKey] && doc.bodySlots[targetSlotKey].name !== '-') {
+      slotKeysToUpdate.push(targetSlotKey);
+    } else if (oldNameLower) {
+      Object.keys(doc.bodySlots).forEach(sk => {
+        const sd = doc.bodySlots[sk];
+        if (sd && sd.name && String(sd.name).toLowerCase().trim() === oldNameLower) {
+          slotKeysToUpdate.push(sk);
+        }
+      });
+    }
+    slotKeysToUpdate.forEach(sk => {
+      const sd = doc.bodySlots[sk];
+      if (!sd) return;
+      sd.baseItemId = forgedV2Item.baseItemId || forgedV2Item.id || sd.baseItemId || null;
+      sd.name = newName;
+      sd.masterDbName = newName;
+      sd.category = cat;
+      sd.weight = newWeight;
+      sd.cost = newCost;
+      sd.desc = newDesc;
+      sd.benefit = newDesc;
+      sd.description = newDesc;
+      sd.material = forgedV2Item.material || null;
+      sd.enhancementBonus = Number(forgedV2Item.enhancementBonus) || 0;
+      sd.enhancements = Array.isArray(forgedV2Item.enhancements) ? forgedV2Item.enhancements.slice() : [];
+      sd.modifiers = JSON.parse(JSON.stringify(clonedModifiers));
+      sd.damageParts = JSON.parse(JSON.stringify(clonedDamageParts));
+      sd.modes = JSON.parse(JSON.stringify(clonedModes));
+      sd.weaponMeta = clonedWeaponMeta ? JSON.parse(JSON.stringify(clonedWeaponMeta)) : null;
+      sd.armorMeta = clonedArmorMeta ? JSON.parse(JSON.stringify(clonedArmorMeta)) : null;
+      sd.ruleFlags = JSON.parse(JSON.stringify(clonedRuleFlags));
+      sd.tacticalBadges = JSON.parse(JSON.stringify(clonedTacticalBadges));
+      sd.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || sd.dice;
+      sd.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || sd.critMin;
+      sd.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || sd.critMult;
+      sd.attBonus = Number(forgedV2Item.enhancementBonus) || 0;
+      sd.dmgBonus = Number(forgedV2Item.enhancementBonus) || 0;
+      sd.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || sd.dmgType;
+      if (computedAcBonus !== undefined) sd.acBonus = computedAcBonus;
+      if (clonedArmorMeta) {
+        sd.maxDex = clonedArmorMeta.maxDex;
+        sd.checkPenalty = clonedArmorMeta.acp;
+      }
+    });
+
+    if (cat === 'Weapon' || originalItem?.category === 'Weapon') {
+      const wepIdx = doc.weapons.findIndex(w => {
+        if (!w) return false;
+        if (originalItem?.id !== undefined && String(w.id) === String(originalItem.id)) return true;
+        return oldNameLower && String(w.name || '').toLowerCase().trim() === oldNameLower;
+      });
+      const updatedWepObj = {
+        id: forgedV2Item.id || originalItem?.id || ('wep_' + Date.now()),
+        baseItemId: forgedV2Item.baseItemId || forgedV2Item.id || null,
+        name: newName,
+        grip: String(clonedWeaponMeta?.handedness || '').includes('Two') ? '2-Hand' : (wepIdx >= 0 ? doc.weapons[wepIdx].grip : '1-Hand'),
+        dice: (primaryPart && primaryPart.dice) || forgedV2Item.dice || '1d8',
+        damageParts: JSON.parse(JSON.stringify(clonedDamageParts)),
+        modifiers: JSON.parse(JSON.stringify(clonedModifiers)),
+        modes: JSON.parse(JSON.stringify(clonedModes)),
+        weaponMeta: clonedWeaponMeta ? JSON.parse(JSON.stringify(clonedWeaponMeta)) : null,
+        ruleFlags: JSON.parse(JSON.stringify(clonedRuleFlags)),
+        tacticalBadges: JSON.parse(JSON.stringify(clonedTacticalBadges)),
+        critMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
+        rawCritMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
+        critMult: Number(clonedWeaponMeta?.critMult || forgedV2Item.critMult) || 2,
+        attBonus: Number(forgedV2Item.enhancementBonus) || 0,
+        dmgBonus: Number(forgedV2Item.enhancementBonus) || 0,
+        dmgType: (primaryPart && primaryPart.type) || forgedV2Item.dmgType || 'Slashing',
+        bonusType: 'enhancement',
+        tags: forgedV2Item.tags || [],
+        elementalMods: secondaryParts.map(sp => ({ name: sp.source || sp.type, dice: sp.dice, type: sp.type })),
+        keen: Boolean(clonedRuleFlags && clonedRuleFlags.keen)
+      };
+      if (wepIdx >= 0) {
+        doc.weapons[wepIdx] = Object.assign({}, doc.weapons[wepIdx], updatedWepObj);
+      } else {
+        doc.weapons.push(updatedWepObj);
+      }
+      if (oldNameLower && String(doc.activeWeapon || '').toLowerCase().trim() === oldNameLower) {
+        doc.activeWeapon = newName;
+      }
+      if (oldNameLower && String(doc.activeOffHand || '').toLowerCase().trim() === oldNameLower) {
+        doc.activeOffHand = newName;
+      }
+      if (doc.tactical?.weaponSets) {
+        const s1 = doc.tactical.weaponSets.set1;
+        const s2 = doc.tactical.weaponSets.set2;
+        if (s1 && oldNameLower && String(s1.mainWeapon || '').toLowerCase().trim() === oldNameLower) {
+          s1.mainWeapon = newName;
+        }
+        if (s2 && oldNameLower && String(s2.mainWeapon || '').toLowerCase().trim() === oldNameLower) {
+          s2.mainWeapon = newName;
+        }
+      }
+    }
+
+    if (!Array.isArray(doc.customDb)) doc.customDb = [];
+    if (forgedV2Item.enhancementBonus > 0 || forgedV2Item.material || (Array.isArray(forgedV2Item.enhancements) && forgedV2Item.enhancements.length > 0)) {
+      const existingIdx = doc.customDb.findIndex(m => m && String(m.name || '').toLowerCase().trim() === newName.toLowerCase());
+      if (existingIdx >= 0) {
+        doc.customDb[existingIdx] = Object.assign({}, doc.customDb[existingIdx], JSON.parse(JSON.stringify(forgedV2Item)));
+      } else {
+        doc.customDb.push(JSON.parse(JSON.stringify(forgedV2Item)));
+      }
+    }
+
+    setStoreOutcome(stateObj, {
+      status: 'item_reforged',
+      oldName,
+      newName,
+      newCost
+    });
+    return doc;
+  });
+
+  // 9a. 'inventory/equipCompanionItem' ({ compId, slotKey, poolItemId })
+  CharStore.registerReducer('inventory/equipCompanionItem', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const compId = payload.compId;
+    const slotKey = payload.slotKey;
+    const poolItemId = payload.poolItemId !== undefined ? payload.poolItemId : payload.itemId;
+    const comp = compId
+      ? (doc.companions || []).find(c => c && (String(c.id) === String(compId) || c.name === compId))
+      : null;
+    const useSingleComp = !comp && doc.companion && typeof doc.companion === 'object';
+    if ((!comp && !useSingleComp) || !slotKey) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    const poolIdx = doc.gearPool.findIndex(p => p && (String(p.id) === String(poolItemId) || p.name === poolItemId));
+    if (poolIdx < 0) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    const poolItem = doc.gearPool[poolIdx];
+    const gearMap = comp
+      ? (comp.gearSlots && typeof comp.gearSlots === 'object' ? comp.gearSlots : (comp.gearSlots = {}))
+      : (doc.companion.gear && typeof doc.companion.gear === 'object' ? doc.companion.gear : (doc.companion.gear = {}));
+
+    const prevItem = gearMap[slotKey];
+    if (prevItem && prevItem.name && prevItem.name !== '-') {
+      const existingPrev = doc.gearPool.find(g => g && g.name === prevItem.name);
+      if (existingPrev) {
+        existingPrev.qty = (Number(existingPrev.qty) || 1) + 1;
+      } else {
+        doc.gearPool.push({ ...prevItem, qty: 1 });
+      }
+    }
+
+    const equippedCopy = JSON.parse(JSON.stringify(poolItem));
+    equippedCopy.qty = 1;
+    gearMap[slotKey] = equippedCopy;
+
+    if ((Number(poolItem.qty) || 1) > 1) {
+      poolItem.qty = Number(poolItem.qty) - 1;
+    } else {
+      doc.gearPool.splice(poolIdx, 1);
+    }
+
+    setStoreOutcome(stateObj, {
+      status: 'companion_item_equipped',
+      compId: comp ? (comp.id || comp.name) : (doc.companion.name || 'companion'),
+      compName: comp ? comp.name : (doc.companion.name || 'Companion'),
+      slotKey,
+      itemName: equippedCopy.name
+    });
+    return doc;
+  });
+
+  // 9b. 'inventory/unequipCompanionSlot' ({ compId, slotKey })
+  CharStore.registerReducer('inventory/unequipCompanionSlot', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    const compId = payload.compId;
+    const slotKey = payload.slotKey;
+    const comp = compId
+      ? (doc.companions || []).find(c => c && (String(c.id) === String(compId) || c.name === compId))
+      : null;
+    const gearMap = comp ? comp.gearSlots : (doc.companion && doc.companion.gear ? doc.companion.gear : null);
+    if (!gearMap || !gearMap[slotKey] || !gearMap[slotKey].name || gearMap[slotKey].name === '-') {
+      setStoreOutcome(stateObj, { status: 'empty_slot' });
+      return doc;
+    }
+    const prevItem = gearMap[slotKey];
+    const existing = doc.gearPool.find(g => g && g.name === prevItem.name);
+    if (existing) {
+      existing.qty = (Number(existing.qty) || 1) + 1;
+    } else {
+      doc.gearPool.push({ ...prevItem, qty: 1 });
+    }
+    delete gearMap[slotKey];
+    setStoreOutcome(stateObj, {
+      status: 'companion_slot_unequipped',
+      compId: comp ? (comp.id || comp.name) : (doc.companion?.name || 'companion'),
+      compName: comp ? comp.name : (doc.companion?.name || 'Companion'),
+      slotKey,
+      itemName: prevItem.name
+    });
+    return doc;
+  });
+
+  // 10. 'inventory/updateWealth' ({ pp, gp, sp, cp } or { field, value })
+  CharStore.registerReducer('inventory/updateWealth', (doc, action, stateObj) => {
+    ensureInventoryDocStructures(doc);
+    const payload = (action && action.payload) || {};
+    if (!doc.wealth || typeof doc.wealth !== 'object') {
+      doc.wealth = { pp: 0, gp: 0, sp: 0, cp: 0 };
+    }
+    const coins = ['pp', 'gp', 'sp', 'cp'];
+    if (payload.field && coins.includes(payload.field)) {
+      doc.wealth[payload.field] = Math.max(0, Number(payload.value) || 0);
+    } else {
+      coins.forEach(c => {
+        if (payload[c] !== undefined) {
+          doc.wealth[c] = Math.max(0, Number(payload[c]) || 0);
+        }
+      });
+    }
+    setStoreOutcome(stateObj, { status: 'wealth_updated', wealth: Object.assign({}, doc.wealth) });
     return doc;
   });
 
