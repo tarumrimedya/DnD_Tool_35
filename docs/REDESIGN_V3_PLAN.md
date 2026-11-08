@@ -11,6 +11,7 @@ Branch: `redesign/page-from-scratch` (taban: `feat/v25-lego-engine-spotlight-ter
 | Teknoloji | Build'siz native ES modülleri + JSDoc + `tsc --checkJs` |
 | İlk dilim | `📜 Character & Logs` |
 | İzolasyon | Aynı repo, ayrı branch, ayrı klasör (`sheet/`), V3'e ait motor kopyası (`sheet/engine/`). Ortak olan tek şey veri sözleşmesi. `verify_and_sync` iki yönlü kuralı denetler: eski dosyalar `sheet/`'e referans veremez, `sheet.html` kök motoru yükleyemez |
+| Homebrew yeri | Karaktere özel kütüphane (`character.customDb`, ADR-011 korunur). Ortak/kampanya kütüphanesi yok; karakter kendi homebrew'unu taşır, Hub'a ve başka cihaza taşındığında eksiksiz gider |
 | Öncelik | Önce backend (veri katmanı). Ardından Master DB / Forge / Rule Master, `kind` tabanlı tek bir Entry Editor olarak yeniden tasarlanır |
 
 ## 1. Korunacak öz
