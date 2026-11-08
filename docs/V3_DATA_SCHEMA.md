@@ -38,9 +38,15 @@ Bugünkü en büyük karışıklık şu: **hesaplanan değerler kaynak veriyle a
 
 > **Hub uyumu:** Hub `fullData` üzerinden `hp`, `abilities`, `stats`, `level`, `class`, `classes`, `name` gibi alanları okuyor. V3 bunları kaydederken `deriveSheet()` çıktısından yazmaya devam eder. Hub hiçbir şey fark etmez.
 
+### 1.2b Ev kuralları (kaynak)
+
+`settings` alanının büyük kısmı arayüz tercihi değil, **karaktere özel ev kuralıdır** ve hesabı doğrudan değiştirir. Kaynak sınıfındadır:
+
+`settings.babSaveSystem` (`fractional`), `settings.featMode`, `settings.clMode`, `settings.casterType` / `casterTypeExplicit`, `settings.boonDisciplines`, `settings.ignoreAsf`, `settings.mergeSkills`, `settings.consolidatedSkillGroups`, `settings.warlockBoon`
+
 ### 1.3 Arayüz durumu
 
-`tactical.*` (`weaponSets` hariç, o kaynaktır; netleşecek), `settings`, `cockpitCollapsed`, `_preferredMagicDiscipline`, `customSilhouette*`
+`tactical.*` (`weaponSets` hariç, o kaynaktır; netleşecek), `settings.pinDrawerLimit`, `cockpitCollapsed`, `_preferredMagicDiscipline`, `customSilhouette*`
 
 ### 1.4 Oturum ve iç alanlar
 
@@ -241,15 +247,38 @@ Kaynak: kullanıcının `Awaken 1.xlsx` (18 yetenek: Magic / Defence / Similitud
 4. **`choices` zorunlu bir primitif.** "Bir büyü / okul / silah / element / beceri seç" kalıbı boon'ların yaklaşık %20'sinde var. Seçim karakterde saklanır (`choiceValues`), etkiler seçime göre uygulanır.
 5. **Yüzdelik ve oran etkileri** ("%25 daha az AoE hasarı", "%20 daha uzun süre", "taşıma kapasitesi x3"). Hesaplanabilenler `multipliers` ile, hesaplanamayanlar `badge` olarak kodlanır.
 
-### 11.3 Açık soru
+### 11.3 Birleşik beceriler (ev kuralı)
 
-Tablolarda 3.5e dışı terimler var: **Athletics, Perception, Stealth, Outdoorsman, attune, command action**. Bunlar 3.5e becerilerine şöyle eşlenebilir (öneri):
+Tablolardaki Athletics, Perception, Stealth gibi terimler 3.5e dışı değil: masada kullanılan **birleşik beceri** ev kuralının grup adları. Karakterde `settings.mergeSkills: true` ve `settings.consolidatedSkillGroups` 7 grup tanımlıyor:
 
-| Tablodaki | 3.5e karşılığı |
-| :--- | :--- |
-| Athletics | Climb + Jump + Swim |
-| Perception | Spot + Listen |
-| Stealth | Hide + Move Silently |
-| Outdoorsman | Survival |
-| attune (+2 item) | 3.5e'de karşılığı yok → `badge` |
-| command action | 3.5e'de karşılığı yok → `badge` |
+| Grup (`key`) | Bileşenler | Stat | ACP |
+| :--- | :--- | :--- | :--- |
+| Athletics (`athletics`) | Climb + Jump + Swim | STR | ✓ |
+| Stealth (`stealth`) | Hide + Move Silently | DEX | ✓ |
+| Perception (`perception`) | Spot + Listen + Search | WIS | |
+| Acrobatics (`acrobatics`) | Tumble + Balance + Escape Artist | DEX | ✓ |
+| Thievery (`thievery`) | Open Lock + Disable Device + Sleight of Hand | DEX | ✓ |
+| Persuasion & Social (`diplomacy_merged`) | Diplomacy + Gather Information | CHA | |
+| Linguistics (`linguistics`) | Decipher Script + Forgery | INT | |
+
+Grup rank'ı = bileşenlerin en yüksek rank'ı; class skill = bileşenlerden biri class skill ise (`char_inventory.js` `renderSkills`).
+
+**Bulunan tutarsızlık (kök neden):** Ekran ile motor grupları **farklı kaynaklardan** okuyor.
+
+- Ekran (`renderSkills`) → `settings.consolidatedSkillGroups` (yukarıdaki tablo).
+- Motor (`rule_engine.js` `getSkillAliases`) → önce `customDb` içinde **adı** "skilleri birleştir" / "skill consolidation" olan bir kayıt arıyor (isimle arama, GEMINI §3.4 ihlali), yoksa `settings.skillMapping`, o da yoksa sabit `DEFAULT_SKILL_MAPPING`.
+- Gerçek karakterde ne o kayıt ne `settings.skillMapping` var, yani motor **sabit varsayılanı** kullanıyor. Varsayılan karakterin gruplarından farklı: Persuasion'a **Sense Motive**, Linguistics'e **Speak Language** de dahil. Grup adları da tutmuyor (`diplomacy_merged` ↔ `diplomacy`) ve eşleşme `includes` ile bulanık yapılıyor.
+- Olası sonuç: Sense Motive'e gelen bir bonus motor tarafında Persuasion grubuna da sayılabilir; ekranda ise Sense Motive ayrı bir beceri. (Kod okumasıyla çıkarıldı, henüz çalıştırılarak doğrulanmadı.)
+
+**V3 kuralı:**
+
+1. Birleşik grupların **tek kaynağı** `settings.consolidatedSkillGroups`. Motor ve ekran aynı listeyi okur. İsimle `customDb` araması ve ayrı `skillMapping` kopyası V3 motor kopyasında kaldırılır (kök dosyaya dokunulmaz).
+2. Karakterde grup tanımı yoksa tek bir varsayılan kullanılır ve bu varsayılan ekranınkiyle **aynı** dosyadan gelir.
+3. Grup eşleşmesi `key` ile birebir yapılır, `includes` yok.
+4. Modifier hedefleri: `skill.<grupKey>` (örneğin `skill.perception`) gruba, `skill.<bileşen>` (örneğin `skill.climb`) bileşene gider. Bileşen bonusunun gruba nasıl yansıyacağı aşağıdaki açık soruda.
+5. DM içeriğindeki terimler: Athletics / Stealth / Perception / Acrobatics / Thievery / Linguistics doğrudan grup `key`'ine eşlenir. **Outdoorsman** bir grup değil, Survival'a eşlenmesi öneriliyor. **attune** ve **command action** 3.5e'de ve ev kurallarında karşılıksız → `badge`.
+
+**Açık soru:** Grup açıkken bir bileşene gelen bonus (örneğin ırktan gelen Climb +4) nasıl uygulansın?
+
+- **(a)** Grup toplamına girer (Athletics zarına her zaman +4).
+- **(b)** Grup toplamına girmez; "yalnızca tırmanırken +4" diye koşullu gösterilir.
