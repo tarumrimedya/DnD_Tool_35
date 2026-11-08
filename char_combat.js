@@ -4820,6 +4820,19 @@
       const stripTag = (str) => String(str || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
       const rawPool = [];
 
+      const legoEval = char.legoEvaluation || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateLegoCharacter === 'function' ? RuleEngine.evaluateLegoCharacter(char) : null);
+      if (legoEval && Array.isArray(legoEval.entries)) {
+        legoEval.entries.forEach(le => {
+          if (le && (le._autoUnlocked || le._mutated)) {
+            rawPool.push({ ...le, _src: 'legoEvaluation' });
+          }
+        });
+      }
+      if (Array.isArray(char.legoEntries)) {
+        char.legoEntries.forEach(le => {
+          if (le) rawPool.push({ ...le, _src: 'legoEntries' });
+        });
+      }
       if (Array.isArray(char.specialAbilities)) {
         char.specialAbilities.forEach(a => {
           if (a) rawPool.push(typeof a === 'string' ? { name: a, _src: 'specialAbilities' } : { ...a, _src: 'specialAbilities' });
@@ -4828,11 +4841,6 @@
       if (Array.isArray(char.feats)) {
         char.feats.forEach(f => {
           if (f) rawPool.push(typeof f === 'string' ? { name: f, _src: 'feats' } : { ...f, _src: 'feats' });
-        });
-      }
-      if (Array.isArray(char.legoEntries)) {
-        char.legoEntries.forEach(le => {
-          if (le) rawPool.push({ ...le, _src: 'legoEntries' });
         });
       }
 
@@ -4856,7 +4864,9 @@
           ? masterDb.find(m => m && m.name && stripTag(m.name).toLowerCase() === lower)
           : (Array.isArray(char.customDb) ? char.customDb.find(m => m && m.name && stripTag(m.name).toLowerCase() === lower) : null);
 
-        let merged = Object.assign({}, item, dbMatch || {}, { name: cleanName });
+        let merged = item._mutated
+          ? Object.assign({}, dbMatch || {}, item, { name: cleanName })
+          : Object.assign({}, item, dbMatch || {}, { name: cleanName });
         const benText = merged.benefit || merged.desc || merged.description || '';
 
         if (!merged.dcFormula && !merged.recharge && (!Array.isArray(merged.damageParts) || merged.damageParts.length === 0)) {
@@ -4880,7 +4890,7 @@
         // Extract V2.5 modes[] and resources[] if present so Lego entities project automatically without regex
         const primaryMode = Array.isArray(merged.modes) && merged.modes.length > 0 ? merged.modes[0] : null;
         const roundRes = Array.isArray(merged.resources)
-          ? merged.resources.find(r => r && r.recharge && (r.recharge.period === 'rounds' || r.recharge.dice))
+          ? merged.resources.find(r => r && ((r.recharge && (r.recharge.period === 'rounds' || r.recharge.dice)) || r.rechargeModel === 'cooldown_turns' || r.rechargeFormula))
           : null;
         const effDamageParts = (Array.isArray(merged.damageParts) && merged.damageParts.some(dp => dp && dp.dice))
           ? merged.damageParts
@@ -4888,7 +4898,7 @@
         const effSaveObj = (primaryMode && primaryMode.save && typeof primaryMode.save === 'object') ? primaryMode.save : null;
         const effSaveStr = effSaveObj ? `${effSaveObj.type || 'Reflex'} (${effSaveObj.onSave || 'half'})` : (merged.save || (primaryMode && typeof primaryMode.save === 'string' ? primaryMode.save : ''));
         const effDcFormula = merged.dcFormula || (effSaveObj && effSaveObj.dcFormula) || '';
-        const effRechargeDice = merged.rechargeDice || (roundRes && roundRes.recharge && roundRes.recharge.dice) || '';
+        const effRechargeDice = merged.rechargeDice || (roundRes && ((roundRes.recharge && roundRes.recharge.dice) || roundRes.rechargeFormula)) || '';
         const effRange = merged.range || (primaryMode && (primaryMode.area || primaryMode.range)) || '';
         const dbExplicitAction = dbMatch ? (dbMatch.action || dbMatch.actionType || '') : '';
         const itemNonDefaultAction = (item && item.actionType && !['standard', 'passive'].includes(String(item.actionType).toLowerCase()))
@@ -4944,6 +4954,30 @@
           });
         }
       });
+
+      if (typeof SchemaMigrator !== 'undefined' && typeof SchemaMigrator.getAbilityStemAndScore === 'function' && result.length > 1) {
+        const stemMaxScore = new Map();
+        for (let i = 0; i < result.length; i++) {
+          const info = SchemaMigrator.getAbilityStemAndScore(result[i]);
+          if (!info.stem) continue;
+          const prev = stemMaxScore.has(info.stem) ? stemMaxScore.get(info.stem) : -Infinity;
+          if (info.score > prev) stemMaxScore.set(info.stem, info.score);
+        }
+        return result.filter(r => {
+          if (!r) return false;
+          if (Array.isArray(r.overrides) && r.overrides.length > 0) return true;
+          if (Array.isArray(r.modifiers) && r.modifiers.length > 0) return true;
+          const info = SchemaMigrator.getAbilityStemAndScore(r);
+          if (!info.stem) return true;
+          const maxScore = stemMaxScore.get(info.stem);
+          if (maxScore !== undefined && maxScore >= 2 && info.score < maxScore) {
+            if (info.isMalformedSlug || (info.score <= 1 && !info.hasTypedDamage && !info.hasSaveOrDc)) {
+              return false;
+            }
+          }
+          return true;
+        });
+      }
 
       return result;
     }
@@ -5043,6 +5077,9 @@
       if (!ab) return;
 
       // Save atomic undo snapshot before spending action or rolling cooldown
+      if (typeof _pushTerminalUndoSnapshot === 'function') {
+        _pushTerminalUndoSnapshot(`Special Attack: ${ab.name}`);
+      }
       window._lastCombatActivationUndo = {
         abilityKey: ab.key,
         spentActions: JSON.parse(JSON.stringify(character.tactical?.spentActions || {})),
@@ -5182,6 +5219,9 @@
       const ab = abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
       if (!ab || !ab.rechargeDice || typeof parseAndRollDiceFormula !== 'function') return;
 
+      if (typeof _pushTerminalUndoSnapshot === 'function') {
+        _pushTerminalUndoSnapshot(`Roll Recharge: ${ab.name}`);
+      }
       const parsed = parseAndRollDiceFormula(ab.rechargeDice);
       if (!parsed) return;
       const curRound = Number(character.tactical?.round) || 1;
@@ -5206,11 +5246,60 @@
 
     function resetSpecialAttackCooldown(abilityKey) {
       if (!character || !character.tactical || !character.tactical.abilityCooldowns) return;
+      if (typeof _pushTerminalUndoSnapshot === 'function') {
+        _pushTerminalUndoSnapshot(`Reset Cooldown: ${abilityKey}`);
+      }
       delete character.tactical.abilityCooldowns[abilityKey];
       saveStateToStorage(false);
       renderWeaponSetsUI();
     }
     window.resetSpecialAttackCooldown = resetSpecialAttackCooldown;
+
+    function triggerReactiveLegoModeFromCockpit(entryId, modeId) {
+      if (!character || typeof RuleEngine === 'undefined' || typeof RuleEngine.triggerLegoMode !== 'function') return;
+      const evalModes = character.evaluatedModes || (typeof RuleEngine.evaluateLegoCharacter === 'function' ? RuleEngine.evaluateLegoCharacter(character)?.modes : []) || [];
+      const mode = evalModes.find(m => m && (m.entryId === entryId || String(m.entryId || '').split(':').pop() === entryId) && m.id === modeId)
+        || evalModes.find(m => m && (m.entryId === entryId || String(m.entryId || '').split(':').pop() === entryId));
+
+      const inputValues = {};
+      if (mode && Array.isArray(mode.inputs) && mode.inputs.length > 0 && typeof window !== 'undefined' && typeof window.prompt === 'function') {
+        for (let i = 0; i < mode.inputs.length; i++) {
+          const inp = mode.inputs[i];
+          const defVal = inp.default !== undefined ? inp.default : 1;
+          const raw = window.prompt(`${inp.label || inp.id}:`, String(defVal));
+          if (raw === null) return; // User cancelled prompt -> abort before snapshot or spending action
+          const numVal = Number(raw);
+          inputValues[inp.id] = Number.isFinite(numVal) ? numVal : defVal;
+        }
+      }
+
+      if (typeof _pushTerminalUndoSnapshot === 'function') {
+        _pushTerminalUndoSnapshot(`Reaction: ${entryId} (${modeId})`);
+      }
+      const res = RuleEngine.triggerLegoMode(character, entryId, modeId, inputValues);
+      if (!res) return;
+      const actType = (mode && mode.actionType) ? mode.actionType : 'immediate';
+      if (typeof consumeActionEconomy === 'function') {
+        consumeActionEconomy(actType, `${entryId} (${modeId})`);
+      }
+      if (res.tempHpGained > 0 && character.hp) {
+        character.hp.temp = Math.max(Number(character.hp.temp) || 0, res.tempHpGained);
+      }
+      if (res.healedHp > 0 && character.hp) {
+        character.hp.current = Math.min(Number(character.hp.max) || 999, (Number(character.hp.current) || 0) + res.healedHp);
+      }
+      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      if (typeof renderAll === 'function') renderAll();
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '⚡',
+          title: `Reactive Mode Triggered: ${entryId}`,
+          breakdown: `${res.tempHpGained > 0 ? `+${res.tempHpGained} Temp HP ` : ''}${res.healedHp > 0 ? `+${res.healedHp} HP ` : ''}${res.spawnedBuff ? `• Spawned ${res.spawnedBuff.name}` : ''}`,
+          total: 'REACTION'
+        });
+      }
+    }
+    window.triggerReactiveLegoModeFromCockpit = triggerReactiveLegoModeFromCockpit;
 
     function renderWeaponSetsUI() {
       const container = document.getElementById('weapon-sets-cards-container');
@@ -10167,6 +10256,130 @@
         }
       });
 
+      // 5.5. V2.5 Composable Lego Defenses (`defenses[]`) & Reactive Modes (`modes[].reactsTo` / `immediate`)
+      const legoEval = character.legoEvaluation || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateLegoCharacter === 'function' ? RuleEngine.evaluateLegoCharacter(character) : null);
+      if (legoEval && legoEval.defenses) {
+        const lDefs = legoEval.defenses;
+        (Array.isArray(lDefs.dr) ? lDefs.dr : []).forEach(dr => {
+          if (!dr || !dr.value) return;
+          const lbl = `DR ${dr.value}/${dr.bypass || '-'}`;
+          pushUniqueDefense({
+            type: 'dr',
+            name: dr.source || lbl,
+            label: lbl,
+            icon: '🛡️',
+            bgClass: 'bg-amber-950/80 text-amber-300 border-amber-500/60 hover:border-amber-400',
+            benefit: `${dr.source || 'Defense'}: Damage Reduction ${dr.value}/${dr.bypass || '-'}`
+          });
+        });
+        if (Number(lDefs.sr) > 0) {
+          pushUniqueDefense({
+            type: 'sr',
+            name: `SR ${lDefs.sr}`,
+            label: `SR ${lDefs.sr}`,
+            icon: '🔮',
+            bgClass: 'bg-purple-950/80 text-purple-300 border-purple-500/60 hover:border-purple-400',
+            benefit: `Spell Resistance ${lDefs.sr}`
+          });
+        }
+        Object.entries(lDefs.resistances || {}).forEach(([eKey, val]) => {
+          if (!val || Number(val) <= 0) return;
+          const capKey = eKey.charAt(0).toUpperCase() + eKey.slice(1);
+          const eStyle = ENERGY_STYLE_MAP[eKey.toLowerCase()] || { icon: '🛡️', cls: 'bg-sky-950/80 text-sky-300 border-sky-500/60 hover:border-sky-400' };
+          pushUniqueDefense({
+            type: 'resistance',
+            name: `Resist ${capKey} ${val}`,
+            label: `Resist ${capKey} ${val}`,
+            icon: eStyle.icon,
+            bgClass: eStyle.cls,
+            benefit: `Energy Resistance: Ignores first ${val} points of ${capKey} damage per attack.`
+          });
+        });
+        (Array.isArray(lDefs.immunities) ? lDefs.immunities : []).forEach(imm => {
+          if (!imm) return;
+          const capImm = String(imm).charAt(0).toUpperCase() + String(imm).slice(1);
+          pushUniqueDefense({
+            type: 'immunity',
+            name: `Immune: ${capImm}`,
+            label: `Immune: ${capImm}`,
+            icon: '✨',
+            bgClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 hover:border-emerald-400',
+            benefit: `Complete Immunity to ${capImm}.`
+          });
+        });
+        (Array.isArray(lDefs.vulnerabilities) ? lDefs.vulnerabilities : []).forEach(vuln => {
+          if (!vuln) return;
+          const capV = String(vuln).charAt(0).toUpperCase() + String(vuln).slice(1);
+          pushUniqueDefense({
+            type: 'vulnerability',
+            name: `Vulnerable: ${capV}`,
+            label: `Vulnerable: ${capV} (+50%)`,
+            icon: '⚠️',
+            bgClass: 'bg-rose-950/80 text-rose-300 border-rose-500/60 hover:border-rose-400',
+            benefit: `Vulnerability to ${capV} (+50% incoming damage).`
+          });
+        });
+        Object.entries(lDefs.absorptions || {}).forEach(([eKey, ratio]) => {
+          const rNum = typeof ratio === 'number' ? ratio : Number(ratio?.healRatio ?? ratio?.ratio ?? 0);
+          if (!rNum || rNum <= 0) return;
+          const capKey = eKey.charAt(0).toUpperCase() + eKey.slice(1);
+          pushUniqueDefense({
+            type: 'absorption',
+            name: `Absorb ${capKey}`,
+            label: `Absorb ${capKey} (${Math.round(rNum * 100)}% Heal)`,
+            icon: '💚',
+            bgClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 hover:border-emerald-400',
+            benefit: `Elemental Absorption: Converts incoming ${capKey} damage into ${Math.round(rNum * 100)}% HP healing.`
+          });
+        });
+        if (Number(lDefs.fortification) > 0) {
+          pushUniqueDefense({
+            type: 'fortification',
+            name: `Fortification ${lDefs.fortification}%`,
+            label: `Fortification ${lDefs.fortification}%`,
+            icon: '🛡️',
+            bgClass: 'bg-indigo-950/80 text-indigo-300 border-indigo-500/60 hover:border-indigo-400',
+            benefit: `${lDefs.fortification}% chance to negate critical hits and sneak attack bonus damage.`
+          });
+        }
+        if (Number(lDefs.fastHealing) > 0) {
+          pushUniqueDefense({
+            type: 'fast_healing',
+            name: `Fast Healing ${lDefs.fastHealing}`,
+            label: `Fast Healing ${lDefs.fastHealing}`,
+            icon: '💚',
+            bgClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 hover:border-emerald-400',
+            benefit: `Regains ${lDefs.fastHealing} HP at the start of each round.`
+          });
+        }
+        if (Number(lDefs.regen) > 0) {
+          pushUniqueDefense({
+            type: 'regen',
+            name: `Regeneration ${lDefs.regen}`,
+            label: `Regeneration ${lDefs.regen}`,
+            icon: '💚',
+            bgClass: 'bg-emerald-950/80 text-emerald-300 border-emerald-500/60 hover:border-emerald-400',
+            benefit: `Regeneration ${lDefs.regen} per round.`
+          });
+        }
+      }
+      if (legoEval && Array.isArray(legoEval.modes)) {
+        legoEval.modes.forEach(m => {
+          if (!m || (!m.reactsTo && String(m.actionType || '').toLowerCase() !== 'immediate')) return;
+          const safeEntryId = String(m.entryId || '').replace(/'/g, "\\'");
+          const safeModeId = String(m.id || '').replace(/'/g, "\\'");
+          pushUniqueDefense({
+            type: 'reaction_mode',
+            name: m.entryName || m.name,
+            label: `⚡ ${m.name || m.entryName}`,
+            icon: '⚡',
+            bgClass: 'bg-cyan-950/80 text-cyan-300 border-cyan-500/60 hover:border-cyan-400',
+            benefit: `${m.entryName || m.name}: Reactive / Immediate trigger (${m.reactsTo || 'Immediate Action'}). Click to trigger!`,
+            onClick: `triggerReactiveLegoModeFromCockpit('${safeEntryId}', '${safeModeId}')`
+          });
+        });
+      }
+
       if (card && list) {
         if (items.length === 0) {
           card.classList.add('hidden');
@@ -10176,8 +10389,9 @@
           list.innerHTML = items.map(it => {
             const safeName = (it.name || '').replace(/'/g, "\\'");
             const safeTip = (it.benefit || '').replace(/"/g, '&quot;');
+            const clickAttr = it.onClick ? it.onClick : `showFeatDetail('${safeName}', null, 'ability')`;
             return `
-              <button type="button" onclick="showFeatDetail('${safeName}', null, 'ability')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold border ${it.bgClass} shadow-sm transition active:scale-95 cursor-pointer">
+              <button type="button" onclick="${clickAttr}" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold border ${it.bgClass} shadow-sm transition active:scale-95 cursor-pointer">
                 <span>${it.icon}</span>
                 <span class="truncate max-w-[180px]">${it.label}</span>
               </button>
@@ -14135,12 +14349,6 @@
       }
     }
 
-    // Explicit window exports for companion combat
-    window.renderCockpitCompanionCard = renderCockpitCompanionCard;
-    window.adjustCompanionHp = adjustCompanionHp;
-    window.rollCompanionAttack = rollCompanionAttack;
-    window.rollCompanionTactical = rollCompanionTactical;
-
     function rollSkill3D(skillName, totalMod, subtitle = '') {
       const d20 = Math.floor(Math.random() * 20) + 1;
       const total = d20 + totalMod;
@@ -14167,9 +14375,1191 @@
       }
     }
 
-    // Explicit window exports for companion combat
-    window.renderCockpitCompanionCard = renderCockpitCompanionCard;
-    window.adjustCompanionHp = adjustCompanionHp;
-    window.rollCompanionAttack = rollCompanionAttack;
-    window.rollCompanionTactical = rollCompanionTactical;
+
+    // ============================================================================
+    // DESKTOP IDE INTELLISENSE COMMAND TERMINAL & V2.5 LEGO INLINE ASSEMBLER
+    // ============================================================================
+    let _spotlightTerminalItems = [];
+    let _spotlightTerminalActiveIndex = 0;
+    let _spotlightTerminalUndoStack = [];
+
+    function _escTermHtml(val) {
+      if (typeof safeEscapeHtml === 'function') return safeEscapeHtml(String(val ?? ''));
+      return String(val ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function _collectCharacterOwnedSets(ch) {
+      const ownedIds = new Set();
+      const ownedNames = new Set();
+      if (!ch || typeof ch !== 'object') return { ownedIds, ownedNames };
+      const addSource = (item) => {
+        if (!item) return;
+        const name = (typeof item === 'string' ? item : (item.name || '')).trim();
+        if (name) {
+          ownedNames.add(name.toLowerCase());
+          const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+          if (slug) {
+            ownedIds.add(slug);
+            ownedIds.add(`srd:${slug}`);
+          }
+        }
+        if (typeof item === 'object') {
+          const fullId = String(item.id || item.baseItemId || '').trim();
+          if (fullId) {
+            ownedIds.add(fullId);
+            const shortId = fullId.split(':').pop();
+            if (shortId) ownedIds.add(shortId);
+          }
+        }
+      };
+      (ch.feats || []).forEach(addSource);
+      (ch.specialAbilities || []).forEach(addSource);
+      (ch.legoEntries || []).forEach(addSource);
+      (ch.classFeatures || []).forEach(addSource);
+      return { ownedIds, ownedNames };
+    }
+
+    function _pushTerminalUndoSnapshot(actionLabel) {
+      if (typeof character === 'undefined' || !character) return;
+      try {
+        const snapEntry = {
+          label: actionLabel || 'Command',
+          ts: Date.now(),
+          charSnapshot: JSON.parse(JSON.stringify({
+            level: character.level,
+            hp: character.hp,
+            abilities: character.abilities || {},
+            baseAbilities: character.baseAbilities || {},
+            stats: character.stats || {},
+            feats: character.feats || [],
+            specialAbilities: character.specialAbilities || [],
+            levelProgression: character.levelProgression || [],
+            bodySlots: character.bodySlots || {},
+            inventory: character.inventory || [],
+            gearPool: character.gearPool || [],
+            weapons: character.weapons || [],
+            spells: character.spells || [],
+            spellcasting: character.spellcasting || {},
+            actionEconomy: character.actionEconomy || null,
+            tactical: character.tactical || {},
+            specialAttackCooldowns: JSON.parse(JSON.stringify(character.specialAttackCooldowns || character.tactical?.abilityCooldowns || {})),
+            encounterRound: character.encounterRound || 1,
+            legoEntries: character.legoEntries || [],
+            activeLegoBuffs: character.activeLegoBuffs || [],
+            activeBuffIds: character.activeBuffIds || [],
+            buffs: character.buffs || []
+          }))
+        };
+        _spotlightTerminalUndoStack.push(snapEntry);
+        if (_spotlightTerminalUndoStack.length > 20) _spotlightTerminalUndoStack.shift();
+        window._spotlightTerminalUndoStack = _spotlightTerminalUndoStack;
+        if (character && '_terminalUndoStack' in character) delete character._terminalUndoStack;
+        const undoBtn = document.getElementById('btn-spotlight-terminal-undo');
+        if (undoBtn) undoBtn.classList.remove('hidden');
+      } catch (_) {}
+    }
+
+    function undoLastTerminalAction() {
+      if (typeof character === 'undefined' || !character) return;
+      if (character && '_terminalUndoStack' in character) delete character._terminalUndoStack;
+      if (!_spotlightTerminalUndoStack.length) return;
+      const snap = _spotlightTerminalUndoStack.pop();
+      window._spotlightTerminalUndoStack = _spotlightTerminalUndoStack;
+      if (!snap || !snap.charSnapshot) return;
+      Object.assign(character, snap.charSnapshot);
+      if (character && '_terminalUndoStack' in character) delete character._terminalUndoStack;
+      const undoBtn = document.getElementById('btn-spotlight-terminal-undo');
+      if (undoBtn && _spotlightTerminalUndoStack.length === 0) undoBtn.classList.add('hidden');
+      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      if (typeof renderAll === 'function') renderAll();
+      if (typeof showDiceTopToast === 'function') {
+        showDiceTopToast({
+          icon: '↩',
+          title: 'Terminal Action Undone',
+          breakdown: `Reverted: ${snap.label}`,
+          total: 'UNDO'
+        });
+      }
+      const input = document.getElementById('spotlight-terminal-input');
+      if (input) onSpotlightTerminalInput(input.value || '');
+    }
+
+    function parseSpotlightCommand(rawVal) {
+      let rest = String(rawVal || '').trim();
+      let level = null;
+      const lvlPrefix = rest.match(/^(?:lvl|level)\s*(\d+)\s*[,:]?\s*(.*)$/i);
+      if (lvlPrefix) {
+        level = Math.max(1, Math.min(30, parseInt(lvlPrefix[1], 10) || 1));
+        rest = (lvlPrefix[2] || '').trim();
+      }
+      const tokens = [];
+      if (level !== null) tokens.push({ kind: 'level', label: `Lvl ${level}`, cls: 'bg-purple-950 text-purple-300 border-purple-700' });
+
+      if (/^feat\s*:/i.test(rest)) {
+        const arg = rest.replace(/^feat\s*:\s*/i, '').trim();
+        tokens.push({ kind: 'cmd', label: 'Feat', cls: 'bg-amber-950 text-amber-300 border-amber-700' });
+        if (arg) tokens.push({ kind: 'arg', label: arg, cls: 'bg-slate-900 text-slate-200 border-slate-700' });
+        return { cmd: 'feat', level, arg, tokens };
+      }
+      if (/^item\s*:/i.test(rest)) {
+        const arg = rest.replace(/^item\s*:\s*/i, '').trim();
+        tokens.push({ kind: 'cmd', label: 'Item', cls: 'bg-indigo-950 text-indigo-300 border-indigo-700' });
+        if (arg) tokens.push({ kind: 'arg', label: arg, cls: 'bg-slate-900 text-slate-200 border-slate-700' });
+        return { cmd: 'item', level, arg, tokens };
+      }
+      if (/^spell\s*:/i.test(rest)) {
+        const arg = rest.replace(/^spell\s*:\s*/i, '').trim();
+        tokens.push({ kind: 'cmd', label: 'Spell', cls: 'bg-violet-950 text-violet-300 border-violet-700' });
+        if (arg) tokens.push({ kind: 'arg', label: arg, cls: 'bg-slate-900 text-slate-200 border-slate-700' });
+        return { cmd: 'spell', level, arg, tokens };
+      }
+      if (/^buff\s*:/i.test(rest)) {
+        const arg = rest.replace(/^buff\s*:\s*/i, '').trim();
+        tokens.push({ kind: 'cmd', label: 'Buff', cls: 'bg-pink-950 text-pink-300 border-pink-700' });
+        if (arg) tokens.push({ kind: 'arg', label: arg, cls: 'bg-slate-900 text-slate-200 border-slate-700' });
+        return { cmd: 'buff', level, arg, tokens };
+      }
+      if (/^stat\s*:/i.test(rest)) {
+        const arg = rest.replace(/^stat\s*:\s*/i, '').trim();
+        tokens.push({ kind: 'cmd', label: 'Stat', cls: 'bg-lime-950 text-lime-300 border-lime-700' });
+        if (arg) tokens.push({ kind: 'arg', label: arg.toUpperCase(), cls: 'bg-slate-900 text-lime-200 border-slate-700' });
+        return { cmd: 'stat', level, arg, tokens };
+      }
+      if (/^boon\s*:/i.test(rest)) {
+        const arg = rest.replace(/^boon\s*:\s*/i, '').trim();
+        tokens.push({ kind: 'cmd', label: 'Boon', cls: 'bg-amber-950 text-amber-300 border-amber-700' });
+        arg.split(',').map(s => s.trim()).filter(Boolean).slice(0, 5).forEach(seg => {
+          tokens.push({ kind: 'arg', label: seg, cls: 'bg-slate-900 text-cyan-200 border-slate-700' });
+        });
+        return { cmd: 'boon', level, arg, tokens };
+      }
+      if (/^synergy/i.test(rest)) {
+        tokens.push({ kind: 'cmd', label: 'Synergy Pool', cls: 'bg-emerald-950 text-emerald-300 border-emerald-700' });
+        return { cmd: 'synergy', level, arg: rest.replace(/^synergy\s*:?\s*/i, '').trim(), tokens };
+      }
+      if (/^hp\s*:/i.test(rest)) {
+        const arg = rest.replace(/^hp\s*:\s*/i, '').trim();
+        tokens.push({ kind: 'cmd', label: 'HP', cls: 'bg-sky-950 text-sky-300 border-sky-700' });
+        if (arg) tokens.push({ kind: 'arg', label: arg, cls: 'bg-slate-900 text-sky-200 border-slate-700' });
+        return { cmd: 'hp', level, arg, tokens };
+      }
+      if (/^use\s*:/i.test(rest)) {
+        const arg = rest.replace(/^use\s*:\s*/i, '').trim();
+        tokens.push({ kind: 'cmd', label: 'Use Ability', cls: 'bg-rose-950 text-rose-300 border-rose-700' });
+        if (arg) tokens.push({ kind: 'arg', label: arg, cls: 'bg-slate-900 text-rose-200 border-slate-700' });
+        return { cmd: 'use', level, arg, tokens };
+      }
+      if (/^(nr|next\s*round|end\s*turn)$/i.test(rest)) {
+        tokens.push({ kind: 'cmd', label: 'Turn Clock +1', cls: 'bg-teal-950 text-teal-300 border-teal-700' });
+        return { cmd: 'nr', level, arg: '', tokens };
+      }
+      if (rest) {
+        tokens.push({ kind: 'cmd', label: 'Search', cls: 'bg-cyan-950 text-cyan-300 border-cyan-700' });
+        tokens.push({ kind: 'arg', label: rest, cls: 'bg-slate-900 text-slate-200 border-slate-700' });
+      }
+      return { cmd: rest ? 'fuzzy' : 'empty', level, arg: rest, tokens };
+    }
+
+    function renderSpotlightTokenChips(rawVal) {
+      const bar = document.getElementById('spotlight-terminal-token-bar');
+      if (!bar) return null;
+      const parsed = parseSpotlightCommand(rawVal);
+      if (!parsed.tokens || parsed.tokens.length === 0) {
+        bar.innerHTML = '';
+        bar.classList.add('hidden');
+        return parsed;
+      }
+      bar.innerHTML = `<span class="text-slate-500 font-bold">Tokens:</span>` + parsed.tokens.map(t =>
+        `<span class="px-1.5 py-0.5 rounded border font-bold ${t.cls}">[${_escTermHtml(t.label)}]</span>`
+      ).join('');
+      bar.classList.remove('hidden');
+      return parsed;
+    }
+
+    function toggleSpotlightTerminal(forceState = null) {
+      const modal = document.getElementById('modal-spotlight-terminal');
+      const input = document.getElementById('spotlight-terminal-input');
+      if (!modal) return;
+      const isHidden = modal.classList.contains('hidden');
+      const open = forceState !== null ? Boolean(forceState) : isHidden;
+      if (open) {
+        modal.classList.remove('hidden');
+        const undoBtn = document.getElementById('btn-spotlight-terminal-undo');
+        if (undoBtn) undoBtn.classList.toggle('hidden', _spotlightTerminalUndoStack.length === 0);
+        if (input) {
+          input.focus();
+          input.select();
+          onSpotlightTerminalInput(input.value || '');
+        }
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function setSpotlightTerminalSample(sampleText) {
+      const input = document.getElementById('spotlight-terminal-input');
+      if (!input) return;
+      input.value = sampleText;
+      input.focus();
+      onSpotlightTerminalInput(sampleText);
+    }
+
+    function _parseInlineBoonDsl(rawQuery) {
+      const body = String(rawQuery || '').replace(/^boon\s*:\s*/i, '').trim();
+      if (!body) return null;
+      const segments = body.split(',').map(s => s.trim()).filter(Boolean);
+      const name = segments[0] || 'Custom DM Boon';
+      let dice = '';
+      let dmgType = 'Untyped';
+      let range = '60 ft.';
+      let saveType = 'Reflex';
+      let dcFormula = '10 + floor(@level / 2) + @conMod';
+      let hasSave = false;
+      let rechargeDice = '';
+      let actionType = 'passive';
+      const modifiers = [];
+      const defenses = [];
+
+      for (let i = 1; i < segments.length; i++) {
+        const seg = segments[i];
+        const kv = seg.match(/^([a-zA-Z_]+)\s*[:=]\s*(.+)$/);
+        if (!kv) continue;
+        const k = kv[1].toLowerCase().trim();
+        const v = kv[2].trim();
+        if (k === 'dmg' || k === 'damage') {
+          const dm = v.match(/^(\d+d\d+(?:\s*[+-]\s*\d+)?)\s*(.*)$/i);
+          if (dm) {
+            dice = dm[1].replace(/\s+/g, '');
+            if (dm[2]) dmgType = dm[2].trim();
+          } else {
+            dice = v;
+          }
+          if (actionType === 'passive') actionType = 'standard';
+        } else if (k === 'range' || k === 'area') {
+          range = v;
+        } else if (k === 'save' || k === 'dc') {
+          hasSave = true;
+          const sm = v.match(/^(Fortitude|Fort|Reflex|Ref|Will)\s*(.*)$/i);
+          if (sm) {
+            const st = sm[1].toLowerCase();
+            saveType = st.startsWith('fort') ? 'Fortitude' : (st.startsWith('ref') ? 'Reflex' : 'Will');
+            if (sm[2]) dcFormula = sm[2].replace(/^dc\s*[:=]?\s*/i, '').trim();
+          } else {
+            dcFormula = v.replace(/^dc\s*[:=]?\s*/i, '').trim();
+          }
+        } else if (k === 'recharge' || k === 'cooldown') {
+          rechargeDice = v.replace(/\s*(turns?|rounds?)\b/ig, '').replace(/\s+/g, '');
+        } else if (k === 'action' || k === 'act') {
+          const al = v.toLowerCase();
+          if (al.startsWith('mov')) actionType = 'move';
+          else if (al.startsWith('swi')) actionType = 'swift';
+          else if (al.startsWith('imm')) actionType = 'immediate';
+          else if (al.startsWith('ful')) actionType = 'full';
+          else if (al.startsWith('fre')) actionType = 'free';
+          else if (al.startsWith('std') || al.startsWith('sta')) actionType = 'standard';
+          else actionType = 'passive';
+        } else if (k === 'mod' || k === 'bonus') {
+          const mm = v.match(/^([+-]?\d+|\S+)\s+to\s+([a-zA-Z._]+)(?:\s+\(([^)]+)\))?/i);
+          if (mm) {
+            const valNum = Number(mm[1]);
+            modifiers.push({
+              target: mm[2].trim(),
+              op: 'add',
+              ...(Number.isFinite(valNum) ? { value: valNum } : { formula: mm[1] }),
+              type: mm[3] ? mm[3].trim() : 'Untyped'
+            });
+          }
+        } else if (k === 'resist' || k === 'resistance') {
+          const rm = v.match(/^([a-zA-Z]+)\s+(\d+)/i);
+          if (rm) {
+            defenses.push({ kind: 'resistance', damageType: rm[1], value: Number(rm[2]) || 10 });
+          }
+        }
+      }
+
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+      const actLabelMap = {
+        move: 'Move Action',
+        standard: 'Standard Action',
+        swift: 'Swift Action',
+        immediate: 'Immediate Action',
+        full: 'Full-Round Action',
+        free: 'Free Action',
+        passive: 'Passive'
+      };
+      const entry = {
+        schemaVersion: 2,
+        id: `pack_dm_custom:${slug}`,
+        name: name,
+        type: dice ? 'Special Ability' : 'DM Boon',
+        category: dice ? 'Special Ability' : 'DM Boon',
+        source: 'Spotlight Lego Terminal',
+        action: actLabelMap[actionType] || 'Standard Action',
+        actionType: actionType,
+        range: range,
+        save: hasSave ? `${saveType} half` : (dice ? `${saveType} half` : 'None'),
+        dcFormula: (hasSave || dice) ? dcFormula : '',
+        rechargeDice: rechargeDice || '',
+        benefit: `${name}${dice ? ` — ${dice} ${dmgType} damage (${range}, ${actLabelMap[actionType] || 'Standard Action'}${rechargeDice ? `, Recharge ${rechargeDice} rounds` : ''})` : ''}`,
+        modifiers: modifiers,
+        defenses: defenses,
+        resources: rechargeDice ? [{
+          id: `res_${slug}_recharge`,
+          name: `${name} Recharge`,
+          rechargeModel: 'cooldown_turns',
+          rechargeFormula: rechargeDice,
+          cooldownRemaining: 0
+        }] : [],
+        damageParts: dice ? [{ dice: dice, bonus: 0, type: dmgType, multiplyOnCrit: false, source: name }] : [],
+        modes: dice ? [{
+          id: `mode_${slug}`,
+          name: `Use ${name}`,
+          actionType: actionType,
+          range: range,
+          area: { shape: 'line', sizeFt: parseInt(range, 10) || 60 },
+          save: { type: saveType, dcFormula: dcFormula, onSave: 'half' },
+          damageParts: [{ dice: dice, bonus: 0, type: dmgType, multiplyOnCrit: false }],
+          resourceCost: rechargeDice ? { resourceId: `res_${slug}_recharge`, rollCooldownOnUse: true } : undefined
+        }] : [],
+        grants: [],
+        choices: []
+      };
+      return entry;
+    }
+
+    function _getLevelFeatSlotDiagnostics(targetLevelNum) {
+      const lvl = Math.max(1, Math.min(30, Number(targetLevelNum) || 1));
+      const prog = (typeof character !== 'undefined' && Array.isArray(character.levelProgression)) ? character.levelProgression : [];
+      const row = prog[lvl - 1] || null;
+      const existingFeats = (row && Array.isArray(row.feats)) ? row.feats : [];
+      const isGeneralLevel = (lvl === 1 || lvl % 3 === 0);
+      const className = (row && row.className) ? row.className : ((character && character.classes) ? String(character.classes).split(' ')[0] : 'Fighter');
+      const isFighterBonusLevel = /fighter/i.test(className) && (lvl === 1 || lvl % 2 === 0);
+      const hasRegularTaken = existingFeats.some(f => !/\[(Bonus|Extra Bonus|DM Boon|Flaw|Flaw Bonus|Racial|Extra Racial|Invocation)\]/i.test(String(f)));
+      const hasClassBonusTaken = existingFeats.some(f => /\[(Bonus|Extra Bonus)\]/i.test(String(f)));
+      const nextGeneralLvl = [1, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30].find(n => n > lvl) || 3;
+
+      return {
+        level: lvl,
+        className,
+        isGeneralLevel,
+        isFighterBonusLevel,
+        hasRegularTaken,
+        hasClassBonusTaken,
+        existingFeats,
+        nextGeneralLvl
+      };
+    }
+
+    function onSpotlightTerminalInput(rawVal, _isFallback = false) {
+      const resultsEl = document.getElementById('spotlight-terminal-results');
+      if (!resultsEl) return;
+      if (!_isFallback) renderSpotlightTokenChips(rawVal);
+      const q = String(rawVal || '').trim();
+      _spotlightTerminalItems = [];
+      _spotlightTerminalActiveIndex = 0;
+
+      // 1. Empty State -> Show Character Synergy Suggestions & Quick Command Guide
+      if (!q) {
+        const { ownedIds, ownedNames } = _collectCharacterOwnedSets(typeof character !== 'undefined' ? character : null);
+        const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
+        const dmBoons = catalog.filter(entry => entry && (entry.pack || (entry.id && String(entry.id).includes(':') && !String(entry.id).startsWith('srd:')) || entry.category === 'DM Boon'));
+
+        const synergyCards = dmBoons.slice(0, 6).map((b, idx) => {
+          const reqFeats = (b.requires && Array.isArray(b.requires.feats)) ? b.requires.feats : [];
+          const hasV25Pred = Boolean(b.requires && (b.requires.all || b.requires.any || b.requires.has || b.requires.not));
+          const reqMet = hasV25Pred && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluatePredicate === 'function'
+            ? RuleEngine.evaluatePredicate(b.requires, character || {}, { ownedIds })
+            : reqFeats.every(rf => {
+                const rfStr = String(rf).trim();
+                const rfSlug = rfStr.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+                return ownedIds.has(rfStr) || ownedIds.has(rfSlug) || ownedNames.has(rfStr.toLowerCase());
+              });
+          const bId = String(b.id || '').trim();
+          const bShortId = bId.split(':').pop();
+          const isOwned = (bId && (ownedIds.has(bId) || (bShortId && ownedIds.has(bShortId)))) || ownedNames.has(String(b.name || '').toLowerCase().trim());
+          _spotlightTerminalItems.push({
+            type: 'ADD_BOON',
+            entry: b,
+            autocomplete: `boon: ${b.name}`
+          });
+          return `
+            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-cyan-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-bold text-white text-xs">${_escTermHtml(b.name)}</span>
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' : 'bg-amber-950 text-amber-300 border border-amber-700') : 'bg-purple-950 text-purple-300 border border-purple-800'}">
+                    ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? '✨ Synergy Ready' : `Requires: ${_escTermHtml(reqFeats.join(' + ') || 'Prerequisites')}`) : _escTermHtml(b.type || 'DM Boon')}
+                  </span>
+                  ${isOwned ? '<span class="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 text-[9px] font-bold">✅ Owned</span>' : ''}
+                </div>
+                <p class="text-[11px] text-slate-400 truncate mt-0.5">${_escTermHtml(b.benefit || b.description || '')}</p>
+              </div>
+              <span class="px-2 py-1 rounded bg-cyan-950 text-cyan-300 border border-cyan-700/60 font-mono text-[10px] font-bold shrink-0">Enter ↵</span>
+            </div>
+          `;
+        }).join('');
+
+        resultsEl.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-[11px] text-slate-400 px-1">
+              <span class="font-bold text-cyan-300 uppercase tracking-wider">🐉 Available DM Draconic Path, Synergies &amp; Boons</span>
+              <span class="font-mono text-[10px]">Type <code class="text-purple-300">lvl 5, feat: clave</code> or <code class="text-amber-300">boon: ...</code></span>
+            </div>
+            ${synergyCards || '<div class="p-3 text-slate-400 text-xs">Type a command above to begin.</div>'}
+          </div>
+        `;
+        return;
+      }
+
+      // 2. Command Family A: `lvl <N>, feat: <query>` or `feat: <query>`
+      const _termFuzzyScore = (qStr, targetName, haystack = '') => {
+        if (!qStr) return 100;
+        if (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.fuzzyScore === 'function') {
+          return SrdCompendium.fuzzyScore(qStr, targetName, haystack);
+        }
+        const ql = String(qStr).toLowerCase().trim();
+        const nl = String(targetName || '').toLowerCase().trim();
+        if (nl === ql) return 1000;
+        if (nl.startsWith(ql)) return 500;
+        if (nl.includes(ql)) return 300;
+        if (String(haystack || '').toLowerCase().includes(ql)) return 150;
+        return 0;
+      };
+
+      const lvlFeatMatch = q.match(/^(?:(?:lvl|level)\s*(\d+)\s*[,:]?\s*)?feat\s*:\s*(.*)$/i);
+      if (lvlFeatMatch) {
+        const targetLvl = lvlFeatMatch[1] ? parseInt(lvlFeatMatch[1], 10) : ((character && character.level) || 1);
+        const featQuery = (lvlFeatMatch[2] || '').trim();
+        const slotDiag = _getLevelFeatSlotDiagnostics(targetLvl);
+        const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
+
+        const matches = catalog
+          .map(f => {
+            const fScore = featQuery ? _termFuzzyScore(featQuery, f.name, `${f.benefit || ''} ${f.category || ''}`) : 100;
+            const legacyMatch = !featQuery || (typeof matchesFeatSearchQuery === 'function' ? matchesFeatSearchQuery(f, featQuery) : false);
+            const relScore = featQuery && typeof getFeatSearchRelevance === 'function' ? getFeatSearchRelevance(f, featQuery) : 0;
+            const score = Math.max(fScore, legacyMatch ? Math.max(50, relScore) : 0);
+            return {
+              feat: f,
+              score,
+              pEval: typeof checkFeatPrerequisites === 'function' ? checkFeatPrerequisites(f, 0, targetLvl - 1) : { allMet: true, checks: [] }
+            };
+          })
+          .filter(m => !featQuery || m.score > 0)
+          .sort((a, b) => {
+            if (b.score !== a.score) return b.score - a.score;
+            return (a.feat.name || '').localeCompare(b.feat.name || '');
+          })
+          .slice(0, 8);
+
+        let slotAlertHtml = '';
+        if (!slotDiag.isGeneralLevel && !slotDiag.isFighterBonusLevel) {
+          slotAlertHtml = `
+            <div class="p-2.5 rounded-xl bg-amber-950/70 border border-amber-600/70 text-amber-200 text-[11px] flex items-center justify-between gap-2">
+              <div>
+                <span class="font-bold">⚠️ D&amp;D 3.5e RAW Slot Notice (Level ${targetLvl}):</span>
+                <span>General Feats are gained at Levels 1, 3, 6, 9, 12, 15, 18. Selecting a feat at Level ${targetLvl} will add it as a <strong>[Class Bonus Feat]</strong> or <strong>[DM Boon]</strong>, or you can route it to Level ${slotDiag.nextGeneralLvl}.</span>
+              </div>
+            </div>
+          `;
+        } else if (slotDiag.hasRegularTaken) {
+          slotAlertHtml = `
+            <div class="p-2 rounded-xl bg-indigo-950/70 border border-indigo-600/60 text-indigo-200 text-[11px]">
+              ℹ️ Level ${targetLvl} already has a General Feat (${_escTermHtml(slotDiag.existingFeats.join(', '))}). Pressing Enter will add as a <strong>Bonus / DM Grant Feat</strong> at Level ${targetLvl}.
+            </div>
+          `;
+        }
+
+        if (matches.length === 0) {
+          resultsEl.innerHTML = `${slotAlertHtml}<div class="p-4 text-center text-slate-400">No feats matched "${_escTermHtml(featQuery)}".</div>`;
+          return;
+        }
+
+        const rowsHtml = matches.map((m, idx) => {
+          const f = m.feat;
+          const isQual = m.pEval.allMet && !m.pEval.isAlreadyKnownFromClass;
+          const slotMode = (!slotDiag.isGeneralLevel || slotDiag.hasRegularTaken)
+            ? (slotDiag.isFighterBonusLevel && !slotDiag.hasClassBonusTaken ? 'Class Bonus Feat' : 'DM Boon')
+            : 'Regular Feat';
+          _spotlightTerminalItems.push({
+            type: 'ADD_LEVEL_FEAT',
+            level: targetLvl,
+            feat: f,
+            slotMode: slotMode,
+            nextGeneralLvl: slotDiag.nextGeneralLvl,
+            autocomplete: `lvl ${targetLvl}, feat: ${f.name}`
+          });
+
+          const prereqPills = (m.pEval.checks || []).map(c =>
+            `<span class="px-1.5 py-0.5 rounded font-mono text-[9px] ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/50' : 'bg-rose-950 text-rose-300 border border-rose-700/60 font-bold'}">${_escTermHtml(c.label)} ${c.met ? '✓' : '✗'}</span>`
+          ).join('');
+
+          return `
+            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-3 ${idx === _spotlightTerminalActiveIndex ? 'bg-slate-900 border-cyan-400 shadow-lg' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
+              <div class="min-w-0 flex-1 space-y-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-bold text-white text-xs">${_escTermHtml(f.name)}</span>
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${isQual ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' : 'bg-rose-950 text-rose-300 border border-rose-700'}">${isQual ? '✅ Qualified' : '⚠️ Prereq / DM Override'}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 text-[9px] font-mono">Lvl ${targetLvl} • ${_escTermHtml(slotMode)}</span>
+                  ${f.isFighterBonusFeat ? '<span class="px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 text-[9px]">⚔️ Fighter Bonus</span>' : ''}
+                </div>
+                ${prereqPills ? `<div class="flex flex-wrap gap-1">${prereqPills}</div>` : ''}
+                <p class="text-[11px] text-slate-400 truncate">${_escTermHtml(f.benefit || '')}</p>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                ${!slotDiag.isGeneralLevel ? `<button type="button" onclick="event.stopPropagation(); executeSpotlightTerminalFeatAtLevel(${idx}, ${slotDiag.nextGeneralLvl}, 'Regular Feat')" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-700/60 font-mono text-[10px] font-bold cursor-pointer" title="Add to next legal 3.5e General Feat slot (Level ${slotDiag.nextGeneralLvl})">Lvl ${slotDiag.nextGeneralLvl}</button>` : ''}
+                <span class="px-2 py-1 rounded bg-cyan-950 text-cyan-300 border border-cyan-700/60 font-mono text-[10px] font-bold">Enter ↵</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        resultsEl.innerHTML = `<div class="space-y-2">${slotAlertHtml}${rowsHtml}</div>`;
+        return;
+      }
+
+      // 3. Command Family B: `boon: <Name>, dmg: 4d8 Acid, range: 60ft, recharge: 1d4+1, action: move`
+      if (/^boon\s*:/i.test(q)) {
+        const subBoonQ = q.replace(/^boon\s*:\s*/i, '').trim();
+        const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
+        const matchedCatalogBoons = (!subBoonQ.includes(',') && subBoonQ)
+          ? catalog
+              .filter(entry => entry && (entry.type === 'DM Boon' || entry.category === 'DM Boon' || entry.pack))
+              .map(b => ({ b, sc: _termFuzzyScore(subBoonQ, b.name, b.benefit || b.description || '') }))
+              .filter(x => x.sc > 0)
+              .sort((a, b) => b.sc - a.sc)
+              .slice(0, 5)
+              .map(x => x.b)
+          : [];
+
+        const matchedBoonRows = matchedCatalogBoons.map(b => {
+          const idx = _spotlightTerminalItems.length;
+          _spotlightTerminalItems.push({
+            type: 'ADD_BOON',
+            entry: b,
+            autocomplete: `boon: ${b.name}`
+          });
+          return `
+            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-amber-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-bold text-white">${_escTermHtml(b.name)} <span class="text-[10px] font-mono text-amber-300">(${_escTermHtml(b.type || 'DM Boon')})</span></div>
+                <div class="text-[11px] text-slate-400 truncate">${_escTermHtml(b.benefit || b.description || '')}</div>
+              </div>
+              <span class="px-2 py-1 rounded bg-amber-950 text-amber-300 border border-amber-700 font-mono text-[10px] font-bold">Add ↵</span>
+            </div>
+          `;
+        }).join('');
+
+        const parsedBoon = _parseInlineBoonDsl(q);
+        if (parsedBoon) {
+          const interactionMap = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getObjectInteractionMap === 'function')
+            ? RuleEngine.getObjectInteractionMap(parsedBoon, character)
+            : { boundUiTargets: ['CombatSpecialAttacksPanel'], links: [] };
+
+          const synthIdx = _spotlightTerminalItems.length;
+          _spotlightTerminalItems.push({
+            type: 'CREATE_INLINE_BOON',
+            entry: parsedBoon,
+            autocomplete: q
+          });
+
+          const targetBadges = (interactionMap.boundUiTargets || interactionMap.nodes || []).map(t =>
+            `<span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-700/70 font-mono text-[10px] font-bold">🔗 ${_escTermHtml(t)}</span>`
+          ).join('');
+
+          const linkRows = (interactionMap.links || []).map(l =>
+            `<div class="text-[10px] font-mono text-slate-300 flex items-center gap-1.5"><span class="text-emerald-400">●</span> <span><strong>${_escTermHtml(l.widget)}:</strong> ${_escTermHtml(l.detail)}</span></div>`
+          ).join('');
+
+          resultsEl.innerHTML = `
+            <div class="space-y-2">
+              ${matchedBoonRows}
+              <div class="p-3 rounded-xl bg-slate-900 border border-cyan-500/80 space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <div>
+                    <div class="text-xs font-black text-white flex items-center gap-2">
+                      <span>⚡ Live V2.5 Lego Assembly Preview: ${_escTermHtml(parsedBoon.name)}</span>
+                      <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-700 text-[10px] font-mono">${_escTermHtml(parsedBoon.action)}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-300 mt-0.5">${_escTermHtml(parsedBoon.benefit)}</p>
+                  </div>
+                  <button type="button" onclick="executeSpotlightTerminalItem(${synthIdx})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs shadow cursor-pointer shrink-0">➕ Bind &amp; Add (Enter ↵)</button>
+                </div>
+                <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5">
+                  <div class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">🗺️ Automatic Page Object Interaction Map</div>
+                  <div class="flex flex-wrap gap-1.5">${targetBadges}</div>
+                  <div class="space-y-1 pt-1">${linkRows}</div>
+                </div>
+              </div>
+            </div>
+          `;
+          return;
+        }
+      }
+
+      // 4. Command Family C: `synergy:` (Character-Aware Draconic Path & Boon Filter)
+      if (/^synergy/i.test(q)) {
+        const { ownedIds, ownedNames } = _collectCharacterOwnedSets(typeof character !== 'undefined' ? character : null);
+        const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
+        const dmBoons = catalog.filter(entry => entry && (entry.pack || (entry.id && String(entry.id).includes(':') && !String(entry.id).startsWith('srd:')) || entry.category === 'DM Boon'));
+
+        const cards = dmBoons.map((b, idx) => {
+          const reqFeats = (b.requires && Array.isArray(b.requires.feats)) ? b.requires.feats : [];
+          const hasV25Pred = Boolean(b.requires && (b.requires.all || b.requires.any || b.requires.has || b.requires.not));
+          const reqMet = hasV25Pred && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluatePredicate === 'function'
+            ? RuleEngine.evaluatePredicate(b.requires, character || {}, { ownedIds })
+            : reqFeats.every(rf => {
+                const rfStr = String(rf).trim();
+                const rfSlug = rfStr.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+                return ownedIds.has(rfStr) || ownedIds.has(rfSlug) || ownedNames.has(rfStr.toLowerCase());
+              });
+          _spotlightTerminalItems.push({
+            type: 'ADD_BOON',
+            entry: b,
+            autocomplete: `boon: ${b.name}`
+          });
+          return `
+            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-emerald-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-bold text-white text-xs">${_escTermHtml(b.name)}</span>
+                  <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-amber-950 text-amber-300 border border-amber-700') : 'bg-purple-950 text-purple-300 border border-purple-800'}">
+                    ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? '✅ Synergy Unlocked!' : `🔒 Requires: ${_escTermHtml(reqFeats.join(' + ') || 'Prerequisites')}`) : 'Base Draconic / Lesser Boon'}
+                  </span>
+                </div>
+                <p class="text-[11px] text-slate-400 mt-0.5">${_escTermHtml(b.benefit || '')}</p>
+              </div>
+              <span class="px-2 py-1 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-mono text-[10px] font-bold">Add ↵</span>
+            </div>
+          `;
+        }).join('');
+        resultsEl.innerHTML = `<div class="space-y-2">${cards}</div>`;
+        return;
+      }
+
+      // 5. Command Family D: Live Combat (`use: <ability>`, `hp: -15 acid`, `nr` / `next round`)
+      if (/^(nr|next\s*round|end\s*turn)$/i.test(q)) {
+        _spotlightTerminalItems.push({
+          type: 'NEXT_ROUND',
+          autocomplete: 'nr'
+        });
+        resultsEl.innerHTML = `
+          <div onclick="executeSpotlightTerminalItem(0)" class="p-3 rounded-xl bg-slate-900 border border-teal-500/80 flex items-center justify-between cursor-pointer">
+            <div>
+              <div class="text-xs font-bold text-white">⏱️ Advance Combat Round &amp; Tick Cooldowns</div>
+              <div class="text-[11px] text-slate-400">Resets Standard/Move/Swift actions (respecting Immediate Action swift-lock) and decrements active breath/ability recharge timers.</div>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-teal-950 text-teal-300 border border-teal-700 font-mono text-xs font-bold">Enter ↵</span>
+          </div>
+        `;
+        return;
+      }
+
+      const hpMatch = q.match(/^hp\s*:\s*([+-]?\d+)\s*([a-zA-Z]*)$/i);
+      if (hpMatch) {
+        const rawDelta = parseInt(hpMatch[1], 10) || 0;
+        const dmgType = (hpMatch[2] || '').trim();
+        _spotlightTerminalItems.push({
+          type: 'HP_ADJUST',
+          delta: rawDelta,
+          damageType: dmgType,
+          autocomplete: q
+        });
+        resultsEl.innerHTML = `
+          <div onclick="executeSpotlightTerminalItem(0)" class="p-3 rounded-xl bg-slate-900 border border-sky-500/80 flex items-center justify-between cursor-pointer">
+            <div>
+              <div class="text-xs font-bold text-white">${rawDelta < 0 ? `🩸 Apply ${Math.abs(rawDelta)} ${_escTermHtml(dmgType || 'Physical')} Damage (with V2.5 Defense/Absorption Evaluation)` : `💚 Heal +${rawDelta} HP`}</div>
+              <div class="text-[11px] text-slate-400">Evaluates active Energy Resistance, Immunity, Vulnerability, DR, and Elemental Absorption before modifying HP.</div>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-sky-950 text-sky-300 border border-sky-700 font-mono text-xs font-bold">Enter ↵</span>
+          </div>
+        `;
+        return;
+      }
+
+      const useMatch = q.match(/^use\s*:\s*(.*)$/i);
+      if (useMatch) {
+        const subQ = (useMatch[1] || '').toLowerCase().trim();
+        const abilities = typeof getCharacterSpecialAttackAbilities === 'function' ? getCharacterSpecialAttackAbilities() : [];
+        const filtered = abilities
+          .map(a => ({ a, sc: subQ ? _termFuzzyScore(subQ, a.name, a.dmgType || '') : 100 }))
+          .filter(x => !subQ || x.sc > 0)
+          .sort((x, y) => y.sc - x.sc)
+          .map(x => x.a);
+        if (filtered.length === 0) {
+          resultsEl.innerHTML = `<div class="p-3 text-slate-400 text-xs">No active combat special attacks matched "${_escTermHtml(subQ)}".</div>`;
+          return;
+        }
+        resultsEl.innerHTML = filtered.map((a, idx) => {
+          _spotlightTerminalItems.push({
+            type: 'USE_ABILITY',
+            abilityIndex: abilities.indexOf(a),
+            ability: a,
+            autocomplete: `use: ${a.name}`
+          });
+          return `
+            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-rose-500/80' : 'bg-slate-900/50 border-slate-800'}">
+              <div>
+                <div class="text-xs font-bold text-white">${_escTermHtml(a.name)} <span class="text-[10px] font-mono text-amber-300">(${_escTermHtml(a.action || 'Standard')})</span></div>
+                <div class="text-[11px] text-slate-400">${a.dice ? `Damage: ${_escTermHtml(a.dice)} ${_escTermHtml(a.dmgType || '')}` : ''} ${a.dc ? `• DC ${_escTermHtml(a.dc)} ${_escTermHtml(a.save || '')}` : ''}</div>
+              </div>
+              <span class="px-2 py-1 rounded bg-rose-950 text-rose-300 border border-rose-700 font-mono text-[10px] font-bold">Trigger ↵</span>
+            </div>
+          `;
+        }).join('');
+        return;
+      }
+
+      // 5.5. Phase P6 Command Families: `item:`, `spell:`, `buff:`, `stat:`
+      const parsedCmd = parseSpotlightCommand(q);
+      if (parsedCmd && parsedCmd.cmd === 'item') {
+        const subQ = (parsedCmd.arg || '').trim();
+        let hits = [];
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.resolveLocalZeroTokenQuery === 'function' && subQ) {
+          hits = RuleMaster.resolveLocalZeroTokenQuery(subQ).filter(e => e && !['Feat', 'Spell', 'Deity', 'Domain', 'Race', 'Class'].includes(e.type));
+        }
+        if (hits.length === 0 && typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.search === 'function' && subQ) {
+          hits = SrdCompendium.search(subQ, { type: ['Weapon', 'Armor', 'Shield', 'Item', 'MagicItem', 'AugmentationCrystal'], limit: 8 });
+        }
+        if (hits.length === 0 && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+          hits = masterDb
+            .filter(e => e && !['Feat', 'Spell'].includes(e.type))
+            .map(e => ({ e, sc: subQ ? _termFuzzyScore(subQ, e.name, e.benefit || e.description || '') : 100 }))
+            .filter(x => !subQ || x.sc > 0)
+            .sort((a, b) => b.sc - a.sc)
+            .slice(0, 8)
+            .map(x => x.e);
+        }
+        if (hits.length === 0) {
+          resultsEl.innerHTML = `<div class="p-3 text-slate-400 text-xs">Type an item name or V2 Forge query (e.g. <code class="text-indigo-300">item: +2 Keen Mithral Scimitar</code> or <code class="text-indigo-300">item: Cloak of Charisma +4</code>).</div>`;
+          return;
+        }
+        resultsEl.innerHTML = hits.slice(0, 8).map((it, idx) => {
+          _spotlightTerminalItems.push({ type: 'EQUIP_ITEM', entry: it, autocomplete: `item: ${it.name}` });
+          return `
+            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-indigo-500/80' : 'bg-slate-900/50 border-slate-800'}">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-bold text-white">${_escTermHtml(it.name)} <span class="text-[10px] font-mono text-indigo-300">(${_escTermHtml(it.slot || it.type || 'Item')})</span></div>
+                <div class="text-[11px] text-slate-400 truncate">${_escTermHtml(it.benefit || it.description || '')}</div>
+              </div>
+              <span class="px-2 py-1 rounded bg-indigo-950 text-indigo-300 border border-indigo-700 font-mono text-[10px] font-bold">Equip ↵</span>
+            </div>
+          `;
+        }).join('');
+        return;
+      }
+
+      if (parsedCmd && parsedCmd.cmd === 'spell') {
+        const subQ = (parsedCmd.arg || '').toLowerCase().trim();
+        let hits = [];
+        if (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.search === 'function' && subQ) {
+          hits = window.SrdCompendium.search(subQ, { type: 'Spell', limit: 8 });
+        }
+        if (hits.length === 0 && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+          hits = masterDb
+            .filter(e => e && e.type === 'Spell')
+            .map(e => ({ e, sc: subQ ? _termFuzzyScore(subQ, e.name, e.school || '') : 100 }))
+            .filter(x => !subQ || x.sc > 0)
+            .sort((a, b) => b.sc - a.sc)
+            .slice(0, 8)
+            .map(x => x.e);
+        }
+        if (hits.length === 0 && typeof RuleMaster !== 'undefined' && RuleMaster.canonicalDictionary && subQ && RuleMaster.canonicalDictionary[subQ]) {
+          hits = [RuleMaster.canonicalDictionary[subQ]];
+        }
+        if (hits.length === 0) {
+          resultsEl.innerHTML = `<div class="p-3 text-slate-400 text-xs">No spells matched "${_escTermHtml(subQ)}". Try <code class="text-violet-300">spell: Haste</code> or <code class="text-violet-300">spell: Fireball</code>.</div>`;
+          return;
+        }
+        resultsEl.innerHTML = hits.slice(0, 8).map((sp, idx) => {
+          _spotlightTerminalItems.push({ type: 'ADD_SPELL', entry: sp, level: parsedCmd.level, autocomplete: `spell: ${sp.name}` });
+          return `
+            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-violet-500/80' : 'bg-slate-900/50 border-slate-800'}">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-bold text-white">🔮 ${_escTermHtml(sp.name)} <span class="text-[10px] font-mono text-violet-300">(${_escTermHtml(sp.school || 'Spell')} • Lvl ${_escTermHtml(sp.level ?? parsedCmd.level ?? 1)})</span></div>
+                <div class="text-[11px] text-slate-400 truncate">${_escTermHtml(sp.benefit || sp.description || '')}</div>
+              </div>
+              <span class="px-2 py-1 rounded bg-violet-950 text-violet-300 border border-violet-700 font-mono text-[10px] font-bold">Learn ↵</span>
+            </div>
+          `;
+        }).join('');
+        return;
+      }
+
+      if (parsedCmd && parsedCmd.cmd === 'buff') {
+        const subQ = (parsedCmd.arg || '').toLowerCase().trim();
+        const charBuffs = (character && Array.isArray(character.buffs)) ? character.buffs : [];
+        const matchedBuffs = charBuffs
+          .filter(b => b && b.name)
+          .map(b => ({ b, sc: subQ ? _termFuzzyScore(subQ, b.name, b.summary || '') : 100 }))
+          .filter(x => !subQ || x.sc > 0)
+          .sort((a, b) => b.sc - a.sc)
+          .map(x => x.b);
+        const existingNames = new Set(charBuffs.map(b => String(b?.name || '').toLowerCase().trim()).filter(Boolean));
+        const candidateTemplates = [];
+        const seenCandNames = new Set();
+
+        const addBuffCandidate = (rawObj) => {
+          if (!rawObj || !rawObj.name) return;
+          const nLower = String(rawObj.name).toLowerCase().trim();
+          if (!nLower || existingNames.has(nLower) || seenCandNames.has(nLower)) return;
+          const sc = subQ ? _termFuzzyScore(subQ, rawObj.name, rawObj.summary || rawObj.benefit || '') : 100;
+          if (subQ && sc <= 0) return;
+          let resolvedMods = Array.isArray(rawObj.modifiers) ? JSON.parse(JSON.stringify(rawObj.modifiers)) : [];
+          let resolvedFlags = (rawObj.ruleFlags && typeof rawObj.ruleFlags === 'object') ? JSON.parse(JSON.stringify(rawObj.ruleFlags)) : {};
+          let summary = rawObj.summary || rawObj.benefit || rawObj.description || '';
+          if (resolvedMods.length === 0 && typeof RuleEngine !== 'undefined' && typeof RuleEngine.resolveSpellBuffSpec === 'function') {
+            const spec = RuleEngine.resolveSpellBuffSpec({ name: rawObj.name, id: rawObj.id }, character, Number(character?.level) || 1);
+            if (spec && spec.isBuffSpell) {
+              if (Array.isArray(spec.modifiers)) resolvedMods = JSON.parse(JSON.stringify(spec.modifiers));
+              if (spec.ruleFlags) resolvedFlags = Object.assign({}, resolvedFlags, JSON.parse(JSON.stringify(spec.ruleFlags)));
+              if (!summary && spec.summary) summary = spec.summary;
+            }
+          }
+          if (resolvedMods.length === 0 && Object.keys(resolvedFlags).length === 0 && String(rawObj.type || '').toLowerCase() !== 'buff') {
+            return;
+          }
+          seenCandNames.add(nLower);
+          candidateTemplates.push({
+            id: rawObj.id || `buff_${nLower.replace(/[^a-z0-9]+/g, '_')}`,
+            schemaVersion: 2,
+            name: rawObj.name,
+            type: 'Buff',
+            source: rawObj.source || 'Spell',
+            active: true,
+            rounds: Number(rawObj.rounds) || 10,
+            durationText: rawObj.durationText || rawObj.duration || '1 min / CL',
+            summary: summary || 'V2 Spell/Buff Effect',
+            modifiers: resolvedMods,
+            ruleFlags: resolvedFlags
+          });
+        };
+
+        if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getDefaultBuffs === 'function') {
+          (RuleEngine.getDefaultBuffs() || []).forEach(addBuffCandidate);
+        }
+        if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+          masterDb.forEach(e => {
+            if (!e) return;
+            const t = String(e.type || e.category || '').toLowerCase();
+            if (t === 'buff' || t === 'spell') addBuffCandidate(e);
+          });
+        }
+        if (subQ && typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.search === 'function') {
+          (SrdCompendium.search(subQ, { type: 'Spell', limit: 8 }) || []).forEach(addBuffCandidate);
+        }
+
+        const combinedRows = [];
+        matchedBuffs.slice(0, 6).forEach(b => {
+          const idx = _spotlightTerminalItems.length;
+          _spotlightTerminalItems.push({ type: 'TOGGLE_BUFF', buffId: b.id, buffName: b.name, autocomplete: `buff: ${b.name}` });
+          combinedRows.push(`
+            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-pink-500/80' : 'bg-slate-900/50 border-slate-800'}">
+              <div>
+                <div class="text-xs font-bold text-white">${b.active ? '🟢' : '⚪'} ${_escTermHtml(b.name)}</div>
+                <div class="text-[11px] text-slate-400">${b.active ? 'Currently Active — Press Enter to deactivate' : 'Inactive — Press Enter to activate'}</div>
+              </div>
+              <span class="px-2 py-1 rounded bg-pink-950 text-pink-300 border border-pink-700 font-mono text-[10px] font-bold">Toggle ↵</span>
+            </div>
+          `);
+        });
+
+        candidateTemplates.slice(0, Math.max(0, 8 - combinedRows.length)).forEach(tpl => {
+          const idx = _spotlightTerminalItems.length;
+          _spotlightTerminalItems.push({ type: 'TOGGLE_BUFF', buffName: tpl.name, buffTemplate: tpl, autocomplete: `buff: ${tpl.name}` });
+          combinedRows.push(`
+            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-pink-500/80' : 'bg-slate-900/50 border-slate-800'}">
+              <div>
+                <div class="text-xs font-bold text-white">✨ Add &amp; Activate Buff: ${_escTermHtml(tpl.name)}</div>
+                <div class="text-[11px] text-slate-400 line-clamp-1">${_escTermHtml(tpl.summary || 'Canonical V2 Buff')}</div>
+              </div>
+              <span class="px-2 py-1 rounded bg-pink-950 text-pink-300 border border-pink-700 font-mono text-[10px] font-bold">Activate ↵</span>
+            </div>
+          `);
+        });
+
+        resultsEl.innerHTML = combinedRows.length > 0
+          ? combinedRows.join('')
+          : `<div class="p-3 text-slate-400 text-xs">No matching buff or buff-capable spell found for "${_escTermHtml(subQ)}".</div>`;
+        return;
+      }
+
+      if (parsedCmd && parsedCmd.cmd === 'stat') {
+        const sm = String(parsedCmd.arg || '').match(/^(str|dex|con|int|wis|cha)\s*([+-=]?\s*\d+)$/i);
+        if (!sm) {
+          resultsEl.innerHTML = `<div class="p-3 text-slate-400 text-xs">Syntax: <code class="text-lime-300">stat: str +2</code> or <code class="text-lime-300">stat: cha = 18</code></div>`;
+          return;
+        }
+        const abilKey = sm[1].toLowerCase();
+        const rawNumStr = sm[2].replace(/\s+/g, '');
+        const isSet = rawNumStr.startsWith('=') || (!rawNumStr.startsWith('+') && !rawNumStr.startsWith('-'));
+        const numVal = parseInt(rawNumStr.replace(/^=/, ''), 10) || 0;
+        _spotlightTerminalItems.push({
+          type: 'STAT_ADJUST',
+          ability: abilKey,
+          isSet,
+          value: numVal,
+          autocomplete: `stat: ${abilKey} ${rawNumStr}`
+        });
+        const curBase = Number(character?.baseAbilities?.[abilKey] ?? character?.abilities?.[abilKey] ?? 10);
+        const nextBase = isSet ? numVal : (curBase + numVal);
+        resultsEl.innerHTML = `
+          <div onclick="executeSpotlightTerminalItem(0)" class="p-3 rounded-xl bg-slate-900 border border-lime-500/80 flex items-center justify-between cursor-pointer">
+            <div>
+              <div class="text-xs font-bold text-white">💪 Adjust Base ${abilKey.toUpperCase()}: ${curBase} → <span class="text-lime-300">${nextBase}</span></div>
+              <div class="text-[11px] text-slate-400">Updates base ability score and recalculates all dependent D&amp;D 3.5e modifiers, saves, and AC.</div>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-lime-950 text-lime-300 border border-lime-700 font-mono text-xs font-bold">Apply ↵</span>
+          </div>
+        `;
+        return;
+      }
+
+      // Default Fallback: Fuzzy Feat & DM Boon Search across entire compendium
+      onSpotlightTerminalInput(`feat: ${q}`, true);
+    }
+
+    function executeSpotlightTerminalFeatAtLevel(itemIdx, overrideLevel, overrideSlotMode) {
+      const item = _spotlightTerminalItems[itemIdx];
+      if (!item || item.type !== 'ADD_LEVEL_FEAT') return;
+      item.level = overrideLevel;
+      item.slotMode = overrideSlotMode || 'Regular Feat';
+      executeSpotlightTerminalItem(itemIdx);
+    }
+
+    function executeSpotlightTerminalItem(idx = _spotlightTerminalActiveIndex) {
+      const item = _spotlightTerminalItems[idx];
+      if (!item) return;
+
+      if (item.type === 'ADD_LEVEL_FEAT') {
+        _pushTerminalUndoSnapshot(`Add ${item.feat.name} at Level ${item.level}`);
+        const lvlIdx = Math.max(0, (Number(item.level) || 1) - 1);
+        if (typeof activeQuickLevelIndex !== 'undefined') {
+          activeQuickLevelIndex = lvlIdx;
+        }
+        window.activeQuickLevelIndex = lvlIdx;
+        const catEl = document.getElementById('quick-feat-category');
+        if (catEl) catEl.value = item.slotMode || 'Regular Feat';
+        const benEl = document.getElementById('quick-feat-benefit');
+        if (benEl) benEl.value = item.feat.benefit || '';
+        if (typeof confirmQuickLevelFeat === 'function') {
+          confirmQuickLevelFeat(item.feat.name);
+        } else if (typeof learnFeatObject === 'function') {
+          learnFeatObject(item.feat);
+        }
+        if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+        if (typeof renderAll === 'function') renderAll();
+        toggleSpotlightTerminal(false);
+        return;
+      }
+
+      if (item.type === 'CREATE_INLINE_BOON' || item.type === 'ADD_BOON') {
+        const entry = item.entry;
+        _pushTerminalUndoSnapshot(`Add ${entry.name}`);
+        if (typeof learnFeatObject === 'function') {
+          learnFeatObject(entry);
+        }
+        if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+        if (typeof renderAll === 'function') renderAll();
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '⚡',
+            title: `${entry.name} Bound to Sheet`,
+            breakdown: `${entry.benefit || entry.description || 'V2.5 Lego Object active.'}`,
+            total: entry.action || 'ACTIVE'
+          });
+        }
+        toggleSpotlightTerminal(false);
+        return;
+      }
+
+      if (item.type === 'NEXT_ROUND') {
+        _pushTerminalUndoSnapshot('Advance Combat Round');
+        if (typeof advanceCombatRound === 'function') advanceCombatRound();
+        toggleSpotlightTerminal(false);
+        return;
+      }
+
+      if (item.type === 'USE_ABILITY') {
+        _pushTerminalUndoSnapshot(`Use ${item.ability?.name || 'Ability'}`);
+        if (typeof executeSpecialAttackAbilityRoll === 'function') {
+          executeSpecialAttackAbilityRoll(item.abilityIndex);
+        }
+        toggleSpotlightTerminal(false);
+        return;
+      }
+
+      if (item.type === 'HP_ADJUST') {
+        _pushTerminalUndoSnapshot(`HP ${item.delta} ${item.damageType || ''}`);
+        let finalDelta = item.delta;
+        let note = '';
+        if (finalDelta < 0 && item.damageType && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateLegoCharacter === 'function') {
+          const evalRes = RuleEngine.evaluateLegoCharacter(character);
+          if (typeof RuleEngine.applyIncomingDamage === 'function') {
+            const dmgOut = RuleEngine.applyIncomingDamage(evalRes, Math.abs(finalDelta), item.damageType);
+            finalDelta = dmgOut.finalDelta;
+            note = dmgOut.note || '';
+          }
+        }
+        if (character && character.hp) {
+          character.hp.current = Math.min(Number(character.hp.max) || 999, (Number(character.hp.current) || 0) + finalDelta);
+        }
+        if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+        if (typeof renderAll === 'function') renderAll();
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: finalDelta >= 0 ? '💚' : '🩸',
+            title: note || (finalDelta >= 0 ? `Healed +${finalDelta} HP` : `Took ${Math.abs(finalDelta)} Damage`),
+            breakdown: `Current HP: ${character?.hp?.current ?? 0} / ${character?.hp?.max ?? 0}`,
+            total: `${finalDelta >= 0 ? '+' : ''}${finalDelta} HP`
+          });
+        }
+        toggleSpotlightTerminal(false);
+        return;
+      }
+
+      if (item.type === 'EQUIP_ITEM') {
+        _pushTerminalUndoSnapshot(`Equip ${item.entry?.name || 'Item'}`);
+        if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.equipItemWithChildren === 'function') {
+          RuleMaster.equipItemWithChildren(item.entry);
+        } else if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.equipItem === 'function') {
+          RuleMaster.equipItem(item.entry);
+        }
+        toggleSpotlightTerminal(false);
+        return;
+      }
+
+      if (item.type === 'ADD_SPELL') {
+        const sp = item.entry;
+        _pushTerminalUndoSnapshot(`Learn Spell ${sp?.name || 'Spell'}`);
+        if (character) {
+          if (!Array.isArray(character.spells)) character.spells = [];
+          if (!character.spells.some(s => String(s.name || '').toLowerCase() === String(sp.name || '').toLowerCase())) {
+            character.spells.push({
+              id: sp.id || `spell_${Date.now()}`,
+              name: sp.name,
+              level: Number(sp.level ?? item.level ?? 1) || 1,
+              school: sp.school || 'Universal',
+              desc: sp.benefit || sp.description || '',
+              prepared: 1,
+              cast: 0
+            });
+          }
+        }
+        if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+        if (typeof renderAll === 'function') renderAll();
+        toggleSpotlightTerminal(false);
+        return;
+      }
+
+      if (item.type === 'TOGGLE_BUFF') {
+        _pushTerminalUndoSnapshot(`Toggle Buff ${item.buffName || ''}`);
+        if (character) {
+          if (!Array.isArray(character.buffs)) character.buffs = [];
+          let targetBuff = character.buffs.find(b => b && ((item.buffId && b.id === item.buffId) || String(b.name || '').toLowerCase() === String(item.buffName || '').toLowerCase()));
+          if (!targetBuff && item.buffTemplate) {
+            targetBuff = JSON.parse(JSON.stringify(item.buffTemplate));
+            targetBuff.active = true;
+            character.buffs.push(targetBuff);
+          } else if (targetBuff) {
+            targetBuff.active = !targetBuff.active;
+          }
+        }
+        if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+        if (typeof renderAll === 'function') renderAll();
+        toggleSpotlightTerminal(false);
+        return;
+      }
+
+      if (item.type === 'STAT_ADJUST') {
+        const k = item.ability;
+        _pushTerminalUndoSnapshot(`Stat ${k.toUpperCase()} ${item.isSet ? '=' : '+'}${item.value}`);
+        if (character) {
+          if (!character.baseAbilities) character.baseAbilities = Object.assign({ str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, character.abilities || {});
+          if (!character.abilities) character.abilities = Object.assign({}, character.baseAbilities);
+          const cur = Number(character.baseAbilities[k] ?? character.abilities[k] ?? 10);
+          const next = item.isSet ? item.value : (cur + item.value);
+          character.baseAbilities[k] = next;
+          character.abilities[k] = next;
+        }
+        if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+        if (typeof renderAll === 'function') renderAll();
+        toggleSpotlightTerminal(false);
+      }
+    }
+
+    function onSpotlightTerminalKeydown(e) {
+      if (!e) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        toggleSpotlightTerminal(false);
+        return;
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        undoLastTerminalAction();
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (_spotlightTerminalItems.length > 0) {
+          _spotlightTerminalActiveIndex = (_spotlightTerminalActiveIndex + 1) % _spotlightTerminalItems.length;
+        }
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (_spotlightTerminalItems.length > 0) {
+          _spotlightTerminalActiveIndex = (_spotlightTerminalActiveIndex - 1 + _spotlightTerminalItems.length) % _spotlightTerminalItems.length;
+        }
+        return;
+      }
+      if (e.key === 'Tab') {
+        const item = _spotlightTerminalItems[_spotlightTerminalActiveIndex];
+        if (item && item.autocomplete) {
+          e.preventDefault();
+          setSpotlightTerminalSample(item.autocomplete);
+        }
+        return;
+      }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        executeSpotlightTerminalItem(_spotlightTerminalActiveIndex);
+      }
+    }
+
+    if (typeof document !== 'undefined' && !window._spotlightTerminalKeyListenerBound) {
+      window._spotlightTerminalKeyListenerBound = true;
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          toggleSpotlightTerminal();
+          return;
+        }
+        const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
+        const isEditing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (e.target && e.target.isContentEditable);
+        if (!isEditing && e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          toggleSpotlightTerminal(true);
+        }
+      });
+    }
+
+    window.toggleSpotlightTerminal = toggleSpotlightTerminal;
+    window.onSpotlightTerminalInput = onSpotlightTerminalInput;
+    window.onSpotlightTerminalKeydown = onSpotlightTerminalKeydown;
+    window.setSpotlightTerminalSample = setSpotlightTerminalSample;
+    window.executeSpotlightTerminalItem = executeSpotlightTerminalItem;
+    window.executeSpotlightTerminalFeatAtLevel = executeSpotlightTerminalFeatAtLevel;
+    window.undoLastTerminalAction = undoLastTerminalAction;
+    window.undoLastTerminalCommand = undoLastTerminalAction;
+    window.parseSpotlightCommand = parseSpotlightCommand;
+    window.renderSpotlightTokenChips = renderSpotlightTokenChips;
+
 

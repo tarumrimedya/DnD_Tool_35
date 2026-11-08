@@ -5391,6 +5391,29 @@ CRITICAL RULES:
               </div>
             </div>
           </div>
+
+          <!-- DM Rule Pack Manager & Character-Aware Eligibility / Synergy Filter -->
+          <div id="hub-dm-pack-manager-panel" class="bg-slate-950/90 border border-amber-500/30 rounded-lg p-3 space-y-2 mt-2">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <div class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                <span>📦</span>
+                <span>DM Rule Pack Manager & Character Eligibility Filter</span>
+              </div>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <button type="button" onclick="document.getElementById('settings-json-file-input').click()" class="px-2 py-1 rounded bg-amber-950/80 hover:bg-amber-900 text-amber-200 border border-amber-700/60 text-[10px] font-bold cursor-pointer">📂 Import Rule Pack (.json)</button>
+                <select id="hub-pack-char-select" onchange="renderHubDmPackManager()" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[10px] font-bold text-slate-200"></select>
+                <select id="hub-pack-elig-filter" onchange="renderHubDmPackManager()" class="bg-slate-900 border border-amber-700/50 rounded px-2 py-1 text-[10px] font-bold text-amber-200">
+                  <option value="ALL">🎯 Eligibility: All</option>
+                  <option value="ELIGIBLE">✅ Eligible</option>
+                  <option value="SYNERGY_READY">✨ Synergy Ready</option>
+                  <option value="PREREQ_MISSING">🔒 Prereq Missing</option>
+                </select>
+              </div>
+            </div>
+            <div id="hub-dm-pack-summary" class="text-[10px] text-slate-400 font-mono">Import a `{ pack, entries: [...] }` JSON bundle or click Load DM Boons Pack to inspect character eligibility & synergy readiness.</div>
+            <div id="hub-dm-pack-entries-list" class="max-h-40 overflow-y-auto space-y-1 pr-1"></div>
+          </div>
+
           <input type="file" id="settings-json-file-input" accept=".json" onchange="handleJsonFileUpload(event)" class="hidden">
         </div>
 
@@ -5848,6 +5871,7 @@ CRITICAL RULES:
 
       // 3. Kampanya Kitapları Kısaltmalarını Doldur
       renderHubSplatbooks();
+      if (typeof renderHubDmPackManager === 'function') renderHubDmPackManager();
     }
 
     function closeSettingsModal() {
@@ -6147,6 +6171,143 @@ CRITICAL RULES:
       a.remove();
     }
 
+    function evaluateHubEntryEligibility(entry, charData) {
+      if (!entry || typeof entry !== 'object') return { eligible: true, status: 'ELIGIBLE' };
+      const req = entry.requires;
+      const catStr = String(entry.type || entry.category || entry.sourceCategory || '').toLowerCase().trim();
+      const isSynergy = Boolean(
+        entry.autoUnlock === true
+        || entry.isSynergy === true
+        || entry.isSynergyGrant === true
+        || catStr === 'synergy'
+      );
+      if (!req || (Array.isArray(req) && req.length === 0) || (typeof req === 'object' && Object.keys(req).length === 0)) {
+        return { eligible: true, status: 'ELIGIBLE' };
+      }
+      if (!charData) return { eligible: true, status: 'ELIGIBLE' };
+      const ownedSet = new Set();
+      const addToken = (tok) => {
+        if (!tok) return;
+        const norm = String(tok).toLowerCase().trim();
+        if (!norm) return;
+        ownedSet.add(norm);
+        ownedSet.add(norm.split(':').pop());
+      };
+      const collectArr = (arr) => {
+        if (!Array.isArray(arr)) return;
+        arr.forEach(x => {
+          if (!x) return;
+          if (typeof x === 'string') {
+            addToken(x);
+            addToken(`feat_${x.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`);
+          } else if (typeof x === 'object') {
+            if (x.id) addToken(x.id);
+            if (x.name) {
+              addToken(x.name);
+              addToken(`feat_${String(x.name).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`);
+            }
+          }
+        });
+      };
+      collectArr(charData.feats);
+      collectArr(charData.specialAbilities);
+      collectArr(charData.legoEntries);
+      collectArr(charData.classFeatures);
+      collectArr(charData.traits);
+      collectArr(charData.flaws);
+      const checkOwnedId = (id) => {
+        const norm = String(id || '').toLowerCase().trim();
+        if (!norm) return false;
+        return ownedSet.has(norm) || ownedSet.has(norm.split(':').pop());
+      };
+      const evalPred = (pred) => {
+        if (!pred) return true;
+        if (typeof pred === 'string') return checkOwnedId(pred);
+        if (typeof pred !== 'object') return true;
+        if (Array.isArray(pred.all)) return pred.all.every(evalPred);
+        if (Array.isArray(pred.any)) return pred.any.some(evalPred);
+        if (pred.not) return !evalPred(pred.not);
+        if (pred.has) {
+          const reqs = Array.isArray(pred.has) ? pred.has : [pred.has];
+          if (!reqs.every(checkOwnedId)) return false;
+        }
+        if (Array.isArray(pred.hasEntries)) {
+          if (!pred.hasEntries.every(checkOwnedId)) return false;
+        }
+        if (pred.hasEntry) {
+          if (!checkOwnedId(pred.hasEntry)) return false;
+        }
+        return true;
+      };
+      const ok = evalPred(req);
+      if (ok) {
+        return { eligible: true, status: isSynergy ? 'SYNERGY_READY' : 'ELIGIBLE' };
+      }
+      return { eligible: false, status: 'PREREQ_MISSING' };
+    }
+
+    function renderHubDmPackManager() {
+      const charSel = document.getElementById('hub-pack-char-select');
+      const filterSel = document.getElementById('hub-pack-elig-filter');
+      const summaryEl = document.getElementById('hub-dm-pack-summary');
+      const listEl = document.getElementById('hub-dm-pack-entries-list');
+      if (!charSel || !filterSel || !summaryEl || !listEl) return;
+
+      const escHtml = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      const chars = Array.isArray(state?.characters) ? state.characters : [];
+      const prevCharId = charSel.value;
+      charSel.innerHTML = chars.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.name || c.id)}</option>`).join('');
+      if (prevCharId && chars.some(c => c.id === prevCharId)) charSel.value = prevCharId;
+
+      const activeChar = chars.find(c => c.id === charSel.value) || chars[0] || null;
+      const charData = activeChar ? (activeChar.fullData || activeChar) : null;
+
+      const allEntriesMap = new Map();
+      chars.forEach(c => {
+        const db = Array.isArray(c?.fullData?.customDb) ? c.fullData.customDb : [];
+        db.forEach(e => {
+          if (e && (e.id || e.name)) allEntriesMap.set(String(e.id || e.name).toLowerCase(), e);
+        });
+      });
+      if (Array.isArray(window._hubLoadedPackEntries)) {
+        window._hubLoadedPackEntries.forEach(e => {
+          if (e && (e.id || e.name)) allEntriesMap.set(String(e.id || e.name).toLowerCase(), e);
+        });
+      }
+
+      const entries = Array.from(allEntriesMap.values());
+      const mode = filterSel.value || 'ALL';
+      let counts = { ELIGIBLE: 0, SYNERGY_READY: 0, PREREQ_MISSING: 0 };
+      const filtered = entries.filter(e => {
+        const res = evaluateHubEntryEligibility(e, charData);
+        counts[res.status] = (counts[res.status] || 0) + 1;
+        e._hubElig = res;
+        if (mode === 'ALL') return true;
+        if (mode === 'ELIGIBLE') return res.eligible;
+        return res.status === mode;
+      });
+
+      summaryEl.textContent = `Total Custom/Pack Entries: ${entries.length} • ✅ Eligible: ${counts.ELIGIBLE + counts.SYNERGY_READY} • ✨ Synergy Ready: ${counts.SYNERGY_READY} • 🔒 Prereq Missing: ${counts.PREREQ_MISSING}`;
+      if (filtered.length === 0) {
+        listEl.innerHTML = `<div class="text-[10px] text-slate-500 italic py-1">No entries match the current filter.</div>`;
+        return;
+      }
+      listEl.innerHTML = filtered.slice(0, 60).map(e => {
+        const st = e._hubElig?.status || 'ELIGIBLE';
+        const badge = st === 'SYNERGY_READY'
+          ? '<span class="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 text-[9px] font-bold">✨ Synergy Ready</span>'
+          : (st === 'PREREQ_MISSING'
+            ? '<span class="px-1.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800/60 text-[9px] font-bold">🔒 Prereq Missing</span>'
+            : '<span class="px-1.5 py-0.5 rounded bg-teal-950 text-teal-300 border border-teal-800/60 text-[9px] font-bold">✅ Eligible</span>');
+        const packStr = (typeof e.pack === 'object' && e.pack !== null) ? String(e.pack.id || e.pack.name || '') : String(e.pack || '');
+        const packBadge = packStr ? `<span class="px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800/60 text-[9px] font-mono">📦 ${escHtml(packStr)}</span>` : '';
+        return `<div class="flex items-center justify-between gap-2 bg-slate-900/80 border border-slate-800 rounded px-2 py-1 text-[10px]">
+          <div class="font-bold text-slate-200 truncate">${escHtml(e.name || e.id)}</div>
+          <div class="flex items-center gap-1 shrink-0">${packBadge}${badge}</div>
+        </div>`;
+      }).join('');
+    }
+
     function handleJsonFileUpload(event) {
       const file = event.target.files && event.target.files[0];
       if (!file) return;
@@ -6160,6 +6321,23 @@ CRITICAL RULES:
             saveHubStorage();
             renderHub();
             alert('✅ Full Hub backup bundle restored successfully!');
+          } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (Array.isArray(parsed.entries) || Array.isArray(parsed.customDb) || Array.isArray(parsed.masterDb))) {
+            const rawList = Array.isArray(parsed.entries) ? parsed.entries : (Array.isArray(parsed.customDb) ? parsed.customDb : parsed.masterDb);
+            const packId = (typeof parsed.pack === 'object' && parsed.pack !== null)
+              ? String(parsed.pack.id || parsed.pack.name || '')
+              : String(parsed.pack || parsed.packId || '');
+            const stamped = rawList.map(item => {
+              if (!item || typeof item !== 'object') return item;
+              const normPack = (typeof item.pack === 'object' && item.pack !== null)
+                ? String(item.pack.id || item.pack.name || '')
+                : String(item.pack || packId || '');
+              return normPack ? Object.assign({}, item, { pack: normPack }) : item;
+            });
+            window._hubLoadedPackEntries = stamped;
+            mergeEntriesIntoHubCharacters(stamped);
+            renderHub();
+            renderHubDmPackManager();
+            alert(`✅ Rule Pack${packId ? ' "' + packId + '"' : ''} merged into characters (${stamped.length} entries)!`);
           } else if (parsed.name && (parsed.stats || parsed.abilities || parsed.classes)) {
             const newChar = {
               id: parsed.id || ('char_' + Date.now()),
@@ -6177,9 +6355,10 @@ CRITICAL RULES:
             renderHub();
             alert(`✅ Character "${parsed.name}" imported successfully!`);
           } else if (Array.isArray(parsed)) {
-            if (parsed.length > 0 && parsed[0].benefit !== undefined) {
+            if (parsed.length > 0 && (parsed[0].benefit !== undefined || parsed[0].modifiers !== undefined || parsed[0].category !== undefined)) {
               mergeEntriesIntoHubCharacters(parsed);
               renderHub();
+              renderHubDmPackManager();
               alert(`✅ Custom DB library merged into characters (${parsed.length} entries)!`);
             } else {
               parsed.forEach(c => {

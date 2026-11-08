@@ -665,35 +665,105 @@ const RuleEngine = {
     return out;
   },
 
+  // Build normalized ownedIds Set (raw, lowercase, and unprefixed shortId) from existingOwnedIds or character arrays
+  buildCharacterOwnedIdsSet(character, existingOwnedIds = null) {
+    const ownedIds = new Set();
+    const addToken = (tok) => {
+      if (!tok) return;
+      const raw = String(tok).trim();
+      if (!raw) return;
+      const norm = raw.toLowerCase();
+      const shortId = norm.split(':').pop();
+      ownedIds.add(raw);
+      ownedIds.add(norm);
+      if (shortId) ownedIds.add(shortId);
+    };
+    if (existingOwnedIds && (existingOwnedIds instanceof Set ? existingOwnedIds.size > 0 : existingOwnedIds.length > 0)) {
+      const iter = existingOwnedIds instanceof Set ? existingOwnedIds : Array.from(existingOwnedIds);
+      iter.forEach(addToken);
+      return ownedIds;
+    }
+    const ch = character || {};
+    const scanArr = (arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(item => {
+        if (!item) return;
+        if (typeof item === 'string') {
+          addToken(item);
+          addToken(`feat_${item.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`);
+        } else if (typeof item === 'object') {
+          if (item.id) addToken(item.id);
+          if (item.baseItemId) addToken(item.baseItemId);
+          if (item.name) {
+            addToken(item.name);
+            addToken(`feat_${String(item.name).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}`);
+          }
+        }
+      });
+    };
+    scanArr(ch.feats);
+    scanArr(ch.specialAbilities);
+    scanArr(ch.legoEntries);
+    scanArr(ch.classFeatures);
+    scanArr(ch.traits);
+    scanArr(ch.flaws);
+    if (Array.isArray(ch.levelProgression)) {
+      ch.levelProgression.filter(r => r && r.active !== false).forEach(r => {
+        scanArr(r.feats);
+        scanArr(r.specialAbilities);
+      });
+    }
+    return ownedIds;
+  },
+
   // Evaluate structured V2.5 Predicate (when / requires) deterministically without regex guessing
   evaluatePredicate(predicate, character, context = {}) {
     if (!predicate) return true;
+    const ch = character || {};
+    const toggles = ch.activeToggles || context.toggles || {};
+    const ownedIds = this.buildCharacterOwnedIdsSet(ch, context.ownedIds);
+    const hasOwnedId = (id) => {
+      const raw = String(id || '').trim();
+      if (!raw) return false;
+      const norm = raw.toLowerCase();
+      const shortId = norm.split(':').pop();
+      return ownedIds.has(raw) || ownedIds.has(norm) || ownedIds.has(shortId);
+    };
+
     if (typeof predicate === 'string') {
       const tKey = predicate.toLowerCase().trim();
       if (!tKey) return true;
-      const toggles = (character && character.activeToggles) || context.toggles || {};
+      if (tKey in toggles) return toggles[tKey] !== false;
+      if (ownedIds.size > 0 && hasOwnedId(tKey)) return true;
       return toggles[tKey] !== false;
     }
     if (typeof predicate !== 'object') return true;
 
-    const ch = character || {};
-    const toggles = ch.activeToggles || context.toggles || {};
-    const ownedIds = context.ownedIds instanceof Set ? context.ownedIds : new Set(context.ownedIds || []);
+    const childCtx = Object.assign({}, context, { ownedIds });
 
     if (Array.isArray(predicate.all)) {
-      const ok = predicate.all.every(p => typeof p === 'string' ? ownedIds.has(p) : this.evaluatePredicate(p, ch, context));
+      const ok = predicate.all.every(p => typeof p === 'string' ? hasOwnedId(p) : this.evaluatePredicate(p, ch, childCtx));
       if (!ok) return false;
     }
     if (Array.isArray(predicate.any)) {
-      const ok = predicate.any.some(p => typeof p === 'string' ? ownedIds.has(p) : this.evaluatePredicate(p, ch, context));
+      const ok = predicate.any.some(p => typeof p === 'string' ? hasOwnedId(p) : this.evaluatePredicate(p, ch, childCtx));
       if (!ok) return false;
     }
     if (predicate.not) {
-      if (this.evaluatePredicate(predicate.not, ch, context)) return false;
+      const notMet = typeof predicate.not === 'string'
+        ? hasOwnedId(predicate.not)
+        : this.evaluatePredicate(predicate.not, ch, childCtx);
+      if (notMet) return false;
     }
     if (predicate.has) {
       const reqs = Array.isArray(predicate.has) ? predicate.has : [predicate.has];
-      if (!reqs.every(id => ownedIds.has(id))) return false;
+      if (!reqs.every(id => hasOwnedId(id))) return false;
+    }
+    if (Array.isArray(predicate.hasEntries)) {
+      if (!predicate.hasEntries.every(id => hasOwnedId(id))) return false;
+    }
+    if (predicate.hasEntry) {
+      if (!hasOwnedId(predicate.hasEntry)) return false;
     }
     if (predicate.toggle) {
       if (!toggles[predicate.toggle]) return false;
@@ -717,6 +787,41 @@ const RuleEngine = {
       if (bab < predicate.minBab) return false;
     }
     return true;
+  },
+
+  // Return list of missing requirement IDs/clauses for a V2.5 `requires` object
+  getMissingRequirements(requires, character, context = {}) {
+    if (!requires || typeof requires !== 'object') return [];
+    const ch = character || {};
+    const ownedIds = this.buildCharacterOwnedIdsSet(ch, context.ownedIds);
+    const hasOwnedId = (id) => {
+      const raw = String(id || '').trim();
+      if (!raw) return false;
+      const norm = raw.toLowerCase();
+      const shortId = norm.split(':').pop();
+      return ownedIds.has(raw) || ownedIds.has(norm) || ownedIds.has(shortId);
+    };
+    const missing = [];
+    if (Array.isArray(requires.all)) {
+      requires.all.forEach(p => {
+        if (typeof p === 'string') {
+          if (!hasOwnedId(p)) missing.push(p);
+        } else if (!this.evaluatePredicate(p, ch, Object.assign({}, context, { ownedIds }))) {
+          missing.push(JSON.stringify(p));
+        }
+      });
+    }
+    if (requires.has) {
+      const reqs = Array.isArray(requires.has) ? requires.has : [requires.has];
+      reqs.forEach(id => { if (!hasOwnedId(id)) missing.push(id); });
+    }
+    if (Array.isArray(requires.hasEntries)) {
+      requires.hasEntries.forEach(id => { if (!hasOwnedId(id)) missing.push(id); });
+    }
+    if (requires.hasEntry && !hasOwnedId(requires.hasEntry)) {
+      missing.push(requires.hasEntry);
+    }
+    return missing;
   },
 
   // Check if a target entity matches a ModifierEntryV2.selector filter
@@ -760,26 +865,137 @@ const RuleEngine = {
     return 1 + extra;
   },
 
-  // Single Unified V2.5 Composable Lego Evaluation Pipeline
-  // Stages: 1. Grants/Synergies -> 2. Selector Modifiers -> 3. Stat/Sub-Component Modifiers -> 4. Defenses -> 5. Resources -> 6. Modes
-  evaluateLegoCharacter(character, candidatePool = []) {
+  // Collect and deduplicate all V2.5 Composable Lego entries from a character (legoEntries, feats, specialAbilities, classFeatures, equipped items, active buffs)
+  collectLegoEntries(character) {
     const ch = character || {};
-    const baseEntries = Array.isArray(ch.legoEntries) ? ch.legoEntries : [];
-    const activeBuffEntries = Array.isArray(ch.activeLegoBuffs) ? ch.activeLegoBuffs : [];
-    const allInitial = [...baseEntries, ...activeBuffEntries].map(e => this.normalizeLegoEntry(e));
+    const collected = [];
+    const seenFullIds = new Set();
+    const seenNames = new Set();
+    const seenItemIds = new Set();
+    const seenBodySlotNames = new Set();
 
-    // Resolve House-Rule Overrides (Priority: Character-local > DM Pack > SRD)
-    const overriddenIds = new Set();
-    allInitial.forEach(e => {
-      if (e && e.overrides) {
-        overriddenIds.add(e.overrides);
-        overriddenIds.add(String(e.overrides).split(':').pop());
+    const addEntry = (raw, fallbackCategory = 'Feature', legoSource = 'legoEntries') => {
+      if (!raw) return;
+      let obj = raw;
+      if (typeof raw === 'string') {
+        if (typeof this.getMasterDbEntry === 'function') {
+          obj = this.getMasterDbEntry(raw, fallbackCategory);
+        }
+        if (!obj || typeof obj !== 'object') return;
+      } else if (typeof raw === 'object') {
+        const dbMatch = (typeof this.getMasterDbEntry === 'function')
+          ? (this.getMasterDbEntry(raw, fallbackCategory) || this.getMasterDbEntry(raw.id || raw.name, fallbackCategory))
+          : null;
+        if (dbMatch && typeof dbMatch === 'object') {
+          const merged = Object.assign({}, dbMatch, raw);
+          ['modifiers', 'defenses', 'resources', 'modes', 'grants', 'choices', 'damageParts'].forEach(k => {
+            if ((!Array.isArray(raw[k]) || raw[k].length === 0) && Array.isArray(dbMatch[k]) && dbMatch[k].length > 0) {
+              merged[k] = dbMatch[k];
+            }
+          });
+          if (!raw.id && dbMatch.id) merged.id = dbMatch.id;
+          if (!raw.requires && dbMatch.requires) merged.requires = dbMatch.requires;
+          if (!raw.overrides && dbMatch.overrides) merged.overrides = dbMatch.overrides;
+          obj = merged;
+        }
+      }
+      const norm = this.normalizeLegoEntry(obj);
+      if (!norm) return;
+      norm._legoSource = legoSource;
+      const fullId = String(norm.id || norm.baseItemId || norm.name || '').trim().toLowerCase();
+      const nameLower = String(norm.name || '').trim().toLowerCase();
+      if (fullId && seenFullIds.has(fullId)) return;
+      if (!fullId.includes(':') && nameLower && seenNames.has(nameLower) && !norm.overrides) return;
+      if (fullId) seenFullIds.add(fullId);
+      if (nameLower) seenNames.add(nameLower);
+      collected.push(norm);
+    };
+
+    const addItem = (rawItem, fromBodySlot = false) => {
+      if (!rawItem || typeof rawItem !== 'object') return;
+      const invId = String(rawItem.inventoryId || '').trim().toLowerCase();
+      const itemId = String(rawItem.id || '').trim().toLowerCase();
+      const nameKey = String(rawItem.name || '').trim().toLowerCase();
+      if (fromBodySlot) {
+        if (invId && seenItemIds.has(`inv:${invId}`)) return;
+        if (invId) seenItemIds.add(`inv:${invId}`);
+        if (itemId) seenItemIds.add(`id:${itemId}`);
+        if (nameKey) seenBodySlotNames.add(nameKey);
+      } else {
+        if (invId && seenItemIds.has(`inv:${invId}`)) return;
+        if (itemId && seenItemIds.has(`id:${itemId}`)) return;
+        if (nameKey && seenBodySlotNames.has(nameKey)) return;
+        if (invId) seenItemIds.add(`inv:${invId}`);
+        if (itemId) seenItemIds.add(`id:${itemId}`);
+        if (nameKey) seenBodySlotNames.add(nameKey);
+      }
+      const norm = this.normalizeLegoEntry(rawItem);
+      if (norm) {
+        norm._legoSource = fromBodySlot ? 'bodySlots' : 'inventory';
+        collected.push(norm);
+      }
+    };
+
+    (Array.isArray(ch.legoEntries) ? ch.legoEntries : []).forEach(e => addEntry(e, 'Feat', 'legoEntries'));
+    (Array.isArray(ch.feats) ? ch.feats : []).forEach(f => addEntry(f, 'Feat', 'feats'));
+    (Array.isArray(ch.specialAbilities) ? ch.specialAbilities : []).forEach(a => addEntry(a, 'Special Ability', 'specialAbilities'));
+    (Array.isArray(ch.classFeatures) ? ch.classFeatures : []).forEach(cf => addEntry(cf, 'Class Feature', 'classFeatures'));
+
+    Object.values(ch.bodySlots || {}).forEach(slotItem => {
+      if (slotItem && typeof slotItem === 'object' && slotItem.active !== false && slotItem.equipped !== false) {
+        addItem(slotItem, true);
       }
     });
-    const activeEntries = allInitial.filter(e => {
-      if (!e) return false;
-      const shortId = String(e.id || '').split(':').pop();
-      if ((overriddenIds.has(e.id) || overriddenIds.has(shortId)) && !e.overrides) return false;
+    const invItems = (Array.isArray(ch.inventory) ? ch.inventory : []).concat(Array.isArray(ch.gearPool) ? ch.gearPool : []);
+    invItems.forEach(item => {
+      if (item && typeof item === 'object' && (item.equipped || item.isEquipped)) {
+        addItem(item, false);
+      }
+    });
+
+    (Array.isArray(ch.activeLegoBuffs) ? ch.activeLegoBuffs : []).forEach(b => {
+      if (b && typeof b === 'object' && b.active !== false) addEntry(b, 'Buff', 'activeLegoBuffs');
+    });
+    (Array.isArray(ch.buffs) ? ch.buffs : []).forEach(b => {
+      if (b && typeof b === 'object' && Boolean(b.active)) addEntry(b, 'Buff', 'buffs');
+    });
+
+    return collected;
+  },
+
+  // Single Unified V2.5 Composable Lego Evaluation Pipeline
+  // Stages: 1. Grants/Synergies -> 2. Selector Modifiers -> 3. Stat/Sub-Component Modifiers -> 4. Defenses -> 5. Resources -> 6. Modes
+  evaluateLegoCharacter(character, candidatePool = [], options = {}) {
+    const ch = character || {};
+    const allInitial = this.collectLegoEntries(ch);
+
+    // Resolve House-Rule Overrides (Priority: Character-local > DM Pack > SRD; supports chained overrides Pack B -> Pack A -> SRD)
+    const isOverriddenBy = (target, overrider) => {
+      if (!target || !overrider || !overrider.overrides || target === overrider) return false;
+      const ov = String(overrider.overrides).trim().toLowerCase();
+      const tId = String(target.id || '').trim().toLowerCase();
+      const tSlug = String(target.name || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+      if (!ov) return false;
+      if (tId && tId === ov) return true;
+      if (ov.startsWith('srd:') && !tId.includes(':')) {
+        const ovShort = ov.split(':').pop();
+        if (tId === ovShort || tSlug === ovShort) return true;
+      }
+      return false;
+    };
+    const nonOverridden = allInitial.filter(target => {
+      if (!target) return false;
+      return !allInitial.some(other => isOverriddenBy(target, other));
+    });
+    // Final deduplication among surviving non-overridden entries: if both an SRD/unprefixed entry and its exact same-ID copy exist, keep first
+    const seenActiveKeys = new Set();
+    const activeEntries = nonOverridden.filter(e => {
+      const fullId = String(e.id || '').trim().toLowerCase();
+      const shortId = fullId.split(':').pop();
+      const hasNs = fullId.includes(':');
+      const key = hasNs ? fullId : (shortId || String(e.name || '').trim().toLowerCase());
+      if (key && seenActiveKeys.has(key)) return false;
+      if (key) seenActiveKeys.add(key);
       return true;
     });
 
@@ -797,30 +1013,21 @@ const RuleEngine = {
     const grantedCapabilities = { spellsAtWill: [], proficiencies: [], senses: [], movements: [], unlockedEntities: [] };
     const poolNormalized = Array.isArray(candidatePool) ? candidatePool.map(p => this.normalizeLegoEntry(p)) : [];
 
-    // Check candidate pool entries that auto-unlock via requires/grants synergy
-    poolNormalized.forEach(cand => {
-      if (!cand || ownedIds.has(cand.id) || ownedIds.has(String(cand.id).split(':').pop())) return;
-      if (cand.requires && (cand.requires.all || cand.requires.any || cand.requires.has)) {
-        if (this.evaluatePredicate(cand.requires, ch, ctx)) {
-          activeEntries.push(cand);
-          ownedIds.add(cand.id);
-          ownedIds.add(String(cand.id).split(':').pop());
-          grantedCapabilities.unlockedEntities.push(cand.id);
-        }
-      }
-    });
-
-    activeEntries.forEach(e => {
+    // First process embedded grants (which may unlock entities needed by candidatePool requires predicates)
+    activeEntries.slice().forEach(e => {
       (e.grants || []).forEach(g => {
         if (!this.evaluatePredicate(g.requires, ch, ctx)) return;
         if (g.grantType === 'entity' && g.targetId && !ownedIds.has(g.targetId)) {
           const found = poolNormalized.find(p => p.id === g.targetId || String(p.id).split(':').pop() === g.targetId);
           if (found) {
-            activeEntries.push(found);
-            ownedIds.add(found.id);
-            grantedCapabilities.unlockedEntities.push(found.id);
+            const unlocked = Object.assign({}, found, { _autoUnlocked: true });
+            activeEntries.push(unlocked);
+            ownedIds.add(unlocked.id);
+            ownedIds.add(String(unlocked.id).split(':').pop());
+            grantedCapabilities.unlockedEntities.push(unlocked.id);
           } else {
             ownedIds.add(g.targetId);
+            ownedIds.add(String(g.targetId).split(':').pop());
             grantedCapabilities.unlockedEntities.push(g.targetId);
           }
         } else if (g.grantType === 'spell_at_will') {
@@ -835,18 +1042,44 @@ const RuleEngine = {
       });
     });
 
+    // Check candidate pool entries that auto-unlock via requires/grants synergy
+    poolNormalized.forEach(cand => {
+      if (!cand || ownedIds.has(cand.id) || ownedIds.has(String(cand.id).split(':').pop())) return;
+      if (cand.requires && (cand.requires.all || cand.requires.any || cand.requires.has)) {
+        if (this.evaluatePredicate(cand.requires, ch, ctx)) {
+          const unlocked = Object.assign({}, cand, { _autoUnlocked: true });
+          activeEntries.push(unlocked);
+          ownedIds.add(unlocked.id);
+          ownedIds.add(String(unlocked.id).split(':').pop());
+          grantedCapabilities.unlockedEntities.push(unlocked.id);
+        }
+      }
+    });
+
     // Deep-clone entries before Stage 2 selector mutations so base catalog objects are never mutated in place
     const workingEntries = activeEntries.map(e => JSON.parse(JSON.stringify(e)));
+
+    const getStacks = (e) => (e && e.stacks !== undefined && e.stacks !== null && e.stacks !== '' && !Number.isNaN(Number(e.stacks))) ? Number(e.stacks) : 1;
+    const getInvested = (e) => (e && e.invested !== undefined && e.invested !== null && e.invested !== '' && !Number.isNaN(Number(e.invested))) ? Number(e.invested) : 0;
 
     // Collect all active modifiers (from top-level and passive modes)
     const allModifiers = [];
     workingEntries.forEach(e => {
       const selfCtx = Object.assign({}, ctx, {
-        self: { stacks: Number(e.stacks) || 1, invested: Number(e.invested) || 0 }
+        self: { stacks: getStacks(e), invested: getInvested(e) }
       });
       (e.modifiers || []).forEach(m => {
         if (this.evaluatePredicate(m.when || m.condition, ch, selfCtx)) {
           allModifiers.push({ mod: m, sourceEntry: e, selfCtx });
+        }
+      });
+      (e.modes || []).forEach(mode => {
+        if (mode && (String(mode.actionType || '').toLowerCase() === 'passive' || mode.isPassive)) {
+          (mode.modifiers || []).forEach(m => {
+            if (this.evaluatePredicate(m.when || m.condition, ch, selfCtx)) {
+              allModifiers.push({ mod: m, sourceEntry: e, selfCtx });
+            }
+          });
         }
       });
     });
@@ -913,12 +1146,22 @@ const RuleEngine = {
     const refreshedStatMods = [];
     workingEntries.forEach(e => {
       const selfCtx = Object.assign({}, ctx, {
-        self: { stacks: Number(e.stacks) || 1, invested: Number(e.invested) || 0 }
+        self: { stacks: getStacks(e), invested: getInvested(e) }
       });
       (e.modifiers || []).forEach(m => {
         if (m.selector || String(m.target || '').startsWith('entity.')) return;
         if (this.evaluatePredicate(m.when || m.condition, ch, selfCtx)) {
           refreshedStatMods.push({ mod: m, sourceEntry: e, selfCtx });
+        }
+      });
+      (e.modes || []).forEach(mode => {
+        if (mode && (String(mode.actionType || '').toLowerCase() === 'passive' || mode.isPassive)) {
+          (mode.modifiers || []).forEach(m => {
+            if (m.selector || String(m.target || '').startsWith('entity.')) return;
+            if (this.evaluatePredicate(m.when || m.condition, ch, selfCtx)) {
+              refreshedStatMods.push({ mod: m, sourceEntry: e, selfCtx });
+            }
+          });
         }
       });
     });
@@ -970,8 +1213,14 @@ const RuleEngine = {
 
     const evaluatedAbilities = {};
     abilityKeys.forEach(k => {
-      const typedSum = Object.values(abilityTotals[k].typed).reduce((a, b) => a + b, 0);
-      const score = abilityTotals[k].base + typedSum + abilityTotals[k].untyped;
+      let score;
+      if (options && options.precomputedAbilities && options.precomputedAbilities[k] !== undefined) {
+        const pre = options.precomputedAbilities[k];
+        score = typeof pre === 'object' ? Number(pre.score ?? pre.total ?? pre.base ?? 10) : Number(pre);
+      } else {
+        const typedSum = Object.values(abilityTotals[k].typed).reduce((a, b) => a + b, 0);
+        score = abilityTotals[k].base + typedSum + abilityTotals[k].untyped;
+      }
       const modVal = this.getAbilityMod(score);
       evaluatedAbilities[k] = { score, mod: modVal };
       ctx[`${k}Mod`] = modVal;
@@ -1005,11 +1254,11 @@ const RuleEngine = {
         return;
       }
       if (t === 'spell.damageMultiplier') {
-        multipliers.spellDamage += v;
+        multipliers.spellDamage += (op === 'multiply' && v > 1) ? (v - 1) : v;
         return;
       }
       if (t === 'healing.receivedMultiplier') {
-        multipliers.healingReceived += v;
+        multipliers.healingReceived += (op === 'multiply' && v > 1) ? (v - 1) : v;
         return;
       }
       if (t === 'size.effective') {
@@ -1025,6 +1274,11 @@ const RuleEngine = {
       if (op === 'replace' || op === 'max' || op === 'set') {
         replacements[t] = replacements[t] || [];
         replacements[t].push({ op, value: Math.floor(v), source: sourceEntry.name, affects: mod.affects || null });
+        return;
+      }
+      if (/^(?:save\.(?:fort|ref|will)|ac)\.abilitymod$/i.test(t) && op === 'add') {
+        replacements[t] = replacements[t] || [];
+        replacements[t].push({ op: 'add', value: Math.floor(v), source: sourceEntry.name, affects: mod.affects || null });
         return;
       }
 
@@ -1057,10 +1311,15 @@ const RuleEngine = {
     // Resolve Sub-Component Ability Modifiers (e.g. save.will.abilityMod, save.ref.abilityMod, ac.abilityMod)
     const resolveSubComponentMod = (slotKey, defaultMod) => {
       const cands = replacements[slotKey];
-      if (!cands || cands.length === 0) return defaultMod;
-      const forced = cands.filter(c => c.op === 'replace' || c.op === 'set');
-      if (forced.length > 0) return Math.max(...forced.map(f => f.value));
-      return Math.max(defaultMod, ...cands.map(c => c.value));
+      const addSum = (cands || []).filter(c => c.op === 'add').reduce((acc, c) => acc + c.value, 0);
+      const nonAdd = (cands || []).filter(c => c.op !== 'add');
+      let baseVal = defaultMod;
+      if (nonAdd.length > 0) {
+        const forced = nonAdd.filter(c => c.op === 'replace' || c.op === 'set');
+        if (forced.length > 0) baseVal = Math.max(...forced.map(f => f.value));
+        else baseVal = Math.max(defaultMod, ...nonAdd.map(c => c.value));
+      }
+      return baseVal + addSum;
     };
 
     const fortAbiMod = resolveSubComponentMod('save.fort.abilityMod', evaluatedAbilities.con.mod);
@@ -1072,7 +1331,12 @@ const RuleEngine = {
     const saves = {
       fort: (Number(baseSaves.fort) || 0) + fortAbiMod + sumBucket('save.fort'),
       ref: (Number(baseSaves.ref) || 0) + refAbiMod + sumBucket('save.ref'),
-      will: (Number(baseSaves.will) || 0) + willAbiMod + sumBucket('save.will')
+      will: (Number(baseSaves.will) || 0) + willAbiMod + sumBucket('save.will'),
+      abilityMods: {
+        fort: fortAbiMod,
+        ref: refAbiMod,
+        will: willAbiMod
+      }
     };
 
     // Resolve Armor Class (Normal, Touch, Flat-Footed) & AC Replacement (e.g. Perform Dance check = AC)
@@ -1122,7 +1386,7 @@ const RuleEngine = {
         intMod: evaluatedAbilities.int.mod,
         wisMod: evaluatedAbilities.wis.mod,
         chaMod: evaluatedAbilities.cha.mod,
-        self: { stacks: Number(e.stacks) || 1, invested: Number(e.invested) || 0 }
+        self: { stacks: getStacks(e), invested: getInvested(e) }
       });
       (e.defenses || []).forEach(d => {
         if (!this.evaluatePredicate(d.when, ch, selfCtx)) return;
@@ -1147,7 +1411,12 @@ const RuleEngine = {
         } else if (d.kind === 'fortification') {
           defenses.fortification = Math.max(defenses.fortification, val);
         } else if (d.kind === 'absorption') {
-          defenses.absorptions[tgt] = Math.max(defenses.absorptions[tgt] || 0, Number(d.healRatio ?? 1));
+          const ratio = (d.healRatio !== undefined || d.ratio !== undefined || d.value !== undefined)
+            ? Number(d.healRatio ?? d.ratio ?? d.value)
+            : null;
+          if (ratio !== null && Number.isFinite(ratio)) {
+            defenses.absorptions[tgt] = Math.max(defenses.absorptions[tgt] || 0, ratio);
+          }
         }
       });
     });
@@ -1181,7 +1450,7 @@ const RuleEngine = {
         intMod: evaluatedAbilities.int.mod,
         wisMod: evaluatedAbilities.wis.mod,
         chaMod: evaluatedAbilities.cha.mod,
-        self: { stacks: Number(e.stacks) || 1, invested: Number(e.invested) || 0 }
+        self: { stacks: getStacks(e), invested: getInvested(e) }
       });
 
       (e.modes || []).forEach(m => {
@@ -1225,7 +1494,7 @@ const RuleEngine = {
     return {
       abilities: evaluatedAbilities,
       saves,
-      ac: { normal: normalAc, touch: touchAc, flatFooted: flatFootedAc, naturalArmor: natArmorBonus },
+      ac: { normal: normalAc, touch: touchAc, flatFooted: flatFootedAc, naturalArmor: natArmorBonus, abilityMod: acAbiMod, replacements: acReplaces },
       hpBonus: sumBucket('hp'),
       speedLandBonus: sumBucket('speed.land'),
       defenses: {
@@ -1249,6 +1518,92 @@ const RuleEngine = {
       grantedCapabilities,
       modes: evaluatedModes,
       entries: workingEntries
+    };
+  },
+
+  // D&D 3.5e RAW Incoming Damage Mitigation Pipeline (Immunity -> Vulnerability +50% -> Resistance / DR -> Elemental Absorption)
+  applyIncomingDamage(evalResOrChar, amount, damageType, bypassTypes = []) {
+    const incoming = Math.max(0, Math.floor(Number(amount) || 0));
+    const dKey = String(damageType || 'physical').trim().toLowerCase();
+    const evalRes = (evalResOrChar && evalResOrChar.defenses)
+      ? evalResOrChar
+      : this.evaluateLegoCharacter(evalResOrChar || {});
+    const defs = evalRes.defenses || {};
+    const immunities = Array.isArray(defs.immunities) ? defs.immunities : [];
+    const vulnerabilities = Array.isArray(defs.vulnerabilities) ? defs.vulnerabilities : [];
+    const resistances = defs.resistances || {};
+    const absorptions = defs.absorptions || defs.absorption || {};
+    const drList = Array.isArray(defs.dr) ? defs.dr : [];
+
+    // 1. Immunity check
+    if (dKey && immunities.includes(dKey)) {
+      return {
+        incoming,
+        damageType: dKey,
+        finalDelta: 0,
+        taken: 0,
+        healed: 0,
+        note: `Immune to ${damageType} (0 dmg)`
+      };
+    }
+
+    // 2. Absorption check (converts incoming damage of matching type into healing according to explicit ratio)
+    const rawAbsorb = dKey ? absorptions[dKey] : undefined;
+    const absorbRatio = typeof rawAbsorb === 'number'
+      ? rawAbsorb
+      : (rawAbsorb && typeof rawAbsorb === 'object' ? Number(rawAbsorb.healRatio ?? rawAbsorb.ratio ?? rawAbsorb.value) : null);
+    if (absorbRatio !== null && Number.isFinite(absorbRatio) && absorbRatio > 0) {
+      const healed = Math.floor(incoming * absorbRatio);
+      return {
+        incoming,
+        damageType: dKey,
+        finalDelta: healed,
+        taken: 0,
+        healed,
+        note: `Absorbed ${damageType} (+${healed} HP)`
+      };
+    }
+
+    // 3. Vulnerability (+50% damage before resistance per 3.5e RAW)
+    let dmg = incoming;
+    const isVulnerable = Boolean(dKey && vulnerabilities.includes(dKey));
+    if (isVulnerable) {
+      dmg = Math.floor(dmg * 1.5);
+    }
+
+    // 4. Energy Resistance or Physical DR
+    let mitigatedBy = 0;
+    const isPhysical = !dKey || ['physical', 'slashing', 'piercing', 'bludgeoning'].includes(dKey);
+    if (!isPhysical && resistances[dKey] > 0) {
+      mitigatedBy = Number(resistances[dKey]) || 0;
+    } else if (isPhysical && drList.length > 0) {
+      const bypassSet = new Set((Array.isArray(bypassTypes) ? bypassTypes : [bypassTypes]).map(b => String(b || '').toLowerCase().trim()));
+      let bestDr = 0;
+      drList.forEach(dr => {
+        const bp = String(dr.bypass || '-').toLowerCase().trim();
+        const isBypassed = bp !== '-' && bp !== '' && bp !== 'none' && bypassSet.has(bp);
+        if (!isBypassed && Number(dr.value) > bestDr) bestDr = Number(dr.value);
+      });
+      mitigatedBy = bestDr;
+    }
+
+    const taken = Math.max(0, dmg - mitigatedBy);
+    let note = '';
+    if (isVulnerable && mitigatedBy > 0) {
+      note = `Vulnerable (+50% -> ${dmg}) & Resisted ${mitigatedBy} ${damageType} (${taken} taken)`;
+    } else if (isVulnerable) {
+      note = `Vulnerable to ${damageType} (${taken} taken)`;
+    } else if (mitigatedBy > 0) {
+      note = `Resisted ${mitigatedBy} ${damageType || 'Physical'} (${taken} taken)`;
+    }
+
+    return {
+      incoming,
+      damageType: dKey,
+      finalDelta: -taken,
+      taken,
+      healed: 0,
+      note
     };
   },
 
@@ -1381,7 +1736,10 @@ const RuleEngine = {
       }
     });
 
-    return { nodes: Array.from(nodes), edges };
+    const nodeList = Array.from(nodes);
+    const boundUiTargets = nodeList.filter(n => n !== (norm.id || norm.name));
+    const links = edges.map(e => ({ widget: e.to, detail: e.effect, from: e.from }));
+    return { nodes: nodeList, edges, boundUiTargets, links };
   },
 
   // Phase 3: Local Two-Tier Lego Pattern Matcher (matches input text against curated lego_patterns.json skeletons)
@@ -3978,7 +4336,72 @@ const RuleEngine = {
     const charLvl = Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.filter(l => l.active !== false).length : 1) || 1;
     const bab = Number(character.bab) || 0;
     const chaModForCtx = this.getAbilityMod(character.abilities?.cha || character.baseAbilities?.cha || 10);
-    const evalContext = { cl: charLvl, level: charLvl, bab, chaMod: chaModForCtx };
+    const evalContext = this.buildFormulaContext(character, { cl: charLvl, level: charLvl, bab, chaMod: chaModForCtx });
+
+    const resolveStacks = (val) => (val !== undefined && val !== null && val !== '' && !Number.isNaN(Number(val))) ? Number(val) : 1;
+
+    // V2.5 Unified Composable Lego Evaluation Pre-Pass (Synergy Auto-Unlocks, Entity Selector Mutations, Defenses, Resources, Modes)
+    const rawPool = Array.isArray(masterDb) && masterDb.length > 0 ? masterDb : (Array.isArray(character.customDb) ? character.customDb : []);
+    const explicitGrantTargetIds = new Set();
+    const scanExplicitGrants = (arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(item => {
+        if (!item || typeof item !== 'object' || !Array.isArray(item.grants)) return;
+        item.grants.forEach(g => {
+          if (g && g.grantType === 'entity' && g.targetId) {
+            const tid = String(g.targetId).toLowerCase().trim();
+            explicitGrantTargetIds.add(tid);
+            explicitGrantTargetIds.add(tid.split(':').pop());
+          }
+        });
+      });
+    };
+    scanExplicitGrants(character.feats);
+    scanExplicitGrants(character.specialAbilities);
+    scanExplicitGrants(character.legoEntries);
+    scanExplicitGrants(character.classFeatures);
+
+    const candidatePool = rawPool.filter(e => {
+      if (!e || typeof e !== 'object') return false;
+      const eid = String(e.id || '').toLowerCase().trim();
+      const eshort = eid.split(':').pop();
+      if (eid && (explicitGrantTargetIds.has(eid) || (eshort && explicitGrantTargetIds.has(eshort)))) {
+        return true;
+      }
+      if (!e.requires) return false;
+      const catStr = String(e.type || e.category || e.sourceCategory || '').toLowerCase().trim();
+      return Boolean(
+        e.autoUnlock === true
+        || e.isSynergy === true
+        || e.isSynergyGrant === true
+        || catStr === 'synergy'
+      );
+    });
+    let legoEval = this.evaluateLegoCharacter(character, candidatePool);
+    character.legoEvaluation = legoEval;
+    character.evaluatedDefenses = legoEval.defenses;
+    character.evaluatedResources = legoEval.resources;
+    character.evaluatedModes = legoEval.modes;
+    character.grantedCapabilities = legoEval.grantedCapabilities;
+
+    const mutatedLegoMap = new Map();
+    const activeLegoIdSet = new Set();
+    const activeLegoNameSet = new Set();
+    (legoEval.entries || []).forEach(le => {
+      if (!le) return;
+      if (le.id) {
+        activeLegoIdSet.add(String(le.id).toLowerCase());
+        activeLegoIdSet.add(String(le.id).toLowerCase().split(':').pop());
+      }
+      if (le.name) activeLegoNameSet.add(String(le.name).toLowerCase().trim());
+      if (le._mutated || (Array.isArray(le.modifiers) && le.modifiers.length > 0)) {
+        if (le.id) {
+          mutatedLegoMap.set(String(le.id).toLowerCase(), le);
+          mutatedLegoMap.set(String(le.id).toLowerCase().split(':').pop(), le);
+        }
+        if (le.name) mutatedLegoMap.set(String(le.name).toLowerCase().trim(), le);
+      }
+    });
 
     // 1. Ensure Base Abilities
     if (!character.baseAbilities) {
@@ -4065,10 +4488,18 @@ const RuleEngine = {
       modifiers.forEach(mod => {
         if (!mod || !mod.target) return;
         const target = String(mod.target).trim().toLowerCase();
+        if (mod.selector || target.startsWith('entity.')) return;
+        const modWhen = mod.when || (mod.condition && typeof mod.condition === 'object' ? mod.condition : null);
+        if (modWhen && !this.evaluatePredicate(modWhen, character, ctx)) return;
         const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
         const rawExpr = hasFormula ? mod.formula : mod.value;
-        const val = Number(this.evaluateFormula(rawExpr, ctx)) || Number(mod.value) || 0;
+        let val = Number(this.evaluateFormula(rawExpr, ctx)) || Number(mod.value) || 0;
+        if (mod.cap !== undefined && mod.cap !== null && mod.cap !== '') {
+          const capVal = Number(this.evaluateFormula(mod.cap, ctx));
+          if (!Number.isNaN(capVal)) val = Math.min(val, capVal);
+        }
         if (val === 0) return;
+        const strCondition = (typeof mod.condition === 'string' && mod.condition.trim()) ? mod.condition.trim() : null;
 
         const mType = String(mod.type || (val < 0 ? 'penalty' : 'untyped')).trim();
         const mTypeLower = mType.toLowerCase();
@@ -4083,6 +4514,9 @@ const RuleEngine = {
 
         // Armor Class (both `ac.*` and `ac` / `armor` / `shield` / `natural` / `deflection` / `dodge`)
         const acSub = target.startsWith('ac.') ? target.slice(3) : target;
+        if (acSub === 'abilitymod' || acSub === 'base' || acSub === 'total') {
+          return;
+        }
         if (target === 'ac' || target.startsWith('ac.') || ['armor', 'shield', 'natural', 'deflection', 'dodge'].includes(acSub)) {
           if (sourceCategory === 'feat' && (acSub === 'shield' || mTypeLower === 'shield')) {
             const baseShield = shieldBonuses.find(b => (b.type || '').toLowerCase() === 'shield');
@@ -4108,7 +4542,7 @@ const RuleEngine = {
               return;
             }
           }
-          if (mod.condition) {
+          if (strCondition) {
             const acTypeLabel = acSub === 'deflection' || mTypeLower === 'deflection'
               ? 'Deflection'
               : (acSub === 'dodge' || mTypeLower === 'dodge'
@@ -4122,7 +4556,7 @@ const RuleEngine = {
               target: 'AC',
               val,
               type: acTypeLabel,
-              condition: String(mod.condition).trim(),
+              condition: strCondition,
               source: sourceName
             });
             return;
@@ -4151,12 +4585,12 @@ const RuleEngine = {
         // Saving Throws (`save.all`, `saves.all`, `save.fort`, `fort`, etc.)
         const saveSub = target.replace(/^saves?\./, '');
         if (saveSub === 'all' || target === 'saves' || target === 'all_saves' || saveSub === 'fort' || saveSub === 'ref' || saveSub === 'will') {
-          if (mod.condition) {
+          if (strCondition) {
             conditionalSaveBonuses.push({
               target: saveSub === 'all' || target === 'saves' || target === 'all_saves' ? 'All Saves' : saveSub.toUpperCase(),
               val,
               type: mType.charAt(0).toUpperCase() + mType.slice(1),
-              condition: String(mod.condition).trim(),
+              condition: strCondition,
               source: sourceName
             });
             return;
@@ -4299,11 +4733,24 @@ const RuleEngine = {
     }
 
     // 3. Collect Active Buffs & Debuffs / Conditions (Canonical V2 modifiers & ruleFlags)
-    character.buffs.forEach(rawBuff => {
-      if (!rawBuff || !rawBuff.active) return;
+    const processedLegoSourceIds = new Set();
+    const processedLegoSourceNames = new Set();
+    const combinedBuffList = [
+      ...(Array.isArray(character.buffs) ? character.buffs.filter(b => Boolean(b && b.active)) : []),
+      ...(Array.isArray(character.activeLegoBuffs)
+        ? character.activeLegoBuffs.filter(lb => lb && lb.active !== false && !character.buffs.some(b => b && (b.id === lb.id || (b.name && lb.name && b.name.toLowerCase() === lb.name.toLowerCase()))))
+        : [])
+    ];
+    combinedBuffList.forEach(rawBuff => {
+      if (!rawBuff) return;
       const buff = this.ensureV2Entry(rawBuff);
+      if (buff.id) {
+        processedLegoSourceIds.add(String(buff.id).toLowerCase());
+        processedLegoSourceIds.add(String(buff.id).toLowerCase().split(':').pop());
+      }
+      if (buff.name) processedLegoSourceNames.add(String(buff.name).toLowerCase().trim());
       const buffCl = Number(buff.casterLevel || buff.cl || charLvl) || charLvl;
-      const buffCtx = { ...evalContext, cl: buffCl };
+      const buffCtx = { ...evalContext, cl: buffCl, self: { stacks: resolveStacks(rawBuff.stacks !== undefined ? rawBuff.stacks : buff.stacks), invested: Number(buff.invested) || 0 } };
 
       // Auto-hydrate V2 modifiers & ruleFlags from canonical spell spec if missing or using legacy static/off-by-one formulas on a scaling or ward spell buff
       const isScalingSpellBuff = /^(divine favor|barkskin|shield of faith|conviction|mass conviction|conviction, mass|magic vestment|greater magic weapon|magic weapon, greater|greater magic fang|magic fang, greater)$/i.test(String(buff.name || '').trim());
@@ -4429,11 +4876,23 @@ const RuleEngine = {
       const cleanName = stripFeatTag(rawName);
       if (inactiveOnlyFeatSet.has(cleanName)) return;
       const dbEntry = this.getMasterDbEntry(featObj) || this.getMasterDbEntry(cleanName);
+      const fIdLower = String(featObj.id || dbEntry?.id || '').toLowerCase();
+      if (fIdLower) {
+        processedLegoSourceIds.add(fIdLower);
+        processedLegoSourceIds.add(fIdLower.split(':').pop());
+      }
+      processedLegoSourceNames.add(cleanName);
+      processedLegoSourceNames.add(rawName.toLowerCase());
 
-      // Apply V2 modifiers from feat object or compendium entry
-      let featMods = (Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0)
-        ? featObj.modifiers
-        : (dbEntry && Array.isArray(dbEntry.modifiers) ? dbEntry.modifiers : []);
+      // Check if Stage-2 Lego entity mutation modified this entry's modifiers
+      const mutatedEntry = (fIdLower && (mutatedLegoMap.get(fIdLower) || mutatedLegoMap.get(fIdLower.split(':').pop()))) || mutatedLegoMap.get(cleanName);
+
+      // Apply V2 modifiers from mutated Lego entry, feat object, or compendium entry
+      let featMods = (mutatedEntry && Array.isArray(mutatedEntry.modifiers) && mutatedEntry.modifiers.length > 0)
+        ? mutatedEntry.modifiers
+        : ((Array.isArray(featObj.modifiers) && featObj.modifiers.length > 0)
+          ? featObj.modifiers
+          : (dbEntry && Array.isArray(dbEntry.modifiers) ? dbEntry.modifiers : []));
 
       // Auto-hydrate legacy DM Boon entries (e.g. "DM Boon: HP +20", "DM Boon: Ride +4", "DM Boon: Natural Armor AC (+2 (+1/4 Lvl))") if saved without V2 modifiers or missing scaling formula
       const needsScalingFormulaHydration = (cleanName.includes('boon') || cleanName.includes('grant') || String(featObj.category || '').toLowerCase().includes('boon'))
@@ -4467,7 +4926,9 @@ const RuleEngine = {
       const modsToApply = (cleanName === 'toughness' && activeProgRows.length > 0)
         ? featMods.filter(m => !m || !['hp', 'hp.max'].includes(String(m.target || '').toLowerCase()))
         : featMods;
-      applyV2Modifiers(modsToApply, rawName, 'feat', evalContext);
+      const rawStacksVal = featObj.stacks !== undefined ? featObj.stacks : mutatedEntry?.stacks;
+      const featSelfCtx = { ...evalContext, self: { stacks: resolveStacks(rawStacksVal), invested: Number(featObj.invested || mutatedEntry?.invested) || 0 } };
+      applyV2Modifiers(modsToApply, rawName, 'feat', featSelfCtx);
 
       const rf = { ...(dbEntry?.ruleFlags || {}), ...(featObj.ruleFlags || {}) };
       const featTextLower = `${cleanName} ${featObj.benefit || featObj.description || dbEntry?.benefit || dbEntry?.description || ''}`.toLowerCase();
@@ -4536,6 +4997,45 @@ const RuleEngine = {
       }
     });
 
+    // 3.6. Apply remaining V2.5 Lego entries (`character.legoEntries`, `classFeatures`, and Stage-1 `_autoUnlocked` synergies) not already processed above
+    Object.values(character.bodySlots || {}).forEach(s => {
+      if (s && s.active !== false) {
+        if (s.id) {
+          processedLegoSourceIds.add(String(s.id).toLowerCase());
+          processedLegoSourceIds.add(String(s.id).toLowerCase().split(':').pop());
+        }
+        if (s.name) processedLegoSourceNames.add(String(s.name).toLowerCase().trim());
+      }
+    });
+    (legoEval.entries || []).forEach(le => {
+      if (!le) return;
+      if (le._legoSource !== 'legoEntries' && le._legoSource !== 'classFeatures' && le._autoUnlocked !== true) {
+        return;
+      }
+      const leId = String(le.id || '').toLowerCase();
+      const leShort = leId.split(':').pop();
+      const leName = stripFeatTag(le.name || '');
+      if ((leId && (processedLegoSourceIds.has(leId) || (leShort && processedLegoSourceIds.has(leShort)))) || (leName && processedLegoSourceNames.has(leName))) {
+        return;
+      }
+      if (leId) {
+        processedLegoSourceIds.add(leId);
+        if (leShort) processedLegoSourceIds.add(leShort);
+      }
+      if (leName) processedLegoSourceNames.add(leName);
+      const leStacks = (le.stacks !== undefined && le.stacks !== null && le.stacks !== '' && !Number.isNaN(Number(le.stacks))) ? Number(le.stacks) : 1;
+      const leInvested = (le.invested !== undefined && le.invested !== null && le.invested !== '' && !Number.isNaN(Number(le.invested))) ? Number(le.invested) : 0;
+      const leCtx = { ...evalContext, self: { stacks: leStacks, invested: leInvested } };
+      if (Array.isArray(le.modifiers) && le.modifiers.length > 0) {
+        applyV2Modifiers(le.modifiers, le.name || le.id || 'Lego Entry', 'feat', leCtx);
+      }
+      (le.modes || []).forEach(mode => {
+        if (mode && (String(mode.actionType || '').toLowerCase() === 'passive' || mode.isPassive) && Array.isArray(mode.modifiers) && mode.modifiers.length > 0) {
+          applyV2Modifiers(mode.modifiers, le.name || le.id || 'Lego Entry', 'feat', leCtx);
+        }
+      });
+    });
+
     // 3.8. Collect Slotless or Wondrous Gear Pool Items (e.g. Stone of Good Luck, Pale Green Ioun Stone)
     if (Array.isArray(character.gearPool)) {
       character.gearPool.forEach(rawItem => {
@@ -4544,7 +5044,7 @@ const RuleEngine = {
         const dbEntry = this.getMasterDbEntry(item);
         const isSlotless = (item.slot || dbEntry?.slot || '').toLowerCase().includes('slotless')
           || (item.category || '').toLowerCase() === 'other';
-        if (!item.isEquipped && !isSlotless) return;
+        if (!item.isEquipped && !item.equipped && !isSlotless) return;
 
         const itemMods = (Array.isArray(item.modifiers) && item.modifiers.length > 0)
           ? item.modifiers
@@ -4703,6 +5203,14 @@ const RuleEngine = {
       character.abilities[stat] = base + netBonus;
     });
 
+    // BL2: Re-evaluate V2.5 Lego pipeline with post-Step-4 final abilities so abilityMod substitutions (Force of Personality, Canny Defense, etc.) use item/buff-modified ability scores
+    legoEval = this.evaluateLegoCharacter(character, candidatePool, { precomputedAbilities: character.abilities });
+    character.legoEvaluation = legoEval;
+    character.evaluatedDefenses = legoEval.defenses;
+    character.evaluatedResources = legoEval.resources;
+    character.evaluatedModes = legoEval.modes;
+    character.grantedCapabilities = legoEval.grantedCapabilities;
+
     // 4.5. Resolve Dynamic Hit Points (HP) based on Constitution Changes, Feats/Boons, Flaws, and Debuff Penalties
     const charFeatNames = [
       ...(character.feats || [])
@@ -4798,8 +5306,18 @@ const RuleEngine = {
     const baseAC = 10;
     const sizeBonus = character.acBreakdown?.size || 0;
 
-    const totalAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + effectiveDex + effectiveDodge - totalPenalty;
-    const touchAC = baseAC + (hasShieldWard ? effectiveShield : 0) + effectiveDeflection + sizeBonus + effectiveDex + effectiveDodge - totalPenalty;
+    // Reconcile V2.5 `ac.abilityMod` sub-component bonus / substitution (e.g. Canny Defense, Monk/Swordsage AC Bonus)
+    let legoAcAbilityDelta = 0;
+    const hasLegoAcAbiMod = (legoEval.entries || []).some(e =>
+      (e.modifiers || []).concat((e.modes || []).filter(m => m && (m.actionType === 'passive' || m.isPassive)).flatMap(m => m.modifiers || []))
+        .some(m => m && String(m.target || '').toLowerCase() === 'ac.abilitymod')
+    );
+    if (hasLegoAcAbiMod && legoEval.ac && typeof legoEval.ac.abilityMod === 'number') {
+      legoAcAbilityDelta = Math.max(0, legoEval.ac.abilityMod - fullDexMod);
+    }
+
+    let totalAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + effectiveDex + legoAcAbilityDelta + effectiveDodge;
+    let touchAC = baseAC + (hasShieldWard ? effectiveShield : 0) + effectiveDeflection + sizeBonus + effectiveDex + legoAcAbilityDelta + effectiveDodge;
 
     // Flat-footed AC (RAW: retain negative Dex penalty even when flat-footed; retain Dex & Dodge if Uncanny Dodge unless immobilized/helpless)
     const hasUncannyDodge = !conditionEffectiveDexZero && (
@@ -4807,9 +5325,30 @@ const RuleEngine = {
       (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : a.name).toLowerCase().includes('uncanny dodge')) ||
       (character.buffs || []).some(b => b && b.active && b.ruleFlags?.uncannyDodge)
     );
-    const flatDex = hasUncannyDodge ? effectiveDex : Math.min(0, fullDexMod);
+    const flatDex = hasUncannyDodge ? (effectiveDex + legoAcAbilityDelta) : Math.min(0, fullDexMod);
     const flatDodge = hasUncannyDodge ? effectiveDodge : 0;
-    const flatAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + flatDex + flatDodge - totalPenalty;
+    let flatAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + flatDex + flatDodge;
+
+    // BL1: Reconcile V2.5 `ac.base` / `ac.total` replacements BEFORE subtracting totalPenalty, respecting `rep.affects`
+    if (legoEval.ac && Array.isArray(legoEval.ac.replacements) && legoEval.ac.replacements.length > 0) {
+      legoEval.ac.replacements.forEach(rep => {
+        const aff = Array.isArray(rep.affects) ? rep.affects : ['normal', 'touch', 'flatFooted'];
+        const v = Number(rep.value) || 0;
+        if (rep.op === 'replace' || rep.op === 'set') {
+          if (aff.includes('normal')) totalAC = v;
+          if (aff.includes('touch')) touchAC = v;
+          if (aff.includes('flatFooted')) flatAC = v;
+        } else if (rep.op === 'max') {
+          if (aff.includes('normal')) totalAC = Math.max(totalAC, v);
+          if (aff.includes('touch')) touchAC = Math.max(touchAC, v);
+          if (aff.includes('flatFooted')) flatAC = Math.max(flatAC, v);
+        }
+      });
+    }
+
+    totalAC -= totalPenalty;
+    touchAC -= totalPenalty;
+    flatAC -= totalPenalty;
 
     character.acBreakdown = {
       armor: effectiveArmor,
@@ -4825,6 +5364,7 @@ const RuleEngine = {
       total: totalAC,
       touch: touchAC,
       flat: flatAC,
+      flatFooted: flatAC,
       armorCategory: equippedArmorCategory,
       loseDexToAC: conditionLoseDexToAC,
       effectiveDexZero: conditionEffectiveDexZero,
@@ -4894,10 +5434,23 @@ const RuleEngine = {
       hasSteadfastDetermination = true;
     }
 
-    const willStatMod = hasSteadfastDetermination ? conMod : wisMod;
+    const hasLegoSaveAbiMod = (saveKey) => (legoEval.entries || []).some(e =>
+      (e.modifiers || []).concat((e.modes || []).filter(m => m && (m.actionType === 'passive' || m.isPassive)).flatMap(m => m.modifiers || []))
+        .some(m => m && String(m.target || '').toLowerCase() === `save.${saveKey}.abilitymod`)
+    );
 
-    const finalFort = baseFort + conMod + netBonusFort;
-    const finalRef = baseRef + dexMod + netBonusRef;
+    const fortStatMod = (hasLegoSaveAbiMod('fort') && legoEval.saves?.abilityMods?.fort !== undefined)
+      ? legoEval.saves.abilityMods.fort
+      : conMod;
+    const refStatMod = (hasLegoSaveAbiMod('ref') && legoEval.saves?.abilityMods?.ref !== undefined)
+      ? legoEval.saves.abilityMods.ref
+      : dexMod;
+    const willStatMod = (hasLegoSaveAbiMod('will') && legoEval.saves?.abilityMods?.will !== undefined)
+      ? legoEval.saves.abilityMods.will
+      : (hasSteadfastDetermination ? conMod : wisMod);
+
+    const finalFort = baseFort + fortStatMod + netBonusFort;
+    const finalRef = baseRef + refStatMod + netBonusRef;
     const finalWill = baseWill + willStatMod + netBonusWill;
 
     character.evaluatedSaves = {
@@ -4915,8 +5468,8 @@ const RuleEngine = {
 
     if (!character.isNpc) {
       if (!character.saves || typeof character.saves !== 'object') character.saves = {};
-      character.saves.fort = { ...(character.saves.fort || {}), base: baseFort, ability: conMod, magic: resistBonus, misc: netBonusFort - resistBonus, total: finalFort };
-      character.saves.ref = { ...(character.saves.ref || {}), base: baseRef, ability: dexMod, magic: resistBonus, misc: netBonusRef - resistBonus, total: finalRef };
+      character.saves.fort = { ...(character.saves.fort || {}), base: baseFort, ability: fortStatMod, magic: resistBonus, misc: netBonusFort - resistBonus, total: finalFort };
+      character.saves.ref = { ...(character.saves.ref || {}), base: baseRef, ability: refStatMod, magic: resistBonus, misc: netBonusRef - resistBonus, total: finalRef };
       character.saves.will = { ...(character.saves.will || {}), base: baseWill, ability: willStatMod, abilityKey: hasSteadfastDetermination ? 'con' : 'wis', magic: resistBonus, misc: netBonusWill - resistBonus, total: finalWill };
     } else if (character.saves) {
       if (character.saves.fort?.total !== undefined) character.evaluatedSaves.fort = character.saves.fort.total;

@@ -1,0 +1,4228 @@
+{
+  "schemaVersion": 2,
+  "pack": {
+    "id": "pack_dm_draconic_boons",
+    "name": "DM Draconic Path, Synergies & 83 Lesser Boons",
+    "author": "Dungeon Master",
+    "version": "2.5.0",
+    "totalEntries": 107,
+    "draconicPathCount": 24,
+    "lesserBoonsCount": 83
+  },
+  "entries": [
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_draconic_nat_ac",
+      "name": "Draconic Natural Armor (2 + 1/4 Lvl)",
+      "type": "DM Boon",
+      "source": "DM Boon Sheet (A5)",
+      "benefit": "Natural Armor bonus equal to 2 + 1 per 4 character levels.",
+      "description": "Grants a scaling Natural Armor bonus of 2 + floor(Character Level / 4).",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ac.natural",
+          "op": "add",
+          "formula": "2 + floor(@level / 4)",
+          "type": "Natural Armor"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "natural_armor",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon"
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_breath_weapon_acid",
+      "name": "Dragon Breath Weapon (Acid)",
+      "type": "Special Ability",
+      "source": "DM Boon Sheet (A11)",
+      "benefit": "Move Action: 60 ft. Acid Breath deals 4d8 Acid damage (Reflex DC 10 + Level + CON mod half; recharge 1d4+1 rounds).",
+      "description": "Exhale a 60-foot line of acid as a Move Action (DM Override), dealing 4d8 Acid damage. Reflex save (DC 10 + Level + CON modifier) for half damage. Recharges in 1d4+1 rounds.",
+      "action": "Move Action",
+      "actionType": "move",
+      "range": "60 ft.",
+      "save": "Reflex half",
+      "dcFormula": "10 + @level + @conMod",
+      "recharge": "1d4+1 rounds",
+      "rechargeDice": "1d4+1",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [
+        {
+          "id": "res_dragon_breath_cd",
+          "name": "Breath Weapon Recharge",
+          "kind": "consume",
+          "maxFormula": 1,
+          "recharge": {
+            "period": "rounds",
+            "dice": "1d4+1"
+          }
+        }
+      ],
+      "damageParts": [
+        {
+          "dice": "4d8",
+          "bonus": 0,
+          "type": "Acid",
+          "multiplyOnCrit": false,
+          "onCritOnly": false,
+          "source": "Dragon Breath"
+        }
+      ],
+      "modes": [
+        {
+          "id": "breath_acid_move",
+          "name": "Acid Breath (Move)",
+          "actionType": "move",
+          "area": "60 ft. line",
+          "resourceCost": [
+            {
+              "resourceId": "res_dragon_breath_cd",
+              "amount": 1
+            }
+          ],
+          "save": {
+            "type": "Reflex",
+            "dcFormula": "10 + @level + @conMod",
+            "onSave": "half"
+          },
+          "damageParts": [
+            {
+              "dice": "4d8",
+              "bonus": 0,
+              "type": "Acid",
+              "multiplyOnCrit": false,
+              "onCritOnly": false,
+              "source": "Dragon Breath"
+            }
+          ],
+          "modifiers": [],
+          "defenses": []
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "breath_weapon",
+        "draconic",
+        "acid",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon"
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_acid_resist_scaling",
+      "name": "Draconic Acid Resistance (Lvl x 2)",
+      "type": "DM Boon",
+      "source": "DM Boon Sheet (A32)",
+      "benefit": "Acid Resistance equal to Character Level x 2.",
+      "description": "Grants Acid Resistance equal to twice your character level.",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "resistance",
+          "target": "acid",
+          "formula": "@level * 2"
+        }
+      ],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "acid",
+        "resistance",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon"
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_draconic_toughness",
+      "name": "Draconic Toughness (+Lvl HP)",
+      "type": "DM Boon",
+      "source": "DM Boon Sheet (A62)",
+      "benefit": "Gain bonus Hit Points equal to your Character Level.",
+      "description": "Your draconic resilience grants +1 hit point per character level.",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "hp",
+          "op": "add",
+          "formula": "@level",
+          "type": "Untyped"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "hp",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon"
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_draconic_core",
+      "name": "Draconic Core (1 hr/day)",
+      "type": "DM Boon",
+      "source": "DM Boon Sheet (A41)",
+      "benefit": "1 hour/day: Gain Acid Immunity and deal 2x Breath Weapon damage.",
+      "description": "Once per day for 1 hour, you gain full immunity to Acid and your Breath Weapon deals double damage (x2).",
+      "action": "Standard Action",
+      "actionType": "standard",
+      "modifiers": [
+        {
+          "target": "entity.damageMultiplier",
+          "selector": {
+            "tag": "breath_weapon"
+          },
+          "op": "multiply",
+          "value": 2,
+          "when": {
+            "toggle": "draconic_core_active"
+          }
+        }
+      ],
+      "defenses": [
+        {
+          "kind": "immunity",
+          "target": "acid",
+          "when": {
+            "toggle": "draconic_core_active"
+          }
+        }
+      ],
+      "resources": [
+        {
+          "id": "res_draconic_core",
+          "name": "Draconic Core (1 hr/day)",
+          "kind": "consume",
+          "maxFormula": 1,
+          "recharge": {
+            "period": "day"
+          }
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "acid",
+        "breath_weapon",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon"
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_master_of_deferment",
+      "name": "Master of Deferment",
+      "type": "DM Boon",
+      "source": "DM Boon Sheet (A83)",
+      "benefit": "Postponed Fate (Immediate, 1/hr): Delay a failed emotion/mind/condition save effect by 3 rounds. Eyes of the Oracle (Immediate, 1/hr): Intervene as a readied action after seeing an enemy action.",
+      "description": "Postponed Fate (Immediate Action, 1/hour): When you fail a save against emotion control, mind control, or a condition (Blind, Slowed, etc.), delay the effect for 3 rounds. Eyes of the Oracle (1/hour): React to an enemy action as if you had readied an action.",
+      "action": "Immediate Action",
+      "actionType": "immediate",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [
+        {
+          "id": "res_postponed_fate",
+          "name": "Postponed Fate (1/hr)",
+          "kind": "consume",
+          "maxFormula": 1,
+          "recharge": {
+            "period": "hour"
+          }
+        },
+        {
+          "id": "res_eyes_of_oracle",
+          "name": "Eyes of the Oracle (1/hr)",
+          "kind": "consume",
+          "maxFormula": 1,
+          "recharge": {
+            "period": "hour"
+          }
+        }
+      ],
+      "damageParts": [],
+      "modes": [
+        {
+          "id": "postponed_fate",
+          "name": "Postponed Fate (Delay 3 Rds)",
+          "actionType": "immediate",
+          "reactsTo": "save_failed",
+          "resourceCost": [
+            {
+              "resourceId": "res_postponed_fate",
+              "amount": 1
+            }
+          ],
+          "spawnsBuff": {
+            "id": "timer_postponed_fate",
+            "name": "Postponed Fate (Delayed Condition)",
+            "durationRounds": 3,
+            "note": "Failed save effect takes effect when this 3-round countdown expires."
+          },
+          "damageParts": [],
+          "modifiers": []
+        },
+        {
+          "id": "eyes_of_oracle",
+          "name": "Eyes of the Oracle (Retroactive Ready)",
+          "actionType": "immediate",
+          "reactsTo": "turn_start",
+          "resourceCost": [
+            {
+              "resourceId": "res_eyes_of_oracle",
+              "amount": 1
+            }
+          ],
+          "damageParts": [],
+          "modifiers": []
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "immediate",
+        "reaction",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon"
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_draconic_counter",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Draconic Counter",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Magic)",
+      "benefit": "Sacrifice a spell: Counterspell as Greater Dispel + Sacrificed spell's Level. If countered, caster takes 5 mental damage for each spell level dispelled this way",
+      "description": "Sacrifice a spell: Counterspell as Greater Dispel + Sacrificed spell's Level. If countered, caster takes 5 mental damage for each spell level dispelled this way",
+      "action": "Readied Action",
+      "actionType": "standard",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [
+        {
+          "id": "draconic_counterspell",
+          "name": "Draconic Counterspell",
+          "actionType": "standard",
+          "inputs": [
+            {
+              "id": "spellLevel",
+              "label": "Sacrificed Spell Level",
+              "type": "int",
+              "min": 1,
+              "max": 9,
+              "default": 3
+            }
+          ],
+          "damageParts": [
+            {
+              "dice": "0d0",
+              "bonus": 15,
+              "type": "Mental",
+              "source": "Draconic Counter (5/Spell Lvl)"
+            }
+          ]
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "draconic_path",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_perfect_casting",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Perfect Casting",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Magic)",
+      "benefit": "Gain +10 (sacred) to concentration checks for spellcasting. Your Spells are harder to counter or dispel (gain +5 DC vs counter and dispel)",
+      "description": "Gain +10 (sacred) to concentration checks for spellcasting. Your Spells are harder to counter or dispel (gain +5 DC vs counter and dispel)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "skill.concentration",
+          "op": "add",
+          "value": 10,
+          "type": "Sacred",
+          "sourceLabel": "Perfect Casting"
+        },
+        {
+          "target": "entity.dispelDcBonus",
+          "selector": {
+            "type": "Spell"
+          },
+          "op": "add",
+          "value": 5,
+          "type": "Untyped",
+          "sourceLabel": "Perfect Casting"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "draconic_path",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_rune_affinity",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Rune Affinity",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Magic)",
+      "benefit": "Gain +10 (sacred) to identify, activate item/rune, use magic device checks",
+      "description": "Gain +10 (sacred) to identify, activate item/rune, use magic device checks",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "skill.use_magic_device",
+          "op": "add",
+          "value": 10,
+          "type": "Sacred",
+          "sourceLabel": "Rune Affinity"
+        },
+        {
+          "target": "skill.spellcraft",
+          "op": "add",
+          "value": 10,
+          "type": "Sacred",
+          "sourceLabel": "Rune Affinity"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "draconic_path",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_control_arcane",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Control Arcane (Synergy: Draconic Counter + Perfect Casting)",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Draconic Counter + Perfect Casting)",
+      "benefit": "When counter a spell with draconic counter, instead of counter the spell, you may choose a new target for the spell",
+      "description": "When counter a spell with draconic counter, instead of counter the spell, you may choose a new target for the spell",
+      "action": "Passive",
+      "actionType": "passive",
+      "requires": {
+        "all": [
+          "boon_draconic_counter",
+          "boon_perfect_casting"
+        ],
+        "feats": [
+          "Draconic Counter",
+          "Perfect Casting"
+        ]
+      },
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "synergy",
+        "dm_boon"
+      ],
+      "sourceCategory": "Synergy",
+      "autoUnlock": true,
+      "isSynergy": true
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_devour_rune",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Devour Rune (Synergy: Draconic Counter + Rune Affinity)",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Draconic Counter + Rune Affinity)",
+      "benefit": "Devour a magic item's daily usage & gain that many spell slot back OR Destroy a rune/glyph (d20+10+caster level+cha mod vs DC) if succeed also gain that many spell slot back",
+      "description": "Devour a magic item's daily usage & gain that many spell slot back OR Destroy a rune/glyph (d20+10+caster level+cha mod vs DC) if succeed also gain that many spell slot back",
+      "action": "Full-Round Action",
+      "actionType": "full_round",
+      "requires": {
+        "all": [
+          "boon_draconic_counter",
+          "boon_rune_affinity"
+        ],
+        "feats": [
+          "Draconic Counter",
+          "Rune Affinity"
+        ]
+      },
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "synergy",
+        "dm_boon"
+      ],
+      "sourceCategory": "Synergy",
+      "autoUnlock": true,
+      "isSynergy": true
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_rune_control",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Rune Control (Synergy: Perfect Casting + Rune Affinity)",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Perfect Casting + Rune Affinity)",
+      "benefit": "When use a magic item, you use them with half charge OR use full charge and add a metamagic effect that you know on the spell. Spells you cast from items DC is either item's DC+2 OR 10+Level/2+Cha Mod+4 (whichever is higher)",
+      "description": "When use a magic item, you use them with half charge OR use full charge and add a metamagic effect that you know on the spell. Spells you cast from items DC is either item's DC+2 OR 10+Level/2+Cha Mod+4 (whichever is higher)",
+      "action": "Passive",
+      "actionType": "passive",
+      "requires": {
+        "all": [
+          "boon_perfect_casting",
+          "boon_rune_affinity"
+        ],
+        "feats": [
+          "Perfect Casting",
+          "Rune Affinity"
+        ]
+      },
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "synergy",
+        "dm_boon"
+      ],
+      "sourceCategory": "Synergy",
+      "autoUnlock": true,
+      "isSynergy": true
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_absorb_magic",
+      "name": "Absorb Magic",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Path (A77)",
+      "benefit": "Immediate Action: +2 Competence save vs targeted spell. If saved, gain 10 Temp HP per spell level (EONT) and inflict Slowed (Ref), Sickened (Fort), or Confused (Will) on caster.",
+      "description": "Gain +2 competence bonus on saves vs a spell that targets you. If saved, gain 10 temporary HP for each spell level dispelled this way (EONT). Caster of the saved spell gets (EONT): if Reflex spell: Slowed; if Fort spell: Sickened; if Will spell: Confused.",
+      "action": "Immediate Action",
+      "actionType": "immediate",
+      "modifiers": [
+        {
+          "target": "save.all",
+          "op": "add",
+          "value": 2,
+          "type": "Competence",
+          "when": {
+            "toggle": "vs_targeted_spell"
+          }
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [
+        {
+          "id": "absorb_spell_save",
+          "name": "Absorb Saved Spell (Temp HP)",
+          "actionType": "immediate",
+          "reactsTo": "on_spell_targeted",
+          "inputs": [
+            {
+              "id": "spellLevel",
+              "label": "Saved Spell Level",
+              "type": "int",
+              "min": 1,
+              "max": 9,
+              "default": 3
+            }
+          ],
+          "spawnsBuff": {
+            "id": "buff_absorb_magic_temp_hp",
+            "name": "Absorb Magic (EONT)",
+            "durationRounds": 1,
+            "tempHpFormula": "10 * @input.spellLevel",
+            "modifiers": [],
+            "defenses": []
+          },
+          "damageParts": [],
+          "modifiers": []
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "defence_path",
+        "immediate",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon"
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_elemental_accustomed",
+      "name": "Elemental Accustomed",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Path (A89)",
+      "benefit": "Full Acid Immunity. In Marsh/Bog/Swamp: ignore difficult terrain, +10 Outdoorsman & Stealth, +3 Natural Armor, and DR 3/-.",
+      "description": "Gain full immunity to ancestral element (Acid). Ancestral terrain (Marsh, Bog, Swamp) is favored terrain: ignore difficult terrain, gain +10 Outdoorsman and Stealth, +3 Natural Armor, and DR 3/-.",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ac.natural",
+          "op": "add",
+          "value": 3,
+          "type": "Untyped",
+          "when": {
+            "terrain": [
+              "marsh",
+              "bog",
+              "swamp"
+            ]
+          }
+        }
+      ],
+      "defenses": [
+        {
+          "kind": "immunity",
+          "target": "acid"
+        },
+        {
+          "kind": "dr",
+          "target": "physical",
+          "value": 3,
+          "bypass": "-",
+          "when": {
+            "terrain": [
+              "marsh",
+              "bog",
+              "swamp"
+            ]
+          }
+        }
+      ],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "defence_path",
+        "acid",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon"
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_draconic_scales",
+      "name": "Draconic Scales",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Path",
+      "benefit": "Standard Action (1/day for 1 min): Gain DR (Level + floor(Level/4))/magic.",
+      "description": "Once per day as a Standard Action for 1 minute, gain Damage Reduction equal to Level + Level/4 bypassed by magic.",
+      "action": "Standard Action",
+      "actionType": "standard",
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "dr",
+          "target": "physical",
+          "formula": "@level + floor(@level / 4)",
+          "bypass": "magic",
+          "when": {
+            "toggle": "draconic_scales_active"
+          }
+        }
+      ],
+      "resources": [
+        {
+          "id": "res_draconic_scales",
+          "name": "Draconic Scales (1/day)",
+          "kind": "consume",
+          "maxFormula": 1,
+          "recharge": {
+            "period": "day"
+          }
+        }
+      ],
+      "damageParts": [],
+      "modes": [
+        {
+          "id": "activate_scales",
+          "name": "Activate Draconic Scales (10 Rds)",
+          "actionType": "standard",
+          "resourceCost": [
+            {
+              "resourceId": "res_draconic_scales",
+              "amount": 1
+            }
+          ],
+          "spawnsBuff": {
+            "id": "buff_draconic_scales",
+            "name": "Draconic Scales (Active)",
+            "durationRounds": 10,
+            "defenses": [
+              {
+                "kind": "dr",
+                "target": "physical",
+                "formula": "@level + floor(@level / 4)",
+                "bypass": "magic"
+              }
+            ]
+          },
+          "damageParts": [],
+          "modifiers": []
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "defence_path",
+        "dr",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon"
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_arcane_shield",
+      "name": "Arcane Shield (Synergy: Absorb Magic + Elemental Accustomed)",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Synergy (A92)",
+      "benefit": "Synergy Unlock: Upgrades Absorb Magic save bonus from +2 to +4 Competence. When saved with Absorb Magic, gain Improved Evasion, Mettle, and +Sacred AC per spell level (EONT).",
+      "description": "Requires Absorb Magic + Elemental Accustomed. When saved with Absorb Magic, gain Improved Evasion, Mettle, and +AC (Sacred) for each spell level dispelled this way (EONT). Absorb Magic's competence bonus becomes +4 instead of +2.",
+      "action": "Passive",
+      "actionType": "passive",
+      "requires": {
+        "all": [
+          "boon_absorb_magic",
+          "boon_elemental_accustomed"
+        ]
+      },
+      "modifiers": [
+        {
+          "target": "entity.saveBonus",
+          "selector": {
+            "id": "boon_absorb_magic"
+          },
+          "op": "set",
+          "value": 4,
+          "type": "Competence"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "synergy",
+        "defence_path",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon",
+      "sourceCategory": "Synergy",
+      "autoUnlock": true,
+      "isSynergy": true
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_grand_scales",
+      "name": "Grand Scales (Synergy: Absorb Magic + Draconic Scales)",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Synergy",
+      "benefit": "Synergy Unlock: Draconic Scales also grants SR (11 + Level) and Immunity to Critical Hits.",
+      "description": "Requires Absorb Magic + Draconic Scales. While Draconic Scales is active, also gain Spell Resistance (11 + Character Level) and Immunity to Critical Hits.",
+      "action": "Passive",
+      "actionType": "passive",
+      "requires": {
+        "all": [
+          "boon_absorb_magic",
+          "boon_draconic_scales"
+        ]
+      },
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "sr",
+          "target": "magic",
+          "formula": "11 + @level",
+          "when": {
+            "toggle": "draconic_scales_active"
+          }
+        },
+        {
+          "kind": "fortification",
+          "target": "crit",
+          "value": 100,
+          "when": {
+            "toggle": "draconic_scales_active"
+          }
+        }
+      ],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "synergy",
+        "defence_path",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon",
+      "sourceCategory": "Synergy",
+      "autoUnlock": true,
+      "isSynergy": true
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_elemental_supremacy",
+      "name": "Elemental Supremacy (Synergy: Draconic Scales + Elemental Accustomed)",
+      "type": "DM Boon",
+      "source": "DM Draconic Defence Synergy",
+      "benefit": "Synergy Unlock: Acid damage heals you (100% absorption). At-Will (Std Action): Acid Aura deals 2d12 + CON mod Acid on touch and heals 1 + CON mod per round.",
+      "description": "Requires Draconic Scales + Elemental Accustomed. Acid damage heals you. At Will (Standard Action): Cover your body with acid; touch deals 2d12 + CON mod Acid damage, Swarm Resist 10, and you heal 1 + CON mod HP each turn.",
+      "action": "Standard Action",
+      "actionType": "standard",
+      "requires": {
+        "all": [
+          "boon_draconic_scales",
+          "boon_elemental_accustomed"
+        ]
+      },
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "absorption",
+          "target": "acid",
+          "healRatio": 1
+        }
+      ],
+      "resources": [],
+      "damageParts": [
+        {
+          "dice": "2d12",
+          "bonus": 0,
+          "type": "Acid",
+          "multiplyOnCrit": false,
+          "onCritOnly": false,
+          "source": "Elemental Supremacy Touch"
+        }
+      ],
+      "modes": [
+        {
+          "id": "acid_body_touch",
+          "name": "Acid Body Touch (2d12+CON)",
+          "actionType": "standard",
+          "damageParts": [
+            {
+              "dice": "2d12",
+              "bonus": 0,
+              "type": "Acid"
+            }
+          ],
+          "modifiers": []
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "synergy",
+        "defence_path",
+        "acid",
+        "dm_boon"
+      ],
+      "pack": "pack_dm_draconic_boons",
+      "category": "DM Boon",
+      "sourceCategory": "Synergy",
+      "autoUnlock": true,
+      "isSynergy": true
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_possessive_dragon",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Possessive Dragon",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Similitude)",
+      "benefit": "If a feat, ability, spell or spell like ability effects an item in your possession, you roll a Will save (emotion effect) vs effect DC; if saved your items are not effected",
+      "description": "If a feat, ability, spell or spell like ability effects an item in your possession, you roll a Will save (emotion effect) vs effect DC; if saved your items are not effected",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "draconic_path",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_draconic_roar",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Draconic Roar",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Similitude)",
+      "benefit": "Level*5ft area Will vs 10+Level/2+Con mod. Target: 5<Level fail:Panicked save:Frightened ; 5<Level<5 fail:Frightened save:Shaken ; Level<5 fail:Shaken save:- (1d6 turn)",
+      "description": "Level*5ft area Will vs 10+Level/2+Con mod. Target: 5<Level fail:Panicked save:Frightened ; 5<Level<5 fail:Frightened save:Shaken ; Level<5 fail:Shaken save:- (1d6 turn)",
+      "action": "Swift Action",
+      "actionType": "swift",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [
+        {
+          "id": "use_draconic_roar",
+          "name": "Draconic Roar (Will Save)",
+          "actionType": "swift",
+          "area": "@level * 5 ft. burst",
+          "save": {
+            "type": "Will",
+            "dcFormula": "10 + floor(@level / 2) + @conMod",
+            "onSave": "partial"
+          },
+          "damageParts": []
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "draconic_path",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_draconic_affinity",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Draconic Affinity",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Similitude)",
+      "benefit": "Gain Anc abilities (Breath Under Water, swim speed as land speed, fight underwater ; imm sleep, slow stun, paralysis ; 1/Day corrupt water)",
+      "description": "Gain Anc abilities (Breath Under Water, swim speed as land speed, fight underwater ; imm sleep, slow stun, paralysis ; 1/Day corrupt water)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "speed.swim",
+          "op": "max",
+          "formula": "30",
+          "type": "Untyped"
+        }
+      ],
+      "defenses": [
+        {
+          "kind": "immunity",
+          "target": "sleep"
+        },
+        {
+          "kind": "immunity",
+          "target": "slow"
+        },
+        {
+          "kind": "immunity",
+          "target": "stun"
+        },
+        {
+          "kind": "immunity",
+          "target": "paralysis"
+        }
+      ],
+      "resources": [
+        {
+          "id": "res_corrupt_water",
+          "name": "Corrupt Water (1/day)",
+          "kind": "consume",
+          "maxFormula": 1,
+          "recharge": {
+            "period": "day"
+          }
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "draconic_path",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_arcane_roar",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Arcane Roar (Synergy: Possessive Dragon + Draconic Roar)",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Possessive Dragon + Draconic Roar)",
+      "benefit": "When use Draconic Roar; all magic item in area roll for Will save (if in possession, the owner will roll). Failed items cant be activated until begining of your next turn",
+      "description": "When use Draconic Roar; all magic item in area roll for Will save (if in possession, the owner will roll). Failed items cant be activated until begining of your next turn",
+      "action": "Passive",
+      "actionType": "passive",
+      "requires": {
+        "all": [
+          "boon_possessive_dragon",
+          "boon_draconic_roar"
+        ],
+        "feats": [
+          "Possessive Dragon",
+          "Draconic Roar"
+        ]
+      },
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "synergy",
+        "dm_boon"
+      ],
+      "sourceCategory": "Synergy",
+      "autoUnlock": true,
+      "isSynergy": true
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_arcane_purity",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Arcane Purity (Synergy: Possessive Dragon + Draconic Affinity)",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Possessive Dragon + Draconic Affinity)",
+      "benefit": "If a spell or spell like ability is sourced from an item/scroll/rune (which is not crafted with draconic magic), you defend like you have 21+Level SR against it & if resisted, the source item lost all charge. You gain 10 temp HP for each charge lost this way (max 100) (EONT)",
+      "description": "If a spell or spell like ability is sourced from an item/scroll/rune (which is not crafted with draconic magic), you defend like you have 21+Level SR against it & if resisted, the source item lost all charge. You gain 10 temp HP for each charge lost this way (max 100) (EONT)",
+      "action": "Passive",
+      "actionType": "passive",
+      "requires": {
+        "all": [
+          "boon_possessive_dragon",
+          "boon_draconic_affinity"
+        ],
+        "feats": [
+          "Possessive Dragon",
+          "Draconic Affinity"
+        ]
+      },
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "sr",
+          "target": "magic",
+          "formula": "21 + @level"
+        }
+      ],
+      "resources": [],
+      "damageParts": [],
+      "modes": [
+        {
+          "id": "arcane_purity_absorb",
+          "name": "Arcane Purity (Drain Item Charges)",
+          "actionType": "immediate",
+          "reactsTo": "on_spell_resisted",
+          "inputs": [
+            {
+              "id": "chargesDrained",
+              "label": "Item Charges Lost",
+              "type": "int",
+              "min": 1,
+              "max": 10,
+              "default": 2
+            }
+          ],
+          "spawnsBuff": {
+            "id": "buff_arcane_purity_temp_hp",
+            "name": "Arcane Purity Temp HP",
+            "durationRounds": 1,
+            "tempHpFormula": "min(100, 10 * @input.chargesDrained)"
+          }
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "synergy",
+        "dm_boon"
+      ],
+      "sourceCategory": "Synergy",
+      "autoUnlock": true,
+      "isSynergy": true
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_lord_of_reptiles",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Lord of Reptiles (Synergy: Draconic Roar + Draconic Affinity)",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Draconic Path (Draconic Roar + Draconic Affinity)",
+      "benefit": "Always speak with reptiles; At Will Charm Reptiles; At Will Summon Locust Swarm (1 per 3 levels); 3/day Call Reptiles (1 with max HD: 2+Level OR 4 with each max HD 2+Level/2 OR 8 with each max HD 2+Level/4)",
+      "description": "Always speak with reptiles; At Will Charm Reptiles; At Will Summon Locust Swarm (1 per 3 levels); 3/day Call Reptiles (1 with max HD: 2+Level OR 4 with each max HD 2+Level/2 OR 8 with each max HD 2+Level/4)",
+      "action": "Passive",
+      "actionType": "passive",
+      "requires": {
+        "all": [
+          "boon_draconic_roar",
+          "boon_draconic_affinity"
+        ],
+        "feats": [
+          "Draconic Roar",
+          "Draconic Affinity"
+        ]
+      },
+      "modifiers": [],
+      "defenses": [],
+      "resources": [
+        {
+          "id": "res_call_reptiles",
+          "name": "Call Reptiles (3/day)",
+          "kind": "consume",
+          "maxFormula": 3,
+          "recharge": {
+            "period": "day"
+          }
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "spell_at_will",
+          "targetId": "charm_reptiles"
+        },
+        {
+          "grantType": "spell_at_will",
+          "targetId": "summon_locust_swarm"
+        }
+      ],
+      "choices": [],
+      "tags": [
+        "draconic",
+        "synergy",
+        "dm_boon"
+      ],
+      "sourceCategory": "Synergy",
+      "autoUnlock": true,
+      "isSynergy": true
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_abjuration_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Abjuration Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Choose a 1st level spell of this school that you know, cast it at will | Benefit 2: Protection spells has +2",
+      "benefit1": "Choose a 1st level spell of this school that you know, cast it at will",
+      "benefit2": "Protection spells has +2",
+      "description": "• Benefit 1: Choose a 1st level spell of this school that you know, cast it at will\n• Benefit 2: Protection spells has +2",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "spell_at_will",
+          "filter": {
+            "school": "Abjuration",
+            "level": 1
+          },
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [
+        {
+          "id": "choice_boon_of_abjuration_lesser_spell",
+          "label": "Chosen 1st-Level Abjuration Spell",
+          "type": "spell",
+          "filter": {
+            "school": "Abjuration",
+            "level": 1
+          }
+        }
+      ],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_acid_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Acid Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get Acid Resist 10; you can set object on fire with a touch | Benefit 2: You can acid a weapon you hold for additioanl 1d6 fire damage",
+      "benefit1": "You get Acid Resist 10; you can set object on fire with a touch",
+      "benefit2": "You can acid a weapon you hold for additioanl 1d6 fire damage",
+      "description": "• Benefit 1: You get Acid Resist 10; you can set object on fire with a touch\n• Benefit 2: You can acid a weapon you hold for additioanl 1d6 fire damage",
+      "action": "Standard Action",
+      "actionType": "free",
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "resistance",
+          "target": "acid",
+          "value": 10,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "resources": [],
+      "damageParts": [
+        {
+          "dice": "1d6",
+          "bonus": 0,
+          "type": "Acid"
+        }
+      ],
+      "modes": [
+        {
+          "id": "imbue_acid_weapon",
+          "name": "Imbue Weapon (+1d6 Acid/Fire)",
+          "actionType": "free",
+          "damageParts": [
+            {
+              "dice": "1d6",
+              "bonus": 0,
+              "type": "Acid"
+            }
+          ]
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_adfiliation_i",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Adfiliation - I",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: A piece of your soul is transfered to a non-magical item | Benefit 2: Effects are Vary",
+      "benefit1": "A piece of your soul is transfered to a non-magical item",
+      "benefit2": "Effects are Vary",
+      "description": "• Benefit 1: A piece of your soul is transfered to a non-magical item\n• Benefit 2: Effects are Vary",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_alpha_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Alpha Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Choose a Fav wild shape. Your fav wild shape has Level x2 more HP | Benefit 2: You gain command action to same type of creatures of your fav wild shaped type",
+      "benefit1": "Choose a Fav wild shape. Your fav wild shape has Level x2 more HP",
+      "benefit2": "You gain command action to same type of creatures of your fav wild shaped type",
+      "description": "• Benefit 1: Choose a Fav wild shape. Your fav wild shape has Level x2 more HP\n• Benefit 2: You gain command action to same type of creatures of your fav wild shaped type",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_animal_lover_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Animal Lover Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Animals do not attack you unless provoked | Benefit 2: Gain +3 to handle animal checks",
+      "benefit1": "Animals do not attack you unless provoked",
+      "benefit2": "Gain +3 to handle animal checks",
+      "description": "• Benefit 1: Animals do not attack you unless provoked\n• Benefit 2: Gain +3 to handle animal checks",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "skill.handle_animal",
+          "op": "add",
+          "value": 3,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_archery_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Archery Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: All range attacks and abilities with range weapons has double range | Benefit 2: Ignore %25 of all covers and shields",
+      "benefit1": "All range attacks and abilities with range weapons has double range",
+      "benefit2": "Ignore %25 of all covers and shields",
+      "description": "• Benefit 1: All range attacks and abilities with range weapons has double range\n• Benefit 2: Ignore %25 of all covers and shields",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_armor_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Armor Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Sacrifice your standart action; Gain +5 AC until your next turn | Benefit 2: All armors you wear grant +1 additional AC",
+      "benefit1": "Sacrifice your standart action; Gain +5 AC until your next turn",
+      "benefit2": "All armors you wear grant +1 additional AC",
+      "description": "• Benefit 1: Sacrifice your standart action; Gain +5 AC until your next turn\n• Benefit 2: All armors you wear grant +1 additional AC",
+      "action": "Standard Action",
+      "actionType": "standard",
+      "modifiers": [
+        {
+          "target": "ac.armor",
+          "op": "add",
+          "value": 1,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [
+        {
+          "id": "sacrifice_std_ac",
+          "name": "Sacrifice Standard (+5 AC)",
+          "actionType": "standard",
+          "spawnsBuff": {
+            "id": "buff_boon_armor",
+            "name": "Boon of Armor (+5 AC)",
+            "durationRounds": 1,
+            "modifiers": [
+              {
+                "target": "ac.dodge",
+                "op": "add",
+                "value": 5,
+                "type": "Dodge"
+              }
+            ]
+          }
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_artificial_pro_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Artificial Pro Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Alchemical bombs and piosons cause half damage to you | Benefit 2: Golems do not attack you unless provoked (by attacking them or interacting with thier mission)",
+      "benefit1": "Alchemical bombs and piosons cause half damage to you",
+      "benefit2": "Golems do not attack you unless provoked (by attacking them or interacting with thier mission)",
+      "description": "• Benefit 1: Alchemical bombs and piosons cause half damage to you\n• Benefit 2: Golems do not attack you unless provoked (by attacking them or interacting with thier mission)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_atlas_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Atlas Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Your carry weight is x3 | Benefit 2: Gain +4 Resist against knockback and knockdown",
+      "benefit1": "Your carry weight is x3",
+      "benefit2": "Gain +4 Resist against knockback and knockdown",
+      "description": "• Benefit 1: Your carry weight is x3\n• Benefit 2: Gain +4 Resist against knockback and knockdown",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "carryingCapacity.multiplier",
+          "op": "multiply",
+          "value": 3,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_berserker_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Berserker Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Rage duration is doubled | Benefit 2: Gain +2 save vs magic during rage",
+      "benefit1": "Rage duration is doubled",
+      "benefit2": "Gain +2 save vs magic during rage",
+      "description": "• Benefit 1: Rage duration is doubled\n• Benefit 2: Gain +2 save vs magic during rage",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_blacksmith_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Blacksmith Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: All weapons you craft has 1 damage dice higher (a shortword you craft is 1d8 instead of 1d6) | Benefit 2: Shield you craft has +2 DR",
+      "benefit1": "All weapons you craft has 1 damage dice higher (a shortword you craft is 1d8 instead of 1d6)",
+      "benefit2": "Shield you craft has +2 DR",
+      "description": "• Benefit 1: All weapons you craft has 1 damage dice higher (a shortword you craft is 1d8 instead of 1d6)\n• Benefit 2: Shield you craft has +2 DR",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "entity.damageDice",
+          "selector": {
+            "type": "Weapon",
+            "tag": "crafted_by_self"
+          },
+          "op": "step_die",
+          "value": 1,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_bloodlust_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Bloodlust Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: For each kill you get +1 dmg to all attacks until end of combat (max +10) | Benefit 2: One per turn, if your attack kills a creature; gain one more attack (with the same attack bonus of the kill)",
+      "benefit1": "For each kill you get +1 dmg to all attacks until end of combat (max +10)",
+      "benefit2": "One per turn, if your attack kills a creature; gain one more attack (with the same attack bonus of the kill)",
+      "description": "• Benefit 1: For each kill you get +1 dmg to all attacks until end of combat (max +10)\n• Benefit 2: One per turn, if your attack kills a creature; gain one more attack (with the same attack bonus of the kill)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "damage.all",
+          "op": "add",
+          "formula": "min(10, @self.stacks)",
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_cantrip_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Cantrip Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Add 3 cantrips to your list | Benefit 2: Once a day, imbue any item with one of those cantrip, this item can activate that cantrip with command word",
+      "benefit1": "Add 3 cantrips to your list",
+      "benefit2": "Once a day, imbue any item with one of those cantrip, this item can activate that cantrip with command word",
+      "description": "• Benefit 1: Add 3 cantrips to your list\n• Benefit 2: Once a day, imbue any item with one of those cantrip, this item can activate that cantrip with command word",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_caster_combat_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Caster Combat Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: All spell attacks get +3 | Benefit 2: Damaging spells increase cause %10 more damage",
+      "benefit1": "All spell attacks get +3",
+      "benefit2": "Damaging spells increase cause %10 more damage",
+      "description": "• Benefit 1: All spell attacks get +3\n• Benefit 2: Damaging spells increase cause %10 more damage",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "attack.spell",
+          "op": "add",
+          "value": 3,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "target": "spell.damageMultiplier",
+          "op": "add",
+          "value": 0.1,
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_casting_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Casting Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Your spells are +3 harder to be dispelled or countered | Benefit 2: Gain a metamagic feat (within your level req)",
+      "benefit1": "Your spells are +3 harder to be dispelled or countered",
+      "benefit2": "Gain a metamagic feat (within your level req)",
+      "description": "• Benefit 1: Your spells are +3 harder to be dispelled or countered\n• Benefit 2: Gain a metamagic feat (within your level req)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_cavalry_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Cavalry Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Your Speed with mounts gets +40ft | Benefit 2: You get +2 attack +3 damage on mounted attacks",
+      "benefit1": "Your Speed with mounts gets +40ft",
+      "benefit2": "You get +2 attack +3 damage on mounted attacks",
+      "description": "• Benefit 1: Your Speed with mounts gets +40ft\n• Benefit 2: You get +2 attack +3 damage on mounted attacks",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_charisma_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Charisma Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Gain +2 CHA | Benefit 2: Sense Motive checks vs you are +3 harder",
+      "benefit1": "Gain +2 CHA",
+      "benefit2": "Sense Motive checks vs you are +3 harder",
+      "description": "• Benefit 1: Gain +2 CHA\n• Benefit 2: Sense Motive checks vs you are +3 harder",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ability.cha",
+          "op": "add",
+          "value": 2,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_cleanser_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Cleanser Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Non-Willing undead and construct creatures ignore you unless provoked | Benefit 2: You get +2 morale bonus on saves and AC from undead sources",
+      "benefit1": "Non-Willing undead and construct creatures ignore you unless provoked",
+      "benefit2": "You get +2 morale bonus on saves and AC from undead sources",
+      "description": "• Benefit 1: Non-Willing undead and construct creatures ignore you unless provoked\n• Benefit 2: You get +2 morale bonus on saves and AC from undead sources",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_combat_perform_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Combat Perform Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You can use your perform dance check as your AC as long as you spent 1 action to dance each turn | Benefit 2: While dancing you get +2 to all attack with small weapons",
+      "benefit1": "You can use your perform dance check as your AC as long as you spent 1 action to dance each turn",
+      "benefit2": "While dancing you get +2 to all attack with small weapons",
+      "description": "• Benefit 1: You can use your perform dance check as your AC as long as you spent 1 action to dance each turn\n• Benefit 2: While dancing you get +2 to all attack with small weapons",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ac.total",
+          "op": "replace",
+          "formula": "@state.perform_dance_roll",
+          "when": {
+            "toggle": "dancing"
+          },
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "target": "attack.melee",
+          "op": "add",
+          "value": 2,
+          "type": "Untyped",
+          "when": {
+            "toggle": "dancing"
+          },
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_conjuration_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Conjuration Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: choose a 1st level spell of this school that you know, cast it at will | Benefit 2: Summon spells has duration time and +4 harder to banish",
+      "benefit1": "choose a 1st level spell of this school that you know, cast it at will",
+      "benefit2": "Summon spells has duration time and +4 harder to banish",
+      "description": "• Benefit 1: choose a 1st level spell of this school that you know, cast it at will\n• Benefit 2: Summon spells has duration time and +4 harder to banish",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "spell_at_will",
+          "filter": {
+            "school": "Conjuration",
+            "level": 1
+          },
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [
+        {
+          "id": "choice_boon_of_conjuration_lesser_spell",
+          "label": "Chosen 1st-Level Conjuration Spell",
+          "type": "spell",
+          "filter": {
+            "school": "Conjuration",
+            "level": 1
+          }
+        }
+      ],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_constitution_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Constitution Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Gain +2 CON | Benefit 2: Poison and Disease +5 save",
+      "benefit1": "Gain +2 CON",
+      "benefit2": "Poison and Disease +5 save",
+      "description": "• Benefit 1: Gain +2 CON\n• Benefit 2: Poison and Disease +5 save",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ability.con",
+          "op": "add",
+          "value": 2,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "target": "save.fort",
+          "op": "add",
+          "value": 5,
+          "type": "Untyped",
+          "condition": "vs. Poison & Disease",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_crafting_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Crafting Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get +3 to all your crafting checks | Benefit 2: You need %25 less materials to craft",
+      "benefit1": "You get +3 to all your crafting checks",
+      "benefit2": "You need %25 less materials to craft",
+      "description": "• Benefit 1: You get +3 to all your crafting checks\n• Benefit 2: You need %25 less materials to craft",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "skill.craft",
+          "op": "add",
+          "value": 3,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_defence_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Defence Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You gain +1 Natural AC and Resist 5 to chosen element | Benefit 2: Gain +1 save vs chosen spell school",
+      "benefit1": "You gain +1 Natural AC and Resist 5 to chosen element",
+      "benefit2": "Gain +1 save vs chosen spell school",
+      "description": "• Benefit 1: You gain +1 Natural AC and Resist 5 to chosen element\n• Benefit 2: Gain +1 save vs chosen spell school",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ac.natural",
+          "op": "add",
+          "value": 1,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [
+        {
+          "kind": "resistance",
+          "target": "acid",
+          "value": 5,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [
+        {
+          "id": "choice_def_element",
+          "label": "Chosen Element (Resist 5)",
+          "type": "element",
+          "options": [
+            "acid",
+            "cold",
+            "electricity",
+            "fire",
+            "sonic"
+          ]
+        }
+      ],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_dexterity_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Dexterity Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Gain +2 DEX | Benefit 2: Base land speed +10",
+      "benefit1": "Gain +2 DEX",
+      "benefit2": "Base land speed +10",
+      "description": "• Benefit 1: Gain +2 DEX\n• Benefit 2: Base land speed +10",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ability.dex",
+          "op": "add",
+          "value": 2,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "target": "speed.land",
+          "op": "add",
+          "value": 10,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_dexterous_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Dexterous Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Lockpick and Disable a Device skill actions are move action | Benefit 2: Nat 1 is not auto crit fail for Lockpick and Disable a Device",
+      "benefit1": "Lockpick and Disable a Device skill actions are move action",
+      "benefit2": "Nat 1 is not auto crit fail for Lockpick and Disable a Device",
+      "description": "• Benefit 1: Lockpick and Disable a Device skill actions are move action\n• Benefit 2: Nat 1 is not auto crit fail for Lockpick and Disable a Device",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "entity.actionType",
+          "selector": {
+            "id": "act_disable_device"
+          },
+          "op": "set",
+          "value": "move",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_divination_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Divination Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: choose a 1st level spell of this school that you know, cast it at will | Benefit 2: Scry duration and area +%50",
+      "benefit1": "choose a 1st level spell of this school that you know, cast it at will",
+      "benefit2": "Scry duration and area +%50",
+      "description": "• Benefit 1: choose a 1st level spell of this school that you know, cast it at will\n• Benefit 2: Scry duration and area +%50",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "spell_at_will",
+          "filter": {
+            "school": "Divination",
+            "level": 1
+          },
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [
+        {
+          "id": "choice_boon_of_divination_lesser_spell",
+          "label": "Chosen 1st-Level Divination Spell",
+          "type": "spell",
+          "filter": {
+            "school": "Divination",
+            "level": 1
+          }
+        }
+      ],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_ease_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Ease Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Your eating and drinking needs are half then usual | Benefit 2: You get full rest with 4 hours of sleep",
+      "benefit1": "Your eating and drinking needs are half then usual",
+      "benefit2": "You get full rest with 4 hours of sleep",
+      "description": "• Benefit 1: Your eating and drinking needs are half then usual\n• Benefit 2: You get full rest with 4 hours of sleep",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_elusiveness_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Elusiveness Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Get %25 less damage from all AoE | Benefit 2: Get +2 dodge AC",
+      "benefit1": "Get %25 less damage from all AoE",
+      "benefit2": "Get +2 dodge AC",
+      "description": "• Benefit 1: Get %25 less damage from all AoE\n• Benefit 2: Get +2 dodge AC",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ac.dodge",
+          "op": "add",
+          "value": 2,
+          "type": "Dodge",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_enchantment_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Enchantment Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: choose a 1st level spell of this school that you know, cast it at will | Benefit 2: Number of targets of your enchantment spells are doubled",
+      "benefit1": "choose a 1st level spell of this school that you know, cast it at will",
+      "benefit2": "Number of targets of your enchantment spells are doubled",
+      "description": "• Benefit 1: choose a 1st level spell of this school that you know, cast it at will\n• Benefit 2: Number of targets of your enchantment spells are doubled",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "spell_at_will",
+          "filter": {
+            "school": "Enchantment",
+            "level": 1
+          },
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [
+        {
+          "id": "choice_boon_of_enchantment_lesser_spell",
+          "label": "Chosen 1st-Level Enchantment Spell",
+          "type": "spell",
+          "filter": {
+            "school": "Enchantment",
+            "level": 1
+          }
+        }
+      ],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_evocation_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Evocation Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: choose a 1st level spell of this school that you know, cast it at will | Benefit 2: AoE spells has double area",
+      "benefit1": "choose a 1st level spell of this school that you know, cast it at will",
+      "benefit2": "AoE spells has double area",
+      "description": "• Benefit 1: choose a 1st level spell of this school that you know, cast it at will\n• Benefit 2: AoE spells has double area",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "entity.areaMultiplier",
+          "selector": {
+            "type": "Spell"
+          },
+          "op": "multiply",
+          "value": 2,
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "spell_at_will",
+          "filter": {
+            "school": "Evocation",
+            "level": 1
+          },
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [
+        {
+          "id": "choice_boon_of_evocation_lesser_spell",
+          "label": "Chosen 1st-Level Evocation Spell",
+          "type": "spell",
+          "filter": {
+            "school": "Evocation",
+            "level": 1
+          }
+        }
+      ],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_exterminator_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Exterminator Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You gain +4 morale bonus perception, track, sense motive vs Fiends | Benefit 2: You get +2 morale bonus on saves and AC from Fiend sources",
+      "benefit1": "You gain +4 morale bonus perception, track, sense motive vs Fiends",
+      "benefit2": "You get +2 morale bonus on saves and AC from Fiend sources",
+      "description": "• Benefit 1: You gain +4 morale bonus perception, track, sense motive vs Fiends\n• Benefit 2: You get +2 morale bonus on saves and AC from Fiend sources",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_fire_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Fire Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get Fire Resist 10; you can set object on fire with a touch | Benefit 2: You can ignite a weapon you hold for additioanl 1d6 fire damage",
+      "benefit1": "You get Fire Resist 10; you can set object on fire with a touch",
+      "benefit2": "You can ignite a weapon you hold for additioanl 1d6 fire damage",
+      "description": "• Benefit 1: You get Fire Resist 10; you can set object on fire with a touch\n• Benefit 2: You can ignite a weapon you hold for additioanl 1d6 fire damage",
+      "action": "Standard Action",
+      "actionType": "free",
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "resistance",
+          "target": "fire",
+          "value": 10,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "resources": [],
+      "damageParts": [
+        {
+          "dice": "1d6",
+          "bonus": 0,
+          "type": "Fire"
+        }
+      ],
+      "modes": [
+        {
+          "id": "imbue_fire_weapon",
+          "name": "Ignite Weapon (+1d6 Fire)",
+          "actionType": "free",
+          "damageParts": [
+            {
+              "dice": "1d6",
+              "bonus": 0,
+              "type": "Fire"
+            }
+          ]
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_focus_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Focus Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Choose a skill you have. You gain no morale or distruction penalty to that skill | Benefit 2: 19-20 are considered critical success for that skill",
+      "benefit1": "Choose a skill you have. You gain no morale or distruction penalty to that skill",
+      "benefit2": "19-20 are considered critical success for that skill",
+      "description": "• Benefit 1: Choose a skill you have. You gain no morale or distruction penalty to that skill\n• Benefit 2: 19-20 are considered critical success for that skill",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_foresight_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Foresight Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You can roll initiative against a surprise attack with +2, if your init is higher you dont get surprised | Benefit 2: You gain +5 save vs traps",
+      "benefit1": "You can roll initiative against a surprise attack with +2, if your init is higher you dont get surprised",
+      "benefit2": "You gain +5 save vs traps",
+      "description": "• Benefit 1: You can roll initiative against a surprise attack with +2, if your init is higher you dont get surprised\n• Benefit 2: You gain +5 save vs traps",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "save.ref",
+          "op": "add",
+          "value": 5,
+          "type": "Untyped",
+          "condition": "vs. Traps",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_fortified_mind_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Fortified Mind Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Gain +3 vs disblief checks, illusion spells cause half damage to you | Benefit 2: You get +3 save vs fear and charm effects",
+      "benefit1": "Gain +3 vs disblief checks, illusion spells cause half damage to you",
+      "benefit2": "You get +3 save vs fear and charm effects",
+      "description": "• Benefit 1: Gain +3 vs disblief checks, illusion spells cause half damage to you\n• Benefit 2: You get +3 save vs fear and charm effects",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "save.will",
+          "op": "add",
+          "value": 3,
+          "type": "Untyped",
+          "condition": "vs. Fear & Charm",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_guardian_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Guardian Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Youcan use your shield protect an ally within 10 ft with shield AC +2 | Benefit 2: You give %50 cover to an ally behind 30ft of you",
+      "benefit1": "Youcan use your shield protect an ally within 10 ft with shield AC +2",
+      "benefit2": "You give %50 cover to an ally behind 30ft of you",
+      "description": "• Benefit 1: Youcan use your shield protect an ally within 10 ft with shield AC +2\n• Benefit 2: You give %50 cover to an ally behind 30ft of you",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_high_magic_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of High Magic Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You can sacrifice two spells of the same level to gain a +1 spell slot of 1 level higher (free action) | Benefit 2: Your spells of your highest spell level has +1 DC",
+      "benefit1": "You can sacrifice two spells of the same level to gain a +1 spell slot of 1 level higher (free action)",
+      "benefit2": "Your spells of your highest spell level has +1 DC",
+      "description": "• Benefit 1: You can sacrifice two spells of the same level to gain a +1 spell slot of 1 level higher (free action)\n• Benefit 2: Your spells of your highest spell level has +1 DC",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_hoarding_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Hoarding Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You can attune +2 more items | Benefit 2: Your bags, containers and quivers can hold %50 more bulk (if transfered, extra bulk randomly drop)",
+      "benefit1": "You can attune +2 more items",
+      "benefit2": "Your bags, containers and quivers can hold %50 more bulk (if transfered, extra bulk randomly drop)",
+      "description": "• Benefit 1: You can attune +2 more items\n• Benefit 2: Your bags, containers and quivers can hold %50 more bulk (if transfered, extra bulk randomly drop)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_ice_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Ice Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get Cold Resist 10; you can cool/freeze objects with a touch | Benefit 2: You can freeze a weapon you hold for additioanl 1d6 cold damage",
+      "benefit1": "You get Cold Resist 10; you can cool/freeze objects with a touch",
+      "benefit2": "You can freeze a weapon you hold for additioanl 1d6 cold damage",
+      "description": "• Benefit 1: You get Cold Resist 10; you can cool/freeze objects with a touch\n• Benefit 2: You can freeze a weapon you hold for additioanl 1d6 cold damage",
+      "action": "Standard Action",
+      "actionType": "free",
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "resistance",
+          "target": "cold",
+          "value": 10,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "resources": [],
+      "damageParts": [
+        {
+          "dice": "1d6",
+          "bonus": 0,
+          "type": "Cold"
+        }
+      ],
+      "modes": [
+        {
+          "id": "imbue_cold_weapon",
+          "name": "Freeze Weapon (+1d6 Cold)",
+          "actionType": "free",
+          "damageParts": [
+            {
+              "dice": "1d6",
+              "bonus": 0,
+              "type": "Cold"
+            }
+          ]
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_illusion_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Illusion Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: choose a 1st level spell of this school that you know, cast it at will | Benefit 2: Your illusions spells has double duration",
+      "benefit1": "choose a 1st level spell of this school that you know, cast it at will",
+      "benefit2": "Your illusions spells has double duration",
+      "description": "• Benefit 1: choose a 1st level spell of this school that you know, cast it at will\n• Benefit 2: Your illusions spells has double duration",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "entity.durationMultiplier",
+          "selector": {
+            "type": "Spell",
+            "school": "Illusion"
+          },
+          "op": "multiply",
+          "value": 2,
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "spell_at_will",
+          "filter": {
+            "school": "Illusion",
+            "level": 1
+          },
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [
+        {
+          "id": "choice_boon_of_illusion_lesser_spell",
+          "label": "Chosen 1st-Level Illusion Spell",
+          "type": "spell",
+          "filter": {
+            "school": "Illusion",
+            "level": 1
+          }
+        }
+      ],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_intelligence_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Intelligence Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Gain +2 INT | Benefit 2: Learn an universal 1st level spell and can cast at will",
+      "benefit1": "Gain +2 INT",
+      "benefit2": "Learn an universal 1st level spell and can cast at will",
+      "description": "• Benefit 1: Gain +2 INT\n• Benefit 2: Learn an universal 1st level spell and can cast at will",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ability.int",
+          "op": "add",
+          "value": 2,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "spell_at_will",
+          "filter": {
+            "school": "Universal",
+            "level": 1
+          },
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_immortality_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of immortality Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Your aging is stopped, you no longer gain age bonus or penalty (max lifespan is not changed) | Benefit 2: Cure and inflict spells has half effect on you",
+      "benefit1": "Your aging is stopped, you no longer gain age bonus or penalty (max lifespan is not changed)",
+      "benefit2": "Cure and inflict spells has half effect on you",
+      "description": "• Benefit 1: Your aging is stopped, you no longer gain age bonus or penalty (max lifespan is not changed)\n• Benefit 2: Cure and inflict spells has half effect on you",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_item_mastery_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of item Mastery Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Spells you cast from items has +2 DC | Benefit 2: You get +4 on UMD when casting blind",
+      "benefit1": "Spells you cast from items has +2 DC",
+      "benefit2": "You get +4 on UMD when casting blind",
+      "description": "• Benefit 1: Spells you cast from items has +2 DC\n• Benefit 2: You get +4 on UMD when casting blind",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_knowledge_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Knowledge Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Choose two knowledge skill that you have no rank; get +4 on them | Benefit 2: Gain +1 to all knowledge skills checks that you have 2 rank or more",
+      "benefit1": "Choose two knowledge skill that you have no rank; get +4 on them",
+      "benefit2": "Gain +1 to all knowledge skills checks that you have 2 rank or more",
+      "description": "• Benefit 1: Choose two knowledge skill that you have no rank; get +4 on them\n• Benefit 2: Gain +1 to all knowledge skills checks that you have 2 rank or more",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_leading_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Leading Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You can command %50 more cohort | Benefit 2: Recruits a cohort of a different alignment and different race cause no penalty",
+      "benefit1": "You can command %50 more cohort",
+      "benefit2": "Recruits a cohort of a different alignment and different race cause no penalty",
+      "description": "• Benefit 1: You can command %50 more cohort\n• Benefit 2: Recruits a cohort of a different alignment and different race cause no penalty",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_lightning_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Lightning Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get Lightning Resist 10; you can shock a constuct for 2d10 dmg with touch attack | Benefit 2: You can light a weapon you hold for additioanl 1d6 lightning damage",
+      "benefit1": "You get Lightning Resist 10; you can shock a constuct for 2d10 dmg with touch attack",
+      "benefit2": "You can light a weapon you hold for additioanl 1d6 lightning damage",
+      "description": "• Benefit 1: You get Lightning Resist 10; you can shock a constuct for 2d10 dmg with touch attack\n• Benefit 2: You can light a weapon you hold for additioanl 1d6 lightning damage",
+      "action": "Standard Action",
+      "actionType": "free",
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "resistance",
+          "target": "electricity",
+          "value": 10,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "resources": [],
+      "damageParts": [
+        {
+          "dice": "1d6",
+          "bonus": 0,
+          "type": "Electricity"
+        }
+      ],
+      "modes": [
+        {
+          "id": "imbue_lightning_weapon",
+          "name": "Shock Weapon (+1d6 Electricity)",
+          "actionType": "free",
+          "damageParts": [
+            {
+              "dice": "1d6",
+              "bonus": 0,
+              "type": "Electricity"
+            }
+          ]
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_linguistics_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Linguistics Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You learn 3 languages of your choice | Benefit 2: You get +4 on dechipher script checks based on language dechiphers",
+      "benefit1": "You learn 3 languages of your choice",
+      "benefit2": "You get +4 on dechipher script checks based on language dechiphers",
+      "description": "• Benefit 1: You learn 3 languages of your choice\n• Benefit 2: You get +4 on dechipher script checks based on language dechiphers",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "skill.decipher_script",
+          "op": "add",
+          "value": 4,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_low_magic_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Low Magic Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get +1 spell slot for level 1 and level 2 and level 3spells | Benefit 2: Your Level 1 and level 2 and level 3 spells get +1 DC",
+      "benefit1": "You get +1 spell slot for level 1 and level 2 and level 3spells",
+      "benefit2": "Your Level 1 and level 2 and level 3 spells get +1 DC",
+      "description": "• Benefit 1: You get +1 spell slot for level 1 and level 2 and level 3spells\n• Benefit 2: Your Level 1 and level 2 and level 3 spells get +1 DC",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "spellSlot.level1",
+          "op": "add",
+          "value": 1,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "target": "spellSlot.level2",
+          "op": "add",
+          "value": 1,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "target": "spellSlot.level3",
+          "op": "add",
+          "value": 1,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "target": "entity.dc",
+          "selector": {
+            "type": "Spell",
+            "maxLevel": 3
+          },
+          "op": "add",
+          "value": 1,
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_mage_killer_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Mage Killer Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: When you saved vs a targeted spell, you get +3 attack and +3 damage vs the caster (1 turn) | Benefit 2: Gain +4 save vs targeted mind effect and illusions spells",
+      "benefit1": "When you saved vs a targeted spell, you get +3 attack and +3 damage vs the caster (1 turn)",
+      "benefit2": "Gain +4 save vs targeted mind effect and illusions spells",
+      "description": "• Benefit 1: When you saved vs a targeted spell, you get +3 attack and +3 damage vs the caster (1 turn)\n• Benefit 2: Gain +4 save vs targeted mind effect and illusions spells",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_memory_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Memory Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get +5 on wisdom checks for remembering | Benefit 2: Gain +10 on d100 checks of memory required spells",
+      "benefit1": "You get +5 on wisdom checks for remembering",
+      "benefit2": "Gain +10 on d100 checks of memory required spells",
+      "description": "• Benefit 1: You get +5 on wisdom checks for remembering\n• Benefit 2: Gain +10 on d100 checks of memory required spells",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_minion_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Minion Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Your minion/animal companion gain your levelx2 HP | Benefit 2: Your minion/animal companion gain +2 save vs spells and abilities",
+      "benefit1": "Your minion/animal companion gain your levelx2 HP",
+      "benefit2": "Your minion/animal companion gain +2 save vs spells and abilities",
+      "description": "• Benefit 1: Your minion/animal companion gain your levelx2 HP\n• Benefit 2: Your minion/animal companion gain +2 save vs spells and abilities",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_necromancy_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Necromancy Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: choose a 1st level spell of this school that you know, cast it at will | Benefit 2: Undead control HD is doubled (max is not changed)",
+      "benefit1": "choose a 1st level spell of this school that you know, cast it at will",
+      "benefit2": "Undead control HD is doubled (max is not changed)",
+      "description": "• Benefit 1: choose a 1st level spell of this school that you know, cast it at will\n• Benefit 2: Undead control HD is doubled (max is not changed)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "spell_at_will",
+          "filter": {
+            "school": "Necromancy",
+            "level": 1
+          },
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [
+        {
+          "id": "choice_boon_of_necromancy_lesser_spell",
+          "label": "Chosen 1st-Level Necromancy Spell",
+          "type": "spell",
+          "filter": {
+            "school": "Necromancy",
+            "level": 1
+          }
+        }
+      ],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_negative_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Negative Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get Negative Resist 10; you can heal an undead for 2d10 with touch | Benefit 2: You can curse a weapon you hold for additioanl 1d6 negative damage",
+      "benefit1": "You get Negative Resist 10; you can heal an undead for 2d10 with touch",
+      "benefit2": "You can curse a weapon you hold for additioanl 1d6 negative damage",
+      "description": "• Benefit 1: You get Negative Resist 10; you can heal an undead for 2d10 with touch\n• Benefit 2: You can curse a weapon you hold for additioanl 1d6 negative damage",
+      "action": "Standard Action",
+      "actionType": "standard",
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "resistance",
+          "target": "negative",
+          "value": 10,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "resources": [],
+      "damageParts": [
+        {
+          "dice": "2d10",
+          "bonus": 0,
+          "type": "Negative"
+        }
+      ],
+      "modes": [
+        {
+          "id": "touch_boon_of_negative_lesser",
+          "name": "Channel Touch (2d10)",
+          "actionType": "standard",
+          "damageParts": [
+            {
+              "dice": "2d10",
+              "bonus": 0,
+              "type": "Negative"
+            }
+          ]
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_performance_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Performance Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: All composition spells gets +2 DC | Benefit 2: Composition spells dont need concentration (you still only can have 1 active composition)",
+      "benefit1": "All composition spells gets +2 DC",
+      "benefit2": "Composition spells dont need concentration (you still only can have 1 active composition)",
+      "description": "• Benefit 1: All composition spells gets +2 DC\n• Benefit 2: Composition spells dont need concentration (you still only can have 1 active composition)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_periapt_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Periapt Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get +4 save vs curse and hex | Benefit 2: You can feel an item is cursed without a skill check, just by looking at it (10 ft)",
+      "benefit1": "You get +4 save vs curse and hex",
+      "benefit2": "You can feel an item is cursed without a skill check, just by looking at it (10 ft)",
+      "description": "• Benefit 1: You get +4 save vs curse and hex\n• Benefit 2: You can feel an item is cursed without a skill check, just by looking at it (10 ft)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "save.all",
+          "op": "add",
+          "value": 4,
+          "type": "Untyped",
+          "condition": "vs. Curse & Hex",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_positive_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Positive Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get Negative Resist 10; you can dmg an undead for 2d10 dmg with touch attack | Benefit 2: You can bless a weapon you hold for additioanl 1d6 positive damage",
+      "benefit1": "You get Negative Resist 10; you can dmg an undead for 2d10 dmg with touch attack",
+      "benefit2": "You can bless a weapon you hold for additioanl 1d6 positive damage",
+      "description": "• Benefit 1: You get Negative Resist 10; you can dmg an undead for 2d10 dmg with touch attack\n• Benefit 2: You can bless a weapon you hold for additioanl 1d6 positive damage",
+      "action": "Standard Action",
+      "actionType": "standard",
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "resistance",
+          "target": "negative",
+          "value": 10,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "resources": [],
+      "damageParts": [
+        {
+          "dice": "2d10",
+          "bonus": 0,
+          "type": "Positive"
+        }
+      ],
+      "modes": [
+        {
+          "id": "touch_boon_of_positive_lesser",
+          "name": "Channel Touch (2d10)",
+          "actionType": "standard",
+          "damageParts": [
+            {
+              "dice": "2d10",
+              "bonus": 0,
+              "type": "Positive"
+            }
+          ]
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_resilience_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Resilience Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Gain +1 to all saves vs spells | Benefit 2: If you fail a save vs a spell. You gain +3 additional save vs same spell for 1 minute",
+      "benefit1": "Gain +1 to all saves vs spells",
+      "benefit2": "If you fail a save vs a spell. You gain +3 additional save vs same spell for 1 minute",
+      "description": "• Benefit 1: Gain +1 to all saves vs spells\n• Benefit 2: If you fail a save vs a spell. You gain +3 additional save vs same spell for 1 minute",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "save.all",
+          "op": "add",
+          "value": 1,
+          "type": "Untyped",
+          "condition": "vs. Spells",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_saint_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Saint Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Gain Saint Touch ability 1+wis mod /day (cure disease + 2d10+wis mod heal) | Benefit 2: Touched by you gain +2 vs poison and disease for 24 hours",
+      "benefit1": "Gain Saint Touch ability 1+wis mod /day (cure disease + 2d10+wis mod heal)",
+      "benefit2": "Touched by you gain +2 vs poison and disease for 24 hours",
+      "description": "• Benefit 1: Gain Saint Touch ability 1+wis mod /day (cure disease + 2d10+wis mod heal)\n• Benefit 2: Touched by you gain +2 vs poison and disease for 24 hours",
+      "action": "Standard Action",
+      "actionType": "standard",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [
+        {
+          "id": "res_saint_touch",
+          "name": "Saint Touch (1+WIS/day)",
+          "kind": "consume",
+          "maxFormula": "1 + max(0, @wisMod)",
+          "recharge": {
+            "period": "day"
+          }
+        }
+      ],
+      "damageParts": [
+        {
+          "dice": "2d10",
+          "bonus": 0,
+          "type": "Healing"
+        }
+      ],
+      "modes": [
+        {
+          "id": "use_saint_touch",
+          "name": "Saint Touch (2d10+WIS Heal & Cure Disease)",
+          "actionType": "standard",
+          "resourceCost": [
+            {
+              "resourceId": "res_saint_touch",
+              "amount": 1
+            }
+          ],
+          "damageParts": [
+            {
+              "dice": "2d10",
+              "bonus": 0,
+              "type": "Healing"
+            }
+          ]
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_savage_attack_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Savage Attack Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: For each consecutive hit at the same target grant +1 more damage (max lvl/2) | Benefit 2: Whenever you missed a target on strike, you get +2 attack to the same target on your next strike",
+      "benefit1": "For each consecutive hit at the same target grant +1 more damage (max lvl/2)",
+      "benefit2": "Whenever you missed a target on strike, you get +2 attack to the same target on your next strike",
+      "description": "• Benefit 1: For each consecutive hit at the same target grant +1 more damage (max lvl/2)\n• Benefit 2: Whenever you missed a target on strike, you get +2 attack to the same target on your next strike",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_scent_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Scent Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get scent ability 30 ft | Benefit 2: You can use scent to track (with outdoorsman skill)",
+      "benefit1": "You get scent ability 30 ft",
+      "benefit2": "You can use scent to track (with outdoorsman skill)",
+      "description": "• Benefit 1: You get scent ability 30 ft\n• Benefit 2: You can use scent to track (with outdoorsman skill)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "sense",
+          "targetId": "scent",
+          "value": 30,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_siegecraft_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Siegecraft Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You cause %25 more damage with siege weapons | Benefit 2: Ranged siege weapons you use has %25 more range",
+      "benefit1": "You cause %25 more damage with siege weapons",
+      "benefit2": "Ranged siege weapons you use has %25 more range",
+      "description": "• Benefit 1: You cause %25 more damage with siege weapons\n• Benefit 2: Ranged siege weapons you use has %25 more range",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_sight_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Sight Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You gain superior darkvision 60ft (if already have superior darkvision, range inc +60 ft) | Benefit 2: Detection spells you cast has double range and area (like detect magic, true seeing, detect poison, etc)",
+      "benefit1": "You gain superior darkvision 60ft (if already have superior darkvision, range inc +60 ft)",
+      "benefit2": "Detection spells you cast has double range and area (like detect magic, true seeing, detect poison, etc)",
+      "description": "• Benefit 1: You gain superior darkvision 60ft (if already have superior darkvision, range inc +60 ft)\n• Benefit 2: Detection spells you cast has double range and area (like detect magic, true seeing, detect poison, etc)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "sense",
+          "targetId": "superior_darkvision",
+          "value": 60,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_spell_sniper_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Spell Sniper Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: All spell attacks get +2 and %25 more range | Benefit 2: Spell attacks ignore half and lesser covers",
+      "benefit1": "All spell attacks get +2 and %25 more range",
+      "benefit2": "Spell attacks ignore half and lesser covers",
+      "description": "• Benefit 1: All spell attacks get +2 and %25 more range\n• Benefit 2: Spell attacks ignore half and lesser covers",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_strength_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Strength Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Gain +2 STR | Benefit 2: Grapple checks and Athletics checks +4",
+      "benefit1": "Gain +2 STR",
+      "benefit2": "Grapple checks and Athletics checks +4",
+      "description": "• Benefit 1: Gain +2 STR\n• Benefit 2: Grapple checks and Athletics checks +4",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ability.str",
+          "op": "add",
+          "value": 2,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "target": "grapple",
+          "op": "add",
+          "value": 4,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_strike_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Strike Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You get -1 less penalty for each conc melee strike (-4 instead of normal -5) | Benefit 2: All melee weap cause +1 more dmg per phy dmg dice more damage (for example: 2d6 weapon get +2 dmg)",
+      "benefit1": "You get -1 less penalty for each conc melee strike (-4 instead of normal -5)",
+      "benefit2": "All melee weap cause +1 more dmg per phy dmg dice more damage (for example: 2d6 weapon get +2 dmg)",
+      "description": "• Benefit 1: You get -1 less penalty for each conc melee strike (-4 instead of normal -5)\n• Benefit 2: All melee weap cause +1 more dmg per phy dmg dice more damage (for example: 2d6 weapon get +2 dmg)",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_superior_blood_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Superior Blood Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Healling effects heals you %25 more | Benefit 2: Your blood is poisonous for who try to suck it. Fort DC: 10+Level/2+Con Mod, or sickened",
+      "benefit1": "Healling effects heals you %25 more",
+      "benefit2": "Your blood is poisonous for who try to suck it. Fort DC: 10+Level/2+Con Mod, or sickened",
+      "description": "• Benefit 1: Healling effects heals you %25 more\n• Benefit 2: Your blood is poisonous for who try to suck it. Fort DC: 10+Level/2+Con Mod, or sickened",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "healing.receivedMultiplier",
+          "op": "add",
+          "value": 0.25,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_swift_defence_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Swift Defence Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: can be flatfooted by only 3 or more opponents (instead of 2) | Benefit 2: When you get Crit hit, roll d20. if you roll 19-20; change the crit into regular hit",
+      "benefit1": "can be flatfooted by only 3 or more opponents (instead of 2)",
+      "benefit2": "When you get Crit hit, roll d20. if you roll 19-20; change the crit into regular hit",
+      "description": "• Benefit 1: can be flatfooted by only 3 or more opponents (instead of 2)\n• Benefit 2: When you get Crit hit, roll d20. if you roll 19-20; change the crit into regular hit",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_tenacious_magic_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Tenacious Magic Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: All spells you cast (including from items) has %20 more duration | Benefit 2: All Spells you cast has +3 dispelling DC",
+      "benefit1": "All spells you cast (including from items) has %20 more duration",
+      "benefit2": "All Spells you cast has +3 dispelling DC",
+      "description": "• Benefit 1: All spells you cast (including from items) has %20 more duration\n• Benefit 2: All Spells you cast has +3 dispelling DC",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "entity.durationMultiplier",
+          "selector": {
+            "type": "Spell"
+          },
+          "op": "multiply",
+          "value": 1.2,
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "target": "entity.dispelDcBonus",
+          "selector": {
+            "type": "Spell"
+          },
+          "op": "add",
+          "value": 3,
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_the_blind_eye_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of the Blind Eye Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: When you get this boon, you became blind. And got Blindsight 120 ft | Benefit 2: You get +8 to all listen checks",
+      "benefit1": "When you get this boon, you became blind. And got Blindsight 120 ft",
+      "benefit2": "You get +8 to all listen checks",
+      "description": "• Benefit 1: When you get this boon, you became blind. And got Blindsight 120 ft\n• Benefit 2: You get +8 to all listen checks",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "skill.listen",
+          "op": "add",
+          "value": 8,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "sense",
+          "targetId": "blindsight",
+          "value": 120,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_the_breathless_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of the Breathless Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You lost the ability to breath, therefore you cannot speak. And you dont need to breath to survive | Benefit 2: All spells you cast are auto Silent Spell - You ignore verbal component of spells",
+      "benefit1": "You lost the ability to breath, therefore you cannot speak. And you dont need to breath to survive",
+      "benefit2": "All spells you cast are auto Silent Spell - You ignore verbal component of spells",
+      "description": "• Benefit 1: You lost the ability to breath, therefore you cannot speak. And you dont need to breath to survive\n• Benefit 2: All spells you cast are auto Silent Spell - You ignore verbal component of spells",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_the_devourer_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of the Devourer Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You became a cannibal, you only consume meat. You get -3 to all diplomacy +3 to all intimidate | Benefit 2: When you consume a heart with special cooking, you get a random ability of the heart's owner",
+      "benefit1": "You became a cannibal, you only consume meat. You get -3 to all diplomacy +3 to all intimidate",
+      "benefit2": "When you consume a heart with special cooking, you get a random ability of the heart's owner",
+      "description": "• Benefit 1: You became a cannibal, you only consume meat. You get -3 to all diplomacy +3 to all intimidate\n• Benefit 2: When you consume a heart with special cooking, you get a random ability of the heart's owner",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "skill.diplomacy",
+          "op": "add",
+          "value": -3,
+          "type": "Penalty",
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "target": "skill.intimidate",
+          "op": "add",
+          "value": 3,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_the_hunter_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of the Hunter Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: On the wild terrains, you get +2 perception, stealth, and survival | Benefit 2: You can track without speed penalty on the wild terrains",
+      "benefit1": "On the wild terrains, you get +2 perception, stealth, and survival",
+      "benefit2": "You can track without speed penalty on the wild terrains",
+      "description": "• Benefit 1: On the wild terrains, you get +2 perception, stealth, and survival\n• Benefit 2: You can track without speed penalty on the wild terrains",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_the_ocean_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of the Ocean Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You can swim with your base land speed | Benefit 2: You can melee fight underwater without penalty",
+      "benefit1": "You can swim with your base land speed",
+      "benefit2": "You can melee fight underwater without penalty",
+      "description": "• Benefit 1: You can swim with your base land speed\n• Benefit 2: You can melee fight underwater without penalty",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "speed.swim",
+          "op": "max",
+          "formula": "30",
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_the_servant_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of the Servant Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You gain an unseen servant that you can command without sustaining (30 ft max range) | Benefit 2: You can use your unseen servant as a proxy for listen checks",
+      "benefit1": "You gain an unseen servant that you can command without sustaining (30 ft max range)",
+      "benefit2": "You can use your unseen servant as a proxy for listen checks",
+      "description": "• Benefit 1: You gain an unseen servant that you can command without sustaining (30 ft max range)\n• Benefit 2: You can use your unseen servant as a proxy for listen checks",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_the_true_caster_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of the True Caster Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Your caster level treated +1 for all spells you cast to calculating effects and SR | Benefit 2: Receiving damage while casting, do not cause fizzle",
+      "benefit1": "Your caster level treated +1 for all spells you cast to calculating effects and SR",
+      "benefit2": "Receiving damage while casting, do not cause fizzle",
+      "description": "• Benefit 1: Your caster level treated +1 for all spells you cast to calculating effects and SR\n• Benefit 2: Receiving damage while casting, do not cause fizzle",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "casterLevel",
+          "op": "add",
+          "value": 1,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_the_twisted_mind_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of the Twisted Mind Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: All mind effect and emotion effects, effect you half duration | Benefit 2: Gain +3 save for mind effects and emotion effects",
+      "benefit1": "All mind effect and emotion effects, effect you half duration",
+      "benefit2": "Gain +3 save for mind effects and emotion effects",
+      "description": "• Benefit 1: All mind effect and emotion effects, effect you half duration\n• Benefit 2: Gain +3 save for mind effects and emotion effects",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "save.will",
+          "op": "add",
+          "value": 3,
+          "type": "Untyped",
+          "condition": "vs. Mind & Emotion Effects",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_the_war_master_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of the War Master Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You became trained with every kind of weapon and armor | Benefit 2: Non magical weapons and armor you are using are considered as +1 and magical",
+      "benefit1": "You became trained with every kind of weapon and armor",
+      "benefit2": "Non magical weapons and armor you are using are considered as +1 and magical",
+      "description": "• Benefit 1: You became trained with every kind of weapon and armor\n• Benefit 2: Non magical weapons and armor you are using are considered as +1 and magical",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "proficiency",
+          "targetId": "all_weapons_and_armor",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_the_warrior_mage_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of the Warrior Mage Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Swift: Sacrifice a spell, gain AC bonus equal to sacrificed spell level until your next turn | Benefit 2: Swift: Sacrifice a spell, heal yourself sacrificed spell level x5",
+      "benefit1": "Swift: Sacrifice a spell, gain AC bonus equal to sacrificed spell level until your next turn",
+      "benefit2": "Swift: Sacrifice a spell, heal yourself sacrificed spell level x5",
+      "description": "• Benefit 1: Swift: Sacrifice a spell, gain AC bonus equal to sacrificed spell level until your next turn\n• Benefit 2: Swift: Sacrifice a spell, heal yourself sacrificed spell level x5",
+      "action": "Swift Action",
+      "actionType": "swift",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [
+        {
+          "id": "arcane_shield_sacrifice",
+          "name": "Arcane Shield (Sacrifice Spell -> +AC)",
+          "actionType": "swift",
+          "inputs": [
+            {
+              "id": "spellLevel",
+              "label": "Sacrificed Spell Level",
+              "type": "int",
+              "min": 1,
+              "max": 9,
+              "default": 1
+            }
+          ],
+          "spawnsBuff": {
+            "id": "buff_warrior_mage_ac",
+            "name": "Warrior Mage AC",
+            "durationRounds": 1,
+            "modifiers": [
+              {
+                "target": "ac.dodge",
+                "op": "add",
+                "formula": "@input.spellLevel",
+                "type": "Dodge"
+              }
+            ]
+          }
+        },
+        {
+          "id": "arcane_heal_sacrifice",
+          "name": "Arcane Surge (Sacrifice Spell -> Heal 5x Lvl)",
+          "actionType": "swift",
+          "inputs": [
+            {
+              "id": "spellLevel",
+              "label": "Sacrificed Spell Level",
+              "type": "int",
+              "min": 1,
+              "max": 9,
+              "default": 1
+            }
+          ],
+          "spawnsBuff": {
+            "id": "buff_warrior_mage_heal",
+            "name": "Warrior Mage Heal",
+            "durationRounds": 1,
+            "healFormula": "5 * @input.spellLevel"
+          }
+        }
+      ],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_transmutation_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Transmutation Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: choose a 1st level spell of this school that you know, cast it at will | Benefit 2: Transmutation range +%50, area +50%,",
+      "benefit1": "choose a 1st level spell of this school that you know, cast it at will",
+      "benefit2": "Transmutation range +%50, area +50%,",
+      "description": "• Benefit 1: choose a 1st level spell of this school that you know, cast it at will\n• Benefit 2: Transmutation range +%50, area +50%,",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "entity.areaMultiplier",
+          "selector": {
+            "type": "Spell",
+            "school": "Transmutation"
+          },
+          "op": "multiply",
+          "value": 1.5,
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [
+        {
+          "grantType": "spell_at_will",
+          "filter": {
+            "school": "Transmutation",
+            "level": 1
+          },
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "choices": [
+        {
+          "id": "choice_boon_of_transmutation_lesser_spell",
+          "label": "Chosen 1st-Level Transmutation Spell",
+          "type": "spell",
+          "filter": {
+            "school": "Transmutation",
+            "level": 1
+          }
+        }
+      ],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_troll_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Troll Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: You gain regen 3, and vulnurability acid 5 and fire 5 (mark of the troll will be imprinted on your neck) | Benefit 2: As long as your head is attached to your body, you cannot be killed without acid or fire damage",
+      "benefit1": "You gain regen 3, and vulnurability acid 5 and fire 5 (mark of the troll will be imprinted on your neck)",
+      "benefit2": "As long as your head is attached to your body, you cannot be killed without acid or fire damage",
+      "description": "• Benefit 1: You gain regen 3, and vulnurability acid 5 and fire 5 (mark of the troll will be imprinted on your neck)\n• Benefit 2: As long as your head is attached to your body, you cannot be killed without acid or fire damage",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [
+        {
+          "kind": "regen",
+          "target": "acid_or_fire",
+          "value": 3,
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "kind": "vulnerability",
+          "target": "acid",
+          "value": 5,
+          "sourceLabel": "Benefit 1"
+        },
+        {
+          "kind": "vulnerability",
+          "target": "fire",
+          "value": 5,
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_watcher_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Watcher Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: When get scry'd, throw a will save, if succeed you notice that you are being scry'd | Benefit 2: If someone fails a scry check on you, you instantly learn who tried to scry you",
+      "benefit1": "When get scry'd, throw a will save, if succeed you notice that you are being scry'd",
+      "benefit2": "If someone fails a scry check on you, you instantly learn who tried to scry you",
+      "description": "• Benefit 1: When get scry'd, throw a will save, if succeed you notice that you are being scry'd\n• Benefit 2: If someone fails a scry check on you, you instantly learn who tried to scry you",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_weapon_mastery_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Weapon Mastery Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Select a weapon you can use. Gain Focus and Specialization feats to it | Benefit 2: While using a weapon you have weapon focus, gain +1 AC",
+      "benefit1": "Select a weapon you can use. Gain Focus and Specialization feats to it",
+      "benefit2": "While using a weapon you have weapon focus, gain +1 AC",
+      "description": "• Benefit 1: Select a weapon you can use. Gain Focus and Specialization feats to it\n• Benefit 2: While using a weapon you have weapon focus, gain +1 AC",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ac.dodge",
+          "op": "add",
+          "value": 1,
+          "type": "Dodge",
+          "sourceLabel": "Benefit 2"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    },
+    {
+      "schemaVersion": 2,
+      "id": "pack_dm_draconic_boons:boon_of_wisdom_lesser",
+      "pack": "pack_dm_draconic_boons",
+      "name": "Boon of Wisdom Lesser",
+      "type": "DM Boon",
+      "category": "DM Boon",
+      "source": "DM Lesser Boons Compendium",
+      "benefit": "Benefit 1: Gain +2 WIS | Benefit 2: If succeed a save against mind effecting spell/ability, immunue to same effect for 1 minute",
+      "benefit1": "Gain +2 WIS",
+      "benefit2": "If succeed a save against mind effecting spell/ability, immunue to same effect for 1 minute",
+      "description": "• Benefit 1: Gain +2 WIS\n• Benefit 2: If succeed a save against mind effecting spell/ability, immunue to same effect for 1 minute",
+      "action": "Passive",
+      "actionType": "passive",
+      "modifiers": [
+        {
+          "target": "ability.wis",
+          "op": "add",
+          "value": 2,
+          "type": "Untyped",
+          "sourceLabel": "Benefit 1"
+        }
+      ],
+      "defenses": [],
+      "resources": [],
+      "damageParts": [],
+      "modes": [],
+      "grants": [],
+      "choices": [],
+      "tags": [
+        "lesser_boon",
+        "dm_boon"
+      ]
+    }
+  ]
+}

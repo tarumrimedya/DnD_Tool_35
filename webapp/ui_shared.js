@@ -514,6 +514,7 @@
     activeTab: 'srd', // 'srd' | 'forge' | 'custom' | 'Monster'
     srdCategoryFilter: 'all_gear', // 'all_gear' | 'Weapon' | 'Armor' | 'Item'
     query: '',
+    _searchSeq: 0,
     results: [],
     selectedEntry: null,
     onEquipCallback: null,
@@ -576,12 +577,13 @@
               <div class="w-8 h-8 rounded-lg bg-amber-500 text-slate-950 font-black flex items-center justify-center text-sm shrink-0 shadow">
                 🔍
               </div>
-              <input type="text" id="dnd-ui-compendium-input" oninput="DnDUI.onCompendiumSearchInput(this.value)" placeholder="Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)..." class="flex-1 h-8 bg-transparent pr-2 text-xs sm:text-sm text-white placeholder-slate-200 focus:outline-none font-semibold">
+              <input type="text" id="dnd-ui-compendium-input" oninput="DnDUI.onCompendiumSearchInput(this.value)" onkeydown="DnDUI.onCompendiumInputKeydown(event)" placeholder="Search 3,522 SRD entries (e.g. Longsword, Full Plate, Ring, Cloak)..." class="flex-1 h-8 bg-transparent pr-2 text-xs sm:text-sm text-white placeholder-slate-200 focus:outline-none font-semibold">
               <button type="button" onclick="DnDUI.onCompendiumSearchInput(document.getElementById('dnd-ui-compendium-input')?.value || '')" class="h-8 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-1.5 shrink-0 shadow transition cursor-pointer">
                 <span>🔍</span>
                 <span>Search</span>
               </button>
             </div>
+            <div id="dnd-ui-compendium-token-bar" class="hidden flex flex-wrap items-center gap-1.5 pt-0.5 text-[10px] font-mono"></div>
             <div id="dnd-ui-compendium-srd-subfilters" class="flex flex-wrap items-center gap-1.5 text-[11px]">
               <button type="button" data-srd-sub="all_gear" onclick="DnDUI.setSrdSubFilter('all_gear')" class="px-2.5 py-1 rounded-lg font-bold whitespace-nowrap transition cursor-pointer bg-indigo-600/30 text-indigo-200 border border-indigo-500/50">📦 All Gear</button>
               <button type="button" data-srd-sub="Armor" onclick="DnDUI.setSrdSubFilter('Armor')" class="px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition cursor-pointer bg-slate-900 text-slate-400 hover:text-white border border-slate-800">🛡️ Armor &amp; Shields</button>
@@ -772,7 +774,7 @@
     // Filter catalog by selected item type (Weapon vs Armor vs Shield)
     let eligibleCatalog = [];
     if (global.SrdCompendium && typeof global.SrdCompendium.getEnhancements === 'function') {
-      const compList = global.SrdCompendium.getEnhancements(baseType);
+      const compList = global.SrdCompendium.getEnhancements(baseType === 'Shield' ? 'Shield' : baseType);
       if (Array.isArray(compList) && compList.length > 0) {
         eligibleCatalog = compList.map(e => ({
           id: e.id,
@@ -1358,16 +1360,114 @@
     await executeCompendiumDrawerSearch(_drawerState.query);
   }
 
+  function parseCompendiumInlineQuery(raw) {
+    let working = String(raw || '').trim();
+    const filters = {};
+    const chips = [];
+
+    const prefixMatch = working.match(/^(armor|shield|weapon|ring|wondrous|item)\s*:\s*/i);
+    if (prefixMatch) {
+      const pKey = prefixMatch[1].toLowerCase();
+      const mapType = {
+        armor: ['Armor', 'Shield'],
+        shield: ['Shield'],
+        weapon: ['Weapon'],
+        ring: ['Ring', 'MagicItem', 'Item'],
+        wondrous: ['Wondrous Item', 'MagicItem', 'Item'],
+        item: ['Item', 'MagicItem', 'Consumable', 'Tool']
+      };
+      filters.type = mapType[pKey] || [pKey];
+      chips.push({ label: `TYPE: ${pKey.toUpperCase()}`, color: 'bg-indigo-950/90 text-indigo-300 border-indigo-500/60' });
+      working = working.slice(prefixMatch[0].length).trim();
+    }
+
+    const tokenRegex = /\b(type|slot|lvl|level|elig|pack)\s*:\s*("[^"]+"|'[^']+'|[^\s,;]+)/gi;
+    working = working.replace(tokenRegex, (_, rawKey, rawVal) => {
+      const k = rawKey.toLowerCase();
+      const v = String(rawVal || '').replace(/^['"]|['"]$/g, '').trim();
+      if (!v) return '';
+      if (k === 'type') {
+        filters.type = v.toLowerCase() === 'armor' ? ['Armor', 'Shield'] : v;
+        chips.push({ label: `TYPE: ${v.toUpperCase()}`, color: 'bg-indigo-950/90 text-indigo-300 border-indigo-500/60' });
+      } else if (k === 'slot') {
+        filters.slot = v;
+        chips.push({ label: `SLOT: ${v.toUpperCase()}`, color: 'bg-sky-950/90 text-sky-300 border-sky-500/60' });
+      } else if (k === 'lvl' || k === 'level') {
+        filters.level = Number(v);
+        chips.push({ label: `LVL ${v}`, color: 'bg-purple-950/90 text-purple-300 border-purple-500/60' });
+      } else if (k === 'elig') {
+        filters.elig = v.toLowerCase();
+        chips.push({ label: `ELIG: ${v.toUpperCase()}`, color: 'bg-emerald-950/90 text-emerald-300 border-emerald-500/60' });
+      } else if (k === 'pack') {
+        filters.pack = v.toLowerCase();
+        chips.push({ label: `PACK: ${v}`, color: 'bg-amber-950/90 text-amber-300 border-amber-500/60' });
+      }
+      return ' ';
+    }).replace(/\s+/g, ' ').trim();
+
+    const tokenBar = typeof document !== 'undefined' ? document.getElementById('dnd-ui-compendium-token-bar') : null;
+    if (tokenBar) {
+      if (chips.length > 0) {
+        let html = `<span class="text-slate-500 font-bold uppercase text-[9px]">Tokens:</span>` +
+          chips.map(c => `<span class="px-1.5 py-0.5 rounded border font-bold ${c.color}">${escapeHtml(c.label)}</span>`).join('');
+        if (working) {
+          html += `<span class="px-1.5 py-0.5 rounded border bg-slate-900 text-slate-300 border-slate-700">QUERY: "${escapeHtml(working)}"</span>`;
+        }
+        tokenBar.innerHTML = html;
+        tokenBar.classList.remove('hidden');
+      } else {
+        tokenBar.innerHTML = '';
+        tokenBar.classList.add('hidden');
+      }
+    }
+
+    return { cleanQuery: working, filters, chips };
+  }
+
   async function onCompendiumSearchInput(val) {
     _drawerState.query = val || '';
     await executeCompendiumDrawerSearch(_drawerState.query);
+  }
+
+  async function onCompendiumInputKeydown(event) {
+    if (!event) return;
+    const results = Array.isArray(_drawerState.results) ? _drawerState.results : [];
+    if (!results.length) return;
+    const curIdx = typeof _drawerState.selectedIndex === 'number' ? _drawerState.selectedIndex : 0;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      const nextIdx = (curIdx + 1) % results.length;
+      await selectCompendiumEntry(nextIdx);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      const prevIdx = (curIdx - 1 + results.length) % results.length;
+      await selectCompendiumEntry(prevIdx);
+    } else if (event.key === 'Tab') {
+      const sel = results[curIdx];
+      const input = document.getElementById('dnd-ui-compendium-input');
+      if (sel && sel.name && input) {
+        event.preventDefault();
+        input.value = sel.name;
+        _drawerState.query = sel.name;
+        await executeCompendiumDrawerSearch(sel.name);
+      }
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      equipSelectedCompendiumEntry();
+    }
   }
 
   async function executeCompendiumDrawerSearch(query) {
     const listEl = document.getElementById('dnd-ui-compendium-list');
     if (!listEl || !global.SrdCompendium) return;
 
-    const filters = { limit: 60 };
+    const parsedQ = parseCompendiumInlineQuery(query || '');
+    const cleanQuery = parsedQ.cleanQuery;
+    const inlineFilters = parsedQ.filters || {};
+    const reqId = ++_drawerState._searchSeq;
+
+    const filters = { limit: (inlineFilters.pack || inlineFilters.elig) ? 500 : 60 };
     if (_drawerState.activeTab === 'Monster') {
       filters.type = ['Monster'];
     } else if (_drawerState.activeTab === 'srd' || _drawerState.activeTab === 'Weapon' || _drawerState.activeTab === 'Armor' || _drawerState.activeTab === 'Item') {
@@ -1390,8 +1490,72 @@
       filters.type = tabMap[_drawerState.activeTab] || _drawerState.activeTab;
     }
 
-    const results = await global.SrdCompendium.search(query || '', filters);
-    _drawerState.results = Array.isArray(results) ? results : [];
+    if (inlineFilters.type) {
+      filters.type = Array.isArray(inlineFilters.type) ? inlineFilters.type : [inlineFilters.type];
+    }
+    if (inlineFilters.slot) {
+      filters.slot = inlineFilters.slot;
+    }
+    if (inlineFilters.level !== undefined && !Number.isNaN(inlineFilters.level)) {
+      filters.level = inlineFilters.level;
+    }
+
+    let results = await global.SrdCompendium.search(cleanQuery || '', filters);
+    if (reqId !== _drawerState._searchSeq) return;
+    results = Array.isArray(results) ? results.slice() : [];
+
+    // Apply inline pack: and elig: filters if present
+    if (inlineFilters.pack) {
+      results = results.filter(r => {
+        const pStr = (typeof r?.pack === 'object' && r.pack !== null)
+          ? String(r.pack.id || r.pack.name || '')
+          : String(r?.pack || '');
+        return pStr.toLowerCase().includes(inlineFilters.pack);
+      });
+    }
+    if (inlineFilters.elig && global.RuleMaster && typeof global.RuleMaster.evaluateEntryEligibilityForCharacter === 'function') {
+      const ef = inlineFilters.elig;
+      results = results.filter(r => {
+        const elig = global.RuleMaster.evaluateEntryEligibilityForCharacter(r);
+        if (ef === 'synergy') return elig.status === 'SYNERGY_READY';
+        if (ef === 'no' || ef === 'locked' || ef === 'missing') return !elig.met;
+        if (ef === 'yes' || ef === 'ok' || ef === 'elig' || ef === 'eligible') return elig.met;
+        return true;
+      });
+    }
+    if (results.length > 60) results = results.slice(0, 60);
+
+    // Natural Language Lego Item Synthesis inside Spotlight Search
+    const isGearDrawer = _drawerState.activeTab !== 'Monster' && _drawerState.activeTab !== 'Feat' && _drawerState.activeTab !== 'Spell';
+    if (cleanQuery && cleanQuery.length >= 3 && isGearDrawer) {
+      let synthItem = null;
+      if (global.RuleMaster && typeof global.RuleMaster.resolveLocalZeroTokenQuery === 'function') {
+        try {
+          const hits = global.RuleMaster.resolveLocalZeroTokenQuery(cleanQuery);
+          if (Array.isArray(hits) && hits.length > 0) {
+            const top = hits[0];
+            if (top && (top._isAssembledLego || top.enhancementBonus > 0 || top.material || (Array.isArray(top.enhancements) && top.enhancements.length > 0) || top.source === 'ItemAssembler-ZeroToken')) {
+              synthItem = top;
+            }
+          }
+        } catch (_) {}
+      }
+      if (!synthItem && global.ItemAssembler && typeof global.ItemAssembler.parseNaturalLanguageItem === 'function') {
+        try {
+          const parsed = global.ItemAssembler.parseNaturalLanguageItem(cleanQuery);
+          if (parsed && (parsed.enhancementBonus > 0 || parsed.material || (Array.isArray(parsed.enhancements) && parsed.enhancements.length > 0) || parsed.masterwork)) {
+            synthItem = parsed;
+          }
+        } catch (_) {}
+      }
+      if (synthItem && !results.some(r => r && String(r.name || '').toLowerCase() === String(synthItem.name || '').toLowerCase())) {
+        const clonedSynth = Object.assign({}, synthItem, { _instantForgeSynthesis: true, _isAssembledLego: true });
+        results.unshift(clonedSynth);
+      }
+    }
+
+    _drawerState.results = results;
+    _drawerState.selectedIndex = 0;
 
     if (_drawerState.results.length === 0) {
       const safeQ = escapeHtml(query || '');
@@ -1412,29 +1576,65 @@
       return;
     }
 
-    listEl.innerHTML = _drawerState.results.map((r, idx) => `
-      <div onclick="DnDUI.selectCompendiumEntry(${idx})" class="p-2.5 hover:bg-slate-900/90 cursor-pointer transition flex items-center justify-between gap-2 ${idx === 0 ? 'bg-indigo-950/50' : ''}">
-        <div class="min-w-0">
-          <div class="text-xs font-bold text-white truncate">${escapeHtml(r.name)}</div>
+    listEl.innerHTML = _drawerState.results.map((r, idx) => {
+      let badgesHtml = '';
+      if (r._instantForgeSynthesis) {
+        badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-600/60 text-[9px] font-mono font-bold">⚒️ Instant Forge Assembly</span>`;
+      }
+      if (Array.isArray(r._parseWarnings) && r._parseWarnings.length > 0) {
+        r._parseWarnings.forEach(w => {
+          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-500/50 text-[9px] font-mono font-semibold">⚠️ ${escapeHtml(w)}</span>`;
+        });
+      }
+      const hasPrereqOrFeat = Boolean(r.requires || (r.prereq && r.prereq !== '-') || r.type === 'Feat' || r.type === 'DM Boon');
+      if (hasPrereqOrFeat && global.RuleMaster && typeof global.RuleMaster.evaluateEntryEligibilityForCharacter === 'function') {
+        const elig = global.RuleMaster.evaluateEntryEligibilityForCharacter(r);
+        if (elig.status === 'SYNERGY_READY') {
+          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-emerald-950/90 text-emerald-300 border border-emerald-600/60 text-[9px] font-mono font-bold">✨ Synergy Ready</span>`;
+        } else if (elig.status === 'PREREQ_MISSING') {
+          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-rose-950/90 text-rose-300 border border-rose-700/60 text-[9px] font-mono font-bold">🔒 Missing Prereq</span>`;
+        } else if (r.requires || (r.prereq && r.prereq !== '-')) {
+          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-teal-950/90 text-teal-300 border border-teal-700/60 text-[9px] font-mono font-bold">✅ Eligible</span>`;
+        }
+      }
+      return `
+      <div data-comp-row-idx="${idx}" onclick="DnDUI.selectCompendiumEntry(${idx})" class="p-2.5 hover:bg-slate-900/90 cursor-pointer transition flex items-center justify-between gap-2 ${idx === 0 ? 'bg-indigo-950/50' : ''}">
+        <div class="min-w-0 flex-1">
+          <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
+            <span class="truncate">${escapeHtml(r.name)}</span>
+            ${badgesHtml}
+          </div>
           <div class="text-[10px] text-slate-400 font-mono truncate">${escapeHtml(r.type || 'SRD')}${r.category ? ` • ${escapeHtml(r.category)}` : ''}${r.level !== undefined && r.type === 'Monster' ? ` • CR ${escapeHtml(r.level)}` : ''}</div>
         </div>
         <span class="text-xs text-slate-500">›</span>
       </div>
-    `).join('');
+    `;
+    }).join('');
 
     await selectCompendiumEntry(0);
   }
 
   async function selectCompendiumEntry(idx) {
+    _drawerState.selectedIndex = idx;
     const item = _drawerState.results[idx];
     const detailEl = document.getElementById('dnd-ui-compendium-detail');
     if (!item || !detailEl || !global.SrdCompendium) return;
 
+    const listEl = document.getElementById('dnd-ui-compendium-list');
+    if (listEl) {
+      listEl.querySelectorAll('[data-comp-row-idx]').forEach(row => {
+        const rIdx = Number(row.getAttribute('data-comp-row-idx'));
+        row.classList.toggle('bg-indigo-950/50', rIdx === idx);
+      });
+    }
+
     let full = item;
-    if (typeof global.SrdCompendium.fetchEntry === 'function') {
-      full = (await global.SrdCompendium.fetchEntry(item.id, item.type)) || item;
-    } else if (typeof global.SrdCompendium.getById === 'function') {
-      full = global.SrdCompendium.getById(item.id) || item;
+    if (!(item._isAssembledLego || item._instantForgeSynthesis)) {
+      if (typeof global.SrdCompendium.fetchEntry === 'function') {
+        full = (await global.SrdCompendium.fetchEntry(item.id, item.type)) || item;
+      } else if (typeof global.SrdCompendium.getById === 'function') {
+        full = global.SrdCompendium.getById(item.id) || item;
+      }
     }
     _drawerState.selectedEntry = full;
 
@@ -1593,6 +1793,8 @@
     setSrdSubFilter,
     jumpToCustomAiTabWithQuery,
     onCompendiumSearchInput,
+    onCompendiumInputKeydown,
+    parseCompendiumInlineQuery,
     selectCompendiumEntry,
     equipSelectedCompendiumEntry,
     onForgeNaturalLanguageInput,

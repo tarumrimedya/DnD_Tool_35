@@ -13,7 +13,7 @@
   'use strict';
 
   const IDB_NAME = 'dnd35_srd_compendium_v2';
-  const IDB_VERSION = 4;
+  const IDB_VERSION = 5;
   const IDB_STORE = 'chunks';
 
   const EAGER_CHUNKS = [
@@ -26,7 +26,8 @@
     'mic_compendium.json',
     'srd_domains.json',
     'srd_companions.json',
-    'srd_templates.json'
+    'srd_templates.json',
+    'lego_patterns.json'
   ];
 
   const LAZY_CHUNKS = [
@@ -76,7 +77,15 @@
 
   function normalizeNameKey(name) {
     return String(name || '')
+      .replace(/[İIı]/g, 'i')
+      .replace(/[ğĞ]/g, 'g')
+      .replace(/[üÜ]/g, 'u')
+      .replace(/[şŞ]/g, 's')
+      .replace(/[öÖ]/g, 'o')
+      .replace(/[çÇ]/g, 'c')
       .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/^↳\s*/, '')
       .trim();
   }
@@ -150,6 +159,16 @@
   const _catalogIds = new Set();
 
   function registerEntries(records) {
+    if (records && typeof records === 'object' && !Array.isArray(records)) {
+      if (Array.isArray(records.entries)) {
+        records = records.entries;
+      } else if (Array.isArray(records.patterns)) {
+        global.LEGO_PATTERNS_CATALOG = records.patterns;
+        return;
+      } else {
+        return;
+      }
+    }
     if (!Array.isArray(records)) return;
     if (!Array.isArray(global.BUNDLED_SRD_CORE_CATALOG)) {
       global.BUNDLED_SRD_CORE_CATALOG = [];
@@ -488,13 +507,150 @@
     },
 
     /**
+     * Bounded Levenshtein edit distance (returns maxDist + 1 if distance exceeds maxDist).
+     */
+    _boundedLevenshtein(a, b, maxDist = 2) {
+      if (a === b) return 0;
+      const la = a.length;
+      const lb = b.length;
+      if (Math.abs(la - lb) > maxDist) return maxDist + 1;
+      if (la === 0) return lb <= maxDist ? lb : maxDist + 1;
+      if (lb === 0) return la <= maxDist ? la : maxDist + 1;
+
+      let prev = new Array(lb + 1);
+      let curr = new Array(lb + 1);
+      for (let j = 0; j <= lb; j++) prev[j] = j;
+
+      for (let i = 1; i <= la; i++) {
+        curr[0] = i;
+        let rowMin = curr[0];
+        const ca = a.charCodeAt(i - 1);
+        for (let j = 1; j <= lb; j++) {
+          const cost = ca === b.charCodeAt(j - 1) ? 0 : 1;
+          const val = Math.min(
+            prev[j] + 1,
+            curr[j - 1] + 1,
+            prev[j - 1] + cost
+          );
+          curr[j] = val;
+          if (val < rowMin) rowMin = val;
+        }
+        if (rowMin > maxDist) return maxDist + 1;
+        const tmp = prev;
+        prev = curr;
+        curr = tmp;
+      }
+      return prev[lb];
+    },
+
+    /**
+     * Returns true if all characters of needle appear in target in order.
+     */
+    _isOrderedSubsequence(needle, target) {
+      if (!needle) return true;
+      if (!target || needle.length > target.length) return false;
+      let i = 0;
+      for (let j = 0; j < target.length && i < needle.length; j++) {
+        if (needle.charCodeAt(i) === target.charCodeAt(j)) i++;
+      }
+      return i === needle.length;
+    },
+
+    /**
+     * Typo-tolerant Fuzzy Relevance Scorer for Spotlight & Compendium searches.
+     * Ranks Exact (1000) > Prefix (500-600) > Name Substring (250-350) > All Name Tokens (220)
+     * > Name-word Levenshtein Typo (140-200) > Name Subsequence (115) > Haystack Substring (80).
+     */
+    fuzzyScore(query, targetName, haystack = '') {
+      const q = normalizeNameKey(query);
+      if (!q) return 100;
+      const nLower = normalizeNameKey(targetName);
+      const hLower = haystack ? normalizeNameKey(haystack) : '';
+      if (!nLower && !hLower) return 0;
+      const qClean = q.replace(/[^a-z0-9]/g, '');
+      const nClean = nLower.replace(/[^a-z0-9]/g, '');
+
+      const matchesSubstringOrWordPrefix = (text, needle) => {
+        if (!text || !needle) return false;
+        if (needle.length >= 4) return text.includes(needle);
+        const words = text.split(/[^a-z0-9]+/).filter(Boolean);
+        return words.some(w => w.startsWith(needle));
+      };
+
+      if (nLower === q || (qClean && nClean === qClean)) {
+        return 1000;
+      }
+      if (nLower.startsWith(q) || (qClean.length >= 3 && nClean.startsWith(qClean))) {
+        return 600 - Math.min(100, nLower.length);
+      }
+      if (matchesSubstringOrWordPrefix(nLower, q) || (qClean.length >= 4 && nClean.includes(qClean))) {
+        const idx = nLower.indexOf(q);
+        return 350 - Math.min(100, idx >= 0 ? idx : 0);
+      }
+
+      const qTokens = q.split(/\s+/).filter(Boolean);
+      const allNameTokens = nLower && qTokens.length > 0 && qTokens.every(tok => matchesSubstringOrWordPrefix(nLower, tok) || (tok.length >= 4 && nClean.includes(tok)));
+      if (allNameTokens) {
+        return 220;
+      }
+
+      // Typo-tolerant per-token Levenshtein against target NAME words (requires >= 4 chars per typo token)
+      const targetWords = nLower.split(/[^a-z0-9]+/).filter(Boolean);
+      if (targetWords.length > 0 && qTokens.length > 0) {
+        let totalDist = 0;
+        let allTokensMatched = true;
+        for (let i = 0; i < qTokens.length; i++) {
+          const qt = qTokens[i].replace(/[^a-z0-9]/g, '');
+          if (!qt) continue;
+          if (matchesSubstringOrWordPrefix(nLower, qt) || (qt.length >= 4 && nClean.includes(qt))) continue;
+          if (qt.length < 4) {
+            allTokensMatched = false;
+            break;
+          }
+          const maxDist = qt.length >= 6 ? 2 : 1;
+          let bestWordDist = maxDist + 1;
+          for (let w = 0; w < targetWords.length; w++) {
+            const tw = targetWords[w];
+            const d = SrdCompendium._boundedLevenshtein(qt, tw, maxDist);
+            if (d < bestWordDist) bestWordDist = d;
+            if (bestWordDist === 0) break;
+          }
+          if (bestWordDist <= maxDist) {
+            totalDist += bestWordDist;
+          } else {
+            allTokensMatched = false;
+            break;
+          }
+        }
+        if (allTokensMatched) {
+          return Math.max(140, 200 - totalDist * 20);
+        }
+      }
+
+      // Ordered subsequence fallback on target name when first character matches (e.g. "scimtr" -> "scimitar")
+      if (qClean.length >= 4 && nClean.length >= qClean.length && qClean[0] === nClean[0] && (nClean.length - qClean.length) <= 4) {
+        if (SrdCompendium._isOrderedSubsequence(qClean, nClean)) {
+          return 115;
+        }
+      }
+
+      // Haystack / description substring or token match ranks below name matches
+      if (hLower) {
+        const fullHaystack = `${nLower} ${hLower}`;
+        if (matchesSubstringOrWordPrefix(fullHaystack, q) || (qTokens.length > 0 && qTokens.every(tok => matchesSubstringOrWordPrefix(fullHaystack, tok)))) {
+          return 80;
+        }
+      }
+
+      return 0;
+    },
+
+    /**
      * Unified Search across all 3,522 SRD Index entries AND the user's dynamic Master DB.
      * Supports type, category, slot, level, isFighterBonusFeat, and resolveFull options.
      */
     search(query = '', filters = {}) {
       const q = normalizeNameKey(query);
-      const qClean = q ? q.replace(/[^a-z0-9]/g, '') : '';
-      const qTokens = q ? q.split(/\s+/).filter(Boolean) : [];
       const limit = filters.limit || 50;
       const includeMasterDb = filters.includeMasterDb !== false;
       const resolveFull = filters.resolveFull !== false;
@@ -521,8 +677,6 @@
         const tLower = String(type || '').toLowerCase();
         const cLower = String(category || '').toLowerCase();
         const sLower = String(slot || '').toLowerCase();
-        const nLower = normalizeNameKey(name);
-        const nClean = nLower.replace(/[^a-z0-9]/g, '');
 
         if (allowedTypes && !allowedTypes.has(tLower)) return;
         if (catFilter && !cLower.includes(catFilter)) return;
@@ -532,21 +686,9 @@
 
         let score = (q && isCustom) ? 5 : 0;
         if (q) {
-          if (nLower === q || (qClean && nClean === qClean)) {
-            score += 1000;
-          } else if (nLower.startsWith(q) || (qClean.length >= 3 && nClean.startsWith(qClean))) {
-            score += 600 - Math.min(100, nLower.length);
-          } else if (nLower.includes(q) || (qClean.length >= 3 && nClean.includes(qClean))) {
-            score += 350 - Math.min(100, nLower.indexOf(q));
-          } else {
-            // Token match across name + category + type
-            const haystack = `${nLower} ${cLower} ${tLower}`;
-            for (let i = 0; i < qTokens.length; i++) {
-              const tok = qTokens[i];
-              if (!haystack.includes(tok) && !nClean.includes(tok)) return;
-            }
-            score += 150;
-          }
+          const fScore = SrdCompendium.fuzzyScore(q, name, `${cLower} ${tLower} ${sLower}`);
+          if (fScore <= 0) return;
+          score += fScore;
         } else {
           score += 100;
         }
@@ -641,17 +783,46 @@
       });
     },
 
+    _ensureNodeEquipmentLoaded() {
+      if (this.getAllLoaded('Material').length === 0 && typeof require !== 'undefined') {
+        try {
+          const fs = require('fs');
+          const path = require('path');
+          ['database/srd_equipment.json', 'database/mic_compendium.json'].forEach((rel) => {
+            const p = path.resolve(__dirname, rel);
+            if (fs.existsSync(p)) {
+              const records = JSON.parse(fs.readFileSync(p, 'utf8'));
+              registerEntries(records);
+            }
+          });
+        } catch (_) {}
+      }
+    },
+
     getMaterials() {
+      this._ensureNodeEquipmentLoaded();
       return this.getAllLoaded('Material');
     },
 
     getEnhancements(targetType = null) {
+      this._ensureNodeEquipmentLoaded();
       const list = this.getAllLoaded('Enhancement');
       if (!targetType) return list;
+      if (targetType === 'Shield' || targetType === 'Armor') {
+        return list.filter((e) => {
+          if (!e.targetType || e.targetType === 'Any') return true;
+          if (e.targetType !== 'Armor' && e.targetType !== 'Shield') return false;
+          const applies = String(e.appliesTo || '').toLowerCase().trim();
+          if (targetType === 'Shield' && applies === 'armor') return false;
+          if (targetType === 'Armor' && applies === 'shield') return false;
+          return true;
+        });
+      }
       return list.filter((e) => !e.targetType || e.targetType === targetType || e.targetType === 'Any');
     },
 
     getCrystals(targetType = null) {
+      this._ensureNodeEquipmentLoaded();
       const list = this.getAllLoaded('AugmentationCrystal');
       if (!targetType) return list;
       const t = targetType.toLowerCase();
@@ -1574,14 +1745,25 @@
      */
     parseNaturalLanguageItem(rawText) {
       if (!rawText || typeof rawText !== 'string') return null;
+      if (typeof SrdCompendium._ensureNodeEquipmentLoaded === 'function') {
+        SrdCompendium._ensureNodeEquipmentLoaded();
+      }
       let working = rawText.trim();
       if (!working) return null;
 
+      // Step A: Strip leading prefixes (armor:, shield:, weapon:, item:, ring:, wondrous:, type:..., slot:...) even without space after colon
+      working = working
+        .replace(/^(?:armor|shield|weapon|item|ring|wondrous|equipment)\s*:\s*/i, '')
+        .replace(/\b(?:type|slot)\s*:\s*(?:"[^"]+"|'[^']+'|[^\s,;]+)/gi, ' ')
+        .trim();
+      if (!working) return null;
+
+      // Step B: Match +1..+10 even when followed by a comma or parenthesis
       let enhancementBonus = 0;
-      const bonusMatch = working.match(/(?:^|\s)\+([1-9]|10)(?=\s|$)/i);
+      const bonusMatch = working.match(/(?:^|[\s,(])\+([1-9]|10)(?=[\s,)]|$)/i);
       if (bonusMatch) {
         enhancementBonus = parseInt(bonusMatch[1], 10) || 0;
-        working = working.replace(bonusMatch[0], ' ').trim();
+        working = working.replace(/\+([1-9]|10)(?=[\s,)]|$)/i, ' ').trim();
       }
 
       let masterwork = false;
@@ -1605,33 +1787,6 @@
         }
       }
 
-      const enhancements = [];
-      const allEnhs = [
-        ...SrdCompendium.getEnhancements('Weapon'),
-        ...SrdCompendium.getEnhancements('Armor')
-      ];
-      const seenEnhIds = new Set();
-      const sortedEnhs = [];
-      for (let i = 0; i < allEnhs.length; i++) {
-        if (!seenEnhIds.has(allEnhs[i].id)) {
-          seenEnhIds.add(allEnhs[i].id);
-          sortedEnhs.push(allEnhs[i]);
-        }
-      }
-      sortedEnhs.sort((a, b) => (b.name || '').length - (a.name || '').length);
-
-      for (let i = 0; i < sortedEnhs.length; i++) {
-        const enh = sortedEnhs[i];
-        const eName = String(enh.name || '').trim();
-        if (!eName) continue;
-        const escaped = eName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const re = new RegExp(`\\b${escaped}\\b`, 'i');
-        if (re.test(working)) {
-          enhancements.push(enh.id);
-          working = working.replace(re, ' ').trim();
-        }
-      }
-
       let crystal = null;
       const crystalMatch = working.match(/(?:with|socketed with|attached with)\s+([a-z0-9\s,'-]+)$/i);
       if (crystalMatch) {
@@ -1645,29 +1800,179 @@
         }
       }
 
-      const baseQuery = working
-        .replace(/\bof\b/gi, ' ')
-        .replace(/[(),]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+      // Step C: Resolve Base Item (exact loaded Weapon/Armor/Shield or common aliases like "heavy shield", "light shield", "studded leather", "half plate")
+      let matchedBase = null;
+      const isWoodHint = material === 'mat-darkwood' || /\b(?:wood|wooden|darkwood)\b/i.test(rawText);
+      const allBaseCandidates = SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield'])
+        .slice()
+        .sort((a, b) => (b.name || '').length - (a.name || '').length);
 
-      if (!baseQuery) return null;
+      for (let i = 0; i < allBaseCandidates.length; i++) {
+        const cand = allBaseCandidates[i];
+        const cName = String(cand.name || '').trim();
+        if (!cName) continue;
+        const escaped = cName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(`\\b${escaped}\\b`, 'i');
+        if (re.test(working)) {
+          matchedBase = cand;
+          working = working.replace(re, ' ').trim();
+          break;
+        }
+      }
 
-      const baseRef = SrdCompendium.getByName(baseQuery, 'Weapon') ||
-        SrdCompendium.getByName(baseQuery, 'Armor') ||
-        SrdCompendium.getByName(baseQuery, 'Shield') ||
-        SrdCompendium.getById(`wpn-${slugify(baseQuery)}`) ||
-        SrdCompendium.getById(`arm-${slugify(baseQuery)}`) ||
-        SrdCompendium.getById(`shd-${slugify(baseQuery)}`);
+      if (!matchedBase) {
+        const baseAliases = [
+          { re: /\bheavy\s+shield\b/i, id: isWoodHint ? 'shd-heavy-wooden-shield' : 'shd-heavy-steel-shield' },
+          { re: /\blight\s+shield\b/i, id: isWoodHint ? 'shd-light-wooden-shield' : 'shd-light-steel-shield' },
+          { re: /\btower\s+shield\b/i, id: 'shd-tower-shield' },
+          { re: /\bstudded\s+leather(?:\s+armor)?\b/i, id: 'arm-studded-leather-armor' },
+          { re: /\bhalf[\s-]+plate(?:\s+armor)?\b/i, id: 'arm-half-plate' },
+          { re: /\bfull[\s-]+plate(?:\s+armor)?\b/i, id: 'arm-full-plate' }
+        ];
+        for (let i = 0; i < baseAliases.length; i++) {
+          if (baseAliases[i].re.test(working)) {
+            const resolved = SrdCompendium.getById(baseAliases[i].id);
+            if (resolved) {
+              matchedBase = resolved;
+              working = working.replace(baseAliases[i].re, ' ').trim();
+              break;
+            }
+          }
+        }
+      }
 
-      if (!baseRef || !['Weapon', 'Armor', 'Shield'].includes(baseRef.type)) {
+      // Step D: Normalize enhancement aliases (strip [Synergy] and (MIC), invert "X, Greater" -> "Greater X") and match comma segments
+      const enhancements = [];
+      const candidateEnhs = matchedBase
+        ? SrdCompendium.getEnhancements(matchedBase.type)
+        : [
+            ...SrdCompendium.getEnhancements('Weapon'),
+            ...SrdCompendium.getEnhancements('Armor'),
+            ...SrdCompendium.getEnhancements('Shield')
+          ];
+      const seenEnhIds = new Set();
+      const uniqueEnhs = [];
+      for (let i = 0; i < candidateEnhs.length; i++) {
+        if (candidateEnhs[i] && !seenEnhIds.has(candidateEnhs[i].id)) {
+          seenEnhIds.add(candidateEnhs[i].id);
+          uniqueEnhs.push(candidateEnhs[i]);
+        }
+      }
+
+      const aliasPairs = [];
+      for (let i = 0; i < uniqueEnhs.length; i++) {
+        const enh = uniqueEnhs[i];
+        const rawName = String(enh.name || '').trim();
+        if (!rawName) continue;
+        const stripped = rawName
+          .replace(/\[[^\]]*\]/g, '')
+          .replace(/\([^)]*\)/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const localAliases = new Set([rawName, stripped]);
+        if (stripped.includes(',')) {
+          const parts = stripped.split(',').map(s => s.trim()).filter(Boolean);
+          if (parts.length === 2) {
+            localAliases.add(`${parts[1]} ${parts[0]}`);
+            localAliases.add(`${parts[0]} ${parts[1]}`);
+          }
+        }
+        localAliases.forEach((al) => {
+          if (al) aliasPairs.push({ enh, alias: al });
+        });
+      }
+      aliasPairs.sort((a, b) => b.alias.length - a.alias.length);
+
+      for (let i = 0; i < aliasPairs.length; i++) {
+        const { enh, alias } = aliasPairs[i];
+        if (enhancements.includes(enh.id)) continue;
+        const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(`\\b${escaped}\\b`, 'i');
+        if (re.test(working)) {
+          enhancements.push(enh.id);
+          working = working.replace(re, ' ').trim();
+        }
+      }
+
+      // Match leftover comma/semicolon-separated segments by prefix (len >= 4) or fuzzyScore >= 160
+      const segments = working.split(/[,;]+/);
+      const unmatchedSegments = [];
+      for (let s = 0; s < segments.length; s++) {
+        const segClean = segments[s]
+          .replace(/\bof\b/gi, ' ')
+          .replace(/[()]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (!segClean) continue;
+        const segLower = segClean.toLowerCase();
+        let matchedSegEnh = null;
+
+        if (segLower.length >= 4) {
+          // 1. Prefix match against normalized enhancement aliases (e.g., "Bashi" -> "Bashing")
+          let bestPrefixAliasLen = Infinity;
+          for (let i = 0; i < aliasPairs.length; i++) {
+            const { enh, alias } = aliasPairs[i];
+            if (enhancements.includes(enh.id)) continue;
+            const alLower = alias.toLowerCase();
+            if (alLower.startsWith(segLower) && alLower.length < bestPrefixAliasLen) {
+              bestPrefixAliasLen = alLower.length;
+              matchedSegEnh = enh;
+            }
+          }
+          // 2. Fuzzy match fallback (>= 160)
+          if (!matchedSegEnh && typeof SrdCompendium.fuzzyScore === 'function') {
+            let bestScore = 159;
+            for (let i = 0; i < aliasPairs.length; i++) {
+              const { enh, alias } = aliasPairs[i];
+              if (enhancements.includes(enh.id)) continue;
+              const sc = SrdCompendium.fuzzyScore(segLower, alias);
+              if (sc > bestScore) {
+                bestScore = sc;
+                matchedSegEnh = enh;
+              }
+            }
+          }
+        }
+
+        if (matchedSegEnh) {
+          enhancements.push(matchedSegEnh.id);
+        } else {
+          unmatchedSegments.push(segClean);
+        }
+      }
+
+      let usedUnmatchedForBase = false;
+      if (!matchedBase) {
+        const baseQuery = unmatchedSegments.join(' ').replace(/\s+/g, ' ').trim();
+        if (!baseQuery) return null;
+        matchedBase = SrdCompendium.getByName(baseQuery, 'Weapon') ||
+          SrdCompendium.getByName(baseQuery, 'Armor') ||
+          SrdCompendium.getByName(baseQuery, 'Shield') ||
+          SrdCompendium.getById(`wpn-${slugify(baseQuery)}`) ||
+          SrdCompendium.getById(`arm-${slugify(baseQuery)}`) ||
+          SrdCompendium.getById(`shd-${slugify(baseQuery)}`);
+        if (matchedBase) usedUnmatchedForBase = true;
+      }
+
+      if (!matchedBase || !['Weapon', 'Armor', 'Shield'].includes(matchedBase.type)) {
         return null;
       }
 
+      const parseWarnings = [];
+      if (!usedUnmatchedForBase && unmatchedSegments.length > 0) {
+        parseWarnings.push(`Unrecognized token(s): ${unmatchedSegments.join(', ')}`);
+      }
+      if (enhancements.length > 0 && enhancementBonus < 1) {
+        parseWarnings.push('RAW 3.5e: Magic special abilities require at least a +1 enhancement bonus');
+      }
+      if (enhancementBonus > 5) {
+        parseWarnings.push(`Epic (+${enhancementBonus}) enhancement bonus`);
+      }
+
       try {
-        return ItemAssembler.assemble({
-          baseItem: baseRef,
-          baseItemId: baseRef.id,
+        const assembled = ItemAssembler.assemble({
+          baseItem: matchedBase,
+          baseItemId: matchedBase.id,
           material,
           masterwork,
           enhancementBonus,
@@ -1675,6 +1980,10 @@
           crystal,
           source: 'ItemAssembler-ZeroToken'
         });
+        if (assembled && parseWarnings.length > 0) {
+          assembled._parseWarnings = parseWarnings;
+        }
+        return assembled;
       } catch (e) {
         return null;
       }
@@ -1852,6 +2161,19 @@
       }
 
       entry.ruleFlags = entry.ruleFlags && typeof entry.ruleFlags === 'object' ? entry.ruleFlags : {};
+      if (!Array.isArray(entry.defenses)) entry.defenses = [];
+      if (!Array.isArray(entry.resources)) entry.resources = [];
+      if (!Array.isArray(entry.grants)) entry.grants = [];
+      if (!Array.isArray(entry.choices)) entry.choices = [];
+      if (rawEntry.requires !== undefined && entry.requires === undefined) entry.requires = safeClone(rawEntry.requires);
+      if (rawEntry.overrides !== undefined && entry.overrides === undefined) entry.overrides = rawEntry.overrides;
+      if (rawEntry.pack !== undefined && entry.pack === undefined) entry.pack = rawEntry.pack;
+      if (rawEntry.stacks !== undefined && entry.stacks === undefined) entry.stacks = rawEntry.stacks;
+      if (rawEntry.invested !== undefined && entry.invested === undefined) entry.invested = rawEntry.invested;
+      if (rawEntry.autoUnlock !== undefined && entry.autoUnlock === undefined) entry.autoUnlock = rawEntry.autoUnlock;
+      if (rawEntry.isSynergy !== undefined && entry.isSynergy === undefined) entry.isSynergy = rawEntry.isSynergy;
+      if (rawEntry.isSynergyGrant !== undefined && entry.isSynergyGrant === undefined) entry.isSynergyGrant = rawEntry.isSynergyGrant;
+      if (rawEntry.sourceCategory !== undefined && entry.sourceCategory === undefined) entry.sourceCategory = rawEntry.sourceCategory;
       const cleanNameLower = String(entry.name || '').toLowerCase().trim();
       if (cleanNameLower.includes('steadfast determination')) {
         entry.ruleFlags.conToWillSave = true;
@@ -1928,12 +2250,175 @@
       return parents;
     },
 
+    getAbilityStemAndScore(entry) {
+      if (!entry || typeof entry !== 'object') {
+        const s = typeof entry === 'string' ? entry.toLowerCase().trim() : '';
+        return { stem: s, score: 0, isMalformedSlug: false, hasTypedDamage: false, hasSaveOrDc: false };
+      }
+      const rawName = String(entry.name || '').toLowerCase();
+      const stem = rawName
+        .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '')
+        .replace(/\([^)]*\)/g, ' ')
+        .replace(/\b(?:damage|deals|dealing)\b.*$/i, ' ')
+        .replace(/\b(?:weapon|attack|blast|strike|ability)\b\s*$/i, ' ')
+        .replace(/[^a-z0-9\s]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const idStr = String(entry.id || '').toLowerCase().trim();
+      const isMalformedSlug = /_(?:damage|deals|dealing)(?:_|$)/i.test(idStr);
+      const hasTypedDamage = (Array.isArray(entry.damageParts) && entry.damageParts.some(dp => dp && dp.type && !/^(untyped|physical)$/i.test(String(dp.type).trim()))) ||
+        (Array.isArray(entry.modes) && entry.modes.some(m => Array.isArray(m.damageParts) && m.damageParts.some(dp => dp && dp.type && !/^(untyped|physical)$/i.test(String(dp.type).trim()))));
+      const hasSaveOrDc = Boolean(entry.dcFormula || entry.save || (Array.isArray(entry.modes) && entry.modes.some(m => m && m.save)));
+      const hasRecharge = Boolean(entry.recharge || entry.rechargeDice || (Array.isArray(entry.resources) && entry.resources.length > 0));
+      const score = (hasTypedDamage ? 2 : 0) + (hasSaveOrDc ? 2 : 0) + (hasRecharge ? 1 : 0) + (entry.range ? 1 : 0) - (isMalformedSlug ? 3 : 0);
+      return { stem, score, isMalformedSlug, hasTypedDamage, hasSaveOrDc };
+    },
+
+    sanitizeCharacterAbilitiesAndPool(charData) {
+      if (!charData || typeof charData !== 'object') return charData;
+      const EXPLICIT_NON_GEAR_CATS = new Set([
+        'special ability', 'dm grant', 'dm boon', 'boon',
+        'feat', 'flaw', 'class feature', 'racial trait', 'synergy', 'template',
+        'spell', 'maneuver', 'stance'
+      ]);
+      const STRICT_NON_PHYSICAL_CATS = new Set([
+        'special ability', 'dm boon', 'dm grant', 'boon', 'feat', 'flaw', 'class feature', 'racial trait', 'synergy', 'template'
+      ]);
+      const PHYSICAL_SLOTS = new Set([
+        'mainhand', 'main hand', 'offhand', 'off-hand', 'off hand', 'off-hand/shield', 'two hands', 'two-handed',
+        'body', 'ring', 'ring1', 'ring2', 'neck', 'throat', 'waist', 'belt', 'shoulders',
+        'head', 'eyes', 'face', 'feet', 'boots', 'hands', 'gloves', 'arms', 'bracers',
+        'torso', 'armor', 'shield', 'weapon'
+      ]);
+      const PHYSICAL_GEAR_RX = /\b(scroll|wand|potion|oil|elixir|staff|rod|ring|amulet|cloak|boots|gloves|bracers|belt|helm|shield|armor|sword|dagger|bow|crossbow|axe|mace|spear)\b/i;
+
+      if (!Array.isArray(charData.specialAbilities)) charData.specialAbilities = [];
+      if (!Array.isArray(charData.feats)) charData.feats = [];
+      if (!Array.isArray(charData.spells)) charData.spells = [];
+
+      const pushUniqueEntry = (targetArr, item) => {
+        const idStr = String(item.id || '').trim();
+        const nmLower = String(item.name || '').toLowerCase().trim();
+        const exists = targetArr.some(existing => {
+          if (!existing) return false;
+          if (typeof existing === 'string') return existing.toLowerCase().trim() === nmLower;
+          return (idStr && String(existing.id || '').trim() === idStr) ||
+            (nmLower && String(existing.name || '').toLowerCase().trim() === nmLower);
+        });
+        if (!exists) targetArr.push(item);
+      };
+
+      if (Array.isArray(charData.gearPool)) {
+        const cleanPool = [];
+        for (let i = 0; i < charData.gearPool.length; i++) {
+          const item = charData.gearPool[i];
+          if (!item || typeof item !== 'object') continue;
+          const idStr = String(item.id || '').trim();
+          const idLower = idStr.toLowerCase();
+          const catLower = String(item.category || item.type || '').toLowerCase().trim();
+          const typeLower = String(item.type || '').toLowerCase().trim();
+          const slotLower = String(item.slot || '').toLowerCase().trim();
+          const nameStr = String(item.name || '');
+
+          const hasPhysicalSlot = PHYSICAL_SLOTS.has(slotLower);
+          const isScrollOrWand = PHYSICAL_GEAR_RX.test(nameStr) || PHYSICAL_GEAR_RX.test(catLower) || PHYSICAL_GEAR_RX.test(typeLower);
+          const hasPhysicalEconomy = Number(item.cost) > 0 || Number(item.gpValue) > 0 || Number(item.priceGp) > 0 ||
+            Number(item.weight) > 0 || Number(item.weightLb) > 0 || Boolean(item.weaponStats || item.armorStats || item.baseItemId);
+          const isStrictNonPhysicalCat = STRICT_NON_PHYSICAL_CATS.has(catLower) || STRICT_NON_PHYSICAL_CATS.has(typeLower);
+          const isMalformedAbilitySlug = /_(?:damage|deals|dealing)(?:_|$)/i.test(idLower);
+
+          // Physical Item Guard (B1): keep physical items in gearPool unless explicitly typed as non-gear ability/feat/boon
+          if ((hasPhysicalSlot || isScrollOrWand || hasPhysicalEconomy) && !isStrictNonPhysicalCat && !isMalformedAbilitySlug) {
+            cleanPool.push(item);
+            continue;
+          }
+
+          const effectiveCat = EXPLICIT_NON_GEAR_CATS.has(catLower)
+            ? catLower
+            : (EXPLICIT_NON_GEAR_CATS.has(typeLower) ? typeLower : '');
+
+          if (item.autoUnlock === true || item.isSynergy === true || effectiveCat === 'synergy') {
+            // Synergies auto-unlock dynamically via RuleEngine.evaluateLegoCharacter; ensure preserved in customDb before removing from gearPool
+            if (!Array.isArray(charData.customDb)) charData.customDb = [];
+            pushUniqueEntry(charData.customDb, item);
+            continue;
+          } else if (effectiveCat === 'feat' || effectiveCat === 'flaw') {
+            pushUniqueEntry(charData.feats, item);
+            continue;
+          } else if (effectiveCat === 'spell' && !isScrollOrWand) {
+            pushUniqueEntry(charData.spells, item);
+            continue;
+          } else if (
+            effectiveCat === 'maneuver' ||
+            effectiveCat === 'stance' ||
+            effectiveCat === 'special ability' ||
+            effectiveCat === 'dm grant' ||
+            effectiveCat === 'dm boon' ||
+            effectiveCat === 'boon' ||
+            effectiveCat === 'class feature' ||
+            effectiveCat === 'racial trait' ||
+            effectiveCat === 'template' ||
+            isMalformedAbilitySlug
+          ) {
+            pushUniqueEntry(charData.specialAbilities, item);
+            continue;
+          }
+
+          cleanPool.push(item);
+        }
+        charData.gearPool = cleanPool;
+      }
+
+      // Generic Stem & Completeness Deduplication (B2 & M1)
+      if (Array.isArray(charData.specialAbilities) && charData.specialAbilities.length > 0) {
+        const stemMaxScore = new Map();
+        for (let i = 0; i < charData.specialAbilities.length; i++) {
+          const a = charData.specialAbilities[i];
+          if (!a || typeof a !== 'object') continue;
+          const info = SchemaMigrator.getAbilityStemAndScore(a);
+          if (!info.stem) continue;
+          const prev = stemMaxScore.has(info.stem) ? stemMaxScore.get(info.stem) : -Infinity;
+          if (info.score > prev) stemMaxScore.set(info.stem, info.score);
+        }
+
+        charData.specialAbilities = charData.specialAbilities.filter(a => {
+          if (!a || typeof a !== 'object') return true;
+          if (Array.isArray(a.overrides) && a.overrides.length > 0) return true;
+          if (Array.isArray(a.modifiers) && a.modifiers.length > 0) return true;
+          const info = SchemaMigrator.getAbilityStemAndScore(a);
+          if (!info.stem) return true;
+          const maxScore = stemMaxScore.get(info.stem);
+          if (maxScore !== undefined && maxScore >= 2 && info.score < maxScore) {
+            if (info.isMalformedSlug || (info.score <= 1 && !info.hasTypedDamage && !info.hasSaveOrDc)) {
+              return false;
+            }
+          }
+          return true;
+        });
+
+        if (Array.isArray(charData.customDb)) {
+          charData.customDb = charData.customDb.filter(entry => {
+            if (!entry || typeof entry !== 'object') return true;
+            const info = SchemaMigrator.getAbilityStemAndScore(entry);
+            if (info.isMalformedSlug && info.stem && (stemMaxScore.get(info.stem) || 0) >= 2) {
+              return false;
+            }
+            return true;
+          });
+        }
+      }
+
+      return charData;
+    },
+
     /**
      * Upgrades an entire character sheet object (`characterData`) to Canonical V2 (`schemaVersion: 2`)
      * on load, including inventory, feats, spells, buffs, and `smartNotes`.
      */
     upgradeCharacterToV2(charData) {
       if (!charData || typeof charData !== 'object') return charData;
+
+      SchemaMigrator.sanitizeCharacterAbilitiesAndPool(charData);
 
       const listKeys = ['inventory', 'gear', 'weapons', 'armors', 'feats', 'specialAbilities', 'spells', 'buffs'];
       for (let i = 0; i < listKeys.length; i++) {
@@ -1942,6 +2427,8 @@
           charData[k] = SchemaMigrator.upgradeArrayToV2(charData[k]);
         }
       }
+
+      SchemaMigrator.sanitizeCharacterAbilitiesAndPool(charData);
 
       // Migrate legacy plain-text `notes` into structured `smartNotes` for `HubNotes` compatibility
       if (!Array.isArray(charData.smartNotes)) {

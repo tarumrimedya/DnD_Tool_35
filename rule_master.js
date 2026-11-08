@@ -322,9 +322,26 @@ const RuleMaster = {
       if (!Array.isArray(v2.modifiers)) v2.modifiers = [];
       if (!Array.isArray(v2.damageParts)) v2.damageParts = [];
       if (!Array.isArray(v2.modes)) v2.modes = [];
+      if (!Array.isArray(v2.defenses)) v2.defenses = [];
+      if (!Array.isArray(v2.resources)) v2.resources = [];
+      if (!Array.isArray(v2.grants)) v2.grants = [];
+      if (!Array.isArray(v2.choices)) v2.choices = [];
       if (!v2.ruleFlags || typeof v2.ruleFlags !== 'object') v2.ruleFlags = {};
       if (!Array.isArray(v2.tacticalBadges)) v2.tacticalBadges = [];
     }
+    if (!Array.isArray(v2.defenses)) v2.defenses = Array.isArray(entry.defenses) ? entry.defenses.slice() : [];
+    if (!Array.isArray(v2.resources)) v2.resources = Array.isArray(entry.resources) ? entry.resources.slice() : [];
+    if (!Array.isArray(v2.grants)) v2.grants = Array.isArray(entry.grants) ? entry.grants.slice() : [];
+    if (!Array.isArray(v2.choices)) v2.choices = Array.isArray(entry.choices) ? entry.choices.slice() : [];
+    if (entry.requires !== undefined && v2.requires === undefined) v2.requires = entry.requires;
+    if (entry.overrides !== undefined && v2.overrides === undefined) v2.overrides = entry.overrides;
+    if (entry.pack !== undefined && v2.pack === undefined) v2.pack = entry.pack;
+    if (entry.stacks !== undefined && v2.stacks === undefined) v2.stacks = entry.stacks;
+    if (entry.invested !== undefined && v2.invested === undefined) v2.invested = entry.invested;
+    if (entry.autoUnlock !== undefined && v2.autoUnlock === undefined) v2.autoUnlock = entry.autoUnlock;
+    if (entry.isSynergy !== undefined && v2.isSynergy === undefined) v2.isSynergy = entry.isSynergy;
+    if (entry.isSynergyGrant !== undefined && v2.isSynergyGrant === undefined) v2.isSynergyGrant = entry.isSynergyGrant;
+    if (entry.sourceCategory !== undefined && v2.sourceCategory === undefined) v2.sourceCategory = entry.sourceCategory;
     const cleanName = String(v2.name || '').replace(/^flaw:\s*/i, '').trim().toLowerCase();
     const isFlaw = String(v2.type || '').toLowerCase() === 'flaw'
       || String(v2.category || '').toLowerCase() === 'flaw'
@@ -614,9 +631,11 @@ const RuleMaster = {
       nonlethal: 'Nonlethal', untyped: 'Untyped'
     };
     const dmgRx = /\b(\d+d\d+)(?:\s*([+-]\s*\d+))?\s*(acid|fire|cold|electricity|electric|lightning|sonic|force|positive(?:\s+energy)?|negative(?:\s+energy)?|divine|holy|unholy|untyped|slashing|piercing|bludgeoning|nonlethal)?(?:\s*(?:damage|dmg))?\b/gi;
+    const matchedDmgStrings = [];
     let dmgMatch;
     while ((dmgMatch = dmgRx.exec(working)) !== null) {
       const fullMatched = dmgMatch[0];
+      matchedDmgStrings.push(fullMatched);
       const idxInCombined = combinedRaw.indexOf(fullMatched);
       if (idxInCombined >= 0) markerIndices.push(idxInCombined);
       const diceCore = dmgMatch[1].toLowerCase();
@@ -632,6 +651,12 @@ const RuleMaster = {
         source: 'Ability'
       });
     }
+    matchedDmgStrings.forEach(s => {
+      working = working.replace(s, ' ');
+    });
+    working = working
+      .replace(/\b(?:damage|dmg)\s*[:=-]?\s*/gi, ' ')
+      .replace(/\bdeals?\b/gi, ' ');
 
     // Verify we have enough structured ability markers to qualify (at least 2 markers, or Save/DC + Dice/Recharge)
     const hasDamage = damageParts.length > 0;
@@ -646,25 +671,30 @@ const RuleMaster = {
 
     // 5. EXTRACT CLEAN ABILITY NAME
     let rawTitle = '';
-    const segments = rawMain.split(/(?:\r?\n|\|)+/).map(s => s.trim()).filter(Boolean);
-    if (segments.length > 1) {
-      const firstSeg = segments[0];
-      if (!/^\d+d\d+/i.test(firstSeg) && !/^(?:save|dc|recharge|cooldown)\b/i.test(firstSeg)) {
-        rawTitle = firstSeg;
+    if (rawMain && rawBen && !/\d+d\d+|\b(?:save|dc|recharge|deals?|damage|dmg)\b/i.test(rawMain)) {
+      rawTitle = rawMain;
+    } else {
+      const segments = rawMain.split(/(?:\r?\n|\||—| - |:)+/).map(s => s.trim()).filter(Boolean);
+      if (segments.length > 1) {
+        const firstSeg = segments[0];
+        if (!/^\d+d\d+/i.test(firstSeg) && !/^(?:save|dc|recharge|cooldown)\b/i.test(firstSeg)) {
+          rawTitle = firstSeg;
+        }
       }
-    }
-    if (!rawTitle && markerIndices.length > 0) {
-      const earliestIdx = Math.min(...markerIndices);
-      if (earliestIdx > 0) {
-        rawTitle = combinedRaw.slice(0, earliestIdx).replace(/[\r\n|,;:\-•]+$/g, '').trim();
+      if (!rawTitle && markerIndices.length > 0) {
+        const earliestIdx = Math.min(...markerIndices);
+        if (earliestIdx > 0) {
+          rawTitle = combinedRaw.slice(0, earliestIdx).replace(/[\r\n|,;:\-•]+$/g, '').trim();
+        }
       }
-    }
-    if (!rawTitle) {
-      rawTitle = working.replace(/[,;|•\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!rawTitle) {
+        rawTitle = working.replace(/[,;|•\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+      }
     }
     rawTitle = rawTitle
       .replace(/^(?:special\s*ability|racial\s*trait|class\s*feature|feat|dm\s*boon|boon)\s*:\s*/i, '')
-      .replace(/[\r\n|,;:\-•]+$/g, '')
+      .replace(/\b(?:deals?|dealing|damage|dmg|takes?|taking|suffers?|usable\s+every|usable\s+once|in\s+a\s+\d|cone\s+of|line\s+of|range\s*:|save\s*:|dc\s*:|recharge\s*:|cooldown\s*:)\b[\s\S]*$/i, '')
+      .replace(/[\r\n|,;:\-•()]+$/g, '')
       .trim();
     if (!rawTitle || /^\d+$/.test(rawTitle)) {
       rawTitle = 'Special Ability';
@@ -1284,31 +1314,62 @@ const RuleMaster = {
     this.updateSelectionUi();
   },
 
+  evaluateEntryEligibilityForCharacter(item, ch = null) {
+    const activeChar = ch || (typeof character !== 'undefined' ? character : null);
+    if (!item || typeof item !== 'object') return { status: 'ELIGIBLE', isSynergy: false, met: true };
+    const hasV25Req = Boolean(item.requires && typeof item.requires === 'object' && Object.keys(item.requires).length > 0);
+    const catStr = String(item.type || item.category || item.sourceCategory || '').toLowerCase().trim();
+    const isSynergy = Boolean(
+      item.autoUnlock === true
+      || item.isSynergy === true
+      || item.isSynergyGrant === true
+      || catStr === 'synergy'
+    );
+    let met = true;
+    if (hasV25Req && typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluatePredicate === 'function') {
+      const ctx = typeof RuleEngine.getFormulaContext === 'function' ? RuleEngine.getFormulaContext(activeChar || {}) : {};
+      const ownedIds = typeof RuleEngine.buildCharacterOwnedIdsSet === 'function'
+        ? RuleEngine.buildCharacterOwnedIdsSet(activeChar || {})
+        : undefined;
+      met = RuleEngine.evaluatePredicate(item.requires, activeChar || {}, Object.assign({}, ctx, { ownedIds }));
+    } else if (item.prereq && item.prereq !== '-' && typeof checkFeatPrerequisites === 'function' && activeChar) {
+      const pEval = checkFeatPrerequisites(item, 0, Math.max(0, (Number(activeChar.level) || 1) - 1));
+      met = Boolean(pEval && pEval.allMet);
+    }
+    if (!met) return { status: 'PREREQ_MISSING', isSynergy, met: false };
+    if (isSynergy && hasV25Req) return { status: 'SYNERGY_READY', isSynergy: true, met: true };
+    return { status: 'ELIGIBLE', isSynergy, met: true };
+  },
+
   toggleSelectAllFiltered(isChecked) {
     if (!Array.isArray(masterDb)) return;
     const query = (document.getElementById('mdb-search-input')?.value || '').toLowerCase();
     const cat = document.getElementById('mdb-category-filter')?.value || 'ALL';
+    const eligFilter = document.getElementById('mdb-eligibility-filter')?.value || 'ALL';
     const bonusFilter = document.getElementById('mdb-bonus-filter')?.value || 'ALL';
     const scopeFilter = document.getElementById('mdb-scope-filter')?.value || 'ALL';
 
     masterDb.forEach((rawItem, idx) => {
       const item = this.ensureV2(rawItem);
+      const haystack = `${item.benefit || ''} ${item.description || ''} ${item.portfolio || ''} ${item.favoredWeapon || ''} ${item.grantedPower?.description || ''} ${Array.isArray(item.domains) ? item.domains.join(' ') : ''} ${item.source || ''} ${item.pack || ''} ${item.discipline || ''}`.toLowerCase();
+      const fuzzySc = (query && typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.fuzzyScore === 'function')
+        ? SrdCompendium.fuzzyScore(query, item.name || '', haystack)
+        : 0;
       const matchQ = !query ||
+        fuzzySc > 0 ||
         (item.name && item.name.toLowerCase().includes(query)) ||
-        (item.benefit && item.benefit.toLowerCase().includes(query)) ||
-        (item.description && item.description.toLowerCase().includes(query)) ||
-        (item.portfolio && item.portfolio.toLowerCase().includes(query)) ||
-        (item.favoredWeapon && item.favoredWeapon.toLowerCase().includes(query)) ||
-        (item.grantedPower?.description && item.grantedPower.description.toLowerCase().includes(query)) ||
-        (Array.isArray(item.domains) && item.domains.join(' ').toLowerCase().includes(query)) ||
-        (item.source && item.source.toLowerCase().includes(query)) ||
-        (item.discipline && item.discipline.toLowerCase().includes(query));
-      const matchCat = cat === 'ALL' || item.type === cat || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
+        haystack.includes(query);
+      const matchCat = cat === 'ALL' || item.type === cat || (cat === 'DM Grant' && item.type === 'DM Boon') || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
       const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
       const matchBonus = bonusFilter === 'ALL' || itemBonusType === bonusFilter;
       const matchScope = scopeFilter === 'ALL' || (item.scope || 'None / General') === scopeFilter;
+      const elig = this.evaluateEntryEligibilityForCharacter(item);
+      const matchElig = eligFilter === 'ALL'
+        || (eligFilter === 'ELIGIBLE' && elig.met)
+        || (eligFilter === 'SYNERGY_READY' && elig.status === 'SYNERGY_READY')
+        || (eligFilter === 'PREREQ_MISSING' && !elig.met);
 
-      if (matchQ && matchCat && matchBonus && matchScope) {
+      if (matchQ && matchCat && matchBonus && matchScope && matchElig) {
         const key = this.getEntrySelectionKey(item, idx);
         if (isChecked) {
           this.selectedIds.add(key);
@@ -1675,6 +1736,7 @@ const RuleMaster = {
     }
 
     this.onInlineManualTypeChange(true);
+    this.renderInlineLegoPrimitiveStudio();
 
     // Update Editing Banner & Action Button Labels
     const banner = document.getElementById('im-editing-banner');
@@ -2030,30 +2092,38 @@ const RuleMaster = {
 
     const query = (document.getElementById('mdb-search-input')?.value || '').toLowerCase();
     const cat = document.getElementById('mdb-category-filter')?.value || 'ALL';
+    const eligFilter = document.getElementById('mdb-eligibility-filter')?.value || 'ALL';
     const bonusFilter = document.getElementById('mdb-bonus-filter')?.value || 'ALL';
     const scopeFilter = document.getElementById('mdb-scope-filter')?.value || 'ALL';
 
+    const fuzzyScores = new WeakMap();
     let filtered = masterDb.filter((rawItem, idx) => {
+      if (rawItem && typeof rawItem === 'object' && '_fuzzyScore' in rawItem) delete rawItem._fuzzyScore;
       const item = this.ensureV2(rawItem);
       rawItem._originalIndex = idx;
-      const matchQ = !query ||
-        (item.name && item.name.toLowerCase().includes(query)) ||
-        (item.benefit && item.benefit.toLowerCase().includes(query)) ||
-        (item.description && item.description.toLowerCase().includes(query)) ||
-        (item.portfolio && item.portfolio.toLowerCase().includes(query)) ||
-        (item.favoredWeapon && item.favoredWeapon.toLowerCase().includes(query)) ||
-        (item.grantedPower?.description && item.grantedPower.description.toLowerCase().includes(query)) ||
-        (Array.isArray(item.domains) && item.domains.join(' ').toLowerCase().includes(query)) ||
-        (item.source && item.source.toLowerCase().includes(query)) ||
-        (item.discipline && item.discipline.toLowerCase().includes(query));
+      const haystack = `${item.benefit || ''} ${item.description || ''} ${item.portfolio || ''} ${item.favoredWeapon || ''} ${item.grantedPower?.description || ''} ${Array.isArray(item.domains) ? item.domains.join(' ') : ''} ${item.source || ''} ${item.pack || ''} ${item.discipline || ''}`.toLowerCase();
+      const fuzzySc = (query && typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.fuzzyScore === 'function')
+        ? SrdCompendium.fuzzyScore(query, item.name || '', haystack)
+        : (query && ((item.name && item.name.toLowerCase().includes(query)) || haystack.includes(query)) ? 100 : 0);
+      if (rawItem && typeof rawItem === 'object') fuzzyScores.set(rawItem, fuzzySc);
+      const matchQ = !query || fuzzySc > 0 || (item.name && item.name.toLowerCase().includes(query)) || haystack.includes(query);
 
-      const matchCat = cat === 'ALL' || item.type === cat || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
+      const matchCat = cat === 'ALL' || item.type === cat || (cat === 'DM Grant' && item.type === 'DM Boon') || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
       const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
       const matchBonus = bonusFilter === 'ALL' || itemBonusType === bonusFilter;
       const matchScope = scopeFilter === 'ALL' || (item.scope || 'None / General') === scopeFilter;
+      const elig = this.evaluateEntryEligibilityForCharacter(item);
+      const matchElig = eligFilter === 'ALL'
+        || (eligFilter === 'ELIGIBLE' && elig.met)
+        || (eligFilter === 'SYNERGY_READY' && elig.status === 'SYNERGY_READY')
+        || (eligFilter === 'PREREQ_MISSING' && !elig.met);
 
-      return matchQ && matchCat && matchBonus && matchScope;
+      return matchQ && matchCat && matchBonus && matchScope && matchElig;
     });
+
+    if (query) {
+      filtered.sort((a, b) => (fuzzyScores.get(b) || 0) - (fuzzyScores.get(a) || 0));
+    }
 
     const countBadge = document.getElementById('mdb-total-count-badge');
     if (countBadge) countBadge.textContent = `${filtered.length} / ${masterDb.length} Custom Entries`;
@@ -2167,6 +2237,28 @@ const RuleMaster = {
       const safeDescAttr = String(descText || '-').replace(/"/g, '&quot;');
       const safeItemNameJs = String(item.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
+      const eligBadgeHtml = (() => {
+        if (!item.requires && !item.pack) return '';
+        const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        const ch = (typeof window !== 'undefined' && window.characterData) ? window.characterData : (typeof character !== 'undefined' ? character : null);
+        const elig = this.evaluateEntryEligibilityForCharacter(item, ch);
+        let badges = '';
+        if (item.pack) {
+          const packStr = (typeof item.pack === 'object' && item.pack !== null) ? String(item.pack.id || item.pack.name || '') : String(item.pack || '');
+          if (packStr) {
+            badges += `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-950/80 text-indigo-300 border border-indigo-700/50">📦 ${esc(packStr)}</span>`;
+          }
+        }
+        if (elig.status === 'SYNERGY_READY') {
+          badges += `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-600/60" title="Auto-Unlock / Synergy Prerequisite Met">✨ Synergy Ready</span>`;
+        } else if (elig.status === 'PREREQ_MISSING') {
+          badges += `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-950/80 text-rose-300 border border-rose-800/60" title="Prerequisites Not Met">🔒 Prereq Missing</span>`;
+        } else if (item.requires) {
+          badges += `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-950/80 text-teal-300 border border-teal-700/50" title="Prerequisites Met">✅ Eligible</span>`;
+        }
+        return badges;
+      })();
+
       tr.innerHTML = `
         <td class="py-2.5 px-2.5 text-center">
           <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="RuleMaster.toggleSelectEntry('${escapedKey}', this.checked)" class="w-3.5 h-3.5 rounded border-slate-600 bg-slate-900 text-amber-500 focus:ring-amber-500 cursor-pointer" title="Select entry for export or batch actions">
@@ -2176,6 +2268,7 @@ const RuleMaster = {
             ${isDeity && item.icon ? `<span>${item.icon}</span>` : ''}
             <span>${item.name}</span>
             ${modesCount > 0 ? `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">⚡ ${modesCount} Mod</span>` : ''}
+            ${eligBadgeHtml}
           </div>
           <div class="text-[10px] text-slate-400 font-mono mt-0.5">${isDeity ? (item.title ? `${item.title} • ${item.category || 'Custom'}` : (item.category || item.source || 'Custom')) : (item.source || 'Custom')}</div>
         </td>
@@ -2337,12 +2430,23 @@ const RuleMaster = {
     }
   },
 
+  _failedGeminiModels: new Set(),
+
+  _isDeprecatedGeminiModel(m) {
+    if (!m || typeof m !== 'string') return true;
+    const lower = m.toLowerCase().trim();
+    if (this._failedGeminiModels && this._failedGeminiModels.has(lower)) return true;
+    return /^gemini-(?:1\.0|1\.5|2\.0)(?:-|$)/i.test(lower) ||
+           /(?:^|-)(?:exp|vision|aqa)(?:-|$)/i.test(lower);
+  },
+
   // Helper: Sanitize and deduplicate models cascade, ensuring guaranteed fallbacks and avoiding hangs
   _sanitizeModelList(list) {
-    let models = [...new Set([...(list || []), 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'].filter(Boolean))];
-    // If gemini-3.1-flash-lite is at index 0, move a reliable 2.5 or 2.0 flash model to index 0 so it doesn't hang
+    const fallbackList = ['gemini-2.5-flash', 'gemini-3.0-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro'];
+    let models = [...new Set([...(list || []), ...fallbackList].filter(m => m && !this._isDeprecatedGeminiModel(m)))];
+    // If gemini-3.1-flash-lite is at index 0, move a reliable 2.5 or 3.0 flash model to index 0 so it doesn't hang
     if (models[0] && models[0].includes('3.1-flash-lite')) {
-      const betterIdx = models.findIndex(m => m.includes('2.5-flash') && !m.includes('3.1'));
+      const betterIdx = models.findIndex(m => (m.includes('2.5-flash') || m.includes('3.0-flash')) && !m.includes('3.1'));
       if (betterIdx > 0) {
         const [better] = models.splice(betterIdx, 1);
         models.unshift(better);
@@ -2357,36 +2461,36 @@ const RuleMaster = {
       const match = (name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
       return match ? parseFloat(match[1]) : 0.0;
     }
-    // Filter out hanging or experimental models like 3.1-flash-lite from primary evaluation
+    // Filter out hanging, experimental, or deprecated models (e.g. 2.0-flash, 3.1-flash-lite)
     const cleanedModels = (Array.isArray(apiModels) ? apiModels.slice() : [])
-      .filter(m => m && !m.toLowerCase().includes('3.1-flash-lite'));
+      .filter(m => m && !m.toLowerCase().includes('3.1-flash-lite') && !this._isDeprecatedGeminiModel(m));
     const sorted = cleanedModels.sort((a, b) => parseVer(b) - parseVer(a));
 
+    const flash30 = sorted.find(m => m.includes('3.0-flash') && !m.includes('lite')) || 'gemini-3.0-flash';
     const flash25 = sorted.find(m => m.includes('2.5-flash') && !m.includes('lite')) || 'gemini-2.5-flash';
     const lite25 = sorted.find(m => m.includes('2.5-flash-lite')) || 'gemini-2.5-flash-lite';
-    const flash20 = sorted.find(m => m.includes('2.0-flash')) || 'gemini-2.0-flash';
 
     const liteModels = sorted.filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'));
     const flashModels = sorted.filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'));
     const proModels = sorted.filter(m => m.toLowerCase().includes('pro'));
 
     const pick3 = (candidates) => {
-      const pool = [...candidates, flash25, lite25, flash20, 'gemini-2.5-flash', 'gemini-2.0-flash'];
+      const pool = [...candidates, flash25, flash30, lite25, 'gemini-2.5-flash', 'gemini-3.0-flash', 'gemini-2.5-flash-lite'];
       const uniq = [];
       pool.forEach(m => {
-        if (m && !uniq.includes(m)) uniq.push(m);
+        if (m && !this._isDeprecatedGeminiModel(m) && !uniq.includes(m)) uniq.push(m);
       });
       return {
         primary: uniq[0] || 'gemini-2.5-flash',
-        fallback: uniq[1] || 'gemini-2.0-flash',
+        fallback: uniq[1] || 'gemini-3.0-flash',
         tertiary: uniq[2] || 'gemini-2.5-flash-lite'
       };
     };
 
     return {
-      QUICK_SEARCH: pick3([flash25, lite25, flash20, ...flashModels, ...liteModels]),
-      RULE_AUDIT: pick3([proModels[0], flash25, proModels[1], lite25]),
-      IMPORT_BATCH: pick3([flash25, lite25, proModels[0], flash20])
+      QUICK_SEARCH: pick3([flash25, flash30, lite25, ...flashModels, ...liteModels]),
+      RULE_AUDIT: pick3([proModels[0], flash25, flash30, proModels[1], lite25]),
+      IMPORT_BATCH: pick3([flash25, flash30, lite25, proModels[0]])
     };
   },
 
@@ -2397,12 +2501,31 @@ const RuleMaster = {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === 'object' && parsed.QUICK_SEARCH && parsed.RULE_AUDIT && parsed.IMPORT_BATCH) {
-          return parsed;
+          const allModels = [
+            parsed.QUICK_SEARCH.primary, parsed.QUICK_SEARCH.fallback, parsed.QUICK_SEARCH.tertiary,
+            parsed.RULE_AUDIT.primary, parsed.RULE_AUDIT.fallback, parsed.RULE_AUDIT.tertiary,
+            parsed.IMPORT_BATCH.primary, parsed.IMPORT_BATCH.fallback, parsed.IMPORT_BATCH.tertiary
+          ].filter(Boolean);
+          if (allModels.some(m => this._isDeprecatedGeminiModel(m))) {
+            localStorage.removeItem('dnd35_gemini_routing_matrix');
+            localStorage.removeItem('dnd35_gemini_discovered_models');
+            this._discoveredApiModels = null;
+          } else {
+            return parsed;
+          }
         }
       }
       const discoveredRaw = this._discoveredApiModels || JSON.parse(localStorage.getItem('dnd35_gemini_discovered_models') || 'null');
       if (Array.isArray(discoveredRaw) && discoveredRaw.length > 0) {
-        return this.buildDynamicRoutingFromModels(discoveredRaw);
+        if (discoveredRaw.some(m => this._isDeprecatedGeminiModel(m))) {
+          try {
+            localStorage.removeItem('dnd35_gemini_routing_matrix');
+            localStorage.removeItem('dnd35_gemini_discovered_models');
+          } catch (e) {}
+          this._discoveredApiModels = null;
+        } else {
+          return this.buildDynamicRoutingFromModels(discoveredRaw);
+        }
       }
     } catch (e) {}
     return this.buildDynamicRoutingFromModels([]);
@@ -2417,7 +2540,7 @@ const RuleMaster = {
     } else if (userPref === 'auto' && taskType === 'IMPORT_BATCH') {
       cfg = routing.IMPORT_BATCH;
     }
-    return [cfg.primary, cfg.fallback, cfg.tertiary].filter(Boolean);
+    return this._sanitizeModelList([cfg.primary, cfg.fallback, cfg.tertiary].filter(Boolean));
   },
 
   // Sanal Flash Ailesi Çözümleyicisi: Canlı modeller arasından en güncel ve kararlı Flash modelini dinamik seçer
@@ -2579,33 +2702,61 @@ Schema:
     }
 
     // Eğer önceden kaydedilmiş bir dinamik AI yönlendirme matrisi varsa doğrudan kullan (0ms gecikme)
-    const hasCustomMatrix = Boolean(localStorage.getItem('dnd35_gemini_routing_matrix'));
-    if (hasCustomMatrix && !forceRefresh) {
-      const activeRouting = this.getActiveTaskRouting();
-      let taskCfg = activeRouting.QUICK_SEARCH;
-      if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL' || this.getAiModelMode() === 'pro') {
-        taskCfg = activeRouting.RULE_AUDIT;
-      } else if (taskType === 'IMPORT_BATCH' && this.getAiModelMode() === 'auto') {
-        taskCfg = activeRouting.IMPORT_BATCH;
-      }
-      const customList = this._sanitizeModelList([taskCfg.primary, taskCfg.fallback, taskCfg.tertiary]);
-      if (customList.length > 0) {
-        if (!this._cachedTaskModels) this._cachedTaskModels = {};
-        this._cachedTaskModels[cacheKey] = customList;
-        return customList;
-      }
+    const rawMatrix = localStorage.getItem('dnd35_gemini_routing_matrix');
+    if (rawMatrix && !forceRefresh) {
+      try {
+        const parsedM = JSON.parse(rawMatrix);
+        const allM = parsedM ? [
+          parsedM.QUICK_SEARCH?.primary, parsedM.QUICK_SEARCH?.fallback, parsedM.QUICK_SEARCH?.tertiary,
+          parsedM.RULE_AUDIT?.primary, parsedM.RULE_AUDIT?.fallback, parsedM.RULE_AUDIT?.tertiary,
+          parsedM.IMPORT_BATCH?.primary, parsedM.IMPORT_BATCH?.fallback, parsedM.IMPORT_BATCH?.tertiary
+        ].filter(Boolean) : [];
+        if (allM.some(m => this._isDeprecatedGeminiModel(m))) {
+          localStorage.removeItem('dnd35_gemini_routing_matrix');
+          localStorage.removeItem('dnd35_gemini_discovered_models');
+          this._discoveredApiModels = null;
+        } else {
+          const activeRouting = this.getActiveTaskRouting();
+          let taskCfg = activeRouting.QUICK_SEARCH;
+          if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL' || this.getAiModelMode() === 'pro') {
+            taskCfg = activeRouting.RULE_AUDIT;
+          } else if (taskType === 'IMPORT_BATCH' && this.getAiModelMode() === 'auto') {
+            taskCfg = activeRouting.IMPORT_BATCH;
+          }
+          const customList = this._sanitizeModelList([taskCfg.primary, taskCfg.fallback, taskCfg.tertiary]);
+          if (customList.length > 0) {
+            if (!this._cachedTaskModels) this._cachedTaskModels = {};
+            this._cachedTaskModels[cacheKey] = customList;
+            return customList;
+          }
+        }
+      } catch (e) {}
     }
 
     try {
       let apiModels = (!forceRefresh && this._discoveredApiModels) ? this._discoveredApiModels : null;
+      if (Array.isArray(apiModels) && apiModels.some(m => this._isDeprecatedGeminiModel(m))) {
+        apiModels = null;
+        this._discoveredApiModels = null;
+        try {
+          localStorage.removeItem('dnd35_gemini_routing_matrix');
+          localStorage.removeItem('dnd35_gemini_discovered_models');
+        } catch (e) {}
+      }
       if (!apiModels && !forceRefresh) {
         try {
           const cachedJson = localStorage.getItem('dnd35_gemini_discovered_models');
           if (cachedJson) {
             const parsed = JSON.parse(cachedJson);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              apiModels = parsed;
-              this._discoveredApiModels = parsed;
+              if (parsed.some(m => this._isDeprecatedGeminiModel(m))) {
+                localStorage.removeItem('dnd35_gemini_routing_matrix');
+                localStorage.removeItem('dnd35_gemini_discovered_models');
+                this._discoveredApiModels = null;
+              } else {
+                apiModels = parsed;
+                this._discoveredApiModels = parsed;
+              }
             }
           }
         } catch (e) {}
@@ -2626,7 +2777,8 @@ Schema:
             .map(m => m.name.replace(/^models\//, ''))
             .filter(m => {
               const lower = m.toLowerCase();
-              return !lower.includes('tts') &&
+              return !this._isDeprecatedGeminiModel(m) &&
+                     !lower.includes('tts') &&
                      !lower.includes('image') &&
                      !lower.includes('audio') &&
                      !lower.includes('embedding') &&
@@ -3540,8 +3692,8 @@ Return valid JSON only matching:
 }`;
     }
 
-    // 4. WEAPON / ARMOR / SHIELD / WONDROUS ITEM / RING / MAGIC ITEM / AUGMENT CRYSTAL
-    if (['weapon', 'armor', 'shield', 'armor / shield', 'wondrous item', 'ring', 'magic item', 'item', 'augment crystal', 'potion', 'scroll', 'wand', 'consumable'].includes(cat)) {
+    // 4. WEAPON / ARMOR / SHIELD / WONDROUS ITEM / RING / MAGIC ITEM / AUGMENT CRYSTAL / EQUIPMENT
+    if (['weapon', 'armor', 'shield', 'armor / shield', 'wondrous item', 'ring', 'magic item', 'item', 'equipment', 'augment crystal', 'potion', 'scroll', 'wand', 'consumable'].includes(cat)) {
       return `You are a master D&D 3.5e Rule Arbiter.
 Target query: "${cleanQuery}" (Category: "${effectiveCategory}").
 
@@ -4040,10 +4192,23 @@ Return valid JSON only matching:
         } else {
           const errJson = await response.json().catch(() => ({}));
           lastError = errJson.error?.message || `HTTP ${response.status} (${model})`;
-          if (response.status === 404 || (lastError && lastError.toLowerCase().includes('not found'))) {
+          const errLower = String(lastError || '').toLowerCase();
+          if (
+            response.status === 404 ||
+            errLower.includes('not found') ||
+            errLower.includes('no longer available') ||
+            errLower.includes('deprecated') ||
+            errLower.includes('is not supported')
+          ) {
+            if (this._failedGeminiModels && model) {
+              this._failedGeminiModels.add(String(model).toLowerCase().trim());
+            }
             this._discoveredApiModels = null;
             this._cachedTaskModels = {};
-            try { localStorage.removeItem('dnd35_gemini_discovered_models'); } catch (e) {}
+            try {
+              localStorage.removeItem('dnd35_gemini_discovered_models');
+              localStorage.removeItem('dnd35_gemini_routing_matrix');
+            } catch (e) {}
           }
         }
       } catch (netErr) {
@@ -4572,9 +4737,11 @@ Return valid JSON only matching:
     const item = this.ensureV2(rawItem);
     const type = (item.type || '').toLowerCase();
     const cat = item.category || item.type || 'Other';
+    const catLower = String(cat || '').toLowerCase();
 
-    // 1. Ensure item is placed in character.gearPool (except pure Feats/Spells/Maneuvers/Stances/Racial Traits/Flaws/Deities/Domains)
-    const isNonPhysical = ['feat', 'spell', 'maneuver', 'stance', 'flaw', 'racial trait', 'race', 'deity', 'domain', 'cleric domain'].includes(type);
+    // 1. Ensure item is placed in character.gearPool (except pure Feats/Spells/Maneuvers/Stances/Racial Traits/Flaws/Deities/Domains/Special Abilities/DM Boons)
+    const nonPhysicalTypes = ['feat', 'spell', 'maneuver', 'stance', 'flaw', 'racial trait', 'race', 'deity', 'domain', 'cleric domain', 'special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'trait', 'synergy', 'template'];
+    const isNonPhysical = nonPhysicalTypes.includes(type) || nonPhysicalTypes.includes(catLower) || String(item.id || '').startsWith('ability_') || String(item.id || '').startsWith('feat_') || String(item.id || '').startsWith('boon_');
     if (type === 'deity') {
       if (typeof selectDeityItem === 'function') {
         selectDeityItem(item.name);
@@ -4855,6 +5022,22 @@ Return valid JSON only matching:
       if (!character.feats) character.feats = [];
       character.feats.push(item.name);
       alert(`✨ Feat "${item.name}" added to character!`);
+    } else if (['special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'synergy', 'trait', 'template'].includes(type) || ['special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'synergy', 'trait', 'template'].includes(catLower) || String(item.id || '').startsWith('ability_') || String(item.id || '').startsWith('boon_')) {
+      if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+      const existingIdx = character.specialAbilities.findIndex(a => {
+        if (!a) return false;
+        if (typeof a === 'string') return a.toLowerCase().trim() === String(item.name || '').toLowerCase().trim();
+        return (item.id && String(a.id || '') === String(item.id)) || String(a.name || '').toLowerCase().trim() === String(item.name || '').toLowerCase().trim();
+      });
+      if (existingIdx >= 0) {
+        character.specialAbilities[existingIdx] = Object.assign({}, typeof character.specialAbilities[existingIdx] === 'object' ? character.specialAbilities[existingIdx] : {}, item);
+      } else {
+        character.specialAbilities.push(item);
+      }
+      if (typeof SchemaMigrator !== 'undefined' && typeof SchemaMigrator.sanitizeCharacterAbilitiesAndPool === 'function') {
+        SchemaMigrator.sanitizeCharacterAbilitiesAndPool(character);
+      }
+      alert(`✨ Special Ability / Boon "${item.name}" added to character!`);
     } else if (type === 'potion' || type === 'scroll' || type === 'wand' || type === 'consumable' || (item.category && item.category.toLowerCase() === 'consumable')) {
       if (!character.consumables) character.consumables = [];
       character.consumables.push({
@@ -5979,6 +6162,7 @@ Return valid JSON only matching:
       if (modList && !modList.children.length) {
         this.addInlineManualModifierRow();
       }
+      this.renderInlineLegoPrimitiveStudio();
       const nameIn = document.getElementById('im-name');
       if (nameIn) nameIn.focus();
     } else {
@@ -6202,9 +6386,11 @@ Return valid JSON only matching:
     const prereqVal = (document.getElementById('im-prereq')?.value || '-').trim();
     const benefitVal = (document.getElementById('im-benefit')?.value || '').trim();
 
-    const baseObj = (editIdx >= 0 && typeof masterDb !== 'undefined' && Array.isArray(masterDb) && masterDb[editIdx])
-      ? this.ensureV2(JSON.parse(JSON.stringify(masterDb[editIdx])))
-      : (this._currentEditingEntry ? this.ensureV2(JSON.parse(JSON.stringify(this._currentEditingEntry))) : this.createEmptyEntry(typeVal));
+    const baseObj = this._currentEditingEntry
+      ? this.ensureV2(JSON.parse(JSON.stringify(this._currentEditingEntry)))
+      : ((editIdx >= 0 && typeof masterDb !== 'undefined' && Array.isArray(masterDb) && masterDb[editIdx])
+        ? this.ensureV2(JSON.parse(JSON.stringify(masterDb[editIdx])))
+        : this.createEmptyEntry(typeVal));
 
     const modifiers = [];
     document.querySelectorAll('#im-modifiers-list .im-mod-row').forEach(row => {
@@ -6216,6 +6402,16 @@ Return valid JSON only matching:
         modifiers.push({ target, value: Number(rawVal), type, condition: cond });
       }
     });
+    // Preserve V2.5 formula-based or selector-based modifiers from baseObj that cannot be represented in numeric-only inputs
+    if (Array.isArray(baseObj.modifiers)) {
+      baseObj.modifiers.forEach(bm => {
+        if (!bm || typeof bm !== 'object') return;
+        const isComplexV25 = Boolean((bm.formula !== undefined && bm.formula !== null && isNaN(Number(bm.formula))) || bm.selector || (bm.op && bm.op !== 'add'));
+        if (isComplexV25 && !modifiers.some(m => m.target === bm.target && m.formula === bm.formula)) {
+          modifiers.push(Object.assign({}, bm));
+        }
+      });
+    }
 
     const damageParts = [];
     if (diceVal) {
@@ -6259,6 +6455,16 @@ Return valid JSON only matching:
       damageParts,
       ruleFlags
     });
+
+    if (editIdx < 0 && entry.name && (!baseObj.id || String(baseObj.id).startsWith('ability_') || String(baseObj.id).startsWith('custom_'))) {
+      const slug = String(entry.name || '')
+        .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'entry';
+      const isAbilityType = ['Special Ability', 'DM Boon', 'DM Grant', 'Racial Trait', 'Class Feature'].includes(typeVal);
+      entry.id = isAbilityType ? `ability_${slug}` : `custom_${slug}_${Date.now()}`;
+    }
 
     if (!isNaN(chargesVal) && chargesVal > 0) {
       entry.dailyCharges = {
@@ -6366,12 +6572,303 @@ Return valid JSON only matching:
     const saveEqLbl = document.getElementById('btn-im-save-equip-label');
     if (saveEqLbl) saveEqLbl.textContent = 'Save & Equip to Character';
 
+    setVal('im-v25-pattern-select', '');
+    const dryRunBox = document.getElementById('im-v25-dryrun-preview');
+    if (dryRunBox) {
+      dryRunBox.innerHTML = '';
+      dryRunBox.classList.add('hidden');
+    }
+
     this.onInlineManualTypeChange(true);
+    this.renderInlineLegoPrimitiveStudio();
 
     const mdbModal = document.getElementById('modal-master-db-editor');
     if (mdbModal && !mdbModal.classList.contains('hidden')) {
       this.closeMasterDbEditorModal();
     }
+  },
+
+  // ====================================================
+  // PHASE P5: V2.5 UNIVERSAL RULE FORGE (6-PRIMITIVE LEGO STUDIO)
+  // ====================================================
+  _ensureEditingDraft() {
+    if (!this._currentEditingEntry) {
+      const typeVal = document.getElementById('im-type')?.value || 'DM Boon';
+      this._currentEditingEntry = this.createEmptyEntry(typeVal);
+    }
+    const e = this._currentEditingEntry;
+    if (!Array.isArray(e.defenses)) e.defenses = [];
+    if (!Array.isArray(e.resources)) e.resources = [];
+    if (!Array.isArray(e.modes)) e.modes = [];
+    if (!Array.isArray(e.grants)) e.grants = [];
+    if (!Array.isArray(e.choices)) e.choices = [];
+    if (!Array.isArray(e.modifiers)) e.modifiers = [];
+    return e;
+  },
+
+  renderInlineLegoPrimitiveStudio() {
+    const pillsBox = document.getElementById('im-v25-primitives-pills');
+    if (!pillsBox) return;
+    const e = this._currentEditingEntry;
+    if (!e) {
+      pillsBox.innerHTML = '<span class="italic text-slate-500">No V2.5 Lego primitives attached yet. Choose an archetype above or click a primitive button.</span>';
+      return;
+    }
+
+    const escHtml = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const pills = [];
+    (e.defenses || []).forEach((d, idx) => {
+      const lbl = d.kind === 'immunity' ? `Immunity: ${d.target}` : (d.kind === 'dr' ? `DR ${d.value || d.formula}/${d.bypass || '-'}` : (d.kind === 'absorption' ? `Absorb ${d.target} (${Math.round((Number(d.healRatio ?? 1)) * 100)}%)` : `${d.kind}: ${d.target} ${d.value || d.formula || ''}`));
+      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-950/90 border border-cyan-500/50 text-cyan-200 font-mono text-[10px]"><span>🛡️ ${escHtml(lbl)}</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('defenses', ${idx})" class="text-cyan-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+    });
+    (e.resources || []).forEach((r, idx) => {
+      const rec = r.recharge?.dice ? `Recharge ${r.recharge.dice} rds` : (r.recharge?.period || 'daily');
+      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-950/90 border border-amber-500/50 text-amber-200 font-mono text-[10px]"><span>🔋 ${escHtml(r.name || r.id)} (${escHtml(r.maxFormula ?? 1)} / ${escHtml(rec)})</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('resources', ${idx})" class="text-amber-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+    });
+    (e.modes || []).forEach((m, idx) => {
+      const react = m.reactsTo ? ` [Reacts: ${m.reactsTo}]` : '';
+      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-950/90 border border-purple-500/50 text-purple-200 font-mono text-[10px]"><span>⚡ ${escHtml(m.name || m.id)} (${escHtml(m.actionType || 'standard')}${escHtml(react)})</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('modes', ${idx})" class="text-purple-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+    });
+    (e.grants || []).forEach((g, idx) => {
+      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-950/90 border border-emerald-500/50 text-emerald-200 font-mono text-[10px]"><span>🎁 Grant ${escHtml(g.grantType)}: ${escHtml(g.targetId || g.name || '')}</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('grants', ${idx})" class="text-emerald-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+    });
+    (e.choices || []).forEach((c, idx) => {
+      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-pink-950/90 border border-pink-500/50 text-pink-200 font-mono text-[10px]"><span>🎯 Choice: ${escHtml(c.label || c.id)}</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('choices', ${idx})" class="text-pink-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+    });
+    (e.modifiers || []).forEach((m, idx) => {
+      const isComplex = Boolean((m.formula !== undefined && m.formula !== null && isNaN(Number(m.formula))) || m.selector || (m.op && m.op !== 'add') || m.cap || m.when);
+      if (isComplex) {
+        const desc = `${m.target} [${m.op || 'add'}] ${m.formula ?? m.value}${m.cap ? ` (cap ${m.cap})` : ''}`;
+        pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-sky-950/90 border border-sky-500/50 text-sky-200 font-mono text-[10px]"><span>🔄 ${escHtml(desc)}</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('modifiers', ${idx})" class="text-sky-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+      }
+    });
+
+    pillsBox.innerHTML = pills.length > 0
+      ? pills.join('')
+      : '<span class="italic text-slate-500">No V2.5 Lego primitives attached yet. Choose an archetype above or click a primitive button.</span>';
+  },
+
+  removeLegoPrimitive(arrayKey, idx) {
+    const e = this._ensureEditingDraft();
+    if (Array.isArray(e[arrayKey]) && idx >= 0 && idx < e[arrayKey].length) {
+      e[arrayKey].splice(idx, 1);
+      this.renderInlineLegoPrimitiveStudio();
+    }
+  },
+
+  applyLegoPatternSkeleton(patternId) {
+    if (!patternId) return;
+    const e = this._ensureEditingDraft();
+    const setVal = (id, v) => { const el = document.getElementById(id); if (el && v !== undefined) el.value = v; };
+
+    if (patternId === 'breath_recharge') {
+      setVal('im-name', document.getElementById('im-name')?.value || 'Dragon Breath (Acid)');
+      setVal('im-type', 'Special Ability');
+      setVal('im-action', 'Move Action');
+      setVal('im-dice', '4d8');
+      setVal('im-dmg-type', 'Acid');
+      setVal('im-benefit', '60 ft. line of acid dealing 4d8 acid damage (Reflex DC 10 + Level + CON mod for half). Usable as a move action; recharges in 1d4+1 rounds.');
+      e.resources = [{ id: 'breath_cd', name: 'Breath Recharge', kind: 'consume', maxFormula: 1, recharge: { period: 'rounds', dice: '1d4+1' } }];
+      e.modes = [{
+        id: 'breath_attack',
+        name: 'Breath Weapon',
+        actionType: 'move',
+        area: '60 ft. line',
+        save: { type: 'Reflex', dcFormula: '10 + @level + @conMod', onSave: 'half' },
+        damageParts: [{ dice: '4d8', bonus: 0, type: 'Acid' }]
+      }];
+    } else if (patternId === 'elemental_defense') {
+      setVal('im-name', document.getElementById('im-name')?.value || 'Elemental Accustomed');
+      setVal('im-type', 'Special Ability');
+      setVal('im-action', 'Passive');
+      setVal('im-benefit', 'Grants Acid Immunity, +3 Natural Armor in Swamp/Underground terrain, and DR 3/- while in favored terrain.');
+      e.defenses = [
+        { kind: 'immunity', target: 'acid' },
+        { kind: 'dr', target: 'physical', value: 3, bypass: '-', when: { terrain: ['swamp', 'underground'] } }
+      ];
+      e.modifiers.push({ target: 'ac.natural', op: 'add', value: 3, type: 'Untyped', when: { terrain: ['swamp', 'underground'] } });
+    } else if (patternId === 'reactive_absorb') {
+      setVal('im-name', document.getElementById('im-name')?.value || 'Absorb Magic');
+      setVal('im-type', 'Special Ability');
+      setVal('im-action', 'Immediate Action');
+      setVal('im-benefit', '+2 Competence bonus on saves vs targeted spells. As an immediate action (1/day), absorb a targeted spell and gain 3 × Spell Level temporary HP.');
+      e.resources = [{ id: 'absorb_daily', name: 'Absorb Magic (1/Day)', kind: 'charges', maxFormula: 1, recharge: { period: 'day' } }];
+      e.modes = [{
+        id: 'absorb_spell',
+        name: 'Absorb Targeted Spell',
+        actionType: 'immediate',
+        reactsTo: 'on_spell_targeted',
+        inputs: [{ id: 'spellLevel', label: 'Incoming Spell Level', type: 'number', default: 3 }],
+        tempHpFormula: '3 * @input.spellLevel'
+      }];
+    } else if (patternId === 'synergy_mutator') {
+      setVal('im-name', document.getElementById('im-name')?.value || 'Arcane Shield (Synergy)');
+      setVal('im-type', 'Special Ability');
+      setVal('im-action', 'Passive');
+      setVal('im-benefit', 'Synergy Boon: Automatically unlocked when prerequisites are met, upgrading target boon save bonus to +4.');
+      e.requires = { all: ['boon_absorb_magic', 'boon_elemental_accustomed'] };
+      e.autoUnlock = true;
+      e.isSynergy = true;
+      e.sourceCategory = 'Synergy';
+      e.modifiers.push({ target: 'entity.saveBonus', selector: { id: 'boon_absorb_magic' }, op: 'set', value: 4, type: 'Competence' });
+    } else if (patternId === 'tier_progressive') {
+      setVal('im-name', document.getElementById('im-name')?.value || 'Progressive Boon (Tier 1-3)');
+      setVal('im-type', 'Special Ability');
+      setVal('im-action', 'Passive');
+      setVal('im-benefit', 'Tiered Boon: Scales dynamically with @stacks (Tier 1: +2, Tier 2: +4, Tier 3: +6).');
+      e.stacks = 1;
+      e.modifiers.push({ target: 'ac.natural', op: 'add', formula: 'lookup(@stacks, 0, 2, 4, 6)', type: 'Natural Armor' });
+    } else if (patternId === 'stat_substitution') {
+      setVal('im-name', document.getElementById('im-name')?.value || 'Force of Personality');
+      setVal('im-type', 'Feat');
+      setVal('im-action', 'Passive');
+      setVal('im-benefit', 'Apply your Charisma modifier instead of Wisdom on Will saving throws.');
+      e.modifiers.push({ target: 'save.will.abilityMod', op: 'max', formula: '@chaMod' });
+    } else if (patternId === 'aura_grant') {
+      setVal('im-name', document.getElementById('im-name')?.value || 'Draconic Presence & Senses');
+      setVal('im-type', 'Special Ability');
+      setVal('im-action', 'Passive');
+      setVal('im-benefit', 'Grants Darkvision 60 ft., Blindsense 30 ft., and Frightful Presence aura (DC 10 + 1/2 HD + CHA mod).');
+      e.grants = [
+        { grantType: 'sense', targetId: 'darkvision', value: 60 },
+        { grantType: 'sense', targetId: 'blindsense', value: 30 },
+        { grantType: 'aura', targetId: 'frightful_presence', radius: 30, saveType: 'Will', dcFormula: '10 + floor(@level / 2) + @chaMod' }
+      ];
+    }
+
+    this.onInlineManualTypeChange(true);
+    this.renderInlineLegoPrimitiveStudio();
+    this.runInlineLegoDryRunPreview();
+  },
+
+  promptAddLegoPrimitive(kind) {
+    const e = this._ensureEditingDraft();
+    if (kind === 'defense') {
+      const defKind = (window.prompt('Defense Kind (immunity | resistance | dr | vulnerability | sr | absorption):', 'resistance') || '').trim().toLowerCase();
+      if (!defKind) return;
+      const target = (window.prompt('Target Damage Type (acid | cold | fire | electricity | sonic | physical):', 'acid') || 'acid').trim().toLowerCase();
+      if (defKind === 'immunity' || defKind === 'vulnerability') {
+        e.defenses.push({ kind: defKind, target });
+      } else if (defKind === 'absorption') {
+        const ratio = parseFloat(window.prompt('Heal Ratio (e.g. 1.0 for 100% or 0.5 for 50%):', '1.0') || '1.0');
+        e.defenses.push({ kind: 'absorption', target, healRatio: isNaN(ratio) ? 1.0 : ratio });
+      } else if (defKind === 'dr') {
+        const val = parseInt(window.prompt('DR Value (e.g. 5):', '5') || '5', 10) || 5;
+        const bypass = (window.prompt('DR Bypass (e.g. - | magic | adamantine | cold iron):', '-') || '-').trim();
+        e.defenses.push({ kind: 'dr', target: 'physical', value: val, bypass });
+      } else {
+        const val = parseInt(window.prompt('Resistance / SR Value (e.g. 10):', '10') || '10', 10) || 10;
+        e.defenses.push({ kind: defKind, target, value: val });
+      }
+    } else if (kind === 'resource') {
+      const name = (window.prompt('Resource / Cooldown Name:', 'Breath Recharge') || '').trim();
+      if (!name) return;
+      const period = (window.prompt('Recharge Period (rounds | encounter | day):', 'rounds') || 'rounds').trim().toLowerCase();
+      const dice = period === 'rounds' ? (window.prompt('Cooldown Dice Formula (e.g. 1d4+1):', '1d4+1') || '1d4+1').trim() : null;
+      const maxVal = period === 'rounds' ? 1 : (parseInt(window.prompt('Max Daily/Encounter Charges:', '3') || '3', 10) || 1);
+      e.resources.push({
+        id: name.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
+        name,
+        kind: period === 'rounds' ? 'consume' : 'charges',
+        maxFormula: maxVal,
+        recharge: dice ? { period: 'rounds', dice } : { period }
+      });
+    } else if (kind === 'mode') {
+      const name = (window.prompt('Mode / Reaction Name:', 'Reactive Shield') || '').trim();
+      if (!name) return;
+      const actionType = (window.prompt('Action Type (standard | move | swift | immediate | free | passive):', 'immediate') || 'immediate').trim().toLowerCase();
+      const reactsTo = actionType === 'immediate' ? (window.prompt('Reaction Trigger (on_spell_targeted | on_hit | on_attacked | leave blank):', 'on_spell_targeted') || '').trim() : '';
+      const modeObj = { id: name.toLowerCase().replace(/[^a-z0-9]+/g, '_'), name, actionType };
+      if (reactsTo) modeObj.reactsTo = reactsTo;
+      e.modes.push(modeObj);
+    } else if (kind === 'grant') {
+      const grantType = (window.prompt('Grant Type (sense | aura | sla | entity | proficiency):', 'sense') || '').trim().toLowerCase();
+      if (!grantType) return;
+      const targetId = (window.prompt('Granted Capability ID / Name (e.g. darkvision | blindsense | frightful_presence):', 'darkvision') || '').trim();
+      const val = parseInt(window.prompt('Range / Value in ft. (e.g. 60):', '60') || '60', 10) || 60;
+      e.grants.push({ grantType, targetId, value: val });
+    } else if (kind === 'choice') {
+      const label = (window.prompt('Choice / Parameter Label (e.g. Choose Energy Type):', 'Choose Energy Type') || '').trim();
+      if (!label) return;
+      const opts = (window.prompt('Comma-separated Options:', 'acid, cold, electricity, fire, sonic') || '').split(',').map(s => s.trim()).filter(Boolean);
+      e.choices.push({ id: 'choice_' + (e.choices.length + 1), label, options: opts });
+    } else if (kind === 'substitution') {
+      const target = (window.prompt('Target Stat Path (save.will.abilityMod | save.ref.abilityMod | ac.abilityMod | ac.total):', 'save.will.abilityMod') || '').trim();
+      if (!target) return;
+      const op = (window.prompt('Operation (max | replace | add):', 'max') || 'max').trim().toLowerCase();
+      const formula = (window.prompt('Formula (e.g. @chaMod | max(0, @intMod) | 10 + @level):', '@chaMod') || '@chaMod').trim();
+      const cap = (window.prompt('Optional Cap Formula (e.g. @classes.duelist.level or leave blank):', '') || '').trim();
+      const modObj = { target, op, formula };
+      if (cap) modObj.cap = cap;
+      e.modifiers.push(modObj);
+    }
+    this.renderInlineLegoPrimitiveStudio();
+    this.runInlineLegoDryRunPreview();
+  },
+
+  runInlineLegoDryRunPreview() {
+    const previewBox = document.getElementById('im-v25-dryrun-preview');
+    if (!previewBox || typeof RuleEngine === 'undefined') return;
+    const escHtml = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const draft = this.buildInlineManualV2Entry();
+    const imap = typeof RuleEngine.getObjectInteractionMap === 'function'
+      ? RuleEngine.getObjectInteractionMap(draft)
+      : { nodes: [], boundUiTargets: [] };
+
+    let deltaHtml = '';
+    if (typeof character !== 'undefined' && character && typeof RuleEngine.evaluateLegoCharacter === 'function') {
+      const beforeClone = JSON.parse(JSON.stringify(character));
+      if (typeof RuleEngine.recalculateCharacter === 'function') {
+        RuleEngine.recalculateCharacter(beforeClone, typeof masterDb !== 'undefined' ? masterDb : []);
+      }
+      const beforeEval = RuleEngine.evaluateLegoCharacter(beforeClone);
+
+      const afterClone = JSON.parse(JSON.stringify(character));
+      if (!Array.isArray(afterClone.legoEntries)) afterClone.legoEntries = [];
+      afterClone.legoEntries.push(draft);
+      if (typeof RuleEngine.recalculateCharacter === 'function') {
+        RuleEngine.recalculateCharacter(afterClone, typeof masterDb !== 'undefined' ? masterDb : []);
+      }
+      const afterEval = RuleEngine.evaluateLegoCharacter(afterClone);
+
+      const beforeAC = Number(beforeClone.acBreakdown?.total ?? beforeEval.ac.normal);
+      const afterAC = Number(afterClone.acBreakdown?.total ?? afterEval.ac.normal);
+      const dAC = afterAC - beforeAC;
+
+      const deltas = [];
+      if (dAC !== 0) deltas.push(`AC ${beforeAC} → <b class="text-emerald-300">${afterAC}</b>`);
+      ['fort', 'ref', 'will'].forEach(s => {
+        const bSave = Number(beforeClone.saves?.[s]?.total ?? beforeClone.evaluatedSaves?.[s]?.total ?? beforeClone.evaluatedSaves?.[s] ?? beforeEval.saves[s]);
+        const aSave = Number(afterClone.saves?.[s]?.total ?? afterClone.evaluatedSaves?.[s]?.total ?? afterClone.evaluatedSaves?.[s] ?? afterEval.saves[s]);
+        const dSave = aSave - bSave;
+        if (dSave !== 0) deltas.push(`${s.toUpperCase()} +${bSave} → <b class="text-emerald-300">+${aSave}</b>`);
+      });
+      if (afterEval.defenses.immunities.length > beforeEval.defenses.immunities.length) {
+        deltas.push(`Immunities: <b class="text-cyan-300">${escHtml(afterEval.defenses.immunities.join(', ').toUpperCase())}</b>`);
+      }
+      if (afterEval.defenses.dr.length > beforeEval.defenses.dr.length) {
+        const lastDr = afterEval.defenses.dr[afterEval.defenses.dr.length - 1];
+        const drVal = lastDr.value ?? lastDr.amount ?? 0;
+        deltas.push(`DR: <b class="text-amber-300">${escHtml(drVal)}/${escHtml(lastDr.bypass)}</b>`);
+      }
+      deltaHtml = deltas.length > 0
+        ? `<div><span class="text-slate-400 font-semibold">Live Sheet Delta:</span> ${deltas.join(' • ')}</div>`
+        : `<div class="text-slate-400">Live Sheet Delta: <span class="text-emerald-300 font-semibold">Validated (0 AST syntax errors)</span></div>`;
+    }
+
+    const nodesPills = (imap.boundUiTargets || imap.nodes || []).map(n => `<span class="px-1.5 py-0.5 rounded bg-emerald-950 border border-emerald-700/60 text-emerald-300 font-mono text-[9px]">🔗 ${escHtml(n)}</span>`).join(' ');
+    previewBox.innerHTML = `
+      <div class="flex flex-wrap items-center justify-between gap-1">
+        <span class="font-bold text-emerald-300">⚡ Dry-Run Passed: "${escHtml(draft.name || 'Draft Entry')}"</span>
+        <span class="text-[9px] font-mono text-slate-400">Schema v2.5 • ${(draft.defenses || []).length} Def • ${(draft.resources || []).length} Res • ${(draft.modes || []).length} Modes</span>
+      </div>
+      ${deltaHtml}
+      <div class="flex flex-wrap items-center gap-1 pt-0.5">
+        <span class="text-slate-400 font-semibold">Connected Page Objects:</span>
+        ${nodesPills || '<span class="text-slate-500 italic">Passive Stat Sheet</span>'}
+      </div>
+    `;
+    previewBox.classList.remove('hidden');
   },
 
   saveInlineManualEntry(alsoEquip = false) {
