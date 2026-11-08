@@ -275,10 +275,9 @@ Grup rank'ı = bileşenlerin en yüksek rank'ı; class skill = bileşenlerden bi
 1. Birleşik grupların **tek kaynağı** `settings.consolidatedSkillGroups`. Motor ve ekran aynı listeyi okur. İsimle `customDb` araması ve ayrı `skillMapping` kopyası V3 motor kopyasında kaldırılır (kök dosyaya dokunulmaz).
 2. Karakterde grup tanımı yoksa tek bir varsayılan kullanılır ve bu varsayılan ekranınkiyle **aynı** dosyadan gelir.
 3. Grup eşleşmesi `key` ile birebir yapılır, `includes` yok.
-4. Modifier hedefleri: `skill.<grupKey>` (örneğin `skill.perception`) gruba, `skill.<bileşen>` (örneğin `skill.climb`) bileşene gider. Bileşen bonusunun gruba nasıl yansıyacağı aşağıdaki açık soruda.
+4. Modifier hedefleri: `skill.<grupKey>` (örneğin `skill.perception`) ve `skill.<bileşen>` (örneğin `skill.climb`). Grup açıkken **bileşene gelen bonus grup toplamına girer** (karar, 2026-11-08). Irktan gelen Climb +4, Athletics zarına her zaman eklenir.
+   - 3.5e yığılma kuralı grup seviyesinde uygulanır: aynı türden bonuslar yığılmaz, en yükseği alınır. Örnek: Climb'a +2 competence ve Jump'a +3 competence gelirse Athletics'e yalnızca +3 competence girer. Farklı türler (racial + competence) ve untyped bonuslar yığılır.
+   - Dökümde (breakdown) her bonusun hangi bileşenden geldiği görünür: "Racial +4 (Climb)".
 5. DM içeriğindeki terimler: Athletics / Stealth / Perception / Acrobatics / Thievery / Linguistics doğrudan grup `key`'ine eşlenir. **Outdoorsman** bir grup değil, Survival'a eşlenmesi öneriliyor. **attune** ve **command action** 3.5e'de ve ev kurallarında karşılıksız → `badge`.
 
-**Açık soru:** Grup açıkken bir bileşene gelen bonus (örneğin ırktan gelen Climb +4) nasıl uygulansın?
-
-- **(a)** Grup toplamına girer (Athletics zarına her zaman +4).
-- **(b)** Grup toplamına girmez; "yalnızca tırmanırken +4" diye koşullu gösterilir.
+Kural 4'teki yığılma davranışı için `tools/test_sheet_v3.mjs` içine fixture'lı test yazılacak (aynı tür / farklı tür / untyped).
