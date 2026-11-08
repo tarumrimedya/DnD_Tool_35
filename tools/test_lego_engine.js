@@ -911,7 +911,48 @@ function createBaseChar(overrides = {}) {
       RuleMaster._isDeprecatedGeminiModel('gemini-2.5-flash')
     ],
     [true, true, false]);
+
+  // Phase P11 Regression Test 53: SchemaMigrator.upgradeCharacterToV2 zero-data-loss category routing, physical item guard, synergy exclusion, and generic stem/completeness deduplication
+  const dirtyCharP11 = {
+    gearPool: [
+      { id: 'shd-heavy-steel-shield', name: 'Heavy Steel Shield', category: 'Shield', type: 'Shield', cost: 20, weight: 15 },
+      { id: 'scroll-fireball', name: 'Scroll of Fireball', category: 'Spell', type: 'Spell', cost: 375 },
+      { id: 'feat_dodge_ misplaced', name: 'Dodge', category: 'Feat', type: 'Feat' },
+      { id: 'spell_magic_missile', name: 'Magic Missile', category: 'Spell', type: 'Spell' },
+      { id: 'synergy_twin_fang', name: 'Twin Fang Synergy', category: 'Synergy', type: 'Synergy', autoUnlock: true, isSynergy: true },
+      { id: 'ability_dragon_breath_damage_deals_deals', name: 'Dragon Breath', category: 'Special Ability', type: 'Special Ability' }
+    ],
+    feats: [],
+    spells: [],
+    specialAbilities: [
+      { id: 'ability_dragon_breath_damage_deals_deals', name: 'Dragon Breath', category: 'Special Ability', damageParts: [{ dice: '4d8', type: 'Untyped' }] },
+      { id: 'ability_dragon_breath_weapon_acid', name: 'Dragon Breath Weapon (Acid)', category: 'Special Ability', dcFormula: '10 + floor(level / 2) + conMod', damageParts: [{ dice: '4d6', type: 'Acid' }] }
+    ]
+  };
+  SchemaMigrator.upgradeCharacterToV2(dirtyCharP11);
+  assertEq('Phase P11 Test 53: SchemaMigrator.upgradeCharacterToV2 routes feat->feats, spell->spells, keeps physical shield & scroll in gearPool, excludes autoUnlock synergy from specialAbilities, and deduplicates malformed Dragon Breath',
+    [
+      dirtyCharP11.gearPool.map(g => g.id),
+      dirtyCharP11.feats.map(f => f.name),
+      dirtyCharP11.spells.map(s => s.name),
+      dirtyCharP11.specialAbilities.map(a => a.id)
+    ],
+    [
+      ['shd-heavy-steel-shield', 'scroll-fireball'],
+      ['Dodge'],
+      ['Magic Missile'],
+      ['ability_dragon_breath_weapon_acid']
+    ]);
+
+  // Phase P11 Regression Test 54: RuleMaster.parseStructuredAbilityStatBlock strips damage/deals keywords from extracted name and id
+  const parsedBreathStatBlock = RuleMaster.parseStructuredAbilityStatBlock('Dragon Breath, dmg: 4d8, deals 4d8 damage, Range: 60 ft., Recharge: 1d4+1 rounds');
+  assertEq('Phase P11 Test 54: RuleMaster.parseStructuredAbilityStatBlock extracts clean name "Dragon Breath" and clean id "ability_dragon_breath"',
+    [
+      parsedBreathStatBlock ? parsedBreathStatBlock.name : null,
+      parsedBreathStatBlock ? parsedBreathStatBlock.id : null
+    ],
+    ['Dragon Breath', 'ability_dragon_breath']);
 }
 
-console.log(`✅ V2.5 LEGO ENGINE BENCHMARK: ${passed}/${passed + failed} assertions passed (15 Golden Set + 6 Forum Edge Cases + Interaction Map + Namespace/Deduplication + Damage/Migrator + P2 Parity Gate + 6 Parity/Regression Fixtures + P4 Export Pack + P9/P10 Spotlight & Lego Synthesis + Security Gate).`);
+console.log(`✅ V2.5 LEGO ENGINE BENCHMARK: ${passed}/${passed + failed} assertions passed (15 Golden Set + 6 Forum Edge Cases + Interaction Map + Namespace/Deduplication + Damage/Migrator + P2 Parity Gate + 6 Parity/Regression Fixtures + P4 Export Pack + P9/P10/P11 Spotlight, Lego Synthesis & Sanitization + Security Gate).`);
 if (failed > 0) process.exit(1);

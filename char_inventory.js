@@ -4973,7 +4973,9 @@
         return;
       }
 
-      container.innerHTML = equippedBannerHtml + eligible.map(item => `
+      container.innerHTML = equippedBannerHtml + eligible.map(item => {
+        const safeIdAttr = String(item.id ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        return `
         <div class="p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/60 transition flex items-center justify-between gap-3">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
@@ -4990,16 +4992,17 @@
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
             ${isForgeEditableItem(item) ? `
-              <button type="button" onclick="openForgeForPoolItem(${item.id})" class="w-8 h-8 rounded-lg bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white text-xs font-bold transition shadow inline-flex items-center justify-center cursor-pointer" title="Customize in Item Forge">
+              <button type="button" onclick="openForgeForPoolItem('${safeIdAttr}')" class="w-8 h-8 rounded-lg bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white text-xs font-bold transition shadow inline-flex items-center justify-center cursor-pointer" title="Customize in Item Forge">
                 ⚒️
               </button>
             ` : ''}
-            <button onclick="equipPoolItem(${item.id}, '${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer">
+            <button onclick="equipPoolItem('${safeIdAttr}', '${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer">
               <span>⚡ Equip</span>
             </button>
           </div>
         </div>
-      `).join('');
+      `;
+      }).join('');
     }
 
     // ====================================================
@@ -5285,6 +5288,7 @@
       container.innerHTML = compatibleItems.map(item => {
         const acBonus = (item.acBonus || item.armorBonus) ? `+${(item.acBonus || item.armorBonus) + (item.enhancementBonus || 0)} AC` : null;
         const enhBonus = item.enhancementBonus ? `+${item.enhancementBonus} Magic` : null;
+        const safeIdAttr = String(item.id ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
         return `
           <div class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-amber-500/50 flex items-center justify-between gap-3 transition">
@@ -5297,7 +5301,7 @@
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5 truncate">${safeEscapeHtml(item.desc || item.benefit || '')}</div>
             </div>
-            <button type="button" onclick="equipItemToCompanion(${item.id}, '${_activeCompanionEquipSlotKey}')" class="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs rounded-lg shadow transition cursor-pointer shrink-0">
+            <button type="button" onclick="equipItemToCompanion('${safeIdAttr}', '${_activeCompanionEquipSlotKey}')" class="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs rounded-lg shadow transition cursor-pointer shrink-0">
               ✓ Equip
             </button>
           </div>
@@ -5316,7 +5320,7 @@
       if (!character || !character.companion) return;
       if (!Array.isArray(character.gearPool)) character.gearPool = [];
 
-      const itemIdx = character.gearPool.findIndex(i => i && i.id === itemId);
+      const itemIdx = character.gearPool.findIndex(i => i && String(i.id) === String(itemId));
       if (itemIdx === -1) {
         alert('Item not found in Gear Pool.');
         return;
@@ -5984,6 +5988,7 @@
       filtered.forEach(item => {
         const statsBadgesHtml = renderGearItemStatsBadgesHtml(item, { compact: true });
         const profWarn = getEquipmentProficiencyWarning(item);
+        const safeIdAttr = String(item.id ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-900/60 transition border-b border-slate-800/80';
         tr.innerHTML = `
@@ -6000,9 +6005,9 @@
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono">
             <div class="flex items-center justify-center gap-1">
-              <button onclick="adjustPoolQty(${item.id}, -1)" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">-</button>
+              <button onclick="adjustPoolQty('${safeIdAttr}', -1)" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">-</button>
               <span class="w-6 text-center ${Number(item.qty) <= 0 ? 'text-rose-400 font-bold' : 'text-white font-bold'}">${(item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1}</span>
-              <button onclick="adjustPoolQty(${item.id}, 1)" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">+</button>
+              <button onclick="adjustPoolQty('${safeIdAttr}', 1)" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">+</button>
             </div>
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono text-slate-400">${item.weight || 0} lb</td>
@@ -6011,26 +6016,26 @@
             <div class="flex items-center justify-center gap-1.5">
               ${isConsumableOrSlotless(item) ? `
                 <div class="flex flex-col gap-1.5 w-20">
-                  <button onclick="consumeItem3D('pool', ${item.id})" class="ui-btn-xs w-full h-6 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Consume / Activate / Use">
+                  <button onclick="consumeItem3D('pool', '${safeIdAttr}')" class="ui-btn-xs w-full h-6 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Consume / Activate / Use">
                     <span>🧪</span><span>Use</span>
                   </button>
-                  <button onclick="togglePoolBelt(${item.id})" class="ui-btn-xs w-full h-6 ${item.isBelt ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600 shadow-sm shadow-emerald-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'} border text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="${item.isBelt ? 'Remove from Belt (Disable Quick Access)' : 'Attach to Belt (Add to Combat Quick Access)'}">
+                  <button onclick="togglePoolBelt('${safeIdAttr}')" class="ui-btn-xs w-full h-6 ${item.isBelt ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600 shadow-sm shadow-emerald-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'} border text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="${item.isBelt ? 'Remove from Belt (Disable Quick Access)' : 'Attach to Belt (Add to Combat Quick Access)'}">
                     <span>${item.isBelt ? '🟢' : '⚡'}</span><span>${item.isBelt ? 'On Belt' : 'Belt'}</span>
                   </button>
                 </div>
               ` : `
                 <div class="w-20 flex items-center justify-center">
-                  <button onclick="equipPoolItem(${item.id})" class="ui-btn-sm w-full h-7 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Equip to Body Slot">
+                  <button onclick="equipPoolItem('${safeIdAttr}')" class="ui-btn-sm w-full h-7 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Equip to Body Slot">
                     <span>⚡</span><span>Equip</span>
                   </button>
                 </div>
               `}
               ${isForgeEditableItem(item) ? `
-                <button onclick="openForgeForPoolItem(${item.id})" class="w-7 h-7 flex items-center justify-center bg-amber-950/80 hover:bg-amber-800 border border-amber-600/60 text-amber-300 hover:text-white text-xs rounded-md transition cursor-pointer shrink-0" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
+                <button onclick="openForgeForPoolItem('${safeIdAttr}')" class="w-7 h-7 flex items-center justify-center bg-amber-950/80 hover:bg-amber-800 border border-amber-600/60 text-amber-300 hover:text-white text-xs rounded-md transition cursor-pointer shrink-0" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
                   ⚒️
                 </button>
               ` : ''}
-              <button onclick="deletePoolItem(${item.id})" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded-md transition cursor-pointer shrink-0" title="Delete">
+              <button onclick="deletePoolItem('${safeIdAttr}')" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded-md transition cursor-pointer shrink-0" title="Delete">
                 🗑️
               </button>
             </div>
@@ -6041,7 +6046,7 @@
     }
 
     function togglePoolBelt(itemId) {
-      const item = (character.gearPool || []).find(p => p.id === itemId);
+      const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
       if (item) {
         item.isBelt = !item.isBelt;
         if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
@@ -6051,7 +6056,7 @@
     }
 
     function adjustPoolQty(itemId, delta) {
-      const item = (character.gearPool || []).find(p => p.id === itemId);
+      const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
       if (item) {
         const currentQty = (item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1;
         item.qty = Math.max(0, currentQty + delta);
@@ -6076,14 +6081,14 @@
 
     function deletePoolItem(itemId) {
       if (confirm('Are you sure you want to delete this item from your inventory pool?')) {
-        const item = (character.gearPool || []).find(p => p.id === itemId);
+        const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
         if (item) {
           const cleanName = (item.name || '').toLowerCase().trim();
           if (Array.isArray(character.consumables)) {
             character.consumables = character.consumables.filter(c => (c.name || '').toLowerCase().trim() !== cleanName);
           }
         }
-        character.gearPool = (character.gearPool || []).filter(p => p.id !== itemId);
+        character.gearPool = (character.gearPool || []).filter(p => !p || String(p.id) !== String(itemId));
         saveStateToStorage(true);
         renderAll();
       }
@@ -6091,7 +6096,7 @@
 
     // Equip item from pool into the correct body slot (Madde 8)
     function equipPoolItem(itemId, targetSlotKeyOverride = null) {
-      const item = (character.gearPool || []).find(p => p.id === itemId);
+      const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
       if (!item) return;
 
       if (isConsumableOrSlotless(item)) {
@@ -7912,7 +7917,7 @@
     }
 
     function openForgeForPoolItem(itemId) {
-      const item = (character.gearPool || []).find(p => p && p.id === itemId);
+      const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
       if (!item) return;
       closeSlotEquipModal();
       if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
@@ -8089,19 +8094,45 @@
     // ====================================================
 
     // Kontrol: Silah mı ve büyüsel saldırı/iyileştirme özelliği yok mu?
-    function isWeaponWithoutMagicOrHealing(item) {
+    function isWeaponWithoutMagicOrHealing(item, slotKey = '') {
       if (!item) return false;
       const name = (item.name || '').toLowerCase().trim();
       const desc = (item.desc || item.effect || '').toLowerCase().trim();
       const cat = item.category || (typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(item) : '');
+      const catLower = String(cat || '').toLowerCase().trim();
+      const typeLower = String(item.type || '').toLowerCase().trim();
+      const effSlotKey = slotKey || item.slotKey || '';
       const combined = name + ' ' + desc;
+
+      // Exclude non-gear rule entries (feats, special abilities, boons, spells, maneuvers, etc.)
+      if (['feat', 'special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'racial trait', 'spell', 'maneuver', 'stance'].includes(catLower)) {
+        return true;
+      }
 
       // Asalar, iksirler, parşömenler asla silah sayılmaz
       if (/wand|scroll|potion|asa\b|iksir|parşömen/i.test(name)) return false;
 
+      // Exclude physical Armor and Shield items unless they explicitly have dailyCharges, charges > 0, or an active mode
+      const isArmorOrShield = (
+        catLower === 'armor' ||
+        catLower === 'shield' ||
+        typeLower === 'armor' ||
+        typeLower === 'shield' ||
+        effSlotKey === 'armor' ||
+        (effSlotKey === 'offHand' && /shield|kalkan|buckler/i.test(name + ' ' + catLower))
+      );
+      if (isArmorOrShield) {
+        const hasExplicitChargesOrActiveMode = (
+          Number(item.dailyCharges?.max || item.dailyCharges) > 0 ||
+          Number(item.charges) > 0 ||
+          (Array.isArray(item.modes) && item.modes.some(m => m && m.actionType && m.actionType !== 'passive'))
+        );
+        return !hasExplicitChargesOrActiveMode;
+      }
+
       // 1. Silah kategorisi veya tanınan silah ismi kontrolü
-      const isWeaponCat = (cat === 'Weapon');
-      const isWeaponSlot = (item.slotKey === 'mainHand' || item.slotKey === 'offHand');
+      const isWeaponCat = (cat === 'Weapon' || catLower === 'weapon' || typeLower === 'weapon');
+      const isWeaponSlot = (effSlotKey === 'mainHand' || effSlotKey === 'offHand');
       const knownWeapons = [
         'dagger', 'rapier', 'hançer', 'longsword', 'shortsword', 'greatsword', 'scimitar',
         'falchion', 'handaxe', 'battleaxe', 'greataxe', 'halberd', 'spear', 'longspear',
@@ -8754,7 +8785,7 @@
       }
 
       // 4. Buff & Destek İksirleri
-      if (/potion|iksir|elixir|buff|strength|grace|endurance|cunning|wisdom|splendor|invisibility|fly|hız|haste|shield/i.test(name)) {
+      if (/potion|iksir|elixir|buff|strength|grace|endurance|cunning|wisdom|splendor|invisibility|fly|hız|haste|shield of faith|scroll of shield|potion of shield/i.test(name)) {
         return 'buff';
       }
 
@@ -8849,13 +8880,19 @@
         }
       });
 
-      // Equipped Body Slots items that have daily charges - excluding plain weapons
+      // Equipped Body Slots items that have daily charges - excluding plain weapons, armor, and shields
       if (character.bodySlots) {
         Object.entries(character.bodySlots).forEach(([slotKey, slotItem]) => {
           if (slotItem && slotItem.name && slotItem.name !== '-') {
-            if (isWeaponWithoutMagicOrHealing(slotItem)) return;
-            const hasDaily = !!ensureItemDailyCharges(slotItem);
-            const isWandOrUse = (slotItem.desc && /(?:cure|fireball|missile|\d+d\d+)/i.test(slotItem.desc)) || (slotItem.name && /wand|asa/i.test(slotItem.name));
+            if (isWeaponWithoutMagicOrHealing(slotItem, slotKey)) return;
+            const slotCat = String(slotItem.category || slotItem.type || '').toLowerCase().trim();
+            const isPhysicalSlotGear = slotCat === 'weapon' || slotCat === 'armor' || slotCat === 'shield' || slotKey === 'mainHand' || slotKey === 'offHand' || slotKey === 'armor';
+            const hasCharges = Number(slotItem.dailyCharges?.max || slotItem.dailyCharges || slotItem.charges) > 0 ||
+              (Array.isArray(slotItem.modes) && slotItem.modes.some(m => m && m.actionType && m.actionType !== 'passive'));
+            const hasDaily = isPhysicalSlotGear ? hasCharges : !!ensureItemDailyCharges(slotItem);
+            const isWandOrUse = isPhysicalSlotGear
+              ? hasCharges
+              : ((slotItem.desc && /(?:cure|fireball|missile|\d+d\d+)/i.test(slotItem.desc)) || (slotItem.name && /wand|asa/i.test(slotItem.name)));
             if (hasDaily || isWandOrUse) {
               const key = (slotItem.name || '').toLowerCase().trim();
               if (!displayMap.has(key)) {
@@ -9005,6 +9042,7 @@
           }
 
           const card = document.createElement('div');
+          const safePoolIdAttr = String(item.poolId ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
           card.className = `bg-slate-900/90 border ${group.cardBorder} p-3 rounded-xl flex items-center justify-between gap-3 transition shadow-sm ${isExhausted ? 'opacity-60' : ''}`;
           card.innerHTML = `
             <div class="min-w-0 flex-1">
@@ -9020,7 +9058,7 @@
                 <span class="border-l border-slate-700 pl-2 font-mono text-[11px]">${chargeText}</span>
               </div>
             </div>
-            <button onclick="consumeItem3D('${item.sourceType}', ${item.sourceType === 'pool' ? item.poolId : (item.sourceType === 'slot' ? `'${item.slotKey}'` : item.idx)})" ${isExhausted ? 'disabled' : ''} class="shrink-0 whitespace-nowrap inline-flex items-center justify-center gap-1.5 ${group.btnBg} disabled:opacity-30 disabled:cursor-not-allowed border text-xs font-bold px-3 py-1.5 rounded-lg transition self-center">
+            <button onclick="consumeItem3D('${item.sourceType}', ${item.sourceType === 'pool' ? `'${safePoolIdAttr}'` : (item.sourceType === 'slot' ? `'${item.slotKey}'` : item.idx)})" ${isExhausted ? 'disabled' : ''} class="shrink-0 whitespace-nowrap inline-flex items-center justify-center gap-1.5 ${group.btnBg} disabled:opacity-30 disabled:cursor-not-allowed border text-xs font-bold px-3 py-1.5 rounded-lg transition self-center">
               <span>${group.btnIcon}</span>
               <span>${isExhausted ? 'Depleted' : group.btnText}</span>
             </button>
@@ -9038,7 +9076,7 @@
       if (sourceType === 'slot') {
         item = character.bodySlots?.[idOrIdx];
       } else if (sourceType === 'pool' || sourceType === true) {
-        item = (character.gearPool || []).find(p => p.id === idOrIdx);
+        item = (character.gearPool || []).find(p => p && String(p.id) === String(idOrIdx));
       } else {
         item = character.consumables?.[idOrIdx];
       }

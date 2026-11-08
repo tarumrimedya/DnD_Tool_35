@@ -4955,6 +4955,30 @@
         }
       });
 
+      if (typeof SchemaMigrator !== 'undefined' && typeof SchemaMigrator.getAbilityStemAndScore === 'function' && result.length > 1) {
+        const stemMaxScore = new Map();
+        for (let i = 0; i < result.length; i++) {
+          const info = SchemaMigrator.getAbilityStemAndScore(result[i]);
+          if (!info.stem) continue;
+          const prev = stemMaxScore.has(info.stem) ? stemMaxScore.get(info.stem) : -Infinity;
+          if (info.score > prev) stemMaxScore.set(info.stem, info.score);
+        }
+        return result.filter(r => {
+          if (!r) return false;
+          if (Array.isArray(r.overrides) && r.overrides.length > 0) return true;
+          if (Array.isArray(r.modifiers) && r.modifiers.length > 0) return true;
+          const info = SchemaMigrator.getAbilityStemAndScore(r);
+          if (!info.stem) return true;
+          const maxScore = stemMaxScore.get(info.stem);
+          if (maxScore !== undefined && maxScore >= 2 && info.score < maxScore) {
+            if (info.isMalformedSlug || (info.score <= 1 && !info.hasTypedDamage && !info.hasSaveOrDc)) {
+              return false;
+            }
+          }
+          return true;
+        });
+      }
+
       return result;
     }
     window.getCharacterSpecialAttackAbilities = getCharacterSpecialAttackAbilities;

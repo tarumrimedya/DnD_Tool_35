@@ -1062,7 +1062,10 @@
         syncCustomClassesToRuleEngine();
       }
 
-      // Enforce D&D 3.5e RAW slot integrity on loaded character
+      // Enforce D&D 3.5e RAW slot integrity & V2 gearPool/ability sanitization on loaded character
+      if (typeof SchemaMigrator !== 'undefined' && typeof SchemaMigrator.sanitizeCharacterAbilitiesAndPool === 'function' && character) {
+        SchemaMigrator.sanitizeCharacterAbilitiesAndPool(character);
+      }
       if (typeof sanitizeBodySlots === 'function' && character) {
         if (sanitizeBodySlots(character)) {
           saveStateToStorage(false);

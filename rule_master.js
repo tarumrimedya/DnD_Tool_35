@@ -631,9 +631,11 @@ const RuleMaster = {
       nonlethal: 'Nonlethal', untyped: 'Untyped'
     };
     const dmgRx = /\b(\d+d\d+)(?:\s*([+-]\s*\d+))?\s*(acid|fire|cold|electricity|electric|lightning|sonic|force|positive(?:\s+energy)?|negative(?:\s+energy)?|divine|holy|unholy|untyped|slashing|piercing|bludgeoning|nonlethal)?(?:\s*(?:damage|dmg))?\b/gi;
+    const matchedDmgStrings = [];
     let dmgMatch;
     while ((dmgMatch = dmgRx.exec(working)) !== null) {
       const fullMatched = dmgMatch[0];
+      matchedDmgStrings.push(fullMatched);
       const idxInCombined = combinedRaw.indexOf(fullMatched);
       if (idxInCombined >= 0) markerIndices.push(idxInCombined);
       const diceCore = dmgMatch[1].toLowerCase();
@@ -649,6 +651,12 @@ const RuleMaster = {
         source: 'Ability'
       });
     }
+    matchedDmgStrings.forEach(s => {
+      working = working.replace(s, ' ');
+    });
+    working = working
+      .replace(/\b(?:damage|dmg)\s*[:=-]?\s*/gi, ' ')
+      .replace(/\bdeals?\b/gi, ' ');
 
     // Verify we have enough structured ability markers to qualify (at least 2 markers, or Save/DC + Dice/Recharge)
     const hasDamage = damageParts.length > 0;
@@ -663,25 +671,30 @@ const RuleMaster = {
 
     // 5. EXTRACT CLEAN ABILITY NAME
     let rawTitle = '';
-    const segments = rawMain.split(/(?:\r?\n|\|)+/).map(s => s.trim()).filter(Boolean);
-    if (segments.length > 1) {
-      const firstSeg = segments[0];
-      if (!/^\d+d\d+/i.test(firstSeg) && !/^(?:save|dc|recharge|cooldown)\b/i.test(firstSeg)) {
-        rawTitle = firstSeg;
+    if (rawMain && rawBen && !/\d+d\d+|\b(?:save|dc|recharge|deals?|damage|dmg)\b/i.test(rawMain)) {
+      rawTitle = rawMain;
+    } else {
+      const segments = rawMain.split(/(?:\r?\n|\||—| - |:)+/).map(s => s.trim()).filter(Boolean);
+      if (segments.length > 1) {
+        const firstSeg = segments[0];
+        if (!/^\d+d\d+/i.test(firstSeg) && !/^(?:save|dc|recharge|cooldown)\b/i.test(firstSeg)) {
+          rawTitle = firstSeg;
+        }
       }
-    }
-    if (!rawTitle && markerIndices.length > 0) {
-      const earliestIdx = Math.min(...markerIndices);
-      if (earliestIdx > 0) {
-        rawTitle = combinedRaw.slice(0, earliestIdx).replace(/[\r\n|,;:\-•]+$/g, '').trim();
+      if (!rawTitle && markerIndices.length > 0) {
+        const earliestIdx = Math.min(...markerIndices);
+        if (earliestIdx > 0) {
+          rawTitle = combinedRaw.slice(0, earliestIdx).replace(/[\r\n|,;:\-•]+$/g, '').trim();
+        }
       }
-    }
-    if (!rawTitle) {
-      rawTitle = working.replace(/[,;|•\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (!rawTitle) {
+        rawTitle = working.replace(/[,;|•\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+      }
     }
     rawTitle = rawTitle
       .replace(/^(?:special\s*ability|racial\s*trait|class\s*feature|feat|dm\s*boon|boon)\s*:\s*/i, '')
-      .replace(/[\r\n|,;:\-•]+$/g, '')
+      .replace(/\b(?:deals?|dealing|damage|dmg|takes?|taking|suffers?|usable\s+every|usable\s+once|in\s+a\s+\d|cone\s+of|line\s+of|range\s*:|save\s*:|dc\s*:|recharge\s*:|cooldown\s*:)\b[\s\S]*$/i, '')
+      .replace(/[\r\n|,;:\-•()]+$/g, '')
       .trim();
     if (!rawTitle || /^\d+$/.test(rawTitle)) {
       rawTitle = 'Special Ability';
@@ -4724,9 +4737,11 @@ Return valid JSON only matching:
     const item = this.ensureV2(rawItem);
     const type = (item.type || '').toLowerCase();
     const cat = item.category || item.type || 'Other';
+    const catLower = String(cat || '').toLowerCase();
 
-    // 1. Ensure item is placed in character.gearPool (except pure Feats/Spells/Maneuvers/Stances/Racial Traits/Flaws/Deities/Domains)
-    const isNonPhysical = ['feat', 'spell', 'maneuver', 'stance', 'flaw', 'racial trait', 'race', 'deity', 'domain', 'cleric domain'].includes(type);
+    // 1. Ensure item is placed in character.gearPool (except pure Feats/Spells/Maneuvers/Stances/Racial Traits/Flaws/Deities/Domains/Special Abilities/DM Boons)
+    const nonPhysicalTypes = ['feat', 'spell', 'maneuver', 'stance', 'flaw', 'racial trait', 'race', 'deity', 'domain', 'cleric domain', 'special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'trait', 'synergy', 'template'];
+    const isNonPhysical = nonPhysicalTypes.includes(type) || nonPhysicalTypes.includes(catLower) || String(item.id || '').startsWith('ability_') || String(item.id || '').startsWith('feat_') || String(item.id || '').startsWith('boon_');
     if (type === 'deity') {
       if (typeof selectDeityItem === 'function') {
         selectDeityItem(item.name);
@@ -5007,6 +5022,22 @@ Return valid JSON only matching:
       if (!character.feats) character.feats = [];
       character.feats.push(item.name);
       alert(`✨ Feat "${item.name}" added to character!`);
+    } else if (['special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'synergy', 'trait', 'template'].includes(type) || ['special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'synergy', 'trait', 'template'].includes(catLower) || String(item.id || '').startsWith('ability_') || String(item.id || '').startsWith('boon_')) {
+      if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+      const existingIdx = character.specialAbilities.findIndex(a => {
+        if (!a) return false;
+        if (typeof a === 'string') return a.toLowerCase().trim() === String(item.name || '').toLowerCase().trim();
+        return (item.id && String(a.id || '') === String(item.id)) || String(a.name || '').toLowerCase().trim() === String(item.name || '').toLowerCase().trim();
+      });
+      if (existingIdx >= 0) {
+        character.specialAbilities[existingIdx] = Object.assign({}, typeof character.specialAbilities[existingIdx] === 'object' ? character.specialAbilities[existingIdx] : {}, item);
+      } else {
+        character.specialAbilities.push(item);
+      }
+      if (typeof SchemaMigrator !== 'undefined' && typeof SchemaMigrator.sanitizeCharacterAbilitiesAndPool === 'function') {
+        SchemaMigrator.sanitizeCharacterAbilitiesAndPool(character);
+      }
+      alert(`✨ Special Ability / Boon "${item.name}" added to character!`);
     } else if (type === 'potion' || type === 'scroll' || type === 'wand' || type === 'consumable' || (item.category && item.category.toLowerCase() === 'consumable')) {
       if (!character.consumables) character.consumables = [];
       character.consumables.push({
@@ -6424,6 +6455,16 @@ Return valid JSON only matching:
       damageParts,
       ruleFlags
     });
+
+    if (editIdx < 0 && entry.name && (!baseObj.id || String(baseObj.id).startsWith('ability_') || String(baseObj.id).startsWith('custom_'))) {
+      const slug = String(entry.name || '')
+        .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '') || 'entry';
+      const isAbilityType = ['Special Ability', 'DM Boon', 'DM Grant', 'Racial Trait', 'Class Feature'].includes(typeVal);
+      entry.id = isAbilityType ? `ability_${slug}` : `custom_${slug}_${Date.now()}`;
+    }
 
     if (!isNaN(chargesVal) && chargesVal > 0) {
       entry.dailyCharges = {

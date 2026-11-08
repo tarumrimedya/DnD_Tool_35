@@ -2250,12 +2250,175 @@
       return parents;
     },
 
+    getAbilityStemAndScore(entry) {
+      if (!entry || typeof entry !== 'object') {
+        const s = typeof entry === 'string' ? entry.toLowerCase().trim() : '';
+        return { stem: s, score: 0, isMalformedSlug: false, hasTypedDamage: false, hasSaveOrDc: false };
+      }
+      const rawName = String(entry.name || '').toLowerCase();
+      const stem = rawName
+        .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '')
+        .replace(/\([^)]*\)/g, ' ')
+        .replace(/\b(?:damage|deals|dealing)\b.*$/i, ' ')
+        .replace(/\b(?:weapon|attack|blast|strike|ability)\b\s*$/i, ' ')
+        .replace(/[^a-z0-9\s]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const idStr = String(entry.id || '').toLowerCase().trim();
+      const isMalformedSlug = /_(?:damage|deals|dealing)(?:_|$)/i.test(idStr);
+      const hasTypedDamage = (Array.isArray(entry.damageParts) && entry.damageParts.some(dp => dp && dp.type && !/^(untyped|physical)$/i.test(String(dp.type).trim()))) ||
+        (Array.isArray(entry.modes) && entry.modes.some(m => Array.isArray(m.damageParts) && m.damageParts.some(dp => dp && dp.type && !/^(untyped|physical)$/i.test(String(dp.type).trim()))));
+      const hasSaveOrDc = Boolean(entry.dcFormula || entry.save || (Array.isArray(entry.modes) && entry.modes.some(m => m && m.save)));
+      const hasRecharge = Boolean(entry.recharge || entry.rechargeDice || (Array.isArray(entry.resources) && entry.resources.length > 0));
+      const score = (hasTypedDamage ? 2 : 0) + (hasSaveOrDc ? 2 : 0) + (hasRecharge ? 1 : 0) + (entry.range ? 1 : 0) - (isMalformedSlug ? 3 : 0);
+      return { stem, score, isMalformedSlug, hasTypedDamage, hasSaveOrDc };
+    },
+
+    sanitizeCharacterAbilitiesAndPool(charData) {
+      if (!charData || typeof charData !== 'object') return charData;
+      const EXPLICIT_NON_GEAR_CATS = new Set([
+        'special ability', 'dm grant', 'dm boon', 'boon',
+        'feat', 'flaw', 'class feature', 'racial trait', 'synergy', 'template',
+        'spell', 'maneuver', 'stance'
+      ]);
+      const STRICT_NON_PHYSICAL_CATS = new Set([
+        'special ability', 'dm boon', 'dm grant', 'boon', 'feat', 'flaw', 'class feature', 'racial trait', 'synergy', 'template'
+      ]);
+      const PHYSICAL_SLOTS = new Set([
+        'mainhand', 'main hand', 'offhand', 'off-hand', 'off hand', 'off-hand/shield', 'two hands', 'two-handed',
+        'body', 'ring', 'ring1', 'ring2', 'neck', 'throat', 'waist', 'belt', 'shoulders',
+        'head', 'eyes', 'face', 'feet', 'boots', 'hands', 'gloves', 'arms', 'bracers',
+        'torso', 'armor', 'shield', 'weapon'
+      ]);
+      const PHYSICAL_GEAR_RX = /\b(scroll|wand|potion|oil|elixir|staff|rod|ring|amulet|cloak|boots|gloves|bracers|belt|helm|shield|armor|sword|dagger|bow|crossbow|axe|mace|spear)\b/i;
+
+      if (!Array.isArray(charData.specialAbilities)) charData.specialAbilities = [];
+      if (!Array.isArray(charData.feats)) charData.feats = [];
+      if (!Array.isArray(charData.spells)) charData.spells = [];
+
+      const pushUniqueEntry = (targetArr, item) => {
+        const idStr = String(item.id || '').trim();
+        const nmLower = String(item.name || '').toLowerCase().trim();
+        const exists = targetArr.some(existing => {
+          if (!existing) return false;
+          if (typeof existing === 'string') return existing.toLowerCase().trim() === nmLower;
+          return (idStr && String(existing.id || '').trim() === idStr) ||
+            (nmLower && String(existing.name || '').toLowerCase().trim() === nmLower);
+        });
+        if (!exists) targetArr.push(item);
+      };
+
+      if (Array.isArray(charData.gearPool)) {
+        const cleanPool = [];
+        for (let i = 0; i < charData.gearPool.length; i++) {
+          const item = charData.gearPool[i];
+          if (!item || typeof item !== 'object') continue;
+          const idStr = String(item.id || '').trim();
+          const idLower = idStr.toLowerCase();
+          const catLower = String(item.category || item.type || '').toLowerCase().trim();
+          const typeLower = String(item.type || '').toLowerCase().trim();
+          const slotLower = String(item.slot || '').toLowerCase().trim();
+          const nameStr = String(item.name || '');
+
+          const hasPhysicalSlot = PHYSICAL_SLOTS.has(slotLower);
+          const isScrollOrWand = PHYSICAL_GEAR_RX.test(nameStr) || PHYSICAL_GEAR_RX.test(catLower) || PHYSICAL_GEAR_RX.test(typeLower);
+          const hasPhysicalEconomy = Number(item.cost) > 0 || Number(item.gpValue) > 0 || Number(item.priceGp) > 0 ||
+            Number(item.weight) > 0 || Number(item.weightLb) > 0 || Boolean(item.weaponStats || item.armorStats || item.baseItemId);
+          const isStrictNonPhysicalCat = STRICT_NON_PHYSICAL_CATS.has(catLower) || STRICT_NON_PHYSICAL_CATS.has(typeLower);
+          const isMalformedAbilitySlug = /_(?:damage|deals|dealing)(?:_|$)/i.test(idLower);
+
+          // Physical Item Guard (B1): keep physical items in gearPool unless explicitly typed as non-gear ability/feat/boon
+          if ((hasPhysicalSlot || isScrollOrWand || hasPhysicalEconomy) && !isStrictNonPhysicalCat && !isMalformedAbilitySlug) {
+            cleanPool.push(item);
+            continue;
+          }
+
+          const effectiveCat = EXPLICIT_NON_GEAR_CATS.has(catLower)
+            ? catLower
+            : (EXPLICIT_NON_GEAR_CATS.has(typeLower) ? typeLower : '');
+
+          if (item.autoUnlock === true || item.isSynergy === true || effectiveCat === 'synergy') {
+            // Synergies auto-unlock dynamically via RuleEngine.evaluateLegoCharacter; ensure preserved in customDb before removing from gearPool
+            if (!Array.isArray(charData.customDb)) charData.customDb = [];
+            pushUniqueEntry(charData.customDb, item);
+            continue;
+          } else if (effectiveCat === 'feat' || effectiveCat === 'flaw') {
+            pushUniqueEntry(charData.feats, item);
+            continue;
+          } else if (effectiveCat === 'spell' && !isScrollOrWand) {
+            pushUniqueEntry(charData.spells, item);
+            continue;
+          } else if (
+            effectiveCat === 'maneuver' ||
+            effectiveCat === 'stance' ||
+            effectiveCat === 'special ability' ||
+            effectiveCat === 'dm grant' ||
+            effectiveCat === 'dm boon' ||
+            effectiveCat === 'boon' ||
+            effectiveCat === 'class feature' ||
+            effectiveCat === 'racial trait' ||
+            effectiveCat === 'template' ||
+            isMalformedAbilitySlug
+          ) {
+            pushUniqueEntry(charData.specialAbilities, item);
+            continue;
+          }
+
+          cleanPool.push(item);
+        }
+        charData.gearPool = cleanPool;
+      }
+
+      // Generic Stem & Completeness Deduplication (B2 & M1)
+      if (Array.isArray(charData.specialAbilities) && charData.specialAbilities.length > 0) {
+        const stemMaxScore = new Map();
+        for (let i = 0; i < charData.specialAbilities.length; i++) {
+          const a = charData.specialAbilities[i];
+          if (!a || typeof a !== 'object') continue;
+          const info = SchemaMigrator.getAbilityStemAndScore(a);
+          if (!info.stem) continue;
+          const prev = stemMaxScore.has(info.stem) ? stemMaxScore.get(info.stem) : -Infinity;
+          if (info.score > prev) stemMaxScore.set(info.stem, info.score);
+        }
+
+        charData.specialAbilities = charData.specialAbilities.filter(a => {
+          if (!a || typeof a !== 'object') return true;
+          if (Array.isArray(a.overrides) && a.overrides.length > 0) return true;
+          if (Array.isArray(a.modifiers) && a.modifiers.length > 0) return true;
+          const info = SchemaMigrator.getAbilityStemAndScore(a);
+          if (!info.stem) return true;
+          const maxScore = stemMaxScore.get(info.stem);
+          if (maxScore !== undefined && maxScore >= 2 && info.score < maxScore) {
+            if (info.isMalformedSlug || (info.score <= 1 && !info.hasTypedDamage && !info.hasSaveOrDc)) {
+              return false;
+            }
+          }
+          return true;
+        });
+
+        if (Array.isArray(charData.customDb)) {
+          charData.customDb = charData.customDb.filter(entry => {
+            if (!entry || typeof entry !== 'object') return true;
+            const info = SchemaMigrator.getAbilityStemAndScore(entry);
+            if (info.isMalformedSlug && info.stem && (stemMaxScore.get(info.stem) || 0) >= 2) {
+              return false;
+            }
+            return true;
+          });
+        }
+      }
+
+      return charData;
+    },
+
     /**
      * Upgrades an entire character sheet object (`characterData`) to Canonical V2 (`schemaVersion: 2`)
      * on load, including inventory, feats, spells, buffs, and `smartNotes`.
      */
     upgradeCharacterToV2(charData) {
       if (!charData || typeof charData !== 'object') return charData;
+
+      SchemaMigrator.sanitizeCharacterAbilitiesAndPool(charData);
 
       const listKeys = ['inventory', 'gear', 'weapons', 'armors', 'feats', 'specialAbilities', 'spells', 'buffs'];
       for (let i = 0; i < listKeys.length; i++) {
@@ -2264,6 +2427,8 @@
           charData[k] = SchemaMigrator.upgradeArrayToV2(charData[k]);
         }
       }
+
+      SchemaMigrator.sanitizeCharacterAbilitiesAndPool(charData);
 
       // Migrate legacy plain-text `notes` into structured `smartNotes` for `HubNotes` compatibility
       if (!Array.isArray(charData.smartNotes)) {
