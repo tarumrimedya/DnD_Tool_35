@@ -1896,30 +1896,79 @@
     }
 
     function toggleActionEconomy(type) {
-      if (!character.tactical) character.tactical = {};
-      if (!character.tactical.spentActions) character.tactical.spentActions = {};
-      character.tactical.spentActions[type] = !character.tactical.spentActions[type];
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        window.CharStore.dispatch({
+          type: 'combat/toggleAction',
+          label: `Toggle Action (${type})`,
+          payload: { type },
+          meta: { label: `Toggle Action (${type})`, cloudSync: false }
+        });
+      } else {
+        if (!character.tactical) character.tactical = {};
+        if (!character.tactical.spentActions) character.tactical.spentActions = {};
+        character.tactical.spentActions[type] = !character.tactical.spentActions[type];
+        saveStateToStorage(false);
+      }
       updateActionEconomyUI();
-      saveStateToStorage(false);
     }
 
     function resetActionEconomy() {
       if (!character) return;
-      if (!character.tactical) character.tactical = {};
-      const lockSwift = Boolean(character.tactical.spentActions && character.tactical.spentActions.swiftLockedNextTurn);
-      character.tactical.spentActions = {
-        standard: false,
-        move: false,
-        swift: lockSwift,
-        immediate: false,
-        swiftLockedNextTurn: false
-      };
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        window.CharStore.dispatch({
+          type: 'combat/resetActions',
+          label: 'Reset Action Economy',
+          payload: {},
+          meta: { label: 'Reset Action Economy', cloudSync: false }
+        });
+      } else {
+        if (!character.tactical) character.tactical = {};
+        const lockSwift = Boolean(character.tactical.spentActions && character.tactical.spentActions.swiftLockedNextTurn);
+        character.tactical.spentActions = {
+          standard: false,
+          move: false,
+          swift: lockSwift,
+          immediate: false,
+          swiftLockedNextTurn: false
+        };
+      }
       updateActionEconomyUI();
     }
     window.resetActionEconomy = resetActionEconomy;
 
     function consumeActionEconomy(actionTypeOrString, sourceLabel = '') {
       if (!character) return false;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        const actLbl = `Consume Action${sourceLabel ? ': ' + sourceLabel : ''}`;
+        window.CharStore.dispatch({
+          type: 'combat/consumeAction',
+          label: actLbl,
+          payload: { actionType: actionTypeOrString, sourceLabel },
+          meta: { label: actLbl, cloudSync: false }
+        });
+        const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
+        updateActionEconomyUI();
+        if (out && out.alreadySpent && typeof showDiceTopToast === 'function') {
+          const roundNum = out.round || Number(character.encounterRound || character.tactical?.round) || 1;
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'Extra Action Used',
+            breakdown: `${out.spentLabel || 'Action'} was already spent in Round ${roundNum}${sourceLabel ? ' • ' + sourceLabel : ''}.`,
+            total: 'Extra Action'
+          }, { stack: true, toastId: 'action-economy-overuse-toast' });
+        }
+        return out ? Boolean(out.consumed) : true;
+      }
+
       if (!character.tactical) character.tactical = {};
       if (!character.tactical.spentActions) character.tactical.spentActions = {};
 
@@ -1955,12 +2004,10 @@
         spent.standard = true;
         spent.move = true;
       } else if (kind === 'move' && spent.move && !spent.standard) {
-        // D&D 3.5e RAW (PHB p.138): A character can take a move action in place of a standard action
         spent.standard = true;
         alreadySpent = false;
         spentLabel = 'Move Action (converted from Standard Action)';
       } else if (kind === 'immediate') {
-        // D&D 3.5e RAW (PHB2 / RC): Using an Immediate Action consumes your Swift Action (or next turn's Swift if already spent)
         alreadySpent = Boolean(spent.immediate);
         spent.immediate = true;
         if (!spent.swift) {

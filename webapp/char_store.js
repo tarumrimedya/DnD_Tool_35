@@ -963,6 +963,500 @@
   CharStore.registerReducer('consumable/use', applyConsumableUseReducer);
   CharStore.applyConsumableUseReducer = applyConsumableUseReducer;
 
+  // ==========================================================================
+  // Phase R3: Combat Tab Domain Reducers (Action Economy, Round Tick, Special
+  // Attacks, Reactive Modes, Tactical Modifiers, Weapon Sets & Buffs)
+  // ==========================================================================
+  function setStoreOutcome(_stateObj, out) {
+    _lastOutcome = out || null;
+    return out;
+  }
+
+  function ensureCombatActionStructures(doc) {
+    if (!doc.tactical || typeof doc.tactical !== 'object') {
+      doc.tactical = {};
+    }
+    if (!doc.tactical.spentActions || typeof doc.tactical.spentActions !== 'object') {
+      const ae = doc.actionEconomy || {};
+      doc.tactical.spentActions = {
+        standard: ae.standard === false || ae.standard === 'spent',
+        move: ae.move === false || ae.move === 'spent',
+        swift: ae.swift === false || ae.swift === 'spent',
+        immediate: ae.immediate === false || ae.immediate === 'spent',
+        swiftLockedNextTurn: false
+      };
+    }
+    if (!doc.actionEconomy || typeof doc.actionEconomy !== 'object') {
+      doc.actionEconomy = {
+        standard: !doc.tactical.spentActions.standard,
+        move: !doc.tactical.spentActions.move,
+        swift: !doc.tactical.spentActions.swift,
+        immediate: !doc.tactical.spentActions.immediate
+      };
+    }
+  }
+
+  function syncActionEconomyFromSpent(doc) {
+    ensureCombatActionStructures(doc);
+    const sp = doc.tactical.spentActions;
+    doc.actionEconomy = {
+      standard: !sp.standard,
+      move: !sp.move,
+      swift: !sp.swift,
+      immediate: !sp.immediate
+    };
+  }
+
+  function applyConsumeActionOnDoc(doc, actionTypeOrString, sourceLabel = '') {
+    ensureCombatActionStructures(doc);
+    const spent = doc.tactical.spentActions;
+    const ae = doc.actionEconomy;
+    // Sync spent from actionEconomy if actionEconomy was explicitly set false
+    ['standard', 'move', 'swift', 'immediate'].forEach(k => {
+      if (ae[k] === false || ae[k] === 'spent') spent[k] = true;
+    });
+
+    const raw = String(
+      (actionTypeOrString && typeof actionTypeOrString === 'object')
+        ? (actionTypeOrString.castingTime || actionTypeOrString.action || actionTypeOrString.initiationAction || 'standard')
+        : (actionTypeOrString || 'standard')
+    ).trim().toLowerCase();
+
+    if (/free/i.test(raw)) {
+      syncActionEconomyFromSpent(doc);
+      return {
+        consumed: false,
+        alreadySpent: false,
+        reason: 'Free Action',
+        spentLabel: 'Free Action',
+        usedType: 'free',
+        round: Number(doc.encounterRound || doc.tactical?.round) || 1,
+        sourceLabel
+      };
+    }
+
+    let kind = 'standard';
+    if (/full[-\s]*round|1\s*round|^full$/i.test(raw)) kind = 'full';
+    else if (/swift/i.test(raw)) kind = 'swift';
+    else if (/immediate|reaction/i.test(raw)) kind = 'immediate';
+    else if (/move/i.test(raw)) kind = 'move';
+
+    let alreadySpent = false;
+    let spentLabel = 'Standard Action';
+
+    if (kind === 'full') {
+      alreadySpent = Boolean(spent.standard || spent.move);
+      if (spent.standard && spent.move) {
+        spentLabel = 'Full-Round Action (Standard + Move)';
+      } else if (spent.standard) {
+        spentLabel = 'Standard Action (required for Full-Round Action)';
+      } else if (spent.move) {
+        spentLabel = 'Move Action (required for Full-Round Action)';
+      } else {
+        spentLabel = 'Full-Round Action';
+      }
+      spent.standard = true;
+      spent.move = true;
+    } else if (kind === 'move' && spent.move && !spent.standard) {
+      spent.standard = true;
+      alreadySpent = false;
+      spentLabel = 'Move Action (converted from Standard Action)';
+    } else if (kind === 'immediate') {
+      alreadySpent = Boolean(spent.immediate);
+      spent.immediate = true;
+      if (!spent.swift) {
+        spent.swift = true;
+      } else {
+        spent.swiftLockedNextTurn = true;
+      }
+      spentLabel = 'Immediate Action';
+    } else {
+      alreadySpent = Boolean(spent[kind]);
+      const cap = kind.charAt(0).toUpperCase() + kind.slice(1);
+      spentLabel = `${cap} Action`;
+      spent[kind] = true;
+    }
+
+    syncActionEconomyFromSpent(doc);
+    return {
+      consumed: !alreadySpent,
+      alreadySpent,
+      reason: spentLabel,
+      spentLabel,
+      usedType: kind,
+      round: Number(doc.encounterRound || doc.tactical?.round) || 1,
+      sourceLabel
+    };
+  }
+
+  function syncCooldownOnDoc(doc, abilityKey, name, cooldownRounds, resourceId) {
+    if (!doc.tactical || typeof doc.tactical !== 'object') doc.tactical = {};
+    if (!doc.tactical.abilityCooldowns || typeof doc.tactical.abilityCooldowns !== 'object') {
+      doc.tactical.abilityCooldowns = {};
+    }
+    if (!doc.specialAttackCooldowns || typeof doc.specialAttackCooldowns !== 'object') {
+      doc.specialAttackCooldowns = {};
+    }
+    const curRound = Number(doc.tactical.round || doc.encounterRound) || 1;
+    const waitRounds = Math.max(0, Number(cooldownRounds) || 0);
+    if (waitRounds > 0) {
+      const readyRound = curRound + waitRounds;
+      doc.specialAttackCooldowns[abilityKey] = waitRounds;
+      doc.tactical.abilityCooldowns[abilityKey] = {
+        name: name || abilityKey,
+        waitRounds,
+        readyRound,
+        rolledAtRound: curRound
+      };
+    } else {
+      delete doc.specialAttackCooldowns[abilityKey];
+      delete doc.tactical.abilityCooldowns[abilityKey];
+    }
+
+    const syncResList = (arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(entry => {
+        if (!entry || !Array.isArray(entry.resources)) return;
+        const entryMatch = entry.id === abilityKey || String(entry.id || '').replace(/[^a-z0-9_:]+/gi, '_') === abilityKey;
+        entry.resources.forEach(r => {
+          if (!r) return;
+          if ((resourceId && r.id === resourceId) || entryMatch) {
+            r.cooldownRemaining = waitRounds;
+          }
+        });
+      });
+    };
+    syncResList(doc.legoEntries);
+    syncResList(doc.specialAbilities);
+  }
+
+  // 1. 'combat/advanceRound'
+  CharStore.registerReducer('combat/advanceRound', (doc, _action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    doc.tactical.round = (Number(doc.tactical.round || doc.encounterRound) || 1) + 1;
+    doc.encounterRound = doc.tactical.round;
+
+    const lockSwift = Boolean(doc.tactical.spentActions && doc.tactical.spentActions.swiftLockedNextTurn);
+    doc.tactical.spentActions = {
+      standard: false,
+      move: false,
+      swift: lockSwift,
+      immediate: false,
+      swiftLockedNextTurn: false
+    };
+    syncActionEconomyFromSpent(doc);
+
+    const notes = [];
+    if (doc.tactical.shieldBlockActive) {
+      doc.tactical.shieldBlockActive = false;
+      notes.push('Shield Block reset');
+    }
+    if (doc.tactical.charge) {
+      doc.tactical.charge = false;
+      notes.push('Charge AC penalty cleared');
+    }
+
+    const engine = resolveRuleEngine();
+    if (engine && typeof engine.tickRoundResources === 'function') {
+      const tickRes = engine.tickRoundResources(doc);
+      if (tickRes && Array.isArray(tickRes.notes)) {
+        notes.push(...tickRes.notes);
+      }
+    }
+
+    if (Array.isArray(doc.buffs)) {
+      doc.buffs.forEach(b => {
+        if (!b || b.active === false) return;
+        const isPerm = /perm/i.test(String(b.duration || b.durationText || ''));
+        if (isPerm) return;
+        if (typeof b.durationRounds === 'number' && b.durationRounds > 0) {
+          b.durationRounds = Math.max(0, b.durationRounds - 1);
+          if (typeof b.rounds === 'number' && b.rounds > 0) {
+            b.rounds = b.durationRounds;
+          }
+          if (b.durationRounds === 0) {
+            b.active = false;
+            b.durationText = 'Expired';
+            notes.push(`⌛ ${b.name || 'Buff'} expired`);
+          } else {
+            b.durationText = `${b.durationRounds} ${b.durationRounds === 1 ? 'round' : 'rounds'}`;
+          }
+        } else if (Number.isFinite(Number(b.rounds)) && Number(b.rounds) > 0) {
+          b.rounds = Math.max(0, Number(b.rounds) - 1);
+          if (b.rounds === 0) {
+            b.active = false;
+            b.durationText = 'Expired';
+            notes.push(`⌛ ${b.name || 'Buff'} expired`);
+          } else {
+            b.durationText = `${b.rounds} ${b.rounds === 1 ? 'round' : 'rounds'}`;
+          }
+        }
+      });
+    }
+
+    setStoreOutcome(stateObj, {
+      status: 'round_advanced',
+      round: doc.tactical.round,
+      notes
+    });
+    return doc;
+  });
+
+  // 2. 'combat/consumeAction'
+  CharStore.registerReducer('combat/consumeAction', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const out = applyConsumeActionOnDoc(doc, payload.actionType, payload.sourceLabel || '');
+    setStoreOutcome(stateObj, out);
+    return doc;
+  });
+
+  // 3. 'combat/toggleAction' & 'combat/resetActions'
+  CharStore.registerReducer('combat/toggleAction', (doc, action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    const type = action?.payload?.type;
+    if (type && ['standard', 'move', 'swift', 'immediate'].includes(type)) {
+      doc.tactical.spentActions[type] = !doc.tactical.spentActions[type];
+      syncActionEconomyFromSpent(doc);
+    }
+    setStoreOutcome(stateObj, { status: 'action_toggled', type, actionEconomy: Object.assign({}, doc.actionEconomy) });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/resetActions', (doc, _action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    const lockSwift = Boolean(doc.tactical.spentActions && doc.tactical.spentActions.swiftLockedNextTurn);
+    doc.tactical.spentActions = {
+      standard: false,
+      move: false,
+      swift: lockSwift,
+      immediate: false,
+      swiftLockedNextTurn: false
+    };
+    syncActionEconomyFromSpent(doc);
+    setStoreOutcome(stateObj, { status: 'actions_reset', actionEconomy: Object.assign({}, doc.actionEconomy) });
+    return doc;
+  });
+
+  // 4. 'combat/specialAttackRoll', 'combat/specialAttackRecharge', & 'combat/specialAttackReady'
+  CharStore.registerReducer('combat/specialAttackRoll', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const abilityKey = payload.abilityKey;
+    if (!abilityKey) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const actOut = applyConsumeActionOnDoc(doc, payload.actionType || 'standard', payload.name || abilityKey);
+    if (payload.cooldownRounds !== undefined && payload.cooldownRounds !== null && Number(payload.cooldownRounds) > 0) {
+      syncCooldownOnDoc(doc, abilityKey, payload.name || abilityKey, Number(payload.cooldownRounds), payload.resourceId);
+    }
+    setStoreOutcome(stateObj, {
+      status: 'special_attack_rolled',
+      abilityKey,
+      cooldownRounds: Number(payload.cooldownRounds) || 0,
+      actionOutcome: actOut
+    });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/specialAttackRecharge', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const abilityKey = payload.abilityKey;
+    if (!abilityKey) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const waitRounds = Math.max(1, Number(payload.cooldownRounds) || 1);
+    syncCooldownOnDoc(doc, abilityKey, payload.name || abilityKey, waitRounds, payload.resourceId);
+    setStoreOutcome(stateObj, {
+      status: 'special_attack_recharged',
+      abilityKey,
+      cooldownRounds: waitRounds
+    });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/specialAttackReady', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const abilityKey = payload.abilityKey;
+    if (!abilityKey) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    syncCooldownOnDoc(doc, abilityKey, payload.name || abilityKey, 0, payload.resourceId);
+    setStoreOutcome(stateObj, {
+      status: 'special_attack_ready',
+      abilityKey
+    });
+    return doc;
+  });
+
+  // 5. 'combat/triggerReactiveMode'
+  CharStore.registerReducer('combat/triggerReactiveMode', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const engine = resolveRuleEngine();
+    if (!engine || typeof engine.activateLegoMode !== 'function') {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const res = engine.activateLegoMode(doc, payload.entryId, payload.modeId, payload.inputValues || {});
+    if (!res) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    const actOut = applyConsumeActionOnDoc(doc, payload.actionType || 'immediate', `${payload.entryId} (${payload.modeId})`);
+    setStoreOutcome(stateObj, {
+      status: 'reactive_mode_triggered',
+      result: res,
+      actionOutcome: actOut
+    });
+    return doc;
+  });
+
+  const DEFAULT_TACTICAL_MOD_KEYS = [
+    'flanking', 'charge', 'higherGround',
+    'fightingDefensively', 'totalDefense', 'shieldBlockActive',
+    'powerAttackActive', 'combatExpertiseActive',
+    'rapidShot', 'manyshot', 'pointBlankShot', 'deadlyAim',
+    'rangedHigherGround', 'targetInMelee', 'coverPenalty', 'defensiveCastingActive',
+    'rangePenalty', 'enhanceArrow', 'trueStrike', 'sneakAttack', 'bootsHaste', 'witchlightSpeed'
+  ];
+
+  function isAllowedTacticalModKey(key) {
+    if (!key || typeof key !== 'string') return false;
+    const engine = resolveRuleEngine();
+    const list = (engine && Array.isArray(engine.TACTICAL_MOD_KEYS))
+      ? engine.TACTICAL_MOD_KEYS
+      : DEFAULT_TACTICAL_MOD_KEYS;
+    return list.includes(key);
+  }
+
+  // 6. 'combat/toggleTacticalMod', 'combat/adjustPowerAttack', 'combat/adjustCombatExpertise',
+  //    'combat/switchWeaponSet', 'combat/toggleBuff', & 'combat/removeBuff'
+  CharStore.registerReducer('combat/toggleTacticalMod', (doc, action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    const payload = (action && action.payload) || {};
+    if (payload.globalIdx !== undefined && payload.globalIdx !== null) {
+      const idx = Number(payload.globalIdx);
+      if (Array.isArray(doc.activeModifiers) && doc.activeModifiers[idx]) {
+        const nextAct = payload.value !== undefined
+          ? Boolean(payload.value)
+          : !Boolean(doc.activeModifiers[idx].active);
+        doc.activeModifiers[idx].active = nextAct;
+      }
+      setStoreOutcome(stateObj, { status: 'modifier_toggled', globalIdx: idx });
+      return doc;
+    }
+    const rawKey = payload.key;
+    const resolvedKey = rawKey === 'shieldBlock' ? 'shieldBlockActive' : rawKey;
+    if (!resolvedKey || !isAllowedTacticalModKey(resolvedKey)) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const nextVal = payload.value !== undefined
+      ? Boolean(payload.value)
+      : !Boolean(doc.tactical[resolvedKey]);
+    doc.tactical[resolvedKey] = nextVal;
+    if (resolvedKey === 'fightingDefensively' && nextVal) {
+      doc.tactical.totalDefense = false;
+    } else if (resolvedKey === 'totalDefense' && nextVal) {
+      doc.tactical.fightingDefensively = false;
+    }
+    setStoreOutcome(stateObj, { status: 'tactical_toggled', key: resolvedKey, value: doc.tactical[resolvedKey] });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/adjustPowerAttack', (doc, action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    const payload = (action && action.payload) || {};
+    const bab = Math.max(0, Number(doc.bab) || 0);
+    const cur = Number(doc.tactical.powerAttack) || 0;
+    const next = payload.value !== undefined
+      ? Number(payload.value)
+      : (cur + (Number(payload.delta) || 0));
+    doc.tactical.powerAttack = Math.max(0, Math.min(bab, next));
+    setStoreOutcome(stateObj, { status: 'power_attack_adjusted', value: doc.tactical.powerAttack });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/adjustCombatExpertise', (doc, action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    const payload = (action && action.payload) || {};
+    const maxCap = Math.min(5, Math.max(0, Number(doc.bab) || 0));
+    const cur = Number(doc.tactical.combatExpertise) || 0;
+    const next = payload.value !== undefined
+      ? Number(payload.value)
+      : (cur + (Number(payload.delta) || 0));
+    doc.tactical.combatExpertise = Math.max(0, Math.min(maxCap, next));
+    setStoreOutcome(stateObj, { status: 'combat_expertise_adjusted', value: doc.tactical.combatExpertise });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/switchWeaponSet', (doc, action, stateObj) => {
+    ensureCombatActionStructures(doc);
+    const payload = (action && action.payload) || {};
+    const setNum = Number(payload.setNum) || 1;
+    doc.activeWeaponSet = setNum;
+    if (Array.isArray(payload.activeSets) && doc.tactical.weaponSets) {
+      doc.tactical.weaponSets.activeSets = payload.activeSets.slice();
+      doc.tactical.weaponSets.activeSet = (payload.activeSets.includes(1) && payload.activeSets.includes(2))
+        ? 'both'
+        : (payload.activeSets.includes(2) ? 2 : 1);
+    }
+    setStoreOutcome(stateObj, { status: 'weapon_set_switched', setNum });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/toggleBuff', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const idx = Number(payload.index);
+    if (!Array.isArray(doc.buffs) || !doc.buffs[idx]) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    const b = doc.buffs[idx];
+    const wasActive = b.active !== false;
+    const nextActive = !wasActive;
+    b.active = nextActive;
+    if (wasActive && !nextActive && doc.hp) {
+      const tempHp = Math.max(
+        Number(payload.grantedTempHp) || 0,
+        Number(b.tempHp) || 0,
+        Number(b.ruleFlags?.tempHp) || 0
+      );
+      if (tempHp > 0) {
+        doc.hp.temp = Math.max(0, (Number(doc.hp.temp) || 0) - tempHp);
+      }
+      if (b._tempHpSynced) {
+        delete b._tempHpSynced;
+      }
+    }
+    setStoreOutcome(stateObj, { status: 'buff_toggled', index: idx, active: b.active });
+    return doc;
+  });
+
+  CharStore.registerReducer('combat/removeBuff', (doc, action, stateObj) => {
+    const payload = (action && action.payload) || {};
+    const idx = Number(payload.index);
+    if (!Array.isArray(doc.buffs) || !doc.buffs[idx]) {
+      setStoreOutcome(stateObj, { status: 'not_found' });
+      return doc;
+    }
+    const b = doc.buffs[idx];
+    if (b && b.active !== false && doc.hp) {
+      const tempHp = Math.max(
+        Number(payload.grantedTempHp) || 0,
+        Number(b.tempHp) || 0,
+        Number(b.ruleFlags?.tempHp) || 0
+      );
+      if (tempHp > 0) {
+        doc.hp.temp = Math.max(0, (Number(doc.hp.temp) || 0) - tempHp);
+      }
+    }
+    doc.buffs.splice(idx, 1);
+    setStoreOutcome(stateObj, { status: 'buff_removed', index: idx });
+    return doc;
+  });
+
   // Global Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z Keyboard Listener (Browser Only)
   if (typeof window !== 'undefined' && window.addEventListener && typeof document !== 'undefined') {
     window.addEventListener('keydown', function (ev) {

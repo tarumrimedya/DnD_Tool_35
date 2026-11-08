@@ -1672,6 +1672,95 @@ const RuleEngine = {
     return result;
   },
 
+  // Activate a reactive/immediate Lego mode and apply its HP/TempHP/Buff effects onto character
+  activateLegoMode(character, entryId, modeId, inputValues = {}) {
+    if (!character) return null;
+    const res = this.triggerLegoMode(character, entryId, modeId, inputValues);
+    if (!res) return null;
+    if (res.tempHpGained > 0 && character.hp) {
+      character.hp.temp = Math.max(Number(character.hp.temp) || 0, res.tempHpGained);
+    }
+    if (res.healedHp > 0 && character.hp) {
+      character.hp.current = Math.min(Number(character.hp.max) || 999, (Number(character.hp.current) || 0) + res.healedHp);
+    }
+    if (res.spawnedBuff) {
+      if (!Array.isArray(character.buffs)) character.buffs = [];
+      const existing = character.buffs.find(b => b && b.id === res.spawnedBuff.id);
+      if (existing) {
+        existing.active = true;
+        existing.durationRounds = res.spawnedBuff.durationRounds;
+        existing.durationText = `${res.spawnedBuff.durationRounds} ${res.spawnedBuff.durationRounds === 1 ? 'round' : 'rounds'}`;
+      } else {
+        character.buffs.push(Object.assign({}, res.spawnedBuff, {
+          active: true,
+          durationText: `${res.spawnedBuff.durationRounds} ${res.spawnedBuff.durationRounds === 1 ? 'round' : 'rounds'}`
+        }));
+      }
+    }
+    return res;
+  },
+
+  // Tick per-round cooldowns & Lego recharge resources when advancing combat round
+  tickRoundResources(character) {
+    const ch = character || {};
+    const notes = [];
+    const rechargedAbilities = [];
+    const remainingAbilities = [];
+    const curR = Number(ch.tactical?.round || ch.encounterRound) || 1;
+
+    if (ch.specialAttackCooldowns && typeof ch.specialAttackCooldowns === 'object') {
+      Object.keys(ch.specialAttackCooldowns).forEach(k => {
+        const rem = Math.max(0, (Number(ch.specialAttackCooldowns[k]) || 0) - 1);
+        if (rem <= 0) {
+          delete ch.specialAttackCooldowns[k];
+        } else {
+          ch.specialAttackCooldowns[k] = rem;
+        }
+      });
+    }
+
+    if (ch.tactical && ch.tactical.abilityCooldowns && typeof ch.tactical.abilityCooldowns === 'object') {
+      Object.keys(ch.tactical.abilityCooldowns).forEach(k => {
+        const entry = ch.tactical.abilityCooldowns[k];
+        const readyR = (entry && typeof entry === 'object') ? Number(entry.readyRound || 0) : Number(entry || 0);
+        const abName = (entry && typeof entry === 'object' && entry.name) ? entry.name : k.replace(/_/g, ' ');
+        if (readyR <= curR) {
+          delete ch.tactical.abilityCooldowns[k];
+          if (ch.specialAttackCooldowns) delete ch.specialAttackCooldowns[k];
+          notes.push(`🔥 ${abName} Recharged & READY!`);
+          rechargedAbilities.push(k);
+        } else {
+          const rem = readyR - curR;
+          if (entry && typeof entry === 'object') {
+            entry.waitRounds = rem;
+          }
+          if (ch.specialAttackCooldowns) {
+            ch.specialAttackCooldowns[k] = rem;
+          }
+          notes.push(`⏳ ${abName}: ${rem} ${rem === 1 ? 'round' : 'rounds'} left`);
+          remainingAbilities.push({ key: k, remaining: rem });
+        }
+      });
+    }
+
+    const tickResourceList = (arr) => {
+      if (!Array.isArray(arr)) return;
+      arr.forEach(entry => {
+        if (!entry || !Array.isArray(entry.resources)) return;
+        entry.resources.forEach(r => {
+          if (!r) return;
+          if (typeof r.cooldownRemaining === 'number' && r.cooldownRemaining > 0) {
+            r.cooldownRemaining = Math.max(0, r.cooldownRemaining - 1);
+          }
+        });
+      });
+    };
+    tickResourceList(ch.legoEntries);
+    tickResourceList(ch.specialAbilities);
+
+    return { notes, rechargedAbilities, remainingAbilities };
+  },
+
   // Dry-Run Preview: compare character stats before and after adding a candidate V2.5 Lego Entry
   dryRunLegoEntry(character, candidateEntry, candidatePool = []) {
     const before = this.evaluateLegoCharacter(character, candidatePool);
@@ -8037,6 +8126,274 @@ const RuleEngine = {
   },
 
   /**
+   * Pure Special Attacks & Breath Weapons derivation helper (Phase R3).
+   * Projects structured V2 / V2.5 special attack cards (`6d8 Acid`, `4d8` `1d4+1` recharge, etc.)
+   * without mutating `w`.
+   */
+  deriveSpecialAttacks(w, legoEval = null, customDb = []) {
+    if (!w || typeof w !== 'object') return [];
+    const stripTag = (str) => String(str || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+    const rawPool = [];
+
+    const resolvedLego = legoEval || w.legoEvaluation || (typeof this.evaluateLegoCharacter === 'function' ? this.evaluateLegoCharacter(w) : null);
+    if (resolvedLego && Array.isArray(resolvedLego.entries)) {
+      resolvedLego.entries.forEach(le => {
+        if (le && (le._autoUnlocked || le._mutated)) {
+          rawPool.push({ ...le, _src: 'legoEvaluation' });
+        }
+      });
+    }
+    if (Array.isArray(w.legoEntries)) {
+      w.legoEntries.forEach(le => {
+        if (le) rawPool.push({ ...le, _src: 'legoEntries' });
+      });
+    }
+    if (Array.isArray(w.specialAbilities)) {
+      w.specialAbilities.forEach(a => {
+        if (a) rawPool.push(typeof a === 'string' ? { name: a, _src: 'specialAbilities' } : { ...a, _src: 'specialAbilities' });
+      });
+    }
+    if (Array.isArray(w.feats)) {
+      w.feats.forEach(f => {
+        if (f) rawPool.push(typeof f === 'string' ? { name: f, _src: 'feats' } : { ...f, _src: 'feats' });
+      });
+    }
+
+    const excludedNames = new Set([
+      'power attack', 'sneak attack', 'punishing stance', 'mountain hammer', 'steel wind',
+      'flurry of blows', 'two-weapon fighting', 'improved two-weapon fighting', 'greater two-weapon fighting',
+      'agile shield fighter', 'weapon specialization', 'greater weapon specialization', 'point blank shot',
+      'rapid shot', 'manyshot', 'deadly aim', 'combat expertise', 'steadfast determination'
+    ]);
+
+    const dbList = Array.isArray(customDb) && customDb.length > 0
+      ? customDb
+      : (Array.isArray(w.customDb) ? w.customDb : []);
+
+    const seen = new Set();
+    const result = [];
+    const curRound = Number(w.tactical?.round || w.encounterRound) || 1;
+    const ruleMasterRef = (typeof window !== 'undefined' && window.RuleMaster)
+      || (typeof RuleMaster !== 'undefined' ? RuleMaster : null);
+
+    rawPool.forEach(item => {
+      const cleanName = stripTag(item.name || '');
+      if (!cleanName) return;
+      const lower = cleanName.toLowerCase();
+      if (seen.has(lower) || excludedNames.has(lower) || lower.startsWith('sneak attack')) return;
+
+      const dbMatch = dbList.find(m => m && m.name && stripTag(m.name).toLowerCase() === lower) || null;
+      let merged = item._mutated
+        ? Object.assign({}, dbMatch || {}, item, { name: cleanName })
+        : Object.assign({}, item, dbMatch || {}, { name: cleanName });
+      const benText = merged.benefit || merged.desc || merged.description || '';
+
+      if (!merged.dcFormula && !merged.recharge && (!Array.isArray(merged.damageParts) || merged.damageParts.length === 0)) {
+        if (ruleMasterRef && typeof ruleMasterRef.parseStructuredAbilityStatBlock === 'function') {
+          const parsed = ruleMasterRef.parseStructuredAbilityStatBlock(cleanName, benText, merged.category || merged.type || '');
+          if (parsed) {
+            merged = Object.assign({}, parsed, merged, {
+              name: parsed.name || cleanName,
+              damageParts: (Array.isArray(merged.damageParts) && merged.damageParts.length > 0) ? merged.damageParts : (parsed.damageParts || []),
+              save: merged.save || parsed.save || '',
+              dcFormula: merged.dcFormula || parsed.dcFormula || '',
+              range: merged.range || parsed.range || '',
+              recharge: merged.recharge || parsed.recharge || '',
+              rechargeDice: merged.rechargeDice || parsed.rechargeDice || '',
+              ruleFlags: Object.assign({}, parsed.ruleFlags || {}, merged.ruleFlags || {})
+            });
+          }
+        }
+      }
+
+      const primaryMode = Array.isArray(merged.modes) && merged.modes.length > 0 ? merged.modes[0] : null;
+      const roundRes = Array.isArray(merged.resources)
+        ? merged.resources.find(r => r && ((r.recharge && (r.recharge.period === 'rounds' || r.recharge.dice)) || r.rechargeModel === 'cooldown_turns' || r.rechargeFormula))
+        : null;
+      const anyRes = roundRes || (Array.isArray(merged.resources) && merged.resources[0]) || null;
+      const effDamageParts = (Array.isArray(merged.damageParts) && merged.damageParts.some(dp => dp && dp.dice))
+        ? merged.damageParts
+        : (primaryMode && Array.isArray(primaryMode.damageParts) ? primaryMode.damageParts : []);
+      const effSaveObj = (primaryMode && primaryMode.save && typeof primaryMode.save === 'object') ? primaryMode.save : null;
+      const effSaveStr = effSaveObj ? `${effSaveObj.type || 'Reflex'} (${effSaveObj.onSave || 'half'})` : (merged.save || (primaryMode && typeof primaryMode.save === 'string' ? primaryMode.save : ''));
+      const effDcFormula = merged.dcFormula || (effSaveObj && effSaveObj.dcFormula) || '';
+      const rf = merged.ruleFlags || {};
+      const effRechargeDice = merged.rechargeDice || rf.rechargeFormula || (roundRes && ((roundRes.recharge && roundRes.recharge.dice) || roundRes.rechargeFormula)) || '';
+      const effRange = merged.range || (primaryMode && (primaryMode.area || primaryMode.range)) || '';
+      const dbExplicitAction = dbMatch ? (dbMatch.action || dbMatch.actionType || '') : '';
+      const itemNonDefaultAction = (item && item.actionType && !['standard', 'passive'].includes(String(item.actionType).toLowerCase()))
+        ? item.actionType
+        : ((item && item.action && !/^(standard(\s+action)?|passive)$/i.test(String(item.action).trim())) ? item.action : '');
+      const rawActionCandidate = String(
+        dbExplicitAction ||
+        itemNonDefaultAction ||
+        (primaryMode && (primaryMode.action || primaryMode.actionType)) ||
+        merged.action ||
+        merged.actionType ||
+        'Standard Action'
+      ).trim().toLowerCase();
+      let rawActionType = 'standard';
+      let effActionLabel = 'Standard Action';
+      if (rawActionCandidate.includes('move')) {
+        rawActionType = 'move';
+        effActionLabel = 'Move Action';
+      } else if (rawActionCandidate.includes('swift')) {
+        rawActionType = 'swift';
+        effActionLabel = 'Swift Action';
+      } else if (rawActionCandidate.includes('immediate') || rawActionCandidate.includes('reaction')) {
+        rawActionType = 'immediate';
+        effActionLabel = 'Immediate Action';
+      } else if (rawActionCandidate.includes('full')) {
+        rawActionType = 'full';
+        effActionLabel = 'Full-Round Action';
+      } else if (rawActionCandidate.includes('free')) {
+        rawActionType = 'free';
+        effActionLabel = 'Free Action';
+      }
+
+      const hasDmgParts = Array.isArray(effDamageParts) && effDamageParts.some(dp => dp && dp.dice);
+      const hasV2SpecialFlag = Boolean(rf.isBreathWeapon || rf.isSpecialAttack || rf.isStructuredAbility || rf.rechargeFormula);
+      const hasSaveOrRecharge = Boolean(hasV2SpecialFlag || effDcFormula || effSaveStr || merged.recharge || effRechargeDice);
+      const isBreathOrBlast = hasV2SpecialFlag || /\b(breath weapon|breath|cone of|line of|gaze|spit|acid|fire|cold|electricity|sonic)\b/i.test(`${cleanName} ${benText}`);
+
+      if (hasDmgParts && (hasSaveOrRecharge || isBreathOrBlast || effRange)) {
+        seen.add(lower);
+        const key = (merged.id || lower).replace(/[^a-z0-9_:]+/gi, '_').replace(/^_|_$/g, '');
+        const cleanParts = effDamageParts.filter(dp => dp && dp.dice);
+        const dp0 = cleanParts[0] || { dice: '1d6', bonus: 0, type: 'Damage' };
+        const bonusNum = Number(dp0.bonus || 0);
+        const dmgFormula = `${dp0.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
+        const dmgType = dp0.type || 'Damage';
+
+        const cdEntry = w.tactical?.abilityCooldowns?.[key];
+        const readyRoundFromTactical = (cdEntry && typeof cdEntry === 'object')
+          ? Number(cdEntry.readyRound || 0)
+          : Number(cdEntry || 0);
+        const remFromTactical = Math.max(0, readyRoundFromTactical - curRound);
+        const remFromDirect = Number(w.specialAttackCooldowns?.[key]) || 0;
+        const remFromRes = Number(roundRes?.cooldownRemaining) || 0;
+        const cooldownRemaining = Math.max(remFromTactical, remFromDirect, remFromRes);
+        const readyRound = readyRoundFromTactical > curRound
+          ? readyRoundFromTactical
+          : (cooldownRemaining > 0 ? curRound + cooldownRemaining : 0);
+
+        const dcEval = (effSaveStr || effDcFormula)
+          ? this.evaluateAbilitySaveDc({ dcFormula: effDcFormula, benefit: benText }, w)
+          : null;
+
+        result.push({
+          key,
+          abilityKey: key,
+          id: merged.id || key,
+          entryId: merged.id || key,
+          modeId: primaryMode?.id || null,
+          resourceId: anyRes?.id || null,
+          name: merged.name || cleanName,
+          source: merged.source || merged.category || 'Special Ability',
+          damageParts: cleanParts,
+          dice: dmgFormula,
+          dmgFormula,
+          diceFormula: dmgFormula,
+          dmgType,
+          save: effSaveStr,
+          dcFormula: effDcFormula,
+          dc: dcEval ? dcEval.dc : null,
+          dcVal: dcEval ? dcEval.dc : null,
+          dcBreakdown: dcEval ? dcEval.breakdown : '',
+          range: effRange,
+          recharge: merged.recharge || (effRechargeDice ? `${effRechargeDice} rounds` : ''),
+          rechargeDice: effRechargeDice,
+          cooldownExpr: effRechargeDice,
+          cooldownRemaining,
+          remainingCooldown: cooldownRemaining,
+          readyRound,
+          isOnCooldown: cooldownRemaining > 0,
+          isReady: cooldownRemaining === 0,
+          action: effActionLabel,
+          actionType: rawActionType,
+          benefit: benText,
+          desc: benText
+        });
+      }
+    });
+
+    const migrator = (typeof window !== 'undefined' && window.SchemaMigrator)
+      || (typeof SchemaMigrator !== 'undefined' ? SchemaMigrator : null);
+    if (migrator && typeof migrator.getAbilityStemAndScore === 'function' && result.length > 1) {
+      const stemMaxScore = new Map();
+      for (let i = 0; i < result.length; i++) {
+        const info = migrator.getAbilityStemAndScore(result[i]);
+        if (!info.stem) continue;
+        const prev = stemMaxScore.has(info.stem) ? stemMaxScore.get(info.stem) : -Infinity;
+        if (info.score > prev) stemMaxScore.set(info.stem, info.score);
+      }
+      return result.filter(r => {
+        if (!r) return false;
+        if (Array.isArray(r.overrides) && r.overrides.length > 0) return true;
+        if (Array.isArray(r.modifiers) && r.modifiers.length > 0) return true;
+        const info = migrator.getAbilityStemAndScore(r);
+        if (!info.stem) return true;
+        const maxScore = stemMaxScore.get(info.stem);
+        if (maxScore !== undefined && maxScore >= 2 && info.score < maxScore) {
+          if (info.isMalformedSlug || (info.score <= 1 && !info.hasTypedDamage && !info.hasSaveOrDc)) {
+            return false;
+          }
+        }
+        return true;
+      });
+    }
+
+    return result;
+  },
+
+  /**
+   * Pure Active Combat Buffs Strip derivation helper (Phase R3).
+   * Computes effective casterLevel, duration, and summary without mutating `w.buffs`.
+   */
+  deriveActiveBuffsStrip(w) {
+    if (!w || !Array.isArray(w.buffs)) return [];
+    const charLevel = Number(w.level) || 1;
+    const result = [];
+    w.buffs.forEach((b, idx) => {
+      if (!b || (b.active === false && !b.pinnedToCombat)) return;
+      const buffId = b.id || ('buff_' + String(b.name || idx).toLowerCase().replace(/[^a-z0-9]+/g, '_'));
+      const rawBCl = Number(b.casterLevel || b.cl || charLevel) || 1;
+      const minDomainCl = typeof this.getSpellEffectiveCasterLevel === 'function'
+        ? this.getSpellEffectiveCasterLevel(b, w, charLevel)
+        : rawBCl;
+      const casterLevel = Math.max(rawBCl, minDomainCl);
+      const spec = typeof this.resolveSpellBuffSpec === 'function'
+        ? this.resolveSpellBuffSpec(b, w, casterLevel)
+        : null;
+      const duration = (casterLevel > rawBCl && spec?.durationText)
+        ? spec.durationText
+        : (b.durationText || b.duration || spec?.durationText || '');
+      const summary = b.summary || spec?.summaryText || b.notes || b.description || 'Active Buff';
+      const clBonusInfo = typeof this.getSpellCasterLevelBonus === 'function'
+        ? this.getSpellCasterLevelBonus(b, w)
+        : { bonus: 0, sources: [] };
+      result.push({
+        idx,
+        id: buffId,
+        buffId,
+        name: b.name || 'Buff',
+        active: b.active !== false,
+        isPinned: Boolean(b.pinnedToCombat),
+        casterLevel,
+        effectiveCasterLevel: casterLevel,
+        duration,
+        summary,
+        isSpellBuff: Boolean(b.source === 'Spell' || spec?.isBuffSpell),
+        clBonus: clBonusInfo.bonus || 0,
+        clSources: clBonusInfo.sources || [],
+        targetWeapon: b.targetWeapon || null,
+        chosenEnergy: b.chosenEnergy || null
+      });
+    });
+    return result;
+  },
+
+  /**
    * Pure, zero-mutation sheet derivation pipeline (Phase R1 Strangler Fig).
    * Accepts `(inputChar, customDb, tacticalOptions)` or `(inputChar, { masterDb, session, tactical })`.
    * Returns a self-contained `SheetView` without mutating `inputChar` or `customDb`.
@@ -8067,7 +8424,13 @@ const RuleEngine = {
     }
     const workingDb = JSON.parse(JSON.stringify(rawDb));
     const workingSession = rawSession ? JSON.parse(JSON.stringify(rawSession)) : null;
-    if (workingSession && workingSession.actionEconomy && !resolvedTactical.spentActions) {
+    if (
+      workingSession &&
+      workingSession.actionEconomy &&
+      !resolvedTactical.spentActions &&
+      !working.tactical?.spentActions &&
+      Object.values(workingSession.actionEconomy).some(Boolean)
+    ) {
       resolvedTactical.spentActions = Object.assign({}, workingSession.actionEconomy);
     }
 
@@ -8101,6 +8464,33 @@ const RuleEngine = {
     });
 
     const consumablesGrouped = this.deriveConsumablesView(working);
+    const specialAttacks = this.deriveSpecialAttacks(working, working.legoEvaluation, workingDb);
+    const activeBuffsStrip = this.deriveActiveBuffsStrip(working);
+    const spent = working.tactical?.spentActions || working.actionEconomy?.spentActions || {};
+    const ae = working.actionEconomy || {};
+    const isActionAvailable = (val, spentFlag) => {
+      if (spentFlag === true) return false;
+      if (val === false || val === 'spent' || val === 'unavailable' || val === 'consumed_by_immediate' || val === 'consumed_by_swift') return false;
+      return true;
+    };
+    const derivedActionEconomy = {
+      standard: isActionAvailable(ae.standard, spent.standard),
+      move: isActionAvailable(ae.move, spent.move),
+      swift: isActionAvailable(ae.swift, spent.swift),
+      immediate: isActionAvailable(ae.immediate, spent.immediate)
+    };
+    const derivedTactical = {
+      powerAttack: Number(working.tactical?.powerAttack || 0),
+      combatExpertise: Number(working.tactical?.combatExpertise || 0),
+      fightingDefensively: Boolean(working.tactical?.fightingDefensively),
+      totalDefense: Boolean(working.tactical?.totalDefense),
+      shieldBlockActive: Boolean(working.tactical?.shieldBlockActive),
+      flanking: Boolean(working.tactical?.flanking),
+      charge: Boolean(working.tactical?.charge),
+      higherGround: Boolean(working.tactical?.higherGround),
+      activeWeaponSet: Number(working.activeWeaponSet || (working.tactical?.weaponSets?.activeSet === 2 ? 2 : 1)),
+      maxBabCap: Math.min(5, Number(working.bab || 0))
+    };
 
     return {
       meta: {
@@ -8148,6 +8538,7 @@ const RuleEngine = {
         periodicEffects: working.periodicHpEffects || []
       },
       combat: {
+        round: Number(working.tactical?.round || working.encounterRound || 1),
         bab: Number(working.bab) || 0,
         grapple: Number(working.grappleBonus) || 0,
         initiative: (Number(working.buffInitiativeBonus) || 0) + mods.dex,
@@ -8160,7 +8551,10 @@ const RuleEngine = {
         },
         weapons: evaluatedWeapons,
         modes: working.evaluatedModes || [],
-        actionEconomy: working.actionEconomy || {}
+        actionEconomy: derivedActionEconomy,
+        tactical: derivedTactical,
+        specialAttacks,
+        activeBuffsStrip
       },
       defenses: {
         ...(working.evaluatedDefenses || {}),
@@ -8212,6 +8606,15 @@ const RuleEngine = {
     }
     return targetChar;
   },
+
+  TACTICAL_MOD_KEYS: Object.freeze([
+    'flanking', 'charge', 'higherGround',
+    'fightingDefensively', 'totalDefense', 'shieldBlockActive',
+    'powerAttackActive', 'combatExpertiseActive',
+    'rapidShot', 'manyshot', 'pointBlankShot', 'deadlyAim',
+    'rangedHigherGround', 'targetInMelee', 'coverPenalty', 'defensiveCastingActive',
+    'rangePenalty', 'enhanceArrow', 'trueStrike', 'sneakAttack', 'bootsHaste', 'witchlightSpeed'
+  ]),
 
   /**
    * Returns a clean clone of `charDoc` with heavy transient evaluation-only properties stripped,

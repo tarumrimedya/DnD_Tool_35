@@ -647,6 +647,280 @@ function runDeriveSheetTests() {
   );
   CharStore.clearHistory();
 
+  // --------------------------------------------------------------------------
+  // Phase R3: `sheet.combat` View-Model, Special Attacks, Action Economy, Round Tick & Undo/Redo
+  // --------------------------------------------------------------------------
+  const v05Combat = derivedViews[4];
+  check(
+    'Phase R3: sheet.combat exposes round, actionEconomy, tactical, specialAttacks, and activeBuffsStrip across all 5 fixtures',
+    derivedViews.every(v =>
+      v && v.combat &&
+      typeof v.combat.round === 'number' &&
+      v.combat.actionEconomy && typeof v.combat.actionEconomy.standard === 'boolean' &&
+      v.combat.tactical && typeof v.combat.tactical.maxBabCap === 'number' &&
+      Array.isArray(v.combat.specialAttacks) &&
+      Array.isArray(v.combat.activeBuffsStrip)
+    )
+  );
+  check(
+    'Phase R3: Fixture 05 (Dragon-Blooded Boons) derives both Half-Dragon Breath Weapon (6d8 Acid, DC 22) and DM Boon Breath Weapon (4d8 Acid, 1d4+1 recharge, DC 31)',
+    v05Combat.combat.specialAttacks.some(sa => sa.name.includes('Half-Dragon') && sa.diceFormula === '6d8' && sa.dcVal === 22) &&
+    v05Combat.combat.specialAttacks.some(sa => sa.name.includes('Dragon Breath Weapon') && sa.diceFormula === '4d8' && sa.dcVal === 31 && sa.cooldownExpr === '1d4+1'),
+    JSON.stringify(v05Combat.combat.specialAttacks.map(s => ({ key: s.key, name: s.name, dice: s.diceFormula, dc: s.dcVal, cd: s.cooldownExpr })))
+  );
+  check(
+    'Phase R3: Fixture 04 (Mystic Theurge) derives activeBuffsStrip with effective Caster Level and summary without mutating character.buffs',
+    derivedViews[3].combat.activeBuffsStrip.length >= 2 &&
+    derivedViews[3].combat.activeBuffsStrip.every(b => typeof b.effectiveCasterLevel === 'number' && b.id),
+    JSON.stringify(derivedViews[3].combat.activeBuffsStrip.map(b => ({ id: b.id, name: b.name, cl: b.effectiveCasterLevel })))
+  );
+
+  // Initialize CharStore with Fixture 05 and test Special Attack Roll -> Advance Round -> Undo -> Redo
+  CharStore.clearHistory();
+  CharStore.replaceDoc(JSON.parse(JSON.stringify(f05Raw)));
+  const boonSa = CharStore.getSheet().combat.specialAttacks.find(sa => sa.cooldownExpr === '1d4+1') || CharStore.getSheet().combat.specialAttacks[0];
+  check(
+    'Phase R3: Initial Round === 1, Standard Action available, Breath Weapon ready (remainingCooldown === 0)',
+    CharStore.getSheet().combat.round === 1 &&
+    CharStore.getSheet().combat.actionEconomy.standard === true &&
+    Boolean(boonSa && boonSa.isReady === true && boonSa.remainingCooldown === 0)
+  );
+
+  // Dispatch combat/specialAttackRoll with 3-round cooldown and Move/Standard action consumption
+  CharStore.dispatch({
+    type: 'combat/specialAttackRoll',
+    label: `Special Attack: ${boonSa.name}`,
+    payload: {
+      abilityKey: boonSa.key,
+      abilityName: boonSa.name,
+      entryId: boonSa.entryId,
+      modeId: boonSa.modeId,
+      cooldownRounds: 3,
+      actionType: 'standard'
+    }
+  });
+  const afterRollSheet = CharStore.getSheet();
+  const boonSaAfterRoll = afterRollSheet.combat.specialAttacks.find(sa => sa.key === boonSa.key);
+  check(
+    'Phase R3: combat/specialAttackRoll sets cooldown to 3 rounds (readyRound === 4) and consumes Standard Action',
+    afterRollSheet.combat.round === 1 &&
+    afterRollSheet.combat.actionEconomy.standard === false &&
+    Boolean(boonSaAfterRoll && boonSaAfterRoll.isReady === false && boonSaAfterRoll.remainingCooldown === 3 && boonSaAfterRoll.readyRound === 4),
+    JSON.stringify({ round: afterRollSheet.combat.round, actionEconomy: afterRollSheet.combat.actionEconomy, boonSaAfterRoll })
+  );
+
+  // Dispatch combat/toggleTacticalMod (charge + shieldBlockActive) before advancing round
+  CharStore.dispatch({
+    type: 'combat/toggleTacticalMod',
+    label: 'Toggle Charge',
+    payload: { key: 'charge', value: true }
+  });
+  CharStore.dispatch({
+    type: 'combat/toggleTacticalMod',
+    label: 'Toggle Shield Block',
+    payload: { key: 'shieldBlockActive', value: true }
+  });
+  check(
+    'Phase R3: combat/toggleTacticalMod activates charge and shieldBlockActive in sheet.combat.tactical',
+    CharStore.getSheet().combat.tactical.charge === true &&
+    CharStore.getSheet().combat.tactical.shieldBlockActive === true
+  );
+
+  // Dispatch combat/advanceRound -> Round 1 -> 2, cooldown 3 -> 2, actionEconomy reset, 1-round reactions cleared
+  CharStore.dispatch({
+    type: 'combat/advanceRound',
+    label: 'Next Round'
+  });
+  const afterRound2Sheet = CharStore.getSheet();
+  const boonSaRound2 = afterRound2Sheet.combat.specialAttacks.find(sa => sa.key === boonSa.key);
+  const round2Outcome = CharStore.getLastOutcome();
+  check(
+    'Phase R3: combat/advanceRound advances Round 1 -> 2, ticks cooldown 3 -> 2, resets Standard Action to true, and clears Charge/Shield Block',
+    afterRound2Sheet.combat.round === 2 &&
+    afterRound2Sheet.combat.actionEconomy.standard === true &&
+    afterRound2Sheet.combat.tactical.charge === false &&
+    afterRound2Sheet.combat.tactical.shieldBlockActive === false &&
+    Boolean(boonSaRound2 && boonSaRound2.remainingCooldown === 2) &&
+    Boolean(round2Outcome && round2Outcome.round === 2 && Array.isArray(round2Outcome.notes) && round2Outcome.notes.length >= 2),
+    JSON.stringify({ round: afterRound2Sheet.combat.round, rem: boonSaRound2?.remainingCooldown, notes: round2Outcome?.notes })
+  );
+
+  // Undo (Ctrl+Z) -> Restores Round 1, cooldown 3, Standard Action spent (false), Charge & Shield Block active
+  CharStore.undo();
+  const afterUndoSheet = CharStore.getSheet();
+  const boonSaAfterUndo = afterUndoSheet.combat.specialAttacks.find(sa => sa.key === boonSa.key);
+  check(
+    'Phase R3: CharStore.undo() (Ctrl+Z) restores Round 1, cooldown 3, spent Standard Action (false), and tactical flags',
+    afterUndoSheet.combat.round === 1 &&
+    afterUndoSheet.combat.actionEconomy.standard === false &&
+    afterUndoSheet.combat.tactical.charge === true &&
+    afterUndoSheet.combat.tactical.shieldBlockActive === true &&
+    Boolean(boonSaAfterUndo && boonSaAfterUndo.remainingCooldown === 3),
+    JSON.stringify({ round: afterUndoSheet.combat.round, rem: boonSaAfterUndo?.remainingCooldown, std: afterUndoSheet.combat.actionEconomy.standard })
+  );
+
+  // Redo (Ctrl+Y) -> Re-applies Round 2, cooldown 2, Standard Action available (true)
+  CharStore.redo();
+  const afterRedoSheet = CharStore.getSheet();
+  const boonSaAfterRedo = afterRedoSheet.combat.specialAttacks.find(sa => sa.key === boonSa.key);
+  check(
+    'Phase R3: CharStore.redo() (Ctrl+Y) re-applies Round 2, cooldown 2, and available Standard Action (true)',
+    afterRedoSheet.combat.round === 2 &&
+    afterRedoSheet.combat.actionEconomy.standard === true &&
+    Boolean(boonSaAfterRedo && boonSaAfterRedo.remainingCooldown === 2)
+  );
+  CharStore.clearHistory();
+
+  // --------------------------------------------------------------------------
+  // Phase R3 QA Remediation Gates:
+  // 1) Actions.invoke (el, dataset, event) Parameter Order & combat:* Contract
+  // 2) Strict Whitelist on combat/toggleTacticalMod
+  // 3) BAB 0 Combat Expertise Cap (0)
+  // 4) Unified Buff Round Tick (b.rounds & b.durationRounds) on combat/advanceRound
+  // 5) Formula Temp HP Subtraction on combat/toggleBuff & combat/removeBuff
+  // --------------------------------------------------------------------------
+  check('Phase R3 QA: UI.Actions is exported with register and invoke', Boolean(Actions && typeof Actions.register === 'function' && typeof Actions.invoke === 'function'));
+
+  let capturedOrder = null;
+  Actions.register('test:param-order-probe', (el, data, event) => {
+    if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+    capturedOrder = {
+      hasDatasetOnArg0: Boolean(el && el.dataset && el.dataset.abilityKey === 'sa_half_dragon_breath_weapon'),
+      elValueOnArg0: el ? el.value : null,
+      abilityKeyOnArg1: data ? data.abilityKey : null,
+      idxOnArg1: data ? Number(data.idx) : null,
+      deltaOnArg1: data ? Number(data.delta) : null,
+      pinNameOnArg1: data ? data.pinName : null,
+      eventStoppedOnArg2: Boolean(event && event.stopped === true)
+    };
+  });
+  const mockEvent = {
+    stopped: false,
+    stopPropagation() { this.stopped = true; },
+    preventDefault() {},
+    target: { closest: () => null }
+  };
+  Actions.invoke('test:param-order-probe', {
+    abilityKey: 'sa_half_dragon_breath_weapon',
+    idx: '2',
+    delta: '-1',
+    pinName: 'Scorching Ray',
+    value: 'offense_spell'
+  }, mockEvent);
+  check(
+    'Phase R3 QA: Actions.invoke passes (el, dataset, event) in exact order and preserves dataset.abilityKey, idx, delta, pinName, el.value, and event.stopPropagation()',
+    Boolean(
+      capturedOrder &&
+      capturedOrder.hasDatasetOnArg0 === true &&
+      capturedOrder.elValueOnArg0 === 'offense_spell' &&
+      capturedOrder.abilityKeyOnArg1 === 'sa_half_dragon_breath_weapon' &&
+      capturedOrder.idxOnArg1 === 2 &&
+      capturedOrder.deltaOnArg1 === -1 &&
+      capturedOrder.pinNameOnArg1 === 'Scorching Ray' &&
+      capturedOrder.eventStoppedOnArg2 === true
+    ),
+    JSON.stringify(capturedOrder)
+  );
+
+  // Verify all 24 `combat:*` Actions registrations in char_combat.js use `(el, data, event)` signature (never `(event, data)`)
+  const charCombatSrc = fs.readFileSync(path.join(__dirname, '..', 'char_combat.js'), 'utf8');
+  const combatActionRegs = [...charCombatSrc.matchAll(/Actions\.register\(\s*'(combat:[^']+)'\s*,\s*\(([^)]*)\)/g)];
+  check(
+    'Phase R3 QA: All Actions.register("combat:*") handlers in char_combat.js declare (el, data, event) parameter order and read data.abilityKey on special-attack-roll/recharge',
+    combatActionRegs.length >= 24 &&
+    combatActionRegs.every(m => {
+      const params = m[2].split(',').map(s => s.trim());
+      return params[0] === 'el' && params[1] === 'data';
+    }) &&
+    /Actions\.register\('combat:special-attack-roll'[\s\S]{0,200}data\.abilityKey/.test(charCombatSrc) &&
+    /Actions\.register\('combat:special-attack-recharge'[\s\S]{0,200}data\.abilityKey/.test(charCombatSrc),
+    JSON.stringify(combatActionRegs.map(m => [m[1], m[2]]))
+  );
+
+  // Verify strict whitelist on combat/toggleTacticalMod rejects arbitrary keys without polluting Undo history
+  CharStore.clearHistory();
+  const undoBeforeInvalidKey = CharStore.getHistoryCounts().undo;
+  CharStore.dispatch({
+    type: 'combat/toggleTacticalMod',
+    payload: { key: '__proto_pollute_or_arbitrary_key__' }
+  });
+  check(
+    'Phase R3 QA: combat/toggleTacticalMod rejects non-whitelisted tactical key with invalid_payload and does not push onto Undo stack',
+    CharStore.getLastOutcome()?.status === 'invalid_payload' &&
+    CharStore.getHistoryCounts().undo === undoBeforeInvalidKey &&
+    CharStore.getDoc().tactical.__proto_pollute_or_arbitrary_key__ === undefined
+  );
+
+  // Verify ALL canonical tactical modifier keys (melee, defense, and all 6 qualified ranged modifier keys) are accepted by combat/toggleTacticalMod
+  const expectedTacticalKeys = [
+    'flanking', 'charge', 'higherGround',
+    'fightingDefensively', 'totalDefense', 'shieldBlock', 'shieldBlockActive',
+    'powerAttackActive', 'combatExpertiseActive',
+    'rapidShot', 'manyshot', 'pointBlankShot', 'deadlyAim',
+    'rangedHigherGround', 'targetInMelee', 'coverPenalty', 'defensiveCastingActive',
+    'rangePenalty', 'enhanceArrow', 'trueStrike', 'sneakAttack', 'bootsHaste', 'witchlightSpeed'
+  ];
+  const allTacticalKeysAccepted = expectedTacticalKeys.every(k => {
+    CharStore.dispatch({
+      type: 'combat/toggleTacticalMod',
+      payload: { key: k, value: true },
+      meta: { skipHistory: true }
+    });
+    const out = CharStore.getLastOutcome();
+    const resolved = k === 'shieldBlock' ? 'shieldBlockActive' : k;
+    return out && out.status === 'tactical_toggled' && CharStore.getDoc().tactical[resolved] === true;
+  });
+  check(
+    'Phase R3 QA: combat/toggleTacticalMod accepts all 23 melee, defense, and ranged tactical modifier keys (including rangePenalty, enhanceArrow, trueStrike, sneakAttack, bootsHaste, witchlightSpeed)',
+    allTacticalKeysAccepted && Array.isArray(RuleEngine.TACTICAL_MOD_KEYS) && RuleEngine.TACTICAL_MOD_KEYS.length === 22
+  );
+
+  // Verify BAB 0 Combat Expertise Cap === 0
+  const bab0Doc = JSON.parse(JSON.stringify(f01Raw));
+  bab0Doc.bab = 0;
+  CharStore.replaceDoc(bab0Doc, { skipHistory: true });
+  CharStore.dispatch({
+    type: 'combat/adjustCombatExpertise',
+    payload: { delta: 3 }
+  });
+  check(
+    'Phase R3 QA: combat/adjustCombatExpertise enforces D&D 3.5e RAW cap min(5, max(0, bab)) -> 0 when BAB is 0',
+    CharStore.getDoc().tactical.combatExpertise === 0 &&
+    CharStore.getSheet().combat.tactical.combatExpertise === 0
+  );
+
+  // Verify Unified Buff Round Tick (b.rounds = 2 -> 1 -> 0 expired) & Formula Temp HP subtraction on toggleBuff
+  const buffTestDoc = JSON.parse(JSON.stringify(f04Raw));
+  buffTestDoc.buffs.push({
+    id: 'buff_potion_bull_str',
+    name: "Bull's Strength (Potion)",
+    active: true,
+    rounds: 2,
+    durationText: '2 rounds'
+  });
+  CharStore.replaceDoc(buffTestDoc, { skipHistory: true });
+  const initialTempHp = CharStore.getSheet().hp.temp; // 18 from Greater Heroism
+  const ghIdx = CharStore.getDoc().buffs.findIndex(b => b && b.name === 'Greater Heroism');
+  CharStore.dispatch({
+    type: 'combat/toggleBuff',
+    payload: { index: ghIdx, grantedTempHp: 18 }
+  });
+  check(
+    'Phase R3 QA: combat/toggleBuff subtracts formula grantedTempHp (18 -> 0) when deactivating Greater Heroism',
+    CharStore.getDoc().hp.temp === 0 && CharStore.getSheet().hp.temp === 0 && CharStore.getDoc().buffs[ghIdx].active === false,
+    `initialTemp=${initialTempHp}, afterToggleTemp=${CharStore.getSheet().hp.temp}`
+  );
+  CharStore.dispatch({ type: 'combat/advanceRound' });
+  const potionBuffR2 = CharStore.getDoc().buffs.find(b => b && b.id === 'buff_potion_bull_str');
+  CharStore.dispatch({ type: 'combat/advanceRound' });
+  const potionBuffR3 = CharStore.getDoc().buffs.find(b => b && b.id === 'buff_potion_bull_str');
+  check(
+    'Phase R3 QA: combat/advanceRound ticks R2 potion buff b.rounds (2 -> 1 -> 0) and marks active=false on expiry',
+    potionBuffR2 && potionBuffR3 && potionBuffR3.rounds === 0 && potionBuffR3.active === false && potionBuffR3.durationText === 'Expired',
+    JSON.stringify(potionBuffR3)
+  );
+  CharStore.clearHistory();
+
   return { passed, elapsedMs: Date.now() - startMs };
 }
 

@@ -4817,169 +4817,13 @@
 
     function getCharacterSpecialAttackAbilities(char) {
       if (!char) return [];
-      const stripTag = (str) => String(str || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
-      const rawPool = [];
-
-      const legoEval = char.legoEvaluation || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.evaluateLegoCharacter === 'function' ? RuleEngine.evaluateLegoCharacter(char) : null);
-      if (legoEval && Array.isArray(legoEval.entries)) {
-        legoEval.entries.forEach(le => {
-          if (le && (le._autoUnlocked || le._mutated)) {
-            rawPool.push({ ...le, _src: 'legoEvaluation' });
-          }
-        });
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveSpecialAttacks === 'function') {
+        const dbList = (typeof masterDb !== 'undefined' && Array.isArray(masterDb) && masterDb.length > 0)
+          ? masterDb
+          : (Array.isArray(char.customDb) ? char.customDb : []);
+        return RuleEngine.deriveSpecialAttacks(char, char.legoEvaluation, dbList);
       }
-      if (Array.isArray(char.legoEntries)) {
-        char.legoEntries.forEach(le => {
-          if (le) rawPool.push({ ...le, _src: 'legoEntries' });
-        });
-      }
-      if (Array.isArray(char.specialAbilities)) {
-        char.specialAbilities.forEach(a => {
-          if (a) rawPool.push(typeof a === 'string' ? { name: a, _src: 'specialAbilities' } : { ...a, _src: 'specialAbilities' });
-        });
-      }
-      if (Array.isArray(char.feats)) {
-        char.feats.forEach(f => {
-          if (f) rawPool.push(typeof f === 'string' ? { name: f, _src: 'feats' } : { ...f, _src: 'feats' });
-        });
-      }
-
-      const excludedNames = new Set([
-        'power attack', 'sneak attack', 'punishing stance', 'mountain hammer', 'steel wind',
-        'flurry of blows', 'two-weapon fighting', 'improved two-weapon fighting', 'greater two-weapon fighting',
-        'agile shield fighter', 'weapon specialization', 'greater weapon specialization', 'point blank shot',
-        'rapid shot', 'manyshot', 'deadly aim', 'combat expertise', 'steadfast determination'
-      ]);
-
-      const seen = new Set();
-      const result = [];
-
-      rawPool.forEach(item => {
-        const cleanName = stripTag(item.name || '');
-        if (!cleanName) return;
-        const lower = cleanName.toLowerCase();
-        if (seen.has(lower) || excludedNames.has(lower) || lower.startsWith('sneak attack')) return;
-
-        const dbMatch = (typeof masterDb !== 'undefined' && Array.isArray(masterDb))
-          ? masterDb.find(m => m && m.name && stripTag(m.name).toLowerCase() === lower)
-          : (Array.isArray(char.customDb) ? char.customDb.find(m => m && m.name && stripTag(m.name).toLowerCase() === lower) : null);
-
-        let merged = item._mutated
-          ? Object.assign({}, dbMatch || {}, item, { name: cleanName })
-          : Object.assign({}, item, dbMatch || {}, { name: cleanName });
-        const benText = merged.benefit || merged.desc || merged.description || '';
-
-        if (!merged.dcFormula && !merged.recharge && (!Array.isArray(merged.damageParts) || merged.damageParts.length === 0)) {
-          if (typeof window !== 'undefined' && window.RuleMaster && typeof window.RuleMaster.parseStructuredAbilityStatBlock === 'function') {
-            const parsed = window.RuleMaster.parseStructuredAbilityStatBlock(cleanName, benText, merged.category || merged.type || '');
-            if (parsed) {
-              merged = Object.assign({}, parsed, merged, {
-                name: parsed.name || cleanName,
-                damageParts: (Array.isArray(merged.damageParts) && merged.damageParts.length > 0) ? merged.damageParts : (parsed.damageParts || []),
-                save: merged.save || parsed.save || '',
-                dcFormula: merged.dcFormula || parsed.dcFormula || '',
-                range: merged.range || parsed.range || '',
-                recharge: merged.recharge || parsed.recharge || '',
-                rechargeDice: merged.rechargeDice || parsed.rechargeDice || '',
-                ruleFlags: Object.assign({}, parsed.ruleFlags || {}, merged.ruleFlags || {})
-              });
-            }
-          }
-        }
-
-        // Extract V2.5 modes[] and resources[] if present so Lego entities project automatically without regex
-        const primaryMode = Array.isArray(merged.modes) && merged.modes.length > 0 ? merged.modes[0] : null;
-        const roundRes = Array.isArray(merged.resources)
-          ? merged.resources.find(r => r && ((r.recharge && (r.recharge.period === 'rounds' || r.recharge.dice)) || r.rechargeModel === 'cooldown_turns' || r.rechargeFormula))
-          : null;
-        const effDamageParts = (Array.isArray(merged.damageParts) && merged.damageParts.some(dp => dp && dp.dice))
-          ? merged.damageParts
-          : (primaryMode && Array.isArray(primaryMode.damageParts) ? primaryMode.damageParts : []);
-        const effSaveObj = (primaryMode && primaryMode.save && typeof primaryMode.save === 'object') ? primaryMode.save : null;
-        const effSaveStr = effSaveObj ? `${effSaveObj.type || 'Reflex'} (${effSaveObj.onSave || 'half'})` : (merged.save || (primaryMode && typeof primaryMode.save === 'string' ? primaryMode.save : ''));
-        const effDcFormula = merged.dcFormula || (effSaveObj && effSaveObj.dcFormula) || '';
-        const effRechargeDice = merged.rechargeDice || (roundRes && ((roundRes.recharge && roundRes.recharge.dice) || roundRes.rechargeFormula)) || '';
-        const effRange = merged.range || (primaryMode && (primaryMode.area || primaryMode.range)) || '';
-        const dbExplicitAction = dbMatch ? (dbMatch.action || dbMatch.actionType || '') : '';
-        const itemNonDefaultAction = (item && item.actionType && !['standard', 'passive'].includes(String(item.actionType).toLowerCase()))
-          ? item.actionType
-          : ((item && item.action && !/^(standard(\s+action)?|passive)$/i.test(String(item.action).trim())) ? item.action : '');
-        const rawActionCandidate = String(
-          dbExplicitAction ||
-          itemNonDefaultAction ||
-          (primaryMode && (primaryMode.action || primaryMode.actionType)) ||
-          merged.action ||
-          merged.actionType ||
-          'Standard Action'
-        ).trim().toLowerCase();
-        let rawActionType = 'standard';
-        let effActionLabel = 'Standard Action';
-        if (rawActionCandidate.includes('move')) {
-          rawActionType = 'move';
-          effActionLabel = 'Move Action';
-        } else if (rawActionCandidate.includes('swift')) {
-          rawActionType = 'swift';
-          effActionLabel = 'Swift Action';
-        } else if (rawActionCandidate.includes('immediate') || rawActionCandidate.includes('reaction')) {
-          rawActionType = 'immediate';
-          effActionLabel = 'Immediate Action';
-        } else if (rawActionCandidate.includes('full')) {
-          rawActionType = 'full';
-          effActionLabel = 'Full-Round Action';
-        } else if (rawActionCandidate.includes('free')) {
-          rawActionType = 'free';
-          effActionLabel = 'Free Action';
-        }
-
-        const hasDmgParts = Array.isArray(effDamageParts) && effDamageParts.some(dp => dp && dp.dice);
-        const hasSaveOrRecharge = Boolean(effDcFormula || effSaveStr || merged.recharge || effRechargeDice || merged.ruleFlags?.isStructuredAbility);
-        const isBreathOrBlast = /\b(breath weapon|breath|cone of|line of|gaze|spit|acid|fire|cold|electricity|sonic)\b/i.test(`${cleanName} ${benText}`);
-
-        if (hasDmgParts && (hasSaveOrRecharge || isBreathOrBlast || effRange)) {
-          seen.add(lower);
-          const key = (merged.id || lower).replace(/[^a-z0-9_:]+/gi, '_').replace(/^_|_$/g, '');
-          result.push({
-            key,
-            id: merged.id || key,
-            name: merged.name || cleanName,
-            damageParts: effDamageParts.filter(dp => dp && dp.dice),
-            save: effSaveStr,
-            dcFormula: effDcFormula,
-            range: effRange,
-            recharge: merged.recharge || (effRechargeDice ? `${effRechargeDice} rounds` : ''),
-            rechargeDice: effRechargeDice,
-            action: effActionLabel,
-            actionType: rawActionType,
-            benefit: benText
-          });
-        }
-      });
-
-      if (typeof SchemaMigrator !== 'undefined' && typeof SchemaMigrator.getAbilityStemAndScore === 'function' && result.length > 1) {
-        const stemMaxScore = new Map();
-        for (let i = 0; i < result.length; i++) {
-          const info = SchemaMigrator.getAbilityStemAndScore(result[i]);
-          if (!info.stem) continue;
-          const prev = stemMaxScore.has(info.stem) ? stemMaxScore.get(info.stem) : -Infinity;
-          if (info.score > prev) stemMaxScore.set(info.stem, info.score);
-        }
-        return result.filter(r => {
-          if (!r) return false;
-          if (Array.isArray(r.overrides) && r.overrides.length > 0) return true;
-          if (Array.isArray(r.modifiers) && r.modifiers.length > 0) return true;
-          const info = SchemaMigrator.getAbilityStemAndScore(r);
-          if (!info.stem) return true;
-          const maxScore = stemMaxScore.get(info.stem);
-          if (maxScore !== undefined && maxScore >= 2 && info.score < maxScore) {
-            if (info.isMalformedSlug || (info.score <= 1 && !info.hasTypedDamage && !info.hasSaveOrDc)) {
-              return false;
-            }
-          }
-          return true;
-        });
-      }
-
-      return result;
+      return [];
     }
     window.getCharacterSpecialAttackAbilities = getCharacterSpecialAttackAbilities;
 
@@ -4987,17 +4831,15 @@
       const abilities = getCharacterSpecialAttackAbilities(char);
       if (!abilities || abilities.length === 0) return '';
 
-      if (!char.tactical) char.tactical = {};
-      if (!char.tactical.abilityCooldowns || typeof char.tactical.abilityCooldowns !== 'object') {
-        char.tactical.abilityCooldowns = {};
-      }
-      const curRound = Number(char.tactical.round) || 1;
+      const curRound = Number(char.tactical?.round || char.encounterRound) || 1;
       const esc = (str) => String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
       return abilities.map(ab => {
-        const cdEntry = char.tactical.abilityCooldowns[ab.key];
-        const readyRound = (cdEntry && typeof cdEntry === 'object') ? Number(cdEntry.readyRound || 0) : Number(cdEntry || 0);
-        const remainingRounds = Math.max(0, readyRound - curRound);
+        const cdEntry = char.tactical?.abilityCooldowns?.[ab.key];
+        const readyRoundFromTactical = (cdEntry && typeof cdEntry === 'object') ? Number(cdEntry.readyRound || 0) : Number(cdEntry || 0);
+        const remFromTactical = Math.max(0, readyRoundFromTactical - curRound);
+        const remainingRounds = ab.cooldownRemaining !== undefined ? Math.max(remFromTactical, Number(ab.cooldownRemaining) || 0) : remFromTactical;
+        const readyRound = readyRoundFromTactical > curRound ? readyRoundFromTactical : (remainingRounds > 0 ? curRound + remainingRounds : 0);
         const isOnCooldown = remainingRounds > 0;
 
         const dp = ab.damageParts[0] || { dice: '1d6', bonus: 0, type: 'Damage' };
@@ -5020,11 +4862,11 @@
           }
         }
 
-        const safeKey = ab.key.replace(/'/g, "\\'");
+        const safeKeyAttr = esc(ab.key);
 
         return `
         <!-- SPECIAL ATTACK / BREATH WEAPON CARD -->
-        <div onclick="executeSpecialAttackAbilityRoll('${safeKey}')" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${isOnCooldown ? 'bg-gradient-to-r from-purple-950/50 to-slate-900/90 border-purple-500/60 text-purple-200 shadow-md' : 'bg-gradient-to-r from-emerald-950/60 to-slate-900/90 border-emerald-500/80 text-emerald-100 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-500/30 hover:border-emerald-400'}">
+        <div data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${isOnCooldown ? 'bg-gradient-to-r from-purple-950/50 to-slate-900/90 border-purple-500/60 text-purple-200 shadow-md' : 'bg-gradient-to-r from-emerald-950/60 to-slate-900/90 border-emerald-500/80 text-emerald-100 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-500/30 hover:border-emerald-400'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-xs">${isOnCooldown ? '⏳' : '🔥'}</span>
@@ -5051,15 +4893,15 @@
           </div>
           <div class="shrink-0 flex items-center gap-1.5">
             ${isOnCooldown ? `
-              <button type="button" onclick="event.stopPropagation(); resetSpecialAttackCooldown('${safeKey}')" class="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 border border-purple-500/50 transition cursor-pointer" title="Clear cooldown and mark Ready">
+              <button type="button" data-action="combat:special-attack-ready" data-ability-key="${safeKeyAttr}" class="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 border border-purple-500/50 transition cursor-pointer" title="Clear cooldown and mark Ready">
                 ↺ Ready
               </button>
             ` : (ab.rechargeDice ? `
-              <button type="button" onclick="event.stopPropagation(); rollSpecialAttackCooldownOnly('${safeKey}')" class="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/50 transition cursor-pointer" title="Roll Recharge Cooldown (${esc(ab.rechargeDice)}) only">
+              <button type="button" data-action="combat:special-attack-recharge" data-ability-key="${safeKeyAttr}" class="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/50 transition cursor-pointer" title="Roll Recharge Cooldown (${esc(ab.rechargeDice)}) only">
                 ⏳ ${esc(ab.rechargeDice)}
               </button>
             ` : '')}
-            <button type="button" onclick="event.stopPropagation(); executeSpecialAttackAbilityRoll('${safeKey}')" class="text-[10px] font-black px-2.5 py-1.5 rounded-lg ${isOnCooldown ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'} shadow transition active:scale-95 cursor-pointer flex items-center gap-1">
+            <button type="button" data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="text-[10px] font-black px-2.5 py-1.5 rounded-lg ${isOnCooldown ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'} shadow transition active:scale-95 cursor-pointer flex items-center gap-1">
               <span>🔥</span>
               <span>Roll ${esc(dmgFormula)}</span>
             </button>
@@ -5073,11 +4915,13 @@
     function executeSpecialAttackAbilityRoll(abilityKey) {
       if (!character) return;
       const abilities = getCharacterSpecialAttackAbilities(character);
-      const ab = abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
+      const ab = (typeof abilityKey === 'number' && !isNaN(abilityKey))
+        ? abilities[abilityKey]
+        : abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
       if (!ab) return;
 
-      // Save atomic undo snapshot before spending action or rolling cooldown
-      if (typeof _pushTerminalUndoSnapshot === 'function') {
+      const hasStore = Boolean(typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function');
+      if (!hasStore && typeof _pushTerminalUndoSnapshot === 'function') {
         _pushTerminalUndoSnapshot(`Special Attack: ${ab.name}`);
       }
       window._lastCombatActivationUndo = {
@@ -5085,11 +4929,6 @@
         spentActions: JSON.parse(JSON.stringify(character.tactical?.spentActions || {})),
         prevCooldown: character.tactical?.abilityCooldowns?.[ab.key] ? JSON.parse(JSON.stringify(character.tactical.abilityCooldowns[ab.key])) : null
       };
-
-      // Wire to Action Economy Node automatically (e.g. Move Action for Dragon Breath)
-      if (typeof consumeActionEconomy === 'function') {
-        consumeActionEconomy(ab.actionType || ab.action || 'standard', ab.name);
-      }
 
       const dp = ab.damageParts[0] || { dice: '1d6', bonus: 0, type: 'Damage' };
       const bonusNum = Number(dp.bonus || 0);
@@ -5123,29 +4962,67 @@
         }
       }
 
-      // Also roll Recharge Dice automatically if present!
+      // Roll Recharge Dice if present
       let rechargeNote = '';
       let parsedRecharge = null;
+      let waitRounds = 0;
       if (ab.rechargeDice) {
         parsedRecharge = parseAndRollDiceFormula(ab.rechargeDice);
         if (parsedRecharge) {
-          const curRound = Number(character.tactical?.round) || 1;
-          const waitRounds = Math.max(1, parsedRecharge.grandTotal);
+          const curRound = Number(character.tactical?.round || character.encounterRound) || 1;
+          waitRounds = Math.max(1, parsedRecharge.grandTotal);
           const readyRound = curRound + waitRounds;
+          const rRolls = parsedRecharge.diceGroups.map(g => `[${g.rolls.join(', ')}]`).join('');
+          rechargeNote = `⏳ Recharge (${ab.rechargeDice} = ${rRolls}): ${waitRounds} rounds (Ready R${readyRound})`;
+        }
+      }
+
+      // Dispatch atomic 'combat/specialAttackRoll' via CharStore
+      const actType = ab.actionType || ab.action || 'standard';
+      if (hasStore) {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        window.CharStore.dispatch({
+          type: 'combat/specialAttackRoll',
+          label: `Special Attack: ${ab.name}`,
+          payload: {
+            abilityKey: ab.key,
+            name: ab.name,
+            cooldownRounds: waitRounds,
+            actionType: actType,
+            resourceId: ab.resourceId || null
+          },
+          meta: { label: `Special Attack: ${ab.name}`, cloudSync: false }
+        });
+        const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
+        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+        if (out && out.actionOutcome && out.actionOutcome.alreadySpent && typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'Extra Action Used',
+            breakdown: `${out.actionOutcome.spentLabel || 'Action'} was already spent in Round ${out.actionOutcome.round || 1} • ${ab.name}.`,
+            total: 'Extra Action'
+          }, { stack: true, toastId: 'action-economy-overuse-toast' });
+        }
+      } else {
+        if (typeof consumeActionEconomy === 'function') {
+          consumeActionEconomy(actType, ab.name);
+        }
+        if (waitRounds > 0) {
+          const curRound = Number(character.tactical?.round) || 1;
           if (!character.tactical) character.tactical = {};
           if (!character.tactical.abilityCooldowns) character.tactical.abilityCooldowns = {};
           character.tactical.abilityCooldowns[ab.key] = {
             name: ab.name,
             waitRounds,
-            readyRound,
+            readyRound: curRound + waitRounds,
             rolledAtRound: curRound
           };
-          const rRolls = parsedRecharge.diceGroups.map(g => `[${g.rolls.join(', ')}]`).join('');
-          rechargeNote = `⏳ Recharge (${ab.rechargeDice} = ${rRolls}): ${waitRounds} rounds (Ready R${readyRound})`;
           saveStateToStorage(false);
-          renderWeaponSetsUI();
         }
       }
+      renderWeaponSetsUI();
 
       const dice3dList = [];
       parsedDmg.diceGroups.forEach(g => {
@@ -5216,26 +5093,47 @@
     function rollSpecialAttackCooldownOnly(abilityKey) {
       if (!character) return;
       const abilities = getCharacterSpecialAttackAbilities(character);
-      const ab = abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
+      const ab = (typeof abilityKey === 'number' && !isNaN(abilityKey))
+        ? abilities[abilityKey]
+        : abilities.find(a => a.key === abilityKey || a.name.toLowerCase() === String(abilityKey || '').toLowerCase());
       if (!ab || !ab.rechargeDice || typeof parseAndRollDiceFormula !== 'function') return;
 
-      if (typeof _pushTerminalUndoSnapshot === 'function') {
+      const hasStore = Boolean(typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function');
+      if (!hasStore && typeof _pushTerminalUndoSnapshot === 'function') {
         _pushTerminalUndoSnapshot(`Roll Recharge: ${ab.name}`);
       }
       const parsed = parseAndRollDiceFormula(ab.rechargeDice);
       if (!parsed) return;
-      const curRound = Number(character.tactical?.round) || 1;
       const waitRounds = Math.max(1, parsed.grandTotal);
-      const readyRound = curRound + waitRounds;
-      if (!character.tactical) character.tactical = {};
-      if (!character.tactical.abilityCooldowns) character.tactical.abilityCooldowns = {};
-      character.tactical.abilityCooldowns[ab.key] = {
-        name: ab.name,
-        waitRounds,
-        readyRound,
-        rolledAtRound: curRound
-      };
-      saveStateToStorage(false);
+
+      if (hasStore) {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        window.CharStore.dispatch({
+          type: 'combat/specialAttackRecharge',
+          label: `Roll Recharge: ${ab.name}`,
+          payload: {
+            abilityKey: ab.key,
+            name: ab.name,
+            cooldownRounds: waitRounds,
+            resourceId: ab.resourceId || null
+          },
+          meta: { label: `Roll Recharge: ${ab.name}`, cloudSync: false }
+        });
+      } else {
+        const curRound = Number(character.tactical?.round) || 1;
+        const readyRound = curRound + waitRounds;
+        if (!character.tactical) character.tactical = {};
+        if (!character.tactical.abilityCooldowns) character.tactical.abilityCooldowns = {};
+        character.tactical.abilityCooldowns[ab.key] = {
+          name: ab.name,
+          waitRounds,
+          readyRound,
+          rolledAtRound: curRound
+        };
+        saveStateToStorage(false);
+      }
       renderWeaponSetsUI();
 
       if (typeof window.rollAbilityTacticalDice === 'function') {
@@ -5245,12 +5143,25 @@
     window.rollSpecialAttackCooldownOnly = rollSpecialAttackCooldownOnly;
 
     function resetSpecialAttackCooldown(abilityKey) {
-      if (!character || !character.tactical || !character.tactical.abilityCooldowns) return;
-      if (typeof _pushTerminalUndoSnapshot === 'function') {
+      if (!character) return;
+      const hasStore = Boolean(typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function');
+      if (!hasStore && typeof _pushTerminalUndoSnapshot === 'function') {
         _pushTerminalUndoSnapshot(`Reset Cooldown: ${abilityKey}`);
       }
-      delete character.tactical.abilityCooldowns[abilityKey];
-      saveStateToStorage(false);
+      if (hasStore) {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        window.CharStore.dispatch({
+          type: 'combat/specialAttackReady',
+          label: `Reset Cooldown: ${abilityKey}`,
+          payload: { abilityKey },
+          meta: { label: `Reset Cooldown: ${abilityKey}`, cloudSync: false }
+        });
+      } else if (character.tactical && character.tactical.abilityCooldowns) {
+        delete character.tactical.abilityCooldowns[abilityKey];
+        saveStateToStorage(false);
+      }
       renderWeaponSetsUI();
     }
     window.resetSpecialAttackCooldown = resetSpecialAttackCooldown;
@@ -5273,22 +5184,39 @@
         }
       }
 
-      if (typeof _pushTerminalUndoSnapshot === 'function') {
+      const hasStore = Boolean(typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function');
+      if (!hasStore && typeof _pushTerminalUndoSnapshot === 'function') {
         _pushTerminalUndoSnapshot(`Reaction: ${entryId} (${modeId})`);
       }
-      const res = RuleEngine.triggerLegoMode(character, entryId, modeId, inputValues);
-      if (!res) return;
       const actType = (mode && mode.actionType) ? mode.actionType : 'immediate';
-      if (typeof consumeActionEconomy === 'function') {
-        consumeActionEconomy(actType, `${entryId} (${modeId})`);
+      let res = null;
+      if (hasStore) {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        window.CharStore.dispatch({
+          type: 'combat/triggerReactiveMode',
+          label: `Reaction: ${entryId} (${modeId})`,
+          payload: { entryId, modeId, inputValues, actionType: actType }
+        });
+        const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
+        res = out && out.result ? out.result : null;
+        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+      } else {
+        res = RuleEngine.triggerLegoMode(character, entryId, modeId, inputValues);
+        if (!res) return;
+        if (typeof consumeActionEconomy === 'function') {
+          consumeActionEconomy(actType, `${entryId} (${modeId})`);
+        }
+        if (res.tempHpGained > 0 && character.hp) {
+          character.hp.temp = Math.max(Number(character.hp.temp) || 0, res.tempHpGained);
+        }
+        if (res.healedHp > 0 && character.hp) {
+          character.hp.current = Math.min(Number(character.hp.max) || 999, (Number(character.hp.current) || 0) + res.healedHp);
+        }
+        if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
       }
-      if (res.tempHpGained > 0 && character.hp) {
-        character.hp.temp = Math.max(Number(character.hp.temp) || 0, res.tempHpGained);
-      }
-      if (res.healedHp > 0 && character.hp) {
-        character.hp.current = Math.min(Number(character.hp.max) || 999, (Number(character.hp.current) || 0) + res.healedHp);
-      }
-      if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
+      if (!res) return;
       if (typeof renderAll === 'function') renderAll();
       if (typeof showDiceTopToast === 'function') {
         showDiceTopToast({
@@ -5331,7 +5259,7 @@
       // Card 1 UI (Main Hand)
       const card1Html = `
         <!-- CARD 1: MAIN HAND -->
-        <div onclick="activateWeaponSet(1)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is1 ? 'bg-gradient-to-r from-amber-950/60 to-slate-900/90 border-amber-500 text-amber-200 shadow-md shadow-amber-950/40 ring-1 ring-amber-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
+        <div data-action="combat:weapon-set-activate" data-set-num="1" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is1 ? 'bg-gradient-to-r from-amber-950/60 to-slate-900/90 border-amber-500 text-amber-200 shadow-md shadow-amber-950/40 ring-1 ring-amber-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span class="text-xs ${is1 ? 'text-amber-400' : 'text-slate-500'}">⚔️</span>
@@ -5384,7 +5312,7 @@
       if (isTwoHandLocked) {
         card2Html = `
         <!-- CARD 2: OFF-HAND (LOCKED - TWO-HANDED WEAPON) -->
-        <div onclick="activateWeaponSet(2)" class="p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-500 cursor-not-allowed select-none flex items-center justify-between gap-2 opacity-70">
+        <div data-action="combat:weapon-set-activate" data-set-num="2" class="p-2.5 rounded-xl border border-slate-800 bg-slate-950/60 text-slate-500 cursor-not-allowed select-none flex items-center justify-between gap-2 opacity-70">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span class="text-xs text-slate-600">🔒</span>
@@ -5410,7 +5338,7 @@
       } else if (mainIsDouble) {
         card2Html = `
         <!-- CARD 2: DOUBLE WEAPON OFF-HAND HEAD (CLICK TO TOGGLE TWF) -->
-        <div onclick="activateWeaponSet(2)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is2 ? 'bg-gradient-to-r from-sky-950/60 to-slate-900/90 border-sky-500 text-sky-200 shadow-md shadow-sky-950/40 ring-1 ring-sky-500/40' : 'bg-slate-900/75 border-amber-500/40 text-slate-300 hover:border-sky-500/60 hover:text-white'}">
+        <div data-action="combat:weapon-set-activate" data-set-num="2" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is2 ? 'bg-gradient-to-r from-sky-950/60 to-slate-900/90 border-sky-500 text-sky-200 shadow-md shadow-sky-950/40 ring-1 ring-sky-500/40' : 'bg-slate-900/75 border-amber-500/40 text-slate-300 hover:border-sky-500/60 hover:text-white'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-xs ${is2 ? 'text-sky-400' : 'text-amber-400'}">🗡️</span>
@@ -5449,7 +5377,7 @@
       } else {
         card2Html = `
         <!-- CARD 2: OFF-HAND -->
-        <div onclick="activateWeaponSet(2)" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is2 ? 'bg-gradient-to-r from-sky-950/60 to-slate-900/90 border-sky-500 text-sky-200 shadow-md shadow-sky-950/40 ring-1 ring-sky-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
+        <div data-action="combat:weapon-set-activate" data-set-num="2" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${is2 ? 'bg-gradient-to-r from-sky-950/60 to-slate-900/90 border-sky-500 text-sky-200 shadow-md shadow-sky-950/40 ring-1 ring-sky-500/40' : 'bg-slate-900/70 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span class="text-xs ${is2 ? 'text-sky-400' : 'text-slate-500'}">${isCard2Shield ? '🛡️' : '🗡️'}</span>
@@ -5549,6 +5477,17 @@
           sets.activeSets = [1];
         }
         sets.activeSet = (sets.activeSets.includes(1) && sets.activeSets.includes(2)) ? 'both' : 1;
+        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+          if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+            window.CharStore._syncExternalCharacterRef(character);
+          }
+          window.CharStore.dispatch({
+            type: 'combat/switchWeaponSet',
+            label: `Switch Weapon Set ${setNum}`,
+            payload: { setNum, activeSets: sets.activeSets.slice() },
+            meta: { label: `Switch Weapon Set ${setNum}`, cloudSync: false }
+          });
+        }
         applyWeaponSetsConfiguration();
         return;
       }
@@ -5569,6 +5508,17 @@
       }
 
       sets.activeSet = (sets.activeSets.includes(1) && sets.activeSets.includes(2)) ? 'both' : (sets.activeSets.includes(2) ? 2 : 1);
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        window.CharStore.dispatch({
+          type: 'combat/switchWeaponSet',
+          label: `Switch Weapon Set ${setNum}`,
+          payload: { setNum, activeSets: sets.activeSets.slice() },
+          meta: { label: `Switch Weapon Set ${setNum}`, cloudSync: false }
+        });
+      }
       applyWeaponSetsConfiguration();
     }
 
@@ -6525,7 +6475,7 @@
         const label = prop.dice ? `${prop.icon} ${prop.name} (+${prop.dice})` : `${prop.icon} ${prop.name}`;
 
         return `
-          <button type="button" onclick="toggleWeaponElementalProperty(${setNum}, '${prop.id}')" class="px-2 py-0.5 rounded text-[9px] font-bold border transition flex items-center gap-1 cursor-pointer select-none ${badgeClass}">
+          <button type="button" data-action="combat:weapon-elemental-toggle" data-set-num="${setNum}" data-prop-id="${prop.id}" class="px-2 py-0.5 rounded text-[9px] font-bold border transition flex items-center gap-1 cursor-pointer select-none ${badgeClass}">
             <span>${label}</span>
           </button>
         `;
@@ -6880,10 +6830,8 @@
       // Row 1: Fixed 3 items: 1. Flanking, 2. Charge, 3. Higher Ground (Glow Card Toggle)
       const fixedCardsHtml = [
         `
-        <div onclick="toggleFixedMeleeModifier('flanking')"
-             onmouseenter="showCombatModifierHoverTooltip(event, 'flanking', 'melee')"
-             onmouseleave="hideCombatModifierHoverTooltip()"
-             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+        <div data-action="combat:melee-fixed-toggle" data-mod-key="flanking"
+             data-combat-tooltip="flanking" data-tooltip-cat="melee"
              class="relative ${flanking ? 'border-2 border-sky-400 bg-sky-950 text-white shadow-[0_0_12px_rgba(56,189,248,0.35)] ring-1 ring-sky-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-sky-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${flanking ? 'text-sky-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Positional</span>
@@ -6895,10 +6843,8 @@
         </div>
         `,
         `
-        <div onclick="toggleFixedMeleeModifier('charge')"
-             onmouseenter="showCombatModifierHoverTooltip(event, 'charge', 'melee')"
-             onmouseleave="hideCombatModifierHoverTooltip()"
-             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+        <div data-action="combat:melee-fixed-toggle" data-mod-key="charge"
+             data-combat-tooltip="charge" data-tooltip-cat="melee"
              class="relative ${charge ? 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_12px_rgba(251,113,133,0.35)] ring-1 ring-rose-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-rose-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${charge ? 'text-rose-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Action</span>
@@ -6910,10 +6856,8 @@
         </div>
         `,
         `
-        <div onclick="toggleFixedMeleeModifier('higherGround')"
-             onmouseenter="showCombatModifierHoverTooltip(event, 'higherGround', 'melee')"
-             onmouseleave="hideCombatModifierHoverTooltip()"
-             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+        <div data-action="combat:melee-fixed-toggle" data-mod-key="higherGround"
+             data-combat-tooltip="higherGround" data-tooltip-cat="melee"
              class="relative ${hg ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_12px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${hg ? 'text-amber-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Positional</span>
@@ -6959,10 +6903,10 @@
         const actualIdx = character.activeModifiers.indexOf(mod);
 
         const reorderControls = window.meleeReorderModeActive ? `
-          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0 w-full" onclick="event.stopPropagation()">
-            <button type="button" onclick="moveMeleeModifierOrder(${idx}, -1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Move Left">◀</button>
+          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0 w-full">
+            <button type="button" data-action="combat:melee-mod-move" data-idx="${idx}" data-delta="-1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Move Left">◀</button>
             <span class="text-[8px] text-slate-400 font-mono truncate max-w-[45px]">${mod.source || ''}</span>
-            <button type="button" onclick="moveMeleeModifierOrder(${idx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= dynamicMods.length - 1 ? 'disabled' : ''} title="Move Right">▶</button>
+            <button type="button" data-action="combat:melee-mod-move" data-idx="${idx}" data-delta="1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= dynamicMods.length - 1 ? 'disabled' : ''} title="Move Right">▶</button>
           </div>
         ` : `
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
@@ -6970,12 +6914,10 @@
           </div>
         `;
 
-        const safeName = (mod.name || '').replace(/'/g, "\\'");
+        const safeTooltipName = (mod.name || '').replace(/"/g, '&quot;');
         return `
-        <div onclick="toggleModifier(${actualIdx})"
-             onmouseenter="showCombatModifierHoverTooltip(event, '${safeName}', 'melee')"
-             onmouseleave="hideCombatModifierHoverTooltip()"
-             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+        <div data-action="combat:melee-mod-toggle" data-idx="${actualIdx}"
+             data-combat-tooltip="${safeTooltipName}" data-tooltip-cat="melee"
              class="relative ${mod.active ? cardBorderActive : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-rose-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           <!-- Reorder Mini Controls -->
           ${reorderControls}
@@ -7063,10 +7005,8 @@
       ];
 
       grid.innerHTML = cards.map(c => `
-        <div onclick="${c.onclick}"
-             onmouseenter="showCombatModifierHoverTooltip(event, '${c.id}', 'defense')"
-             onmouseleave="hideCombatModifierHoverTooltip()"
-             onmousemove="updateCombatModifierHoverTooltipPos(event)"
+        <div data-action="combat:defense-mod-toggle" data-mod-id="${c.id}"
+             data-combat-tooltip="${c.id}" data-tooltip-cat="defense"
              class="${c.active ? activeClass : inactiveClass}">
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
             <span class="text-[8px] font-mono ${c.active ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${c.source}</span>
@@ -7569,19 +7509,19 @@
       // Base Situational Cards: Rules every ranged combatant can use (Glow Card Toggle)
       const baseCardsHtml = [
         `
-        <div onclick="onRangedModifierToggle('rangedHigherGround')" class="relative ${hg ? 'border border-amber-500 bg-amber-950/60 text-white shadow-md shadow-amber-950/50 ring-1 ring-amber-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+        <div data-action="combat:ranged-mod-toggle" data-mod-key="rangedHigherGround" class="relative ${hg ? 'border border-amber-500 bg-amber-950/60 text-white shadow-md shadow-amber-950/50 ring-1 ring-amber-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${hg ? 'text-white font-black' : 'text-amber-400'} leading-tight">Higher Gr.</div>
           <div class="text-[9px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} mt-1">+1 Ranged</div>
         </div>
         `,
         `
-        <div onclick="onRangedModifierToggle('targetInMelee')" class="relative ${tinM ? 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+        <div data-action="combat:ranged-mod-toggle" data-mod-key="targetInMelee" class="relative ${tinM ? 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${tinM ? 'text-white font-black' : 'text-rose-400'} leading-tight">Firing into Melee</div>
           <div class="text-[9px] ${tinM ? 'text-rose-200 font-bold' : 'text-slate-400'} mt-1">${hasPrecise ? '⚡ No Penalty (Precise)' : '-4 Atk (Melee)'}</div>
         </div>
         `,
         `
-        <div onclick="onRangedModifierToggle('coverPenalty')" class="relative ${cvr ? 'border border-slate-400 bg-slate-800/80 text-white shadow-md shadow-slate-900/50 ring-1 ring-slate-400/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
+        <div data-action="combat:ranged-mod-toggle" data-mod-key="coverPenalty" class="relative ${cvr ? 'border border-slate-400 bg-slate-800/80 text-white shadow-md shadow-slate-900/50 ring-1 ring-slate-400/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${cvr ? 'text-white font-black' : 'text-slate-300'} leading-tight">Target in Cover</div>
           <div class="text-[9px] ${cvr ? 'text-slate-100 font-bold' : 'text-slate-400'} mt-1">-4 Atk (Cover)</div>
         </div>
@@ -7609,10 +7549,10 @@
 
       const dynamicCardsHtml = visibleMods.map((mod, idx) => {
         const reorderControls = window.rangedReorderModeActive ? `
-          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0 w-full" onclick="event.stopPropagation()">
-            <button type="button" onclick="moveRangedModifierOrder(${idx}, -1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Move Left">◀</button>
+          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0 w-full">
+            <button type="button" data-action="combat:ranged-mod-move" data-idx="${idx}" data-delta="-1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Move Left">◀</button>
             <span class="text-[8px] text-slate-400 font-mono truncate max-w-[45px]">${mod.source}</span>
-            <button type="button" onclick="moveRangedModifierOrder(${idx}, 1, event)" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= qualifiedRangedList.length - 1 ? 'disabled' : ''} title="Move Right">▶</button>
+            <button type="button" data-action="combat:ranged-mod-move" data-idx="${idx}" data-delta="1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= qualifiedRangedList.length - 1 ? 'disabled' : ''} title="Move Right">▶</button>
           </div>
         ` : `
           <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
@@ -7621,9 +7561,10 @@
         `;
 
         const activeBorder = 'border border-amber-500 bg-amber-950/60 text-white shadow-md shadow-amber-950/50 ring-1 ring-amber-500/40';
+        const safeModId = String(mod.id || '').replace(/"/g, '&quot;');
 
         return `
-        <div onclick="onRangedModifierToggle('${mod.id}')" class="relative ${mod.active ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
+        <div data-action="combat:ranged-mod-toggle" data-mod-key="${safeModId}" class="relative ${mod.active ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
           ${reorderControls}
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
@@ -7655,6 +7596,7 @@
 
     function onRangedModifierToggle(modKey) {
       if (!character.tactical) character.tactical = {};
+      let usedStore = false;
       if (modKey.startsWith('pin_')) {
         const pinName = modKey.replace('pin_', '');
         const allPins = getAllCombatPins();
@@ -7662,6 +7604,14 @@
         if (pin) {
           pin.active = !pin.active;
         }
+      } else if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        CharStore.dispatch({
+          type: 'combat/toggleTacticalMod',
+          payload: { key: modKey },
+          label: `Toggle Ranged Modifier: ${modKey}`,
+          meta: { label: `Toggle Ranged Modifier: ${modKey}`, cloudSync: false }
+        });
+        usedStore = true;
       } else {
         character.tactical[modKey] = !character.tactical[modKey];
       }
@@ -7670,7 +7620,7 @@
       if (typeof renderWeaponSetsUI === 'function') {
         try { renderWeaponSetsUI(); } catch (e) {}
       }
-      saveStateToStorage(false);
+      if (!usedStore) saveStateToStorage(false);
     }
 
     function toggleExpandRangedModifiersGrid() {
@@ -7680,13 +7630,24 @@
 
     function toggleFixedMeleeModifier(key) {
       if (!character) return;
-      if (!character.tactical) character.tactical = {};
-      character.tactical[key] = !character.tactical[key];
+      let usedStore = false;
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        CharStore.dispatch({
+          type: 'combat/toggleTacticalMod',
+          payload: { key },
+          label: `Toggle Tactical Modifier: ${key}`,
+          meta: { label: `Toggle Tactical Modifier: ${key}`, cloudSync: false }
+        });
+        usedStore = true;
+      } else {
+        if (!character.tactical) character.tactical = {};
+        character.tactical[key] = !character.tactical[key];
+      }
       recalculateOffense();
       renderOffenseModifiersGrid();
       renderHUD();
       if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
-      saveStateToStorage(false);
+      if (!usedStore) saveStateToStorage(false);
     }
 
     function toggleDefensiveCastingModifier() {
@@ -8658,7 +8619,7 @@
             }
 
             return `
-              <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
+              <button type="button" data-action="combat:attack-chain-roll" data-idx="${idx}" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
                 <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
                 <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
                 <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Ranged'}</div>
@@ -8667,7 +8628,7 @@
           }).join('');
 
           const fullAttackBtnHtml = `
-            <button type="button" onclick="executeFullAttackRoll(false)" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group">
+            <button type="button" data-action="combat:full-attack-roll" data-custom="false" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group">
               <div class="text-[9px] uppercase tracking-wider text-red-100/90 font-sans font-bold truncate flex items-center justify-center gap-0.5 leading-tight">
                 <span>🏹</span>
                 <span class="truncate">Full</span>
@@ -8860,7 +8821,7 @@
           }
 
           return `
-            <button type="button" onclick="rollAttackChainItemByIndex(${idx})" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
+            <button type="button" data-action="combat:attack-chain-roll" data-idx="${idx}" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
               <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
               <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
               <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Standard'}</div>
@@ -8869,7 +8830,7 @@
         }).join('');
 
         const fullAttackBtn = `
-          <button type="button" onclick="executeFullAttackRoll(false)" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group">
+          <button type="button" data-action="combat:full-attack-roll" data-custom="false" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group">
             <div class="text-[9px] uppercase tracking-wider text-red-100/90 font-sans font-bold truncate flex items-center justify-center gap-0.5 leading-tight">
               <span>⚔️</span>
               <span class="truncate">Full</span>
@@ -8898,10 +8859,22 @@
 
     function toggleModifier(idx) {
       if (!character.activeModifiers || !character.activeModifiers[idx]) return;
-      character.activeModifiers[idx].active = !character.activeModifiers[idx].active;
+      let usedStore = false;
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        const modLbl = `Toggle Modifier: ${character.activeModifiers[idx].name || idx}`;
+        CharStore.dispatch({
+          type: 'combat/toggleTacticalMod',
+          payload: { globalIdx: idx },
+          label: modLbl,
+          meta: { label: modLbl, cloudSync: false }
+        });
+        usedStore = true;
+      } else {
+        character.activeModifiers[idx].active = !character.activeModifiers[idx].active;
+      }
       recalculateOffense();
       renderOffenseModifiersGrid();
-      saveStateToStorage(false);
+      if (!usedStore) saveStateToStorage(false);
     }
 
     // Single Iterative Attack Roll (Handles Main Hand, Off-Hand, and Flurry individually)
@@ -9836,6 +9809,22 @@
         toggleBuffActive(buff.id);
         return;
       }
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        const wasActive = buff.active !== false;
+        const grantedTempHp = (wasActive && typeof getBuffGrantedTempHp === 'function')
+          ? getBuffGrantedTempHp(buff)
+          : 0;
+        CharStore.dispatch({
+          type: 'combat/toggleBuff',
+          payload: { index: idx, id: buff.id || buff.name, grantedTempHp },
+          label: `Toggle Buff: ${buff.name || idx}`
+        });
+        if (wasActive && grantedTempHp > 0 && typeof markPlayerHpChanged === 'function') {
+          markPlayerHpChanged();
+        }
+        renderAll();
+        return;
+      }
       buff.active = !buff.active;
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
         RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
@@ -9848,6 +9837,22 @@
     function removeCombatBuff(idx) {
       if (!character || !Array.isArray(character.buffs) || !character.buffs[idx]) return;
       const buff = character.buffs[idx];
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        const wasActive = buff && buff.active !== false;
+        const grantedTempHp = (wasActive && typeof getBuffGrantedTempHp === 'function')
+          ? getBuffGrantedTempHp(buff)
+          : 0;
+        CharStore.dispatch({
+          type: 'combat/removeBuff',
+          payload: { index: idx, id: buff.id, name: buff.name, grantedTempHp },
+          label: `Remove Buff: ${buff.name || idx}`
+        });
+        if (wasActive && grantedTempHp > 0 && typeof markPlayerHpChanged === 'function') {
+          markPlayerHpChanged();
+        }
+        renderAll();
+        return;
+      }
       if (buff && buff.active !== false && character.hp && typeof getBuffGrantedTempHp === 'function') {
         const tempHp = getBuffGrantedTempHp(buff);
         if (tempHp > 0) {
@@ -10060,14 +10065,6 @@
         const spec = (typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec)
           ? RuleEngine.resolveSpellBuffSpec(b, character, bCl)
           : null;
-        if (bCl > rawBCl && spec && spec.isBuffSpell) {
-          b.casterLevel = bCl;
-          b.cl = bCl;
-          if (spec.durationText) {
-            b.duration = spec.durationText;
-            b.durationText = spec.durationText;
-          }
-        }
         const rf = { ...(spec?.ruleFlags || {}), ...(b.ruleFlags || {}) };
         const bName = b.name || spec?.name || 'Spell Buff';
         const energyType = b.chosenEnergy || (/\((fire|cold|acid|electricity|sonic)\)/i.exec(bName)?.[1]) || null;
@@ -10366,8 +10363,6 @@
       if (legoEval && Array.isArray(legoEval.modes)) {
         legoEval.modes.forEach(m => {
           if (!m || (!m.reactsTo && String(m.actionType || '').toLowerCase() !== 'immediate')) return;
-          const safeEntryId = String(m.entryId || '').replace(/'/g, "\\'");
-          const safeModeId = String(m.id || '').replace(/'/g, "\\'");
           pushUniqueDefense({
             type: 'reaction_mode',
             name: m.entryName || m.name,
@@ -10375,7 +10370,8 @@
             icon: '⚡',
             bgClass: 'bg-cyan-950/80 text-cyan-300 border-cyan-500/60 hover:border-cyan-400',
             benefit: `${m.entryName || m.name}: Reactive / Immediate trigger (${m.reactsTo || 'Immediate Action'}). Click to trigger!`,
-            onClick: `triggerReactiveLegoModeFromCockpit('${safeEntryId}', '${safeModeId}')`
+            entryId: String(m.entryId || ''),
+            modeId: String(m.id || '')
           });
         });
       }
@@ -10387,11 +10383,15 @@
           card.classList.remove('hidden');
           if (countBadge) countBadge.textContent = items.length;
           list.innerHTML = items.map(it => {
-            const safeName = (it.name || '').replace(/'/g, "\\'");
+            const safeName = (it.name || '').replace(/"/g, '&quot;');
             const safeTip = (it.benefit || '').replace(/"/g, '&quot;');
-            const clickAttr = it.onClick ? it.onClick : `showFeatDetail('${safeName}', null, 'ability')`;
+            const safeEntryId = String(it.entryId || '').replace(/"/g, '&quot;');
+            const safeModeId = String(it.modeId || '').replace(/"/g, '&quot;');
+            const actionAttrs = it.type === 'reaction_mode'
+              ? `data-action="combat:defense-pill-click" data-pill-type="reaction_mode" data-entry-id="${safeEntryId}" data-mode-id="${safeModeId}"`
+              : `data-action="combat:defense-pill-click" data-pill-type="feat_detail" data-feat-name="${safeName}"`;
             return `
-              <button type="button" onclick="${clickAttr}" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold border ${it.bgClass} shadow-sm transition active:scale-95 cursor-pointer">
+              <button type="button" ${actionAttrs} title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold border ${it.bgClass} shadow-sm transition active:scale-95 cursor-pointer">
                 <span>${it.icon}</span>
                 <span class="truncate max-w-[180px]">${it.label}</span>
               </button>
@@ -10419,12 +10419,10 @@
           }
 
           buffsList.innerHTML = visibleBuffEntries.map(({ b, idx }) => {
-            if (!b.id) {
-              b.id = 'buff_' + String(b.name || idx).toLowerCase().replace(/[^a-z0-9]+/g, '_');
-            }
+            const computedBuffId = b.id || ('buff_' + String(b.name || idx).toLowerCase().replace(/[^a-z0-9]+/g, '_'));
             const isAct = b.active !== false;
             const isPinned = Boolean(b.pinnedToCombat);
-            const safeBuffId = String(b.id || idx).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            const safeBuffId = String(computedBuffId).replace(/"/g, '&quot;');
             const rawBCl = Number(b.casterLevel || b.cl || character.level) || 1;
             const minDomainCl = (typeof RuleEngine !== 'undefined' && RuleEngine.getSpellEffectiveCasterLevel)
               ? RuleEngine.getSpellEffectiveCasterLevel(b, character, Number(character.level) || 1)
@@ -10459,7 +10457,7 @@
 
             return `
               <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg border transition ${isAct ? 'bg-slate-900/90 border-emerald-500/40' : 'bg-slate-950/60 border-slate-800/80 opacity-75 hover:opacity-100'}">
-                <button type="button" onclick="toggleCombatBuffActive(${idx})" class="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer" title="${isAct ? 'Click to toggle buff Off' : 'Click to toggle buff On'}">
+                <button type="button" data-action="combat:buff-toggle" data-buff-idx="${idx}" class="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer" title="${isAct ? 'Click to toggle buff Off' : 'Click to toggle buff On'}">
                   <span class="w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] font-black border shrink-0 ${isAct ? 'bg-emerald-600 border-emerald-400 text-white' : 'bg-slate-900 border-slate-600 text-transparent'}">✓</span>
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 flex-wrap">
@@ -10473,8 +10471,8 @@
                   </div>
                 </button>
                 <div class="flex items-center gap-1 shrink-0">
-                  <button type="button" onclick="event.stopPropagation(); toggleBuffCombatPin('${safeBuffId}')" class="w-5 h-5 inline-flex items-center justify-center rounded border transition-all cursor-pointer ${pinBtnClasses}" title="${pinBtnTitle}">${pinIconSvg}</button>
-                  <button type="button" onclick="removeCombatBuff(${idx})" class="text-[10px] font-bold text-slate-500 hover:text-rose-400 px-1.5 py-0.5 rounded hover:bg-rose-950/40 transition shrink-0 cursor-pointer" title="Dismiss / Remove Buff">✕</button>
+                  <button type="button" data-action="combat:buff-pin" data-buff-id="${safeBuffId}" class="w-5 h-5 inline-flex items-center justify-center rounded border transition-all cursor-pointer ${pinBtnClasses}" title="${pinBtnTitle}">${pinIconSvg}</button>
+                  <button type="button" data-action="combat:buff-remove" data-buff-idx="${idx}" class="text-[10px] font-bold text-slate-500 hover:text-rose-400 px-1.5 py-0.5 rounded hover:bg-rose-950/40 transition shrink-0 cursor-pointer" title="Dismiss / Remove Buff">✕</button>
                 </div>
               </div>
             `;
@@ -10797,21 +10795,40 @@
 
     // --- TACTICAL DEFENSE CONTROLS ---
     function adjustCombatExpertise(delta) {
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        CharStore.dispatch({
+          type: 'combat/adjustCombatExpertise',
+          payload: { delta },
+          label: 'Adjust Combat Expertise',
+          meta: { label: 'Adjust Combat Expertise', cloudSync: false }
+        });
+        renderAll();
+        return;
+      }
       if (!character.tactical) character.tactical = {};
-      const bab = character.bab || 3;
+      const maxCap = Math.min(5, Math.max(0, Number(character.bab) || 0));
       const cur = character.tactical.combatExpertise || 0;
-      character.tactical.combatExpertise = Math.max(0, Math.min(bab, cur + delta));
+      character.tactical.combatExpertise = Math.max(0, Math.min(maxCap, cur + delta));
       saveStateToStorage(false);
       renderAll();
     }
 
     function onToggleFightingDefensively() {
-      if (!character.tactical) character.tactical = {};
-      character.tactical.fightingDefensively = !character.tactical.fightingDefensively;
-      if (character.tactical.fightingDefensively) {
-        character.tactical.totalDefense = false;
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        CharStore.dispatch({
+          type: 'combat/toggleTacticalMod',
+          payload: { key: 'fightingDefensively' },
+          label: 'Toggle Fighting Defensively',
+          meta: { label: 'Toggle Fighting Defensively', cloudSync: false }
+        });
+      } else {
+        if (!character.tactical) character.tactical = {};
+        character.tactical.fightingDefensively = !character.tactical.fightingDefensively;
+        if (character.tactical.fightingDefensively) {
+          character.tactical.totalDefense = false;
+        }
+        saveStateToStorage(false);
       }
-      saveStateToStorage(false);
       renderDefenseModifiersGrid();
       if (typeof recalculateDefense === 'function') recalculateDefense();
       if (typeof recalculateOffense === 'function') recalculateOffense();
@@ -10820,12 +10837,21 @@
     }
 
     function onToggleTotalDefense() {
-      if (!character.tactical) character.tactical = {};
-      character.tactical.totalDefense = !character.tactical.totalDefense;
-      if (character.tactical.totalDefense) {
-        character.tactical.fightingDefensively = false;
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        CharStore.dispatch({
+          type: 'combat/toggleTacticalMod',
+          payload: { key: 'totalDefense' },
+          label: 'Toggle Total Defense',
+          meta: { label: 'Toggle Total Defense', cloudSync: false }
+        });
+      } else {
+        if (!character.tactical) character.tactical = {};
+        character.tactical.totalDefense = !character.tactical.totalDefense;
+        if (character.tactical.totalDefense) {
+          character.tactical.fightingDefensively = false;
+        }
+        saveStateToStorage(false);
       }
-      saveStateToStorage(false);
       renderDefenseModifiersGrid();
       if (typeof recalculateDefense === 'function') recalculateDefense();
       if (typeof recalculateOffense === 'function') recalculateOffense();
@@ -10836,18 +10862,39 @@
     function adjustPowerAttack(delta) {
       const input = document.getElementById('power-attack-val');
       if (!input) return;
-      const bab = character.bab || 3;
+      const bab = Math.max(0, Number(character.bab) || 0);
       const cur = parseInt(input.value) || 0;
-      input.value = Math.max(0, Math.min(bab, cur + delta));
+      const nextVal = Math.max(0, Math.min(bab, cur + delta));
+      input.value = nextVal;
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        CharStore.dispatch({
+          type: 'combat/adjustPowerAttack',
+          payload: { value: nextVal },
+          label: 'Adjust Power Attack',
+          meta: { label: 'Adjust Power Attack', cloudSync: false }
+        });
+      } else if (character.tactical) {
+        character.tactical.powerAttack = nextVal;
+      }
       recalculateOffense();
     }
 
     // --- REACTIVE MANEUVERS & COUNTERS ---
     function triggerShieldBlockReaction() {
       if (!character.tactical) character.tactical = {};
-      const nextState = !character.tactical.shieldBlockActive;
-      character.tactical.shieldBlockActive = nextState;
-      saveStateToStorage(false);
+      let nextState = !character.tactical.shieldBlockActive;
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        CharStore.dispatch({
+          type: 'combat/toggleTacticalMod',
+          payload: { key: 'shieldBlockActive' },
+          label: 'Toggle Shield Block',
+          meta: { label: 'Toggle Shield Block', cloudSync: false }
+        });
+        nextState = Boolean(character.tactical?.shieldBlockActive);
+      } else {
+        character.tactical.shieldBlockActive = nextState;
+        saveStateToStorage(false);
+      }
       renderDefenseModifiersGrid();
       if (typeof recalculateDefense === 'function') recalculateDefense();
       renderHUD();
@@ -11001,10 +11048,10 @@
 
       const coreHtml = coreSkills.map(cs => {
         const info = getCombatSkillInfo(cs.name);
-        const safeName = cs.name.replace(/'/g, "\\'");
+        const safeName = cs.name.replace(/"/g, '&quot;');
         const modColor = info.total >= 0 ? 'text-emerald-400' : 'text-rose-400';
         return `
-          <button type="button" onclick="rollCombatSkill('${safeName}')" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/50 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between gap-1.5 transition cursor-pointer" title="Roll 1d20${info.formatted} ${cs.label} Check">
+          <button type="button" data-action="combat:skill-roll" data-skill-name="${safeName}" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/50 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between gap-1.5 transition cursor-pointer" title="Roll 1d20${info.formatted} ${cs.label} Check">
             <span class="truncate">${cs.label}</span>
             <span class="font-mono font-bold ${modColor} text-xs shrink-0">${info.formatted}</span>
           </button>
@@ -11013,14 +11060,14 @@
 
       const pinnedHtml = pinnedSkills.map(pin => {
         const info = getCombatSkillInfo(pin.name);
-        const safeName = String(pin.name).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const safeName = String(pin.name).replace(/"/g, '&quot;');
         const modColor = info.total >= 0 ? 'text-sky-300' : 'text-rose-400';
         return `
-          <div onclick="rollCombatSkill('${safeName}')" class="bg-sky-950/35 hover:bg-sky-900/50 border border-sky-800/70 hover:border-sky-400 rounded px-2 py-1.5 text-left text-xs text-sky-100 hover:text-white flex items-center justify-between gap-1 transition cursor-pointer group" title="Roll 1d20${info.formatted} ${pin.name} Check">
+          <div data-action="combat:skill-roll" data-skill-name="${safeName}" class="bg-sky-950/35 hover:bg-sky-900/50 border border-sky-800/70 hover:border-sky-400 rounded px-2 py-1.5 text-left text-xs text-sky-100 hover:text-white flex items-center justify-between gap-1 transition cursor-pointer group" title="Roll 1d20${info.formatted} ${pin.name} Check">
             <span class="truncate font-medium">${pin.name}</span>
             <div class="flex items-center gap-1 shrink-0">
               <span class="font-mono font-bold ${modColor} text-xs">${info.formatted}</span>
-              <button type="button" onclick="event.stopPropagation(); unpinCombatSkill('${safeName}')" class="text-slate-500 hover:text-rose-400 text-[11px] font-bold px-0.5 leading-none transition cursor-pointer" title="Unpin ${pin.name} from Combat Skills">×</button>
+              <button type="button" data-action="combat:skill-unpin" data-skill-name="${safeName}" class="text-slate-500 hover:text-rose-400 text-[11px] font-bold px-0.5 leading-none transition cursor-pointer" title="Unpin ${pin.name} from Combat Skills">×</button>
             </div>
           </div>
         `;
@@ -11727,48 +11774,48 @@
 
     // --- ROUND ADVANCEMENT & REST ---
     function advanceCombatRound() {
-      if (!character.tactical) character.tactical = {};
-      character.tactical.round = (character.tactical.round || 1) + 1;
-      character.encounterRound = character.tactical.round;
-      if (typeof resetActionEconomy === 'function') resetActionEconomy();
-
-      // Reset 1-round temporary reactions
       let notes = [];
-      if (character.tactical.shieldBlockActive) {
-        character.tactical.shieldBlockActive = false;
-        notes.push('Shield Block reset');
-      }
-      if (character.tactical.charge) {
-        character.tactical.charge = false;
-        const cBox = document.getElementById('mod-charge');
-        if (cBox) cBox.checked = false;
-        notes.push('Charge AC penalty cleared');
-      }
-
-      // Advance & notify special attack ability cooldowns (e.g. Breath Weapon 1d4+1 rounds)
-      if (character.tactical.abilityCooldowns && typeof character.tactical.abilityCooldowns === 'object') {
-        const curR = Number(character.tactical.round) || 1;
-        Object.keys(character.tactical.abilityCooldowns).forEach(k => {
-          const entry = character.tactical.abilityCooldowns[k];
-          const readyR = (entry && typeof entry === 'object') ? Number(entry.readyRound || 0) : Number(entry || 0);
-          const abName = (entry && typeof entry === 'object' && entry.name) ? entry.name : k.replace(/_/g, ' ');
-          if (readyR <= curR) {
-            delete character.tactical.abilityCooldowns[k];
-            notes.push(`🔥 ${abName} Recharged & READY!`);
-          } else {
-            const rem = readyR - curR;
-            notes.push(`⏳ ${abName}: ${rem} ${rem === 1 ? 'round' : 'rounds'} left`);
-          }
+      let nextRound = 1;
+      if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
+        CharStore.dispatch({
+          type: 'combat/advanceRound',
+          label: 'Next Round',
+          meta: { label: 'Next Round', cloudSync: false }
         });
-      }
+        const outcome = CharStore.getLastOutcome ? CharStore.getLastOutcome() : null;
+        if (outcome && Array.isArray(outcome.notes)) {
+          notes = outcome.notes;
+        }
+        nextRound = Number(outcome?.round || character?.tactical?.round || 1);
+        const cBox = document.getElementById('mod-charge');
+        if (cBox && !character?.tactical?.charge) cBox.checked = false;
+        if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
+        renderAll();
+      } else {
+        if (!character.tactical) character.tactical = {};
+        character.tactical.round = (character.tactical.round || 1) + 1;
+        character.encounterRound = character.tactical.round;
+        nextRound = character.tactical.round;
+        if (typeof resetActionEconomy === 'function') resetActionEconomy();
 
-      saveStateToStorage(false);
-      renderAll();
+        if (character.tactical.shieldBlockActive) {
+          character.tactical.shieldBlockActive = false;
+          notes.push('Shield Block reset');
+        }
+        if (character.tactical.charge) {
+          character.tactical.charge = false;
+          const cBox = document.getElementById('mod-charge');
+          if (cBox) cBox.checked = false;
+          notes.push('Charge AC penalty cleared');
+        }
+        saveStateToStorage(false);
+        renderAll();
+      }
       showDiceTopToast({
         icon: '⏱️',
-        title: `Round ${character.tactical.round} Started!`,
+        title: `Round ${nextRound} Started!`,
         breakdown: notes.length > 0 ? notes.join(' • ') : 'All 1-round reactions refreshed.',
-        total: `Round ${character.tactical.round}`
+        total: `Round ${nextRound}`
       });
     }
 
@@ -12353,32 +12400,34 @@
         const dbItem = typeof findMasterItem === 'function' ? findMasterItem(pin.name) : null;
         const attackType = pin.attackType || dbItem?.attackType || '';
         const isTouchAttack = (attackType === 'ranged_touch' || attackType === 'melee_touch');
+        const safePinNameAttr = String(pin.name || '').replace(/"/g, '&quot;');
 
         let actionBtns = [];
 
         // If it's a touch attack spell (e.g. Melf's Acid Arrow, Scorching Ray, Vampiric Touch)
         if (isTouchAttack) {
-          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); rollSpellTouchAttack('${pin.name.replace(/'/g, "\\'")}')" class="py-1 px-2 rounded bg-amber-950/80 hover:bg-amber-900 border border-amber-600/70 text-amber-300 font-bold text-[10px] transition shrink-0 inline-flex items-center gap-1 cursor-pointer shadow-sm" title="Roll Touch Attack (BAB + DEX/STR)"><span>⚡</span><span>Touch</span></button>`);
+          actionBtns.push(`<button type="button" data-action="combat:pin-touch-roll" data-pin-name="${safePinNameAttr}" class="py-1 px-2 rounded bg-amber-950/80 hover:bg-amber-900 border border-amber-600/70 text-amber-300 font-bold text-[10px] transition shrink-0 inline-flex items-center gap-1 cursor-pointer shadow-sm" title="Roll Touch Attack (BAB + DEX/STR)"><span>⚡</span><span>Touch</span></button>`);
         }
 
         const isAmmoPin = pin.sourceType === 'Ammunition' || pin.attackType === 'ammunition' || dbItem?.attackType === 'ammunition' || (category === 'offense_ranged' && (pin.ammoVal || pin.name.toLowerCase().includes('arrow') || pin.name.toLowerCase().includes('bolt') || pin.name.toLowerCase().includes('bullet')));
         if (isAmmoPin) {
           const selArrow = character.tactical?.selectedArrow || 'standard';
           const pinAmmoVal = pin.ammoVal || getAmmoValFromName(pin.name);
+          const safeAmmoValAttr = String(pinAmmoVal || '').replace(/"/g, '&quot;');
           const isSelected = (selArrow === pinAmmoVal) || (selArrow === `inv_${pin.name}`) || (selArrow.toLowerCase().includes(pin.name.toLowerCase()));
-          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); selectCombatAmmoPin('${pin.name.replace(/'/g, "\\'")}', '${pinAmmoVal}')" class="py-1 px-2.5 rounded font-bold text-[10px] transition shrink-0 flex items-center gap-1 cursor-pointer ${isSelected ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'}">${isSelected ? '🏹 Equipped' : '🏹 Equip'}</button>`);
+          actionBtns.push(`<button type="button" data-action="combat:pin-ammo-select" data-pin-name="${safePinNameAttr}" data-ammo-val="${safeAmmoValAttr}" class="py-1 px-2.5 rounded font-bold text-[10px] transition shrink-0 flex items-center gap-1 cursor-pointer ${isSelected ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 font-black shadow-[0_0_8px_rgba(245,158,11,0.6)]' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'}">${isSelected ? '🏹 Equipped' : '🏹 Equip'}</button>`);
         } else if (pin.sourceType === 'Maneuver' || pin.sourceType === 'Stance') {
-          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-700/70 text-rose-300 font-bold text-[10px] transition shrink-0 cursor-pointer">⚡ Ready</button>`);
+          actionBtns.push(`<button type="button" data-action="combat:pin-execute" data-category="${category}" data-idx="${idx}" class="py-1 px-2 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-700/70 text-rose-300 font-bold text-[10px] transition shrink-0 cursor-pointer">⚡ Ready</button>`);
         } else if (pin.sourceType === 'Spell') {
-          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-700/70 text-purple-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🔮 Cast</button>`);
+          actionBtns.push(`<button type="button" data-action="combat:pin-execute" data-category="${category}" data-idx="${idx}" class="py-1 px-2 rounded bg-purple-950/60 hover:bg-purple-900 border border-purple-700/70 text-purple-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🔮 Cast</button>`);
         } else if (pin.sourceType === 'Consumable' || pin.autoType === 'belt_item') {
-          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-700/70 text-emerald-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🧪 Use</button>`);
+          actionBtns.push(`<button type="button" data-action="combat:pin-execute" data-category="${category}" data-idx="${idx}" class="py-1 px-2 rounded bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-700/70 text-emerald-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🧪 Use</button>`);
         } else if (pin.sourceType === 'Skill') {
-          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); executePinAction('${category}', ${idx})" class="py-1 px-2 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-700/70 text-sky-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🎯 Roll</button>`);
+          actionBtns.push(`<button type="button" data-action="combat:pin-execute" data-category="${category}" data-idx="${idx}" class="py-1 px-2 rounded bg-sky-950/60 hover:bg-sky-900 border border-sky-700/70 text-sky-300 font-bold text-[10px] transition shrink-0 cursor-pointer">🎯 Roll</button>`);
         } else {
           // Feats, Special Abilities, Buffs: Interactive Active / Passive Toggle Button
           const isActive = Boolean(pin.active);
-          actionBtns.push(`<button type="button" onclick="event.stopPropagation(); toggleCombatPinActive('${category}', ${idx})" class="py-1 px-2.5 rounded font-bold text-[10px] transition shrink-0 flex items-center gap-1 cursor-pointer ${isActive ? 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700'}">${isActive ? '✓ Active' : '⚪ Passive'}</button>`);
+          actionBtns.push(`<button type="button" data-action="combat:pin-toggle" data-category="${category}" data-idx="${idx}" class="py-1 px-2.5 rounded font-bold text-[10px] transition shrink-0 flex items-center gap-1 cursor-pointer ${isActive ? 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700'}">${isActive ? '✓ Active' : '⚪ Passive'}</button>`);
         }
 
         const autoResolved = resolvePinTarget({ ...pin, pinTarget: 'auto' });
@@ -12393,7 +12442,7 @@
         const autoShort = autoShortMap[autoResolved] || 'Auto';
 
         const quickDrawerSelect = `
-          <select onclick="event.stopPropagation()" onchange="changePinTargetDirect('${pin.name.replace(/'/g, "\\'")}', this.value)" class="text-[9px] font-mono bg-slate-950 text-slate-300 border border-slate-700/80 rounded px-1.5 py-0.5 cursor-pointer hover:border-amber-500 transition shrink-0" title="Change Combat Drawer">
+          <select data-change-action="combat:pin-drawer-change" data-pin-name="${safePinNameAttr}" class="text-[9px] font-mono bg-slate-950 text-slate-300 border border-slate-700/80 rounded px-1.5 py-0.5 cursor-pointer hover:border-amber-500 transition shrink-0" title="Change Combat Drawer">
             <option value="auto" ${pin.pinTarget === 'auto' || !pin.pinTarget ? 'selected' : ''}>🎯 Auto (Rule Engine)</option>
             <option value="offense_spell" ${pin.pinTarget === 'offense_spell' ? 'selected' : ''}>⚔️ Spell: Offense</option>
             <option value="spell_control" ${pin.pinTarget === 'spell_control' ? 'selected' : ''}>🕸️ Spell: Control</option>
@@ -12408,8 +12457,8 @@
 
         const reorderControls = isReorder ? `
           <div class="flex items-center gap-1 shrink-0">
-            <button onclick="movePinItem('${category}', ${idx}, -1)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer" title="Move Up">▲</button>
-            <button onclick="movePinItem('${category}', ${idx}, 1)" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer" title="Move Down">▼</button>
+            <button type="button" data-action="combat:pin-move" data-category="${category}" data-idx="${idx}" data-delta="-1" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer" title="Move Up">▲</button>
+            <button type="button" data-action="combat:pin-move" data-category="${category}" data-idx="${idx}" data-delta="1" class="w-5 h-5 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer" title="Move Down">▼</button>
           </div>
         ` : '';
 
@@ -12417,7 +12466,7 @@
         const iconColor = category === 'offense_melee' ? 'text-rose-400' : (category === 'offense_ranged' ? 'text-amber-400' : (category === 'offense_spell' ? 'text-purple-400' : (category === 'spell_control' ? 'text-amber-400' : (category === 'spell_support' ? 'text-emerald-400' : 'text-indigo-400'))));
 
         return `
-          <div id="pin-card-${category}-${idx}" class="pin-card relative group ${activeCardBorder} rounded-lg p-2 flex items-center justify-between gap-2 transition select-none cursor-pointer" onclick="onPinCardClick(event, '${category}', ${idx})">
+          <div id="pin-card-${category}-${idx}" data-action="combat:pin-card-click" data-category="${category}" data-idx="${idx}" class="pin-card relative group ${activeCardBorder} rounded-lg p-2 flex items-center justify-between gap-2 transition select-none cursor-pointer">
             <!-- Pin Info -->
             <div class="flex items-center gap-2 min-w-0 flex-1">
               <span class="text-xs ${iconColor} shrink-0">
@@ -12433,7 +12482,7 @@
             </div>
 
             <!-- Drawer Switcher & Reorder & Action -->
-            <div class="flex items-center gap-1.5 shrink-0" onclick="event.stopPropagation()">
+            <div class="flex items-center gap-1.5 shrink-0">
               ${quickDrawerSelect}
               ${reorderControls}
               ${actionBtns.join('')}
@@ -12456,7 +12505,7 @@
       if (isReorder) {
         container.innerHTML += `
           <div class="pt-1 text-center">
-            <button onclick="togglePinReorderMode('${category}')" class="py-1 px-3 bg-emerald-950 border border-emerald-600 text-emerald-300 font-bold text-xs rounded-lg shadow transition cursor-pointer">
+            <button type="button" data-action="combat:pin-reorder-toggle" data-category="${category}" class="py-1 px-3 bg-emerald-950 border border-emerald-600 text-emerald-300 font-bold text-xs rounded-lg shadow transition cursor-pointer">
               ✓ Done Reordering
             </button>
           </div>
@@ -14467,7 +14516,13 @@
     function undoLastTerminalAction() {
       if (typeof character === 'undefined' || !character) return;
       if (character && '_terminalUndoStack' in character) delete character._terminalUndoStack;
-      if (!_spotlightTerminalUndoStack.length) return;
+      if (!_spotlightTerminalUndoStack.length) {
+        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.canUndo === 'function' && window.CharStore.canUndo()) {
+          window.CharStore.undo();
+          if (typeof renderAll === 'function') renderAll();
+        }
+        return;
+      }
       const snap = _spotlightTerminalUndoStack.pop();
       window._spotlightTerminalUndoStack = _spotlightTerminalUndoStack;
       if (!snap || !snap.charSnapshot) return;
@@ -15561,5 +15616,179 @@
     window.undoLastTerminalCommand = undoLastTerminalAction;
     window.parseSpotlightCommand = parseSpotlightCommand;
     window.renderSpotlightTokenChips = renderSpotlightTokenChips;
+
+    // --- PHASE R3 DELEGATED COMBAT ACTIONS & HOVER TOOLTIPS ---
+    if (typeof Actions !== 'undefined' && typeof Actions.register === 'function') {
+      Actions.register('combat:special-attack-roll', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.abilityKey) {
+          executeSpecialAttackAbilityRoll(data.abilityKey);
+        } else {
+          const idx = Number(data.idx);
+          if (!isNaN(idx)) executeSpecialAttackAbilityRoll(idx);
+        }
+      });
+      Actions.register('combat:special-attack-ready', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.abilityKey) resetSpecialAttackCooldown(data.abilityKey);
+      });
+      Actions.register('combat:special-attack-recharge', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.abilityKey) {
+          rollSpecialAttackCooldownOnly(data.abilityKey);
+        } else {
+          const idx = Number(data.idx);
+          if (!isNaN(idx)) rollSpecialAttackCooldownOnly(idx);
+        }
+      });
+      Actions.register('combat:weapon-set-activate', (el, data, _event) => {
+        const setNum = Number(data.setNum);
+        if (setNum === 1 || setNum === 2) activateWeaponSet(setNum);
+      });
+      Actions.register('combat:weapon-elemental-toggle', (el, data, _event) => {
+        const setNum = Number(data.setNum);
+        if ((setNum === 1 || setNum === 2) && data.propId) {
+          toggleWeaponElementalProperty(setNum, data.propId);
+        }
+      });
+      Actions.register('combat:melee-fixed-toggle', (el, data, _event) => {
+        if (data.modKey) toggleFixedMeleeModifier(data.modKey);
+      });
+      Actions.register('combat:melee-mod-toggle', (el, data, _event) => {
+        const idx = Number(data.idx);
+        if (!isNaN(idx) && idx >= 0) toggleModifier(idx);
+      });
+      Actions.register('combat:melee-mod-move', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        const idx = Number(data.idx);
+        const delta = Number(data.delta);
+        if (!isNaN(idx) && !isNaN(delta)) moveMeleeModifierOrder(idx, delta, event);
+      });
+      Actions.register('combat:defense-mod-toggle', (el, data, _event) => {
+        const modId = data.modId;
+        if (modId === 'fightingDefensively') onToggleFightingDefensively();
+        else if (modId === 'totalDefense') onToggleTotalDefense();
+        else if (modId === 'shieldBlock') triggerShieldBlockReaction();
+      });
+      Actions.register('combat:ranged-mod-toggle', (el, data, _event) => {
+        if (data.modKey) onRangedModifierToggle(data.modKey);
+      });
+      Actions.register('combat:ranged-mod-move', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        const idx = Number(data.idx);
+        const delta = Number(data.delta);
+        if (!isNaN(idx) && !isNaN(delta)) moveRangedModifierOrder(idx, delta, event);
+      });
+      Actions.register('combat:attack-chain-roll', (el, data, _event) => {
+        const idx = Number(data.idx);
+        if (!isNaN(idx)) rollAttackChainItemByIndex(idx);
+      });
+      Actions.register('combat:full-attack-roll', (el, data, _event) => {
+        const isCustom = data.custom === 'true';
+        executeFullAttackRoll(isCustom);
+      });
+      Actions.register('combat:defense-pill-click', (el, data, _event) => {
+        if (data.pillType === 'reaction_mode') {
+          triggerReactiveLegoModeFromCockpit(data.entryId || '', data.modeId || '');
+        } else if (data.featName && typeof showFeatDetail === 'function') {
+          showFeatDetail(data.featName, null, 'ability');
+        }
+      });
+      Actions.register('combat:buff-toggle', (el, data, _event) => {
+        const idx = Number(data.buffIdx);
+        if (!isNaN(idx)) toggleCombatBuffActive(idx);
+      });
+      Actions.register('combat:buff-pin', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.buffId && typeof toggleBuffCombatPin === 'function') {
+          toggleBuffCombatPin(data.buffId);
+        }
+      });
+      Actions.register('combat:buff-remove', (el, data, _event) => {
+        const idx = Number(data.buffIdx);
+        if (!isNaN(idx)) removeCombatBuff(idx);
+      });
+      Actions.register('combat:skill-roll', (el, data, _event) => {
+        if (data.skillName) rollCombatSkill(data.skillName);
+      });
+      Actions.register('combat:skill-unpin', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.skillName) unpinCombatSkill(data.skillName);
+      });
+      Actions.register('combat:pin-touch-roll', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.pinName) rollSpellTouchAttack(data.pinName);
+      });
+      Actions.register('combat:pin-ammo-select', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.pinName) selectCombatAmmoPin(data.pinName, data.ammoVal || 'standard');
+      });
+      Actions.register('combat:pin-execute', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        const idx = Number(data.idx);
+        if (data.category && !isNaN(idx)) executePinAction(data.category, idx);
+      });
+      Actions.register('combat:pin-toggle', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        const idx = Number(data.idx);
+        if (data.category && !isNaN(idx)) toggleCombatPinActive(data.category, idx);
+      });
+      Actions.register('combat:pin-drawer-change', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data.pinName && el && typeof el.value === 'string') {
+          changePinTargetDirect(data.pinName, el.value);
+        }
+      });
+      Actions.register('combat:pin-move', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        const idx = Number(data.idx);
+        const delta = Number(data.delta);
+        if (data.category && !isNaN(idx) && !isNaN(delta)) movePinItem(data.category, idx, delta);
+      });
+      Actions.register('combat:pin-card-click', (el, data, event) => {
+        if (event && event.target && typeof event.target.closest === 'function') {
+          if (event.target.closest('select, button, input')) return;
+        }
+        const idx = Number(data.idx);
+        if (data.category && !isNaN(idx)) onPinCardClick(event, data.category, idx);
+      });
+      Actions.register('combat:pin-reorder-toggle', (el, data, _event) => {
+        if (data.category) togglePinReorderMode(data.category);
+      });
+    }
+
+    let _combatHoverTooltipDelegatedBound = false;
+    if (typeof document !== 'undefined' && !_combatHoverTooltipDelegatedBound) {
+      _combatHoverTooltipDelegatedBound = true;
+      let activeTooltipEl = null;
+      document.addEventListener('mouseover', (e) => {
+        if (!e.target || typeof e.target.closest !== 'function') return;
+        const el = e.target.closest('[data-combat-tooltip]');
+        if (!el) return;
+        if (activeTooltipEl === el) return;
+        activeTooltipEl = el;
+        const nameOrId = el.getAttribute('data-combat-tooltip') || '';
+        const cat = el.getAttribute('data-tooltip-cat') || 'melee';
+        if (nameOrId && typeof showCombatModifierHoverTooltip === 'function') {
+          showCombatModifierHoverTooltip(e, nameOrId, cat);
+        }
+      });
+      document.addEventListener('mouseout', (e) => {
+        if (!activeTooltipEl) return;
+        const related = e.relatedTarget;
+        if (related && activeTooltipEl.contains(related)) return;
+        activeTooltipEl = null;
+        if (typeof hideCombatModifierHoverTooltip === 'function') {
+          hideCombatModifierHoverTooltip();
+        }
+      });
+      document.addEventListener('mousemove', (e) => {
+        if (!activeTooltipEl) return;
+        if (typeof updateCombatModifierHoverTooltipPos === 'function') {
+          updateCombatModifierHoverTooltipPos(e);
+        }
+      });
+    }
+
 
 

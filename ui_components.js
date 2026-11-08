@@ -402,6 +402,7 @@
       throw new Error(`Unregistered UI action: ${actionName}`);
     }
     const mockEl = {
+      value: dataset && dataset.value !== undefined ? String(dataset.value) : '',
       dataset: Object.assign({}, dataset),
       getAttribute(attr) {
         if (attr && attr.startsWith('data-')) {
