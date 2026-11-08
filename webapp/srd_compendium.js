@@ -783,17 +783,46 @@
       });
     },
 
+    _ensureNodeEquipmentLoaded() {
+      if (this.getAllLoaded('Material').length === 0 && typeof require !== 'undefined') {
+        try {
+          const fs = require('fs');
+          const path = require('path');
+          ['database/srd_equipment.json', 'database/mic_compendium.json'].forEach((rel) => {
+            const p = path.resolve(__dirname, rel);
+            if (fs.existsSync(p)) {
+              const records = JSON.parse(fs.readFileSync(p, 'utf8'));
+              registerEntries(records);
+            }
+          });
+        } catch (_) {}
+      }
+    },
+
     getMaterials() {
+      this._ensureNodeEquipmentLoaded();
       return this.getAllLoaded('Material');
     },
 
     getEnhancements(targetType = null) {
+      this._ensureNodeEquipmentLoaded();
       const list = this.getAllLoaded('Enhancement');
       if (!targetType) return list;
+      if (targetType === 'Shield' || targetType === 'Armor') {
+        return list.filter((e) => {
+          if (!e.targetType || e.targetType === 'Any') return true;
+          if (e.targetType !== 'Armor' && e.targetType !== 'Shield') return false;
+          const applies = String(e.appliesTo || '').toLowerCase().trim();
+          if (targetType === 'Shield' && applies === 'armor') return false;
+          if (targetType === 'Armor' && applies === 'shield') return false;
+          return true;
+        });
+      }
       return list.filter((e) => !e.targetType || e.targetType === targetType || e.targetType === 'Any');
     },
 
     getCrystals(targetType = null) {
+      this._ensureNodeEquipmentLoaded();
       const list = this.getAllLoaded('AugmentationCrystal');
       if (!targetType) return list;
       const t = targetType.toLowerCase();
@@ -1716,14 +1745,25 @@
      */
     parseNaturalLanguageItem(rawText) {
       if (!rawText || typeof rawText !== 'string') return null;
+      if (typeof SrdCompendium._ensureNodeEquipmentLoaded === 'function') {
+        SrdCompendium._ensureNodeEquipmentLoaded();
+      }
       let working = rawText.trim();
       if (!working) return null;
 
+      // Step A: Strip leading prefixes (armor:, shield:, weapon:, item:, ring:, wondrous:, type:..., slot:...) even without space after colon
+      working = working
+        .replace(/^(?:armor|shield|weapon|item|ring|wondrous|equipment)\s*:\s*/i, '')
+        .replace(/\b(?:type|slot)\s*:\s*(?:"[^"]+"|'[^']+'|[^\s,;]+)/gi, ' ')
+        .trim();
+      if (!working) return null;
+
+      // Step B: Match +1..+10 even when followed by a comma or parenthesis
       let enhancementBonus = 0;
-      const bonusMatch = working.match(/(?:^|\s)\+([1-9]|10)(?=\s|$)/i);
+      const bonusMatch = working.match(/(?:^|[\s,(])\+([1-9]|10)(?=[\s,)]|$)/i);
       if (bonusMatch) {
         enhancementBonus = parseInt(bonusMatch[1], 10) || 0;
-        working = working.replace(bonusMatch[0], ' ').trim();
+        working = working.replace(/\+([1-9]|10)(?=[\s,)]|$)/i, ' ').trim();
       }
 
       let masterwork = false;
@@ -1747,33 +1787,6 @@
         }
       }
 
-      const enhancements = [];
-      const allEnhs = [
-        ...SrdCompendium.getEnhancements('Weapon'),
-        ...SrdCompendium.getEnhancements('Armor')
-      ];
-      const seenEnhIds = new Set();
-      const sortedEnhs = [];
-      for (let i = 0; i < allEnhs.length; i++) {
-        if (!seenEnhIds.has(allEnhs[i].id)) {
-          seenEnhIds.add(allEnhs[i].id);
-          sortedEnhs.push(allEnhs[i]);
-        }
-      }
-      sortedEnhs.sort((a, b) => (b.name || '').length - (a.name || '').length);
-
-      for (let i = 0; i < sortedEnhs.length; i++) {
-        const enh = sortedEnhs[i];
-        const eName = String(enh.name || '').trim();
-        if (!eName) continue;
-        const escaped = eName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const re = new RegExp(`\\b${escaped}\\b`, 'i');
-        if (re.test(working)) {
-          enhancements.push(enh.id);
-          working = working.replace(re, ' ').trim();
-        }
-      }
-
       let crystal = null;
       const crystalMatch = working.match(/(?:with|socketed with|attached with)\s+([a-z0-9\s,'-]+)$/i);
       if (crystalMatch) {
@@ -1787,29 +1800,179 @@
         }
       }
 
-      const baseQuery = working
-        .replace(/\bof\b/gi, ' ')
-        .replace(/[(),]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+      // Step C: Resolve Base Item (exact loaded Weapon/Armor/Shield or common aliases like "heavy shield", "light shield", "studded leather", "half plate")
+      let matchedBase = null;
+      const isWoodHint = material === 'mat-darkwood' || /\b(?:wood|wooden|darkwood)\b/i.test(rawText);
+      const allBaseCandidates = SrdCompendium.getAllLoaded(['Weapon', 'Armor', 'Shield'])
+        .slice()
+        .sort((a, b) => (b.name || '').length - (a.name || '').length);
 
-      if (!baseQuery) return null;
+      for (let i = 0; i < allBaseCandidates.length; i++) {
+        const cand = allBaseCandidates[i];
+        const cName = String(cand.name || '').trim();
+        if (!cName) continue;
+        const escaped = cName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(`\\b${escaped}\\b`, 'i');
+        if (re.test(working)) {
+          matchedBase = cand;
+          working = working.replace(re, ' ').trim();
+          break;
+        }
+      }
 
-      const baseRef = SrdCompendium.getByName(baseQuery, 'Weapon') ||
-        SrdCompendium.getByName(baseQuery, 'Armor') ||
-        SrdCompendium.getByName(baseQuery, 'Shield') ||
-        SrdCompendium.getById(`wpn-${slugify(baseQuery)}`) ||
-        SrdCompendium.getById(`arm-${slugify(baseQuery)}`) ||
-        SrdCompendium.getById(`shd-${slugify(baseQuery)}`);
+      if (!matchedBase) {
+        const baseAliases = [
+          { re: /\bheavy\s+shield\b/i, id: isWoodHint ? 'shd-heavy-wooden-shield' : 'shd-heavy-steel-shield' },
+          { re: /\blight\s+shield\b/i, id: isWoodHint ? 'shd-light-wooden-shield' : 'shd-light-steel-shield' },
+          { re: /\btower\s+shield\b/i, id: 'shd-tower-shield' },
+          { re: /\bstudded\s+leather(?:\s+armor)?\b/i, id: 'arm-studded-leather-armor' },
+          { re: /\bhalf[\s-]+plate(?:\s+armor)?\b/i, id: 'arm-half-plate' },
+          { re: /\bfull[\s-]+plate(?:\s+armor)?\b/i, id: 'arm-full-plate' }
+        ];
+        for (let i = 0; i < baseAliases.length; i++) {
+          if (baseAliases[i].re.test(working)) {
+            const resolved = SrdCompendium.getById(baseAliases[i].id);
+            if (resolved) {
+              matchedBase = resolved;
+              working = working.replace(baseAliases[i].re, ' ').trim();
+              break;
+            }
+          }
+        }
+      }
 
-      if (!baseRef || !['Weapon', 'Armor', 'Shield'].includes(baseRef.type)) {
+      // Step D: Normalize enhancement aliases (strip [Synergy] and (MIC), invert "X, Greater" -> "Greater X") and match comma segments
+      const enhancements = [];
+      const candidateEnhs = matchedBase
+        ? SrdCompendium.getEnhancements(matchedBase.type)
+        : [
+            ...SrdCompendium.getEnhancements('Weapon'),
+            ...SrdCompendium.getEnhancements('Armor'),
+            ...SrdCompendium.getEnhancements('Shield')
+          ];
+      const seenEnhIds = new Set();
+      const uniqueEnhs = [];
+      for (let i = 0; i < candidateEnhs.length; i++) {
+        if (candidateEnhs[i] && !seenEnhIds.has(candidateEnhs[i].id)) {
+          seenEnhIds.add(candidateEnhs[i].id);
+          uniqueEnhs.push(candidateEnhs[i]);
+        }
+      }
+
+      const aliasPairs = [];
+      for (let i = 0; i < uniqueEnhs.length; i++) {
+        const enh = uniqueEnhs[i];
+        const rawName = String(enh.name || '').trim();
+        if (!rawName) continue;
+        const stripped = rawName
+          .replace(/\[[^\]]*\]/g, '')
+          .replace(/\([^)]*\)/g, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        const localAliases = new Set([rawName, stripped]);
+        if (stripped.includes(',')) {
+          const parts = stripped.split(',').map(s => s.trim()).filter(Boolean);
+          if (parts.length === 2) {
+            localAliases.add(`${parts[1]} ${parts[0]}`);
+            localAliases.add(`${parts[0]} ${parts[1]}`);
+          }
+        }
+        localAliases.forEach((al) => {
+          if (al) aliasPairs.push({ enh, alias: al });
+        });
+      }
+      aliasPairs.sort((a, b) => b.alias.length - a.alias.length);
+
+      for (let i = 0; i < aliasPairs.length; i++) {
+        const { enh, alias } = aliasPairs[i];
+        if (enhancements.includes(enh.id)) continue;
+        const escaped = alias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(`\\b${escaped}\\b`, 'i');
+        if (re.test(working)) {
+          enhancements.push(enh.id);
+          working = working.replace(re, ' ').trim();
+        }
+      }
+
+      // Match leftover comma/semicolon-separated segments by prefix (len >= 4) or fuzzyScore >= 160
+      const segments = working.split(/[,;]+/);
+      const unmatchedSegments = [];
+      for (let s = 0; s < segments.length; s++) {
+        const segClean = segments[s]
+          .replace(/\bof\b/gi, ' ')
+          .replace(/[()]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (!segClean) continue;
+        const segLower = segClean.toLowerCase();
+        let matchedSegEnh = null;
+
+        if (segLower.length >= 4) {
+          // 1. Prefix match against normalized enhancement aliases (e.g., "Bashi" -> "Bashing")
+          let bestPrefixAliasLen = Infinity;
+          for (let i = 0; i < aliasPairs.length; i++) {
+            const { enh, alias } = aliasPairs[i];
+            if (enhancements.includes(enh.id)) continue;
+            const alLower = alias.toLowerCase();
+            if (alLower.startsWith(segLower) && alLower.length < bestPrefixAliasLen) {
+              bestPrefixAliasLen = alLower.length;
+              matchedSegEnh = enh;
+            }
+          }
+          // 2. Fuzzy match fallback (>= 160)
+          if (!matchedSegEnh && typeof SrdCompendium.fuzzyScore === 'function') {
+            let bestScore = 159;
+            for (let i = 0; i < aliasPairs.length; i++) {
+              const { enh, alias } = aliasPairs[i];
+              if (enhancements.includes(enh.id)) continue;
+              const sc = SrdCompendium.fuzzyScore(segLower, alias);
+              if (sc > bestScore) {
+                bestScore = sc;
+                matchedSegEnh = enh;
+              }
+            }
+          }
+        }
+
+        if (matchedSegEnh) {
+          enhancements.push(matchedSegEnh.id);
+        } else {
+          unmatchedSegments.push(segClean);
+        }
+      }
+
+      let usedUnmatchedForBase = false;
+      if (!matchedBase) {
+        const baseQuery = unmatchedSegments.join(' ').replace(/\s+/g, ' ').trim();
+        if (!baseQuery) return null;
+        matchedBase = SrdCompendium.getByName(baseQuery, 'Weapon') ||
+          SrdCompendium.getByName(baseQuery, 'Armor') ||
+          SrdCompendium.getByName(baseQuery, 'Shield') ||
+          SrdCompendium.getById(`wpn-${slugify(baseQuery)}`) ||
+          SrdCompendium.getById(`arm-${slugify(baseQuery)}`) ||
+          SrdCompendium.getById(`shd-${slugify(baseQuery)}`);
+        if (matchedBase) usedUnmatchedForBase = true;
+      }
+
+      if (!matchedBase || !['Weapon', 'Armor', 'Shield'].includes(matchedBase.type)) {
         return null;
       }
 
+      const parseWarnings = [];
+      if (!usedUnmatchedForBase && unmatchedSegments.length > 0) {
+        parseWarnings.push(`Unrecognized token(s): ${unmatchedSegments.join(', ')}`);
+      }
+      if (enhancements.length > 0 && enhancementBonus < 1) {
+        parseWarnings.push('RAW 3.5e: Magic special abilities require at least a +1 enhancement bonus');
+      }
+      if (enhancementBonus > 5) {
+        parseWarnings.push(`Epic (+${enhancementBonus}) enhancement bonus`);
+      }
+
       try {
-        return ItemAssembler.assemble({
-          baseItem: baseRef,
-          baseItemId: baseRef.id,
+        const assembled = ItemAssembler.assemble({
+          baseItem: matchedBase,
+          baseItemId: matchedBase.id,
           material,
           masterwork,
           enhancementBonus,
@@ -1817,6 +1980,10 @@
           crystal,
           source: 'ItemAssembler-ZeroToken'
         });
+        if (assembled && parseWarnings.length > 0) {
+          assembled._parseWarnings = parseWarnings;
+        }
+        return assembled;
       } catch (e) {
         return null;
       }

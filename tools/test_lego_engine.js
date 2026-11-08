@@ -11,7 +11,7 @@ const vm = require('vm');
 const rootDir = path.resolve(__dirname, '..');
 const srdCompendiumCode = fs.readFileSync(path.join(rootDir, 'srd_compendium.js'), 'utf8');
 const ruleEngineCode = fs.readFileSync(path.join(rootDir, 'rule_engine.js'), 'utf8');
-const sandbox = { window: {}, console, Math, Number, String, Array, Object, Set, Map, JSON, RegExp };
+const sandbox = { window: {}, console, Math, Number, String, Array, Object, Set, Map, JSON, RegExp, require, __dirname: rootDir };
 vm.createContext(sandbox);
 vm.runInContext(`${srdCompendiumCode}\n${ruleEngineCode}\nwindow.RuleEngine = RuleEngine;`, sandbox);
 const RuleEngine = sandbox.window.RuleEngine;
@@ -882,7 +882,36 @@ function createBaseChar(overrides = {}) {
       SrdCompendium.fuzzyScore('SCİMİTAR', 'Scimitar') === 1000
     ],
     [true, true, true]);
+
+  // Phase P10 Regression Test 51: Natural Language Shield + Comma-Separated Enhancement Synthesis
+  const ItemAssembler = sandbox.window.ItemAssembler;
+  const parsedShield = ItemAssembler.parseNaturalLanguageItem('armor:Adamantine Heavy Shield +5, Greater Anchoring, Bashi');
+  assertEq('Phase P10 Test 51: ItemAssembler.parseNaturalLanguageItem("armor:Adamantine Heavy Shield +5, Greater Anchoring, Bashi") synthesizes V2 shield with baseItemId, material, +5, Greater Anchoring, and Bashing',
+    [
+      Boolean(parsedShield),
+      parsedShield ? parsedShield.baseItemId : null,
+      parsedShield ? parsedShield.material : null,
+      parsedShield ? parsedShield.enhancementBonus : null,
+      Boolean(parsedShield && Array.isArray(parsedShield.enhancements) && parsedShield.enhancements.includes('enh-anchoring-greater-synergy')),
+      Boolean(parsedShield && Array.isArray(parsedShield.enhancements) && parsedShield.enhancements.includes('enh-bashing'))
+    ],
+    [true, 'shd-heavy-steel-shield', 'mat-adamantine', 5, true, true]);
+
+  // Phase P10 Act Polish Test 52: _parseWarnings for unrecognized tokens & RuleMaster._isDeprecatedGeminiModel boundary-safe check
+  const ruleMasterCode = fs.readFileSync(path.join(rootDir, 'rule_master.js'), 'utf8');
+  sandbox.document = { addEventListener() {}, getElementById() { return null; } };
+  sandbox.localStorage = { getItem() { return null; }, setItem() {}, removeItem() {} };
+  vm.runInContext(`${ruleMasterCode}\nwindow.RuleMaster = RuleMaster;`, sandbox);
+  const RuleMaster = sandbox.window.RuleMaster;
+  const parsedShieldWarn = ItemAssembler.parseNaturalLanguageItem('armor:Adamantine Heavy Shield +5, Greater Anchoring, Bashi, UnknownTokenXYZ');
+  assertEq('Phase P10 Test 52: _parseWarnings captures unrecognized tokens and RuleMaster._isDeprecatedGeminiModel rejects gemini-2.0-flash while keeping gemini-2.5-flash',
+    [
+      Boolean(parsedShieldWarn && Array.isArray(parsedShieldWarn._parseWarnings) && parsedShieldWarn._parseWarnings.includes('Unrecognized token(s): UnknownTokenXYZ')),
+      RuleMaster._isDeprecatedGeminiModel('gemini-2.0-flash'),
+      RuleMaster._isDeprecatedGeminiModel('gemini-2.5-flash')
+    ],
+    [true, true, false]);
 }
 
-console.log(`✅ V2.5 LEGO ENGINE BENCHMARK: ${passed}/${passed + failed} assertions passed (15 Golden Set + 6 Forum Edge Cases + Interaction Map + Namespace/Deduplication + Damage/Migrator + P2 Parity Gate + 6 Parity/Regression Fixtures + P4 Export Pack + P9 Fuzzy Search + Security Gate).`);
+console.log(`✅ V2.5 LEGO ENGINE BENCHMARK: ${passed}/${passed + failed} assertions passed (15 Golden Set + 6 Forum Edge Cases + Interaction Map + Namespace/Deduplication + Damage/Migrator + P2 Parity Gate + 6 Parity/Regression Fixtures + P4 Export Pack + P9/P10 Spotlight & Lego Synthesis + Security Gate).`);
 if (failed > 0) process.exit(1);

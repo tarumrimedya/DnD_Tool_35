@@ -2417,12 +2417,23 @@ const RuleMaster = {
     }
   },
 
+  _failedGeminiModels: new Set(),
+
+  _isDeprecatedGeminiModel(m) {
+    if (!m || typeof m !== 'string') return true;
+    const lower = m.toLowerCase().trim();
+    if (this._failedGeminiModels && this._failedGeminiModels.has(lower)) return true;
+    return /^gemini-(?:1\.0|1\.5|2\.0)(?:-|$)/i.test(lower) ||
+           /(?:^|-)(?:exp|vision|aqa)(?:-|$)/i.test(lower);
+  },
+
   // Helper: Sanitize and deduplicate models cascade, ensuring guaranteed fallbacks and avoiding hangs
   _sanitizeModelList(list) {
-    let models = [...new Set([...(list || []), 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'].filter(Boolean))];
-    // If gemini-3.1-flash-lite is at index 0, move a reliable 2.5 or 2.0 flash model to index 0 so it doesn't hang
+    const fallbackList = ['gemini-2.5-flash', 'gemini-3.0-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro'];
+    let models = [...new Set([...(list || []), ...fallbackList].filter(m => m && !this._isDeprecatedGeminiModel(m)))];
+    // If gemini-3.1-flash-lite is at index 0, move a reliable 2.5 or 3.0 flash model to index 0 so it doesn't hang
     if (models[0] && models[0].includes('3.1-flash-lite')) {
-      const betterIdx = models.findIndex(m => m.includes('2.5-flash') && !m.includes('3.1'));
+      const betterIdx = models.findIndex(m => (m.includes('2.5-flash') || m.includes('3.0-flash')) && !m.includes('3.1'));
       if (betterIdx > 0) {
         const [better] = models.splice(betterIdx, 1);
         models.unshift(better);
@@ -2437,36 +2448,36 @@ const RuleMaster = {
       const match = (name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
       return match ? parseFloat(match[1]) : 0.0;
     }
-    // Filter out hanging or experimental models like 3.1-flash-lite from primary evaluation
+    // Filter out hanging, experimental, or deprecated models (e.g. 2.0-flash, 3.1-flash-lite)
     const cleanedModels = (Array.isArray(apiModels) ? apiModels.slice() : [])
-      .filter(m => m && !m.toLowerCase().includes('3.1-flash-lite'));
+      .filter(m => m && !m.toLowerCase().includes('3.1-flash-lite') && !this._isDeprecatedGeminiModel(m));
     const sorted = cleanedModels.sort((a, b) => parseVer(b) - parseVer(a));
 
+    const flash30 = sorted.find(m => m.includes('3.0-flash') && !m.includes('lite')) || 'gemini-3.0-flash';
     const flash25 = sorted.find(m => m.includes('2.5-flash') && !m.includes('lite')) || 'gemini-2.5-flash';
     const lite25 = sorted.find(m => m.includes('2.5-flash-lite')) || 'gemini-2.5-flash-lite';
-    const flash20 = sorted.find(m => m.includes('2.0-flash')) || 'gemini-2.0-flash';
 
     const liteModels = sorted.filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'));
     const flashModels = sorted.filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'));
     const proModels = sorted.filter(m => m.toLowerCase().includes('pro'));
 
     const pick3 = (candidates) => {
-      const pool = [...candidates, flash25, lite25, flash20, 'gemini-2.5-flash', 'gemini-2.0-flash'];
+      const pool = [...candidates, flash25, flash30, lite25, 'gemini-2.5-flash', 'gemini-3.0-flash', 'gemini-2.5-flash-lite'];
       const uniq = [];
       pool.forEach(m => {
-        if (m && !uniq.includes(m)) uniq.push(m);
+        if (m && !this._isDeprecatedGeminiModel(m) && !uniq.includes(m)) uniq.push(m);
       });
       return {
         primary: uniq[0] || 'gemini-2.5-flash',
-        fallback: uniq[1] || 'gemini-2.0-flash',
+        fallback: uniq[1] || 'gemini-3.0-flash',
         tertiary: uniq[2] || 'gemini-2.5-flash-lite'
       };
     };
 
     return {
-      QUICK_SEARCH: pick3([flash25, lite25, flash20, ...flashModels, ...liteModels]),
-      RULE_AUDIT: pick3([proModels[0], flash25, proModels[1], lite25]),
-      IMPORT_BATCH: pick3([flash25, lite25, proModels[0], flash20])
+      QUICK_SEARCH: pick3([flash25, flash30, lite25, ...flashModels, ...liteModels]),
+      RULE_AUDIT: pick3([proModels[0], flash25, flash30, proModels[1], lite25]),
+      IMPORT_BATCH: pick3([flash25, flash30, lite25, proModels[0]])
     };
   },
 
@@ -2477,12 +2488,31 @@ const RuleMaster = {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === 'object' && parsed.QUICK_SEARCH && parsed.RULE_AUDIT && parsed.IMPORT_BATCH) {
-          return parsed;
+          const allModels = [
+            parsed.QUICK_SEARCH.primary, parsed.QUICK_SEARCH.fallback, parsed.QUICK_SEARCH.tertiary,
+            parsed.RULE_AUDIT.primary, parsed.RULE_AUDIT.fallback, parsed.RULE_AUDIT.tertiary,
+            parsed.IMPORT_BATCH.primary, parsed.IMPORT_BATCH.fallback, parsed.IMPORT_BATCH.tertiary
+          ].filter(Boolean);
+          if (allModels.some(m => this._isDeprecatedGeminiModel(m))) {
+            localStorage.removeItem('dnd35_gemini_routing_matrix');
+            localStorage.removeItem('dnd35_gemini_discovered_models');
+            this._discoveredApiModels = null;
+          } else {
+            return parsed;
+          }
         }
       }
       const discoveredRaw = this._discoveredApiModels || JSON.parse(localStorage.getItem('dnd35_gemini_discovered_models') || 'null');
       if (Array.isArray(discoveredRaw) && discoveredRaw.length > 0) {
-        return this.buildDynamicRoutingFromModels(discoveredRaw);
+        if (discoveredRaw.some(m => this._isDeprecatedGeminiModel(m))) {
+          try {
+            localStorage.removeItem('dnd35_gemini_routing_matrix');
+            localStorage.removeItem('dnd35_gemini_discovered_models');
+          } catch (e) {}
+          this._discoveredApiModels = null;
+        } else {
+          return this.buildDynamicRoutingFromModels(discoveredRaw);
+        }
       }
     } catch (e) {}
     return this.buildDynamicRoutingFromModels([]);
@@ -2497,7 +2527,7 @@ const RuleMaster = {
     } else if (userPref === 'auto' && taskType === 'IMPORT_BATCH') {
       cfg = routing.IMPORT_BATCH;
     }
-    return [cfg.primary, cfg.fallback, cfg.tertiary].filter(Boolean);
+    return this._sanitizeModelList([cfg.primary, cfg.fallback, cfg.tertiary].filter(Boolean));
   },
 
   // Sanal Flash Ailesi Çözümleyicisi: Canlı modeller arasından en güncel ve kararlı Flash modelini dinamik seçer
@@ -2659,33 +2689,61 @@ Schema:
     }
 
     // Eğer önceden kaydedilmiş bir dinamik AI yönlendirme matrisi varsa doğrudan kullan (0ms gecikme)
-    const hasCustomMatrix = Boolean(localStorage.getItem('dnd35_gemini_routing_matrix'));
-    if (hasCustomMatrix && !forceRefresh) {
-      const activeRouting = this.getActiveTaskRouting();
-      let taskCfg = activeRouting.QUICK_SEARCH;
-      if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL' || this.getAiModelMode() === 'pro') {
-        taskCfg = activeRouting.RULE_AUDIT;
-      } else if (taskType === 'IMPORT_BATCH' && this.getAiModelMode() === 'auto') {
-        taskCfg = activeRouting.IMPORT_BATCH;
-      }
-      const customList = this._sanitizeModelList([taskCfg.primary, taskCfg.fallback, taskCfg.tertiary]);
-      if (customList.length > 0) {
-        if (!this._cachedTaskModels) this._cachedTaskModels = {};
-        this._cachedTaskModels[cacheKey] = customList;
-        return customList;
-      }
+    const rawMatrix = localStorage.getItem('dnd35_gemini_routing_matrix');
+    if (rawMatrix && !forceRefresh) {
+      try {
+        const parsedM = JSON.parse(rawMatrix);
+        const allM = parsedM ? [
+          parsedM.QUICK_SEARCH?.primary, parsedM.QUICK_SEARCH?.fallback, parsedM.QUICK_SEARCH?.tertiary,
+          parsedM.RULE_AUDIT?.primary, parsedM.RULE_AUDIT?.fallback, parsedM.RULE_AUDIT?.tertiary,
+          parsedM.IMPORT_BATCH?.primary, parsedM.IMPORT_BATCH?.fallback, parsedM.IMPORT_BATCH?.tertiary
+        ].filter(Boolean) : [];
+        if (allM.some(m => this._isDeprecatedGeminiModel(m))) {
+          localStorage.removeItem('dnd35_gemini_routing_matrix');
+          localStorage.removeItem('dnd35_gemini_discovered_models');
+          this._discoveredApiModels = null;
+        } else {
+          const activeRouting = this.getActiveTaskRouting();
+          let taskCfg = activeRouting.QUICK_SEARCH;
+          if (taskType === 'RULE_AUDIT' || taskType === 'COMPLEX_TACTICAL' || this.getAiModelMode() === 'pro') {
+            taskCfg = activeRouting.RULE_AUDIT;
+          } else if (taskType === 'IMPORT_BATCH' && this.getAiModelMode() === 'auto') {
+            taskCfg = activeRouting.IMPORT_BATCH;
+          }
+          const customList = this._sanitizeModelList([taskCfg.primary, taskCfg.fallback, taskCfg.tertiary]);
+          if (customList.length > 0) {
+            if (!this._cachedTaskModels) this._cachedTaskModels = {};
+            this._cachedTaskModels[cacheKey] = customList;
+            return customList;
+          }
+        }
+      } catch (e) {}
     }
 
     try {
       let apiModels = (!forceRefresh && this._discoveredApiModels) ? this._discoveredApiModels : null;
+      if (Array.isArray(apiModels) && apiModels.some(m => this._isDeprecatedGeminiModel(m))) {
+        apiModels = null;
+        this._discoveredApiModels = null;
+        try {
+          localStorage.removeItem('dnd35_gemini_routing_matrix');
+          localStorage.removeItem('dnd35_gemini_discovered_models');
+        } catch (e) {}
+      }
       if (!apiModels && !forceRefresh) {
         try {
           const cachedJson = localStorage.getItem('dnd35_gemini_discovered_models');
           if (cachedJson) {
             const parsed = JSON.parse(cachedJson);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              apiModels = parsed;
-              this._discoveredApiModels = parsed;
+              if (parsed.some(m => this._isDeprecatedGeminiModel(m))) {
+                localStorage.removeItem('dnd35_gemini_routing_matrix');
+                localStorage.removeItem('dnd35_gemini_discovered_models');
+                this._discoveredApiModels = null;
+              } else {
+                apiModels = parsed;
+                this._discoveredApiModels = parsed;
+              }
             }
           }
         } catch (e) {}
@@ -2706,7 +2764,8 @@ Schema:
             .map(m => m.name.replace(/^models\//, ''))
             .filter(m => {
               const lower = m.toLowerCase();
-              return !lower.includes('tts') &&
+              return !this._isDeprecatedGeminiModel(m) &&
+                     !lower.includes('tts') &&
                      !lower.includes('image') &&
                      !lower.includes('audio') &&
                      !lower.includes('embedding') &&
@@ -3620,8 +3679,8 @@ Return valid JSON only matching:
 }`;
     }
 
-    // 4. WEAPON / ARMOR / SHIELD / WONDROUS ITEM / RING / MAGIC ITEM / AUGMENT CRYSTAL
-    if (['weapon', 'armor', 'shield', 'armor / shield', 'wondrous item', 'ring', 'magic item', 'item', 'augment crystal', 'potion', 'scroll', 'wand', 'consumable'].includes(cat)) {
+    // 4. WEAPON / ARMOR / SHIELD / WONDROUS ITEM / RING / MAGIC ITEM / AUGMENT CRYSTAL / EQUIPMENT
+    if (['weapon', 'armor', 'shield', 'armor / shield', 'wondrous item', 'ring', 'magic item', 'item', 'equipment', 'augment crystal', 'potion', 'scroll', 'wand', 'consumable'].includes(cat)) {
       return `You are a master D&D 3.5e Rule Arbiter.
 Target query: "${cleanQuery}" (Category: "${effectiveCategory}").
 
@@ -4120,10 +4179,23 @@ Return valid JSON only matching:
         } else {
           const errJson = await response.json().catch(() => ({}));
           lastError = errJson.error?.message || `HTTP ${response.status} (${model})`;
-          if (response.status === 404 || (lastError && lastError.toLowerCase().includes('not found'))) {
+          const errLower = String(lastError || '').toLowerCase();
+          if (
+            response.status === 404 ||
+            errLower.includes('not found') ||
+            errLower.includes('no longer available') ||
+            errLower.includes('deprecated') ||
+            errLower.includes('is not supported')
+          ) {
+            if (this._failedGeminiModels && model) {
+              this._failedGeminiModels.add(String(model).toLowerCase().trim());
+            }
             this._discoveredApiModels = null;
             this._cachedTaskModels = {};
-            try { localStorage.removeItem('dnd35_gemini_discovered_models'); } catch (e) {}
+            try {
+              localStorage.removeItem('dnd35_gemini_discovered_models');
+              localStorage.removeItem('dnd35_gemini_routing_matrix');
+            } catch (e) {}
           }
         }
       } catch (netErr) {

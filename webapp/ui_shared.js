@@ -774,7 +774,7 @@
     // Filter catalog by selected item type (Weapon vs Armor vs Shield)
     let eligibleCatalog = [];
     if (global.SrdCompendium && typeof global.SrdCompendium.getEnhancements === 'function') {
-      const compList = global.SrdCompendium.getEnhancements(baseType);
+      const compList = global.SrdCompendium.getEnhancements(baseType === 'Shield' ? 'Shield' : baseType);
       if (Array.isArray(compList) && compList.length > 0) {
         eligibleCatalog = compList.map(e => ({
           id: e.id,
@@ -1365,13 +1365,29 @@
     const filters = {};
     const chips = [];
 
+    const prefixMatch = working.match(/^(armor|shield|weapon|ring|wondrous|item)\s*:\s*/i);
+    if (prefixMatch) {
+      const pKey = prefixMatch[1].toLowerCase();
+      const mapType = {
+        armor: ['Armor', 'Shield'],
+        shield: ['Shield'],
+        weapon: ['Weapon'],
+        ring: ['Ring', 'MagicItem', 'Item'],
+        wondrous: ['Wondrous Item', 'MagicItem', 'Item'],
+        item: ['Item', 'MagicItem', 'Consumable', 'Tool']
+      };
+      filters.type = mapType[pKey] || [pKey];
+      chips.push({ label: `TYPE: ${pKey.toUpperCase()}`, color: 'bg-indigo-950/90 text-indigo-300 border-indigo-500/60' });
+      working = working.slice(prefixMatch[0].length).trim();
+    }
+
     const tokenRegex = /\b(type|slot|lvl|level|elig|pack)\s*:\s*("[^"]+"|'[^']+'|[^\s,;]+)/gi;
     working = working.replace(tokenRegex, (_, rawKey, rawVal) => {
       const k = rawKey.toLowerCase();
       const v = String(rawVal || '').replace(/^['"]|['"]$/g, '').trim();
       if (!v) return '';
       if (k === 'type') {
-        filters.type = v;
+        filters.type = v.toLowerCase() === 'armor' ? ['Armor', 'Shield'] : v;
         chips.push({ label: `TYPE: ${v.toUpperCase()}`, color: 'bg-indigo-950/90 text-indigo-300 border-indigo-500/60' });
       } else if (k === 'slot') {
         filters.slot = v;
@@ -1475,7 +1491,7 @@
     }
 
     if (inlineFilters.type) {
-      filters.type = [inlineFilters.type];
+      filters.type = Array.isArray(inlineFilters.type) ? inlineFilters.type : [inlineFilters.type];
     }
     if (inlineFilters.slot) {
       filters.slot = inlineFilters.slot;
@@ -1564,6 +1580,11 @@
       let badgesHtml = '';
       if (r._instantForgeSynthesis) {
         badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-600/60 text-[9px] font-mono font-bold">⚒️ Instant Forge Assembly</span>`;
+      }
+      if (Array.isArray(r._parseWarnings) && r._parseWarnings.length > 0) {
+        r._parseWarnings.forEach(w => {
+          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-500/50 text-[9px] font-mono font-semibold">⚠️ ${escapeHtml(w)}</span>`;
+        });
       }
       const hasPrereqOrFeat = Boolean(r.requires || (r.prereq && r.prereq !== '-') || r.type === 'Feat' || r.type === 'DM Boon');
       if (hasPrereqOrFeat && global.RuleMaster && typeof global.RuleMaster.evaluateEntryEligibilityForCharacter === 'function') {

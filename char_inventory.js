@@ -6847,6 +6847,10 @@
       item._badgesHtmlCache = renderGearItemStatsBadgesHtml(item, { compact: true });
       const profWarn = getEquipmentProficiencyWarning(item);
       const btnId = isSearchMode ? `btn-add-search-${idx}` : `btn-add-pool-${idx}`;
+      const escWarn = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const parseWarnHtml = (Array.isArray(item._parseWarnings) && item._parseWarnings.length > 0)
+        ? `<div class="flex flex-wrap gap-1">${item._parseWarnings.map(w => `<span class="text-[9px] bg-amber-950/90 text-amber-300 border border-amber-500/50 px-1.5 py-0.5 rounded font-mono font-semibold">⚠️ ${escWarn(w)}</span>`).join('')}</div>`
+        : '';
 
       return `
         <div id="pool-item-card-${idx}" class="bg-slate-900 border border-slate-700/80 hover:border-amber-500/60 p-2.5 rounded-xl transition space-y-1.5 shadow-sm">
@@ -6854,6 +6858,7 @@
             <div class="flex items-center gap-1.5 min-w-0 flex-1">
               <span class="text-base shrink-0">${icon}</span>
               <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
+              ${item._isSynthesizedLego ? `<span class="text-[9px] bg-indigo-950/90 text-indigo-300 border border-indigo-500/60 px-1.5 py-0.2 rounded font-bold shrink-0">⚒️ Instant Lego Assembly</span>` : ''}
               ${profWarn ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${profWarn.tooltip}">⚠️</span>` : ''}
               ${inInv ? `<span class="text-[9px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.2 rounded font-semibold shrink-0">✓ Owned</span>` : ''}
             </div>
@@ -6877,6 +6882,7 @@
             <span class="text-amber-400 font-mono">${cost} gp</span>
             <span class="text-slate-500 font-serif italic">${source}</span>
           </div>
+          ${parseWarnHtml}
           ${item._badgesHtmlCache}
           ${desc ? `<p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed bg-slate-950/60 p-1.5 rounded border border-slate-800/80">${desc}</p>` : ''}
         </div>
@@ -6957,58 +6963,72 @@
       const resultsBox = document.getElementById('pool-search-results-box');
       if (!resultsBox) return;
 
-      const q = String(query || '').toLowerCase().trim();
-      if (!q) {
+      const rawQ = String(query || '').trim();
+      if (!rawQ) {
         renderUnaddedMasterDbItems(_currentPoolCategoryFilter || 'all');
         return;
       }
 
-      const qClean = q.replace(/[^a-z0-9]/g, '');
-      const qTokens = q.split(/[\s\-_',.]+/).filter(Boolean);
-      const combined = getUnifiedEquipmentCatalog();
-      const activeFilter = _currentPoolCategoryFilter || 'all';
+      let inlineCatFilter = null;
+      let cleanRaw = rawQ;
+      const prefixMatch = rawQ.match(/^(armor|shield|weapon|ring|wondrous|item|potion|crystal|equipment)\s*:\s*/i);
+      if (prefixMatch) {
+        const pKey = prefixMatch[1].toLowerCase();
+        if (pKey === 'armor' || pKey === 'shield') inlineCatFilter = 'armor';
+        else if (pKey === 'weapon') inlineCatFilter = 'weapon';
+        else if (pKey === 'potion') inlineCatFilter = 'potion';
+        else if (pKey === 'crystal') inlineCatFilter = 'crystal';
+        else if (pKey === 'ring' || pKey === 'wondrous' || pKey === 'item') inlineCatFilter = 'wondrous';
+        cleanRaw = rawQ.slice(prefixMatch[0].length).trim();
+      }
 
-      // Score and filter SRD + Custom DB items so exact/prefix/compound name matches rank first
+      const cleanQuery = cleanRaw || rawQ;
+      const q = cleanQuery.toLowerCase().trim();
+      const qClean = q.replace(/[^a-z0-9]/g, '');
+      const qTokens = q.split(/[\s\-_',.+()]+/).filter(Boolean);
+      const combined = getUnifiedEquipmentCatalog();
+      const activeFilter = inlineCatFilter || _currentPoolCategoryFilter || 'all';
+
+      // Instant Lego Item Synthesis for natural language composite queries
+      let synthesizedLegoItem = null;
+      if (cleanQuery.length >= 3 && typeof ItemAssembler !== 'undefined' && typeof ItemAssembler.parseNaturalLanguageItem === 'function') {
+        try {
+          const parsedLego = ItemAssembler.parseNaturalLanguageItem(cleanQuery);
+          if (
+            parsedLego &&
+            (parsedLego.enhancementBonus > 0 ||
+              parsedLego.material ||
+              (Array.isArray(parsedLego.enhancements) && parsedLego.enhancements.length > 0) ||
+              parsedLego.isMasterwork ||
+              parsedLego.masterwork ||
+              parsedLego.abilityBonus > 0 ||
+              parsedLego.crystal)
+          ) {
+            parsedLego._isSynthesizedLego = true;
+            synthesizedLegoItem = parsedLego;
+          }
+        } catch (_) {}
+      }
+
+      // Score and filter SRD + Custom DB items via unified SrdCompendium.fuzzyScore
       const scored = [];
       for (let i = 0; i < combined.length; i++) {
         const item = combined[i];
         if (!item || !item.name) continue;
 
         const name = String(item.name || '').toLowerCase().trim();
-        const nameClean = name.replace(/[^a-z0-9]/g, '');
         const cat = String(item.category || '').toLowerCase();
         const type = String(item.type || '').toLowerCase();
         const slot = String(item.slot || '').toLowerCase();
         const desc = String(item.benefit || item.description || item.shortDescription || '').toLowerCase();
         const tags = Array.isArray(item.tags) ? item.tags.join(' ').toLowerCase() : '';
+        const haystack = `${name} ${cat} ${type} ${slot} ${tags} ${desc}`;
 
         let score = 0;
-
-        // 1. Exact match (handles spacing/hyphen variants: "chain mail" <-> "chainmail", "half plate" <-> "half-plate")
-        if (name === q || (qClean && nameClean === qClean)) {
-          score = 1000;
-        } else if (name.startsWith(q) || (qClean.length >= 3 && nameClean.startsWith(qClean))) {
-          score = 800 - Math.min(100, name.length);
-        } else if (name.includes(q) || (qClean.length >= 3 && nameClean.includes(qClean))) {
-          score = 600 - Math.min(100, name.indexOf(q));
-        } else {
-          // 2. Multi-word tokenized matching across name, category, type, slot, tags, description
-          const haystack = `${name} ${cat} ${type} ${slot} ${tags} ${desc}`;
-          let allTokensInName = true;
-          let allTokensInHaystack = true;
-          for (let t = 0; t < qTokens.length; t++) {
-            const tok = qTokens[t];
-            if (!name.includes(tok) && !nameClean.includes(tok)) allTokensInName = false;
-            if (!haystack.includes(tok) && !nameClean.includes(tok)) {
-              allTokensInHaystack = false;
-              break;
-            }
-          }
-          if (allTokensInName && qTokens.length > 0) {
-            score = 400;
-          } else if (allTokensInHaystack && qTokens.length > 0) {
-            score = 200;
-          }
+        if (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.fuzzyScore === 'function') {
+          score = SrdCompendium.fuzzyScore(cleanQuery, item.name, haystack);
+        } else if (name.includes(q)) {
+          score = name === q ? 1000 : 500;
         }
 
         if (score > 0) {
@@ -7022,11 +7042,14 @@
 
       scored.sort((a, b) => b.score - a.score || a.item.name.localeCompare(b.item.name));
       const allMatches = scored.map(s => s.item);
+      if (synthesizedLegoItem) {
+        allMatches.unshift(synthesizedLegoItem);
+      }
 
       // Category tab filtering: if specific tab selected and has matches in that tab, narrow to that tab
       let displayMatches = allMatches;
       if (activeFilter !== 'all') {
-        const inCat = allMatches.filter(item => itemMatchesPoolCategory(item, activeFilter));
+        const inCat = allMatches.filter(item => item._isSynthesizedLego || itemMatchesPoolCategory(item, activeFilter));
         if (inCat.length > 0) {
           displayMatches = inCat;
         }
@@ -7036,7 +7059,7 @@
       renderPoolCategoryTabs(allMatches, activeFilter);
 
       window._poolCurrentMatches = displayMatches;
-      renderPoolSearchResults(displayMatches, query);
+      renderPoolSearchResults(displayMatches, cleanQuery);
     }
 
     function renderPoolSearchResults(matches, query) {
@@ -7106,7 +7129,9 @@
     }
 
     async function searchAiForPoolItem(query) {
-      const q = (query || '').trim();
+      const q = String(query || '')
+        .replace(/^(?:armor|shield|weapon|item|ring|wondrous|equipment|potion|crystal)\s*:\s*/i, '')
+        .trim();
       if (!q) {
         alert('⚠️ Please enter an item name to search.');
         return;
