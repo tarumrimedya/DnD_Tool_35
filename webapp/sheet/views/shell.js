@@ -38,10 +38,42 @@ export function TabBar({ activeTab, characterId }) {
     </nav>`;
 }
 
+/** @param {string|null} iso */
+const clock = iso => {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const SECONDARY_BTN = 'ui-btn-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700';
+
 /**
- * @param {{ name: string, characterId: string|null, readOnly: boolean }} props
+ * Editing state and controls (Phase B). The page stays read-only until this tab holds the lock.
+ * @param {{ write: import('../core/store.js').WriteState, canEdit: boolean }} props
  */
-export function Header({ name, characterId, readOnly }) {
+export function WriteControls({ write, canEdit }) {
+  if (write.save === 'conflict' || write.save === 'error') {
+    return html`
+      <span class="v3-readonly-banner" data-tone="danger" role="alert">${write.message || 'Not saved.'}</span>
+      <button type="button" class="${SECONDARY_BTN}" data-action="reload-page">Reload</button>`;
+  }
+  if (write.lock === 'held') {
+    return html`
+      <span class="v3-readonly-banner" data-tone="ok" role="status">Editing${write.savedAt ? ` • Saved ${clock(write.savedAt)}` : ''}</span>
+      <button type="button" class="${SECONDARY_BTN}" data-action="stop-editing">Stop Editing</button>`;
+  }
+  const enabled = canEdit && write.lock !== 'requesting' && write.lock !== 'unsupported';
+  return html`
+    <span class="v3-readonly-banner" role="status">${write.message || 'Read-Only: enable editing to make changes here'}</span>
+    <button type="button" class="ui-btn-sm bg-indigo-600 hover:bg-indigo-500 text-white" data-action="enable-editing" ${enabled ? '' : html`disabled`}>Enable Editing</button>
+    ${write.lock === 'busy' ? html`<button type="button" class="${SECONDARY_BTN}" data-action="take-over-editing">Take Over</button>` : ''}`;
+}
+
+/**
+ * @param {{ name: string, characterId: string|null, write: import('../core/store.js').WriteState|null, canEdit: boolean }} props
+ *   `write` is null while there is no character to edit.
+ */
+export function Header({ name, characterId, write, canEdit }) {
   return html`
     <header class="flex flex-wrap items-center justify-between gap-3">
       <div class="min-w-0">
@@ -49,7 +81,7 @@ export function Header({ name, characterId, readOnly }) {
         <h1 class="text-lg font-extrabold text-white truncate">${name}</h1>
       </div>
       <div class="flex flex-wrap items-center gap-2">
-        ${readOnly ? html`<span class="v3-readonly-banner" role="status">Read-Only Preview: changes are made in the classic sheet</span>` : ''}
+        ${write ? WriteControls({ write, canEdit }) : html`<span class="v3-readonly-banner" role="status">Read-Only</span>`}
         <a class="ui-btn-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700" href="${classicSheetHref(characterId)}">Open Classic Sheet</a>
         <a class="ui-btn-sm bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700" href="hub.html">Hub</a>
       </div>

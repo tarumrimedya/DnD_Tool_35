@@ -11,13 +11,22 @@
 /**
  * @typedef {Object} SheetState
  * @property {'loading'|'ready'|'empty'|'error'} status
- * @property {Record<string, any>|null} character   Resolved character (read-only clone in Phase A).
+ * @property {Record<string, any>|null} character   Resolved character, V3 in-memory shape (storage-codec.js).
  * @property {{ source: string, requestedId: string|null, notes: string[] }} load
  * @property {{ compendium: 'idle'|'loading'|'ready'|'error', ruleEngine: boolean, migrator: boolean, error?: string }} engine
  * @property {{ status: 'pending'|'done'|'error', applied: string[], notes: string[], error?: string }} migration
- *   In-memory V3 migrations (Phase A: never saved).
+ *   V3 migrations. Applied in memory on load; saved with the first edit.
  * @property {{ activeTab: string }} ui
- * @property {boolean} readOnly                      Phase A: always true. Writes are refused.
+ * @property {WriteState} write
+ * @property {boolean} readOnly                      True unless this tab holds the writer lock and has no conflict.
+ */
+
+/**
+ * @typedef {Object} WriteState
+ * @property {import('./writer-lock.js').LockStatus|'requesting'} lock
+ * @property {'idle'|'saved'|'conflict'|'error'} save
+ * @property {string|null} savedAt
+ * @property {string|null} message
  */
 
 /** @returns {SheetState} */
@@ -29,6 +38,7 @@ export function createInitialState() {
     engine: { compendium: 'idle', ruleEngine: false, migrator: false },
     migration: { status: 'pending', applied: [], notes: [] },
     ui: { activeTab: 'character' },
+    write: { lock: 'idle', save: 'idle', savedAt: null, message: null },
     readOnly: true
   };
 }
@@ -81,4 +91,13 @@ export function createStore(initialState) {
       return () => listeners.delete(listener);
     }
   };
+}
+
+/**
+ * Writes are allowed only while this tab holds the lock and the last save did not hit a conflict
+ * or a storage error (both need a reload first).
+ * @param {WriteState} w
+ */
+export function isReadOnly(w) {
+  return w.lock !== 'held' || w.save === 'conflict' || w.save === 'error';
 }

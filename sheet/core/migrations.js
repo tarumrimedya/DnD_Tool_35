@@ -6,7 +6,8 @@
  *  - Each migration runs once; applied ids are recorded in `character.v3Migrations`.
  *  - Migrations never delete data. An entry that cannot stay where it is moves to
  *    `character.quarantine` with a reason and a suggested kind; the user decides.
- *  - Only additive changes to the classic data contract (new fields, string ids).
+ *  - Only additive changes to the classic data contract (new fields). Quarantine and string ids
+ *    are the in-memory shape; storage-codec.js writes them back in the classic shape.
  *  - `runMigrations` never mutates its input.
  */
 import { inferKind, LIST_KINDS } from './entry-kind.js';

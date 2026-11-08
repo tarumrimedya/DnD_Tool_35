@@ -158,9 +158,10 @@ export function defineHomebrew(c, entry, env = {}) {
 /**
  * Apply the user's decision on a quarantined entry.
  * - `{ action: 'move', kind }`: re-adds the entry with that kind through `addEntry`
+ * - `{ action: 'keep' }`: puts the entry back into the list it came from, unchanged
  * - `{ action: 'delete', confirmed: true }`: permanently drops it (the only delete in V3)
  * @param {Character} c @param {number} index
- * @param {{ action: 'move', kind: string } | { action: 'delete', confirmed: boolean }} decision
+ * @param {{ action: 'move', kind: string } | { action: 'keep' } | { action: 'delete', confirmed: boolean }} decision
  * @param {ActionEnv} [env]
  * @returns {ActionResult}
  */
@@ -172,6 +173,14 @@ export function resolveQuarantine(c, index, decision, env = {}) {
   if (decision.action === 'delete') {
     if (decision.confirmed !== true) return fail('Deleting a quarantined entry needs explicit confirmation.');
     return { ok: true, character: { ...c, quarantine: rest } };
+  }
+  if (decision.action === 'keep') {
+    // Back into the list it came from, exactly as it was; the migration that flagged it has run
+    // and will not flag it again.
+    const from = ENTRY_LIST_KEYS.includes(record.from) ? record.from : null;
+    if (!from) return fail(`Cannot keep "${record.entry?.name ?? '?'}": unknown source list "${record.from}".`);
+    const list = Array.isArray(c[from]) ? c[from] : [];
+    return { ok: true, character: { ...c, quarantine: rest, [from]: [...list, record.entry] } };
   }
   if (decision.action === 'move') {
     if (!KINDS.includes(decision.kind)) return fail(`Unknown target kind "${decision.kind}".`);

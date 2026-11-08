@@ -173,9 +173,26 @@ Arayüzde "Needs Review" rozeti olarak görünür: "Taşı" / "Olduğu gibi bır
 ## 7. Kayıt ve senkron
 
 - Aynı localStorage anahtarları (`dnd35_character`, `dnd35_active_character_id`, `dnd35_hub_db`) ve aynı Supabase `full_data`.
-- Yazma kilidi: `BroadcastChannel('dnd35-writer')`. Aynı karakter iki sekmede yazılmaz.
-- Çakışma: Yazmadan önce `lastModified` kontrol edilir. Diskteki kayıt daha yeniyse V3 üzerine yazmaz, birleştirme ister.
+- **Yazma kilidi** (`sheet/core/writer-lock.js`): Web Locks API, karakter başına `dnd35-writer:<id>`. Sayfa salt okunur açılır, "Enable Editing" kilidi yalnızca boşsa alır. Kilit başka bir V3 sekmesindeyse "Take Over" ile devralınır, eski sekme salt okunura düşer. Sekme kapanınca tarayıcı kilidi kendisi bırakır, bayat kilit olmaz. (Plandaki `BroadcastChannel` yerine bu seçildi: kilidin bırakılmasını tarayıcı garanti eder.)
+- **Klasik sayfa bu kilidi bilmez.** Kök dosyalar değişmediği için klasik sekme kilitlenmez. Onun yazdıkları aşağıdaki çakışma kontrolüyle yakalanır.
+- **Çakışma** (`persistence.js` `planSave`): `lastModified` yetmez, çünkü klasik sayfa bulut senkronu olmayan kayıtlarda onu güncellemez. Bu yüzden yazmadan önce `dnd35_character` (bu karaktere aitse) ve Hub `fullData` içeriği, sekmenin en son yüklediği veya yazdığı içerikle karşılaştırılır. Biri değiştiyse hiçbir şey yazılmaz, sayfa "Reload" ister. Başka sekmeden gelen `storage` olayı da aynı kontrolü anında yapar. `dnd35_character` artık başka bir karakteri tutuyorsa çakışma sayılmaz: o anahtara dokunulmaz, yalnızca Hub kaydı yazılır.
+- **Hub özeti:** `name`, `race`, `classes`, `level`, `maxHp` ve `fullData` yazılır. Türetilmiş sayılar (AC, save, attack) klasik sayfa tarafından yenilenir. DM HP alanlarına (`currentHp`, `tempHp`, `lastHpUpdateTs`) dokunulmaz.
+- **Bulut:** V3 Supabase'e yazmaz. Klasik sayfa sonraki açılışta buluttan yeni olan yerel kopyayı korur ve kendisi yükler (char_hud.js yükleyici, `localModTs > cloudTs`).
+- **Önce kaydet, sonra göster:** Bir eylem önce kaydedilir. Kayıt reddedilir veya başarısız olursa sayfadaki karakter de değişmez.
 - ADR-005 (DM HP otoritesi) değişmez.
+
+### 7.1 Saklama biçimi (`sheet/core/storage-codec.js`)
+
+V3'ün bellekteki biçimi klasik sayfanınkinden iki noktada ayrılır. Kayıt her zaman klasik biçimde, yalnızca alan ekleyerek yapılır:
+
+| Bellekte (V3) | Kayıtta (klasik sayfanın gördüğü) |
+| :--- | :--- |
+| Karantinadaki kayıt `quarantine` dizisinde, listesinin dışında | Kayıt geldiği listede (`from`) durur, üzerinde `v3Review: { reason, suggested, note, at, migration }` işareti olur. `quarantine` alanı yazılmaz |
+| Tüm id'ler string | Yüklemede sayı olan id yine sayı olarak yazılır (klasik sayfada `w.inventoryId === item.id` gibi katı karşılaştırmalar var) |
+
+- `decodeStored` ve `encodeForStorage` saf fonksiyonlardır ve birbirinin tersidir. Gerçek fixture'da `encode(decode(x))` girdiyle birebir aynı çıkar.
+- Karantinadaki kayıt geri yazılırken listenin sonuna eklenir; listedeki sırası değişebilir.
+- Karantina kararları: "Move as <kind>" kaydı yeni listesine taşır. "Keep in <list>" kaydı işaretsiz olarak yerinde bırakır, migration bir daha işaretlemez. "Delete" onay ister ve kaydı siler.
 
 ## 8. Kararlar (2026-11-08)
 

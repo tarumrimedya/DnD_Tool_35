@@ -76,3 +76,6 @@ body {
   background: rgba(69, 26, 3, 0.55); border: 1px solid rgba(245, 158, 11, 0.45);
   color: #fcd34d; border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.6875rem; font-weight: 700;
 }
+.v3-readonly-banner[data-tone="ok"] { background: rgba(2, 44, 34, 0.6); border-color: rgba(16, 185, 129, 0.45); color: #6ee7b7; }
+.v3-readonly-banner[data-tone="danger"] { background: rgba(76, 5, 25, 0.6); border-color: rgba(244, 63, 94, 0.5); color: #fda4af; }
+:where(.ui-btn-md, .ui-btn-sm, .ui-btn-xs):disabled { opacity: 0.5; cursor: not-allowed; }

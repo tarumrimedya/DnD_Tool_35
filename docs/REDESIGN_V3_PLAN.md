@@ -78,10 +78,10 @@ tools/test_sheet_v3.mjs      # store/actions/derive/migration testleri (Node, bu
 ## 5. Kayıt güvenliği (iki sayfa aynı anda)
 
 - **Faz A (salt okunur):** V3 sayfası karakteri okur ama hiç yazmaz. Eski sayfayla birlikte açık kalması risksizdir.
-- **Faz B (yazma):**
-  - `BroadcastChannel('dnd35-writer')` ile tek yazıcı kilidi kullanılır. V3 yazma moduna geçerse açık eski sekmeye "read-only" uyarısı gönderilir.
-  - Yazma sırasında `lastModified` kontrol edilir: diskteki kayıt daha yeniyse üzerine yazılmaz, birleştirme istenir.
-  - Kayıt `persistence.js` üzerinden mevcut `dnd35_character` + Supabase yoluna gider, format aynıdır.
+- **Faz B (yazma), 2026-11-08'de uygulandı. Ayrıntılar: V3_DATA_SCHEMA.md bölüm 7.**
+  - Tek yazıcı kilidi olarak Web Locks (`dnd35-writer:<id>`) kullanıldı. Klasik sekme kilidi bilmez, çünkü kök dosyalara dokunmak `main` onayı ister. Onun yazdıkları içerik karşılaştırmasıyla yakalanır ve V3 üzerine yazmaz.
+  - Yazmadan önce `lastModified` yerine saklanan içeriğin kendisi karşılaştırılır. Değiştiyse yazılmaz, "Reload" istenir. Birleştirme arayüzü yok.
+  - Kayıt `dnd35_character` ve Hub `fullData`'ya klasik biçimde gider. Supabase'e klasik sayfa yükler.
 
 ## 6. Arayüz kuralları
 
