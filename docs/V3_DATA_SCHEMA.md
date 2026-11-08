@@ -326,3 +326,17 @@ V3 motor kopyasında tüm bonus listeleri tek bir fonksiyondan geçer: `RuleEngi
 - Düzeltilen hata (çalıştırılarak doğrulandı): Lego adımı yığılmayan türleri yalnızca büyük harfle tanıyordu. Verideki küçük harfli `luck` / `competence` / `enhancement` girdileri bu yüzden yığılıyordu: luck +1 ve +2 Will'e +3, enhancement +2 ve +4 STR'ye +6 veriyordu. Aynı hata kök `rule_engine.js`'te, yani klasik sayfada da duruyor.
 - Gerçek karakterin yetenek, save, AC, HP ve attack değerleri değişmedi. Bu karşılaştırma Node'da SRD kompendiyumu yüklenmeden yapıldı.
 - Kaynak: SRD "Combining Magic Effects" ve forumlarda alıntılanan Rules Compendium s.21 ve s.28. Kitabın kendisi doğrudan görülmedi.
+
+### 11.5 Skills tablosu: klasik tablodan farklar (2026-11-08)
+
+V3 Skills tablosu (`sheet/core/derive-skills.js`) klasik `renderSkills` ile aynı satırları, puan havuzunu ve maksimum rankları verir. İki yerde 3.5e RAW'a göre düzeltildi:
+
+| Konu | Klasik tablo | V3 |
+| :--- | :--- | :--- |
+| Armor Check Penalty | Motor ACP'yi negatif tutuyor (`acBreakdown.acp = -2`), tablo `total - acp` yapıyor. Ceza bonusa dönüşüyor: Heavy Steel Shield ile Acrobatics, Athletics, Stealth, Thievery **+2 fazla**. ACP sütunu "0" gösteriyor | ACP eklenir (negatif). Sütunda `-2` görünür. Gerçek karakterde bu dört satır klasikten 4 düşük |
+| Yarım rank | Cross-class 0.5 rank toplama eklenir | Rank sütunu gerçek değeri gösterir, toplama aşağı yuvarlanmış rank girer (PHB s.62) |
+
+- Klasik hata `main`'de canlı. Aynı desen `char_combat.js` combat skill pinlerinde de var (`acpVal = …acBreakdown?.acp`). Kök dosyalara dokunulmadı.
+- Değerler motorun yeniden hesapladığı kopyadan gelir (`engine-adapter.js` `deriveCharacter`): saklanan karakter değişmez.
+- Klasikteki `ensureAllSkills` karakteri yerinde değiştiriyor (eksik çekirdek beceriler, Türkçe ad temizliği). V3 bunu yapmaz, saklanan `skills` dizisini gösterir. `key` alanı olmayan beceriler varsa tablo uyarı gösterir.
+- Bilinen ve korunan klasik davranışlar: grup `misc` değeri en yüksek pozitif bileşenden gelir (negatif misc yok sayılır); trained-only beceriler eğitimsiz de toplam gösterir.

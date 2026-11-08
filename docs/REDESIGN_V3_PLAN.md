@@ -106,7 +106,7 @@ Adımlar (her adım ayrı commit):
 
 1. **İskelet:** `sheet.html`, store, persistence (salt okunur), engine adaptörü, tokens, delegate, Character sekmesi boş kabuğu.
 2. **Profile kartı:** Eski sayfayla aynı görünüm, aynı veri.
-3. **Ability scores + Skills (salt okunur):** Sayılar `deriveSheet()` → `RuleEngine` üzerinden gelir. Eşitlik testi: aynı karakter için eski sayfadaki skill toplamları = V3 değerleri.
+3. **Ability scores + Skills (salt okunur):** Sayılar `deriveSheet()` → `RuleEngine` üzerinden gelir. Eşitlik testi: aynı karakter için eski sayfadaki skill toplamları = V3 değerleri. **Skills tamamlandı (2026-11-08)**: klasik tabloyla eşit, iki RAW düzeltmesi dışında (V3_DATA_SCHEMA.md 11.5). Ability scores klasik sayfada sekmenin değil üst hero bar'ın parçası; o bar ayrı bir adımda taşınacak.
 4. **Feats & Special Abilities:** `kind` tabanlı liste. Karantinadaki kayıtlar görünür olur.
 5. **Level Progression (salt okunur tablo).**
 6. **Faz B:** Yazma kilidi, ardından düzenleme akışları (Profile edit, skill rank, feat ekleme, Level Up). Level Up wizard en sona kalır.

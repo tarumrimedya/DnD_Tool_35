@@ -47,6 +47,10 @@ body {
 .ui-btn-icon { width: 1.75rem; height: 1.75rem; padding: 0; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 700; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; transition: all 0.15s ease; cursor: pointer; }
 .ui-btn-icon-sm { width: 1.5rem; height: 1.5rem; padding: 0; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 700; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; transition: all 0.15s ease; cursor: pointer; }
 
+/* Input heights (identical to classic sheet) */
+.ui-input-md { height: 2rem; border-radius: 0.5rem; font-size: 0.75rem; line-height: 1; }
+.ui-input-sm { height: 1.75rem; border-radius: 0.375rem; font-size: 0.75rem; line-height: 1; }
+
 /* V3 tab bar: one rule set instead of a ~300-char class string per button */
 .v3-tab {
   height: 2.25rem; flex: 1 0 auto; min-width: 105px; padding: 0 0.75rem;

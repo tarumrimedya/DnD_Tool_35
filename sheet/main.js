@@ -8,7 +8,7 @@ import { createKindContext } from './core/entry-kind.js';
 import { runMigrations } from './core/migrations.js';
 import { resolveQuarantine } from './core/actions.js';
 import { html, mount } from './ui/html.js';
-import { delegateActions } from './ui/delegate.js';
+import { delegateActions, delegateInputs } from './ui/delegate.js';
 import { Header, TabBar, TABS, classicSheetHref } from './views/shell.js';
 import { CharacterTab } from './views/character/index.js';
 
@@ -19,6 +19,11 @@ const store = createStore(createInitialState());
  * @type {{ id: string, baseline: import('./core/persistence.js').StoredFingerprint, memo: import('./core/storage-codec.js').CodecMemo, lock: ReturnType<typeof createWriterLock>, kindCtx: any } | null}
  */
 let session = null;
+
+/** @param {Partial<import('./core/derive-skills.js').SkillView>} patch */
+function setSkillView(patch) {
+  store.setState(s => ({ ...s, ui: { ...s.ui, skills: { ...s.ui.skills, ...patch } } }));
+}
 
 /** @param {Partial<import('./core/store.js').WriteState>} patch */
 function setWrite(patch) {
@@ -125,6 +130,8 @@ function boot() {
       const next = data.tab || 'character';
       store.setState(s => (s.ui.activeTab === next ? s : { ...s, ui: { ...s.ui, activeTab: next } }));
     },
+    'skill-filter': data => setSkillView({ filter: /** @type {any} */ (data.filter || 'class') }),
+    'skill-search-clear': () => setSkillView({ search: '' }),
     'enable-editing': () => requestEditing(false),
     'take-over-editing': () => requestEditing(true),
     'stop-editing': () => {
@@ -140,6 +147,11 @@ function boot() {
       if (!window.confirm(`Permanently delete "${name}"? This cannot be undone.`)) return;
       commit(c => resolveQuarantine(c, reviewIndex(data), { action: 'delete', confirmed: true }));
     }
+  });
+
+  delegateInputs(root, {
+    'skill-search': value => setSkillView({ search: value }),
+    'skill-stat': value => setSkillView({ stat: value || 'all' })
   });
 
   // Phase A renders the whole app on any change; per-section subscriptions arrive with real sections.

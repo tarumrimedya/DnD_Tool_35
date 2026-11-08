@@ -97,3 +97,46 @@ export function getActiveTemplates(character) {
     return [];
   }
 }
+
+/** @type {WeakMap<object, { key: string, value: Record<string, any> }>} */
+const derivedCache = new WeakMap();
+
+/**
+ * The character as the engine sees it after a full recalculation (effective abilities, AC
+ * breakdown with Armor Check Penalty, ...), computed on a private clone so the stored character
+ * is never touched. Cached per character object (state replaces it on every change) and per
+ * engine readiness (`cacheKey`, e.g. compendium status), because item lookups depend on it.
+ * Returns the plain clone when the engine is missing or the recalculation throws.
+ * @param {Record<string, any>} character @param {string} [cacheKey]
+ * @returns {Record<string, any>}
+ */
+export function deriveCharacter(character, cacheKey = '') {
+  const hit = derivedCache.get(character);
+  if (hit && hit.key === cacheKey) return hit.value;
+  const w = g();
+  const clone = structuredClone(character);
+  if (w.RuleEngine && typeof w.RuleEngine.recalculateCharacter === 'function') {
+    try {
+      w.RuleEngine.recalculateCharacter(clone, Array.isArray(clone.customDb) ? clone.customDb : []);
+    } catch (e) {
+      console.warn('[Sheet V3] recalculateCharacter failed; showing stored values.', e);
+    }
+  }
+  derivedCache.set(character, { key: cacheKey, value: clone });
+  return clone;
+}
+
+/**
+ * Engine functions the skills table needs (derive-skills.js `SkillEngine`), bound to a derived
+ * character. Falls back to plain 3.5e math when the engine is missing.
+ * @param {Record<string, any>} derived
+ */
+export function skillEngine(derived) {
+  const re = g().RuleEngine;
+  return {
+    abilityMod: (/** @type {number} */ score) => (re && typeof re.getAbilityMod === 'function' ? re.getAbilityMod(score) : Math.floor((Number(score) - 10) / 2)),
+    skillBonus: (/** @type {string} */ key, /** @type {string} */ name, /** @type {string} */ stat) =>
+      (re && typeof re.evaluateSkillBonus === 'function' ? re.evaluateSkillBonus(derived, key, name, stat) : { total: 0, breakdown: [] }),
+    classDef: (/** @type {string} */ name) => (re && typeof re.getClassDef === 'function' ? re.getClassDef(name) : null)
+  };
+}

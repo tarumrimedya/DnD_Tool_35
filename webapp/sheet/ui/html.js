@@ -54,10 +54,19 @@ export function html(strings, ...values) {
 }
 
 /**
- * Replace a container's content with a template result.
+ * Replace a container's content with a template result. A focused field with an `id` keeps
+ * focus and caret across the re-render, so typing in a search box is not interrupted.
  * @param {Element} container
  * @param {SafeHtml} template
  */
 export function mount(container, template) {
+  const active = typeof document !== 'undefined' ? document.activeElement : null;
+  const focusId = active && active.id && container.contains(active) ? active.id : null;
+  const caret = active instanceof HTMLInputElement ? [active.selectionStart, active.selectionEnd] : null;
   container.innerHTML = template.value;
+  if (!focusId) return;
+  const next = document.getElementById(focusId);
+  if (!next) return;
+  next.focus();
+  if (caret && next instanceof HTMLInputElement && caret[0] !== null) next.setSelectionRange(caret[0], caret[1]);
 }

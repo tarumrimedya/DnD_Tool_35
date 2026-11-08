@@ -35,3 +35,32 @@ export function delegateActions(root, handlers) {
   root.addEventListener('click', onClick);
   return () => root.removeEventListener('click', onClick);
 }
+
+/**
+ * Text and select inputs: `<input data-input="skill-search">`. Handlers receive the value, the
+ * element's dataset and the element. `input` fires while typing, `change` for selects.
+ * @param {Element} root
+ * @param {Record<string, (value: string, data: DOMStringMap, el: HTMLElement) => void>} handlers
+ * @returns {() => void} detach
+ */
+export function delegateInputs(root, handlers) {
+  /** @param {Event} event */
+  const onInput = event => {
+    const el = event.target;
+    if (!(el instanceof HTMLInputElement || el instanceof HTMLSelectElement || el instanceof HTMLTextAreaElement)) return;
+    if (!root.contains(el) || !el.dataset.input) return;
+    if (event.type === 'change' && el instanceof HTMLInputElement && el.type === 'text') return; // already handled on input
+    const handler = handlers[el.dataset.input];
+    if (!handler) {
+      console.warn(`[Sheet V3] No handler for data-input="${el.dataset.input}"`);
+      return;
+    }
+    handler(el.value, el.dataset, el);
+  };
+  root.addEventListener('input', onInput);
+  root.addEventListener('change', onInput);
+  return () => {
+    root.removeEventListener('input', onInput);
+    root.removeEventListener('change', onInput);
+  };
+}

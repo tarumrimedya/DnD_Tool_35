@@ -1,15 +1,17 @@
 // @ts-check
 import { html } from '../../ui/html.js';
-import { getActiveTemplates } from '../../core/engine-adapter.js';
+import { getActiveTemplates, deriveCharacter, skillEngine, getConsolidatedSkillGroups } from '../../core/engine-adapter.js';
+import { deriveSkills } from '../../core/derive-skills.js';
 import { ProfileCard } from './profile.js';
+import { SkillsTable } from './skills.js';
 
 /**
- * Character & Logs tab (plan section 7). Sections not migrated yet render as placeholders and
- * are filled in by their own step (2 to 5).
+ * Character & Logs tab (plan section 7). Sections follow the classic order (Profile, Feats &
+ * Special Abilities, Level Progression, Skills); those not migrated yet render as placeholders
+ * and are filled in by their own step.
  */
 
 const SECTIONS = Object.freeze([
-  { id: 'abilities-skills', title: 'Ability Scores & Skills', step: 3 },
   { id: 'feats-abilities', title: 'Feats & Special Abilities', step: 4 },
   { id: 'progression', title: 'Level Progression & Planning', step: 5 }
 ]);
@@ -91,6 +93,17 @@ function NeedsReview(c, readOnly) {
     </section>`;
 }
 
+/**
+ * Skills read from the engine's recalculated copy (effective abilities, Armor Check Penalty).
+ * @param {Record<string, any>} c
+ * @param {import('../../core/store.js').SheetState} state
+ */
+function Skills(c, state) {
+  const derived = deriveCharacter(c, state.engine.compendium);
+  const d = deriveSkills(derived, { groups: getConsolidatedSkillGroups(derived), engine: skillEngine(derived) });
+  return SkillsTable(d, state.ui.skills);
+}
+
 /** @param {import('../../core/store.js').SheetState} state */
 export function CharacterTab(state) {
   const c = state.character;
@@ -106,6 +119,7 @@ export function CharacterTab(state) {
             <span class="badge bg-slate-800 text-slate-400 border border-slate-700">Step ${s.step}</span>
           </div>
         </section>`)}
+      ${Skills(c, state)}
       ${LoadDiagnostics(c, state)}
     </div>`;
 }
