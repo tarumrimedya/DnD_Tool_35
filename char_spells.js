@@ -10,6 +10,31 @@
     window._spellCurrentFilterLevel = window._spellCurrentFilterLevel || 'all';
     window._currentSpellPickerType = window._currentSpellPickerType || 'Spell';
 
+    function syncSpellsStore() {
+      const store = typeof window !== 'undefined' ? window.CharStore : null;
+      if (store && typeof store.getDoc === 'function') {
+        if (typeof character !== 'undefined' && character && store.getDoc() !== character && typeof store._syncExternalCharacterRef === 'function') {
+          store._syncExternalCharacterRef(character);
+        }
+        return store;
+      }
+      return null;
+    }
+
+    function getSpellsView() {
+      const store = syncSpellsStore();
+      if (store && typeof store.getSheet === 'function') {
+        const sheet = store.getSheet();
+        if (sheet && sheet.spells && sheet.spells.casterStatsView) {
+          return sheet.spells;
+        }
+      }
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveSpellsView === 'function' && typeof character !== 'undefined' && character) {
+        return RuleEngine.deriveSpellsView(character, (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb : []);
+      }
+      return null;
+    }
+
     function countCharacterMartialFeats(char = character) {
       let martialStudyCount = 0;
       let martialStanceCount = 0;
@@ -526,11 +551,10 @@
 
     function getCharacterClericDomains(char = character) {
       if (!char) return [];
-      if (!char.spellcasting) char.spellcasting = {};
-      if (Array.isArray(char.spellcasting.domains) && char.spellcasting.domains.some(Boolean)) {
+      if (Array.isArray(char.spellcasting?.domains) && char.spellcasting.domains.some(Boolean)) {
         return char.spellcasting.domains.filter(Boolean);
       }
-      // Harvest from levelProgression specialAbilities or feats if present
+      // Harvest from levelProgression specialAbilities or feats if present (pure read, no mutation)
       const harvested = [];
       (char.levelProgression || []).forEach(p => {
         if (!p || p.active === false) return;
@@ -545,8 +569,7 @@
         });
       });
       if (harvested.length > 0) {
-        char.spellcasting.domains = harvested.slice(0, 2);
-        return char.spellcasting.domains;
+        return harvested.slice(0, 2);
       }
       return [];
     }
@@ -786,23 +809,18 @@
       const container = document.getElementById('discipline-prepared-content');
       if (!container) return;
 
-      if (!character.spellcasting) character.spellcasting = {};
-      if (!Array.isArray(character.spellcasting.preparedSpells)) {
-        character.spellcasting.preparedSpells = [];
-      }
-      if (!Array.isArray(character.spellcasting.preparedSlots)) {
-        character.spellcasting.preparedSlots = [];
-      }
-
+      const spellsView = getSpellsView();
       const { statKey, statVal, statMod, cl, clMode, hasClass, wizLvls } = getPreparedCasterInfo();
-      if ((wizLvls > 0 || hasClass) && Number(cl) > 0) {
-        character.spellcasting.preparedSlots = calculateWizardSlots(cl, statVal, character.spellcasting.preparedSlots);
-      } else {
-        character.spellcasting.preparedSlots = (character.spellcasting.preparedSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0);
+      let slots = spellsView?.slotsByLevelView?.preparedArray;
+      if (!Array.isArray(slots)) {
+        const rawSlots = Array.isArray(character.spellcasting?.preparedSlots) ? character.spellcasting.preparedSlots : [];
+        if ((wizLvls > 0 || hasClass) && Number(cl) > 0) {
+          slots = calculateWizardSlots(cl, statVal, rawSlots);
+        } else {
+          slots = rawSlots.filter(s => (Number(s.dmBonus) || 0) > 0);
+        }
       }
-
-      const slots = character.spellcasting.preparedSlots;
-      const spells = character.spellcasting.preparedSpells;
+      const spells = Array.isArray(character.spellcasting?.preparedSpells) ? character.spellcasting.preparedSpells : [];
       const ignoreAsf = character?.settings?.ignoreAsf !== false;
       const searchVal = (document.getElementById('prep-spell-filter-search')?.value || '').toLowerCase().trim();
       const schoolVal = document.getElementById('prep-spell-filter-school')?.value || 'all';
@@ -861,7 +879,7 @@
         const isActive = String(lvlFilter) === String(lvl);
         const label = lvl === 'all' ? 'All' : (lvl === 0 ? 'Level 0' : `Level ${lvl}`);
         return `
-          <button type="button" onclick="setPreparedFilterLevel('${lvl}')" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
+          <button type="button" data-action="spells:prepared-filter-level" data-level="${lvl}" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
             isActive ? 'bg-sky-700 text-white border-sky-400 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
           }">${label}</button>
         `;
@@ -966,7 +984,7 @@
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
                 ${dmgExpr ? `
-                  <button onclick="castPreparedSpellDirectly(${originalIdx})" class="${
+                  <button data-action="spells:cast-prepared" data-idx="${originalIdx}" class="${
                     hasActiveSlot 
                       ? 'bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border-amber-600/80 cursor-pointer shadow' 
                       : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
@@ -977,7 +995,7 @@
                     <span>${dmgExpr}</span>
                   </button>
                 ` : `
-                  <button onclick="castPreparedSpellDirectly(${originalIdx})" class="${
+                  <button data-action="spells:cast-prepared" data-idx="${originalIdx}" class="${
                     hasActiveSlot 
                       ? 'bg-sky-900/70 hover:bg-sky-600 text-white border-sky-500 cursor-pointer shadow' 
                       : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
@@ -988,7 +1006,7 @@
                     <span>Cast</span>
                   </button>
                 `}
-                <button onclick="deletePreparedSpell(${originalIdx})" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Unprepare / Remove Spell (Leaves Empty Slot)">
+                <button data-action="spells:delete-prepared" data-idx="${originalIdx}" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Unprepare / Remove Spell (Leaves Empty Slot)">
                   🗑️
                 </button>
               </div>
@@ -1006,12 +1024,12 @@
         return `
           <tr class="transition cursor-pointer group border-l-4 ${theme.borderLeft} ${
             hasActiveSlot ? 'hover:bg-sky-950/25 bg-slate-950/20' : 'opacity-40 grayscale-[35%] bg-slate-950/60'
-          }" onclick="if(!event.target.closest('button')) openPreparedSpellPickerForLevel(${lvl})">
+          }" data-action="spells:open-prepared-picker" data-level="${lvl}">
             <td class="py-2.5 px-3 text-center align-middle">
               <span class="badge ${theme.badge} opacity-60 text-[10px] font-bold font-mono px-2 py-0.5">${lvl}</span>
             </td>
             <td class="py-2.5 px-3">
-              <button type="button" onclick="openPreparedSpellPickerForLevel(${lvl})" class="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300/80 group-hover:text-sky-100 cursor-pointer">
+              <button type="button" data-action="spells:open-prepared-picker" data-level="${lvl}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-300/80 group-hover:text-sky-100 cursor-pointer">
                 <span class="w-4 h-4 rounded border border-dashed border-sky-500/70 bg-sky-950/60 flex items-center justify-center text-[10px] text-sky-300 group-hover:bg-sky-800 transition">+</span>
                 <span class="italic">+ Prepare Spell (Empty Slot)</span>
               </button
@@ -1025,7 +1043,7 @@
             <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This prepared slot is empty. Click to prepare a ${lvl === 0 ? 'Level 0 (Cantrip)' : `Level ${lvl}`} spell.</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
-                <button type="button" onclick="openPreparedSpellPickerForLevel(${lvl})" class="h-7 min-w-[115px] bg-sky-950/80 hover:bg-sky-900 text-sky-300 hover:text-white border border-dashed border-sky-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Prepare Level ${lvl} Spell">
+                <button type="button" data-action="spells:open-prepared-picker" data-level="${lvl}" class="h-7 min-w-[115px] bg-sky-950/80 hover:bg-sky-900 text-sky-300 hover:text-white border border-dashed border-sky-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Prepare Level ${lvl} Spell">
                   <span>✨</span>
                   <span>+ Select Spell</span>
                 </button>
@@ -1056,7 +1074,7 @@
             </div>
             <div class="flex items-center gap-2">
               <span class="h-8 px-2.5 rounded-lg ${ignoreAsf ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-slate-800 text-slate-400 border border-slate-700'} text-xs font-bold inline-flex items-center">${ignoreAsf ? '🛡️ ASF: 0% (DM Boon)' : '🛡️ ASF: Standard'}</span>
-              <button onclick="restoreAllPreparedSlots()" class="w-40 h-8 bg-sky-800 hover:bg-sky-700 text-white text-xs font-bold px-3 rounded-lg border border-sky-500/50 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
+              <button data-action="spells:restore-all-prepared" class="w-40 h-8 bg-sky-800 hover:bg-sky-700 text-white text-xs font-bold px-3 rounded-lg border border-sky-500/50 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>✨</span>
                 <span>Restore All Slots</span>
               </button>
@@ -1072,7 +1090,7 @@
               </span>
               <div class="flex items-center gap-2">
                 <span class="text-slate-400 text-[10px] hidden sm:inline">Casting expends a prepared slot • DM bonus slots supported</span>
-                <button type="button" onclick="openSpellSlotsModal(undefined, 'prepared')" class="ui-btn-xs h-6 px-2.5 text-[10px] text-amber-400 hover:text-amber-200 font-bold inline-flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 rounded-md border border-amber-900/50 transition" title="Slot Management &amp; DM Bonuses">
+                <button type="button" data-action="spells:open-slots-modal" data-discipline="prepared" class="ui-btn-xs h-6 px-2.5 text-[10px] text-amber-400 hover:text-amber-200 font-bold inline-flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 rounded-md border border-amber-900/50 transition" title="Slot Management &amp; DM Bonuses">
                   <span>⚙️</span>
                   <span>Slot &amp; DM Bonus Manager</span>
                 </button>
@@ -1088,10 +1106,10 @@
             <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
               <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
                 <div class="relative flex-1 min-w-[180px]">
-                  <input type="text" id="prep-spell-filter-search" value="${searchVal}" oninput="renderPreparedDisciplineView(${Boolean(hasPrepared)})" placeholder="Search prepared spell name, school, or effect..." class="ui-input-md h-8 w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 pl-8 focus:outline-none focus:border-sky-500">
+                  <input type="text" id="prep-spell-filter-search" value="${searchVal}" data-input-action="spells:prepared-filter-refresh" data-has-prepared="${Boolean(hasPrepared)}" placeholder="Search prepared spell name, school, or effect..." class="ui-input-md h-8 w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 pl-8 focus:outline-none focus:border-sky-500">
                   <span class="absolute inset-y-0 left-2.5 flex items-center pointer-events-none text-slate-400 text-xs">🔍</span>
                 </div>
-                <select id="prep-spell-filter-school" onchange="renderPreparedDisciplineView(${Boolean(hasPrepared)})" class="ui-input-md h-8 bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 focus:outline-none focus:border-sky-500 cursor-pointer">
+                <select id="prep-spell-filter-school" data-change-action="spells:prepared-filter-refresh" data-has-prepared="${Boolean(hasPrepared)}" class="ui-input-md h-8 bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 focus:outline-none focus:border-sky-500 cursor-pointer">
                   <option value="all" ${schoolVal === 'all' ? 'selected' : ''}>All Schools</option>
                   <option value="Abjuration" ${schoolVal === 'Abjuration' ? 'selected' : ''}>Abjuration</option>
                   <option value="Conjuration" ${schoolVal === 'Conjuration' ? 'selected' : ''}>Conjuration</option>
@@ -1156,8 +1174,16 @@
     function deletePreparedSpell(idx) {
       if (!character?.spellcasting?.preparedSpells?.[idx]) return;
       const s = character.spellcasting.preparedSpells[idx];
-      character.spellcasting.preparedSpells.splice(idx, 1);
-      saveStateToStorage(true);
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/removeSpell',
+          payload: { discipline: 'prepared', index: idx },
+          meta: { label: `Unprepare Spell (${s.name})` }
+        });
+      } else {
+        character.spellcasting.preparedSpells.splice(idx, 1);
+        saveStateToStorage(true);
+      }
       renderAll();
       showDiceTopToast({
         icon: '🗑️',
@@ -1351,7 +1377,7 @@
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
         RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
       }
-      saveStateToStorage(true);
+      syncSpellsStore();
       renderAll();
 
       if (!options.silentToast) {
@@ -1573,11 +1599,19 @@
     }
 
     function toggleClericSpontaneousMode() {
-      if (!character.spellcasting) character.spellcasting = {};
       const policy = resolveClericEnergyPolicy(character);
       if (policy.locked && policy.forcedMode) {
-        character.spellcasting.clericSpontaneousMode = policy.forcedMode;
-        saveStateToStorage(true);
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/toggleClericSpontaneousMode',
+            payload: { mode: policy.forcedMode },
+            meta: { label: 'Cleric Energy Channel Locked' }
+          });
+        } else {
+          if (!character.spellcasting) character.spellcasting = {};
+          character.spellcasting.clericSpontaneousMode = policy.forcedMode;
+          saveStateToStorage(true);
+        }
         const classesStatus = checkCharacterMagicClasses();
         renderDivineDisciplineView(classesStatus.hasDivine);
         showDiceTopToast({
@@ -1588,10 +1622,19 @@
         });
         return;
       }
-      const cur = character.spellcasting.clericSpontaneousMode || 'cure';
+      const cur = character?.spellcasting?.clericSpontaneousMode || 'cure';
       const next = cur === 'cure' ? 'inflict' : 'cure';
-      character.spellcasting.clericSpontaneousMode = next;
-      saveStateToStorage(true);
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/toggleClericSpontaneousMode',
+          payload: { mode: next },
+          meta: { label: `Set Cleric Spontaneous Mode (${next})` }
+        });
+      } else {
+        if (!character.spellcasting) character.spellcasting = {};
+        character.spellcasting.clericSpontaneousMode = next;
+        saveStateToStorage(true);
+      }
       const classesStatus = checkCharacterMagicClasses();
       renderDivineDisciplineView(classesStatus.hasDivine);
       showDiceTopToast({
@@ -1632,13 +1675,38 @@
       const spont = getClericSpontaneousSpellInfo(lvl, cl, mode);
       if (!spont) return;
 
-      const slot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
+      const spellsView = getSpellsView();
+      const slot = spellsView?.slotsByLevelView?.divine?.[lvl] || character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
       const regDaily = slot ? (slot.regularDaily ?? Math.max(0, (slot.daily || 0) - (slot.domainDaily || 0))) : 0;
       const regUsed = slot ? Math.max(0, (slot.used || 0) - (slot.domainUsed || 0)) : 0;
       if (slot && regUsed < regDaily && slot.used < slot.daily) {
-        slot.used++;
+        const resolvedIdx = typeof spellIdxOrName === 'number' ? spellIdxOrName : divList.indexOf(s);
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/castSpell',
+            payload: {
+              discipline: 'clericConversion',
+              index: resolvedIdx,
+              spellIndex: resolvedIdx,
+              spellId: s.id,
+              spellName: s.name,
+              spellLevel: lvl,
+              level: lvl,
+              isDomain: Boolean(s.isDomainSpell),
+              isDomainSpell: Boolean(s.isDomainSpell),
+              isSpontaneousConversion: true,
+              convName: spont.name
+            },
+            meta: { label: `Spontaneous Conversion (${s.name} ➔ ${spont.name})` }
+          });
+          const out = CharStore.getLastOutcome();
+          if (!out || out.status !== 'spell_cast') return;
+        } else {
+          const mutSlot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
+          if (mutSlot) mutSlot.used++;
+          saveStateToStorage(true);
+        }
         if (typeof consumeActionEconomy === 'function') consumeActionEconomy('standard', spont.name);
-        saveStateToStorage(true);
         renderAll();
         rollSpellOrManeuverFormula(
           spont.formula,
@@ -1665,7 +1733,8 @@
       const { cl: baseCl } = getPreparedCasterInfo();
       const cl = getSpellEffectiveCl(s, baseCl);
       const dmgExpr = resolveSpellEffectiveFormula(s, cl);
-      const slot = character.spellcasting?.preparedSlots?.find(sl => Number(sl.level) === lvl);
+      const spellsView = getSpellsView();
+      const slot = spellsView?.slotsByLevelView?.prepared?.[lvl] || character.spellcasting?.preparedSlots?.find(sl => Number(sl.level) === lvl);
       if (!slot || slot.used >= slot.daily) {
         showDiceTopToast({
           icon: '\u26A0\uFE0F',
@@ -1676,16 +1745,41 @@
         return;
       }
 
-      const preCast = getSpellPreCastOptions(s, cl, slot, lvl);
+      const mutSlot = character.spellcasting?.preparedSlots?.find(sl => Number(sl.level) === lvl) || slot;
+      const preCast = getSpellPreCastOptions(s, cl, mutSlot, lvl, {
+        discipline: 'prepared',
+        spellIdx,
+        level: lvl,
+        isDomain: false
+      });
       if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
         showSpellPreCastChoiceToast(preCast);
         return;
       }
 
       if (slot && slot.used < slot.daily) {
-        slot.used++;
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/castSpell',
+            payload: {
+              discipline: 'prepared',
+              index: spellIdx,
+              spellIndex: spellIdx,
+              spellId: s.id,
+              spellName: name,
+              spellLevel: lvl,
+              level: lvl,
+              markPreparedCast: true
+            },
+            meta: { label: `Cast Prepared Spell (${name})` }
+          });
+          const out = CharStore.getLastOutcome();
+          if (!out || out.status !== 'spell_cast') return;
+        } else {
+          if (mutSlot) mutSlot.used++;
+          saveStateToStorage(true);
+        }
         if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
-        saveStateToStorage(true);
         renderAll();
         if (handleBuffSpellCast(s, cl, `Level ${lvl} Prepared Slot Expended`, '📖')) {
           return;
@@ -1711,8 +1805,16 @@
     }
 
     function restoreAllPreparedSlots() {
-      (character?.spellcasting?.preparedSlots || []).forEach(s => s.used = 0);
-      saveStateToStorage();
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/restoreAllSlots',
+          payload: { discipline: 'prepared' },
+          meta: { label: 'Restore Prepared Slots' }
+        });
+      } else {
+        (character?.spellcasting?.preparedSlots || []).forEach(s => s.used = 0);
+        saveStateToStorage();
+      }
       renderAll();
       showDiceTopToast({
         icon: '✨',
@@ -1727,28 +1829,20 @@
       const container = document.getElementById('discipline-divine-content');
       if (!container) return;
 
-      if (!character.spellcasting) character.spellcasting = {};
-      if (!Array.isArray(character.spellcasting.divineSpells)) {
-        character.spellcasting.divineSpells = [];
-      }
-      if (!Array.isArray(character.spellcasting.divineSlots)) {
-        character.spellcasting.divineSlots = [];
-      }
-
+      const spellsView = getSpellsView();
       const { statKey, statVal, statMod, cl, clMode, hasClass, divLvls } = getDivineCasterInfo();
       const energyPolicy = resolveClericEnergyPolicy(character);
-      if (energyPolicy.forcedMode && character.spellcasting.clericSpontaneousMode !== energyPolicy.forcedMode) {
-        character.spellcasting.clericSpontaneousMode = energyPolicy.forcedMode;
+      const spontMode = energyPolicy.forcedMode || spellsView?.casterStatsView?.divine?.clericSpontaneousMode || character.spellcasting?.clericSpontaneousMode || 'cure';
+      let slots = spellsView?.slotsByLevelView?.divineArray;
+      if (!Array.isArray(slots)) {
+        const rawSlots = Array.isArray(character.spellcasting?.divineSlots) ? character.spellcasting.divineSlots : [];
+        if ((divLvls > 0 || hasClass) && Number(cl) > 0) {
+          slots = calculateDivineSlots(cl, statVal, rawSlots);
+        } else {
+          slots = rawSlots.filter(s => (Number(s.dmBonus) || 0) > 0);
+        }
       }
-      const spontMode = character.spellcasting.clericSpontaneousMode || 'cure';
-      if ((divLvls > 0 || hasClass) && Number(cl) > 0) {
-        character.spellcasting.divineSlots = calculateDivineSlots(cl, statVal, character.spellcasting.divineSlots);
-      } else {
-        character.spellcasting.divineSlots = (character.spellcasting.divineSlots || []).filter(s => (Number(s.dmBonus) || 0) > 0);
-      }
-
-      const slots = character.spellcasting.divineSlots;
-      const spells = character.spellcasting.divineSpells;
+      const spells = Array.isArray(character.spellcasting?.divineSpells) ? character.spellcasting.divineSpells : [];
       const hasDomainCap = hasClericDomainCapability(character);
       const chosenDomains = getCharacterClericDomains(character);
       const searchVal = (document.getElementById('divine-spell-filter-search')?.value || '').toLowerCase().trim();
@@ -1813,7 +1907,7 @@
         const isActive = String(lvlFilter) === String(lvl);
         const label = lvl === 'all' ? 'All' : (lvl === 0 ? 'Level 0' : `Level ${lvl}`);
         return `
-          <button type="button" onclick="setDivineFilterLevel('${lvl}')" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
+          <button type="button" data-action="spells:divine-filter-level" data-level="${lvl}" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
             isActive ? 'bg-amber-700 text-white border-amber-400 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
           }">${label}</button>
         `;
@@ -1924,7 +2018,7 @@
         // D&D 3.5e RAW (PHB p.32): Domain spells cannot be spontaneously converted to Cure/Inflict Wounds
         const showSpontBtn = Boolean(spontInfo && !isAlreadyTarget && !isDom);
         const spontBtnHtml = showSpontBtn ? `
-          <button onclick="castClericSpontaneousConversion(${originalIdx})" class="${
+          <button data-action="spells:cast-cleric-spontaneous" data-idx="${originalIdx}" class="${
             hasActiveSlot
               ? (spontMode === 'cure'
                 ? 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80 cursor-pointer shadow'
@@ -1975,7 +2069,7 @@
               <div class="flex items-center justify-end gap-1.5 w-full">
                 ${spontBtnHtml}
                 ${dmgExpr ? `
-                  <button onclick="castDivineSpellDirectly(${originalIdx})" class="${
+                  <button data-action="spells:cast-divine" data-idx="${originalIdx}" class="${
                     hasActiveSlot 
                       ? 'bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border-amber-600/80 cursor-pointer shadow' 
                       : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
@@ -1986,7 +2080,7 @@
                     <span>${dmgExpr}</span>
                   </button>
                 ` : `
-                  <button onclick="castDivineSpellDirectly(${originalIdx})" class="${
+                  <button data-action="spells:cast-divine" data-idx="${originalIdx}" class="${
                     hasActiveSlot 
                       ? 'bg-amber-900/70 hover:bg-amber-600 text-white border-amber-500 cursor-pointer shadow' 
                       : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
@@ -1997,7 +2091,7 @@
                     <span>Cast</span>
                   </button>
                 `}
-                <button onclick="deleteDivineSpell(${originalIdx})" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Unprepare / Remove Spell (Leaves Empty Slot)">
+                <button data-action="spells:delete-divine" data-idx="${originalIdx}" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Unprepare / Remove Spell (Leaves Empty Slot)">
                   🗑️
                 </button>
               </div>
@@ -2019,12 +2113,12 @@
         return `
           <tr class="transition cursor-pointer group border-l-4 ${theme.borderLeft} ${
             hasActiveSlot ? 'hover:bg-amber-950/25 bg-slate-950/20' : 'opacity-40 grayscale-[35%] bg-slate-950/60'
-          }" onclick="if(!event.target.closest('button')) openDivineSpellPickerForLevel(${lvl}, false)">
+          }" data-action="spells:open-divine-picker" data-level="${lvl}" data-domain="false">
             <td class="py-2.5 px-3 text-center align-middle">
               <span class="badge ${theme.badge} opacity-60 text-[10px] font-bold font-mono px-2 py-0.5">${lvl}</span>
             </td>
             <td class="py-2.5 px-3">
-              <button type="button" onclick="openDivineSpellPickerForLevel(${lvl}, false)" class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300/80 group-hover:text-amber-100 cursor-pointer">
+              <button type="button" data-action="spells:open-divine-picker" data-level="${lvl}" data-domain="false" class="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-300/80 group-hover:text-amber-100 cursor-pointer">
                 <span class="w-4 h-4 rounded border border-dashed border-amber-500/70 bg-amber-950/60 flex items-center justify-center text-[10px] text-amber-300 group-hover:bg-amber-800 transition">+</span>
                 <span class="italic">+ Prepare Divine Spell (Empty Slot)</span>
               </button>
@@ -2038,7 +2132,7 @@
             <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">Regular Cleric/Divine spell slot. Click to prepare a ${lvl === 0 ? 'Level 0 (Orison)' : `Level ${lvl}`} class spell.</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
-                <button type="button" onclick="openDivineSpellPickerForLevel(${lvl}, false)" class="h-7 min-w-[115px] bg-amber-950/80 hover:bg-amber-900 text-amber-300 hover:text-white border border-dashed border-amber-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Prepare Level ${lvl} Divine Spell">
+                <button type="button" data-action="spells:open-divine-picker" data-level="${lvl}" data-domain="false" class="h-7 min-w-[115px] bg-amber-950/80 hover:bg-amber-900 text-amber-300 hover:text-white border border-dashed border-amber-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Prepare Level ${lvl} Divine Spell">
                   <span>✨</span>
                   <span>+ Select Spell</span>
                 </button>
@@ -2056,19 +2150,16 @@
         const hasActiveSlot = Math.max(0, domDaily - domUsed) > 0;
         const hasChosenDomains = chosenDomains.length > 0;
         const domLabel = hasChosenDomains ? chosenDomains.join(' / ') : 'Select Domains in Progression';
-        const rowClickAction = hasChosenDomains
-          ? `openDivineSpellPickerForLevel(${lvl}, true)`
-          : `if(typeof openClericDomainPickerModal==='function') openClericDomainPickerModal(0, 0); else openDivineSpellPickerForLevel(${lvl}, true)`;
 
         return `
           <tr class="transition cursor-pointer group border-l-4 border-l-yellow-400 ${
             hasActiveSlot ? 'hover:bg-yellow-950/30 bg-yellow-950/10' : 'opacity-40 grayscale-[35%] bg-slate-950/60'
-          }" onclick="if(!event.target.closest('button')) { ${rowClickAction}; }">
+          }" data-action="spells:open-divine-domain-row" data-level="${lvl}" data-has-domains="${hasChosenDomains}">
             <td class="py-2.5 px-3 text-center align-middle">
               <span class="badge bg-yellow-950/90 text-yellow-300 border border-yellow-500/80 text-[10px] font-bold font-mono px-1.5 py-0.5">${lvl}⚜️</span>
             </td>
             <td class="py-2.5 px-3">
-              <button type="button" onclick="${rowClickAction}" class="inline-flex items-center gap-1.5 text-xs font-bold text-yellow-300 group-hover:text-yellow-100 cursor-pointer">
+              <button type="button" data-action="spells:open-divine-domain-row" data-level="${lvl}" data-has-domains="${hasChosenDomains}" class="inline-flex items-center gap-1.5 text-xs font-bold text-yellow-300 group-hover:text-yellow-100 cursor-pointer">
                 <span class="w-4 h-4 rounded border border-dashed border-yellow-400/80 bg-yellow-950/80 flex items-center justify-center text-[10px] text-yellow-300 group-hover:bg-yellow-800 transition">⚜️</span>
                 <span class="italic">+ Prepare Domain Spell (${domLabel})</span>
               </button>
@@ -2088,7 +2179,7 @@
             </td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
-                <button type="button" onclick="${rowClickAction}" class="h-7 min-w-[115px] bg-yellow-950/90 hover:bg-yellow-800 text-yellow-200 hover:text-white border border-dashed border-yellow-400/90 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="${hasChosenDomains ? `Prepare Level ${lvl} Domain Spell (${domLabel})` : 'Select Cleric Domains'}">
+                <button type="button" data-action="spells:open-divine-domain-row" data-level="${lvl}" data-has-domains="${hasChosenDomains}" class="h-7 min-w-[115px] bg-yellow-950/90 hover:bg-yellow-800 text-yellow-200 hover:text-white border border-dashed border-yellow-400/90 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="${hasChosenDomains ? `Prepare Level ${lvl} Domain Spell (${domLabel})` : 'Select Cleric Domains'}">
                   <span>⚜️</span>
                   <span>${hasChosenDomains ? '+ Domain Spell' : '+ Select Domains'}</span>
                 </button>
@@ -2103,10 +2194,8 @@
       const turnDomainInfo = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getTurnUndeadAndDomainPowers === 'function')
         ? RuleEngine.getTurnUndeadAndDomainPowers(character)
         : { hasTurnUndead: false, activeDomainPowers: [], elementalTurningPools: [] };
-      if (!character.spellcasting.domainPowerUses || typeof character.spellcasting.domainPowerUses !== 'object') {
-        character.spellcasting.domainPowerUses = {};
-      }
-      const turnUsed = Math.max(0, Number(character.spellcasting.turnUndeadUsed) || 0);
+      const domainPowerUses = character.spellcasting?.domainPowerUses || {};
+      const turnUsed = Math.max(0, Number(character.spellcasting?.turnUndeadUsed) || 0);
       const turnMax = turnDomainInfo.maxDailyTurns || 0;
       const turnRem = Math.max(0, turnMax - turnUsed);
       const isRebuke = spontMode === 'inflict';
@@ -2118,7 +2207,7 @@
       let domainPowersStripHtml = '';
       if (turnDomainInfo.hasTurnUndead || turnDomainInfo.elementalTurningPools.length > 0 || turnDomainInfo.activeDomainPowers.length > 0) {
         const turnBtnHtml = turnDomainInfo.hasTurnUndead ? `
-          <button type="button" onclick="rollTurnUndeadCheck('undead', false)" class="${
+          <button type="button" data-action="spells:roll-turn-undead" data-pool-id="undead" class="${
             turnRem > 0
               ? (isRebuke ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-200 border-rose-500/80 shadow' : 'bg-sky-950/90 hover:bg-sky-800 text-sky-200 border-sky-500/80 shadow')
               : 'bg-slate-900 text-slate-500 border-slate-800 opacity-50 cursor-not-allowed'
@@ -2130,10 +2219,10 @@
         ` : '';
 
         const elemBtnsHtml = (turnDomainInfo.elementalTurningPools || []).map(ep => {
-          const used = Math.max(0, Number(character.spellcasting.domainPowerUses[ep.id]) || 0);
+          const used = Math.max(0, Number(domainPowerUses[ep.id]) || 0);
           const rem = Math.max(0, ep.maxUses - used);
           return `
-            <button type="button" onclick="rollTurnUndeadCheck('${ep.id}', false)" class="${
+            <button type="button" data-action="spells:roll-turn-undead" data-pool-id="${ep.id}" class="${
               rem > 0
                 ? 'bg-teal-950/90 hover:bg-teal-800 text-teal-200 border-teal-500/80 shadow'
                 : 'bg-slate-900 text-slate-500 border-slate-800 opacity-50 cursor-not-allowed'
@@ -2146,11 +2235,11 @@
         }).join('');
 
         const activePowersBtnsHtml = (turnDomainInfo.activeDomainPowers || []).map(pw => {
-          const used = Math.max(0, Number(character.spellcasting.domainPowerUses[pw.id]) || 0);
+          const used = Math.max(0, Number(domainPowerUses[pw.id]) || 0);
           const rem = Math.max(0, pw.maxUses - used);
           const unit = pw.unitLabel || '/day';
           return `
-            <button type="button" onclick="activateClericDomainPower('${pw.id}')" class="${
+            <button type="button" data-action="spells:activate-domain-power" data-power-id="${pw.id}" class="${
               rem > 0
                 ? 'bg-amber-950/90 hover:bg-amber-800 text-amber-200 border-amber-500/80 shadow'
                 : 'bg-slate-900 text-slate-500 border-slate-800 opacity-50 cursor-not-allowed'
@@ -2194,7 +2283,7 @@
                   <span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[10px] font-bold">Cleric / Druid</span>
                   <span class="badge bg-amber-950/90 text-amber-200 border border-amber-400/80 text-xs font-extrabold px-2.5 py-0.5 font-mono shadow-sm" title="Caster Level: ${cl} (${clMode})">CL: ${cl}</span>
                   ${hasDomainCap ? `
-                    <button type="button" onclick="if(typeof openClericDomainPickerModal==='function') openClericDomainPickerModal(0, 0)" class="badge ${chosenDomains.length === 2 ? 'bg-yellow-950/90 text-yellow-200 border-yellow-500/80 hover:bg-yellow-900' : 'bg-yellow-950/90 text-yellow-300 border-dashed border-yellow-400 animate-pulse hover:bg-yellow-900'} text-[10px] font-bold px-2 py-0.5 cursor-pointer transition inline-flex items-center gap-1" title="Click to view or change your Cleric Domains (1st-Level Class Feature)">
+                    <button type="button" data-action="spells:open-domain-picker-modal" class="badge ${chosenDomains.length === 2 ? 'bg-yellow-950/90 text-yellow-200 border-yellow-500/80 hover:bg-yellow-900' : 'bg-yellow-950/90 text-yellow-300 border-dashed border-yellow-400 animate-pulse hover:bg-yellow-900'} text-[10px] font-bold px-2 py-0.5 cursor-pointer transition inline-flex items-center gap-1" title="Click to view or change your Cleric Domains (1st-Level Class Feature)">
                       <span>⚜️</span>
                       <span>${chosenDomains.length > 0 ? `Domains: ${chosenDomains.join(' & ')} (${chosenDomains.length}/2)` : '+ Select Cleric Domains (0/2)'}</span>
                     </button>
@@ -2205,7 +2294,7 @@
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-              <button type="button" onclick="toggleClericSpontaneousMode()" class="${
+              <button type="button" data-action="spells:toggle-cleric-spontaneous" class="${
                 spontMode === 'cure'
                   ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80'
                   : 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-500/80'
@@ -2214,7 +2303,7 @@
                 <span>Spontaneous: ${spontMode === 'cure' ? 'Cure Wounds' : 'Inflict Wounds'}${energyPolicy.locked ? ' 🔒' : ''}</span>
               </button>
               <span class="h-8 px-2.5 rounded-lg bg-emerald-950 text-emerald-300 border border-emerald-600 text-xs font-bold inline-flex items-center">🛡️ ASF: 0%</span>
-              <button onclick="restoreAllDivineSlots()" class="w-40 h-8 bg-amber-800 hover:bg-amber-700 text-white text-xs font-bold px-3 rounded-lg border border-amber-500/50 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
+              <button data-action="spells:restore-all-divine" class="w-40 h-8 bg-amber-800 hover:bg-amber-700 text-white text-xs font-bold px-3 rounded-lg border border-amber-500/50 shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>✨</span>
                 <span>Restore All Slots</span>
               </button>
@@ -2231,7 +2320,7 @@
               </span>
               <div class="flex items-center gap-2">
                 <span class="text-slate-400 text-[10px] hidden sm:inline">Casting expends a divine slot • DM bonus slots supported</span>
-                <button type="button" onclick="openSpellSlotsModal(undefined, 'divine')" class="ui-btn-xs h-6 px-2.5 text-[10px] text-amber-400 hover:text-amber-200 font-bold inline-flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 rounded-md border border-amber-900/50 transition" title="Slot Management &amp; DM Bonuses">
+                <button type="button" data-action="spells:open-slots-modal" data-discipline="divine" class="ui-btn-xs h-6 px-2.5 text-[10px] text-amber-400 hover:text-amber-200 font-bold inline-flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 rounded-md border border-amber-900/50 transition" title="Slot Management &amp; DM Bonuses">
                   <span>⚙️</span>
                   <span>Slot &amp; DM Bonus Manager</span>
                 </button>
@@ -2247,10 +2336,10 @@
             <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
               <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
                 <div class="relative flex-1 min-w-[180px]">
-                  <input type="text" id="divine-spell-filter-search" value="${searchVal}" oninput="renderDivineDisciplineView(${Boolean(hasDivine)})" placeholder="Search divine spell name, school, or effect..." class="ui-input-md h-8 w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 pl-8 focus:outline-none focus:border-amber-500">
+                  <input type="text" id="divine-spell-filter-search" value="${searchVal}" data-input-action="spells:divine-filter-refresh" data-has-divine="${Boolean(hasDivine)}" placeholder="Search divine spell name, school, or effect..." class="ui-input-md h-8 w-full bg-slate-950 text-white placeholder-slate-500 text-xs rounded-lg border border-slate-700 px-3 pl-8 focus:outline-none focus:border-amber-500">
                   <span class="absolute inset-y-0 left-2.5 flex items-center pointer-events-none text-slate-400 text-xs">🔍</span>
                 </div>
-                <select id="divine-spell-filter-school" onchange="renderDivineDisciplineView(${Boolean(hasDivine)})" class="ui-input-md h-8 bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 focus:outline-none focus:border-amber-500 cursor-pointer">
+                <select id="divine-spell-filter-school" data-change-action="spells:divine-filter-refresh" data-has-divine="${Boolean(hasDivine)}" class="ui-input-md h-8 bg-slate-950 text-slate-300 text-xs rounded-lg border border-slate-700 px-2.5 focus:outline-none focus:border-amber-500 cursor-pointer">
                   <option value="all" ${schoolVal === 'all' ? 'selected' : ''}>All Schools</option>
                   <option value="Abjuration" ${schoolVal === 'Abjuration' ? 'selected' : ''}>Abjuration</option>
                   <option value="Conjuration" ${schoolVal === 'Conjuration' ? 'selected' : ''}>Conjuration (Healing / Summoning)</option>
@@ -2314,8 +2403,16 @@
     function deleteDivineSpell(idx) {
       if (!character?.spellcasting?.divineSpells?.[idx]) return;
       const s = character.spellcasting.divineSpells[idx];
-      character.spellcasting.divineSpells.splice(idx, 1);
-      saveStateToStorage(true);
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/removeSpell',
+          payload: { discipline: 'divine', index: idx },
+          meta: { label: `Unprepare Divine Spell (${s.name})` }
+        });
+      } else {
+        character.spellcasting.divineSpells.splice(idx, 1);
+        saveStateToStorage(true);
+      }
       renderAll();
       showDiceTopToast({
         icon: '🗑️',
@@ -2334,7 +2431,8 @@
       const { cl: baseCl } = getDivineCasterInfo();
       const cl = getSpellEffectiveCl(s, baseCl);
       const dmgExpr = resolveSpellEffectiveFormula(s, cl);
-      const slot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
+      const spellsView = getSpellsView();
+      const slot = spellsView?.slotsByLevelView?.divine?.[lvl] || character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl);
       const domDaily = slot ? (Number(slot.domainDaily) || 0) : 0;
       const domUsed = slot ? (Number(slot.domainUsed) || 0) : 0;
       const regDaily = slot ? (slot.regularDaily !== undefined ? Number(slot.regularDaily) : Math.max(0, (slot.daily || 0) - domDaily)) : 0;
@@ -2351,18 +2449,45 @@
         return;
       }
 
-      const preCast = getSpellPreCastOptions(s, cl, slot, lvl);
+      const mutSlot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl) || slot;
+      const preCast = getSpellPreCastOptions(s, cl, mutSlot, lvl, {
+        discipline: 'divine',
+        spellIdx,
+        level: lvl,
+        isDomain: isDom
+      });
       if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
         showSpellPreCastChoiceToast(preCast);
         return;
       }
 
-      slot.used++;
-      if (isDom) {
-        slot.domainUsed = Math.min(domDaily, domUsed + 1);
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/castSpell',
+          payload: {
+            discipline: 'divine',
+            index: spellIdx,
+            spellIndex: spellIdx,
+            spellId: s.id,
+            spellName: name,
+            spellLevel: lvl,
+            level: lvl,
+            isDomain: isDom,
+            isDomainSpell: isDom,
+            markPreparedCast: true
+          },
+          meta: { label: `Cast Divine Spell (${name})` }
+        });
+        const out = CharStore.getLastOutcome();
+        if (!out || out.status !== 'spell_cast') return;
+      } else {
+        if (mutSlot) {
+          mutSlot.used++;
+          if (isDom) mutSlot.domainUsed = Math.min(domDaily, domUsed + 1);
+        }
+        saveStateToStorage(true);
       }
       if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
-      saveStateToStorage(true);
       renderAll();
       if (handleBuffSpellCast(s, cl, `Level ${lvl} ${isDom ? 'Domain' : 'Divine'} Slot Expended`, isDom ? '⚜️' : '✨')) {
         return;
@@ -2380,15 +2505,23 @@
     }
 
     function restoreAllDivineSlots() {
-      (character?.spellcasting?.divineSlots || []).forEach(s => {
-        s.used = 0;
-        s.domainUsed = 0;
-      });
-      if (character?.spellcasting) {
-        character.spellcasting.turnUndeadUsed = 0;
-        character.spellcasting.domainPowerUses = {};
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/restoreAllSlots',
+          payload: { discipline: 'divine' },
+          meta: { label: 'Restore Divine Slots & Powers' }
+        });
+      } else {
+        (character?.spellcasting?.divineSlots || []).forEach(s => {
+          s.used = 0;
+          s.domainUsed = 0;
+        });
+        if (character?.spellcasting) {
+          character.spellcasting.turnUndeadUsed = 0;
+          character.spellcasting.domainPowerUses = {};
+        }
+        saveStateToStorage();
       }
-      saveStateToStorage();
       renderAll();
       showDiceTopToast({
         icon: '✨',
@@ -2399,26 +2532,24 @@
     }
 
     // D&D 3.5e RAW Turn/Rebuke Undead & Elemental Turning Roller (PHB p. 159 + Glory/Sun/Extra Turning)
-    function rollTurnUndeadCheck(poolId = 'undead', isGreaterTurning = false) {
+    function rollTurnUndeadCheck(poolId = 'undead', isGreaterTurning = false, skipSpend = false) {
       if (!character || typeof RuleEngine === 'undefined' || typeof RuleEngine.getTurnUndeadAndDomainPowers !== 'function') return;
-      if (!character.spellcasting) character.spellcasting = {};
-      if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
 
       const info = RuleEngine.getTurnUndeadAndDomainPowers(character);
-      const isRebuke = (character.spellcasting.clericSpontaneousMode || 'cure') === 'inflict';
+      const isRebuke = (character.spellcasting?.clericSpontaneousMode || 'cure') === 'inflict';
       let label = isRebuke ? 'Rebuke Undead' : 'Turn Undead';
       let maxUses = info.maxDailyTurns || 1;
-      let used = Math.max(0, Number(character.spellcasting.turnUndeadUsed) || 0);
+      let used = Math.max(0, Number(character.spellcasting?.turnUndeadUsed) || 0);
 
       if (poolId !== 'undead') {
         const ep = (info.elementalTurningPools || []).find(p => p.id === poolId);
         if (!ep) return;
         label = `${ep.label} (${ep.domain} Domain)`;
         maxUses = ep.maxUses;
-        used = Math.max(0, Number(character.spellcasting.domainPowerUses[poolId]) || 0);
+        used = Math.max(0, Number(character.spellcasting?.domainPowerUses?.[poolId]) || 0);
       }
 
-      if (used >= maxUses) {
+      if (!skipSpend && used >= maxUses) {
         showDiceTopToast({
           icon: '⚠️',
           title: `No ${label} Uses Remaining`,
@@ -2428,13 +2559,33 @@
         return;
       }
 
-      if (poolId === 'undead') {
-        character.spellcasting.turnUndeadUsed = used + 1;
-      } else {
-        character.spellcasting.domainPowerUses[poolId] = used + 1;
+      if (!skipSpend) {
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/useTurnOrDomainPower',
+            payload: {
+              kind: poolId === 'undead' ? 'turn' : 'domain',
+              id: poolId,
+              poolId,
+              isTurnUndead: poolId === 'undead',
+              maxUses
+            },
+            meta: { label: `Use ${label}` }
+          });
+          const out = CharStore.getLastOutcome();
+          if (!out || out.status !== 'power_used') return;
+        } else {
+          if (!character.spellcasting) character.spellcasting = {};
+          if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
+          if (poolId === 'undead') {
+            character.spellcasting.turnUndeadUsed = used + 1;
+          } else {
+            character.spellcasting.domainPowerUses[poolId] = used + 1;
+          }
+          saveStateToStorage(true);
+        }
       }
       if (typeof consumeActionEconomy === 'function') consumeActionEconomy('standard', label);
-      saveStateToStorage(true);
       renderAll();
 
       // Roll Turning Check (1d20 + CHA + Glory + Knowledge Religion Synergy) & Turning Damage (2d6/3d6 + Cleric Lvl + CHA)
@@ -2468,10 +2619,11 @@
       const greaterNote = isGreaterTurning
         ? ' • ☀️ GREATER TURNING: All turned undead are DESTROYED instead!'
         : (destroyThreshold >= 1 ? ` • Destroy/Command if ≤ ${destroyThreshold} HD` : '');
+      const remainingAfter = skipSpend ? Math.max(0, maxUses - used) : Math.max(0, maxUses - used - 1);
 
       showDiceTopToast({
         icon: isGreaterTurning ? '☀️' : (isRebuke ? '💀' : '✨'),
-        title: `${isGreaterTurning ? 'Greater Turning (Sun Domain)' : label} (${maxUses - used - 1}/${maxUses} Left)`,
+        title: `${isGreaterTurning ? 'Greater Turning (Sun Domain)' : label} (${remainingAfter}/${maxUses} Left)`,
         breakdown: `Turning Check: 1d20(${d20}) ${checkMod >= 0 ? '+' : ''}${checkMod} = ${checkTotal} ➔ Max Creature HD: ${maxHdAffected} HD • Turning Damage: ${diceCount}d6([${dmgRolls.join('+')}])+${info.effectiveTurningLevel + info.chaMod} = ${totalHdTurned} Total HD${greaterNote}`,
         total: `${totalHdTurned} HD (Max ${maxHdAffected} HD)`
       });
@@ -2481,14 +2633,12 @@
     // Activate 1/day Cleric Domain Granted Power (Strength, Protection, Destruction, Charm, Travel, Luck, Death/Repose, Sun, Nobility, Animal, Community)
     function activateClericDomainPower(powerId) {
       if (!character || typeof RuleEngine === 'undefined' || typeof RuleEngine.getTurnUndeadAndDomainPowers !== 'function') return;
-      if (!character.spellcasting) character.spellcasting = {};
-      if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
 
       const info = RuleEngine.getTurnUndeadAndDomainPowers(character);
       const pw = (info.activeDomainPowers || []).find(p => p.id === powerId);
       if (!pw) return;
 
-      const used = Math.max(0, Number(character.spellcasting.domainPowerUses[pw.id]) || 0);
+      const used = Math.max(0, Number(character.spellcasting?.domainPowerUses?.[pw.id]) || 0);
       if (used >= pw.maxUses) {
         showDiceTopToast({
           icon: '⚠️',
@@ -2500,16 +2650,46 @@
       }
 
       if (pw.kind === 'greater_turning') {
-        character.spellcasting.domainPowerUses[pw.id] = used + 1;
-        rollTurnUndeadCheck('undead', true);
+        const turnUsedNow = Math.max(0, Number(character.spellcasting?.turnUndeadUsed) || 0);
+        const maxTurnUses = info.maxDailyTurns || 1;
+        if (turnUsedNow >= maxTurnUses) {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'No Turn Undead Uses Remaining',
+            breakdown: 'Greater Turning requires an available daily Turn Undead attempt.',
+            total: '0 Left'
+          });
+          return;
+        }
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/useTurnOrDomainPower',
+            payload: {
+              kind: 'domain',
+              id: pw.id,
+              powerId: pw.id,
+              maxUses: pw.maxUses,
+              consumeTurnUndead: true,
+              maxTurnUses: maxTurnUses
+            },
+            meta: { label: `Use ${pw.name}` }
+          });
+          const out = CharStore.getLastOutcome();
+          if (!out || out.status !== 'power_used') return;
+        } else {
+          if (!character.spellcasting) character.spellcasting = {};
+          if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
+          character.spellcasting.domainPowerUses[pw.id] = used + 1;
+          character.spellcasting.turnUndeadUsed = turnUsedNow + 1;
+          saveStateToStorage(true);
+        }
+        rollTurnUndeadCheck('undead', true, true);
         return;
       }
 
-      character.spellcasting.domainPowerUses[pw.id] = used + 1;
       if (typeof consumeActionEconomy === 'function') consumeActionEconomy(pw.actionType, pw.name);
 
       if (pw.kind === 'buff') {
-        if (!Array.isArray(character.buffs)) character.buffs = [];
         const buffObj = {
           id: pw.id,
           schemaVersion: 2,
@@ -2526,14 +2706,27 @@
           summary: pw.summary,
           description: `${pw.summary} (${pw.durationText})`
         };
-        const existingIdx = character.buffs.findIndex(b => b && (b.id === pw.id || b.name === buffObj.name));
-        if (existingIdx !== -1) character.buffs[existingIdx] = buffObj;
-        else character.buffs.push(buffObj);
-
-        if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
-          RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/useTurnOrDomainPower',
+            payload: { kind: 'domain', id: pw.id, powerId: pw.id, maxUses: pw.maxUses, buffEntry: buffObj, buffPayload: buffObj },
+            meta: { label: `Activate Domain Power (${pw.name})` }
+          });
+          const out = CharStore.getLastOutcome();
+          if (!out || out.status !== 'power_used') return;
+        } else {
+          if (!character.spellcasting) character.spellcasting = {};
+          if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
+          character.spellcasting.domainPowerUses[pw.id] = used + 1;
+          if (!Array.isArray(character.buffs)) character.buffs = [];
+          const existingIdx = character.buffs.findIndex(b => b && (b.id === pw.id || b.name === buffObj.name));
+          if (existingIdx !== -1) character.buffs[existingIdx] = buffObj;
+          else character.buffs.push(buffObj);
+          if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
+            RuleEngine.recalculateCharacter(character, typeof masterDb !== 'undefined' ? masterDb : []);
+          }
+          saveStateToStorage(true);
         }
-        saveStateToStorage(true);
         renderAll();
         showDiceTopToast({
           icon: pw.icon || '⚜️',
@@ -2544,7 +2737,20 @@
         return;
       }
 
-      saveStateToStorage(true);
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/useTurnOrDomainPower',
+          payload: { kind: 'domain', id: pw.id, powerId: pw.id, maxUses: pw.maxUses },
+          meta: { label: `Activate Domain Power (${pw.name})` }
+        });
+        const out = CharStore.getLastOutcome();
+        if (!out || out.status !== 'power_used') return;
+      } else {
+        if (!character.spellcasting) character.spellcasting = {};
+        if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
+        character.spellcasting.domainPowerUses[pw.id] = used + 1;
+        saveStateToStorage(true);
+      }
       renderAll();
 
       if (pw.kind === 'roll' && pw.formula) {
@@ -2763,21 +2969,6 @@
       const hasMartialFeatOrBoon = martialStudyCount > 0 || martialStanceCount > 0 || dmReadiedBonus > 0 || dmKnownBonus > 0 || dmStanceBonus > 0;
 
       if (!adeptClass && !classesStatus.hasMartial && !hasMartialFeatOrBoon) {
-        // Clean up any orphaned maneuvers/stances on non-martial characters
-        if (!character?.isNpc && character?.tomeOfBattle) {
-          if (Array.isArray(character.tomeOfBattle.maneuversKnown) && character.tomeOfBattle.maneuversKnown.length > 0) {
-            character.tomeOfBattle.maneuversKnown = [];
-          }
-          if (Array.isArray(character.tomeOfBattle.readiedManeuvers) && character.tomeOfBattle.readiedManeuvers.length > 0) {
-            character.tomeOfBattle.readiedManeuvers = [];
-          }
-          if (Array.isArray(character.tomeOfBattle.stancesKnown) && character.tomeOfBattle.stancesKnown.length > 0) {
-            character.tomeOfBattle.stancesKnown = [];
-          }
-          if (character.activeStance) {
-            character.activeStance = '';
-          }
-        }
         return {
           adeptClass: 'No Martial Adept Class',
           martialLvls: 0,
@@ -2804,9 +2995,6 @@
           : Math.max(1, Math.floor(activeCharLvl / 2)));
       const storedIl = Number(character?.tomeOfBattle?.initiatorLevel) || 0;
       const il = character?.isNpc ? Math.max(storedIl, computedIl, 1) : Math.max(computedIl, 1);
-      if (character?.tomeOfBattle) {
-        character.tomeOfBattle.initiatorLevel = il;
-      }
 
       const rawMaxManeuverLvl = Math.min(9, Math.max(1, Math.ceil(il / 2)));
       const readiedList = character?.tomeOfBattle?.readiedManeuvers || [];
@@ -3170,40 +3358,37 @@
     function renderSpellsCockpit() {
       const { primaryClass, statKey, statVal, statMod, cl, clMode, hasClass: hasSpontaneous, sorcLvls, isSpontBoon } = getCasterInfo();
       const classesStatus = checkCharacterMagicClasses();
+      const spellsView = getSpellsView();
 
-      // Synchronize Sorcerer spell slots with effective Caster Level (CL)
-      if (character && typeof calculateSorcererSlots === 'function') {
-        if (!character.spellcasting) character.spellcasting = {};
-        character.spellcasting.cl = cl;
-        if (character.isNpc) {
-          if (character.spellSlots && typeof character.spellSlots === 'object') {
-            const curSlots = Array.isArray(character.spellcasting.slots) ? character.spellcasting.slots : [];
-            const built = [];
-            for (let lvl = 0; lvl <= 9; lvl++) {
-              const daily = Number(character.spellSlots[lvl]) || 0;
-              if (daily > 0 || lvl === 0) {
-                const found = curSlots.find(s => Number(s.level) === lvl);
-                built.push({
-                  level: lvl,
-                  daily: daily,
-                  used: found ? Math.min(found.used || 0, daily) : 0
-                });
-              }
+      let spontSlots = spellsView?.slotsByLevelView?.spontaneousArray;
+      if (!Array.isArray(spontSlots)) {
+        const curSlots = Array.isArray(character?.spellcasting?.slots) ? character.spellcasting.slots : [];
+        if (character?.isNpc && character.spellSlots && typeof character.spellSlots === 'object') {
+          spontSlots = [];
+          for (let lvl = 0; lvl <= 9; lvl++) {
+            const daily = Number(character.spellSlots[lvl]) || 0;
+            if (daily > 0 || lvl === 0) {
+              const found = curSlots.find(s => Number(s.level) === lvl);
+              spontSlots.push({
+                level: lvl,
+                daily: daily,
+                used: found ? Math.min(found.used || 0, daily) : 0
+              });
             }
-            character.spellcasting.slots = built;
           }
-        } else {
-          const curSlots = Array.isArray(character.spellcasting.slots) ? character.spellcasting.slots : [];
-          character.spellcasting.slots = ((sorcLvls > 0 || isSpontBoon) && cl > 0)
-            ? calculateSorcererSlots(cl, statVal, curSlots) 
+        } else if (typeof calculateSorcererSlots === 'function') {
+          spontSlots = ((sorcLvls > 0 || isSpontBoon) && cl > 0)
+            ? calculateSorcererSlots(cl, statVal, curSlots)
             : curSlots.filter(s => (Number(s.dmBonus) || 0) > 0);
+        } else {
+          spontSlots = curSlots;
         }
       }
 
       // Top archetype badges (Sadeleştirilmiş Kalan / Toplam Sayaçları)
       const spontBadge = document.getElementById('tab-spontaneous-badge');
       if (spontBadge) {
-        const slots = Array.isArray(character?.spellcasting?.slots) ? character.spellcasting.slots : [];
+        const slots = spontSlots;
         const totalDaily = slots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
         const totalUsed = slots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
         const totalRemaining = Math.max(0, totalDaily - totalUsed);
@@ -3219,15 +3404,15 @@
       }
 
       const prepInfo = getPreparedCasterInfo();
-      if (character?.spellcasting) {
-        const curPrep = Array.isArray(character.spellcasting.preparedSlots) ? character.spellcasting.preparedSlots : [];
-        character.spellcasting.preparedSlots = ((prepInfo.wizLvls > 0 || prepInfo.hasClass) && prepInfo.cl > 0)
+      let pSlots = spellsView?.slotsByLevelView?.preparedArray;
+      if (!Array.isArray(pSlots)) {
+        const curPrep = Array.isArray(character?.spellcasting?.preparedSlots) ? character.spellcasting.preparedSlots : [];
+        pSlots = ((prepInfo.wizLvls > 0 || prepInfo.hasClass) && prepInfo.cl > 0)
           ? calculateWizardSlots(prepInfo.cl, prepInfo.statVal, curPrep)
           : curPrep.filter(s => (Number(s.dmBonus) || 0) > 0);
       }
       const prepBadge = document.getElementById('tab-prepared-badge');
       if (prepBadge) {
-        const pSlots = Array.isArray(character?.spellcasting?.preparedSlots) ? character.spellcasting.preparedSlots : [];
         const pDaily = pSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
         const pUsed = pSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
         const pRem = Math.max(0, pDaily - pUsed);
@@ -3241,15 +3426,15 @@
       }
 
       const divInfo = getDivineCasterInfo();
-      if (character?.spellcasting) {
-        const curDiv = Array.isArray(character.spellcasting.divineSlots) ? character.spellcasting.divineSlots : [];
-        character.spellcasting.divineSlots = ((divInfo.divLvls > 0 || divInfo.hasClass) && divInfo.cl > 0)
+      let dSlots = spellsView?.slotsByLevelView?.divineArray;
+      if (!Array.isArray(dSlots)) {
+        const curDiv = Array.isArray(character?.spellcasting?.divineSlots) ? character.spellcasting.divineSlots : [];
+        dSlots = ((divInfo.divLvls > 0 || divInfo.hasClass) && divInfo.cl > 0)
           ? calculateDivineSlots(divInfo.cl, divInfo.statVal, curDiv)
           : curDiv.filter(s => (Number(s.dmBonus) || 0) > 0);
       }
       const divineBadge = document.getElementById('tab-divine-badge');
       if (divineBadge) {
-        const dSlots = Array.isArray(character?.spellcasting?.divineSlots) ? character.spellcasting.divineSlots : [];
         const dDaily = dSlots.reduce((sum, s) => sum + (Number(s.daily) || 0), 0);
         const dUsed = dSlots.reduce((sum, s) => sum + (Number(s.used) || 0), 0);
         const dRem = Math.max(0, dDaily - dUsed);
@@ -3279,8 +3464,8 @@
         }
       }
 
-      try { renderPreparedDisciplineView(classesStatus.hasPrepared || (character?.spellcasting?.preparedSlots || []).some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderPreparedDisciplineView error:', e); }
-      try { renderDivineDisciplineView(classesStatus.hasDivine || (character?.spellcasting?.divineSlots || []).some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderDivineDisciplineView error:', e); }
+      try { renderPreparedDisciplineView(classesStatus.hasPrepared || pSlots.some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderPreparedDisciplineView error:', e); }
+      try { renderDivineDisciplineView(classesStatus.hasDivine || dSlots.some(s => (Number(s.daily) || 0) > 0)); } catch (e) { console.error('renderDivineDisciplineView error:', e); }
       try { renderCasterBoonUI(); } catch (e) { console.error('renderCasterBoonUI error:', e); }
 
       const titleEl = document.getElementById('spells-cockpit-class-title');
@@ -3422,7 +3607,7 @@
         tabsContainer.innerHTML = sources.map(s => {
           const isAct = s.key === activeSource.key;
           return `
-            <button type="button" onclick="switchCompactSlotsSource('${s.key}')" class="text-[9px] px-2 py-0.5 rounded font-bold transition cursor-pointer flex items-center gap-1 ${isAct ? `${s.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">
+            <button type="button" data-action="spells:switch-compact-source" data-source="${s.key}" class="text-[9px] px-2 py-0.5 rounded font-bold transition cursor-pointer flex items-center gap-1 ${isAct ? `${s.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">
               <span>${s.icon}</span>
               <span>${s.shortLabel}</span>
             </button>
@@ -3514,37 +3699,63 @@
       }
     }
     function useSpellSlot(idx) {
-      if (!character?.spellcasting?.slots?.[idx]) return;
-      if (character.spellcasting.slots[idx].used < character.spellcasting.slots[idx].daily) {
-        character.spellcasting.slots[idx].used++;
+      const slot = character?.spellcasting?.slots?.[idx];
+      if (!slot) return;
+      if (slot.used < slot.daily) {
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/adjustSlot',
+            payload: { discipline: 'spontaneous', level: Number(slot.level) || 0, deltaUsed: 1 },
+            meta: { label: `Use Level ${slot.level} Spell Slot` }
+          });
+        } else {
+          slot.used++;
+          saveStateToStorage();
+        }
         renderSpellSlots();
-        saveStateToStorage();
       }
     }
 
     function restoreSpellSlot(idx) {
-      if (!character?.spellcasting?.slots?.[idx]) return;
-      if (character.spellcasting.slots[idx].used > 0) {
-        character.spellcasting.slots[idx].used--;
+      const slot = character?.spellcasting?.slots?.[idx];
+      if (!slot) return;
+      if (slot.used > 0) {
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/adjustSlot',
+            payload: { discipline: 'spontaneous', level: Number(slot.level) || 0, deltaUsed: -1 },
+            meta: { label: `Restore Level ${slot.level} Spell Slot` }
+          });
+        } else {
+          slot.used--;
+          saveStateToStorage();
+        }
         renderSpellSlots();
-        saveStateToStorage();
       }
     }
 
     function restoreAllSpellSlots() {
-      (character?.spellcasting?.slots || []).forEach(s => s.used = 0);
-      (character?.spellcasting?.preparedSlots || []).forEach(s => s.used = 0);
-      (character?.spellcasting?.divineSlots || []).forEach(s => {
-        s.used = 0;
-        s.domainUsed = 0;
-      });
-      if (character?.spellcasting) {
-        character.spellcasting.turnUndeadUsed = 0;
-        character.spellcasting.domainPowerUses = {};
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/restoreAllSlots',
+          payload: { discipline: 'all' },
+          meta: { label: 'Restore All Spell Slots' }
+        });
+      } else {
+        (character?.spellcasting?.slots || []).forEach(s => s.used = 0);
+        (character?.spellcasting?.preparedSlots || []).forEach(s => s.used = 0);
+        (character?.spellcasting?.divineSlots || []).forEach(s => {
+          s.used = 0;
+          s.domainUsed = 0;
+        });
+        if (character?.spellcasting) {
+          character.spellcasting.turnUndeadUsed = 0;
+          character.spellcasting.domainPowerUses = {};
+        }
+        if (character) character.lastModified = new Date().toISOString();
+        saveStateToStorage(true);
       }
-      if (character) character.lastModified = new Date().toISOString();
       renderSpellSlots();
-      saveStateToStorage(true);
       if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
         window.CloudSync.pushImmediate();
       } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
@@ -3841,7 +4052,7 @@
         options.forEach((opt, idx) => {
           const btn = btnsBar.querySelector(`[data-opt-idx="${idx}"]`);
           if (btn) {
-            btn.onclick = (e) => {
+            btn.addEventListener('click', (e) => {
               e.stopPropagation();
               clearSpellPreCastChoice();
               if (typeof consumeActionEconomy === 'function') {
@@ -3850,15 +4061,15 @@
               if (typeof opt.execute === 'function') {
                 opt.execute();
               }
-            };
+            });
           }
         });
         const cancelBtn = btnsBar.querySelector('#spell-precast-cancel-btn');
         if (cancelBtn) {
-          cancelBtn.onclick = (e) => {
+          cancelBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             clearSpellPreCastChoice();
-          };
+          });
         }
       }
 
@@ -3907,7 +4118,7 @@
       }, 60);
     }
 
-    function getSpellPreCastOptions(spellItem, cl, slotRef, lvl) {
+    function getSpellPreCastOptions(spellItem, cl, slotRef, lvl, castCtx = null) {
       if (!spellItem) return null;
       if (isMasterDbChildEntry(spellItem)) return null;
 
@@ -3922,6 +4133,44 @@
       if (!isBloodSacrifice && !hasChildren) {
         return null;
       }
+
+      const dispatchPreCastChoice = (hpCost = 0, variantLabel = '') => {
+        const disc = (castCtx && castCtx.discipline) || 'spontaneous';
+        const sIdx = castCtx && castCtx.spellIdx !== undefined ? castCtx.spellIdx : undefined;
+        const isDom = Boolean(castCtx && castCtx.isDomain);
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/castSpell',
+            payload: {
+              discipline: disc,
+              index: sIdx,
+              spellIndex: sIdx,
+              spellId: spellItem.id,
+              spellName: pName,
+              spellLevel: lvl,
+              level: lvl,
+              isDomain: isDom,
+              isDomainSpell: isDom,
+              markPreparedCast: true,
+              selfHpCost: hpCost > 0 ? hpCost : 0
+            },
+            meta: { label: variantLabel ? `Cast ${pName} (${variantLabel})` : `Cast ${pName}` }
+          });
+          const out = CharStore.getLastOutcome();
+          if (!out || out.status !== 'spell_cast') return false;
+        } else if (slotRef && slotRef.used < slotRef.daily) {
+          slotRef.used++;
+          if (hpCost > 0 && character?.hp) {
+            character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - hpCost);
+          }
+          saveStateToStorage(true);
+        } else {
+          return false;
+        }
+        if (typeof consumeActionEconomy === 'function') consumeActionEconomy(spellItem, pName);
+        renderAll();
+        return true;
+      };
 
       const options = [];
 
@@ -3950,11 +4199,7 @@
             label,
             className: btnClass,
             execute: () => {
-              if (slotRef && slotRef.used < slotRef.daily) {
-                slotRef.used++;
-                saveStateToStorage(true);
-                renderAll();
-              }
+              if (!dispatchPreCastChoice(hpCost, shortTitle)) return;
               if (childDice) {
                 rollSpellOrManeuverFormula(
                   childDice,
@@ -3970,9 +4215,6 @@
                   total: child.shortResult || 'Special Effect'
                 });
               }
-              if (hpCost > 0) {
-                applySpellSelfDamage(hpCost, child.name || pName, true, { stack: true });
-              }
             }
           });
         });
@@ -3985,11 +4227,7 @@
             label: `\u2600\uFE0F Standard (${parentDice})`,
             className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
             execute: () => {
-              if (slotRef && slotRef.used < slotRef.daily) {
-                slotRef.used++;
-                saveStateToStorage(true);
-                renderAll();
-              }
+              if (!dispatchPreCastChoice(0, 'Standard')) return;
               rollSpellOrManeuverFormula(
                 parentDice,
                 `${pName} (Level ${lvl} \u2022 -1 Slot)`,
@@ -4004,29 +4242,20 @@
             label: '\uD83E\uDE78 Sacrifice 5 HP (3d6)',
             className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-rose-800 hover:bg-rose-700 text-rose-100 border border-rose-400 transition shadow cursor-pointer',
             execute: () => {
-              if (slotRef && slotRef.used < slotRef.daily) {
-                slotRef.used++;
-                saveStateToStorage(true);
-                renderAll();
-              }
+              if (!dispatchPreCastChoice(5, '5 HP Sacrifice')) return;
               rollSpellOrManeuverFormula(
                 '3d6',
                 `${pName} \u2794 5 HP Sacrifice (3d6 Damage)`,
                 { name: `${pName} (5 HP Sacrifice)`, dice: '3d6', effectType: 'damage' },
                 { name: pName }
               );
-              applySpellSelfDamage(5, pName, true, { stack: true });
             }
           },
           {
             label: '\u2694\uFE0F No Sacrifice (1d6)',
             className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
             execute: () => {
-              if (slotRef && slotRef.used < slotRef.daily) {
-                slotRef.used++;
-                saveStateToStorage(true);
-                renderAll();
-              }
+              if (!dispatchPreCastChoice(0, 'No Sacrifice')) return;
               rollSpellOrManeuverFormula(
                 '1d6',
                 `${pName} \u2794 No Sacrifice (1d6 Damage)`,
@@ -4294,12 +4523,10 @@
     function renderManeuvers() {
       renderSpellsCockpit();
 
-      if (!character.tomeOfBattle) character.tomeOfBattle = {};
-      if (!Array.isArray(character.tomeOfBattle.readiedManeuvers)) character.tomeOfBattle.readiedManeuvers = [];
-      if (!Array.isArray(character.tomeOfBattle.stancesKnown)) character.tomeOfBattle.stancesKnown = [];
-      if (!Array.isArray(character.tomeOfBattle.maneuversKnown)) {
-        character.tomeOfBattle.maneuversKnown = character.tomeOfBattle.readiedManeuvers.map(m => ({ ...m }));
-      }
+      const tob = character?.tomeOfBattle || {};
+      const readiedList = Array.isArray(tob.readiedManeuvers) ? tob.readiedManeuvers : [];
+      const stancesList = Array.isArray(tob.stancesKnown) ? tob.stancesKnown : [];
+      const maneuversList = Array.isArray(tob.maneuversKnown) ? tob.maneuversKnown : readiedList;
 
       const classesStatus = checkCharacterMagicClasses();
       const initInfo = getInitiatorInfo();
@@ -4335,7 +4562,7 @@
       const container = document.getElementById('maneuvers-container');
       if (container) {
         container.innerHTML = '';
-        const readied = character.tomeOfBattle.readiedManeuvers;
+        const readied = readiedList;
         const totalCards = Math.max(maxReadied, readied.length);
 
         for (let slotIdx = 0; slotIdx < totalCards; slotIdx++) {
@@ -4367,33 +4594,31 @@
 
               <div class="pt-2 border-t border-slate-800/80 flex items-center justify-end gap-2">
                 ${m.expended ? `
-                  <button onclick="useOrRecoverManeuver(${slotIdx})" class="flex-1 text-xs font-bold py-1 px-2.5 rounded-lg border transition shadow flex items-center justify-center gap-1.5 cursor-pointer bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-700" title="Recover Maneuver">
+                  <button data-action="spells:use-or-recover-maneuver" data-idx="${slotIdx}" class="flex-1 text-xs font-bold py-1 px-2.5 rounded-lg border transition shadow flex items-center justify-center gap-1.5 cursor-pointer bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-700" title="Recover Maneuver">
                     <span>🔄</span>
                     <span>Recover</span>
                   </button>
                 ` : (dmgExpr ? `
-                  <button onclick="useOrRecoverManeuver(${slotIdx})" class="flex-1 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/80 text-xs font-bold font-mono py-1 px-2.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer" title="Execute Maneuver & Roll Damage (${dmgExpr})">
+                  <button data-action="spells:use-or-recover-maneuver" data-idx="${slotIdx}" class="flex-1 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/80 text-xs font-bold font-mono py-1 px-2.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer" title="Execute Maneuver & Roll Damage (${dmgExpr})">
                     ${getFormulaDiceIconSvg(dmgExpr, 'w-3.5 h-3.5 text-amber-400 shrink-0')}
                     <span>${dmgExpr}</span>
                   </button>
                 ` : `
-                  <button onclick="useOrRecoverManeuver(${slotIdx})" class="flex-1 bg-rose-950 hover:bg-rose-800 text-rose-200 hover:text-white border border-rose-600 text-xs font-bold py-1 px-2.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer" title="Execute Maneuver (Expend)">
+                  <button data-action="spells:use-or-recover-maneuver" data-idx="${slotIdx}" class="flex-1 bg-rose-950 hover:bg-rose-800 text-rose-200 hover:text-white border border-rose-600 text-xs font-bold py-1 px-2.5 rounded-lg transition shadow flex items-center justify-center gap-1.5 cursor-pointer" title="Execute Maneuver (Expend)">
                     <span>⚡</span>
                     <span>Use</span>
                   </button>
                 `)}
 
-                <button onclick="toggleManeuverReadied('${escape(m.name)}')" class="w-6 h-6 inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-400 text-xs rounded-lg border border-slate-700 transition cursor-pointer shrink-0" title="Unready Maneuver (Leaves Empty Slot)">
+                <button data-action="spells:toggle-maneuver-readied" data-name="${escape(m.name)}" class="w-6 h-6 inline-flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-400 text-xs rounded-lg border border-slate-700 transition cursor-pointer shrink-0" title="Unready Maneuver (Leaves Empty Slot)">
                   ✕
                 </button>
               </div>
             `;
           } else {
             div.className = 'p-3.5 rounded-xl border border-dashed border-rose-500/40 bg-slate-950/40 hover:bg-rose-950/20 flex flex-col justify-between transition-all cursor-pointer group';
-            div.onclick = (e) => {
-              if (e.target.closest('button')) return;
-              openReadyManeuverFromPoolModal(slotIdx);
-            };
+            div.setAttribute('data-action', 'spells:open-ready-maneuver-modal');
+            div.setAttribute('data-slot-idx', String(slotIdx));
             div.innerHTML = `
               <div class="space-y-1.5 mb-3">
                 <div class="flex items-center justify-between gap-1">
@@ -4404,7 +4629,7 @@
                 <p class="text-[11px] text-slate-500">Equip a known maneuver from your Pool: Maneuvers &amp; Stances Known into this readied slot.</p>
               </div>
               <div class="pt-2 border-t border-slate-800/60 flex items-center justify-end">
-                <button type="button" onclick="openReadyManeuverFromPoolModal(${slotIdx})" class="w-full bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-dashed border-rose-500/60 text-xs font-bold py-1 px-2.5 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer">
+                <button type="button" data-action="spells:open-ready-maneuver-modal" data-slot-idx="${slotIdx}" class="w-full bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-dashed border-rose-500/60 text-xs font-bold py-1 px-2.5 rounded-lg transition flex items-center justify-center gap-1 cursor-pointer">
                   <span>⚡</span>
                   <span>+ Ready from Known Pool</span>
                 </button>
@@ -4425,7 +4650,7 @@
           { key: 'stance', label: '🥋 Stances' }
         ];
         pillsEl.innerHTML = types.map(t => `
-          <button type="button" onclick="setManeuverTypeFilter('${t.key}')" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
+          <button type="button" data-action="spells:maneuver-type-filter" data-type-key="${t.key}" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
             typeFilter === t.key ? 'bg-rose-800 text-white border-rose-500 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
           }">${t.label}</button>
         `).join('');
@@ -4437,10 +4662,10 @@
         libTbody.innerHTML = '';
         const searchVal = (document.getElementById('maneuver-filter-search')?.value || '').toLowerCase().trim();
         const discVal = document.getElementById('maneuver-filter-discipline')?.value || 'all';
-        const readiedNames = (character.tomeOfBattle.readiedManeuvers || []).map(m => (m.name || '').toLowerCase().trim());
+        const readiedNames = readiedList.map(m => (m.name || '').toLowerCase().trim());
 
-        const maneuvers = character.tomeOfBattle.maneuversKnown || [];
-        const stances = character.tomeOfBattle.stancesKnown || [];
+        const maneuvers = maneuversList;
+        const stances = stancesList;
 
         const renderManeuverLibRow = (m) => {
           const isReadied = readiedNames.includes((m.name || '').toLowerCase().trim());
@@ -4474,21 +4699,21 @@
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
                 ${dmgExpr ? `
-                  <button onclick="rollSpellOrManeuverFormula('${dmgExpr}', '${m.name} Damage')" class="h-7 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Roll Damage Dice (${dmgExpr})">
+                  <button data-action="spells:roll-formula" data-expr="${dmgExpr}" data-title="${escape(`${m.name} Damage`)}" class="h-7 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Roll Damage Dice (${dmgExpr})">
                     ${getFormulaDiceIconSvg(dmgExpr, 'w-3.5 h-3.5 text-amber-400 shrink-0')}
                     <span>${dmgExpr}</span>
                   </button>
                 ` : ''}
                 ${isReadied ? `
-                  <button onclick="toggleManeuverReadied('${escape(m.name)}')" class="h-7 min-w-[115px] bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-xs font-bold px-2.5 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
+                  <button data-action="spells:toggle-maneuver-readied" data-name="${escape(m.name)}" class="h-7 min-w-[115px] bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-xs font-bold px-2.5 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
                     ✓ Readied
                   </button>
                 ` : `
-                  <button onclick="toggleManeuverReadied('${escape(m.name)}')" ${character.tomeOfBattle.readiedManeuvers.length >= maxReadied ? 'disabled' : ''} class="h-7 min-w-[115px] bg-slate-800 hover:bg-rose-900 disabled:opacity-40 text-slate-300 hover:text-white border border-slate-700 hover:border-rose-600 text-xs font-bold px-2.5 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
+                  <button data-action="spells:toggle-maneuver-readied" data-name="${escape(m.name)}" ${readiedList.length >= maxReadied ? 'disabled' : ''} class="h-7 min-w-[115px] bg-slate-800 hover:bg-rose-900 disabled:opacity-40 text-slate-300 hover:text-white border border-slate-700 hover:border-rose-600 text-xs font-bold px-2.5 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
                     + Ready
                   </button>
                 `}
-                <button onclick="deleteManeuverFromLibrary('${escape(m.name)}', false)" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Remove Maneuver (Leaves Empty Slot)">
+                <button data-action="spells:delete-maneuver" data-name="${escape(m.name)}" data-stance="false" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Remove Maneuver (Leaves Empty Slot)">
                   🗑️
                 </button>
               </div>
@@ -4500,14 +4725,12 @@
         const renderEmptyManeuverLibRow = (slotNum, slotCeiling = initInfo.maxManeuverLvl) => {
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-rose-950/20 transition cursor-pointer group bg-slate-950/20';
-          tr.onclick = (e) => {
-            if (e.target.closest('button')) return;
-            openManeuverPickerModal('Maneuver');
-          };
+          tr.setAttribute('data-action', 'spells:open-maneuver-picker');
+          tr.setAttribute('data-picker-type', 'Maneuver');
           tr.innerHTML = `
             <td class="py-2.5 px-3 text-rose-400/60 font-bold font-mono text-center" title="Tome of Battle RAW Slot Ceiling: Up to Level ${slotCeiling}">≤${slotCeiling}</td>
             <td class="py-2.5 px-3">
-              <button type="button" onclick="openManeuverPickerModal('Maneuver')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300/80 group-hover:text-rose-100 cursor-pointer">
+              <button type="button" data-action="spells:open-maneuver-picker" data-picker-type="Maneuver" class="inline-flex items-center gap-1.5 text-xs font-semibold text-rose-300/80 group-hover:text-rose-100 cursor-pointer">
                 <span class="w-4 h-4 rounded border border-dashed border-rose-500/70 bg-rose-950/60 flex items-center justify-center text-[10px] text-rose-300 group-hover:bg-rose-800 transition">+</span>
                 <span class="italic">+ Select Maneuver (Empty Slot #${slotNum} • Max Lvl ${slotCeiling})</span>
               </button>
@@ -4517,7 +4740,7 @@
             <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This maneuver slot is empty. Click to learn a maneuver up to Level ${slotCeiling} (Tome of Battle progression).</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
-                <button type="button" onclick="openManeuverPickerModal('Maneuver')" class="h-7 min-w-[115px] bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-dashed border-rose-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
+                <button type="button" data-action="spells:open-maneuver-picker" data-picker-type="Maneuver" class="h-7 min-w-[115px] bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-dashed border-rose-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
                   <span>⚔️</span>
                   <span>+ Select Maneuver</span>
                 </button>
@@ -4549,21 +4772,21 @@
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
                 ${dmgExpr ? `
-                  <button onclick="rollSpellOrManeuverFormula('${dmgExpr}', '${st.name} Damage')" class="h-7 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Roll Stance Damage (${dmgExpr})">
+                  <button data-action="spells:roll-formula" data-expr="${dmgExpr}" data-title="${escape(`${st.name} Damage`)}" class="h-7 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white text-xs font-bold font-mono px-2 rounded-lg border border-amber-600/80 shadow transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Roll Stance Damage (${dmgExpr})">
                     ${getFormulaDiceIconSvg(dmgExpr, 'w-3.5 h-3.5 text-amber-400 shrink-0')}
                     <span>${dmgExpr}</span>
                   </button>
                 ` : ''}
                 ${isActive ? `
-                  <button onclick="selectStanceDirectly('None')" class="h-7 min-w-[115px] rounded-lg bg-teal-950 hover:bg-rose-950 text-teal-300 hover:text-rose-300 border border-teal-600 hover:border-rose-600 text-xs font-bold px-2.5 transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap" title="Click to exit active stance">
+                  <button data-action="spells:select-stance" data-name="None" class="h-7 min-w-[115px] rounded-lg bg-teal-950 hover:bg-rose-950 text-teal-300 hover:text-rose-300 border border-teal-600 hover:border-rose-600 text-xs font-bold px-2.5 transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap" title="Click to exit active stance">
                     ✓ Active Stance
                   </button>
                 ` : `
-                  <button onclick="selectStanceDirectly('${escape(st.name)}')" class="h-7 min-w-[115px] bg-slate-800 hover:bg-teal-900 text-teal-300 border border-slate-700 hover:border-teal-600 text-xs font-bold px-2.5 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
+                  <button data-action="spells:select-stance" data-name="${escape(st.name)}" class="h-7 min-w-[115px] bg-slate-800 hover:bg-teal-900 text-teal-300 border border-slate-700 hover:border-teal-600 text-xs font-bold px-2.5 rounded-lg transition shadow inline-flex items-center justify-center cursor-pointer whitespace-nowrap">
                     Enter Stance
                   </button>
                 `}
-                <button onclick="deleteManeuverFromLibrary('${escape(st.name)}', true)" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Remove Stance (Leaves Empty Slot)">
+                <button data-action="spells:delete-maneuver" data-name="${escape(st.name)}" data-stance="true" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Remove Stance (Leaves Empty Slot)">
                   🗑️
                 </button>
               </div>
@@ -4575,14 +4798,12 @@
         const renderEmptyStanceLibRow = (slotNum, slotCeiling = initInfo.maxManeuverLvl) => {
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-teal-950/20 transition cursor-pointer group bg-slate-950/20';
-          tr.onclick = (e) => {
-            if (e.target.closest('button')) return;
-            openManeuverPickerModal('Stance');
-          };
+          tr.setAttribute('data-action', 'spells:open-maneuver-picker');
+          tr.setAttribute('data-picker-type', 'Stance');
           tr.innerHTML = `
             <td class="py-2.5 px-3 text-teal-400/60 font-bold font-mono text-center" title="Tome of Battle RAW Stance Slot Ceiling: Up to Level ${slotCeiling}">≤${slotCeiling}</td>
             <td class="py-2.5 px-3">
-              <button type="button" onclick="openManeuverPickerModal('Stance')" class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-300/80 group-hover:text-teal-100 cursor-pointer">
+              <button type="button" data-action="spells:open-maneuver-picker" data-picker-type="Stance" class="inline-flex items-center gap-1.5 text-xs font-semibold text-teal-300/80 group-hover:text-teal-100 cursor-pointer">
                 <span class="w-4 h-4 rounded border border-dashed border-teal-500/70 bg-teal-950/60 flex items-center justify-center text-[10px] text-teal-300 group-hover:bg-teal-800 transition">+</span>
                 <span class="italic">+ Select Stance (Empty Stance Slot #${slotNum} • Max Lvl ${slotCeiling})</span>
               </button>
@@ -4592,7 +4813,7 @@
             <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This stance slot is empty. Click to learn a martial stance up to Level ${slotCeiling} (Tome of Battle progression).</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
-                <button type="button" onclick="openManeuverPickerModal('Stance')" class="h-7 min-w-[115px] bg-teal-950/80 hover:bg-teal-900 text-teal-300 hover:text-white border border-dashed border-teal-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
+                <button type="button" data-action="spells:open-maneuver-picker" data-picker-type="Stance" class="h-7 min-w-[115px] bg-teal-950/80 hover:bg-teal-900 text-teal-300 hover:text-white border border-dashed border-teal-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap">
                   <span>🥋</span>
                   <span>+ Select Stance</span>
                 </button>
@@ -4679,9 +4900,9 @@
         modal = document.createElement('div');
         modal.id = 'maneuver-ready-pool-modal';
         modal.className = 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 overflow-y-auto hidden';
-        modal.onclick = (e) => {
+        modal.addEventListener('click', (e) => {
           if (e.target === modal) closeReadyManeuverFromPoolModal();
-        };
+        });
         document.body.appendChild(modal);
       }
 
@@ -4711,7 +4932,7 @@
               First learn maneuvers into your <strong>Pool: Maneuvers &amp; Stances Known</strong>, then ready them into your active combat slots.
             </p>
             <div class="pt-2 flex flex-wrap items-center justify-center gap-2">
-              <button type="button" onclick="closeReadyManeuverFromPoolModal(); openManeuverPickerModal('Maneuver');" class="px-3.5 py-2 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold transition shadow border border-rose-500 cursor-pointer inline-flex items-center gap-1.5">
+              <button type="button" data-action="spells:learn-maneuver-from-ready-modal" class="px-3.5 py-2 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold transition shadow border border-rose-500 cursor-pointer inline-flex items-center gap-1.5">
                 <span>⚔️</span>
                 <span>+ Learn New Maneuver to Known Pool (${known.length}/${initInfo.maxKnownManeuvers || 0})</span>
               </button>
@@ -4735,7 +4956,7 @@
                 <div class="text-[11px] text-slate-300 line-clamp-2">${m.notes || m.benefit || '-'}</div>
               </div>
               <div class="shrink-0">
-                <button type="button" onclick="readyKnownManeuverFromModal('${escape(m.name)}')" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold border border-rose-500 transition shadow flex items-center gap-1 cursor-pointer whitespace-nowrap">
+                <button type="button" data-action="spells:ready-maneuver-from-modal" data-name="${escape(m.name)}" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold border border-rose-500 transition shadow flex items-center gap-1 cursor-pointer whitespace-nowrap">
                   <span>⚡</span>
                   <span>Ready</span>
                 </button>
@@ -4755,17 +4976,17 @@
                 <p class="text-[11px] text-slate-400">Select from your Known Maneuver Pool (${readied.length} / ${maxReadied} Readied)</p>
               </div>
             </div>
-            <button type="button" onclick="closeReadyManeuverFromPoolModal()" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex items-center justify-center text-xs cursor-pointer">✕</button>
+            <button type="button" data-action="spells:close-ready-maneuver-modal" class="w-7 h-7 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-700 flex items-center justify-center text-xs cursor-pointer">✕</button>
           </div>
           <div class="p-4 space-y-2.5 overflow-y-auto flex-1">
             ${bodyHtml}
           </div>
           <div class="bg-slate-900/90 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between gap-2">
-            <button type="button" onclick="closeReadyManeuverFromPoolModal(); openManeuverPickerModal('Maneuver');" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-rose-300 hover:text-white border border-rose-800/60 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+            <button type="button" data-action="spells:learn-maneuver-from-ready-modal" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-rose-300 hover:text-white border border-rose-800/60 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
               <span>📚</span>
               <span>+ Learn New Maneuver to Pool (${known.length}/${initInfo.maxKnownManeuvers || 0})</span>
             </button>
-            <button type="button" onclick="closeReadyManeuverFromPoolModal()" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold transition cursor-pointer">Close</button>
+            <button type="button" data-action="spells:close-ready-maneuver-modal" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs font-bold transition cursor-pointer">Close</button>
           </div>
         </div>
       `;
@@ -4786,29 +5007,40 @@
     function useOrRecoverManeuver(idx) {
       const m = character?.tomeOfBattle?.readiedManeuvers?.[idx];
       if (!m) return;
-      if (m.expended) {
-        m.expended = false;
-        renderManeuvers();
+      const wasExpended = Boolean(m.expended);
+      const mName = m.name;
+      const mDiscipline = m.discipline;
+      const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || findDiceExpression(m.notes || m.benefit);
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/expendOrRecoverManeuver',
+          payload: { slotIdx: idx, index: idx, name: mName, mode: wasExpended ? 'recover' : 'expend' },
+          meta: { label: wasExpended ? `Recover Maneuver (${mName})` : `Execute Maneuver (${mName})` }
+        });
+        const out = CharStore.getLastOutcome();
+        if (!out || out.status === 'not_found') return;
+      } else {
+        m.expended = !wasExpended;
         saveStateToStorage();
+      }
+      if (wasExpended) {
+        renderManeuvers();
         showDiceTopToast({
           icon: '🔄',
-          title: m.name,
+          title: mName,
           breakdown: 'Maneuver recovered and ready for use',
           total: 'Ready'
         });
       } else {
-        m.expended = true;
-        if (typeof consumeActionEconomy === 'function') consumeActionEconomy(m, m.name);
-        const dmgExpr = (Array.isArray(m.damageParts) && m.damageParts[0]?.dice) || m.damageDice || findDiceExpression(m.notes || m.benefit);
+        if (typeof consumeActionEconomy === 'function') consumeActionEconomy(m, mName);
         renderManeuvers();
-        saveStateToStorage();
         if (dmgExpr) {
-          rollSpellOrManeuverFormula(dmgExpr, `${m.name} (Maneuver Executed)`, m);
+          rollSpellOrManeuverFormula(dmgExpr, `${mName} (Maneuver Executed)`, m);
         } else {
           showDiceTopToast({
             icon: '⚡',
-            title: m.name,
-            breakdown: `${m.discipline || 'Martial'} maneuver executed`,
+            title: mName,
+            breakdown: `${mDiscipline || 'Martial'} maneuver executed`,
             total: 'Expended',
           });
         }
@@ -4822,12 +5054,21 @@
     function toggleManeuverReadied(escapedName) {
       const name = unescape(escapedName);
       const cleanName = (name || '').toLowerCase().trim();
-      const readied = character.tomeOfBattle.readiedManeuvers || [];
+      const readied = character?.tomeOfBattle?.readiedManeuvers || [];
       const existingIdx = readied.findIndex(m => (m.name || '').toLowerCase().trim() === cleanName);
       const { maxReadied } = getInitiatorInfo();
 
       if (existingIdx >= 0) {
-        readied.splice(existingIdx, 1);
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/toggleManeuverReadied',
+            payload: { name, maxReadied },
+            meta: { label: `Unready Maneuver (${name})` }
+          });
+        } else {
+          readied.splice(existingIdx, 1);
+          saveStateToStorage(true);
+        }
         showDiceTopToast({
           icon: '⚔️',
           title: 'Maneuver Unreadied',
@@ -4839,9 +5080,18 @@
           alert(`⚠️ Your maximum readied maneuver quota is full (${maxReadied}/${maxReadied}). Unready a maneuver first.`);
           return;
         }
-        const knownItem = (character.tomeOfBattle.maneuversKnown || []).find(m => (m.name || '').toLowerCase().trim() === cleanName);
+        const knownItem = (character?.tomeOfBattle?.maneuversKnown || []).find(m => (m.name || '').toLowerCase().trim() === cleanName);
         if (knownItem) {
-          readied.push({ ...knownItem, expended: false });
+          if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+            CharStore.dispatch({
+              type: 'spells/toggleManeuverReadied',
+              payload: { name, maxReadied },
+              meta: { label: `Ready Maneuver (${name})` }
+            });
+          } else {
+            readied.push({ ...knownItem, expended: false });
+            saveStateToStorage(true);
+          }
           showDiceTopToast({
             icon: '⚡',
             title: 'Maneuver Readied',
@@ -4852,16 +5102,23 @@
       }
 
       if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
-      saveStateToStorage(true);
       renderManeuvers();
     }
 
     function recoverAllManeuvers() {
-      (character?.tomeOfBattle?.readiedManeuvers || []).forEach(m => m.expended = false);
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/expendOrRecoverManeuver',
+          payload: { recoverAll: true, mode: 'recoverAll' },
+          meta: { label: 'Recover All Maneuvers' }
+        });
+      } else {
+        (character?.tomeOfBattle?.readiedManeuvers || []).forEach(m => m.expended = false);
+        if (character) character.lastModified = new Date().toISOString();
+        saveStateToStorage(true);
+      }
       if (typeof consumeActionEconomy === 'function') consumeActionEconomy('swift', 'Recover Maneuvers');
-      if (character) character.lastModified = new Date().toISOString();
       renderManeuvers();
-      saveStateToStorage(true);
       if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
         window.CloudSync.pushImmediate();
       } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
@@ -4877,22 +5134,38 @@
 
     function onStanceChange() {
       const selectEl = document.getElementById('active-stance-select');
-      if (selectEl) {
-        character.activeStance = selectEl.value;
-        if (selectEl.value && selectEl.value !== 'None' && typeof consumeActionEconomy === 'function') {
-          consumeActionEconomy('swift', `Stance: ${selectEl.value}`);
-        }
+      const nextStance = selectEl ? selectEl.value : (character?.activeStance || 'None');
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/selectStance',
+          payload: { name: nextStance },
+          meta: { label: `Change Stance (${nextStance})` }
+        });
+      } else {
+        character.activeStance = nextStance;
+        saveStateToStorage();
+      }
+      if (nextStance && nextStance !== 'None' && typeof consumeActionEconomy === 'function') {
+        consumeActionEconomy('swift', `Stance: ${nextStance}`);
       }
       if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
       recalculateOffense();
       renderSpellsCockpit();
       renderManeuvers();
-      saveStateToStorage();
     }
 
     function selectStanceDirectly(escapedName) {
       const name = unescape(escapedName);
-      character.activeStance = name;
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/selectStance',
+          payload: { name },
+          meta: { label: (!name || name === 'None') ? 'Exit Stance' : `Enter Stance (${name})` }
+        });
+      } else {
+        character.activeStance = name;
+        saveStateToStorage();
+      }
       if (name && name !== 'None' && typeof consumeActionEconomy === 'function') {
         consumeActionEconomy('swift', `Stance: ${name}`);
       }
@@ -4900,7 +5173,6 @@
       recalculateOffense();
       renderSpellsCockpit();
       renderManeuvers();
-      saveStateToStorage();
       showDiceTopToast({
         icon: '🥋',
         title: (!name || name === 'None') ? 'Stance Exited' : 'Stance Changed',
@@ -4913,25 +5185,33 @@
       const name = unescape(escapedName);
       const cleanName = (name || '').toLowerCase().trim();
 
-      if (isStance) {
-        const idx = (character.tomeOfBattle?.stancesKnown || []).findIndex(st => (st.name || '').toLowerCase().trim() === cleanName);
-        if (idx >= 0) {
-          character.tomeOfBattle.stancesKnown.splice(idx, 1);
-          if (character.activeStance === name) character.activeStance = 'None';
-        }
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/removeManeuverOrStance',
+          payload: { name, isStance: Boolean(isStance) },
+          meta: { label: `Remove ${isStance ? 'Stance' : 'Maneuver'} (${name})` }
+        });
       } else {
-        const idx = (character.tomeOfBattle?.maneuversKnown || []).findIndex(m => (m.name || '').toLowerCase().trim() === cleanName);
-        if (idx >= 0) {
-          character.tomeOfBattle.maneuversKnown.splice(idx, 1);
+        if (isStance) {
+          const idx = (character.tomeOfBattle?.stancesKnown || []).findIndex(st => (st.name || '').toLowerCase().trim() === cleanName);
+          if (idx >= 0) {
+            character.tomeOfBattle.stancesKnown.splice(idx, 1);
+            if (character.activeStance === name) character.activeStance = 'None';
+          }
+        } else {
+          const idx = (character.tomeOfBattle?.maneuversKnown || []).findIndex(m => (m.name || '').toLowerCase().trim() === cleanName);
+          if (idx >= 0) {
+            character.tomeOfBattle.maneuversKnown.splice(idx, 1);
+          }
+          const rIdx = (character.tomeOfBattle?.readiedManeuvers || []).findIndex(m => (m.name || '').toLowerCase().trim() === cleanName);
+          if (rIdx >= 0) {
+            character.tomeOfBattle.readiedManeuvers.splice(rIdx, 1);
+          }
         }
-        const rIdx = (character.tomeOfBattle?.readiedManeuvers || []).findIndex(m => (m.name || '').toLowerCase().trim() === cleanName);
-        if (rIdx >= 0) {
-          character.tomeOfBattle.readiedManeuvers.splice(rIdx, 1);
-        }
+        saveStateToStorage(true);
       }
 
       if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
-      saveStateToStorage(true);
       renderManeuvers();
       showDiceTopToast({
         icon: '🗑️',
@@ -4945,7 +5225,8 @@
       const numLvl = Number(lvl) || 0;
       const knownCount = (character?.spellcasting?.knownSpells || []).filter(s => Number(s.level || 0) === numLvl).length;
       const { cl, hasClass, primaryClass } = getCasterInfo();
-      const slot = character?.spellcasting?.slots?.find(s => Number(s.level) === numLvl);
+      const spellsView = getSpellsView();
+      const slot = spellsView?.slotsByLevelView?.spontaneous?.[numLvl] || character?.spellcasting?.slots?.find(s => Number(s.level) === numLvl);
 
       if (!hasClass || Number(cl) <= 0) {
         if (slot && (Number(slot.dmBonus) || 0) > 0) {
@@ -5033,18 +5314,15 @@
       const schoolVal = document.getElementById('spell-filter-school')?.value || 'all';
       const lvlFilter = window._spellCurrentFilterLevel || 'all';
 
-      const classesStatus = checkCharacterMagicClasses();
-      let spells = character?.spellcasting?.knownSpells || [];
+      const spellsView = getSpellsView();
+      const spontSlotsArr = spellsView?.slotsByLevelView?.spontaneousArray || (Array.isArray(character?.spellcasting?.slots) ? character.spellcasting.slots : []);
+      let spells = Array.isArray(character?.spellcasting?.knownSpells) ? character.spellcasting.knownSpells : [];
       if (spells.length === 0 && Array.isArray(character?.spells) && character.spells.length > 0) {
         spells = character.spells;
-        if (character?.spellcasting) character.spellcasting.knownSpells = spells;
       }
 
-      if (!character.spellcasting) character.spellcasting = {};
-      if (!Array.isArray(character.spellcasting.knownSpells)) character.spellcasting.knownSpells = [];
-
       const { cl: spontCl, hasClass: hasSpontClass } = getCasterInfo();
-      const slotLevels = (character?.spellcasting?.slots || [])
+      const slotLevels = spontSlotsArr
         .filter(s => (Number(s.daily) || 0) > 0 || (Number(s.dmBonus) || 0) > 0)
         .map(s => Number(s.level));
       const knownLevels = spells.map(s => Number(s.level));
@@ -5065,7 +5343,7 @@
           const isActive = String(lvlFilter) === String(lvl);
           const label = lvl === 'all' ? 'All' : (lvl === 0 ? 'Level 0' : `Level ${lvl}`);
           pillsHtml += `
-            <button type="button" onclick="setSpellFilterLevel('${lvl}')" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
+            <button type="button" data-action="spells:spont-filter-level" data-level="${lvl}" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
               isActive 
                 ? 'bg-purple-800 text-white border-purple-500 shadow' 
                 : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
@@ -5088,7 +5366,7 @@
           }
         });
 
-        const slotObj = (character?.spellcasting?.slots || []).find(sl => Number(sl.level) === lvl);
+        const slotObj = spontSlotsArr.find(sl => Number(sl.level) === lvl);
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
         const totalDaily = slotObj ? (slotObj.daily || 0) : 0;
         const hasActiveSlot = remainingSlots > 0;
@@ -5170,7 +5448,7 @@
         const dc = getSpellDc(s.level !== undefined ? s.level : lvl);
         const spellCl = getSpellEffectiveCl(s, spontCl);
         const dmgExpr = resolveSpellEffectiveFormula(s, spellCl);
-        const slotObj = (character?.spellcasting?.slots || []).find(sl => Number(sl.level) === lvl);
+        const slotObj = spontSlotsArr.find(sl => Number(sl.level) === lvl);
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
         const hasActiveSlot = remainingSlots > 0;
         const theme = getSpellLevelTheme(lvl);
@@ -5212,13 +5490,13 @@
           <td class="py-2.5 px-3 text-right align-middle">
             <div class="flex items-center justify-end gap-2 w-full">
               ${isTouchAttack ? `
-                <button type="button" onclick="rollSpellTouchAttack(${originalIdx})" class="h-7 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/80 text-xs font-bold font-mono px-2 rounded-lg transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shadow" title="Roll ${isRangedTouch ? 'Ranged' : 'Melee'} Touch Attack (BAB + ${isRangedTouch ? 'DEX' : 'STR'})">
+                <button type="button" data-action="spells:roll-touch-attack" data-idx="${originalIdx}" class="h-7 bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/80 text-xs font-bold font-mono px-2 rounded-lg transition inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap shadow" title="Roll ${isRangedTouch ? 'Ranged' : 'Melee'} Touch Attack (BAB + ${isRangedTouch ? 'DEX' : 'STR'})">
                   <span>⚡</span>
                   <span>Touch ${touchAtkBonus >= 0 ? '+' : ''}${touchAtkBonus}</span>
                 </button>
               ` : ''}
               ${dmgExpr ? `
-                <button onclick="castSpellDirectly(${originalIdx})" class="${
+                <button data-action="spells:cast-spontaneous" data-idx="${originalIdx}" class="${
                   hasActiveSlot 
                     ? 'bg-amber-950/90 hover:bg-amber-800 text-amber-300 hover:text-white border-amber-600/80 cursor-pointer shadow' 
                     : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
@@ -5229,7 +5507,7 @@
                   <span>${dmgExpr}</span>
                 </button>
               ` : `
-                <button onclick="castSpellDirectly(${originalIdx})" class="${
+                <button data-action="spells:cast-spontaneous" data-idx="${originalIdx}" class="${
                   hasActiveSlot 
                     ? 'bg-purple-900/70 hover:bg-purple-600 text-white border-purple-500 cursor-pointer shadow' 
                     : 'opacity-50 cursor-not-allowed bg-slate-900 border-slate-800 text-slate-500'
@@ -5240,7 +5518,7 @@
                     <span>Cast</span>
                   </button>
               `}
-              <button onclick="deleteKnownSpell(${originalIdx})" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Unprepare / Remove Spell (Leaves Empty Slot)">
+              <button data-action="spells:delete-known" data-idx="${originalIdx}" class="w-6 h-6 inline-flex items-center justify-center text-slate-500 hover:text-rose-400 text-xs transition cursor-pointer shrink-0" title="Unprepare / Remove Spell (Leaves Empty Slot)">
                 🗑️
               </button>
             </div>
@@ -5251,7 +5529,7 @@
 
       function renderEmptySpellSlotRow(lvl, slotNumber) {
         const dc = getSpellDc(lvl);
-        const slotObj = (character?.spellcasting?.slots || []).find(sl => Number(sl.level) === lvl);
+        const slotObj = spontSlotsArr.find(sl => Number(sl.level) === lvl);
         const remainingSlots = slotObj ? Math.max(0, (slotObj.daily || 0) - (slotObj.used || 0)) : 0;
         const hasActiveSlot = remainingSlots > 0;
         const theme = getSpellLevelTheme(lvl);
@@ -5260,16 +5538,14 @@
         tr.className = `transition cursor-pointer group border-l-4 ${theme.borderLeft} ${
           hasActiveSlot ? 'hover:bg-purple-950/25 bg-slate-950/20' : 'opacity-40 grayscale-[35%] bg-slate-950/60'
         }`;
-        tr.onclick = (e) => {
-          if (e.target.closest('button')) return;
-          openSpellPickerForSpecificLevel(lvl);
-        };
+        tr.setAttribute('data-action', 'spells:open-spont-picker');
+        tr.setAttribute('data-level', String(lvl));
         tr.innerHTML = `
           <td class="py-2.5 px-3 text-center align-middle">
             <span class="badge ${theme.badge} opacity-60 text-[10px] font-bold font-mono px-2 py-0.5">${lvl === 0 ? '0' : lvl}</span>
           </td>
           <td class="py-2.5 px-3">
-            <button type="button" onclick="openSpellPickerForSpecificLevel(${lvl})" class="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-300/80 group-hover:text-purple-100 cursor-pointer">
+            <button type="button" data-action="spells:open-spont-picker" data-level="${lvl}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-300/80 group-hover:text-purple-100 cursor-pointer">
               <span class="w-4 h-4 rounded border border-dashed border-purple-500/70 bg-purple-950/60 flex items-center justify-center text-[10px] text-purple-300 group-hover:bg-purple-800 transition">+</span>
               <span class="italic">+ Select Spell (Empty Slot)</span>
             </button>
@@ -5283,7 +5559,7 @@
           <td class="py-2.5 px-3 text-slate-500 text-[11px] italic">This spell slot is empty. Click to learn a ${lvl === 0 ? 'Level 0 (Cantrip)' : `Level ${lvl}`} spell.</td>
           <td class="py-2.5 px-3 text-right align-middle">
             <div class="flex items-center justify-end gap-2 w-full">
-              <button type="button" onclick="openSpellPickerForSpecificLevel(${lvl})" class="h-7 min-w-[115px] bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-dashed border-purple-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Select Level ${lvl} Spell">
+              <button type="button" data-action="spells:open-spont-picker" data-level="${lvl}" class="h-7 min-w-[115px] bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-dashed border-purple-500/80 text-xs font-bold px-2.5 rounded-lg transition shadow-sm inline-flex items-center justify-center gap-1 cursor-pointer whitespace-nowrap" title="Select Level ${lvl} Spell">
                 <span>🔮</span>
                 <span>+ Select Spell</span>
               </button>
@@ -5303,8 +5579,16 @@
     function deleteKnownSpell(idx) {
       if (!character?.spellcasting?.knownSpells?.[idx]) return;
       const s = character.spellcasting.knownSpells[idx];
-      character.spellcasting.knownSpells.splice(idx, 1);
-      saveStateToStorage(true);
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/removeSpell',
+          payload: { discipline: 'spontaneous', index: idx },
+          meta: { label: `Remove Known Spell (${s.name})` }
+        });
+      } else {
+        character.spellcasting.knownSpells.splice(idx, 1);
+        saveStateToStorage(true);
+      }
       renderAll();
       showDiceTopToast({
         icon: '🗑️',
@@ -5323,7 +5607,8 @@
       const cl = getSpellEffectiveCl(s, baseCl);
       const dmgExpr = resolveSpellEffectiveFormula(s, cl);
 
-      const slot = character.spellcasting?.slots?.find(sl => sl.level === lvl);
+      const spellsView = getSpellsView();
+      const slot = spellsView?.slotsByLevelView?.spontaneous?.[lvl] || character.spellcasting?.slots?.find(sl => Number(sl.level) === lvl);
       if (!slot || slot.used >= slot.daily) {
         showDiceTopToast({
           icon: '\u26A0\uFE0F',
@@ -5334,16 +5619,40 @@
         return;
       }
 
-      const preCast = getSpellPreCastOptions(s, cl, slot, lvl);
+      const mutSlot = character.spellcasting?.slots?.find(sl => Number(sl.level) === lvl) || slot;
+      const preCast = getSpellPreCastOptions(s, cl, mutSlot, lvl, {
+        discipline: 'spontaneous',
+        spellIdx,
+        level: lvl,
+        isDomain: false
+      });
       if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
         showSpellPreCastChoiceToast(preCast);
         return;
       }
 
       if (slot && slot.used < slot.daily) {
-        slot.used++;
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/castSpell',
+            payload: {
+              discipline: 'spontaneous',
+              index: spellIdx,
+              spellIndex: spellIdx,
+              spellId: s.id,
+              spellName: name,
+              spellLevel: lvl,
+              level: lvl
+            },
+            meta: { label: `Cast Spontaneous Spell (${name})` }
+          });
+          const out = CharStore.getLastOutcome();
+          if (!out || out.status !== 'spell_cast') return;
+        } else {
+          if (mutSlot) mutSlot.used++;
+          saveStateToStorage(true);
+        }
         if (typeof consumeActionEconomy === 'function') consumeActionEconomy(s, name);
-        saveStateToStorage(true);
         renderAll();
 
         if (handleBuffSpellCast(s, cl, `Level ${lvl} Spontaneous Slot Expended`, '🔮')) {
@@ -6323,7 +6632,7 @@
           `;
         } else {
           actionHtml = `
-            <button type="button" onclick="addMasterDbItemToCharacter('${escape(item.name)}')" class="${pickerPalette.addBtn} font-bold text-xs px-3 py-1.5 rounded-lg border shadow transition flex items-center gap-1 cursor-pointer" title="${countText ? 'Current / Max Slots: ' + countText : ''}">
+            <button type="button" data-action="spells:add-picker-item" data-name="${escape(item.name)}" class="${pickerPalette.addBtn} font-bold text-xs px-3 py-1.5 rounded-lg border shadow transition flex items-center gap-1 cursor-pointer" title="${countText ? 'Current / Max Slots: ' + countText : ''}">
               <span>+ Add</span>
               ${countText ? `<span class="text-[10px] opacity-80 font-mono">(${countText})</span>` : ''}
             </button>
@@ -6513,9 +6822,16 @@
           newSpellEntry.domainSource = matchedDomainName;
         }
 
-        character.spellcasting[poolKey].push(newSpellEntry);
-
-        saveStateToStorage(true);
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/addSpell',
+            payload: { pool: targetPool, spellEntry: newSpellEntry, isDomainSpell: isDomainAdded },
+            meta: { label: isDomainAdded ? `Prepare Domain Spell: ${item.name}` : `Add Spell: ${item.name}` }
+          });
+        } else {
+          character.spellcasting[poolKey].push(newSpellEntry);
+          saveStateToStorage(true);
+        }
         renderAll();
         renderSpellPickerResults();
         showDiceTopToast({
@@ -6620,9 +6936,16 @@
           expended: false
         };
 
-        character.tomeOfBattle.maneuversKnown.push(newManeuver);
-
-        saveStateToStorage(true);
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/addManeuverOrStance',
+            payload: { itemType: 'Maneuver', entry: newManeuver },
+            meta: { label: `Learn Maneuver: ${item.name}` }
+          });
+        } else {
+          character.tomeOfBattle.maneuversKnown.push(newManeuver);
+          saveStateToStorage(true);
+        }
         renderAll();
         renderSpellPickerResults();
         showDiceTopToast({
@@ -6705,7 +7028,7 @@
         }
 
         const v2StanceDice = (Array.isArray(item.damageParts) && item.damageParts[0]?.dice) || item.damageDice || undefined;
-        character.tomeOfBattle.stancesKnown.push({
+        const newStance = {
           id: item.id || ('tob_stance_' + String(item.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '_')),
           schemaVersion: 2,
           name: item.name,
@@ -6719,9 +7042,17 @@
           ruleFlags: Array.isArray(item.ruleFlags) ? [...item.ruleFlags] : [],
           tacticalBadges: Array.isArray(item.tacticalBadges) ? [...item.tacticalBadges] : [],
           benefit: item.benefit || item.shortDescription || stripSpellHtml(item.description || item.desc) || ''
-        });
-
-        saveStateToStorage(true);
+        };
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/addManeuverOrStance',
+            payload: { itemType: 'Stance', entry: newStance },
+            meta: { label: `Learn Stance: ${item.name}` }
+          });
+        } else {
+          character.tomeOfBattle.stancesKnown.push(newStance);
+          saveStateToStorage(true);
+        }
         renderAll();
         renderSpellPickerResults();
         showDiceTopToast({
@@ -6796,7 +7127,7 @@
           <div class="p-4 bg-rose-950/60 border border-rose-600 rounded-xl text-center space-y-2">
             <div class="text-rose-400 font-bold text-xs">⚠️ Rule Master Lookup Error</div>
             <p class="text-[11px] text-slate-300">${err.message || 'Could not fetch entry.'}</p>
-            <button onclick="renderSpellPickerResults()" class="mt-2 text-xs bg-slate-800 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-lg border border-slate-700">Back to List</button>
+            <button type="button" data-action="spells:picker-results-refresh" class="mt-2 text-xs bg-slate-800 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-lg border border-slate-700">Back to List</button>
           </div>
         `;
       }
@@ -7400,7 +7731,7 @@
                 : `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-900 text-slate-500 border border-slate-800">+ Add Boon</span>`));
 
           return `
-            <button type="button" onclick="toggleDisciplineDmBoon('${d.key}')" class="p-2 rounded-xl border text-left transition flex items-center justify-between gap-2 cursor-pointer active:scale-95 ${activeClass}" title="Click to toggle ${d.label} as a DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
+            <button type="button" data-action="spells:toggle-dm-boon" data-discipline="${d.key}" class="p-2 rounded-xl border text-left transition flex items-center justify-between gap-2 cursor-pointer active:scale-95 ${activeClass}" title="Click to toggle ${d.label} as a DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
               <span class="flex items-center gap-1.5 text-[11px] font-bold truncate">
                 <span>${d.icon}</span>
                 <span class="truncate">${d.label}</span>
@@ -7427,7 +7758,7 @@
             ? `🌟 Boon (CL ${activeLevels})`
             : (hasClass ? `Class Lvl ${d.classLvl}` : `+ Boon`);
           return `
-            <button type="button" onclick="toggleDisciplineDmBoon('${d.key}')" class="px-2.5 py-1.5 rounded-lg border text-[10px] font-bold transition inline-flex items-center justify-between gap-1.5 cursor-pointer active:scale-95 ${chipCls}" title="Click to toggle ${d.label} DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
+            <button type="button" data-action="spells:toggle-dm-boon" data-discipline="${d.key}" class="px-2.5 py-1.5 rounded-lg border text-[10px] font-bold transition inline-flex items-center justify-between gap-1.5 cursor-pointer active:scale-95 ${chipCls}" title="Click to toggle ${d.label} DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
               <span class="flex items-center gap-1 truncate">
                 <span>${d.icon}</span>
                 <span>${d.short}</span>
@@ -7442,46 +7773,49 @@
 
     function toggleDisciplineDmBoon(disc) {
       if (!character) return;
-      if (!character.settings) character.settings = {};
       const target = String(disc || '').toLowerCase().trim();
       const valid = ['spontaneous', 'prepared', 'divine', 'martial', 'warlock'];
       if (!valid.includes(target)) return;
 
       const currentBoons = getCharacterBoonDisciplines(character);
-      let nextBoons;
       const wasActive = currentBoons.includes(target);
-      if (wasActive) {
-        nextBoons = currentBoons.filter(d => d !== target);
+      const autoDisc = resolvePreferredMagicDiscipline(character) || 'spontaneous';
+
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'spells/toggleDmBoon',
+          payload: { discipline: target, fallbackDiscipline: autoDisc },
+          meta: { label: `${!wasActive ? 'Enable' : 'Disable'} DM Boon (${target})` }
+        });
       } else {
-        nextBoons = [...currentBoons, target];
-      }
-
-      character.settings.boonDisciplines = nextBoons;
-      character.settings.warlockBoon = nextBoons.includes('warlock');
-
-      if (nextBoons.length > 0) {
-        character.settings.casterTypeExplicit = true;
-        if (!wasActive) {
-          character.settings.casterType = target;
-        } else if (!nextBoons.includes(character.settings.casterType)) {
-          character.settings.casterType = nextBoons[0];
-        }
-        if (nextBoons.length === 1 && nextBoons[0] === 'warlock') {
-          character.settings.clMode = 'Warlock Boon (Invocations & Eldritch Blast)';
+        if (!character.settings) character.settings = {};
+        const nextBoons = wasActive ? currentBoons.filter(d => d !== target) : [...currentBoons, target];
+        character.settings.boonDisciplines = nextBoons;
+        character.settings.warlockBoon = nextBoons.includes('warlock');
+        if (nextBoons.length > 0) {
+          character.settings.casterTypeExplicit = true;
+          if (!wasActive) {
+            character.settings.casterType = target;
+          } else if (!nextBoons.includes(character.settings.casterType)) {
+            character.settings.casterType = nextBoons[0];
+          }
+          if (nextBoons.length === 1 && nextBoons[0] === 'warlock') {
+            character.settings.clMode = 'Warlock Boon (Invocations & Eldritch Blast)';
+          } else {
+            character.settings.clMode = 'Character Level (DM Boon)';
+          }
         } else {
-          character.settings.clMode = 'Character Level (DM Boon)';
+          character.settings.casterTypeExplicit = false;
+          character.settings.clMode = 'Class Level';
+          character.settings.casterType = autoDisc;
         }
-      } else {
-        character.settings.casterTypeExplicit = false;
-        character.settings.clMode = 'Class Level';
-        const autoDisc = resolvePreferredMagicDiscipline(character) || 'spontaneous';
-        character.settings.casterType = autoDisc;
+        saveStateToStorage(true);
       }
 
       const clSel = document.getElementById('setting-cl-mode');
-      if (clSel) clSel.value = character.settings.clMode;
+      if (clSel) clSel.value = character.settings?.clMode || 'Class Level';
       const typeSel = document.getElementById('setting-caster-type');
-      if (typeSel && typeSel.querySelector(`option[value="${character.settings.casterType}"]`)) {
+      if (typeSel && typeSel.querySelector(`option[value="${character.settings?.casterType}"]`)) {
         typeSel.value = character.settings.casterType;
       }
 
@@ -7497,7 +7831,6 @@
         autoSelectMagicDisciplineTab(character, true);
       }
 
-      saveStateToStorage(true);
       if (typeof updateQuickFeatCategoryWarlockState === 'function') {
         updateQuickFeatCategoryWarlockState();
       }
@@ -8451,29 +8784,29 @@
               <span>📋</span>
               <span>Clone / Load from Existing Class Template</span>
             </label>
-            <button type="button" onclick="applyAdventurerRoguePreset()" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-500/50 transition cursor-pointer" title="Load Rogue template with Fighter Bonus Feats at levels 1, 3, 5..19 in place of Sneak Attack">
+            <button type="button" data-action="spells:custom-class-rogue-preset" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-500/50 transition cursor-pointer" title="Load Rogue template with Fighter Bonus Feats at levels 1, 3, 5..19 in place of Sneak Attack">
               ⚡ Preset: Rogue (Adventurer / Feat Variant)
             </button>
           </div>
           <div class="flex items-center gap-2">
-            <select id="custom-class-template-select" onchange="loadClassTemplateIntoCustomModal(this.value)" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-300 font-bold">
+            <select id="custom-class-template-select" data-change-action="spells:custom-class-template-change" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-300 font-bold">
               <option value="">-- Start from Blank Custom Class --</option>
             </select>
-            <button type="button" onclick="loadClassTemplateIntoCustomModal(document.getElementById('custom-class-template-select')?.value)" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg border border-indigo-400/40 transition cursor-pointer">
+            <button type="button" data-action="spells:custom-class-load-template" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg border border-indigo-400/40 transition cursor-pointer">
               Load Template
             </button>
           </div>
           <div class="grid grid-cols-2 gap-2 pt-1">
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Class Category</label>
-              <select id="custom-class-type" onchange="onCustomClassMaxLevelChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-purple-300 font-bold">
+              <select id="custom-class-type" data-change-action="spells:custom-class-type-change" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-purple-300 font-bold">
                 <option value="Base Class" selected>🛡️ Base / Variant Class</option>
                 <option value="Prestige Class">👑 Prestige Class</option>
               </select>
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Max Class Level</label>
-              <select id="custom-class-max-level" onchange="renderCustomClassLevelEditorRows()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-amber-300 font-bold">
+              <select id="custom-class-max-level" data-change-action="spells:custom-class-max-level-change" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-amber-300 font-bold">
                 <option value="20" selected>20 Levels (Standard Base)</option>
                 <option value="10">10 Levels (Prestige)</option>
                 <option value="5">5 Levels (Short Prestige)</option>
@@ -8932,12 +9265,12 @@
       if (!foundCategory || !foundPin) return '';
 
       const isActive = Boolean(foundPin.active);
-      const safeTarget = cleanTarget.replace(/'/g, "\\'");
+      const safeTarget = escape(cleanTarget);
 
       if (isActive) {
-        return `<span onclick="event.stopPropagation(); toggleFeatPinActiveState('${safeTarget}')" class="absolute top-0.5 right-0.5 inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[9px] border border-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.85)] pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: ACTIVE (+Bonus applied). Click to deactivate!"><span class="text-[9px]">✓</span><span>Active</span></span>`;
+        return `<span data-action="spells:toggle-feat-pin" data-target="${safeTarget}" class="absolute top-0.5 right-0.5 inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[9px] border border-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.85)] pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: ACTIVE (+Bonus applied). Click to deactivate!"><span class="text-[9px]">✓</span><span>Active</span></span>`;
       } else {
-        return `<span onclick="event.stopPropagation(); toggleFeatPinActiveState('${safeTarget}')" class="absolute top-0.5 right-0.5 inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-[9px] border border-slate-700 shadow pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: INACTIVE. Click to activate!"><span class="text-[8px]">⚪</span><span>Inactive</span></span>`;
+        return `<span data-action="spells:toggle-feat-pin" data-target="${safeTarget}" class="absolute top-0.5 right-0.5 inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-[9px] border border-slate-700 shadow pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: INACTIVE. Click to activate!"><span class="text-[8px]">⚪</span><span>Inactive</span></span>`;
       }
     }
 
@@ -9152,7 +9485,7 @@
                 <span class="font-extrabold text-white truncate">${currentTarget}</span>
                 ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-900/80 text-amber-300 font-mono">${meta}</span>` : ''}
               </div>
-              <button type="button" onclick="window.clearFeatModalTargetSelection()" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
+              <button type="button" data-action="spells:clear-feat-target-weapon" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
             </div>
           `;
         } else {
@@ -9186,9 +9519,9 @@
         filteredEquipped.forEach(w => {
           const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
           const meta = metaFn(w);
-          const safeW = w.replace(/'/g, "\\'");
+          const safeW = escape(w);
           html += `
-            <button type="button" onclick="window.selectFeatModalTargetWeapon('${safeW}')" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent hover:border-amber-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+            <button type="button" data-action="spells:select-feat-target-weapon" data-weapon="${safeW}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent hover:border-amber-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="font-bold text-white text-xs group-hover:text-amber-200 truncate">${w}</span>
                 <span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold shrink-0">Equipped</span>
@@ -9210,9 +9543,9 @@
         filteredCompendium.forEach(w => {
           const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
           const meta = metaFn(w);
-          const safeW = w.replace(/'/g, "\\'");
+          const safeW = escape(w);
           html += `
-            <button type="button" onclick="window.selectFeatModalTargetWeapon('${safeW}')" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+            <button type="button" data-action="spells:select-feat-target-weapon" data-weapon="${safeW}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="font-bold text-white text-xs group-hover:text-purple-200 truncate">${w}</span>
                 ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
@@ -9339,7 +9672,7 @@
               placeholder="Type weapon name (e.g. Longsword, Greatsword, Scimitar)..."
               class="w-full bg-slate-950 border border-amber-500/70 focus:border-amber-400 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-400 font-medium transition"
               autocomplete="off">
-            <button type="button" id="feat-modal-target-spotlight-clear-btn" onclick="window.clearFeatModalTargetSelection()" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold transition cursor-pointer ${currentTarget ? '' : 'hidden'}" title="Clear selection">&times;</button>
+            <button type="button" id="feat-modal-target-spotlight-clear-btn" data-action="spells:clear-feat-target-weapon" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold transition cursor-pointer ${currentTarget ? '' : 'hidden'}" title="Clear selection">&times;</button>
           </div>
           <div id="feat-modal-target-active-badge-container"></div>
           <div id="feat-modal-target-spotlight-results" class="max-h-52 overflow-y-auto space-y-1 p-1 bg-slate-950/70 border border-slate-800 rounded-lg custom-scroll text-xs"></div>
@@ -9744,10 +10077,10 @@
               const bonusNum = Number(dp.bonus || 0);
               const formula = `${dp.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
               const dmgType = dp.type || 'Damage';
-              const safeFormula = formula.replace(/'/g, "\\'");
-              const safeLabel = `${title} (${dmgType} Damage)`.replace(/'/g, "\\'");
+              const safeFormula = escape(formula);
+              const safeLabel = escape(`${title} (${dmgType} Damage)`);
               buttonsHtml.push(`
-                <button type="button" onclick="rollAbilityTacticalDice('${safeFormula}', '${safeLabel}', 'damage', '${safeAction}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-950/90 hover:bg-rose-800 text-rose-100 border border-rose-600/70 shadow transition active:scale-95 cursor-pointer">
+                <button type="button" data-action="spells:roll-ability-tactical-dice" data-formula="${safeFormula}" data-label="${safeLabel}" data-mode="damage" data-action-type="${escape(safeAction)}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-950/90 hover:bg-rose-800 text-rose-100 border border-rose-600/70 shadow transition active:scale-95 cursor-pointer">
                   <span>⚔️</span>
                   <span>Roll ${safeEscapeHtml(formula)} ${safeEscapeHtml(dmgType)}</span>
                 </button>
@@ -9755,10 +10088,10 @@
             });
           }
           if (mergedV2.rechargeDice) {
-            const safeRFormula = String(mergedV2.rechargeDice).replace(/'/g, "\\'");
-            const safeRLabel = `${title} — Recharge Cooldown`.replace(/'/g, "\\'");
+            const safeRFormula = escape(String(mergedV2.rechargeDice));
+            const safeRLabel = escape(`${title} — Recharge Cooldown`);
             buttonsHtml.push(`
-              <button type="button" onclick="rollAbilityTacticalDice('${safeRFormula}', '${safeRLabel}', 'recharge')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-950/90 hover:bg-indigo-800 text-indigo-100 border border-indigo-600/70 shadow transition active:scale-95 cursor-pointer">
+              <button type="button" data-action="spells:roll-ability-tactical-dice" data-formula="${safeRFormula}" data-label="${safeRLabel}" data-mode="recharge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-950/90 hover:bg-indigo-800 text-indigo-100 border border-indigo-600/70 shadow transition active:scale-95 cursor-pointer">
                 <span>⏳</span>
                 <span>Roll Recharge (${safeEscapeHtml(mergedV2.rechargeDice)} rounds)</span>
               </button>
@@ -9910,4 +10243,178 @@
         }, { autoDismiss: true, dismissMs: 4000 });
       }
     }
+
+    // =========================================================================
+    // PHASE R5: Delegated Event Handlers (`spells:*`)
+    // Parameter order strictly `(el, data, event)` per `UI.Actions` contract
+    // =========================================================================
+    (function registerSpellsDelegatedActions() {
+      const Actions = window.Actions || (window.UI && window.UI.Actions);
+      if (!Actions || typeof Actions.register !== 'function') return;
+
+      Actions.register('spells:prepared-filter-level', (el, data, event) => {
+        const lvl = data.level === 'all' ? 'all' : Number(data.level);
+        setPreparedFilterLevel(lvl);
+      });
+      Actions.register('spells:cast-prepared', (el, data, event) => {
+        castPreparedSpellDirectly(Number(data.idx));
+      });
+      Actions.register('spells:delete-prepared', (el, data, event) => {
+        deletePreparedSpell(Number(data.idx));
+      });
+      Actions.register('spells:open-prepared-picker', (el, data, event) => {
+        openPreparedSpellPickerForLevel(Number(data.level));
+      });
+      Actions.register('spells:restore-all-prepared', (el, data, event) => {
+        restoreAllPreparedSlots();
+      });
+      Actions.register('spells:open-slots-modal', (el, data, event) => {
+        openSpellSlotsModal(undefined, data.discipline || undefined);
+      });
+      Actions.register('spells:prepared-filter-refresh', (el, data, event) => {
+        renderPreparedDisciplineView(data.hasPrepared === 'true');
+      });
+      Actions.register('spells:divine-filter-level', (el, data, event) => {
+        const lvl = data.level === 'all' ? 'all' : Number(data.level);
+        setDivineFilterLevel(lvl);
+      });
+      Actions.register('spells:cast-cleric-spontaneous', (el, data, event) => {
+        castClericSpontaneousConversion(Number(data.idx));
+      });
+      Actions.register('spells:cast-divine', (el, data, event) => {
+        castDivineSpellDirectly(Number(data.idx));
+      });
+      Actions.register('spells:delete-divine', (el, data, event) => {
+        deleteDivineSpell(Number(data.idx));
+      });
+      Actions.register('spells:open-divine-picker', (el, data, event) => {
+        openDivineSpellPickerForLevel(Number(data.level), data.domain === 'true');
+      });
+      Actions.register('spells:open-divine-domain-row', (el, data, event) => {
+        const lvl = Number(data.level);
+        if (data.hasDomains === 'true') {
+          openDivineSpellPickerForLevel(lvl, true);
+        } else if (typeof openClericDomainPickerModal === 'function') {
+          openClericDomainPickerModal(0, 0);
+        } else {
+          openDivineSpellPickerForLevel(lvl, true);
+        }
+      });
+      Actions.register('spells:roll-turn-undead', (el, data, event) => {
+        rollTurnUndeadCheck(data.poolId || 'undead', false);
+      });
+      Actions.register('spells:activate-domain-power', (el, data, event) => {
+        activateClericDomainPower(data.powerId || '');
+      });
+      Actions.register('spells:open-domain-picker-modal', (el, data, event) => {
+        if (typeof openClericDomainPickerModal === 'function') {
+          openClericDomainPickerModal(0, 0);
+        }
+      });
+      Actions.register('spells:toggle-cleric-spontaneous', (el, data, event) => {
+        toggleClericSpontaneousMode();
+      });
+      Actions.register('spells:restore-all-divine', (el, data, event) => {
+        restoreAllDivineSlots();
+      });
+      Actions.register('spells:divine-filter-refresh', (el, data, event) => {
+        renderDivineDisciplineView(data.hasDivine === 'true');
+      });
+      Actions.register('spells:switch-compact-source', (el, data, event) => {
+        switchCompactSlotsSource(data.source || 'spontaneous');
+      });
+      Actions.register('spells:use-or-recover-maneuver', (el, data, event) => {
+        useOrRecoverManeuver(Number(data.idx));
+      });
+      Actions.register('spells:toggle-maneuver-readied', (el, data, event) => {
+        toggleManeuverReadied(data.name || '');
+      });
+      Actions.register('spells:open-ready-maneuver-modal', (el, data, event) => {
+        openReadyManeuverFromPoolModal(Number(data.slotIdx) || 0);
+      });
+      Actions.register('spells:maneuver-type-filter', (el, data, event) => {
+        setManeuverTypeFilter(data.typeKey || 'all');
+      });
+      Actions.register('spells:roll-formula', (el, data, event) => {
+        rollSpellOrManeuverFormula(data.expr || '', unescape(data.title || ''));
+      });
+      Actions.register('spells:delete-maneuver', (el, data, event) => {
+        deleteManeuverFromLibrary(data.name || '', data.stance === 'true');
+      });
+      Actions.register('spells:open-maneuver-picker', (el, data, event) => {
+        openManeuverPickerModal(data.pickerType || 'Maneuver');
+      });
+      Actions.register('spells:select-stance', (el, data, event) => {
+        selectStanceDirectly(data.name || '');
+      });
+      Actions.register('spells:learn-maneuver-from-ready-modal', (el, data, event) => {
+        closeReadyManeuverFromPoolModal();
+        openManeuverPickerModal('Maneuver');
+      });
+      Actions.register('spells:ready-maneuver-from-modal', (el, data, event) => {
+        readyKnownManeuverFromModal(data.name || '');
+      });
+      Actions.register('spells:close-ready-maneuver-modal', (el, data, event) => {
+        closeReadyManeuverFromPoolModal();
+      });
+      Actions.register('spells:spont-filter-level', (el, data, event) => {
+        const lvl = data.level === 'all' ? 'all' : Number(data.level);
+        setSpellFilterLevel(lvl);
+      });
+      Actions.register('spells:roll-touch-attack', (el, data, event) => {
+        rollSpellTouchAttack(Number(data.idx));
+      });
+      Actions.register('spells:cast-spontaneous', (el, data, event) => {
+        castSpellDirectly(Number(data.idx));
+      });
+      Actions.register('spells:delete-known', (el, data, event) => {
+        deleteKnownSpell(Number(data.idx));
+      });
+      Actions.register('spells:open-spont-picker', (el, data, event) => {
+        openSpellPickerForSpecificLevel(Number(data.level));
+      });
+      Actions.register('spells:add-picker-item', (el, data, event) => {
+        addMasterDbItemToCharacter(data.name || '');
+      });
+      Actions.register('spells:picker-results-refresh', (el, data, event) => {
+        renderSpellPickerResults();
+      });
+      Actions.register('spells:toggle-dm-boon', (el, data, event) => {
+        toggleDisciplineDmBoon(data.discipline || '');
+      });
+      Actions.register('spells:custom-class-rogue-preset', (el, data, event) => {
+        applyAdventurerRoguePreset();
+      });
+      Actions.register('spells:custom-class-template-change', (el, data, event) => {
+        loadClassTemplateIntoCustomModal(el ? el.value : '');
+      });
+      Actions.register('spells:custom-class-load-template', (el, data, event) => {
+        loadClassTemplateIntoCustomModal(document.getElementById('custom-class-template-select')?.value || '');
+      });
+      Actions.register('spells:custom-class-type-change', (el, data, event) => {
+        onCustomClassMaxLevelChange();
+      });
+      Actions.register('spells:custom-class-max-level-change', (el, data, event) => {
+        renderCustomClassLevelEditorRows();
+      });
+      Actions.register('spells:toggle-feat-pin', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        toggleFeatPinActiveState(unescape(data.target || ''));
+      });
+      Actions.register('spells:clear-feat-target-weapon', (el, data, event) => {
+        if (typeof window.clearFeatModalTargetSelection === 'function') window.clearFeatModalTargetSelection();
+      });
+      Actions.register('spells:select-feat-target-weapon', (el, data, event) => {
+        if (typeof window.selectFeatModalTargetWeapon === 'function') window.selectFeatModalTargetWeapon(unescape(data.weapon || ''));
+      });
+      Actions.register('spells:roll-ability-tactical-dice', (el, data, event) => {
+        rollAbilityTacticalDice(
+          unescape(data.formula || ''),
+          unescape(data.label || ''),
+          data.mode || 'damage',
+          data.actionType ? unescape(data.actionType) : undefined
+        );
+      });
+    })();
+
 

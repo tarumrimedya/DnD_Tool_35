@@ -119,7 +119,18 @@
     window.getFormulaDiceIconSvg = getFormulaDiceIconSvg;
 
     let character = null;
-    try { Object.defineProperty(window, 'character', { get: () => character, set: (v) => { character = v; }, configurable: true }); } catch (e) {}
+    try {
+      Object.defineProperty(window, 'character', {
+        get: () => character,
+        set: (v) => {
+          character = v;
+          if (window.CharStore && typeof window.CharStore._syncExternalCharacterRef === 'function') {
+            window.CharStore._syncExternalCharacterRef(v);
+          }
+        },
+        configurable: true
+      });
+    } catch (e) {}
     let masterDb = [];
     try { Object.defineProperty(window, 'masterDb', { get: () => masterDb, set: (v) => { masterDb = v; }, configurable: true }); } catch (e) {}
 
@@ -1885,30 +1896,79 @@
     }
 
     function toggleActionEconomy(type) {
-      if (!character.tactical) character.tactical = {};
-      if (!character.tactical.spentActions) character.tactical.spentActions = {};
-      character.tactical.spentActions[type] = !character.tactical.spentActions[type];
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        window.CharStore.dispatch({
+          type: 'combat/toggleAction',
+          label: `Toggle Action (${type})`,
+          payload: { type },
+          meta: { label: `Toggle Action (${type})`, cloudSync: false }
+        });
+      } else {
+        if (!character.tactical) character.tactical = {};
+        if (!character.tactical.spentActions) character.tactical.spentActions = {};
+        character.tactical.spentActions[type] = !character.tactical.spentActions[type];
+        saveStateToStorage(false);
+      }
       updateActionEconomyUI();
-      saveStateToStorage(false);
     }
 
     function resetActionEconomy() {
       if (!character) return;
-      if (!character.tactical) character.tactical = {};
-      const lockSwift = Boolean(character.tactical.spentActions && character.tactical.spentActions.swiftLockedNextTurn);
-      character.tactical.spentActions = {
-        standard: false,
-        move: false,
-        swift: lockSwift,
-        immediate: false,
-        swiftLockedNextTurn: false
-      };
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        window.CharStore.dispatch({
+          type: 'combat/resetActions',
+          label: 'Reset Action Economy',
+          payload: {},
+          meta: { label: 'Reset Action Economy', cloudSync: false }
+        });
+      } else {
+        if (!character.tactical) character.tactical = {};
+        const lockSwift = Boolean(character.tactical.spentActions && character.tactical.spentActions.swiftLockedNextTurn);
+        character.tactical.spentActions = {
+          standard: false,
+          move: false,
+          swift: lockSwift,
+          immediate: false,
+          swiftLockedNextTurn: false
+        };
+      }
       updateActionEconomyUI();
     }
     window.resetActionEconomy = resetActionEconomy;
 
     function consumeActionEconomy(actionTypeOrString, sourceLabel = '') {
       if (!character) return false;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+          window.CharStore._syncExternalCharacterRef(character);
+        }
+        const actLbl = `Consume Action${sourceLabel ? ': ' + sourceLabel : ''}`;
+        window.CharStore.dispatch({
+          type: 'combat/consumeAction',
+          label: actLbl,
+          payload: { actionType: actionTypeOrString, sourceLabel },
+          meta: { label: actLbl, cloudSync: false }
+        });
+        const out = typeof window.CharStore.getLastOutcome === 'function' ? window.CharStore.getLastOutcome() : null;
+        updateActionEconomyUI();
+        if (out && out.alreadySpent && typeof showDiceTopToast === 'function') {
+          const roundNum = out.round || Number(character.encounterRound || character.tactical?.round) || 1;
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'Extra Action Used',
+            breakdown: `${out.spentLabel || 'Action'} was already spent in Round ${roundNum}${sourceLabel ? ' • ' + sourceLabel : ''}.`,
+            total: 'Extra Action'
+          }, { stack: true, toastId: 'action-economy-overuse-toast' });
+        }
+        return out ? Boolean(out.consumed) : true;
+      }
+
       if (!character.tactical) character.tactical = {};
       if (!character.tactical.spentActions) character.tactical.spentActions = {};
 
@@ -1944,12 +2004,10 @@
         spent.standard = true;
         spent.move = true;
       } else if (kind === 'move' && spent.move && !spent.standard) {
-        // D&D 3.5e RAW (PHB p.138): A character can take a move action in place of a standard action
         spent.standard = true;
         alreadySpent = false;
         spentLabel = 'Move Action (converted from Standard Action)';
       } else if (kind === 'immediate') {
-        // D&D 3.5e RAW (PHB2 / RC): Using an Immediate Action consumes your Swift Action (or next turn's Swift if already spent)
         alreadySpent = Boolean(spent.immediate);
         spent.immediate = true;
         if (!spent.swift) {
@@ -2462,12 +2520,20 @@
           const tdVal = character.tactical?.totalDefense !== undefined ? character.tactical.totalDefense : (document.getElementById('toggle-total-defense')?.checked || false);
           const chargeVal = character.tactical?.charge !== undefined ? character.tactical.charge : (document.getElementById('mod-charge')?.checked || false);
 
-          RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), {
+          const tacticalOpts = {
             combatExpertise: ceVal,
             fightingDefensively: fdVal,
             totalDefense: tdVal,
             charge: chargeVal
-          });
+          };
+          if (window.CharStore && typeof window.CharStore.recompute === 'function') {
+            window.CharStore._syncExternalCharacterRef(character);
+            if (!(options && options.skipRecompute)) {
+              window.CharStore.recompute(tacticalOpts);
+            }
+          } else {
+            RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), tacticalOpts);
+          }
         } catch (e) {
           console.error('recalculateCharacter error:', e);
         }
@@ -3696,13 +3762,13 @@
                   <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-900/60 text-white border border-purple-500/70 font-bold text-[11px] shadow-sm">
                     <span>${escapeRaceHtml(t.name)}</span>
                     <span class="text-[9px] font-mono text-purple-200 bg-purple-950/80 px-1 rounded">LA +${Number(t.levelAdjustment) || 0}</span>
-                    <button type="button" onclick="quickRemoveCharacterTemplate('${escapeRaceHtml(t.id)}')" class="text-purple-300 hover:text-rose-400 font-black ml-0.5 cursor-pointer" title="Remove ${escapeRaceHtml(t.name)}">✕</button>
+                    <button type="button" data-action="hud:quick-remove-template" data-template-id="${escapeRaceHtml(t.id)}" class="text-purple-300 hover:text-rose-400 font-black ml-0.5 cursor-pointer" title="Remove ${escapeRaceHtml(t.name)}">✕</button>
                   </span>
                 `).join('')}
               </div>
               <div class="flex items-center gap-2 text-[10px] font-mono">
                 <span class="px-2 py-0.5 rounded bg-slate-900 text-amber-300 border border-amber-500/40 font-bold">Total LA: +${totalLa} • ECL: ${ecl}</span>
-                <button type="button" onclick="openProfileEditModal('template')" class="text-purple-300 hover:text-white font-sans font-bold underline cursor-pointer">Manage ➔</button>
+                <button type="button" data-action="hud:open-profile-modal" data-section="template" class="text-purple-300 hover:text-white font-sans font-bold underline cursor-pointer">Manage ➔</button>
               </div>
             </div>
             ${pills.length > 0 ? `<div class="flex flex-wrap items-center gap-1.5 text-[10px] pt-1 border-t border-purple-900/40">${pills.join('')}</div>` : ''}
@@ -3846,8 +3912,8 @@
             Search any official D&D 3.5e sourcebook (Eberron, Races of Stone, Races of the Wild, Monster Manual, etc.) and apply ability modifiers, size, speed, and racial traits directly to your character.
           </p>
           <div class="flex items-center gap-1.5">
-            <input type="text" id="race-ai-search-input" placeholder="e.g., Warforged, Goliath, Drow, Catfolk, Thri-Kreen..." onkeydown="if(event.key==='Enter') searchRaceViaRuleMasterAi();" class="flex-1 bg-slate-900 border border-purple-500/60 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-bold focus:outline-none focus:border-purple-400">
-            <button type="button" id="btn-fetch-race-ai" onclick="searchRaceViaRuleMasterAi()" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center gap-1 shrink-0 cursor-pointer">
+            <input type="text" id="race-ai-search-input" placeholder="e.g., Warforged, Goliath, Drow, Catfolk, Thri-Kreen..." class="flex-1 bg-slate-900 border border-purple-500/60 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 font-bold focus:outline-none focus:border-purple-400">
+            <button type="button" id="btn-fetch-race-ai" data-action="hud:search-race-ai" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center gap-1 shrink-0 cursor-pointer">
               <span>🔮</span>
               <span>Rule Master AI</span>
             </button>
@@ -3857,7 +3923,10 @@
       `;
       card.classList.remove('hidden');
       const input = document.getElementById('race-ai-search-input');
-      if (input) setTimeout(() => input.focus(), 50);
+      if (input) {
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') searchRaceViaRuleMasterAi(); });
+        setTimeout(() => input.focus(), 50);
+      }
     }
 
     function renderRaceNotFoundCard(card, raceName) {
@@ -3875,7 +3944,7 @@
             Would you like to fetch this race from official D&D 3.5e sources (with ability modifiers, size, speed, and racial traits) via Rule Master AI?
           </p>
           <div class="flex items-center gap-2 pt-1">
-            <button type="button" id="btn-fetch-race-ai" onclick="searchRaceViaRuleMasterAi('${escaped.replace(/'/g, "\\'")}')" class="flex-1 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <button type="button" id="btn-fetch-race-ai" data-action="hud:search-race-ai" data-query="${escaped}" class="flex-1 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
               <span>🔮</span>
               <span>Fetch "${escaped}" via Rule Master AI</span>
             </button>
@@ -4159,7 +4228,7 @@
             <span class="text-xl block">🔍</span>
             <div class="text-xs font-bold text-slate-200">"${escapeRaceHtml(filterText)}" not found in list</div>
             <p class="text-[10px] text-slate-400">You can search this race directly from official D&D 3.5e sourcebooks.</p>
-            <button type="button" onclick="searchRaceViaRuleMasterAi('${escapeRaceHtml(filterText).replace(/'/g, "\\\'")}'); closeRaceSpotlightDropdown();" class="w-full py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <button type="button" data-action="hud:search-race-ai" data-query="${escapeRaceHtml(filterText)}" data-close-dropdown="1" class="w-full py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
               <span>🔮</span>
               <span>Fetch "${escapeRaceHtml(filterText)}" via Rule Master AI</span>
             </button>
@@ -4192,7 +4261,7 @@
             : 'bg-slate-900/50 hover:bg-slate-800/80 border border-transparent hover:border-purple-500/30 text-slate-200';
 
           html += `
-            <button type="button" data-race-name="${escapeRaceHtml(r.name)}" onclick="selectRaceItem('${escapeRaceHtml(r.name).replace(/'/g, "\\'")}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
+            <button type="button" data-action="hud:select-race" data-race-name="${escapeRaceHtml(r.name)}" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
               <div class="flex items-center gap-2 min-w-0">
                 <span class="text-sm shrink-0">${r.icon || '🧬'}</span>
                 <div class="truncate">
@@ -4219,7 +4288,7 @@
       if (!q || 'diğer'.includes(q) || 'ai'.includes(q) || 'rule master'.includes(q)) {
         html += `
           <div class="pt-1 border-t border-purple-900/40 mt-1">
-            <button type="button" onclick="selectRaceItem('Diğer')" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-purple-950/70 to-indigo-950/70 hover:from-purple-900/80 hover:to-indigo-900/80 border border-purple-500/40 hover:border-purple-400 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+            <button type="button" data-action="hud:select-race" data-race-name="Diğer" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-purple-950/70 to-indigo-950/70 hover:from-purple-900/80 hover:to-indigo-900/80 border border-purple-500/40 hover:border-purple-400 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
               <div class="flex items-center gap-2">
                 <span class="text-base shrink-0">🔮</span>
                 <div>
@@ -4453,7 +4522,7 @@
         const acq = t.templateAcquisition || (String(t.category || '').includes('Inherited') ? 'Inherited' : 'Acquired');
 
         return `
-          <button type="button" onclick="toggleModalTemplateItem('${escapeRaceHtml(t.id)}')" class="w-full text-left p-2 rounded-lg border transition flex flex-col gap-1 cursor-pointer ${isSelected ? 'bg-purple-950/80 border-purple-400 text-white shadow-md' : 'bg-slate-900/80 hover:bg-slate-800/90 border-slate-800 hover:border-purple-500/50 text-slate-200'}">
+          <button type="button" data-action="hud:toggle-modal-template" data-template-id="${escapeRaceHtml(t.id)}" class="w-full text-left p-2 rounded-lg border transition flex flex-col gap-1 cursor-pointer ${isSelected ? 'bg-purple-950/80 border-purple-400 text-white shadow-md' : 'bg-slate-900/80 hover:bg-slate-800/90 border-slate-800 hover:border-purple-500/50 text-slate-200'}">
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="text-sm shrink-0">${isSelected ? '✅' : '🧬'}</span>
@@ -4535,7 +4604,7 @@
                 ${t.creatureType ? `<span class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 font-semibold">${escapeRaceHtml(t.creatureType)}</span>` : ''}
                 <span class="text-[10px] text-slate-400 font-mono">(${escapeRaceHtml(t.source || 'SRD 3.5e')})</span>
               </div>
-              <button type="button" onclick="removeModalTemplateItem('${escapeRaceHtml(t.id)}')" class="px-2 py-0.5 rounded bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-700/60 text-[10px] font-bold transition cursor-pointer">✕ Remove</button>
+              <button type="button" data-action="hud:remove-modal-template" data-template-id="${escapeRaceHtml(t.id)}" class="px-2 py-0.5 rounded bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-700/60 text-[10px] font-bold transition cursor-pointer">✕ Remove</button>
             </div>
 
             ${pills.length > 0 ? `
@@ -4743,7 +4812,7 @@
           : 'bg-slate-900/50 hover:bg-slate-800/80 border border-transparent hover:border-purple-500/30 text-slate-200';
 
         html += `
-          <button type="button" onclick="selectSizeItem('${s.id}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
+          <button type="button" data-action="hud:select-size" data-size-id="${s.id}" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
             <div class="flex items-center gap-2 min-w-0">
               <span class="text-sm shrink-0">${s.icon}</span>
               <div class="truncate">
@@ -4843,7 +4912,7 @@
           : 'bg-slate-900/50 hover:bg-slate-800/80 border border-transparent hover:border-purple-500/30 text-slate-200';
 
         html += `
-          <button type="button" onclick="selectGenderItem('${g.id}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
+          <button type="button" data-action="hud:select-gender" data-gender-id="${g.id}" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
             <div class="flex items-center gap-2 min-w-0">
               <span class="text-xs font-bold shrink-0 ${g.iconClass}">${g.icon}</span>
               <span class="text-xs font-bold truncate">${g.label}</span>
@@ -4972,7 +5041,7 @@
           : 'bg-slate-900/70 hover:bg-slate-800/90 border-slate-800 hover:border-purple-500/50 text-slate-200 shadow-sm';
 
         html += `
-          <button type="button" onclick="selectAlignmentItem('${escapeDeityHtml(a.id)}')" class="p-2.5 rounded-xl border flex flex-col justify-between gap-1.5 transition cursor-pointer group active:scale-95 text-left ${selectedClasses}">
+          <button type="button" data-action="hud:select-alignment" data-align-id="${escapeDeityHtml(a.id)}" class="p-2.5 rounded-xl border flex flex-col justify-between gap-1.5 transition cursor-pointer group active:scale-95 text-left ${selectedClasses}">
             <div class="flex items-center justify-between gap-1">
               <span class="text-lg shrink-0">${a.icon}</span>
               <span class="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-slate-950 border border-slate-700 text-purple-300">${a.shortCode}</span>
@@ -5392,11 +5461,11 @@
             <div class="text-xs font-bold text-slate-200">"${escapeDeityHtml(filterText)}" not found in pantheon</div>
             <p class="text-[10px] text-slate-400">Search official sourcebooks via AI or create a custom deity/patron directly.</p>
             <div class="space-y-1.5 pt-1">
-              <button type="button" onclick="searchDeityViaRuleMasterAi('${escapeDeityHtml(filterText).replace(/'/g, "\'")}'); closeDeitySpotlightDropdown();" class="w-full py-2 px-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <button type="button" data-action="hud:search-deity-ai" data-query="${escapeDeityHtml(filterText)}" data-close-dropdown="1" class="w-full py-2 px-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 active:scale-95 text-white font-extrabold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>🔮</span>
                 <span>Fetch "${escapeDeityHtml(filterText)}" via Rule Master AI</span>
               </button>
-              <button type="button" onclick="openCustomDeityEditorModal({ name: '${escapeDeityHtml(filterText).replace(/'/g, "\'")}' }); closeDeitySpotlightDropdown();" class="w-full py-2 px-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-300 hover:text-white border border-slate-700 hover:border-amber-500 font-bold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <button type="button" data-action="hud:open-custom-deity-editor" data-deity-name="${escapeDeityHtml(filterText)}" data-close-dropdown="1" class="w-full py-2 px-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-amber-300 hover:text-white border border-slate-700 hover:border-amber-500 font-bold text-xs rounded-lg shadow transition flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>✨</span>
                 <span>Use "${escapeDeityHtml(filterText)}" as Custom Deity / Patron (Manual Editor)</span>
               </button>
@@ -5443,7 +5512,7 @@
           }
 
           html += `
-            <button type="button" data-deity-name="${escapeDeityHtml(d.name)}" onclick="selectDeityItem('${escapeDeityHtml(d.name).replace(/'/g, "\'")}')" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
+            <button type="button" data-action="hud:select-deity" data-deity-name="${escapeDeityHtml(d.name)}" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
               <div class="flex items-center gap-2 min-w-0">
                 <span class="text-sm shrink-0">${d.icon || '☀️'}</span>
                 <div class="truncate">
@@ -5472,14 +5541,14 @@
       if (q && !filtered.some(d => d.name.toLowerCase() === q)) {
         html += `
           <div class="pt-1.5 border-t border-purple-900/40 mt-1 space-y-1">
-            <button type="button" onclick="searchDeityViaRuleMasterAi('${escapeDeityHtml(filterText).replace(/'/g, "\'")}'); closeDeitySpotlightDropdown();" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-purple-950/50 hover:bg-purple-900/70 border border-purple-500/40 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+            <button type="button" data-action="hud:search-deity-ai" data-query="${escapeDeityHtml(filterText)}" data-close-dropdown="1" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-purple-950/50 hover:bg-purple-900/70 border border-purple-500/40 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
               <div class="flex items-center gap-2">
                 <span class="text-sm shrink-0">🔮</span>
                 <span class="text-xs font-bold text-purple-200 group-hover:text-white">Fetch "${escapeDeityHtml(filterText)}" via Rule Master AI (Auto-Fill Editor)</span>
               </div>
               <span class="text-xs text-purple-400 group-hover:translate-x-0.5 transition-transform">➔</span>
             </button>
-            <button type="button" onclick="openCustomDeityEditorModal({ name: '${escapeDeityHtml(filterText).replace(/'/g, "\'")}' }); closeDeitySpotlightDropdown();" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+            <button type="button" data-action="hud:open-custom-deity-editor" data-deity-name="${escapeDeityHtml(filterText)}" data-close-dropdown="1" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
               <div class="flex items-center gap-2">
                 <span class="text-sm shrink-0">✨</span>
                 <span class="text-xs font-bold text-amber-300 group-hover:text-white">Use "${escapeDeityHtml(filterText)}" as Custom Deity / Patron (Manual Editor)</span>
@@ -5493,7 +5562,7 @@
       if (!q || 'diğer'.includes(q) || 'other'.includes(q) || 'ai'.includes(q) || 'custom'.includes(q) || 'rule master'.includes(q)) {
         html += `
           <div class="pt-1 border-t border-purple-900/40 mt-1 space-y-1">
-            <button type="button" onclick="openCustomDeityEditorModal(); closeDeitySpotlightDropdown();" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-amber-950/60 to-purple-950/60 hover:from-amber-900/70 hover:to-purple-900/70 border border-amber-500/50 hover:border-amber-400 text-amber-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+            <button type="button" data-action="hud:open-custom-deity-editor" data-close-dropdown="1" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-amber-950/60 to-purple-950/60 hover:from-amber-900/70 hover:to-purple-900/70 border border-amber-500/50 hover:border-amber-400 text-amber-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
               <div class="flex items-center gap-2">
                 <span class="text-base shrink-0">✨</span>
                 <div>
@@ -5503,7 +5572,7 @@
               </div>
               <span class="text-xs text-amber-300 font-bold group-hover:translate-x-0.5 transition-transform">➔</span>
             </button>
-            <button type="button" onclick="searchDeityViaRuleMasterAi(); closeDeitySpotlightDropdown();" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-purple-950/70 to-indigo-950/70 hover:from-purple-900/80 hover:to-indigo-900/80 border border-purple-500/40 hover:border-purple-400 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+            <button type="button" data-action="hud:search-deity-ai" data-close-dropdown="1" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-purple-950/70 to-indigo-950/70 hover:from-purple-900/80 hover:to-indigo-900/80 border border-purple-500/40 hover:border-purple-400 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
               <div class="flex items-center gap-2">
                 <span class="text-base shrink-0">🔮</span>
                 <div>
@@ -5673,7 +5742,7 @@
       const iconGrid = document.getElementById('custom-deity-icon-grid');
       if (iconGrid) {
         iconGrid.innerHTML = CANONICAL_DEITY_ICONS.map(ic => `
-          <button type="button" data-icon="${ic}" onclick="selectCustomDeityIcon('${ic}')" class="w-8 h-8 rounded-lg flex items-center justify-center text-base border transition bg-slate-900 border-slate-700/80 hover:bg-slate-800 text-slate-300 hover:border-slate-500 cursor-pointer" title="${ic}">
+          <button type="button" data-action="hud:select-deity-icon" data-icon="${ic}" class="w-8 h-8 rounded-lg flex items-center justify-center text-base border transition bg-slate-900 border-slate-700/80 hover:bg-slate-800 text-slate-300 hover:border-slate-500 cursor-pointer" title="${ic}">
             ${ic}
           </button>
         `).join('');
@@ -5692,7 +5761,7 @@
         const allDoms = getAllDomainsWithCustom();
         const domainNames = allDoms.map(d => d.name || d.id || '').filter(Boolean);
         domainsGrid.innerHTML = domainNames.map(d => `
-          <button type="button" data-domain="${escapeDeityHtml(d)}" onclick="toggleCustomDeityDomainChip('${escapeDeityHtml(d).replace(/'/g, "\'")}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition text-center truncate cursor-pointer bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200" title="${escapeDeityHtml(d)}">
+          <button type="button" data-action="hud:toggle-deity-domain-chip" data-domain="${escapeDeityHtml(d)}" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition text-center truncate cursor-pointer bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200" title="${escapeDeityHtml(d)}">
             ${escapeDeityHtml(d)}
           </button>
         `).join('');
@@ -6033,7 +6102,7 @@
               <span class="text-base">✅</span>
               <span>Rule Master AI populated fields for "<strong>${escapeDeityHtml(deityObj.name)}</strong>". Review &amp; click Save.</span>
             </div>
-            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-emerald-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
+            <button type="button" data-action="hud:dismiss-parent-banner" class="text-emerald-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
           `;
           statusBanner.classList.remove('hidden');
         }
@@ -6055,7 +6124,7 @@
               <span class="text-base">⚠️</span>
               <span>${escapeDeityHtml(errMsg)} — ready for manual setup.</span>
             </div>
-            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-amber-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
+            <button type="button" data-action="hud:dismiss-parent-banner" class="text-amber-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
           `;
           statusBanner.classList.remove('hidden');
         }
@@ -6137,7 +6206,7 @@
       const skillsGrid = document.getElementById('custom-domain-skills-grid');
       if (skillsGrid) {
         skillsGrid.innerHTML = CANONICAL_DOMAIN_SKILLS.map(sk => `
-          <button type="button" data-skill="${escapeDeityHtml(sk)}" onclick="toggleCustomDomainSkillChip('${escapeDeityHtml(sk).replace(/'/g, "\\'")}')" class="px-2 py-0.5 rounded text-[10px] font-medium border transition cursor-pointer bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200" title="${escapeDeityHtml(sk)}">
+          <button type="button" data-action="hud:toggle-domain-skill-chip" data-skill="${escapeDeityHtml(sk)}" class="px-2 py-0.5 rounded text-[10px] font-medium border transition cursor-pointer bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-600 hover:text-slate-200" title="${escapeDeityHtml(sk)}">
             ${escapeDeityHtml(sk)}
           </button>
         `).join('');
@@ -6292,7 +6361,7 @@
               <span class="text-base">✅</span>
               <span>Rule Master AI populated official fields for "<strong>${escapeDeityHtml(domainObj.name)}</strong>" Domain. Review &amp; click Save.</span>
             </div>
-            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-emerald-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
+            <button type="button" data-action="hud:dismiss-parent-banner" class="text-emerald-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
           `;
           statusBanner.classList.remove('hidden');
         }
@@ -6314,7 +6383,7 @@
               <span class="text-base">⚠️</span>
               <span>${escapeDeityHtml(errMsg)} — ready for manual setup.</span>
             </div>
-            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="text-amber-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
+            <button type="button" data-action="hud:dismiss-parent-banner" class="text-amber-400 hover:text-white text-xs font-bold px-2 py-0.5 rounded cursor-pointer">&times;</button>
           `;
           statusBanner.classList.remove('hidden');
         }
@@ -6589,8 +6658,8 @@
       if (inDb) {
         badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
       } else {
-        const safe = clean.replace(/'/g, "\\'");
-        badgeEl.innerHTML = `<button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Weapon', '${safe}')" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch weapon via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
+        const safe = escapeDeityHtml(clean);
+        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Weapon" data-entry-name="${safe}" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch weapon via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
       }
     }
 
@@ -6682,8 +6751,8 @@
       if (inDb) {
         badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
       } else {
-        const safe = clean.replace(/'/g, "\\'");
-        badgeEl.innerHTML = `<button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Special Ability', '${safe}')" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch ability via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
+        const safe = escapeDeityHtml(clean);
+        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Special Ability" data-entry-name="${safe}" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch ability via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
       }
     }
 
@@ -6699,8 +6768,8 @@
       if (inDb) {
         badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
       } else {
-        const safe = clean.replace(/'/g, "\\'");
-        badgeEl.innerHTML = `<button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Feat', '${safe}')" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch feat via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
+        const safe = escapeDeityHtml(clean);
+        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Feat" data-entry-name="${safe}" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch feat via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
       }
     }
 
@@ -6716,8 +6785,8 @@
       if (inDb) {
         badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1 py-0.5">✓ DB</span>';
       } else {
-        const safe = clean.replace(/'/g, "\\'");
-        badgeEl.innerHTML = `<button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('Spell', '${safe}', ${lvl})" class="text-[9px] font-bold text-emerald-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1 py-0.5 transition cursor-pointer active:scale-95" title="Not in DB — Click to fetch via Rule Master AI & add to Master DB">➕ AI</button>`;
+        const safe = escapeDeityHtml(clean);
+        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Spell" data-entry-name="${safe}" data-level="${lvl}" class="text-[9px] font-bold text-emerald-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1 py-0.5 transition cursor-pointer active:scale-95" title="Not in DB — Click to fetch via Rule Master AI & add to Master DB">➕ AI</button>`;
       }
     }
 
@@ -6931,17 +7000,17 @@
 
       if (filtered.length === 0) {
         const aiType = ctx.mode === 'weapon' ? 'Weapon' : (ctx.mode === 'spell' ? 'Spell' : (ctx.mode === 'feat' ? 'Feat' : 'Special Ability'));
-        const safeQ = escapeDeityHtml(query).replace(/'/g, "\\'");
-        const lvlArg = (ctx.mode === 'spell' && ctx.targetLvl !== null) ? `, ${ctx.targetLvl}` : '';
+        const safeQ = escapeDeityHtml(query);
+        const lvlAttr = (ctx.mode === 'spell' && ctx.targetLvl !== null) ? ` data-level="${ctx.targetLvl}"` : '';
         resultsEl.innerHTML = `
           <div class="p-6 text-center text-slate-400 space-y-2.5">
             <span class="text-2xl block">🔍</span>
             <p class="text-xs text-slate-300">No match found in local DB for "<strong>${escapeDeityHtml(query)}</strong>".</p>
             <div class="flex items-center justify-center gap-2 pt-1 flex-wrap">
-              <button type="button" onclick="fetchAndAddMissingDomainEntryViaAi('${aiType}', '${safeQ}'${lvlArg})" class="px-3 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-lg shadow transition cursor-pointer active:scale-95 flex items-center gap-1">
+              <button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="${aiType}" data-entry-name="${safeQ}"${lvlAttr} class="px-3 py-1.5 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-lg shadow transition cursor-pointer active:scale-95 flex items-center gap-1">
                 <span>🔮</span> <span>Fetch "${escapeDeityHtml(query)}" via Rule Master AI</span>
               </button>
-              <button type="button" onclick="selectDomainSpotlightCustom('${safeQ}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold text-xs rounded-lg shadow transition cursor-pointer active:scale-95">
+              <button type="button" data-action="hud:select-domain-spotlight-custom" data-custom-name="${safeQ}" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold text-xs rounded-lg shadow transition cursor-pointer active:scale-95">
                 Use "${escapeDeityHtml(query)}" (Custom ${aiType})
               </button>
             </div>
@@ -6951,7 +7020,7 @@
       }
 
       const clearBtnHtml = !q ? `
-        <button type="button" onclick="selectDomainSpotlightItem('')" class="w-full text-left p-2 rounded-xl bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800/80 hover:border-rose-500/50 transition flex items-center justify-between gap-3 group cursor-pointer">
+        <button type="button" data-action="hud:select-domain-spotlight-item" data-item-name="" class="w-full text-left p-2 rounded-xl bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800/80 hover:border-rose-500/50 transition flex items-center justify-between gap-3 group cursor-pointer">
           <span class="font-bold text-slate-400 group-hover:text-rose-200 text-xs">— None (Clear Selection) —</span>
           <span class="text-[10px] text-slate-500 group-hover:text-rose-300 font-mono">Clear ✕</span>
         </button>
@@ -6960,13 +7029,13 @@
       const display = filtered.slice(0, 30);
       resultsEl.innerHTML = clearBtnHtml + display.map(item => {
         const name = item.name || '';
-        const safeName = name.replace(/'/g, "\\'");
+        const safeName = escapeDeityHtml(name);
         const meta1 = ctx.mode === 'spell' ? (item.school || 'Spell') : (ctx.mode === 'weapon' ? (item.category || 'Weapon') : (item.category || item.source || ''));
         const meta2 = ctx.mode === 'spell' ? (item.level !== undefined ? `Level ${item.level}` : '') : (ctx.mode === 'weapon' ? (item.damage ? `${item.damage}${item.critical ? ' (' + item.critical + ')' : ''}` : '') : (item.uses || ''));
         const desc = item.benefit || item.shortDescription || item.description || item.desc || '';
 
         return `
-          <button type="button" onclick="selectDomainSpotlightItem('${safeName}')" class="w-full text-left p-2 rounded-xl bg-slate-900/60 hover:bg-purple-950/70 border border-slate-800/80 hover:border-purple-500/60 transition flex items-start justify-between gap-3 group cursor-pointer active:scale-[0.99]">
+          <button type="button" data-action="hud:select-domain-spotlight-item" data-item-name="${safeName}" class="w-full text-left p-2 rounded-xl bg-slate-900/60 hover:bg-purple-950/70 border border-slate-800/80 hover:border-purple-500/60 transition flex items-start justify-between gap-3 group cursor-pointer active:scale-[0.99]">
             <div class="space-y-0.5 flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-bold text-white text-xs group-hover:text-purple-200">${escapeDeityHtml(name)}</span>
@@ -7248,7 +7317,7 @@
           const allDoms = getAllDomainsWithCustom();
           const dNames = allDoms.map(d => d.name || d.id || '').filter(Boolean);
           dGrid.innerHTML = dNames.map(d => `
-            <button type="button" data-domain="${escapeDeityHtml(d)}" onclick="toggleCustomDeityDomainChip('${escapeDeityHtml(d).replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition text-center truncate cursor-pointer bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200" title="${escapeDeityHtml(d)}">
+            <button type="button" data-action="hud:toggle-deity-domain-chip" data-domain="${escapeDeityHtml(d)}" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition text-center truncate cursor-pointer bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200" title="${escapeDeityHtml(d)}">
               ${escapeDeityHtml(d)}
             </button>
           `).join('');
@@ -7670,7 +7739,7 @@
         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-indigo-950/80 border border-indigo-700/60 text-indigo-200 shadow-sm">
           <span class="text-amber-400 shrink-0">🎖️</span>
           <span class="font-bold truncate max-w-[140px]" title="${safeEscapeHtml(f.benefit || f.name)}">${safeEscapeHtml(f.name)}</span>
-          <button type="button" onclick="removeNpcStudioFeat(${idx})" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Remove feat">&times;</button>
+          <button type="button" data-action="hud:remove-npc-feat" data-index="${idx}" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Remove feat">&times;</button>
         </div>
       `).join('');
     }
@@ -7719,7 +7788,7 @@
             <span class="shrink-0">⚡</span>
             <span class="font-bold truncate max-w-[140px]" title="${safeEscapeHtml(a.benefit || a.name)}">${safeEscapeHtml(a.name)}</span>
             ${typeBadge}
-            <button type="button" onclick="removeNpcStudioAbility(${idx})" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Remove ability">&times;</button>
+            <button type="button" data-action="hud:remove-npc-ability" data-index="${idx}" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Remove ability">&times;</button>
           </div>
         `;
       }).join('');
@@ -7772,7 +7841,7 @@
             <span class="shrink-0">🔮</span>
             <span class="font-bold truncate max-w-[140px]">${safeEscapeHtml(sName)}</span>
             ${sLvl !== '' ? `<span class="text-[9px] font-mono text-sky-400">Lvl ${sLvl}</span>` : ''}
-            <button type="button" onclick="removeNpcStudioSpell(${idx})" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Remove spell">&times;</button>
+            <button type="button" data-action="hud:remove-npc-spell" data-index="${idx}" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Remove spell">&times;</button>
           </div>
         `;
       }).join('');
@@ -7818,7 +7887,7 @@
             <span class="shrink-0">⚔️</span>
             <span class="font-bold truncate max-w-[140px]">${safeEscapeHtml(mName)}</span>
             ${mLvl !== '' ? `<span class="text-[9px] font-mono text-rose-400">Lvl ${mLvl}</span>` : ''}
-            <button type="button" onclick="removeNpcStudioManeuver(${idx})" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Remove maneuver">&times;</button>
+            <button type="button" data-action="hud:remove-npc-maneuver" data-index="${idx}" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Remove maneuver">&times;</button>
           </div>
         `;
       }).join('');
@@ -8199,9 +8268,9 @@ function renderManualStatsPanel() {
               </div>
             </div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustManualStat('${s.key}', -1)" class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">－</button>
-              <input type="number" min="1" max="50" value="${val}" onchange="setManualStatInput('${s.key}', this.value)" class="w-12 h-7 bg-slate-950 border border-slate-700 rounded text-center text-amber-400 font-mono font-bold text-sm focus:border-purple-500 focus:outline-none">
-              <button type="button" onclick="adjustManualStat('${s.key}', 1)" class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">＋</button>
+              <button type="button" data-action="hud:adjust-manual-stat" data-stat-key="${s.key}" data-delta="-1" class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">－</button>
+              <input type="number" min="1" max="50" value="${val}" data-change-action="hud:set-manual-stat-input" data-stat-key="${s.key}" class="w-12 h-7 bg-slate-950 border border-slate-700 rounded text-center text-amber-400 font-mono font-bold text-sm focus:border-purple-500 focus:outline-none">
+              <button type="button" data-action="hud:adjust-manual-stat" data-stat-key="${s.key}" data-delta="1" class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">＋</button>
             </div>
           </div>
         `;
@@ -8358,9 +8427,9 @@ function renderManualStatsPanel() {
               </div>
             </div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="adjustPointBuyStat('${s.key}', -1)" ${val <= 8 ? 'disabled' : ''} class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">－</button>
+              <button type="button" data-action="hud:adjust-pointbuy-stat" data-stat-key="${s.key}" data-delta="-1" ${val <= 8 ? 'disabled' : ''} class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">－</button>
               <span class="w-8 text-center text-amber-400 font-mono font-black text-base">${val}</span>
-              <button type="button" onclick="adjustPointBuyStat('${s.key}', 1)" ${val >= 18 ? 'disabled' : ''} class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">＋</button>
+              <button type="button" data-action="hud:adjust-pointbuy-stat" data-stat-key="${s.key}" data-delta="1" ${val >= 18 ? 'disabled' : ''} class="w-7 h-7 rounded bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 text-slate-200 font-bold text-sm flex items-center justify-center transition cursor-pointer">＋</button>
             </div>
           </div>
         `;
@@ -8559,7 +8628,7 @@ function renderManualStatsPanel() {
             <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex flex-col items-center justify-between">
               <div class="w-full flex items-center justify-between">
                 <span class="text-[9px] font-mono text-purple-300 uppercase px-1.5 py-0.2 rounded bg-purple-950 border border-purple-800">${s.label}</span>
-                <button type="button" onclick="rerollSingle4d6Stat(${r.id})" class="text-slate-400 hover:text-amber-300 active:scale-95 text-xs p-0.5 rounded hover:bg-slate-800 transition cursor-pointer" title="Reroll 4d6 for ${s.label} only (auto-rerolls if two or more 1s are rolled)">⚡</button>
+                <button type="button" data-action="hud:reroll-single-4d6" data-roll-id="${r.id}" class="text-slate-400 hover:text-amber-300 active:scale-95 text-xs p-0.5 rounded hover:bg-slate-800 transition cursor-pointer" title="Reroll 4d6 for ${s.label} only (auto-rerolls if two or more 1s are rolled)">⚡</button>
               </div>
               <div class="text-lg font-black text-amber-400 font-mono my-1">${r.total}</div>
               <div class="flex items-center gap-1 justify-center">${diceHtml}</div>
@@ -8591,7 +8660,7 @@ function renderManualStatsPanel() {
                   <div class="text-[10px] text-slate-400 font-mono">Final: <strong class="text-amber-400 font-bold">${val}</strong> (${modStr})</div>
                 </div>
               </div>
-              <select onchange="onRolledStatSelect('${s.key}', this.value)" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono font-bold cursor-pointer max-w-[130px]">
+              <select data-change-action="hud:rolled-stat-select" data-stat-key="${s.key}" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white font-mono font-bold cursor-pointer max-w-[130px]">
                 ${optionsHtml}
               </select>
             </div>
@@ -8802,12 +8871,40 @@ function renderManualStatsPanel() {
         }
       }
 
-      // 3. Taban statları uygula
-      if (!character.baseAbilities) character.baseAbilities = {};
-      character.hasCustomBaseAbilities = true;
+      // 3. Taban statları uygula (via CharStore reducer for Undo/Redo support)
+      const nextBaseAbilities = {};
       STAT_KEYS.forEach(s => {
-        character.baseAbilities[s.key] = Number(statDistState.workingAbilities[s.key]) || 10;
+        nextBaseAbilities[s.key] = Number(statDistState.workingAbilities[s.key]) || 10;
       });
+
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        window.CharStore.dispatch({
+          type: 'progression/setAbilityScores',
+          payload: {
+            baseAbilities: nextBaseAbilities,
+            templates: Array.isArray(_modalSelectedTemplates) ? [..._modalSelectedTemplates] : [],
+            profile: {
+              name: character.name,
+              race: character.race,
+              size: character.size,
+              baseSpeed: character.baseSpeed,
+              alignment: character.alignment,
+              deity: character.deity,
+              gender: character.gender,
+              age: character.age,
+              height: character.height,
+              weight: character.weight,
+              specialAbilities: Array.isArray(character.specialAbilities) ? [...character.specialAbilities] : [],
+              clericSpontaneousMode: character.spellcasting?.clericSpontaneousMode
+            }
+          },
+          meta: { label: 'Update Character Profile & Ability Scores' }
+        });
+      } else {
+        if (!character.baseAbilities) character.baseAbilities = {};
+        character.hasCustomBaseAbilities = true;
+        Object.assign(character.baseAbilities, nextBaseAbilities);
+      }
 
       closeStatDistributionModal();
 
@@ -8824,6 +8921,22 @@ function renderManualStatsPanel() {
         });
       } else {
         alert('✅ Character profile and base ability scores updated successfully!');
+      }
+    }
+
+    function saveAbilityEditorChanges() {
+      return saveStatDistribution();
+    }
+
+    function setSheetViewMode(mode) {
+      const cleanMode = String(mode || 'both').toLowerCase().trim();
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        window.CharStore.dispatch({
+          type: 'ui/setMode',
+          payload: { mode: cleanMode }
+        });
+      } else if (typeof document !== 'undefined' && document.body) {
+        document.body.dataset.sheetMode = cleanMode;
       }
     }
 
@@ -8867,24 +8980,54 @@ function renderManualStatsPanel() {
       };
     }
 
-    function applyDamage() {
-      if (!character || !character.hp) return;
-      const input = document.getElementById('hp-adjust-input');
-      const evaluated = evaluateHpAmount(input?.value || '0');
-      if (evaluated.total <= 0) return;
-      let dmgLeft = evaluated.total;
-      const curTemp = Math.max(0, Number(character.hp.temp) || 0);
-      if (curTemp > 0) {
-        const absorbed = Math.min(curTemp, dmgLeft);
-        character.hp.temp = curTemp - absorbed;
-        dmgLeft -= absorbed;
+    function applyHpModalAdjustment(mode = 'damage', explicitAmount = null, source = '') {
+      if (!character || !character.hp) return null;
+      const input = typeof document !== 'undefined' ? document.getElementById('hp-adjust-input') : null;
+      const rawExpr = explicitAmount !== null && explicitAmount !== undefined ? explicitAmount : (input?.value || '0');
+      const evaluated = evaluateHpAmount(rawExpr);
+      if (mode !== 'clearTemp' && evaluated.total <= 0) return evaluated;
+
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        window.CharStore.dispatch({
+          type: 'hud/adjustHp',
+          payload: {
+            mode: mode,
+            amount: evaluated.total,
+            additive: mode === 'temp',
+            source: source || (mode === 'damage' ? 'Damage' : (mode === 'heal' ? 'Healing' : 'HP Adjustment'))
+          },
+          meta: { label: `${mode === 'damage' ? 'Take Damage' : (mode === 'heal' ? 'Heal HP' : 'Adjust HP')} (${evaluated.total})` }
+        });
+      } else {
+        if (mode === 'damage') {
+          let dmgLeft = evaluated.total;
+          const curTemp = Math.max(0, Number(character.hp.temp) || 0);
+          if (curTemp > 0) {
+            const absorbed = Math.min(curTemp, dmgLeft);
+            character.hp.temp = curTemp - absorbed;
+            dmgLeft -= absorbed;
+          }
+          if (dmgLeft > 0) {
+            character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - dmgLeft);
+          }
+        } else if (mode === 'heal') {
+          character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + evaluated.total);
+        } else if (mode === 'temp') {
+          character.hp.temp = (Math.max(0, Number(character.hp.temp) || 0)) + evaluated.total;
+        } else if (mode === 'clearTemp') {
+          character.hp.temp = 0;
+        }
+        character.hp._lastPlayerChangeTs = Date.now();
       }
-      if (dmgLeft > 0) {
-        character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - dmgLeft);
-      }
-      character.hp._lastPlayerChangeTs = Date.now();
       saveStateToStorage(true);
       renderAll();
+      return evaluated;
+    }
+
+    function applyDamage() {
+      if (!character || !character.hp) return;
+      const evaluated = applyHpModalAdjustment('damage', null, 'Damage');
+      if (!evaluated || evaluated.total <= 0) return;
       if (evaluated.isDice) {
         showDiceTopToast({
           icon: '💥',
@@ -8897,13 +9040,8 @@ function renderManualStatsPanel() {
 
     function applyHeal() {
       if (!character || !character.hp) return;
-      const input = document.getElementById('hp-adjust-input');
-      const evaluated = evaluateHpAmount(input?.value || '0');
-      if (evaluated.total <= 0) return;
-      character.hp.current = Math.min(Number(character.hp.max) || 0, (Number(character.hp.current) || 0) + evaluated.total);
-      character.hp._lastPlayerChangeTs = Date.now();
-      saveStateToStorage(true);
-      renderAll();
+      const evaluated = applyHpModalAdjustment('heal', null, 'Healing');
+      if (!evaluated || evaluated.total <= 0) return;
       if (evaluated.isDice) {
         showDiceTopToast({
           icon: '💖',
@@ -8918,10 +9056,7 @@ function renderManualStatsPanel() {
       if (!character || !character.hp) return;
       const curTemp = Number(character.hp.temp) || 0;
       if (curTemp <= 0) return;
-      character.hp.temp = 0;
-      character.hp._lastPlayerChangeTs = Date.now();
-      saveStateToStorage(true);
-      renderAll();
+      applyHpModalAdjustment('clearTemp', 0, 'Clear Temp HP');
       showDiceTopToast({
         icon: '🛡️',
         title: 'Temp HP Cleared',
@@ -8936,11 +9071,8 @@ function renderManualStatsPanel() {
       if (healVal <= 0) return;
       const prevHp = Number(character.hp.current) || 0;
       const maxHp = Number(character.hp.max) || 1;
-      character.hp.current = Math.min(maxHp, prevHp + healVal);
-      character.hp._lastPlayerChangeTs = Date.now();
+      applyHpModalAdjustment('heal', healVal, sourceName);
       const actualGain = character.hp.current - prevHp;
-      saveStateToStorage(true);
-      renderAll();
       showDiceTopToast({
         icon: '💚',
         title: `${sourceName} Applied`,
@@ -8953,9 +9085,6 @@ function renderManualStatsPanel() {
       if (!character || !character.hp) return;
       const tempVal = Math.max(0, Number(amount) || 0);
       if (tempVal <= 0) return;
-      const prevTemp = Math.max(0, Number(character.hp.temp) || 0);
-      character.hp.temp = prevTemp + tempVal;
-      character.hp._lastPlayerChangeTs = Date.now();
       let extraBuffNote = '';
       if (typeof window.applySpellBuffToCharacter === 'function' && typeof RuleEngine !== 'undefined' && RuleEngine.resolveSpellBuffSpec) {
         const bSpec = RuleEngine.resolveSpellBuffSpec({ name: sourceName }, character);
@@ -8964,8 +9093,7 @@ function renderManualStatsPanel() {
           extraBuffNote = ` • Buff Active (${bSpec.summaryText})`;
         }
       }
-      saveStateToStorage(true);
-      renderAll();
+      applyHpModalAdjustment('temp', tempVal, sourceName);
       showDiceTopToast({
         icon: '🛡️',
         title: `${sourceName} (Temp HP)`,
@@ -8976,19 +9104,9 @@ function renderManualStatsPanel() {
 
     function applySpellSelfDamage(amount, sourceName = 'Blood Sacrifice', showToast = true, toastOptions = { stack: true }) {
       if (!character || !character.hp) return;
-      let dmgLeft = Math.max(0, Number(amount) || 0);
-      if (dmgLeft <= 0) return;
-      const curTemp = Math.max(0, Number(character.hp.temp) || 0);
-      if (curTemp > 0) {
-        const absorbed = Math.min(curTemp, dmgLeft);
-        character.hp.temp = curTemp - absorbed;
-        dmgLeft -= absorbed;
-      }
-      if (dmgLeft > 0) {
-        character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - dmgLeft);
-      }
-      saveStateToStorage(true);
-      renderAll();
+      const dmgVal = Math.max(0, Number(amount) || 0);
+      if (dmgVal <= 0) return;
+      applyHpModalAdjustment('damage', dmgVal, sourceName);
       if (showToast) {
         showDiceTopToast({
         icon: '🩸',
@@ -8996,7 +9114,7 @@ function renderManualStatsPanel() {
         breakdown: `Self-Damage Applied • Remaining HP: ${character.hp.current}/${character.hp.max}`,
         total: `-${amount} HP`
         }, { stack: true, ...(toastOptions || {}) });
-    }
+      }
     }
 
     // ==========================================
@@ -9108,7 +9226,7 @@ function renderManualStatsPanel() {
         const durLabel = p.infinite ? '∞' : `${p.rounds}rd`;
         const sign = isDmg ? '-' : '+';
         return `
-          <button type="button" onclick="applyPeriodicPreset(${idx})" class="px-2 py-1 rounded text-[10px] font-bold border transition flex items-center gap-1 ${colorClass} cursor-pointer active:scale-95 shadow-sm">
+          <button type="button" data-action="hud:apply-periodic-preset" data-index="${idx}" class="px-2 py-1 rounded text-[10px] font-bold border transition flex items-center gap-1 ${colorClass} cursor-pointer active:scale-95 shadow-sm">
             <span>${p.icon}</span>
             <span>${p.name}</span>
             <span class="opacity-75 font-mono">(${sign}${p.amount} / ${durLabel})</span>
@@ -9281,7 +9399,7 @@ function renderManualStatsPanel() {
             </div>
             <div class="flex items-center gap-2 shrink-0 ml-1">
               <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-900/90 text-slate-300 font-mono font-bold border border-slate-700">${dur}</span>
-              <button onclick="removePeriodicHpEffect('${eff.id}')" class="text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded px-1.5 py-0.5 text-xs font-bold transition cursor-pointer" title="Remove">✕</button>
+              <button type="button" data-action="hud:remove-periodic-effect" data-eff-id="${eff.id}" class="text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded px-1.5 py-0.5 text-xs font-bold transition cursor-pointer" title="Remove">✕</button>
             </div>
           </div>
         `;
@@ -9336,7 +9454,7 @@ function renderManualStatsPanel() {
             </div>
             <div class="flex items-center gap-1 shrink-0 ml-1">
               <span class="text-[9px] px-1 py-0.2 rounded bg-slate-900/90 border border-slate-700 text-slate-300 font-mono font-bold">${durText}</span>
-              <button onclick="removePeriodicHpEffect('${eff.id}')" class="text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded px-1 transition text-xs font-bold cursor-pointer" title="Remove Effect">✕</button>
+              <button type="button" data-action="hud:remove-periodic-effect" data-eff-id="${eff.id}" class="text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded px-1 transition text-xs font-bold cursor-pointer" title="Remove Effect">✕</button>
             </div>
           </div>
         `;
@@ -9589,5 +9707,112 @@ function renderManualStatsPanel() {
         };
       }
       renderCockpitPanelsCollapsedState();
+    }
+
+    // ====================================================
+    // DELEGATED HUD ACTIONS (`hud:*`) — Strict `(el, data, event)`
+    // ====================================================
+    if (window.Actions && typeof window.Actions.register === 'function') {
+      window.Actions.register('hud:set-sheet-mode', (el, data, event) => {
+        setSheetViewMode(data.mode || 'both');
+      });
+      window.Actions.register('hud:quick-remove-template', (el, data, event) => {
+        quickRemoveCharacterTemplate(data.templateId || '');
+      });
+      window.Actions.register('hud:open-profile-modal', (el, data, event) => {
+        openProfileEditModal(data.section || 'identity');
+      });
+      window.Actions.register('hud:search-race-ai', (el, data, event) => {
+        searchRaceViaRuleMasterAi(data.query || undefined);
+        if (data.closeDropdown === '1') closeRaceSpotlightDropdown();
+      });
+      window.Actions.register('hud:select-race', (el, data, event) => {
+        selectRaceItem(data.raceName || '');
+      });
+      window.Actions.register('hud:toggle-modal-template', (el, data, event) => {
+        toggleModalTemplateItem(data.templateId || '');
+      });
+      window.Actions.register('hud:remove-modal-template', (el, data, event) => {
+        removeModalTemplateItem(data.templateId || '');
+      });
+      window.Actions.register('hud:select-size', (el, data, event) => {
+        selectSizeItem(data.sizeId || 'Medium');
+      });
+      window.Actions.register('hud:select-gender', (el, data, event) => {
+        selectGenderItem(data.genderId || 'Male');
+      });
+      window.Actions.register('hud:select-alignment', (el, data, event) => {
+        selectAlignmentItem(data.alignId || 'True Neutral');
+      });
+      window.Actions.register('hud:search-deity-ai', (el, data, event) => {
+        searchDeityViaRuleMasterAi(data.query || undefined);
+        if (data.closeDropdown === '1') closeDeitySpotlightDropdown();
+      });
+      window.Actions.register('hud:open-custom-deity-editor', (el, data, event) => {
+        if (data.deityName) {
+          openCustomDeityEditorModal({ name: data.deityName });
+        } else {
+          openCustomDeityEditorModal();
+        }
+        if (data.closeDropdown === '1') closeDeitySpotlightDropdown();
+      });
+      window.Actions.register('hud:select-deity', (el, data, event) => {
+        selectDeityItem(data.deityName || '');
+      });
+      window.Actions.register('hud:select-deity-icon', (el, data, event) => {
+        selectCustomDeityIcon(data.icon || '☀️');
+      });
+      window.Actions.register('hud:toggle-deity-domain-chip', (el, data, event) => {
+        toggleCustomDeityDomainChip(data.domain || '');
+      });
+      window.Actions.register('hud:dismiss-parent-banner', (el, data, event) => {
+        if (el && el.parentElement) el.parentElement.classList.add('hidden');
+      });
+      window.Actions.register('hud:toggle-domain-skill-chip', (el, data, event) => {
+        toggleCustomDomainSkillChip(data.skill || '');
+      });
+      window.Actions.register('hud:fetch-missing-domain-entry', (el, data, event) => {
+        const lvl = data.level !== undefined && data.level !== '' ? Number(data.level) : null;
+        fetchAndAddMissingDomainEntryViaAi(data.entryType || 'Feat', data.entryName || '', lvl);
+      });
+      window.Actions.register('hud:select-domain-spotlight-custom', (el, data, event) => {
+        selectDomainSpotlightCustom(data.customName || '');
+      });
+      window.Actions.register('hud:select-domain-spotlight-item', (el, data, event) => {
+        selectDomainSpotlightItem(data.itemName !== undefined ? data.itemName : '');
+      });
+      window.Actions.register('hud:remove-npc-feat', (el, data, event) => {
+        removeNpcStudioFeat(Number(data.index) || 0);
+      });
+      window.Actions.register('hud:remove-npc-ability', (el, data, event) => {
+        removeNpcStudioAbility(Number(data.index) || 0);
+      });
+      window.Actions.register('hud:remove-npc-spell', (el, data, event) => {
+        removeNpcStudioSpell(Number(data.index) || 0);
+      });
+      window.Actions.register('hud:remove-npc-maneuver', (el, data, event) => {
+        removeNpcStudioManeuver(Number(data.index) || 0);
+      });
+      window.Actions.register('hud:adjust-manual-stat', (el, data, event) => {
+        adjustManualStat(data.statKey || 'str', Number(data.delta) || 0);
+      });
+      window.Actions.register('hud:set-manual-stat-input', (el, data, event) => {
+        setManualStatInput(data.statKey || 'str', el ? el.value : 10);
+      });
+      window.Actions.register('hud:adjust-pointbuy-stat', (el, data, event) => {
+        adjustPointBuyStat(data.statKey || 'str', Number(data.delta) || 0);
+      });
+      window.Actions.register('hud:reroll-single-4d6', (el, data, event) => {
+        rerollSingle4d6Stat(Number(data.rollId) || 0);
+      });
+      window.Actions.register('hud:rolled-stat-select', (el, data, event) => {
+        onRolledStatSelect(data.statKey || 'str', el ? el.value : 0);
+      });
+      window.Actions.register('hud:apply-periodic-preset', (el, data, event) => {
+        applyPeriodicPreset(Number(data.index) || 0);
+      });
+      window.Actions.register('hud:remove-periodic-effect', (el, data, event) => {
+        removePeriodicHpEffect(data.effId || '');
+      });
     }
 

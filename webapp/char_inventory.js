@@ -194,7 +194,7 @@
           ? 'ui-btn-xs h-6 text-[10px] px-2.5 rounded-md font-bold bg-emerald-950 text-emerald-300 border border-emerald-700 cursor-pointer hover:border-emerald-400 transition inline-flex items-center' 
           : 'ui-btn-xs h-6 text-[10px] px-2.5 rounded-md font-bold bg-slate-800 text-slate-300 border border-slate-700 cursor-pointer hover:border-slate-500 transition inline-flex items-center';
         modeBadge.title = 'Click to toggle in House Rules';
-        modeBadge.onclick = () => { if (typeof openHouseRulesModal === 'function') openHouseRulesModal(); };
+        modeBadge.dataset.action = 'inventory:open-house-rules';
       }
 
       const maxRankInfo = document.getElementById('skills-max-rank-info');
@@ -339,7 +339,8 @@
           <td class="py-2 px-2 text-center align-middle">
             <button 
               type="button" 
-              onclick="toggleSkillClass('${item.key}')" 
+              data-action="inventory:toggle-skill-class"
+              data-skill-key="${item.key}"
               title="${item.isClass ? 'Class Skill • Click to make Cross-Class' : 'Cross-Class Skill • Click to make Class Skill'}"
               class="w-6 h-6 rounded flex items-center justify-center transition ${item.isClass ? 'text-amber-400 hover:text-amber-300 font-black' : 'text-slate-600 hover:text-slate-400 font-normal'}">
               <span>${item.isClass ? '⭐' : '⚪'}</span>
@@ -372,7 +373,7 @@
           <!-- 3D Roll -->
           <td class="py-2 px-3 text-center align-middle">
             <div class="inline-flex items-center gap-1">
-              <button onclick="rollSkill3D('${safeName}', ${total}, '${safeSubtitle}')" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded-lg border border-slate-700 text-xs font-mono transition inline-flex items-center gap-1.5 justify-center shadow-sm active:scale-95" title="Roll 1d20${total >= 0 ? '+' : ''}${total} ${safeName} check">
+              <button data-action="inventory:roll-skill" data-skill-name="${safeName}" data-total="${total}" data-subtitle="${safeSubtitle}" class="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded-lg border border-slate-700 text-xs font-mono transition inline-flex items-center gap-1.5 justify-center shadow-sm active:scale-95" title="Roll 1d20${total >= 0 ? '+' : ''}${total} ${safeName} check">
                 ${getD20IconSvg('w-3.5 h-3.5 text-amber-400')}
                 <span>Roll</span>
               </button>
@@ -382,9 +383,9 @@
           <!-- Rank & Rank Adjustment Buttons -->
           <td class="py-2 px-2 text-center align-middle font-mono">
             <div class="inline-flex items-center gap-1">
-              <button onclick="adjustSkillRank('${item.key}', -1)" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">-</button>
+              <button data-action="inventory:adjust-skill-rank" data-skill-key="${item.key}" data-delta="-1" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">-</button>
               <span class="w-6 text-center font-bold ${isOverRank ? 'text-rose-400 animate-pulse' : (item.ranks > 0 ? 'text-sky-300' : 'text-slate-500')}">${item.ranks}</span>
-              <button onclick="adjustSkillRank('${item.key}', 1)" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">+</button>
+              <button data-action="inventory:adjust-skill-rank" data-skill-key="${item.key}" data-delta="1" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">+</button>
             </div>
             <div class="text-[9px] text-slate-500 font-mono">/ ${maxRankAllowed}</div>
           </td>
@@ -969,7 +970,7 @@
         const pinIconSvg = isPinned
           ? `<svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`
           : `<svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
-        const buffPinBtnHtml = `<button type="button" onclick="event.stopPropagation(); toggleBuffCombatPin('${safeBuffId}')" class="w-6 h-6 inline-flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${pinBtnClasses}" title="${pinBtnTitle}">${pinIconSvg}</button>`;
+        const buffPinBtnHtml = `<button type="button" data-action="inventory:toggle-buff-pin" data-buff-id="${safeBuffId}" class="w-6 h-6 inline-flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${pinBtnClasses}" title="${pinBtnTitle}">${pinIconSvg}</button>`;
 
         if (viewMode === 'list') {
           // --- LISTE GÖRÜNÜMÜ (COMPACT LIST VIEW) ---
@@ -980,7 +981,7 @@
             <div class="flex items-center justify-between gap-2.5 flex-wrap sm:flex-nowrap">
               <!-- Sol: Checkbox + İsim + Kategori Rozeti -->
               <div class="flex items-center gap-2.5 min-w-0">
-                <input type="checkbox" ${isAct ? 'checked' : ''} onchange="toggleBuffActive('${buff.id}')" class="w-4 h-4 rounded shrink-0 ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'} cursor-pointer">
+                <input type="checkbox" ${isAct ? 'checked' : ''} data-change-action="inventory:toggle-buff-active" data-buff-id="${safeBuffId}" class="w-4 h-4 rounded shrink-0 ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'} cursor-pointer">
                 <div class="min-w-0 flex items-center gap-1.5 flex-wrap">
                   <span class="font-bold text-xs truncate ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
                   <span class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
@@ -999,13 +1000,13 @@
                 </div>
                 <div class="flex items-center gap-1">
                   ${buff.rounds !== null && buff.rounds !== undefined ? `
-                    <button type="button" onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Decrease 1 Round">-</button>
+                    <button type="button" data-action="inventory:adjust-buff-rounds" data-buff-id="${safeBuffId}" data-delta="-1" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Decrease 1 Round">-</button>
                     <span class="font-mono font-bold px-1 text-xs ${buff.rounds <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-400'} min-w-[36px] text-center">${buff.rounds} Rd</span>
-                    <button type="button" onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Add 1 Round">+</button>
+                    <button type="button" data-action="inventory:adjust-buff-rounds" data-buff-id="${safeBuffId}" data-delta="1" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center cursor-pointer" title="Add 1 Round">+</button>
                   ` : `<span class="text-[10px] text-slate-500 italic px-2">${buffDurDisplay}</span>`}
                 </div>
                 ${buffPinBtnHtml}
-                <button type="button" onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-1 text-xs transition cursor-pointer" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
+                <button type="button" data-action="inventory:delete-buff" data-buff-id="${safeBuffId}" class="text-slate-500 hover:text-rose-400 p-1 text-xs transition cursor-pointer" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
               </div>
             </div>
 
@@ -1027,13 +1028,13 @@
             <div class="space-y-1.5">
               <div class="flex items-center justify-between gap-1.5">
                 <label class="flex items-center gap-2 cursor-pointer select-none">
-                  <input type="checkbox" ${isAct ? 'checked' : ''} onchange="toggleBuffActive('${buff.id}')" class="w-4 h-4 rounded ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'}">
+                  <input type="checkbox" ${isAct ? 'checked' : ''} data-change-action="inventory:toggle-buff-active" data-buff-id="${safeBuffId}" class="w-4 h-4 rounded ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'}">
                   <span class="font-bold text-xs ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
                 </label>
                 <div class="flex items-center gap-1">
                   <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
                   ${buffPinBtnHtml}
-                  <button onclick="deleteBuff('${buff.id}')" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
+                  <button data-action="inventory:delete-buff" data-buff-id="${safeBuffId}" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
                 </div>
               </div>
 
@@ -1056,9 +1057,9 @@
               </div>
               <div class="flex items-center gap-1">
                 ${buff.rounds !== null && buff.rounds !== undefined ? `
-                  <button onclick="adjustBuffRounds('${buff.id}', -1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">-</button>
+                  <button data-action="inventory:adjust-buff-rounds" data-buff-id="${safeBuffId}" data-delta="-1" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">-</button>
                   <span class="font-mono font-bold px-1.5 ${buff.rounds <= 3 ? 'text-rose-400 animate-pulse' : 'text-amber-400'}">${buff.rounds} Rd</span>
-                  <button onclick="adjustBuffRounds('${buff.id}', 1)" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">+</button>
+                  <button data-action="inventory:adjust-buff-rounds" data-buff-id="${safeBuffId}" data-delta="1" class="w-5 h-5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded font-bold leading-none flex items-center justify-center">+</button>
                 ` : `<span class="text-[10px] text-slate-500 italic">${buffDurDisplay}</span>`}
               </div>
             </div>
@@ -1312,6 +1313,49 @@
 
     function executeLongRest(isFullHeal = true) {
       if (!character) return;
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'hud/longRest',
+          payload: { isFullHeal: Boolean(isFullHeal) },
+          meta: { label: isFullHeal ? 'Long Rest (Full Recovery)' : 'Long Rest (8h Natural Healing)' }
+        });
+        const out = (typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null) || {};
+        if (typeof renderActionEconomy === 'function') {
+          renderActionEconomy();
+        }
+        if (typeof renderHUD === 'function') {
+          try { renderHUD(); } catch (e) { console.warn('renderHUD immediate rest error:', e); }
+        }
+        try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in rest:', e); }
+        try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in rest:', e); }
+        try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in rest:', e); }
+        try { if (typeof renderSpellSlots === 'function') renderSpellSlots(); } catch (e) { console.warn('renderSpellSlots error in rest:', e); }
+        try { renderAll(); } catch (e) { console.warn('renderAll error in rest:', e); }
+
+        const maxHp = Number(out.maxHp ?? character.hp?.max) || (Number(character.level || 1) * 10) || 10;
+        const curHp = Number(out.currentHp ?? character.hp?.current) || maxHp;
+        const hpGain = Number(out.hpGain) || 0;
+        const refreshedDailyItems = Number(out.refreshedDailyItems) || 0;
+        const refreshedDailyFeats = Number(out.refreshedDailyFeats) || 0;
+        const removedConditions = Number(out.removedConditions) || 0;
+        const hasRingOfSustenance = Boolean(out.hasRingOfSustenance);
+
+        const details = [];
+        details.push(isFullHeal ? `Full HP (${curHp}/${maxHp})` : `+${hpGain} HP Natural Healing (${curHp}/${maxHp})`);
+        const totalReadyLong = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
+        details.push(`All spells and ${totalReadyLong} maneuvers readied`);
+        if (refreshedDailyItems > 0 || refreshedDailyFeats > 0) details.push(`${refreshedDailyItems + refreshedDailyFeats} Daily Item/Feat charges refreshed`);
+        if (removedConditions > 0) details.push("Fatigue/Debuffs cleared");
+        if (hasRingOfSustenance) details.push("💍 2 Hours (Ring of Sustenance)");
+
+        showDiceTopToast({
+          icon: "☀️",
+          title: `Long Rest Complete (${isFullHeal ? "Full Heal" : "D&D 3.5e RAW"})`,
+          breakdown: details.join(" • "),
+          total: `${curHp}/${maxHp} HP`
+        }, { stack: false, autoDismiss: true, dismissMs: 5000 });
+        return;
+      }
       character.encounterRound = 1;
       if (!character.tactical) character.tactical = {};
       character.tactical.round = 1;
@@ -1551,6 +1595,54 @@
 
     function executeShortRest(minutes = 5) {
       if (!character) return;
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'hud/shortRest',
+          payload: { minutes: Number(minutes) || 5 },
+          meta: { label: `Short Rest (${minutes} min)` }
+        });
+        const out = (typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null) || {};
+        if (typeof renderActionEconomy === 'function') {
+          renderActionEconomy();
+        }
+        if (typeof renderHUD === 'function') {
+          try { renderHUD(); } catch (e) { console.warn('renderHUD immediate short rest error:', e); }
+        }
+        try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in short rest:', e); }
+        try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in short rest:', e); }
+        try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in short rest:', e); }
+        try { renderAll(); } catch (e) { console.warn('renderAll error in short rest:', e); }
+
+        const refreshedManeuvers = Number(out.refreshedManeuvers) || 0;
+        const reReadiedCount = Number(out.reReadiedCount) || 0;
+        const nonlethalHealed = Number(out.nonlethalHealed) || 0;
+        const downgradedExhausted = Boolean(out.downgradedExhausted);
+        const expiredBuffs = Number(out.expiredBuffs) || 0;
+        const expiredBuffNames = Array.isArray(out.expiredBuffNames) ? out.expiredBuffNames : [];
+
+        const summaryParts = [];
+        const totalReadyShort = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
+        if (refreshedManeuvers > 0 || reReadiedCount > 0) {
+          summaryParts.push(`${refreshedManeuvers + reReadiedCount} maneuvers recovered / readied`);
+        } else {
+          summaryParts.push(`${totalReadyShort} maneuvers ready for combat`);
+        }
+        if (nonlethalHealed > 0) summaryParts.push(`Healed ${nonlethalHealed} Nonlethal HP`);
+        if (downgradedExhausted) summaryParts.push("Exhausted downgraded to Fatigued");
+        if (expiredBuffs > 0) {
+          const namesLabel = expiredBuffNames.length <= 3 ? ` (${expiredBuffNames.join(", ")})` : "";
+          summaryParts.push(`${expiredBuffs} buff(s) expired${namesLabel}`);
+        }
+        summaryParts.push("Encounter round reset");
+
+        showDiceTopToast({
+          icon: "☕",
+          title: `${minutes >= 60 ? "1-Hour Short Rest" : "5-Min Quick Recovery"} Complete`,
+          breakdown: summaryParts.join(" • "),
+          total: "Maneuvers Ready"
+        }, { stack: false, autoDismiss: true, dismissMs: 4500 });
+        return;
+      }
 
       // 1. Tome of Battle Maneuvers: Kusanan & kullanilan manevralarin tekrar kusanilmasi / tazelenmesi
       let refreshedManeuvers = 0;
@@ -2071,23 +2163,23 @@
         return `
           <div class="grid grid-cols-12 gap-1.5 items-center bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
             <div class="col-span-4">
-              <select onchange="onBuffModalV2ModifierChange(${idx}, 'target', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-white font-medium focus:border-indigo-500 focus:outline-none">
+              <select data-change-action="inventory:buff-v2-mod-change" data-mod-idx="${idx}" data-field="target" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-white font-medium focus:border-indigo-500 focus:outline-none">
                 ${buildTargetOptions(mod.target)}
               </select>
             </div>
             <div class="col-span-2">
-              <input type="text" value="${formulaStr.replace(/"/g, '&quot;')}" placeholder="+2 or @cl" oninput="onBuffModalV2ModifierChange(${idx}, 'formula', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono font-bold text-amber-300 text-center focus:border-amber-400 focus:outline-none" title="Number (e.g. 4, -2) or V2 formula (e.g. 2 + min(3, floor(@cl / 6)))">
+              <input type="text" value="${formulaStr.replace(/"/g, '&quot;')}" placeholder="+2 or @cl" data-input-action="inventory:buff-v2-mod-input" data-mod-idx="${idx}" data-field="formula" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono font-bold text-amber-300 text-center focus:border-amber-400 focus:outline-none" title="Number (e.g. 4, -2) or V2 formula (e.g. 2 + min(3, floor(@cl / 6)))">
             </div>
             <div class="col-span-3">
-              <select onchange="onBuffModalV2ModifierChange(${idx}, 'type', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-indigo-200 focus:border-indigo-500 focus:outline-none">
+              <select data-change-action="inventory:buff-v2-mod-change" data-mod-idx="${idx}" data-field="type" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-indigo-200 focus:border-indigo-500 focus:outline-none">
                 ${buildTypeOptions(mod.type)}
               </select>
             </div>
             <div class="col-span-2">
-              <input type="text" value="${condStr}" placeholder="Condition" oninput="onBuffModalV2ModifierChange(${idx}, 'condition', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[10px] text-slate-300 focus:border-indigo-500 focus:outline-none" title="Optional condition (e.g., vs Evil, vs Fear)">
+              <input type="text" value="${condStr}" placeholder="Condition" data-input-action="inventory:buff-v2-mod-input" data-mod-idx="${idx}" data-field="condition" class="w-full bg-slate-950 border border-slate-700 rounded px-1.5 py-1 text-[10px] text-slate-300 focus:border-indigo-500 focus:outline-none" title="Optional condition (e.g., vs Evil, vs Fear)">
             </div>
             <div class="col-span-1 text-right">
-              <button type="button" onclick="removeBuffModalV2ModifierRow(${idx})" class="w-6 h-6 rounded bg-rose-950/70 hover:bg-rose-800 text-rose-300 text-xs font-bold transition cursor-pointer" title="Remove Modifier">&times;</button>
+              <button type="button" data-action="inventory:remove-buff-v2-mod" data-mod-idx="${idx}" class="w-6 h-6 rounded bg-rose-950/70 hover:bg-rose-800 text-rose-300 text-xs font-bold transition cursor-pointer" title="Remove Modifier">&times;</button>
             </div>
           </div>
         `;
@@ -2147,7 +2239,7 @@
           : 'bg-indigo-600 text-white border-indigo-400 shadow';
         const idleCls = 'bg-slate-900 text-slate-400 border-slate-700 hover:text-slate-200 hover:border-slate-600';
         return `
-          <button type="button" onclick="toggleBuffModalRuleFlag('${f.key}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? activeCls : idleCls}">
+          <button type="button" data-action="inventory:toggle-buff-rule-flag" data-flag-key="${f.key}" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? activeCls : idleCls}">
             ${f.label}
           </button>
         `;
@@ -2178,7 +2270,7 @@
         : 'px-2 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-950/70 hover:bg-indigo-800/80 text-indigo-200 border border-indigo-700/60 transition cursor-pointer';
 
       container.innerHTML = list.map((item, idx) => `
-        <button type="button" onclick="onBuffQuickPickClick(${idx})" class="${chipCls}">
+        <button type="button" data-action="inventory:buff-quick-pick" data-pick-idx="${idx}" class="${chipCls}">
           ${item.label}
         </button>
       `).join('');
@@ -2453,7 +2545,7 @@
           .trim();
 
         return `
-          <div data-buff-spot-idx="${idx}" onmousedown="event.preventDefault(); pickBuffSpotlightResult(${idx})" class="p-2.5 cursor-pointer transition flex flex-col gap-1 ${isSel ? 'bg-indigo-950 text-white' : 'bg-slate-950 hover:bg-slate-900 text-slate-200'}">
+          <div data-buff-spot-idx="${idx}" data-action="inventory:pick-buff-spotlight" data-spot-idx="${idx}" class="p-2.5 cursor-pointer transition flex flex-col gap-1 ${isSel ? 'bg-indigo-950 text-white' : 'bg-slate-950 hover:bg-slate-900 text-slate-200'}">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-xs text-amber-300 truncate">${item.name}</span>
               <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-[9px] font-mono text-purple-300 shrink-0">${item._spotlightKind || item.type || 'SRD 3.5e'}</span>
@@ -2712,7 +2804,7 @@
           ];
           energyBtns.innerHTML = ENERGIES.map(e => {
             const active = _selectedSpotlightEnergy === e.type;
-            return `<button type="button" onclick="selectBuffModalEnergy('${e.type}')" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? 'bg-amber-600 text-white border-amber-300 shadow' : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-white'}">${e.icon} ${e.type}</button>`;
+            return `<button type="button" data-action="inventory:select-buff-energy" data-energy="${e.type}" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? 'bg-amber-600 text-white border-amber-300 shadow' : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-white'}">${e.icon} ${e.type}</button>`;
           }).join('');
           energyBox.classList.remove('hidden');
         } else {
@@ -3505,27 +3597,34 @@
         }
       }
 
-      // 1. Calculate Carrying Capacity & Weights
-      const strScore = character.abilities?.str || 10;
-      const caps = RuleEngine.getCarryingCapacity(strScore);
+      // 1. Calculate Carrying Capacity & Weights (via SheetView when available)
+      const sheetInv = (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getSheet === 'function' && window.CharStore.getSheet()?.inventory)
+        || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveInventoryView === 'function' ? RuleEngine.deriveInventoryView(character) : null);
+      const encView = sheetInv?.encumbranceView || null;
+      const strScore = encView ? encView.strScore : (character.abilities?.str || 10);
+      const caps = encView ? encView.capacities : RuleEngine.getCarryingCapacity(strScore);
 
       let equippedWeight = 0;
-      Object.values(character.bodySlots).forEach(slot => {
-        if (slot && slot.active && slot.name && slot.name !== '-') {
-          equippedWeight += Number(slot.weight) || 0;
-        }
-      });
-
       let poolWeight = 0;
-      character.gearPool.forEach(item => {
-        if (!item.isEquipped) {
-          const q = (item.qty !== undefined && item.qty !== null) ? Math.max(0, Number(item.qty)) : 1;
-          poolWeight += (Number(item.weight) || 0) * q;
-        }
-      });
+      if (encView) {
+        equippedWeight = encView.equippedWeight;
+        poolWeight = encView.poolWeight;
+      } else {
+        Object.values(character.bodySlots).forEach(slot => {
+          if (slot && slot.active && slot.name && slot.name !== '-') {
+            equippedWeight += Number(slot.weight) || 0;
+          }
+        });
+        character.gearPool.forEach(item => {
+          if (!item.isEquipped) {
+            const q = (item.qty !== undefined && item.qty !== null) ? Math.max(0, Number(item.qty)) : 1;
+            poolWeight += (Number(item.weight) || 0) * q;
+          }
+        });
+      }
 
-      const totalWeight = Math.round((equippedWeight + poolWeight) * 10) / 10;
-      const load = RuleEngine.getLoadStatus(totalWeight, strScore);
+      const totalWeight = encView ? encView.totalWeight : (Math.round((equippedWeight + poolWeight) * 10) / 10);
+      const load = encView ? encView.loadStatus : RuleEngine.getLoadStatus(totalWeight, strScore);
 
       const wDisplay = document.getElementById('inv-total-weight');
       if (wDisplay) wDisplay.textContent = totalWeight + ' lbs';
@@ -3538,7 +3637,7 @@
 
       const bar = document.getElementById('inv-weight-bar');
       if (bar) {
-        const pct = Math.min(100, Math.round((totalWeight / caps.heavy) * 100));
+        const pct = encView ? encView.barPct : Math.min(100, Math.round((totalWeight / caps.heavy) * 100));
         bar.style.width = pct + '%';
         if (totalWeight <= caps.light) bar.className = 'bg-emerald-500 h-full rounded-full transition-all duration-300';
         else if (totalWeight <= caps.medium) bar.className = 'bg-amber-500 h-full rounded-full transition-all duration-300';
@@ -3559,7 +3658,8 @@
       if (slotsTbody) {
         slotsTbody.innerHTML = '';
         BODY_SLOT_DEFS.forEach(def => {
-          const slotData = character.bodySlots[def.key] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+          const rawSlot = character.bodySlots[def.key] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+          const slotData = Object.assign({}, rawSlot);
           const isOccupied = slotData.name && slotData.name !== '-';
 
           let conflictNotice = '';
@@ -3573,7 +3673,7 @@
           tr.className = 'hover:bg-slate-900/50 transition border-b border-slate-800/80';
           tr.innerHTML = `
             <td class="py-2.5 px-3 text-center align-middle">
-              <input type="checkbox" ${slotData.active ? 'checked' : ''} ${!isOccupied ? 'disabled' : ''} onchange="toggleSlotActive('${def.key}')" class="w-4 h-4 rounded text-sky-500 border-slate-700 focus:ring-0">
+              <input type="checkbox" ${slotData.active ? 'checked' : ''} ${!isOccupied ? 'disabled' : ''} data-change-action="inventory:toggle-slot-active" data-slot-key="${def.key}" class="w-4 h-4 rounded text-sky-500 border-slate-700 focus:ring-0">
             </td>
             <td class="py-2.5 px-3 text-center align-middle text-lg">${def.icon}</td>
             <td class="py-2.5 px-3 align-middle font-bold text-slate-300">
@@ -3595,8 +3695,8 @@
             <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${isOccupied ? slotData.cost + ' GP' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle">
               <div class="inline-flex items-center justify-center gap-1.5">
-                ${isOccupied && isForgeEditableItem(slotData) ? `<button onclick="openForgeForSlotItem('${def.key}')" title="Customize in Item Forge" class="w-7 h-7 bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 text-xs rounded-lg inline-flex items-center justify-center transition cursor-pointer shrink-0">⚒️</button>` : ''}
-                ${isOccupied ? `<button onclick="unequipSlot('${def.key}')" class="w-20 h-7 bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">Unequip</button>` : `<button onclick="openSlotEquipModal('${def.key}')" class="w-20 h-7 bg-sky-950/70 hover:bg-sky-900 text-sky-300 hover:text-white border border-sky-700/60 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">+ Equip</button>`}
+                ${isOccupied && isForgeEditableItem(slotData) ? `<button data-action="inventory:forge-slot-item" data-slot-key="${def.key}" title="Customize in Item Forge" class="w-7 h-7 bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 text-xs rounded-lg inline-flex items-center justify-center transition cursor-pointer shrink-0">⚒️</button>` : ''}
+                ${isOccupied ? `<button data-action="inventory:unequip-slot" data-slot-key="${def.key}" class="w-20 h-7 bg-rose-950/70 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">Unequip</button>` : `<button data-action="inventory:open-slot-equip" data-slot-key="${def.key}" class="w-20 h-7 bg-sky-950/70 hover:bg-sky-900 text-sky-300 hover:text-white border border-sky-700/60 text-[11px] font-bold px-2.5 rounded-lg inline-flex items-center justify-center transition cursor-pointer">+ Equip</button>`}
               </div>
             </td>
           `;
@@ -4437,9 +4537,8 @@
           // Draggable cyan card pin with pulsing halo and coordinates
           terminalMarkup = `
             <g id="sil-card-node-group-${slotKey}" class="cursor-grab select-none pointer-events-auto"
-               onmousedown="startDraggingCardNode(event, '${slotKey}')"
-               ontouchstart="startDraggingCardNode(event, '${slotKey}')"
-               onclick="event.stopPropagation()">
+               data-sil-drag-card="${slotKey}"
+               data-action="inventory:noop-stop">
               <circle cx="${cardX.toFixed(1)}" cy="${cardY.toFixed(1)}" r="18" fill="transparent" class="cursor-grab"/>
               <circle cx="${cardX.toFixed(1)}" cy="${cardY.toFixed(1)}" r="12" fill="#0284c7" fill-opacity="0.35" stroke="#38bdf8" stroke-dasharray="3,2" stroke-width="1.8" class="pointer-events-none animate-pulse"/>
               <circle id="sil-card-pin-${slotKey}" cx="${cardX.toFixed(1)}" cy="${cardY.toFixed(1)}" r="6.5" fill="#0ea5e9" stroke="#ffffff" stroke-width="2" class="cursor-grab"/>
@@ -4533,8 +4632,7 @@
           // Edit Mode: draggable handles with visual coordinate label
           nodesMarkup += `
             <g id="sil-node-group-${slotKey}" class="slot-anchor-node is-editing cursor-grab select-none pointer-events-auto"
-               onmousedown="startDraggingSlotNode(event, '${slotKey}')"
-               ontouchstart="startDraggingSlotNode(event, '${slotKey}')">
+               data-sil-drag-node="${slotKey}">
               <!-- Draggable Touch Area -->
               <circle id="sil-touch-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="20" fill="transparent" class="cursor-grab"/>
               <!-- Drag Halo -->
@@ -4550,7 +4648,7 @@
         } else {
           // Normal Mode: clickable to equip
           nodesMarkup += `
-            <g id="sil-node-group-${slotKey}" class="slot-anchor-node cursor-pointer group pointer-events-auto" onclick="openSlotEquipModal('${slotKey}')">
+            <g id="sil-node-group-${slotKey}" class="slot-anchor-node cursor-pointer group pointer-events-auto" data-action="inventory:open-slot-equip" data-slot-key="${slotKey}">
               <circle id="sil-halo-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="9" fill="${color}" fill-opacity="0.22" stroke="${color}" stroke-opacity="0.4" stroke-width="1" class="transition-all duration-300 pointer-events-none"/>
               <circle id="sil-node-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="5" fill="${color}" stroke="#0b1329" stroke-width="1.8" class="transition-all duration-300 group-hover:scale-125"/>
               <circle id="sil-glint-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="1.5" fill="#ffffff" class="pointer-events-none"/>
@@ -4565,14 +4663,7 @@
           <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_35%,rgba(56,189,248,0.18)_0%,rgba(245,158,11,0.06)_45%,transparent_75%)] pointer-events-none"></div>
 
           <svg id="sil-main-svg" viewBox="0 0 460 520" preserveAspectRatio="none"
-               class="w-full h-full select-none ${isSilhouetteTransformActive() ? 'cursor-grab' : ''}"
-               onwheel="handleSilhouetteWheel(event)"
-               onmousedown="startSilhouettePan(event)"
-               ontouchstart="startSilhouettePan(event)"
-               onmousemove="handleSilhouetteSvgMouseMove(event)"
-               onmouseup="stopDraggingSlotNode()"
-               ontouchmove="handleSilhouetteSvgTouchMove(event)"
-               ontouchend="stopDraggingSlotNode()">
+               class="w-full h-full select-none ${isSilhouetteTransformActive() ? 'cursor-grab' : ''}">
             <image id="sil-bg-image" href="${imgSrc}" xlink:href="${imgSrc}" x="${imgX}" y="${imgY}" width="${imgW}" height="${imgH}" preserveAspectRatio="none" class="pointer-events-none filter contrast-110 brightness-105" />
 
             <g class="pointer-events-auto">
@@ -4612,19 +4703,19 @@
 
       function buildCardHtml(slotKey, isRight) {
         const def = BODY_SLOT_DEFS.find(d => d.key === slotKey) || { key: slotKey, name: slotKey, trName: slotKey, icon: '⚔️' };
-        const slotData = character.bodySlots[slotKey] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+        const rawSlot = character.bodySlots[slotKey] || { name: '-', active: false, weight: 0, cost: 0, desc: '' };
+        const slotData = Object.assign({}, rawSlot);
         const isOccupied = slotData.name && slotData.name !== '-';
         if (isOccupied && slotData.active) activeOccupiedCount++;
 
         if (isOccupied) {
           return `
             <div data-slot="${slotKey}"
-                 onmouseenter="highlightSlotNode('${slotKey}', true)"
-                 onmouseleave="highlightSlotNode('${slotKey}', false)"
+                 data-sil-hover-slot="${slotKey}"
                  class="group relative bg-[#0b1329]/90 hover:bg-[#0f172a] border ${slotData.active ? 'border-sky-500/60 shadow-[0_0_15px_rgba(56,189,248,0.15)]' : 'border-slate-800 opacity-70'} rounded-xl p-2 sm:p-2.5 transition flex items-center justify-between gap-2.5">
               
               <div class="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
-                <button type="button" onclick="toggleSlotActive('${slotKey}')" title="Toggle Active / Inactive (${slotData.active ? 'Active' : 'Inactive'})" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg ${slotData.active ? 'bg-sky-950/80 border border-sky-400/60 text-sky-300 shadow-[0_0_8px_rgba(56,189,248,0.25)]' : 'bg-slate-800/80 border border-slate-700 text-slate-500 grayscale opacity-60'} flex items-center justify-center text-base sm:text-lg shrink-0 shadow-inner hover:scale-105 hover:border-sky-400 transition cursor-pointer">
+                <button type="button" data-action="inventory:toggle-slot-active" data-slot-key="${slotKey}" title="Toggle Active / Inactive (${slotData.active ? 'Active' : 'Inactive'})" class="w-8 h-8 sm:w-9 sm:h-9 rounded-lg ${slotData.active ? 'bg-sky-950/80 border border-sky-400/60 text-sky-300 shadow-[0_0_8px_rgba(56,189,248,0.25)]' : 'bg-slate-800/80 border border-slate-700 text-slate-500 grayscale opacity-60'} flex items-center justify-center text-base sm:text-lg shrink-0 shadow-inner hover:scale-105 hover:border-sky-400 transition cursor-pointer">
                   ${def.icon}
                 </button>
                 <div class="min-w-0 flex-1">
@@ -4632,18 +4723,20 @@
                     <span class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-sky-400">${def.trName || def.name}</span>
                     ${slotData.active ? '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-sky-950 text-sky-300 border border-sky-600/40">ACTIVE</span>' : '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-slate-800 text-slate-400 border border-slate-700">INACTIVE</span>'}
                     ${(() => {
-                      const dailyC = (typeof ensureItemDailyCharges === 'function') ? ensureItemDailyCharges(slotData) : slotData.dailyCharges;
+                      const dailyC = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.normalizeItemDailyCharges === 'function')
+                        ? RuleEngine.normalizeItemDailyCharges(slotData)
+                        : slotData.dailyCharges;
                       if (!dailyC) return '';
                       const isRound = (dailyC.unit === 'rounds' || dailyC.unit === 'tur' || dailyC.unit === 'turn');
                       const activeBuff = isRound && (typeof isItemBuffActive === 'function') && isItemBuffActive(slotData);
                       return `
                         <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-500/50 shadow-sm" title="Daily Remaining: ${dailyC.current}/${dailyC.max} ${dailyC.unit || 'charges'}">
                           <span>⚡ ${dailyC.current}/${dailyC.max}</span>
-                          <button type="button" onclick="event.stopPropagation(); spendSlotCharge('${slotKey}', 1)" title="Spend 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current <= 0 ? 'disabled' : ''}>-</button>
-                          <button type="button" onclick="event.stopPropagation(); restoreSlotCharge('${slotKey}', 1)" title="Restore 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current >= dailyC.max ? 'disabled' : ''}>+</button>
+                          <button type="button" data-action="inventory:spend-slot-charge" data-slot-key="${slotKey}" data-amount="1" title="Spend 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current <= 0 ? 'disabled' : ''}>-</button>
+                          <button type="button" data-action="inventory:restore-slot-charge" data-slot-key="${slotKey}" data-amount="1" title="Restore 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current >= dailyC.max ? 'disabled' : ''}>+</button>
                         </div>
                         ${isRound ? `
-                          <button type="button" onclick="event.stopPropagation(); ${activeBuff ? `dischargeDailyRoundItem('${encodeURIComponent(slotData.name)}', '${slotKey}')` : `castDailyRoundItem('${encodeURIComponent(slotData.name)}', '${slotKey}')`}"
+                          <button type="button" data-action="${activeBuff ? 'inventory:discharge-daily-round' : 'inventory:cast-daily-round'}" data-encoded-name="${encodeURIComponent(slotData.name)}" data-slot-key="${slotKey}"
                                   title="${activeBuff ? 'End Effect' : 'Spend 1 Charge & Activate'}"
                                   class="px-1.5 py-0.5 rounded text-[8px] font-bold transition flex items-center gap-0.5 cursor-pointer shadow-sm ${activeBuff ? 'bg-rose-950 text-rose-300 border border-rose-500 hover:bg-rose-900 animate-pulse' : 'bg-emerald-950 text-emerald-300 border border-emerald-600 hover:bg-emerald-900'}">
                             <span>${activeBuff ? '🛑 End' : '✨ Cast'}</span>
@@ -4667,11 +4760,11 @@
 
               <div class="flex items-center gap-1.5 shrink-0">
                 ${isForgeEditableItem(slotData) ? `
-                  <button onclick="openForgeForSlotItem('${slotKey}')" title="Customize in Item Forge" class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 transition text-xs inline-flex items-center justify-center cursor-pointer">
+                  <button data-action="inventory:forge-slot-item" data-slot-key="${slotKey}" title="Customize in Item Forge" class="w-6 h-6 rounded bg-amber-950/80 hover:bg-amber-800 text-amber-300 hover:text-white border border-amber-600/60 transition text-xs inline-flex items-center justify-center cursor-pointer">
                     ⚒️
                   </button>
                 ` : ''}
-                <button onclick="unequipSlot('${slotKey}')" title="Unequip (Return to Inventory)" class="w-6 h-6 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition text-xs inline-flex items-center justify-center cursor-pointer">
+                <button data-action="inventory:unequip-slot" data-slot-key="${slotKey}" title="Unequip (Return to Inventory)" class="w-6 h-6 rounded bg-rose-950/60 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-800 transition text-xs inline-flex items-center justify-center cursor-pointer">
                   ❌
                 </button>
               </div>
@@ -4680,9 +4773,8 @@
         } else {
           return `
             <div data-slot="${slotKey}"
-                 onclick="openSlotEquipModal('${slotKey}')"
-                 onmouseenter="highlightSlotNode('${slotKey}', true)"
-                 onmouseleave="highlightSlotNode('${slotKey}', false)"
+                 data-action="inventory:open-slot-equip" data-slot-key="${slotKey}"
+                 data-sil-hover-slot="${slotKey}"
                  class="group relative bg-[#0b1329]/40 hover:bg-[#0b1329]/90 border border-dashed border-slate-800 hover:border-sky-500/60 rounded-xl p-2 sm:p-2.5 transition flex items-center justify-between gap-2.5 cursor-pointer">
               
               <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
@@ -4738,8 +4830,8 @@
 
       // Bottom Dock: Weapons & Carrying Capacity HUD
       if (bottomDock) {
-        const mh = character.bodySlots?.mainHand || {};
-        const oh = character.bodySlots?.offHand || {};
+        const mh = Object.assign({}, character.bodySlots?.mainHand || {});
+        const oh = Object.assign({}, character.bodySlots?.offHand || {});
         const mhHas = Boolean(mh.name && mh.name !== '-');
         const ohHas = Boolean(oh.name && oh.name !== '-');
         if (mhHas && typeof hydrateGearItemStats === 'function') hydrateGearItemStats(mh);
@@ -4756,7 +4848,7 @@
         if (mhIsDouble) {
           // Double Weapon occupies BOTH slots; clicking Off-Hand badge toggles TWF!
           offHandBadgeHtml = `
-            <div onclick="if(typeof activateWeaponSet==='function'){activateWeaponSet(2); renderAll();}"
+            <div data-action="inventory:activate-double-twf"
                  class="h-full min-w-0 flex flex-col justify-start gap-1.5 px-3 py-2 rounded-xl ${isDoubleTwfActive ? 'bg-sky-950/80 border border-sky-400 text-white shadow-md shadow-sky-950/60 ring-1 ring-sky-400/40' : 'bg-slate-950 border border-amber-500/60 hover:border-sky-400 text-slate-200'} text-xs cursor-pointer select-none transition"
                  title="Double Weapon occupies both hands. Click to toggle Two-Weapon Fighting (TWF)">
               <div class="flex items-center justify-between gap-2 min-w-0">
@@ -4786,15 +4878,15 @@
         } else {
           // One-Handed / Light Weapon or Empty Main Hand: normal Off-Hand slot
           offHandBadgeHtml = `
-            <div onclick="openSlotEquipModal('offHand')" class="h-full min-w-0 flex flex-col justify-start gap-1.5 pl-3 ${ohHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
+            <div data-action="inventory:open-slot-equip" data-slot-key="offHand" class="h-full min-w-0 flex flex-col justify-start gap-1.5 pl-3 ${ohHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${ohHas ? 'bg-slate-950 border border-amber-500/60 hover:border-amber-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-amber-500/60 text-slate-400 hover:text-amber-200'} text-xs cursor-pointer transition" title="${ohHas ? 'Click to change Off-Hand weapon or shield' : 'Click to equip Off-Hand weapon or shield'}">
               <div class="flex items-center justify-between gap-2 min-w-0">
                 <div class="flex items-center gap-1.5 min-w-0 flex-1">
                   <span class="text-amber-400 font-bold text-[10px] shrink-0">OFF-HAND:</span>
                   <span class="font-bold truncate">${ohHas ? oh.name : '+ Equip Off-Hand'}</span>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
-                  ${ohHas && isForgeEditableItem(oh) ? `<button type="button" onclick="event.stopPropagation(); openForgeForSlotItem('offHand')" title="Customize Off-Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
-                  ${ohHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('offHand')" title="Unequip Off-Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
+                  ${ohHas && isForgeEditableItem(oh) ? `<button type="button" data-action="inventory:forge-slot-item" data-slot-key="offHand" title="Customize Off-Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
+                  ${ohHas ? `<button type="button" data-action="inventory:unequip-slot" data-slot-key="offHand" title="Unequip Off-Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
                 </div>
               </div>
               ${ohStatsHtml}
@@ -4812,7 +4904,7 @@
             <!-- Weapon Quick Slots (Stacked on Mobile, Side-by-Side on sm+) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1 min-w-0 w-full items-stretch">
               <!-- Main Hand Badge -->
-              <div onclick="openSlotEquipModal('mainHand')" class="h-full min-w-0 flex flex-col justify-start gap-1.5 pl-3 ${mhHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
+              <div data-action="inventory:open-slot-equip" data-slot-key="mainHand" class="h-full min-w-0 flex flex-col justify-start gap-1.5 pl-3 ${mhHas ? 'pr-2 py-2' : 'pr-3 py-2'} rounded-xl ${mhHas ? 'bg-slate-950 border border-sky-500/60 hover:border-sky-400 text-white' : 'bg-slate-950/60 border border-slate-800 hover:border-sky-500/60 text-slate-400 hover:text-sky-200'} text-xs cursor-pointer transition" title="${mhHas ? 'Click to change Main Hand weapon' : 'Click to equip Main Hand weapon'}">
                 <div class="flex items-center justify-between gap-2 min-w-0">
                   <div class="flex items-center gap-1.5 min-w-0 flex-1">
                     <span class="text-sky-400 font-bold text-[10px] shrink-0">MAIN HAND:</span>
@@ -4820,8 +4912,8 @@
                     ${mhIsDouble ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60 shrink-0">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
                   </div>
                   <div class="flex items-center gap-1 shrink-0">
-                    ${mhHas && isForgeEditableItem(mh) ? `<button type="button" onclick="event.stopPropagation(); openForgeForSlotItem('mainHand')" title="Customize Main Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
-                    ${mhHas ? `<button type="button" onclick="event.stopPropagation(); unequipSlot('mainHand')" title="Unequip Main Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
+                    ${mhHas && isForgeEditableItem(mh) ? `<button type="button" data-action="inventory:forge-slot-item" data-slot-key="mainHand" title="Customize Main Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
+                    ${mhHas ? `<button type="button" data-action="inventory:unequip-slot" data-slot-key="mainHand" title="Unequip Main Hand" class="w-6 h-6 rounded-md bg-rose-950/80 hover:bg-rose-700 border border-rose-700/80 text-rose-300 hover:text-white text-xs font-extrabold inline-flex items-center justify-center shrink-0 transition cursor-pointer">✕</button>` : ''}
                   </div>
                 </div>
                 ${mhStatsHtml}
@@ -4882,7 +4974,7 @@
       if (modalEl) {
         let footerUnequipBtn = document.getElementById('slot-equip-footer-unequip-btn');
         if (!footerUnequipBtn) {
-          const closeBtn = modalEl.querySelector('button[onclick="closeSlotEquipModal()"]:not(.w-7)');
+          const closeBtn = Array.from(modalEl.querySelectorAll('button:not(.w-7)')).find(b => b.textContent.trim() === 'Close');
           if (closeBtn && closeBtn.parentElement) {
             closeBtn.parentElement.className = 'bg-slate-950 px-4 py-2.5 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0';
             footerUnequipBtn = document.createElement('button');
@@ -4896,10 +4988,8 @@
           if (hasEquipped) {
             footerUnequipBtn.classList.remove('hidden');
             footerUnequipBtn.innerHTML = `<span>✕</span><span>Unequip ${currentSlotData.name}</span>`;
-            footerUnequipBtn.onclick = () => {
-              unequipSlot(_currentEquipSlotKey);
-              closeSlotEquipModal();
-            };
+            footerUnequipBtn.setAttribute('data-action', 'inventory:unequip-slot-modal');
+            footerUnequipBtn.setAttribute('data-slot-key', _currentEquipSlotKey);
           } else {
             footerUnequipBtn.classList.add('hidden');
           }
@@ -4918,12 +5008,12 @@
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
             ${isForgeEditableItem(currentSlotData) ? `
-              <button type="button" onclick="openForgeForSlotItem('${_currentEquipSlotKey}')" class="px-2.5 py-1.5 bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer" title="Customize in Item Forge">
+              <button type="button" data-action="inventory:forge-slot-item" data-slot-key="${_currentEquipSlotKey}" class="px-2.5 py-1.5 bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer" title="Customize in Item Forge">
                 <span>⚒️</span>
                 <span>Forge</span>
               </button>
             ` : ''}
-            <button type="button" onclick="unequipSlot('${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-rose-900/90 hover:bg-rose-700 border border-rose-500/70 text-rose-100 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 cursor-pointer">
+            <button type="button" data-action="inventory:unequip-slot-modal" data-slot-key="${_currentEquipSlotKey}" class="px-3 py-1.5 bg-rose-900/90 hover:bg-rose-700 border border-rose-500/70 text-rose-100 hover:text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1.5 cursor-pointer">
               <span>✕</span>
               <span>Unequip</span>
             </button>
@@ -4964,7 +5054,7 @@
               No ${hasEquipped ? 'other ' : ''}eligible items found in your inventory pool for <strong>${def?.trName || def?.name || 'this slot'}</strong>.
             </p>
             <div class="pt-2 flex flex-wrap items-center justify-center gap-2">
-              <button onclick="closeSlotEquipModal(); openAddPoolItemModal();" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition shadow cursor-pointer">
+              <button data-action="inventory:open-add-pool-from-equip" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition shadow cursor-pointer">
                 ➕ Add New Item to Inventory
               </button>
             </div>
@@ -4974,7 +5064,7 @@
       }
 
       container.innerHTML = equippedBannerHtml + eligible.map(item => {
-        const safeIdAttr = String(item.id ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const safeIdAttr = String(item.id ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
         return `
         <div class="p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/60 transition flex items-center justify-between gap-3">
           <div class="min-w-0 flex-1">
@@ -4992,11 +5082,11 @@
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
             ${isForgeEditableItem(item) ? `
-              <button type="button" onclick="openForgeForPoolItem('${safeIdAttr}')" class="w-8 h-8 rounded-lg bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white text-xs font-bold transition shadow inline-flex items-center justify-center cursor-pointer" title="Customize in Item Forge">
+              <button type="button" data-action="inventory:forge-pool-item" data-item-id="${safeIdAttr}" class="w-8 h-8 rounded-lg bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white text-xs font-bold transition shadow inline-flex items-center justify-center cursor-pointer" title="Customize in Item Forge">
                 ⚒️
               </button>
             ` : ''}
-            <button onclick="equipPoolItem('${safeIdAttr}', '${_currentEquipSlotKey}'); closeSlotEquipModal();" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer">
+            <button data-action="inventory:equip-pool-item-modal" data-item-id="${safeIdAttr}" data-slot-key="${_currentEquipSlotKey}" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow flex items-center gap-1 cursor-pointer">
               <span>⚡ Equip</span>
             </button>
           </div>
@@ -5041,7 +5131,7 @@
               <div class="text-3xl">🐾</div>
               <h4 class="text-sm font-black text-white uppercase tracking-wider">No Active Companion or Mount</h4>
               <p class="text-xs text-slate-400">Select or summon an Animal Companion, Familiar, or Special Mount to manage equipment slots and barding.</p>
-              <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-8 px-4 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
+              <button type="button" data-action="inventory:open-companion-modal" class="ui-btn-sm h-8 px-4 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5 mx-auto">
                 <span>➕</span>
                 <span>Select / Summon Companion</span>
               </button>
@@ -5089,7 +5179,7 @@
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <button type="button" onclick="if (typeof openCompanionModal === 'function') openCompanionModal();" class="ui-btn-sm h-8 px-3 bg-slate-900 hover:bg-slate-800 border border-amber-600/50 text-amber-300 hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+            <button type="button" data-action="inventory:open-companion-modal" class="ui-btn-sm h-8 px-3 bg-slate-900 hover:bg-slate-800 border border-amber-600/50 text-amber-300 hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
               <span>⚙️</span>
               <span>Manage Companion</span>
             </button>
@@ -5129,11 +5219,11 @@
                     </div>
                   </div>
                   <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
-                    <button type="button" onclick="openCompanionEquipModal('${slotDef.key}')" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded transition cursor-pointer">
+                    <button type="button" data-action="inventory:open-companion-equip" data-slot-key="${slotDef.key}" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded transition cursor-pointer">
                       <span>⇄</span>
                       <span>Swap</span>
                     </button>
-                    <button type="button" onclick="unequipCompanionSlot('${slotDef.key}')" class="ui-btn-xs h-6 px-2.5 text-[10px] font-bold text-rose-300 hover:text-white bg-rose-950 hover:bg-rose-900 border border-rose-700/60 rounded transition cursor-pointer">
+                    <button type="button" data-action="inventory:unequip-companion-slot" data-slot-key="${slotDef.key}" class="ui-btn-xs h-6 px-2.5 text-[10px] font-bold text-rose-300 hover:text-white bg-rose-950 hover:bg-rose-900 border border-rose-700/60 rounded transition cursor-pointer">
                       <span>✕</span>
                       <span>Unequip</span>
                     </button>
@@ -5154,7 +5244,7 @@
                     <p class="text-[10px] text-slate-500 italic min-h-[30px]">${slotDef.hint}</p>
                   </div>
                   <div class="pt-2 border-t border-slate-800/60 text-right">
-                    <button type="button" onclick="openCompanionEquipModal('${slotDef.key}')" class="ui-btn-xs h-6 px-2.5 bg-amber-600/90 hover:bg-amber-500 text-white rounded font-bold text-[10px] shadow transition cursor-pointer inline-flex items-center gap-1">
+                    <button type="button" data-action="inventory:open-companion-equip" data-slot-key="${slotDef.key}" class="ui-btn-xs h-6 px-2.5 bg-amber-600/90 hover:bg-amber-500 text-white rounded font-bold text-[10px] shadow transition cursor-pointer inline-flex items-center gap-1">
                       <span>➕</span>
                       <span>Equip</span>
                     </button>
@@ -5185,16 +5275,16 @@
                 <p id="companion-equip-modal-subtitle" class="text-[10px] text-slate-400">Select compatible item from character gear pool</p>
               </div>
             </div>
-            <button type="button" onclick="closeCompanionEquipModal()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">
+            <button type="button" data-action="inventory:close-companion-equip" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">
               ✕
             </button>
           </div>
 
           <!-- Search & Filter Controls -->
           <div class="p-3 bg-slate-950/70 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
-            <input type="text" id="companion-equip-search-input" oninput="renderCompanionEquipList()" placeholder="Filter items in gear pool..." class="ui-input-md h-8 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white placeholder-slate-500">
+            <input type="text" id="companion-equip-search-input" data-input-action="inventory:filter-companion-equip" placeholder="Filter items in gear pool..." class="ui-input-md h-8 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white placeholder-slate-500">
             <label class="flex items-center gap-1.5 text-[11px] text-slate-400 shrink-0 cursor-pointer select-none">
-              <input type="checkbox" id="companion-equip-show-all" onchange="renderCompanionEquipList()" class="rounded border-slate-700 text-amber-500">
+              <input type="checkbox" id="companion-equip-show-all" data-change-action="inventory:filter-companion-equip" class="rounded border-slate-700 text-amber-500">
               <span>Show All Items</span>
             </label>
           </div>
@@ -5206,7 +5296,7 @@
 
           <!-- Footer -->
           <div class="bg-slate-900/90 px-4 py-2.5 border-t border-slate-800 flex items-center justify-end shrink-0">
-            <button type="button" onclick="closeCompanionEquipModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer">
+            <button type="button" data-action="inventory:close-companion-equip" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer">
               Close
             </button>
           </div>
@@ -5288,7 +5378,7 @@
       container.innerHTML = compatibleItems.map(item => {
         const acBonus = (item.acBonus || item.armorBonus) ? `+${(item.acBonus || item.armorBonus) + (item.enhancementBonus || 0)} AC` : null;
         const enhBonus = item.enhancementBonus ? `+${item.enhancementBonus} Magic` : null;
-        const safeIdAttr = String(item.id ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const safeIdAttr = String(item.id ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 
         return `
           <div class="p-2.5 rounded-xl bg-slate-900 hover:bg-slate-800/80 border border-slate-800 hover:border-amber-500/50 flex items-center justify-between gap-3 transition">
@@ -5301,7 +5391,7 @@
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5 truncate">${safeEscapeHtml(item.desc || item.benefit || '')}</div>
             </div>
-            <button type="button" onclick="equipItemToCompanion('${safeIdAttr}', '${_activeCompanionEquipSlotKey}')" class="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs rounded-lg shadow transition cursor-pointer shrink-0">
+            <button type="button" data-action="inventory:equip-companion-item" data-item-id="${safeIdAttr}" data-slot-key="${_activeCompanionEquipSlotKey}" class="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs rounded-lg shadow transition cursor-pointer shrink-0">
               ✓ Equip
             </button>
           </div>
@@ -5316,8 +5406,36 @@
       }
     }
 
+    function syncInventoryStore() {
+      if (typeof window !== 'undefined' && window.CharStore && !window.CharStore.getDoc() && typeof character !== 'undefined') {
+        window.CharStore._syncExternalCharacterRef(character);
+      }
+    }
+
     function equipItemToCompanion(itemId, slotKey) {
       if (!character || !character.companion) return;
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        syncInventoryStore();
+        window.CharStore.dispatch({
+          type: 'inventory/equipCompanionItem',
+          payload: { poolItemId: itemId, slotKey },
+          meta: { label: `Equip Companion Item (${slotKey})` }
+        });
+        const out = window.CharStore.getLastOutcome();
+        if (!out || out.status === 'not_found') {
+          alert('Item not found in Gear Pool.');
+          return;
+        }
+        closeCompanionEquipModal();
+        renderAll();
+        showDiceTopToast({
+          icon: '🐾',
+          title: 'Companion Item Equipped',
+          breakdown: `${out.itemName} equipped in ${slotKey}.`,
+          total: 'Equipped'
+        });
+        return;
+      }
       if (!Array.isArray(character.gearPool)) character.gearPool = [];
 
       const itemIdx = character.gearPool.findIndex(i => i && String(i.id) === String(itemId));
@@ -5358,6 +5476,24 @@
 
     function unequipCompanionSlot(slotKey) {
       if (!character || !character.companion || !character.companion.gear) return;
+      if (window.CharStore && typeof window.CharStore.dispatch === 'function') {
+        syncInventoryStore();
+        window.CharStore.dispatch({
+          type: 'inventory/unequipCompanionSlot',
+          payload: { slotKey },
+          meta: { label: `Unequip Companion Slot (${slotKey})` }
+        });
+        const out = window.CharStore.getLastOutcome();
+        if (!out || out.status === 'empty_slot') return;
+        renderAll();
+        showDiceTopToast({
+          icon: '🐾',
+          title: 'Companion Item Unequipped',
+          breakdown: `${out.itemName} returned to Gear Pool.`,
+          total: 'Unequipped'
+        });
+        return;
+      }
       const item = character.companion.gear[slotKey];
       if (!item || !item.name || item.name === '-') return;
 
@@ -5403,6 +5539,15 @@
             return;
           }
         }
+        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+          window.CharStore.dispatch({
+            type: 'inventory/toggleSlotActive',
+            payload: { slotKey },
+            meta: { label: `Toggle Body Slot (${slotKey})` }
+          });
+          renderAll();
+          return;
+        }
         character.bodySlots[slotKey].active = !character.bodySlots[slotKey].active;
         saveStateToStorage();
         renderAll();
@@ -5412,6 +5557,26 @@
     function unequipSlot(slotKey, silent = false) {
       const slot = character.bodySlots?.[slotKey];
       if (!slot || slot.name === '-') return;
+      const slotName = slot.name;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({
+          type: 'inventory/unequipSlot',
+          payload: { slotKey },
+          meta: { label: `Unequip ${slotName}` }
+        });
+        try { renderWeaponSetsUI(); } catch (e) {}
+        try { recalculateOffense(); } catch (e) {}
+        renderAll();
+        if (!silent && typeof showDiceTopToast === 'function') {
+          const slotDef = BODY_SLOT_DEFS.find(d => d.key === slotKey);
+          showDiceTopToast({
+            title: 'Item Unequipped',
+            breakdown: `"${slotName}" (${slotDef?.trName || slotKey}) unequipped and returned to backpack.`,
+            icon: '📦'
+          });
+        }
+        return;
+      }
 
       if (!Array.isArray(character.gearPool)) character.gearPool = [];
 
@@ -5762,8 +5927,9 @@
       return null;
     }
 
-    function renderGearItemStatsBadgesHtml(item, options = {}) {
-      if (!item || typeof item !== 'object' || !item.name || item.name === '-') return '';
+    function renderGearItemStatsBadgesHtml(rawItem, options = {}) {
+      if (!rawItem || typeof rawItem !== 'object' || !rawItem.name || rawItem.name === '-') return '';
+      const item = Object.assign({}, rawItem);
       hydrateGearItemStats(item);
 
       const compact = Boolean(options.compact);
@@ -5953,8 +6119,12 @@
       if (!tbody) return;
       tbody.innerHTML = '';
 
-      // Auto-heal miscategorized items in gear pool (e.g. Dagger +2 labeled as 'Other')
-      (character.gearPool || []).forEach(item => {
+      const query = (document.getElementById('pool-search-input')?.value || '').toLowerCase().trim();
+      const catFilter = document.getElementById('pool-category-filter')?.value || 'All';
+
+      // Build normalized view rows without mutating character.gearPool in place
+      const poolRows = (character.gearPool || []).filter(Boolean).map(rawItem => {
+        const item = Object.assign({}, rawItem);
         if (!item.category || item.category === 'Other') {
           const autoCat = mapEntryToGearCategory(item);
           if (autoCat && autoCat !== 'Other') {
@@ -5967,12 +6137,10 @@
             }
           }
         }
+        return item;
       });
 
-      const query = (document.getElementById('pool-search-input')?.value || '').toLowerCase().trim();
-      const catFilter = document.getElementById('pool-category-filter')?.value || 'All';
-
-      const filtered = (character.gearPool || []).filter(item => {
+      const filtered = poolRows.filter(item => {
         if (item.isEquipped) return false; // Equipped items are shown in body slots
         if (typeof RuleEngine !== 'undefined' && RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(item)) return false;
         const matchesQuery = !query || item.name.toLowerCase().includes(query) || (item.desc || '').toLowerCase().includes(query);
@@ -5988,7 +6156,7 @@
       filtered.forEach(item => {
         const statsBadgesHtml = renderGearItemStatsBadgesHtml(item, { compact: true });
         const profWarn = getEquipmentProficiencyWarning(item);
-        const safeIdAttr = String(item.id ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const safeIdAttr = String(item.id ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-900/60 transition border-b border-slate-800/80';
         tr.innerHTML = `
@@ -6005,9 +6173,9 @@
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono">
             <div class="flex items-center justify-center gap-1">
-              <button onclick="adjustPoolQty('${safeIdAttr}', -1)" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">-</button>
+              <button data-action="inventory:adjust-pool-qty" data-item-id="${safeIdAttr}" data-delta="-1" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">-</button>
               <span class="w-6 text-center ${Number(item.qty) <= 0 ? 'text-rose-400 font-bold' : 'text-white font-bold'}">${(item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1}</span>
-              <button onclick="adjustPoolQty('${safeIdAttr}', 1)" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">+</button>
+              <button data-action="inventory:adjust-pool-qty" data-item-id="${safeIdAttr}" data-delta="1" class="ui-btn-icon w-6 h-6 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-xs leading-none inline-flex items-center justify-center cursor-pointer">+</button>
             </div>
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono text-slate-400">${item.weight || 0} lb</td>
@@ -6016,26 +6184,26 @@
             <div class="flex items-center justify-center gap-1.5">
               ${isConsumableOrSlotless(item) ? `
                 <div class="flex flex-col gap-1.5 w-20">
-                  <button onclick="consumeItem3D('pool', '${safeIdAttr}')" class="ui-btn-xs w-full h-6 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Consume / Activate / Use">
+                  <button data-action="inventory:use-pool-item" data-item-id="${safeIdAttr}" class="ui-btn-xs w-full h-6 bg-indigo-950 hover:bg-indigo-900 text-indigo-300 border border-indigo-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Consume / Activate / Use">
                     <span>🧪</span><span>Use</span>
                   </button>
-                  <button onclick="togglePoolBelt('${safeIdAttr}')" class="ui-btn-xs w-full h-6 ${item.isBelt ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600 shadow-sm shadow-emerald-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'} border text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="${item.isBelt ? 'Remove from Belt (Disable Quick Access)' : 'Attach to Belt (Add to Combat Quick Access)'}">
+                  <button data-action="inventory:toggle-pool-belt" data-item-id="${safeIdAttr}" class="ui-btn-xs w-full h-6 ${item.isBelt ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-600 shadow-sm shadow-emerald-950' : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'} border text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="${item.isBelt ? 'Remove from Belt (Disable Quick Access)' : 'Attach to Belt (Add to Combat Quick Access)'}">
                     <span>${item.isBelt ? '🟢' : '⚡'}</span><span>${item.isBelt ? 'On Belt' : 'Belt'}</span>
                   </button>
                 </div>
               ` : `
                 <div class="w-20 flex items-center justify-center">
-                  <button onclick="equipPoolItem('${safeIdAttr}')" class="ui-btn-sm w-full h-7 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Equip to Body Slot">
+                  <button data-action="inventory:equip-pool-item" data-item-id="${safeIdAttr}" class="ui-btn-sm w-full h-7 bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 text-[11px] font-bold rounded-md transition cursor-pointer flex items-center justify-center gap-1.5 shadow-sm" title="Equip to Body Slot">
                     <span>⚡</span><span>Equip</span>
                   </button>
                 </div>
               `}
               ${isForgeEditableItem(item) ? `
-                <button onclick="openForgeForPoolItem('${safeIdAttr}')" class="w-7 h-7 flex items-center justify-center bg-amber-950/80 hover:bg-amber-800 border border-amber-600/60 text-amber-300 hover:text-white text-xs rounded-md transition cursor-pointer shrink-0" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
+                <button data-action="inventory:forge-pool-item" data-item-id="${safeIdAttr}" class="w-7 h-7 flex items-center justify-center bg-amber-950/80 hover:bg-amber-800 border border-amber-600/60 text-amber-300 hover:text-white text-xs rounded-md transition cursor-pointer shrink-0" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
                   ⚒️
                 </button>
               ` : ''}
-              <button onclick="deletePoolItem('${safeIdAttr}')" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded-md transition cursor-pointer shrink-0" title="Delete">
+              <button data-action="inventory:delete-pool-item" data-item-id="${safeIdAttr}" class="w-7 h-7 flex items-center justify-center bg-slate-800 hover:bg-rose-900 text-slate-400 hover:text-rose-200 text-xs rounded-md transition cursor-pointer shrink-0" title="Delete">
                 🗑️
               </button>
             </div>
@@ -6046,6 +6214,16 @@
     }
 
     function togglePoolBelt(itemId) {
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({
+          type: 'inventory/togglePoolBelt',
+          payload: { itemId },
+          meta: { label: 'Toggle Belt Quick-Access' }
+        });
+        if (typeof syncAutomatedCombatPins === 'function') syncAutomatedCombatPins(character);
+        renderAll();
+        return;
+      }
       const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
       if (item) {
         item.isBelt = !item.isBelt;
@@ -6056,6 +6234,15 @@
     }
 
     function adjustPoolQty(itemId, delta) {
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({
+          type: 'inventory/adjustPoolQty',
+          payload: { itemId, delta },
+          meta: { label: `Adjust Item Qty (${delta > 0 ? '+' : ''}${delta})` }
+        });
+        renderAll();
+        return;
+      }
       const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
       if (item) {
         const currentQty = (item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1;
@@ -6081,6 +6268,15 @@
 
     function deletePoolItem(itemId) {
       if (confirm('Are you sure you want to delete this item from your inventory pool?')) {
+        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+          window.CharStore.dispatch({
+            type: 'inventory/deletePoolItem',
+            payload: { itemId },
+            meta: { label: 'Delete Inventory Item' }
+          });
+          renderAll();
+          return;
+        }
         const item = (character.gearPool || []).find(p => p && String(p.id) === String(itemId));
         if (item) {
           const cleanName = (item.name || '').toLowerCase().trim();
@@ -6112,6 +6308,7 @@
         return;
       }
 
+      const hasStore = Boolean(typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc());
       const hasOversized = RuleEngine.hasOversizedWeaponFeat(character);
       let targetSlotKey = targetSlotKeyOverride || null;
       let twoHandWarningMsg = null;
@@ -6130,7 +6327,7 @@
           const mhIsTwoHand = mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
           if (mhIsTwoHand && !hasOversized) {
             const prevMhName = mh.name;
-            unequipSlot('mainHand', true);
+            if (!hasStore) unequipSlot('mainHand', true);
             twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" to equip "${item.name}" in off-hand.`;
           }
           // If Main Hand is empty and the parent Double Weapon is in the pool unequipped, auto-equip parent in Main Hand
@@ -6158,7 +6355,7 @@
           const ohIsOffHead = oh && oh.name && oh.name !== '-' && RuleEngine.isOffHandWeaponHead && RuleEngine.isOffHandWeaponHead(oh);
           if (oh && oh.name && oh.name !== '-' && !hasOversized && !(isDouble && ohIsOffHead)) {
             const prevOhName = oh.name;
-            unequipSlot('offHand', true);
+            if (!hasStore) unequipSlot('offHand', true);
             twoHandWarningMsg = `Unequipped off-hand "${prevOhName}" because "${item.name}" is a two-handed weapon.`;
           }
         } else if (!targetSlotKey) {
@@ -6171,7 +6368,7 @@
             const mhIsTwoHand = RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
             if (mhIsTwoHand && !hasOversized) {
               const prevMhName = mh.name;
-              unequipSlot('mainHand', true);
+              if (!hasStore) unequipSlot('mainHand', true);
               targetSlotKey = 'mainHand';
               twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" and equipped "${item.name}" in main hand.`;
             } else {
@@ -6183,7 +6380,7 @@
           const mhIsTwoHand = mh && mh.name && mh.name !== '-' && RuleEngine.isTwoHandedWeapon(mh) && !mhIsDouble;
           if (mhIsTwoHand && !hasOversized) {
             const prevMhName = mh.name;
-            unequipSlot('mainHand', true);
+            if (!hasStore) unequipSlot('mainHand', true);
             twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" to equip "${item.name}" in off-hand.`;
           }
         }
@@ -6193,7 +6390,7 @@
 
         if (mhIsTwoHand && !hasOversized) {
           const prevMhName = mh.name;
-          unequipSlot('mainHand', true);
+          if (!hasStore) unequipSlot('mainHand', true);
           twoHandWarningMsg = `Unequipped two-handed "${prevMhName}" and equipped shield "${item.name}".`;
         }
         targetSlotKey = targetSlotKeyOverride || 'offHand';
@@ -6242,6 +6439,48 @@
           }
           return;
         }
+      }
+
+      if (hasStore) {
+        window.CharStore.dispatch({
+          type: 'inventory/equipPoolItem',
+          payload: { itemId, forceSlotKey: targetSlotKey },
+          meta: { label: `Equip ${item.name || 'Item'}` }
+        });
+        const out = window.CharStore.getLastOutcome ? window.CharStore.getLastOutcome() : null;
+        if (out && out.twoHandWarningMsg && !twoHandWarningMsg) {
+          twoHandWarningMsg = out.twoHandWarningMsg;
+        }
+        try { renderWeaponSetsUI(); } catch (e) {}
+        try { recalculateOffense(); } catch (e) {}
+        renderAll();
+        const slotDef = BODY_SLOT_DEFS.find(d => d.key === targetSlotKey);
+        const slotLabel = slotDef?.trName || targetSlotKey;
+        let toastIcon = '⚔️';
+        let toastTitle = 'Weapon Equipped';
+        if (item.category === 'Shield') {
+          toastIcon = '🛡️';
+          toastTitle = 'Shield Equipped';
+        } else if (item.category === 'Armor') {
+          toastIcon = '🛡️';
+          toastTitle = 'Armor Equipped';
+        } else if (item.category !== 'Weapon') {
+          toastIcon = '✨';
+          toastTitle = 'Item Equipped';
+        }
+        const breakdownText = twoHandWarningMsg
+          ? twoHandWarningMsg
+          : `Equipped "${item.name}" (${slotLabel}). Defense and stats updated.`;
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            title: toastTitle,
+            breakdown: breakdownText,
+            icon: toastIcon
+          });
+        } else {
+          alert(breakdownText);
+        }
+        return;
       }
 
       // Unequip currently equipped item in that slot if any
@@ -6830,7 +7069,7 @@
           ? 'bg-amber-500/15 text-amber-300 font-bold border-amber-500/50 shadow-sm' 
           : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 hover:text-white border-slate-800 font-semibold';
         return `
-          <button type="button" onclick="renderUnaddedMasterDbItems('${t.key}')" class="px-2.5 py-1 rounded-md border text-[10px] whitespace-nowrap transition flex items-center gap-1 cursor-pointer ${activeClass}">
+          <button type="button" data-action="inventory:pool-category-tab" data-category="${t.key}" class="px-2.5 py-1 rounded-md border text-[10px] whitespace-nowrap transition flex items-center gap-1 cursor-pointer ${activeClass}">
             <span>${t.label}</span>
             <span class="text-[9px] px-1 py-0.2 rounded-full ${isActive ? 'bg-amber-500/20 text-amber-200' : 'bg-slate-950 text-slate-400'}">${t.count}</span>
           </button>
@@ -6869,11 +7108,11 @@
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               ${isForgeEditableItem(item) ? `
-                <button type="button" onclick="openForgeForSpotlightItem(${idx}, false)" class="bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white p-1.5 rounded-lg text-xs font-bold transition cursor-pointer" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
+                <button type="button" data-action="inventory:forge-spotlight-item" data-index="${idx}" data-is-ai="false" class="bg-amber-950/90 hover:bg-amber-800 border border-amber-500/70 text-amber-200 hover:text-white p-1.5 rounded-lg text-xs font-bold transition cursor-pointer" title="Customize in Item Forge (Material, +1..+5, Keen, Flaming...)">
                   ⚒️
                 </button>
               ` : ''}
-              <button id="${btnId}" type="button" onclick="addMasterDbItemDirectlyToPool(${idx}, this)" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-2.5 sm:px-3 rounded-lg shadow transition flex items-center gap-1 whitespace-nowrap cursor-pointer">
+              <button id="${btnId}" type="button" data-action="inventory:add-spotlight-item" data-index="${idx}" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-2.5 sm:px-3 rounded-lg shadow transition flex items-center gap-1 whitespace-nowrap cursor-pointer">
                 <span>➕</span>
                 <span class="sm:hidden">Add</span>
                 <span class="hidden sm:inline">Add to Inventory</span>
@@ -7087,11 +7326,11 @@
               </div>
             </div>
             <div class="flex flex-wrap gap-2 pt-1 border-t border-slate-800">
-              <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs py-2 px-3 rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+              <button type="button" data-action="inventory:search-ai-pool-item" data-query="${escapedQ}" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-extrabold text-xs py-2 px-3 rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
                 <span>🔮</span>
                 <span>Fetch "${escapedQ}" via Rule Master AI</span>
               </button>
-              <button type="button" onclick="if(window.DnDUI && typeof window.DnDUI.switchCompendiumTab === 'function') { window.DnDUI.switchCompendiumTab('forge'); } else { openItemForgeModal(); }" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
+              <button type="button" data-action="inventory:open-item-forge" class="bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold text-xs py-2 px-3 rounded-lg transition flex items-center justify-center gap-1.5 cursor-pointer">
                 <span>⚒️</span>
                 <span>Open in Item Forge</span>
               </button>
@@ -7106,7 +7345,7 @@
       let html = `
         <div class="flex items-center justify-between text-[11px] text-slate-400 font-bold px-1 mb-1">
           <span>Spotlight Results (${matches.length} items found):</span>
-          <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-amber-400 hover:text-amber-300 underline flex items-center gap-1 font-semibold">
+          <button type="button" data-action="inventory:search-ai-pool-item" data-query="${escapedQ}" class="text-amber-400 hover:text-amber-300 underline flex items-center gap-1 font-semibold">
             <span>🔮 Search Rulebooks via Rule Master AI</span>
           </button>
         </div>
@@ -7114,7 +7353,7 @@
           ${matches.slice(0, 25).map((item, idx) => renderSpotlightItemCardHtml(item, idx, true, ownedSet)).join('')}
         </div>
         <div class="text-center pt-1">
-          <button type="button" onclick="searchAiForPoolItem('${escapedQ}')" class="text-xs text-amber-300 hover:text-amber-200 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 shadow">
+          <button type="button" data-action="inventory:search-ai-pool-item" data-query="${escapedQ}" class="text-xs text-amber-300 hover:text-amber-200 bg-slate-900 hover:bg-slate-800 border border-amber-500/40 rounded-lg px-3 py-1.5 transition inline-flex items-center gap-1.5 shadow">
             <span>🔮</span>
             <span>Not what you're looking for? <strong>Fetch "${escapedQ}" via Rule Master AI</strong></span>
           </button>
@@ -7208,10 +7447,10 @@
             </div>
             <p class="text-[11px] text-rose-400">${err.message || 'No response from API.'}</p>
             <div class="pt-2 border-t border-rose-900/50 flex flex-wrap gap-2 text-xs">
-              <button type="button" onclick="searchAiForPoolItem('${q.replace(/'/g, "\\'")}')" class="bg-rose-900 hover:bg-rose-800 text-white font-bold py-1.5 px-3 rounded-lg transition">
+              <button type="button" data-action="inventory:search-ai-pool-item" data-query="${q.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" class="bg-rose-900 hover:bg-rose-800 text-white font-bold py-1.5 px-3 rounded-lg transition">
                 🔄 Retry
               </button>
-              <button type="button" onclick="fillPoolFormWithQueryName('${q.replace(/'/g, "\\'")}')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 px-3 rounded-lg transition">
+              <button type="button" data-action="inventory:fill-pool-form-query" data-query="${q.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 px-3 rounded-lg transition">
                 ✏️ Fill Manually
               </button>
             </div>
@@ -7261,7 +7500,7 @@
                 </div>
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                <button type="button" onclick="addAiItemToPoolAndDb(${idx})" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
+                <button type="button" data-action="inventory:add-ai-pool-item" data-index="${idx}" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs py-1.5 px-3 rounded-lg shadow transition flex items-center gap-1">
                   <span>➕</span>
                   <span>Add to Inventory</span>
                 </button>
@@ -7618,6 +7857,19 @@
     // ====================================================
     function addV2ItemToCharacterGearPool(v2Item) {
       if (!v2Item || !character) return;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({ type: 'inventory/addPoolItem', payload: { item: v2Item } });
+        renderAll();
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '⚒️',
+            title: 'Item Added to Inventory',
+            breakdown: `"${v2Item.name}" added to your Inventory.`,
+            total: `${Number(v2Item.priceGp ?? v2Item.cost ?? 0).toLocaleString('tr-TR')} gp`
+          });
+        }
+        return;
+      }
       if (!Array.isArray(character.gearPool)) character.gearPool = [];
       const cat = typeof mapEntryToGearCategory === 'function' ? mapEntryToGearCategory(v2Item) : (v2Item.type || 'Other');
       const isBeltItem = (v2Item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
@@ -7716,6 +7968,30 @@
 
     function applyForgedItemUpdate(originalItem, targetSlotKey, forgedV2Item) {
       if (!forgedV2Item || !character) return;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        const oldName = String(originalItem?.name || '').trim();
+        const newName = String(forgedV2Item.name || oldName || 'Forged Item').trim();
+        const newCost = Number(forgedV2Item.priceGp ?? forgedV2Item.cost) || 0;
+        window.CharStore.dispatch({
+          type: 'inventory/reforgeItem',
+          payload: {
+            targetContext: { originalItem, targetSlotKey },
+            itemData: forgedV2Item
+          }
+        });
+        renderAll();
+        if (typeof showDiceTopToast === 'function') {
+          showDiceTopToast({
+            icon: '⚒️',
+            title: 'Item Reforged',
+            breakdown: oldName && oldName !== newName
+              ? `"${oldName}" reforged into "${newName}".`
+              : `"${newName}" properties updated in Item Forge.`,
+            total: `${newCost.toLocaleString('en-US')} gp`
+          });
+        }
+        return;
+      }
       if (!Array.isArray(character.gearPool)) character.gearPool = [];
 
       const oldName = String(originalItem?.name || '').trim();
@@ -8214,6 +8490,30 @@
     function spendSlotCharge(slotKey, amount = 1) {
       const item = character.bodySlots?.[slotKey];
       if (!item) return;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({ type: 'inventory/adjustSlotCharge', payload: { slotKey, delta: -Math.abs(Number(amount) || 1) } });
+        const out = window.CharStore.getLastOutcome ? window.CharStore.getLastOutcome() : null;
+        if (out && out.status === 'charges_exhausted') {
+          showDiceTopToast({
+            icon: '⏳',
+            title: item.name || 'Charged Item',
+            breakdown: 'All daily charges expended! Resets on a Long Rest (☀️).',
+            total: '0 Charges'
+          });
+          return;
+        }
+        renderAll();
+        const dcNow = character.bodySlots?.[slotKey]?.dailyCharges || out?.dailyCharges;
+        if (dcNow) {
+          showDiceTopToast({
+            icon: '⚡',
+            title: item.name || 'Charge Expended',
+            breakdown: `Expended ${amount} charge(s). Remaining: ${dcNow.current}/${dcNow.max} ${dcNow.unit || 'charges'}.`,
+            total: `${dcNow.current}/${dcNow.max}`
+          });
+        }
+        return;
+      }
       const dc = ensureItemDailyCharges(item);
       if (!dc || dc.current <= 0) {
         showDiceTopToast({
@@ -8238,6 +8538,11 @@
     function restoreSlotCharge(slotKey, amount = 1) {
       const item = character.bodySlots?.[slotKey];
       if (!item) return;
+      if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
+        window.CharStore.dispatch({ type: 'inventory/adjustSlotCharge', payload: { slotKey, delta: Math.abs(Number(amount) || 1) } });
+        renderAll();
+        return;
+      }
       const dc = ensureItemDailyCharges(item);
       if (!dc || dc.current >= dc.max) return;
       dc.current = Math.min(dc.max, dc.current + amount);
@@ -8654,431 +8959,184 @@
       renderAll();
     }
 
-    // Hasar / Büyü Formülü Ayrıştırıcı (Wand of Fireball, Magic Missile, Lightning vb.)
+    // Canonical Damage / Healing / Consumable Plan Wrapper (delegates to RuleEngine.parseConsumablePlan)
     function parseDamageFromItem(name, effectDesc) {
-      const cleanName = (name || '').toLowerCase();
-      const cleanDesc = (effectDesc || '').toLowerCase();
-      const combined = cleanName + ' ' + cleanDesc;
-
-      // 1. Fireball / Ateş Topu
-      if (cleanName.includes('fireball') || cleanName.includes('ateş topu')) {
-        const clMatch = combined.match(/cl\s*(\d+)/i);
-        let cl = 5;
-        if (clMatch) cl = Math.min(10, Math.max(5, parseInt(clMatch[1])));
-        const diceMatch = cleanDesc.match(/(\d+)d6/i);
-        const count = diceMatch ? parseInt(diceMatch[1]) : cl;
-        return {
-          type: 'fire',
-          typeName: 'Fire Damage',
-          icon: '🔥',
-          diceCount: count,
-          diceSides: 6,
-          flatBonus: 0,
-          formula: `${count}d6`,
-          saveDesc: 'Reflex DC 14 half'
-        };
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.parseConsumablePlan === 'function') {
+        const plan = RuleEngine.parseConsumablePlan(name, effectDesc);
+        return plan && plan.isDamage ? plan : null;
       }
-
-      // 2. Magic Missile / Büyülü Füze
-      if (cleanName.includes('magic missile') || cleanName.includes('büyülü füze')) {
-        const clMatch = combined.match(/cl\s*(\d+)/i);
-        let cl = 1;
-        if (clMatch) cl = parseInt(clMatch[1]) || 1;
-        let missiles = 1;
-        if (cl >= 9) missiles = 5;
-        else if (cl >= 7) missiles = 4;
-        else if (cl >= 5) missiles = 3;
-        else if (cl >= 3) missiles = 2;
-
-        const mMatch = cleanDesc.match(/(\d+)\s*(?:missile|füze|adet|x)/i);
-        if (mMatch) missiles = parseInt(mMatch[1]) || missiles;
-
-        return {
-          type: 'force',
-          typeName: 'Force Damage',
-          icon: '⚡',
-          diceCount: missiles,
-          diceSides: 4,
-          flatBonus: missiles * 1, // her füze 1d4+1
-          formula: `${missiles}x(1d4+1)`,
-          isMagicMissile: true,
-          missiles: missiles
-        };
-      }
-
-      // 3. Lightning Bolt / Yıldırım
-      if (cleanName.includes('lightning bolt') || cleanName.includes('yıldırım')) {
-        const clMatch = combined.match(/cl\s*(\d+)/i);
-        const cl = clMatch ? Math.min(10, Math.max(5, parseInt(clMatch[1]))) : 5;
-        return {
-          type: 'electricity',
-          typeName: 'Electricity Damage',
-          icon: '⚡',
-          diceCount: cl,
-          diceSides: 6,
-          flatBonus: 0,
-          formula: `${cl}d6`,
-          saveDesc: 'Reflex DC 14 half'
-        };
-      }
-
-      // 4. Scorching Ray / Yakıcı Işın
-      if (cleanName.includes('scorching ray')) {
-        return {
-          type: 'fire',
-          typeName: 'Scorching Ray (Fire)',
-          icon: '🔥',
-          diceCount: 4,
-          diceSides: 6,
-          flatBonus: 0,
-          formula: '4d6'
-        };
-      }
-
-      // 5. Genel Zar / Hasar Ayrıştırıcı (örn. 5d6, 3d6+3, 2d8, 1d6+2 vb.)
-      const genMatch = (effectDesc || '').match(/(\d+)d(\d+)(?:\s*([+-]\s*\d+))?/i);
-      if (genMatch) {
-        const count = parseInt(genMatch[1]) || 1;
-        const sides = parseInt(genMatch[2]) || 6;
-        const flat = genMatch[3] ? parseInt(genMatch[3].replace(/\s+/g, '')) : 0;
-        let typeName = 'Damage';
-        let icon = '💥';
-        if (/fire|ateş/i.test(combined)) { typeName = 'Fire Damage'; icon = '🔥'; }
-        else if (/cold|soğuk|buz/i.test(combined)) { typeName = 'Cold Damage'; icon = '❄️'; }
-        else if (/acid|asit/i.test(combined)) { typeName = 'Acid Damage'; icon = '🧪'; }
-        else if (/electric|elektrik|yıldırım/i.test(combined)) { typeName = 'Electricity Damage'; icon = '⚡'; }
-        else if (/force|güç/i.test(combined)) { typeName = 'Force Damage'; icon = '✨'; }
-
-        return {
-          type: 'generic',
-          typeName,
-          icon,
-          diceCount: count,
-          diceSides: sides,
-          flatBonus: flat,
-          formula: `${count}d${sides}${flat !== 0 ? (flat > 0 ? '+' : '') + flat : ''}`
-        };
-      }
-
       return null;
     }
 
-    // Eşyayı Kategoriye Ayırıcı
     function getConsumableCategory(item) {
-      const name = (item.name || '').toLowerCase();
-      const desc = (item.effect || item.desc || '').toLowerCase();
-      const combined = name + ' ' + desc;
-
-      // 1. İyileşme (En yüksek öncelik)
-      if (/cure|heal|iyileş|can iksir|healing/i.test(name) || (/cure|heal|iyileş/i.test(desc) && !/fireball|magic missile|wand/i.test(name))) {
-        return 'healing';
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.parseConsumablePlan === 'function') {
+        const plan = RuleEngine.parseConsumablePlan(item, item?.effect || item?.desc);
+        if (plan.isHealing) return 'healing';
+        if (plan.isDamage) return 'wand_damage';
+        const combined = `${item?.name || ''} ${item?.desc || ''} ${item?.effect || ''}`;
+        if (item?.dailyCharges || /(?:\d+\s*\/\s*day|\d+\s*\/\s*gün|günde\s*\d+)/i.test(combined)) {
+          return 'daily_charge';
+        }
+        if (plan.isCure || plan.isPotion || plan.kind === 'buff') return 'buff';
       }
-
-      // 2. Asalar & Hasar Veren Eşyalar
-      if (/wand|asa|fireball|magic missile|lightning|scorching|hasar|damage|cone of cold|ice storm/i.test(name) || /(\d+)d(\d+).*hasar|damage/i.test(desc)) {
-        return 'wand_damage';
-      }
-
-      // 3. Günlük Şarjlı Eşyalar (Ring of Sending 3/day vb.)
-      if (item.dailyCharges || /(?:\d+\s*\/\s*day|\d+\s*\/\s*gün|günde\s*\d+)/i.test(combined)) {
-        return 'daily_charge';
-      }
-
-      // 4. Buff & Destek İksirleri
-      if (/potion|iksir|elixir|buff|strength|grace|endurance|cunning|wisdom|splendor|invisibility|fly|hız|haste|shield of faith|scroll of shield|potion of shield/i.test(name)) {
-        return 'buff';
-      }
-
       return 'other';
     }
 
-    function renderConsumables() {
-      const container = document.getElementById('consumables-container');
-      if (!container) return;
-      container.innerHTML = '';
+    function renderConsumables(containerOverride, sheetOverride) {
+      const container = containerOverride || (typeof document !== 'undefined' ? document.getElementById('consumables-container') : null);
+      if (!container && !sheetOverride) return '';
 
-      // 0. Auto-clean: Purge non-magical weapons previously synced into character.consumables
-      if (Array.isArray(character.consumables)) {
-        const prevLen = character.consumables.length;
-        character.consumables = character.consumables.filter(c => !isWeaponWithoutMagicOrHealing(c));
-        if (character.consumables.length !== prevLen && typeof saveStateToStorage === 'function') {
-          saveStateToStorage(true);
-        }
+      const sheetView = sheetOverride
+        || (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getSheet === 'function' ? window.CharStore.getSheet() : null)
+        || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveSheet === 'function' && typeof character !== 'undefined'
+          ? RuleEngine.deriveSheet(character, typeof masterDb !== 'undefined' ? masterDb : [])
+          : null);
+      const cg = sheetView?.inventory?.consumablesGrouped
+        || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveConsumablesView === 'function' && typeof character !== 'undefined'
+          ? RuleEngine.deriveConsumablesView(character)
+          : { allItems: [], byGroup: {} });
+
+      if (typeof UI !== 'undefined' && typeof UI.renderConsumablesView === 'function') {
+        return UI.renderConsumablesView(container, cg);
       }
+      return '';
+    }
 
-      // 1. Sync character.gearPool consumables with character.consumables (excluding plain weapons)
-      if (Array.isArray(character.gearPool)) {
-        if (!Array.isArray(character.consumables)) character.consumables = [];
-        character.gearPool.forEach(p => {
-          if (isWeaponWithoutMagicOrHealing(p)) return;
-          if (p.category === 'Consumable' || (p.isBelt && p.category !== 'Weapon') || p.category === 'Wand' || (p.name || '').toLowerCase().includes('wand')) {
-            const cleanName = (p.name || '').toLowerCase().trim();
-            const existing = character.consumables.find(c => (c.name || '').toLowerCase().trim() === cleanName);
-            if (existing) {
-              existing.qty = (p.qty !== undefined && p.qty !== null) ? Number(p.qty) : (existing.qty !== undefined ? Number(existing.qty) : 1);
-              if (!existing.effect && p.desc) existing.effect = p.desc;
-              if (p.dailyCharges) existing.dailyCharges = p.dailyCharges;
-            } else if (p.category === 'Consumable' || p.category === 'Wand') {
-              character.consumables.push({
-                name: p.name,
-                qty: (p.qty !== undefined && p.qty !== null) ? Number(p.qty) : 1,
-                effect: p.desc || 'Consumable effect',
-                dailyCharges: p.dailyCharges || null
-              });
-            }
-          }
+    function emitConsumableUseFeedback(outcome) {
+      if (!outcome || !outcome.status) return;
+      const name = outcome.name || 'Magic Item';
+      const remainingInfo = outcome.remainingInfo || '';
+
+      if (outcome.status === 'healed_minor') {
+        addDiceHistoryEntry({
+          icon: '💖',
+          title: `${name}`,
+          formula: '1 HP',
+          breakdown: `Cure Minor Wounds: +1 HP • HP: ${outcome.prevHp} ➔ ${outcome.newHp}/${outcome.maxHp} • ${remainingInfo}`,
+          total: '+1 HP'
         });
-      }
-
-      // 2. Build unified list of consumables to display
-      const displayMap = new Map();
-
-      // GearPool items (Consumable, isBelt, Wand, or has daily charges) - excluding plain weapons
-      (character.gearPool || []).forEach(p => {
-        if (isWeaponWithoutMagicOrHealing(p)) return;
-        const isWand = p.category === 'Wand' || (p.name || '').toLowerCase().includes('wand');
-        const hasDaily = !!ensureItemDailyCharges(p);
-        if ((p.category === 'Consumable' || (p.isBelt && p.category !== 'Weapon') || isWand || hasDaily) && !p.isEquipped) {
-          const key = (p.name || '').toLowerCase().trim();
-          if (!key) return;
-          displayMap.set(key, {
-            name: p.name,
-            qty: (p.qty !== undefined && p.qty !== null) ? Number(p.qty) : 1,
-            effect: p.desc || 'Consumable / wand',
-            sourceType: 'pool',
-            poolId: p.id,
-            isBelt: !!p.isBelt,
-            dailyCharges: p.dailyCharges || null
-          });
-        }
-      });
-
-      // Regular consumables in character.consumables - excluding plain weapons
-      (character.consumables || []).forEach((c, cIdx) => {
-        if (isWeaponWithoutMagicOrHealing(c)) return;
-        const key = (c.name || '').toLowerCase().trim();
-        if (!key) return;
-        ensureItemDailyCharges(c);
-        if (!displayMap.has(key)) {
-          displayMap.set(key, {
-            name: c.name,
-            qty: (c.qty !== undefined && c.qty !== null) ? Number(c.qty) : 1,
-            effect: c.effect || 'Consumable effect',
-            sourceType: 'consumable',
-            idx: cIdx,
-            isBelt: false,
-            dailyCharges: c.dailyCharges || null
-          });
-        } else {
-          const existing = displayMap.get(key);
-          if (c.effect && (!existing.effect || existing.effect === 'Consumable effect' || existing.effect === 'Sarf malzemesi etkisi')) {
-            existing.effect = c.effect;
-          }
-          if (c.dailyCharges && !existing.dailyCharges) {
-            existing.dailyCharges = c.dailyCharges;
-          }
-        }
-      });
-
-      // Equipped Body Slots items that have daily charges - excluding plain weapons, armor, and shields
-      if (character.bodySlots) {
-        Object.entries(character.bodySlots).forEach(([slotKey, slotItem]) => {
-          if (slotItem && slotItem.name && slotItem.name !== '-') {
-            if (isWeaponWithoutMagicOrHealing(slotItem, slotKey)) return;
-            const slotCat = String(slotItem.category || slotItem.type || '').toLowerCase().trim();
-            const isPhysicalSlotGear = slotCat === 'weapon' || slotCat === 'armor' || slotCat === 'shield' || slotKey === 'mainHand' || slotKey === 'offHand' || slotKey === 'armor';
-            const hasCharges = Number(slotItem.dailyCharges?.max || slotItem.dailyCharges || slotItem.charges) > 0 ||
-              (Array.isArray(slotItem.modes) && slotItem.modes.some(m => m && m.actionType && m.actionType !== 'passive'));
-            const hasDaily = isPhysicalSlotGear ? hasCharges : !!ensureItemDailyCharges(slotItem);
-            const isWandOrUse = isPhysicalSlotGear
-              ? hasCharges
-              : ((slotItem.desc && /(?:cure|fireball|missile|\d+d\d+)/i.test(slotItem.desc)) || (slotItem.name && /wand|asa/i.test(slotItem.name)));
-            if (hasDaily || isWandOrUse) {
-              const key = (slotItem.name || '').toLowerCase().trim();
-              if (!displayMap.has(key)) {
-                displayMap.set(key, {
-                  name: slotItem.name,
-                  qty: Number(slotItem.qty) || 1,
-                  effect: slotItem.desc || 'Equipped magic item',
-                  sourceType: 'slot',
-                  slotKey: slotKey,
-                  isBelt: false,
-                  fromSlot: true,
-                  dailyCharges: slotItem.dailyCharges || null
-                });
-              }
-            }
-          }
-        });
-      }
-
-      const allItems = Array.from(displayMap.values());
-
-      if (allItems.length === 0) {
-        container.innerHTML = `<div class="text-center text-slate-500 italic py-4 bg-slate-900/50 rounded-xl border border-slate-800">No consumables or charged items found on belt or in bag.</div>`;
         return;
       }
 
-      // Group definitions with strict ordering: HEALING FIRST!
-      const GROUPS = [
-        {
-          key: 'healing',
-          title: '💖 HEALING ITEMS & POTIONS',
+      if (outcome.status === 'healed_spell') {
+        const curedText = Array.isArray(outcome.healCured) && outcome.healCured.length > 0
+          ? ` • Cured Conditions: ${outcome.healCured.join(', ')}`
+          : '';
+        addDiceHistoryEntry({
           icon: '💖',
-          badgeText: 'Healing',
-          badgeBg: 'bg-emerald-950 text-emerald-300 border-emerald-700',
-          cardBorder: 'border-emerald-500/40 hover:border-emerald-400',
-          btnBg: 'bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border-emerald-500/40',
-          btnIcon: '💖',
-          btnText: 'Drink / Use'
-        },
-        {
-          key: 'wand_damage',
-          title: '⚡ WANDS & OFFENSIVE ITEMS',
-          icon: '⚡',
-          badgeText: 'Wand / Damage',
-          badgeBg: 'bg-rose-950 text-rose-300 border-rose-700',
-          cardBorder: 'border-rose-500/40 hover:border-rose-400',
-          btnBg: 'bg-rose-600/30 hover:bg-rose-600 text-rose-300 hover:text-white border-rose-500/40',
-          btnIcon: '⚡',
-          btnText: 'Activate'
-        },
-        {
-          key: 'buff',
-          title: '🧪 BUFF, CONDITION & UTILITY POTIONS',
-          icon: '🧪',
-          badgeText: 'Buff',
-          badgeBg: 'bg-purple-950 text-purple-300 border-purple-700',
-          cardBorder: 'border-purple-500/40 hover:border-purple-400',
-          btnBg: 'bg-purple-600/30 hover:bg-purple-600 text-purple-300 hover:text-white border-purple-500/40',
-          btnIcon: '🧪',
-          btnText: 'Use'
-        },
-        {
-          key: 'daily_charge',
-          title: '💍 DAILY CHARGED MAGIC ITEMS (X/DAY)',
-          icon: '💍',
-          badgeText: 'Daily Charge',
-          badgeBg: 'bg-sky-950 text-sky-300 border-sky-700',
-          cardBorder: 'border-sky-500/40 hover:border-sky-400',
-          btnBg: 'bg-sky-600/30 hover:bg-sky-600 text-sky-300 hover:text-white border-sky-500/40',
-          btnIcon: '💍',
-          btnText: 'Use'
-        },
-        {
-          key: 'other',
-          title: '📦 OTHER CONSUMABLES',
-          icon: '📦',
-          badgeText: 'Consumable',
-          badgeBg: 'bg-slate-800 text-slate-300 border-slate-600',
-          cardBorder: 'border-slate-700 hover:border-slate-500',
-          btnBg: 'bg-amber-600/30 hover:bg-amber-600 text-amber-300 hover:text-white border-amber-500/40',
-          btnIcon: '📦',
-          btnText: 'Use'
-        }
-      ];
-
-      // Distribute items into groups
-      const groupedData = {};
-      GROUPS.forEach(g => { groupedData[g.key] = []; });
-
-      allItems.forEach(item => {
-        const cat = getConsumableCategory(item);
-        if (groupedData[cat]) {
-          groupedData[cat].push(item);
-        } else {
-          groupedData['other'].push(item);
-        }
-      });
-
-      // Render each non-empty group in order
-      GROUPS.forEach(group => {
-        const items = groupedData[group.key];
-        if (!items || items.length === 0) return;
-
-        // Sort alphabetically within category
-        items.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-
-        const section = document.createElement('div');
-        section.className = 'space-y-2';
-
-        const header = document.createElement('div');
-        header.className = 'flex items-center justify-between border-b border-slate-800/80 pb-1 pt-1.5';
-        header.innerHTML = `
-          <div class="flex items-center gap-1.5 text-xs font-bold text-slate-200">
-            <span>${group.icon}</span>
-            <span>${group.title}</span>
-            <span class="badge ${group.badgeBg} text-[10px] ml-1 px-1.5 py-0.2">${items.length}</span>
-          </div>
-        `;
-        section.appendChild(header);
-
-        const grid = document.createElement('div');
-        grid.className = 'grid grid-cols-1 md:grid-cols-2 gap-2.5';
-
-        items.forEach(item => {
-          const isDaily = item.dailyCharges && typeof item.dailyCharges.max === 'number';
-          const isExhausted = isDaily ? (item.dailyCharges.current <= 0) : (item.qty <= 0);
-
-          let chargeText = '';
-          if (isDaily) {
-            chargeText = `Daily Left: <strong class="${item.dailyCharges.current > 0 ? 'text-sky-300' : 'text-rose-400'}">${item.dailyCharges.current} / ${item.dailyCharges.max}</strong>`;
-          } else {
-            chargeText = `Qty / Charges: <strong class="${item.qty > 0 ? 'text-white' : 'text-rose-400'}">${item.qty}</strong>`;
-          }
-
-          // Damage or heal tag
-          let tagBadge = '';
-          const dmgPlan = parseDamageFromItem(item.name, item.effect);
-          if (dmgPlan) {
-            tagBadge = `<span class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[9px] font-mono">${dmgPlan.formula} Dmg</span>`;
-          } else if (/cure|heal|iyileş/i.test(item.name)) {
-            let formulaBadge = '1d8+1';
-            if (/serious/i.test(item.name)) formulaBadge = '3d8+5';
-            else if (/moderate/i.test(item.name)) formulaBadge = '2d8+3';
-            else if (/critical/i.test(item.name)) formulaBadge = '4d8+7';
-            else if (/heal/i.test(item.name)) formulaBadge = '110 HP';
-            tagBadge = `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] font-mono">${formulaBadge} HP</span>`;
-          }
-
-          const card = document.createElement('div');
-          const safePoolIdAttr = String(item.poolId ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-          card.className = `bg-slate-900/90 border ${group.cardBorder} p-3 rounded-xl flex items-center justify-between gap-3 transition shadow-sm ${isExhausted ? 'opacity-60' : ''}`;
-          card.innerHTML = `
-            <div class="min-w-0 flex-1">
-              <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
-                <span>${item.name}</span>
-                <span class="badge ${group.badgeBg} text-[9px] font-bold px-1.5 py-0.2">${group.badgeText}</span>
-                ${item.isBelt ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px]">On Belt</span>' : ''}
-                ${item.fromSlot ? '<span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[9px]">Equipped</span>' : ''}
-                ${tagBadge}
-              </div>
-              <div class="text-[10px] text-slate-300 break-words mt-1 flex items-center gap-2 flex-wrap">
-                <span>${item.effect}</span>
-                <span class="border-l border-slate-700 pl-2 font-mono text-[11px]">${chargeText}</span>
-              </div>
-            </div>
-            <button onclick="consumeItem3D('${item.sourceType}', ${item.sourceType === 'pool' ? `'${safePoolIdAttr}'` : (item.sourceType === 'slot' ? `'${item.slotKey}'` : item.idx)})" ${isExhausted ? 'disabled' : ''} class="shrink-0 whitespace-nowrap inline-flex items-center justify-center gap-1.5 ${group.btnBg} disabled:opacity-30 disabled:cursor-not-allowed border text-xs font-bold px-3 py-1.5 rounded-lg transition self-center">
-              <span>${group.btnIcon}</span>
-              <span>${isExhausted ? 'Depleted' : group.btnText}</span>
-            </button>
-          `;
-          grid.appendChild(card);
+          title: `${name} (Heal & Cure)`,
+          formula: `${outcome.healTotal} HP`,
+          breakdown: `Heal: +${outcome.healTotal} HP • HP: ${outcome.prevHp} ➔ ${outcome.newHp}/${outcome.maxHp}${curedText} • ${remainingInfo}`,
+          total: `+${outcome.healTotal} HP`
         });
+        return;
+      }
 
-        section.appendChild(grid);
-        container.appendChild(section);
+      if (outcome.status === 'healed_dice') {
+        const rollVals = Array.isArray(outcome.rolls) ? outcome.rolls.map(r => (typeof r === 'object' ? r.value : r)) : [];
+        const dSides = outcome.diceSides || 8;
+        const flatB = Number(outcome.flatBonus) || 0;
+        const bonusSuffix = flatB !== 0 ? (flatB > 0 ? `+${flatB}` : `${flatB}`) : '';
+        const bonusBreakdown = flatB !== 0 ? ` + ${flatB}` : '';
+        addDiceHistoryEntry({
+          icon: '💖',
+          title: `${name}`,
+          formula: `${outcome.diceCount}d${dSides}${bonusSuffix}`,
+          breakdown: `${outcome.diceCount}d${dSides} [${rollVals.join(' + ')}]${bonusBreakdown} • HP: ${outcome.prevHp} ➔ ${outcome.newHp}/${outcome.maxHp} • ${remainingInfo}`,
+          total: `+${outcome.healTotal} HP`
+        });
+        return;
+      }
+
+      if (outcome.status === 'damage_roll') {
+        const dp = outcome.damagePlan || {};
+        const rolls = Array.isArray(outcome.rolls) ? outcome.rolls : [];
+        const totalDamage = outcome.totalDamage || 0;
+        let breakdownText = '';
+        if (dp.isMagicMissile) {
+          breakdownText = `${dp.missiles} Missiles: [${rolls.map(v => `${v}+1`).join(' + ')}] = ${totalDamage} Force Damage • ${remainingInfo}`;
+        } else {
+          breakdownText = `${dp.formula} [${rolls.join(' + ')}]${dp.flatBonus ? ` + ${dp.flatBonus}` : ''} = ${totalDamage} ${dp.typeName}${dp.saveDesc ? ` (${dp.saveDesc})` : ''} • ${remainingInfo}`;
+        }
+        addDiceHistoryEntry({
+          icon: dp.icon || '💥',
+          title: `${name} (Damage Roll)`,
+          formula: dp.formula || 'Damage',
+          breakdown: breakdownText,
+          total: `${totalDamage} Damage`
+        });
+        return;
+      }
+
+      if (outcome.status === 'cured_debuffs') {
+        const curedList = (outcome.curedDebuffs || []).join(', ');
+        showDiceTopToast({
+          icon: '✨',
+          title: name,
+          breakdown: `Cured: Removed "${curedList}" and all associated penalties! • ${remainingInfo}`,
+          total: 'Cured'
+        });
+        addDiceHistoryEntry({
+          icon: '✨',
+          title: `${name} (Cure / Rule)`,
+          formula: 'D&D 3.5e RAW',
+          breakdown: `Used: ${name} • Cured Condition: ${curedList} • ${remainingInfo}`,
+          total: 'Cured'
+        });
+        return;
+      }
+
+      if (outcome.status === 'restoration_no_effect') {
+        showDiceTopToast({
+          icon: 'ℹ️',
+          title: name,
+          breakdown: `Used, but no active Energy Drain or Negative Level condition was found on the character. • ${remainingInfo}`,
+          total: 'No Effect'
+        });
+        return;
+      }
+
+      if (outcome.status === 'buff_activated') {
+        showDiceTopToast({
+          icon: '🧪',
+          title: name,
+          breakdown: `Activated "${outcome.activatedBuff}" (${outcome.activatedSummary || `${outcome.activatedRounds} rounds`}) • ${remainingInfo}`,
+          total: 'Active'
+        });
+        return;
+      }
+
+      if (outcome.status === 'daily_used' && outcome.dailyCharges) {
+        showDiceTopToast({
+          icon: '💍',
+          title: name,
+          breakdown: `Magic item property activated • ${remainingInfo}`,
+          total: `${outcome.dailyCharges.current}/${outcome.dailyCharges.max}`
+        });
+        return;
+      }
+
+      showDiceTopToast({
+        icon: '📦',
+        title: name,
+        breakdown: `Used • ${remainingInfo}`,
+        total: '✔'
       });
     }
 
     function consumeItem3D(sourceType, idOrIdx) {
+      const activeDoc = (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getDoc === 'function' && window.CharStore.getDoc())
+        ? window.CharStore.getDoc()
+        : character;
+
       let item = null;
       if (sourceType === 'slot') {
-        item = character.bodySlots?.[idOrIdx];
+        item = activeDoc.bodySlots?.[idOrIdx];
       } else if (sourceType === 'pool' || sourceType === true) {
-        item = (character.gearPool || []).find(p => p && String(p.id) === String(idOrIdx));
+        item = (activeDoc.gearPool || []).find(p => p && String(p.id) === String(idOrIdx));
       } else {
-        item = character.consumables?.[idOrIdx];
+        const numIdx = Number(idOrIdx);
+        item = activeDoc.consumables?.[Number.isFinite(numIdx) ? numIdx : idOrIdx];
       }
 
       if (!item) {
@@ -9091,20 +9149,32 @@
         return;
       }
 
-      ensureItemDailyCharges(item);
-      const isDaily = item.dailyCharges && typeof item.dailyCharges.max === 'number';
+      const plan = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.parseConsumablePlan === 'function')
+        ? RuleEngine.parseConsumablePlan(item, item.effect || item.desc)
+        : { kind: 'other', isHealing: false, isDamage: false, isCure: false, diceCount: 0, diceSides: 0, cureFlags: {} };
+
+      const combinedText = `${item.name || ''} ${item.desc || ''} ${item.effect || ''}`;
+      const dailyMatch = combinedText.match(/(\d+)\s*\/\s*(?:day|gün)|günde\s*(\d+)/i);
+      const maxDaily = (item.dailyCharges && typeof item.dailyCharges === 'object' && Number(item.dailyCharges.max) > 0)
+        ? Number(item.dailyCharges.max)
+        : (typeof item.dailyCharges === 'number' && item.dailyCharges > 0
+          ? item.dailyCharges
+          : (dailyMatch ? parseInt(dailyMatch[1] || dailyMatch[2], 10) : 0));
+      const isDaily = maxDaily > 0;
+      const currentDaily = (item.dailyCharges && typeof item.dailyCharges === 'object' && item.dailyCharges.current !== undefined)
+        ? Number(item.dailyCharges.current)
+        : maxDaily;
 
       if (isDaily) {
-        if (item.dailyCharges.current <= 0) {
+        if (currentDaily <= 0) {
           showDiceTopToast({
             icon: '⏳',
             title: item.name || 'Magic Item',
             breakdown: 'All daily charges expended! Resets on a Long Rest (☀️).',
-            total: `0 / ${item.dailyCharges.max}`
+            total: `0 / ${maxDaily}`
           });
           return;
         }
-        item.dailyCharges.current--;
       } else {
         const curQty = (item.qty !== undefined && item.qty !== null) ? Number(item.qty) : 1;
         if (curQty <= 0) {
@@ -9116,371 +9186,103 @@
           });
           return;
         }
-        item.qty = Math.max(0, curQty - 1);
       }
 
       const name = item.name || 'Magic Item';
-
-      // Bidirectional sync between gearPool and consumables
-      const cleanName = (name || '').toLowerCase().trim();
-      const targetPoolId = (sourceType === 'pool' ? idOrIdx : (item.id || item.poolId));
-      if (Array.isArray(character.consumables)) {
-        const cMatch = character.consumables.find(c => (c.name || '').toLowerCase().trim() === cleanName);
-        if (cMatch) {
-          if (!isDaily) cMatch.qty = item.qty;
-          if (isDaily && item.dailyCharges) cMatch.dailyCharges = item.dailyCharges;
-        }
-      }
-      if (Array.isArray(character.gearPool)) {
-        const pMatch = character.gearPool.find(p => (targetPoolId && p.id === targetPoolId) || (p.name || '').toLowerCase().trim() === cleanName);
-        if (pMatch) {
-          if (!isDaily) pMatch.qty = item.qty;
-          if (isDaily && item.dailyCharges) pMatch.dailyCharges = item.dailyCharges;
-        }
-      }
-
-      // Kalan şarj metni
-      const remainingInfo = isDaily 
-        ? `Daily Remaining: ${item.dailyCharges.current}/${item.dailyCharges.max}` 
-        : `Remaining Charges/Qty: ${item.qty}`;
-
-      // 1. İYİLEŞME ZARI KONTROLÜ (Cure / Heal vb.)
-      if (/cure|heal|iyileş/i.test(name)) {
-        let diceCount = 1;
-        let flatBonus = 1;
-        let isHealSpell = false;
-        let isCureMinor = false;
-
-        if (/minor/i.test(name)) { isCureMinor = true; diceCount = 0; flatBonus = 1; }
-        else if (/serious/i.test(name)) { diceCount = 3; flatBonus = 5; }
-        else if (/moderate/i.test(name)) { diceCount = 2; flatBonus = 3; }
-        else if (/critical/i.test(name)) { diceCount = 4; flatBonus = 7; }
-        else if (/heal/i.test(name) && !/cure/i.test(name)) { isHealSpell = true; }
-
-        if (isCureMinor) {
-          const prevHp = character.hp.current;
-          character.hp.current = Math.min(character.hp.max, character.hp.current + 1);
-          saveStateToStorage(true);
-          renderAll();
-          addDiceHistoryEntry({
-            icon: '💖',
-            title: `${name}`,
-            formula: '1 HP',
-            breakdown: `Cure Minor Wounds: +1 HP • HP: ${prevHp} ➔ ${character.hp.current}/${character.hp.max} • ${remainingInfo}`,
-            total: '+1 HP'
-          });
-          return;
-        }
-
-        if (isHealSpell) {
-          // D&D 3.5e Heal Spell: 110 HP (CL 11) or 150 HP (CL 15 Greater Heal) + Cure diseases, blindness, sickness, fatigue
-          const healTotal = /greater|mass/i.test(name) ? 150 : 110;
-          const prevHp = character.hp.current;
-          character.hp.current = Math.min(character.hp.max, character.hp.current + healTotal);
-          const healCured = [];
-          if (Array.isArray(character.buffs)) {
-            character.buffs.forEach(b => {
-              if (!b.active) return;
-              const bName = (b.name || '').toLowerCase();
-              if (bName.includes('sick') || bName.includes('nauseat') || bName.includes('blind') || bName.includes('deaf') || bName.includes('disease') || bName.includes('poison') || bName.includes('fatigue') || bName.includes('exhaust') || bName.includes('daze') || bName.includes('stun') || bName.includes('confus')) {
-                b.active = false;
-                b.durationText = 'Cured (Heal)';
-                healCured.push(b.name);
-              }
-            });
+      const dispatchUseAction = (rollsPayload) => {
+        const actionObj = {
+          type: 'consumable/use',
+          label: `Use ${name}`,
+          meta: { label: `Use ${name}` },
+          payload: {
+            sourceType,
+            idOrIdx,
+            rolls: rollsPayload || null,
+            nowTs: Date.now()
+          }
+        };
+        let outcome = null;
+        if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function') {
+          if (!window.CharStore.getDoc() && typeof character !== 'undefined') {
+            window.CharStore._syncExternalCharacterRef(character);
+          }
+          window.CharStore.dispatch(actionObj);
+          if (typeof window.CharStore.getLastOutcome === 'function') {
+            outcome = window.CharStore.getLastOutcome();
+          }
+        } else if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.applyConsumableUseReducer === 'function') {
+          window.CharStore.applyConsumableUseReducer(character, actionObj);
+          if (typeof window.CharStore.getLastOutcome === 'function') {
+            outcome = window.CharStore.getLastOutcome();
           }
           saveStateToStorage(true);
-          renderAll();
-          const curedText = healCured.length > 0 ? ` • Cured Conditions: ${healCured.join(', ')}` : '';
-          addDiceHistoryEntry({
-            icon: '💖',
-            title: `${name} (Heal & Cure)`,
-            formula: `${healTotal} HP`,
-            breakdown: `Heal: +${healTotal} HP • HP: ${prevHp} ➔ ${character.hp.current}/${character.hp.max}${curedText} • ${remainingInfo}`,
-            total: `+${healTotal} HP`
-          });
-          return;
         }
+        renderAll();
+        if (outcome) {
+          emitConsumableUseFeedback(outcome);
+        }
+      };
 
-        const rolls = [];
-        let sum = 0;
+      // 1. Healing Dice Pre-Roll (if standard Cure Wounds potion/wand)
+      if (plan.isHealing && !plan.isCureMinor && !plan.isHealSpell && plan.diceCount > 0) {
+        const diceCount = plan.diceCount || 1;
+        const diceSides = plan.diceSides || 8;
+        const healRoll = [];
         for (let i = 0; i < diceCount; i++) {
-          const val = Math.floor(Math.random() * 8) + 1;
-          rolls.push({ type: 'd8', value: val });
-          sum += val;
+          const val = Math.floor(Math.random() * diceSides) + 1;
+          healRoll.push({ type: 'd' + diceSides, value: val });
         }
-        const healTotal = sum + flatBonus;
 
-        const applyHealing = () => {
-          const prevHp = character.hp.current;
-          character.hp.current = Math.min(character.hp.max, character.hp.current + healTotal);
-          saveStateToStorage(true);
-          renderAll();
-          addDiceHistoryEntry({
-            icon: '💖',
-            title: `${name}`,
-            formula: `${diceCount}d8+${flatBonus}`,
-            breakdown: `${diceCount}d8 [${rolls.map(r => r.value).join(' + ')}] + ${flatBonus} • HP: ${prevHp} ➔ ${character.hp.current}/${character.hp.max} • ${remainingInfo}`,
-            total: `+${healTotal} HP`
-          });
-        };
-
-        if (window.Dice3D && typeof Dice3D.roll === 'function') {
+        const rollsPayload = { healRoll, dmgRoll: null, abilityHealRoll: null };
+        if (typeof window !== 'undefined' && window.Dice3D && typeof Dice3D.roll === 'function') {
           try {
-            Dice3D.roll(rolls, applyHealing);
-          } catch (err) {
-            applyHealing();
+            Dice3D.roll(healRoll, () => dispatchUseAction(rollsPayload));
+          } catch (_) {
+            dispatchUseAction(rollsPayload);
           }
         } else {
-          applyHealing();
+          dispatchUseAction(rollsPayload);
         }
         return;
       }
 
-      // 2. SALDIRI / HASAR ASASI KONTROLÜ (Wand of Fireball, Magic Missile vb.)
-      const damagePlan = parseDamageFromItem(name, item.effect || item.desc);
-      if (damagePlan) {
-        const rolls = [];
-        let sum = 0;
+      // 2. Offensive / Damage Wand Pre-Roll
+      if (plan.isDamage && plan.diceCount > 0) {
+        const dmgRoll = [];
         const dice3dList = [];
-
-        for (let i = 0; i < damagePlan.diceCount; i++) {
-          const val = Math.floor(Math.random() * damagePlan.diceSides) + 1;
-          rolls.push(val);
-          sum += val;
-          if (dice3dList.length < 6 && [4, 6, 8, 10, 12, 20, 100].includes(damagePlan.diceSides)) {
-            dice3dList.push({ type: 'd' + damagePlan.diceSides, value: val });
+        for (let i = 0; i < plan.diceCount; i++) {
+          const val = Math.floor(Math.random() * plan.diceSides) + 1;
+          dmgRoll.push(val);
+          if (dice3dList.length < 6 && [4, 6, 8, 10, 12, 20, 100].includes(plan.diceSides)) {
+            dice3dList.push({ type: 'd' + plan.diceSides, value: val });
           }
         }
-        const totalDamage = sum + (damagePlan.flatBonus || 0);
 
-        const applyDamageRoll = () => {
-          saveStateToStorage(true);
-          renderAll();
-
-          let breakdownText = '';
-          if (damagePlan.isMagicMissile) {
-            breakdownText = `${damagePlan.missiles} Missiles: [${rolls.map(v => `${v}+1`).join(' + ')}] = ${totalDamage} Force Damage • ${remainingInfo}`;
-          } else {
-            breakdownText = `${damagePlan.formula} [${rolls.join(' + ')}]${damagePlan.flatBonus ? ` + ${damagePlan.flatBonus}` : ''} = ${totalDamage} ${damagePlan.typeName}${damagePlan.saveDesc ? ` (${damagePlan.saveDesc})` : ''} • ${remainingInfo}`;
-          }
-
-          addDiceHistoryEntry({
-            icon: damagePlan.icon,
-            title: `${name} (Damage Roll)`,
-            formula: damagePlan.formula,
-            breakdown: breakdownText,
-            total: `${totalDamage} Damage`
-          });
-        };
-
-        if (window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
+        const rollsPayload = { healRoll: null, dmgRoll, abilityHealRoll: null };
+        if (typeof window !== 'undefined' && window.Dice3D && typeof Dice3D.roll === 'function' && dice3dList.length > 0) {
           try {
-            Dice3D.roll(dice3dList, applyDamageRoll);
-          } catch (err) {
-            applyDamageRoll();
+            Dice3D.roll(dice3dList, () => dispatchUseAction(rollsPayload));
+          } catch (_) {
+            dispatchUseAction(rollsPayload);
           }
         } else {
-          applyDamageRoll();
+          dispatchUseAction(rollsPayload);
         }
         return;
       }
 
-      // 3. D&D 3.5e RAW TEDAVİ / DEBUFF TEMİZLEME MOTORU (Restoration, Remove Curse/Disease/Blindness/Paralysis vb.)
-      const cleanLower = (name || '').toLowerCase();
-      const curedDebuffs = [];
-
-      if (/restoration/i.test(cleanLower)) {
-        const isLesser = /lesser\s+restoration/i.test(cleanLower);
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            const bNotes = (b.notes || '').toLowerCase();
-            const isDrain = bName.includes('drain') || bName.includes('negative level') || bNotes.includes('negative level') || bNotes.includes('restoration gerektirir');
-            const isFatigue = bName.includes('fatigue') || bName.includes('exhaust') || bName.includes('yorgun');
-            
-            if (isLesser) {
-              if (isFatigue) {
-                b.active = false;
-                b.durationText = 'Cured (Lesser Restoration)';
-                curedDebuffs.push(b.name);
-              }
-            } else {
-              // Standard or Greater Restoration
-              if (isDrain || isFatigue) {
-                b.active = false;
-                b.durationText = 'Cured (Restoration)';
-                curedDebuffs.push(b.name);
-              }
-            }
-          });
-        }
-      } else if (/remove\s*curse|break\s*enchantment/i.test(cleanLower)) {
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            if (bName.includes('curse') || bName.includes('lanet')) {
-              b.active = false;
-              b.durationText = 'Cured (Remove Curse)';
-              curedDebuffs.push(b.name);
-            }
-          });
-        }
-      } else if (/remove\s*disease/i.test(cleanLower)) {
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            if (bName.includes('disease') || bName.includes('hastalık') || bName.includes('sickened') || bName.includes('nauseated')) {
-              b.active = false;
-              b.durationText = 'Cured (Remove Disease)';
-              curedDebuffs.push(b.name);
-            }
-          });
-        }
-      } else if (/remove\s*blindness|remove\s*deafness/i.test(cleanLower)) {
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            if (bName.includes('blind') || bName.includes('deaf') || bName.includes('kör') || bName.includes('sağır')) {
-              b.active = false;
-              b.durationText = 'Cured (Remove Blindness/Deafness)';
-              curedDebuffs.push(b.name);
-            }
-          });
-        }
-      } else if (/remove\s*paralysis/i.test(cleanLower)) {
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            if (bName.includes('paraly') || bName.includes('felç') || bName.includes('slow')) {
-              b.active = false;
-              b.durationText = 'Cured (Remove Paralysis)';
-              curedDebuffs.push(b.name);
-            }
-          });
-        }
-      } else if (/neutralize\s*poison/i.test(cleanLower)) {
-        if (Array.isArray(character.buffs)) {
-          character.buffs.forEach(b => {
-            if (!b.active) return;
-            const bName = (b.name || '').toLowerCase();
-            if (bName.includes('poison') || bName.includes('zehir')) {
-              b.active = false;
-              b.durationText = 'Cured (Neutralize Poison)';
-              curedDebuffs.push(b.name);
-            }
-          });
-        }
-      }
-
-      if (curedDebuffs.length > 0) {
-        saveStateToStorage(true);
-        renderAll();
-        showDiceTopToast({
-          icon: '✨',
-          title: name,
-          breakdown: `Cured: Removed "${curedDebuffs.join(', ')}" and all associated penalties! • ${remainingInfo}`,
-          total: 'Cured'
-        });
-        addDiceHistoryEntry({
-          icon: '✨',
-          title: `${name} (Cure / Rule)`,
-          formula: 'D&D 3.5e RAW',
-          breakdown: `Used: ${name} • Cured Condition: ${curedDebuffs.join(', ')} • ${remainingInfo}`,
-          total: 'Cured'
-        });
-        return;
-      } else if (/restoration/i.test(cleanLower)) {
-        saveStateToStorage(true);
-        renderAll();
-        showDiceTopToast({
-          icon: 'ℹ️',
-          title: name,
-          breakdown: `Used, but no active Energy Drain or Negative Level condition was found on the character. • ${remainingInfo}`,
-          total: 'No Effect'
-        });
-        return;
-      }
-
-      // 4. BUFF İKSİRİ VEYA DURUM KONTROLÜ
-      let activatedBuff = null;
-      let activatedRounds = 30;
-      let activatedSummary = '';
-      if (!Array.isArray(character.buffs)) character.buffs = [];
-
-      const compendiumEntry = (typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function')
-        ? (window.SrdCompendium.getByName(name) || null)
+      // 3. Instant / Non-Dice or Lesser Restoration Consumables
+      const abilityHealRoll = (plan.isCure && plan.cureFlags && plan.cureFlags.lesserRestoration)
+        ? (Math.floor(Math.random() * 4) + 1)
         : null;
-      const defaultRounds = Number(compendiumEntry?.ruleFlags?.durationRounds || item?.ruleFlags?.durationRounds) || 30;
+      dispatchUseAction({ healRoll: null, dmgRoll: null, abilityHealRoll });
+    }
 
-      const match = character.buffs.find(b => {
-        const bClean = (b.name || '').toLowerCase();
-        return cleanLower.includes(bClean) || bClean.includes(cleanLower.replace(/^(potion|oil) of /i, '').replace(/iksir[iı]?/i, '').replace(/'s/g, '').trim());
+    if (typeof Actions !== 'undefined' && typeof Actions.register === 'function') {
+      Actions.register('consumable:use', (el, dataset) => {
+        if (!dataset) return;
+        consumeItem3D(dataset.sourceType || 'consumable', dataset.id);
       });
-      if (match) {
-        match.active = true;
-        match.rounds = defaultRounds;
-        activatedBuff = match.name;
-        activatedRounds = match.rounds;
-        activatedSummary = match.summary || match.notes || '';
-      } else if (compendiumEntry && ((Array.isArray(compendiumEntry.modifiers) && compendiumEntry.modifiers.length > 0) || (compendiumEntry.ruleFlags && Object.keys(compendiumEntry.ruleFlags).length > 0))) {
-        const buffLabel = String(compendiumEntry.name || name).replace(/^(Potion|Oil) of\s+/i, '').trim();
-        const v2Mods = Array.isArray(compendiumEntry.modifiers) ? JSON.parse(JSON.stringify(compendiumEntry.modifiers)) : [];
-        const v2Flags = compendiumEntry.ruleFlags ? JSON.parse(JSON.stringify(compendiumEntry.ruleFlags)) : {};
-        const durMin = Math.round(defaultRounds / 10);
-        const durText = defaultRounds >= 600 ? `${Math.round(defaultRounds / 600)} hr.` : (defaultRounds >= 10 ? `${durMin} min. (${defaultRounds} rounds)` : `${defaultRounds} rounds`);
-        const newBuff = {
-          id: 'buff_pot_' + Date.now(),
-          schemaVersion: 2,
-          name: buffLabel,
-          source: 'Potion',
-          category: 'Buff',
-          active: true,
-          rounds: defaultRounds,
-          duration: durText,
-          durationText: durText,
-          casterLevel: Number(compendiumEntry.casterLevel) || 3,
-          summary: compendiumEntry.shortDescription || buffLabel,
-          notes: `Activated via ${name}`,
-          modifiers: v2Mods,
-          ruleFlags: v2Flags
-        };
-        character.buffs.push(newBuff);
-        activatedBuff = newBuff.name;
-        activatedRounds = defaultRounds;
-        activatedSummary = newBuff.summary;
-      }
-
-      saveStateToStorage(true);
-      renderAll();
-
-      if (activatedBuff) {
-        showDiceTopToast({
-          icon: '🧪',
-          title: name,
-          breakdown: `Activated "${activatedBuff}" (${activatedSummary || `${activatedRounds} rounds`}) • ${remainingInfo}`,
-          total: 'Active'
-        });
-      } else if (isDaily) {
-        showDiceTopToast({
-          icon: '💍',
-          title: name,
-          breakdown: `Magic item property activated • ${remainingInfo}`,
-          total: `${item.dailyCharges.current}/${item.dailyCharges.max}`
-        });
-      } else {
-        showDiceTopToast({
-          icon: '📦',
-          title: name,
-          breakdown: `Used • ${remainingInfo}`,
-          total: '✔'
-        });
-      }
     }
 
     // Export & Import
@@ -9739,3 +9541,321 @@
       alert("✅ All local data reset to factory defaults! Reloading page...");
       window.location.reload();
     }
+
+    // =========================================================================
+    // Phase R4: Delegated Inventory, Silhouette, Pool, Skills & Buffs Actions
+    // All handlers strictly use the `(el, data, event)` parameter contract.
+    // =========================================================================
+    (function registerInventoryDelegatedActions() {
+      const actionsApi = (typeof window !== 'undefined' && (window.Actions || window.UI?.Actions))
+        || (typeof Actions !== 'undefined' ? Actions : null);
+      if (!actionsApi || typeof actionsApi.register !== 'function') return;
+
+      actionsApi.register('inventory:toggle-slot-active', (el, data, event) => {
+        if (data && data.slotKey) toggleSlotActive(data.slotKey);
+      });
+      actionsApi.register('inventory:forge-slot-item', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.slotKey) openForgeForSlotItem(data.slotKey);
+      });
+      actionsApi.register('inventory:unequip-slot', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.slotKey) unequipSlot(data.slotKey);
+      });
+      actionsApi.register('inventory:open-slot-equip', (el, data, event) => {
+        if (data && data.slotKey) openSlotEquipModal(data.slotKey);
+      });
+      actionsApi.register('inventory:spend-slot-charge', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.slotKey) spendSlotCharge(data.slotKey, Number(data.amount) || 1);
+      });
+      actionsApi.register('inventory:restore-slot-charge', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.slotKey) restoreSlotCharge(data.slotKey, Number(data.amount) || 1);
+      });
+      actionsApi.register('inventory:discharge-daily-round', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.encodedName) dischargeDailyRoundItem(data.encodedName, data.slotKey);
+      });
+      actionsApi.register('inventory:cast-daily-round', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.encodedName) castDailyRoundItem(data.encodedName, data.slotKey);
+      });
+      actionsApi.register('inventory:activate-double-twf', (el, data, event) => {
+        if (typeof activateWeaponSet === 'function') {
+          activateWeaponSet(2);
+          renderAll();
+        }
+      });
+      actionsApi.register('inventory:unequip-slot-modal', (el, data, event) => {
+        if (data && data.slotKey) {
+          unequipSlot(data.slotKey);
+          closeSlotEquipModal();
+        }
+      });
+      actionsApi.register('inventory:open-add-pool-from-equip', (el, data, event) => {
+        closeSlotEquipModal();
+        if (typeof openAddPoolItemModal === 'function') openAddPoolItemModal();
+      });
+      actionsApi.register('inventory:forge-pool-item', (el, data, event) => {
+        if (data && data.itemId !== undefined) openForgeForPoolItem(data.itemId);
+      });
+      actionsApi.register('inventory:equip-pool-item-modal', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          equipPoolItem(data.itemId, data.slotKey || null);
+          closeSlotEquipModal();
+        }
+      });
+      actionsApi.register('inventory:open-companion-modal', (el, data, event) => {
+        if (typeof openCompanionModal === 'function') openCompanionModal();
+      });
+      actionsApi.register('inventory:open-companion-equip', (el, data, event) => {
+        if (data && data.slotKey) openCompanionEquipModal(data.slotKey);
+      });
+      actionsApi.register('inventory:unequip-companion-slot', (el, data, event) => {
+        if (data && data.slotKey) unequipCompanionSlot(data.slotKey);
+      });
+      actionsApi.register('inventory:close-companion-equip', (el, data, event) => {
+        closeCompanionEquipModal();
+      });
+      actionsApi.register('inventory:filter-companion-equip', (el, data, event) => {
+        renderCompanionEquipList();
+      });
+      actionsApi.register('inventory:equip-companion-item', (el, data, event) => {
+        if (data && data.itemId !== undefined && data.slotKey) {
+          equipItemToCompanion(data.itemId, data.slotKey);
+        }
+      });
+      actionsApi.register('inventory:adjust-pool-qty', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          adjustPoolQty(data.itemId, Number(data.delta) || 0);
+        }
+      });
+      actionsApi.register('inventory:use-pool-item', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          consumeItem3D('pool', data.itemId);
+        }
+      });
+      actionsApi.register('inventory:toggle-pool-belt', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          togglePoolBelt(data.itemId);
+        }
+      });
+      actionsApi.register('inventory:equip-pool-item', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          equipPoolItem(data.itemId);
+        }
+      });
+      actionsApi.register('inventory:delete-pool-item', (el, data, event) => {
+        if (data && data.itemId !== undefined) {
+          deletePoolItem(data.itemId);
+        }
+      });
+      actionsApi.register('inventory:pool-category-tab', (el, data, event) => {
+        if (data && data.category) {
+          renderUnaddedMasterDbItems(data.category);
+        }
+      });
+      actionsApi.register('inventory:forge-spotlight-item', (el, data, event) => {
+        openForgeForSpotlightItem(Number(data?.index) || 0, data?.isAi === 'true');
+      });
+      actionsApi.register('inventory:add-spotlight-item', (el, data, event) => {
+        addMasterDbItemDirectlyToPool(Number(data?.index) || 0, el);
+      });
+      actionsApi.register('inventory:search-ai-pool-item', (el, data, event) => {
+        if (data && data.query !== undefined) {
+          searchAiForPoolItem(data.query);
+        }
+      });
+      actionsApi.register('inventory:open-item-forge', (el, data, event) => {
+        if (window.DnDUI && typeof window.DnDUI.switchCompendiumTab === 'function') {
+          window.DnDUI.switchCompendiumTab('forge');
+        } else if (typeof openItemForgeModal === 'function') {
+          openItemForgeModal();
+        }
+      });
+      actionsApi.register('inventory:fill-pool-form-query', (el, data, event) => {
+        if (data && data.query !== undefined) {
+          fillPoolFormWithQueryName(data.query);
+        }
+      });
+      actionsApi.register('inventory:add-ai-pool-item', (el, data, event) => {
+        addAiItemToPoolAndDb(Number(data?.index) || 0, el);
+      });
+      actionsApi.register('inventory:toggle-skill-class', (el, data, event) => {
+        if (data && data.skillKey && typeof toggleSkillClass === 'function') {
+          toggleSkillClass(data.skillKey);
+        }
+      });
+      actionsApi.register('inventory:roll-skill', (el, data, event) => {
+        if (data && data.skillName && typeof rollSkill3D === 'function') {
+          rollSkill3D(data.skillName, Number(data.total) || 0, data.subtitle || '');
+        }
+      });
+      actionsApi.register('inventory:adjust-skill-rank', (el, data, event) => {
+        if (data && data.skillKey && typeof adjustSkillRank === 'function') {
+          adjustSkillRank(data.skillKey, Number(data.delta) || 0);
+        }
+      });
+      actionsApi.register('inventory:toggle-buff-pin', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (data && data.buffId !== undefined && typeof toggleBuffCombatPin === 'function') {
+          toggleBuffCombatPin(data.buffId);
+        }
+      });
+      actionsApi.register('inventory:toggle-buff-active', (el, data, event) => {
+        if (data && data.buffId !== undefined && typeof toggleBuffActive === 'function') {
+          toggleBuffActive(data.buffId);
+        }
+      });
+      actionsApi.register('inventory:adjust-buff-rounds', (el, data, event) => {
+        if (data && data.buffId !== undefined && typeof adjustBuffRounds === 'function') {
+          adjustBuffRounds(data.buffId, Number(data.delta) || 0);
+        }
+      });
+      actionsApi.register('inventory:delete-buff', (el, data, event) => {
+        if (data && data.buffId !== undefined && typeof deleteBuff === 'function') {
+          deleteBuff(data.buffId);
+        }
+      });
+      actionsApi.register('inventory:open-house-rules', (el, data, event) => {
+        if (typeof openHouseRulesModal === 'function') openHouseRulesModal();
+      });
+      actionsApi.register('inventory:buff-v2-mod-change', (el, data, event) => {
+        if (data && data.modIdx !== undefined && data.field) {
+          onBuffModalV2ModifierChange(Number(data.modIdx), data.field, el ? el.value : '');
+        }
+      });
+      actionsApi.register('inventory:buff-v2-mod-input', (el, data, event) => {
+        if (data && data.modIdx !== undefined && data.field) {
+          onBuffModalV2ModifierChange(Number(data.modIdx), data.field, el ? el.value : '');
+        }
+      });
+      actionsApi.register('inventory:remove-buff-v2-mod', (el, data, event) => {
+        if (data && data.modIdx !== undefined) {
+          removeBuffModalV2ModifierRow(Number(data.modIdx));
+        }
+      });
+      actionsApi.register('inventory:toggle-buff-rule-flag', (el, data, event) => {
+        if (data && data.flagKey) {
+          toggleBuffModalRuleFlag(data.flagKey);
+        }
+      });
+      actionsApi.register('inventory:buff-quick-pick', (el, data, event) => {
+        if (data && data.pickIdx !== undefined) {
+          onBuffQuickPickClick(Number(data.pickIdx));
+        }
+      });
+      actionsApi.register('inventory:pick-buff-spotlight', (el, data, event) => {
+        if (event && typeof event.preventDefault === 'function') event.preventDefault();
+        if (data && data.spotIdx !== undefined) {
+          pickBuffSpotlightResult(Number(data.spotIdx));
+        }
+      });
+      actionsApi.register('inventory:select-buff-energy', (el, data, event) => {
+        if (data && data.energy) {
+          selectBuffModalEnergy(data.energy);
+        }
+      });
+      actionsApi.register('inventory:unequip-slot-modal', (el, data, event) => {
+        const key = (data && data.slotKey) || _currentEquipSlotKey;
+        if (key) {
+          unequipSlot(key);
+          closeSlotEquipModal();
+        }
+      });
+      actionsApi.register('inventory:close-slot-equip', (el, data, event) => {
+        closeSlotEquipModal();
+      });
+      actionsApi.register('inventory:noop-stop', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      });
+      actionsApi.register('inventory:switch-view', (el, data, event) => {
+        if (data && data.view && typeof switchInventoryView === 'function') {
+          switchInventoryView(data.view);
+        }
+      });
+      actionsApi.register('inventory:open-buff-modal', (el, data, event) => {
+        if (typeof openBuffModal === 'function') {
+          openBuffModal((data && data.mode) || 'buff');
+        }
+      });
+
+      function initSilhouetteDelegatedEvents() {
+        if (typeof document === 'undefined' || document._dndSilDelegatedBound) return;
+        document._dndSilDelegatedBound = true;
+
+        document.addEventListener('mousedown', (e) => {
+          const spotEl = e.target && e.target.closest ? e.target.closest('[data-action="inventory:pick-buff-spotlight"]') : null;
+          if (spotEl) {
+            e.preventDefault();
+            pickBuffSpotlightResult(Number(spotEl.dataset.spotIdx || 0));
+            return;
+          }
+          const cardPin = e.target && e.target.closest ? e.target.closest('[data-sil-drag-card]') : null;
+          if (cardPin) {
+            startDraggingCardNode(e, cardPin.dataset.silDragCard);
+            return;
+          }
+          const slotNode = e.target && e.target.closest ? e.target.closest('[data-sil-drag-node]') : null;
+          if (slotNode) {
+            startDraggingSlotNode(e, slotNode.dataset.silDragNode);
+            return;
+          }
+          const mainSvg = e.target && e.target.closest ? e.target.closest('#sil-main-svg') : null;
+          if (mainSvg) {
+            startSilhouettePan(e);
+          }
+        });
+
+        document.addEventListener('touchstart', (e) => {
+          const cardPin = e.target && e.target.closest ? e.target.closest('[data-sil-drag-card]') : null;
+          if (cardPin) {
+            startDraggingCardNode(e, cardPin.dataset.silDragCard);
+            return;
+          }
+          const slotNode = e.target && e.target.closest ? e.target.closest('[data-sil-drag-node]') : null;
+          if (slotNode) {
+            startDraggingSlotNode(e, slotNode.dataset.silDragNode);
+            return;
+          }
+          const mainSvg = e.target && e.target.closest ? e.target.closest('#sil-main-svg') : null;
+          if (mainSvg) {
+            startSilhouettePan(e);
+          }
+        }, { passive: true });
+
+        document.addEventListener('wheel', (e) => {
+          const mainSvg = e.target && e.target.closest ? e.target.closest('#sil-main-svg') : null;
+          if (mainSvg) {
+            handleSilhouetteWheel(e);
+          }
+        }, { passive: false });
+
+        document.addEventListener('mousemove', (e) => {
+          const mainSvg = e.target && e.target.closest ? e.target.closest('#sil-main-svg') : null;
+          if (mainSvg && typeof handleSilhouetteSvgMouseMove === 'function') {
+            handleSilhouetteSvgMouseMove(e);
+          }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+          const mainSvg = e.target && e.target.closest ? e.target.closest('#sil-main-svg') : null;
+          if (mainSvg && typeof handleSilhouetteSvgTouchMove === 'function') {
+            handleSilhouetteSvgTouchMove(e);
+          }
+        }, { passive: false });
+
+        let _lastHoveredSilSlot = null;
+        document.addEventListener('mouseover', (e) => {
+          const hoverCard = e.target && e.target.closest ? e.target.closest('[data-sil-hover-slot]') : null;
+          const nextSlot = hoverCard ? hoverCard.dataset.silHoverSlot : null;
+          if (nextSlot !== _lastHoveredSilSlot) {
+            if (_lastHoveredSilSlot) highlightSlotNode(_lastHoveredSilSlot, false);
+            if (nextSlot) highlightSlotNode(nextSlot, true);
+            _lastHoveredSilSlot = nextSlot;
+          }
+        });
+      }
+      initSilhouetteDelegatedEvents();
+    })();

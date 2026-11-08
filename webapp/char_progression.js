@@ -337,7 +337,7 @@
               ? `<span class="px-2.5 py-1 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-bold inline-block">✅ Owned</span>`
               : (!isQualified
                 ? `<button disabled type="button" title="Prerequisites not met" class="px-3 py-1.5 rounded-lg bg-slate-800 text-rose-300/80 border border-rose-800/50 font-bold text-xs opacity-60 cursor-not-allowed whitespace-nowrap">🔒 Prereqs Not Met</button>`
-                : `<button onclick="selectFeatFromPicker('${safeName}')" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow transition whitespace-nowrap">
+                : `<button data-action="progression:select-feat-from-picker" data-feat-name="${String(f.name || '').replace(/"/g, '&quot;')}" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow transition whitespace-nowrap">
                     ${isFeatPickerForLevelUp ? '⬆️ Select for Level' : '➕ Learn'}
                   </button>`)
             }
@@ -713,7 +713,7 @@
                 <span class="font-extrabold text-white truncate">${currentTarget}</span>
                 ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-900/80 text-amber-300 font-mono">${meta}</span>` : ''}
               </div>
-              <button type="button" onclick="window.clearQuickFeatTargetSelection()" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
+              <button type="button" data-action="progression:clear-quick-feat-target" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
             </div>
           `;
         } else {
@@ -749,7 +749,7 @@
           const meta = getWeaponDisplayMeta(w);
           const safeW = w.replace(/'/g, "\\'");
           html += `
-            <button type="button" onclick="window.selectQuickFeatTargetWeapon('${safeW}')" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent hover:border-amber-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+            <button type="button" data-action="progression:select-quick-feat-target" data-weapon="${String(w || '').replace(/"/g, '&quot;')}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent hover:border-amber-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="font-bold text-white text-xs group-hover:text-amber-200 truncate">${w}</span>
                 <span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold shrink-0">Equipped</span>
@@ -773,7 +773,7 @@
           const meta = getWeaponDisplayMeta(w);
           const safeW = w.replace(/'/g, "\\'");
           html += `
-            <button type="button" onclick="window.selectQuickFeatTargetWeapon('${safeW}')" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+            <button type="button" data-action="progression:select-quick-feat-target" data-weapon="${String(w || '').replace(/"/g, '&quot;')}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="font-bold text-white text-xs group-hover:text-purple-200 truncate">${w}</span>
                 ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
@@ -873,7 +873,7 @@
             placeholder="Type weapon name (e.g. Longsword, Greatsword, Scimitar)..."
             class="w-full bg-slate-950 border border-amber-500/70 focus:border-amber-400 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-400 font-medium transition"
             autocomplete="off">
-          <button type="button" id="quick-feat-target-spotlight-clear-btn" onclick="window.clearQuickFeatTargetSelection()" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold transition cursor-pointer ${currentTarget ? '' : 'hidden'}" title="Clear selection">&times;</button>
+          <button type="button" id="quick-feat-target-spotlight-clear-btn" data-action="progression:clear-quick-feat-target" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold transition cursor-pointer ${currentTarget ? '' : 'hidden'}" title="Clear selection">&times;</button>
         </div>
         <div id="quick-feat-target-active-badge-container"></div>
         <div id="quick-feat-target-spotlight-results" class="max-h-52 overflow-y-auto space-y-1 p-1 bg-slate-950/70 border border-slate-800 rounded-lg custom-scroll text-xs"></div>
@@ -1587,7 +1587,7 @@
                    <span>Prereqs Not Met</span>
                  </button>`
               : `<button type="button"
-                         onclick="selectFeatForQuickLevel('${safeName}', true)"
+                         data-action="progression:select-feat-for-quick-level" data-feat-name="${String(item.name || '').replace(/"/g, '&quot;')}"
                          title="${isQualified ? 'Add this feat to the level' : 'Add as DM Boon (bypasses prerequisites)'}"
                          class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
                    <span>${isQualified ? '🎯' : '🌟'}</span>
@@ -1618,7 +1618,7 @@
         }).join('');
         if (filteredItems.length > MAX_VISIBLE) {
           listHtml += `
-            <button type="button" onclick="window.expandAllQuickFeatResults()" class="w-full py-2 px-3 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-purple-200 hover:text-white font-bold text-xs border border-purple-500/40 transition cursor-pointer">
+            <button type="button" data-action="progression:expand-quick-feat-results" class="w-full py-2 px-3 rounded-lg bg-slate-800/90 hover:bg-slate-700 text-purple-200 hover:text-white font-bold text-xs border border-purple-500/40 transition cursor-pointer">
               Show All ${filteredItems.length} Matching Feats (${filteredItems.length - MAX_VISIBLE} more) ▼
             </button>
           `;
@@ -1629,28 +1629,28 @@
         <!-- Filter Tabs -->
         <div class="flex items-center justify-between border-b border-slate-800 pb-2 flex-wrap gap-1.5">
           <div class="flex items-center gap-1.5 flex-wrap">
-            <button type="button" onclick="setQuickFeatSearchFilter('ALL')" class="${filterPillClass('ALL')}">
+            <button type="button" data-action="progression:set-quick-feat-filter" data-filter="ALL" class="${filterPillClass('ALL')}">
               📋 All (${countAll})
             </button>
-            <button type="button" onclick="setQuickFeatSearchFilter('QUALIFIED')" class="${filterPillClass('QUALIFIED')}">
+            <button type="button" data-action="progression:set-quick-feat-filter" data-filter="QUALIFIED" class="${filterPillClass('QUALIFIED')}">
               ✅ Qualified (${countQualified})
             </button>
-            <button type="button" onclick="setQuickFeatSearchFilter('FIGHTER')" class="${filterPillClass('FIGHTER')}">
+            <button type="button" data-action="progression:set-quick-feat-filter" data-filter="FIGHTER" class="${filterPillClass('FIGHTER')}">
               ⚔️ Fighter (${countFighter})
             </button>
-            <button type="button" onclick="setQuickFeatSearchFilter('BOON')" class="${filterPillClass('BOON')}">
+            <button type="button" data-action="progression:set-quick-feat-filter" data-filter="BOON" class="${filterPillClass('BOON')}">
               🌟 DM Boon (${countBoon})
             </button>
-            <button type="button" onclick="setQuickFeatSearchFilter('FLAW')" class="${filterPillClass('FLAW')}">
+            <button type="button" data-action="progression:set-quick-feat-filter" data-filter="FLAW" class="${filterPillClass('FLAW')}">
               ⚠️ Flaws (${countFlaw})
             </button>
             ${invocationsList.length > 0 ? `
-              <button type="button" onclick="setQuickFeatSearchFilter('INVOCATION')" class="${filterPillClass('INVOCATION')}">
+              <button type="button" data-action="progression:set-quick-feat-filter" data-filter="INVOCATION" class="${filterPillClass('INVOCATION')}">
                 🔮 Invocation (${countInvocation})
               </button>
             ` : ''}
           </div>
-          <button type="button" onclick="closeQuickFeatCatalogConsole()" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition font-bold cursor-pointer">
+          <button type="button" data-action="progression:close-quick-feat-console" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition font-bold cursor-pointer">
             ▲ Close
           </button>
         </div>
@@ -1663,7 +1663,7 @@
         <!-- Rule Master AI Fallback -->
         <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
           <button type="button"
-                  onclick="triggerRuleMasterForQuickFeat()"
+                  data-action="progression:trigger-rm-quick-feat"
                   class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-600 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 border border-purple-400/40 shadow transition cursor-pointer active:scale-98">
             <span>⚡</span>
             <span>Fetch via Rule Master AI: "${query || 'New 3.5e Feat'}" (3.5e Compendium)</span>
@@ -2085,11 +2085,10 @@
         tacticalBadges: resolvedTacticalBadges
       };
 
+      let saPayload = null;
+      let featEntryPayload = null;
       if (category === 'Special Ability') {
-        row.specialAbilities.push(formattedName);
-        if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
-        const existingSaIdx = character.specialAbilities.findIndex(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === featName.toLowerCase().trim());
-        const saPayload = {
+        saPayload = {
           ...resolvedExtras,
           name: featName,
           type: v2SourceObj?.type || 'Special Ability',
@@ -2097,47 +2096,23 @@
           benefit: benefit || v2SourceObj?.benefit || '',
           source: `Level ${row.level} (${row.className})`
         };
-        if (existingSaIdx === -1) {
-          character.specialAbilities.push(saPayload);
-        } else {
-          character.specialAbilities[existingSaIdx] = typeof character.specialAbilities[existingSaIdx] === 'object'
-            ? { ...character.specialAbilities[existingSaIdx], ...saPayload }
-            : saPayload;
-        }
       } else if (category === 'Warlock Invocation') {
-        row.feats.push(formattedName);
-        if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
-        if (!character.specialAbilities.some(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === featName.toLowerCase())) {
-          character.specialAbilities.push({
-            ...resolvedExtras,
-            name: `${featName} (Invocation)`,
-            category: 'Warlock Invocation',
-            benefit: benefit,
-            source: `Level ${row.level} (Warlock Boon)`
-          });
-        }
-        if (!Array.isArray(character.feats)) character.feats = [];
-        if (!character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === featName.toLowerCase())) {
-          character.feats.push({
-            ...resolvedExtras,
-            name: featName,
-            category: 'Warlock Invocation',
-            benefit: benefit,
-            source: `Level ${row.level} (Warlock Boon)`
-          });
-        }
+        saPayload = {
+          ...resolvedExtras,
+          name: `${featName} (Invocation)`,
+          category: 'Warlock Invocation',
+          benefit: benefit,
+          source: `Level ${row.level} (Warlock Boon)`
+        };
+        featEntryPayload = {
+          ...resolvedExtras,
+          name: featName,
+          category: 'Warlock Invocation',
+          benefit: benefit,
+          source: `Level ${row.level} (Warlock Boon)`
+        };
       } else {
-        // If adding a Flaw, remove any stale regular-feat tag for the same flaw at this level
-        if (category === 'Flaw') {
-          row.feats = row.feats.filter(fStr => {
-            const raw = String(fStr || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
-            return raw !== featName.toLowerCase().trim();
-          });
-        }
-        row.feats.push(formattedName);
-        if (!Array.isArray(character.feats)) character.feats = [];
-        const existingIdx = character.feats.findIndex(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === featName.toLowerCase().trim());
-        const featEntryPayload = {
+        featEntryPayload = {
           ...resolvedExtras,
           name: featName,
           type: category === 'Flaw' ? 'Flaw' : 'Feat',
@@ -2147,42 +2122,30 @@
             ? (catalogMatch?.source || 'Unearthed Arcana, page 91')
             : (category === 'Flaw Bonus Feat' ? `Level ${row.level} (Flaw Bonus Feat)` : (category === 'DM Boon' ? `Level ${row.level} (DM Boon)` : `Level ${row.level} (${row.className})`))
         };
-        if (existingIdx === -1) {
-          character.feats.push(featEntryPayload);
-          if (featName.toLowerCase() === 'toughness' && character.hp) {
-            if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 44) - (Number(character.hp.conBonusHp) || 0);
-            character.hp.baseMax = (Number(character.hp.baseMax) || 0) + 3;
-            character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
-            character.hp.current = (Number(character.hp.current) || 0) + 3;
-          }
-        } else if (typeof character.feats[existingIdx] === 'object') {
-          character.feats[existingIdx] = { ...character.feats[existingIdx], ...featEntryPayload };
-        }
       }
 
+      let customDbEntry = null;
+      let customDbUpdateOnly = false;
       if (Array.isArray(masterDb)) {
         const clean = featName.toLowerCase().trim();
         const existingDbIdx = masterDb.findIndex(m => m && (m.name || '').toLowerCase().trim() === clean);
         if (existingDbIdx >= 0) {
-          if (resolvedModifiers.length > 0 && (!Array.isArray(masterDb[existingDbIdx].modifiers) || masterDb[existingDbIdx].modifiers.length === 0)) {
-            masterDb[existingDbIdx].modifiers = resolvedModifiers;
-          }
-          if (resolvedDamageParts.length > 0) {
-            masterDb[existingDbIdx].damageParts = resolvedDamageParts;
-          }
-          if (resolvedExtras.save) masterDb[existingDbIdx].save = resolvedExtras.save;
-          if (resolvedExtras.dcFormula) masterDb[existingDbIdx].dcFormula = resolvedExtras.dcFormula;
-          if (resolvedExtras.range) masterDb[existingDbIdx].range = resolvedExtras.range;
-          if (resolvedExtras.recharge) masterDb[existingDbIdx].recharge = resolvedExtras.recharge;
-          if (resolvedExtras.rechargeDice) masterDb[existingDbIdx].rechargeDice = resolvedExtras.rechargeDice;
-          if (benefit) {
-            masterDb[existingDbIdx].benefit = benefit;
-            masterDb[existingDbIdx].description = benefit;
-          }
+          customDbUpdateOnly = true;
+          customDbEntry = {
+            ...masterDb[existingDbIdx],
+            ...(resolvedModifiers.length > 0 && (!Array.isArray(masterDb[existingDbIdx].modifiers) || masterDb[existingDbIdx].modifiers.length === 0) ? { modifiers: resolvedModifiers } : {}),
+            ...(resolvedDamageParts.length > 0 ? { damageParts: resolvedDamageParts } : {}),
+            ...(resolvedExtras.save ? { save: resolvedExtras.save } : {}),
+            ...(resolvedExtras.dcFormula ? { dcFormula: resolvedExtras.dcFormula } : {}),
+            ...(resolvedExtras.range ? { range: resolvedExtras.range } : {}),
+            ...(resolvedExtras.recharge ? { recharge: resolvedExtras.recharge } : {}),
+            ...(resolvedExtras.rechargeDice ? { rechargeDice: resolvedExtras.rechargeDice } : {}),
+            ...(benefit ? { benefit: benefit, description: benefit } : {})
+          };
         } else {
           const inCanonical = getCombinedFeatCatalog(true).some(f => (f.name || '').toLowerCase().trim() === clean);
           if (!inCanonical) {
-            masterDb.push({
+            customDbEntry = {
               ...resolvedExtras,
               id: resolvedExtras.id || ('feat_' + clean.replace(/[^a-z0-9]+/g, '_')),
               name: featName,
@@ -2194,8 +2157,77 @@
               source: category === 'DM Boon' ? `Level ${row.level} (DM Boon)` : `Level ${row.level} (${row.className})`,
               benefit: benefit || (v2SourceObj ? v2SourceObj.benefit : ''),
               description: benefit || (v2SourceObj ? v2SourceObj.benefit : '')
+            };
+          }
+        }
+      }
+
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'progression/addFeat',
+          payload: {
+            levelIndex: targetLvlIdx,
+            category: category,
+            featName: featName,
+            featString: formattedName,
+            clearExistingFlawName: category === 'Flaw' ? featName : null,
+            specialAbilityObj: saPayload,
+            featObj: featEntryPayload,
+            isToughness: featName.toLowerCase() === 'toughness',
+            customDbEntry: customDbEntry,
+            customDbUpdateOnly: customDbUpdateOnly
+          },
+          meta: { label: `Add ${category}: ${featName} (Lv.${row.level})` }
+        });
+      } else {
+        if (category === 'Special Ability') {
+          row.specialAbilities.push(formattedName);
+          if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+          const existingSaIdx = character.specialAbilities.findIndex(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === featName.toLowerCase().trim());
+          if (existingSaIdx === -1) {
+            character.specialAbilities.push(saPayload);
+          } else {
+            character.specialAbilities[existingSaIdx] = typeof character.specialAbilities[existingSaIdx] === 'object'
+              ? { ...character.specialAbilities[existingSaIdx], ...saPayload }
+              : saPayload;
+          }
+        } else if (category === 'Warlock Invocation') {
+          row.feats.push(formattedName);
+          if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
+          if (!character.specialAbilities.some(a => (typeof a === 'string' ? a : a.name).toLowerCase().trim() === featName.toLowerCase())) {
+            character.specialAbilities.push(saPayload);
+          }
+          if (!Array.isArray(character.feats)) character.feats = [];
+          if (!character.feats.some(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === featName.toLowerCase())) {
+            character.feats.push(featEntryPayload);
+          }
+        } else {
+          if (category === 'Flaw') {
+            row.feats = row.feats.filter(fStr => {
+              const raw = String(fStr || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+              return raw !== featName.toLowerCase().trim();
             });
           }
+          row.feats.push(formattedName);
+          if (!Array.isArray(character.feats)) character.feats = [];
+          const existingIdx = character.feats.findIndex(f => (typeof f === 'string' ? f : f.name).toLowerCase().trim() === featName.toLowerCase().trim());
+          if (existingIdx === -1) {
+            character.feats.push(featEntryPayload);
+            if (featName.toLowerCase() === 'toughness' && character.hp) {
+              if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 44) - (Number(character.hp.conBonusHp) || 0);
+              character.hp.baseMax = (Number(character.hp.baseMax) || 0) + 3;
+              character.hp.max = (Number(character.hp.baseMax) || 0) + (Number(character.hp.conBonusHp) || 0);
+              character.hp.current = (Number(character.hp.current) || 0) + 3;
+            }
+          } else if (typeof character.feats[existingIdx] === 'object') {
+            character.feats[existingIdx] = { ...character.feats[existingIdx], ...featEntryPayload };
+          }
+        }
+        if (customDbEntry && Array.isArray(masterDb)) {
+          const clean = featName.toLowerCase().trim();
+          const exDbIdx = masterDb.findIndex(m => m && (m.name || '').toLowerCase().trim() === clean);
+          if (exDbIdx >= 0) masterDb[exDbIdx] = customDbEntry;
+          else if (!customDbUpdateOnly) masterDb.push(customDbEntry);
         }
       }
 
@@ -3939,7 +3971,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 </span>
               </div>
               <div class="flex items-center gap-2">
-                <select onchange="onLevelUpSlotCategoryChange(${idx}, this.value)" class="h-7 bg-slate-900 border border-slate-700 hover:border-purple-500/60 rounded-lg px-2 text-[11px] text-amber-300 font-bold focus:outline-none focus:border-purple-500 cursor-pointer" title="Feat / Ability Category">
+                <select data-change-action="progression:lvlup-slot-category" data-slot-idx="${idx}" class="h-7 bg-slate-900 border border-slate-700 hover:border-purple-500/60 rounded-lg px-2 text-[11px] text-amber-300 font-bold focus:outline-none focus:border-purple-500 cursor-pointer" title="Feat / Ability Category">
                   <option value="Regular Feat" ${slot.category === 'Regular Feat' ? 'selected' : ''}>🎖️ Regular Feat</option>
                   <option value="Class Bonus Feat" ${slot.category === 'Class Bonus Feat' ? 'selected' : ''}>⚔️ Class Bonus Feat</option>
                   <option value="Flaw Bonus Feat" ${slot.category === 'Flaw Bonus Feat' ? 'selected' : ''}>🎖️ Flaw Bonus Feat</option>
@@ -3949,13 +3981,13 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   <option value="Special Ability" ${slot.category === 'Special Ability' ? 'selected' : ''}>✨ Special Ability</option>
                 </select>
                 ${hasFeat ? `
-                  <button type="button" onclick="clearLevelUpFeatSlot(${idx})" class="h-7 text-[10px] font-semibold text-slate-400 hover:text-amber-300 bg-slate-900 hover:bg-slate-800 border border-slate-700/60 rounded-lg px-2 transition flex items-center gap-1 cursor-pointer" title="Clear selection">
+                  <button type="button" data-action="progression:clear-lvlup-slot" data-slot-idx="${idx}" class="h-7 text-[10px] font-semibold text-slate-400 hover:text-amber-300 bg-slate-900 hover:bg-slate-800 border border-slate-700/60 rounded-lg px-2 transition flex items-center gap-1 cursor-pointer" title="Clear selection">
                     <span>🗑️</span>
                     <span>Clear</span>
                   </button>
                 ` : ''}
                 ${levelUpModalFeatSlots.length > 1 ? `
-                  <button type="button" onclick="removeLevelUpFeatSlot(${idx})" class="text-slate-400 hover:text-rose-400 p-1 text-xs transition cursor-pointer" title="Remove this slot">
+                  <button type="button" data-action="progression:remove-lvlup-slot" data-slot-idx="${idx}" class="text-slate-400 hover:text-rose-400 p-1 text-xs transition cursor-pointer" title="Remove this slot">
                     ✕
                   </button>
                 ` : ''}
@@ -3977,21 +4009,19 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                          id="lvlup-feat-search-input-${idx}"
                          value="${(currentQuery || '').replace(/"/g, '&quot;')}"
                          placeholder="Search feats, pick from catalog, or enter custom name..."
-                         onfocus="openLevelUpFeatSearchConsole(${idx})"
-                         oninput="onLevelUpFeatSearchInput(${idx}, this.value)"
-                         onkeydown="if(event.key==='Enter'){event.preventDefault();triggerRuleMasterForLevelUpSlot(${idx});}"
+                         data-input-action="progression:lvlup-feat-search-input" data-slot-idx="${idx}"
                          class="flex-1 min-w-0 h-8 bg-transparent text-xs sm:text-sm text-white placeholder-slate-200 font-semibold focus:outline-none">
                 </div>
                 <div class="flex items-center gap-1.5 w-full sm:w-auto shrink-0">
                   <button type="button"
-                          onclick="triggerRuleMasterForLevelUpSlot(${idx})"
+                          data-action="progression:trigger-rm-lvlup-slot" data-slot-idx="${idx}"
                           class="flex-1 sm:flex-initial justify-center h-8 px-2.5 sm:px-3 rounded-lg bg-purple-600 hover:bg-purple-500 text-white border border-purple-400/60 text-xs font-bold transition flex items-center gap-1.5 shrink-0 shadow cursor-pointer"
                           title="Search Compendium or Fetch via Rule Master AI">
                     <span>🔮</span>
                     <span>Rule Master AI</span>
                   </button>
                   <button type="button"
-                          onclick="toggleLevelUpFeatSearchConsole(${idx})"
+                          data-action="progression:toggle-lvlup-feat-console" data-slot-idx="${idx}"
                           class="flex-1 sm:flex-initial justify-center h-8 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 hover:text-white text-xs font-bold border border-purple-500/40 transition flex items-center gap-1 shrink-0 cursor-pointer"
                           title="Toggle feat catalog">
                     <span>📜</span>
@@ -4016,7 +4046,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                     <span>${isExotic ? '🗡️' : '⚔️'}</span>
                     <span>${isExotic ? 'Exotic Weapon:' : 'Target Weapon:'}</span>
                   </span>
-                  <select onchange="onLevelUpFeatTargetChange(${idx}, this.value)" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-amber-500">
+                  <select data-change-action="progression:lvlup-feat-target" data-slot-idx="${idx}" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-amber-500">
                     <option value="">-- Select a Weapon --</option>
                     ${targetList.map(w => `<option value="${w}" ${curTarget.toLowerCase() === w.toLowerCase() ? 'selected' : ''}>${w}</option>`).join('')}
                   </select>
@@ -4035,7 +4065,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               <input type="text"
                      id="lvlup-feat-benefit-input-${idx}"
                      value="${(slot.benefit || '').replace(/"/g, '&quot;')}"
-                     oninput="levelUpModalFeatSlots[${idx}].benefit = this.value"
+                     data-input-action="progression:lvlup-feat-benefit-input" data-slot-idx="${idx}"
                      placeholder="e.g., +2 Dodge AC, +1 attack, extra readied maneuver..."
                      class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-purple-500">
             </div>
@@ -4047,6 +4077,16 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           `;
 
           container.appendChild(card);
+          const slotSearchEl = card.querySelector(`#lvlup-feat-search-input-${idx}`);
+          if (slotSearchEl) {
+            slotSearchEl.addEventListener('focus', () => openLevelUpFeatSearchConsole(idx));
+            slotSearchEl.addEventListener('keydown', (ev) => {
+              if (ev.key === 'Enter') {
+                ev.preventDefault();
+                triggerRuleMasterForLevelUpSlot(idx);
+              }
+            });
+          }
 
           if (isOpen) {
             renderLevelUpFeatSearchResults(idx);
@@ -4281,7 +4321,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                          title="${(pEval.alreadyKnownReason || 'Zaten Sahipsiniz').replace(/"/g, '&quot;')}"
                          class="px-2.5 py-1 rounded text-[11px] font-bold shadow shrink-0 opacity-50 cursor-not-allowed bg-slate-800 text-slate-400 flex items-center gap-1">
                    <span>🔒</span>
-                   <span>Zaten Sahipsiniz</span>
+                   <span>Already Owned</span>
                  </button>`
               : ((!isQualified && !allowBoonOverride)
                 ? `<button disabled type="button"
@@ -4291,7 +4331,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                      <span>Prereqs Not Met</span>
                    </button>`
                 : `<button type="button"
-                           onclick="selectFeatForLevelUpSlot(${slotIdx}, '${safeName}')"
+                           data-action="progression:select-feat-lvlup-slot" data-slot-idx="${slotIdx}" data-feat-name="${String(item.name || '').replace(/"/g, '&quot;')}"
                            class="px-2.5 py-1 rounded text-[11px] font-bold shadow transition shrink-0 cursor-pointer flex items-center gap-1 ${isQualified ? 'bg-emerald-600 hover:bg-emerald-500 text-white active:scale-95' : 'bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-600/40'}">
                      <span>${isQualified ? '🎯' : '🌟'}</span>
                      <span>${isQualified ? 'Select' : 'Select Boon'}</span>
@@ -4325,23 +4365,23 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           <!-- Spotlight Filter Tabs -->
           <div class="flex items-center justify-between border-b border-slate-800 pb-2 flex-wrap gap-1.5">
             <div class="flex items-center gap-1.5 flex-wrap">
-              <button type="button" onclick="setLevelUpFeatSearchFilter('ALL', ${slotIdx})" class="${filterPillClass('ALL')}">
+              <button type="button" data-action="progression:set-lvlup-feat-filter" data-filter="ALL" data-slot-idx="${slotIdx}" class="${filterPillClass('ALL')}">
                 📋 All (${countAll})
               </button>
-              <button type="button" onclick="setLevelUpFeatSearchFilter('QUALIFIED', ${slotIdx})" class="${filterPillClass('QUALIFIED')}">
+              <button type="button" data-action="progression:set-lvlup-feat-filter" data-filter="QUALIFIED" data-slot-idx="${slotIdx}" class="${filterPillClass('QUALIFIED')}">
                 ✅ Qualified (${countQualified})
               </button>
-              <button type="button" onclick="setLevelUpFeatSearchFilter('FIGHTER', ${slotIdx})" class="${filterPillClass('FIGHTER')}">
+              <button type="button" data-action="progression:set-lvlup-feat-filter" data-filter="FIGHTER" data-slot-idx="${slotIdx}" class="${filterPillClass('FIGHTER')}">
                 ⚔️ Fighter (${countFighter})
               </button>
-              <button type="button" onclick="setLevelUpFeatSearchFilter('BOON', ${slotIdx})" class="${filterPillClass('BOON')}">
+              <button type="button" data-action="progression:set-lvlup-feat-filter" data-filter="BOON" data-slot-idx="${slotIdx}" class="${filterPillClass('BOON')}">
                 🌟 DM Boon (${countBoon})
               </button>
-              <button type="button" onclick="setLevelUpFeatSearchFilter('FLAW', ${slotIdx})" class="${filterPillClass('FLAW')}">
+              <button type="button" data-action="progression:set-lvlup-feat-filter" data-filter="FLAW" data-slot-idx="${slotIdx}" class="${filterPillClass('FLAW')}">
                 ⚠️ Flaw (${countFlaw})
               </button>
             </div>
-            <button type="button" onclick="closeLevelUpFeatSearchConsole()" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition font-bold cursor-pointer">
+            <button type="button" data-action="progression:close-lvlup-feat-console" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition font-bold cursor-pointer">
               ▲ Close
             </button>
           </div>
@@ -4354,7 +4394,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           <!-- Rule Master AI Fallback -->
           <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
             <button type="button"
-                    onclick="triggerRuleMasterForLevelUpSlot(${slotIdx})"
+                    data-action="progression:trigger-rm-lvlup-slot" data-slot-idx="${slotIdx}"
                     class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-600 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 border border-purple-400/40 shadow transition cursor-pointer active:scale-98">
               <span>⚡</span>
               <span>Fetch via Rule Master AI: "${query || 'New 3.5e Feat'}" (3.5e Compendium)</span>
@@ -4768,7 +4808,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           ? featList.map(fName => {
               const safe = fName.replace(/'/g, "\\'");
               const cornerBadge = getFeatPinCornerBadgeHtml(fName);
-              return `<button type="button" onclick="showFeatDetail('${safe}')" class="relative inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600/80 hover:bg-emerald-900 transition" title="View rule details"><span>✨</span><span class="pr-2">${fName}</span>${cornerBadge}</button>`;
+              return `<button type="button" data-action="progression:show-feat-detail" data-feat-name="${String(fName || '').replace(/"/g, '&quot;')}" class="relative inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600/80 hover:bg-emerald-900 transition" title="View rule details"><span>✨</span><span class="pr-2">${fName}</span>${cornerBadge}</button>`;
             }).join(' ')
           : '<span class="text-slate-500 italic text-[10px]">No special class features or bonus feat selection.</span>';
 
@@ -5282,12 +5322,12 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
             <div class="flex items-center gap-1.5">
               ${!hasFeatures ? `
-                <button type="button" onclick="fetchClassFromRuleMasterAi('${safeName}')" class="text-[10px] text-purple-300 hover:text-white bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer" title="Fetch full progression details from sourcebooks via Rule Master AI">
+                <button type="button" data-action="progression:fetch-class-ai" data-class-name="${String(className || '').replace(/"/g, '&quot;')}" class="text-[10px] text-purple-300 hover:text-white bg-purple-950/80 hover:bg-purple-900 border border-purple-500/50 font-bold px-2 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer" title="Fetch full progression details from sourcebooks via Rule Master AI">
                   <span>✨</span>
                   <span>Fetch Features</span>
                 </button>
               ` : ''}
-              <button type="button" onclick="toggleClassProgression('${safeName}')" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-[10px] font-bold transition cursor-pointer" title="Close table">✕ Close</button>
+              <button type="button" data-action="progression:toggle-class-prog" data-class-name="${String(className || '').replace(/"/g, '&quot;')}" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded text-[10px] font-bold transition cursor-pointer" title="Close table">✕ Close</button>
             </div>
           </div>
 
@@ -5446,7 +5486,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 Scan official D&D 3.5e RAW sourcebooks (PHB, Complete series, Tome of Battle, DMG, etc.) to automatically fetch this class and save it to Master DB.
               </p>
               <div class="pt-1 flex items-center justify-center gap-2">
-                <button type="button" onclick="fetchClassFromRuleMasterAi('${safeQuery}')" id="btn-fetch-class-ai" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-purple-400/40">
+                <button type="button" data-action="progression:fetch-class-ai" data-class-name="${String(q || '').replace(/"/g, '&quot;')}" id="btn-fetch-class-ai" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-purple-400/40">
                   <span>🔮</span>
                   <span>Fetch "${safeQuery}" via Rule Master AI</span>
                 </button>
@@ -5559,7 +5599,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const cleanDesc = (def.description || def.shortDescription || '').replace(/<img[^>]*>/gi, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
         htmlOutput += `
-          <div onclick="selectClassFromSearch('${safeName}')" class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
+          <div data-action="progression:select-class-search" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
             <div class="flex flex-wrap items-center justify-between gap-1.5">
               <div class="flex items-center gap-2">
                 <span class="text-base">${isPrestige ? '👑' : (isCustom ? '⚙️' : '🛡️')}</span>
@@ -5573,22 +5613,22 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 </div>
               </div>
 
-              <div class="flex items-center gap-1.5 flex-wrap" onclick="event.stopPropagation()">
+              <div class="flex items-center gap-1.5 flex-wrap" data-action="progression:noop-stop">
                 ${isCustom ? `
-                  <button type="button" onclick="openCreateCustomClassModal('${safeName}', true)" class="px-2 py-1 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-500/50 text-amber-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Edit ${cName} template & level features">
+                  <button type="button" data-action="progression:open-custom-class-modal" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" data-edit="true" class="px-2 py-1 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-500/50 text-amber-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Edit ${cName} template & level features">
                     <span>✏️</span>
                     <span>Edit</span>
                   </button>
-                  <button type="button" onclick="deleteCustomClass('${safeName}')" class="px-2 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-500/50 text-rose-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Delete custom class ${cName}">
+                  <button type="button" data-action="progression:delete-custom-class" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="px-2 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-500/50 text-rose-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Delete custom class ${cName}">
                     <span>🗑️</span>
                   </button>
                 ` : `
-                  <button type="button" onclick="openCreateCustomClassModal('${safeName}', false)" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Clone ${cName} as a template and customize its level features / bonus feats">
+                  <button type="button" data-action="progression:open-custom-class-modal" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" data-edit="false" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Clone ${cName} as a template and customize its level features / bonus feats">
                     <span>📋</span>
                     <span>Clone / Variant</span>
                   </button>
                 `}
-                <button type="button" onclick="toggleClassProgression('${safeName}')" class="px-2.5 py-1 rounded-lg ${isProgExpanded ? 'bg-indigo-900 border-indigo-400 text-white ring-1 ring-indigo-400/50' : 'bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/50 text-indigo-200 hover:text-white'} font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Show / hide ${cName} level progression table">
+                <button type="button" data-action="progression:toggle-class-prog" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="px-2.5 py-1 rounded-lg ${isProgExpanded ? 'bg-indigo-900 border-indigo-400 text-white ring-1 ring-indigo-400/50' : 'bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/50 text-indigo-200 hover:text-white'} font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Show / hide ${cName} level progression table">
                   <span>📜</span>
                   <span>${isProgExpanded ? 'Hide Progression' : 'Show Progression'}</span>
                 </button>
@@ -5598,7 +5638,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                     <span>Selected Class</span>
                   </span>
                 ` : `
-                  <button type="button" onclick="selectClassFromSearch('${safeName}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
+                  <button type="button" data-action="progression:select-class-search" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
                     <span>🎯</span>
                     <span>Select Class</span>
                   </button>
@@ -5616,7 +5656,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
             ${cleanDesc ? `<p class="text-[10px] text-slate-400 leading-relaxed">${cleanDesc.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
             ${prereqHtml}
-            ${isProgExpanded ? `<div onclick="event.stopPropagation()">${generateClassProgressionHtml(cName, def)}</div>` : ''}
+            ${isProgExpanded ? `<div data-action="progression:noop-stop">${generateClassProgressionHtml(cName, def)}</div>` : ''}
           </div>
         `;
       });
@@ -5629,11 +5669,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               <span>🔮 Looking for another splatbook / variant class matching <b class="text-amber-300">"${q}"</b>?</span>
             </div>
             <div class="flex items-center gap-1.5">
-              <button type="button" onclick="openCreateCustomClassModal()" class="bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40 font-bold text-[10px] px-2.5 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer">
+              <button type="button" data-action="progression:open-custom-class-modal" class="bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40 font-bold text-[10px] px-2.5 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer">
                 <span>📋</span>
                 <span>Clone / Edit Class Template</span>
               </button>
-              <button type="button" onclick="fetchClassFromRuleMasterAi('${safeQuery}')" class="bg-purple-700 hover:bg-purple-600 text-white font-bold text-[10px] px-2.5 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer border border-purple-400/40">
+              <button type="button" data-action="progression:fetch-class-ai" data-class-name="${String(q || '').replace(/"/g, '&quot;')}" class="bg-purple-700 hover:bg-purple-600 text-white font-bold text-[10px] px-2.5 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer border border-purple-400/40">
                 <span>🔮</span>
                 <span>Fetch "${safeQuery}" via AI</span>
               </button>
@@ -6437,13 +6477,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             return;
           }
         }
-        prog[idx].active = true;
-
-        // Apply stat increase if recorded
-        const statKey = getLevelStatIncrease(prog[idx]);
-        if (statKey && character.baseAbilities && character.baseAbilities[statKey] !== undefined) {
-          character.baseAbilities[statKey] = Number(character.baseAbilities[statKey]) + 1;
-        }
       } else {
         // Enforce sequential deactivation: all subsequent levels must be inactive
         for (let i = idx + 1; i < prog.length; i++) {
@@ -6453,12 +6486,28 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             return;
           }
         }
-        prog[idx].active = false;
+      }
 
-        // Revert stat increase if recorded
-        const statKey = getLevelStatIncrease(prog[idx]);
-        if (statKey && character.baseAbilities && character.baseAbilities[statKey] !== undefined) {
-          character.baseAbilities[statKey] = Math.max(1, Number(character.baseAbilities[statKey]) - 1);
+      const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
+      if (usedStore) {
+        CharStore.dispatch({
+          type: 'progression/updateLevelRow',
+          payload: { mode: 'toggleActive', levelIndex: idx },
+          meta: { label: `${prog[idx].active === false ? 'Activate' : 'Deactivate'} Level ${idx + 1}` }
+        });
+      } else {
+        if (prog[idx].active === false) {
+          prog[idx].active = true;
+          const statKey = getLevelStatIncrease(prog[idx]);
+          if (statKey && character.baseAbilities && character.baseAbilities[statKey] !== undefined) {
+            character.baseAbilities[statKey] = Number(character.baseAbilities[statKey]) + 1;
+          }
+        } else {
+          prog[idx].active = false;
+          const statKey = getLevelStatIncrease(prog[idx]);
+          if (statKey && character.baseAbilities && character.baseAbilities[statKey] !== undefined) {
+            character.baseAbilities[statKey] = Math.max(1, Number(character.baseAbilities[statKey]) - 1);
+          }
         }
       }
 
@@ -6467,9 +6516,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         window.pruneOrphanedLevelAbilitiesAndFeats(character, prog[idx]);
       }
       recalculateCharacterClassSummary();
-      saveStateToStorage(true);
+      if (!usedStore) saveStateToStorage(true);
       renderLevelProgression();
       renderAll();
+    }
+
+    function toggleProgressionLevelActive(idx) {
+      return toggleLevelActive(idx);
     }
 
     function deleteLevelRow(idx) {
@@ -6482,21 +6535,71 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const row = prog[idx];
       if (!confirm(`Are you sure you want to delete Level ${row.level} (${row.className})?`)) return;
 
-      // Revert stat increase if recorded on an active level row
-      const statToRevert = getLevelStatIncrease(row);
-      if (statToRevert && row.active !== false && character.baseAbilities && character.baseAbilities[statToRevert] !== undefined) {
-        character.baseAbilities[statToRevert] = Math.max(1, Number(character.baseAbilities[statToRevert]) - 1);
+      const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
+      if (usedStore) {
+        CharStore.dispatch({
+          type: 'progression/updateLevelRow',
+          payload: { mode: 'remove', levelIndex: idx },
+          meta: { label: `Delete Level ${row.level} (${row.className})` }
+        });
+      } else {
+        const statToRevert = getLevelStatIncrease(row);
+        if (statToRevert && row.active !== false && character.baseAbilities && character.baseAbilities[statToRevert] !== undefined) {
+          character.baseAbilities[statToRevert] = Math.max(1, Number(character.baseAbilities[statToRevert]) - 1);
+        }
+        prog.splice(idx, 1);
+        prog.forEach((p, i) => { p.level = i + 1; });
       }
-
-      prog.splice(idx, 1);
-      // Re-number levels
-      prog.forEach((p, i) => { p.level = i + 1; });
 
       if (typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
         window.pruneOrphanedLevelAbilitiesAndFeats(character, row);
       }
       recalculateCharacterClassSummary();
-      saveStateToStorage(true);
+      if (!usedStore) saveStateToStorage(true);
+      renderLevelProgression();
+      renderAll();
+    }
+
+    function removeProgressionLevel(idx) {
+      return deleteLevelRow(idx);
+    }
+
+    function updateProgressionHp(idx, newHp) {
+      const prog = character.levelProgression || [];
+      if (idx < 0 || idx >= prog.length) return;
+      const cleanHp = Math.max(1, Number(newHp) || 1);
+      const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
+      if (usedStore) {
+        CharStore.dispatch({
+          type: 'progression/updateLevelRow',
+          payload: { mode: 'setHp', levelIndex: idx, hpGain: cleanHp },
+          meta: { label: `Set Level ${idx + 1} HP (+${cleanHp})` }
+        });
+      } else {
+        prog[idx].hpGain = cleanHp;
+      }
+      recalculateCharacterClassSummary();
+      if (!usedStore) saveStateToStorage(true);
+      renderLevelProgression();
+      renderAll();
+    }
+
+    function removeFeatByName(featName, levelIdx = null, category = 'feat') {
+      if (!featName) return;
+      const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
+      if (usedStore) {
+        CharStore.dispatch({
+          type: 'progression/removeFeat',
+          payload: {
+            featName: featName,
+            levelIndex: levelIdx,
+            isAbility: category === 'ability' || category === 'Special Ability'
+          },
+          meta: { label: `Remove ${category === 'ability' ? 'Ability' : 'Feat'}: ${featName}` }
+        });
+      }
+      recalculateCharacterClassSummary();
+      if (!usedStore) saveStateToStorage(true);
       renderLevelProgression();
       renderAll();
     }
@@ -6645,7 +6748,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const nextTotal = isSelected ? totalScore : (totalScore + 1);
 
         return `
-          <button type="button" onclick="selectStatForLevel(${idx}, '${s.key}')" class="p-2.5 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer active:scale-95 ${
+          <button type="button" data-action="progression:select-stat-for-level" data-level-idx="${idx}" data-stat-key="${s.key}" class="p-2.5 rounded-xl border text-left transition flex flex-col justify-between cursor-pointer active:scale-95 ${
             isSelected 
               ? 'bg-sky-950/80 border-sky-400 text-white shadow-lg ring-1 ring-sky-400' 
               : 'bg-slate-900/90 border-slate-700/80 text-slate-300 hover:border-sky-500 hover:bg-slate-800/80'
@@ -6684,30 +6787,44 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const oldStat = getLevelStatIncrease(row);
 
       if (oldStat !== newStatKey) {
-        if (row.active !== false && character.baseAbilities) {
-          if (oldStat && typeof character.baseAbilities[oldStat] === 'number') {
-            character.baseAbilities[oldStat] = Math.max(1, character.baseAbilities[oldStat] - 1);
+        const statDef = newStatKey ? STAT_KEYS.find(k => k.key === newStatKey) : null;
+        const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
+        if (usedStore) {
+          CharStore.dispatch({
+            type: 'progression/updateLevelRow',
+            payload: {
+              mode: 'setStatIncrease',
+              levelIndex: idx,
+              statKey: newStatKey || null,
+              statLabel: statDef ? statDef.label : (newStatKey ? newStatKey.toUpperCase() : '')
+            },
+            meta: { label: `Level ${idx + 1} Ability Increase (${statDef ? statDef.label : 'Cleared'})` }
+          });
+        } else {
+          if (row.active !== false && character.baseAbilities) {
+            if (oldStat && typeof character.baseAbilities[oldStat] === 'number') {
+              character.baseAbilities[oldStat] = Math.max(1, character.baseAbilities[oldStat] - 1);
+            }
+            if (newStatKey && typeof character.baseAbilities[newStatKey] === 'number') {
+              character.baseAbilities[newStatKey] = character.baseAbilities[newStatKey] + 1;
+            }
           }
-          if (newStatKey && typeof character.baseAbilities[newStatKey] === 'number') {
-            character.baseAbilities[newStatKey] = character.baseAbilities[newStatKey] + 1;
+
+          row.statIncreased = newStatKey || null;
+
+          if (!Array.isArray(row.feats)) row.feats = [];
+          row.feats = row.feats.filter(f => {
+            const str = String(f).toLowerCase();
+            return !str.includes('+1 stat') && !str.includes('stat:');
+          });
+
+          if (newStatKey) {
+            row.feats.push(`+1 Stat: ${statDef ? statDef.label : newStatKey.toUpperCase()}`);
           }
-        }
-
-        row.statIncreased = newStatKey || null;
-
-        if (!Array.isArray(row.feats)) row.feats = [];
-        row.feats = row.feats.filter(f => {
-          const str = String(f).toLowerCase();
-          return !str.includes('+1 stat') && !str.includes('stat:');
-        });
-
-        if (newStatKey) {
-          const statDef = STAT_KEYS.find(k => k.key === newStatKey);
-          row.feats.push(`+1 Stat: ${statDef ? statDef.label : newStatKey.toUpperCase()}`);
         }
 
         recalculateCharacterClassSummary();
-        saveStateToStorage(true);
+        if (!usedStore) saveStateToStorage(true);
         renderLevelProgression();
         renderAll();
       }
@@ -6992,7 +7109,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 Scan official D&D 3.5e RAW sourcebooks (PHB, Complete series, Tome of Battle, DMG, etc.) to automatically fetch this class and save it to Master DB.
               </p>
               <div class="pt-1 flex items-center justify-center gap-2">
-                <button type="button" onclick="searchOrAddClassWithRuleMaster()" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-purple-400/40">
+                <button type="button" data-action="progression:search-or-add-class-rm" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-purple-400/40">
                   <span>🔮</span>
                   <span>Fetch "${q}" via Rule Master AI</span>
                 </button>
@@ -7105,7 +7222,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const cleanDesc = (def.description || def.shortDescription || '').replace(/<img[^>]*>/gi, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 
         htmlOutput += `
-          <div onclick="selectChangeClassFromSearch('${safeName}')" class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
+          <div data-action="progression:select-change-class-search" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="bg-slate-950/70 hover:bg-slate-900/90 border ${isSelected ? 'border-emerald-500 ring-1 ring-emerald-500/50 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700'} rounded-lg p-2.5 transition space-y-1.5 cursor-pointer group">
             <div class="flex flex-wrap items-center justify-between gap-1.5">
               <div class="flex items-center gap-2">
                 <span class="text-base">${isPrestige ? '👑' : (isCustom ? '⚙️' : '🛡️')}</span>
@@ -7119,22 +7236,22 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 </div>
               </div>
 
-              <div class="flex items-center gap-1.5 flex-wrap" onclick="event.stopPropagation()">
+              <div class="flex items-center gap-1.5 flex-wrap" data-action="progression:noop-stop">
                 ${isCustom ? `
-                  <button type="button" onclick="openCreateCustomClassModal('${safeName}', true)" class="px-2 py-1 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-500/50 text-amber-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Edit ${cName} template & level features">
+                  <button type="button" data-action="progression:open-custom-class-modal" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" data-edit="true" class="px-2 py-1 rounded-lg bg-amber-950/80 hover:bg-amber-900 border border-amber-500/50 text-amber-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Edit ${cName} template & level features">
                     <span>✏️</span>
                     <span>Edit</span>
                   </button>
-                  <button type="button" onclick="deleteCustomClass('${safeName}')" class="px-2 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-500/50 text-rose-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Delete custom class ${cName}">
+                  <button type="button" data-action="progression:delete-custom-class" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="px-2 py-1 rounded-lg bg-rose-950/80 hover:bg-rose-900 border border-rose-500/50 text-rose-200 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Delete custom class ${cName}">
                     <span>🗑️</span>
                   </button>
                 ` : `
-                  <button type="button" onclick="openCreateCustomClassModal('${safeName}', false)" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Clone ${cName} as a template and customize its level features / bonus feats">
+                  <button type="button" data-action="progression:open-custom-class-modal" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" data-edit="false" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 hover:text-white font-bold text-[10px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Clone ${cName} as a template and customize its level features / bonus feats">
                     <span>📋</span>
                     <span>Clone / Variant</span>
                   </button>
                 `}
-                <button type="button" onclick="toggleClassProgression('${safeName}')" class="px-2.5 py-1 rounded-lg ${isProgExpanded ? 'bg-indigo-900 border-indigo-400 text-white ring-1 ring-indigo-400/50' : 'bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/50 text-indigo-200 hover:text-white'} font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Show / hide ${cName} level progression table">
+                <button type="button" data-action="progression:toggle-class-prog" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="px-2.5 py-1 rounded-lg ${isProgExpanded ? 'bg-indigo-900 border-indigo-400 text-white ring-1 ring-indigo-400/50' : 'bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/50 text-indigo-200 hover:text-white'} font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer" title="Show / hide ${cName} level progression table">
                   <span>📜</span>
                   <span>${isProgExpanded ? 'Hide Progression' : 'Show Progression'}</span>
                 </button>
@@ -7144,7 +7261,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                     <span>Selected Class</span>
                   </span>
                 ` : `
-                  <button type="button" onclick="selectChangeClassFromSearch('${safeName}')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
+                  <button type="button" data-action="progression:select-change-class-search" data-class-name="${String(cName || '').replace(/"/g, '&quot;')}" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] shadow flex items-center gap-1 transition active:scale-95 cursor-pointer">
                     <span>🎯</span>
                     <span>Select Class</span>
                   </button>
@@ -7162,7 +7279,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
             ${cleanDesc ? `<p class="text-[10px] text-slate-400 leading-relaxed">${cleanDesc.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
             ${prereqHtml}
-            ${isProgExpanded ? `<div onclick="event.stopPropagation()">${generateClassProgressionHtml(cName, def)}</div>` : ''}
+            ${isProgExpanded ? `<div data-action="progression:noop-stop">${generateClassProgressionHtml(cName, def)}</div>` : ''}
           </div>
         `;
       });
@@ -7263,7 +7380,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         ? featList.map(fName => {
             const safe = fName.replace(/'/g, "\\'");
             const cornerBadge = typeof getFeatPinCornerBadgeHtml === 'function' ? getFeatPinCornerBadgeHtml(fName) : '';
-            return `<button type="button" onclick="showFeatDetail('${safe}')" class="relative inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600/80 hover:bg-emerald-900 transition cursor-pointer" title="View rule details"><span>✨</span><span class="pr-2">${fName}</span>${cornerBadge}</button>`;
+            return `<button type="button" data-action="progression:show-feat-detail" data-feat-name="${String(fName || '').replace(/"/g, '&quot;')}" class="relative inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600/80 hover:bg-emerald-900 transition cursor-pointer" title="View rule details"><span>✨</span><span class="pr-2">${fName}</span>${cornerBadge}</button>`;
           }).join(' ')
         : '<span class="text-slate-500 italic text-[10px]">No special class features or bonus feat selection.</span>';
 
@@ -7325,63 +7442,87 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const oldClass = prog[idx].className || '';
       const oldSpecialAbilities = Array.isArray(prog[idx].specialAbilities) ? [...prog[idx].specialAbilities] : [];
-
-      prog[idx].className = newClass;
-      prog[idx].hd = `d${def.hd}`;
-      prog[idx].hpGain = newHp;
-      prog[idx].skillPts = (idx === 0)
+      const nextSkillPts = (idx === 0)
         ? Math.max(4, ((def.skills || 2) + intMod + isHuman) * 4)
         : Math.max(1, (def.skills || 2) + intMod + isHuman);
-      prog[idx].bab = def.bab >= 1.0 ? 1 : 0;
-      prog[idx].fort = (def.fort === 'good') ? 1 : 0;
-      prog[idx].ref = (def.ref === 'good') ? 1 : 0;
-      prog[idx].will = (def.will === 'good') ? 1 : 0;
 
-      // If active, update character HP
-      if (prog[idx].active !== false && character.hp) {
-        if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 44) - (Number(character.hp.conBonusHp) || 0);
-        character.hp.baseMax = Math.max(1, (Number(character.hp.baseMax) || 1) + hpDiff);
-        character.hp.max = Math.max(1, (Number(character.hp.baseMax) || 1) + (Number(character.hp.conBonusHp) || 0));
-        character.hp.current = Math.min(character.hp.max, Math.max(1, (Number(character.hp.current) || 1) + hpDiff));
-      }
-
-      // Update features if auto is checked or if class changed
+      let nextSpecialAbilities = Array.isArray(prog[idx].specialAbilities) ? [...prog[idx].specialAbilities] : [];
+      let nextNotes = prog[idx].notes;
       if ((autoChk && autoChk.checked) || oldClass !== newClass) {
         let classLvlCount = 0;
         for (let i = 0; i <= idx; i++) {
-          if (prog[i].className === newClass) classLvlCount++;
+          if ((i === idx ? newClass : prog[i].className) === newClass) classLvlCount++;
         }
         const autoData = (typeof RuleEngine !== 'undefined' && RuleEngine.getClassLevelFeatures)
           ? RuleEngine.getClassLevelFeatures(newClass, classLvlCount)
           : { features: [] };
         const autoFeatures = autoData.features || [];
-        prog[idx].specialAbilities = [...autoFeatures];
-        prog[idx].notes = autoFeatures.length > 0 ? autoFeatures.join(', ') : `Updated to ${newClass}`;
+        nextSpecialAbilities = [...autoFeatures];
+        nextNotes = autoFeatures.length > 0 ? autoFeatures.join(', ') : `Updated to ${newClass}`;
       }
 
-      // Handle Stat increase change
       const statSel = document.getElementById('change-class-stat-select');
       const newStatChoice = (statSel?.value || '').trim() || null;
-      const oldStatChoice = getLevelStatIncrease(prog[idx]);
+      const statDef = newStatChoice ? STAT_KEYS.find(k => k.key === newStatChoice) : null;
 
-      if (newStatChoice !== oldStatChoice) {
-        if (prog[idx].active !== false && character.baseAbilities) {
-          if (oldStatChoice && typeof character.baseAbilities[oldStatChoice] === 'number') {
-            character.baseAbilities[oldStatChoice] = Math.max(1, character.baseAbilities[oldStatChoice] - 1);
-          }
-          if (newStatChoice && typeof character.baseAbilities[newStatChoice] === 'number') {
-            character.baseAbilities[newStatChoice] = character.baseAbilities[newStatChoice] + 1;
-          }
-        }
-        prog[idx].statIncreased = newStatChoice;
-        if (!Array.isArray(prog[idx].feats)) prog[idx].feats = [];
-        prog[idx].feats = prog[idx].feats.filter(f => {
-          const str = String(f).toLowerCase();
-          return !str.includes('+1 stat') && !str.includes('stat:');
+      const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
+      if (usedStore) {
+        CharStore.dispatch({
+          type: 'progression/updateLevelRow',
+          payload: {
+            mode: 'setClass',
+            levelIndex: idx,
+            className: newClass,
+            hd: `d${def.hd}`,
+            hpGain: newHp,
+            skillPts: nextSkillPts,
+            bab: def.bab >= 1.0 ? 1 : 0,
+            fort: (def.fort === 'good') ? 1 : 0,
+            ref: (def.ref === 'good') ? 1 : 0,
+            will: (def.will === 'good') ? 1 : 0,
+            specialAbilities: nextSpecialAbilities,
+            notes: nextNotes,
+            statKey: newStatChoice,
+            statLabel: statDef ? statDef.label : (newStatChoice ? newStatChoice.toUpperCase() : '')
+          },
+          meta: { label: `Update Level ${idx + 1} (${newClass})` }
         });
-        if (newStatChoice) {
-          const statDef = STAT_KEYS.find(k => k.key === newStatChoice);
-          prog[idx].feats.push(`+1 Stat: ${statDef ? statDef.label : newStatChoice.toUpperCase()}`);
+      } else {
+        prog[idx].className = newClass;
+        prog[idx].hd = `d${def.hd}`;
+        prog[idx].hpGain = newHp;
+        prog[idx].skillPts = nextSkillPts;
+        prog[idx].bab = def.bab >= 1.0 ? 1 : 0;
+        prog[idx].fort = (def.fort === 'good') ? 1 : 0;
+        prog[idx].ref = (def.ref === 'good') ? 1 : 0;
+        prog[idx].will = (def.will === 'good') ? 1 : 0;
+        if (prog[idx].active !== false && character.hp) {
+          if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 44) - (Number(character.hp.conBonusHp) || 0);
+          character.hp.baseMax = Math.max(1, (Number(character.hp.baseMax) || 1) + hpDiff);
+          character.hp.max = Math.max(1, (Number(character.hp.baseMax) || 1) + (Number(character.hp.conBonusHp) || 0));
+          character.hp.current = Math.min(character.hp.max, Math.max(1, (Number(character.hp.current) || 1) + hpDiff));
+        }
+        prog[idx].specialAbilities = nextSpecialAbilities;
+        prog[idx].notes = nextNotes;
+        const oldStatChoice = getLevelStatIncrease(prog[idx]);
+        if (newStatChoice !== oldStatChoice) {
+          if (prog[idx].active !== false && character.baseAbilities) {
+            if (oldStatChoice && typeof character.baseAbilities[oldStatChoice] === 'number') {
+              character.baseAbilities[oldStatChoice] = Math.max(1, character.baseAbilities[oldStatChoice] - 1);
+            }
+            if (newStatChoice && typeof character.baseAbilities[newStatChoice] === 'number') {
+              character.baseAbilities[newStatChoice] = character.baseAbilities[newStatChoice] + 1;
+            }
+          }
+          prog[idx].statIncreased = newStatChoice;
+          if (!Array.isArray(prog[idx].feats)) prog[idx].feats = [];
+          prog[idx].feats = prog[idx].feats.filter(f => {
+            const str = String(f).toLowerCase();
+            return !str.includes('+1 stat') && !str.includes('stat:');
+          });
+          if (newStatChoice) {
+            prog[idx].feats.push(`+1 Stat: ${statDef ? statDef.label : newStatChoice.toUpperCase()}`);
+          }
         }
       }
 
@@ -7390,7 +7531,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         window.pruneOrphanedLevelAbilitiesAndFeats(character, { specialAbilities: oldSpecialAbilities });
       }
       recalculateCharacterClassSummary();
-      saveStateToStorage(true);
+      if (!usedStore) saveStateToStorage(true);
       renderLevelProgression();
       renderAll();
     }
@@ -7445,7 +7586,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const rowFeats = [];
       let statIncreased = null;
 
-      prog.push({
+      const newRowObj = {
         level: nextLvl,
         active: false,
         className: targetClass,
@@ -7460,10 +7601,21 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         specialAbilities: [...autoFeatures],
         statIncreased: statIncreased,
         notes: autoFeatures.length > 0 ? autoFeatures.join(', ') : `Planned ${targetClass} level`
-      });
+      };
+
+      const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
+      if (usedStore) {
+        CharStore.dispatch({
+          type: 'progression/updateLevelRow',
+          payload: { mode: 'add', row: newRowObj },
+          meta: { label: `Add Planned Level ${nextLvl} (${targetClass})` }
+        });
+      } else {
+        prog.push(newRowObj);
+      }
 
       recalculateCharacterClassSummary();
-      saveStateToStorage(true);
+      if (!usedStore) saveStateToStorage(true);
       renderLevelProgression();
       renderAll();
     }
@@ -7530,9 +7682,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (!character) {
         container.innerHTML = '';
         return;
-      }
-      if (typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
-        window.pruneOrphanedLevelAbilitiesAndFeats(character);
       }
 
       // Collect all feats
@@ -7639,11 +7788,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   </div>
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
-                  <button type="button" onclick="openCompanionModal()" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-amber-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded border border-amber-600/50 transition cursor-pointer">
+                  <button type="button" data-action="progression:open-companion-modal" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-amber-300 hover:text-white bg-slate-950 hover:bg-slate-800 rounded border border-amber-600/50 transition cursor-pointer">
                     <span>⚙️</span>
                     <span>Manage</span>
                   </button>
-                  <button type="button" onclick="dismissCompanion()" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-rose-400 hover:text-white bg-slate-950 hover:bg-rose-900/70 rounded border border-rose-800/60 transition cursor-pointer" title="Dismiss companion">
+                  <button type="button" data-action="progression:dismiss-companion" class="ui-btn-xs h-6 px-2 text-[10px] font-bold text-rose-400 hover:text-white bg-slate-950 hover:bg-rose-900/70 rounded border border-rose-800/60 transition cursor-pointer" title="Dismiss companion">
                     <span>✕</span>
                     <span>Dismiss</span>
                   </button>
@@ -7708,7 +7857,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 <span class="text-[10px] text-slate-400">Character is eligible to bind an animal companion, summon a familiar, or call a paladin war mount.</span>
               </div>
             </div>
-            <button type="button" onclick="openCompanionModal()" class="ui-btn-xs h-7 px-3 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-lg transition shadow flex items-center gap-1.5 cursor-pointer">
+            <button type="button" data-action="progression:open-companion-modal" class="ui-btn-xs h-7 px-3 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-lg transition shadow flex items-center gap-1.5 cursor-pointer">
               <span>➕</span>
               <span>Select Companion</span>
             </button>
@@ -7731,7 +7880,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       container.innerHTML = `
         <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-900/60 shadow mt-4">
           <!-- Akordeon Başlık Çubuğu -->
-          <div onclick="toggleCoreFeatsAccordion()" class="bg-slate-900 hover:bg-slate-800/80 px-3.5 py-2.5 flex items-center justify-between gap-3 cursor-pointer transition select-none">
+          <div data-action="progression:toggle-core-feats-accordion" class="bg-slate-900 hover:bg-slate-800/80 px-3.5 py-2.5 flex items-center justify-between gap-3 cursor-pointer transition select-none">
             <div class="flex items-center gap-2.5 flex-wrap">
               <span class="text-base">🎖️</span>
               <span class="text-xs font-black text-amber-400 uppercase tracking-wide">FEATS &amp; SPECIAL ABILITIES SHOWCASE</span>
@@ -7742,7 +7891,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             </div>
             <div class="flex items-center gap-2">
               ${character?.isNpc ? `
-                <button type="button" onclick="event.stopPropagation(); openNpcStatblockModal('feats')" class="text-[11px] font-bold bg-amber-600/90 hover:bg-amber-500 text-white px-2.5 py-0.5 rounded-lg transition shadow-sm flex items-center gap-1 active:scale-95 cursor-pointer" title="Edit in Statblock Studio">
+                <button type="button" data-action="progression:open-npc-statblock" data-tab="feats" class="text-[11px] font-bold bg-amber-600/90 hover:bg-amber-500 text-white px-2.5 py-0.5 rounded-lg transition shadow-sm flex items-center gap-1 active:scale-95 cursor-pointer" title="Edit in Statblock Studio">
                   <span>⚡</span>
                   <span>Studio</span>
                 </button>
@@ -7766,11 +7915,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   </div>
                   <div class="flex flex-wrap gap-1.5 min-h-[40px] items-start">
                     ${featsList.length > 0 ? featsList.map(f => {
-                      const safeName = f.name.replace(/'/g, "\\'");
                       const safeTip = (getFeatTooltipText(f.name) || f.benefit || f.source || 'View rule details').replace(/"/g, '&quot;');
                       const catBadge = f.category && f.category !== 'Feat' ? `<span class="text-[9px] opacity-75 font-normal">(${safeEscapeHtml(f.category)})</span>` : '';
                       return `
-                        <button type="button" onclick="showFeatDetail('${safeName}', null, 'feat')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-600/60 hover:border-indigo-400 shadow-sm transition active:scale-95 cursor-pointer text-left">
+                        <button type="button" data-action="progression:show-feat-detail" data-feat-name="${String(f.name || '').replace(/"/g, '&quot;')}" data-feat-type="feat" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-600/60 hover:border-indigo-400 shadow-sm transition active:scale-95 cursor-pointer text-left">
                           <span class="text-amber-400 shrink-0">🎖️</span>
                           <span class="truncate max-w-[170px]">${safeEscapeHtml(f.name)}</span>
                           ${catBadge}
@@ -7797,7 +7945,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   </div>
                   <div class="flex flex-wrap gap-1.5 min-h-[40px] items-start">
                     ${abilitiesList.length > 0 ? abilitiesList.map(a => {
-                      const safeName = a.name.replace(/'/g, "\\'");
                       const safeTip = (getFeatTooltipText(a.name) || a.benefit || a.source || 'View rule details').replace(/"/g, '&quot;');
                       let typeBadge = '';
                       let borderCls = 'border-purple-600/60 hover:border-purple-400 text-purple-200 bg-purple-950/80 hover:bg-purple-900';
@@ -7815,7 +7962,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                         typeBadge = `<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-600/50">${safeEscapeHtml(a.type)}</span>`;
                       }
                       return `
-                        <button type="button" onclick="showFeatDetail('${safeName}', null, 'ability')" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border shadow-sm transition active:scale-95 cursor-pointer text-left ${borderCls}">
+                        <button type="button" data-action="progression:show-feat-detail" data-feat-name="${String(a.name || '').replace(/"/g, '&quot;')}" data-feat-type="ability" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border shadow-sm transition active:scale-95 cursor-pointer text-left ${borderCls}">
                           <span class="shrink-0">⚡</span>
                           <span class="truncate max-w-[170px]">${safeEscapeHtml(a.name)}</span>
                           ${typeBadge}
@@ -7855,7 +8002,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 <span class="text-slate-400 block sm:inline text-[11px]">This creature uses D&D 3.5e monster statblock rules (Exempt from 1-20 Level Progression Table).</span>
               </div>
             </div>
-            <button type="button" onclick="toggleNpcLevelProgression()" class="text-xs font-bold text-amber-400 hover:text-amber-300 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-amber-500 transition cursor-pointer">
+            <button type="button" data-action="progression:toggle-npc-level-prog" class="text-xs font-bold text-amber-400 hover:text-amber-300 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-amber-500 transition cursor-pointer">
               ${showTable ? '▲ Hide Level Table' : '▼ Show Level Table'}
             </button>
           `;
@@ -7876,17 +8023,17 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const mobileCardsContainer = document.getElementById('level-progression-mobile-cards');
       if (mobileCardsContainer) mobileCardsContainer.innerHTML = '';
 
-      // Sync settings toolbar UI
-      if (character.settings?.featMode && String(character.settings.featMode).startsWith('Every 2 Levels')) {
-        character.settings.featMode = 'Every 2 Levels (1, 3, 5, 7, 9, 11, 13, 15, 17, 19)';
-      }
+      // Sync settings toolbar UI (pure read — never mutate character.settings during render)
+      const resolvedFeatMode = (character.settings?.featMode && String(character.settings.featMode).startsWith('Every 2 Levels'))
+        ? 'Every 2 Levels (1, 3, 5, 7, 9, 11, 13, 15, 17, 19)'
+        : (character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)');
       const featModeSel = document.getElementById('setting-feat-mode');
       if (featModeSel && character.settings?.featMode) {
-        featModeSel.value = character.settings.featMode;
+        featModeSel.value = resolvedFeatMode;
       }
       const featCadenceDisplay = document.getElementById('level-prog-feat-cadence-display');
       if (featCadenceDisplay) {
-        const curMode = String(character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)');
+        const curMode = String(resolvedFeatMode);
         if (curMode.startsWith('Every 2 Levels')) {
           featCadenceDisplay.textContent = '1, 3, 5, 7, 9, 11, 13, 15, 17, 19';
         } else if (curMode.startsWith('Every 4 Levels')) {
@@ -7984,9 +8131,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         let statBadgeItem = '';
         if (currentStatKey) {
           const sDef = STAT_KEYS.find(k => k.key === currentStatKey) || { key: currentStatKey, label: currentStatKey.toUpperCase(), name: currentStatKey.toUpperCase() };
-          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-sky-600/70 shadow-sm transition text-left cursor-pointer" title="Level ${lvl.level} Ability Score Increase: +1 ${sDef.name}. Click to change or remove."><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+1 Stat: ${sDef.label}</span></button>`;
+          statBadgeItem = `<button type="button" data-action="progression:open-stat-picker" data-level-idx="${idx}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-sky-600/70 shadow-sm transition text-left cursor-pointer" title="Level ${lvl.level} Ability Score Increase: +1 ${sDef.name}. Click to change or remove."><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+1 Stat: ${sDef.label}</span></button>`;
         } else if (isStatInterval) {
-          statBadgeItem = `<button type="button" onclick="openStatPickerForLevel(${idx})" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/90 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-dashed border-sky-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select +1 Ability Score Increase for Level ${lvl.level}"><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+ Select Ability (+1)</span></button>`;
+          statBadgeItem = `<button type="button" data-action="progression:open-stat-picker" data-level-idx="${idx}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/90 hover:bg-sky-900 active:scale-95 text-sky-300 hover:text-white border border-dashed border-sky-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select +1 Ability Score Increase for Level ${lvl.level}"><span class="shrink-0">💪</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+ Select Ability (+1)</span></button>`;
         }
 
         // Filtered and partitioned feats for 3-column split:
@@ -8069,30 +8216,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           : { features: [], featureObjects: [], hasBonusFeat: false };
         const qualifiesForClassBonus = classFeats.hasBonusFeat;
 
-        // Auto-hydrate missing class features on saved progression rows (e.g., Bloodstorm Blade 6-10)
-        if ((!Array.isArray(lvl.specialAbilities) || lvl.specialAbilities.length === 0) &&
-            Array.isArray(classFeats.features) && classFeats.features.length > 0 &&
-            !lvl._abilitiesManuallyCleared) {
-          lvl.specialAbilities = [...classFeats.features];
-          if (isActive && Array.isArray(classFeats.featureObjects)) {
-            if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
-            classFeats.featureObjects.forEach(fObj => {
-              const fName = typeof fObj === 'string' ? fObj : fObj.name;
-              if (!fName) return;
-              const existsInChar = character.specialAbilities.some(a => (typeof a === 'string' ? a : (a?.name || '')).toLowerCase().trim() === fName.toLowerCase().trim());
-              if (!existsInChar) {
-                character.specialAbilities.push({
-                  name: fName,
-                  source: `${lvl.className} Level ${classLevelSoFar}`,
-                  category: 'Class Feature',
-                  benefit: (typeof fObj === 'object' && fObj.summary) ? fObj.summary : `Class feature automatically gained at ${lvl.className} Level ${classLevelSoFar}.`
-                });
-              }
-            });
-          }
-        }
+        // Compute effective row special abilities purely in memory (never mutate lvl or character during render)
+        const effectiveRowAbilities = (Array.isArray(lvl.specialAbilities) && lvl.specialAbilities.length > 0)
+          ? [...lvl.specialAbilities]
+          : ((!lvl._abilitiesManuallyCleared && Array.isArray(classFeats.features) && classFeats.features.length > 0)
+              ? [...classFeats.features]
+              : []);
 
-        const abilityBadgeItems = [...(lvl.specialAbilities || [])].filter(aStr => {
+        const abilityBadgeItems = effectiveRowAbilities.filter(aStr => {
           const str = String(aStr).trim();
           // Hide generic "Domains (2)" or "[Domain: ...]" strings on Cleric 1 because we render dedicated interactive Domain badges
           if ( /^(\[[^\]]+\]\s*)?Domains\s*\(2\)/i.test(str) || /^⚜️\s*Domain:/i.test(str) || /^\[Domain:/i.test(str) ) {
@@ -8102,23 +8233,21 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         }).sort((a, b) => extractFeatSortName(a).localeCompare(extractFeatSortName(b))).map(aStr => {
           const str = String(aStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
-          const safeA = rawName.replace(/'/g, "\\'");
           const tip = getFeatTooltipText(aStr);
           const safeTip = tip.replace(/"/g, '&quot;');
           const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+/, '').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeA}', ${idx}, 'ability')" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="ability" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-sky-950/80 hover:bg-sky-900 text-sky-300 border border-sky-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">✨</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         const classBonusBadgeItems = classBonusFeats.map(fStr => {
           const str = String(fStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
-          const safeF = rawName.replace(/'/g, "\\'");
           const tip = getFeatTooltipText(fStr);
           const safeTip = tip.replace(/"/g, '&quot;');
           const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').replace(/^\[Extra Bonus\]/i, '[Bonus]').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚔️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 border border-indigo-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">⚔️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         const pendingClassBonusButtons = [];
@@ -8146,11 +8275,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 ? 'bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border-yellow-500/80'
                 : 'bg-rose-950/90 hover:bg-rose-900 text-rose-200 border-rose-500/80';
               classBonusBadgeItems.push(
-                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${badgeColorCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${elig.eligible ? '⚜️' : '⚠️'}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">Domain: ${domName}${warSuffix}</span></button>`
+                `<button data-action="progression:open-cleric-domain-picker" data-level-idx="${idx}" data-slot-idx="${dSlot}" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${badgeColorCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${elig.eligible ? '⚜️' : '⚠️'}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">Domain: ${domName}${warSuffix}</span></button>`
               );
             } else {
               pendingClassBonusButtons.push(
-                `<button onclick="openClericDomainPickerModal(${idx}, ${dSlot})" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border border-dashed border-yellow-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Cleric Domain (${dSlot + 1}/2) — Grants a Domain Power and +1 Domain Spell Slot per spell level (1st–9th)"><span class="shrink-0">⚜️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+ Select Cleric Domain (${dSlot + 1}/2)</span></button>`
+                `<button data-action="progression:open-cleric-domain-picker" data-level-idx="${idx}" data-slot-idx="${dSlot}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-amber-950/90 hover:bg-amber-900 text-yellow-300 border border-dashed border-yellow-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Cleric Domain (${dSlot + 1}/2) — Grants a Domain Power and +1 Domain Spell Slot per spell level (1st–9th)"><span class="shrink-0">⚜️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">+ Select Cleric Domain (${dSlot + 1}/2)</span></button>`
               );
             }
           }
@@ -8189,35 +8318,33 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             btnIcon = '🔮';
             btnCls = 'bg-indigo-950/90 hover:bg-indigo-900 text-indigo-300 border-indigo-500';
           }
-          pendingClassBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Class Bonus Feat', true)" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${btnCls} border border-dashed shadow-sm animate-pulse transition text-left cursor-pointer" title="${btnTitle.replace(/"/g, '&quot;')}"><span class="shrink-0">${btnIcon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">${btnText}</span></button>`);
+          pendingClassBonusButtons.push(`<button data-action="progression:open-quick-feat-picker" data-level-idx="${idx}" data-category="Class Bonus Feat" data-locked="true" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${btnCls} border border-dashed shadow-sm animate-pulse transition text-left cursor-pointer" title="${btnTitle.replace(/"/g, '&quot;')}"><span class="shrink-0">${btnIcon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2">${btnText}</span></button>`);
         }
 
         // 2. Beceriler (Regular Feats) badges
         const regularFeatBadgeItems = regularFeats.map(fStr => {
           const str = String(fStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
-          const safeF = rawName.replace(/'/g, "\\'");
           const tip = getFeatTooltipText(fStr);
           const safeTip = tip.replace(/"/g, '&quot;');
           const cleanStr = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[Extra\]\s*)?/i, '').trim();
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600/70 shadow-sm transition text-left cursor-pointer"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         // Check regular feat eligibility
-        const featMode = character.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)';
+        const featMode = resolvedFeatMode;
         const qualifiesForRegularFeat = isLevelQualifiesForFeat(lvl.level, featMode);
         const hasSlotRegularFeat = regularFeats.some(f => !String(f).includes('[Extra]'));
         const regularPromptButtons = [];
         if (qualifiesForRegularFeat && !hasSlotRegularFeat) {
-          regularPromptButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Regular Feat', true)" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Character Feat for this level"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Select Feat</span></button>`);
+          regularPromptButtons.push(`<button data-action="progression:open-quick-feat-picker" data-level-idx="${idx}" data-category="Regular Feat" data-locked="true" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Character Feat for this level"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Select Feat</span></button>`);
         }
 
         // 3. Bonus badges (DM Boons, Invocations, Flaws, Racial, CL Boons)
         const otherBonusBadgeItems = otherBonusFeats.map(fStr => {
           const str = String(fStr);
           const rawName = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
-          const safeF = rawName.replace(/'/g, "\\'");
           const tip = getFeatTooltipText(fStr);
           const safeTip = tip.replace(/"/g, '&quot;');
           let bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
@@ -8252,14 +8379,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           }
           const cleanStr = labelText;
           const cornerBadge = getFeatPinCornerBadgeHtml(rawName);
-          return `<button onclick="showFeatDetail('${safeF}', ${idx}, 'feat')" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
+          return `<button data-action="progression:show-feat-detail" data-feat-name="${rawName.replace(/"/g, '&quot;')}" data-level-idx="${idx}" data-feat-type="feat" title="${safeTip}" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="relative min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold ${bgCls} border shadow-sm transition text-left cursor-pointer"><span class="shrink-0">${icon}</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">${cleanStr}</span>${cornerBadge}</button>`;
         });
 
         const qualifiesForHumanBonus = (lvl.level === 1 && isHuman);
         const hasSlotRacialBonus = otherBonusFeats.some(f => String(f).includes('[Racial]'));
         const pendingBonusButtons = [];
         if (qualifiesForHumanBonus && !hasSlotRacialBonus) {
-          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Racial Trait', true)" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Human racial bonus feat (1st-Level RAW: Extra bonus feat)"><span class="shrink-0">🧬</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Human Bonus Feat</span></button>`);
+          pendingBonusButtons.push(`<button data-action="progression:open-quick-feat-picker" data-level-idx="${idx}" data-category="Racial Trait" data-locked="true" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-teal-950/90 hover:bg-teal-900 text-teal-300 border border-dashed border-teal-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Human racial bonus feat (1st-Level RAW: Extra bonus feat)"><span class="shrink-0">🧬</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Human Bonus Feat</span></button>`);
         }
 
         // D&D 3.5e Unearthed Arcana (p. 91) RAW: Each Flaw at this level grants +1 Bonus Feat slot
@@ -8267,7 +8394,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         for (let fbIdx = 0; fbIdx < unfilledFlawBonusSlots; fbIdx++) {
           const flawRaw = String(flawsAtLevel[flawBonusFeatsAtLevel.length + fbIdx] || 'Flaw').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
           const safeFlawRaw = flawRaw.replace(/"/g, '&quot;');
-          pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Flaw Bonus Feat', true)" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-dashed border-emerald-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Bonus Feat granted by Flaw: ${safeFlawRaw} (Unearthed Arcana p. 91)"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Flaw Bonus Feat (${safeFlawRaw})</span></button>`);
+          pendingBonusButtons.push(`<button data-action="progression:open-quick-feat-picker" data-level-idx="${idx}" data-category="Flaw Bonus Feat" data-locked="true" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-emerald-950/90 hover:bg-emerald-900 text-emerald-300 border border-dashed border-emerald-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Bonus Feat granted by Flaw: ${safeFlawRaw} (Unearthed Arcana p. 91)"><span class="shrink-0">🎖️</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Flaw Bonus Feat (${safeFlawRaw})</span></button>`);
         }
 
         // Warlock Invocation Progression Check (Warlock Boon or Warlock Class Level)
@@ -8279,7 +8406,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           const hasInvocation = otherBonusFeats.some(f => (String(f).includes('[Invocation]') || (String(f).toLowerCase().includes('invocation') && !String(f).includes('[Extra Invocation]'))));
           if (!hasInvocation) {
             const tier = (typeof getWarlockMaxTierForLevel === 'function') ? getWarlockMaxTierForLevel(lvl.level) : 'Least';
-            pendingBonusButtons.push(`<button onclick="openQuickFeatPickerForLevel(${idx}, 'Warlock Invocation', true)" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Level ${lvl.level} Warlock Invocation (${tier})"><span class="shrink-0">🔮</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Select Invocation (${tier})</span></button>`);
+            pendingBonusButtons.push(`<button data-action="progression:open-quick-feat-picker" data-level-idx="${idx}" data-category="Warlock Invocation" data-locked="true" style="width: 150px; min-width: 150px; max-width: 150px; box-sizing: border-box; overflow: hidden;" class="min-h-5 h-auto py-0.5 inline-flex items-center justify-start gap-1 px-1.5 rounded text-[9px] font-bold bg-purple-950/90 hover:bg-purple-900 text-purple-300 border border-dashed border-purple-500 shadow-sm animate-pulse transition text-left cursor-pointer" title="Select Level ${lvl.level} Warlock Invocation (${tier})"><span class="shrink-0">🔮</span><span class="line-clamp-2 break-words text-left flex-1 min-w-0 leading-tight pr-2.5">+ Select Invocation (${tier})</span></button>`);
           }
         }
 
@@ -8327,11 +8454,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const rowRef = rowSummary ? rowSummary.baseSaves.ref : (lvl.ref || 0);
         const rowWill = rowSummary ? rowSummary.baseSaves.will : (lvl.will || 0);
 
-        lvl.bab = rowBab;
-        lvl.fort = rowFort;
-        lvl.ref = rowRef;
-        lvl.will = rowWill;
-
         tr.innerHTML = `
           <td class="py-2 pl-2 pr-1 align-top text-center" style="width: 4%;">
             <div class="h-6 flex items-center justify-center font-bold text-amber-400 text-xs">${lvl.level}</div>
@@ -8339,7 +8461,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           <td class="py-2 px-1 align-top text-center" style="width: 7.5%;">
             <div class="h-6 flex items-center justify-center">
               <label class="inline-flex items-center gap-1 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
-                <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
+                <input type="checkbox" data-change-action="progression:toggle-level-active" data-level-idx="${idx}" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
                 <span class="badge ${isActive ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[8px] px-1 py-0.5 leading-none font-bold whitespace-nowrap">
                   ${isActive ? 'ACTIVE' : 'PLAN'}
                 </span>
@@ -8387,14 +8509,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           </td>
           <td class="py-2 align-top text-center whitespace-nowrap shrink-0" style="width: 34px; min-width: 34px; max-width: 34px; padding-left: 2px; padding-right: 2px;">
             <div class="flex flex-col items-center justify-start gap-0.5 leading-none">
-              <button onclick="openQuickFeatPickerForLevel(${idx})" class="text-emerald-400 hover:text-emerald-300 p-0.5 text-[11px] leading-none transition font-bold" title="Add Feat, Ability, Invocation, or Bonus to this level">
+              <button data-action="progression:open-quick-feat-picker" data-level-idx="${idx}" class="text-emerald-400 hover:text-emerald-300 p-0.5 text-[11px] leading-none transition font-bold" title="Add Feat, Ability, Invocation, or Bonus to this level">
                 ➕
               </button>
-              <button onclick="openChangeLevelClassModal(${idx})" class="text-slate-400 hover:text-amber-400 p-0.5 text-[11px] leading-none transition" title="Edit class & stats for this level">
+              <button data-action="progression:open-change-level-class" data-level-idx="${idx}" class="text-slate-400 hover:text-amber-400 p-0.5 text-[11px] leading-none transition" title="Edit class & stats for this level">
                 ✏️
               </button>
               ${idx > 0 ? `
-                <button onclick="deleteLevelRow(${idx})" class="text-slate-500 hover:text-rose-400 p-0.5 text-[11px] leading-none transition" title="Delete this level">
+                <button data-action="progression:delete-level-row" data-level-idx="${idx}" class="text-slate-500 hover:text-rose-400 p-0.5 text-[11px] leading-none transition" title="Delete this level">
                   🗑️
                 </button>
               ` : ''}
@@ -8425,16 +8547,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 <span class="inline-flex items-center justify-center px-2 py-0.5 rounded bg-amber-950/90 border border-amber-600/80 text-amber-300 font-extrabold text-xs font-mono shrink-0">Lv.${lvl.level}</span>
                 <span class="font-sans font-bold text-white text-xs truncate" title="${lvl.className}-${classLevelSoFar}">${lvl.className}-${classLevelSoFar}</span>
                 <label class="inline-flex items-center gap-1 shrink-0 ${isToggleDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}" title="${toggleTitle}">
-                  <input type="checkbox" onchange="toggleLevelActive(${idx})" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
+                  <input type="checkbox" data-change-action="progression:toggle-level-active" data-level-idx="${idx}" ${isActive ? 'checked' : ''} ${isToggleDisabled ? 'disabled' : ''} class="w-3.5 h-3.5 rounded text-emerald-500 m-0 ${isToggleDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}">
                   <span class="badge ${isActive ? 'bg-emerald-950 text-emerald-300 border-emerald-600' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[8px] px-1 py-0.5 leading-none font-bold whitespace-nowrap">
                     ${isActive ? 'ACTIVE' : 'PLAN'}
                   </span>
                 </label>
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                <button onclick="openQuickFeatPickerForLevel(${idx})" class="ui-btn-icon-sm bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/70 text-emerald-300" title="Add Feat, Ability, Invocation, or Bonus to this level">➕</button>
-                <button onclick="openChangeLevelClassModal(${idx})" class="ui-btn-icon-sm bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400" title="Edit class & stats for this level">✏️</button>
-                ${idx > 0 ? `<button onclick="deleteLevelRow(${idx})" class="ui-btn-icon-sm bg-rose-950/70 hover:bg-rose-900 border border-rose-700/70 text-rose-300" title="Delete this level">🗑️</button>` : ''}
+                <button data-action="progression:open-quick-feat-picker" data-level-idx="${idx}" class="ui-btn-icon-sm bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/70 text-emerald-300" title="Add Feat, Ability, Invocation, or Bonus to this level">➕</button>
+                <button data-action="progression:open-change-level-class" data-level-idx="${idx}" class="ui-btn-icon-sm bg-slate-800/90 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-amber-400" title="Edit class & stats for this level">✏️</button>
+                ${idx > 0 ? `<button data-action="progression:delete-level-row" data-level-idx="${idx}" class="ui-btn-icon-sm bg-rose-950/70 hover:bg-rose-900 border border-rose-700/70 text-rose-300" title="Delete this level">🗑️</button>` : ''}
               </div>
             </div>
             <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-2 py-1 rounded-lg bg-slate-900/90 border border-slate-800/90 font-mono text-[10px]">
@@ -8937,7 +9059,17 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const conGroups = getConsolidatedSkillGroups();
       const consolidated = isMerged ? conGroups.find(c => c.key === skillKey) : null;
 
-      if (consolidated) {
+      const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
+      if (usedStore) {
+        CharStore.dispatch({
+          type: 'progression/toggleSkillClass',
+          payload: {
+            skillKey: skillKey,
+            components: consolidated ? consolidated.components : null
+          },
+          meta: { label: `Toggle Class Skill (${skillKey})` }
+        });
+      } else if (consolidated) {
         // Toggle all components
         const compSkills = (character.skills || []).filter(s => (consolidated.components || []).includes(s.key));
         const anyClass = compSkills.some(s => s.isClass);
@@ -8949,8 +9081,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           sk.isClass = !sk.isClass;
         }
       }
-      saveStateToStorage(true);
+      if (!usedStore) saveStateToStorage(true);
       renderSkills();
+      if (typeof renderAll === 'function') renderAll();
     }
 
     // Interactive Rank Adjustment with strict Skill Points Pool limit
@@ -9011,7 +9144,18 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const newRanks = Math.max(0, currentRanks + delta);
 
-      if (consolidated) {
+      const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
+      if (usedStore) {
+        CharStore.dispatch({
+          type: 'progression/adjustSkillRank',
+          payload: {
+            skillKey: skillKey,
+            delta: delta,
+            components: consolidated ? consolidated.components : null
+          },
+          meta: { label: `${delta >= 0 ? '+' : ''}${delta} Skill Rank (${skillKey})` }
+        });
+      } else if (consolidated) {
         const compSkills = (character.skills || []).filter(s => consolidated.components.includes(s.key));
         compSkills.forEach(s => { s.ranks = newRanks; });
       } else {
@@ -9020,8 +9164,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           sk.ranks = newRanks;
         }
       }
-      saveStateToStorage(true);
+      if (!usedStore) saveStateToStorage(true);
       renderSkills();
+      if (typeof renderAll === 'function') renderAll();
     }
 
     // Toggle Skill Consolidation mode directly from Skills card
@@ -9081,7 +9226,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           return `
             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 shadow-xs">
               <span>${name}</span>
-              <button type="button" onclick="removeSkillFromConsolidatedGroup(${gIdx}, '${cKey}')" class="text-rose-400 hover:text-rose-200 font-bold ml-0.5 text-xs cursor-pointer" title="Remove ${name} from this group">&times;</button>
+              <button type="button" data-action="progression:scm-remove-skill" data-group-idx="${gIdx}" data-skill-key="${cKey}" class="text-rose-400 hover:text-rose-200 font-bold ml-0.5 text-xs cursor-pointer" title="Remove ${name} from this group">&times;</button>
             </span>
           `;
         }).join('');
@@ -9104,17 +9249,17 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 <span class="text-sm shrink-0 cursor-default">${group.icon || '🔗'}</span>
                 <input type="text"
                        value="${(group.name || '').replace(/"/g, '&quot;')}"
-                       oninput="updateConsolidatedGroupName(${gIdx}, this.value)"
+                       data-input-action="progression:scm-group-name" data-group-idx="${gIdx}"
                        placeholder="Group Name..."
                        class="bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded px-2 py-0.5 text-xs text-white font-bold flex-1 min-w-[100px]" />
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
-                <select onchange="updateConsolidatedGroupStat(${gIdx}, this.value)"
+                <select data-change-action="progression:scm-group-stat" data-group-idx="${gIdx}"
                         class="bg-slate-950 border border-slate-700 text-amber-300 font-mono font-bold text-[10px] rounded px-1.5 py-1 focus:outline-none focus:border-amber-500 cursor-pointer">
                   ${statSelectHtml}
                 </select>
                 <button type="button"
-                        onclick="deleteConsolidatedSkillGroup(${gIdx})"
+                        data-action="progression:scm-delete-group" data-group-idx="${gIdx}"
                         class="p-1 rounded bg-rose-950/60 hover:bg-rose-900 border border-rose-800/80 text-rose-300 hover:text-white text-xs transition cursor-pointer"
                         title="Delete Group">
                   🗑️
@@ -9132,7 +9277,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               <span class="text-slate-400">
                 ACP: <strong class="${group.acp ? 'text-rose-400' : 'text-emerald-400'}">${group.acp ? 'Yes (-ACP)' : 'No'}</strong>
               </span>
-              <select onchange="addSkillToConsolidatedGroup(${gIdx}, this.value); this.value='';"
+              <select data-change-action="progression:scm-add-skill" data-group-idx="${gIdx}"
                       class="bg-slate-950 border border-slate-700 hover:border-slate-600 rounded px-2 py-0.5 text-[10px] text-slate-300 font-semibold focus:outline-none cursor-pointer max-w-[190px]">
                 <option value="">+ Add Skill...</option>
                 ${selectOptions}
@@ -9384,20 +9529,20 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               </h3>
               <p class="text-[11px] text-slate-400">Choose one of your deity's two domains to gain its Granted Power and +1 Domain Spell Slot per spell level (1st–9th).</p>
             </div>
-            <button type="button" onclick="closeClericDomainPickerModal()" class="text-slate-400 hover:text-white text-sm font-bold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer">✕</button>
+            <button type="button" data-action="progression:close-cleric-domain-modal" class="text-slate-400 hover:text-white text-sm font-bold px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 cursor-pointer">✕</button>
           </div>
           <div id="cleric-domain-deity-banner" class="px-3.5 py-2 bg-slate-950/90 border-b border-slate-800 text-[11px] flex flex-wrap items-center justify-between gap-2"></div>
           <div class="p-3 border-b border-slate-800 bg-slate-950/60 flex flex-wrap items-center justify-between gap-2">
             <div class="relative flex-1 min-w-[200px]">
-              <input id="cleric-domain-search-input" type="text" oninput="renderClericDomainPickerList()" placeholder="Search domains, granted powers, or domain spells..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white font-bold focus:border-yellow-500 focus:outline-none placeholder-slate-500">
+              <input id="cleric-domain-search-input" type="text" data-input-action="progression:cleric-domain-search" placeholder="Search domains, granted powers, or domain spells..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white font-bold focus:border-yellow-500 focus:outline-none placeholder-slate-500">
               <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
             </div>
-            <button type="button" onclick="if(typeof openCustomDomainEditorModal==='function') openCustomDomainEditorModal();" class="text-xs bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-600/70 font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+            <button type="button" data-action="progression:open-custom-domain-editor" class="text-xs bg-purple-950/80 hover:bg-purple-900 text-purple-300 hover:text-white border border-purple-600/70 font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
               <span>⚜️</span>
               <span>+ Create / Rule Master AI Domain</span>
             </button>
             <label class="inline-flex items-center gap-1.5 text-[11px] text-slate-300 cursor-pointer select-none bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-700 hover:border-yellow-600/60" title="Allow selecting domains outside your Deity's portfolio or Alignment restrictions (House Rule / DM Override)">
-              <input id="cleric-domain-dm-override" type="checkbox" onchange="window._clericDomainDmOverride = this.checked; renderClericDomainPickerList();" class="accent-amber-500 rounded cursor-pointer">
+              <input id="cleric-domain-dm-override" type="checkbox" data-change-action="progression:cleric-domain-dm-override" class="accent-amber-500 rounded cursor-pointer">
               <span>DM Override (Unlock All)</span>
             </label>
             <div id="cleric-domain-current-summary" class="text-[11px] text-yellow-300 font-bold"></div>
@@ -9467,7 +9612,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const alignWarnHtml = (!alignCompat.compatible)
           ? `<div class="w-full mt-1 px-2.5 py-1 rounded bg-rose-950/80 border border-rose-600/70 text-rose-200 text-[10px] font-bold flex items-center justify-between gap-2">
                <span>⚠️ ${alignCompat.reason}</span>
-               <button type="button" onclick="closeClericDomainPickerModal(); if(typeof openStatDistributionModal==='function') openStatDistributionModal();" class="underline text-rose-100 hover:text-white cursor-pointer shrink-0">Edit Alignment / Deity</button>
+               <button type="button" data-action="progression:domain-edit-alignment" class="underline text-rose-100 hover:text-white cursor-pointer shrink-0">Edit Alignment / Deity</button>
              </div>`
           : '';
 
@@ -9478,7 +9623,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             ${favWepText}
             <span class="text-slate-300">⚜️ <strong>Deity Portfolio:</strong> ${portfolioText}</span>
           </div>
-          <button type="button" onclick="closeClericDomainPickerModal(); if(typeof openStatDistributionModal==='function') openStatDistributionModal();" class="text-[10px] text-amber-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-700 px-2 py-0.5 rounded cursor-pointer shrink-0">Change Deity / Alignment</button>
+          <button type="button" data-action="progression:domain-edit-alignment" class="text-[10px] text-amber-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-700 px-2 py-0.5 rounded cursor-pointer shrink-0">Change Deity / Alignment</button>
           ${alignWarnHtml}
         `;
       }
@@ -9486,7 +9631,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const summaryEl = document.getElementById('cleric-domain-current-summary');
       if (summaryEl) {
         if (currentSlotDomain) {
-          summaryEl.innerHTML = `Slot ${ctx.slotIdx + 1}: <span class="text-white">${currentSlotDomain}</span> <button type="button" onclick="clearClericDomainSlot(${ctx.slotIdx})" class="ml-2 text-[10px] text-rose-300 hover:text-white bg-rose-950/80 border border-rose-700 px-2 py-0.5 rounded cursor-pointer">Clear Slot</button>`;
+          summaryEl.innerHTML = `Slot ${ctx.slotIdx + 1}: <span class="text-white">${currentSlotDomain}</span> <button type="button" data-action="progression:clear-cleric-domain-slot" data-slot-idx="${ctx.slotIdx}" class="ml-2 text-[10px] text-rose-300 hover:text-white bg-rose-950/80 border border-rose-700 px-2 py-0.5 rounded cursor-pointer">Clear Slot</button>`;
         } else {
           summaryEl.textContent = `Slot ${ctx.slotIdx + 1}: Empty`;
         }
@@ -9550,7 +9695,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           <div class="py-10 text-center space-y-3">
             <span class="text-3xl block">⚜️</span>
             <p class="text-xs text-slate-300">No domain matching "<strong>${query}</strong>" found in compendium.</p>
-            <button type="button" onclick="if(typeof openCustomDomainEditorModal==='function') openCustomDomainEditorModal({ name: '${safeQ}' });" class="px-4 py-2 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-xl shadow-lg transition inline-flex items-center gap-2 cursor-pointer active:scale-95">
+            <button type="button" data-action="progression:open-custom-domain-editor" data-domain-name="${safeQ}" class="px-4 py-2 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-xl shadow-lg transition inline-flex items-center gap-2 cursor-pointer active:scale-95">
               <span>🔮</span>
               <span>Create / Rule Master AI "${query}" Domain</span>
             </button>
@@ -9599,7 +9744,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         } else if (isOther) {
           btnHtml = `<span class="text-[11px] font-bold text-slate-400 bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg" title="Already selected in your other Domain slot">Other Slot</span>`;
         } else if (canSelect) {
-          btnHtml = `<button type="button" onclick="selectClericDomain('${domName.replace(/'/g, "\\'")}')" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-extrabold text-xs px-3 py-1.5 rounded-lg border border-yellow-400 shadow transition cursor-pointer">⚜️ Select</button>`;
+          btnHtml = `<button type="button" data-action="progression:select-cleric-domain" data-domain-name="${String(domName || '').replace(/"/g, '&quot;')}" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-extrabold text-xs px-3 py-1.5 rounded-lg border border-yellow-400 shadow transition cursor-pointer">⚜️ Select</button>`;
         } else {
           btnHtml = `<span class="text-[10px] font-bold text-slate-500 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg cursor-not-allowed" title="${elig.reason}">🔒 Locked</span>`;
         }
@@ -9937,7 +10082,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 <p class="text-[10px] text-slate-400">D&amp;D 3.5e RAW Template &amp; Progression System</p>
               </div>
             </div>
-            <button type="button" onclick="closeCompanionModal()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">
+            <button type="button" data-action="progression:close-companion-modal" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center text-sm font-bold transition cursor-pointer">
               ✕
             </button>
           </div>
@@ -9950,15 +10095,15 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           <!-- Modal Footer -->
           <div class="bg-slate-900/90 px-4 py-3 border-t border-slate-800 flex items-center justify-between gap-2 shrink-0">
             <div>
-              <button type="button" id="btn-companion-modal-dismiss" onclick="dismissCompanion()" class="px-3 py-1.5 rounded-lg bg-rose-950 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-bold text-xs transition cursor-pointer hidden">
+              <button type="button" id="btn-companion-modal-dismiss" data-action="progression:dismiss-companion" class="px-3 py-1.5 rounded-lg bg-rose-950 hover:bg-rose-900 border border-rose-700/60 text-rose-300 font-bold text-xs transition cursor-pointer hidden">
                 ✕ Dismiss Companion
               </button>
             </div>
             <div class="flex items-center gap-2">
-              <button type="button" onclick="closeCompanionModal()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer">
+              <button type="button" data-action="progression:close-companion-modal" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition cursor-pointer">
                 Cancel
               </button>
-              <button type="button" onclick="saveCompanionSelection()" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs shadow transition cursor-pointer">
+              <button type="button" data-action="progression:save-companion" class="px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-slate-950 font-black text-xs shadow transition cursor-pointer">
                 ✓ Bind / Save Companion
               </button>
             </div>
@@ -10101,15 +10246,15 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       bodyEl.innerHTML = `
         <!-- Type Selection Tabs -->
         <div class="grid grid-cols-3 gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800">
-          <button type="button" onclick="onCompanionTypeChange('animal_companion')" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'animal_companion' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
+          <button type="button" data-action="progression:companion-type" data-type="animal_companion" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'animal_companion' ? 'bg-amber-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
             <span>🐺</span>
             <span>Animal Companion</span>
           </button>
-          <button type="button" onclick="onCompanionTypeChange('familiar')" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'familiar' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
+          <button type="button" data-action="progression:companion-type" data-type="familiar" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'familiar' ? 'bg-purple-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
             <span>🦉</span>
             <span>Familiar</span>
           </button>
-          <button type="button" onclick="onCompanionTypeChange('special_mount')" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'special_mount' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
+          <button type="button" data-action="progression:companion-type" data-type="special_mount" class="py-2 px-2 rounded-lg font-bold transition flex items-center justify-center gap-1.5 cursor-pointer text-xs ${_activeCompanionModalType === 'special_mount' ? 'bg-sky-600 text-white shadow' : 'text-slate-400 hover:text-white hover:bg-slate-900'}">
             <span>🐎</span>
             <span>Special Mount</span>
           </button>
@@ -10131,11 +10276,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wide">Select Creature / Animal</label>
-              <button type="button" onclick="toggleCompanionSpotlight(true)" class="text-[10px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer">
+              <button type="button" data-action="progression:toggle-companion-spotlight" data-open="true" class="text-[10px] text-amber-300 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer">
                 <span>🔮 Spotlight &amp; Rule Master AI</span>
               </button>
             </div>
-            <select id="companion-select-animal" onchange="onCompanionAnimalChange(this.value)" class="ui-input-md w-full h-9 bg-slate-950 text-amber-200 border border-slate-700 rounded-lg px-2.5 text-xs font-bold cursor-pointer">
+            <select id="companion-select-animal" data-change-action="progression:companion-animal" class="ui-input-md w-full h-9 bg-slate-950 text-amber-200 border border-slate-700 rounded-lg px-2.5 text-xs font-bold cursor-pointer">
               ${allowedAnimals.map(a => {
                 const isSelected = a.id === _activeCompanionModalAnimalId;
                 const reqText = a.minLevel ? ` (Req Lvl ${a.minLevel})` : (a.levelAdj ? ` (Adj ${a.levelAdj})` : '');
@@ -10367,14 +10512,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               <p class="text-[10px] text-slate-400">Search SRD creatures or fetch custom splatbook beasts via Rule Master AI</p>
             </div>
           </div>
-          <button type="button" onclick="toggleCompanionSpotlight(false)" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-sm cursor-pointer">✕</button>
+          <button type="button" data-action="progression:toggle-companion-spotlight" data-open="false" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-sm cursor-pointer">✕</button>
         </div>
 
         <div class="my-3">
           <div class="ui-spotlight-well ui-spotlight-amber rounded-xl p-1.5 flex items-center gap-2 border border-amber-500/50 bg-slate-900/90">
             <span class="text-amber-400 pl-2">🔍</span>
-            <input type="text" id="companion-spotlight-input" value="${safeEscapeHtml(query)}" oninput="renderCompanionSpotlightContent(this.value)" placeholder="Search companion creature, animal, or vermin..." class="flex-1 bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none py-1">
-            ${query ? `<button type="button" onclick="renderCompanionSpotlightContent('')" class="text-xs text-slate-400 hover:text-white px-2">✕</button>` : ''}
+            <input type="text" id="companion-spotlight-input" value="${safeEscapeHtml(query)}" data-input-action="progression:companion-spotlight-search" placeholder="Search companion creature, animal, or vermin..." class="flex-1 bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none py-1">
+            ${query ? `<button type="button" data-action="progression:companion-spotlight-clear" class="text-xs text-slate-400 hover:text-white px-2">✕</button>` : ''}
           </div>
         </div>
 
@@ -10387,7 +10532,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           const reqText = a.minLevel ? ` (Req Lvl ${a.minLevel})` : (a.levelAdj ? ` (Adj ${a.levelAdj})` : '');
           const bonusText = a.masterBonusText ? ` • [${a.masterBonusText}]` : '';
           return `
-            <div onclick="selectCompanionFromSpotlight('${safeEscapeHtml(a.id)}')" class="p-2.5 rounded-lg border transition cursor-pointer flex items-center justify-between gap-2 ${isSelected ? 'bg-amber-950/70 border-amber-500/60 text-white' : 'bg-slate-900/60 hover:bg-slate-850 border-slate-800 text-slate-200'}">
+            <div data-action="progression:select-companion-spotlight" data-animal-id="${safeEscapeHtml(a.id)}" class="p-2.5 rounded-lg border transition cursor-pointer flex items-center justify-between gap-2 ${isSelected ? 'bg-amber-950/70 border-amber-500/60 text-white' : 'bg-slate-900/60 hover:bg-slate-850 border-slate-800 text-slate-200'}">
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-bold text-amber-300 truncate">${a.name}</span>
@@ -10414,7 +10559,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (query) {
         html += `
           <div class="pt-2 mt-2 border-t border-slate-800 text-center">
-            <button type="button" onclick="fetchCompanionViaAi('${safeEscapeHtml(query)}')" class="w-full py-2 px-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer border border-purple-400/40">
+            <button type="button" data-action="progression:fetch-companion-ai" data-query="${safeEscapeHtml(query)}" class="w-full py-2 px-3 bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-95 cursor-pointer border border-purple-400/40">
               <span>🔮</span>
               <span>Fetch "${safeEscapeHtml(query)}" via Rule Master AI</span>
             </button>
@@ -10511,6 +10656,238 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
     window.onCompanionAnimalChange = onCompanionAnimalChange;
     window.saveCompanionSelection = saveCompanionSelection;
     window.dismissCompanion = dismissCompanion;
+
+    // Phase R6: Delegated Progression Action Handlers — strictly (el, data, event)
+    if (typeof Actions !== 'undefined' && typeof Actions.register === 'function') {
+      Actions.register('progression:noop-stop', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      });
+      Actions.register('progression:select-feat-from-picker', (el, data, event) => {
+        if (data.featName) selectFeatFromPicker(data.featName);
+      });
+      Actions.register('progression:clear-quick-feat-target', (el, data, event) => {
+        if (typeof window.clearQuickFeatTargetSelection === 'function') window.clearQuickFeatTargetSelection();
+      });
+      Actions.register('progression:select-quick-feat-target', (el, data, event) => {
+        if (data.weapon !== undefined && typeof window.selectQuickFeatTargetWeapon === 'function') {
+          window.selectQuickFeatTargetWeapon(data.weapon);
+        }
+      });
+      Actions.register('progression:select-feat-for-quick-level', (el, data, event) => {
+        if (data.featName) selectFeatForQuickLevel(data.featName, true);
+      });
+      Actions.register('progression:expand-quick-feat-results', (el, data, event) => {
+        if (typeof window.expandAllQuickFeatResults === 'function') window.expandAllQuickFeatResults();
+      });
+      Actions.register('progression:set-quick-feat-filter', (el, data, event) => {
+        if (data.filter) setQuickFeatSearchFilter(data.filter);
+      });
+      Actions.register('progression:close-quick-feat-console', (el, data, event) => {
+        closeQuickFeatCatalogConsole();
+      });
+      Actions.register('progression:trigger-rm-quick-feat', (el, data, event) => {
+        triggerRuleMasterForQuickFeat();
+      });
+      Actions.register('progression:lvlup-slot-category', (el, data, event) => {
+        onLevelUpSlotCategoryChange(Number(data.slotIdx) || 0, el ? el.value : '');
+      });
+      Actions.register('progression:clear-lvlup-slot', (el, data, event) => {
+        clearLevelUpFeatSlot(Number(data.slotIdx) || 0);
+      });
+      Actions.register('progression:remove-lvlup-slot', (el, data, event) => {
+        removeLevelUpFeatSlot(Number(data.slotIdx) || 0);
+      });
+      Actions.register('progression:lvlup-feat-search-input', (el, data, event) => {
+        onLevelUpFeatSearchInput(Number(data.slotIdx) || 0, el ? el.value : '');
+      });
+      Actions.register('progression:trigger-rm-lvlup-slot', (el, data, event) => {
+        triggerRuleMasterForLevelUpSlot(Number(data.slotIdx) || 0);
+      });
+      Actions.register('progression:toggle-lvlup-feat-console', (el, data, event) => {
+        toggleLevelUpFeatSearchConsole(Number(data.slotIdx) || 0);
+      });
+      Actions.register('progression:lvlup-feat-target', (el, data, event) => {
+        onLevelUpFeatTargetChange(Number(data.slotIdx) || 0, el ? el.value : '');
+      });
+      Actions.register('progression:lvlup-feat-benefit-input', (el, data, event) => {
+        const idx = Number(data.slotIdx) || 0;
+        if (Array.isArray(levelUpModalFeatSlots) && levelUpModalFeatSlots[idx]) {
+          levelUpModalFeatSlots[idx].benefit = el ? el.value : '';
+        }
+      });
+      Actions.register('progression:select-feat-lvlup-slot', (el, data, event) => {
+        if (data.featName) selectFeatForLevelUpSlot(Number(data.slotIdx) || 0, data.featName);
+      });
+      Actions.register('progression:set-lvlup-feat-filter', (el, data, event) => {
+        if (data.filter) setLevelUpFeatSearchFilter(data.filter, Number(data.slotIdx) || 0);
+      });
+      Actions.register('progression:close-lvlup-feat-console', (el, data, event) => {
+        closeLevelUpFeatSearchConsole();
+      });
+      Actions.register('progression:show-feat-detail', (el, data, event) => {
+        if (data.featName && typeof showFeatDetail === 'function') {
+          const lvlIdx = (data.levelIdx !== undefined && data.levelIdx !== '') ? Number(data.levelIdx) : null;
+          showFeatDetail(data.featName, lvlIdx, data.featType || 'feat');
+        }
+      });
+      Actions.register('progression:fetch-class-ai', (el, data, event) => {
+        if (data.className !== undefined) fetchClassFromRuleMasterAi(data.className);
+      });
+      Actions.register('progression:toggle-class-prog', (el, data, event) => {
+        if (data.className) toggleClassProgression(data.className);
+      });
+      Actions.register('progression:select-class-search', (el, data, event) => {
+        if (data.className) selectClassFromSearch(data.className);
+      });
+      Actions.register('progression:open-custom-class-modal', (el, data, event) => {
+        if (typeof openCreateCustomClassModal === 'function') {
+          if (data.className) {
+            openCreateCustomClassModal(data.className, data.edit === 'true');
+          } else {
+            openCreateCustomClassModal();
+          }
+        }
+      });
+      Actions.register('progression:delete-custom-class', (el, data, event) => {
+        if (data.className && typeof deleteCustomClass === 'function') {
+          deleteCustomClass(data.className);
+        }
+      });
+      Actions.register('progression:select-stat-for-level', (el, data, event) => {
+        selectStatForLevel(Number(data.levelIdx) || 0, data.statKey || null);
+      });
+      Actions.register('progression:search-or-add-class-rm', (el, data, event) => {
+        searchOrAddClassWithRuleMaster();
+      });
+      Actions.register('progression:select-change-class-search', (el, data, event) => {
+        if (data.className) selectChangeClassFromSearch(data.className);
+      });
+      Actions.register('progression:open-companion-modal', (el, data, event) => {
+        openCompanionModal();
+      });
+      Actions.register('progression:dismiss-companion', (el, data, event) => {
+        dismissCompanion();
+      });
+      Actions.register('progression:toggle-core-feats-accordion', (el, data, event) => {
+        toggleCoreFeatsAccordion();
+      });
+      Actions.register('progression:open-npc-statblock', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        if (typeof openNpcStatblockModal === 'function') openNpcStatblockModal(data.tab || 'feats');
+      });
+      Actions.register('progression:toggle-npc-level-prog', (el, data, event) => {
+        toggleNpcLevelProgression();
+      });
+      Actions.register('progression:open-stat-picker', (el, data, event) => {
+        openStatPickerForLevel(Number(data.levelIdx) || 0);
+      });
+      Actions.register('progression:open-cleric-domain-picker', (el, data, event) => {
+        openClericDomainPickerModal(Number(data.levelIdx) || 0, Number(data.slotIdx) || 0);
+      });
+      Actions.register('progression:open-quick-feat-picker', (el, data, event) => {
+        const lvlIdx = Number(data.levelIdx) || 0;
+        const cat = data.category || null;
+        const locked = data.locked === 'true' ? true : null;
+        openQuickFeatPickerForLevel(lvlIdx, cat, locked);
+      });
+      Actions.register('progression:toggle-level-active', (el, data, event) => {
+        toggleLevelActive(Number(data.levelIdx) || 0);
+      });
+      Actions.register('progression:open-change-level-class', (el, data, event) => {
+        openChangeLevelClassModal(Number(data.levelIdx) || 0);
+      });
+      Actions.register('progression:delete-level-row', (el, data, event) => {
+        deleteLevelRow(Number(data.levelIdx) || 0);
+      });
+      Actions.register('progression:scm-remove-skill', (el, data, event) => {
+        removeSkillFromConsolidatedGroup(Number(data.groupIdx) || 0, data.skillKey || '');
+      });
+      Actions.register('progression:scm-group-name', (el, data, event) => {
+        updateConsolidatedGroupName(Number(data.groupIdx) || 0, el ? el.value : '');
+      });
+      Actions.register('progression:scm-group-stat', (el, data, event) => {
+        updateConsolidatedGroupStat(Number(data.groupIdx) || 0, el ? el.value : 'str');
+      });
+      Actions.register('progression:scm-delete-group', (el, data, event) => {
+        deleteConsolidatedSkillGroup(Number(data.groupIdx) || 0);
+      });
+      Actions.register('progression:scm-add-skill', (el, data, event) => {
+        const val = el ? el.value : '';
+        if (val) {
+          addSkillToConsolidatedGroup(Number(data.groupIdx) || 0, val);
+          if (el) el.value = '';
+        }
+      });
+      Actions.register('progression:close-cleric-domain-modal', (el, data, event) => {
+        closeClericDomainPickerModal();
+      });
+      Actions.register('progression:cleric-domain-search', (el, data, event) => {
+        renderClericDomainPickerList();
+      });
+      Actions.register('progression:open-custom-domain-editor', (el, data, event) => {
+        if (typeof openCustomDomainEditorModal === 'function') {
+          if (data.domainName) openCustomDomainEditorModal({ name: data.domainName });
+          else openCustomDomainEditorModal();
+        }
+      });
+      Actions.register('progression:cleric-domain-dm-override', (el, data, event) => {
+        globalThis._clericDomainDmOverride = Boolean(el && el.checked);
+        renderClericDomainPickerList();
+      });
+      Actions.register('progression:domain-edit-alignment', (el, data, event) => {
+        closeClericDomainPickerModal();
+        if (typeof openStatDistributionModal === 'function') openStatDistributionModal();
+      });
+      Actions.register('progression:clear-cleric-domain-slot', (el, data, event) => {
+        clearClericDomainSlot(Number(data.slotIdx) || 0);
+      });
+      Actions.register('progression:select-cleric-domain', (el, data, event) => {
+        if (data.domainName) selectClericDomain(data.domainName);
+      });
+      Actions.register('progression:close-companion-modal', (el, data, event) => {
+        closeCompanionModal();
+      });
+      Actions.register('progression:save-companion', (el, data, event) => {
+        saveCompanionSelection();
+      });
+      Actions.register('progression:companion-type', (el, data, event) => {
+        if (data.type) onCompanionTypeChange(data.type);
+      });
+      Actions.register('progression:toggle-companion-spotlight', (el, data, event) => {
+        toggleCompanionSpotlight(data.open === 'true');
+      });
+      Actions.register('progression:companion-animal', (el, data, event) => {
+        onCompanionAnimalChange(el ? el.value : '');
+      });
+      Actions.register('progression:companion-spotlight-search', (el, data, event) => {
+        renderCompanionSpotlightContent(el ? el.value : '');
+      });
+      Actions.register('progression:companion-spotlight-clear', (el, data, event) => {
+        renderCompanionSpotlightContent('');
+      });
+      Actions.register('progression:select-companion-spotlight', (el, data, event) => {
+        if (data.animalId) selectCompanionFromSpotlight(data.animalId);
+      });
+      Actions.register('progression:fetch-companion-ai', (el, data, event) => {
+        if (data.query) fetchCompanionViaAi(data.query);
+      });
+      Actions.register('progression:adjust-skill-rank', (el, data, event) => {
+        if (data.skillKey) adjustSkillRank(data.skillKey, Number(data.delta) || 0);
+      });
+      Actions.register('progression:toggle-skill-class', (el, data, event) => {
+        if (data.skillKey) toggleSkillClass(data.skillKey);
+      });
+      Actions.register('progression:remove-feat', (el, data, event) => {
+        if (data.featName) removeFeatByName(data.featName, data.levelIdx !== undefined ? Number(data.levelIdx) : null, data.category || 'feat');
+      });
+      Actions.register('progression:add-level-row', (el, data, event) => {
+        addNewLevelRowToProgression(data.className || null);
+      });
+      Actions.register('progression:update-level-hp', (el, data, event) => {
+        updateProgressionHp(Number(data.levelIdx) || 0, el ? el.value : data.hp);
+      });
+    }
+
 
 
 

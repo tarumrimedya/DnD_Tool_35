@@ -19,6 +19,7 @@ const path = require('path');
 const crypto = require('crypto');
 const vm = require('vm');
 const { runRuleEngineTests } = require('./test_rule_engine');
+const { runDeriveSheetTests } = require('./test_derive_sheet');
 
 const ROOT = path.resolve(__dirname, '..');
 const WEBAPP = path.join(ROOT, 'webapp');
@@ -27,6 +28,7 @@ const CORE_FILES = [
   'index.html',
   'character.html',
   'tailwind_compiled.css',
+  'design_tokens.css',
   'char_modals.js',
   'hero_silhouette_data.js',
   'char_hud.js',
@@ -37,6 +39,8 @@ const CORE_FILES = [
   'hub.html',
   'login.html',
   'rule_engine.js',
+  'char_store.js',
+  'ui_components.js',
   'rule_master.js',
   'rule_master_ai_schema.json',
   'ui_shared.js',
@@ -257,6 +261,7 @@ function main() {
   const AUDIT_FILES = [
     'index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js',
     'char_progression.js', 'char_inventory.js', 'rule_engine.js',
+    'char_store.js', 'ui_components.js', 'design_tokens.css',
     'rule_master.js', 'ui_shared.js', 'hub.html', 'gdrive_sync.js',
     'supabase_auth.js', 'login.html', 'rule_master_ai_schema.json'
   ];
@@ -291,12 +296,84 @@ function main() {
     }
   }
 
-  // 7. Execute D&D 3.5e RAW RuleEngine Automated Regression Suite
+  // 6b. Strangler Fig Technical Debt Ratchet Gate (Inline Events & Global Assignments)
+  const RATCHET_EXCLUDE = new Set([
+    'character.html',
+    'char_modals.js',
+    'hero_silhouette_data.js',
+    'tailwind.config.js',
+    'combat_offense_engine_preview.html',
+    'lvl_up_gorunum.html'
+  ]);
+  const RATCHET_LIMITS = {
+    'index.html':         { inlineEvents: 196, windowAssigns: 0 },
+    'char_hud.js':        { inlineEvents: 0,   windowAssigns: 48 },
+    'char_combat.js':     { inlineEvents: 0,   windowAssigns: 82 },
+    'char_spells.js':     { inlineEvents: 0,   windowAssigns: 68 },
+    'char_progression.js':{ inlineEvents: 0,   windowAssigns: 46 },
+    'char_inventory.js':  { inlineEvents: 0,   windowAssigns: 41 },
+    'rule_engine.js':     { inlineEvents: 0,   windowAssigns: 1 },
+    'char_store.js':      { inlineEvents: 0,   windowAssigns: 1 },
+    'ui_components.js':   { inlineEvents: 0,   windowAssigns: 2 },
+    'rule_master.js':     { inlineEvents: 56,  windowAssigns: 1 },
+    'ui_shared.js':       { inlineEvents: 29,  windowAssigns: 0 },
+    'hub.html':           { inlineEvents: 203, windowAssigns: 11 },
+    'login.html':         { inlineEvents: 2,   windowAssigns: 0 },
+    'gdrive_sync.js':     { inlineEvents: 0,   windowAssigns: 2 },
+    'supabase_auth.js':   { inlineEvents: 8,   windowAssigns: 1 },
+    'srd_compendium.js':  { inlineEvents: 0,   windowAssigns: 0 },
+    'hub_dice.js':        { inlineEvents: 4,   windowAssigns: 36 },
+    'hub_notes.js':       { inlineEvents: 66,  windowAssigns: 1 },
+    'hub_ai.js':          { inlineEvents: 0,   windowAssigns: 0 },
+    'dice3d.js':          { inlineEvents: 0,   windowAssigns: 1 }
+  };
+  const DEFAULT_NEW_FILE_CAP = { inlineEvents: 0, windowAssigns: 2 };
+  const inlineEventRatchetRegex = /\bon(click|dblclick|change|input|keydown|keyup|keypress|submit|focus|blur|mousedown|mouseup|mouseover|mouseout|mouseenter|mouseleave|pointerdown|pointerup|touchstart|touchend|dragstart|dragover|dragleave|drop|wheel|scroll|contextmenu)\s*=/gi;
+  const windowAssignRatchetRegex = /\bwindow\.[a-zA-Z0-9_$]+\s*=(?!=)/g;
+  let totalInline = 0, maxInline = 0, totalWin = 0, maxWin = 0;
+
+  const rootCandidateFiles = fs.readdirSync(ROOT)
+    .filter(f => (f.endsWith('.js') || f.endsWith('.html')) && !RATCHET_EXCLUDE.has(f))
+    .sort();
+
+  for (const rel of rootCandidateFiles) {
+    const full = path.join(ROOT, rel);
+    if (!fs.existsSync(full) || !fs.statSync(full).isFile()) continue;
+    const cap = RATCHET_LIMITS[rel] || DEFAULT_NEW_FILE_CAP;
+    const text = fs.readFileSync(full, 'utf8');
+    const inlineCount = (text.match(inlineEventRatchetRegex) || []).length;
+    const winCount = (text.match(windowAssignRatchetRegex) || []).length;
+    totalInline += inlineCount;
+    maxInline += cap.inlineEvents;
+    totalWin += winCount;
+    maxWin += cap.windowAssigns;
+    if (inlineCount > cap.inlineEvents) {
+      console.error(`[FAIL] Ratchet gate exceeded in ${rel}: inlineEvents=${inlineCount} > cap=${cap.inlineEvents}`);
+      errors++;
+    } else if (RATCHET_LIMITS[rel] && inlineCount < cap.inlineEvents) {
+      console.log(`📉 Ratchet can be tightened in ${rel}: inlineEvents=${inlineCount} < cap=${cap.inlineEvents}`);
+    }
+    if (winCount > cap.windowAssigns) {
+      console.error(`[FAIL] Ratchet gate exceeded in ${rel}: windowAssigns=${winCount} > cap=${cap.windowAssigns}`);
+      errors++;
+    } else if (RATCHET_LIMITS[rel] && winCount < cap.windowAssigns) {
+      console.log(`📉 Ratchet can be tightened in ${rel}: windowAssigns=${winCount} < cap=${cap.windowAssigns}`);
+    }
+  }
+
+  // 7. Execute D&D 3.5e RAW RuleEngine & Golden DeriveSheet Automated Regression Suites
   let ruleTestRes = { passed: 0, elapsedMs: 0 };
+  let deriveTestRes = { passed: 0, elapsedMs: 0 };
   try {
     ruleTestRes = runRuleEngineTests();
   } catch (reErr) {
     console.error(`[FAIL] ${reErr.message}`);
+    errors++;
+  }
+  try {
+    deriveTestRes = runDeriveSheetTests();
+  } catch (dsErr) {
+    console.error(`[FAIL] ${dsErr.message}`);
     errors++;
   }
 
@@ -305,7 +382,8 @@ function main() {
     console.error(`\n❌ VERIFICATION FAILED with ${errors} error(s) (${elapsed}ms).`);
     process.exit(1);
   } else {
-    console.log(`✅ ALL CHECKS PASSED (${CORE_FILES.length} core files synced & verified, ${ruleTestRes.passed}/${ruleTestRes.passed} RAW math tests passed, 0 U+1F3B2, 100% JS/HTML/Event/JSON valid) in ${elapsed}ms.`);
+    console.log(`✅ ALL CHECKS PASSED (${CORE_FILES.length} core files synced & verified, ${ruleTestRes.passed}/${ruleTestRes.passed} RAW math tests + ${deriveTestRes.passed}/${deriveTestRes.passed} golden fixture tests passed, 0 U+1F3B2, 100% JS/HTML/Event/JSON valid) in ${elapsed}ms.`);
+    console.log(`📉 Strangler Ratchet Gate: ${totalInline}/${maxInline} inline events, ${totalWin}/${maxWin} window.* globals.`);
     console.log(`📊 Active TR/Mojibake Lines Remaining: ${totalActiveTrLines} [${trSummary.join(', ') || '0 — 100% PURE ENGLISH!'}]`);
   }
 }

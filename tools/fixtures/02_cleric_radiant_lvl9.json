@@ -1,0 +1,249 @@
+{
+  "schemaVersion": 2,
+  "name": "Aurelia Dawnbringer",
+  "race": "Human",
+  "size": "Medium",
+  "alignment": "Neutral Good",
+  "deity": "Pelor",
+  "level": 9,
+  "bab": 6,
+  "baseSpeed": 30,
+  "baseAbilities": {
+    "str": 14,
+    "dex": 10,
+    "con": 14,
+    "int": 10,
+    "wis": 20,
+    "cha": 16
+  },
+  "abilities": {
+    "str": 14,
+    "dex": 10,
+    "con": 14,
+    "int": 10,
+    "wis": 20,
+    "cha": 16
+  },
+  "baseSaves": {
+    "fort": 8,
+    "ref": 3,
+    "will": 8
+  },
+  "hp": {
+    "baseMax": 54,
+    "conBonusHp": 18,
+    "max": 72,
+    "current": 72,
+    "temp": 0
+  },
+  "classLevels": {
+    "cleric": 6,
+    "radiant servant of pelor": 3
+  },
+  "spellcasting": {
+    "primaryClass": "Cleric",
+    "castingAbility": "wis",
+    "casterLevel": 9,
+    "domains": ["Healing", "Sun"]
+  },
+  "feats": [
+    { "id": "feat-extra-turning", "name": "Extra Turning", "type": "Feat", "active": true },
+    { "id": "feat-empower-spell", "name": "Empower Spell", "type": "Feat", "active": true },
+    { "id": "feat-divine-metamagic", "name": "Divine Metamagic (Empower Spell)", "type": "Feat", "active": true }
+  ],
+  "specialAbilities": [
+    {
+      "id": "sa-turn-undead",
+      "name": "Turn Undead",
+      "category": "Class Feature",
+      "type": "Class Feature",
+      "actionType": "standard",
+      "resources": [
+        {
+          "id": "res_turn_undead",
+          "name": "Turn Undead Attempts",
+          "kind": "consume",
+          "maxFormula": "3 + @chaMod + 4",
+          "recharge": { "period": "day" }
+        }
+      ]
+    },
+    {
+      "id": "sa-radiant-aura",
+      "name": "Radiance & Empowered Healing",
+      "category": "Class Feature",
+      "type": "Class Feature"
+    }
+  ],
+  "bodySlots": {
+    "armor": {
+      "id": "arm-plus1-full-plate",
+      "baseItemId": "arm-full-plate",
+      "name": "+1 Full Plate",
+      "type": "Armor",
+      "category": "Heavy",
+      "armorBonus": 8,
+      "enhancementBonus": 1,
+      "maxDex": 1,
+      "acp": -5,
+      "checkPenalty": -5,
+      "spellFailure": 35,
+      "weight": 50,
+      "cost": 2650,
+      "modifiers": [
+        { "target": "ac.armor", "value": 9, "type": "Armor" }
+      ],
+      "equipped": true
+    },
+    "offHand": {
+      "id": "shd-plus1-heavy-steel-shield",
+      "baseItemId": "shd-heavy-steel-shield",
+      "name": "+1 Heavy Steel Shield",
+      "type": "Shield",
+      "category": "Shield",
+      "shieldBonus": 2,
+      "acBonus": 3,
+      "enhancementBonus": 1,
+      "acp": -1,
+      "checkPenalty": -1,
+      "spellFailure": 15,
+      "weight": 15,
+      "cost": 1170,
+      "modifiers": [
+        { "target": "ac.shield", "value": 3, "type": "Shield" }
+      ],
+      "equipped": true
+    },
+    "neck": {
+      "id": "item-periapt-of-wisdom-2",
+      "name": "Periapt of Wisdom +2",
+      "type": "Wondrous Item",
+      "category": "Neck",
+      "slot": "Neck",
+      "cost": 4000,
+      "modifiers": [
+        { "target": "ability.wis", "value": 2, "type": "Enhancement" }
+      ],
+      "equipped": true
+    },
+    "shoulders": {
+      "id": "item-cloak-of-charisma-2",
+      "name": "Cloak of Charisma +2",
+      "type": "Wondrous Item",
+      "category": "Shoulders",
+      "slot": "Shoulders",
+      "cost": 4000,
+      "modifiers": [
+        { "target": "ability.cha", "value": 2, "type": "Enhancement" }
+      ],
+      "equipped": true
+    },
+    "ring1": {
+      "id": "item-ring-of-protection-1",
+      "name": "Ring of Protection +1",
+      "type": "Ring",
+      "category": "Ring",
+      "slot": "Ring",
+      "cost": 2000,
+      "modifiers": [
+        { "target": "ac.deflection", "value": 1, "type": "Deflection" }
+      ],
+      "equipped": true
+    },
+    "mainHand": {
+      "id": "wpn-plus1-heavy-mace",
+      "baseItemId": "wpn-heavy-mace",
+      "name": "+1 Heavy Mace",
+      "type": "Weapon",
+      "category": "Simple",
+      "handedness": "One-Handed",
+      "grip": "1-Hand",
+      "dice": "1d8",
+      "crit": "20/x2",
+      "critMin": 20,
+      "critMult": 2,
+      "dmgType": "Bludgeoning",
+      "enhancementBonus": 1,
+      "modifiers": [
+        { "target": "attack.weapon", "value": 1, "type": "Enhancement" }
+      ],
+      "damageParts": [
+        { "dice": "1d8", "bonus": 1, "type": "Bludgeoning", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base Weapon" }
+      ],
+      "equipped": true
+    }
+  },
+  "weapons": [
+    {
+      "id": "wpn-plus1-heavy-mace",
+      "baseItemId": "wpn-heavy-mace",
+      "name": "+1 Heavy Mace",
+      "grip": "1-Hand",
+      "handedness": "One-Handed",
+      "dice": "1d8",
+      "crit": "20/x2",
+      "critMin": 20,
+      "critMult": 2,
+      "dmgType": "Bludgeoning",
+      "enhancementBonus": 1,
+      "modifiers": [
+        { "target": "attack.weapon", "value": 1, "type": "Enhancement" }
+      ],
+      "damageParts": [
+        { "dice": "1d8", "bonus": 1, "type": "Bludgeoning", "multiplyOnCrit": true, "onCritOnly": false, "source": "Base Weapon" }
+      ],
+      "equipped": true
+    }
+  ],
+  "gearPool": [
+    {
+      "id": "item-nightstick",
+      "name": "Nightstick",
+      "category": "Rod",
+      "type": "Rod",
+      "slot": "Slotless",
+      "qty": 1,
+      "cost": 7500,
+      "weight": 5,
+      "desc": "Grants 4 extra Turn Undead attempts per day."
+    },
+    {
+      "id": "wand-cure-light-wounds",
+      "name": "Wand of Cure Light Wounds",
+      "category": "Wand",
+      "type": "Wand",
+      "slot": "Slotless",
+      "qty": 25,
+      "cost": 750,
+      "weight": 0,
+      "desc": "Heals 1d8+1 HP per charge."
+    }
+  ],
+  "buffs": [
+    {
+      "id": "spl-protection-from-evil",
+      "name": "Protection from Evil",
+      "active": true,
+      "durationCategory": "minute",
+      "modifiers": [
+        { "target": "ac.deflection", "value": 2, "type": "Deflection", "condition": "vs. Evil" },
+        { "target": "save.all", "value": 2, "type": "Resistance", "condition": "vs. Evil" }
+      ]
+    },
+    {
+      "id": "spl-divine-favor",
+      "name": "Divine Favor",
+      "active": true,
+      "durationCategory": "minute",
+      "modifiers": [
+        { "target": "attack.all", "value": 3, "type": "Luck" },
+        { "target": "damage.all", "value": 3, "type": "Luck" }
+      ]
+    }
+  ],
+  "skills": [
+    { "name": "Concentration", "ability": "con", "ranks": 12, "classSkill": true },
+    { "name": "Heal", "ability": "wis", "ranks": 12, "classSkill": true },
+    { "name": "Knowledge (Religion)", "ability": "int", "ranks": 12, "classSkill": true }
+  ]
+}
