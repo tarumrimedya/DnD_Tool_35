@@ -62,6 +62,26 @@
     } catch (_) {}
   }
 
+  function applySheetModeToDom(rawMode) {
+    const mode = ['both', 'play', 'build'].includes(String(rawMode || '').toLowerCase().trim())
+      ? String(rawMode).toLowerCase().trim()
+      : 'both';
+    if (typeof document !== 'undefined' && document.body) {
+      document.body.dataset.sheetMode = mode;
+      ['play', 'build', 'both'].forEach(function (m) {
+        const btn = document.getElementById('btn-sheet-mode-' + m);
+        if (!btn) return;
+        if (m === mode) {
+          btn.classList.add('bg-indigo-600', 'text-white', 'shadow');
+          btn.classList.remove('text-slate-400', 'hover:text-white');
+        } else {
+          btn.classList.remove('bg-indigo-600', 'text-white', 'shadow');
+          btn.classList.add('text-slate-400', 'hover:text-white');
+        }
+      });
+    }
+  }
+
   const _state = {
     doc: null,
     session: createDefaultSession(),
@@ -128,6 +148,10 @@
       return _state.ui;
     },
 
+    getMode() {
+      return (_state.ui && _state.ui.mode) || (_state.doc && _state.doc.uiMode) || 'both';
+    },
+
     getSheet() {
       if (_sheetDirty || !_state.sheet) {
         return this.recompute(_lastTacticalOptions);
@@ -154,6 +178,9 @@
       const prevId = _state.doc && (_state.doc.id || _state.doc.name);
       const nextId = newChar.id || newChar.name;
       _state.doc = newChar;
+      const extMode = String(newChar.uiMode || (newChar.settings && newChar.settings.sheetViewMode) || (_state.ui && _state.ui.mode) || 'both').toLowerCase().trim();
+      _state.ui = Object.assign({}, _state.ui, { mode: ['both', 'play', 'build'].includes(extMode) ? extMode : 'both' });
+      applySheetModeToDom(_state.ui.mode);
       _sheetDirty = true;
       if (prevId !== nextId && !_isRestoringHistory) {
         _state.session = loadSessionFromStorage(newChar);
@@ -310,6 +337,11 @@
         }
         _state.doc = restoredDoc;
         _state.session = restoredSession;
+        if (restoredDoc) {
+          const restoredMode = String(restoredDoc.uiMode || (restoredDoc.settings && restoredDoc.settings.sheetViewMode) || (_state.ui && _state.ui.mode) || 'both').toLowerCase().trim();
+          _state.ui = Object.assign({}, _state.ui, { mode: ['both', 'play', 'build'].includes(restoredMode) ? restoredMode : 'both' });
+        }
+        applySheetModeToDom(_state.ui.mode);
         saveSessionToStorage(_state.doc, _state.session);
 
         if (typeof root !== 'undefined' && _state.doc) {
@@ -367,8 +399,20 @@
       }
 
       if (type === 'ui/setMode') {
-        const mode = (payload && payload.mode) || payload || 'both';
-        _state.ui = Object.assign({}, _state.ui, { mode: String(mode) });
+        const rawMode = String((payload && payload.mode) || payload || 'both').toLowerCase().trim();
+        const mode = ['both', 'play', 'build'].includes(rawMode) ? rawMode : 'both';
+        if (!meta.skipHistory && _state.doc) {
+          this.recordHistory(meta.label || action.label || 'Change Sheet View Mode');
+        }
+        _state.ui = Object.assign({}, _state.ui, { mode });
+        if (_state.doc && typeof _state.doc === 'object') {
+          _state.doc.uiMode = mode;
+          if (!_state.doc.settings || typeof _state.doc.settings !== 'object') {
+            _state.doc.settings = {};
+          }
+          _state.doc.settings.sheetViewMode = mode;
+        }
+        applySheetModeToDom(mode);
         this.notifyRegions();
         return _state.sheet;
       }
@@ -391,6 +435,11 @@
         if (_state.doc && !Array.isArray(_state.doc.customDb)) {
           _state.doc.customDb = [];
         }
+        if (_state.doc) {
+          const initialMode = String(_state.doc.uiMode || (_state.doc.settings && _state.doc.settings.sheetViewMode) || (_state.ui && _state.ui.mode) || 'both').toLowerCase().trim();
+          _state.ui = Object.assign({}, _state.ui, { mode: ['both', 'play', 'build'].includes(initialMode) ? initialMode : 'both' });
+        }
+        applySheetModeToDom(_state.ui.mode);
         _state.session = loadSessionFromStorage(_state.doc);
         if (typeof root !== 'undefined' && _state.doc) {
           root.masterDb = _state.doc.customDb;
@@ -450,7 +499,12 @@
             outcome.status === 'already_exists' ||
             outcome.status === 'max_readied_reached' ||
             outcome.status === 'quota_full' ||
-            outcome.status === 'locked_mode'
+            outcome.status === 'locked_mode' ||
+            outcome.status === 'max_rank_cap' ||
+            outcome.status === 'min_level_reached' ||
+            outcome.status === 'level_1_locked' ||
+            outcome.status === 'sequential_activation_required' ||
+            outcome.status === 'sequential_deactivation_required'
           )
         );
         if (!isAborted) {
@@ -2470,18 +2524,23 @@
         : { level: numLvl, daily: 0, used: 0, dmBonus: 0 };
       arr.push(slot);
       arr.sort((a, b) => (Number(a.level) || 0) - (Number(b.level) || 0));
-    } else if (derivedSlot) {
-      if ((Number(slot.daily) || 0) === 0 && (Number(derivedSlot.daily) || 0) > 0) {
-        slot.daily = derivedSlot.daily;
+    } else {
+      if (slot.daily === undefined && slot.total !== undefined) {
+        slot.daily = Number(slot.total) || 0;
       }
-      if (slot.regularDaily === undefined && derivedSlot.regularDaily !== undefined) {
-        slot.regularDaily = derivedSlot.regularDaily;
-      }
-      if (slot.domainDaily === undefined && derivedSlot.domainDaily !== undefined) {
-        slot.domainDaily = derivedSlot.domainDaily;
-      }
-      if (slot.known === undefined && derivedSlot.known !== undefined) {
-        slot.known = derivedSlot.known;
+      if (derivedSlot) {
+        if ((Number(slot.daily) || 0) === 0 && (Number(derivedSlot.daily) || 0) > 0) {
+          slot.daily = derivedSlot.daily;
+        }
+        if (slot.regularDaily === undefined && derivedSlot.regularDaily !== undefined) {
+          slot.regularDaily = derivedSlot.regularDaily;
+        }
+        if (slot.domainDaily === undefined && derivedSlot.domainDaily !== undefined) {
+          slot.domainDaily = derivedSlot.domainDaily;
+        }
+        if (slot.known === undefined && derivedSlot.known !== undefined) {
+          slot.known = derivedSlot.known;
+        }
       }
     }
     return slot;
@@ -2628,7 +2687,17 @@
 
     const selfHpCost = Number(payload.selfHpCost) || 0;
     if (selfHpCost > 0 && doc.hp && typeof doc.hp === 'object') {
-      doc.hp.current = Math.max(-10, (Number(doc.hp.current) || 0) - selfHpCost);
+      let dmgLeft = selfHpCost;
+      const prevTemp = Math.max(0, Number(doc.hp.temp) || 0);
+      if (prevTemp > 0) {
+        const absorbed = Math.min(prevTemp, dmgLeft);
+        doc.hp.temp = prevTemp - absorbed;
+        dmgLeft -= absorbed;
+      }
+      if (dmgLeft > 0) {
+        doc.hp.current = Math.max(-10, (Number(doc.hp.current) || 0) - dmgLeft);
+      }
+      doc.hp._lastPlayerChangeTs = Date.now();
     }
 
     setStoreOutcome(stateObj, {
@@ -2638,7 +2707,8 @@
       spellName: (spell && spell.name) || payload.spellName || '',
       isDomain: isDom,
       isAtWill,
-      buffActivated
+      buffActivated,
+      selfHpCost
     });
     return doc;
   });
@@ -2849,18 +2919,20 @@
       return doc;
     }
 
+    if (payload.consumeTurnUndead) {
+      const curTurnUsed = Math.max(0, Number(doc.spellcasting.turnUndeadUsed) || 0);
+      const maxTurnUses = payload.maxTurnUses !== undefined ? Math.max(1, Number(payload.maxTurnUses) || 1) : 99;
+      if (curTurnUsed >= maxTurnUses) {
+        setStoreOutcome(stateObj, { status: 'exhausted_daily', kind: 'turn', id: 'undead', used: curTurnUsed, maxUses: maxTurnUses });
+        return doc;
+      }
+      doc.spellcasting.turnUndeadUsed = curTurnUsed + 1;
+    }
+
     if (kind === 'turn' && id === 'undead') {
       doc.spellcasting.turnUndeadUsed = curUsed + 1;
     } else {
       doc.spellcasting.domainPowerUses[id] = curUsed + 1;
-    }
-
-    if (payload.consumeTurnUndead) {
-      const curTurnUsed = Math.max(0, Number(doc.spellcasting.turnUndeadUsed) || 0);
-      const maxTurnUses = Number(payload.maxTurnUses) || 99;
-      if (curTurnUsed < maxTurnUses) {
-        doc.spellcasting.turnUndeadUsed = curTurnUsed + 1;
-      }
     }
 
     const buffActivated = upsertBuffEntryOnDoc(doc, payload.buffEntry || payload.buffPayload);
@@ -3105,6 +3177,1179 @@
       key: target,
       enabled: !wasActive,
       boonDisciplines: [...nextBoons]
+    });
+    return doc;
+  });
+
+  // =========================================================================
+  // PHASE R6: CHAR TAB (ABILITIES, SKILLS, FEATS, LEVEL PROGRESSION) & HUD REDUCERS
+  // =========================================================================
+
+  function extractLevelStatIncreaseKey(lvlRow) {
+    if (!lvlRow) return null;
+    if (lvlRow.statIncreased) return String(lvlRow.statIncreased).toLowerCase().trim();
+    if (Array.isArray(lvlRow.feats)) {
+      for (let i = 0; i < lvlRow.feats.length; i++) {
+        const f = String(lvlRow.feats[i] || '');
+        const m = f.match(/(?:\+1\s*Stat|Stat)\s*:\s*(STR|DEX|CON|INT|WIS|CHA)/i);
+        if (m) return m[1].toLowerCase();
+      }
+    }
+    return null;
+  }
+
+  CharStore.registerReducer('progression/adjustAbility', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    if (!doc || !payload) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const rawKey = payload.statKey || payload.abilityKey || payload.key;
+    if (!rawKey) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const key = String(rawKey).toLowerCase().trim();
+    if (!['str', 'dex', 'con', 'int', 'wis', 'cha'].includes(key)) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload', statKey: key });
+      return doc;
+    }
+    if (!doc.baseAbilities || typeof doc.baseAbilities !== 'object') {
+      doc.baseAbilities = Object.assign({ str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, doc.abilities || {});
+    }
+    if (!doc.abilities || typeof doc.abilities !== 'object') {
+      doc.abilities = Object.assign({}, doc.baseAbilities);
+    }
+    const prevScore = Number(doc.baseAbilities[key] ?? doc.abilities[key] ?? 10);
+    let nextScore = prevScore;
+    if (payload.score !== undefined && payload.score !== null) {
+      nextScore = Math.max(1, Number(payload.score) || 10);
+    } else if (payload.delta !== undefined && payload.delta !== null) {
+      nextScore = Math.max(1, prevScore + (Number(payload.delta) || 0));
+    }
+    doc.baseAbilities[key] = nextScore;
+    doc.abilities[key] = nextScore;
+    doc.hasCustomBaseAbilities = true;
+    setStoreOutcome(stateObj, {
+      status: 'ability_adjusted',
+      statKey: key,
+      previousScore: prevScore,
+      baseScore: nextScore
+    });
+    return doc;
+  });
+
+  CharStore.registerReducer('progression/setAbilityScores', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    if (!doc || !payload) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    if (!doc.baseAbilities || typeof doc.baseAbilities !== 'object') {
+      doc.baseAbilities = { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+    }
+    if (!doc.abilities || typeof doc.abilities !== 'object') {
+      doc.abilities = Object.assign({}, doc.baseAbilities);
+    }
+    const srcBase = payload.baseAbilities || payload.abilities;
+    if (srcBase && typeof srcBase === 'object') {
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(function (k) {
+        if (srcBase[k] !== undefined && srcBase[k] !== null) {
+          const val = Math.max(1, Number(srcBase[k]) || 10);
+          doc.baseAbilities[k] = val;
+          doc.abilities[k] = val;
+        }
+      });
+      doc.hasCustomBaseAbilities = true;
+    }
+    if (payload.abilities && typeof payload.abilities === 'object') {
+      ['str', 'dex', 'con', 'int', 'wis', 'cha'].forEach(function (k) {
+        if (payload.abilities[k] !== undefined && payload.abilities[k] !== null) {
+          doc.abilities[k] = Math.max(1, Number(payload.abilities[k]) || 10);
+        }
+      });
+    }
+    if (payload.racialMods && typeof payload.racialMods === 'object') {
+      doc.racialMods = Object.assign({}, doc.racialMods || {}, payload.racialMods);
+    }
+    if (payload.levelUpMods && typeof payload.levelUpMods === 'object') {
+      doc.levelUpMods = Object.assign({}, doc.levelUpMods || {}, payload.levelUpMods);
+    }
+    if (Array.isArray(payload.templates)) {
+      doc.templates = JSON.parse(JSON.stringify(payload.templates));
+    }
+    if (payload.profile && typeof payload.profile === 'object') {
+      const p = payload.profile;
+      if (p.name) doc.name = p.name;
+      if (p.race) doc.race = p.race;
+      if (p.size) doc.size = p.size;
+      if (p.baseSpeed !== undefined && Number(p.baseSpeed) > 0) doc.baseSpeed = Number(p.baseSpeed);
+      if (p.alignment) doc.alignment = p.alignment;
+      if (p.deity !== undefined) doc.deity = p.deity;
+      if (p.gender !== undefined) doc.gender = p.gender;
+      if (p.age !== undefined && !isNaN(Number(p.age))) doc.age = Number(p.age);
+      if (p.height !== undefined) doc.height = p.height;
+      if (p.weight !== undefined) doc.weight = p.weight;
+      if (Array.isArray(p.specialAbilities)) {
+        doc.specialAbilities = JSON.parse(JSON.stringify(p.specialAbilities));
+      }
+      if (p.clericSpontaneousMode && doc.spellcasting) {
+        doc.spellcasting.clericSpontaneousMode = p.clericSpontaneousMode;
+      }
+    }
+    setStoreOutcome(stateObj, {
+      status: 'ability_scores_set',
+      baseAbilities: Object.assign({}, doc.baseAbilities)
+    });
+    return doc;
+  });
+
+  CharStore.registerReducer('progression/adjustSkillRank', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    if (!doc || !payload || !payload.skillKey) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    if (!Array.isArray(doc.skills)) doc.skills = [];
+    const skillKey = String(payload.skillKey).trim();
+    const delta = Number(payload.delta) || 0;
+    const components = Array.isArray(payload.components) ? payload.components : null;
+
+    const activeLevels = Array.isArray(doc.levelProgression) && doc.levelProgression.length > 0
+      ? doc.levelProgression.filter(function (p) { return p && p.active !== false; }).length
+      : (Number(doc.level) || 1);
+    const charLevel = Math.max(1, activeLevels || Number(doc.level) || 1);
+    const maxClassRank = charLevel + 3;
+    const maxCrossRank = Math.floor((charLevel + 3) / 2 * 10) / 10;
+
+    let targetSkills = [];
+    if (components && components.length > 0) {
+      components.forEach(function (compKey) {
+        let sk = doc.skills.find(function (s) { return s && (s.key === compKey || s.name === compKey); });
+        if (!sk) {
+          sk = { key: compKey, name: compKey, ranks: 0, isClass: false };
+          doc.skills.push(sk);
+        }
+        targetSkills.push(sk);
+      });
+    } else {
+      let sk = doc.skills.find(function (s) {
+        return s && (s.key === skillKey || s.name === skillKey || String(s.key || '').toLowerCase() === skillKey.toLowerCase());
+      });
+      if (!sk) {
+        sk = { key: skillKey, name: skillKey, ranks: 0, isClass: false };
+        doc.skills.push(sk);
+      }
+      targetSkills.push(sk);
+    }
+
+    const currentRanks = Math.max(0, ...targetSkills.map(function (s) { return Number(s.ranks) || 0; }));
+    const isClass = targetSkills.some(function (s) { return Boolean(s.isClass); });
+    const maxAllowedRank = isClass ? maxClassRank : maxCrossRank;
+
+    if (delta > 0 && currentRanks + delta > maxAllowedRank) {
+      setStoreOutcome(stateObj, {
+        status: 'max_rank_cap',
+        skillKey: skillKey,
+        currentRanks: currentRanks,
+        maxAllowedRank: maxAllowedRank,
+        isClass: isClass
+      });
+      return doc;
+    }
+
+    const newRanks = Math.max(0, currentRanks + delta);
+    targetSkills.forEach(function (s) {
+      s.ranks = newRanks;
+    });
+
+    setStoreOutcome(stateObj, {
+      status: 'skill_rank_adjusted',
+      skillKey: skillKey,
+      previousRanks: currentRanks,
+      newRanks: newRanks,
+      isClass: isClass,
+      maxAllowedRank: maxAllowedRank
+    });
+    return doc;
+  });
+
+  CharStore.registerReducer('progression/toggleSkillClass', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    if (!doc || !payload || !payload.skillKey) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    if (!Array.isArray(doc.skills)) doc.skills = [];
+    const skillKey = String(payload.skillKey).trim();
+    const components = Array.isArray(payload.components) ? payload.components : null;
+
+    let targetSkills = [];
+    if (components && components.length > 0) {
+      components.forEach(function (compKey) {
+        let sk = doc.skills.find(function (s) { return s && (s.key === compKey || s.name === compKey); });
+        if (!sk) {
+          sk = { key: compKey, name: compKey, ranks: 0, isClass: false };
+          doc.skills.push(sk);
+        }
+        targetSkills.push(sk);
+      });
+    } else {
+      let sk = doc.skills.find(function (s) {
+        return s && (s.key === skillKey || s.name === skillKey || String(s.key || '').toLowerCase() === skillKey.toLowerCase());
+      });
+      if (!sk) {
+        sk = { key: skillKey, name: skillKey, ranks: 0, isClass: false };
+        doc.skills.push(sk);
+      }
+      targetSkills.push(sk);
+    }
+
+    const anyClass = targetSkills.some(function (s) { return Boolean(s.isClass); });
+    const nextState = payload.isClass !== undefined ? Boolean(payload.isClass) : !anyClass;
+    targetSkills.forEach(function (s) {
+      s.isClass = nextState;
+    });
+
+    setStoreOutcome(stateObj, {
+      status: 'skill_class_toggled',
+      skillKey: skillKey,
+      isClass: nextState
+    });
+    return doc;
+  });
+
+  CharStore.registerReducer('progression/addFeat', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    if (!doc || !payload) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    if (!Array.isArray(doc.feats)) doc.feats = [];
+    if (!Array.isArray(doc.specialAbilities)) doc.specialAbilities = [];
+    if (!Array.isArray(doc.levelProgression)) doc.levelProgression = [];
+
+    const lvlIdx = payload.levelIndex !== undefined && payload.levelIndex !== null ? Number(payload.levelIndex) : null;
+    const category = payload.category || (payload.featObj && payload.featObj.category) || 'Regular Feat';
+    const featName = String(payload.featName || (payload.featObj && payload.featObj.name) || (payload.specialAbilityObj && payload.specialAbilityObj.name) || payload.featString || '').trim();
+    const featString = String(payload.featString || featName).trim();
+    if (!featName && !featString && !payload.featObj && !payload.specialAbilityObj && !payload.customDbEntry) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+
+    if (lvlIdx !== null && lvlIdx >= 0) {
+      if (!doc.levelProgression[lvlIdx]) {
+        doc.levelProgression[lvlIdx] = {
+          level: lvlIdx + 1,
+          className: (doc.classes ? String(doc.classes).split(' ')[0] : 'Fighter'),
+          hd: 'd10',
+          hpGain: 10,
+          feats: [],
+          specialAbilities: [],
+          active: true
+        };
+      }
+      const row = doc.levelProgression[lvlIdx];
+      if (!Array.isArray(row.feats)) row.feats = [];
+      if (!Array.isArray(row.specialAbilities)) row.specialAbilities = [];
+
+      if (payload.clearExistingFlawName) {
+        const cleanFlaw = String(payload.clearExistingFlawName).toLowerCase().trim();
+        row.feats = row.feats.filter(function (fStr) {
+          const raw = String(fStr || '').replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim().toLowerCase();
+          return raw !== cleanFlaw;
+        });
+      }
+
+      if (category === 'Special Ability') {
+        if (featString && !row.specialAbilities.includes(featString)) {
+          row.specialAbilities.push(featString);
+        }
+      } else if (featString) {
+        row.feats.push(featString);
+      }
+    }
+
+    if (payload.specialAbilityObj && typeof payload.specialAbilityObj === 'object') {
+      const sa = JSON.parse(JSON.stringify(payload.specialAbilityObj));
+      const saNameLower = String(sa.name || '').toLowerCase().trim();
+      const exSaIdx = doc.specialAbilities.findIndex(function (a) {
+        return String(typeof a === 'string' ? a : (a && a.name) || '').toLowerCase().trim() === saNameLower;
+      });
+      if (exSaIdx === -1) {
+        doc.specialAbilities.push(sa);
+      } else {
+        doc.specialAbilities[exSaIdx] = typeof doc.specialAbilities[exSaIdx] === 'object'
+          ? Object.assign({}, doc.specialAbilities[exSaIdx], sa)
+          : sa;
+      }
+    }
+
+    if (payload.featObj && typeof payload.featObj === 'object') {
+      const fObj = JSON.parse(JSON.stringify(payload.featObj));
+      const fNameLower = String(fObj.name || '').toLowerCase().trim();
+      const exIdx = doc.feats.findIndex(function (f) {
+        return String(typeof f === 'string' ? f : (f && f.name) || '').toLowerCase().trim() === fNameLower;
+      });
+      if (exIdx === -1) {
+        doc.feats.push(fObj);
+        if ((payload.isToughness || fNameLower === 'toughness') && doc.hp) {
+          if (doc.hp.baseMax === undefined) doc.hp.baseMax = (Number(doc.hp.max) || 44) - (Number(doc.hp.conBonusHp) || 0);
+          doc.hp.baseMax = (Number(doc.hp.baseMax) || 0) + 3;
+          doc.hp.max = (Number(doc.hp.baseMax) || 0) + (Number(doc.hp.conBonusHp) || 0);
+          doc.hp.current = (Number(doc.hp.current) || 0) + 3;
+        }
+      } else if (typeof doc.feats[exIdx] === 'object') {
+        doc.feats[exIdx] = Object.assign({}, doc.feats[exIdx], fObj);
+      }
+    } else if (featName && category !== 'Special Ability') {
+      const cleanNameLower = featName.toLowerCase();
+      const exists = doc.feats.some(function (f) {
+        return String(typeof f === 'string' ? f : (f && f.name) || '').toLowerCase().trim() === cleanNameLower;
+      });
+      if (!exists) {
+        const entry = {
+          name: featName,
+          type: category === 'Flaw' ? 'Flaw' : 'Feat',
+          category: category
+        };
+        if (payload.target) entry.target = payload.target;
+        doc.feats.push(entry);
+      }
+    }
+
+    if (payload.customDbEntry && typeof payload.customDbEntry === 'object') {
+      if (!Array.isArray(doc.customDb)) doc.customDb = [];
+      const entryCopy = JSON.parse(JSON.stringify(payload.customDbEntry));
+      const cleanDb = String(entryCopy.name || '').toLowerCase().trim();
+      const exDbIdx = doc.customDb.findIndex(function (m) {
+        return m && String(m.name || '').toLowerCase().trim() === cleanDb;
+      });
+      if (exDbIdx >= 0) {
+        doc.customDb[exDbIdx] = Object.assign({}, doc.customDb[exDbIdx], entryCopy);
+      } else if (!payload.customDbUpdateOnly) {
+        doc.customDb.push(entryCopy);
+      }
+    }
+
+    setStoreOutcome(stateObj, {
+      status: 'feat_added',
+      featName: featName,
+      category: category,
+      levelIndex: lvlIdx
+    });
+    return doc;
+  });
+
+  CharStore.registerReducer('progression/removeFeat', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    if (!doc || !payload) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const rawTarget = String(payload.featName || payload.featString || '').trim();
+    const cleanTarget = rawTarget
+      .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/i, '')
+      .replace(/^DM\s*Boon:\s*/i, '')
+      .replace(/^Flaw:\s*/i, '')
+      .trim()
+      .toLowerCase();
+    if (!cleanTarget) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+
+    const lvlIdx = payload.levelIndex !== undefined && payload.levelIndex !== null ? Number(payload.levelIndex) : null;
+    const matchesFeatStr = function (s) {
+      const cleaned = String(s || '')
+        .replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/i, '')
+        .replace(/^DM\s*Boon:\s*/i, '')
+        .replace(/^Flaw:\s*/i, '')
+        .trim()
+        .toLowerCase();
+      return cleaned === cleanTarget || String(s || '').trim().toLowerCase() === rawTarget.toLowerCase();
+    };
+
+    if (Array.isArray(doc.levelProgression)) {
+      if (lvlIdx !== null && lvlIdx >= 0 && doc.levelProgression[lvlIdx]) {
+        const row = doc.levelProgression[lvlIdx];
+        if (Array.isArray(row.feats)) {
+          row.feats = row.feats.filter(function (f) { return !matchesFeatStr(f); });
+        }
+        if (Array.isArray(row.specialAbilities)) {
+          row.specialAbilities = row.specialAbilities.filter(function (a) { return !matchesFeatStr(a); });
+        }
+      } else {
+        doc.levelProgression.forEach(function (row) {
+          if (!row) return;
+          if (Array.isArray(row.feats)) {
+            row.feats = row.feats.filter(function (f) { return !matchesFeatStr(f); });
+          }
+          if (Array.isArray(row.specialAbilities)) {
+            row.specialAbilities = row.specialAbilities.filter(function (a) { return !matchesFeatStr(a); });
+          }
+        });
+      }
+    }
+
+    const stillInProg = Array.isArray(doc.levelProgression) && doc.levelProgression.some(function (row) {
+      if (!row || row.active === false) return false;
+      const inF = Array.isArray(row.feats) && row.feats.some(matchesFeatStr);
+      const inA = Array.isArray(row.specialAbilities) && row.specialAbilities.some(matchesFeatStr);
+      return inF || inA;
+    });
+
+    if (!stillInProg) {
+      if (Array.isArray(doc.feats)) {
+        doc.feats = doc.feats.filter(function (f) {
+          const n = typeof f === 'string' ? f : (f && f.name) || '';
+          return !matchesFeatStr(n);
+        });
+      }
+      if (payload.isAbility && Array.isArray(doc.specialAbilities)) {
+        doc.specialAbilities = doc.specialAbilities.filter(function (a) {
+          const n = typeof a === 'string' ? a : (a && a.name) || '';
+          return !matchesFeatStr(n) && !matchesFeatStr(n.replace(/\s*\(Invocation\)$/i, ''));
+        });
+      }
+    }
+
+    setStoreOutcome(stateObj, {
+      status: 'feat_removed',
+      featName: rawTarget,
+      levelIndex: lvlIdx
+    });
+    return doc;
+  });
+
+  CharStore.registerReducer('progression/updateLevelRow', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    if (!doc || !payload) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    if (!Array.isArray(doc.levelProgression)) doc.levelProgression = [];
+    const prog = doc.levelProgression;
+    const mode = String(payload.mode || '').trim();
+    const idx = payload.levelIndex !== undefined && payload.levelIndex !== null ? Number(payload.levelIndex) : -1;
+
+    if (mode === 'add') {
+      const nextLvl = prog.length + 1;
+      const rowData = payload.row ? JSON.parse(JSON.stringify(payload.row)) : {
+        level: nextLvl,
+        active: payload.active !== undefined ? Boolean(payload.active) : false,
+        className: payload.className || (prog.length > 0 ? prog[prog.length - 1].className : 'Fighter'),
+        hd: payload.hd || 'd10',
+        hpGain: Number(payload.hpGain) || 10,
+        bab: Number(payload.bab) || 1,
+        fort: Number(payload.fort) || 0,
+        ref: Number(payload.ref) || 0,
+        will: Number(payload.will) || 0,
+        skillPts: Number(payload.skillPts) || 4,
+        feats: Array.isArray(payload.feats) ? [...payload.feats] : [],
+        specialAbilities: Array.isArray(payload.specialAbilities) ? [...payload.specialAbilities] : [],
+        statIncreased: payload.statIncreased || null,
+        notes: payload.notes || ''
+      };
+      rowData.level = nextLvl;
+      prog.push(rowData);
+      setStoreOutcome(stateObj, { status: 'level_row_added', level: nextLvl, row: rowData });
+      return doc;
+    }
+
+    if (idx < 0 || idx >= prog.length) {
+      setStoreOutcome(stateObj, { status: 'not_found', levelIndex: idx });
+      return doc;
+    }
+    const row = prog[idx];
+
+    if (mode === 'remove' || mode === 'delete') {
+      if (prog.length <= 1) {
+        setStoreOutcome(stateObj, { status: 'min_level_reached' });
+        return doc;
+      }
+      const statToRevert = extractLevelStatIncreaseKey(row);
+      if (statToRevert && row.active !== false && doc.baseAbilities && doc.baseAbilities[statToRevert] !== undefined) {
+        doc.baseAbilities[statToRevert] = Math.max(1, Number(doc.baseAbilities[statToRevert]) - 1);
+      }
+      prog.splice(idx, 1);
+      prog.forEach(function (p, i) { p.level = i + 1; });
+      setStoreOutcome(stateObj, { status: 'level_row_removed', levelIndex: idx });
+      return doc;
+    }
+
+    if (mode === 'toggleActive') {
+      if (idx === 0 && row.active !== false) {
+        setStoreOutcome(stateObj, { status: 'level_1_locked' });
+        return doc;
+      }
+      if (row.active === false) {
+        for (let i = 0; i < idx; i++) {
+          if (prog[i].active === false) {
+            setStoreOutcome(stateObj, { status: 'sequential_activation_required', blockingLevel: i + 1 });
+            return doc;
+          }
+        }
+        row.active = true;
+        const statKey = extractLevelStatIncreaseKey(row);
+        if (statKey && doc.baseAbilities && doc.baseAbilities[statKey] !== undefined) {
+          doc.baseAbilities[statKey] = Number(doc.baseAbilities[statKey]) + 1;
+        }
+      } else {
+        for (let i = idx + 1; i < prog.length; i++) {
+          if (prog[i].active !== false) {
+            setStoreOutcome(stateObj, { status: 'sequential_deactivation_required', blockingLevel: i + 1 });
+            return doc;
+          }
+        }
+        row.active = false;
+        const statKey = extractLevelStatIncreaseKey(row);
+        if (statKey && doc.baseAbilities && doc.baseAbilities[statKey] !== undefined) {
+          doc.baseAbilities[statKey] = Math.max(1, Number(doc.baseAbilities[statKey]) - 1);
+        }
+      }
+      setStoreOutcome(stateObj, { status: 'level_active_toggled', levelIndex: idx, active: row.active });
+      return doc;
+    }
+
+    if (mode === 'setHp' || mode === 'hp') {
+      const oldHp = Number(row.hpGain) || 0;
+      const newHp = Math.max(1, Number(payload.hpGain ?? payload.hp) || 1);
+      const hpDiff = newHp - oldHp;
+      row.hpGain = newHp;
+      if (row.active !== false && doc.hp) {
+        if (doc.hp.baseMax === undefined) doc.hp.baseMax = (Number(doc.hp.max) || 44) - (Number(doc.hp.conBonusHp) || 0);
+        doc.hp.baseMax = Math.max(1, (Number(doc.hp.baseMax) || 1) + hpDiff);
+        doc.hp.max = Math.max(1, (Number(doc.hp.baseMax) || 1) + (Number(doc.hp.conBonusHp) || 0));
+        doc.hp.current = Math.min(doc.hp.max, Math.max(1, (Number(doc.hp.current) || 1) + hpDiff));
+      }
+      setStoreOutcome(stateObj, { status: 'level_hp_updated', levelIndex: idx, hpGain: newHp });
+      return doc;
+    }
+
+    if (mode === 'setStatIncrease' || mode === 'stat') {
+      const oldStat = extractLevelStatIncreaseKey(row);
+      const rawStatVal = payload.statKey !== undefined ? payload.statKey : payload.statIncreased;
+      const newStatKey = rawStatVal ? String(rawStatVal).toLowerCase().trim() : null;
+      if (oldStat !== newStatKey) {
+        if (!doc.baseAbilities || typeof doc.baseAbilities !== 'object') {
+          doc.baseAbilities = Object.assign({ str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, doc.abilities || {});
+        }
+        if (row.active !== false) {
+          if (oldStat && doc.baseAbilities[oldStat] !== undefined) {
+            doc.baseAbilities[oldStat] = Math.max(1, Number(doc.baseAbilities[oldStat]) - 1);
+          }
+          if (newStatKey && doc.baseAbilities[newStatKey] !== undefined) {
+            doc.baseAbilities[newStatKey] = Number(doc.baseAbilities[newStatKey]) + 1;
+          }
+        }
+        row.statIncreased = newStatKey;
+        if (!Array.isArray(row.feats)) row.feats = [];
+        row.feats = row.feats.filter(function (f) {
+          const str = String(f).toLowerCase();
+          return !str.includes('+1 stat') && !str.includes('stat:');
+        });
+        if (newStatKey) {
+          const label = payload.statLabel || newStatKey.toUpperCase();
+          row.feats.push('+1 Stat: ' + label);
+        }
+      }
+      setStoreOutcome(stateObj, { status: 'level_stat_updated', levelIndex: idx, statKey: newStatKey });
+      return doc;
+    }
+
+    if (mode === 'setClass' || mode === 'editClass') {
+      const oldHp = Number(row.hpGain) || 0;
+      const newHp = payload.hpGain !== undefined ? Math.max(1, Number(payload.hpGain) || 1) : oldHp;
+      const hpDiff = newHp - oldHp;
+      if (payload.className) row.className = payload.className;
+      if (payload.hd) row.hd = payload.hd;
+      row.hpGain = newHp;
+      if (payload.skillPts !== undefined) row.skillPts = Number(payload.skillPts) || 4;
+      if (payload.bab !== undefined) row.bab = Number(payload.bab) || 0;
+      if (payload.fort !== undefined) row.fort = Number(payload.fort) || 0;
+      if (payload.ref !== undefined) row.ref = Number(payload.ref) || 0;
+      if (payload.will !== undefined) row.will = Number(payload.will) || 0;
+      if (Array.isArray(payload.specialAbilities)) {
+        row.specialAbilities = [...payload.specialAbilities];
+      }
+      if (payload.notes !== undefined) {
+        row.notes = payload.notes;
+      }
+      if (row.active !== false && doc.hp && hpDiff !== 0) {
+        if (doc.hp.baseMax === undefined) doc.hp.baseMax = (Number(doc.hp.max) || 44) - (Number(doc.hp.conBonusHp) || 0);
+        doc.hp.baseMax = Math.max(1, (Number(doc.hp.baseMax) || 1) + hpDiff);
+        doc.hp.max = Math.max(1, (Number(doc.hp.baseMax) || 1) + (Number(doc.hp.conBonusHp) || 0));
+        doc.hp.current = Math.min(doc.hp.max, Math.max(1, (Number(doc.hp.current) || 1) + hpDiff));
+      }
+      if (payload.statKey !== undefined) {
+        const oldStat = extractLevelStatIncreaseKey(row);
+        const newStatKey = payload.statKey ? String(payload.statKey).toLowerCase().trim() : null;
+        if (oldStat !== newStatKey) {
+          if (!doc.baseAbilities || typeof doc.baseAbilities !== 'object') {
+            doc.baseAbilities = Object.assign({ str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 }, doc.abilities || {});
+          }
+          if (row.active !== false) {
+            if (oldStat && doc.baseAbilities[oldStat] !== undefined) {
+              doc.baseAbilities[oldStat] = Math.max(1, Number(doc.baseAbilities[oldStat]) - 1);
+            }
+            if (newStatKey && doc.baseAbilities[newStatKey] !== undefined) {
+              doc.baseAbilities[newStatKey] = Number(doc.baseAbilities[newStatKey]) + 1;
+            }
+          }
+          row.statIncreased = newStatKey;
+          if (!Array.isArray(row.feats)) row.feats = [];
+          row.feats = row.feats.filter(function (f) {
+            const str = String(f).toLowerCase();
+            return !str.includes('+1 stat') && !str.includes('stat:');
+          });
+          if (newStatKey) {
+            const label = payload.statLabel || newStatKey.toUpperCase();
+            row.feats.push('+1 Stat: ' + label);
+          }
+        }
+      }
+      setStoreOutcome(stateObj, { status: 'level_class_updated', levelIndex: idx, className: row.className });
+      return doc;
+    }
+
+    setStoreOutcome(stateObj, { status: 'invalid_payload', mode: mode });
+    return doc;
+  });
+
+  CharStore.registerReducer('hud/adjustHp', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    if (!doc || !payload) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    if (!doc.hp || typeof doc.hp !== 'object') {
+      doc.hp = { current: 10, max: 10, temp: 0 };
+    }
+    const mode = String(payload.mode || 'damage').trim();
+    const amt = Math.max(0, Number(payload.amount) || 0);
+    const prevCurrent = Number(doc.hp.current) || 0;
+    const prevTemp = Math.max(0, Number(doc.hp.temp) || 0);
+    const maxHp = Math.max(1, Number(doc.hp.max) || 1);
+    let absorbedTemp = 0;
+
+    if (mode === 'damage') {
+      let dmgLeft = amt;
+      if (prevTemp > 0 && dmgLeft > 0) {
+        absorbedTemp = Math.min(prevTemp, dmgLeft);
+        doc.hp.temp = prevTemp - absorbedTemp;
+        dmgLeft -= absorbedTemp;
+      }
+      if (dmgLeft > 0) {
+        doc.hp.current = Math.max(-10, prevCurrent - dmgLeft);
+      }
+    } else if (mode === 'heal') {
+      doc.hp.current = Math.min(maxHp, prevCurrent + amt);
+    } else if (mode === 'temp') {
+      if (payload.additive) {
+        doc.hp.temp = prevTemp + amt;
+      } else {
+        doc.hp.temp = Math.max(prevTemp, amt);
+      }
+    } else if (mode === 'clearTemp') {
+      doc.hp.temp = 0;
+    } else if (mode === 'setCurrent') {
+      doc.hp.current = Number(payload.amount) || 0;
+    } else if (mode === 'setMax') {
+      const nextMax = Math.max(1, Number(payload.amount) || 1);
+      doc.hp.max = nextMax;
+      doc.hp.baseMax = nextMax - (Number(doc.hp.conBonusHp) || 0);
+    } else {
+      setStoreOutcome(stateObj, { status: 'invalid_payload', mode: mode });
+      return doc;
+    }
+
+    doc.hp._lastPlayerChangeTs = Date.now();
+    setStoreOutcome(stateObj, {
+      status: 'hp_adjusted',
+      mode: mode,
+      amount: amt,
+      absorbedTemp: absorbedTemp,
+      tempAbsorbed: absorbedTemp,
+      hpLost: Math.max(0, prevCurrent - doc.hp.current),
+      previousHp: prevCurrent,
+      previousTemp: prevTemp,
+      currentHp: doc.hp.current,
+      maxHp: doc.hp.max,
+      tempHp: doc.hp.temp,
+      source: payload.source || ''
+    });
+    return doc;
+  });
+
+  CharStore.registerReducer('hud/shortRest', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    if (!doc) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const minutes = Math.max(1, Number(payload.minutes) || 5);
+    const charLvl = Math.max(1, (Array.isArray(doc.levelProgression) ? doc.levelProgression.filter(function (r) { return r && r.active !== false; }).length : 0) || Number(doc.level) || 1);
+
+    // 1. Tome of Battle Maneuvers recovery & auto-fill
+    let refreshedManeuvers = 0;
+    let reReadiedCount = 0;
+    if (!doc.tomeOfBattle || typeof doc.tomeOfBattle !== 'object') doc.tomeOfBattle = {};
+    if (!Array.isArray(doc.tomeOfBattle.readiedManeuvers)) doc.tomeOfBattle.readiedManeuvers = [];
+    if (!Array.isArray(doc.tomeOfBattle.maneuversKnown) && doc.tomeOfBattle.readiedManeuvers.length > 0) {
+      doc.tomeOfBattle.maneuversKnown = doc.tomeOfBattle.readiedManeuvers.map(function (m) { return Object.assign({}, m); });
+    }
+    doc.tomeOfBattle.readiedManeuvers.forEach(function (m) {
+      if (m && m.expended) {
+        m.expended = false;
+        refreshedManeuvers++;
+      }
+    });
+    const maxReadied = Number(doc.tomeOfBattle.maxReadied) || (typeof root !== 'undefined' && typeof root.getInitiatorInfo === 'function' ? (root.getInitiatorInfo().maxReadied || 3) : 3);
+    if (doc.tomeOfBattle.readiedManeuvers.length < maxReadied && Array.isArray(doc.tomeOfBattle.maneuversKnown)) {
+      const readiedNames = doc.tomeOfBattle.readiedManeuvers.map(function (m) { return String((m && m.name) || '').toLowerCase().trim(); });
+      for (let i = 0; i < doc.tomeOfBattle.maneuversKnown.length; i++) {
+        if (doc.tomeOfBattle.readiedManeuvers.length >= maxReadied) break;
+        const known = doc.tomeOfBattle.maneuversKnown[i];
+        if (!known) continue;
+        const kName = String(known.name || '').toLowerCase().trim();
+        if (kName && !readiedNames.includes(kName)) {
+          doc.tomeOfBattle.readiedManeuvers.push(Object.assign({}, known, { expended: false }));
+          readiedNames.push(kName);
+          reReadiedCount++;
+        }
+      }
+    }
+    if (Array.isArray(doc.activeModifiers)) {
+      doc.activeModifiers.forEach(function (mod) {
+        if (mod && mod.source === 'Maneuver' && mod.active) {
+          mod.active = false;
+        }
+      });
+    }
+
+    // 2. Encounter round, cooldowns & action economy reset
+    doc.encounterRound = 1;
+    if (!doc.tactical || typeof doc.tactical !== 'object') doc.tactical = {};
+    doc.tactical.round = 1;
+    if (!payload || payload.resetRecharge !== false) {
+      doc.tactical.abilityCooldowns = {};
+      doc.specialAttackCooldowns = {};
+    }
+    doc.actionEconomy = { standard: true, move: true, swift: true, immediate: true };
+    doc.tactical.spentActions = { standard: false, move: false, swift: false, immediate: false, fullRound: false };
+
+    // 3. Expire or decrement combat / round-based / minute-based buffs
+    let expiredBuffs = 0;
+    const expiredBuffNames = [];
+    const restRounds = minutes * 10;
+    if (Array.isArray(doc.buffs)) {
+      doc.buffs.forEach(function (b) {
+        if (!b || !b.active) return;
+        const bIdLower = String(b.id || '').toLowerCase();
+        const bNameLower = String(b.name || '').toLowerCase();
+        if (
+          bIdLower === 'debuff_exhausted' || bIdLower === 'debuff_fatigued' ||
+          bIdLower === 'debuff_sickened' || bIdLower === 'debuff_shaken' ||
+          bNameLower === 'exhausted' || bNameLower === 'fatigued'
+        ) {
+          return;
+        }
+
+        const durRaw = String(b.durationText || b.duration || '').trim();
+        const durLower = durRaw.toLowerCase();
+        const isPermanent = Boolean(b.permanent) || durLower.includes('kalıcı') || durLower.includes('permanent') || durLower.includes('condition');
+        const is24h = durLower.includes('24 saat') || durLower.includes('24 hour') || durLower.includes('24 hr');
+        if (isPermanent || is24h) return;
+
+        if (!b.initialDuration && durRaw) b.initialDuration = durRaw;
+        if ((b.initialRounds === undefined || b.initialRounds === null) && b.rounds !== null && b.rounds !== undefined) {
+          b.initialRounds = Number(b.rounds);
+        }
+
+        const bCl = Math.max(1, Number(b.casterLevel || b.cl || charLvl) || 1);
+        let shouldExpire = false;
+
+        if (b.durationType === 'rounds') {
+          shouldExpire = true;
+        } else if (b.rounds !== null && b.rounds !== undefined && Number(b.rounds) > 0) {
+          const remRds = Number(b.rounds) - restRounds;
+          if (remRds <= 0) {
+            shouldExpire = true;
+          } else {
+            b.rounds = remRds;
+            if (/\b(?:min|mins|minute|minutes|dk|dakika)\b/i.test(durLower)) {
+              const remMins = Math.max(1, Math.ceil(remRds / 10));
+              b.duration = remMins + ' min';
+              b.durationText = remMins + ' min';
+            }
+          }
+        } else if (Number(b.durationRounds) > 0 && Number(b.durationRounds) <= restRounds) {
+          shouldExpire = true;
+        } else {
+          let parsedMins = null;
+          let parsedRounds = null;
+
+          if (/\b1\s*round\/level/i.test(durLower)) {
+            parsedRounds = bCl;
+          } else {
+            const rdMatch = durLower.match(/(\d+)\s*(?:rd|rds|round|rounds|tur)\b/i);
+            if (rdMatch) parsedRounds = parseInt(rdMatch[1], 10);
+          }
+
+          if (parsedRounds !== null) {
+            if (parsedRounds <= restRounds) {
+              shouldExpire = true;
+            } else {
+              const remRds = parsedRounds - restRounds;
+              b.rounds = remRds;
+              b.duration = remRds + ' rounds';
+              b.durationText = remRds + ' rounds';
+            }
+          } else {
+            if (/10\s*min\.?\/level/i.test(durLower)) {
+              parsedMins = bCl * 10;
+            } else if (/\b1\s*min\.?\/level/i.test(durLower)) {
+              parsedMins = bCl;
+            } else if (/\b1\s*(?:hr|hour)\.?\/level/i.test(durLower)) {
+              parsedMins = bCl * 60;
+            } else {
+              const minMatch = durLower.match(/(\d+)\s*(?:min|mins|minute|minutes|dk|dakika)\b/i);
+              if (minMatch) {
+                parsedMins = parseInt(minMatch[1], 10);
+              } else {
+                const hrMatch = durLower.match(/(\d+)\s*(?:hr|hrs|hour|hours|saat)\b/i);
+                if (hrMatch) parsedMins = parseInt(hrMatch[1], 10) * 60;
+              }
+            }
+
+            if (parsedMins !== null && parsedMins > 0) {
+              if (parsedMins <= minutes) {
+                shouldExpire = true;
+              } else {
+                const remMins = parsedMins - minutes;
+                if (remMins >= 60 && remMins % 60 === 0 && /\b(?:hr|hrs|hour|hours|saat)\b/i.test(durLower)) {
+                  const remHrs = remMins / 60;
+                  b.duration = remHrs + ' hr';
+                  b.durationText = remHrs + ' hr';
+                } else {
+                  b.duration = remMins + ' min';
+                  b.durationText = remMins + ' min';
+                  if (remMins <= 15) b.rounds = remMins * 10;
+                }
+              }
+            }
+          }
+        }
+
+        if (shouldExpire) {
+          b.active = false;
+          if (typeof b.durationLeft === 'number') b.durationLeft = 0;
+          expiredBuffs++;
+          if (b.name) expiredBuffNames.push(b.name);
+          if (b.initialDuration) {
+            b.duration = b.initialDuration;
+            b.durationText = b.initialDuration;
+          }
+          if (b.initialRounds !== undefined && b.initialRounds !== null) {
+            b.rounds = b.initialRounds;
+          }
+          const tempHp = (typeof root !== 'undefined' && typeof root.getBuffGrantedTempHp === 'function')
+            ? root.getBuffGrantedTempHp(b)
+            : (Number(b.grantedTempHp) || 0);
+          if (tempHp > 0 && doc.hp) {
+            doc.hp.temp = Math.max(0, (Number(doc.hp.temp) || 0) - tempHp);
+            b._tempHpSynced = false;
+            doc.hp._lastPlayerChangeTs = Date.now();
+          }
+        }
+      });
+    }
+
+    // 4. Nonlethal and Condition healing for 1 Hour rest (60 min)
+    let nonlethalHealed = 0;
+    let downgradedExhausted = false;
+    let fatigueCleared = false;
+    if (minutes >= 60) {
+      if (!doc.hp || typeof doc.hp !== 'object') {
+        const maxH = (charLvl * 10) || 10;
+        doc.hp = { current: maxH, max: maxH, temp: 0, nonlethal: 0 };
+      }
+      const currentNonlethal = Number(doc.hp.nonlethal) || 0;
+      if (currentNonlethal > 0) {
+        nonlethalHealed = Math.min(currentNonlethal, charLvl);
+        doc.hp.nonlethal = currentNonlethal - nonlethalHealed;
+        doc.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(doc.hp._lastDmUpdateTs) || 0) + 100);
+      }
+
+      if (Array.isArray(doc.buffs)) {
+        const exhaustedBuff = doc.buffs.find(function (b) {
+          return b && b.active && (b.id === 'debuff_exhausted' || String(b.name || '').toLowerCase().includes('exhausted'));
+        });
+        if (exhaustedBuff) {
+          exhaustedBuff.active = false;
+          downgradedExhausted = true;
+          const fatiguedBuff = doc.buffs.find(function (b) {
+            return b && (b.id === 'debuff_fatigued' || String(b.name || '').toLowerCase().includes('fatigued'));
+          });
+          if (fatiguedBuff) {
+            fatiguedBuff.active = true;
+          }
+        } else {
+          const fatiguedBuff = doc.buffs.find(function (b) {
+            return b && b.active && (b.id === 'debuff_fatigued' || String(b.name || '').toLowerCase().includes('fatigued'));
+          });
+          if (fatiguedBuff && payload.clearFatigueOnHour) {
+            fatiguedBuff.active = false;
+            fatigueCleared = true;
+          }
+        }
+      }
+    }
+
+    doc.lastModified = new Date().toISOString();
+    setStoreOutcome(stateObj, {
+      status: 'short_rest_complete',
+      minutes: minutes,
+      refreshedManeuvers: refreshedManeuvers,
+      reReadiedCount: reReadiedCount,
+      expiredBuffs: expiredBuffs,
+      expiredBuffNames: expiredBuffNames,
+      nonlethalHealed: nonlethalHealed,
+      fatigueCleared: fatigueCleared,
+      downgradedExhausted: downgradedExhausted
+    });
+    return doc;
+  });
+
+  CharStore.registerReducer('hud/longRest', function (doc, action, stateObj) {
+    const payload = (action && action.payload) || action || {};
+    if (!doc) {
+      setStoreOutcome(stateObj, { status: 'invalid_payload' });
+      return doc;
+    }
+    const opts = payload || {};
+    const isFullHeal = opts.isFullHeal !== undefined ? Boolean(opts.isFullHeal) : (opts.healHp !== false);
+    const charLvl = Math.max(1, (Array.isArray(doc.levelProgression) ? doc.levelProgression.filter(function (r) { return r && r.active !== false; }).length : 0) || Number(doc.level) || 1);
+    const maxHp = Number(doc.hp && doc.hp.max) || (charLvl * 10) || 10;
+    if (!doc.hp || typeof doc.hp !== 'object') {
+      doc.hp = { current: maxHp, max: maxHp, temp: 0, nonlethal: 0 };
+    }
+    const prevHp = Number(doc.hp.current) || 0;
+    let hpGain = 0;
+
+    if (opts.healHp !== false) {
+      if (isFullHeal) {
+        hpGain = Math.max(0, maxHp - prevHp);
+        doc.hp.current = maxHp;
+      } else {
+        // D&D 3.5e RAW PHB p.146: 1 HP per character level per 8 hours of natural rest
+        hpGain = Math.max(0, Math.min(maxHp - prevHp, charLvl));
+        doc.hp.current = Math.min(maxHp, prevHp + charLvl);
+      }
+      doc.hp.temp = 0;
+      doc.hp.nonlethal = 0;
+      doc.hp._lastPlayerChangeTs = Math.max(Date.now(), (Number(doc.hp._lastDmUpdateTs) || 0) + 100);
+    }
+
+    // Encounter round, cooldowns & action economy reset
+    doc.encounterRound = 1;
+    if (!doc.tactical || typeof doc.tactical !== 'object') doc.tactical = {};
+    if (opts.clearRoundBuffs !== false) {
+      doc.tactical.combatExpertise = 0;
+      doc.tactical.fightingDefensively = false;
+      doc.tactical.totalDefense = false;
+      doc.tactical.shieldBlockActive = false;
+      doc.tactical.abilityCooldowns = {};
+      doc.tactical.round = 1;
+    }
+    doc.specialAttackCooldowns = {};
+    doc.actionEconomy = { standard: true, move: true, swift: true, immediate: true };
+    doc.tactical.spentActions = { standard: false, move: false, swift: false, immediate: false, fullRound: false };
+
+    // Spell slots & prepared/divine cast flags reset
+    let refreshedSpells = 0;
+    if (opts.restoreSlots !== false && doc.spellcasting) {
+      if (Array.isArray(doc.spellcasting.slots)) {
+        doc.spellcasting.slots.forEach(function (s) {
+          if (s) {
+            if (Number(s.used) > 0) refreshedSpells += Number(s.used);
+            s.used = 0;
+          }
+        });
+      }
+      if (Array.isArray(doc.spellcasting.preparedSlots)) {
+        doc.spellcasting.preparedSlots.forEach(function (s) {
+          if (s) {
+            if (Number(s.used) > 0) refreshedSpells += Number(s.used);
+            s.used = 0;
+          }
+        });
+      }
+      if (Array.isArray(doc.spellcasting.divineSlots)) {
+        doc.spellcasting.divineSlots.forEach(function (s) {
+          if (s) {
+            if (Number(s.used) > 0) refreshedSpells += Number(s.used);
+            if (Number(s.domainUsed) > 0) refreshedSpells += Number(s.domainUsed);
+            s.used = 0;
+            s.domainUsed = 0;
+          }
+        });
+      }
+      if (Array.isArray(doc.spellcasting.preparedSpells)) {
+        doc.spellcasting.preparedSpells.forEach(function (sp) {
+          if (sp) {
+            sp.isCast = false;
+            sp.cast = false;
+            delete sp.convertedTo;
+          }
+        });
+      }
+      if (Array.isArray(doc.spellcasting.divineSpells)) {
+        doc.spellcasting.divineSpells.forEach(function (sp) {
+          if (sp) {
+            sp.isCast = false;
+            sp.cast = false;
+            delete sp.convertedTo;
+          }
+        });
+      }
+      doc.spellcasting.turnUndeadUsed = 0;
+      doc.spellcasting.domainPowerUses = {};
+    }
+
+    // Tome of Battle Maneuvers recovery & auto-fill
+    let refreshedManeuvers = 0;
+    let reReadiedCount = 0;
+    if (!doc.tomeOfBattle || typeof doc.tomeOfBattle !== 'object') doc.tomeOfBattle = {};
+    if (!Array.isArray(doc.tomeOfBattle.readiedManeuvers)) doc.tomeOfBattle.readiedManeuvers = [];
+    if (!Array.isArray(doc.tomeOfBattle.maneuversKnown) && doc.tomeOfBattle.readiedManeuvers.length > 0) {
+      doc.tomeOfBattle.maneuversKnown = doc.tomeOfBattle.readiedManeuvers.map(function (m) { return Object.assign({}, m); });
+    }
+    doc.tomeOfBattle.readiedManeuvers.forEach(function (m) {
+      if (m && m.expended) {
+        m.expended = false;
+        refreshedManeuvers++;
+      }
+    });
+    const maxReadied = Number(doc.tomeOfBattle.maxReadied) || (typeof root !== 'undefined' && typeof root.getInitiatorInfo === 'function' ? (root.getInitiatorInfo().maxReadied || 3) : 3);
+    if (doc.tomeOfBattle.readiedManeuvers.length < maxReadied && Array.isArray(doc.tomeOfBattle.maneuversKnown)) {
+      const readiedNames = doc.tomeOfBattle.readiedManeuvers.map(function (m) { return String((m && m.name) || '').toLowerCase().trim(); });
+      for (let i = 0; i < doc.tomeOfBattle.maneuversKnown.length; i++) {
+        if (doc.tomeOfBattle.readiedManeuvers.length >= maxReadied) break;
+        const known = doc.tomeOfBattle.maneuversKnown[i];
+        if (!known) continue;
+        const kName = String(known.name || '').toLowerCase().trim();
+        if (kName && !readiedNames.includes(kName)) {
+          doc.tomeOfBattle.readiedManeuvers.push(Object.assign({}, known, { expended: false }));
+          readiedNames.push(kName);
+          reReadiedCount++;
+        }
+      }
+    }
+    if (Array.isArray(doc.activeModifiers)) {
+      doc.activeModifiers.forEach(function (mod) {
+        if (mod && mod.source === 'Maneuver' && mod.active) {
+          mod.active = false;
+        }
+      });
+    }
+
+    // Durations, Conditions & Debuffs
+    let removedConditions = 0;
+    if (Array.isArray(doc.buffs)) {
+      doc.buffs.forEach(function (b) {
+        if (!b || !b.active) return;
+        const bName = String(b.name || '').toLowerCase();
+        const isFatigued = b.id === 'debuff_fatigued' || bName.includes('fatigued');
+        const isExhausted = b.id === 'debuff_exhausted' || bName.includes('exhausted');
+        const isSickened = b.id === 'debuff_sickened' || bName.includes('sickened');
+        const isShaken = b.id === 'debuff_shaken' || bName.includes('shaken');
+        if (isFatigued || isExhausted || isSickened || isShaken) {
+          b.active = false;
+          removedConditions++;
+          return;
+        }
+        const dur = String(b.durationText || b.duration || '').toLowerCase();
+        const isPermanent = dur.includes('kalıcı') || dur.includes('permanent') || Boolean(b.permanent);
+        const is24h = dur.includes('24 saat') || dur.includes('24 hour') || dur.includes('24 hr');
+        if (!isPermanent && !is24h) {
+          b.active = false;
+          b._tempHpSynced = false;
+          if (b.initialDuration) {
+            b.duration = b.initialDuration;
+            b.durationText = b.initialDuration;
+          }
+          if (b.initialRounds !== undefined && b.initialRounds !== null) {
+            b.rounds = b.initialRounds;
+          }
+        }
+      });
+    }
+
+    if (Array.isArray(doc.periodicHpEffects)) {
+      doc.periodicHpEffects = [];
+    }
+
+    // Daily charges on magic items
+    let refreshedDailyItems = 0;
+    const resetItemCharges = function (item) {
+      if (item && item.dailyCharges && typeof item.dailyCharges.max === 'number') {
+        if (item.dailyCharges.current !== item.dailyCharges.max) {
+          refreshedDailyItems++;
+        } else if (item.dailyCharges.max > 0) {
+          refreshedDailyItems++;
+        }
+        item.dailyCharges.current = item.dailyCharges.max;
+      }
+    };
+    if (doc.bodySlots && typeof doc.bodySlots === 'object') {
+      Object.values(doc.bodySlots).forEach(resetItemCharges);
+    }
+    if (Array.isArray(doc.gearPool)) {
+      doc.gearPool.forEach(resetItemCharges);
+    }
+    if (Array.isArray(doc.consumables)) {
+      doc.consumables.forEach(resetItemCharges);
+    }
+
+    // Daily feats / specialAbilities / legoEntries
+    let refreshedDailyFeats = 0;
+    const resetFeatCharges = function (f) {
+      if (!f || typeof f !== 'object') return;
+      if (f.used) { f.used = false; refreshedDailyFeats++; }
+      if (f.expended) { f.expended = false; refreshedDailyFeats++; }
+      if (f.dailyCharges && typeof f.dailyCharges.max === 'number') {
+        f.dailyCharges.current = f.dailyCharges.max;
+        refreshedDailyFeats++;
+      }
+    };
+    if (Array.isArray(doc.feats)) doc.feats.forEach(resetFeatCharges);
+    if (Array.isArray(doc.specialAbilities)) doc.specialAbilities.forEach(resetFeatCharges);
+    if (Array.isArray(doc.legoEntries)) doc.legoEntries.forEach(resetFeatCharges);
+
+    const hasRingOfSustenance = Boolean(
+      doc.bodySlots && (
+        (doc.bodySlots.ring1 && String(doc.bodySlots.ring1.name || '').includes('Ring of Sustenance')) ||
+        (doc.bodySlots.ring2 && String(doc.bodySlots.ring2.name || '').includes('Ring of Sustenance'))
+      )
+    );
+
+    doc.lastModified = new Date().toISOString();
+    setStoreOutcome(stateObj, {
+      status: 'long_rest_complete',
+      isFullHeal: isFullHeal,
+      hpGain: hpGain,
+      currentHp: doc.hp.current,
+      maxHp: maxHp,
+      refreshedSpells: refreshedSpells,
+      refreshedManeuvers: refreshedManeuvers,
+      reReadiedCount: reReadiedCount,
+      refreshedDailyItems: refreshedDailyItems,
+      refreshedDailyFeats: refreshedDailyFeats,
+      removedConditions: removedConditions,
+      hasRingOfSustenance: hasRingOfSustenance
     });
     return doc;
   });

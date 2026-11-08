@@ -1313,6 +1313,51 @@
 
     function executeLongRest(isFullHeal = true) {
       if (!character) return;
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'hud/longRest',
+          payload: { isFullHeal: Boolean(isFullHeal) },
+          meta: { label: isFullHeal ? 'Long Rest (Full Recovery)' : 'Long Rest (8h Natural Healing)' }
+        });
+        const out = (typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null) || {};
+        if (typeof resetActionEconomy === 'function') resetActionEconomy();
+        if (typeof renderHUD === 'function') {
+          try { renderHUD(); } catch (e) { console.warn('renderHUD immediate rest error:', e); }
+        }
+        try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in rest:', e); }
+        if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
+          window.CloudSync.pushImmediate();
+        } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
+          window.GDriveSync.pushToCloud(true);
+        }
+        try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in rest:', e); }
+        try { if (typeof renderSpellSlots === 'function') renderSpellSlots(); } catch (e) { console.warn('renderSpellSlots error in rest:', e); }
+        try { renderAll(); } catch (e) { console.warn('renderAll error in rest:', e); }
+
+        const maxHp = Number(out.maxHp ?? character.hp?.max) || (Number(character.level || 1) * 10) || 10;
+        const curHp = Number(out.currentHp ?? character.hp?.current) || maxHp;
+        const hpGain = Number(out.hpGain) || 0;
+        const refreshedDailyItems = Number(out.refreshedDailyItems) || 0;
+        const refreshedDailyFeats = Number(out.refreshedDailyFeats) || 0;
+        const removedConditions = Number(out.removedConditions) || 0;
+        const hasRingOfSustenance = Boolean(out.hasRingOfSustenance);
+
+        const details = [];
+        details.push(isFullHeal ? `Full HP (${curHp}/${maxHp})` : `+${hpGain} HP Natural Healing (${curHp}/${maxHp})`);
+        const totalReadyLong = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
+        details.push(`All spells and ${totalReadyLong} maneuvers readied`);
+        if (refreshedDailyItems > 0 || refreshedDailyFeats > 0) details.push(`${refreshedDailyItems + refreshedDailyFeats} Daily Item/Feat charges refreshed`);
+        if (removedConditions > 0) details.push("Fatigue/Debuffs cleared");
+        if (hasRingOfSustenance) details.push("💍 2 Hours (Ring of Sustenance)");
+
+        showDiceTopToast({
+          icon: "☀️",
+          title: `Long Rest Complete (${isFullHeal ? "Full Heal" : "D&D 3.5e RAW"})`,
+          breakdown: details.join(" • "),
+          total: `${curHp}/${maxHp} HP`
+        }, { stack: false, autoDismiss: true, dismissMs: 5000 });
+        return;
+      }
       character.encounterRound = 1;
       if (!character.tactical) character.tactical = {};
       character.tactical.round = 1;
@@ -1552,6 +1597,56 @@
 
     function executeShortRest(minutes = 5) {
       if (!character) return;
+      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+        CharStore.dispatch({
+          type: 'hud/shortRest',
+          payload: { minutes: Number(minutes) || 5 },
+          meta: { label: `Short Rest (${minutes} min)` }
+        });
+        const out = (typeof CharStore.getLastOutcome === 'function' ? CharStore.getLastOutcome() : null) || {};
+        if (typeof resetActionEconomy === 'function') resetActionEconomy();
+        if (typeof renderHUD === 'function') {
+          try { renderHUD(); } catch (e) { console.warn('renderHUD immediate short rest error:', e); }
+        }
+        try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in short rest:', e); }
+        if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
+          window.CloudSync.pushImmediate();
+        } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
+          window.GDriveSync.pushToCloud(true);
+        }
+        try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in short rest:', e); }
+        try { renderAll(); } catch (e) { console.warn('renderAll error in short rest:', e); }
+
+        const refreshedManeuvers = Number(out.refreshedManeuvers) || 0;
+        const reReadiedCount = Number(out.reReadiedCount) || 0;
+        const nonlethalHealed = Number(out.nonlethalHealed) || 0;
+        const downgradedExhausted = Boolean(out.downgradedExhausted);
+        const expiredBuffs = Number(out.expiredBuffs) || 0;
+        const expiredBuffNames = Array.isArray(out.expiredBuffNames) ? out.expiredBuffNames : [];
+
+        const summaryParts = [];
+        const totalReadyShort = (character.tomeOfBattle?.readiedManeuvers || []).filter(m => !m.expended).length;
+        if (refreshedManeuvers > 0 || reReadiedCount > 0) {
+          summaryParts.push(`${refreshedManeuvers + reReadiedCount} maneuvers recovered / readied`);
+        } else {
+          summaryParts.push(`${totalReadyShort} maneuvers ready for combat`);
+        }
+        if (nonlethalHealed > 0) summaryParts.push(`Healed ${nonlethalHealed} Nonlethal HP`);
+        if (downgradedExhausted) summaryParts.push("Exhausted downgraded to Fatigued");
+        if (expiredBuffs > 0) {
+          const namesLabel = expiredBuffNames.length <= 3 ? ` (${expiredBuffNames.join(", ")})` : "";
+          summaryParts.push(`${expiredBuffs} buff(s) expired${namesLabel}`);
+        }
+        summaryParts.push("Encounter round reset");
+
+        showDiceTopToast({
+          icon: "☕",
+          title: `${minutes >= 60 ? "1-Hour Short Rest" : "5-Min Quick Recovery"} Complete`,
+          breakdown: summaryParts.join(" • "),
+          total: "Maneuvers Ready"
+        }, { stack: false, autoDismiss: true, dismissMs: 4500 });
+        return;
+      }
 
       // 1. Tome of Battle Maneuvers: Kusanan & kullanilan manevralarin tekrar kusanilmasi / tazelenmesi
       let refreshedManeuvers = 0;

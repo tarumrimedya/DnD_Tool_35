@@ -1746,7 +1746,12 @@
       }
 
       const mutSlot = character.spellcasting?.preparedSlots?.find(sl => Number(sl.level) === lvl) || slot;
-      const preCast = getSpellPreCastOptions(s, cl, mutSlot, lvl);
+      const preCast = getSpellPreCastOptions(s, cl, mutSlot, lvl, {
+        discipline: 'prepared',
+        spellIdx,
+        level: lvl,
+        isDomain: false
+      });
       if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
         showSpellPreCastChoiceToast(preCast);
         return;
@@ -2445,7 +2450,12 @@
       }
 
       const mutSlot = character.spellcasting?.divineSlots?.find(sl => Number(sl.level) === lvl) || slot;
-      const preCast = getSpellPreCastOptions(s, cl, mutSlot, lvl);
+      const preCast = getSpellPreCastOptions(s, cl, mutSlot, lvl, {
+        discipline: 'divine',
+        spellIdx,
+        level: lvl,
+        isDomain: isDom
+      });
       if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
         showSpellPreCastChoiceToast(preCast);
         return;
@@ -2522,7 +2532,7 @@
     }
 
     // D&D 3.5e RAW Turn/Rebuke Undead & Elemental Turning Roller (PHB p. 159 + Glory/Sun/Extra Turning)
-    function rollTurnUndeadCheck(poolId = 'undead', isGreaterTurning = false) {
+    function rollTurnUndeadCheck(poolId = 'undead', isGreaterTurning = false, skipSpend = false) {
       if (!character || typeof RuleEngine === 'undefined' || typeof RuleEngine.getTurnUndeadAndDomainPowers !== 'function') return;
 
       const info = RuleEngine.getTurnUndeadAndDomainPowers(character);
@@ -2539,7 +2549,7 @@
         used = Math.max(0, Number(character.spellcasting?.domainPowerUses?.[poolId]) || 0);
       }
 
-      if (used >= maxUses) {
+      if (!skipSpend && used >= maxUses) {
         showDiceTopToast({
           icon: '⚠️',
           title: `No ${label} Uses Remaining`,
@@ -2549,29 +2559,31 @@
         return;
       }
 
-      if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
-        CharStore.dispatch({
-          type: 'spells/useTurnOrDomainPower',
-          payload: {
-            kind: poolId === 'undead' ? 'turn' : 'domain',
-            id: poolId,
-            poolId,
-            isTurnUndead: poolId === 'undead',
-            maxUses
-          },
-          meta: { label: `Use ${label}` }
-        });
-        const out = CharStore.getLastOutcome();
-        if (!out || out.status !== 'power_used') return;
-      } else {
-        if (!character.spellcasting) character.spellcasting = {};
-        if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
-        if (poolId === 'undead') {
-          character.spellcasting.turnUndeadUsed = used + 1;
+      if (!skipSpend) {
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/useTurnOrDomainPower',
+            payload: {
+              kind: poolId === 'undead' ? 'turn' : 'domain',
+              id: poolId,
+              poolId,
+              isTurnUndead: poolId === 'undead',
+              maxUses
+            },
+            meta: { label: `Use ${label}` }
+          });
+          const out = CharStore.getLastOutcome();
+          if (!out || out.status !== 'power_used') return;
         } else {
-          character.spellcasting.domainPowerUses[poolId] = used + 1;
+          if (!character.spellcasting) character.spellcasting = {};
+          if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
+          if (poolId === 'undead') {
+            character.spellcasting.turnUndeadUsed = used + 1;
+          } else {
+            character.spellcasting.domainPowerUses[poolId] = used + 1;
+          }
+          saveStateToStorage(true);
         }
-        saveStateToStorage(true);
       }
       if (typeof consumeActionEconomy === 'function') consumeActionEconomy('standard', label);
       renderAll();
@@ -2607,10 +2619,11 @@
       const greaterNote = isGreaterTurning
         ? ' • ☀️ GREATER TURNING: All turned undead are DESTROYED instead!'
         : (destroyThreshold >= 1 ? ` • Destroy/Command if ≤ ${destroyThreshold} HD` : '');
+      const remainingAfter = skipSpend ? Math.max(0, maxUses - used) : Math.max(0, maxUses - used - 1);
 
       showDiceTopToast({
         icon: isGreaterTurning ? '☀️' : (isRebuke ? '💀' : '✨'),
-        title: `${isGreaterTurning ? 'Greater Turning (Sun Domain)' : label} (${maxUses - used - 1}/${maxUses} Left)`,
+        title: `${isGreaterTurning ? 'Greater Turning (Sun Domain)' : label} (${remainingAfter}/${maxUses} Left)`,
         breakdown: `Turning Check: 1d20(${d20}) ${checkMod >= 0 ? '+' : ''}${checkMod} = ${checkTotal} ➔ Max Creature HD: ${maxHdAffected} HD • Turning Damage: ${diceCount}d6([${dmgRolls.join('+')}])+${info.effectiveTurningLevel + info.chaMod} = ${totalHdTurned} Total HD${greaterNote}`,
         total: `${totalHdTurned} HD (Max ${maxHdAffected} HD)`
       });
@@ -2637,10 +2650,28 @@
       }
 
       if (pw.kind === 'greater_turning') {
+        const turnUsedNow = Math.max(0, Number(character.spellcasting?.turnUndeadUsed) || 0);
+        const maxTurnUses = info.maxDailyTurns || 1;
+        if (turnUsedNow >= maxTurnUses) {
+          showDiceTopToast({
+            icon: '⚠️',
+            title: 'No Turn Undead Uses Remaining',
+            breakdown: 'Greater Turning requires an available daily Turn Undead attempt.',
+            total: '0 Left'
+          });
+          return;
+        }
         if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
           CharStore.dispatch({
             type: 'spells/useTurnOrDomainPower',
-            payload: { kind: 'domain', id: pw.id, powerId: pw.id, maxUses: pw.maxUses },
+            payload: {
+              kind: 'domain',
+              id: pw.id,
+              powerId: pw.id,
+              maxUses: pw.maxUses,
+              consumeTurnUndead: true,
+              maxTurnUses: maxTurnUses
+            },
             meta: { label: `Use ${pw.name}` }
           });
           const out = CharStore.getLastOutcome();
@@ -2649,9 +2680,10 @@
           if (!character.spellcasting) character.spellcasting = {};
           if (!character.spellcasting.domainPowerUses) character.spellcasting.domainPowerUses = {};
           character.spellcasting.domainPowerUses[pw.id] = used + 1;
+          character.spellcasting.turnUndeadUsed = turnUsedNow + 1;
           saveStateToStorage(true);
         }
-        rollTurnUndeadCheck('undead', true);
+        rollTurnUndeadCheck('undead', true, true);
         return;
       }
 
@@ -4086,7 +4118,7 @@
       }, 60);
     }
 
-    function getSpellPreCastOptions(spellItem, cl, slotRef, lvl) {
+    function getSpellPreCastOptions(spellItem, cl, slotRef, lvl, castCtx = null) {
       if (!spellItem) return null;
       if (isMasterDbChildEntry(spellItem)) return null;
 
@@ -4101,6 +4133,44 @@
       if (!isBloodSacrifice && !hasChildren) {
         return null;
       }
+
+      const dispatchPreCastChoice = (hpCost = 0, variantLabel = '') => {
+        const disc = (castCtx && castCtx.discipline) || 'spontaneous';
+        const sIdx = castCtx && castCtx.spellIdx !== undefined ? castCtx.spellIdx : undefined;
+        const isDom = Boolean(castCtx && castCtx.isDomain);
+        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
+          CharStore.dispatch({
+            type: 'spells/castSpell',
+            payload: {
+              discipline: disc,
+              index: sIdx,
+              spellIndex: sIdx,
+              spellId: spellItem.id,
+              spellName: pName,
+              spellLevel: lvl,
+              level: lvl,
+              isDomain: isDom,
+              isDomainSpell: isDom,
+              markPreparedCast: true,
+              selfHpCost: hpCost > 0 ? hpCost : 0
+            },
+            meta: { label: variantLabel ? `Cast ${pName} (${variantLabel})` : `Cast ${pName}` }
+          });
+          const out = CharStore.getLastOutcome();
+          if (!out || out.status !== 'spell_cast') return false;
+        } else if (slotRef && slotRef.used < slotRef.daily) {
+          slotRef.used++;
+          if (hpCost > 0 && character?.hp) {
+            character.hp.current = Math.max(-10, (Number(character.hp.current) || 0) - hpCost);
+          }
+          saveStateToStorage(true);
+        } else {
+          return false;
+        }
+        if (typeof consumeActionEconomy === 'function') consumeActionEconomy(spellItem, pName);
+        renderAll();
+        return true;
+      };
 
       const options = [];
 
@@ -4129,11 +4199,7 @@
             label,
             className: btnClass,
             execute: () => {
-              if (slotRef && slotRef.used < slotRef.daily) {
-                slotRef.used++;
-                saveStateToStorage(true);
-                renderAll();
-              }
+              if (!dispatchPreCastChoice(hpCost, shortTitle)) return;
               if (childDice) {
                 rollSpellOrManeuverFormula(
                   childDice,
@@ -4149,9 +4215,6 @@
                   total: child.shortResult || 'Special Effect'
                 });
               }
-              if (hpCost > 0) {
-                applySpellSelfDamage(hpCost, child.name || pName, true, { stack: true });
-              }
             }
           });
         });
@@ -4164,11 +4227,7 @@
             label: `\u2600\uFE0F Standard (${parentDice})`,
             className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
             execute: () => {
-              if (slotRef && slotRef.used < slotRef.daily) {
-                slotRef.used++;
-                saveStateToStorage(true);
-                renderAll();
-              }
+              if (!dispatchPreCastChoice(0, 'Standard')) return;
               rollSpellOrManeuverFormula(
                 parentDice,
                 `${pName} (Level ${lvl} \u2022 -1 Slot)`,
@@ -4183,29 +4242,20 @@
             label: '\uD83E\uDE78 Sacrifice 5 HP (3d6)',
             className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-rose-800 hover:bg-rose-700 text-rose-100 border border-rose-400 transition shadow cursor-pointer',
             execute: () => {
-              if (slotRef && slotRef.used < slotRef.daily) {
-                slotRef.used++;
-                saveStateToStorage(true);
-                renderAll();
-              }
+              if (!dispatchPreCastChoice(5, '5 HP Sacrifice')) return;
               rollSpellOrManeuverFormula(
                 '3d6',
                 `${pName} \u2794 5 HP Sacrifice (3d6 Damage)`,
                 { name: `${pName} (5 HP Sacrifice)`, dice: '3d6', effectType: 'damage' },
                 { name: pName }
               );
-              applySpellSelfDamage(5, pName, true, { stack: true });
             }
           },
           {
             label: '\u2694\uFE0F No Sacrifice (1d6)',
             className: 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 transition cursor-pointer',
             execute: () => {
-              if (slotRef && slotRef.used < slotRef.daily) {
-                slotRef.used++;
-                saveStateToStorage(true);
-                renderAll();
-              }
+              if (!dispatchPreCastChoice(0, 'No Sacrifice')) return;
               rollSpellOrManeuverFormula(
                 '1d6',
                 `${pName} \u2794 No Sacrifice (1d6 Damage)`,
@@ -5570,7 +5620,12 @@
       }
 
       const mutSlot = character.spellcasting?.slots?.find(sl => Number(sl.level) === lvl) || slot;
-      const preCast = getSpellPreCastOptions(s, cl, mutSlot, lvl);
+      const preCast = getSpellPreCastOptions(s, cl, mutSlot, lvl, {
+        discipline: 'spontaneous',
+        spellIdx,
+        level: lvl,
+        isDomain: false
+      });
       if (preCast && Array.isArray(preCast.options) && preCast.options.length > 0) {
         showSpellPreCastChoiceToast(preCast);
         return;
@@ -8729,29 +8784,29 @@
               <span>📋</span>
               <span>Clone / Load from Existing Class Template</span>
             </label>
-            <button type="button" onclick="applyAdventurerRoguePreset()" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-500/50 transition cursor-pointer" title="Load Rogue template with Fighter Bonus Feats at levels 1, 3, 5..19 in place of Sneak Attack">
+            <button type="button" data-action="spells:custom-class-rogue-preset" class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-950/90 hover:bg-amber-900 text-amber-300 border border-amber-500/50 transition cursor-pointer" title="Load Rogue template with Fighter Bonus Feats at levels 1, 3, 5..19 in place of Sneak Attack">
               ⚡ Preset: Rogue (Adventurer / Feat Variant)
             </button>
           </div>
           <div class="flex items-center gap-2">
-            <select id="custom-class-template-select" onchange="loadClassTemplateIntoCustomModal(this.value)" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-300 font-bold">
+            <select id="custom-class-template-select" data-change-action="spells:custom-class-template-change" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-300 font-bold">
               <option value="">-- Start from Blank Custom Class --</option>
             </select>
-            <button type="button" onclick="loadClassTemplateIntoCustomModal(document.getElementById('custom-class-template-select')?.value)" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg border border-indigo-400/40 transition cursor-pointer">
+            <button type="button" data-action="spells:custom-class-load-template" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg border border-indigo-400/40 transition cursor-pointer">
               Load Template
             </button>
           </div>
           <div class="grid grid-cols-2 gap-2 pt-1">
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Class Category</label>
-              <select id="custom-class-type" onchange="onCustomClassMaxLevelChange()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-purple-300 font-bold">
+              <select id="custom-class-type" data-change-action="spells:custom-class-type-change" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-purple-300 font-bold">
                 <option value="Base Class" selected>🛡️ Base / Variant Class</option>
                 <option value="Prestige Class">👑 Prestige Class</option>
               </select>
             </div>
             <div>
               <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Max Class Level</label>
-              <select id="custom-class-max-level" onchange="renderCustomClassLevelEditorRows()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-amber-300 font-bold">
+              <select id="custom-class-max-level" data-change-action="spells:custom-class-max-level-change" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-amber-300 font-bold">
                 <option value="20" selected>20 Levels (Standard Base)</option>
                 <option value="10">10 Levels (Prestige)</option>
                 <option value="5">5 Levels (Short Prestige)</option>
@@ -9210,12 +9265,12 @@
       if (!foundCategory || !foundPin) return '';
 
       const isActive = Boolean(foundPin.active);
-      const safeTarget = cleanTarget.replace(/'/g, "\\'");
+      const safeTarget = escape(cleanTarget);
 
       if (isActive) {
-        return `<span onclick="event.stopPropagation(); toggleFeatPinActiveState('${safeTarget}')" class="absolute top-0.5 right-0.5 inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[9px] border border-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.85)] pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: ACTIVE (+Bonus applied). Click to deactivate!"><span class="text-[9px]">✓</span><span>Active</span></span>`;
+        return `<span data-action="spells:toggle-feat-pin" data-target="${safeTarget}" class="absolute top-0.5 right-0.5 inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[9px] border border-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.85)] pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: ACTIVE (+Bonus applied). Click to deactivate!"><span class="text-[9px]">✓</span><span>Active</span></span>`;
       } else {
-        return `<span onclick="event.stopPropagation(); toggleFeatPinActiveState('${safeTarget}')" class="absolute top-0.5 right-0.5 inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-[9px] border border-slate-700 shadow pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: INACTIVE. Click to activate!"><span class="text-[8px]">⚪</span><span>Inactive</span></span>`;
+        return `<span data-action="spells:toggle-feat-pin" data-target="${safeTarget}" class="absolute top-0.5 right-0.5 inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-[9px] border border-slate-700 shadow pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: INACTIVE. Click to activate!"><span class="text-[8px]">⚪</span><span>Inactive</span></span>`;
       }
     }
 
@@ -9430,7 +9485,7 @@
                 <span class="font-extrabold text-white truncate">${currentTarget}</span>
                 ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-900/80 text-amber-300 font-mono">${meta}</span>` : ''}
               </div>
-              <button type="button" onclick="window.clearFeatModalTargetSelection()" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
+              <button type="button" data-action="spells:clear-feat-target-weapon" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
             </div>
           `;
         } else {
@@ -9464,9 +9519,9 @@
         filteredEquipped.forEach(w => {
           const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
           const meta = metaFn(w);
-          const safeW = w.replace(/'/g, "\\'");
+          const safeW = escape(w);
           html += `
-            <button type="button" onclick="window.selectFeatModalTargetWeapon('${safeW}')" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent hover:border-amber-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+            <button type="button" data-action="spells:select-feat-target-weapon" data-weapon="${safeW}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent hover:border-amber-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="font-bold text-white text-xs group-hover:text-amber-200 truncate">${w}</span>
                 <span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold shrink-0">Equipped</span>
@@ -9488,9 +9543,9 @@
         filteredCompendium.forEach(w => {
           const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
           const meta = metaFn(w);
-          const safeW = w.replace(/'/g, "\\'");
+          const safeW = escape(w);
           html += `
-            <button type="button" onclick="window.selectFeatModalTargetWeapon('${safeW}')" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+            <button type="button" data-action="spells:select-feat-target-weapon" data-weapon="${safeW}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="font-bold text-white text-xs group-hover:text-purple-200 truncate">${w}</span>
                 ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
@@ -9617,7 +9672,7 @@
               placeholder="Type weapon name (e.g. Longsword, Greatsword, Scimitar)..."
               class="w-full bg-slate-950 border border-amber-500/70 focus:border-amber-400 rounded-lg pl-8 pr-7 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-400 font-medium transition"
               autocomplete="off">
-            <button type="button" id="feat-modal-target-spotlight-clear-btn" onclick="window.clearFeatModalTargetSelection()" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold transition cursor-pointer ${currentTarget ? '' : 'hidden'}" title="Clear selection">&times;</button>
+            <button type="button" id="feat-modal-target-spotlight-clear-btn" data-action="spells:clear-feat-target-weapon" class="absolute right-2 text-slate-400 hover:text-white text-xs font-bold transition cursor-pointer ${currentTarget ? '' : 'hidden'}" title="Clear selection">&times;</button>
           </div>
           <div id="feat-modal-target-active-badge-container"></div>
           <div id="feat-modal-target-spotlight-results" class="max-h-52 overflow-y-auto space-y-1 p-1 bg-slate-950/70 border border-slate-800 rounded-lg custom-scroll text-xs"></div>
@@ -10022,10 +10077,10 @@
               const bonusNum = Number(dp.bonus || 0);
               const formula = `${dp.dice}${bonusNum ? (bonusNum > 0 ? '+' + bonusNum : bonusNum) : ''}`;
               const dmgType = dp.type || 'Damage';
-              const safeFormula = formula.replace(/'/g, "\\'");
-              const safeLabel = `${title} (${dmgType} Damage)`.replace(/'/g, "\\'");
+              const safeFormula = escape(formula);
+              const safeLabel = escape(`${title} (${dmgType} Damage)`);
               buttonsHtml.push(`
-                <button type="button" onclick="rollAbilityTacticalDice('${safeFormula}', '${safeLabel}', 'damage', '${safeAction}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-950/90 hover:bg-rose-800 text-rose-100 border border-rose-600/70 shadow transition active:scale-95 cursor-pointer">
+                <button type="button" data-action="spells:roll-ability-tactical-dice" data-formula="${safeFormula}" data-label="${safeLabel}" data-mode="damage" data-action-type="${escape(safeAction)}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-rose-950/90 hover:bg-rose-800 text-rose-100 border border-rose-600/70 shadow transition active:scale-95 cursor-pointer">
                   <span>⚔️</span>
                   <span>Roll ${safeEscapeHtml(formula)} ${safeEscapeHtml(dmgType)}</span>
                 </button>
@@ -10033,10 +10088,10 @@
             });
           }
           if (mergedV2.rechargeDice) {
-            const safeRFormula = String(mergedV2.rechargeDice).replace(/'/g, "\\'");
-            const safeRLabel = `${title} — Recharge Cooldown`.replace(/'/g, "\\'");
+            const safeRFormula = escape(String(mergedV2.rechargeDice));
+            const safeRLabel = escape(`${title} — Recharge Cooldown`);
             buttonsHtml.push(`
-              <button type="button" onclick="rollAbilityTacticalDice('${safeRFormula}', '${safeRLabel}', 'recharge')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-950/90 hover:bg-indigo-800 text-indigo-100 border border-indigo-600/70 shadow transition active:scale-95 cursor-pointer">
+              <button type="button" data-action="spells:roll-ability-tactical-dice" data-formula="${safeRFormula}" data-label="${safeRLabel}" data-mode="recharge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-950/90 hover:bg-indigo-800 text-indigo-100 border border-indigo-600/70 shadow transition active:scale-95 cursor-pointer">
                 <span>⏳</span>
                 <span>Roll Recharge (${safeEscapeHtml(mergedV2.rechargeDice)} rounds)</span>
               </button>
@@ -10326,6 +10381,39 @@
       });
       Actions.register('spells:toggle-dm-boon', (el, data, event) => {
         toggleDisciplineDmBoon(data.discipline || '');
+      });
+      Actions.register('spells:custom-class-rogue-preset', (el, data, event) => {
+        applyAdventurerRoguePreset();
+      });
+      Actions.register('spells:custom-class-template-change', (el, data, event) => {
+        loadClassTemplateIntoCustomModal(el ? el.value : '');
+      });
+      Actions.register('spells:custom-class-load-template', (el, data, event) => {
+        loadClassTemplateIntoCustomModal(document.getElementById('custom-class-template-select')?.value || '');
+      });
+      Actions.register('spells:custom-class-type-change', (el, data, event) => {
+        onCustomClassMaxLevelChange();
+      });
+      Actions.register('spells:custom-class-max-level-change', (el, data, event) => {
+        renderCustomClassLevelEditorRows();
+      });
+      Actions.register('spells:toggle-feat-pin', (el, data, event) => {
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+        toggleFeatPinActiveState(unescape(data.target || ''));
+      });
+      Actions.register('spells:clear-feat-target-weapon', (el, data, event) => {
+        if (typeof window.clearFeatModalTargetSelection === 'function') window.clearFeatModalTargetSelection();
+      });
+      Actions.register('spells:select-feat-target-weapon', (el, data, event) => {
+        if (typeof window.selectFeatModalTargetWeapon === 'function') window.selectFeatModalTargetWeapon(unescape(data.weapon || ''));
+      });
+      Actions.register('spells:roll-ability-tactical-dice', (el, data, event) => {
+        rollAbilityTacticalDice(
+          unescape(data.formula || ''),
+          unescape(data.label || ''),
+          data.mode || 'damage',
+          data.actionType ? unescape(data.actionType) : undefined
+        );
       });
     })();
 

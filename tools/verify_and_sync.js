@@ -307,10 +307,10 @@ function main() {
   ]);
   const RATCHET_LIMITS = {
     'index.html':         { inlineEvents: 318, windowAssigns: 0 },
-    'char_hud.js':        { inlineEvents: 50,  windowAssigns: 48 },
+    'char_hud.js':        { inlineEvents: 0,   windowAssigns: 48 },
     'char_combat.js':     { inlineEvents: 98,  windowAssigns: 82 },
-    'char_spells.js':     { inlineEvents: 13,  windowAssigns: 68 },
-    'char_progression.js':{ inlineEvents: 115, windowAssigns: 47 },
+    'char_spells.js':     { inlineEvents: 0,   windowAssigns: 68 },
+    'char_progression.js':{ inlineEvents: 0,   windowAssigns: 46 },
     'char_inventory.js':  { inlineEvents: 27,  windowAssigns: 41 },
     'rule_engine.js':     { inlineEvents: 0,   windowAssigns: 1 },
     'char_store.js':      { inlineEvents: 0,   windowAssigns: 1 },

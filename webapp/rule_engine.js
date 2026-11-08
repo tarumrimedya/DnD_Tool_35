@@ -9629,6 +9629,305 @@ const RuleEngine = {
   },
 
   /**
+   * Pure, zero-mutation progression & character features derivation (Phase R6).
+   * Returns `{ levelsView, featSlotsView, skillBudgetsView, featuresView }` without mutating `w`.
+   */
+  deriveProgressionView(w, workingDb = []) {
+    if (!w || typeof w !== 'object') {
+      return {
+        levelsView: {
+          rows: [],
+          summary: {
+            activeLevelsCount: 0,
+            totalLevel: 0,
+            classSummaryStr: '',
+            totalBab: 0,
+            baseSaves: { fort: 0, ref: 0, will: 0 },
+            totalSkillPoints: 0,
+            featMode: 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)'
+          }
+        },
+        featSlotsView: {
+          featMode: 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)',
+          regularSlotsEarned: 0,
+          bonusSlotsEarned: 0,
+          flawSlotsEarned: 0,
+          totalSlotsEarned: 0,
+          regularFeatsTaken: 0,
+          bonusFeatsTaken: 0,
+          flawFeatsTaken: 0,
+          openRegularSlots: 0,
+          openBonusSlots: 0
+        },
+        skillBudgetsView: {
+          isMerged: false,
+          charLevel: 1,
+          maxClassRank: 4,
+          maxCrossRank: 2,
+          totalSkillPoints: 0,
+          spentSkillPoints: 0,
+          remainingSkillPoints: 0,
+          isOverBudget: false
+        },
+        featuresView: {
+          featsList: [],
+          racialTraits: [],
+          classFeatures: [],
+          templatesAndBoons: [],
+          flawsList: []
+        }
+      };
+    }
+
+    const abi = w.abilities || { str: 10, dex: 10, con: 10, int: 10, wis: 10, cha: 10 };
+    const intMod = this.getAbilityMod(abi.int || 10);
+    const isHuman = String(w.race || '').toLowerCase().includes('human');
+    const sys = w.settings?.babSaveSystem || 'standard';
+    const rawFeatMode = String(w.settings?.featMode || 'Standard 3.5e (1, 3, 6, 9, 12, 15, 18)');
+    const featMode = rawFeatMode.startsWith('Every 2 Levels')
+      ? 'Every 2 Levels (1, 3, 5, 7, 9, 11, 13, 15, 17, 19)'
+      : rawFeatMode;
+
+    const isLevelQualifiesForFeat = (lvlNum, modeStr) => {
+      const m = String(modeStr || '');
+      if (m.startsWith('Every 2 Levels')) return lvlNum % 2 === 1;
+      if (m.startsWith('Every 4 Levels')) return lvlNum === 1 || lvlNum % 4 === 0;
+      if (m.startsWith('All Free')) return true;
+      return lvlNum === 1 || lvlNum % 3 === 0;
+    };
+
+    const rawProg = Array.isArray(w.levelProgression) ? w.levelProgression : [];
+    const progSummary = typeof this.calculateProgression === 'function'
+      ? this.calculateProgression(rawProg, { system: sys, isHuman, intMod })
+      : null;
+
+    const classCountsSoFar = {};
+    const activeClassCounts = {};
+    let regularSlotsEarned = 0;
+    let bonusSlotsEarned = 0;
+    let flawSlotsEarned = 0;
+    let regularFeatsTaken = 0;
+    let bonusFeatsTaken = 0;
+    let flawFeatsTaken = 0;
+
+    const rows = rawProg.map((lvl, idx) => {
+      const isActive = lvl && lvl.active !== false;
+      const lvlNum = Number(lvl?.level) || (idx + 1);
+      const cName = String(lvl?.className || lvl?.class || 'Fighter').trim();
+      classCountsSoFar[cName] = (classCountsSoFar[cName] || 0) + 1;
+      const classLevelSoFar = classCountsSoFar[cName];
+      if (isActive) {
+        activeClassCounts[cName] = (activeClassCounts[cName] || 0) + 1;
+      }
+
+      const rowSlice = rawProg.slice(0, idx + 1).map(p => ({ ...p, active: true }));
+      const rowCalc = typeof this.calculateProgression === 'function'
+        ? this.calculateProgression(rowSlice, { system: sys, isHuman, intMod })
+        : null;
+      const rowBab = rowCalc ? rowCalc.baseBab : (Number(lvl?.bab) || 0);
+      const rowFort = rowCalc ? rowCalc.baseSaves.fort : (Number(lvl?.fort) || 0);
+      const rowRef = rowCalc ? rowCalc.baseSaves.ref : (Number(lvl?.ref) || 0);
+      const rowWill = rowCalc ? rowCalc.baseSaves.will : (Number(lvl?.will) || 0);
+
+      const featsArr = Array.isArray(lvl?.feats) ? [...lvl.feats] : [];
+      const qualifiesReg = isLevelQualifiesForFeat(lvlNum, featMode);
+      if (isActive && qualifiesReg) regularSlotsEarned++;
+      if (isActive && lvlNum === 1 && isHuman) bonusSlotsEarned++;
+
+      featsArr.forEach(fStr => {
+        const s = String(fStr || '');
+        if (!s || s.includes('+1 Stat') || s.includes('Stat:')) return;
+        if (s.includes('[Flaw]') || /^⚠️\s*\[Flaw\]/i.test(s)) {
+          if (isActive) flawSlotsEarned++;
+        } else if (s.includes('[Flaw Bonus]')) {
+          if (isActive) flawFeatsTaken++;
+        } else if (s.includes('[Bonus]') || s.includes('[Extra Bonus]') || s.includes('[Racial]') || s.includes('[Extra Racial]')) {
+          if (isActive) {
+            bonusFeatsTaken++;
+            if (s.includes('[Bonus]')) bonusSlotsEarned++;
+          }
+        } else if (!s.includes('[DM Boon]') && !s.includes('Invocation')) {
+          if (isActive) regularFeatsTaken++;
+        }
+      });
+
+      const rawStatInc = lvl?.statIncrease || lvl?.statIncreased || null;
+      return {
+        index: idx,
+        level: lvlNum,
+        active: isActive,
+        className: cName,
+        classLevelSoFar,
+        hd: Number(lvl?.hd) || 8,
+        hpRoll: Number(lvl?.hpRoll ?? lvl?.hpGain ?? lvl?.hp) || 0,
+        hpGain: Number(lvl?.hpGain ?? lvl?.hpRoll ?? lvl?.hp) || 0,
+        bab: rowBab,
+        fort: rowFort,
+        ref: rowRef,
+        will: rowWill,
+        skillPoints: Number(lvl?.skillPoints ?? lvl?.skillPts) || 0,
+        feats: featsArr,
+        classFeatures: Array.isArray(lvl?.classFeatures) ? [...lvl.classFeatures] : [],
+        statIncrease: rawStatInc,
+        statIncreaseKey: rawStatInc ? String(rawStatInc).toLowerCase() : null
+      };
+    });
+
+    if (rows.length === 0) {
+      const charLvl = Math.max(1, Number(w.level) || 1);
+      for (let l = 1; l <= charLvl; l++) {
+        if (isLevelQualifiesForFeat(l, featMode)) regularSlotsEarned++;
+      }
+      if (isHuman) bonusSlotsEarned++;
+      regularFeatsTaken = Array.isArray(w.feats) ? w.feats.length : 0;
+    }
+
+    const activeLevelsCount = rows.length > 0
+      ? rows.filter(r => r.active).length
+      : Math.max(1, Number(w.level) || 1);
+    const totalLevel = rows.length > 0 ? rows.length : activeLevelsCount;
+    const classSummaryStr = Object.keys(activeClassCounts).length > 0
+      ? Object.entries(activeClassCounts).map(([k, v]) => `${k} ${v}`).join(' / ')
+      : (typeof w.classes === 'string' ? w.classes : '');
+
+    const totalBab = progSummary && rows.length > 0 ? progSummary.baseBab : (Number(w.bab) || 0);
+    const baseSaves = progSummary && rows.length > 0
+      ? { ...progSummary.baseSaves }
+      : {
+          fort: Number(w.baseSaves?.fort ?? w.saves?.fort?.base ?? 0),
+          ref: Number(w.baseSaves?.ref ?? w.saves?.ref?.base ?? 0),
+          will: Number(w.baseSaves?.will ?? w.saves?.will?.base ?? 0)
+        };
+    const totalSkillPoints = progSummary && rows.length > 0
+      ? progSummary.totalSkillPoints
+      : (Number(w.skillPointsTotal) || 0);
+
+    // Skill budgets
+    const isMerged = Boolean(w.settings?.skillConsolidation && w.settings.skillConsolidation !== 'standard');
+    const maxClassRank = activeLevelsCount + 3;
+    const maxCrossRank = Math.floor(maxClassRank / 2);
+    let spentSkillPoints = 0;
+    const skillsList = Array.isArray(w.skills) ? w.skills : Object.values(w.skills || {});
+    skillsList.forEach(sk => {
+      if (!sk || typeof sk !== 'object') return;
+      const ranks = Number(sk.ranks ?? sk.rank ?? 0) || 0;
+      const isCls = sk.isClassSkill !== false && sk.classSkill !== false && sk.isClass !== false;
+      spentSkillPoints += isCls ? ranks : (ranks * 2);
+    });
+    const remainingSkillPoints = totalSkillPoints - spentSkillPoints;
+
+    // Features view
+    const featMap = new Map();
+    (w.feats || []).forEach(f => {
+      if (!f) return;
+      const name = (typeof f === 'string' ? f : (f.name || '')).trim();
+      if (!name) return;
+      const key = name.toLowerCase();
+      if (!featMap.has(key)) {
+        featMap.set(key, {
+          name,
+          category: typeof f === 'object' ? (f.category || 'Feat') : 'Feat',
+          benefit: typeof f === 'object' ? (f.benefit || f.desc || '') : '',
+          source: typeof f === 'object' ? (f.source || '') : ''
+        });
+      }
+    });
+    rows.forEach(r => {
+      if (!r.active) return;
+      (r.feats || []).forEach(fn => {
+        if (!fn || typeof fn !== 'string' || fn.includes('+1 Stat') || fn.includes('Stat:')) return;
+        const clean = fn.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨⚜️\s]+(\[.*?\])?\s*/, '').trim();
+        const key = clean.toLowerCase();
+        if (clean && !featMap.has(key)) {
+          featMap.set(key, {
+            name: clean,
+            category: 'Level Feat',
+            benefit: '',
+            source: `Level ${r.level}`
+          });
+        }
+      });
+    });
+
+    const racialTraits = [];
+    const classFeatures = [];
+    const templatesAndBoons = [];
+    const flawsList = [];
+    (w.specialAbilities || []).forEach(a => {
+      if (!a) return;
+      const entry = typeof a === 'string' ? { name: a, category: 'Special Ability', type: '' } : { ...a };
+      const cat = String(entry.category || entry.type || '').toLowerCase();
+      if (cat.includes('flaw')) flawsList.push(entry);
+      else if (cat.includes('racial')) racialTraits.push(entry);
+      else if (cat.includes('boon') || cat.includes('template')) templatesAndBoons.push(entry);
+      else classFeatures.push(entry);
+    });
+
+    const totalSlotsEarned = regularSlotsEarned + bonusSlotsEarned + flawSlotsEarned;
+    const openRegularSlots = Math.max(0, regularSlotsEarned - regularFeatsTaken);
+    const openBonusSlots = Math.max(0, (bonusSlotsEarned + flawSlotsEarned) - (bonusFeatsTaken + flawFeatsTaken));
+    const featsListArr = Array.from(featMap.values());
+    const abilitiesListArr = [...racialTraits, ...classFeatures, ...templatesAndBoons];
+    const progressionSummary = {
+      activeLevelsCount,
+      totalLevel,
+      classSummaryStr,
+      totalBab,
+      baseSaves,
+      totalSkillPoints,
+      featMode
+    };
+    const levelsViewArr = rows.slice();
+    Object.defineProperty(levelsViewArr, 'rows', { value: rows, enumerable: false });
+    Object.defineProperty(levelsViewArr, 'summary', { value: progressionSummary, enumerable: false });
+
+    return {
+      levelsView: levelsViewArr,
+      activeLevelsCount,
+      plannedLevelsCount: rows.length,
+      progressionSummary,
+      featSlotsView: {
+        featMode,
+        maxStandardFeats: regularSlotsEarned,
+        takenStandardFeats: regularFeatsTaken,
+        takenBonusFeats: bonusFeatsTaken,
+        takenFlawFeats: flawFeatsTaken,
+        regularSlotsEarned,
+        bonusSlotsEarned,
+        flawSlotsEarned,
+        totalSlotsEarned,
+        regularFeatsTaken,
+        bonusFeatsTaken,
+        flawFeatsTaken,
+        openRegularSlots,
+        openBonusSlots
+      },
+      skillBudgetsView: {
+        isMerged,
+        charLevel: activeLevelsCount,
+        maxClassRank,
+        maxCrossRank,
+        totalBudget: totalSkillPoints,
+        spentPoints: spentSkillPoints,
+        remainingPoints: remainingSkillPoints,
+        totalSkillPoints,
+        spentSkillPoints,
+        remainingSkillPoints,
+        isOverBudget: totalSkillPoints > 0 && remainingSkillPoints < 0
+      },
+      featuresView: {
+        featsList: featsListArr,
+        featCount: featsListArr.length,
+        abilitiesList: abilitiesListArr,
+        racialTraits,
+        classFeatures,
+        templatesAndBoons,
+        flawsList
+      }
+    };
+  },
+
+  /**
    * Pure, zero-mutation sheet derivation pipeline (Phase R1 Strangler Fig).
    * Accepts `(inputChar, customDb, tacticalOptions)` or `(inputChar, { masterDb, session, tactical })`.
    * Returns a self-contained `SheetView` without mutating `inputChar` or `customDb`.
@@ -9701,6 +10000,7 @@ const RuleEngine = {
     const consumablesGrouped = this.deriveConsumablesView(working);
     const inventoryView = this.deriveInventoryView(working);
     const spellsView = this.deriveSpellsView(working, workingDb);
+    const progressionView = this.deriveProgressionView(working, workingDb);
     const specialAttacks = this.deriveSpecialAttacks(working, working.legoEvaluation, workingDb);
     const activeBuffsStrip = this.deriveActiveBuffsStrip(working);
     const spent = working.tactical?.spentActions || working.actionEconomy?.spentActions || {};
@@ -9821,6 +10121,7 @@ const RuleEngine = {
         spellsByLevelView: spellsView.spellsByLevelView,
         maneuversView: spellsView.maneuversView
       },
+      progression: progressionView,
       session: workingSession,
       warnings: working.activeConditionWarnings || [],
       _workingSnapshot: working

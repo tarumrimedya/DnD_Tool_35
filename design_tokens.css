@@ -80,11 +80,13 @@
 }
 
 /* Sheet Mode Visibility Rules (Play vs. Build) */
-[data-sheet-mode="play"] [data-mode-only="build"] {
+[data-sheet-mode="play"] [data-mode-only="build"],
+body[data-sheet-mode="play"] [data-mode-only="build"] {
   display: none !important;
 }
 
-[data-sheet-mode="build"] [data-mode-only="play"] {
+[data-sheet-mode="build"] [data-mode-only="play"],
+body[data-sheet-mode="build"] [data-mode-only="play"] {
   display: none !important;
 }
 

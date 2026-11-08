@@ -1602,6 +1602,473 @@ function runDeriveSheetTests() {
   );
   CharStore.clearHistory();
 
+  // ==========================================================================
+  // PHASE R6: Pure sheet.progression View-Models, Progression & HUD Reducers,
+  //           Play/Build/Both Mode Toggle, Pre-Cast Spell Store Wiring,
+  //           and Static (el, data, event) Signature Audit
+  // ==========================================================================
+  allFixtures.forEach(rawFix => {
+    const rawClone = JSON.parse(JSON.stringify(rawFix));
+    deepFreeze(rawClone);
+    const derived = RuleEngine.deriveSheet(rawClone, rawClone.customDb || []);
+    const prog = derived.progression;
+    check(
+      `Phase R6 [${rawFix.name}]: sheet.progression exposes pure levelsView, featSlotsView, skillBudgetsView, and featuresView with 0 input mutation`,
+      Boolean(
+        prog &&
+        Array.isArray(prog.levelsView) &&
+        prog.featSlotsView &&
+        typeof prog.featSlotsView.maxStandardFeats === 'number' &&
+        prog.skillBudgetsView &&
+        typeof prog.skillBudgetsView.totalBudget === 'number' &&
+        typeof prog.skillBudgetsView.maxClassRank === 'number' &&
+        prog.featuresView &&
+        Array.isArray(prog.featuresView.featsList) &&
+        Array.isArray(prog.featuresView.abilitiesList)
+      )
+    );
+  });
+
+  // Phase R6 Reducer & Undo/Redo Suite
+  const r6Doc = {
+    name: 'R6 Test Hero',
+    race: 'Human',
+    classes: 'Fighter 4',
+    level: 4,
+    uiMode: 'both',
+    baseAbilities: { str: 16, dex: 14, con: 14, int: 12, wis: 10, cha: 8 },
+    abilities: { str: 16, dex: 14, con: 14, int: 12, wis: 10, cha: 8 },
+    hp: { current: 36, max: 40, baseMax: 32, conBonusHp: 8, temp: 5, nonlethal: 0 },
+    levelProgression: [
+      { level: 1, className: 'Fighter', hd: 'd10', hpGain: 10, skillPts: 16, feats: ['🎖️ Power Attack', '🧬 [Racial] Cleave', '⚔️ [Bonus] Weapon Focus (Longsword)'], specialAbilities: [], active: true },
+      { level: 2, className: 'Fighter', hd: 'd10', hpGain: 8, skillPts: 4, feats: ['⚔️ [Bonus] Improved Initiative'], specialAbilities: [], active: true },
+      { level: 3, className: 'Fighter', hd: 'd10', hpGain: 7, skillPts: 4, feats: ['🎖️ Iron Will'], specialAbilities: [], active: true },
+      { level: 4, className: 'Fighter', hd: 'd10', hpGain: 7, skillPts: 4, feats: [], specialAbilities: [], statIncreased: null, active: true }
+    ],
+    skills: [
+      { key: 'jump', name: 'Jump', stat: 'str', ranks: 4, isClass: true },
+      { key: 'tumble', name: 'Tumble', stat: 'dex', ranks: 2, isClass: false }
+    ],
+    feats: [
+      { name: 'Power Attack', category: 'Regular Feat' },
+      { name: 'Cleave', category: 'Racial Trait' },
+      { name: 'Weapon Focus (Longsword)', category: 'Class Bonus Feat' },
+      { name: 'Improved Initiative', category: 'Class Bonus Feat' },
+      { name: 'Iron Will', category: 'Regular Feat' }
+    ],
+    specialAbilities: [],
+    spellcasting: {
+      cl: 4,
+      slots: [{ level: 1, total: 3, used: 1 }],
+      knownSpells: [{ name: 'Shield', level: 1, castsUsed: 1 }],
+      preparedSlots: [],
+      preparedSpells: [],
+      divineSlots: [],
+      divineSpells: [],
+      turnUndeadUsed: 1,
+      domainPowerUses: {}
+    },
+    tomeOfBattle: {
+      readiedManeuvers: [{ name: 'Steel Wind', level: 1, expended: true }]
+    },
+    buffs: [
+      { id: 'buff_haste', name: 'Haste', durationType: 'rounds', durationLeft: 3, active: true }
+    ],
+    customDb: []
+  };
+  CharStore.replaceDoc(r6Doc);
+  CharStore.clearHistory();
+
+  // 1. ui/setMode ('play' -> 'build' -> 'both')
+  CharStore.dispatch({ type: 'ui/setMode', payload: { mode: 'play' }, meta: { label: 'Mode: Play' } });
+  check(
+    'Phase R6: ui/setMode sets CharStore.getMode() and doc.uiMode to "play"',
+    CharStore.getMode() === 'play' && CharStore.getDoc().uiMode === 'play' && CharStore.getDoc().settings?.sheetViewMode === 'play'
+  );
+  CharStore.dispatch({ type: 'ui/setMode', payload: { mode: 'build' }, meta: { label: 'Mode: Build' } });
+  check(
+    'Phase R6: ui/setMode sets CharStore.getMode() and doc.uiMode to "build"',
+    CharStore.getMode() === 'build' && CharStore.getDoc().uiMode === 'build'
+  );
+  CharStore.undo();
+  check(
+    'Phase R6: CharStore.undo() restores uiMode === "play"',
+    CharStore.getMode() === 'play' && CharStore.getDoc().uiMode === 'play'
+  );
+  CharStore.redo();
+  check(
+    'Phase R6: CharStore.redo() re-applies uiMode === "build"',
+    CharStore.getMode() === 'build' && CharStore.getDoc().uiMode === 'build'
+  );
+
+  // 2. progression/adjustAbility & progression/updateLevelRow (setStatIncrease)
+  CharStore.dispatch({ type: 'progression/adjustAbility', payload: { abilityKey: 'str', delta: 2 }, meta: { label: '+2 Base STR' } });
+  check(
+    'Phase R6: progression/adjustAbility increments baseAbilities.str from 16 -> 18',
+    CharStore.getDoc().baseAbilities.str === 18
+  );
+  CharStore.dispatch({
+    type: 'progression/updateLevelRow',
+    payload: { mode: 'setStatIncrease', levelIndex: 3, statKey: 'str', statLabel: 'STR' },
+    meta: { label: 'Lv.4 +1 STR' }
+  });
+  check(
+    'Phase R6: progression/updateLevelRow (setStatIncrease) sets level 4 statIncreased="str" and increments baseAbilities.str 18 -> 19',
+    CharStore.getDoc().levelProgression[3].statIncreased === 'str' &&
+    CharStore.getDoc().baseAbilities.str === 19 &&
+    CharStore.getSheet().progression.levelsView[3].statIncreaseKey === 'str'
+  );
+
+  // 3. progression/adjustSkillRank & progression/toggleSkillClass
+  CharStore.dispatch({
+    type: 'progression/adjustSkillRank',
+    payload: { skillKey: 'jump', delta: 2 },
+    meta: { label: '+2 Jump Ranks' }
+  });
+  check(
+    'Phase R6: progression/adjustSkillRank increments Jump ranks 4 -> 6 and updates skillBudgetsView.spentPoints',
+    CharStore.getDoc().skills.find(s => s.key === 'jump').ranks === 6 &&
+    CharStore.getSheet().progression.skillBudgetsView.spentPoints === 10
+  );
+  // Attempt to exceed maxClassRank (level 4 + 3 = 7)
+  CharStore.dispatch({
+    type: 'progression/adjustSkillRank',
+    payload: { skillKey: 'jump', delta: 2 },
+    meta: { label: 'Exceed Max Rank Cap' }
+  });
+  check(
+    'Phase R6: progression/adjustSkillRank blocks rank increase above maxClassRank (7 at level 4)',
+    CharStore.getDoc().skills.find(s => s.key === 'jump').ranks === 6 &&
+    CharStore.getLastOutcome()?.status === 'max_rank_cap'
+  );
+  CharStore.dispatch({
+    type: 'progression/toggleSkillClass',
+    payload: { skillKey: 'tumble' },
+    meta: { label: 'Toggle Tumble Class Skill' }
+  });
+  check(
+    'Phase R6: progression/toggleSkillClass toggles Tumble isClass false -> true',
+    CharStore.getDoc().skills.find(s => s.key === 'tumble').isClass === true
+  );
+
+  // 4. progression/addFeat & progression/removeFeat
+  CharStore.dispatch({
+    type: 'progression/addFeat',
+    payload: {
+      levelIndex: 3,
+      category: 'Class Bonus Feat',
+      featName: 'Weapon Specialization (Longsword)',
+      featString: '⚔️ [Bonus] Weapon Specialization (Longsword)',
+      featObj: { name: 'Weapon Specialization (Longsword)', category: 'Class Bonus Feat', benefit: '+2 damage with Longsword' }
+    },
+    meta: { label: 'Add Weapon Specialization' }
+  });
+  check(
+    'Phase R6: progression/addFeat adds Weapon Specialization (Longsword) to level 4 and doc.feats',
+    CharStore.getDoc().levelProgression[3].feats.includes('⚔️ [Bonus] Weapon Specialization (Longsword)') &&
+    CharStore.getDoc().feats.some(f => f.name === 'Weapon Specialization (Longsword)') &&
+    CharStore.getSheet().progression.featuresView.featCount === 6
+  );
+  CharStore.dispatch({
+    type: 'progression/removeFeat',
+    payload: { featName: 'Weapon Specialization (Longsword)', levelIndex: 3 },
+    meta: { label: 'Remove Weapon Specialization' }
+  });
+  check(
+    'Phase R6: progression/removeFeat removes Weapon Specialization (Longsword) from level 4 and doc.feats',
+    !CharStore.getDoc().levelProgression[3].feats.some(f => f.includes('Weapon Specialization')) &&
+    !CharStore.getDoc().feats.some(f => f.name === 'Weapon Specialization (Longsword)') &&
+    CharStore.getSheet().progression.featuresView.featCount === 5
+  );
+
+  // 5. progression/updateLevelRow ('add', 'toggleActive', 'setHp', 'remove')
+  CharStore.dispatch({
+    type: 'progression/updateLevelRow',
+    payload: { mode: 'add', className: 'Fighter', hd: 'd10', hpGain: 6, bab: 5, fort: 4, ref: 1, will: 1, skillPts: 4, active: false },
+    meta: { label: 'Add Planned Level 5' }
+  });
+  check(
+    'Phase R6: progression/updateLevelRow (add) appends planned Level 5 row',
+    CharStore.getDoc().levelProgression.length === 5 &&
+    CharStore.getDoc().levelProgression[4].active === false &&
+    CharStore.getSheet().progression.plannedLevelsCount === 5 &&
+    CharStore.getSheet().progression.activeLevelsCount === 4
+  );
+  CharStore.dispatch({
+    type: 'progression/updateLevelRow',
+    payload: { mode: 'toggleActive', levelIndex: 4 },
+    meta: { label: 'Activate Level 5' }
+  });
+  check(
+    'Phase R6: progression/updateLevelRow (toggleActive) activates Level 5',
+    CharStore.getDoc().levelProgression[4].active === true &&
+    CharStore.getSheet().progression.activeLevelsCount === 5
+  );
+  CharStore.dispatch({
+    type: 'progression/updateLevelRow',
+    payload: { mode: 'setHp', levelIndex: 4, hpGain: 9 },
+    meta: { label: 'Set Level 5 HP to 9' }
+  });
+  check(
+    'Phase R6: progression/updateLevelRow (setHp) updates Level 5 hpGain 6 -> 9',
+    CharStore.getDoc().levelProgression[4].hpGain === 9
+  );
+  CharStore.dispatch({
+    type: 'progression/updateLevelRow',
+    payload: { mode: 'remove', levelIndex: 4 },
+    meta: { label: 'Remove Level 5' }
+  });
+  check(
+    'Phase R6: progression/updateLevelRow (remove) deletes Level 5',
+    CharStore.getDoc().levelProgression.length === 4
+  );
+
+  // 6. hud/adjustHp (Temp HP absorption first on damage!) & Undo/Redo
+  const hpBeforeDmg = CharStore.getDoc().hp.current; // 36, temp: 5
+  CharStore.dispatch({
+    type: 'hud/adjustHp',
+    payload: { mode: 'damage', amount: 8 },
+    meta: { label: 'Take 8 Damage' }
+  });
+  check(
+    'Phase R6: hud/adjustHp (damage: 8) absorbs 5 Temp HP first (temp: 5 -> 0) and reduces current HP by remaining 3 (36 -> 33)',
+    CharStore.getDoc().hp.temp === 0 &&
+    CharStore.getDoc().hp.current === hpBeforeDmg - 3 &&
+    CharStore.getLastOutcome()?.tempAbsorbed === 5 &&
+    CharStore.getLastOutcome()?.hpLost === 3
+  );
+  CharStore.undo();
+  check(
+    'Phase R6: CharStore.undo() after hud/adjustHp restores Temp HP (5) and current HP (36)',
+    CharStore.getDoc().hp.temp === 5 &&
+    CharStore.getDoc().hp.current === hpBeforeDmg
+  );
+  CharStore.redo();
+  check(
+    'Phase R6: CharStore.redo() re-applies 8 damage (temp === 0, current === 33)',
+    CharStore.getDoc().hp.temp === 0 &&
+    CharStore.getDoc().hp.current === hpBeforeDmg - 3
+  );
+
+  // 7. Pre-Cast Spell selfHpCost via spells/castSpell & atomic consumeTurnUndead via spells/useTurnOrDomainPower
+  CharStore.dispatch({
+    type: 'hud/adjustHp',
+    payload: { mode: 'temp', amount: 3 },
+    meta: { label: 'Grant +3 Temp HP' }
+  });
+  CharStore.dispatch({
+    type: 'spells/castSpell',
+    payload: { discipline: 'spontaneous', spellIndex: 0, level: 1, selfHpCost: 5 },
+    meta: { label: 'Cast Shield (Blood Sacrifice -5 HP)' }
+  });
+  check(
+    'Phase R6: spells/castSpell with selfHpCost: 5 deducts 3 Temp HP first and 2 current HP atomically while spending spell slot',
+    CharStore.getDoc().hp.temp === 0 &&
+    CharStore.getDoc().hp.current === hpBeforeDmg - 5 &&
+    CharStore.getDoc().spellcasting.slots[0].used === 2 &&
+    CharStore.getLastOutcome()?.selfHpCost === 5
+  );
+  CharStore.dispatch({
+    type: 'spells/useTurnOrDomainPower',
+    payload: {
+      powerId: 'sun_greater_turning',
+      maxUses: 1,
+      consumeTurnUndead: true,
+      maxTurnUses: 5
+    },
+    meta: { label: 'Sun Domain: Greater Turning' }
+  });
+  check(
+    'Phase R6: spells/useTurnOrDomainPower with consumeTurnUndead: true atomically increments domainPowerUses["sun_greater_turning"] AND turnUndeadUsed (1 -> 2)',
+    CharStore.getDoc().spellcasting.domainPowerUses['sun_greater_turning'] === 1 &&
+    CharStore.getDoc().spellcasting.turnUndeadUsed === 2
+  );
+
+  // 8. hud/shortRest & hud/longRest with Undo/Redo
+  CharStore.dispatch({
+    type: 'hud/shortRest',
+    payload: { minutes: 5 },
+    meta: { label: 'Short Rest (5m)' }
+  });
+  check(
+    'Phase R6: hud/shortRest recovers expended Tome of Battle maneuvers and expires round-based buffs',
+    CharStore.getDoc().tomeOfBattle.readiedManeuvers[0].expended === false &&
+    CharStore.getDoc().buffs.find(b => b.id === 'buff_haste').active === false
+  );
+  CharStore.dispatch({
+    type: 'hud/longRest',
+    payload: { isFullHeal: true },
+    meta: { label: 'Long Rest' }
+  });
+  check(
+    'Phase R6: hud/longRest restores full HP, resets spell slots (used === 0), and resets turnUndeadUsed & domainPowerUses',
+    CharStore.getDoc().hp.current === CharStore.getDoc().hp.max &&
+    CharStore.getDoc().spellcasting.slots[0].used === 0 &&
+    CharStore.getDoc().spellcasting.turnUndeadUsed === 0 &&
+    Object.keys(CharStore.getDoc().spellcasting.domainPowerUses).length === 0
+  );
+  CharStore.undo();
+  check(
+    'Phase R6: CharStore.undo() after hud/longRest restores pre-rest HP and spent spell slots (used === 2)',
+    CharStore.getDoc().hp.current === hpBeforeDmg - 5 &&
+    CharStore.getDoc().spellcasting.slots[0].used === 2 &&
+    CharStore.getDoc().spellcasting.turnUndeadUsed === 2
+  );
+
+  // 9. Static Audit: Every Actions.register('hud:*' | 'progression:*') handler strictly declares (el, data, event)
+  const hudSrc = fs.readFileSync(path.join(__dirname, '..', 'char_hud.js'), 'utf8');
+  const progSrc = fs.readFileSync(path.join(__dirname, '..', 'char_progression.js'), 'utf8');
+  const hudRegMatches = [...hudSrc.matchAll(/Actions\.register\(\s*['"](hud:[^'"]+)['"]\s*,\s*(?:async\s*)?\(\s*([^)]*)\)/g)];
+  const progRegMatches = [...progSrc.matchAll(/Actions\.register\(\s*['"](progression:[^'"]+)['"]\s*,\s*(?:async\s*)?\(\s*([^)]*)\)/g)];
+  const badHudSigs = hudRegMatches.filter(m => m[2].replace(/\s+/g, '') !== 'el,data,event');
+  const badProgSigs = progRegMatches.filter(m => m[2].replace(/\s+/g, '') !== 'el,data,event');
+  check(
+    `Phase R6 Static Gate: All ${hudRegMatches.length} hud:* and ${progRegMatches.length} progression:* Actions.register handlers strictly declare (el, data, event)`,
+    hudRegMatches.length >= 25 && progRegMatches.length >= 50 && badHudSigs.length === 0 && badProgSigs.length === 0,
+    JSON.stringify({ badHud: badHudSigs.map(m => m[1]), badProg: badProgSigs.map(m => m[1]) })
+  );
+
+  // 10. Phase R6 QA Remediation:
+  // A. hud/longRest { isFullHeal: false } (8h Natural Healing +1 HP / level per PHB p.146) vs { isFullHeal: true }
+  const r6ClericDoc = JSON.parse(JSON.stringify(allFixtures[0]));
+  r6ClericDoc.level = 9;
+  r6ClericDoc.levelProgression = Array.from({ length: 9 }, (_, i) => ({
+    level: i + 1,
+    className: 'Cleric',
+    hd: 'd8',
+    hpGain: 6,
+    active: true
+  }));
+  r6ClericDoc.hp = { current: 20, max: 68, baseMax: 50, conBonusHp: 18, temp: 4, nonlethal: 6 };
+  r6ClericDoc.spellcasting = {
+    divineSlots: [{ level: 1, total: 4, used: 3, domainTotal: 1, domainUsed: 1 }],
+    turnUndeadUsed: 2,
+    domainPowerUses: { strength_feat_of_strength: 1 }
+  };
+  CharStore.replaceDoc(r6ClericDoc, { skipHistory: true });
+  const clericMaxHp = CharStore.getDoc().hp.max;
+  CharStore.dispatch({
+    type: 'doc/mutate',
+    payload: function (d) { d.hp.current = 20; d.hp.temp = 4; d.hp.nonlethal = 6; },
+    meta: { skipHistory: true }
+  });
+  CharStore.clearHistory();
+  CharStore.dispatch({
+    type: 'hud/longRest',
+    payload: { isFullHeal: false },
+    meta: { label: '8h Natural Healing Rest' }
+  });
+  const naturalRestOut = CharStore.getLastOutcome();
+  check(
+    'Phase R6 QA: hud/longRest with { isFullHeal: false } on Level 9 Cleric at 20 HP heals +9 HP (29 HP, 1 HP/lvl per PHB p.146) and reports out.hpGain === 9 & out.refreshedSpells === 4',
+    CharStore.getDoc().hp.current === 29 &&
+    CharStore.getDoc().hp.temp === 0 &&
+    CharStore.getDoc().hp.nonlethal === 0 &&
+    naturalRestOut?.isFullHeal === false &&
+    naturalRestOut?.hpGain === 9 &&
+    naturalRestOut?.currentHp === 29 &&
+    naturalRestOut?.refreshedSpells === 4
+  );
+  CharStore.dispatch({
+    type: 'hud/longRest',
+    payload: { isFullHeal: true },
+    meta: { label: 'Full Long Rest' }
+  });
+  const fullRestOut = CharStore.getLastOutcome();
+  check(
+    'Phase R6 QA: hud/longRest with { isFullHeal: true } heals remaining HP to full maxHp',
+    CharStore.getDoc().hp.current === clericMaxHp &&
+    fullRestOut?.isFullHeal === true &&
+    fullRestOut?.hpGain === (clericMaxHp - 29)
+  );
+
+  // B. Single-Undo-Step Greater Turning & exhausted_daily guard when turnUndeadUsed >= maxTurnUses
+  CharStore.clearHistory();
+  const undoBeforeGreaterTurn = CharStore.getHistoryCounts().undo;
+  CharStore.dispatch({
+    type: 'spells/useTurnOrDomainPower',
+    payload: {
+      kind: 'domain',
+      id: 'sun_greater_turning',
+      powerId: 'sun_greater_turning',
+      maxUses: 1,
+      consumeTurnUndead: true,
+      maxTurnUses: 2
+    },
+    meta: { label: 'Use Greater Turning (Sun Domain)' }
+  });
+  check(
+    'Phase R6 QA: Greater Turning single dispatch increments both domainPowerUses["sun_greater_turning"] and turnUndeadUsed in exactly 1 Undo step',
+    CharStore.getDoc().spellcasting.domainPowerUses['sun_greater_turning'] === 1 &&
+    CharStore.getDoc().spellcasting.turnUndeadUsed === 1 &&
+    CharStore.getHistoryCounts().undo === undoBeforeGreaterTurn + 1
+  );
+  // Set turnUndeadUsed = 2 (at maxTurnUses = 2) and reset domainPowerUses to test exhausted_daily guard
+  CharStore.dispatch({
+    type: 'doc/mutate',
+    payload: function (d) {
+      d.spellcasting.turnUndeadUsed = 2;
+      d.spellcasting.domainPowerUses = {};
+    },
+    meta: { skipHistory: true }
+  });
+  const undoBeforeExhaustedTurn = CharStore.getHistoryCounts().undo;
+  CharStore.dispatch({
+    type: 'spells/useTurnOrDomainPower',
+    payload: {
+      kind: 'domain',
+      id: 'sun_greater_turning',
+      powerId: 'sun_greater_turning',
+      maxUses: 1,
+      consumeTurnUndead: true,
+      maxTurnUses: 2
+    },
+    meta: { label: 'Blocked Greater Turning' }
+  });
+  check(
+    'Phase R6 QA: spells/useTurnOrDomainPower with consumeTurnUndead: true aborts with exhausted_daily when turnUndeadUsed >= maxTurnUses, leaving domainPowerUses untouched and _undoStack unchanged',
+    CharStore.getLastOutcome()?.status === 'exhausted_daily' &&
+    !CharStore.getDoc().spellcasting.domainPowerUses['sun_greater_turning'] &&
+    CharStore.getHistoryCounts().undo === undoBeforeExhaustedTurn
+  );
+
+  // C. No-op R6 dispatches (max_rank_cap, level_1_locked, invalid statKey) do NOT push onto _undoStack
+  CharStore.dispatch({
+    type: 'doc/mutate',
+    payload: function (d) {
+      d.skills = [{ key: 'concentration', name: 'Concentration', ranks: 12, isClass: true }];
+    },
+    meta: { skipHistory: true }
+  });
+  const undoBeforeNoOps = CharStore.getHistoryCounts().undo;
+  CharStore.dispatch({
+    type: 'progression/adjustSkillRank',
+    payload: { skillKey: 'concentration', delta: 1 },
+    meta: { label: 'Over Cap Skill Rank' }
+  });
+  const outSkillCap = CharStore.getLastOutcome();
+  CharStore.dispatch({
+    type: 'progression/updateLevelRow',
+    payload: { mode: 'toggleActive', levelIndex: 0 },
+    meta: { label: 'Deactivate Level 1' }
+  });
+  const outLvl1Locked = CharStore.getLastOutcome();
+  CharStore.dispatch({
+    type: 'progression/adjustAbility',
+    payload: { statKey: 'invalid_stat', delta: 1 },
+    meta: { label: 'Invalid Stat Key' }
+  });
+  const outInvalidStat = CharStore.getLastOutcome();
+  check(
+    'Phase R6 QA: No-op R6 dispatches (max_rank_cap, level_1_locked, invalid statKey) set rejection outcomes and do NOT push onto _undoStack',
+    outSkillCap?.status === 'max_rank_cap' &&
+    outLvl1Locked?.status === 'level_1_locked' &&
+    outInvalidStat?.status === 'invalid_payload' &&
+    CharStore.getHistoryCounts().undo === undoBeforeNoOps
+  );
+
+  CharStore.clearHistory();
+
   return { passed, elapsedMs: Date.now() - startMs };
 }
 
