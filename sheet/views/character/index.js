@@ -1,13 +1,14 @@
 // @ts-check
 import { html } from '../../ui/html.js';
+import { getActiveTemplates } from '../../core/engine-adapter.js';
+import { ProfileCard } from './profile.js';
 
 /**
- * Character & Logs tab (plan section 7). Step 1 renders the section frame and a load
- * diagnostics card; each section is filled in by its own step (2 to 5).
+ * Character & Logs tab (plan section 7). Sections not migrated yet render as placeholders and
+ * are filled in by their own step (2 to 5).
  */
 
 const SECTIONS = Object.freeze([
-  { id: 'profile', title: 'Character Profile', step: 2 },
   { id: 'abilities-skills', title: 'Ability Scores & Skills', step: 3 },
   { id: 'feats-abilities', title: 'Feats & Special Abilities', step: 4 },
   { id: 'progression', title: 'Level Progression & Planning', step: 5 }
@@ -97,6 +98,7 @@ export function CharacterTab(state) {
   return html`
     <div class="space-y-4">
       ${NeedsReview(c, state.readOnly)}
+      ${ProfileCard(c, getActiveTemplates(c))}
       ${SECTIONS.map(s => html`
         <section class="v3-section" data-section="${s.id}" aria-label="${s.title}">
           <div class="flex items-center justify-between gap-2">

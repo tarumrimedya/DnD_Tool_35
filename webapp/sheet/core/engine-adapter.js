@@ -80,3 +80,20 @@ export function normalizeCharacterV2(character) {
   }
   return clone;
 }
+
+/**
+ * Active character templates resolved by the forked engine (SRD compendium first, then the
+ * character's own library). Empty until the compendium is loaded or when the engine is missing.
+ * @param {Record<string, any>|null} character
+ * @returns {Array<Record<string, any>>}
+ */
+export function getActiveTemplates(character) {
+  const w = g();
+  if (!character || !w.RuleEngine || typeof w.RuleEngine.getCharacterActiveTemplateEntries !== 'function') return [];
+  try {
+    return w.RuleEngine.getCharacterActiveTemplateEntries(character) || [];
+  } catch (e) {
+    console.warn('[Sheet V3] Template lookup failed.', e);
+    return [];
+  }
+}
