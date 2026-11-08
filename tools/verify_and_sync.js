@@ -18,6 +18,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const vm = require('vm');
+const { spawnSync } = require('child_process');
 const { runRuleEngineTests } = require('./test_rule_engine');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -48,8 +49,24 @@ const CORE_FILES = [
   'hub_ai.js',
   'dice3d.js',
   'character_data.json',
-  'master_db.json'
+  'master_db.json',
+  'sheet.html'
 ];
+
+// Sheet V3 (docs/REDESIGN_V3_PLAN.md): every file under sheet/ is synced and verified like a core file.
+// sheet/ holds native ES modules (sheet/package.json sets "type": "module").
+const SHEET_DIR = 'sheet';
+function listFilesRecursive(relDir) {
+  const abs = path.join(ROOT, relDir);
+  if (!fs.existsSync(abs)) return [];
+  return fs.readdirSync(abs, { withFileTypes: true }).flatMap(d => {
+    const rel = path.posix.join(relDir, d.name);
+    return d.isDirectory() ? listFilesRecursive(rel) : [rel];
+  });
+}
+const SHEET_FILES = listFilesRecursive(SHEET_DIR);
+const isEsModuleFile = rel => rel.startsWith(`${SHEET_DIR}/`) && rel.endsWith('.js');
+CORE_FILES.push(...SHEET_FILES);
 
 const DB_FILES = [
   'srd_index.json',
@@ -87,6 +104,7 @@ function main() {
     const src = path.join(ROOT, rel);
     const dst = path.join(WEBAPP, rel);
     if (fs.existsSync(src)) {
+      fs.mkdirSync(path.dirname(dst), { recursive: true });
       fs.copyFileSync(src, dst);
     }
   }
@@ -168,11 +186,20 @@ function main() {
         errors++;
       }
     } else if (rel.endsWith('.js')) {
-      try {
-        new vm.Script(text, { filename: rel });
-      } catch (e) {
-        console.error(`[FAIL] JS syntax error in ${rel}: ${e.message}`);
-        errors++;
+      if (isEsModuleFile(rel)) {
+        // ES modules cannot be parsed by vm.Script; let Node parse them as modules.
+        const chk = spawnSync(process.execPath, ['--check', full], { encoding: 'utf8' });
+        if (chk.status !== 0) {
+          console.error(`[FAIL] JS module syntax error in ${rel}: ${(chk.stderr || '').trim().split('\n').slice(0, 4).join(' | ')}`);
+          errors++;
+        }
+      } else {
+        try {
+          new vm.Script(text, { filename: rel });
+        } catch (e) {
+          console.error(`[FAIL] JS syntax error in ${rel}: ${e.message}`);
+          errors++;
+        }
       }
 
       // 5c. Architectural Guardrails (No Proxy alien patterns, no duplicate static catalogs in UI modules)
@@ -298,6 +325,16 @@ function main() {
   } catch (reErr) {
     console.error(`[FAIL] ${reErr.message}`);
     errors++;
+  }
+
+  // 8. Sheet V3 unit tests (ES module suite, run in a child process)
+  const sheetTestPath = path.join(__dirname, 'test_sheet_v3.mjs');
+  if (fs.existsSync(sheetTestPath)) {
+    const sheetRes = spawnSync(process.execPath, [sheetTestPath], { encoding: 'utf8' });
+    if (sheetRes.status !== 0) {
+      console.error(`[FAIL] Sheet V3 tests failed:\n${(sheetRes.stdout || '') + (sheetRes.stderr || '')}`);
+      errors++;
+    }
   }
 
   const elapsed = Date.now() - startMs;

@@ -1,0 +1,78 @@
+/* =========================================================================
+ * Sheet V3 design tokens + base component classes.
+ *
+ * Colors and the 4-tier button sizes are copied from the classic sheet's
+ * inline <style> (index.html) so V3 looks identical. Layout utilities come
+ * from the existing static tailwind_compiled.css; no new arbitrary Tailwind
+ * classes are introduced (GEMINI section 1.3). Anything not covered there
+ * is a named v3-* class defined here.
+ * ========================================================================= */
+
+:root {
+  --v3-bg: #080e1e;
+  --v3-card: #0f172a;        /* = bg-dndCard */
+  --v3-surface: #1e293b;     /* = bg-slate-800 (inactive tabs) */
+  --v3-card-deep: #020617;
+  --v3-border: #334155;
+  --v3-text: #f8fafc;
+  --v3-muted: #94a3b8;
+
+  /* Page themes (UI guide section 2) */
+  --v3-theme-character: #6366f1;  /* indigo  */
+  --v3-theme-progression: #10b981;/* emerald */
+  --v3-theme-combat: #e11d48;     /* crimson */
+  --v3-theme-spells: #a855f7;     /* purple  */
+  --v3-theme-inventory: #f59e0b;  /* amber   */
+}
+
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--v3-bg);
+  color: var(--v3-text);
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--v3-card-deep); }
+::-webkit-scrollbar-thumb { background: var(--v3-border); border-radius: 3px; }
+
+/* Badge (identical to classic sheet) */
+.badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; align-items: center; line-height: 1.2; }
+:where(.badge) { display: inline-flex; }
+
+/* 4-tier button system (identical to classic sheet) */
+:where(.ui-btn-md, .ui-btn-sm, .ui-btn-xs, .ui-btn-icon, .ui-btn-icon-sm) { display: inline-flex; }
+.ui-btn-md { height: 2.25rem; padding-left: 0.75rem; padding-right: 0.75rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; align-items: center; justify-content: center; gap: 0.375rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+.ui-btn-sm { height: 1.75rem; padding-left: 0.625rem; padding-right: 0.625rem; border-radius: 0.375rem; font-size: 0.6875rem; font-weight: 700; align-items: center; justify-content: center; gap: 0.25rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+.ui-btn-xs { height: 1.5rem; padding-left: 0.5rem; padding-right: 0.5rem; border-radius: 0.25rem; font-size: 0.625rem; font-weight: 700; align-items: center; justify-content: center; gap: 0.25rem; line-height: 1; white-space: nowrap; transition: all 0.15s ease; cursor: pointer; }
+.ui-btn-icon { width: 1.75rem; height: 1.75rem; padding: 0; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 700; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; transition: all 0.15s ease; cursor: pointer; }
+.ui-btn-icon-sm { width: 1.5rem; height: 1.5rem; padding: 0; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 700; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; transition: all 0.15s ease; cursor: pointer; }
+
+/* V3 tab bar: one rule set instead of a ~300-char class string per button */
+.v3-tab {
+  height: 2.25rem; flex: 1 0 auto; min-width: 105px; padding: 0 0.75rem;
+  border-radius: 0.5rem; border: 1px solid var(--v3-border);
+  background: var(--v3-surface); color: #e2e8f0;
+  font-size: 0.75rem; font-weight: 700; white-space: nowrap;
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.375rem;
+  cursor: pointer; transition: all 0.15s ease; text-decoration: none;
+}
+.v3-tab:hover { background: #334155; color: #fff; border-color: #64748b; }
+.v3-tab[aria-selected="true"] {
+  background: linear-gradient(90deg, var(--v3-tab-from, #4f46e5), var(--v3-tab-to, #7c3aed));
+  color: #fff; border-color: var(--v3-tab-ring, #818cf8);
+  box-shadow: 0 0 0 2px rgba(129, 140, 248, 0.4);
+}
+.v3-tab[data-legacy="true"] { opacity: 0.6; }
+.v3-tab[data-legacy="true"]:hover { opacity: 1; }
+
+.v3-card { background: var(--v3-card); border: 1px solid var(--v3-border); border-radius: 0.75rem; padding: 1rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
+.v3-section { border: 1px dashed var(--v3-border); border-radius: 0.75rem; padding: 0.875rem 1rem; }
+.v3-kv { background: rgba(2, 6, 23, 0.6); border: 1px solid #1e293b; border-radius: 0.5rem; padding: 0.5rem; }
+.v3-kv > dt { font-size: 10px; color: var(--v3-muted); text-transform: uppercase; font-weight: 700; }
+.v3-kv > dd { margin: 0; font-weight: 600; font-size: 0.75rem; overflow-wrap: anywhere; }
+
+.v3-readonly-banner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem;
+  background: rgba(69, 26, 3, 0.55); border: 1px solid rgba(245, 158, 11, 0.45);
+  color: #fcd34d; border-radius: 0.5rem; padding: 0.4rem 0.75rem; font-size: 0.6875rem; font-weight: 700;
+}

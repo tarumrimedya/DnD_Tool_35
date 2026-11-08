@@ -1,0 +1,6 @@
+{
+  "name": "dnd35-sheet-v3",
+  "private": true,
+  "type": "module",
+  "description": "Marks sheet/ as native ES modules so Node (tests, node --check) parses them the same way the browser does."
+}

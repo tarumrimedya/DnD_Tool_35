@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Character Sheet V3 Preview</title>
+  <!-- Static compiled Tailwind (shared with the classic sheet) + V3 tokens -->
+  <link rel="stylesheet" href="tailwind_compiled.css?v=20261104_2123">
+  <link rel="stylesheet" href="sheet/ui/tokens.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
+</head>
+<body class="min-h-screen">
+  <div id="v3-root" class="max-w-7xl mx-auto px-4 py-4"></div>
+
+  <!-- Shared legacy engine (classic scripts, same files as index.html and hub.html).
+       V3 reaches them only through sheet/core/engine-adapter.js. -->
+  <script src="srd_compendium.js?v=20261107_1835"></script>
+  <script src="rule_engine.js?v=20261107_1835"></script>
+
+  <script type="module" src="sheet/main.js"></script>
+</body>
+</html>
