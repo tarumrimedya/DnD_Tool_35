@@ -9713,6 +9713,62 @@ function renderManualStatsPanel() {
     // DELEGATED HUD ACTIONS (`hud:*`) — Strict `(el, data, event)`
     // ====================================================
     if (window.Actions && typeof window.Actions.register === 'function') {
+      window.Actions.register('hud:switch-tab', (el, data, event) => {
+        if (data && data.tab) switchTab(data.tab);
+      });
+      window.Actions.register('hud:open-profile-edit', (el, data, event) => {
+        openProfileEditModal((data && (data.profileTab || data.section)) || undefined);
+      });
+      window.Actions.register('hud:open-level-up-modal', (el, data, event) => {
+        if (typeof window.openLevelUpModal === 'function') window.openLevelUpModal();
+      });
+      window.Actions.register('hud:open-npc-statblock', (el, data, event) => {
+        if (typeof openNpcStatblockModal === 'function') openNpcStatblockModal();
+      });
+      window.Actions.register('hud:toggle-spotlight-terminal', (el, data, event) => {
+        if (typeof window.toggleSpotlightTerminal === 'function') window.toggleSpotlightTerminal();
+      });
+      window.Actions.register('hud:open-quest-notebook', (el, data, event) => {
+        if (window.HubNotes && typeof window.HubNotes.openCharacterNotebookModal === 'function') {
+          window.HubNotes.openCharacterNotebookModal('editor');
+        } else if (window.HubNotes && typeof window.HubNotes.openFullNotesModal === 'function') {
+          window.HubNotes.openFullNotesModal(null, 'editor');
+        }
+      });
+      window.Actions.register('hud:open-settings-modal', (el, data, event) => {
+        if (typeof openSettingsModal === 'function') openSettingsModal();
+      });
+      window.Actions.register('hud:sync-pill-click', (el, data, event) => {
+        if (window.SupabaseAuth && typeof window.SupabaseAuth.handlePillClick === 'function') {
+          window.SupabaseAuth.handlePillClick();
+        } else if (window.CloudSync && typeof window.CloudSync.connect === 'function') {
+          window.CloudSync.connect();
+        }
+      });
+      window.Actions.register('hud:clear-temp-hp', (el, data, event) => {
+        if (typeof clearTempHp === 'function') clearTempHp();
+      });
+      window.Actions.register('hud:apply-damage', (el, data, event) => {
+        if (typeof applyDamage === 'function') applyDamage();
+      });
+      window.Actions.register('hud:apply-heal', (el, data, event) => {
+        if (typeof applyHeal === 'function') applyHeal();
+      });
+      window.Actions.register('hud:open-periodic-hp', (el, data, event) => {
+        if (typeof openPeriodicHpModal === 'function') openPeriodicHpModal();
+      });
+      window.Actions.register('hud:roll-save', (el, data, event) => {
+        if (data && data.saveKey && typeof window.rollSave3D === 'function') window.rollSave3D(data.saveKey);
+      });
+      window.Actions.register('hud:roll-initiative', (el, data, event) => {
+        if (typeof window.rollInitiative3D === 'function') window.rollInitiative3D();
+      });
+      window.Actions.register('hud:short-rest', (el, data, event) => {
+        if (typeof performRest === 'function') performRest();
+      });
+      window.Actions.register('hud:long-rest', (el, data, event) => {
+        if (typeof performLongRest === 'function') performLongRest();
+      });
       window.Actions.register('hud:set-sheet-mode', (el, data, event) => {
         setSheetViewMode(data.mode || 'both');
       });

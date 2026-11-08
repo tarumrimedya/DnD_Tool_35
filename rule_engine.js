@@ -1896,7 +1896,9 @@ const RuleEngine = {
 
     const clean = rawName.toLowerCase();
     if (!clean) return null;
-    const db = (typeof window !== 'undefined' && window.masterDb) || (typeof masterDb !== 'undefined' ? masterDb : []);
+    const db = (Array.isArray(this._activeCustomDb) && this._activeCustomDb.length > 0 ? this._activeCustomDb : null)
+      || (typeof window !== 'undefined' && window.masterDb)
+      || (typeof masterDb !== 'undefined' ? masterDb : []);
     let found = Array.isArray(db) && db.length > 0
       ? db.find(m => m && ((refId && m.id === refId) || (m.name && m.name.toLowerCase().trim() === clean) || (m.masterDbName && m.masterDbName.toLowerCase().trim() === clean)))
       : null;
@@ -4441,6 +4443,7 @@ const RuleEngine = {
 
     // V2.5 Unified Composable Lego Evaluation Pre-Pass (Synergy Auto-Unlocks, Entity Selector Mutations, Defenses, Resources, Modes)
     const rawPool = Array.isArray(masterDb) && masterDb.length > 0 ? masterDb : (Array.isArray(character.customDb) ? character.customDb : []);
+    this._activeCustomDb = rawPool;
     const explicitGrantTargetIds = new Set();
     const scanExplicitGrants = (arr) => {
       if (!Array.isArray(arr)) return;
@@ -4962,13 +4965,25 @@ const RuleEngine = {
       ...(character.feats || []),
       ...(character.specialAbilities || [])
     ];
-    const existingFeatNames = new Set(allAbilitiesAndFeats.map(f => stripFeatTag(typeof f === 'string' ? f : (f?.name || ''))).filter(Boolean));
+    const existingFeatCounts = new Map();
+    allAbilitiesAndFeats.forEach(f => {
+      const clean = stripFeatTag(typeof f === 'string' ? f : (f?.name || ''));
+      if (clean) existingFeatCounts.set(clean, (existingFeatCounts.get(clean) || 0) + 1);
+    });
+    const progFeatOccurrences = new Map();
     activeProgRows.forEach(r => {
       [...(r.feats || []), ...(r.specialAbilities || [])].forEach(fStr => {
         const clean = stripFeatTag(typeof fStr === 'string' ? fStr : (fStr?.name || ''));
         if (!clean || clean.startsWith('+1 stat') || clean.includes('stat:') || clean.includes('cl = level')) return;
-        if (!existingFeatNames.has(clean)) {
-          existingFeatNames.add(clean);
+        const seenInProg = (progFeatOccurrences.get(clean) || 0) + 1;
+        progFeatOccurrences.set(clean, seenInProg);
+        const currentCount = existingFeatCounts.get(clean) || 0;
+        const dbMatch = this.getMasterDbEntry(clean);
+        const maxAllowed = (dbMatch && (Number(dbMatch.maxRanks) > 1 || dbMatch.stackable === true))
+          ? (Number(dbMatch.maxRanks) > 1 ? Number(dbMatch.maxRanks) : 20)
+          : 1;
+        if (currentCount < Math.min(maxAllowed, seenInProg)) {
+          existingFeatCounts.set(clean, currentCount + 1);
           allAbilitiesAndFeats.push(typeof fStr === 'string' ? { name: fStr, category: String(fStr).includes('Boon') ? 'DM Boon' : 'Feat' } : fStr);
         }
       });

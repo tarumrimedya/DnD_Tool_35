@@ -16038,6 +16038,122 @@
       Actions.register('combat:close-spotlight-terminal', (el, data, event) => {
         if (typeof closeSpotlightTerminal === 'function') closeSpotlightTerminal();
       });
+      Actions.register('combat:next-round', (el, data, event) => {
+        if (typeof window.advanceNextRound === 'function') window.advanceNextRound();
+      });
+      Actions.register('combat:toggle-action', (el, data, event) => {
+        if (data && data.actionKey && typeof window.toggleActionEconomy === 'function') {
+          window.toggleActionEconomy(data.actionKey);
+        }
+      });
+      Actions.register('combat:toggle-panel', (el, data, event) => {
+        if (data && data.panel && typeof toggleCockpitPanel === 'function') {
+          toggleCockpitPanel(data.panel);
+        }
+      });
+      Actions.register('combat:toggle-srd-spotlight', (el, data, event) => {
+        if (typeof toggleSrdSpotlight === 'function') {
+          const openArg = data && data.open === 'false' ? false : (data && data.open === 'true' ? true : undefined);
+          toggleSrdSpotlight(openArg);
+        }
+      });
+      Actions.register('combat:srd-spotlight-input', (el, data, event) => {
+        if (typeof onSrdSpotlightInput === 'function') onSrdSpotlightInput(el ? el.value : '');
+      });
+      Actions.register('combat:clear-srd-spotlight', (el, data, event) => {
+        if (typeof clearSrdSpotlightInput === 'function') clearSrdSpotlightInput();
+      });
+      Actions.register('combat:srd-spotlight-search', (el, data, event) => {
+        if (typeof onSrdSpotlightInput === 'function') {
+          const inp = document.getElementById('srd-spotlight-input');
+          onSrdSpotlightInput(inp ? inp.value : '');
+        }
+      });
+      Actions.register('combat:toggle-weapon-sets-editor', (el, data, event) => {
+        if (typeof toggleWeaponSetsEditor === 'function') {
+          const openArg = data && data.open === 'false' ? false : (data && data.open === 'true' ? true : undefined);
+          toggleWeaponSetsEditor(openArg);
+        }
+      });
+      Actions.register('combat:save-weapon-set', (el, data, event) => {
+        if (data && data.setNum !== undefined && typeof saveWeaponSetConfig === 'function') {
+          saveWeaponSetConfig(Number(data.setNum));
+        }
+      });
+      Actions.register('combat:weapon-change', (el, data, event) => {
+        if (typeof onWeaponChange === 'function') onWeaponChange();
+      });
+      Actions.register('combat:recalc-offense', (el, data, event) => {
+        if (typeof recalculateOffense === 'function') recalculateOffense();
+      });
+      Actions.register('combat:offhand-change', (el, data, event) => {
+        if (typeof onOffHandChange === 'function') onOffHandChange();
+      });
+      Actions.register('combat:toggle-melee-reorder', (el, data, event) => {
+        if (typeof toggleMeleeReorderMode === 'function') toggleMeleeReorderMode();
+      });
+      Actions.register('combat:power-attack', (el, data, event) => {
+        if (data && data.delta !== undefined && typeof adjustPowerAttack === 'function') {
+          adjustPowerAttack(Number(data.delta));
+        }
+      });
+      Actions.register('combat:toggle-expand-melee-mods', (el, data, event) => {
+        if (typeof toggleExpandModifiersGrid === 'function') toggleExpandModifiersGrid();
+      });
+      Actions.register('combat:toggle-ranged-reorder', (el, data, event) => {
+        if (typeof toggleRangedReorderMode === 'function') toggleRangedReorderMode();
+      });
+      Actions.register('combat:ranged-arrow-change', (el, data, event) => {
+        if (typeof onRangedArrowChange === 'function') onRangedArrowChange();
+      });
+      Actions.register('combat:toggle-expand-ranged-mods', (el, data, event) => {
+        if (typeof toggleExpandRangedModifiersGrid === 'function') toggleExpandRangedModifiersGrid();
+      });
+      Actions.register('combat:initiate-spell-cast', (el, data, event) => {
+        if (typeof initiateCombatSpellCast === 'function') initiateCombatSpellCast();
+      });
+      Actions.register('combat:toggle-spell-mods-expand', (el, data, event) => {
+        if (typeof toggleSpellModifiersGridExpanded === 'function') toggleSpellModifiersGridExpanded();
+      });
+      Actions.register('combat:spell-select-change', (el, data, event) => {
+        if (typeof onCombatSpellChange === 'function') onCombatSpellChange();
+      });
+      Actions.register('combat:open-add-buff', (el, data, event) => {
+        if (typeof window.openAddBuffModal === 'function') window.openAddBuffModal();
+      });
+      Actions.register('combat:shield-block-reaction', (el, data, event) => {
+        if (typeof triggerShieldBlockReaction === 'function') triggerShieldBlockReaction();
+      });
+      Actions.register('combat:roll-aoo', (el, data, event) => {
+        if (typeof rollAttackOfOpportunity === 'function') rollAttackOfOpportunity();
+      });
+      Actions.register('combat:roll-skill', (el, data, event) => {
+        if (data && data.skillName && typeof rollCombatSkill === 'function') {
+          rollCombatSkill(data.skillName);
+        }
+      });
+      Actions.register('combat:toggle-expand-combat-skills', (el, data, event) => {
+        if (typeof toggleExpandCombatSkills === 'function') toggleExpandCombatSkills();
+      });
+      Actions.register('combat:combat-expertise', (el, data, event) => {
+        if (data && data.delta !== undefined && typeof adjustCombatExpertise === 'function') {
+          adjustCombatExpertise(Number(data.delta));
+        }
+      });
+      Actions.register('combat:toggle-expand-defense-grid', (el, data, event) => {
+        if (typeof toggleExpandDefenseGrid === 'function') toggleExpandDefenseGrid();
+      });
+      Actions.register('combat:dismiss-attack-result', (el, data, event) => {
+        if (typeof dismissAttackResult === 'function') dismissAttackResult();
+      });
+      Actions.register('combat:recalc-defense', (el, data, event) => {
+        if (typeof recalculateDefense === 'function') recalculateDefense();
+      });
+      Actions.register('combat:set-buffs-view', (el, data, event) => {
+        if (data && data.mode && typeof window.setBuffsViewMode === 'function') {
+          window.setBuffsViewMode(data.mode);
+        }
+      });
     }
 
     let _combatHoverTooltipDelegatedBound = false;

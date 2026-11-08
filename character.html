@@ -2606,55 +2606,146 @@
                 <div class="flex items-center justify-between gap-2">
                   <div>
                     <span class="text-[11px] font-extrabold text-emerald-400 uppercase tracking-wide">📊 Canonical V2 Stat Modifiers (modifiers[])</span>
-                    <span class="text-[10px] text-slate-400 ml-1.5 hidden sm:inline">Add multiple modifiers with independent D&amp;D 3.5e stacking types</span>
+                    <span class="text-[10px] text-slate-400 ml-1.5 hidden sm:inline">Add multiple modifiers with independent D&amp;D 3.5e stacking types (includes all 36 skills)</span>
                   </div>
-                  <button type="button" onclick="RuleMaster.addInlineManualModifierRow()" class="px-2.5 py-1 rounded-lg bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 font-bold text-[10px] transition cursor-pointer shrink-0">+ Add Stat Modifier</button>
+                  <button type="button" data-action="forge:add-modifier-row" class="px-2.5 py-1 rounded-lg bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 font-bold text-[10px] transition cursor-pointer shrink-0">+ Add Stat Modifier</button>
                 </div>
                 <div id="im-modifiers-list" class="space-y-1.5"></div>
               </div>
 
-              <!-- Row 3: Canonical V2 Damage Parts & Combat Mechanics (25% x 4 Symmetrical Grid) -->
-              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-slate-950/80 border border-slate-800 rounded-xl p-3">
-                <div>
-                  <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Damage / Effect Dice</label>
-                  <input type="text" id="im-dice" placeholder="e.g., 1d8, 2d6, 6d6" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-amber-300 font-mono focus:outline-none focus:border-rose-400">
-                </div>
-                <div>
-                  <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Damage Type</label>
-                  <select id="im-dmg-type" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none focus:border-rose-400">
-                    <option value="Slashing">Slashing</option>
-                    <option value="Piercing">Piercing</option>
-                    <option value="Bludgeoning">Bludgeoning</option>
-                    <option value="Slashing/Piercing">Slashing / Piercing</option>
-                    <option value="Fire">Fire</option>
-                    <option value="Cold">Cold</option>
-                    <option value="Electricity">Electricity</option>
-                    <option value="Acid">Acid</option>
-                    <option value="Sonic">Sonic</option>
-                    <option value="Force">Force</option>
-                    <option value="Positive">Positive Energy</option>
-                    <option value="Negative">Negative Energy</option>
-                    <option value="Untyped">Untyped</option>
-                  </select>
-                </div>
-                <div id="im-col-crit">
-                  <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Crit Threat / Mult</label>
-                  <div class="grid grid-cols-2 gap-1.5">
-                    <input type="number" id="im-crit-min" value="20" min="15" max="20" title="Crit Threat Min (e.g., 19)" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2 text-center text-xs text-white font-mono">
-                    <input type="number" id="im-crit-mult" value="2" min="2" max="4" title="Crit Multiplier (e.g., 2)" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2 text-center text-xs text-white font-mono">
+              <!-- Row 3: Canonical V2 Damage Parts & Multi-Part Chip Builder (R8.2) -->
+              <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-3 space-y-2.5">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <div>
+                    <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Primary Damage / Effect Dice</label>
+                    <input type="text" id="im-dice" placeholder="e.g., 1d8, 2d6, 6d6" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-amber-300 font-mono focus:outline-none focus:border-rose-400">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Primary Damage Type</label>
+                    <select id="im-dmg-type" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none focus:border-rose-400">
+                      <option value="Slashing">Slashing</option>
+                      <option value="Piercing">Piercing</option>
+                      <option value="Bludgeoning">Bludgeoning</option>
+                      <option value="Slashing/Piercing">Slashing / Piercing</option>
+                      <option value="Fire">Fire</option>
+                      <option value="Cold">Cold</option>
+                      <option value="Electricity">Electricity</option>
+                      <option value="Acid">Acid</option>
+                      <option value="Sonic">Sonic</option>
+                      <option value="Force">Force</option>
+                      <option value="Holy">Holy</option>
+                      <option value="Unholy">Unholy</option>
+                      <option value="Precision">Precision</option>
+                      <option value="Positive">Positive Energy</option>
+                      <option value="Negative">Negative Energy</option>
+                      <option value="Nonlethal">Nonlethal</option>
+                      <option value="Untyped">Untyped</option>
+                    </select>
+                  </div>
+                  <div id="im-col-crit">
+                    <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Crit Threat / Mult</label>
+                    <div class="grid grid-cols-2 gap-1.5">
+                      <input type="number" id="im-crit-min" value="20" min="15" max="20" title="Crit Threat Min (e.g., 19)" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2 text-center text-xs text-white font-mono">
+                      <input type="number" id="im-crit-mult" value="2" min="2" max="4" title="Crit Multiplier (e.g., 2)" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2 text-center text-xs text-white font-mono">
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Action Type</label>
+                    <select id="im-action" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none focus:border-rose-400">
+                      <option value="Passive">Passive (Continuous)</option>
+                      <option value="Standard Action">Standard Action</option>
+                      <option value="Full-Round Action">Full-Round Action</option>
+                      <option value="Swift Action">Swift Action</option>
+                      <option value="Immediate Action">Immediate Action</option>
+                      <option value="Move Action">Move Action</option>
+                      <option value="Free Action">Free Action</option>
+                    </select>
                   </div>
                 </div>
-                <div>
-                  <label class="block text-[10px] font-bold text-rose-400 uppercase mb-1">Action Type</label>
-                  <select id="im-action" class="w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none focus:border-rose-400">
-                    <option value="Passive">Passive (Continuous)</option>
-                    <option value="Standard Action">Standard Action</option>
-                    <option value="Full-Round Action">Full-Round Action</option>
-                    <option value="Swift Action">Swift Action</option>
-                    <option value="Immediate Action">Immediate Action</option>
-                    <option value="Move Action">Move Action</option>
-                    <option value="Free Action">Free Action</option>
-                  </select>
+
+                <!-- R8.2: Extra / Multi-Damage Parts Inline Chip Builder (damageParts[]) -->
+                <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-[10px] font-bold text-rose-300 uppercase tracking-wider">💥 Extra Damage Parts (damageParts[] — e.g. +1d6 Fire, +1d10 Burst on Crit)</span>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                      <input type="text" id="im-extra-dmg-dice" placeholder="1d6, 2d6, +4" class="w-24 h-7 bg-slate-900 border border-slate-700 rounded-lg px-2 text-[11px] text-amber-300 font-mono focus:outline-none focus:border-rose-400">
+                      <select id="im-extra-dmg-type" class="h-7 bg-slate-900 border border-slate-700 rounded-lg px-2 text-[11px] text-white focus:outline-none focus:border-rose-400">
+                        <option value="Fire">Fire</option>
+                        <option value="Cold">Cold</option>
+                        <option value="Electricity">Electricity</option>
+                        <option value="Acid">Acid</option>
+                        <option value="Sonic">Sonic</option>
+                        <option value="Force">Force</option>
+                        <option value="Holy">Holy</option>
+                        <option value="Unholy">Unholy</option>
+                        <option value="Precision">Precision (Sneak/Skirmish)</option>
+                        <option value="Slashing">Slashing</option>
+                        <option value="Piercing">Piercing</option>
+                        <option value="Bludgeoning">Bludgeoning</option>
+                        <option value="Positive">Positive Energy</option>
+                        <option value="Negative">Negative Energy</option>
+                        <option value="Nonlethal">Nonlethal</option>
+                        <option value="Untyped">Untyped</option>
+                      </select>
+                      <select id="im-extra-dmg-crit" class="h-7 bg-slate-900 border border-slate-700 rounded-lg px-2 text-[11px] text-rose-200 focus:outline-none focus:border-rose-400">
+                        <option value="normal">Normal (+Every Hit)</option>
+                        <option value="mult">Multiply on Crit</option>
+                        <option value="crit_only">On Crit Only (Burst)</option>
+                      </select>
+                      <button type="button" data-action="forge:add-damage-part" class="px-2.5 h-7 rounded-lg bg-rose-950 hover:bg-rose-900 text-rose-200 border border-rose-700/70 font-bold text-[10px] transition cursor-pointer">+ Add Damage Part</button>
+                    </div>
+                  </div>
+                  <div id="im-damage-parts-chips" class="flex flex-wrap items-center gap-1.5 min-h-5 text-[10px] text-slate-400">
+                    <span class="italic text-slate-500">No extra damage parts attached.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Row 3.5 (R8.6): Contextual Feat Options (Times Selectable & Bonus Pool Routing Tags) -->
+              <div id="im-panel-feat-options" class="hidden bg-slate-950/80 border border-amber-500/40 rounded-xl p-3 space-y-2">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[10px] font-extrabold text-amber-300 uppercase tracking-wider">🎖️ Feat Repeatability &amp; Bonus Pool Routing (R8.6)</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-bold text-slate-300 uppercase">Times Selectable:</label>
+                    <select id="im-feat-max-ranks" class="h-7 bg-slate-900 border border-amber-500/50 rounded-lg px-2 text-[11px] text-amber-200 font-bold focus:outline-none">
+                      <option value="1">1x Only (Standard RAW Feat)</option>
+                      <option value="2">Up to 2x</option>
+                      <option value="3">Up to 3x</option>
+                      <option value="5">Up to 5x</option>
+                      <option value="10">Up to 10x</option>
+                      <option value="20">Unlimited (Up to 20x — e.g. Toughness / Extra Turning)</option>
+                      <option value="per_target">1x Per Weapon / School Target</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-800/80 text-[10px]">
+                  <span class="text-slate-400 font-semibold mr-1">Pool Tags:</span>
+                  <label class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900 border border-slate-700 hover:border-amber-500/50 cursor-pointer text-slate-200">
+                    <input type="checkbox" class="im-feat-tag-chk rounded bg-slate-950 border-slate-700 text-amber-500" value="Fighter Bonus">
+                    <span>⚔️ Fighter Bonus</span>
+                  </label>
+                  <label class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900 border border-slate-700 hover:border-purple-500/50 cursor-pointer text-slate-200">
+                    <input type="checkbox" class="im-feat-tag-chk rounded bg-slate-950 border-slate-700 text-purple-500" value="Metamagic">
+                    <span>🔮 Metamagic (Wizard Bonus)</span>
+                  </label>
+                  <label class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900 border border-slate-700 hover:border-indigo-500/50 cursor-pointer text-slate-200">
+                    <input type="checkbox" class="im-feat-tag-chk rounded bg-slate-950 border-slate-700 text-indigo-500" value="Item Creation">
+                    <span>⚒️ Item Creation (Wizard Bonus)</span>
+                  </label>
+                  <label class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900 border border-slate-700 hover:border-cyan-500/50 cursor-pointer text-slate-200">
+                    <input type="checkbox" class="im-feat-tag-chk rounded bg-slate-950 border-slate-700 text-cyan-500" value="Divine">
+                    <span>✨ Divine</span>
+                  </label>
+                  <label class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900 border border-slate-700 hover:border-emerald-500/50 cursor-pointer text-slate-200">
+                    <input type="checkbox" class="im-feat-tag-chk rounded bg-slate-950 border-slate-700 text-emerald-500" value="Tactical">
+                    <span>🎯 Tactical / Martial</span>
+                  </label>
+                  <label class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900 border border-slate-700 hover:border-rose-500/50 cursor-pointer text-slate-200">
+                    <input type="checkbox" class="im-feat-tag-chk rounded bg-slate-950 border-slate-700 text-rose-500" value="Draconic">
+                    <span>🐉 Draconic</span>
+                  </label>
                 </div>
               </div>
 
@@ -2708,7 +2799,7 @@
                     <span class="px-1.5 py-0.5 rounded bg-indigo-950/80 border border-indigo-700/60 text-[9px] font-mono text-indigo-200">Zero-Token</span>
                   </div>
                   <div class="flex items-center gap-1.5">
-                    <select id="im-v25-pattern-select" onchange="RuleMaster.applyLegoPatternSkeleton(this.value)" class="h-7 bg-slate-900 border border-indigo-500/50 rounded-lg px-2 text-[10px] text-indigo-200 font-semibold focus:outline-none">
+                    <select id="im-v25-pattern-select" data-change-action="forge:apply-lego-pattern" class="h-7 bg-slate-900 border border-indigo-500/50 rounded-lg px-2 text-[10px] text-indigo-200 font-semibold focus:outline-none">
                       <option value="">✨ Clone Archetype Pattern...</option>
                       <option value="breath_recharge">🐉 Breath Weapon (Move Action, 1d4+1 Recharge)</option>
                       <option value="elemental_defense">🛡️ Elemental Immunity + Terrain DR/AC</option>
@@ -2718,21 +2809,24 @@
                       <option value="stat_substitution">🔄 Ability Mod Swap / Cap (CHA to Will / INT to AC)</option>
                       <option value="aura_grant">👁️ Sense / Aura / SLA Grant (Darkvision + Fear Aura)</option>
                     </select>
-                    <button type="button" onclick="RuleMaster.runInlineLegoDryRunPreview()" class="px-2.5 h-7 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/60 text-emerald-300 text-[10px] font-bold transition cursor-pointer flex items-center gap-1">
+                    <button type="button" data-action="forge:run-dry-run" class="px-2.5 h-7 rounded-lg bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600/60 text-emerald-300 text-[10px] font-bold transition cursor-pointer flex items-center gap-1">
                       <span>⚡</span><span>Dry-Run</span>
                     </button>
                   </div>
                 </div>
 
-                <!-- Step 2: 6-Primitive Quick Add Toolbar -->
+                <!-- Step 2: 6-Primitive Quick Add Toolbar (R8.1 Inline Card — Zero window.prompt) -->
                 <div class="flex flex-wrap items-center gap-1.5">
-                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('defense')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold transition cursor-pointer">+ 🛡️ Defense</button>
-                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('resource')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 text-[10px] font-bold transition cursor-pointer">+ 🔋 Resource/Cooldown</button>
-                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('mode')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-purple-500/40 text-purple-300 text-[10px] font-bold transition cursor-pointer">+ ⚡ Mode/Reaction</button>
-                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('grant')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold transition cursor-pointer">+ 🎁 Synergy Grant</button>
-                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('choice')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-pink-500/40 text-pink-300 text-[10px] font-bold transition cursor-pointer">+ 🎯 Choice/Tier</button>
-                  <button type="button" onclick="RuleMaster.promptAddLegoPrimitive('substitution')" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-sky-500/40 text-sky-300 text-[10px] font-bold transition cursor-pointer">+ 🔄 Stat Swap/Cap</button>
+                  <button type="button" data-action="forge:open-primitive-builder" data-kind="defense" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-cyan-500/40 text-cyan-300 text-[10px] font-bold transition cursor-pointer">+ 🛡️ Defense</button>
+                  <button type="button" data-action="forge:open-primitive-builder" data-kind="resource" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-amber-500/40 text-amber-300 text-[10px] font-bold transition cursor-pointer">+ 🔋 Resource/Cooldown</button>
+                  <button type="button" data-action="forge:open-primitive-builder" data-kind="mode" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-purple-500/40 text-purple-300 text-[10px] font-bold transition cursor-pointer">+ ⚡ Mode/Reaction</button>
+                  <button type="button" data-action="forge:open-primitive-builder" data-kind="grant" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold transition cursor-pointer">+ 🎁 Synergy Grant</button>
+                  <button type="button" data-action="forge:open-primitive-builder" data-kind="choice" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-pink-500/40 text-pink-300 text-[10px] font-bold transition cursor-pointer">+ 🎯 Choice/Tier</button>
+                  <button type="button" data-action="forge:open-primitive-builder" data-kind="substitution" class="px-2 py-1 rounded bg-slate-900 hover:bg-slate-800 border border-sky-500/40 text-sky-300 text-[10px] font-bold transition cursor-pointer">+ 🔄 Stat Swap/Cap</button>
                 </div>
+
+                <!-- R8.1 Dynamic Inline Primitive Builder Card (Zero window.prompt) -->
+                <div id="im-v25-inline-primitive-card" class="hidden bg-slate-900/95 border border-indigo-500/50 rounded-lg p-2.5 space-y-2 text-[11px]"></div>
 
                 <!-- Active V2.5 Primitives Pills -->
                 <div id="im-v25-primitives-pills" class="flex flex-wrap items-center gap-1 min-h-6 text-[10px] text-slate-400">
@@ -3824,20 +3918,20 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js?v=20261025_01"></script>
   <script src="srd_compendium.js?v=20261107_1835"></script>
-  <script src="rule_engine.js?v=20261108_r6"></script>
-  <script src="char_store.js?v=20261108_r6"></script>
-  <script src="ui_components.js?v=20261108_r6"></script>
+  <script src="rule_engine.js?v=20261108_r7"></script>
+  <script src="char_store.js?v=20261108_r7"></script>
+  <script src="ui_components.js?v=20261108_r7"></script>
   <script src="rule_master.js?v=20261107_1835"></script>
   <script src="ui_shared.js?v=20261107_1835"></script>
   <script src="hub_notes.js?v=20261107_1835"></script>
   <script src="dice3d.js?v=20261025_2338"></script>
   <script src="gdrive_sync.js?v=20261107_1835"></script>
 
-  <script src="char_hud.js?v=20261108_r6"></script>
-  <script src="char_combat.js?v=20261108_r6"></script>
-  <script src="char_spells.js?v=20261108_r6"></script>
-  <script src="char_progression.js?v=20261108_r6"></script>
-  <script src="char_inventory.js?v=20261108_r6"></script>
+  <script src="char_hud.js?v=20261108_r7"></script>
+  <script src="char_combat.js?v=20261108_r7"></script>
+  <script src="char_spells.js?v=20261108_r7"></script>
+  <script src="char_progression.js?v=20261108_r7"></script>
+  <script src="char_inventory.js?v=20261108_r7"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" onclick="hideSpellHoverTooltip()" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     

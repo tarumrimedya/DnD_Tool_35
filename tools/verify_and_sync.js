@@ -306,7 +306,7 @@ function main() {
     'lvl_up_gorunum.html'
   ]);
   const RATCHET_LIMITS = {
-    'index.html':         { inlineEvents: 196, windowAssigns: 0 },
+    'index.html':         { inlineEvents: 187, windowAssigns: 0 },
     'char_hud.js':        { inlineEvents: 0,   windowAssigns: 48 },
     'char_combat.js':     { inlineEvents: 0,   windowAssigns: 82 },
     'char_spells.js':     { inlineEvents: 0,   windowAssigns: 68 },
@@ -315,7 +315,7 @@ function main() {
     'rule_engine.js':     { inlineEvents: 0,   windowAssigns: 1 },
     'char_store.js':      { inlineEvents: 0,   windowAssigns: 1 },
     'ui_components.js':   { inlineEvents: 0,   windowAssigns: 2 },
-    'rule_master.js':     { inlineEvents: 56,  windowAssigns: 1 },
+    'rule_master.js':     { inlineEvents: 49,  windowAssigns: 1 },
     'ui_shared.js':       { inlineEvents: 29,  windowAssigns: 0 },
     'hub.html':           { inlineEvents: 203, windowAssigns: 11 },
     'login.html':         { inlineEvents: 2,   windowAssigns: 0 },
@@ -358,6 +358,32 @@ function main() {
       errors++;
     } else if (RATCHET_LIMITS[rel] && winCount < cap.windowAssigns) {
       console.log(`📉 Ratchet can be tightened in ${rel}: windowAssigns=${winCount} < cap=${cap.windowAssigns}`);
+    }
+  }
+
+  // 6c. Delegated Action Registration Completeness Gate (index.html + char_*.js + rule_master.js)
+  const ACTION_PRODUCER_FILES = ['index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js', 'rule_master.js'];
+  const ACTION_REGISTRY_FILES = ['ui_components.js', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js', 'char_store.js', 'rule_master.js'];
+  const registeredActions = new Set();
+  for (const rel of ACTION_REGISTRY_FILES) {
+    const full = path.join(ROOT, rel);
+    if (!fs.existsSync(full)) continue;
+    const text = fs.readFileSync(full, 'utf8');
+    for (const m of text.matchAll(/(?:Actions|actionsApi)\.register\(\s*['"]([^'"]+)['"]/g)) {
+      registeredActions.add(m[1]);
+    }
+  }
+  for (const rel of ACTION_PRODUCER_FILES) {
+    const full = path.join(ROOT, rel);
+    if (!fs.existsSync(full)) continue;
+    const text = fs.readFileSync(full, 'utf8');
+    for (const m of text.matchAll(/data-(?:change-|input-|submit-)?action=['"]([^'"$\s]+)['"]/g)) {
+      const act = m[1];
+      if (act === '...' || act.includes('${')) continue;
+      if (!registeredActions.has(act)) {
+        console.error(`[FAIL] Unregistered delegated UI action in ${rel}: "${act}"`);
+        errors++;
+      }
     }
   }
 

@@ -342,6 +342,11 @@ const RuleMaster = {
     if (entry.isSynergy !== undefined && v2.isSynergy === undefined) v2.isSynergy = entry.isSynergy;
     if (entry.isSynergyGrant !== undefined && v2.isSynergyGrant === undefined) v2.isSynergyGrant = entry.isSynergyGrant;
     if (entry.sourceCategory !== undefined && v2.sourceCategory === undefined) v2.sourceCategory = entry.sourceCategory;
+    if (entry.maxRanks !== undefined && v2.maxRanks === undefined) v2.maxRanks = entry.maxRanks;
+    if (entry.stackable !== undefined && v2.stackable === undefined) v2.stackable = entry.stackable;
+    if (entry.targetRepeatable !== undefined && v2.targetRepeatable === undefined) v2.targetRepeatable = entry.targetRepeatable;
+    if (Array.isArray(entry.featTags) && !Array.isArray(v2.featTags)) v2.featTags = entry.featTags.slice();
+    if (entry.isFighterBonusFeat !== undefined && v2.isFighterBonusFeat === undefined) v2.isFighterBonusFeat = entry.isFighterBonusFeat;
     const cleanName = String(v2.name || '').replace(/^flaw:\s*/i, '').trim().toLowerCase();
     const isFlaw = String(v2.type || '').toLowerCase() === 'flaw'
       || String(v2.category || '').toLowerCase() === 'flaw'
@@ -1734,6 +1739,31 @@ const RuleMaster = {
         this.addInlineManualModifierRow();
       }
     }
+
+    // R8.2: Extra Damage Parts Chips (all damageParts after index 0)
+    this._inlineExtraDamageParts = Array.isArray(v2.damageParts) && v2.damageParts.length > 1
+      ? JSON.parse(JSON.stringify(v2.damageParts.slice(1)))
+      : [];
+    this.renderInlineDamagePartsChips();
+
+    // R8.6: Feat Repeatability & Pool Tags
+    const maxRanksEl = document.getElementById('im-feat-max-ranks');
+    if (maxRanksEl) {
+      if (v2.targetRepeatable) maxRanksEl.value = 'per_target';
+      else if (v2.maxRanks && Number(v2.maxRanks) > 1) maxRanksEl.value = String(v2.maxRanks);
+      else if (v2.stackable) maxRanksEl.value = '20';
+      else maxRanksEl.value = '1';
+    }
+    const existingTags = new Set([
+      ...(Array.isArray(v2.featTags) ? v2.featTags : []),
+      ...(Array.isArray(v2.tags) ? v2.tags : []),
+      ...(v2.isFighterBonusFeat ? ['Fighter Bonus'] : []),
+      ...(v2.category ? [v2.category] : []),
+      ...(v2.role ? [v2.role] : [])
+    ].map(t => String(t).toLowerCase()));
+    document.querySelectorAll('.im-feat-tag-chk').forEach(chk => {
+      chk.checked = existingTags.has(String(chk.value).toLowerCase());
+    });
 
     this.onInlineManualTypeChange(true);
     this.renderInlineLegoPrimitiveStudio();
@@ -6180,44 +6210,103 @@ Return valid JSON only matching:
     const typeVal = mod?.type || 'Enhancement';
     const condVal = mod?.condition || '';
 
-    const TARGET_OPTS = [
-      { v: 'ability.str', l: 'STR (Strength)' },
-      { v: 'ability.dex', l: 'DEX (Dexterity)' },
-      { v: 'ability.con', l: 'CON (Constitution)' },
-      { v: 'ability.int', l: 'INT (Intelligence)' },
-      { v: 'ability.wis', l: 'WIS (Wisdom)' },
-      { v: 'ability.cha', l: 'CHA (Charisma)' },
-      { v: 'ac', l: 'AC (Armor Class)' },
-      { v: 'ac.deflection', l: 'Deflection AC' },
-      { v: 'ac.natural', l: 'Natural Armor AC' },
-      { v: 'ac.dodge', l: 'Dodge AC' },
-      { v: 'ac.armor', l: 'Armor AC' },
-      { v: 'ac.shield', l: 'Shield AC' },
-      { v: 'attack.all', l: 'Attack Rolls (All)' },
-      { v: 'attack.melee', l: 'Melee Attack Rolls' },
-      { v: 'attack.ranged', l: 'Ranged Attack Rolls' },
-      { v: 'damage.all', l: 'Damage Rolls (All)' },
-      { v: 'damage.melee', l: 'Melee Damage Rolls' },
-      { v: 'save.all', l: 'All Saving Throws' },
-      { v: 'save.fort', l: 'Fortitude Save' },
-      { v: 'save.ref', l: 'Reflex Save' },
-      { v: 'save.will', l: 'Will Save' },
-      { v: 'init', l: 'Initiative' },
-      { v: 'hp', l: 'Hit Points (HP)' },
-      { v: 'casterLevel', l: 'Caster Level (CL)' },
-      { v: 'speed.land', l: 'Base Speed (ft.)' },
-      { v: 'skill.all', l: 'All Skills' },
-      { v: 'skill.spot', l: 'Skill: Spot' },
-      { v: 'skill.listen', l: 'Skill: Listen' },
-      { v: 'skill.hide', l: 'Skill: Hide' },
-      { v: 'skill.move_silently', l: 'Skill: Move Silently' },
-      { v: 'skill.tumble', l: 'Skill: Tumble' },
-      { v: 'skill.concentration', l: 'Skill: Concentration' },
-      { v: 'skill.spellcraft', l: 'Skill: Spellcraft' },
-      { v: 'skill.jump', l: 'Skill: Jump' },
-      { v: 'skill.intimidate', l: 'Skill: Intimidate' },
-      { v: 'skill.diplomacy', l: 'Skill: Diplomacy' },
-      { v: 'skill.use_magic_device', l: 'Skill: Use Magic Device' }
+    const TARGET_GROUPS = [
+      {
+        group: '💪 Ability Scores (6)',
+        opts: [
+          { v: 'ability.str', l: 'STR (Strength)' },
+          { v: 'ability.dex', l: 'DEX (Dexterity)' },
+          { v: 'ability.con', l: 'CON (Constitution)' },
+          { v: 'ability.int', l: 'INT (Intelligence)' },
+          { v: 'ability.wis', l: 'WIS (Wisdom)' },
+          { v: 'ability.cha', l: 'CHA (Charisma)' }
+        ]
+      },
+      {
+        group: '🛡️ Armor Class (6)',
+        opts: [
+          { v: 'ac', l: 'AC (Armor Class — Total)' },
+          { v: 'ac.deflection', l: 'Deflection AC' },
+          { v: 'ac.natural', l: 'Natural Armor AC' },
+          { v: 'ac.dodge', l: 'Dodge AC' },
+          { v: 'ac.armor', l: 'Armor AC' },
+          { v: 'ac.shield', l: 'Shield AC' }
+        ]
+      },
+      {
+        group: '⚡ Saving Throws (4)',
+        opts: [
+          { v: 'save.all', l: 'All Saving Throws' },
+          { v: 'save.fort', l: 'Fortitude Save' },
+          { v: 'save.ref', l: 'Reflex Save' },
+          { v: 'save.will', l: 'Will Save' }
+        ]
+      },
+      {
+        group: '⚔️ Combat, Initiative, HP, Speed & Caster Level (9)',
+        opts: [
+          { v: 'attack.all', l: 'Attack Rolls (All)' },
+          { v: 'attack.melee', l: 'Melee Attack Rolls' },
+          { v: 'attack.ranged', l: 'Ranged Attack Rolls' },
+          { v: 'damage.all', l: 'Damage Rolls (All)' },
+          { v: 'damage.melee', l: 'Melee Damage Rolls' },
+          { v: 'init', l: 'Initiative' },
+          { v: 'hp', l: 'Hit Points (HP)' },
+          { v: 'casterLevel', l: 'Caster Level (CL)' },
+          { v: 'speed.land', l: 'Base Speed (ft.)' }
+        ]
+      },
+      {
+        group: '🎯 Skills — All 36 Official D&D 3.5e Skills',
+        opts: [
+          { v: 'skill.all', l: 'All Skills' },
+          { v: 'skill.appraise', l: 'Skill: Appraise (INT)' },
+          { v: 'skill.balance', l: 'Skill: Balance (DEX)' },
+          { v: 'skill.bluff', l: 'Skill: Bluff (CHA)' },
+          { v: 'skill.climb', l: 'Skill: Climb (STR)' },
+          { v: 'skill.concentration', l: 'Skill: Concentration (CON)' },
+          { v: 'skill.craft', l: 'Skill: Craft (INT)' },
+          { v: 'skill.decipher_script', l: 'Skill: Decipher Script (INT)' },
+          { v: 'skill.diplomacy', l: 'Skill: Diplomacy (CHA)' },
+          { v: 'skill.disable_device', l: 'Skill: Disable Device (INT)' },
+          { v: 'skill.disguise', l: 'Skill: Disguise (CHA)' },
+          { v: 'skill.escape_artist', l: 'Skill: Escape Artist (DEX)' },
+          { v: 'skill.forgery', l: 'Skill: Forgery (INT)' },
+          { v: 'skill.gather_information', l: 'Skill: Gather Information (CHA)' },
+          { v: 'skill.handle_animal', l: 'Skill: Handle Animal (CHA)' },
+          { v: 'skill.heal', l: 'Skill: Heal (WIS)' },
+          { v: 'skill.hide', l: 'Skill: Hide (DEX)' },
+          { v: 'skill.intimidate', l: 'Skill: Intimidate (CHA)' },
+          { v: 'skill.jump', l: 'Skill: Jump (STR)' },
+          { v: 'skill.knowledge_arcana', l: 'Skill: Knowledge (Arcana) (INT)' },
+          { v: 'skill.knowledge_architecture', l: 'Skill: Knowledge (Architecture & Eng.) (INT)' },
+          { v: 'skill.knowledge_dungeoneering', l: 'Skill: Knowledge (Dungeoneering) (INT)' },
+          { v: 'skill.knowledge_geography', l: 'Skill: Knowledge (Geography) (INT)' },
+          { v: 'skill.knowledge_history', l: 'Skill: Knowledge (History) (INT)' },
+          { v: 'skill.knowledge_local', l: 'Skill: Knowledge (Local) (INT)' },
+          { v: 'skill.knowledge_nature', l: 'Skill: Knowledge (Nature) (INT)' },
+          { v: 'skill.knowledge_nobility', l: 'Skill: Knowledge (Nobility & Royalty) (INT)' },
+          { v: 'skill.knowledge_planes', l: 'Skill: Knowledge (The Planes) (INT)' },
+          { v: 'skill.knowledge_religion', l: 'Skill: Knowledge (Religion) (INT)' },
+          { v: 'skill.listen', l: 'Skill: Listen (WIS)' },
+          { v: 'skill.move_silently', l: 'Skill: Move Silently (DEX)' },
+          { v: 'skill.open_lock', l: 'Skill: Open Lock (DEX)' },
+          { v: 'skill.perform', l: 'Skill: Perform (CHA)' },
+          { v: 'skill.profession', l: 'Skill: Profession (WIS)' },
+          { v: 'skill.ride', l: 'Skill: Ride (DEX)' },
+          { v: 'skill.search', l: 'Skill: Search (INT)' },
+          { v: 'skill.sense_motive', l: 'Skill: Sense Motive (WIS)' },
+          { v: 'skill.sleight_of_hand', l: 'Skill: Sleight of Hand (DEX)' },
+          { v: 'skill.speak_language', l: 'Skill: Speak Language' },
+          { v: 'skill.spellcraft', l: 'Skill: Spellcraft (INT)' },
+          { v: 'skill.spot', l: 'Skill: Spot (WIS)' },
+          { v: 'skill.survival', l: 'Skill: Survival (WIS)' },
+          { v: 'skill.swim', l: 'Skill: Swim (STR)' },
+          { v: 'skill.tumble', l: 'Skill: Tumble (DEX)' },
+          { v: 'skill.use_magic_device', l: 'Skill: Use Magic Device (CHA)' },
+          { v: 'skill.use_rope', l: 'Skill: Use Rope (DEX)' }
+        ]
+      }
     ];
 
     const BONUS_TYPES = [
@@ -6231,7 +6320,7 @@ Return valid JSON only matching:
     row.innerHTML = `
       <div class="sm:col-span-4">
         <select class="im-mod-target w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-white focus:outline-none focus:border-emerald-400">
-          ${TARGET_OPTS.map(o => `<option value="${o.v}" ${o.v === targetVal ? 'selected' : ''}>${o.l}</option>`).join('')}
+          ${TARGET_GROUPS.map(g => `<optgroup label="${g.group}">${g.opts.map(o => `<option value="${o.v}" ${o.v === targetVal ? 'selected' : ''}>${o.l}</option>`).join('')}</optgroup>`).join('')}
         </select>
       </div>
       <div class="sm:col-span-2">
@@ -6246,10 +6335,67 @@ Return valid JSON only matching:
         <input type="text" value="${condVal}" placeholder="Condition (Optional)" class="im-mod-cond w-full h-9 bg-slate-900 border border-slate-700 rounded-lg px-2.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-400">
       </div>
       <div class="sm:col-span-1">
-        <button type="button" onclick="this.closest('.im-mod-row').remove()" class="w-full h-9 rounded-lg bg-rose-950/60 hover:bg-rose-900 border border-rose-800/80 text-rose-300 text-xs font-bold transition cursor-pointer flex items-center justify-center" title="Remove Modifier">🗑️</button>
+        <button type="button" data-action="forge:remove-modifier-row" class="w-full h-9 rounded-lg bg-rose-950/60 hover:bg-rose-900 border border-rose-800/80 text-rose-300 text-xs font-bold transition cursor-pointer flex items-center justify-center" title="Remove Modifier">🗑️</button>
       </div>
     `;
     list.appendChild(row);
+  },
+
+  addInlineExtraDamagePart(part = null) {
+    if (!Array.isArray(this._inlineExtraDamageParts)) this._inlineExtraDamageParts = [];
+    if (part && part.dice) {
+      this._inlineExtraDamageParts.push({
+        dice: String(part.dice).trim(),
+        bonus: Number(part.bonus) || 0,
+        type: part.type || 'Fire',
+        multiplyOnCrit: Boolean(part.multiplyOnCrit),
+        onCritOnly: Boolean(part.onCritOnly),
+        source: part.source || 'Extra'
+      });
+    } else {
+      const diceEl = document.getElementById('im-extra-dmg-dice');
+      const typeEl = document.getElementById('im-extra-dmg-type');
+      const critEl = document.getElementById('im-extra-dmg-crit');
+      const rawDice = (diceEl?.value || '').trim();
+      if (!rawDice) return;
+      const critMode = critEl?.value || 'normal';
+      this._inlineExtraDamageParts.push({
+        dice: rawDice,
+        bonus: 0,
+        type: typeEl?.value || 'Fire',
+        multiplyOnCrit: critMode === 'mult',
+        onCritOnly: critMode === 'crit_only',
+        source: critMode === 'crit_only' ? 'Burst' : 'Extra'
+      });
+      if (diceEl) diceEl.value = '';
+    }
+    this.renderInlineDamagePartsChips();
+    this.runInlineLegoDryRunPreview();
+  },
+
+  removeInlineExtraDamagePart(idx) {
+    if (!Array.isArray(this._inlineExtraDamageParts)) return;
+    const i = Number(idx);
+    if (i >= 0 && i < this._inlineExtraDamageParts.length) {
+      this._inlineExtraDamageParts.splice(i, 1);
+      this.renderInlineDamagePartsChips();
+      this.runInlineLegoDryRunPreview();
+    }
+  },
+
+  renderInlineDamagePartsChips() {
+    const box = document.getElementById('im-damage-parts-chips');
+    if (!box) return;
+    const parts = Array.isArray(this._inlineExtraDamageParts) ? this._inlineExtraDamageParts : [];
+    if (parts.length === 0) {
+      box.innerHTML = '<span class="italic text-slate-500">No extra damage parts attached.</span>';
+      return;
+    }
+    const escHtml = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    box.innerHTML = parts.map((p, idx) => {
+      const critTag = p.onCritOnly ? ' (On Crit Only)' : (p.multiplyOnCrit ? ' (Crit ×)' : '');
+      return `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-950/90 border border-rose-500/50 text-rose-200 font-mono text-[10px]"><span>💥 +${escHtml(p.dice)} ${escHtml(p.type)}${escHtml(critTag)}</span><button type="button" data-action="forge:remove-damage-part" data-idx="${idx}" class="text-rose-400 hover:text-white font-bold ml-0.5 cursor-pointer">×</button></span>`;
+    }).join('');
   },
 
   onInlineManualTypeChange(preserveSlotAndAction = false) {
@@ -6305,10 +6451,12 @@ Return valid JSON only matching:
     const isArmorShield = typeVal === 'Armor' || typeVal === 'Shield';
     const isSpellManeuver = typeVal === 'Spell' || typeVal === 'Maneuver' || typeVal === 'Stance';
     const isWeapon = typeVal === 'Weapon';
-    const isNonPhysicalRule = ['Feat', 'Spell', 'Maneuver', 'Stance', 'Race', 'Flaw', 'Special Ability', 'DM Grant'].includes(typeVal);
+    const isFeatLike = ['Feat', 'DM Boon', 'DM Grant'].includes(typeVal);
+    const isNonPhysicalRule = ['Feat', 'Spell', 'Maneuver', 'Stance', 'Race', 'Flaw', 'Special Ability', 'DM Grant', 'DM Boon', 'Racial Trait', 'Class Feature'].includes(typeVal);
 
     const pArmor = document.getElementById('im-panel-armor');
     const pSpell = document.getElementById('im-panel-spell');
+    const pFeatOpts = document.getElementById('im-panel-feat-options');
     const colCrit = document.getElementById('im-col-crit');
     const rowWepFlags = document.getElementById('im-row-weapon-flags');
     const colSlot = document.getElementById('im-col-slot');
@@ -6317,6 +6465,7 @@ Return valid JSON only matching:
 
     if (pArmor) pArmor.classList.toggle('hidden', !isArmorShield);
     if (pSpell) pSpell.classList.toggle('hidden', !isSpellManeuver);
+    if (pFeatOpts) pFeatOpts.classList.toggle('hidden', !isFeatLike);
     if (colCrit) colCrit.classList.toggle('hidden', !isWeapon);
     if (rowWepFlags) rowWepFlags.classList.toggle('hidden', !(isWeapon || isSpellManeuver));
     if (colSlot) colSlot.classList.toggle('opacity-50', isNonPhysicalRule);
@@ -6424,7 +6573,10 @@ Return valid JSON only matching:
         onCritOnly: false,
         source: typeVal === 'Weapon' ? 'Base Weapon' : 'Primary'
       });
-    } else if (Array.isArray(baseObj.damageParts) && baseObj.damageParts.length > 1) {
+    }
+    if (Array.isArray(this._inlineExtraDamageParts) && this._inlineExtraDamageParts.length > 0) {
+      damageParts.push(...this._inlineExtraDamageParts.map(p => Object.assign({}, p)));
+    } else if (!diceVal && Array.isArray(baseObj.damageParts) && baseObj.damageParts.length > 1) {
       damageParts.push(...baseObj.damageParts.slice(1));
     }
 
@@ -6455,6 +6607,27 @@ Return valid JSON only matching:
       damageParts,
       ruleFlags
     });
+
+    if (['Feat', 'DM Boon', 'DM Grant'].includes(typeVal)) {
+      const maxRanksRaw = document.getElementById('im-feat-max-ranks')?.value || '1';
+      const checkedTags = Array.from(document.querySelectorAll('.im-feat-tag-chk:checked')).map(cb => cb.value).filter(Boolean);
+      entry.featTags = checkedTags;
+      entry.targetRepeatable = maxRanksRaw === 'per_target';
+      entry.maxRanks = maxRanksRaw === 'per_target' ? 1 : (Number(maxRanksRaw) || 1);
+      entry.stackable = entry.maxRanks > 1;
+      if (checkedTags.includes('Fighter Bonus')) {
+        entry.isFighterBonusFeat = true;
+      } else {
+        delete entry.isFighterBonusFeat;
+      }
+      if (checkedTags.includes('Metamagic') && (!entry.category || entry.category === 'General')) {
+        entry.category = 'Metamagic';
+      } else if (checkedTags.includes('Item Creation') && (!entry.category || entry.category === 'General')) {
+        entry.category = 'Item Creation';
+      } else if (checkedTags.includes('Fighter Bonus') && (!entry.category || entry.category === 'General')) {
+        entry.category = 'Fighter Bonus';
+      }
+    }
 
     if (editIdx < 0 && entry.name && (!baseObj.id || String(baseObj.id).startsWith('ability_') || String(baseObj.id).startsWith('custom_'))) {
       const slug = String(entry.name || '')
@@ -6530,6 +6703,8 @@ Return valid JSON only matching:
     this.selectedEntryIndex = -1;
     this._currentEditingEntry = null;
     this._changeAndAddOriginalSnapshot = null;
+    this._inlineExtraDamageParts = [];
+    this.renderInlineDamagePartsChips();
     const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
     setVal('im-name', '');
     setVal('im-type', 'Weapon');
@@ -6553,11 +6728,16 @@ Return valid JSON only matching:
     setVal('im-school-disc', '');
     setVal('im-save-type', '');
     setVal('im-spell-range', '');
+    setVal('im-feat-max-ranks', '1');
+    setVal('im-extra-dmg-dice', '');
+    setVal('im-extra-dmg-type', 'Fire');
+    setVal('im-extra-dmg-crit', 'normal');
 
     ['im-flag-touch', 'im-flag-keen', 'im-flag-adamantine', 'im-flag-two-hand-str'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.checked = false;
     });
+    document.querySelectorAll('.im-feat-tag-chk').forEach(cb => { cb.checked = false; });
 
     const modList = document.getElementById('im-modifiers-list');
     if (modList) {
@@ -6573,6 +6753,7 @@ Return valid JSON only matching:
     if (saveEqLbl) saveEqLbl.textContent = 'Save & Equip to Character';
 
     setVal('im-v25-pattern-select', '');
+    this.closeInlineLegoPrimitiveBuilder();
     const dryRunBox = document.getElementById('im-v25-dryrun-preview');
     if (dryRunBox) {
       dryRunBox.innerHTML = '';
@@ -6619,27 +6800,27 @@ Return valid JSON only matching:
     const pills = [];
     (e.defenses || []).forEach((d, idx) => {
       const lbl = d.kind === 'immunity' ? `Immunity: ${d.target}` : (d.kind === 'dr' ? `DR ${d.value || d.formula}/${d.bypass || '-'}` : (d.kind === 'absorption' ? `Absorb ${d.target} (${Math.round((Number(d.healRatio ?? 1)) * 100)}%)` : `${d.kind}: ${d.target} ${d.value || d.formula || ''}`));
-      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-950/90 border border-cyan-500/50 text-cyan-200 font-mono text-[10px]"><span>🛡️ ${escHtml(lbl)}</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('defenses', ${idx})" class="text-cyan-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-950/90 border border-cyan-500/50 text-cyan-200 font-mono text-[10px]"><span>🛡️ ${escHtml(lbl)}</span><button type="button" data-action="forge:remove-lego-primitive" data-array-key="defenses" data-idx="${idx}" class="text-cyan-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
     });
     (e.resources || []).forEach((r, idx) => {
       const rec = r.recharge?.dice ? `Recharge ${r.recharge.dice} rds` : (r.recharge?.period || 'daily');
-      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-950/90 border border-amber-500/50 text-amber-200 font-mono text-[10px]"><span>🔋 ${escHtml(r.name || r.id)} (${escHtml(r.maxFormula ?? 1)} / ${escHtml(rec)})</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('resources', ${idx})" class="text-amber-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-amber-950/90 border border-amber-500/50 text-amber-200 font-mono text-[10px]"><span>🔋 ${escHtml(r.name || r.id)} (${escHtml(r.maxFormula ?? 1)} / ${escHtml(rec)})</span><button type="button" data-action="forge:remove-lego-primitive" data-array-key="resources" data-idx="${idx}" class="text-amber-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
     });
     (e.modes || []).forEach((m, idx) => {
       const react = m.reactsTo ? ` [Reacts: ${m.reactsTo}]` : '';
-      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-950/90 border border-purple-500/50 text-purple-200 font-mono text-[10px]"><span>⚡ ${escHtml(m.name || m.id)} (${escHtml(m.actionType || 'standard')}${escHtml(react)})</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('modes', ${idx})" class="text-purple-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-purple-950/90 border border-purple-500/50 text-purple-200 font-mono text-[10px]"><span>⚡ ${escHtml(m.name || m.id)} (${escHtml(m.actionType || 'standard')}${escHtml(react)})</span><button type="button" data-action="forge:remove-lego-primitive" data-array-key="modes" data-idx="${idx}" class="text-purple-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
     });
     (e.grants || []).forEach((g, idx) => {
-      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-950/90 border border-emerald-500/50 text-emerald-200 font-mono text-[10px]"><span>🎁 Grant ${escHtml(g.grantType)}: ${escHtml(g.targetId || g.name || '')}</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('grants', ${idx})" class="text-emerald-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-950/90 border border-emerald-500/50 text-emerald-200 font-mono text-[10px]"><span>🎁 Grant ${escHtml(g.grantType)}: ${escHtml(g.targetId || g.name || '')}</span><button type="button" data-action="forge:remove-lego-primitive" data-array-key="grants" data-idx="${idx}" class="text-emerald-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
     });
     (e.choices || []).forEach((c, idx) => {
-      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-pink-950/90 border border-pink-500/50 text-pink-200 font-mono text-[10px]"><span>🎯 Choice: ${escHtml(c.label || c.id)}</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('choices', ${idx})" class="text-pink-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+      pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-pink-950/90 border border-pink-500/50 text-pink-200 font-mono text-[10px]"><span>🎯 Choice: ${escHtml(c.label || c.id)}</span><button type="button" data-action="forge:remove-lego-primitive" data-array-key="choices" data-idx="${idx}" class="text-pink-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
     });
     (e.modifiers || []).forEach((m, idx) => {
       const isComplex = Boolean((m.formula !== undefined && m.formula !== null && isNaN(Number(m.formula))) || m.selector || (m.op && m.op !== 'add') || m.cap || m.when);
       if (isComplex) {
         const desc = `${m.target} [${m.op || 'add'}] ${m.formula ?? m.value}${m.cap ? ` (cap ${m.cap})` : ''}`;
-        pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-sky-950/90 border border-sky-500/50 text-sky-200 font-mono text-[10px]"><span>🔄 ${escHtml(desc)}</span><button type="button" onclick="RuleMaster.removeLegoPrimitive('modifiers', ${idx})" class="text-sky-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
+        pills.push(`<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-sky-950/90 border border-sky-500/50 text-sky-200 font-mono text-[10px]"><span>🔄 ${escHtml(desc)}</span><button type="button" data-action="forge:remove-lego-primitive" data-array-key="modifiers" data-idx="${idx}" class="text-sky-400 hover:text-rose-400 font-bold ml-0.5 cursor-pointer">×</button></span>`);
       }
     });
 
@@ -6741,31 +6922,261 @@ Return valid JSON only matching:
     this.runInlineLegoDryRunPreview();
   },
 
-  promptAddLegoPrimitive(kind) {
+  promptAddLegoPrimitive(kind, directParams = null) {
+    if (!directParams || typeof directParams !== 'object') {
+      this.openInlineLegoPrimitiveBuilder(kind);
+      return;
+    }
+    this._commitLegoPrimitiveObject(kind, directParams);
+  },
+
+  openInlineLegoPrimitiveBuilder(kind) {
+    const card = document.getElementById('im-v25-inline-primitive-card');
+    if (!card) return;
+    this._activePrimitiveBuilderKind = kind;
+    let bodyHtml = '';
+    if (kind === 'defense') {
+      bodyHtml = `
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+          <div>
+            <label class="text-[9px] text-cyan-300 font-bold uppercase block mb-0.5">Defense Kind</label>
+            <select id="im-prim-def-kind" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+              <option value="resistance">Resistance</option>
+              <option value="immunity">Immunity</option>
+              <option value="dr">Damage Reduction (DR)</option>
+              <option value="sr">Spell Resistance (SR)</option>
+              <option value="vulnerability">Vulnerability</option>
+              <option value="absorption">Absorption</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9px] text-cyan-300 font-bold uppercase block mb-0.5">Target / Element</label>
+            <select id="im-prim-def-target" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+              <option value="acid">Acid</option>
+              <option value="cold">Cold</option>
+              <option value="fire">Fire</option>
+              <option value="electricity">Electricity</option>
+              <option value="sonic">Sonic</option>
+              <option value="physical">Physical</option>
+              <option value="magic">Magic / Spells</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9px] text-cyan-300 font-bold uppercase block mb-0.5">Value / Ratio</label>
+            <input id="im-prim-def-val" type="number" step="0.5" value="10" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+          </div>
+          <div>
+            <label class="text-[9px] text-cyan-300 font-bold uppercase block mb-0.5">DR Bypass (if DR)</label>
+            <input id="im-prim-def-bypass" type="text" value="-" placeholder="- | magic | adamantine" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+          </div>
+        </div>`;
+    } else if (kind === 'resource') {
+      bodyHtml = `
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+          <div>
+            <label class="text-[9px] text-amber-300 font-bold uppercase block mb-0.5">Resource / Cooldown Name</label>
+            <input id="im-prim-res-name" type="text" value="Breath Recharge" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+          </div>
+          <div>
+            <label class="text-[9px] text-amber-300 font-bold uppercase block mb-0.5">Recharge Period</label>
+            <select id="im-prim-res-period" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+              <option value="rounds">Rounds (Dice Cooldown)</option>
+              <option value="encounter">Per Encounter</option>
+              <option value="day">Per Day</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9px] text-amber-300 font-bold uppercase block mb-0.5">Cooldown Dice (if Rounds)</label>
+            <input id="im-prim-res-dice" type="text" value="1d4+1" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+          </div>
+          <div>
+            <label class="text-[9px] text-amber-300 font-bold uppercase block mb-0.5">Max Charges</label>
+            <input id="im-prim-res-max" type="number" value="3" min="1" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+          </div>
+        </div>`;
+    } else if (kind === 'mode') {
+      bodyHtml = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div>
+            <label class="text-[9px] text-purple-300 font-bold uppercase block mb-0.5">Mode / Reaction Name</label>
+            <input id="im-prim-mode-name" type="text" value="Reactive Shield" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+          </div>
+          <div>
+            <label class="text-[9px] text-purple-300 font-bold uppercase block mb-0.5">Action Economy</label>
+            <select id="im-prim-mode-action" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+              <option value="immediate">Immediate Action</option>
+              <option value="swift">Swift Action</option>
+              <option value="standard">Standard Action</option>
+              <option value="move">Move Action</option>
+              <option value="free">Free Action</option>
+              <option value="passive">Passive</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9px] text-purple-300 font-bold uppercase block mb-0.5">Reaction Trigger</label>
+            <select id="im-prim-mode-trigger" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+              <option value="on_spell_targeted">On Spell Targeted</option>
+              <option value="on_hit">On Hit</option>
+              <option value="on_attacked">On Attacked</option>
+              <option value="">None (Active Mode)</option>
+            </select>
+          </div>
+        </div>`;
+    } else if (kind === 'grant') {
+      bodyHtml = `
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div>
+            <label class="text-[9px] text-emerald-300 font-bold uppercase block mb-0.5">Grant Type</label>
+            <select id="im-prim-grant-type" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+              <option value="sense">Sense (Darkvision / Blindsense)</option>
+              <option value="aura">Aura</option>
+              <option value="sla">Spell-Like Ability (SLA)</option>
+              <option value="proficiency">Proficiency</option>
+              <option value="entity">Granted Entity / Feat</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9px] text-emerald-300 font-bold uppercase block mb-0.5">Capability ID / Name</label>
+            <input id="im-prim-grant-id" type="text" value="darkvision" placeholder="darkvision | blindsense" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+          </div>
+          <div>
+            <label class="text-[9px] text-emerald-300 font-bold uppercase block mb-0.5">Range / Value (ft.)</label>
+            <input id="im-prim-grant-val" type="number" value="60" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+          </div>
+        </div>`;
+    } else if (kind === 'choice') {
+      bodyHtml = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div>
+            <label class="text-[9px] text-pink-300 font-bold uppercase block mb-0.5">Choice Label</label>
+            <input id="im-prim-choice-label" type="text" value="Choose Energy Type" class="w-full bg-slate-900 border border-pink-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+          </div>
+          <div>
+            <label class="text-[9px] text-pink-300 font-bold uppercase block mb-0.5">Comma-Separated Options</label>
+            <input id="im-prim-choice-opts" type="text" value="acid, cold, electricity, fire, sonic" class="w-full bg-slate-900 border border-pink-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+          </div>
+        </div>`;
+    } else if (kind === 'substitution') {
+      bodyHtml = `
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+          <div>
+            <label class="text-[9px] text-sky-300 font-bold uppercase block mb-0.5">Target Stat Path</label>
+            <select id="im-prim-sub-target" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+              <option value="save.will.abilityMod">save.will.abilityMod (Will Ability)</option>
+              <option value="save.ref.abilityMod">save.ref.abilityMod (Reflex Ability)</option>
+              <option value="save.fort.abilityMod">save.fort.abilityMod (Fortitude Ability)</option>
+              <option value="ac.abilityMod">ac.abilityMod (AC Ability)</option>
+              <option value="ac.total">ac.total (Total AC)</option>
+              <option value="attack.melee">attack.melee (Melee Attack)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9px] text-sky-300 font-bold uppercase block mb-0.5">Operation</label>
+            <select id="im-prim-sub-op" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+              <option value="max">max (Use Higher)</option>
+              <option value="replace">replace (Override)</option>
+              <option value="add">add (Add Formula)</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9px] text-sky-300 font-bold uppercase block mb-0.5">Formula</label>
+            <input id="im-prim-sub-formula" type="text" value="@chaMod" placeholder="@chaMod | max(0, @intMod)" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+          </div>
+          <div>
+            <label class="text-[9px] text-sky-300 font-bold uppercase block mb-0.5">Optional Cap Formula</label>
+            <input id="im-prim-sub-cap" type="text" value="" placeholder="@level (optional)" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+          </div>
+        </div>`;
+    }
+
+    card.innerHTML = `
+      <div class="flex items-center justify-between mb-1.5">
+        <span class="text-[10px] font-black uppercase tracking-wider text-indigo-300">Configure V2.5 Primitive: ${String(kind || '').toUpperCase()}</span>
+        <div class="flex items-center gap-1.5">
+          <button type="button" data-action="forge:confirm-primitive-builder" class="px-2.5 py-0.5 rounded bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-bold cursor-pointer">+ Add to Rule</button>
+          <button type="button" data-action="forge:close-primitive-builder" class="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-bold cursor-pointer">Cancel</button>
+        </div>
+      </div>
+      ${bodyHtml}
+    `;
+    card.classList.remove('hidden');
+  },
+
+  closeInlineLegoPrimitiveBuilder() {
+    this._activePrimitiveBuilderKind = null;
+    const card = document.getElementById('im-v25-inline-primitive-card');
+    if (card) {
+      card.innerHTML = '';
+      card.classList.add('hidden');
+    }
+  },
+
+  confirmInlineLegoPrimitive() {
+    const kind = this._activePrimitiveBuilderKind;
+    if (!kind) return;
+    const val = (id) => document.getElementById(id)?.value;
+    if (kind === 'defense') {
+      this._commitLegoPrimitiveObject('defense', {
+        defKind: (val('im-prim-def-kind') || 'resistance').trim().toLowerCase(),
+        target: (val('im-prim-def-target') || 'acid').trim().toLowerCase(),
+        value: parseFloat(val('im-prim-def-val') || '10'),
+        bypass: (val('im-prim-def-bypass') || '-').trim()
+      });
+    } else if (kind === 'resource') {
+      this._commitLegoPrimitiveObject('resource', {
+        name: (val('im-prim-res-name') || 'Breath Recharge').trim(),
+        period: (val('im-prim-res-period') || 'rounds').trim().toLowerCase(),
+        dice: (val('im-prim-res-dice') || '1d4+1').trim(),
+        maxVal: parseInt(val('im-prim-res-max') || '3', 10) || 1
+      });
+    } else if (kind === 'mode') {
+      this._commitLegoPrimitiveObject('mode', {
+        name: (val('im-prim-mode-name') || 'Reactive Shield').trim(),
+        actionType: (val('im-prim-mode-action') || 'immediate').trim().toLowerCase(),
+        reactsTo: (val('im-prim-mode-trigger') || '').trim()
+      });
+    } else if (kind === 'grant') {
+      this._commitLegoPrimitiveObject('grant', {
+        grantType: (val('im-prim-grant-type') || 'sense').trim().toLowerCase(),
+        targetId: (val('im-prim-grant-id') || 'darkvision').trim(),
+        value: parseInt(val('im-prim-grant-val') || '60', 10) || 60
+      });
+    } else if (kind === 'choice') {
+      this._commitLegoPrimitiveObject('choice', {
+        label: (val('im-prim-choice-label') || 'Choose Energy Type').trim(),
+        options: (val('im-prim-choice-opts') || 'acid, cold, electricity, fire, sonic').split(',').map(s => s.trim()).filter(Boolean)
+      });
+    } else if (kind === 'substitution') {
+      this._commitLegoPrimitiveObject('substitution', {
+        target: (val('im-prim-sub-target') || 'save.will.abilityMod').trim(),
+        op: (val('im-prim-sub-op') || 'max').trim().toLowerCase(),
+        formula: (val('im-prim-sub-formula') || '@chaMod').trim(),
+        cap: (val('im-prim-sub-cap') || '').trim()
+      });
+    }
+    this.closeInlineLegoPrimitiveBuilder();
+  },
+
+  _commitLegoPrimitiveObject(kind, p = {}) {
     const e = this._ensureEditingDraft();
     if (kind === 'defense') {
-      const defKind = (window.prompt('Defense Kind (immunity | resistance | dr | vulnerability | sr | absorption):', 'resistance') || '').trim().toLowerCase();
-      if (!defKind) return;
-      const target = (window.prompt('Target Damage Type (acid | cold | fire | electricity | sonic | physical):', 'acid') || 'acid').trim().toLowerCase();
+      const defKind = (p.defKind || p.kind || 'resistance').toLowerCase();
+      const target = (p.target || 'acid').toLowerCase();
       if (defKind === 'immunity' || defKind === 'vulnerability') {
         e.defenses.push({ kind: defKind, target });
       } else if (defKind === 'absorption') {
-        const ratio = parseFloat(window.prompt('Heal Ratio (e.g. 1.0 for 100% or 0.5 for 50%):', '1.0') || '1.0');
-        e.defenses.push({ kind: 'absorption', target, healRatio: isNaN(ratio) ? 1.0 : ratio });
+        const ratio = isNaN(Number(p.value ?? p.healRatio)) ? 1.0 : Number(p.value ?? p.healRatio);
+        e.defenses.push({ kind: 'absorption', target, healRatio: ratio });
       } else if (defKind === 'dr') {
-        const val = parseInt(window.prompt('DR Value (e.g. 5):', '5') || '5', 10) || 5;
-        const bypass = (window.prompt('DR Bypass (e.g. - | magic | adamantine | cold iron):', '-') || '-').trim();
-        e.defenses.push({ kind: 'dr', target: 'physical', value: val, bypass });
+        e.defenses.push({ kind: 'dr', target: 'physical', value: parseInt(p.value, 10) || 5, bypass: p.bypass || '-' });
       } else {
-        const val = parseInt(window.prompt('Resistance / SR Value (e.g. 10):', '10') || '10', 10) || 10;
-        e.defenses.push({ kind: defKind, target, value: val });
+        e.defenses.push({ kind: defKind, target, value: parseInt(p.value, 10) || 10 });
       }
     } else if (kind === 'resource') {
-      const name = (window.prompt('Resource / Cooldown Name:', 'Breath Recharge') || '').trim();
-      if (!name) return;
-      const period = (window.prompt('Recharge Period (rounds | encounter | day):', 'rounds') || 'rounds').trim().toLowerCase();
-      const dice = period === 'rounds' ? (window.prompt('Cooldown Dice Formula (e.g. 1d4+1):', '1d4+1') || '1d4+1').trim() : null;
-      const maxVal = period === 'rounds' ? 1 : (parseInt(window.prompt('Max Daily/Encounter Charges:', '3') || '3', 10) || 1);
+      const name = p.name || 'Breath Recharge';
+      const period = (p.period || 'rounds').toLowerCase();
+      const dice = period === 'rounds' ? (p.dice || '1d4+1') : null;
+      const maxVal = period === 'rounds' ? 1 : (parseInt(p.maxVal, 10) || 1);
       e.resources.push({
         id: name.toLowerCase().replace(/[^a-z0-9]+/g, '_'),
         name,
@@ -6774,32 +7185,28 @@ Return valid JSON only matching:
         recharge: dice ? { period: 'rounds', dice } : { period }
       });
     } else if (kind === 'mode') {
-      const name = (window.prompt('Mode / Reaction Name:', 'Reactive Shield') || '').trim();
-      if (!name) return;
-      const actionType = (window.prompt('Action Type (standard | move | swift | immediate | free | passive):', 'immediate') || 'immediate').trim().toLowerCase();
-      const reactsTo = actionType === 'immediate' ? (window.prompt('Reaction Trigger (on_spell_targeted | on_hit | on_attacked | leave blank):', 'on_spell_targeted') || '').trim() : '';
+      const name = p.name || 'Reactive Shield';
+      const actionType = (p.actionType || 'immediate').toLowerCase();
       const modeObj = { id: name.toLowerCase().replace(/[^a-z0-9]+/g, '_'), name, actionType };
-      if (reactsTo) modeObj.reactsTo = reactsTo;
+      if (p.reactsTo) modeObj.reactsTo = p.reactsTo;
       e.modes.push(modeObj);
     } else if (kind === 'grant') {
-      const grantType = (window.prompt('Grant Type (sense | aura | sla | entity | proficiency):', 'sense') || '').trim().toLowerCase();
-      if (!grantType) return;
-      const targetId = (window.prompt('Granted Capability ID / Name (e.g. darkvision | blindsense | frightful_presence):', 'darkvision') || '').trim();
-      const val = parseInt(window.prompt('Range / Value in ft. (e.g. 60):', '60') || '60', 10) || 60;
-      e.grants.push({ grantType, targetId, value: val });
+      e.grants.push({
+        grantType: (p.grantType || 'sense').toLowerCase(),
+        targetId: p.targetId || 'darkvision',
+        value: parseInt(p.value, 10) || 60
+      });
     } else if (kind === 'choice') {
-      const label = (window.prompt('Choice / Parameter Label (e.g. Choose Energy Type):', 'Choose Energy Type') || '').trim();
-      if (!label) return;
-      const opts = (window.prompt('Comma-separated Options:', 'acid, cold, electricity, fire, sonic') || '').split(',').map(s => s.trim()).filter(Boolean);
+      const label = p.label || 'Choose Energy Type';
+      const opts = Array.isArray(p.options) ? p.options : String(p.options || 'acid, cold, fire').split(',').map(s => s.trim()).filter(Boolean);
       e.choices.push({ id: 'choice_' + (e.choices.length + 1), label, options: opts });
     } else if (kind === 'substitution') {
-      const target = (window.prompt('Target Stat Path (save.will.abilityMod | save.ref.abilityMod | ac.abilityMod | ac.total):', 'save.will.abilityMod') || '').trim();
-      if (!target) return;
-      const op = (window.prompt('Operation (max | replace | add):', 'max') || 'max').trim().toLowerCase();
-      const formula = (window.prompt('Formula (e.g. @chaMod | max(0, @intMod) | 10 + @level):', '@chaMod') || '@chaMod').trim();
-      const cap = (window.prompt('Optional Cap Formula (e.g. @classes.duelist.level or leave blank):', '') || '').trim();
-      const modObj = { target, op, formula };
-      if (cap) modObj.cap = cap;
+      const modObj = {
+        target: p.target || 'save.will.abilityMod',
+        op: (p.op || 'max').toLowerCase(),
+        formula: p.formula || '@chaMod'
+      };
+      if (p.cap) modObj.cap = p.cap;
       e.modifiers.push(modObj);
     }
     this.renderInlineLegoPrimitiveStudio();
@@ -8121,3 +8528,52 @@ if (typeof document !== 'undefined') {
 }
 
 window.RuleMaster = RuleMaster;
+
+if (typeof window !== 'undefined' && window.Actions && typeof window.Actions.register === 'function') {
+  window.Actions.register('forge:add-modifier-row', () => {
+    RuleMaster.addInlineManualModifierRow();
+  });
+  window.Actions.register('forge:remove-modifier-row', (el) => {
+    const row = el && typeof el.closest === 'function' ? el.closest('.im-mod-row') : null;
+    if (row) row.remove();
+  });
+  window.Actions.register('forge:add-damage-part', () => {
+    RuleMaster.addInlineExtraDamagePart();
+  });
+  window.Actions.register('forge:remove-damage-part', (el, data) => {
+    if (data && data.idx !== undefined) RuleMaster.removeInlineExtraDamagePart(Number(data.idx));
+  });
+  window.Actions.register('forge:apply-lego-pattern', (el, data) => {
+    const pat = (el && el.value !== undefined) ? el.value : ((data && data.pattern) || '');
+    RuleMaster.applyLegoPatternSkeleton(pat);
+  });
+  window.Actions.register('forge:run-dry-run', () => {
+    RuleMaster.runInlineLegoDryRunPreview();
+  });
+  window.Actions.register('forge:open-primitive-builder', (el, data) => {
+    if (data && data.kind) {
+      if (typeof RuleMaster.openInlineLegoPrimitiveBuilder === 'function') {
+        RuleMaster.openInlineLegoPrimitiveBuilder(data.kind);
+      } else if (typeof RuleMaster.openLegoPrimitiveBuilderModal === 'function') {
+        RuleMaster.openLegoPrimitiveBuilderModal(data.kind);
+      } else {
+        RuleMaster.promptAddLegoPrimitive(data.kind);
+      }
+    }
+  });
+  window.Actions.register('forge:remove-lego-primitive', (el, data) => {
+    if (data && data.arrayKey && data.idx !== undefined) {
+      RuleMaster.removeLegoPrimitive(data.arrayKey, Number(data.idx));
+    }
+  });
+  window.Actions.register('forge:confirm-primitive-builder', () => {
+    if (typeof RuleMaster.confirmInlineLegoPrimitive === 'function') {
+      RuleMaster.confirmInlineLegoPrimitive();
+    }
+  });
+  window.Actions.register('forge:close-primitive-builder', () => {
+    if (typeof RuleMaster.closeInlineLegoPrimitiveBuilder === 'function') {
+      RuleMaster.closeInlineLegoPrimitiveBuilder();
+    }
+  });
+}

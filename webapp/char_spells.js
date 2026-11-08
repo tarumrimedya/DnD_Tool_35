@@ -10415,6 +10415,31 @@
           data.actionType ? unescape(data.actionType) : undefined
         );
       });
+      Actions.register('spells:switch-discipline', (el, data, event) => {
+        if (data && data.tab && typeof switchMagicDisciplineTab === 'function') {
+          switchMagicDisciplineTab(data.tab);
+        }
+      });
+      Actions.register('spells:restore-all', (el, data, event) => {
+        if (typeof restoreAllSpellSlots === 'function') restoreAllSpellSlots();
+      });
+      Actions.register('spells:render-known-spells', (el, data, event) => {
+        if (typeof renderKnownSpells === 'function') renderKnownSpells();
+      });
+      Actions.register('maneuver:recover-all', (el, data, event) => {
+        if (typeof recoverAllManeuvers === 'function') recoverAllManeuvers();
+      });
+      Actions.register('maneuver:stance-change', (el, data, event) => {
+        if (typeof onStanceChange === 'function') onStanceChange();
+      });
+      Actions.register('maneuver:render-maneuvers', (el, data, event) => {
+        if (typeof renderManeuvers === 'function') renderManeuvers();
+      });
+      Actions.register('maneuver:open-picker', (el, data, event) => {
+        if (typeof openManeuverPickerModal === 'function') {
+          openManeuverPickerModal((data && data.type) || 'Maneuver');
+        }
+      });
     })();
 
 

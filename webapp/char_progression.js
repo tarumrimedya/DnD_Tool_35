@@ -215,13 +215,18 @@
         const isInv = m.category === 'Warlock Invocation' || invocationByName.has(key);
         if (isInv && !includeInvocations) return;
 
-        if (t === 'feat' || t === 'special ability' || t === 'dm grant' || t === 'flaw' || t === 'racial trait') {
+        if (t === 'feat' || t === 'special ability' || t === 'dm grant' || t === 'dm boon' || t === 'flaw' || t === 'racial trait') {
           const existingCanonical = map.get(key);
           if (existingCanonical) {
-            // Preserve canonical SRD prerequisites, category, scope, and fighter bonus flag!
+            // Preserve canonical SRD prerequisites, category, scope, and fighter bonus flag, while merging user custom R8.6 repeatability/tags!
             if (!existingCanonical.benefit && (m.shortDescription || m.benefit || m.description)) {
               existingCanonical.benefit = m.shortDescription || m.benefit || m.description;
             }
+            if (m.maxRanks !== undefined) existingCanonical.maxRanks = m.maxRanks;
+            if (m.stackable !== undefined) existingCanonical.stackable = m.stackable;
+            if (m.targetRepeatable !== undefined) existingCanonical.targetRepeatable = m.targetRepeatable;
+            if (Array.isArray(m.featTags) && m.featTags.length > 0) existingCanonical.featTags = m.featTags;
+            if (m.isFighterBonusFeat === true) existingCanonical.isFighterBonusFeat = true;
             return;
           }
           const canonicalInv = invocationByName.get(key);
@@ -232,7 +237,7 @@
             type: isKnownFlaw ? 'Flaw' : (m.type || 'Feat'),
             category: isInv
               ? 'Warlock Invocation'
-              : (t === 'special ability' ? 'Special Ability' : (t === 'dm grant' ? 'DM Boon' : (isKnownFlaw ? 'Flaw' : (m.category || 'General')))),
+              : (t === 'special ability' ? 'Special Ability' : ((t === 'dm grant' || t === 'dm boon') ? 'DM Boon' : (isKnownFlaw ? 'Flaw' : (m.category || 'General')))),
             slotDiff: isKnownFlaw ? (Number(m.slotDiff) || 1) : (m.slotDiff || 0),
             prereq: (canonicalInv ? (canonicalInv.prerequisites || canonicalInv.prereq || `Warlock Level ${canonicalInv.minLevel || 1}`) : null) || m.prerequisites || m.prereq || '-',
             source: m.source || 'Master DB',
@@ -1346,8 +1351,9 @@
       const combined = getCombinedFeatCatalog();
 
       // Parametric classification predicates
-      const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || f.category === 'Fighter' || f.category === 'Martial');
-      const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || (f.source && f.source.toLowerCase().includes('campaign')));
+      const hasFeatTag = (f, tagLower) => Array.isArray(f.featTags) && f.featTags.some(t => String(t).toLowerCase() === tagLower);
+      const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || hasFeatTag(f, 'fighter bonus'));
+      const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || (f.source && f.source.toLowerCase().includes('campaign')));
       const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
       // Warlock Invocations are ONLY allowed when the slot is explicitly 'Warlock Invocation' or 'DM Boon' (NEVER in Regular Feat, Human Bonus Feat / Racial Trait, Flaw Bonus Feat, or Class Bonus Feat)
@@ -1418,7 +1424,9 @@
           baseList = combined.filter(f => {
             const c = (f.category || f.type || '').toLowerCase();
             const n = (f.name || '').toLowerCase();
-            return allowedCats.has(c) || allowedNames.has(n);
+            const tagMatched = Array.isArray(f.featTags) && f.featTags.some(t => allowedCats.has(String(t).toLowerCase()));
+            const fighterMatched = (allowedCats.has('fighter') || allowedCats.has('fighter bonus')) && isFighterFeat(f);
+            return allowedCats.has(c) || allowedNames.has(n) || tagMatched || fighterMatched;
           });
         } else {
           baseList = combined.filter(isFighterFeat);
@@ -3050,6 +3058,14 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       if (!cachedSets) {
         const takenFullSet = new Set();
         const takenBaseSet = new Set();
+        const takenBaseCounts = new Map();
+        const recordTaken = (c) => {
+          const full = c.toLowerCase();
+          const base = c.replace(/\(.*?\)/g, '').trim().toLowerCase();
+          takenFullSet.add(full);
+          takenBaseSet.add(base);
+          takenBaseCounts.set(base, (takenBaseCounts.get(base) || 0) + 1);
+        };
 
         // From character.feats
         if (typeof character !== 'undefined' && Array.isArray(character.feats)) {
@@ -3057,8 +3073,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             const raw = typeof f === 'string' ? f : (f?.name || '');
             const c = cleanFeatNameString(raw);
             if (!c || c.startsWith('+1 Stat') || c.includes('Stat:') || c.includes('Primary CL')) return;
-            takenFullSet.add(c.toLowerCase());
-            takenBaseSet.add(c.replace(/\(.*?\)/g, '').trim().toLowerCase());
+            recordTaken(c);
           });
         }
 
@@ -3072,8 +3087,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               }
               const c = cleanFeatNameString(fStr);
               if (!c || c.startsWith('+1 Stat') || c.includes('Stat:') || c.includes('Primary CL') || c.includes('Caster Lvl')) return;
-              takenFullSet.add(c.toLowerCase());
-              takenBaseSet.add(c.replace(/\(.*?\)/g, '').trim().toLowerCase());
+              recordTaken(c);
             });
           });
         }
@@ -3084,17 +3098,26 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             if (excludeContext.slotIdx !== undefined && excludeContext.slotIdx === sIdx) return;
             const c = cleanFeatNameString(slot.name || '');
             if (!c) return;
-            takenFullSet.add(c.toLowerCase());
-            takenBaseSet.add(c.replace(/\(.*?\)/g, '').trim().toLowerCase());
+            recordTaken(c);
           });
         }
-        cachedSets = { takenFullSet, takenBaseSet };
+        cachedSets = { takenFullSet, takenBaseSet, takenBaseCounts };
         _prereqTurnCache.set(takenKey, cachedSets);
       }
-      const { takenFullSet, takenBaseSet } = cachedSets;
+      const { takenFullSet, takenBaseSet, takenBaseCounts } = cachedSets;
 
-      // 3. Targeted repeatable feats (e.g. Weapon Focus, Spell Focus)
-      if (TARGETED_REPEATABLE_FEATS.has(candBase)) {
+      // 2.5. Lookup custom R8.6 repeatability metadata from masterDb / catalog
+      let customEntry = null;
+      if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+        customEntry = masterDb.find(m => {
+          if (!m || !m.name) return false;
+          const mLow = String(m.name).trim().toLowerCase();
+          return mLow === candFull || mLow.replace(/\(.*?\)/g, '').trim() === candBase;
+        }) || null;
+      }
+
+      // 3. Targeted repeatable feats (e.g. Weapon Focus, Spell Focus, or custom targetRepeatable)
+      if (TARGETED_REPEATABLE_FEATS.has(candBase) || (customEntry && customEntry.targetRepeatable === true)) {
         if (hasParens) {
           if (takenFullSet.has(candFull)) {
             return {
@@ -3107,6 +3130,19 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           // Generic targeted feat without target yet
           return { isTaken: false, reason: '' };
         }
+      }
+
+      // 3.5. Custom stackable / multi-rank feats (R8.6 maxRanks > 1 or stackable: true)
+      if (customEntry && (Number(customEntry.maxRanks) > 1 || customEntry.stackable === true)) {
+        const maxAllowed = Number(customEntry.maxRanks) > 1 ? Number(customEntry.maxRanks) : 20;
+        const currentTaken = takenBaseCounts.get(candBase) || 0;
+        if (currentTaken >= maxAllowed) {
+          return {
+            isTaken: true,
+            reason: `Your character has already taken "${cleanCandidate}" the maximum number of times (${maxAllowed}x).`
+          };
+        }
+        return { isTaken: false, reason: '' };
       }
 
       // 4. Standard non-repeatable feats
@@ -4169,8 +4205,9 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const combined = getCombinedFeatCatalog();
 
         // Parametric classification predicates
-        const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || f.category === 'Fighter' || f.category === 'Martial');
-        const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || (f.source && f.source.toLowerCase().includes('campaign')));
+        const hasFeatTag = (f, tagLower) => Array.isArray(f.featTags) && f.featTags.some(t => String(t).toLowerCase() === tagLower);
+        const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || hasFeatTag(f, 'fighter bonus'));
+        const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || (f.source && f.source.toLowerCase().includes('campaign')));
         const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
         // 1. Filter by category
@@ -10882,6 +10919,33 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
       Actions.register('progression:add-level-row', (el, data, event) => {
         addNewLevelRowToProgression(data.className || null);
+      });
+      Actions.register('prog:add-level-row', (el, data, event) => {
+        addNewLevelRowToProgression((data && data.className) || null);
+      });
+      Actions.register('prog:sync-class-skills', (el, data, event) => {
+        if (typeof autoSyncClassSkills === 'function') autoSyncClassSkills(true);
+      });
+      Actions.register('prog:skill-filter', (el, data, event) => {
+        if (data && data.filter && typeof setSkillFilter === 'function') {
+          setSkillFilter(data.filter);
+        }
+      });
+      Actions.register('prog:skill-stat-filter', (el, data, event) => {
+        if (typeof setSkillStatFilter === 'function') {
+          setSkillStatFilter(el ? el.value : '');
+        }
+      });
+      Actions.register('prog:open-custom-skill-modal', (el, data, event) => {
+        if (typeof openCustomSkillModal === 'function') openCustomSkillModal();
+      });
+      Actions.register('prog:skill-search-input', (el, data, event) => {
+        if (typeof onSkillSearchInput === 'function') {
+          onSkillSearchInput(el ? el.value : '');
+        }
+      });
+      Actions.register('prog:clear-skill-search', (el, data, event) => {
+        if (typeof clearSkillSearch === 'function') clearSkillSearch();
       });
       Actions.register('progression:update-level-hp', (el, data, event) => {
         updateProgressionHp(Number(data.levelIdx) || 0, el ? el.value : data.hp);

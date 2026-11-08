@@ -2162,6 +2162,95 @@ function runDeriveSheetTests() {
     );
   }
 
+  // =========================================================================
+  // PHASE R8: CUSTOM RULE & ITEM FORGE ENHANCEMENTS (R8.1 + R8.2 + R8.6)
+  // =========================================================================
+  const rmSrc = fs.readFileSync(path.join(__dirname, '..', 'rule_master.js'), 'utf8');
+  const promptMatches = rmSrc.match(/\bwindow\.prompt\s*\(/g) || [];
+  check(
+    `Phase R8.1: rule_master.js has 0 blocking window.prompt() calls (actual=${promptMatches.length})`,
+    promptMatches.length === 0
+  );
+
+  const skillOptionMatches = rmSrc.match(/\bv:\s*'skill\.[a-z_]+'/g) || [];
+  check(
+    `Phase R8.1: RuleMaster modifier target selector includes all 36 official D&D 3.5e skills + skill.all (actual=${skillOptionMatches.length})`,
+    skillOptionMatches.length >= 37
+  );
+
+  // R8.2: Multi-damageParts[] weapon assembly & combat evaluation
+  const multiDmgChar = JSON.parse(JSON.stringify(f01Raw));
+  const stormbladeEntry = {
+    id: 'custom_stormblade_r8',
+    schemaVersion: 2,
+    name: 'Stormfire Greatsword +1',
+    type: 'Weapon',
+    slot: 'Two-Handed',
+    active: true,
+    modifiers: [
+      { target: 'attack.melee', value: 1, type: 'Enhancement', condition: null },
+      { target: 'damage.melee', value: 1, type: 'Enhancement', condition: null }
+    ],
+    damageParts: [
+      { dice: '2d6', bonus: 1, type: 'Slashing', multiplyOnCrit: true, onCritOnly: false, source: 'Base Weapon' },
+      { dice: '1d6', bonus: 0, type: 'Fire', multiplyOnCrit: false, onCritOnly: false, source: 'Extra Damage' },
+      { dice: '1d6', bonus: 0, type: 'Electricity', multiplyOnCrit: false, onCritOnly: false, source: 'Extra Damage' },
+      { dice: '1d10', bonus: 0, type: 'Fire', multiplyOnCrit: false, onCritOnly: true, source: 'On Critical Hit' }
+    ],
+    weaponStats: {
+      category: 'Martial',
+      handedness: 'Two-Handed',
+      baseDamage: '2d6',
+      critMin: 19,
+      critMult: 2,
+      damageTypes: ['Slashing']
+    }
+  };
+  CharStore.dispatch({
+    type: 'progression/addFeat',
+    payload: { customDbEntry: stormbladeEntry },
+    meta: { label: 'Upsert Stormfire Greatsword +1' }
+  });
+  const savedStormblade = (CharStore.getDoc().customDb || []).find(e => e && e.id === 'custom_stormblade_r8');
+  check(
+    'Phase R8.2: Custom Weapon with multi-damageParts[] (Base + Fire + Electricity + Crit Burst) preserves all 4 structured damageParts in customDb',
+    Boolean(savedStormblade) &&
+    Array.isArray(savedStormblade.damageParts) &&
+    savedStormblade.damageParts.length === 4 &&
+    savedStormblade.damageParts[1].type === 'Fire' &&
+    savedStormblade.damageParts[2].type === 'Electricity' &&
+    savedStormblade.damageParts[3].onCritOnly === true
+  );
+
+  // R8.6: Stackable Custom Feat (maxRanks: 3, stackable: true) taken twice in levelProgression
+  const stackFeatChar = JSON.parse(JSON.stringify(f01Raw));
+  const customToughnessPlus = {
+    id: 'custom_draconic_vigor_r8',
+    schemaVersion: 2,
+    name: 'Draconic Vigor (Custom)',
+    type: 'Feat',
+    category: 'Fighter Bonus',
+    isFighterBonusFeat: true,
+    featTags: ['Fighter Bonus', 'Draconic'],
+    maxRanks: 3,
+    stackable: true,
+    targetRepeatable: false,
+    modifiers: [
+      { target: 'hp', value: 5, type: 'Untyped', condition: null }
+    ]
+  };
+  const baseHpBeforeVigor = RuleEngine.deriveSheet(stackFeatChar, [customToughnessPlus]).hp.max;
+  stackFeatChar.levelProgression = [
+    { level: 1, className: 'Fighter', active: true, feats: ['Draconic Vigor (Custom)', 'Draconic Vigor (Custom)'] }
+  ];
+  const stackFeatSheet = RuleEngine.deriveSheet(stackFeatChar, [customToughnessPlus]);
+  check(
+    `Phase R8.6: Custom Feat with maxRanks=3 & stackable=true taken 2x in levelProgression stacks its +5 HP modifier twice (+10 HP: ${baseHpBeforeVigor} -> ${stackFeatSheet.hp.max})`,
+    stackFeatSheet.hp.max === baseHpBeforeVigor + 10 &&
+    customToughnessPlus.isFighterBonusFeat === true &&
+    customToughnessPlus.featTags.includes('Fighter Bonus')
+  );
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };
