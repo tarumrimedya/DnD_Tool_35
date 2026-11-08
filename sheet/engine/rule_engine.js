@@ -1167,12 +1167,8 @@ const RuleEngine = {
     });
 
     // STAGE 3: Character Stat & Sub-Component Substitution Pipeline with 3.5e RAW Stacking
-    const NON_STACKING_TYPES = new Set([
-      'Enhancement', 'Deflection', 'Armor', 'Shield', 'Natural Armor', 'Resistance',
-      'Morale', 'Luck', 'Insight', 'Sacred', 'Profane', 'Competence', 'Alchemical',
-      'Racial', 'Size', 'Inherent'
-    ]);
-
+    // [V3] Stacking goes through stackBonuses (case-insensitive types, same-source rule). The old
+    // case-sensitive NON_STACKING_TYPES list let lowercase `luck`/`competence`/`enhancement` stack.
     const statBuckets = {};
     const replacements = {};
     const multipliers = { carryingCapacity: [], spellDamage: 0, healingReceived: 0 };
@@ -1194,21 +1190,16 @@ const RuleEngine = {
     const abilityTotals = {};
     abilityKeys.forEach(k => {
       const baseScore = Number(ch.abilities?.[k]?.base ?? ch.abilities?.[k]?.score ?? ch.abilities?.[k] ?? ch.stats?.[k] ?? 10);
-      abilityTotals[k] = { base: baseScore, typed: {}, untyped: 0 };
+      abilityTotals[k] = { base: baseScore, entries: [] };
     });
 
-    refreshedStatMods.forEach(({ mod, selfCtx }) => {
+    refreshedStatMods.forEach(({ mod, sourceEntry, selfCtx }) => {
       const t = String(mod.target || '');
       const m = t.match(/^ability\.(str|dex|con|int|wis|cha)$/i);
       if (!m) return;
       const k = m[1].toLowerCase();
       const v = resolveModValue(mod, selfCtx);
-      const bType = mod.type || 'Untyped';
-      if (NON_STACKING_TYPES.has(bType) && v > 0) {
-        abilityTotals[k].typed[bType] = Math.max(abilityTotals[k].typed[bType] || 0, v);
-      } else {
-        abilityTotals[k].untyped += v;
-      }
+      abilityTotals[k].entries.push({ val: v, type: mod.type || 'untyped', source: sourceEntry?.id || sourceEntry?.name || null });
     });
 
     const evaluatedAbilities = {};
@@ -1218,8 +1209,7 @@ const RuleEngine = {
         const pre = options.precomputedAbilities[k];
         score = typeof pre === 'object' ? Number(pre.score ?? pre.total ?? pre.base ?? 10) : Number(pre);
       } else {
-        const typedSum = Object.values(abilityTotals[k].typed).reduce((a, b) => a + b, 0);
-        score = abilityTotals[k].base + typedSum + abilityTotals[k].untyped;
+        score = abilityTotals[k].base + this.stackBonuses(abilityTotals[k].entries).total;
       }
       const modVal = this.getAbilityMod(score);
       evaluatedAbilities[k] = { score, mod: modVal };
@@ -1286,13 +1276,8 @@ const RuleEngine = {
       const intVal = Math.floor(v);
       const expandTargets = t === 'save.all' ? ['save.fort', 'save.ref', 'save.will'] : [t];
       expandTargets.forEach(targetKey => {
-        statBuckets[targetKey] = statBuckets[targetKey] || { typed: {}, untyped: 0, breakdown: [] };
-        if (NON_STACKING_TYPES.has(bType) && intVal > 0) {
-          const prev = statBuckets[targetKey].typed[bType] || 0;
-          if (intVal > prev) statBuckets[targetKey].typed[bType] = intVal;
-        } else {
-          statBuckets[targetKey].untyped += intVal;
-        }
+        statBuckets[targetKey] = statBuckets[targetKey] || { entries: [], breakdown: [] };
+        statBuckets[targetKey].entries.push({ val: intVal, type: bType, source: sourceEntry.id || sourceEntry.name || null });
         statBuckets[targetKey].breakdown.push({
           value: intVal,
           type: bType,
@@ -1305,7 +1290,7 @@ const RuleEngine = {
     const sumBucket = (key) => {
       const b = statBuckets[key];
       if (!b) return 0;
-      return Object.values(b.typed).reduce((acc, n) => acc + n, 0) + b.untyped;
+      return this.stackBonuses(b.entries).total;
     };
 
     // Resolve Sub-Component Ability Modifiers (e.g. save.will.abilityMod, save.ref.abilityMod, ac.abilityMod)
@@ -2464,36 +2449,62 @@ const RuleEngine = {
     );
   },
 
-  // Resolve bonus stacking according to D&D 3.5e RAW rules
+  /**
+   * [V3] Canonical bonus type key: case-insensitive, spaces/hyphens as underscores, legacy aliases folded.
+   * `Luck`, `luck` and ` LUCK ` are the same type; a missing type is `untyped`.
+   */
+  normalizeBonusType(type) {
+    const t = String(type ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_');
+    if (!t) return 'untyped';
+    const aliases = { racialtrait: 'racial', racial_trait: 'racial', natural: 'natural_armor', unnamed: 'untyped', none: 'untyped' };
+    return aliases[t] || t;
+  },
+
+  // [V3] Types that stack with themselves (3.5e RAW). Every other named type takes the highest only.
+  // `synergy` and `template` are not RAW bonus types: synergy is an unnamed +2 from another skill and
+  // template entries mark improvements to an existing value, so both behave like untyped.
+  SELF_STACKING_BONUS_TYPES: Object.freeze(['dodge', 'circumstance', 'untyped', 'synergy', 'template']),
+
+  /**
+   * [V3] Single 3.5e RAW stacking resolver for every bonus list (skills, saves, AC, attack, damage,
+   * initiative, ability scores, Lego stats).
+   * - Same named type (enhancement, luck, insight, morale, competence, racial, ...): highest only.
+   * - Dodge, circumstance and untyped stack with each other and themselves...
+   * - ...except entries from the same source, which count once (strongest kept).
+   * - Penalties (negative values) stack, except entries from the same source (worst kept).
+   * Entries without a `source` are always treated as distinct sources.
+   * @param {Array<{ val: number, type?: string, source?: string }>} list
+   * @returns {{ total: number, applied: Array<{ val: number, type: string, source: string|null, entry: object }> }}
+   */
+  stackBonuses(list) {
+    const applied = [];
+    const bestOf = (entries, better) => entries.reduce((a, b) => (better(b.val, a.val) ? b : a));
+    const groups = new Map();
+    let anon = 0;
+    (Array.isArray(list) ? list : []).forEach(entry => {
+      if (!entry) return;
+      const val = Number(entry.val) || 0;
+      if (val === 0) return;
+      const type = this.normalizeBonusType(entry.type);
+      const source = entry.source !== undefined && entry.source !== null && String(entry.source).trim() !== '' ? String(entry.source) : null;
+      const item = { val, type, source, entry };
+      let key;
+      if (val < 0) key = `penalty|${source ?? `#${anon++}`}`;
+      else if (this.SELF_STACKING_BONUS_TYPES.includes(type)) key = `${type}|${source ?? `#${anon++}`}`;
+      else key = `${type}|*`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    });
+    groups.forEach((entries, key) => {
+      const pick = key.startsWith('penalty|') ? bestOf(entries, (b, a) => b < a) : bestOf(entries, (b, a) => b > a);
+      applied.push(pick);
+    });
+    return { total: applied.reduce((sum, e) => sum + e.val, 0), applied };
+  },
+
+  // Resolve bonus stacking according to D&D 3.5e RAW rules ([V3] delegates to stackBonuses)
   resolveBonusStacking(bonusList) {
-    const stackingTypes = ['dodge', 'untyped', 'circumstance', 'synergy', 'racial', 'template'];
-    const buckets = {};
-    let total = 0;
-
-    bonusList.forEach(item => {
-      const type = (item.type || 'untyped').toLowerCase();
-      const val = Number(item.val) || 0;
-
-      // Penalties always stack in D&D 3.5e
-      if (val < 0) {
-        total += val;
-        return;
-      }
-
-      if (stackingTypes.includes(type)) {
-        total += val;
-      } else {
-        if (!buckets[type] || val > buckets[type]) {
-          buckets[type] = val;
-        }
-      }
-    });
-
-    Object.values(buckets).forEach(v => {
-      total += v;
-    });
-
-    return total;
+    return this.stackBonuses(bonusList).total;
   },
 
   // Parse modifiers and stat bonuses from a Canonical V2 equipment item (zero heuristic regex guessing per Rule #10.3)
@@ -6800,41 +6811,13 @@ const RuleEngine = {
     });
 
     // 6. Resolve Stacking Rules (D&D 3.5e RAW)
-    let total = 0;
-    const breakdown = [];
-
-    // [V3] One source counts once per check: when the same source reaches this check through several
-    // identities (e.g. Climb and Swim inside Athletics), only its strongest entry is kept. Entries of
-    // one source through the same identity still add up as before.
-    const oncePerSource = (entries, type) => {
-      const bySource = new Map();
-      entries.forEach(e => {
-        if (!bySource.has(e.source)) bySource.set(e.source, []);
-        bySource.get(e.source).push(e);
-      });
-      return [...bySource.values()].flatMap(list => {
-        if (new Set(list.map(e => e.via)).size <= 1) return list;
-        const pick = type === 'penalty' ? (a, b) => (b.val < a.val ? b : a) : (a, b) => (b.val > a.val ? b : a);
-        return [list.reduce(pick)];
-      });
-    };
-
-    Object.entries(buckets).forEach(([type, rawEntries]) => {
-      // [V3] Racial is a named bonus type: per 3.5e RAW only the highest racial bonus applies.
-      if (type === 'untyped' || type === 'circumstance' || type === 'penalty') {
-        oncePerSource(rawEntries, type).forEach(e => {
-          total += e.val;
-          breakdown.push(`${e.name}: ${e.val >= 0 ? '+' : ''}${e.val} (${type})`);
-        });
-      } else {
-        let highest = rawEntries[0];
-        rawEntries.forEach(e => {
-          if (e.val > highest.val) highest = e;
-        });
-        total += highest.val;
-        breakdown.push(`${highest.name}: +${highest.val} (${type})`);
-      }
-    });
+    // [V3] Shared RAW resolver: same named type takes the highest (racial included); dodge,
+    // circumstance and untyped stack; one source counts once per check, also when it reaches the check
+    // through several components of a consolidated group (Climb and Swim inside Athletics).
+    const flat = Object.entries(buckets).flatMap(([type, entries]) =>
+      entries.map(e => ({ val: e.val, type, source: e.source, label: e.name })));
+    const { total, applied } = this.stackBonuses(flat);
+    const breakdown = applied.map(a => `${a.entry.label}: ${a.val >= 0 ? '+' : ''}${a.val} (${a.entry.type})`);
 
     return { total, breakdown };
   },

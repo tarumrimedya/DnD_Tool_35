@@ -293,4 +293,19 @@ Grup rank'ı = bileşenlerin en yüksek rank'ı; class skill = bileşenlerden bi
 - **Aynı kaynak tek sayılır:** Bir kaynak aynı zara birden çok bileşen üzerinden ulaşırsa yalnızca en güçlü girdisi kalır. Örnek: Climb +2 ve Swim +2 veren bir feat Athletics'e +2 verir, +4 değil (3.5e: aynı kaynaktan gelen bonuslar yığılmaz).
 - **Varsayılan, karakterinkinden farklı:** Klasik sayfanın varsayılanında Perception = Spot + Listen ve Thievery ACP'siz. Bu karakterin kendi tanımında ise Search de Perception'da ve Thievery ACP'li. Motor varsayılanı klasik sayfanınkiyle birebir aynı tutuldu ve bu bir testle korunuyor. Karakterin tanımı her zaman önce gelir.
 - **Racial yığılmaz (karar, 2026-11-08):** Racial adlandırılmış bir bonus türü; RAW'a göre beceri zarında yalnızca en yüksek racial bonus geçer (ırk +2 Listen + şablon +8 Listen = +8). Eski motor bunları topluyordu. Yığılan türler: untyped, circumstance, penalty.
-- Açık nokta: Motorun başka yerleri de racial'ı yığılan tür sayıyor (`rule_engine.js` genel yığılma listesi ~2469, yetenek puanları ~5196). Bu karar şimdilik yalnızca beceri bonuslarına uygulandı.
+
+### 11.4 Bonus yığılması: tek çözücü (2026-11-08)
+
+V3 motor kopyasında tüm bonus listeleri tek bir fonksiyondan geçer: `RuleEngine.stackBonuses`. Bunlar beceri, save, AC, attack, damage, initiative, yetenek puanı ve Lego adımı. Testler `tools/test_sheet_v3_stacking.mjs` dosyasında (39 test).
+
+| Tür | Kural |
+| :--- | :--- |
+| Enhancement, Luck, Insight, Morale, Competence, Sacred, Profane, Deflection, Resistance, Armor, Shield, Natural Armor, Size, Alchemical, Inherent, Racial | Aynı türden yalnızca en yüksek |
+| Dodge, Circumstance, Untyped (`synergy`, `template` dahil) | Yığılır, ama aynı kaynaktan gelen tek sayılır (en güçlüsü) |
+| Ceza (eksi değer, türü ne olursa olsun) | Yığılır, ama aynı kaynaktan gelen tek sayılır (en kötüsü) |
+
+- Tür adları büyük/küçük harfe duyarsız: `Luck` = `luck`. `Natural Armor` = `natural_armor` = `natural`, `RacialTrait` = `racial`.
+- Kaynak, girdinin `source` alanıdır (Lego'da kaydın `id`'si, yoksa adı). Kaynağı olmayan girdiler ayrı kaynak sayılır.
+- Düzeltilen hata (çalıştırılarak doğrulandı): Lego adımı yığılmayan türleri yalnızca büyük harfle tanıyordu. Verideki küçük harfli `luck` / `competence` / `enhancement` girdileri bu yüzden yığılıyordu: luck +1 ve +2 Will'e +3, enhancement +2 ve +4 STR'ye +6 veriyordu. Aynı hata kök `rule_engine.js`'te, yani klasik sayfada da duruyor.
+- Gerçek karakterin yetenek, save, AC, HP ve attack değerleri değişmedi. Bu karşılaştırma Node'da SRD kompendiyumu yüklenmeden yapıldı.
+- Kaynak: SRD "Combining Magic Effects" ve forumlarda alıntılanan Rules Compendium s.21 ve s.28. Kitabın kendisi doğrudan görülmedi.
