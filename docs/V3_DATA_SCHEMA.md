@@ -1,6 +1,6 @@
-# Sheet V3 Veri Şeması (TASLAK v0.1)
+# Sheet V3 Veri Şeması (TASLAK v0.2)
 
-Durum: **onay bekliyor**. Kodlama bu doküman onaylandıktan sonra başlar.
+Durum: **kararlar alındı (Bölüm 8)**. Kodlama bu dokümana göre yapılır. Tek açık nokta fixture verisi.
 İlgili: `docs/REDESIGN_V3_PLAN.md`, `sheet/engine/FORK.md`, ADR-011 (karaktere özel `customDb`).
 
 Bu taslak kod okunarak çıkarıldı (alan kullanım sayıları `char_*.js`, `rule_master.js`, `rule_engine.js`, `hub.html` üzerinden). Gerçek karakter export'ları gelince her alan fixture'larla doğrulanacak.
@@ -75,10 +75,9 @@ Bu yüzden `type`/`category` ve isim regex'i ile yapılan her sınıflandırma k
 | `material` | Material | **Tek başına durmaz**, eşyanın `material` alanında | ADR-024 |
 | `feat` | Feat | `feats` | |
 | `flaw` | (custom) | `feats` | UA Flaw |
-| `ability` | SpecialAbility, ClassAbility, RacialTrait | `specialAbilities` | Ex/Su/Sp ayrımı `abilityType` alanında |
-| `boon` | (custom) | `specialAbilities` | DM Boon / DM Grant |
+| `ability` | SpecialAbility, ClassAbility, RacialTrait, (custom DM Boon / DM Grant) | `specialAbilities` | Ex/Su/Sp ayrımı `abilityType` alanında. Kaynak `source` alanında: `'class' \| 'race' \| 'template' \| 'dm' \| 'custom'`. DM Boon = `kind: 'ability'` + `source: 'dm'` |
 | `spell` | Spell | `spells` / `spellcasting` | |
-| `power` | Power | — | Psionics kapsam dışı (ADR-025), sadece okunur |
+| `power` | Power | `spells` (`kind: 'power'`) | Psionic Power'lar korunur: kendi `kind`'ı var, karakterde saklanabilir, hiçbir migration bunları atmaz. Tam psionik kural desteği (power point, manifester level) ADR-025 kapsamında ayrıca ele alınır |
 | `maneuver` | Maneuver | `maneuvers` / `tomeOfBattle` | |
 | `stance` | Stance | `maneuvers` / `tomeOfBattle` | |
 | `template` | (srd_templates) | `templates` | |
@@ -97,8 +96,8 @@ Sıra kesindir, ilk eşleşen kazanır:
 
 1. Kayıtta zaten geçerli bir `kind` varsa o kullanılır.
 2. `id` (ya da `baseItemId` / `sourceId`) SRD indeksinde varsa indeksteki `t` kullanılır.
-3. `id` öneki: `feat-`, `spl-`, `wpn-`, `arm-`, `shd-`, `mi-`, `pot-`, `tob-`… (indeksteki önek tablosu) ve custom önekleri `ability_`, `boon_`, `feat_`.
-4. `type` alanı yalnızca **kayıt türü değerlerinden** biriyse (`Feat`, `Spell`, `Weapon`, `Armor`, `Shield`, `Special Ability`, `DM Boon`, `Maneuver`, `Stance`, `Flaw`…). Hasar ve bonus türleri (`Piercing`, `competence`…) asla eşleşmez.
+3. `id` öneki: `feat-`, `spl-`, `pwr-`, `wpn-`, `arm-`, `shd-`, `mi-`, `pot-`, `tob-`… (indeksteki önek tablosu) ve custom önekleri `ability_`, `feat_`. Eski `boon_` öneki → `kind: 'ability'`, `source: 'dm'`.
+4. `type` alanı yalnızca **kayıt türü değerlerinden** biriyse (`Feat`, `Spell`, `Power`, `Weapon`, `Armor`, `Shield`, `Special Ability`, `Maneuver`, `Stance`, `Flaw`…). `DM Boon` / `DM Grant` / `Boon` → `kind: 'ability'`, `source: 'dm'`. Hasar ve bonus türleri (`Piercing`, `competence`…) asla eşleşmez.
 5. Hiçbiri tutmazsa: **karantina**. İsim regex'i kullanılmaz.
 
 ## 3. Kimlik (id) kuralları
@@ -162,10 +161,25 @@ Arayüzde "Needs Review" rozeti olarak görünür: "Taşı" / "Olduğu gibi bır
 - Çakışma: Yazmadan önce `lastModified` kontrol edilir. Diskteki kayıt daha yeniyse V3 üzerine yazmaz, birleştirme ister.
 - ADR-005 (DM HP otoritesi) değişmez.
 
-## 8. Açık sorular (senin kararın)
+## 8. Kararlar (2026-11-08)
 
-1. **Gerçek karakter export'ları.** 2–4 karakter, fixture olarak. Bölüm 1 ve 6 bunlarla doğrulanacak.
-2. **DM Boon ayrı bir `kind` mı?** Önerim: `boon` ayrı olsun (kaynağı DM, kuralları farklı, Hub'dan gelebilir). Alternatif: `ability` + `source: 'dm'`.
-3. **"Change & Add"**: Bölüm 4'teki `overrides` modeli senin kullanımına uyuyor mu? Değiştirilen SRD kaydı karakterde hem orijinal hem değiştirilmiş olarak görünmemeli.
-4. **`weapons` dizisi**: Bugün `gearPool` ve `bodySlots` ile birlikte üçüncü bir silah listesi var. Aşama 2'de `bodySlots` + `tactical.weaponSets` içinde birleştirilmesini öneriyorum. Bugün için sadece okunur.
-5. **Psionics (`power`, 440 kayıt)**: SRD'de duruyor ama ADR-025'e göre kapsam dışı. V3'te yalnızca okunur bırakılsın mı?
+| # | Konu | Karar |
+| :--- | :--- | :--- |
+| 1 | Fixture verisi | Kullanıcıdan **1 gerçek karakter** (eksik) gelecek. Kalan kapsam, gerçek SRD id'leriyle kurulan **kurgu fixture'larla** tamamlanır (Bölüm 9) |
+| 2 | DM Boon | Ayrı `kind` **yok**. `kind: 'ability'` + `source: 'dm'` |
+| 3 | Change & Add | `overrides` modeli **onaylandı**. Değiştirilen SRD kaydı yeni id ile `customDb`'ye girer, karakterde yalnızca değiştirilmiş hali görünür |
+| 4 | `weapons` dizisi | Aşama 2'de `bodySlots` + `tactical.weaponSets` içinde **birleşecek**. O zamana kadar okunur, V3 yazmaz |
+| 5 | Psionic Power | **Korunur.** `kind: 'power'`, karakterde saklanabilir, migration'lar dokunmaz. Tam psionik kural desteği ADR-025 kapsamında ayrıca karar verilir |
+
+## 9. Fixture stratejisi
+
+Gerçek veri tek ve eksik olduğu için fixture'lar üç katmanlı:
+
+1. **Gerçek karakter** (`tools/fixtures/real/`): Kullanıcının export'u, olduğu gibi. Kişisel alanlar (notlar, portre) istenirse çıkarılır. Eksik olması sorun değil: eksik alanlar da migration'ın karşılaşacağı gerçek bir durumdur.
+2. **Kurgu ama gerçekçi fixture'lar** (`tools/fixtures/synthetic/`): Kodda bulunan geçmiş hata durumlarını yeniden üretir. Örnekler: `gearPool` içinde feat, sayı id'li eşya, `boon_` önekli ability, aynı isimli iki homebrew, `progression` alanlı eski karakter, Türkçe fallback alanları, string ve nesne karışık `feats`. İçerik **gerçek SRD id'leri ve RAW değerlerle** kurulur (ADR-001: uydurma kural verisi yok).
+3. **Sınır durumları** (testlerin içinde): boş karakter, `null` kayıtlar, bozuk JSON.
+
+Her migration için iki test zorunlu:
+
+- **Kayıpsızlık:** Migration'dan önceki her kayıt sonrasında ya yerinde ya da `quarantine` içinde bulunur.
+- **İdempotency:** Migration ikinci kez çalıştığında hiçbir şey değişmez.
