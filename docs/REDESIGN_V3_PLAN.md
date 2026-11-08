@@ -10,13 +10,15 @@ Branch: `redesign/page-from-scratch` (taban: `feat/v25-lego-engine-spotlight-ter
 | Yaklaşım | Paralel yeni sayfa. `index.html` eşitlik sağlanana kadar çalışmaya devam eder |
 | Teknoloji | Build'siz native ES modülleri + JSDoc + `tsc --checkJs` |
 | İlk dilim | `📜 Character & Logs` |
+| İzolasyon | Aynı repo, ayrı branch, ayrı klasör (`sheet/`), V3'e ait motor kopyası (`sheet/engine/`). Ortak olan tek şey veri sözleşmesi. `verify_and_sync` iki yönlü kuralı denetler: eski dosyalar `sheet/`'e referans veremez, `sheet.html` kök motoru yükleyemez |
+| Öncelik | Önce backend (veri katmanı). Ardından Master DB / Forge / Rule Master, `kind` tabanlı tek bir Entry Editor olarak yeniden tasarlanır |
 
 ## 1. Korunacak öz
 
 Aşağıdakilere dokunulmaz, yeni sayfa bunları **kullanır**:
 
 - **Veri sözleşmesi:** `character_data.json` V2 formatı (`schemaVersion: 2`), `customDb` (ADR-011), localStorage anahtarları (`dnd35_character`, `dnd35_active_character_id`, `dnd35_hub_db`), Supabase `full_data`. Hub ve eski sayfa aynı karakteri sorunsuz okumaya devam eder.
-- **Motor:** `rule_engine.js`, `srd_compendium.js` (`SrdCompendium`, `ItemAssembler`, `SchemaMigrator`), `rule_master.js`. Bunlar klasik `<script>` olarak yüklenir, yeni modüller bir adaptör üzerinden çağırır.
+- **Motor:** `rule_engine.js` ve `srd_compendium.js` (`SrdCompendium`, `ItemAssembler`, `SchemaMigrator`) V3'e **kopyalandı** (`sheet/engine/`, bkz. `sheet/engine/FORK.md`). V3 kendi kopyasını yeniden yazar; eski sayfa, Hub ve diğer oturumlar kök dosyaları kullanmaya devam eder. Kopyalar klasik `<script>` olarak yüklenir, yeni modüller yalnızca `engine-adapter.js` üzerinden çağırır. `rule_master.js` (AI, Forge) Master DB/Forge yeniden tasarımında aynı şekilde kopyalanacak.
 - **Deneyim:** Sayfa temalı renkler, 4 kademeli buton standardı, Spotlight paleti, `dice3d` 3D zar, SVG zar ikonları (U+1F3B2 yasak), D&D 3.5e RAW İngilizce UI metinleri.
 - **Görsel kimlik:** Koyu slate/indigo kartlar ve mevcut renk paleti. Yeni sayfa **aynı görünür**, temizlenen şey alttaki yapıdır.
 
@@ -46,6 +48,9 @@ sheet/
     persistence.js          # localStorage/Supabase adaptörü, yazma kilidi
     derive.js               # deriveSheet(character) -> değerler + kaynak dökümü
     engine-adapter.js       # RuleEngine / SrdCompendium global'lerini saran ince katman
+  engine/                   # V3'e ait motor kopyası (klasik script), bkz. FORK.md
+    rule_engine.js
+    srd_compendium.js
   ui/
     tokens.css              # renkler, aralıklar, sayfa temaları (data-theme)
     components.js           # Button(tier), Badge, Card, Tabs, StatTile, Modal

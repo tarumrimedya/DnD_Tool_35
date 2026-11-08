@@ -14,10 +14,11 @@
 <body class="min-h-screen">
   <div id="v3-root" class="max-w-7xl mx-auto px-4 py-4"></div>
 
-  <!-- Shared legacy engine (classic scripts, same files as index.html and hub.html).
-       V3 reaches them only through sheet/core/engine-adapter.js. -->
-  <script src="srd_compendium.js?v=20261107_1835"></script>
-  <script src="rule_engine.js?v=20261107_1835"></script>
+  <!-- Sheet V3's own engine fork (classic scripts, see sheet/engine/FORK.md).
+       The classic sheet and Hub keep using the root copies. V3 modules reach these
+       only through sheet/core/engine-adapter.js. -->
+  <script src="sheet/engine/srd_compendium.js"></script>
+  <script src="sheet/engine/rule_engine.js"></script>
 
   <script type="module" src="sheet/main.js"></script>
 </body>

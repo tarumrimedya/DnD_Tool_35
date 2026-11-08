@@ -53,9 +53,11 @@ const CORE_FILES = [
   'sheet.html'
 ];
 
-// Sheet V3 (docs/REDESIGN_V3_PLAN.md): every file under sheet/ is synced and verified like a core file.
-// sheet/ holds native ES modules (sheet/package.json sets "type": "module").
+// Sheet V3 (docs/REDESIGN_V3_PLAN.md): every runtime file under sheet/ is synced and verified like a core file.
+// sheet/ holds native ES modules (sheet/package.json sets "type": "module"), except sheet/engine/,
+// which is V3's classic-script fork of the legacy engine (sheet/engine/FORK.md).
 const SHEET_DIR = 'sheet';
+const SHEET_ENGINE_DIR = `${SHEET_DIR}/engine/`;
 function listFilesRecursive(relDir) {
   const abs = path.join(ROOT, relDir);
   if (!fs.existsSync(abs)) return [];
@@ -64,8 +66,10 @@ function listFilesRecursive(relDir) {
     return d.isDirectory() ? listFilesRecursive(rel) : [rel];
   });
 }
-const SHEET_FILES = listFilesRecursive(SHEET_DIR);
-const isEsModuleFile = rel => rel.startsWith(`${SHEET_DIR}/`) && rel.endsWith('.js');
+const SHEET_FILES = listFilesRecursive(SHEET_DIR).filter(rel => !rel.endsWith('.md'));
+const isEsModuleFile = rel => rel.startsWith(`${SHEET_DIR}/`) && !rel.startsWith(SHEET_ENGINE_DIR) && rel.endsWith('.js');
+// Legacy files must never depend on Sheet V3 (one-way isolation during the transition).
+const LEGACY_FILES_NO_V3_REFS = CORE_FILES.filter(rel => rel !== 'sheet.html');
 CORE_FILES.push(...SHEET_FILES);
 
 const DB_FILES = [
@@ -325,6 +329,25 @@ function main() {
   } catch (reErr) {
     console.error(`[FAIL] ${reErr.message}`);
     errors++;
+  }
+
+  // 7b. Sheet V3 isolation: legacy files must not reference sheet/ or sheet.html,
+  //     and sheet.html must load the V3 engine fork, not the shared root engine.
+  for (const rel of LEGACY_FILES_NO_V3_REFS) {
+    const full = path.join(ROOT, rel);
+    if (!fs.existsSync(full)) continue;
+    if (/["'(\/]sheet(?:\/|\.html)/.test(fs.readFileSync(full, 'utf8'))) {
+      console.error(`[FAIL] Isolation violation: legacy file ${rel} references Sheet V3 (sheet/ or sheet.html).`);
+      errors++;
+    }
+  }
+  const sheetHtmlPath = path.join(ROOT, 'sheet.html');
+  if (fs.existsSync(sheetHtmlPath)) {
+    const sheetHtml = fs.readFileSync(sheetHtmlPath, 'utf8');
+    if (/<script[^>]+src=["'](?:\.\/)?(?:rule_engine|srd_compendium|rule_master)\.js/i.test(sheetHtml)) {
+      console.error('[FAIL] Isolation violation: sheet.html loads a shared root engine file. Use the fork in sheet/engine/.');
+      errors++;
+    }
   }
 
   // 8. Sheet V3 unit tests (ES module suite, run in a child process)
