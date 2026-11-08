@@ -350,12 +350,12 @@ function main() {
     }
   }
 
-  // 8. Sheet V3 unit tests (ES module suite, run in a child process)
-  const sheetTestPath = path.join(__dirname, 'test_sheet_v3.mjs');
-  if (fs.existsSync(sheetTestPath)) {
-    const sheetRes = spawnSync(process.execPath, [sheetTestPath], { encoding: 'utf8' });
+  // 8. Sheet V3 unit tests (ES module suites tools/test_sheet_v3*.mjs, each in a child process)
+  const sheetTests = fs.readdirSync(__dirname).filter(f => /^test_sheet_v3.*\.mjs$/.test(f)).sort();
+  for (const file of sheetTests) {
+    const sheetRes = spawnSync(process.execPath, [path.join(__dirname, file)], { encoding: 'utf8' });
     if (sheetRes.status !== 0) {
-      console.error(`[FAIL] Sheet V3 tests failed:\n${(sheetRes.stdout || '') + (sheetRes.stderr || '')}`);
+      console.error(`[FAIL] ${file} failed:\n${(sheetRes.stdout || '') + (sheetRes.stderr || '')}`);
       errors++;
     }
   }

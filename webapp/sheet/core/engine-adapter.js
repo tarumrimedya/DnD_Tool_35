@@ -35,14 +35,30 @@ export async function initCompendium() {
 }
 
 /**
- * Apply the legacy V2 upgrade to a private clone so V3 sees the same normalized shape as the
- * classic sheet. The input object is never mutated, and nothing is written back to storage.
+ * Fetch the SRD index used for `kind` inference. Never throws; returns null when unavailable.
+ * @returns {Promise<any|null>}
+ */
+export async function loadSrdIndex() {
+  try {
+    const res = await fetch('database/srd_index.json');
+    return res.ok ? await res.json() : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Apply the legacy V1 -> V2 upgrade to a private clone, only for characters still below
+ * `schemaVersion: 2`. V2 characters are passed through untouched (as a clone) because the legacy
+ * normalizer also drops null entries and folds child rows, which V3 must not do silently.
+ * The input object is never mutated, and nothing is written back to storage.
  * @param {Record<string, any>} character
  * @returns {Record<string, any>}
  */
 export function normalizeCharacterV2(character) {
   const w = g();
   const clone = structuredClone(character);
+  if (Number(clone.schemaVersion) >= 2) return clone;
   if (w.SchemaMigrator && typeof w.SchemaMigrator.upgradeCharacterToV2 === 'function') {
     try {
       return w.SchemaMigrator.upgradeCharacterToV2(clone) || clone;

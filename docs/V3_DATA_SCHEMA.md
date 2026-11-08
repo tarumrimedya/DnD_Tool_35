@@ -81,7 +81,7 @@ Bu yüzden `type`/`category` ve isim regex'i ile yapılan her sınıflandırma k
 | `material` | Material | **Tek başına durmaz**, eşyanın `material` alanında | ADR-024 |
 | `feat` | Feat | `feats` | |
 | `flaw` | (custom) | `feats` | UA Flaw |
-| `ability` | SpecialAbility, ClassAbility, RacialTrait, (custom DM Boon / DM Grant) | `specialAbilities` | Ex/Su/Sp ayrımı `abilityType` alanında. Kaynak `source` alanında: `'class' \| 'race' \| 'template' \| 'dm' \| 'custom'`. DM Boon = `kind: 'ability'` + `source: 'dm'` |
+| `ability` | SpecialAbility, ClassAbility, RacialTrait, (custom DM Boon / DM Grant) | `specialAbilities` | Ex/Su/Sp ayrımı `abilityType` alanında. Kaynak yeni `origin` alanında (`'dm'`); eski `source` alanı serbest metin ("Warblade Level 1") olduğu için kullanılmaz\| 'race' \| 'template' \| 'dm' \| 'custom'`. DM Boon = `kind: 'ability'` + `origin: 'dm'` |
 | `spell` | Spell | `spells` / `spellcasting` | |
 | `power` | Power | `spells` (`kind: 'power'`) | Psionic Power'lar korunur: kendi `kind`'ı var, karakterde saklanabilir, hiçbir migration bunları atmaz. Tam psionik kural desteği (power point, manifester level) ADR-025 kapsamında ayrıca ele alınır |
 | `maneuver` | Maneuver | `maneuvers` / `tomeOfBattle` | |
@@ -102,14 +102,19 @@ Sıra kesindir, ilk eşleşen kazanır. Id'deki paket öneki (`pack_dm_draconic_
 
 1. Kayıtta zaten geçerli bir `kind` varsa o kullanılır.
 2. `id` (ya da `baseItemId` / `sourceId`) SRD indeksinde varsa indeksteki `t` kullanılır.
-2b. **Liste üyeliği:** Tek türlü listelerde kayıt, listenin türünü alır, ama 2–4. adımdaki açık bir sinyal bununla çelişmiyorsa. `specialAbilities` → `ability`, `feats` → `feat` (`type: 'Flaw'` ise `flaw`), `spells` → `spell` (`pwr-` ise `power`), `customClasses` → `class`. Çok türlü listeler (`gearPool`, `customDb`) için bu adım yoktur. Çelişki varsa (örneğin `gearPool` içinde `ability_` id'li kayıt) kayıt karantinaya gider.
-3. `id` öneki: `feat-`, `spl-`, `pwr-`, `wpn-`, `arm-`, `shd-`, `mi-`, `pot-`, `tob-`… (indeksteki önek tablosu) ve custom önekleri `ability_`, `feat_`, `class_`. Eski `boon_` öneki → `kind: 'ability'`, `source: 'dm'`. `cus-` öneki tür bilgisi taşımaz, 2b'ye bırakılır.
-4. `type` alanı yalnızca **kayıt türü değerlerinden** biriyse (`Feat`, `Spell`, `Power`, `Weapon`, `Armor`, `Shield`, `Special Ability`, `Maneuver`, `Stance`, `Flaw`, `Base Class`, `Deity`, `Domain`…). `DM Boon` / `DM Grant` / `Boon` → `kind: 'ability'`, `source: 'dm'`. Hasar ve bonus türleri (`Piercing`, `competence`…) asla eşleşmez.
+3. `type` alanı yalnızca **kayıt türü değerlerinden** biriyse (`Feat`, `Spell`, `Power`, `Weapon`, `Armor`, `Shield`, `Special Ability`, `Maneuver`, `Stance`, `Flaw`, `Base Class`, `Deity`, `Domain`…). `DM Boon` / `DM Grant` / `Boon` → `kind: 'ability'`, `origin: 'dm'`. Hasar ve bonus türleri (`Piercing`, `competence`…) asla eşleşmez.
+4. `id` öneki: `feat-`, `spl-`, `pwr-`, `wpn-`, `arm-`, `shd-`, `mi-`, `pot-`, `tmpl-`… (indeksteki önek tablosu; `tob-` hem manevra hem stance olduğu için kullanılmaz) ve custom önekleri `ability_`, `feat_`, `class_`. `boon_` tür bilgisi **taşımaz**, yalnızca `origin: 'dm'` işaretidir. `cus-` öneki de tür bilgisi taşımaz.
+5. **Liste üyeliği:** Tek türlü listelerde kayıt, listenin türünü alır, ama 2–4. adımdaki açık bir sinyal bununla çelişmiyorsa. `specialAbilities` → `ability`, `feats` → `feat` (`type: 'Flaw'` ise `flaw`), `spells` → `spell` (`pwr-` ise `power`), `customClasses` → `class`. Çok türlü listeler (`gearPool`, `customDb`) için bu adım yoktur. Çelişki varsa (örneğin `gearPool` içinde `ability_` id'li kayıt) kayıt karantinaya gider.
 
-**`source: 'dm'` türden bağımsızdır.** Gerçek veride DM'in verdiği feat'ler var (`type: 'Feat'`, `category: 'DM Boon'`). Bunlar `kind: 'feat'` + `source: 'dm'` olur. `DM Boon` tipli kayıtlar ise `kind: 'ability'` + `source: 'dm'`.
+> **Neden `type`, id önekinden önce?** Gerçek veride `feats` listesinde `type: 'Feat'` olan ama id'si `boon_skill_ride_4` ya da `ability_dragon_breath_…` gibi eski kod yollarının ürettiği DM feat'leri var. `type` kullanıcının Master DB'de seçtiği alan; id önekleri ise eski kodun iç adlandırması. Sıra tersi olsaydı bu feat'ler yanlışlıkla karantinaya düşerdi.
+
+**`origin: 'dm'` türden bağımsızdır.** Gerçek veride DM'in verdiği feat'ler var (`type: 'Feat'`, `category: 'DM Boon'`). Bunlar `kind: 'feat'` + `origin: 'dm'` olur. `DM Boon` tipli kayıtlar ise `kind: 'ability'` + `origin: 'dm'`.
 
 **Kayıt olmayan yapısal listeler:** `skills` (rank kayıtları, `key` ile tanımlanır) ve `levelProgression` (seviye satırları) `kind` almaz. Bunlar karakterin iskeletidir, kütüphane kaydı değildir.
-5. Hiçbiri tutmazsa: **karantina**. İsim regex'i kullanılmaz.
+
+Hiçbiri tutmazsa: **karantina**. İsim regex'i kullanılmaz.
+
+**`origin` alanı:** DM işareti `origin: 'dm'` olarak yeni bir alanda tutulur. Eski `source` alanı serbest metin taşıdığı için ("Warblade Level 1", "Player's Handbook") ona dokunulmaz.
 
 ## 3. Kimlik (id) kuralları
 
@@ -177,7 +182,7 @@ Arayüzde "Needs Review" rozeti olarak görünür: "Taşı" / "Olduğu gibi bır
 | # | Konu | Karar |
 | :--- | :--- | :--- |
 | 1 | Fixture verisi | Kullanıcıdan **1 gerçek karakter** (eksik) gelecek. Kalan kapsam, gerçek SRD id'leriyle kurulan **kurgu fixture'larla** tamamlanır (Bölüm 9) |
-| 2 | DM Boon | Ayrı `kind` **yok**. `kind: 'ability'` + `source: 'dm'` |
+| 2 | DM Boon | Ayrı `kind` **yok**. `kind: 'ability'` + `origin: 'dm'` |
 | 3 | Change & Add | `overrides` modeli **onaylandı**. Değiştirilen SRD kaydı yeni id ile `customDb`'ye girer, karakterde yalnızca değiştirilmiş hali görünür |
 | 4 | `weapons` dizisi | Aşama 2'de `bodySlots` + `tactical.weaponSets` içinde **birleşecek**. O zamana kadar okunur, V3 yazmaz |
 | 5 | Psionic Power | **Korunur.** `kind: 'power'`, karakterde saklanabilir, migration'lar dokunmaz. Tam psionik kural desteği ADR-025 kapsamında ayrıca karar verilir |
@@ -207,9 +212,9 @@ Seviye 17 karakter (Warblade 5 / Rogue (Adventurer Variant) 2 / Bloodstorm Blade
 | 2 | `gearPool`'daki 2 eşyanın id'si **sayı** (`1794058567076`) | `ids-to-string` migration'ı |
 | 3 | `specialAbilities` kayıtlarının 8/9'unda `type` yok, id'ler `cus-` önekli. Tür yalnızca listeden anlaşılıyor | Kural 2b (liste üyeliği) eklendi. Bu kayıtlar karantinaya **gitmez** |
 | 4 | DM Boon id'leri paket önekli: `pack_dm_draconic_boons:boon_draconic_nat_ac` | Paket öneki ayrılır, `pack` alanında saklanır |
-| 5 | DM'in verdiği feat'ler var (`type: 'Feat'`, `category: 'DM Boon'`) | `source: 'dm'` türden bağımsız hale getirildi |
+| 5 | DM'in verdiği feat'ler var (`type: 'Feat'`, `category: 'DM Boon'`) | `origin: 'dm'` türden bağımsız hale getirildi |
 | 6 | `levelProgression[].feats` anlamı **emoji ve etiketli metinle** taşıyor: `"⚠️ [Flaw] Frail"`, `"⚔️ [Bonus] Knock-Down"`, `"🌟 DM Boon: CL = Level 1"`, `"+1 Stat: INT"` | Aşama 1: V3 bu metinleri **tek, test edilmiş bir ayrıştırıcıyla** okur (`slot: regular \| bonus \| flaw \| flawBonus \| dm \| abilityIncrease`). Metinler değişmez, çünkü klasik sayfa yazmaya devam ediyor. Aşama 2: satırlar yapısal kayda (`{ ref, slot, ability? }`) çevrilir |
-| 7 | "DM Boon: +20 HP" bir **özel sınıf** olarak tanımlanmış (`customClasses`), ama hiçbir seviyede kullanılmıyor | Dokunulmaz. Doğru model: `kind: 'ability'`, `source: 'dm'`, `modifiers: [{ target: 'hp.max', value: 20 }]`. Arayüzde "kullanılmayan özel sınıf" uyarısı |
+| 7 | "DM Boon: +20 HP" bir **özel sınıf** olarak tanımlanmış (`customClasses`), ama hiçbir seviyede kullanılmıyor | Dokunulmaz. Doğru model: `kind: 'ability'`, `origin: 'dm'`, `modifiers: [{ target: 'hp.max', value: 20 }]`. Arayüzde "kullanılmayan özel sınıf" uyarısı |
 | 8 | `customDb` kayıtlarında arayüz önbelleği kalıntıları var: `_isGearCache`, `_originalIndex`; ayrıca "Rogue" sınıfı hem `customClasses` hem `customDb` içinde | `_` önekli alanlar oturum/iç sınıfı, hesaba girmez. Çift tanım: `customClasses` asıl, `customDb` kopyası "gölge" olarak işaretlenir |
 | 9 | Türetilmiş değerler kaydediliyor: `legoEvaluation` tek başına **37 KB**, ayrıca `acBreakdown`, `evaluated*`, `ecl`, `grappleBonus`… | Bölüm 1.2 doğrulandı |
 | 10 | `activeModifiers` (7 kayıt: TWF, stance, manevralar) combat pin listesi | Arayüz durumu + türetilmiş. Kayıt değil |

@@ -34,6 +34,12 @@ git diff 628d56c -- rule_engine.js srd_compendium.js
 5. A critical RAW rule fix made in the root engine during the transition must also be applied
    here. Record it below.
 
+## V3 changes to the fork
+
+| Date | File | Change |
+| :--- | :--- | :--- |
+| 2026-11-08 | `srd_compendium.js` | `upgradeCharacterToV2` no longer calls `sanitizeCharacterAbilitiesAndPool` (P11). It silently moved and deleted entries on load; V3 uses quarantine migrations in `sheet/core/migrations.js` instead. V3 also runs `upgradeCharacterToV2` only for characters below `schemaVersion: 2`. |
+
 ## Legacy fixes ported since the fork
 
 | Date | Root commit | Ported in | Note |

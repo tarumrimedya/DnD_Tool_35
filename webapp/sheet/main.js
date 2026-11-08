@@ -1,7 +1,9 @@
 // @ts-check
 import { createInitialState, createStore } from './core/store.js';
 import { readStoredSnapshots, resolveCharacter } from './core/persistence.js';
-import { getEngineAvailability, initCompendium, normalizeCharacterV2 } from './core/engine-adapter.js';
+import { getEngineAvailability, initCompendium, normalizeCharacterV2, loadSrdIndex } from './core/engine-adapter.js';
+import { createKindContext } from './core/entry-kind.js';
+import { runMigrations } from './core/migrations.js';
 import { html, mount } from './ui/html.js';
 import { delegateActions } from './ui/delegate.js';
 import { Header, TabBar, TABS, classicSheetHref } from './views/shell.js';
@@ -66,6 +68,23 @@ function boot() {
     load: { source: resolved.source, requestedId: snapshots.requestedId, notes: resolved.notes },
     engine: { ...s.engine, ruleEngine: availability.ruleEngine, migrator: availability.migrator, compendium: 'loading' }
   }));
+
+  // V3 migrations run in memory on the loaded clone (Phase A: never written back).
+  if (resolved.character) {
+    loadSrdIndex().then(srdIndex => {
+      store.setState(s => {
+        if (!s.character) return s;
+        try {
+          const res = runMigrations(s.character, { ctx: createKindContext(srdIndex) });
+          const notes = res.reports.flatMap(r => r.notes);
+          if (!srdIndex) notes.unshift('SRD index unavailable: kinds were inferred without it.');
+          return { ...s, character: Object.freeze(res.character), migration: { status: 'done', applied: res.applied, notes } };
+        } catch (e) {
+          return { ...s, migration: { status: 'error', applied: [], notes: [], error: e instanceof Error ? e.message : String(e) } };
+        }
+      });
+    });
+  }
 
   initCompendium().then(result => {
     store.setState(s => ({

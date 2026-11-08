@@ -33,7 +33,9 @@ function LoadDiagnostics(c, state) {
     ['Spells', count(c.spells)],
     ['Custom DB', count(c.customDb)],
     ['SRD Compendium', state.engine.compendium],
-    ['Rule Engine', state.engine.ruleEngine ? 'loaded' : 'missing']
+    ['Rule Engine', state.engine.ruleEngine ? 'loaded' : 'missing'],
+    ['V3 Migrations', state.migration.status === 'done' ? `${state.migration.applied.length} applied (in memory)` : state.migration.status],
+    ['Needs Review', count(c.quarantine)]
   ];
   return html`
     <section class="v3-card space-y-3" aria-labelledby="v3-diag-title">
@@ -45,6 +47,36 @@ function LoadDiagnostics(c, state) {
         ? html`<ul class="text-[11px] text-amber-300 space-y-0.5">${state.load.notes.map(n => html`<li>${n}</li>`)}</ul>`
         : ''}
       ${state.engine.error ? html`<p class="text-[11px] text-rose-300">${state.engine.error}</p>` : ''}
+      ${state.migration.error ? html`<p class="text-[11px] text-rose-300">Migration error: ${state.migration.error}</p>` : ''}
+    </section>`;
+}
+
+/**
+ * Quarantined entries (docs/V3_DATA_SCHEMA.md section 6). Read-only in Phase A:
+ * resolving them needs the write lock (Phase B).
+ * @param {Record<string, any>} c
+ */
+function NeedsReview(c) {
+  const q = Array.isArray(c.quarantine) ? c.quarantine : [];
+  if (q.length === 0) return html``;
+  return html`
+    <section class="v3-card space-y-2" aria-labelledby="v3-review-title">
+      <div class="flex items-center gap-2">
+        <h2 id="v3-review-title" class="text-xs font-bold text-amber-300 uppercase tracking-wider">Needs Review</h2>
+        <span class="badge bg-amber-950 text-amber-300 border border-amber-700/70">${q.length}</span>
+      </div>
+      <p class="text-[11px] text-slate-400">These entries could not stay where they are. Nothing was deleted. Resolving them will be available once editing is enabled.</p>
+      <ul class="space-y-1.5">
+        ${q.map(r => html`
+          <li class="v3-kv">
+            <div class="text-xs font-bold text-white">${r.entry?.name ?? r.entry?.id ?? 'Unnamed entry'}</div>
+            <div class="text-[11px] text-slate-400">
+              From <strong class="text-slate-200">${r.from}</strong> •
+              ${r.reason === 'kind-conflict' ? html`Suggested Type: <strong class="text-amber-300">${r.suggested}</strong>` : 'Type could not be determined'}
+            </div>
+            ${r.note ? html`<div class="text-[11px] text-slate-500">${r.note}</div>` : ''}
+          </li>`)}
+      </ul>
     </section>`;
 }
 
@@ -54,6 +86,7 @@ export function CharacterTab(state) {
   if (!c) return html``;
   return html`
     <div class="space-y-4">
+      ${NeedsReview(c)}
       ${SECTIONS.map(s => html`
         <section class="v3-section" data-section="${s.id}" aria-label="${s.title}">
           <div class="flex items-center justify-between gap-2">

@@ -2418,7 +2418,9 @@
     upgradeCharacterToV2(charData) {
       if (!charData || typeof charData !== 'object') return charData;
 
-      SchemaMigrator.sanitizeCharacterAbilitiesAndPool(charData);
+      // Sheet V3: the P11 load-time sanitizer (sanitizeCharacterAbilitiesAndPool) deletes and moves
+      // entries silently. V3 replaces it with non-destructive quarantine migrations
+      // (sheet/core/migrations.js), so it is no longer called here. See sheet/engine/FORK.md.
 
       const listKeys = ['inventory', 'gear', 'weapons', 'armors', 'feats', 'specialAbilities', 'spells', 'buffs'];
       for (let i = 0; i < listKeys.length; i++) {
@@ -2427,8 +2429,6 @@
           charData[k] = SchemaMigrator.upgradeArrayToV2(charData[k]);
         }
       }
-
-      SchemaMigrator.sanitizeCharacterAbilitiesAndPool(charData);
 
       // Migrate legacy plain-text `notes` into structured `smartNotes` for `HubNotes` compatibility
       if (!Array.isArray(charData.smartNotes)) {

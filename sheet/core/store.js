@@ -14,6 +14,8 @@
  * @property {Record<string, any>|null} character   Resolved character (read-only clone in Phase A).
  * @property {{ source: string, requestedId: string|null, notes: string[] }} load
  * @property {{ compendium: 'idle'|'loading'|'ready'|'error', ruleEngine: boolean, migrator: boolean, error?: string }} engine
+ * @property {{ status: 'pending'|'done'|'error', applied: string[], notes: string[], error?: string }} migration
+ *   In-memory V3 migrations (Phase A: never saved).
  * @property {{ activeTab: string }} ui
  * @property {boolean} readOnly                      Phase A: always true. Writes are refused.
  */
@@ -25,6 +27,7 @@ export function createInitialState() {
     character: null,
     load: { source: 'none', requestedId: null, notes: [] },
     engine: { compendium: 'idle', ruleEngine: false, migrator: false },
+    migration: { status: 'pending', applied: [], notes: [] },
     ui: { activeTab: 'character' },
     readOnly: true
   };
