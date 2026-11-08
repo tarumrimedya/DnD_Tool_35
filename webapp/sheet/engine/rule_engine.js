@@ -6543,55 +6543,136 @@ const RuleEngine = {
     return { status: 'Overloaded (Max Load Exceeded)', color: 'rose', maxDex: 0, checkPenalty: -10, speed30: 5, speed20: 5 };
   },
 
-  // Canonical Consolidated Skill Mappings (Bridge between RAW 3.5e skills and Consolidated groups)
-  DEFAULT_SKILL_MAPPING: {
-    "stealth": ["hide", "move_silently", "move silently", "movesilently", "sessiz hareket", "gizlenme"],
-    "perception": ["spot", "listen", "search", "fark etme", "dinleme", "arama"],
-    "athletics": ["climb", "jump", "swim", "tırmanma", "zıplama", "yüzme"],
-    "acrobatics": ["tumble", "balance", "escape_artist", "escape artist", "takla", "denge", "kurtulma"],
-    "thievery": ["disable_device", "disable device", "open_lock", "open lock", "sleight_of_hand", "sleight of hand", "kilit açma", "tuzak bozma"],
-    "diplomacy": ["diplomacy", "gather_information", "gather information", "sense_motive", "sense motive", "diplomasi", "bilgi toplama", "sezgi"],
-    "linguistics": ["decipher_script", "decipher script", "forgery", "speak_language", "speak language", "yazı çözme", "sahtecilik"]
+  // [V3] Consolidated Skills house rule: the single default for both the engine and the V3 sheet.
+  // Same 7 groups as `DEFAULT_CONSOLIDATED_SKILL_GROUPS` in char_progression.js (classic sheet).
+  // A character's `settings.consolidatedSkillGroups` always wins over this default.
+  DEFAULT_CONSOLIDATED_SKILL_GROUPS: Object.freeze([
+    { key: 'athletics', name: 'Athletics', stat: 'str', acp: true, icon: '🏃', components: ['climb', 'jump', 'swim'], compLabels: 'Climb + Jump + Swim', desc: 'Combines Climb, Jump, and Swim into a single physical athletics skill.' },
+    { key: 'stealth', name: 'Stealth', stat: 'dex', acp: true, icon: '🥷', components: ['hide', 'move_silently'], compLabels: 'Hide + Move Silently', desc: 'Combines visual concealment (Hide) and silent movement (Move Silently).' },
+    { key: 'perception', name: 'Perception', stat: 'wis', acp: false, icon: '👁️', components: ['spot', 'listen'], compLabels: 'Spot + Listen', desc: 'Combines visual awareness (Spot) and auditory awareness (Listen).' },
+    { key: 'acrobatics', name: 'Acrobatics', stat: 'dex', acp: true, icon: '🤸', components: ['tumble', 'balance', 'escape_artist'], compLabels: 'Tumble + Balance + Escape Artist', desc: 'Combines Tumble, Balance, and Escape Artist.' },
+    { key: 'thievery', name: 'Thievery', stat: 'dex', acp: false, icon: '🗝️', components: ['open_lock', 'disable_device', 'sleight_of_hand'], compLabels: 'Open Lock + Disable Device + Sleight of Hand', desc: 'Combines lockpicking, disabling traps, and legerdemain.' },
+    { key: 'diplomacy_merged', name: 'Persuasion & Social', stat: 'cha', acp: false, icon: '🗣️', components: ['diplomacy', 'gather_information'], compLabels: 'Diplomacy + Gather Information', desc: 'Combines social persuasion (Diplomacy) and urban rumor gathering (Gather Information).' },
+    { key: 'linguistics', name: 'Linguistics', stat: 'int', acp: false, icon: '📜', components: ['decipher_script', 'forgery'], compLabels: 'Decipher Script + Forgery', desc: 'Combines deciphering ancient scripts and creating/detecting forgeries.' }
+  ].map(g => Object.freeze({ ...g, components: Object.freeze([...g.components]) }))),
+
+  // [V3] Legacy Turkish skill names that may still appear in old modifier targets (bilingual reader shield).
+  LEGACY_SKILL_TARGET_ALIASES: Object.freeze({
+    gizlenme: 'hide', sessizhareket: 'move_silently', farketme: 'spot', dinleme: 'listen', arama: 'search',
+    tirmanma: 'climb', ziplama: 'jump', yuzme: 'swim', takla: 'tumble', denge: 'balance', kurtulma: 'escape_artist',
+    kilitacma: 'open_lock', tuzakbozma: 'disable_device', diplomasi: 'diplomacy', bilgitoplama: 'gather_information',
+    sezgi: 'sense_motive', yazicozme: 'decipher_script', sahtecilik: 'forgery'
+  }),
+
+  // Skill families whose bare target (`skill.craft`, `skill.knowledge`) applies to every sub-skill.
+  SKILL_FAMILIES: Object.freeze(['knowledge', 'craft', 'perform', 'profession']),
+
+  /** [V3] Compact identity used for exact skill matching: lowercase ASCII letters and digits only. */
+  compactSkillId(value) {
+    return String(value ?? '')
+      .toLowerCase()
+      .replace(/ı/g, 'i').replace(/ş/g, 's').replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
+      .replace(/[^a-z0-9]/g, '');
   },
 
-  getSkillAliases(sKey, sName, character) {
-    const aliases = new Set();
-    const kNorm = (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    const nNorm = (sName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    if (kNorm) aliases.add(kNorm);
-    if (nNorm) aliases.add(nNorm);
+  /**
+   * [V3] Active consolidated groups for a character: [] when the house rule is off, the character's
+   * own `settings.consolidatedSkillGroups` when present, otherwise a copy of the single default.
+   * Single source for the engine and the V3 sheet (docs/V3_DATA_SCHEMA.md section 11.3).
+   */
+  getConsolidatedSkillGroups(character) {
+    if (character?.settings?.mergeSkills === false) return [];
+    const own = character?.settings?.consolidatedSkillGroups;
+    const source = Array.isArray(own) && own.length > 0 ? own : this.DEFAULT_CONSOLIDATED_SKILL_GROUPS;
+    return source
+      .filter(g => g && typeof g.key === 'string' && g.key.trim() && Array.isArray(g.components))
+      .map(g => ({ ...g, components: g.components.filter(k => typeof k === 'string' && k.trim()).map(k => k.trim()) }));
+  },
 
-    const isMerged = character?.settings?.mergeSkills !== false;
-    if (isMerged) {
-      let mapping = null;
-      const masterList = (typeof window !== 'undefined' && window.masterDb) || [];
-      if (Array.isArray(masterList)) {
-        const ruleObj = masterList.find(m => m && (m.name || '').toLowerCase().includes('skilleri birleştir') || (m.name || '').toLowerCase().includes('skill consolidation'));
-        if (ruleObj && ruleObj.skillMapping && typeof ruleObj.skillMapping === 'object') {
-          mapping = ruleObj.skillMapping;
-        }
-      }
+  /** [V3] Family of a skill (`craft`, `knowledge`, ...) from its display name "Craft (Alchemy)" or key prefix. */
+  _skillFamily(key, name) {
+    const fromName = /\(/.test(String(name || '')) ? this.compactSkillId(String(name).split('(')[0]) : '';
+    if (this.SKILL_FAMILIES.includes(fromName)) return fromName;
+    const k = String(key || '').toLowerCase();
+    if (k.startsWith('k_')) return 'knowledge';
+    const prefix = this.compactSkillId(k.split('_')[0]);
+    return this.SKILL_FAMILIES.includes(prefix) && k.includes('_') ? prefix : '';
+  },
 
-      if (!mapping) {
-        mapping = character?.settings?.skillMapping || this.DEFAULT_SKILL_MAPPING;
-      }
+  /**
+   * [V3] Which modifier targets count for one skill check. Exact identities only (key or display name,
+   * compacted), never substring matching. A consolidated group's scope includes all its components;
+   * a component's scope includes its group. Each identity carries the label shown in the breakdown.
+   * @returns {{ key: string, ids: Map<string, string|null>, family: string, group: object|null }}
+   */
+  buildSkillScope(character, skillKey, skillName) {
+    const key = String(skillKey || '').trim();
+    const skills = Array.isArray(character?.skills) ? character.skills : [];
+    const skillDef = k => skills.find(s => s && s.key === k) || null;
+    const ids = new Map();
+    const addIds = (k, n, label) => {
+      [k, n].forEach(v => {
+        const id = this.compactSkillId(v);
+        if (id && !ids.has(id)) ids.set(id, label);
+      });
+    };
+    addIds(key, skillName, null);
 
-      if (mapping) {
-        for (const [groupKey, comps] of Object.entries(mapping)) {
-          const gNorm = groupKey.toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (gNorm === kNorm || kNorm.includes(gNorm) || gNorm.includes(kNorm) || nNorm.includes(gNorm) || gNorm.includes(nNorm)) {
-            if (Array.isArray(comps)) {
-              comps.forEach(c => {
-                const cNorm = String(c).toLowerCase().replace(/[^a-z0-9]/g, '');
-                if (cNorm) aliases.add(cNorm);
-              });
-            }
-          }
-        }
-      }
+    const groups = this.getConsolidatedSkillGroups(character);
+    const keyId = this.compactSkillId(key);
+    let group = groups.find(g => this.compactSkillId(g.key) === keyId) || null;
+    if (group) {
+      group.components.forEach(ck => {
+        const def = skillDef(ck);
+        addIds(ck, def?.name, def?.name || ck.replace(/_/g, ' '));
+      });
+    } else {
+      group = groups.find(g => g.components.some(ck => this.compactSkillId(ck) === keyId)) || null;
+      if (group) addIds(group.key, group.name, group.name || group.key);
     }
+    // An undivided family skill ("Perform" with no sub-skills on the sheet) accepts every sub-target.
+    const familyRoot = this.SKILL_FAMILIES.includes(keyId) ? keyId : '';
+    return { key, ids, family: group && this.compactSkillId(group.key) === keyId ? '' : this._skillFamily(key, skillName), familyRoot, group };
+  },
 
-    return Array.from(aliases);
+  /**
+   * [V3] Does a modifier target apply to this scope? Returns null, or `{ via }` where `via` is the
+   * breakdown label of the matched component/group (null when the skill itself was targeted).
+   */
+  matchSkillTarget(scope, rawTarget) {
+    const t = String(rawTarget || '').trim().toLowerCase();
+    if (!t.startsWith('skill.') && !t.startsWith('skills.') && t !== 'skills') return null;
+    const sub = t === 'skills' ? 'all' : t.replace(/^skills?\./, '').trim();
+    let id = this.compactSkillId(sub);
+    if (id === 'all' || id === 'skills' || id === 'allskills') return { via: null };
+    if (this.LEGACY_SKILL_TARGET_ALIASES[id]) id = this.compactSkillId(this.LEGACY_SKILL_TARGET_ALIASES[id]);
+    if (scope.family && (id === scope.family || id === `all${scope.family}`)) return { via: null };
+    if (scope.ids.has(id)) return { via: scope.ids.get(id) };
+    if (scope.familyRoot && id.startsWith(scope.familyRoot)) return { via: sub.replace(/_/g, ' ') };
+    return null;
+  },
+
+  /**
+   * [V3] Feed every skill modifier of one source that applies to `scope` into `addBonus`.
+   * @returns {boolean} true when at least one modifier applied
+   */
+  _applySkillModifiers(modifiers, sourceTitle, defaultType, ctx, scope, addBonus) {
+    if (!Array.isArray(modifiers)) return false;
+    let matched = false;
+    modifiers.forEach(mod => {
+      if (!mod || !mod.target) return;
+      const hit = this.matchSkillTarget(scope, mod.target);
+      if (!hit) return;
+      const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
+      const rawExpr = hasFormula ? mod.formula : mod.value;
+      const val = Number(this.evaluateFormula(rawExpr, ctx)) || Number(mod.value) || 0;
+      if (val === 0) return;
+      const mType = mod.type || (val < 0 ? 'penalty' : defaultType);
+      const label = hit.via ? `${sourceTitle} (${hit.via})` : sourceTitle;
+      addBonus(label, val, mType, { source: sourceTitle, via: hit.via });
+      matched = true;
+    });
+    return matched;
   },
 
   /**
@@ -6604,59 +6685,23 @@ const RuleEngine = {
     if (!character) return { total: 0, breakdown: [] };
     const sName = (skillName || '').toLowerCase().trim();
     const sKey = (skillKey || '').toLowerCase().trim();
-    const isKnowledge = sName.startsWith('knowledge') || sKey.startsWith('knowledge') || sName.includes('bilgi');
-    const aliases = this.getSkillAliases(sKey, sName, character);
+    // [V3] Exact skill scope from the single consolidated-group source (no substring alias matching).
+    const scope = this.buildSkillScope(character, skillKey, skillName);
+    const isKnowledge = scope.family === 'knowledge' || scope.familyRoot === 'knowledge';
     const charLvl = Number(character.level) || 1;
     const evalCtx = { cl: charLvl, level: charLvl, bab: Number(character.bab) || 0 };
 
     const buckets = {};
-    const addBonus = (sourceName, val, bType = 'untyped') => {
+    const addBonus = (sourceName, val, bType = 'untyped', meta = null) => {
       const v = Number(val) || 0;
       if (v === 0) return;
       const type = (bType || 'untyped').toLowerCase().trim();
       if (!buckets[type]) buckets[type] = [];
-      buckets[type].push({ name: sourceName, val: v });
+      buckets[type].push({ name: sourceName, val: v, source: meta?.source ?? sourceName, via: meta?.via ?? null });
     };
 
-    // Helper to check if a V2 modifier target matches this skill
-    const matchSkillModifiers = (modifiers, sourceTitle, defaultType = 'competence', ctx = evalCtx) => {
-      if (!Array.isArray(modifiers)) return false;
-      let matched = false;
-      const baseKeyNorm = sKey.replace(/[^a-z0-9]/g, '');
-
-      modifiers.forEach(mod => {
-        if (!mod || !mod.target) return;
-        const rawTarget = String(mod.target).trim().toLowerCase();
-        if (!rawTarget.startsWith('skill.') && !rawTarget.startsWith('skills.') && rawTarget !== 'skills') return;
-
-        const subTarget = rawTarget.replace(/^skills?\./, '').trim();
-        const tNorm = subTarget.replace(/[^a-z0-9]/g, '');
-        const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
-        const rawExpr = hasFormula ? mod.formula : mod.value;
-        const val = Number(this.evaluateFormula(rawExpr, ctx)) || Number(mod.value) || 0;
-        if (val === 0) return;
-        const mType = mod.type || (val < 0 ? 'penalty' : defaultType);
-
-        let applies = false;
-        if (subTarget === 'all' || subTarget === 'skills' || tNorm === 'allskills') {
-          applies = true;
-        } else if (isKnowledge && (subTarget === 'knowledge' || tNorm === 'allknowledge' || tNorm.includes('knowledge'))) {
-          applies = true;
-        } else if (tNorm && aliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) {
-          applies = true;
-        }
-
-        if (applies) {
-          const label = (tNorm && tNorm !== 'all' && tNorm !== baseKeyNorm)
-            ? `${sourceTitle} (${subTarget.replace(/_/g, ' ')})`
-            : sourceTitle;
-          addBonus(label, val, mType);
-          matched = true;
-        }
-      });
-
-      return matched;
-    };
+    const matchSkillModifiers = (modifiers, sourceTitle, defaultType = 'competence', ctx = evalCtx) =>
+      this._applySkillModifiers(modifiers, sourceTitle, defaultType, ctx, scope, addBonus);
 
     // 1. Negative Level Skill Penalties (if any active buff has negativeLevels without explicit skill.all modifier)
     if (Array.isArray(character.buffs)) {
@@ -6675,7 +6720,7 @@ const RuleEngine = {
     if (character.bodySlots && typeof character.bodySlots === 'object') {
       Object.entries(character.bodySlots).forEach(([slotKey, item]) => {
         if (!item || item.active === false || !item.name || item.name === '-') return;
-        this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character, aliases);
+        this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character, scope);
       });
     }
 
@@ -6687,7 +6732,7 @@ const RuleEngine = {
         if (inBodySlot) return;
         const isSlotless = (item.slot || '').toLowerCase().includes('slotless') || (item.category || '').toLowerCase() === 'other' || (item.category || '').toLowerCase() === 'wondrous item';
         if (item.isEquipped || isSlotless) {
-          this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character, aliases);
+          this._checkItemSkillBonus(item, sKey, sName, isKnowledge, addBonus, character, scope);
         }
       });
     }
@@ -6757,15 +6802,31 @@ const RuleEngine = {
     let total = 0;
     const breakdown = [];
 
-    Object.entries(buckets).forEach(([type, entries]) => {
+    // [V3] One source counts once per check: when the same source reaches this check through several
+    // identities (e.g. Climb and Swim inside Athletics), only its strongest entry is kept. Entries of
+    // one source through the same identity still add up as before.
+    const oncePerSource = (entries, type) => {
+      const bySource = new Map();
+      entries.forEach(e => {
+        if (!bySource.has(e.source)) bySource.set(e.source, []);
+        bySource.get(e.source).push(e);
+      });
+      return [...bySource.values()].flatMap(list => {
+        if (new Set(list.map(e => e.via)).size <= 1) return list;
+        const pick = type === 'penalty' ? (a, b) => (b.val < a.val ? b : a) : (a, b) => (b.val > a.val ? b : a);
+        return [list.reduce(pick)];
+      });
+    };
+
+    Object.entries(buckets).forEach(([type, rawEntries]) => {
       if (type === 'untyped' || type === 'circumstance' || type === 'penalty' || type === 'racial') {
-        entries.forEach(e => {
+        oncePerSource(rawEntries, type).forEach(e => {
           total += e.val;
           breakdown.push(`${e.name}: ${e.val >= 0 ? '+' : ''}${e.val} (${type})`);
         });
       } else {
-        let highest = entries[0];
-        entries.forEach(e => {
+        let highest = rawEntries[0];
+        rawEntries.forEach(e => {
           if (e.val > highest.val) highest = e;
         });
         total += highest.val;
@@ -6776,45 +6837,15 @@ const RuleEngine = {
     return { total, breakdown };
   },
 
-  _checkItemSkillBonus(rawItem, sKey, sName, isKnowledge, addBonus, character = null, aliases = null) {
+  _checkItemSkillBonus(rawItem, sKey, sName, isKnowledge, addBonus, character = null, scope = null) {
     if (!rawItem) return;
     const item = this.ensureV2Entry(rawItem);
-    const skillAliases = aliases || this.getSkillAliases(sKey, sName, character);
-    const baseKeyNorm = (sKey || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const skillScope = scope || this.buildSkillScope(character, sKey, sName);
     const charLvl = Number(character?.level) || 1;
     const evalCtx = { cl: charLvl, level: charLvl };
 
-    const processV2SkillMods = (sourceObj, sourceTitle) => {
-      if (!sourceObj || !Array.isArray(sourceObj.modifiers)) return false;
-      let applied = false;
-      sourceObj.modifiers.forEach(mod => {
-        if (!mod || !mod.target) return;
-        const rawTarget = String(mod.target).trim().toLowerCase();
-        if (!rawTarget.startsWith('skill.') && !rawTarget.startsWith('skills.') && rawTarget !== 'skills') return;
-
-        const subTarget = rawTarget.replace(/^skills?\./, '').trim();
-        const tNorm = subTarget.replace(/[^a-z0-9]/g, '');
-        const hasFormula = mod.formula !== undefined && mod.formula !== null && String(mod.formula).trim() !== '';
-        const rawExpr = hasFormula ? mod.formula : mod.value;
-        const val = Number(this.evaluateFormula(rawExpr, evalCtx)) || Number(mod.value) || 0;
-        if (val === 0) return;
-        const bType = mod.type || 'competence';
-
-        let applies = false;
-        if (subTarget === 'all' || subTarget === 'skills' || tNorm === 'allskills') applies = true;
-        else if (isKnowledge && (subTarget === 'knowledge' || tNorm === 'allknowledge' || tNorm.includes('knowledge'))) applies = true;
-        else if (tNorm && skillAliases.some(a => a && (a === tNorm || a.includes(tNorm) || tNorm.includes(a)))) applies = true;
-
-        if (applies) {
-          const label = (tNorm && tNorm !== 'all' && tNorm !== baseKeyNorm)
-            ? `${sourceTitle} (${subTarget.replace(/_/g, ' ')})`
-            : sourceTitle;
-          addBonus(label, val, bType);
-          applied = true;
-        }
-      });
-      return applied;
-    };
+    const processV2SkillMods = (sourceObj, sourceTitle) =>
+      Boolean(sourceObj) && this._applySkillModifiers(sourceObj.modifiers, sourceTitle, 'competence', evalCtx, skillScope, addBonus);
 
     // 1. Check V2 modifiers on item itself
     let itemHandled = processV2SkillMods(item, item.name || 'Equipped Item');

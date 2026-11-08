@@ -39,6 +39,7 @@ git diff 628d56c -- rule_engine.js srd_compendium.js
 | Date | File | Change |
 | :--- | :--- | :--- |
 | 2026-11-08 | `srd_compendium.js` | `upgradeCharacterToV2` no longer calls `sanitizeCharacterAbilitiesAndPool` (P11). It silently moved and deleted entries on load; V3 uses quarantine migrations in `sheet/core/migrations.js` instead. V3 also runs `upgradeCharacterToV2` only for characters below `schemaVersion: 2`. |
+| 2026-11-08 | `rule_engine.js` | Consolidated skills, single source (docs/V3_DATA_SCHEMA.md 11.3). Removed `DEFAULT_SKILL_MAPPING` and `getSkillAliases`: no more search of `masterDb` by entry name, no `settings.skillMapping` copy, no substring (`includes`) matching. Added `DEFAULT_CONSOLIDATED_SKILL_GROUPS` (identical to `char_progression.js`, test-enforced), `getConsolidatedSkillGroups`, `buildSkillScope`, `matchSkillTarget`, `_applySkillModifiers`. Targets match by exact compact key or display name; families (`skill.craft`, `skill.knowledge`) reach their sub-skills; legacy Turkish target names map through `LEGACY_SKILL_TARGET_ALIASES`. Component bonuses enter the group total; one source reaching a check through several components counts once. Negative item skill modifiers without a type are now `penalty` (they stack) instead of `competence`. Fixes found by running: a Sense Motive bonus reached Persuasion & Social, and a Knowledge (Nature) bonus reached every Knowledge skill. Totals on the real fixture are otherwise unchanged. |
 
 ## Legacy fixes ported since the fork
 

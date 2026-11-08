@@ -48,6 +48,18 @@ export async function loadSrdIndex() {
 }
 
 /**
+ * Active consolidated skill groups for a character, from the forked engine (the single source the
+ * engine itself uses for skill bonuses). Returns [] when the engine is missing or the rule is off.
+ * @param {Record<string, any>|null} character
+ * @returns {Array<Record<string, any>>}
+ */
+export function getConsolidatedSkillGroups(character) {
+  const w = g();
+  if (!character || !w.RuleEngine || typeof w.RuleEngine.getConsolidatedSkillGroups !== 'function') return [];
+  return w.RuleEngine.getConsolidatedSkillGroups(character);
+}
+
+/**
  * Apply the legacy V1 -> V2 upgrade to a private clone, only for characters still below
  * `schemaVersion: 2`. V2 characters are passed through untouched (as a clone) because the legacy
  * normalizer also drops null entries and folds child rows, which V3 must not do silently.

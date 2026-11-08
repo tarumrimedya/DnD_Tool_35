@@ -285,4 +285,11 @@ Grup rank'ı = bileşenlerin en yüksek rank'ı; class skill = bileşenlerden bi
    - Dökümde (breakdown) her bonusun hangi bileşenden geldiği görünür: "Racial +4 (Climb)".
 5. DM içeriğindeki terimler: Athletics / Stealth / Perception / Acrobatics / Thievery / Linguistics doğrudan grup `key`'ine eşlenir. **Outdoorsman** bir grup değil, Survival'a eşlenmesi öneriliyor. **attune** ve **command action** 3.5e'de ve ev kurallarında karşılıksız → `badge`.
 
-Kural 4'teki yığılma davranışı için `tools/test_sheet_v3.mjs` içine fixture'lı test yazılacak (aynı tür / farklı tür / untyped).
+**Uygulama (2026-11-08, V3 motor kopyası):** `sheet/engine/rule_engine.js` içinde `getConsolidatedSkillGroups`, `buildSkillScope`, `matchSkillTarget`. Testler `tools/test_sheet_v3_skills.mjs` dosyasında (26 test).
+
+- Eski motor çalıştırılarak iki sızıntı doğrulandı ve düzeltildi. Sense Motive +5 insight, Persuasion & Social grubuna da giriyordu. Knowledge (Nature) +3 ise Knowledge (Arcana) dahil tüm Knowledge becerilerine giriyordu (`tNorm.includes('knowledge')`).
+- Hedef eşleşmesi tam: becerinin `key`'i veya görünen adı, harf/rakam dışı karakterler atılarak karşılaştırılır. Örnekler: `umd` = "Use Magic Device", `craft_armor` = "Craft (Armorsmithing)", `senseMotive` = `sense_motive`. Aile hedefleri (`skill.craft`, `skill.knowledge`) alt becerilere ulaşır. Tek parça "Perform" becerisi enstrüman hedeflerini kabul eder. Eski Türkçe hedef adları (`skill.gizlenme`) bir eşleme tablosundan geçer.
+- Grup hedefi (`skill.perception`) bileşen zarına da ulaşır. Dökümde "(Perception)" olarak görünür.
+- **Aynı kaynak tek sayılır:** Bir kaynak aynı zara birden çok bileşen üzerinden ulaşırsa yalnızca en güçlü girdisi kalır. Örnek: Climb +2 ve Swim +2 veren bir feat Athletics'e +2 verir, +4 değil (3.5e: aynı kaynaktan gelen bonuslar yığılmaz).
+- **Varsayılan, karakterinkinden farklı:** Klasik sayfanın varsayılanında Perception = Spot + Listen ve Thievery ACP'siz. Bu karakterin kendi tanımında ise Search de Perception'da ve Thievery ACP'li. Motor varsayılanı klasik sayfanınkiyle birebir aynı tutuldu ve bu bir testle korunuyor. Karakterin tanımı her zaman önce gelir.
+- Açık nokta: Mevcut motor `racial` türündeki bonusları kendi aralarında yığıyor (RAW'a göre aynı türden bonuslar yığılmaz). Bu davranışa dokunulmadı.
