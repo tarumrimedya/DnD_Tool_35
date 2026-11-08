@@ -14794,6 +14794,20 @@
       }
 
       // 2. Command Family A: `lvl <N>, feat: <query>` or `feat: <query>`
+      const _termFuzzyScore = (qStr, targetName, haystack = '') => {
+        if (!qStr) return 100;
+        if (typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.fuzzyScore === 'function') {
+          return SrdCompendium.fuzzyScore(qStr, targetName, haystack);
+        }
+        const ql = String(qStr).toLowerCase().trim();
+        const nl = String(targetName || '').toLowerCase().trim();
+        if (nl === ql) return 1000;
+        if (nl.startsWith(ql)) return 500;
+        if (nl.includes(ql)) return 300;
+        if (String(haystack || '').toLowerCase().includes(ql)) return 150;
+        return 0;
+      };
+
       const lvlFeatMatch = q.match(/^(?:(?:lvl|level)\s*(\d+)\s*[,:]?\s*)?feat\s*:\s*(.*)$/i);
       if (lvlFeatMatch) {
         const targetLvl = lvlFeatMatch[1] ? parseInt(lvlFeatMatch[1], 10) : ((character && character.level) || 1);
@@ -14802,12 +14816,18 @@
         const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
 
         const matches = catalog
-          .filter(f => !featQuery || (typeof matchesFeatSearchQuery === 'function' ? matchesFeatSearchQuery(f, featQuery) : f.name.toLowerCase().includes(featQuery.toLowerCase())))
-          .map(f => ({
-            feat: f,
-            score: featQuery && typeof getFeatSearchRelevance === 'function' ? getFeatSearchRelevance(f, featQuery) : 100,
-            pEval: typeof checkFeatPrerequisites === 'function' ? checkFeatPrerequisites(f, 0, targetLvl - 1) : { allMet: true, checks: [] }
-          }))
+          .map(f => {
+            const fScore = featQuery ? _termFuzzyScore(featQuery, f.name, `${f.benefit || ''} ${f.category || ''}`) : 100;
+            const legacyMatch = !featQuery || (typeof matchesFeatSearchQuery === 'function' ? matchesFeatSearchQuery(f, featQuery) : false);
+            const relScore = featQuery && typeof getFeatSearchRelevance === 'function' ? getFeatSearchRelevance(f, featQuery) : 0;
+            const score = Math.max(fScore, legacyMatch ? Math.max(50, relScore) : 0);
+            return {
+              feat: f,
+              score,
+              pEval: typeof checkFeatPrerequisites === 'function' ? checkFeatPrerequisites(f, 0, targetLvl - 1) : { allMet: true, checks: [] }
+            };
+          })
+          .filter(m => !featQuery || m.score > 0)
           .sort((a, b) => {
             if (b.score !== a.score) return b.score - a.score;
             return (a.feat.name || '').localeCompare(b.feat.name || '');
@@ -14882,12 +14902,43 @@
 
       // 3. Command Family B: `boon: <Name>, dmg: 4d8 Acid, range: 60ft, recharge: 1d4+1, action: move`
       if (/^boon\s*:/i.test(q)) {
+        const subBoonQ = q.replace(/^boon\s*:\s*/i, '').trim();
+        const catalog = (typeof getCombinedFeatCatalog === 'function') ? getCombinedFeatCatalog(true) : [];
+        const matchedCatalogBoons = (!subBoonQ.includes(',') && subBoonQ)
+          ? catalog
+              .filter(entry => entry && (entry.type === 'DM Boon' || entry.category === 'DM Boon' || entry.pack))
+              .map(b => ({ b, sc: _termFuzzyScore(subBoonQ, b.name, b.benefit || b.description || '') }))
+              .filter(x => x.sc > 0)
+              .sort((a, b) => b.sc - a.sc)
+              .slice(0, 5)
+              .map(x => x.b)
+          : [];
+
+        const matchedBoonRows = matchedCatalogBoons.map(b => {
+          const idx = _spotlightTerminalItems.length;
+          _spotlightTerminalItems.push({
+            type: 'ADD_BOON',
+            entry: b,
+            autocomplete: `boon: ${b.name}`
+          });
+          return `
+            <div onclick="executeSpotlightTerminalItem(${idx})" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-amber-500/80' : 'bg-slate-900/50 border-slate-800 hover:border-slate-700'}">
+              <div class="min-w-0 flex-1">
+                <div class="text-xs font-bold text-white">${_escTermHtml(b.name)} <span class="text-[10px] font-mono text-amber-300">(${_escTermHtml(b.type || 'DM Boon')})</span></div>
+                <div class="text-[11px] text-slate-400 truncate">${_escTermHtml(b.benefit || b.description || '')}</div>
+              </div>
+              <span class="px-2 py-1 rounded bg-amber-950 text-amber-300 border border-amber-700 font-mono text-[10px] font-bold">Add ↵</span>
+            </div>
+          `;
+        }).join('');
+
         const parsedBoon = _parseInlineBoonDsl(q);
         if (parsedBoon) {
           const interactionMap = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.getObjectInteractionMap === 'function')
             ? RuleEngine.getObjectInteractionMap(parsedBoon, character)
             : { boundUiTargets: ['CombatSpecialAttacksPanel'], links: [] };
 
+          const synthIdx = _spotlightTerminalItems.length;
           _spotlightTerminalItems.push({
             type: 'CREATE_INLINE_BOON',
             entry: parsedBoon,
@@ -14903,21 +14954,24 @@
           ).join('');
 
           resultsEl.innerHTML = `
-            <div class="p-3 rounded-xl bg-slate-900 border border-cyan-500/80 space-y-2.5">
-              <div class="flex items-center justify-between gap-2">
-                <div>
-                  <div class="text-xs font-black text-white flex items-center gap-2">
-                    <span>⚡ Live V2.5 Lego Assembly Preview: ${_escTermHtml(parsedBoon.name)}</span>
-                    <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-700 text-[10px] font-mono">${_escTermHtml(parsedBoon.action)}</span>
+            <div class="space-y-2">
+              ${matchedBoonRows}
+              <div class="p-3 rounded-xl bg-slate-900 border border-cyan-500/80 space-y-2.5">
+                <div class="flex items-center justify-between gap-2">
+                  <div>
+                    <div class="text-xs font-black text-white flex items-center gap-2">
+                      <span>⚡ Live V2.5 Lego Assembly Preview: ${_escTermHtml(parsedBoon.name)}</span>
+                      <span class="px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-700 text-[10px] font-mono">${_escTermHtml(parsedBoon.action)}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-300 mt-0.5">${_escTermHtml(parsedBoon.benefit)}</p>
                   </div>
-                  <p class="text-[11px] text-slate-300 mt-0.5">${_escTermHtml(parsedBoon.benefit)}</p>
+                  <button type="button" onclick="executeSpotlightTerminalItem(${synthIdx})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs shadow cursor-pointer shrink-0">➕ Bind &amp; Add (Enter ↵)</button>
                 </div>
-                <button type="button" onclick="executeSpotlightTerminalItem(0)" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs shadow cursor-pointer shrink-0">➕ Bind &amp; Add (Enter ↵)</button>
-              </div>
-              <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5">
-                <div class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">🗺️ Automatic Page Object Interaction Map</div>
-                <div class="flex flex-wrap gap-1.5">${targetBadges}</div>
-                <div class="space-y-1 pt-1">${linkRows}</div>
+                <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1.5">
+                  <div class="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">🗺️ Automatic Page Object Interaction Map</div>
+                  <div class="flex flex-wrap gap-1.5">${targetBadges}</div>
+                  <div class="space-y-1 pt-1">${linkRows}</div>
+                </div>
               </div>
             </div>
           `;
@@ -15009,7 +15063,11 @@
       if (useMatch) {
         const subQ = (useMatch[1] || '').toLowerCase().trim();
         const abilities = typeof getCharacterSpecialAttackAbilities === 'function' ? getCharacterSpecialAttackAbilities() : [];
-        const filtered = abilities.filter(a => !subQ || a.name.toLowerCase().includes(subQ));
+        const filtered = abilities
+          .map(a => ({ a, sc: subQ ? _termFuzzyScore(subQ, a.name, a.dmgType || '') : 100 }))
+          .filter(x => !subQ || x.sc > 0)
+          .sort((x, y) => y.sc - x.sc)
+          .map(x => x.a);
         if (filtered.length === 0) {
           resultsEl.innerHTML = `<div class="p-3 text-slate-400 text-xs">No active combat special attacks matched "${_escTermHtml(subQ)}".</div>`;
           return;
@@ -15042,8 +15100,17 @@
         if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.resolveLocalZeroTokenQuery === 'function' && subQ) {
           hits = RuleMaster.resolveLocalZeroTokenQuery(subQ).filter(e => e && !['Feat', 'Spell', 'Deity', 'Domain', 'Race', 'Class'].includes(e.type));
         }
+        if (hits.length === 0 && typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.search === 'function' && subQ) {
+          hits = SrdCompendium.search(subQ, { type: ['Weapon', 'Armor', 'Shield', 'Item', 'MagicItem', 'AugmentationCrystal'], limit: 8 });
+        }
         if (hits.length === 0 && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-          hits = masterDb.filter(e => e && !['Feat', 'Spell'].includes(e.type) && (!subQ || String(e.name || '').toLowerCase().includes(subQ.toLowerCase()))).slice(0, 8);
+          hits = masterDb
+            .filter(e => e && !['Feat', 'Spell'].includes(e.type))
+            .map(e => ({ e, sc: subQ ? _termFuzzyScore(subQ, e.name, e.benefit || e.description || '') : 100 }))
+            .filter(x => !subQ || x.sc > 0)
+            .sort((a, b) => b.sc - a.sc)
+            .slice(0, 8)
+            .map(x => x.e);
         }
         if (hits.length === 0) {
           resultsEl.innerHTML = `<div class="p-3 text-slate-400 text-xs">Type an item name or V2 Forge query (e.g. <code class="text-indigo-300">item: +2 Keen Mithral Scimitar</code> or <code class="text-indigo-300">item: Cloak of Charisma +4</code>).</div>`;
@@ -15071,7 +15138,13 @@
           hits = window.SrdCompendium.search(subQ, { type: 'Spell', limit: 8 });
         }
         if (hits.length === 0 && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
-          hits = masterDb.filter(e => e && e.type === 'Spell' && (!subQ || String(e.name || '').toLowerCase().includes(subQ))).slice(0, 8);
+          hits = masterDb
+            .filter(e => e && e.type === 'Spell')
+            .map(e => ({ e, sc: subQ ? _termFuzzyScore(subQ, e.name, e.school || '') : 100 }))
+            .filter(x => !subQ || x.sc > 0)
+            .sort((a, b) => b.sc - a.sc)
+            .slice(0, 8)
+            .map(x => x.e);
         }
         if (hits.length === 0 && typeof RuleMaster !== 'undefined' && RuleMaster.canonicalDictionary && subQ && RuleMaster.canonicalDictionary[subQ]) {
           hits = [RuleMaster.canonicalDictionary[subQ]];
@@ -15098,7 +15171,12 @@
       if (parsedCmd && parsedCmd.cmd === 'buff') {
         const subQ = (parsedCmd.arg || '').toLowerCase().trim();
         const charBuffs = (character && Array.isArray(character.buffs)) ? character.buffs : [];
-        const matchedBuffs = charBuffs.filter(b => b && b.name && (!subQ || b.name.toLowerCase().includes(subQ)));
+        const matchedBuffs = charBuffs
+          .filter(b => b && b.name)
+          .map(b => ({ b, sc: subQ ? _termFuzzyScore(subQ, b.name, b.summary || '') : 100 }))
+          .filter(x => !subQ || x.sc > 0)
+          .sort((a, b) => b.sc - a.sc)
+          .map(x => x.b);
         const existingNames = new Set(charBuffs.map(b => String(b?.name || '').toLowerCase().trim()).filter(Boolean));
         const candidateTemplates = [];
         const seenCandNames = new Set();
@@ -15107,7 +15185,8 @@
           if (!rawObj || !rawObj.name) return;
           const nLower = String(rawObj.name).toLowerCase().trim();
           if (!nLower || existingNames.has(nLower) || seenCandNames.has(nLower)) return;
-          if (subQ && !nLower.includes(subQ)) return;
+          const sc = subQ ? _termFuzzyScore(subQ, rawObj.name, rawObj.summary || rawObj.benefit || '') : 100;
+          if (subQ && sc <= 0) return;
           let resolvedMods = Array.isArray(rawObj.modifiers) ? JSON.parse(JSON.stringify(rawObj.modifiers)) : [];
           let resolvedFlags = (rawObj.ruleFlags && typeof rawObj.ruleFlags === 'object') ? JSON.parse(JSON.stringify(rawObj.ruleFlags)) : {};
           let summary = rawObj.summary || rawObj.benefit || rawObj.description || '';

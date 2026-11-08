@@ -854,7 +854,35 @@ function createBaseChar(overrides = {}) {
   assertEq('Regression Test 46 (BL10): recalculateCharacter only auto-unlocks entries with explicit autoUnlock/isSynergy (AC = 12, not 17)',
     [chBL10.acBreakdown.total, chBL10.grantedCapabilities.unlockedEntities.includes('syn_power_surge'), chBL10.grantedCapabilities.unlockedEntities.includes('feat_cleave')],
     [12, true, false]);
+
+  // Phase P9 Universal Spotlight Search Fuzzy Tests (Tests 47, 48, 49)
+  const SrdCompendium = sandbox.window.SrdCompendium;
+  sandbox.window.masterDb = [
+    { id: 'feat-cleave', name: 'Cleave', type: 'Feat', category: 'General' },
+    { id: 'feat-great-cleave', name: 'Great Cleave', type: 'Feat', category: 'General' },
+    { id: 'feat-power-attack', name: 'Power Attack', type: 'Feat', category: 'General' }
+  ];
+  const claveSearchHits = SrdCompendium.search('clave', { type: 'Feat' });
+  assertEq('Phase P9 Test 47: SrdCompendium.fuzzyScore("clave", "Cleave") > 0 and search("clave", { type: "Feat" }) returns Cleave',
+    [SrdCompendium.fuzzyScore('clave', 'Cleave') > 0, claveSearchHits.some(h => h.name === 'Cleave')],
+    [true, true]);
+
+  assertEq('Phase P9 Test 48: Typo-tolerant fuzzyScore matches "scimtr" -> "Scimitar" and "powr atack" -> "Power Attack"',
+    [SrdCompendium.fuzzyScore('scimtr', 'Scimitar') > 0, SrdCompendium.fuzzyScore('powr atack', 'Power Attack') > 0],
+    [true, true]);
+
+  assertEq('Phase P9 Test 49: Exact match "cleave" ranks strictly higher than typo match "clave" for "Cleave"',
+    SrdCompendium.fuzzyScore('cleave', 'Cleave') > SrdCompendium.fuzzyScore('clave', 'Cleave'),
+    true);
+
+  assertEq('Phase P9 Test 50: Name typo ("clave" -> "Cleave") outranks haystack substring ("enclave"), 3-char "ice" does not false-match "Dice", and Turkish "SCİMİTAR" normalizes to exact match 1000',
+    [
+      SrdCompendium.fuzzyScore('clave', 'Cleave', 'Feat') > SrdCompendium.fuzzyScore('clave', 'Ward Specialist', 'Protects the enclave'),
+      SrdCompendium.fuzzyScore('ice', 'Dice') === 0,
+      SrdCompendium.fuzzyScore('SCİMİTAR', 'Scimitar') === 1000
+    ],
+    [true, true, true]);
 }
 
-console.log(`✅ V2.5 LEGO ENGINE BENCHMARK: ${passed}/${passed + failed} assertions passed (15 Golden Set + 6 Forum Edge Cases + Interaction Map + Namespace/Deduplication + Damage/Migrator + P2 Parity Gate + 6 Parity/Regression Fixtures + P4 Export Pack + Security Gate).`);
+console.log(`✅ V2.5 LEGO ENGINE BENCHMARK: ${passed}/${passed + failed} assertions passed (15 Golden Set + 6 Forum Edge Cases + Interaction Map + Namespace/Deduplication + Damage/Migrator + P2 Parity Gate + 6 Parity/Regression Fixtures + P4 Export Pack + P9 Fuzzy Search + Security Gate).`);
 if (failed > 0) process.exit(1);

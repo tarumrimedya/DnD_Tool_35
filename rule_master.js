@@ -1338,17 +1338,14 @@ const RuleMaster = {
 
     masterDb.forEach((rawItem, idx) => {
       const item = this.ensureV2(rawItem);
+      const haystack = `${item.benefit || ''} ${item.description || ''} ${item.portfolio || ''} ${item.favoredWeapon || ''} ${item.grantedPower?.description || ''} ${Array.isArray(item.domains) ? item.domains.join(' ') : ''} ${item.source || ''} ${item.pack || ''} ${item.discipline || ''}`.toLowerCase();
+      const fuzzySc = (query && typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.fuzzyScore === 'function')
+        ? SrdCompendium.fuzzyScore(query, item.name || '', haystack)
+        : 0;
       const matchQ = !query ||
+        fuzzySc > 0 ||
         (item.name && item.name.toLowerCase().includes(query)) ||
-        (item.benefit && item.benefit.toLowerCase().includes(query)) ||
-        (item.description && item.description.toLowerCase().includes(query)) ||
-        (item.portfolio && item.portfolio.toLowerCase().includes(query)) ||
-        (item.favoredWeapon && item.favoredWeapon.toLowerCase().includes(query)) ||
-        (item.grantedPower?.description && item.grantedPower.description.toLowerCase().includes(query)) ||
-        (Array.isArray(item.domains) && item.domains.join(' ').toLowerCase().includes(query)) ||
-        (item.source && item.source.toLowerCase().includes(query)) ||
-        (item.pack && String(item.pack).toLowerCase().includes(query)) ||
-        (item.discipline && item.discipline.toLowerCase().includes(query));
+        haystack.includes(query);
       const matchCat = cat === 'ALL' || item.type === cat || (cat === 'DM Grant' && item.type === 'DM Boon') || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
       const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
       const matchBonus = bonusFilter === 'ALL' || itemBonusType === bonusFilter;
@@ -2086,20 +2083,17 @@ const RuleMaster = {
     const bonusFilter = document.getElementById('mdb-bonus-filter')?.value || 'ALL';
     const scopeFilter = document.getElementById('mdb-scope-filter')?.value || 'ALL';
 
+    const fuzzyScores = new WeakMap();
     let filtered = masterDb.filter((rawItem, idx) => {
+      if (rawItem && typeof rawItem === 'object' && '_fuzzyScore' in rawItem) delete rawItem._fuzzyScore;
       const item = this.ensureV2(rawItem);
       rawItem._originalIndex = idx;
-      const matchQ = !query ||
-        (item.name && item.name.toLowerCase().includes(query)) ||
-        (item.benefit && item.benefit.toLowerCase().includes(query)) ||
-        (item.description && item.description.toLowerCase().includes(query)) ||
-        (item.portfolio && item.portfolio.toLowerCase().includes(query)) ||
-        (item.favoredWeapon && item.favoredWeapon.toLowerCase().includes(query)) ||
-        (item.grantedPower?.description && item.grantedPower.description.toLowerCase().includes(query)) ||
-        (Array.isArray(item.domains) && item.domains.join(' ').toLowerCase().includes(query)) ||
-        (item.source && item.source.toLowerCase().includes(query)) ||
-        (item.pack && String(item.pack).toLowerCase().includes(query)) ||
-        (item.discipline && item.discipline.toLowerCase().includes(query));
+      const haystack = `${item.benefit || ''} ${item.description || ''} ${item.portfolio || ''} ${item.favoredWeapon || ''} ${item.grantedPower?.description || ''} ${Array.isArray(item.domains) ? item.domains.join(' ') : ''} ${item.source || ''} ${item.pack || ''} ${item.discipline || ''}`.toLowerCase();
+      const fuzzySc = (query && typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.fuzzyScore === 'function')
+        ? SrdCompendium.fuzzyScore(query, item.name || '', haystack)
+        : (query && ((item.name && item.name.toLowerCase().includes(query)) || haystack.includes(query)) ? 100 : 0);
+      if (rawItem && typeof rawItem === 'object') fuzzyScores.set(rawItem, fuzzySc);
+      const matchQ = !query || fuzzySc > 0 || (item.name && item.name.toLowerCase().includes(query)) || haystack.includes(query);
 
       const matchCat = cat === 'ALL' || item.type === cat || (cat === 'DM Grant' && item.type === 'DM Boon') || (cat === 'Class' && (item.category === 'Class' || item.type === 'Base Class' || item.type === 'Prestige Class' || item.type === 'Custom Class'));
       const itemBonusType = item.modifiers?.[0]?.type || (item.type === 'Weapon' && item.enhancementBonus ? 'Enhancement' : 'Untyped');
@@ -2113,6 +2107,10 @@ const RuleMaster = {
 
       return matchQ && matchCat && matchBonus && matchScope && matchElig;
     });
+
+    if (query) {
+      filtered.sort((a, b) => (fuzzyScores.get(b) || 0) - (fuzzyScores.get(a) || 0));
+    }
 
     const countBadge = document.getElementById('mdb-total-count-badge');
     if (countBadge) countBadge.textContent = `${filtered.length} / ${masterDb.length} Custom Entries`;

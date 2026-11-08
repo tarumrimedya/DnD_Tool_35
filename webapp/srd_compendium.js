@@ -77,7 +77,15 @@
 
   function normalizeNameKey(name) {
     return String(name || '')
+      .replace(/[İIı]/g, 'i')
+      .replace(/[ğĞ]/g, 'g')
+      .replace(/[üÜ]/g, 'u')
+      .replace(/[şŞ]/g, 's')
+      .replace(/[öÖ]/g, 'o')
+      .replace(/[çÇ]/g, 'c')
       .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
       .replace(/^↳\s*/, '')
       .trim();
   }
@@ -499,13 +507,150 @@
     },
 
     /**
+     * Bounded Levenshtein edit distance (returns maxDist + 1 if distance exceeds maxDist).
+     */
+    _boundedLevenshtein(a, b, maxDist = 2) {
+      if (a === b) return 0;
+      const la = a.length;
+      const lb = b.length;
+      if (Math.abs(la - lb) > maxDist) return maxDist + 1;
+      if (la === 0) return lb <= maxDist ? lb : maxDist + 1;
+      if (lb === 0) return la <= maxDist ? la : maxDist + 1;
+
+      let prev = new Array(lb + 1);
+      let curr = new Array(lb + 1);
+      for (let j = 0; j <= lb; j++) prev[j] = j;
+
+      for (let i = 1; i <= la; i++) {
+        curr[0] = i;
+        let rowMin = curr[0];
+        const ca = a.charCodeAt(i - 1);
+        for (let j = 1; j <= lb; j++) {
+          const cost = ca === b.charCodeAt(j - 1) ? 0 : 1;
+          const val = Math.min(
+            prev[j] + 1,
+            curr[j - 1] + 1,
+            prev[j - 1] + cost
+          );
+          curr[j] = val;
+          if (val < rowMin) rowMin = val;
+        }
+        if (rowMin > maxDist) return maxDist + 1;
+        const tmp = prev;
+        prev = curr;
+        curr = tmp;
+      }
+      return prev[lb];
+    },
+
+    /**
+     * Returns true if all characters of needle appear in target in order.
+     */
+    _isOrderedSubsequence(needle, target) {
+      if (!needle) return true;
+      if (!target || needle.length > target.length) return false;
+      let i = 0;
+      for (let j = 0; j < target.length && i < needle.length; j++) {
+        if (needle.charCodeAt(i) === target.charCodeAt(j)) i++;
+      }
+      return i === needle.length;
+    },
+
+    /**
+     * Typo-tolerant Fuzzy Relevance Scorer for Spotlight & Compendium searches.
+     * Ranks Exact (1000) > Prefix (500-600) > Name Substring (250-350) > All Name Tokens (220)
+     * > Name-word Levenshtein Typo (140-200) > Name Subsequence (115) > Haystack Substring (80).
+     */
+    fuzzyScore(query, targetName, haystack = '') {
+      const q = normalizeNameKey(query);
+      if (!q) return 100;
+      const nLower = normalizeNameKey(targetName);
+      const hLower = haystack ? normalizeNameKey(haystack) : '';
+      if (!nLower && !hLower) return 0;
+      const qClean = q.replace(/[^a-z0-9]/g, '');
+      const nClean = nLower.replace(/[^a-z0-9]/g, '');
+
+      const matchesSubstringOrWordPrefix = (text, needle) => {
+        if (!text || !needle) return false;
+        if (needle.length >= 4) return text.includes(needle);
+        const words = text.split(/[^a-z0-9]+/).filter(Boolean);
+        return words.some(w => w.startsWith(needle));
+      };
+
+      if (nLower === q || (qClean && nClean === qClean)) {
+        return 1000;
+      }
+      if (nLower.startsWith(q) || (qClean.length >= 3 && nClean.startsWith(qClean))) {
+        return 600 - Math.min(100, nLower.length);
+      }
+      if (matchesSubstringOrWordPrefix(nLower, q) || (qClean.length >= 4 && nClean.includes(qClean))) {
+        const idx = nLower.indexOf(q);
+        return 350 - Math.min(100, idx >= 0 ? idx : 0);
+      }
+
+      const qTokens = q.split(/\s+/).filter(Boolean);
+      const allNameTokens = nLower && qTokens.length > 0 && qTokens.every(tok => matchesSubstringOrWordPrefix(nLower, tok) || (tok.length >= 4 && nClean.includes(tok)));
+      if (allNameTokens) {
+        return 220;
+      }
+
+      // Typo-tolerant per-token Levenshtein against target NAME words (requires >= 4 chars per typo token)
+      const targetWords = nLower.split(/[^a-z0-9]+/).filter(Boolean);
+      if (targetWords.length > 0 && qTokens.length > 0) {
+        let totalDist = 0;
+        let allTokensMatched = true;
+        for (let i = 0; i < qTokens.length; i++) {
+          const qt = qTokens[i].replace(/[^a-z0-9]/g, '');
+          if (!qt) continue;
+          if (matchesSubstringOrWordPrefix(nLower, qt) || (qt.length >= 4 && nClean.includes(qt))) continue;
+          if (qt.length < 4) {
+            allTokensMatched = false;
+            break;
+          }
+          const maxDist = qt.length >= 6 ? 2 : 1;
+          let bestWordDist = maxDist + 1;
+          for (let w = 0; w < targetWords.length; w++) {
+            const tw = targetWords[w];
+            const d = SrdCompendium._boundedLevenshtein(qt, tw, maxDist);
+            if (d < bestWordDist) bestWordDist = d;
+            if (bestWordDist === 0) break;
+          }
+          if (bestWordDist <= maxDist) {
+            totalDist += bestWordDist;
+          } else {
+            allTokensMatched = false;
+            break;
+          }
+        }
+        if (allTokensMatched) {
+          return Math.max(140, 200 - totalDist * 20);
+        }
+      }
+
+      // Ordered subsequence fallback on target name when first character matches (e.g. "scimtr" -> "scimitar")
+      if (qClean.length >= 4 && nClean.length >= qClean.length && qClean[0] === nClean[0] && (nClean.length - qClean.length) <= 4) {
+        if (SrdCompendium._isOrderedSubsequence(qClean, nClean)) {
+          return 115;
+        }
+      }
+
+      // Haystack / description substring or token match ranks below name matches
+      if (hLower) {
+        const fullHaystack = `${nLower} ${hLower}`;
+        if (matchesSubstringOrWordPrefix(fullHaystack, q) || (qTokens.length > 0 && qTokens.every(tok => matchesSubstringOrWordPrefix(fullHaystack, tok)))) {
+          return 80;
+        }
+      }
+
+      return 0;
+    },
+
+    /**
      * Unified Search across all 3,522 SRD Index entries AND the user's dynamic Master DB.
      * Supports type, category, slot, level, isFighterBonusFeat, and resolveFull options.
      */
     search(query = '', filters = {}) {
       const q = normalizeNameKey(query);
-      const qClean = q ? q.replace(/[^a-z0-9]/g, '') : '';
-      const qTokens = q ? q.split(/\s+/).filter(Boolean) : [];
       const limit = filters.limit || 50;
       const includeMasterDb = filters.includeMasterDb !== false;
       const resolveFull = filters.resolveFull !== false;
@@ -532,8 +677,6 @@
         const tLower = String(type || '').toLowerCase();
         const cLower = String(category || '').toLowerCase();
         const sLower = String(slot || '').toLowerCase();
-        const nLower = normalizeNameKey(name);
-        const nClean = nLower.replace(/[^a-z0-9]/g, '');
 
         if (allowedTypes && !allowedTypes.has(tLower)) return;
         if (catFilter && !cLower.includes(catFilter)) return;
@@ -543,21 +686,9 @@
 
         let score = (q && isCustom) ? 5 : 0;
         if (q) {
-          if (nLower === q || (qClean && nClean === qClean)) {
-            score += 1000;
-          } else if (nLower.startsWith(q) || (qClean.length >= 3 && nClean.startsWith(qClean))) {
-            score += 600 - Math.min(100, nLower.length);
-          } else if (nLower.includes(q) || (qClean.length >= 3 && nClean.includes(qClean))) {
-            score += 350 - Math.min(100, nLower.indexOf(q));
-          } else {
-            // Token match across name + category + type
-            const haystack = `${nLower} ${cLower} ${tLower}`;
-            for (let i = 0; i < qTokens.length; i++) {
-              const tok = qTokens[i];
-              if (!haystack.includes(tok) && !nClean.includes(tok)) return;
-            }
-            score += 150;
-          }
+          const fScore = SrdCompendium.fuzzyScore(q, name, `${cLower} ${tLower} ${sLower}`);
+          if (fScore <= 0) return;
+          score += fScore;
         } else {
           score += 100;
         }
