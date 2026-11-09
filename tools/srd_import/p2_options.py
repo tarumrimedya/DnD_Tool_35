@@ -77,7 +77,7 @@ def trait_rec(t):
             'shortDescription': short, 'description': f'<p><strong>Benefit:</strong> {ben}</p><p><strong>Drawback:</strong> {drw}</p>' + (f'<p><strong>Special:</strong> {special}</p>' if special else ''),
             'tags': ['trait', 'unearthed arcana'], 'modifiers': mods, 'damageParts': [], 'modes': [],
             'ruleFlags': dict(flags, isTrait=True), 'tacticalBadges': ['Character Trait'],
-            'tier': 'heroic', 'contentLevel': 'summary', 'verification': 'verified',
+            'levelBand': 'heroic', 'contentLevel': 'summary', 'verification': 'verified',
             'provenance': {'origin': 'rulebook', 'book': 'Unearthed Arcana', 'page': page}}
 
 weak_will = {'id': 'flaw-weak-will', 'schemaVersion': 2, 'name': 'Weak Will', 'type': 'Flaw', 'category': 'Flaw',
@@ -85,7 +85,7 @@ weak_will = {'id': 'flaw-weak-will', 'schemaVersion': 2, 'name': 'Weak Will', 't
              'shortDescription': '-3 penalty on Will saves. Grants +1 Bonus Feat.', 'benefit': '-3 penalty on Will saves. Grants +1 Bonus Feat.',
              'modifiers': [{'target': 'save.will', 'value': -3, 'type': 'Untyped'}], 'damageParts': [],
              'ruleFlags': {'isFlaw': True, 'grantsBonusFeat': 1}, 'tacticalBadges': ['Flaw (+1 Bonus Feat)', '-3 Will Saves'],
-             'tier': 'heroic', 'contentLevel': 'summary', 'verification': 'verified',
+             'levelBand': 'heroic', 'contentLevel': 'summary', 'verification': 'verified',
              'provenance': {'origin': 'rulebook', 'book': 'Unearthed Arcana', 'page': 92}}
 
 # ---------------- SKILL TRICKS (Complete Scoundrel) ----------------
@@ -154,7 +154,7 @@ def trick_rec(t):
             'benefit': ben, 'shortDescription': ben, 'description': f'<p><strong>Prerequisite:</strong> {pre}.</p><p><strong>Benefit:</strong> {ben}</p>',
             'cost': {'skillPoints': 2}, 'usage': 'Once per encounter unless the trick states otherwise',
             'tags': ['skill trick', cat.lower(), 'complete scoundrel'], 'modifiers': [], 'damageParts': [], 'modes': [],
-            'ruleFlags': {'isSkillTrick': True}, 'tier': 'heroic', 'contentLevel': 'summary', 'verification': 'verified',
+            'ruleFlags': {'isSkillTrick': True}, 'levelBand': 'heroic', 'contentLevel': 'summary', 'verification': 'verified',
             'provenance': {'origin': 'rulebook', 'book': 'Complete Scoundrel', 'page': page, 'table': 'Table 3-2: Skill Tricks'}}
 
 recs = [trait_rec(t) for t in T] + [trick_rec(s) for s in S]

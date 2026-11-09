@@ -782,13 +782,36 @@
         "isFighterBonusFeat": {
           "type": "boolean",
           "default": false,
-          "description": "Whether this feat can be selected as a Fighter bonus feat (PHB Table 5-1). Means the heroic (1st-20th level) list; epic fighter bonus feats use tier: 'epic'."
+          "description": "Whether this feat can be selected as a Fighter bonus feat (PHB Table 5-1). Means the heroic (1st-20th level) list; epic fighter bonus feats use fighterBonusFeatTier: 'epic'."
         },
-        "tier": {
+        "levelBand": {
           "type": "string",
           "enum": ["heroic", "epic"],
           "default": "heroic",
-          "description": "Level band of the entry. 'epic' = Epic Level Handbook / DMG epic content usable at character level 21+ (e.g. epic feats; the Epic Fighter Bonus Feat List, ELH p.11-12)."
+          "description": "Level band of the entry. 'epic' = Epic Level Handbook / DMG epic content usable at character level 21+. (Not 'tier': that key is the Warlock invocation grade.)"
+        },
+        "fighterBonusFeatTier": {
+          "type": "string",
+          "enum": ["epic"],
+          "description": "Set to 'epic' on feats from the Epic Fighter Bonus Feat List (ELH p.11-12): fighter bonus feat choices at fighter level 21+ only."
+        },
+        "edition": {
+          "type": "string",
+          "enum": ["3.5", "3.0", "3.5-licensed"],
+          "default": "3.5",
+          "description": "Rules edition of the source book. '3.0' and '3.5-licensed' (non-WotC licensed books) live in an opt-in chunk that is never loaded at page open."
+        },
+        "bonusFeatFor": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Classes that may take this feat as a class bonus feat (e.g. ['Fighter', 'Psychic Warrior'])."
+        },
+        "featTypes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "All feat type tags of the feat (e.g. ['General', 'Fighter'], ['Metamagic'], ['Epic'])."
         },
         "contentLevel": {
           "type": "string",

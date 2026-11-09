@@ -74,7 +74,7 @@
     "isLight": true,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -172,7 +172,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -271,7 +271,7 @@
     "aliases": [
       "Pick, Dire"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -370,7 +370,7 @@
     "aliases": [
       "Scimitar, Great"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -467,7 +467,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -550,7 +550,7 @@
     "aliases": [
       "Dagger, Barbed"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -664,7 +664,7 @@
     "aliases": [
       "Hammer, Throwing"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -749,7 +749,7 @@
     "aliases": [
       "Lightblade, Elven"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -863,7 +863,7 @@
     "aliases": [
       "Long Knife, Drow"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -948,7 +948,7 @@
     "aliases": [
       "Quickrazor, Gnome"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -1052,7 +1052,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -1149,7 +1149,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -1246,7 +1246,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -1355,7 +1355,7 @@
     "aliases": [
       "Rapier, Quickblade"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -1459,7 +1459,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -1563,7 +1563,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -1668,7 +1668,7 @@
     "aliases": [
       "Swordcatcher, Gnome"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -1773,7 +1773,7 @@
     "aliases": [
       "Thinblade, Elven"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -1881,7 +1881,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -1990,7 +1990,7 @@
     "aliases": [
       "Whip, Stingray"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -2074,7 +2074,7 @@
     "aliases": [
       "Courtblade, Elven"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -2155,7 +2155,7 @@
     "aliases": [
       "Greathammer, Goliath"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -2266,7 +2266,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -2400,7 +2400,7 @@
     "aliases": [
       "Hammer, Double"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -2531,7 +2531,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -2612,7 +2612,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -2743,7 +2743,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -2829,7 +2829,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -2915,7 +2915,7 @@
     "aliases": [
       "Poleaxe, Heavy"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -2996,7 +2996,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3082,7 +3082,7 @@
     "aliases": [
       "Sharrash, Talenta"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3162,7 +3162,7 @@
     "aliases": [
       "Tangat, Talenta"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3251,7 +3251,7 @@
     "aliases": [
       "Warpike, Dwarven"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3332,7 +3332,7 @@
     "aliases": [
       "Longbow, Aquatic"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3414,7 +3414,7 @@
     "aliases": [
       "Blowgun, Greater"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3494,7 +3494,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3577,7 +3577,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3659,7 +3659,7 @@
     "aliases": [
       "Crossbow, Aquatic"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3741,7 +3741,7 @@
     "aliases": [
       "Crossbow, Great"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3821,7 +3821,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3901,7 +3901,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -3981,7 +3981,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -4061,7 +4061,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -4141,7 +4141,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -4221,7 +4221,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -4296,7 +4296,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "cross-checked",
     "provenance": {
@@ -4375,7 +4375,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -4455,7 +4455,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -4540,7 +4540,7 @@
     "aliases": [
       "Scorpion Chain, Drow"
     ],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -4622,7 +4622,7 @@
     "isLight": true,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -4755,7 +4755,7 @@
     "isLight": false,
     "combatModifiers": [],
     "aliases": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -4800,7 +4800,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -4844,7 +4844,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -4886,7 +4886,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -4930,7 +4930,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -4974,7 +4974,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5018,7 +5018,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5062,7 +5062,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5106,7 +5106,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5150,7 +5150,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5194,7 +5194,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5238,7 +5238,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5282,7 +5282,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5324,7 +5324,7 @@
     "modes": [],
     "ruleFlags": {},
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5371,7 +5371,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5418,7 +5418,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5465,7 +5465,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5512,7 +5512,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5559,7 +5559,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5606,7 +5606,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5653,7 +5653,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5698,7 +5698,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5743,7 +5743,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5788,7 +5788,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5833,7 +5833,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
@@ -5878,7 +5878,7 @@
       "exoticArmor": true
     },
     "combatModifiers": [],
-    "tier": "heroic",
+    "levelBand": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {

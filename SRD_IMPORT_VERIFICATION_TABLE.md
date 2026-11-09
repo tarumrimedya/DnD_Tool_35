@@ -101,6 +101,19 @@ The name-based matcher must not merge these two. P3 needs a source-aware ID rule
 | No second source (257) | Mostly XPH / ELH / DMG epic feats. Those books are scanned, and the feat index does not cover them; left unchanged. | — |
 | `prereqStruct` for 54 feats | Skipped. Feat prerequisites are evaluated from the text (`char_progression.js`); `prereqStruct` only drives the "ability to cast spells" / psionic defaults, so adding it changes nothing. | — |
 
+## G. P3 Splatbook Feats
+
+| Item | Result |
+| :--- | :--- |
+| 3.5 WotC heroic feats | **1,642** in `srd_feats_splat.json` (lazy; loaded when a feat list first opens) |
+| 3.5 epic feats | **23** in `srd_feats_epic.json` (lazy; loaded from character level 21) |
+| 3.0 + licensed non-WotC 3.5 feats | **357** (223 + 134) in `srd_feats_legacy.json`. The chunk is opt-in: loaded only while the "📜 3.0 & Licensed" filter is on, and never by `preloadAll`. |
+| Excluded | 70 Dragon Magazine feats (not verifiable from the library); 125 placeholder/header/"x2" rows |
+| Verification | 672 feats are **cross-checked**: the workbook and the 3.5 feat index agree on book + page. The rest are **unverified** (single source). All are `contentLevel: "summary"`; the benefit text is the workbook's one-line summary. |
+| Same-name different feats (10) | Listed under a book-qualified alias, e.g. *Two-Weapon Rend (Player's Handbook II)* next to the epic *Two-Weapon Rend* |
+| Same feat, conflicting prerequisites (to check in the books) | *Somatic Weaponry* (Concentration/Spellcraft 4 vs 5 ranks), *Master Staff* (Spellcraft 15 vs 30), *Oversized Two-Weapon Fighting* (Str 13 vs Dex 13 + BAB +1) |
+| `tier` → `levelBand` | The P0/P2 field `tier` collided with the Warlock invocation grade (`tier`), so the feat picker would have shown "heroic Invocation". It is renamed to `levelBand` everywhere, including on Weak Will. |
+
 ## E. Open Item for the User
 
 - **Factotum Reflex save:** *Dungeonscape* is not in `FRP\D&D\Kitap`. If you can check the book or add the PDF, I will settle it. Until then I leave it unchanged.

@@ -258,6 +258,26 @@
     return Array.from(out);
   }
 
+  /** Opt-in chunks (index meta `optIn: true`, e.g. 3.0 / licensed content): loaded only on explicit request. */
+  function getOptInChunkNames() {
+    const chunks = (_indexData && _indexData.chunks) || {};
+    return Object.keys(chunks).filter((name) => chunks[name] && chunks[name].optIn === true);
+  }
+
+  // id -> index row, rebuilt whenever a different index payload is loaded
+  let _indexRowsById = null;
+  let _indexRowsSource = null;
+  function indexRowById(id) {
+    const rows = _indexData && Array.isArray(_indexData.index) ? _indexData.index : null;
+    if (!rows) return null;
+    if (_indexRowsSource !== rows) {
+      _indexRowsById = new Map();
+      for (let i = 0; i < rows.length; i++) if (rows[i] && rows[i].id) _indexRowsById.set(rows[i].id, rows[i]);
+      _indexRowsSource = rows;
+    }
+    return _indexRowsById.get(id) || null;
+  }
+
   // --------------------------------------------------------------------------
   // SRD SNAPSHOTS (tier-2 entries copied into character.customDb)
   // --------------------------------------------------------------------------
@@ -297,13 +317,16 @@
   function buildSnapshot(src) {
     const copy = safeClone(src);
     Object.keys(copy).forEach((k) => { if (k.charAt(0) === '_') delete copy[k]; });
-    const idxHit = _indexData && Array.isArray(_indexData.index)
-      ? _indexData.index.find((x) => x && x.id === src.id)
-      : null;
+    const idxHit = indexRowById(src.id);
+    const chunkName = idxHit && idxHit.f ? idxHit.f : null;
+    const chunkMeta = chunkName && _indexData && _indexData.chunks ? _indexData.chunks[chunkName] : null;
     copy._snapshot = {
       origin: SNAPSHOT_ORIGIN,
       srcId: src.id,
-      chunk: idxHit && idxHit.f ? idxHit.f : null,
+      chunk: chunkName,
+      // Chunk file hash at copy time: while srd_index.json reports the same hash, the source cannot have
+      // changed, so a character load does not need to download the chunk to reconcile this snapshot.
+      chunkHash: chunkMeta && chunkMeta.hash ? chunkMeta.hash : null,
       srcHash: contentHash(src),
       takenAt: new Date().toISOString(),
       status: 'current'
@@ -387,8 +410,9 @@
           }
 
           // Lazy chunk names are derived from the index, so they are resolved after it loads.
+          const optIn = getOptInChunkNames();
           const chunksToLoad = options.preloadAll
-            ? [...EAGER_CHUNKS, ...getLazyChunkNames()]
+            ? [...EAGER_CHUNKS, ...getLazyChunkNames().filter((n) => !optIn.includes(n))]
             : EAGER_CHUNKS;
 
           // 2. Load eager chunks in parallel from IndexedDB cache (falling back to network only if missing)
@@ -584,6 +608,38 @@
       return getLazyChunkNames();
     },
 
+    /** Lazy chunks that are never auto-loaded (index `optIn: true`). */
+    getOptInChunkNames() {
+      return getOptInChunkNames();
+    },
+
+    /**
+     * Synchronous: for every referenced name that currently resolves to an SRD record from a lazy
+     * chunk (i.e. the chunk is in memory this session), make sure an `srd-snapshot` exists in customDb.
+     * Keeps characters self-contained (export / sync / next page load) without waiting for a reload.
+     * Returns the ids added.
+     */
+    snapshotLazyRefs(customDb, names, typeFilter = null) {
+      const added = [];
+      if (!Array.isArray(customDb) || !Array.isArray(names) || names.length === 0) return added;
+      const lazy = getLazyChunkNames();
+      if (lazy.length === 0) return added;
+      const have = new Set(customDb.map((e) => e && e.id).filter(Boolean));
+      for (let i = 0; i < names.length; i++) {
+        const nm = String(names[i] || '').trim();
+        if (!nm) continue;
+        const nKey = normalizeNameKey(nm);
+        const rec = (typeFilter && _byTypeAndName.get(`${String(typeFilter).toLowerCase()}:${nKey}`)) || _byName.get(nKey);
+        if (!rec || !rec.id || have.has(rec.id) || _byId.get(rec.id) !== rec) continue;
+        const row = indexRowById(rec.id);
+        if (!row || !row.f || !lazy.includes(row.f)) continue;
+        customDb.push(buildSnapshot(rec));
+        have.add(rec.id);
+        added.push(rec.id);
+      }
+      return added;
+    },
+
     isChunkLoaded(fileName) {
       return _loadedChunks.has(fileName);
     },
@@ -595,6 +651,8 @@
       const idx = _indexData && Array.isArray(_indexData.index) ? _indexData.index : null;
       if (!idx) return null;
       const raw = String(idOrName).trim();
+      const byId = indexRowById(raw);
+      if (byId) return byId;
       const nKey = normalizeNameKey(raw);
       const tLow = typeFilter ? String(typeFilter).toLowerCase() : null;
       for (let i = 0; i < idx.length; i++) {
@@ -676,8 +734,13 @@
     async reconcileSnapshots(customDb) {
       if (Array.isArray(customDb)) {
         const needed = new Set();
+        const chunks = (_indexData && _indexData.chunks) || {};
         customDb.forEach((e) => {
-          if (isSnapshot(e) && e._snapshot.chunk && !_loadedChunks.has(e._snapshot.chunk)) needed.add(e._snapshot.chunk);
+          if (!isSnapshot(e) || !e._snapshot.chunk || _loadedChunks.has(e._snapshot.chunk)) return;
+          const current = chunks[e._snapshot.chunk] && chunks[e._snapshot.chunk].hash;
+          // Unchanged chunk since the copy was taken: nothing to reconcile, keep the chunk unloaded.
+          if (e._snapshot.chunkHash && current && e._snapshot.chunkHash === current) return;
+          needed.add(e._snapshot.chunk);
         });
         for (const chunk of needed) {
           try { await SrdCompendium.ensureChunkLoaded(chunk); } catch (_) {}

@@ -14344,14 +14344,14 @@
       "Flaw (+1 Bonus Feat)",
       "-3 Will Saves"
     ],
-    "tier": "heroic",
     "contentLevel": "summary",
     "verification": "verified",
     "provenance": {
       "origin": "rulebook",
       "book": "Unearthed Arcana",
       "page": 92
-    }
+    },
+    "levelBand": "heroic"
   },
   {
     "id": "feat-shield-specialization",

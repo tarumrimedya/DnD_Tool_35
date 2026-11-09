@@ -2355,7 +2355,7 @@ function runDeriveSheetTests() {
 
   // SRD Import P2: splatbook gear, traits, skill tricks (lazy chunks) + Weak Will + Boulder Roll
   const p2Gear = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_equipment_splat.json'), 'utf8'));
-  const p2Opts = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_splat.json'), 'utf8'));
+  const p2Opts = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_splat.json'), 'utf8')).filter(e => e.type === 'Trait' || e.type === 'Skill Trick');
   const p2Mans = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_maneuvers.json'), 'utf8'));
   const p2By = id => p2Gear.concat(p2Opts).find(e => e.id === id) || {};
   const p2AllIds = [];
@@ -2405,6 +2405,52 @@ function runDeriveSheetTests() {
     (p2By('trick-hidden-blade').prereqStruct.feats || []).includes('Quick Draw') && p2By('trick-hidden-blade').cost.skillPoints === 2 &&
     boulder.subType === 'Boost' && boulder.level === 4 && boulder.discipline === 'Stone Dragon' && boulder.source === 'ToB p.81'
   );
+  // SRD Import P3: splatbook feats in lazy chunks; 3.0 / licensed content opt-in only
+  const p3Splat = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_splat.json'), 'utf8')).filter(f => f.type === 'Feat');
+  const p3Epic = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_epic.json'), 'utf8'));
+  const p3Legacy = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_legacy.json'), 'utf8'));
+  const p3All = p3Splat.concat(p3Epic, p3Legacy);
+  check(
+    'SRD Import P3: 3.5 heroic / epic / legacy feats are split by edition and level band; the legacy chunk is opt-in and excluded from preloadAll',
+    p3Splat.length > 1500 && p3Splat.every(f => f.edition === '3.5' && f.levelBand === 'heroic') &&
+    p3Epic.length > 0 && p3Epic.every(f => f.edition === '3.5' && f.levelBand === 'epic' && f.isFighterBonusFeat === false) &&
+    p3Legacy.length > 300 && p3Legacy.every(f => f.edition === '3.0' || f.edition === '3.5-licensed') &&
+    p0Idx.chunks['srd_feats_legacy.json'].optIn === true && p0Idx.chunks['srd_feats_splat.json'].eagerLoad === false &&
+    Comp.getOptInChunkNames().includes('srd_feats_legacy.json') && !Comp.getOptInChunkNames().includes('srd_feats_splat.json')
+  );
+  check(
+    'SRD Import P3: no Dragon Magazine, placeholder, header or "xN" rows; every feat has a book source, a summary benefit, verification and provenance; no Warlock "tier" key',
+    p3All.every(f => !/Dragon Magazine/i.test(f.source) && !/ x\d$|Feats$/.test(f.name) && f.benefit && f.benefit.length > 3 &&
+      ['cross-checked', 'unverified'].includes(f.verification) && f.provenance && f.contentLevel === 'summary' && !('tier' in f)) &&
+    p3All.filter(f => f.verification === 'cross-checked').length > 600
+  );
+  Comp.ensureChunkLoaded('srd_feats_splat.json'); // Node: synchronous
+  const p3Db = [];
+  const p3Added = Comp.snapshotLazyRefs(p3Db, ['Acrobatic Strike', 'Power Attack', 'Not A Real Feat'], 'Feat');
+  const rendPh2 = Comp.getByName("Two-Weapon Rend (Player's Handbook II)");
+  check(
+    'SRD Import P3: snapshotLazyRefs copies only lazy-chunk feats (not eager SRD feats) into customDb; book-qualified aliases resolve same-name feats',
+    p3Added.length === 1 && p3Db.length === 1 && p3Db[0].name === 'Acrobatic Strike' && p3Db[0]._snapshot.chunk === 'srd_feats_splat.json' &&
+    Comp.snapshotLazyRefs(p3Db, ['Acrobatic Strike'], 'Feat').length === 0 &&
+    Boolean(rendPh2) && rendPh2.id === 'feat-two-weapon-rend-ph2' && /base attack bonus \+11/.test(rendPh2.prerequisites) &&
+    (Comp.getById('feat-two-weapon-rend') || {}).prerequisites.includes('+9')
+  );
+  const p3ChunkHash = p0Idx.chunks['srd_feats_splat.json'].hash;
+  check(
+    'SRD Import P3: snapshots record the chunk hash so an unchanged chunk is never downloaded just to reconcile; prefixed level-row feat names are cleaned',
+    p3Db[0]._snapshot.chunkHash === p3ChunkHash && Boolean(p3ChunkHash) &&
+    /e\._snapshot\.chunkHash === current\) return;/.test(fs.readFileSync(path.join(__dirname, '..', 'srd_compendium.js'), 'utf8')) &&
+    /replace\(\/\^\[\^A-Za-z0-9\(\]\+\(\\\[\.\*\?\\\]\)\?\\s\*\/, ''\)/.test(fs.readFileSync(path.join(__dirname, '..', 'char_store.js'), 'utf8'))
+  );
+  const p3ProgSrc = fs.readFileSync(path.join(__dirname, '..', 'char_progression.js'), 'utf8');
+  const p3StoreSrc = fs.readFileSync(path.join(__dirname, '..', 'char_store.js'), 'utf8');
+  check(
+    'SRD Import P3: feat catalog loads splat chunks on demand, hides 3.0/licensed unless toggled, and the store snapshots referenced lazy feats',
+    /function ensureFeatSplatChunks\(\)/.test(p3ProgSrc) && /getCombinedFeatCatalog\(includeInvocations = false\) \{\s*ensureFeatSplatChunks\(\);/.test(p3ProgSrc) &&
+    /LEGACY_FEAT_EDITIONS\.has\(f && f\.edition\)/.test(p3ProgSrc) && /'progression:toggle-legacy-feats'/.test(p3ProgSrc) &&
+    /comp\.snapshotLazyRefs\(db, collectFeatRefNames\(_state\.doc\), 'Feat'\)/.test(p3StoreSrc)
+  );
+
   // SRD Import P1 (rest): class pages from book contents, PrC requirements, cross-checked feat pages
   const p1bClasses = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_races.json'), 'utf8')).filter(c => c.type === 'Class');
   const p1bFeats = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats.json'), 'utf8'));

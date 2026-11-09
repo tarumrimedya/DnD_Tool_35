@@ -22,6 +22,9 @@ See `SRD_IMPORT_GAP_AUDIT_REPORT.md` and `SRD_IMPORT_VERIFICATION_TABLE.md` for 
 | P2 | `p2_options.py` | Builds the UA traits, the Weak Will flaw, and the Complete Scoundrel skill tricks. |
 | P2 | `p2_assemble.py` | Writes the lazy chunks (`srd_equipment_splat.json`, `srd_feats_splat.json`), adds Weak Will and Boulder Roll, and registers the chunks in `srd_index.json`. |
 
+| P3 | `p3_feats.py` | Builds the splatbook feats from the workbook. Splits them by edition and level band; drops Dragon Magazine, placeholder, and header rows; separates same-name feats. |
+| P3 | `p3_assemble.py` | Writes `srd_feats_splat.json` (3.5), `srd_feats_epic.json`, and `srd_feats_legacy.json` (3.0 and licensed, `optIn`), and registers them in the index. |
+
 After any change, run `node tools/verify_and_sync.js` (or the Docker command in `CLAUDE.md`). It fills the index rows, counts, and hashes, and runs the regression suites.
 
 Benefit text is paraphrased. No verbatim rulebook text is stored.

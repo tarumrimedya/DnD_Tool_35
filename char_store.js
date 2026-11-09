@@ -14,6 +14,23 @@
 
   const MAX_HISTORY_STEPS = 20;
 
+  // Names of every feat the character references (doc.feats[] objects/strings + levelProgression[].feats).
+  function collectFeatRefNames(doc) {
+    const out = new Set();
+    const add = (f) => {
+      const raw = typeof f === 'string' ? f : (f && (f.name || f.featName));
+      // levelProgression stores display strings such as "🎖️ Aberration Banemagic" / "🌟 [DM Boon] Name"
+      // (same cleanup as char_progression cleanFeatNameString)
+      const n = String(raw || '').replace(/^[^A-Za-z0-9(]+(\[.*?\])?\s*/, '').trim();
+      if (n) out.add(n);
+    };
+    if (doc && Array.isArray(doc.feats)) doc.feats.forEach(add);
+    if (doc && Array.isArray(doc.levelProgression)) {
+      doc.levelProgression.forEach((row) => { if (row && Array.isArray(row.feats)) row.feats.forEach(add); });
+    }
+    return Array.from(out);
+  }
+
   function resolveRuleEngine() {
     if (typeof root !== 'undefined' && root.RuleEngine) return root.RuleEngine;
     if (typeof RuleEngine !== 'undefined') return RuleEngine;
@@ -199,15 +216,23 @@
       if (!doc || !Array.isArray(doc.customDb) || !comp || typeof comp.reconcileSnapshots !== 'function') {
         return Promise.resolve(null);
       }
-      if (!doc.customDb.some(e => e && e._snapshot)) return Promise.resolve(null);
-      return comp.reconcileSnapshots(doc.customDb).then((res) => {
-        if (res && res.changed && _state.doc === doc) {
+      // Feats referenced by name that no longer resolve from memory (lazy chunk not loaded, no snapshot yet):
+      // load their chunk once and snapshot them (migration path; also covers opt-in 3.0 / licensed feats).
+      const unresolved = (typeof comp.resolveMissingRefs === 'function' && typeof comp.getByName === 'function')
+        ? collectFeatRefNames(doc).filter(n => !comp.getByName(n, 'Feat') && !comp.getByName(n))
+        : [];
+      const hasSnapshots = doc.customDb.some(e => e && e._snapshot);
+      if (!hasSnapshots && unresolved.length === 0) return Promise.resolve(null);
+      const migrate = unresolved.length > 0 ? comp.resolveMissingRefs(doc.customDb, unresolved, 'Feat') : Promise.resolve([]);
+      return migrate.then((added) => comp.reconcileSnapshots(doc.customDb).then((res) => {
+        const changed = (res && res.changed) || (Array.isArray(added) && added.length > 0);
+        if (changed && _state.doc === doc) {
           _sheetDirty = true;
           this.recompute(_lastTacticalOptions);
           if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(false);
         }
-        return res;
-      }).catch(() => null);
+        return Object.assign({}, res, { migrated: added || [] });
+      })).catch(() => null);
     },
 
     /**
@@ -234,6 +259,12 @@
         root.masterDb = _state.doc.customDb;
       }
       const db = _state.doc.customDb;
+      // Feats picked from lazy (tier-2) chunks this session get an srd-snapshot in customDb right away,
+      // so export / cloud sync / the next page load resolve them without the chunk.
+      const comp = typeof root !== 'undefined' ? root.SrdCompendium : null;
+      if (comp && typeof comp.snapshotLazyRefs === 'function') {
+        comp.snapshotLazyRefs(db, collectFeatRefNames(_state.doc), 'Feat');
+      }
       const sheetView = engine.deriveSheet(_state.doc, {
         masterDb: db,
         customDb: db,

@@ -111,10 +111,59 @@
     let _cachedFeatCatalogWithInv = null;
     let _cachedFeatCatalogKey = '';
 
+    // Tier-2 feat chunks: 3.5 splatbook feats load on first catalog use, epic feats from character level 21,
+    // 3.0 / licensed feats only while the user has the "3.0 & Licensed" filter on (opt-in chunk).
+    // The open feat list registers itself in _featListRefresher and is redrawn once a chunk arrives.
+    let _featListRefresher = null;
+    let _featChunkCatalogVer = 0; // bumped when a lazy feat chunk arrives or the legacy filter flips (part of the catalog cache key)
+    const LEGACY_FEAT_EDITIONS = new Set(['3.0', '3.5-licensed']);
+
+    function includeLegacyFeats() {
+      return Boolean(typeof character !== 'undefined' && character && character.settings && character.settings.includeLegacyFeats);
+    }
+
+    function ensureFeatSplatChunks() {
+      const comp = (typeof window !== 'undefined') ? window.SrdCompendium : null;
+      if (!comp || !comp._ready || typeof comp.ensureChunkLoaded !== 'function' || typeof comp.isChunkLoaded !== 'function') return;
+      const lazy = typeof comp.getLazyChunkNames === 'function' ? comp.getLazyChunkNames() : [];
+      const charLevel = (typeof character !== 'undefined' && character)
+        ? (Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.length : 0))
+        : 0;
+      const wanted = ['srd_feats_splat.json'];
+      if (charLevel >= 21) wanted.push('srd_feats_epic.json');
+      if (includeLegacyFeats()) wanted.push('srd_feats_legacy.json');
+      const missing = wanted.filter(n => lazy.includes(n) && !comp.isChunkLoaded(n));
+      if (missing.length === 0) return;
+      Promise.all(missing.map(n => comp.ensureChunkLoaded(n))).then(() => {
+        _featChunkCatalogVer++;
+        if (typeof _featListRefresher === 'function') {
+          try { _featListRefresher(); } catch (_) {}
+        }
+      }).catch(() => {});
+    }
+
+    function toggleLegacyFeats() {
+      if (typeof character === 'undefined' || !character) return;
+      if (!character.settings || typeof character.settings !== 'object') character.settings = {};
+      character.settings.includeLegacyFeats = !character.settings.includeLegacyFeats;
+      _featChunkCatalogVer++;
+      if (typeof saveStateToStorage === 'function') saveStateToStorage();
+      ensureFeatSplatChunks();
+      if (typeof _featListRefresher === 'function') _featListRefresher();
+    }
+
+    // Reuses the caller's pill styling: filterPillClass(activeFilter) = active look, any other key = inactive look.
+    function legacyFeatsPillHtml(pillClassFn, activeFilter) {
+      const on = includeLegacyFeats();
+      const cls = pillClassFn(on ? activeFilter : '__legacy_off__');
+      return `<button type="button" data-action="progression:toggle-legacy-feats" title="Show feats from 3.0 books and licensed non-WotC 3.5 books (loaded only while this filter is on)" class="${cls}">📜 3.0 &amp; Licensed${on ? ' ✓' : ''}</button>`;
+    }
+
     function getCombinedFeatCatalog(includeInvocations = false) {
+      ensureFeatSplatChunks();
       const srdReady = Boolean(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready);
       const dbLen = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb.length : 0;
-      const cacheKey = `${srdReady ? 1 : 0}_${(typeof window !== 'undefined' && window._srdCatalogVersion) || 0}_${dbLen}_${(typeof window !== 'undefined' && window._featCatalogCacheVer) || 0}`;
+      const cacheKey = `${srdReady ? 1 : 0}_${(typeof window !== 'undefined' && window._srdCatalogVersion) || 0}_${dbLen}_${(typeof window !== 'undefined' && window._featCatalogCacheVer) || 0}_${includeLegacyFeats() ? 1 : 0}_${_featChunkCatalogVer}`;
       if (_cachedFeatCatalogKey === cacheKey) {
         if (includeInvocations && _cachedFeatCatalogWithInv) return _cachedFeatCatalogWithInv;
         if (!includeInvocations && _cachedFeatCatalogNoInv) return _cachedFeatCatalogNoInv;
@@ -142,14 +191,31 @@
 
       // 1. Canonical V2 SrdCompendium (464 SRD Feats, UA Flaws & DM Boons with structured prerequisites)
       if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
+        const showLegacyEditions = includeLegacyFeats();
         window.SrdCompendium.getAllLoaded(['Feat', 'Flaw', 'DM Boon', 'Special Ability']).forEach(f => {
           if (!f || !f.name) return;
-          const k = f.name.toLowerCase().trim();
+          const isLegacyEdition = LEGACY_FEAT_EDITIONS.has(f.edition);
+          // 3.0 / licensed feats stay out of the catalog unless the user turned the filter on (even if the chunk is in memory)
+          if (isLegacyEdition && !showLegacyEditions) return;
+          let k = f.name.toLowerCase().trim();
           if (!k || skipPlaceholders.has(k)) return;
           if (f.category === 'Warlock Invocation' || invocationByName.has(k)) return;
+          // Same-name different feat (e.g. PHB II vs epic Two-Weapon Rend, or a 3.0 reprint): never overwrite the
+          // entry already listed; list this one under its book-qualified alias, or "Name (Book)" for 3.0/licensed.
+          let displayName = f.name;
+          // Only imported (edition-tagged) records use this rule; core records keep their previous last-wins behaviour.
+          if (f.edition && map.has(k) && map.get(k).id !== f.id) {
+            const bookName = String(f.source || '').replace(/\s*p\.?\s*\d+.*$/i, '').trim();
+            if (Array.isArray(f.aliases) && f.aliases[0]) displayName = f.aliases[0];
+            else if (isLegacyEdition && bookName) displayName = `${f.name} (${bookName})`;
+            else return;
+            k = displayName.toLowerCase().trim();
+            if (map.has(k)) return;
+          }
           const isBoonType = (f.type === 'DM Boon' || f.type === 'Special Ability' || f.category === 'DM Boon' || (f.id && String(f.id).startsWith('pack_')));
           map.set(k, {
             ...f,
+            name: displayName,
             category: f.category || (f.type === 'DM Boon' ? 'DM Boon' : (f.type === 'Special Ability' ? 'Special Ability' : 'General')),
             prereq: f.prerequisites || f.prereq || (isBoonType && f.requires && Array.isArray(f.requires.feats) ? f.requires.feats.join(', ') : '-'),
             benefit: f.shortDescription || f.benefit || f.description || '',
@@ -257,7 +323,8 @@
           }
         });
       }
-      const resultArr = Array.from(map.values());
+      const showLegacy = includeLegacyFeats();
+      const resultArr = Array.from(map.values()).filter(f => showLegacy || !LEGACY_FEAT_EDITIONS.has(f && f.edition));
       if (includeInvocations) {
         _cachedFeatCatalogWithInv = resultArr;
       } else {
@@ -286,6 +353,7 @@
     }
 
     function renderFeatPickerList() {
+      _featListRefresher = renderFeatPickerList;
       const listEl = document.getElementById('feat-picker-list');
       if (!listEl) return;
       listEl.innerHTML = '';
@@ -1341,6 +1409,7 @@
     }
 
     function renderQuickFeatSearchResults() {
+      _featListRefresher = renderQuickFeatSearchResults;
       const consoleEl = document.getElementById('quick-feat-search-console');
       if (!consoleEl) return;
 
@@ -1653,6 +1722,7 @@
             <button type="button" data-action="progression:set-quick-feat-filter" data-filter="FLAW" class="${filterPillClass('FLAW')}">
               ⚠️ Flaws (${countFlaw})
             </button>
+            ${legacyFeatsPillHtml(filterPillClass, activeFilter)}
             ${invocationsList.length > 0 ? `
               <button type="button" data-action="progression:set-quick-feat-filter" data-filter="INVOCATION" class="${filterPillClass('INVOCATION')}">
                 🔮 Invocation (${countInvocation})
@@ -4196,6 +4266,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       }
 
       function renderLevelUpFeatSearchResults(slotIdx) {
+        _featListRefresher = () => renderLevelUpFeatSearchResults(slotIdx);
         const consoleEl = document.getElementById(`lvlup-feat-search-console-${slotIdx}`);
         if (!consoleEl) return;
 
@@ -4419,6 +4490,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               <button type="button" data-action="progression:set-lvlup-feat-filter" data-filter="FLAW" data-slot-idx="${slotIdx}" class="${filterPillClass('FLAW')}">
                 ⚠️ Flaw (${countFlaw})
               </button>
+              ${legacyFeatsPillHtml(filterPillClass, activeFilter)}
             </div>
             <button type="button" data-action="progression:close-lvlup-feat-console" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition font-bold cursor-pointer">
               ▲ Close
@@ -10724,6 +10796,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
       Actions.register('progression:expand-quick-feat-results', (el, data, event) => {
         if (typeof window.expandAllQuickFeatResults === 'function') window.expandAllQuickFeatResults();
+      });
+      Actions.register('progression:toggle-legacy-feats', (el, data, event) => {
+        toggleLegacyFeats();
       });
       Actions.register('progression:set-quick-feat-filter', (el, data, event) => {
         if (data.filter) setQuickFeatSearchFilter(data.filter);

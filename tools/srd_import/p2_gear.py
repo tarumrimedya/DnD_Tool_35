@@ -94,7 +94,7 @@ def make_weapon(w):
         'weaponType': f"{cat} {'Ranged' if hand == 'ranged' else {'light': 'Light', '1h': 'One-Handed', '2h': 'Two-Handed'}[hand]}",
         'damage': dice, 'dmgType': typ, 'isLight': hand == 'light', 'combatModifiers': [],
         'aliases': [w['name']] if w['name'] != name else [],
-        'tier': 'heroic', 'contentLevel': 'summary', 'verification': w['verification'],
+        'levelBand': 'heroic', 'contentLevel': 'summary', 'verification': w['verification'],
         'provenance': w['provenance']
     }
     if rng: rec['range'] = rng
@@ -190,7 +190,7 @@ def make_armor(a):
     rec.update({'shortDescription': short, 'description': f'<p>{short}</p>', 'benefit': short, 'tags': tags,
                 'modifiers': [{'target': tgt, 'value': a['ac'], 'formula': str(a['ac']), 'type': 'shield' if isS else 'armor', 'condition': None}],
                 'damageParts': [], 'modes': [], 'ruleFlags': {'exoticArmor': True} if a['exotic'] else {}, 'combatModifiers': [],
-                'tier': 'heroic', 'contentLevel': 'summary', 'verification': 'verified',
+                'levelBand': 'heroic', 'contentLevel': 'summary', 'verification': 'verified',
                 'provenance': {'origin': 'rulebook', 'book': a['src'], 'page': a['page']}})
     return rec
 
