@@ -2472,10 +2472,28 @@ const RuleMaster = {
            /(?:^|-)(?:exp|vision|aqa|live-preview|customtools)(?:-|$)/i.test(lower);
   },
 
-  // Helper: Sanitize and deduplicate models cascade, ensuring guaranteed fallbacks and avoiding hangs
+  // Helper: Sanitize and deduplicate models cascade, using pure dynamic models when available and fallbackList only when empty
   _sanitizeModelList(list) {
     const fallbackList = ['gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash-lite', 'gemini-3.1-pro-preview'];
-    let models = [...new Set([...(list || []), ...fallbackList].filter(m => m && !this._isDeprecatedGeminiModel(m)))];
+    let discovered = Array.isArray(this._discoveredApiModels) ? this._discoveredApiModels : null;
+    if (!discovered) {
+      try {
+        const raw = localStorage.getItem('dnd35_gemini_discovered_models');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) discovered = parsed;
+        }
+      } catch (e) {}
+    }
+    const cleanDiscovered = Array.isArray(discovered)
+      ? discovered.filter(m => m && !this._isDeprecatedGeminiModel(m))
+      : [];
+    let validInput = (list || []).filter(m => m && !this._isDeprecatedGeminiModel(m));
+    if (cleanDiscovered.length > 0) {
+      const inDiscovered = validInput.filter(m => cleanDiscovered.includes(m));
+      validInput = inDiscovered.length > 0 ? inDiscovered : cleanDiscovered;
+    }
+    let models = [...new Set(validInput.length > 0 ? validInput : fallbackList.filter(m => !this._isDeprecatedGeminiModel(m)))];
     // If gemini-3.1-flash-lite is at index 0, move a reliable 2.5 or 3 flash model to index 0 so it doesn't hang
     if (models[0] && models[0].includes('3.1-flash-lite')) {
       const betterIdx = models.findIndex(m => (m.includes('2.5-flash') || m.includes('3-flash')) && !m.includes('3.1'));
@@ -2487,49 +2505,53 @@ const RuleMaster = {
     return models;
   },
 
-  // Dynamically builds the 3-tier / 9-slot routing matrix from live discovered API models
+  // Dynamically builds the 3-tier / 9-slot routing matrix strictly from live discovered API models (falls back to static list only if apiModels is empty)
   buildDynamicRoutingFromModels(apiModels = []) {
     function parseVer(name) {
       const match = (name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
       return match ? parseFloat(match[1]) : 0.0;
     }
+    const fallbackList = ['gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash-lite', 'gemini-3.1-pro-preview'];
     // Filter out hanging, experimental, or deprecated models (e.g. 2.0-flash, 2.5-pro, 3.1-flash-lite)
     const cleanedModels = (Array.isArray(apiModels) ? apiModels.slice() : [])
       .filter(m => m && !m.toLowerCase().includes('3.1-flash-lite') && !this._isDeprecatedGeminiModel(m));
-    const sorted = cleanedModels.sort((a, b) => parseVer(b) - parseVer(a));
-
-    const flash30 = sorted.find(m => (m.includes('3-flash') || m.includes('3.8-flash') || m.includes('3.7-flash')) && !m.includes('lite')) || 'gemini-3-flash-preview';
-    const flash25 = sorted.find(m => m.includes('2.5-flash') && !m.includes('lite')) || 'gemini-2.5-flash';
-    const lite25 = sorted.find(m => m.includes('2.5-flash-lite')) || 'gemini-2.5-flash-lite';
-    const pro31 = sorted.find(m => m.includes('3.1-pro') || m.includes('3-pro')) || 'gemini-3.1-pro-preview';
+    const sourceModels = cleanedModels.length > 0 ? cleanedModels : fallbackList;
+    const sorted = sourceModels.slice().sort((a, b) => parseVer(b) - parseVer(a));
 
     const liteModels = sorted.filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'));
     const flashModels = sorted.filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'));
     const proModels = sorted.filter(m => m.toLowerCase().includes('pro'));
 
+    const flash25 = flashModels.find(m => m.includes('2.5-flash')) || flashModels[0] || sorted[0];
+    const flash30 = flashModels.find(m => !m.includes('2.5-flash')) || flashModels[1] || flashModels[0] || sorted[0];
+    const lite25 = liteModels.find(m => m.includes('2.5-flash-lite')) || liteModels[0] || flash25;
+    const pro31 = proModels[0] || flash30 || flash25;
+
     const pick3 = (candidates) => {
-      const pool = [...candidates, flash25, flash30, lite25, pro31, 'gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash-lite', 'gemini-3.1-pro-preview'];
+      const pool = [...candidates, ...flashModels, ...liteModels, ...proModels, ...sorted];
       const uniq = [];
       pool.forEach(m => {
         if (m && !this._isDeprecatedGeminiModel(m) && !uniq.includes(m)) uniq.push(m);
       });
       return {
-        primary: uniq[0] || 'gemini-2.5-flash',
-        fallback: uniq[1] || 'gemini-3-flash-preview',
-        tertiary: uniq[2] || 'gemini-2.5-flash-lite'
+        primary: uniq[0] || fallbackList[0],
+        fallback: uniq[1] || uniq[0] || fallbackList[1],
+        tertiary: uniq[2] || uniq[1] || uniq[0] || fallbackList[2]
       };
     };
 
     return {
       QUICK_SEARCH: pick3([flash25, flash30, lite25, ...flashModels, ...liteModels]),
-      RULE_AUDIT: pick3([proModels[0] || pro31, flash25, flash30, proModels[1], lite25]),
-      IMPORT_BATCH: pick3([flash25, flash30, lite25, proModels[0] || pro31])
+      RULE_AUDIT: pick3([pro31, flash25, flash30, proModels[1], lite25]),
+      IMPORT_BATCH: pick3([flash25, flash30, lite25, pro31])
     };
   },
 
   // Returns the dynamically discovered/AI-optimized routing matrix from live API models
   getActiveTaskRouting() {
     try {
+      const discoveredRaw = this._discoveredApiModels || JSON.parse(localStorage.getItem('dnd35_gemini_discovered_models') || 'null');
+      const hasValidDiscovered = Array.isArray(discoveredRaw) && discoveredRaw.length > 0 && !discoveredRaw.some(m => this._isDeprecatedGeminiModel(m));
       const saved = localStorage.getItem('dnd35_gemini_routing_matrix');
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -2539,16 +2561,14 @@ const RuleMaster = {
             parsed.RULE_AUDIT.primary, parsed.RULE_AUDIT.fallback, parsed.RULE_AUDIT.tertiary,
             parsed.IMPORT_BATCH.primary, parsed.IMPORT_BATCH.fallback, parsed.IMPORT_BATCH.tertiary
           ].filter(Boolean);
-          if (allModels.some(m => this._isDeprecatedGeminiModel(m))) {
+          const hasInvalidModel = allModels.some(m => this._isDeprecatedGeminiModel(m) || (hasValidDiscovered && !discoveredRaw.includes(m)));
+          if (hasInvalidModel) {
             localStorage.removeItem('dnd35_gemini_routing_matrix');
-            localStorage.removeItem('dnd35_gemini_discovered_models');
-            this._discoveredApiModels = null;
-          } else {
+          } else if (hasValidDiscovered) {
             return parsed;
           }
         }
       }
-      const discoveredRaw = this._discoveredApiModels || JSON.parse(localStorage.getItem('dnd35_gemini_discovered_models') || 'null');
       if (Array.isArray(discoveredRaw) && discoveredRaw.length > 0) {
         if (discoveredRaw.some(m => this._isDeprecatedGeminiModel(m))) {
           try {
@@ -2734,20 +2754,24 @@ Schema:
       return this._cachedTaskModels[cacheKey];
     }
 
-    // Eğer önceden kaydedilmiş bir dinamik AI yönlendirme matrisi varsa doğrudan kullan (0ms gecikme)
+    // Eğer önceden kaydedilmiş ve canlı keşfedilmiş modellerle doğrulanmış bir AI yönlendirme matrisi varsa doğrudan kullan (0ms gecikme)
     const rawMatrix = localStorage.getItem('dnd35_gemini_routing_matrix');
     if (rawMatrix && !forceRefresh) {
       try {
+        const discoveredRaw = this._discoveredApiModels || JSON.parse(localStorage.getItem('dnd35_gemini_discovered_models') || 'null');
+        const hasValidDiscovered = Array.isArray(discoveredRaw) && discoveredRaw.length > 0 && !discoveredRaw.some(m => this._isDeprecatedGeminiModel(m));
         const parsedM = JSON.parse(rawMatrix);
         const allM = parsedM ? [
           parsedM.QUICK_SEARCH?.primary, parsedM.QUICK_SEARCH?.fallback, parsedM.QUICK_SEARCH?.tertiary,
           parsedM.RULE_AUDIT?.primary, parsedM.RULE_AUDIT?.fallback, parsedM.RULE_AUDIT?.tertiary,
           parsedM.IMPORT_BATCH?.primary, parsedM.IMPORT_BATCH?.fallback, parsedM.IMPORT_BATCH?.tertiary
         ].filter(Boolean) : [];
-        if (allM.some(m => this._isDeprecatedGeminiModel(m))) {
+        if (!hasValidDiscovered || allM.some(m => this._isDeprecatedGeminiModel(m) || !discoveredRaw.includes(m))) {
           localStorage.removeItem('dnd35_gemini_routing_matrix');
-          localStorage.removeItem('dnd35_gemini_discovered_models');
-          this._discoveredApiModels = null;
+          if (!hasValidDiscovered) {
+            localStorage.removeItem('dnd35_gemini_discovered_models');
+            this._discoveredApiModels = null;
+          }
         } else {
           const activeRouting = this.getActiveTaskRouting();
           let taskCfg = activeRouting.QUICK_SEARCH;
