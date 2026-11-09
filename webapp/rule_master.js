@@ -2467,16 +2467,18 @@ const RuleMaster = {
     const lower = m.toLowerCase().trim();
     if (this._failedGeminiModels && this._failedGeminiModels.has(lower)) return true;
     return /^gemini-(?:1\.0|1\.5|2\.0)(?:-|$)/i.test(lower) ||
-           /(?:^|-)(?:exp|vision|aqa)(?:-|$)/i.test(lower);
+           /^gemini-2\.5-pro(?:-|$)/i.test(lower) ||
+           /^gemini-3\.0-flash(?:-|$)/i.test(lower) ||
+           /(?:^|-)(?:exp|vision|aqa|live-preview|customtools)(?:-|$)/i.test(lower);
   },
 
   // Helper: Sanitize and deduplicate models cascade, ensuring guaranteed fallbacks and avoiding hangs
   _sanitizeModelList(list) {
-    const fallbackList = ['gemini-2.5-flash', 'gemini-3.0-flash', 'gemini-2.5-flash-lite', 'gemini-2.5-pro'];
+    const fallbackList = ['gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash-lite', 'gemini-3.1-pro-preview'];
     let models = [...new Set([...(list || []), ...fallbackList].filter(m => m && !this._isDeprecatedGeminiModel(m)))];
-    // If gemini-3.1-flash-lite is at index 0, move a reliable 2.5 or 3.0 flash model to index 0 so it doesn't hang
+    // If gemini-3.1-flash-lite is at index 0, move a reliable 2.5 or 3 flash model to index 0 so it doesn't hang
     if (models[0] && models[0].includes('3.1-flash-lite')) {
-      const betterIdx = models.findIndex(m => (m.includes('2.5-flash') || m.includes('3.0-flash')) && !m.includes('3.1'));
+      const betterIdx = models.findIndex(m => (m.includes('2.5-flash') || m.includes('3-flash')) && !m.includes('3.1'));
       if (betterIdx > 0) {
         const [better] = models.splice(betterIdx, 1);
         models.unshift(better);
@@ -2491,36 +2493,37 @@ const RuleMaster = {
       const match = (name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
       return match ? parseFloat(match[1]) : 0.0;
     }
-    // Filter out hanging, experimental, or deprecated models (e.g. 2.0-flash, 3.1-flash-lite)
+    // Filter out hanging, experimental, or deprecated models (e.g. 2.0-flash, 2.5-pro, 3.1-flash-lite)
     const cleanedModels = (Array.isArray(apiModels) ? apiModels.slice() : [])
       .filter(m => m && !m.toLowerCase().includes('3.1-flash-lite') && !this._isDeprecatedGeminiModel(m));
     const sorted = cleanedModels.sort((a, b) => parseVer(b) - parseVer(a));
 
-    const flash30 = sorted.find(m => m.includes('3.0-flash') && !m.includes('lite')) || 'gemini-3.0-flash';
+    const flash30 = sorted.find(m => (m.includes('3-flash') || m.includes('3.8-flash') || m.includes('3.7-flash')) && !m.includes('lite')) || 'gemini-3-flash-preview';
     const flash25 = sorted.find(m => m.includes('2.5-flash') && !m.includes('lite')) || 'gemini-2.5-flash';
     const lite25 = sorted.find(m => m.includes('2.5-flash-lite')) || 'gemini-2.5-flash-lite';
+    const pro31 = sorted.find(m => m.includes('3.1-pro') || m.includes('3-pro')) || 'gemini-3.1-pro-preview';
 
     const liteModels = sorted.filter(m => m.toLowerCase().includes('flash') && m.toLowerCase().includes('lite'));
     const flashModels = sorted.filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'));
     const proModels = sorted.filter(m => m.toLowerCase().includes('pro'));
 
     const pick3 = (candidates) => {
-      const pool = [...candidates, flash25, flash30, lite25, 'gemini-2.5-flash', 'gemini-3.0-flash', 'gemini-2.5-flash-lite'];
+      const pool = [...candidates, flash25, flash30, lite25, pro31, 'gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash-lite', 'gemini-3.1-pro-preview'];
       const uniq = [];
       pool.forEach(m => {
         if (m && !this._isDeprecatedGeminiModel(m) && !uniq.includes(m)) uniq.push(m);
       });
       return {
         primary: uniq[0] || 'gemini-2.5-flash',
-        fallback: uniq[1] || 'gemini-3.0-flash',
+        fallback: uniq[1] || 'gemini-3-flash-preview',
         tertiary: uniq[2] || 'gemini-2.5-flash-lite'
       };
     };
 
     return {
       QUICK_SEARCH: pick3([flash25, flash30, lite25, ...flashModels, ...liteModels]),
-      RULE_AUDIT: pick3([proModels[0], flash25, flash30, proModels[1], lite25]),
-      IMPORT_BATCH: pick3([flash25, flash30, lite25, proModels[0]])
+      RULE_AUDIT: pick3([proModels[0] || pro31, flash25, flash30, proModels[1], lite25]),
+      IMPORT_BATCH: pick3([flash25, flash30, lite25, proModels[0] || pro31])
     };
   },
 
@@ -2813,10 +2816,12 @@ Schema:
                      !lower.includes('audio') &&
                      !lower.includes('embedding') &&
                      !lower.includes('realtime') &&
+                     !lower.includes('live') &&
+                     !lower.includes('customtools') &&
                      !lower.includes('bison') &&
-                     !lower.includes('preview') &&
                      !lower.includes('omni') &&
-                     !lower.includes('gemma');
+                     !lower.includes('gemma') &&
+                     !/-\d{2}-\d{2}$/.test(lower);
             });
           this._discoveredApiModels = apiModels;
           try {
@@ -3182,6 +3187,32 @@ Schema:
       modes: [],
       ruleFlags: { shockTrooper: true, heedlessCharge: true },
       tacticalBadges: ['Heedless Charge (PA to AC)'],
+      weight: 0,
+      cost: 0
+    },
+    'combat brute': {
+      schemaVersion: 2,
+      id: 'feat_combat_brute',
+      name: 'Combat Brute',
+      type: 'Feat',
+      category: 'Fighter',
+      slot: 'None',
+      source: 'Complete Warrior p.108',
+      prereq: 'Base attack bonus +6, Cleave, Improved Sunder, Power Attack.',
+      prerequisites: 'Base attack bonus +6, Cleave, Improved Sunder, Power Attack.',
+      benefit: 'Prerequisites: Base attack bonus +6, Cleave, Improved Sunder, Power Attack. Benefit: Combat Brute enables three tactical maneuvers: Advancing Blows (+1 attack/damage per 5 ft pushed after bull rush), Sundering Cleave (immediate melee attack against wielder after destroying weapon/shield with sunder), and Momentum Swing (if you charge in round 1 and make a Power Attack of -5 or more in round 2, deal x1.5 Power Attack bonus damage with a one-handed weapon or x3 with a two-handed weapon). Special: A fighter may select Combat Brute as one of his fighter bonus feats.',
+      description: 'Tactical feat granting Advancing Blows, Sundering Cleave, and Momentum Swing (x3 two-handed Power Attack damage in round after a charge).',
+      scope: 'Melee Only',
+      action: 'Passive / Tactical',
+      actionType: 'passive',
+      duration: 'Continuous',
+      role: 'Fighter',
+      isFighterBonusFeat: true,
+      modifiers: [],
+      damageParts: [],
+      modes: [],
+      ruleFlags: { combatBrute: true, momentumSwing: true },
+      tacticalBadges: ['Momentum Swing (x3 2H PA After Charge)', 'Sundering Cleave'],
       weight: 0,
       cost: 0
     },
@@ -4164,7 +4195,7 @@ Return valid JSON only matching:
       };
 
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
 
       try {
         const response = await fetch(url, {
