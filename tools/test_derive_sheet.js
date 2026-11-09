@@ -2278,8 +2278,9 @@ function runDeriveSheetTests() {
     p1Fb('feat-sharp-shooting') === true && p1Fb('feat-martial-study') === true && p1Fb('feat-martial-stance') === true
   );
   check(
-    'SRD Import P1: Fighter feat picker trusts an explicit isFighterBonusFeat=false over the Martial/Fighter category fallback (2 predicates)',
-    (progSrc.match(/f\.isFighterBonusFeat === undefined \|\| f\.isFighterBonusFeat === null\) && \(f\.category === 'Fighter'/g) || []).length === 2 &&
+    'SRD Import P1: Fighter feat picker trusts an explicit isFighterBonusFeat=false over the Martial/Fighter category fallback (both pickers use one helper)',
+    /if \(f\.isFighterBonusFeat === false\) return false;\s*const tagged/.test(progSrc) &&
+    (progSrc.match(/const isFighterFeat = f => isFighterBonusFeatEntry\(f, /g) || []).length === 2 &&
     !/isFighterBonusFeat === true \|\| f\.category === 'Fighter'/.test(progSrc)
   );
 
@@ -2448,7 +2449,65 @@ function runDeriveSheetTests() {
     'SRD Import P3: feat catalog loads splat chunks on demand, hides 3.0/licensed unless toggled, and the store snapshots referenced lazy feats',
     /function ensureFeatSplatChunks\(\)/.test(p3ProgSrc) && /getCombinedFeatCatalog\(includeInvocations = false\) \{\s*ensureFeatSplatChunks\(\);/.test(p3ProgSrc) &&
     /LEGACY_FEAT_EDITIONS\.has\(f && f\.edition\)/.test(p3ProgSrc) && /'progression:toggle-legacy-feats'/.test(p3ProgSrc) &&
-    /comp\.snapshotLazyRefs\(db, collectFeatRefNames\(_state\.doc\), 'Feat'\)/.test(p3StoreSrc)
+    /FEAT_REF_TYPES\.forEach\(t => comp\.snapshotLazyRefs\(db, collectFeatRefNames\(_state\.doc, t\), t\)\)/.test(p3StoreSrc)
+  );
+
+  // SRD Import P3 (rest): book-checked prerequisite conflicts and the ELH epic fighter bonus feat list
+  const p3bFeats = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats.json'), 'utf8'));
+  const p3bF = id => p3bFeats.find(f => f.id === id) || {};
+  check(
+    'SRD Import P3: prerequisite conflicts settled from the books (Somatic Weaponry CM p.47: 5 ranks; Oversized TWF CAd p.111: Str 13; Master Staff ELH p.62: Spellcraft 15)',
+    p3bF('feat-somatic-weaponry').prerequisites === 'Concentration 5 ranks, Spellcraft 5 ranks' &&
+    p3bF('feat-somatic-weaponry').prereqStruct.skills.spellcraft === 5 &&
+    p3bF('feat-oversized-two-weapon-fighting').prerequisites === 'Str 13, Two-Weapon Fighting' &&
+    p3bF('feat-oversized-two-weapon-fighting').prereqStruct.abilities.str === 13 && !p3bF('feat-oversized-two-weapon-fighting').prereqStruct.abilities.dex &&
+    /Spellcraft 15 ranks/.test(p3bF('feat-master-staff').prerequisites)
+  );
+  const p3bEpicFtr = p3bFeats.filter(f => f.fighterBonusFeatTier === 'epic');
+  check(
+    'SRD Import P3: the 31 ELH epic fighter bonus feats carry fighterBonusFeatTier "epic" (not the heroic flag) and are offered only for slots at character level 21+',
+    p3bEpicFtr.length === 31 && p3bEpicFtr.every(f => f.isFighterBonusFeat !== true) &&
+    p3bEpicFtr.some(f => f.id === 'feat-two-weapon-rend') && p3bEpicFtr.some(f => f.id === 'feat-armor-skin') &&
+    /if \(f\.fighterBonusFeatTier === 'epic'\) return \(Number\(slotCharLevel\) \|\| 0\) >= 21;/.test(progSrc)
+  );
+
+  // SRD Import P3 (rest): UA traits and Complete Scoundrel skill tricks on the character
+  const p3tSplat = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_splat.json'), 'utf8'));
+  const p3tTrait = p3tSplat.find(e => e.id === 'trait-abrasive');
+  const p3tTrick = p3tSplat.find(e => e.id === 'trick-acrobatic-backstab');
+  const p3tChar = {
+    level: 2, race: 'Elf', abilities: { cha: 10 },
+    levelProgression: [
+      { level: 1, className: 'Rogue', active: true, feats: ['🎖️ Dodge', '🧬 [Trait] Abrasive', '💪 [Skill Trick] Acrobatic Backstab'] },
+      { level: 2, className: 'Rogue', active: true, feats: [] }
+    ],
+    skills: [{ key: 'tumble', ranks: 3, isClass: true }],
+    feats: [{ name: 'Dodge', type: 'Feat' }, JSON.parse(JSON.stringify(p3tTrait)), JSON.parse(JSON.stringify(p3tTrick))]
+  };
+  const p3tView = RuleEngine.deriveProgressionView(p3tChar, []);
+  const p3tNoTrait = JSON.parse(JSON.stringify(p3tChar));
+  p3tNoTrait.feats = p3tNoTrait.feats.filter(f => f.type !== 'Trait');
+  p3tNoTrait.levelProgression[0].feats = p3tNoTrait.levelProgression[0].feats.filter(f => !f.includes('[Trait]'));
+  check(
+    'SRD Import P3: traits and skill tricks never use a feat slot; each skill trick costs 2 skill points (CSc p.83)',
+    p3tView.featSlotsView.regularFeatsTaken === 1 && p3tView.featSlotsView.openRegularSlots === 0 &&
+    p3tView.skillBudgetsView.skillTrickCount === 1 && p3tView.skillBudgetsView.spentPoints === 5 &&
+    RuleEngine.countSkillTricks(p3tChar) === 1 && RuleEngine.isTraitOrSkillTrickRef('🧬 [Trait] Abrasive')
+  );
+  check(
+    'SRD Import P3: a chosen trait applies its benefit and drawback (Abrasive: +1 Intimidate, -1 Bluff, UA p.87)',
+    RuleEngine.evaluateSkillBonus(p3tChar, 'intimidate', 'Intimidate', 'cha').total -
+      RuleEngine.evaluateSkillBonus(p3tNoTrait, 'intimidate', 'Intimidate', 'cha').total === 1 &&
+    RuleEngine.evaluateSkillBonus(p3tChar, 'bluff', 'Bluff', 'cha').total -
+      RuleEngine.evaluateSkillBonus(p3tNoTrait, 'bluff', 'Bluff', 'cha').total === -1
+  );
+  check(
+    'SRD Import P3: quick feat picker offers Trait / Skill Trick categories with the RAW limits (2 traits, 1 trick per level, half level rounded up) and type-aware snapshots',
+    /value=\\"Trait\\" id=\\"quick-feat-opt-trait\\"/.test(fs.readFileSync(path.join(__dirname, '..', 'char_modals.js'), 'utf8')) &&
+    /value=\\"Skill Trick\\" id=\\"quick-feat-opt-skill-trick\\"/.test(fs.readFileSync(path.join(__dirname, '..', 'char_modals.js'), 'utf8')) &&
+    /if \(countKind\(prog\) >= 2\)/.test(progSrc) && /const trickCap = Math\.ceil\(rowLevel \/ 2\);/.test(progSrc) &&
+    /else if \(category === 'Trait'\) prefix = '🧬 \[Trait\] ';/.test(progSrc) &&
+    /const FEAT_REF_TYPES = \['Feat', 'Trait', 'Skill Trick'\];/.test(p3StoreSrc)
   );
 
   // SRD Import P1 (rest): class pages from book contents, PrC requirements, cross-checked feat pages

@@ -1874,6 +1874,21 @@ const RuleEngine = {
     ].join('\n\n');
   },
 
+  // Feat-list rows that are not feats: UA character traits (UA p.86) and Complete Scoundrel skill tricks
+  // (CSc p.83). They never consume a feat slot.
+  isTraitOrSkillTrickRef(fStr) {
+    const s = String(fStr || '');
+    return s.includes('[Trait]') || s.includes('[Skill Trick]');
+  },
+
+  // Skill tricks learned on active levels; each costs 2 skill points (Complete Scoundrel p.83).
+  countSkillTricks(w) {
+    const rows = Array.isArray(w?.levelProgression) ? w.levelProgression : [];
+    return rows.reduce((n, row) => (row && row.active !== false && Array.isArray(row.feats))
+      ? n + row.feats.filter(f => String(f || '').includes('[Skill Trick]')).length
+      : n, 0);
+  },
+
   // Declarative Compendium & Master DB lookup helper (O(1) ID/BaseItemId priority per Rule #10.4)
   getMasterDbEntry(itemOrName, typeFilter = null) {
     if (!itemOrName) return null;
@@ -9751,7 +9766,7 @@ const RuleEngine = {
 
       featsArr.forEach(fStr => {
         const s = String(fStr || '');
-        if (!s || s.includes('+1 Stat') || s.includes('Stat:')) return;
+        if (!s || s.includes('+1 Stat') || s.includes('Stat:') || this.isTraitOrSkillTrickRef(s)) return;
         if (s.includes('[Flaw]') || /^⚠️\s*\[Flaw\]/i.test(s)) {
           if (isActive) flawSlotsEarned++;
         } else if (s.includes('[Flaw Bonus]')) {
@@ -9794,7 +9809,9 @@ const RuleEngine = {
         if (isLevelQualifiesForFeat(l, featMode)) regularSlotsEarned++;
       }
       if (isHuman) bonusSlotsEarned++;
-      regularFeatsTaken = Array.isArray(w.feats) ? w.feats.length : 0;
+      regularFeatsTaken = Array.isArray(w.feats)
+        ? w.feats.filter(f => !(f && typeof f === 'object' && (f.type === 'Trait' || f.type === 'Skill Trick'))).length
+        : 0;
     }
 
     const activeLevelsCount = rows.length > 0
@@ -9829,6 +9846,8 @@ const RuleEngine = {
       const isCls = sk.isClassSkill !== false && sk.classSkill !== false && sk.isClass !== false;
       spentSkillPoints += isCls ? ranks : (ranks * 2);
     });
+    const skillTrickCount = this.countSkillTricks(w);
+    spentSkillPoints += skillTrickCount * 2;
     const remainingSkillPoints = totalSkillPoints - spentSkillPoints;
 
     // Features view
@@ -9928,6 +9947,8 @@ const RuleEngine = {
         totalSkillPoints,
         spentSkillPoints,
         remainingSkillPoints,
+        skillTrickCount,
+        skillTrickPoints: skillTrickCount * 2,
         isOverBudget: totalSkillPoints > 0 && remainingSkillPoints < 0
       },
       featuresView: {

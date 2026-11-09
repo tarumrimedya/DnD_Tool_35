@@ -14,10 +14,23 @@
 
   const MAX_HISTORY_STEPS = 20;
 
-  // Names of every feat the character references (doc.feats[] objects/strings + levelProgression[].feats).
-  function collectFeatRefNames(doc) {
+  // V2 type a feat-list reference resolves against: UA traits ("🧬 [Trait] Name") and Complete Scoundrel
+  // skill tricks ("💪 [Skill Trick] Name") live in the feat lists but are their own record types.
+  const FEAT_REF_TYPES = ['Feat', 'Trait', 'Skill Trick'];
+  function featRefTypeOf(f) {
+    if (f && typeof f === 'object' && (f.type === 'Trait' || f.type === 'Skill Trick')) return f.type;
+    const s = String(typeof f === 'string' ? f : '');
+    if (s.includes('[Trait]')) return 'Trait';
+    if (s.includes('[Skill Trick]')) return 'Skill Trick';
+    return 'Feat';
+  }
+
+  // Names of every feat the character references (doc.feats[] objects/strings + levelProgression[].feats),
+  // limited to one V2 type ('Feat' by default; 'Trait' / 'Skill Trick' for those rows).
+  function collectFeatRefNames(doc, refType = 'Feat') {
     const out = new Set();
     const add = (f) => {
+      if (featRefTypeOf(f) !== refType) return;
       const raw = typeof f === 'string' ? f : (f && (f.name || f.featName));
       // levelProgression stores display strings such as "🎖️ Aberration Banemagic" / "🌟 [DM Boon] Name"
       // (same cleanup as char_progression cleanFeatNameString)
@@ -218,12 +231,15 @@
       }
       // Feats referenced by name that no longer resolve from memory (lazy chunk not loaded, no snapshot yet):
       // load their chunk once and snapshot them (migration path; also covers opt-in 3.0 / licensed feats).
-      const unresolved = (typeof comp.resolveMissingRefs === 'function' && typeof comp.getByName === 'function')
-        ? collectFeatRefNames(doc).filter(n => !comp.getByName(n, 'Feat') && !comp.getByName(n))
-        : [];
+      const canResolve = typeof comp.resolveMissingRefs === 'function' && typeof comp.getByName === 'function';
+      const unresolvedByType = FEAT_REF_TYPES.map(t => ({
+        t,
+        names: canResolve ? collectFeatRefNames(doc, t).filter(n => !comp.getByName(n, t) && !comp.getByName(n)) : []
+      })).filter(g => g.names.length > 0);
       const hasSnapshots = doc.customDb.some(e => e && e._snapshot);
-      if (!hasSnapshots && unresolved.length === 0) return Promise.resolve(null);
-      const migrate = unresolved.length > 0 ? comp.resolveMissingRefs(doc.customDb, unresolved, 'Feat') : Promise.resolve([]);
+      if (!hasSnapshots && unresolvedByType.length === 0) return Promise.resolve(null);
+      const migrate = unresolvedByType.reduce((p, g) => p.then(acc => comp.resolveMissingRefs(doc.customDb, g.names, g.t)
+        .then(ids => acc.concat(ids || []))), Promise.resolve([]));
       return migrate.then((added) => comp.reconcileSnapshots(doc.customDb).then((res) => {
         const changed = (res && res.changed) || (Array.isArray(added) && added.length > 0);
         if (changed && _state.doc === doc) {
@@ -263,7 +279,7 @@
       // so export / cloud sync / the next page load resolve them without the chunk.
       const comp = typeof root !== 'undefined' ? root.SrdCompendium : null;
       if (comp && typeof comp.snapshotLazyRefs === 'function') {
-        comp.snapshotLazyRefs(db, collectFeatRefNames(_state.doc), 'Feat');
+        FEAT_REF_TYPES.forEach(t => comp.snapshotLazyRefs(db, collectFeatRefNames(_state.doc, t), t));
       }
       const sheetView = engine.deriveSheet(_state.doc, {
         masterDb: db,

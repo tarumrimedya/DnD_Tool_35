@@ -142,6 +142,26 @@
       }).catch(() => {});
     }
 
+    // UA traits / Complete Scoundrel skill tricks from the lazy splat chunk, mapped like catalog feats.
+    // They are never part of getCombinedFeatCatalog (they do not fill feat slots).
+    function getTraitOptionCatalog(kind = null) {
+      ensureFeatSplatChunks();
+      const comp = (typeof window !== 'undefined') ? window.SrdCompendium : null;
+      if (!comp || !comp._ready || typeof comp.getAllLoaded !== 'function') return [];
+      return comp.getAllLoaded(kind ? [kind] : TRAIT_OPTION_TYPES).filter(f => f && f.name).map(f => ({
+        ...f,
+        category: f.type,
+        prereq: f.prerequisites || f.prereq || '-',
+        benefit: f.shortDescription || f.benefit || f.description || '',
+        prereqStruct: f.prereqStruct || {}
+      }));
+    }
+
+    function findTraitOptionByName(name) {
+      const key = String(name || '').toLowerCase().trim();
+      return key ? (getTraitOptionCatalog().find(f => f.name.toLowerCase().trim() === key) || null) : null;
+    }
+
     function toggleLegacyFeats() {
       if (typeof character === 'undefined' || !character) return;
       if (!character.settings || typeof character.settings !== 'object') character.settings = {};
@@ -1057,6 +1077,28 @@
       return false;
     }
 
+    // UA character traits (UA p.86) and Complete Scoundrel skill tricks (CSc p.83) are kept in the level feat
+    // lists as "🧬 [Trait] Name" / "💪 [Skill Trick] Name"; they never consume a feat slot.
+    const TRAIT_OPTION_TYPES = ['Trait', 'Skill Trick'];
+    function getFeatOptionKind(fStr) {
+      const s = String(fStr || '');
+      if (s.includes('[Trait]')) return 'Trait';
+      if (s.includes('[Skill Trick]')) return 'Skill Trick';
+      return null;
+    }
+
+    // Fighter bonus feat list membership. An explicit isFighterBonusFeat (true/false) is authoritative for the heroic
+    // list; category/tag fallback only applies to legacy entries without the flag. Epic fighter bonus feats
+    // (fighterBonusFeatTier: 'epic', ELH p.11-12) are offered only for a slot gained at character level 21 or higher.
+    function isFighterBonusFeatEntry(f, slotCharLevel) {
+      if (!f) return false;
+      if (f.isFighterBonusFeat === true) return true;
+      if (f.fighterBonusFeatTier === 'epic') return (Number(slotCharLevel) || 0) >= 21;
+      if (f.isFighterBonusFeat === false) return false;
+      const tagged = Array.isArray(f.featTags) && f.featTags.some(t => String(t).toLowerCase() === 'fighter bonus');
+      return f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || tagged;
+    }
+
     function openQuickFeatPickerForLevel(levelIdx, preferredCategory = null, isTargetLocked = null) {
       activeQuickLevelIndex = Number(levelIdx);
       const modal = document.getElementById('quick-level-feat-modal');
@@ -1100,6 +1142,10 @@
       ((lvlObj && lvlObj.feats) || []).forEach(fStr => {
         const str = String(fStr);
         if (str.includes('+1 Stat') || str.includes('Stat:')) return;
+        if (getFeatOptionKind(str)) {
+          otherBonusFeats.push(fStr);
+          return;
+        }
         if (str.includes('[Flaw Bonus]')) {
           otherBonusFeats.push(fStr);
           flawBonusFeatsAtLevel.push(fStr);
@@ -1420,15 +1466,14 @@
       const combined = getCombinedFeatCatalog();
 
       // Parametric classification predicates
-      const hasFeatTag = (f, tagLower) => Array.isArray(f.featTags) && f.featTags.some(t => String(t).toLowerCase() === tagLower);
-      // An explicit isFighterBonusFeat (true/false) is authoritative; category/tag fallback only applies to legacy entries without the flag.
-      const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || ((f.isFighterBonusFeat === undefined || f.isFighterBonusFeat === null) && (f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || hasFeatTag(f, 'fighter bonus'))));
+      const quickSlotCharLevel = (activeQuickLevelIndex !== null && activeQuickLevelIndex !== undefined) ? Number(activeQuickLevelIndex) + 1 : (Number(character.level) || 0);
+      const isFighterFeat = f => isFighterBonusFeatEntry(f, quickSlotCharLevel);
       const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || (f.source && f.source.toLowerCase().includes('campaign')));
       const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
       // Warlock Invocations are ONLY allowed when the slot is explicitly 'Warlock Invocation' or 'DM Boon' (NEVER in Regular Feat, Human Bonus Feat / Racial Trait, Flaw Bonus Feat, or Class Bonus Feat)
       let invocationsList = [];
-      const isStandardFeatSlot = ['Regular Feat', 'Racial Trait', 'Flaw Bonus Feat', 'Class Bonus Feat', 'Flaw'].includes(categoryVal);
+      const isStandardFeatSlot = ['Regular Feat', 'Racial Trait', 'Flaw Bonus Feat', 'Class Bonus Feat', 'Flaw', ...TRAIT_OPTION_TYPES].includes(categoryVal);
       const warlockAllowedHere = !isStandardFeatSlot && ((typeof isWarlockEnabledForLevel === 'function') ? isWarlockEnabledForLevel(activeQuickLevelIndex) : false);
       if (warlockAllowedHere) {
         const prog = character.levelProgression || [];
@@ -1465,6 +1510,8 @@
       let baseList = combined;
       if (categoryVal === 'Warlock Invocation' || activeFilter === 'INVOCATION') {
         baseList = invocationsList.length > 0 ? invocationsList : combined;
+      } else if (TRAIT_OPTION_TYPES.includes(categoryVal)) {
+        baseList = getTraitOptionCatalog(categoryVal);
       } else if (categoryVal === 'DM Boon') {
         baseList = (activeFilter === 'BOON') ? combined.filter(isBoonFeat) : combined;
       } else if (categoryVal === 'Flaw') {
@@ -1770,7 +1817,10 @@
         return;
       }
       const catalog = getCombinedFeatCatalog();
-      let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
+      const pickCatVal = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
+      // UA traits / skill tricks resolve from their own catalog (never synthesized as a DM Boon)
+      let found = TRAIT_OPTION_TYPES.includes(pickCatVal) ? findTraitOptionByName(featName) : null;
+      if (!found) found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
       if (!found && window._lastQuickFeatAiV2Entry && (window._lastQuickFeatAiV2Entry.name || '').toLowerCase().trim() === featName.toLowerCase().trim()) {
         found = window._lastQuickFeatAiV2Entry;
       }
@@ -2017,7 +2067,8 @@
         featName = preSynthesizedBoon.name;
         window._lastQuickFeatAiV2Entry = preSynthesizedBoon;
       } else if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.standardizeName === 'function') {
-        const exactCat = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim());
+        const exactCat = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim())
+          || findTraitOptionByName(featName);
         if (exactCat && exactCat.name) {
           featName = exactCat.name;
         } else {
@@ -2046,9 +2097,66 @@
       let category = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
       const benefit = document.getElementById('quick-feat-benefit')?.value.trim() || '';
 
-      const catalogMatch = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim());
+      let catalogMatch = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim());
       if ((catalogMatch && isFlawFeat(catalogMatch)) || CANONICAL_UA_FLAW_NAMES.has(featName.toLowerCase().trim())) {
         category = 'Flaw';
+      }
+      // UA traits / skill tricks: use their own record, and file a picked trait or trick under its own category
+      const traitOptionMatch = (TRAIT_OPTION_TYPES.includes(category) || (!catalogMatch && category === 'Regular Feat')) ? findTraitOptionByName(featName) : null;
+      if (traitOptionMatch) {
+        catalogMatch = traitOptionMatch;
+        category = traitOptionMatch.type;
+      }
+
+      if (TRAIT_OPTION_TYPES.includes(category)) {
+        const prog = character.levelProgression || [];
+        const rowLevel = Number(activeQuickLevelIndex) + 1;
+        const countKind = rows => rows.reduce((n, r) => n + ((r && Array.isArray(r.feats)) ? r.feats.filter(f => getFeatOptionKind(f) === category).length : 0), 0);
+        const blockWith = (title, desc) => {
+          if (typeof showDiceTopToast === 'function') showDiceTopToast({ icon: '⚠️', title, desc, type: 'warning' });
+        };
+        if (category === 'Trait') {
+          // Unearthed Arcana p.86: a character begins play with up to two traits; adding one after 1st level needs DM approval
+          if (countKind(prog) >= 2) {
+            blockWith('Maximum 2 Character Traits (3.5e RAW)', 'Per Unearthed Arcana (p. 86), a character can have at most two traits.');
+            return;
+          }
+          if (rowLevel > 1 && !confirm(`⚠️ Per Unearthed Arcana (p. 86), traits are chosen at 1st level. Adding a trait after 1st level requires DM approval.\n\nAdd the trait "${featName}" at level ${rowLevel}?`)) {
+            return;
+          }
+        } else {
+          // Complete Scoundrel p.83: one skill trick per level; total skill tricks cannot exceed half the character level (rounded up)
+          const rowTricks = (prog[activeQuickLevelIndex] && Array.isArray(prog[activeQuickLevelIndex].feats))
+            ? prog[activeQuickLevelIndex].feats.filter(f => getFeatOptionKind(f) === 'Skill Trick').length
+            : 0;
+          if (rowTricks >= 1) {
+            blockWith('One Skill Trick per Level (3.5e RAW)', `Per Complete Scoundrel (p. 83), you cannot learn more than one skill trick at level ${rowLevel}.`);
+            return;
+          }
+          const trickCap = Math.ceil(rowLevel / 2);
+          const totalCap = Math.ceil(Math.max(rowLevel, prog.length) / 2);
+          if (countKind(prog.slice(0, rowLevel)) + 1 > trickCap || countKind(prog) + 1 > totalCap) {
+            blockWith('Skill Trick Limit Reached (3.5e RAW)', `Per Complete Scoundrel (p. 83), total skill tricks cannot exceed one-half your character level, rounded up (${trickCap} at level ${rowLevel}).`);
+            return;
+          }
+          const trickEval = (typeof checkFeatPrerequisites === 'function') ? checkFeatPrerequisites(catalogMatch || { name: featName }, 0, activeQuickLevelIndex) : null;
+          if (trickEval && !trickEval.allMet) {
+            blockWith('Prerequisites Not Met', `Prerequisites not met for "${featName}" (${trickEval.rawPrereq || 'Missing Prerequisite'}).`);
+            return;
+          }
+          // Costs 2 skill points: informative warning only (same as skill ranks over budget)
+          const isMergedSkills = character.settings?.mergeSkills !== false;
+          const trickTotalPts = calculateTotalSkillPoints(character);
+          const trickSpentPts = calculateSpentSkillPoints(character, isMergedSkills);
+          if (trickTotalPts > 0 && trickSpentPts + 2 > trickTotalPts && typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              icon: '⚠️',
+              title: 'Skill Point Budget Exceeded',
+              breakdown: `A skill trick costs 2 skill points (Complete Scoundrel p.83). Official budget: ${trickTotalPts} (Spent: ${trickSpentPts + 2}).`,
+              total: `+${trickSpentPts + 2 - trickTotalPts}`
+            });
+          }
+        }
       }
 
       if (category === 'Flaw') {
@@ -2106,6 +2214,8 @@
       else if (category === 'Racial Trait') prefix = isExtraAddition ? '🧬 [Extra Racial] ' : '🧬 [Racial] ';
       else if (category === 'Special Ability') prefix = '✨ ';
       else if (category === 'Warlock Invocation') prefix = isExtraAddition ? '🔮 [Extra Invocation] ' : '🔮 [Invocation] ';
+      else if (category === 'Trait') prefix = '🧬 [Trait] ';
+      else if (category === 'Skill Trick') prefix = '💪 [Skill Trick] ';
       else prefix = isExtraAddition ? '🎖️ [Extra] ' : '🎖️ ';
 
       // Resolve structured V2 stat-block / AI cached / synthesized boon metadata for ANY category (including Special Ability!)
@@ -2194,10 +2304,12 @@
         featEntryPayload = {
           ...resolvedExtras,
           name: featName,
-          type: category === 'Flaw' ? 'Flaw' : 'Feat',
+          type: (category === 'Flaw' || TRAIT_OPTION_TYPES.includes(category)) ? category : 'Feat',
           category: category,
           benefit: benefit || (catalogMatch ? catalogMatch.benefit : (v2SourceObj ? v2SourceObj.benefit : '')),
-          source: category === 'Flaw'
+          source: TRAIT_OPTION_TYPES.includes(category)
+            ? (catalogMatch?.source || (category === 'Trait' ? 'Unearthed Arcana p.86' : 'Complete Scoundrel p.83'))
+            : category === 'Flaw'
             ? (catalogMatch?.source || 'Unearthed Arcana, page 91')
             : (category === 'Flaw Bonus Feat' ? `Level ${row.level} (Flaw Bonus Feat)` : (category === 'DM Boon' ? `Level ${row.level} (DM Boon)` : `Level ${row.level} (${row.className})`))
         };
@@ -2222,7 +2334,7 @@
             ...(benefit ? { benefit: benefit, description: benefit } : {})
           };
         } else {
-          const inCanonical = getCombinedFeatCatalog(true).some(f => (f.name || '').toLowerCase().trim() === clean);
+          const inCanonical = Boolean(traitOptionMatch) || getCombinedFeatCatalog(true).some(f => (f.name || '').toLowerCase().trim() === clean);
           if (!inCanonical) {
             customDbEntry = {
               ...resolvedExtras,
@@ -4277,9 +4389,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const combined = getCombinedFeatCatalog();
 
         // Parametric classification predicates
-        const hasFeatTag = (f, tagLower) => Array.isArray(f.featTags) && f.featTags.some(t => String(t).toLowerCase() === tagLower);
-        // An explicit isFighterBonusFeat (true/false) is authoritative; category/tag fallback only applies to legacy entries without the flag.
-        const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || ((f.isFighterBonusFeat === undefined || f.isFighterBonusFeat === null) && (f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || hasFeatTag(f, 'fighter bonus'))));
+          const isFighterFeat = f => isFighterBonusFeatEntry(f, (character.levelProgression || []).length + 1);
         const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || (f.source && f.source.toLowerCase().includes('campaign')));
         const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
@@ -8266,6 +8376,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         (lvl.feats || []).forEach(fStr => {
           const str = String(fStr);
           if (str.includes('+1 Stat') || str.includes('Stat:')) return; // handled by statBadgeItem
+          if (getFeatOptionKind(str)) {
+            otherBonusFeats.push(fStr);
+            return;
+          }
           if (str.includes('[Flaw Bonus]')) {
             otherBonusFeats.push(fStr);
             flawBonusFeatsAtLevel.push(fStr);
@@ -8296,6 +8410,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const getOtherBonusGroupRank = (s) => {
           const str = String(s || '');
           if (str.includes('[Racial]') || str.includes('[Extra Racial]') || str.includes('[Human Bonus]')) return 1; // 1. Human / Racial Bonus
+          if (str.includes('[Trait]')) return 1.5; // 1.5 Character Traits
+          if (str.includes('[Skill Trick]')) return 5.5; // 5.5 Skill Tricks
           if (isFlawFeatString(str) && !str.includes('[Flaw Bonus]')) return 2; // 2. Character Flaws
           if (str.includes('[Flaw Bonus]')) return 3; // 3. Flaw Bonus Feats
           if (str.includes('[Invocation]') || str.includes('[Extra Invocation]') || str.includes('Invocation') || str.includes('🔮')) return 4; // 4. Warlock Invocations
@@ -8468,7 +8584,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           let bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
           let icon = '🌟';
           let labelText = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').trim();
-          if (str.includes('[Flaw Bonus]')) {
+          if (str.includes('[Trait]')) {
+            bgCls = 'bg-indigo-950 text-indigo-300 border-indigo-600';
+            icon = '🧬';
+          } else if (str.includes('[Skill Trick]')) {
+            bgCls = 'bg-sky-950 text-sky-300 border-sky-600';
+            icon = '💪';
+          } else if (str.includes('[Flaw Bonus]')) {
             bgCls = 'bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border-emerald-600/70';
             icon = '🎖️';
           } else if (isFlawFeatString(str)) {
@@ -9167,6 +9289,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         });
       }
 
+      // Each skill trick costs 2 skill points (Complete Scoundrel p.83)
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.countSkillTricks === 'function') {
+        totalSpent += RuleEngine.countSkillTricks(char) * 2;
+      }
       return totalSpent;
     }
 
