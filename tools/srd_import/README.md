@@ -1,6 +1,6 @@
-# HeroForge import pipeline
+# SRD import pipeline
 
-These scripts produced the HeroForge audit and the P1/P2 data in `database/`. Run them with Python 3.12 (`py -I`). PyMuPDF is required for the PDF helpers.
+These scripts import and verify external source data for the modular SRD compendium. They produced the source-data audit and the P1/P2 data in `database/`. Run them with Python 3.12 (`py -I`). PyMuPDF is required for the PDF helpers.
 
 The inputs are local files and are not in this repository:
 - `HeroForge Anew 3.5 v7.4.0.1.xlsm`
@@ -11,7 +11,7 @@ See `HEROFORGE_GAP_AUDIT_REPORT.md` and `HEROFORGE_VERIFICATION_TABLE.md` for th
 
 | Step | Script | What it does |
 | :--- | :--- | :--- |
-| Audit | `hf_dump.py` | Dumps every worksheet in the `.xlsm` to JSON (shared strings resolved). |
+| Audit | `xlsm_dump.py` | Dumps every worksheet in the `.xlsm` to JSON (shared strings resolved). |
 | Audit | `analyze.py` | Extracts the HeroForge catalogs and diffs them against `database/*.json` and the Foundry packs. |
 | Books | `pdfq.py`, `pdfimg.py` | Searches or prints a PDF text layer, and renders scanned pages to PNG for visual checks. |
 | P1 | `p1_apply.py` | Applies the book-verified class save and fighter bonus feat fixes. |

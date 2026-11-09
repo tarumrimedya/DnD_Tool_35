@@ -212,7 +212,7 @@ Licensing note: HF summaries are short paraphrases. Full verbatim WotC non-OGL b
 
 ### 6.1 Principles
 
-- **Staging, not direct writes.** `tools/extract_heroforge_v2.js` writes only to `tools/heroforge/staging/*.json`. A separate, reviewed promote step moves accepted records into `database/` chunks. `srd_*.json` core chunks stay untouched. New content goes into **new lazy chunks** (`eagerLoad: false`) registered in `srd_index.json`.
+- **Staging, not direct writes.** the import scripts (now in `tools/srd_import/`) write only to a staging folder. A separate, reviewed promote step moves accepted records into `database/` chunks. `srd_*.json` core chunks stay untouched. New content goes into **new lazy chunks** (`eagerLoad: false`) registered in `srd_index.json`.
 - **Provenance on every record:**
   ```json
   "provenance": { "origin": "heroforge-anew-7.4.0.1", "sheet": "Feats", "row": 385 },
