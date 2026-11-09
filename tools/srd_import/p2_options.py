@@ -1,4 +1,4 @@
-"""HeroForge P2: Unearthed Arcana character traits (UA p.86-91), the Weak Will flaw (UA p.92) and
+"""SRD import P2: Unearthed Arcana character traits (UA p.86-91), the Weak Will flaw (UA p.92) and
 Complete Scoundrel skill tricks (CS Table 3-2, p.83; descriptions p.84-90). Values transcribed from the books;
 benefit text is paraphrased (no verbatim rules text)."""
 import sys, re, json

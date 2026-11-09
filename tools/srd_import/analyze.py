@@ -1,10 +1,10 @@
-"""HeroForge Anew 3.5 v7.4.0.1 vs Joyful-Fermi database gap analysis."""
+"""builder workbook v7.4.0.1 vs Joyful-Fermi database gap analysis."""
 import sys, json, os, re, csv, collections
 sys.stdout.reconfigure(encoding='utf-8')
-HF, DB, FDB, CSVD, OUT = sys.argv[1:6]
+WB, DB, FDB, CSVD, OUT = sys.argv[1:6]
 C = collections.Counter
 
-def load(n): return json.load(open(os.path.join(HF, n + '.json'), encoding='utf-8'))
+def load(n): return json.load(open(os.path.join(WB, n + '.json'), encoding='utf-8'))
 def key(s):
     s = str(s or '').lower().replace('’', "'")
     s = re.sub(r'\[.*?\]|\(.*?\)', '', s)
@@ -199,7 +199,7 @@ def gap(label, items, getname, cats, fdb=None):
     have = [i for i in items if hit(getname(i), *cats)]
     new = [i for i in items if not hit(getname(i), *cats)]
     newF = [i for i in new if fdb and fhit(getname(i), fdb)]
-    S[label] = {'hf': len(items), 'inJF': len(have), 'netNew': len(new), 'netNewWithFoundryText': len(newF) if fdb else None,
+    S[label] = {'wb': len(items), 'inJF': len(have), 'netNew': len(new), 'netNewWithFoundryText': len(newF) if fdb else None,
                 'sampleNew': [getname(i) for i in new[:12]]}
     return have, new
 
@@ -241,10 +241,10 @@ for f in fh:
     if not re.search(r'p\.?\s*\d|\d{2,3}', src): enr['sourcePageMissing'] += 1
     if not e.get('prereqStruct') and f['prereq'] and f['prereq'].lower() != 'none': enr['prereqStructMissing'] += 1
     if f['prereq'] and not (e.get('prereq') or e.get('prerequisites')): enr['prereqTextMissing'] += 1
-    hfFtr = 'Ftr' in f['bonusFeatClasses']
-    if hfFtr != bool(e.get('isFighterBonusFeat')): enr['fighterFlagMismatch'] += 1; enr.setdefault('_ftrSamples', [])
+    wbFtr = 'Ftr' in f['bonusFeatClasses']
+    if wbFtr != bool(e.get('isFighterBonusFeat')): enr['fighterFlagMismatch'] += 1; enr.setdefault('_ftrSamples', [])
     if f['bonusFeatClasses']: enr['hasBonusFeatClassTags'] += 1
-ftr_mis = [f['name'] + (' (HF=Ftr)' if 'Ftr' in f['bonusFeatClasses'] else ' (JF=Ftr)') for f in fh
+ftr_mis = [f['name'] + (' (WB=Ftr)' if 'Ftr' in f['bonusFeatClasses'] else ' (JF=Ftr)') for f in fh
            if ('Ftr' in f['bonusFeatClasses']) != bool(hit(f['name'], 'feat').get('isFighterBonusFeat'))][:25]
 # classes enrichment
 cenr = C(); cmis = []
@@ -255,12 +255,12 @@ for c in classes:
     nb = lambda v: {'med': 'medium', 'good': 'high', 'poor': 'low', 'full': 'high', 'average': 'medium', 'avg': 'medium'}.get(str(v).lower(), str(v).lower())
     e = dict(e); e['hitDie'] = str(e.get('hitDie', '')).lstrip('d'); e['babProgression'] = nb(e.get('babProgression')) if e.get('babProgression') else None
     e['savingThrows'] = {k: nb(v) for k, v in (e.get('savingThrows') or {}).items()}
-    if e.get('hitDie') and str(e['hitDie']) != str(c['hd']): cenr['hdMismatch'] += 1; cmis.append(f"{c['name']}: HD JF={e['hitDie']} HF={c['hd']}")
-    if e.get('babProgression') and e['babProgression'] != c['bab']: cenr['babMismatch'] += 1; cmis.append(f"{c['name']}: BAB JF={e['babProgression']} HF={c['bab']}")
+    if e.get('hitDie') and str(e['hitDie']) != str(c['hd']): cenr['hdMismatch'] += 1; cmis.append(f"{c['name']}: HD JF={e['hitDie']} WB={c['hd']}")
+    if e.get('babProgression') and e['babProgression'] != c['bab']: cenr['babMismatch'] += 1; cmis.append(f"{c['name']}: BAB JF={e['babProgression']} WB={c['bab']}")
     sv = e.get('savingThrows') or {}
     for s in ('fort', 'ref', 'will'):
-        if sv.get(s) and sv[s] != c[s]: cenr['saveMismatch'] += 1; cmis.append(f"{c['name']}: {s} JF={sv[s]} HF={c[s]}")
-    if e.get('skillPointsPerLevel') and str(e['skillPointsPerLevel']) != str(c['skillPts']): cenr['skillPtsMismatch'] += 1; cmis.append(f"{c['name']}: SP JF={e['skillPointsPerLevel']} HF={c['skillPts']}")
+        if sv.get(s) and sv[s] != c[s]: cenr['saveMismatch'] += 1; cmis.append(f"{c['name']}: {s} JF={sv[s]} WB={c[s]}")
+    if e.get('skillPointsPerLevel') and str(e['skillPointsPerLevel']) != str(c['skillPts']): cenr['skillPtsMismatch'] += 1; cmis.append(f"{c['name']}: SP JF={e['skillPointsPerLevel']} WB={c['skillPts']}")
     if not e.get('classSkills'): cenr['classSkillsMissing'] += 1
     if not re.search(r'\d', str(e.get('source', ''))): cenr['sourcePageMissing'] += 1
     if e.get('category') == 'Prestige' and not (e.get('prereqStruct') or e.get('prerequisites') or e.get('prereq')): cenr['prcPrereqMissing'] += 1
@@ -268,7 +268,7 @@ mm = C(); mmis = []
 for m in mans:
     e = hit(m['name'], 'man')
     if e:
-        if str(e.get('level')) != str(m['level']): mm['levelMismatch'] += 1; mmis.append(f"{m['name']}: L JF={e.get('level')} HF={m['level']}")
+        if str(e.get('level')) != str(m['level']): mm['levelMismatch'] += 1; mmis.append(f"{m['name']}: L JF={e.get('level')} WB={m['level']}")
         if m['discipline'] and e.get('discipline') and key(e['discipline']) != key(m['discipline']): mm['discMismatch'] += 1; mmis.append(f"{m['name']}: {e.get('discipline')} vs {m['discipline']}")
 dom_spell_missing = [s for s in dspells if not hit(s, 'spell')]
 
@@ -290,5 +290,5 @@ res = {'featUnique': len(fk), 'featDupNames': [k for k, v in fk.items() if v > 1
        'deityCount': len(deities), 'mojibakeFeats': sum(1 for f in feats if re.search(r'[-]|â€|Ã', f['summary'] + f['prereq']))}
 os.makedirs(OUT, exist_ok=True)
 json.dump(res, open(os.path.join(OUT, 'gap_report.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
-json.dump(R, open(os.path.join(OUT, 'hf_extracted.json'), 'w', encoding='utf-8'), ensure_ascii=False)
+json.dump(R, open(os.path.join(OUT, 'source_extracted.json'), 'w', encoding='utf-8'), ensure_ascii=False)
 print(json.dumps(res, ensure_ascii=False, indent=1)[:60000])

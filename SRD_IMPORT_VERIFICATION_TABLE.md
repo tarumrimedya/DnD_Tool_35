@@ -1,6 +1,8 @@
-# HeroForge ↔ Joyful-Fermi: Book-Verified Conflict Table
+# Builder Workbook ↔ Joyful-Fermi: Book-Verified Conflict Table
 
-**Date:** 2026-11-09 · **Companion to:** `HEROFORGE_GAP_AUDIT_REPORT.md` §3.1–3.2
+**Date:** 2026-11-09 · **Companion to:** `SRD_IMPORT_GAP_AUDIT_REPORT.md` §3.1–3.2
+
+**Terminology:** "the workbook" / **WB** = the source character-builder spreadsheet (`.xlsm`, v7.4.0.1) and its companion CSVs; **JF** = this project's `database/*.json`.
 
 **Source:** user's rulebook PDFs (`G:\Drive'ım\FRP\D&D\Kitap\`), read directly. Text-layer PDFs were searched with PyMuPDF. Scanned PDFs (CW, CAd, CAr, DMG, ELH) were rendered to images and read visually. Page numbers are **printed book pages**. Nothing in `database/` has been changed yet; this table is the input for Phase P1.
 
@@ -18,10 +20,10 @@
 | Dervish | `savingThrows.will` | low | **high** (Ref and Will good) | ✅ | CW p.26, Table 2–7 | High |
 | Ur-Priest | `savingThrows.fort` | high | **low** (good Will only) | ✅ | CD p.70, Table 2–23 | High |
 | Jade Phoenix Mage | `savingThrows.will` | high | **low** (good Fort only) | ✅ | ToB Table 5–5 | High |
-| Warmage | n/a | n/a | **No conflict.** HF "War Mage" is a different class: an *Age of Mortals* (Dragonlance) prestige class. | ❌ | Name-match false positive | High |
-| Factotum | `savingThrows.ref` | low | HF says high | ⏸ | *Dungeonscape* is not in the library | **Low.** User to confirm. |
+| Warmage | n/a | n/a | **No conflict.** WB "War Mage" is a different class: an *Age of Mortals* (Dragonlance) prestige class. | ❌ | Name-match false positive | High |
+| Factotum | `savingThrows.ref` | low | WB says high | ⏸ | *Dungeonscape* is not in the library | **Low.** User to confirm. |
 
-**Result: HeroForge was right in all 6 verifiable save conflicts; JF was wrong.**
+**Result: The workbook was right in all 6 verifiable save conflicts; JF was wrong.**
 
 ---
 
@@ -45,7 +47,7 @@
 
 ### B3. Epic Fighter Bonus Feat List → New Tier Field, Not the Heroic Boolean
 
-ELH p.11–12 (Epic Fighter Bonus Feat List), confirmed by DMG p.208 ("selected from the list of epic fighter feats"). All **31** HF-flagged epic feats are on the list:
+ELH p.11–12 (Epic Fighter Bonus Feat List), confirmed by DMG p.208 ("selected from the list of epic fighter feats"). All **31** WB-flagged epic feats are on the list:
 
 Armor Skin, Combat Archery, Damage Reduction, Devastating Critical, Dire Charge, Distant Shot, Epic Endurance, Epic Leadership, Epic Prowess, Epic Toughness, Epic Weapon Focus, Epic Weapon Specialization, Exceptional Deflection, Improved Combat Reflexes, Improved Manyshot, Improved Stunning Fist, Improved Whirlwind Attack, Infinite Deflection, Instant Reload, Legendary Commander, Legendary Rider, Legendary Wrestler, Overwhelming Critical, Penetrate Damage Reduction, Perfect Two-Weapon Fighting, Reflect Arrows, Spellcasting Harrier, Storm of Throws, Superior Initiative, Swarm of Arrows, Two-Weapon Rend (epic).
 
@@ -60,13 +62,13 @@ ELH also says any feat designated a fighter bonus feat counts as being on the ep
 | `feat-two-weapon-rend` (JF) | Dex 15, BAB +9, Improved Two-Weapon Fighting, Two-Weapon Fighting | **Epic list** (B3) | Correct record; add page `ELH` |
 | PHB2 *Two-Weapon Rend* | Dex 15, Two-Weapon Fighting, BAB +11 | **Heroic fighter bonus feat** (PHB2 p.84) | **Missing in JF.** Add as a separate record with `id: feat-two-weapon-rend-phb2` and alias `"Two-Weapon Rend (PHB2)"`. |
 
-The name-based matcher must not merge these two. P3 needs a source-aware ID rule for same-name feats; this case is one of the 60 HF duplicate names.
+The name-based matcher must not merge these two. P3 needs a source-aware ID rule for same-name feats; this case is one of the 60 WB duplicate names.
 
 ### B5. No Action Needed
 
 | Item | Finding |
 | :--- | :--- |
-| Improved Grapple | JF `true` is correct (PHB p.95: "A fighter may select Improved Grapple…"). The mismatch came from an HF artifact row `--Improved Grapple--` (OA 63), not from JF. |
+| Improved Grapple | JF `true` is correct (PHB p.95: "A fighter may select Improved Grapple…"). The mismatch came from an WB artifact row `--Improved Grapple--` (OA 63), not from JF. |
 
 ---
 
@@ -79,10 +81,10 @@ The name-based matcher must not merge these two. P3 needs a source-aware ID rule
 
 ---
 
-## D. Corrections to `HEROFORGE_GAP_AUDIT_REPORT.md`
+## D. Corrections to `SRD_IMPORT_GAP_AUDIT_REPORT.md`
 
 1. §3.4: "Fix *Absolute Steel* → Absolute Steel Stance" is **wrong**. Keep the name and add an alias.
-2. §3.1: `--Improved Grapple--` is an **HF artifact**, not a JF record. Exclude it in the extractor.
+2. §3.1: `--Improved Grapple--` is an **WB artifact**, not a JF record. Exclude it in the extractor.
 3. §3.2: the War Mage ↔ Warmage row is a false match, not a data conflict.
 
 ---

@@ -1,6 +1,8 @@
-# HeroForge Anew 3.5 (v7.4.0.1) → Joyful-Fermi V2: Gap Audit Report
+# Builder Workbook (v7.4.0.1) → Joyful-Fermi V2: Gap Audit Report
 
-**Date:** 2026-11-09 · **Brief:** `HEROFORGE_CLAUDE_AUDIT_BRIEF.md` · **Status:** Read-only audit. No repo code or `database/*.json` was changed.
+**Date:** 2026-11-09 · **Brief:** the original audit brief · **Status:** Read-only audit. No repo code or `database/*.json` was changed.
+
+**Terminology:** "the workbook" / **WB** = the source character-builder spreadsheet (`.xlsm`, v7.4.0.1) and its companion CSVs; **JF** = this project's `database/*.json`.
 
 **Method:** Python 3.12 streaming parser (`zipfile` + `ElementTree.iterparse`) over all 65 worksheets plus `sharedStrings.xml`, cross-joined with every `database/*.json` chunk and 14 FoundryVTT `.db` files. Node.js is not on PATH on this machine, so `node tools/verify_and_sync.js` was **not run**. Nothing changed that it would check.
 
@@ -8,16 +10,16 @@ Name matching uses a stronger key than `SrdCompendium.normalizeNameKey`: lowerca
 
 ---
 
-> **Update 2026-11-09:** the conflicts in §3.1–3.2 and §3.4 were checked against the rulebooks. See `HEROFORGE_VERIFICATION_TABLE.md`. Three findings below were corrected there: *Absolute Steel* is the correct name, `--Improved Grapple--` is an HF artifact, and War Mage ≠ Warmage.
+> **Update 2026-11-09:** the conflicts in §3.1–3.2 and §3.4 were checked against the rulebooks. See `SRD_IMPORT_VERIFICATION_TABLE.md`. Three findings below were corrected there: *Absolute Steel* is the correct name, `--Improved Grapple--` is an WB artifact, and War Mage ≠ Warmage.
 
 ## 0. Corrections to the Brief (Read First)
 
 | Brief assumption | Actual finding |
 | :--- | :--- |
 | Big sheets (`Prestige Classes I–III` 11 MB, `Attacks`, `Enhancements`, `Buffs`, `Spell Info`, `Template Info`) hold catalog data | **Wrong.** These are character-builder **UI/calculation sheets**. The XML size is formatting and formulas. For example, `Prestige Classes I` has 26 non-empty rows, all picklists. The real catalogs are `Class Info`, `Feats`, `Interfaces`, `Domains`, `Deities`, `Maneuvers & Stances`, `Variants`, `Class Abilities`, plus `data/WeaponInfo.csv` and `data/CreatureInfo.csv`. |
-| HeroForge has a spell catalog (`Spell Info`, `Spells Known`) to diff against `srd_spells.json` | **No individual spell records exist.** `Spell Info` holds 70 *caster classes* (type, casting stat, TLA). The only spell data is **domain spell lists** (`Domains` sheet), which reference 670 distinct spell names. |
+| The workbook has a spell catalog (`Spell Info`, `Spells Known`) to diff against `srd_spells.json` | **No individual spell records exist.** `Spell Info` holds 70 *caster classes* (type, casting stat, TLA). The only spell data is **domain spell lists** (`Domains` sheet), which reference 670 distinct spell names. |
 | `char_progression.js` contains `PRESTIGE_CLASSES_35E` / `BASE_CLASSES_35E` | **These constants do not exist** anywhere in the repo. Class data lives only in `database/srd_classes_races.json` (42 Base + 33 Prestige `Class` records). |
-| `D:\Downloads\DND DB\*.db` gives full text for HeroForge splatbook content | **No.** Those Foundry D35E packs are SRD-only, and JF has **already ingested them** (records carry `foundryId`; counts match). **0** HeroForge net-new entries have a Foundry full-text counterpart in any category. |
+| `D:\Downloads\DND DB\*.db` gives full text for the workbook splatbook content | **No.** Those Foundry D35E packs are SRD-only, and JF has **already ingested them** (records carry `foundryId`; counts match). **0** The workbook net-new entries have a Foundry full-text counterpart in any category. |
 | Database baseline counts | `srd_index.json` chunk counts lag the files: feats 452 in index vs 467 in file, classes_races 256 vs 281, spells 1,114 vs 1,139. `srd_companions.json` is a single progression document, not 69 records. `verify_and_sync.js` should be checked for why the index is stale. |
 | Feat column `AY` = feat type, `BD` = modifier hooks | `AX`/`AY`/`BA`–`BH` are **picklist helper columns** (metamagic / item-creation dropdown sources), not per-feat metadata. Feat type comes from the **section header row** above each block (`General Feats`, `Tactical Feats`, …). |
 
@@ -25,7 +27,7 @@ Name matching uses a stronger key than `SrdCompendium.normalizeNameKey`: lowerca
 
 ## 1. Worksheet Inventory (Valid Entries)
 
-| Category | Location | HF entries | In JF | **Net-new** | Content level |
+| Category | Location | WB entries | In JF | **Net-new** | Content level |
 | :--- | :--- | ---: | ---: | ---: | :--- |
 | **Feats** | `Feats` (sheet35) | 2,612 rows / **2,532 unique** | 410 rows | **2,202 rows / 2,132 unique** | Name, prereq text, 1-line summary, book + page, bonus-feat class tags |
 | Flaws | `Flaws` (sheet33) | 13 | 12 | 1 (*Weak Will*) | Summary + UA page |
@@ -59,7 +61,7 @@ Top sources: EL 154 · PH 109 · PH2 105 · CP 102 · CW 88 · XPH 78 · PGtF 73
 
 Net-new is concentrated in CP 102, PH2 101, CW 70, PGtF 70, OA 70, RoF 69, RoS 66, TM 65, CM 63, ECS 63, RE 63. Core PH/DMG/EL is mostly already in JF: only 47 Epic feats are missing.
 
-HeroForge source codes **do not match the brief's vocabulary**: `PH` not `PHB`, `PH2` not `PHB2`, `CAd` not `CAdv`, `CAr` not `CArc`, `Dr` = Draconomicon, `DrM` = Dragon Magic, `Dmag` / `DMag` (two spellings), `MM4`, `FB` = Frostburn. A canonical source-code map is a Phase 0 prerequisite.
+The workbook source codes **do not match the brief's vocabulary**: `PH` not `PHB`, `PH2` not `PHB2`, `CAd` not `CAdv`, `CAr` not `CArc`, `Dr` = Draconomicon, `DrM` = Dragon Magic, `Dmag` / `DMag` (two spellings), `MM4`, `FB` = Frostburn. A canonical source-code map is a Phase 0 prerequisite.
 
 ### 1.2 Feats by Section (Type Header)
 
@@ -111,7 +113,7 @@ General 1,289 · Psionic 116 · Metamagic 90 · Epic 73 · General & Racial 71 �
 | `EC` | **prerequisite bullets** (`• BAB +6\n• Dodge feat…`) | `prerequisites` + parsed `prereqStruct` |
 | `EB` | Do / Might qualify (calc) | ignore |
 
-**Not in HeroForge in recoverable form:** per-level class-feature tables, and level-by-level special abilities. `Class Abilities` text exists, but its class↔level linkage is computed by formulas. `Spells per Day` (sheet56, 397 rows) holds slot tables for the 70 caster classes and **can** be extracted as a follow-up.
+**Not in the workbook in recoverable form:** per-level class-feature tables, and level-by-level special abilities. `Class Abilities` text exists, but its class↔level linkage is computed by formulas. `Spells per Day` (sheet56, 397 rows) holds slot tables for the 70 caster classes and **can** be extracted as a follow-up.
 
 ### 2.4 Other Key Sheets
 
@@ -135,12 +137,12 @@ General 1,289 · Psionic 116 · Metamagic 90 · Epic 73 · General & Racial 71 �
 
 | Enrichment opportunity | Count |
 | :--- | ---: |
-| `source` has no page number (HF gives book + page) | **286** |
-| HF prereq exists but JF has no `prereqStruct` | 51 |
-| `isFighterBonusFeat` disagrees with HF `Ftr` tag | **41** (sample below) |
+| `source` has no page number (WB gives book + page) | **286** |
+| WB prereq exists but JF has no `prereqStruct` | 51 |
+| `isFighterBonusFeat` disagrees with WB `Ftr` tag | **41** (sample below) |
 | Matched feats with multi-class bonus-feat tags (Psychic Warrior, Hexblade, Swashbuckler…) | 238 |
 
-**Fighter flag disagreements:** most are Epic feats that HF tags `Ftr` because of the ELH epic fighter bonus-feat list: *Epic Prowess*, *Epic Toughness*, *Epic Weapon Focus*, *Devastating Critical*, *Dire Charge*, *Distant Shot*, … Also *Two-Weapon Rend*, *Sharp-Shooting*, *Combat Archery*. JF says `Ftr` where HF does not for *Tower Shield Proficiency*, *Monkey Grip*, *Evasive Reflexes*, *Snap Kick*, *Stone Power*, *--Improved Grapple--*.
+**Fighter flag disagreements:** most are Epic feats that WB tags `Ftr` because of the ELH epic fighter bonus-feat list: *Epic Prowess*, *Epic Toughness*, *Epic Weapon Focus*, *Devastating Critical*, *Dire Charge*, *Distant Shot*, … Also *Two-Weapon Rend*, *Sharp-Shooting*, *Combat Archery*. JF says `Ftr` where WB does not for *Tower Shield Proficiency*, *Monkey Grip*, *Evasive Reflexes*, *Snap Kick*, *Stone Power*, *--Improved Grapple--*.
 
 **Recommendation:** replace the boolean with `bonusFeatFor: ["Fighter", "Psychic Warrior", …]` plus a `bonusFeatTier: "heroic" | "epic"` note, so epic-list membership does not leak into heroic Fighter bonus feats. Decide each of the 41 against the books. Do not auto-overwrite.
 
@@ -150,7 +152,7 @@ General 1,289 · Psionic 116 · Metamagic 90 · Epic 73 · General & Racial 71 �
 
 After normalizing format (`d12`↔`12`, `med`↔`medium`), HP/BAB/skill points agree. These **9 save/HD conflicts** need a book check. Whichever source is wrong gets fixed:
 
-| Class | JF | HeroForge |
+| Class | JF | The workbook |
 | :--- | :--- | :--- |
 | Knight (PH2) | Fort high | Fort low |
 | Spellthief (CAd) | Ref high | Ref low |
@@ -158,25 +160,25 @@ After normalizing format (`d12`↔`12`, `med`↔`medium`), HP/BAB/skill points a
 | Dervish (CW) | Fort high, Will low | Fort low, Will high |
 | Ur-Priest (CD) | Fort high | Fort low |
 | Jade Phoenix Mage (ToB) | Will high | Will low |
-| War Mage ↔ Warmage | HD 6 / Fort low | HD 4 / Fort high. **Likely a false name match**: HF's "War Mage" may be a different entry than CAr *Warmage*. |
+| War Mage ↔ Warmage | HD 6 / Fort low | HD 4 / Fort high. **Likely a false name match**: WB's "War Mage" may be a different entry than CAr *Warmage*. |
 
 Also: 31 matched classes lack a page in `source`, and 3 JF prestige classes have no prerequisite data at all.
 
 ### 3.3 Domains / Spells
 
 - 118 net-new domains (Spell Compendium, Races of *, Frostburn, Sandstorm, Stormwrack, BoVD/BoED, Eberron, Dragonlance…).
-- These domains reference **250 spells that do not exist in `srd_spells.json`** (e.g. *Aerial Alacrity*, *Bigby's Clenched Fist*, *Blizzard*, *Castigate*, *Demonflesh*). Bigby's and Drawmij's are SRD spells under renamed titles (*Clenched Fist*, *Instant Summons*), so an **alias table** is needed before counting them as missing. Typos in the HF source also exist (*Analyxe Dweomer*, *Dicern Lies*).
+- These domains reference **250 spells that do not exist in `srd_spells.json`** (e.g. *Aerial Alacrity*, *Bigby's Clenched Fist*, *Blizzard*, *Castigate*, *Demonflesh*). Bigby's and Drawmij's are SRD spells under renamed titles (*Clenched Fist*, *Instant Summons*), so an **alias table** is needed before counting them as missing. Typos in the WB source also exist (*Analyxe Dweomer*, *Dicern Lies*).
 - Importing domains without those spells breaks the immutable-`id` rule. A domain spell slot would point at nothing.
 
 ### 3.4 Maneuvers
 
-The JF catalog is essentially complete. Fix the name *Absolute Steel* → **Absolute Steel Stance** and add *Boulder Roll* (Stone Dragon). HF has no level or discipline conflicts with JF.
+The JF catalog is essentially complete. Fix the name *Absolute Steel* → **Absolute Steel Stance** and add *Boulder Roll* (Stone Dragon). WB has no level or discipline conflicts with JF.
 
 ---
 
 ## 4. Cross-Join With `D:\Downloads\DND DB\`
 
-| Foundry pack | Records | Overlap with JF | Overlap with HF net-new |
+| Foundry pack | Records | Overlap with JF | Overlap with WB net-new |
 | :--- | ---: | :--- | ---: |
 | `feats.db` | 388 | already ingested (`foundryId`) | **0** |
 | `spells.db` / `powers.db` | 673 / 441 | already ingested (699 Spell + 440 Power in JF) | **0** of the 250 missing domain spells |
@@ -185,9 +187,9 @@ The JF catalog is essentially complete. Fix the name *Absolute Steel* → **Abso
 | `enhancements.db`, `materials.db`, `weapons-and-ammo.db`, `armors-and-shields.db` | 89 / 17 / 85 / 18 | already ingested | 0 |
 | `commonbuffs.db`, `conditions.db` | 37 / 38 | already ingested (37 Buff / 38 Condition) | 0 |
 
-**Conclusion:** the Foundry packs have nothing more to give for this migration. The proposed "HeroForge index + Foundry full text" join yields zero new full-text records. Splatbook content will be **summary-level only**, unless the user supplies rules text from their own books through the existing Rule Master AI / Manual Rule flow.
+**Conclusion:** the Foundry packs have nothing more to give for this migration. The proposed "the workbook index + Foundry full text" join yields zero new full-text records. Splatbook content will be **summary-level only**, unless the user supplies rules text from their own books through the existing Rule Master AI / Manual Rule flow.
 
-Licensing note: HF summaries are short paraphrases. Full verbatim WotC non-OGL book text (CW, PH2, ToB…) is not something to bulk-scrape into the repo.
+Licensing note: WB summaries are short paraphrases. Full verbatim WotC non-OGL book text (CW, PH2, ToB…) is not something to bulk-scrape into the repo.
 
 ---
 
@@ -215,7 +217,7 @@ Licensing note: HF summaries are short paraphrases. Full verbatim WotC non-OGL b
 - **Staging, not direct writes.** the import scripts (now in `tools/srd_import/`) write only to a staging folder. A separate, reviewed promote step moves accepted records into `database/` chunks. `srd_*.json` core chunks stay untouched. New content goes into **new lazy chunks** (`eagerLoad: false`) registered in `srd_index.json`.
 - **Provenance on every record:**
   ```json
-  "provenance": { "origin": "heroforge-anew-7.4.0.1", "sheet": "Feats", "row": 385 },
+  "provenance": { "origin": "builder-workbook-7.4.0.1", "sheet": "Feats", "row": 385 },
   "contentLevel": "summary",
   "verification": "unverified"
   ```
@@ -223,7 +225,7 @@ Licensing note: HF summaries are short paraphrases. Full verbatim WotC non-OGL b
 - **No heuristic math.** `modifiers: []` and `damageParts` are filled only where the data is structured: weapons, armor, trait/flaw flat bonuses parsed with a closed vocabulary. All other mechanics stay as `benefit` text, honoring GEMINI.md §3 *No Heuristic Regex Guessing*.
 - **IDs:** use `feat-<slug>` and so on. Before allocating an ID, check the existing `srd_index.json` `id`/`n` keys so a matched entry enriches the existing record and never duplicates it.
 
-### 6.2 Pipeline (`tools/extract_heroforge_v2.js`)
+### 6.2 Pipeline (`tools/srd_import/`)
 
 1. **Read the ZIP with zero dependencies.** Parse the end-of-central-directory record, then `zlib.inflateRawSync` the needed entries: `sharedStrings.xml`, the 10 data sheets, and the 2 CSVs from `master.zip`. Use a SAX-style tag scanner for `<row>`/`<c>`; no DOM over the 14 MB XML. About 120 lines.
 2. **Run the per-sheet extractors** from the column maps in §2. The prototype logic exists as `analyze.py` in the session scratchpad.
@@ -243,20 +245,18 @@ Licensing note: HF summaries are short paraphrases. Full verbatim WotC non-OGL b
 | **P4** | Classes: ≈41 base + ≈591 PrC **chassis** (HD, BAB, saves, skill points, class skills, proficiencies, prereq text/struct) in `srd_classes_splat.json`. Add `Spells per Day` tables for casters later. | ~630 | Chassis without class features is only partly usable. Gate the UI so these show as "progression not available". |
 | **P5** | Domains (118) + deities (717) **after** the missing-spell alias pass. The 250 unresolved spell refs stored as `unresolvedSpellRefs[]`, never fake spell records. | ~835 | Depends on the spell gap; risk of dangling `id`s |
 | **P6** | Races/creatures (350) from `CreatureInfo.csv`, reconciled against `srd_monsters.json` (649) and the 36 races | ~350 | Needs dedupe policy between Race and Monster records |
-| **Defer** | Soulmelds 102, vestiges 57, grafts 113, marshal auras 28, ACF names 254 (no rules text), magic equipment picklist 135 (MIC already covers it better), `Buffs`/`Enhancements`/`Attacks` (UI-only) | n/a | Need new engine subsystems (Incarnum, Pact Magic), or HF adds no structured value |
+| **Defer** | Soulmelds 102, vestiges 57, grafts 113, marshal auras 28, ACF names 254 (no rules text), magic equipment picklist 135 (MIC already covers it better), `Buffs`/`Enhancements`/`Attacks` (UI-only) | n/a | Need new engine subsystems (Incarnum, Pact Magic), or WB adds no structured value |
 
 ### 6.4 Open Decisions for the User
 
 1. Is **summary-level** splatbook content (≈66-character benefit lines) acceptable in the main compendium with a `contentLevel` badge, or should it live only as a searchable index until full text is provided?
-2. Who settles the 41 Fighter-flag and 9 save conflicts? A book check is needed; HF is not authoritative.
+2. Who settles the 41 Fighter-flag and 9 save conflicts? A book check is needed; WB is not authoritative.
 3. Should P3/P4 chunks be lazy-loaded (recommended: `eagerLoad: false`, loaded by Spotlight on demand) to keep first paint unchanged?
 
 ---
 
-## Appendix: Artifacts From This Audit (Session Scratchpad, Not in Repo)
+## Appendix: Artifacts From This Audit
 
-- `hf_dump.py`: xlsm → per-sheet JSON (all 65 sheets)
-- `analyze.py`: extraction + gap analysis; outputs `out/gap_report.json` (all counts, samples, mismatch lists) and `out/hf_extracted.json` (all parsed HF records)
-- `prereq.py`: `prereqStruct` parse-coverage probe
-
-Location: `C:\Users\tarum\AppData\Local\Temp\claude\399c2bce0e8b2c04\9e84a0d5-abf7-4c34-9cfa-7b3d09ee67c8\scratchpad\`
+The audit and import scripts are in `tools/srd_import/` (see its README):
+- `xlsm_dump.py`: xlsm → per-sheet JSON (all 65 sheets)
+- `analyze.py`: extraction + gap analysis; outputs `gap_report.json` (all counts, samples, mismatch lists) and `source_extracted.json` (all parsed workbook records)

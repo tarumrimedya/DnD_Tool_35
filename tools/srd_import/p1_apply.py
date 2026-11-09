@@ -1,4 +1,4 @@
-"""P1: apply book-verified fixes (HEROFORGE_VERIFICATION_TABLE.md) to database JSON. Idempotent."""
+"""P1: apply book-verified fixes (SRD_IMPORT_VERIFICATION_TABLE.md) to database JSON. Idempotent."""
 import json, sys, os
 sys.stdout.reconfigure(encoding='utf-8')
 DB = sys.argv[1]

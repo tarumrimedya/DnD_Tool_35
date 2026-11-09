@@ -2251,7 +2251,7 @@ function runDeriveSheetTests() {
     customToughnessPlus.featTags.includes('Fighter Bonus')
   );
 
-  // HeroForge P1: book-verified class saves & fighter bonus feat flags (HEROFORGE_VERIFICATION_TABLE.md)
+  // SRD Import P1: book-verified class saves & fighter bonus feat flags (SRD_IMPORT_VERIFICATION_TABLE.md)
   const dbDir = path.join(__dirname, '..', 'database');
   const p1Classes = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_races.json'), 'utf8'));
   const p1Feats = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats.json'), 'utf8'));
@@ -2263,7 +2263,7 @@ function runDeriveSheetTests() {
       c.fort === legacy(fort) && c.ref === legacy(ref) && c.will === legacy(will);
   };
   check(
-    'HeroForge P1: Class base saves match the books (Knight PHB2 T1-4, Spellthief CAd T1-3, Dervish CW T2-7, Ur-Priest CD T2-23, Jade Phoenix Mage ToB T5-5)',
+    'SRD Import P1: Class base saves match the books (Knight PHB2 T1-4, Spellthief CAd T1-3, Dervish CW T2-7, Ur-Priest CD T2-23, Jade Phoenix Mage ToB T5-5)',
     p1SaveOk('cls-knight', 'low', 'low', 'high') &&
     p1SaveOk('cls-spellthief', 'low', 'low', 'high') &&
     p1SaveOk('cls-dervish', 'low', 'high', 'high') &&
@@ -2272,25 +2272,25 @@ function runDeriveSheetTests() {
   );
   const p1Fb = id => (p1Feats.find(f => f.id === id) || {}).isFighterBonusFeat;
   check(
-    'HeroForge P1: Fighter bonus feat flags match the books (PHB p.101, CW p.103/105, ToB Table 2-1)',
+    'SRD Import P1: Fighter bonus feat flags match the books (PHB p.101, CW p.103/105, ToB Table 2-1)',
     p1Fb('feat-tower-shield-proficiency') === false && p1Fb('feat-monkey-grip') === false &&
     p1Fb('feat-evasive-reflexes') === false && p1Fb('feat-snap-kick') === false && p1Fb('feat-stone-power') === false &&
     p1Fb('feat-sharp-shooting') === true && p1Fb('feat-martial-study') === true && p1Fb('feat-martial-stance') === true
   );
   check(
-    'HeroForge P1: Fighter feat picker trusts an explicit isFighterBonusFeat=false over the Martial/Fighter category fallback (2 predicates)',
+    'SRD Import P1: Fighter feat picker trusts an explicit isFighterBonusFeat=false over the Martial/Fighter category fallback (2 predicates)',
     (progSrc.match(/f\.isFighterBonusFeat === undefined \|\| f\.isFighterBonusFeat === null\) && \(f\.category === 'Fighter'/g) || []).length === 2 &&
     !/isFighterBonusFeat === true \|\| f\.category === 'Fighter'/.test(progSrc)
   );
 
-  // HeroForge P0: tiered lookup (index-driven lazy chunks) + srd-snapshot lifecycle in customDb
+  // SRD Import P0: tiered lookup (index-driven lazy chunks) + srd-snapshot lifecycle in customDb
   require('../srd_compendium.js');
   const Comp = globalThis.SrdCompendium;
   const p0Clone = o => JSON.parse(JSON.stringify(o));
   Comp.getById('feat-power-attack'); // Node: synchronous load of index + eager chunks
   const lazyNames = Comp.getLazyChunkNames();
   check(
-    'HeroForge P0: Lazy tier is derived from srd_index.json eagerLoad:false (monsters lazy, feats eager) and isLazyEntry() follows it',
+    'SRD Import P0: Lazy tier is derived from srd_index.json eagerLoad:false (monsters lazy, feats eager) and isLazyEntry() follows it',
     lazyNames.includes('srd_monsters.json') && !lazyNames.includes('srd_feats.json') &&
     Comp.isLazyEntry('mst-nightwalker') === true && Comp.isLazyEntry('feat-power-attack') === false &&
     (Comp.findIndexEntry('Nightwalker', 'Monster') || {}).f === 'srd_monsters.json'
@@ -2299,7 +2299,7 @@ function runDeriveSheetTests() {
   const nwSrc = Comp.getById('mst-nightwalker');
   const nwSnap = Comp.snapshotLoadedEntry('mst-nightwalker');
   check(
-    'HeroForge P0: snapshotLoadedEntry() copies a lazy entry with _snapshot {origin, srcId, chunk, srcHash} and the copy hashes equal to its source',
+    'SRD Import P0: snapshotLoadedEntry() copies a lazy entry with _snapshot {origin, srcId, chunk, srcHash} and the copy hashes equal to its source',
     Boolean(nwSrc) && Boolean(nwSnap) && nwSnap !== nwSrc &&
     nwSnap._snapshot.origin === 'srd-snapshot' && nwSnap._snapshot.srcId === 'mst-nightwalker' &&
     nwSnap._snapshot.chunk === 'srd_monsters.json' && nwSnap._snapshot.srcHash === Comp.contentHash(nwSrc) &&
@@ -2308,7 +2308,7 @@ function runDeriveSheetTests() {
   const p0Db = [];
   const homebrewDb = [{ id: 'mst-nightwalker', name: 'My Nightwalker', type: 'Monster' }];
   check(
-    'HeroForge P0: upsertSnapshot() adds, refreshes unmodified copies, and never overwrites a homebrew entry with the same id',
+    'SRD Import P0: upsertSnapshot() adds, refreshes unmodified copies, and never overwrites a homebrew entry with the same id',
     Comp.upsertSnapshot(p0Db, p0Clone(nwSnap)) === 'added' && p0Db.length === 1 &&
     Comp.upsertSnapshot(p0Db, p0Clone(nwSnap)) === 'updated' && p0Db.length === 1 &&
     Comp.upsertSnapshot(homebrewDb, p0Clone(nwSnap)) === 'kept' && homebrewDb[0].name === 'My Nightwalker'
@@ -2318,7 +2318,7 @@ function runDeriveSheetTests() {
   p0Current._originalIndex = 4; // UI scratch field must not count either
   const p0CurrentRes = Comp.reconcileSnapshotsSync([p0Current]);
   check(
-    'HeroForge P0: reconcile keeps an up-to-date copy as current (empty defaults and _scratch fields are not edits)',
+    'SRD Import P0: reconcile keeps an up-to-date copy as current (empty defaults and _scratch fields are not edits)',
     p0CurrentRes.checked === 1 && p0CurrentRes.changed === false && p0Current._snapshot.status === 'current'
   );
   const p0Stale = p0Clone(nwSnap);
@@ -2335,25 +2335,25 @@ function runDeriveSheetTests() {
   const p0ResA = Comp.reconcileSnapshotsSync(p0DbA);
   const p0ResB = Comp.reconcileSnapshotsSync(p0DbB);
   check(
-    'HeroForge P0: reconcile auto-updates unedited stale copies, flags edited ones update-available, and flags missing sources orphaned',
+    'SRD Import P0: reconcile auto-updates unedited stale copies, flags edited ones update-available, and flags missing sources orphaned',
     p0ResA.autoUpdated.includes('mst-nightwalker') && p0DbA[0].hp === nwSrc.hp && p0DbA[0]._snapshot.status === 'current' &&
     p0ResA.orphaned.includes('mst-not-in-srd') && p0DbA[1]._snapshot.status === 'orphaned' &&
     p0ResB.updateAvailable.includes('mst-nightwalker') && p0DbB[0].hp === 999 && p0DbB[0]._snapshot.status === 'update-available'
   );
   check(
-    'HeroForge P0: applySnapshotUpdate() replaces an edited copy with the current SRD version',
+    'SRD Import P0: applySnapshotUpdate() replaces an edited copy with the current SRD version',
     Comp.applySnapshotUpdate(p0DbB, 'mst-nightwalker') === true && p0DbB[0].hp === nwSrc.hp && p0DbB[0]._snapshot.status === 'current'
   );
   const p0Idx = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_index.json'), 'utf8'));
   const p0Row = id => p0Idx.index.find(r => r.id === id) || {};
   check(
-    'HeroForge P0: srd_index.json lists every chunk record in short form (missing feats/domain rows added, template rows carry n/t/f)',
+    'SRD Import P0: srd_index.json lists every chunk record in short form (missing feats/domain rows added, template rows carry n/t/f)',
     p0Row('feat-agile-shield-fighter').f === 'srd_feats.json' && p0Row('dom-dragon').f === 'srd_domains.json' &&
     p0Row('tmpl-celestial').n === 'Celestial Creature' && p0Row('tmpl-celestial').t === 'Template' && p0Row('tmpl-celestial').f === 'srd_templates.json' &&
     p0Idx.totalEntries === p0Idx.index.length && p0Idx.chunks['srd_feats.json'].count === p1Feats.length
   );
 
-  // HeroForge P2: splatbook gear, traits, skill tricks (lazy chunks) + Weak Will + Boulder Roll
+  // SRD Import P2: splatbook gear, traits, skill tricks (lazy chunks) + Weak Will + Boulder Roll
   const p2Gear = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_equipment_splat.json'), 'utf8'));
   const p2Opts = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_splat.json'), 'utf8'));
   const p2Mans = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_maneuvers.json'), 'utf8'));
@@ -2364,7 +2364,7 @@ function runDeriveSheetTests() {
     (Array.isArray(data) ? data : []).forEach(e => { if (e && e.id) p2AllIds.push(e.id); });
   });
   check(
-    'HeroForge P2: splat gear + traits/tricks live in lazy chunks; ids are unique across every chunk',
+    'SRD Import P2: splat gear + traits/tricks live in lazy chunks; ids are unique across every chunk',
     p0Idx.chunks['srd_equipment_splat.json'].eagerLoad === false && p0Idx.chunks['srd_feats_splat.json'].eagerLoad === false &&
     Comp.getLazyChunkNames().includes('srd_equipment_splat.json') && Comp.getLazyChunkNames().includes('srd_feats_splat.json') &&
     p2Gear.filter(e => e.type === 'Weapon').length === 51 && p2Gear.filter(e => e.type !== 'Weapon').length === 25 &&
@@ -2376,12 +2376,12 @@ function runDeriveSheetTests() {
     ['verified', 'cross-checked'].includes(e.verification) && e.provenance && Array.isArray(e.modifiers) &&
     (e.type !== 'Weapon' || (Array.isArray(e.modes) && e.modes.length > 0 && e.modes.every(m => /^\d+d\d+$/.test(m.damageParts[0].dice)))) &&
     (!['Armor', 'Shield'].includes(e.type) || (e.modifiers[0] && e.modifiers[0].target === (e.type === 'Shield' ? 'ac.shield' : 'ac.armor'))));
-  check('HeroForge P2: every new record is Canonical V2 with a book page, contentLevel, verification and provenance; weapon modes and armor AC modifiers are well-formed', p2Valid);
+  check('SRD Import P2: every new record is Canonical V2 with a book page, contentLevel, verification and provenance; weapon modes and armor AC modifiers are well-formed', p2Valid);
   const lynx = p2By('wpn-lynxpaw');
   const lynxOff = (lynx.modes || []).find(m => m.id === 'offhand-head') || {};
   const mtn = p2By('arm-mountain-plate');
   check(
-    'HeroForge P2: book-settled weapon stats (Sugliin Frost T4-1, Drow Scorpion Chain RoE, Lynxpaw RotW T7-1, Foot Spike) and armor table values (RoS T7-2)',
+    'SRD Import P2: book-settled weapon stats (Sugliin Frost T4-1, Drow Scorpion Chain RoE, Lynxpaw RotW T7-1, Foot Spike) and armor table values (RoS T7-2)',
     p2By('wpn-sugliin').damage === '2d8' && p2By('wpn-sugliin').critMult === 2 && p2By('wpn-sugliin').weight === 20 &&
     p2By('wpn-drow-scorpion-chain').weight === 12 && p2By('wpn-drow-scorpion-chain').ruleFlags.reach === true &&
     lynx.damage === '1d6' && lynx.critRange === 18 && lynxOff.damageParts[0].dice === '1d4' && lynxOff.damageParts[0].type === 'Slashing' && lynxOff.critMult === 3 &&
@@ -2391,7 +2391,7 @@ function runDeriveSheetTests() {
   );
   const p2Mod = (id, target) => ((p2By(id).modifiers || []).find(m => m.target === target && !m.condition) || {}).value;
   check(
-    'HeroForge P2: UA trait modifiers (Aggressive +2 init / -1 AC, Detached, Quick, Slow) and Weak Will -3 Will (UA p.92)',
+    'SRD Import P2: UA trait modifiers (Aggressive +2 init / -1 AC, Detached, Quick, Slow) and Weak Will -3 Will (UA p.92)',
     p2Mod('trait-aggressive', 'init') === 2 && p2Mod('trait-aggressive', 'ac') === -1 &&
     p2Mod('trait-detached', 'save.will') === 1 && p2Mod('trait-detached', 'save.ref') === -1 &&
     p2Mod('trait-quick', 'speed.land') === 10 && p2By('trait-quick').ruleFlags.frailHpPenalty === true &&
@@ -2400,7 +2400,7 @@ function runDeriveSheetTests() {
   );
   const boulder = p2Mans.find(e => e.id === 'tob-maneuver-boulder-roll') || {};
   check(
-    'HeroForge P2: Skill tricks carry CS Table 3-2 prerequisites as prereqStruct; Boulder Roll is a 4th-level Stone Dragon boost (ToB p.81)',
+    'SRD Import P2: Skill tricks carry CS Table 3-2 prerequisites as prereqStruct; Boulder Roll is a 4th-level Stone Dragon boost (ToB p.81)',
     JSON.stringify(p2By('trick-walk-the-walls').prereqStruct.skills) === JSON.stringify({ climb: 12, tumble: 5 }) &&
     (p2By('trick-hidden-blade').prereqStruct.feats || []).includes('Quick Draw') && p2By('trick-hidden-blade').cost.skillPoints === 2 &&
     boulder.subType === 'Boost' && boulder.level === 4 && boulder.discipline === 'Stone Dragon' && boulder.source === 'ToB p.81'
@@ -2408,7 +2408,7 @@ function runDeriveSheetTests() {
   const p2RmSrc = fs.readFileSync(path.join(__dirname, '..', 'rule_master.js'), 'utf8');
   const uiSharedSrc = fs.readFileSync(path.join(__dirname, '..', 'ui_shared.js'), 'utf8');
   check(
-    'HeroForge P2: equipping reads V2 weapon stats (category/critRange/critMult) and lazy compendium picks are snapshotted into customDb before equip',
+    'SRD Import P2: equipping reads V2 weapon stats (category/critRange/critMult) and lazy compendium picks are snapshotted into customDb before equip',
     (p2RmSrc.match(/const wStats = this\.resolveWeaponStats\(item\);/g) || []).length === 2 &&
     /snapshotLazyEntryIntoCustomDb\(entry\)/.test(uiSharedSrc) && !/equipItem\(entry\.id\)/.test(uiSharedSrc) &&
     /SrdCompendium\.ensureEntryInCustomDb\(masterDb, lazyId\)/.test(fs.readFileSync(path.join(__dirname, '..', 'char_combat.js'), 'utf8'))

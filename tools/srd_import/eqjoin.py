@@ -1,4 +1,4 @@
-﻿"""Join crystalkeep weapon rows with HeroForge WeaponInfo.csv and the JF catalog; classify agreement."""
+﻿"""Join crystalkeep weapon rows with builder workbook WeaponInfo.csv and the JF catalog; classify agreement."""
 import sys, re, json, csv, collections
 sys.stdout.reconfigure(encoding='utf-8')
 EQ, CSVP, JFDB, OUT = sys.argv[1:5]
@@ -16,12 +16,12 @@ def key(s):
 def keyset(n):
     a = re.sub(r'[^a-z0-9]', '', re.sub(r'\(.*?\)|\[.*?\]', '', str(n).lower()))
     return {key(n), a}
-hf = {}
+wb = {}
 with open(CSVP, encoding='utf-8', errors='replace') as f:
     for r in csv.DictReader(f):
         n = r['Select A Weapon'].strip()
         if n and not n.startswith('Select') and not n.startswith('-'):
-            for k in keyset(n): hf.setdefault(k, r)
+            for k in keyset(n): wb.setdefault(k, r)
 jf = {}
 for e in json.load(open(JFDB, encoding='utf-8')):
     if e.get('type') == 'Weapon':
@@ -36,32 +36,32 @@ for w in W:
     book = [s for s in srcs if re.sub(r'\s*p\s?\d.*', '', s).strip() in BOOKS]
     ks = keyset(w['name'])
     inJF = next((jf[k] for k in ks if k in jf), None)
-    h = next((hf[k] for k in ks if k in hf), None)
+    h = next((wb[k] for k in ks if k in wb), None)
     rec = {'name': w['name'], 'srcs': w['srcs'], 'book': book, 'inJF': inJF, 'section': w['section'], 'ck': {k: w.get(k) for k in ('size', 'dmg', 'crit', 'range', 'type', 'cost', 'weight', 'misc')}}
     if inJF: res['alreadyInJF'].append(rec); continue
     if not book: res['magazineOnly'].append(rec); continue
     if not h: res['indexOnly'].append(rec); continue
-    rec['hf'] = {k: h.get(k) for k in ('Cat', 'Size', 'Dmg1(M)', 'Dmg2(M)', 'Threat', 'Crit1', 'Crit2', 'Range', 'Wgt', 'Type', 'Reach', 'Special')}
+    rec['wb'] = {k: h.get(k) for k in ('Cat', 'Size', 'Dmg1(M)', 'Dmg2(M)', 'Threat', 'Crit1', 'Crit2', 'Range', 'Wgt', 'Type', 'Reach', 'Special')}
     diffs = []
     d1 = DICE.get(h['Dmg1(M)']); d2 = DICE.get(h['Dmg2(M)']) if h['Dmg2(M)'] else None
     ckd = (w.get('dmg') or '').replace('§', '').strip()
     ckd_parts = ckd.split('/')
-    if d1 != ckd_parts[0]: diffs.append(f'dmg ck={ckd} hf={d1}/{d2}')
-    if d2 and (len(ckd_parts) < 2 or ckd_parts[1] != d2): diffs.append(f'dmg2 ck={ckd} hf={d2}')
+    if d1 != ckd_parts[0]: diffs.append(f'dmg ck={ckd} wb={d1}/{d2}')
+    if d2 and (len(ckd_parts) < 2 or ckd_parts[1] != d2): diffs.append(f'dmg2 ck={ckd} wb={d2}')
     c = crit_of(w.get('crit'))
-    if not c or c[0] != int(h['Threat'] or 20) or c[1] != int(h['Crit1'] or 2): diffs.append(f"crit ck={w.get('crit')} hf={h['Threat']}/x{h['Crit1']}")
-    if types(w.get('type')) != types(h['Type'].replace('&', ' ')): diffs.append(f"type ck={w.get('type')} hf={h['Type']}")
+    if not c or c[0] != int(h['Threat'] or 20) or c[1] != int(h['Crit1'] or 2): diffs.append(f"crit ck={w.get('crit')} wb={h['Threat']}/x{h['Crit1']}")
+    if types(w.get('type')) != types(h['Type'].replace('&', ' ')): diffs.append(f"type ck={w.get('type')} wb={h['Type']}")
     ckr = re.match(r'(\d+)', w.get('range') or '')
-    hfr = int(float(h['Range'])) if re.match(r'^[\d.]+$', h['Range'] or '') else 0
-    if (int(ckr.group(1)) if ckr else 0) != hfr: diffs.append(f"range ck={w.get('range')} hf={h['Range']}")
+    wbr = int(float(h['Range'])) if re.match(r'^[\d.]+$', h['Range'] or '') else 0
+    if (int(ckr.group(1)) if ckr else 0) != wbr: diffs.append(f"range ck={w.get('range')} wb={h['Range']}")
     ckw = re.match(r'(\d*\.?\d+)', (w.get('weight') or '').replace('½', '0.5').replace('00.5', '0.5'))
     try:
-        if ckw and abs(float(ckw.group(1)) - float(h['Wgt'] or 0)) > 0.01: diffs.append(f"wgt ck={w.get('weight')} hf={h['Wgt']}")
-    except ValueError: diffs.append(f"wgt ck={w.get('weight')} hf={h['Wgt']}")
+        if ckw and abs(float(ckw.group(1)) - float(h['Wgt'] or 0)) > 0.01: diffs.append(f"wgt ck={w.get('weight')} wb={h['Wgt']}")
+    except ValueError: diffs.append(f"wgt ck={w.get('weight')} wb={h['Wgt']}")
     rec['diffs'] = diffs
     res['agree' if not diffs else 'disagree'].append(rec)
-hfOnly = set()
-for k, r in hf.items():
+wbOnly = set()
+for k, r in wb.items():
     pass
 print({k: len(v) for k, v in res.items()})
 for r in res['disagree']: print('DIS', r['name'], r['book'], r['diffs'])

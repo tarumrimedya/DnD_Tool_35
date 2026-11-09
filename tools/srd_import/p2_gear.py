@@ -1,6 +1,6 @@
-"""HeroForge P2: build Canonical V2 splatbook weapon/armor records.
+"""SRD import P2: build Canonical V2 splatbook weapon/armor records.
 
-Weapons: crystalkeep 3.5 Equipment Index (2007) x HeroForge WeaponInfo.csv, kept only when both agree on
+Weapons: crystalkeep 3.5 Equipment Index (2007) x builder workbook WeaponInfo.csv, kept only when both agree on
 damage/critical/type/range/weight (cross-checked); 5 disputed weapons were settled from the books.
 Armor: transcribed from the book tables (Sandstorm T4-2, Stormwrack T5-4, Races of Eberron ch.8, Races of Stone T7-2).
 """
@@ -106,7 +106,7 @@ weapons = {}; seen = set()
 for r in J['agree']:
     if r['name'] in EXCLUDE or r['name'] in seen: continue
     if not any(re.match(r'(\w+)', b).group(1) in BOOKS for b in r['book']): continue
-    seen.add(r['name']); h, ck = r['hf'], r['ck']
+    seen.add(r['name']); h, ck = r['wb'], r['ck']
     misc = ck.get('misc') or ''
     size = ck.get('size') or '—'
     hand = {'0Light': 'light', '1Hand': '1h', '2Hand': '2h'}.get(size) or {'L': 'light', 'O': '1h', 'T': '2h', 'R': 'ranged'}.get(h['Size'])
@@ -124,7 +124,7 @@ for r in J['agree']:
                        source=src_str(r['book']), flags=flags, handAndHalf='Hand-and-a-Half' in misc, twoHandedRanged=twoHandedRanged,
                        double=(dmg2, dtype(ck.get('type') or h['Type']), int(h['Threat'] or 20), int(h['Crit2'] or h['Crit1'] or 2)) if dmg2 else None,
                        verification='cross-checked',
-                       provenance={'origin': 'heroforge-anew-7.4.0.1', 'file': 'data/WeaponInfo.csv', 'crossCheck': 'crystalkeep D&D 3.5 Equipment Index (2007-10-01)'})
+                       provenance={'origin': 'builder-workbook-7.4.0.1', 'file': 'data/WeaponInfo.csv', 'crossCheck': 'crystalkeep D&D 3.5 Equipment Index (2007-10-01)'})
 
 # Thrown / two-handed facts not encoded in either table (Frostburn & Races of the Wild weapon descriptions)
 for nm in ('Glot', 'Harpoon', 'Skiprock'):
@@ -132,7 +132,7 @@ for nm in ('Glot', 'Harpoon', 'Skiprock'):
 if 'Icechucker' in weapons: weapons['Icechucker']['twoHandedRanged'] = True  # fired like a heavy crossbow
 
 # ---------- disputed weapons settled from the books ----------
-book = lambda src, page: {'origin': 'rulebook', 'book': src, 'page': page, 'hint': 'heroforge-anew-7.4.0.1 + crystalkeep index (conflicting)'}
+book = lambda src, page: {'origin': 'rulebook', 'book': src, 'page': page, 'hint': 'builder-workbook-7.4.0.1 + crystalkeep index (conflicting)'}
 weapons['Sugliin'] = dict(name='Sugliin', cat='E', hand='2h', range=0, dmg='2d8', crit=(20, 2), type='Piercing & Slashing', cost=35, weight=20,
                           source='Frostburn p.76', flags={}, verification='verified', provenance=book('Frostburn', 76))
 weapons['Razor Skipdisk'] = dict(name='Razor Skipdisk', cat='E', hand='ranged', range=10, dmg='1d6', crit=(18, 2), type='Slashing', cost=15, weight=2,

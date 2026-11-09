@@ -1,4 +1,4 @@
-"""Parse crystalkeep 3.5 Equipment Index text (pdfq dump) into weapon/armor rows; join with HeroForge WeaponInfo.csv."""
+"""Parse crystalkeep 3.5 Equipment Index text (pdfq dump) into weapon/armor rows; join with builder workbook WeaponInfo.csv."""
 import sys, re, json, csv, collections
 sys.stdout.reconfigure(encoding='utf-8')
 TXT, CSVP, OUT = sys.argv[1], sys.argv[2], sys.argv[3]

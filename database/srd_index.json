@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "703474c925a6c804",
+  "compendiumHash": "a716296341cf80e2",
   "generatedAt": "2026-11-04T15:37:19.474Z",
   "totalEntries": 5155,
   "chunks": {
@@ -73,8 +73,8 @@
     },
     "srd_equipment_splat.json": {
       "count": 76,
-      "bytes": 151742,
-      "hash": "ce48fafd33e50795",
+      "bytes": 151844,
+      "hash": "48301a54f914381e",
       "eagerLoad": false
     },
     "srd_feats_splat.json": {

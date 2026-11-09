@@ -1,4 +1,4 @@
-"""Stream-parse HeroForge xlsm into per-sheet JSON row dumps (col letter -> value)."""
+"""Stream-parse builder workbook xlsm into per-sheet JSON row dumps (col letter -> value)."""
 import sys, zipfile, json, re, os
 import xml.etree.ElementTree as ET
 
