@@ -101,6 +101,57 @@ function main() {
     try {
       const idxData = JSON.parse(fs.readFileSync(srdIdxPath, 'utf8'));
       let idxChanged = false;
+
+      // 2a. Index row completeness (tier-2 search depends on every chunk record having an index row).
+      //     Conservative repair: add missing rows, convert legacy long-form rows
+      //     ({name,type,category,chunk}) to the short form ({n,t,c,f}), refresh counts.
+      //     Existing short-form rows are left untouched (they carry curated fields such as aliases).
+      if (idxData && idxData.chunks && Array.isArray(idxData.index)) {
+        const rowsById = new Map(idxData.index.map(r => [r && r.id, r]));
+        for (const [chunkName, meta] of Object.entries(idxData.chunks)) {
+          const chunkPath = path.join(ROOT, 'database', chunkName);
+          if (!fs.existsSync(chunkPath)) continue;
+          const parsed = JSON.parse(fs.readFileSync(chunkPath, 'utf8'));
+          const records = Array.isArray(parsed) ? parsed : (parsed && Array.isArray(parsed.entries) ? parsed.entries : null);
+          if (!records) continue;
+          let count = 0;
+          for (const rec of records) {
+            if (!rec || !rec.id) continue;
+            count++;
+            const row = rowsById.get(rec.id);
+            if (row) {
+              if (row.n === undefined && row.name !== undefined) {
+                const shortRow = { id: row.id, n: row.name, t: row.type, c: row.category || '', s: row.slot || 'None', f: row.chunk || chunkName };
+                Object.keys(row).forEach(k => delete row[k]);
+                Object.assign(row, shortRow);
+                idxChanged = true;
+              } else if (!row.f) {
+                row.f = chunkName;
+                idxChanged = true;
+              }
+              continue;
+            }
+            const lvl = (rec.type === 'Spell' || rec.type === 'Power' || rec.type === 'Maneuver' || rec.type === 'Stance')
+              ? rec.level
+              : (rec.type === 'Monster' ? rec.cr : rec.minLevel);
+            const newRow = { id: rec.id, n: rec.name, t: rec.type, c: rec.category || '', s: rec.slot || 'None', f: chunkName };
+            if (lvl !== undefined && lvl !== null) newRow.l = lvl;
+            if (rec.isFighterBonusFeat) newRow.fb = 1;
+            idxData.index.push(newRow);
+            rowsById.set(rec.id, newRow);
+            idxChanged = true;
+          }
+          if (meta && meta.count !== count && count > 0) {
+            meta.count = count;
+            idxChanged = true;
+          }
+        }
+        if (idxData.totalEntries !== idxData.index.length) {
+          idxData.totalEntries = idxData.index.length;
+          idxChanged = true;
+        }
+      }
+
       if (idxData && idxData.chunks) {
         const allHashes = [];
         for (const [chunkName, meta] of Object.entries(idxData.chunks)) {
@@ -115,6 +166,8 @@ function main() {
           }
         }
         if (idxChanged) {
+          // Index rows are part of the hash so cached clients (IndexedDB) refetch the index when rows change.
+          allHashes.push(crypto.createHash('sha256').update(JSON.stringify(idxData.index || [])).digest('hex').slice(0, 16));
           idxData.compendiumHash = crypto.createHash('sha256').update(allHashes.join(':')).digest('hex').slice(0, 16);
           fs.writeFileSync(srdIdxPath, JSON.stringify(idxData, null, 2) + '\n', 'utf8');
         }
@@ -125,8 +178,14 @@ function main() {
     }
   }
 
-  // 3. Sync database/ -> webapp/database/
-  for (const rel of DB_FILES) {
+  // 3. Sync database/ -> webapp/database/ (static list + every chunk registered in srd_index.json,
+  //    so new lazy chunks are deployed without editing this file)
+  const dbSyncFiles = new Set(DB_FILES);
+  try {
+    const idxForSync = JSON.parse(fs.readFileSync(srdIdxPath, 'utf8'));
+    Object.keys((idxForSync && idxForSync.chunks) || {}).forEach(name => dbSyncFiles.add(name));
+  } catch (_) {}
+  for (const rel of dbSyncFiles) {
     const src = path.join(ROOT, 'database', rel);
     const dst = path.join(WEBAPP, 'database', rel);
     if (fs.existsSync(src) && fs.existsSync(path.dirname(dst))) {

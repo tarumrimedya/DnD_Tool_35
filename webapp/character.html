@@ -2875,7 +2875,13 @@
               </div>
               <input type="text" id="mdb-search-input" onkeyup="RuleMaster.renderTable()" placeholder="Search saved custom entries (name, description, source, discipline)..." class="w-full h-8 bg-transparent pr-2 text-xs sm:text-sm font-semibold text-white placeholder-slate-200 focus:outline-none">
             </div>
-            <div class="flex items-center gap-2 w-full sm:w-auto min-w-0">
+            <div class="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto min-w-0">
+              <select id="mdb-origin-filter" data-change-action="mdb:render-table" class="h-8 flex-none w-full sm:w-auto min-w-0 bg-slate-950/95 border border-sky-500/40 rounded-lg px-2 text-xs text-sky-200 font-semibold focus:outline-none cursor-pointer truncate" title="Filter entries by origin: your homebrew vs. copies of SRD compendium entries">
+                <option value="ALL">All Sources</option>
+                <option value="HOMEBREW">✍️ Homebrew &amp; Custom</option>
+                <option value="SNAPSHOT">📥 SRD Copies</option>
+                <option value="UPDATE_AVAILABLE">🔔 Update Available</option>
+              </select>
               <select id="mdb-category-filter" onchange="RuleMaster.renderTable()" class="h-8 flex-1 sm:flex-none min-w-0 bg-slate-950/95 border border-purple-500/40 rounded-lg px-2 text-xs text-purple-200 font-semibold focus:outline-none cursor-pointer truncate">
                 <option value="ALL">All Categories</option>
                 <option value="Weapon">Weapons</option>

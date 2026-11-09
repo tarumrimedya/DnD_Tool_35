@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "ef646a53d42d45f0",
+  "compendiumHash": "94285f05864dbe54",
   "generatedAt": "2026-11-04T15:37:19.474Z",
-  "totalEntries": 4984,
+  "totalEntries": 5000,
   "chunks": {
     "srd_equipment.json": {
       "count": 1131,
@@ -12,13 +12,13 @@
       "eagerLoad": true
     },
     "srd_feats.json": {
-      "count": 452,
+      "count": 467,
       "bytes": 803679,
       "hash": "288ce663f298352b",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
-      "count": 256,
+      "count": 281,
       "bytes": 680009,
       "hash": "12cd39d4efd28292",
       "eagerLoad": true
@@ -30,7 +30,7 @@
       "eagerLoad": true
     },
     "srd_spells.json": {
-      "count": 1114,
+      "count": 1139,
       "bytes": 2179406,
       "hash": "1a258bc5b493f265",
       "eagerLoad": true
@@ -54,7 +54,7 @@
       "eagerLoad": true
     },
     "srd_domains.json": {
-      "count": 36,
+      "count": 37,
       "bytes": 75842,
       "hash": "19c974cf6646172d",
       "eagerLoad": true
@@ -40332,276 +40332,315 @@
     },
     {
       "id": "tmpl-half-dragon-red",
-      "name": "Half-Dragon (Red)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Dragon (Red)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-half-dragon-gold",
-      "name": "Half-Dragon (Gold)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Dragon (Gold)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-half-dragon-silver",
-      "name": "Half-Dragon (Silver)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Dragon (Silver)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-half-dragon-blue",
-      "name": "Half-Dragon (Blue)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Dragon (Blue)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-half-dragon-black",
-      "name": "Half-Dragon (Black)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Dragon (Black)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-half-dragon-green",
-      "name": "Half-Dragon (Green)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Dragon (Green)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-half-dragon-white",
-      "name": "Half-Dragon (White)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Dragon (White)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-half-dragon-brass",
-      "name": "Half-Dragon (Brass)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Dragon (Brass)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-half-dragon-bronze",
-      "name": "Half-Dragon (Bronze)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Dragon (Bronze)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-half-dragon-copper",
-      "name": "Half-Dragon (Copper)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Dragon (Copper)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-half-celestial",
-      "name": "Half-Celestial",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Celestial",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-half-fiend",
-      "name": "Half-Fiend",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Half-Fiend",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-celestial",
-      "name": "Celestial Creature",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Celestial Creature",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-fiendish",
-      "name": "Fiendish Creature",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Fiendish Creature",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-lich",
-      "name": "Lich",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Lich",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-vampire",
-      "name": "Vampire",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Vampire",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-ghost",
-      "name": "Ghost",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Ghost",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-demilich",
-      "name": "Demilich",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Demilich",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-skeleton",
-      "name": "Skeleton",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Skeleton",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-zombie",
-      "name": "Zombie",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Zombie",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-werewolf",
-      "name": "Werewolf (Lycanthrope)",
-      "type": "Template",
-      "category": "Inherited / Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Werewolf (Lycanthrope)",
+      "t": "Template",
+      "c": "Inherited / Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-werebear",
-      "name": "Werebear (Lycanthrope)",
-      "type": "Template",
-      "category": "Inherited / Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Werebear (Lycanthrope)",
+      "t": "Template",
+      "c": "Inherited / Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-wererat",
-      "name": "Wererat (Lycanthrope)",
-      "type": "Template",
-      "category": "Inherited / Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Wererat (Lycanthrope)",
+      "t": "Template",
+      "c": "Inherited / Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-weretiger",
-      "name": "Weretiger (Lycanthrope)",
-      "type": "Template",
-      "category": "Inherited / Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Weretiger (Lycanthrope)",
+      "t": "Template",
+      "c": "Inherited / Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-wereboar",
-      "name": "Wereboar (Lycanthrope)",
-      "type": "Template",
-      "category": "Inherited / Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Wereboar (Lycanthrope)",
+      "t": "Template",
+      "c": "Inherited / Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-dire-werewolf",
-      "name": "Dire Werewolf (Lycanthrope)",
-      "type": "Template",
-      "category": "Inherited / Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Dire Werewolf (Lycanthrope)",
+      "t": "Template",
+      "c": "Inherited / Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-dire-wereboar",
-      "name": "Dire Wereboar (Lycanthrope)",
-      "type": "Template",
-      "category": "Inherited / Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Dire Wereboar (Lycanthrope)",
+      "t": "Template",
+      "c": "Inherited / Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-lycanthrope",
-      "name": "Lycanthrope (Humanoid Form Base)",
-      "type": "Template",
-      "category": "Inherited / Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Lycanthrope (Humanoid Form Base)",
+      "t": "Template",
+      "c": "Inherited / Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-lycanthrope-hybrid-form",
-      "name": "Lycanthrope (Active Hybrid Form)",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Lycanthrope (Active Hybrid Form)",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-lycanthrope-animal-form",
-      "name": "Lycanthrope (Active Animal Form)",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Lycanthrope (Active Animal Form)",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-phrenic",
-      "name": "Phrenic Creature",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Phrenic Creature",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-psionic",
-      "name": "Psionic Creature (Subtype Template)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Psionic Creature (Subtype Template)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-shadow-creature",
-      "name": "Shadow Creature",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Shadow Creature",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-paragon",
-      "name": "Paragon Creature",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Paragon Creature",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-pseudonatural",
-      "name": "Pseudonatural Creature (Epic)",
-      "type": "Template",
-      "category": "Inherited Template",
-      "chunk": "srd_templates.json"
+      "n": "Pseudonatural Creature (Epic)",
+      "t": "Template",
+      "c": "Inherited Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-worm-that-walks",
-      "name": "Worm that Walks",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Worm that Walks",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-petitioner",
-      "name": "Petitioner",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Petitioner",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-divine-rank",
-      "name": "Divine Rank 0 (Quasi-Deity / Hero-Deity)",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Divine Rank 0 (Quasi-Deity / Hero-Deity)",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "tmpl-innate-divine-rank",
-      "name": "Divine Rank 1 (Demigod)",
-      "type": "Template",
-      "category": "Acquired Template",
-      "chunk": "srd_templates.json"
+      "n": "Divine Rank 1 (Demigod)",
+      "t": "Template",
+      "c": "Acquired Template",
+      "s": "None",
+      "f": "srd_templates.json"
     },
     {
       "id": "pot-cure-minor-wounds",
@@ -42033,6 +42072,137 @@
       "a": [
         "Mind Flayer"
       ]
+    },
+    {
+      "id": "flaw-feeble",
+      "n": "Feeble",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "flaw-frail",
+      "n": "Frail",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "flaw-inattentive",
+      "n": "Inattentive",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "flaw-meager-fortitude",
+      "n": "Meager Fortitude",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "flaw-murky-eyed",
+      "n": "Murky-Eyed",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "flaw-noncombatant",
+      "n": "Noncombatant",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "flaw-pathetic",
+      "n": "Pathetic",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "flaw-poor-reflexes",
+      "n": "Poor Reflexes",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "flaw-shaky",
+      "n": "Shaky",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "flaw-slow",
+      "n": "Slow",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "flaw-unreactive",
+      "n": "Unreactive",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "flaw-vulnerable",
+      "n": "Vulnerable",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "feat-shield-specialization",
+      "n": "Shield Specialization",
+      "t": "Feat",
+      "c": "Fighter",
+      "s": "None",
+      "f": "srd_feats.json",
+      "fb": 1
+    },
+    {
+      "id": "feat-shield-ward",
+      "n": "Shield Ward",
+      "t": "Feat",
+      "c": "Fighter",
+      "s": "None",
+      "f": "srd_feats.json",
+      "fb": 1
+    },
+    {
+      "id": "feat-agile-shield-fighter",
+      "n": "Agile Shield Fighter",
+      "t": "Feat",
+      "c": "Fighter",
+      "s": "None",
+      "f": "srd_feats.json",
+      "fb": 1
+    },
+    {
+      "id": "dom-dragon",
+      "n": "Dragon",
+      "t": "Domain",
+      "c": "Cleric Domain",
+      "s": "None",
+      "f": "srd_domains.json"
     }
   ]
 }

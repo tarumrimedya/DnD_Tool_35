@@ -2116,6 +2116,39 @@ const RuleMaster = {
   },
 
   // Render Table with Canonical V2 Badges, Embedded Modes, and Actions
+  // Tier-2 SRD snapshot metadata (entries copied into customDb from lazy compendium chunks)
+  getSnapshotMeta(entry) {
+    const s = entry && entry._snapshot;
+    return s && s.origin === 'srd-snapshot' ? s : null;
+  },
+
+  getSnapshotBadgeHtml(entry) {
+    const snap = this.getSnapshotMeta(entry);
+    if (!snap) return '';
+    const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    if (snap.status === 'update-available') {
+      return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-950/90 text-amber-300 border border-amber-600/60" title="The SRD version changed after this copy was edited">🔔 Update Available</span>`
+        + `<button type="button" data-action="mdb:apply-snapshot-update" data-id="${esc(entry.id)}" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-700 hover:bg-amber-600 text-white border border-amber-500/60 transition cursor-pointer" title="Replace this copy with the current SRD version (your edits are discarded)">⬆️ Apply Update</button>`;
+    }
+    if (snap.status === 'orphaned') {
+      return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-950/80 text-rose-300 border border-rose-800/60" title="The source entry is no longer in the SRD compendium">⚠️ Not in SRD</span>`;
+    }
+    return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-950/80 text-sky-300 border border-sky-700/50" title="Copied from the SRD compendium; follows SRD fixes automatically while unedited">📥 SRD Copy</span>`;
+  },
+
+  applySnapshotUpdate(id) {
+    if (!id || typeof SrdCompendium === 'undefined' || typeof SrdCompendium.applySnapshotUpdate !== 'function') return;
+    const db = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb : null;
+    const entry = db ? db.find(e => e && e.id === id) : null;
+    if (!entry) return;
+    if (!confirm(`Replace "${entry.name}" with the current SRD version? Your edits to this copy will be discarded.`)) return;
+    if (SrdCompendium.applySnapshotUpdate(db, id)) {
+      if (typeof CharStore !== 'undefined' && typeof CharStore.recompute === 'function') CharStore.recompute();
+      if (typeof saveStateToStorage === 'function') saveStateToStorage();
+      this.renderTable();
+    }
+  },
+
   renderTable() {
     const tbody = document.getElementById('master-db-tbody');
     if (!tbody || !masterDb) return;
@@ -2125,6 +2158,7 @@ const RuleMaster = {
     const eligFilter = document.getElementById('mdb-eligibility-filter')?.value || 'ALL';
     const bonusFilter = document.getElementById('mdb-bonus-filter')?.value || 'ALL';
     const scopeFilter = document.getElementById('mdb-scope-filter')?.value || 'ALL';
+    const originFilter = document.getElementById('mdb-origin-filter')?.value || 'ALL';
 
     const fuzzyScores = new WeakMap();
     let filtered = masterDb.filter((rawItem, idx) => {
@@ -2147,8 +2181,13 @@ const RuleMaster = {
         || (eligFilter === 'ELIGIBLE' && elig.met)
         || (eligFilter === 'SYNERGY_READY' && elig.status === 'SYNERGY_READY')
         || (eligFilter === 'PREREQ_MISSING' && !elig.met);
+      const snap = this.getSnapshotMeta(rawItem);
+      const matchOrigin = originFilter === 'ALL'
+        || (originFilter === 'HOMEBREW' && !snap)
+        || (originFilter === 'SNAPSHOT' && Boolean(snap))
+        || (originFilter === 'UPDATE_AVAILABLE' && Boolean(snap) && (snap.status === 'update-available' || snap.status === 'orphaned'));
 
-      return matchQ && matchCat && matchBonus && matchScope && matchElig;
+      return matchQ && matchCat && matchBonus && matchScope && matchElig && matchOrigin;
     });
 
     if (query) {
@@ -2288,6 +2327,7 @@ const RuleMaster = {
         }
         return badges;
       })();
+      const snapshotBadgeHtml = this.getSnapshotBadgeHtml(rawItem);
 
       tr.innerHTML = `
         <td class="py-2.5 px-2.5 text-center">
@@ -2299,6 +2339,7 @@ const RuleMaster = {
             <span>${item.name}</span>
             ${modesCount > 0 ? `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">⚡ ${modesCount} Mod</span>` : ''}
             ${eligBadgeHtml}
+            ${snapshotBadgeHtml}
           </div>
           <div class="text-[10px] text-slate-400 font-mono mt-0.5">${isDeity ? (item.title ? `${item.title} • ${item.category || 'Custom'}` : (item.category || item.source || 'Custom')) : (item.source || 'Custom')}</div>
         </td>
@@ -8559,6 +8600,12 @@ if (typeof document !== 'undefined') {
 window.RuleMaster = RuleMaster;
 
 if (typeof window !== 'undefined' && window.Actions && typeof window.Actions.register === 'function') {
+  window.Actions.register('mdb:render-table', () => {
+    RuleMaster.renderTable();
+  });
+  window.Actions.register('mdb:apply-snapshot-update', (el, data) => {
+    RuleMaster.applySnapshotUpdate((data && data.id) || (el && el.dataset && el.dataset.id));
+  });
   window.Actions.register('forge:add-modifier-row', () => {
     RuleMaster.addInlineManualModifierRow();
   });

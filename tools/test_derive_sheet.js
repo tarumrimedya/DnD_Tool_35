@@ -2283,6 +2283,76 @@ function runDeriveSheetTests() {
     !/isFighterBonusFeat === true \|\| f\.category === 'Fighter'/.test(progSrc)
   );
 
+  // HeroForge P0: tiered lookup (index-driven lazy chunks) + srd-snapshot lifecycle in customDb
+  require('../srd_compendium.js');
+  const Comp = globalThis.SrdCompendium;
+  const p0Clone = o => JSON.parse(JSON.stringify(o));
+  Comp.getById('feat-power-attack'); // Node: synchronous load of index + eager chunks
+  const lazyNames = Comp.getLazyChunkNames();
+  check(
+    'HeroForge P0: Lazy tier is derived from srd_index.json eagerLoad:false (monsters lazy, feats eager) and isLazyEntry() follows it',
+    lazyNames.includes('srd_monsters.json') && !lazyNames.includes('srd_feats.json') &&
+    Comp.isLazyEntry('mst-nightwalker') === true && Comp.isLazyEntry('feat-power-attack') === false &&
+    (Comp.findIndexEntry('Nightwalker', 'Monster') || {}).f === 'srd_monsters.json'
+  );
+  Comp.ensureChunkLoaded('srd_monsters.json'); // Node path registers synchronously
+  const nwSrc = Comp.getById('mst-nightwalker');
+  const nwSnap = Comp.snapshotLoadedEntry('mst-nightwalker');
+  check(
+    'HeroForge P0: snapshotLoadedEntry() copies a lazy entry with _snapshot {origin, srcId, chunk, srcHash} and the copy hashes equal to its source',
+    Boolean(nwSrc) && Boolean(nwSnap) && nwSnap !== nwSrc &&
+    nwSnap._snapshot.origin === 'srd-snapshot' && nwSnap._snapshot.srcId === 'mst-nightwalker' &&
+    nwSnap._snapshot.chunk === 'srd_monsters.json' && nwSnap._snapshot.srcHash === Comp.contentHash(nwSrc) &&
+    Comp.contentHash(nwSnap) === nwSnap._snapshot.srcHash
+  );
+  const p0Db = [];
+  const homebrewDb = [{ id: 'mst-nightwalker', name: 'My Nightwalker', type: 'Monster' }];
+  check(
+    'HeroForge P0: upsertSnapshot() adds, refreshes unmodified copies, and never overwrites a homebrew entry with the same id',
+    Comp.upsertSnapshot(p0Db, p0Clone(nwSnap)) === 'added' && p0Db.length === 1 &&
+    Comp.upsertSnapshot(p0Db, p0Clone(nwSnap)) === 'updated' && p0Db.length === 1 &&
+    Comp.upsertSnapshot(homebrewDb, p0Clone(nwSnap)) === 'kept' && homebrewDb[0].name === 'My Nightwalker'
+  );
+  const p0Current = p0Clone(nwSnap);
+  p0Current.defenses = []; // empty default added by RuleMaster.ensureV2 must not count as a user edit
+  p0Current._originalIndex = 4; // UI scratch field must not count either
+  const p0CurrentRes = Comp.reconcileSnapshotsSync([p0Current]);
+  check(
+    'HeroForge P0: reconcile keeps an up-to-date copy as current (empty defaults and _scratch fields are not edits)',
+    p0CurrentRes.checked === 1 && p0CurrentRes.changed === false && p0Current._snapshot.status === 'current'
+  );
+  const p0Stale = p0Clone(nwSnap);
+  p0Stale.hp = 1;
+  p0Stale._snapshot.srcHash = Comp.contentHash(p0Stale); // unedited copy of an older SRD version
+  const p0Edited = p0Clone(nwSnap);
+  p0Edited._snapshot.srcHash = '00000000';
+  p0Edited.hp = 999; // user edit on top of an older SRD version
+  const p0Orphan = p0Clone(nwSnap);
+  p0Orphan.id = 'mst-not-in-srd';
+  p0Orphan._snapshot.srcId = 'mst-not-in-srd';
+  const p0DbA = [p0Stale, p0Orphan];
+  const p0DbB = [p0Edited];
+  const p0ResA = Comp.reconcileSnapshotsSync(p0DbA);
+  const p0ResB = Comp.reconcileSnapshotsSync(p0DbB);
+  check(
+    'HeroForge P0: reconcile auto-updates unedited stale copies, flags edited ones update-available, and flags missing sources orphaned',
+    p0ResA.autoUpdated.includes('mst-nightwalker') && p0DbA[0].hp === nwSrc.hp && p0DbA[0]._snapshot.status === 'current' &&
+    p0ResA.orphaned.includes('mst-not-in-srd') && p0DbA[1]._snapshot.status === 'orphaned' &&
+    p0ResB.updateAvailable.includes('mst-nightwalker') && p0DbB[0].hp === 999 && p0DbB[0]._snapshot.status === 'update-available'
+  );
+  check(
+    'HeroForge P0: applySnapshotUpdate() replaces an edited copy with the current SRD version',
+    Comp.applySnapshotUpdate(p0DbB, 'mst-nightwalker') === true && p0DbB[0].hp === nwSrc.hp && p0DbB[0]._snapshot.status === 'current'
+  );
+  const p0Idx = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_index.json'), 'utf8'));
+  const p0Row = id => p0Idx.index.find(r => r.id === id) || {};
+  check(
+    'HeroForge P0: srd_index.json lists every chunk record in short form (missing feats/domain rows added, template rows carry n/t/f)',
+    p0Row('feat-agile-shield-fighter').f === 'srd_feats.json' && p0Row('dom-dragon').f === 'srd_domains.json' &&
+    p0Row('tmpl-celestial').n === 'Celestial Creature' && p0Row('tmpl-celestial').t === 'Template' && p0Row('tmpl-celestial').f === 'srd_templates.json' &&
+    p0Idx.totalEntries === p0Idx.index.length && p0Idx.chunks['srd_feats.json'].count === p1Feats.length
+  );
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

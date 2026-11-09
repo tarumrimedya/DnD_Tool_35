@@ -779,7 +779,30 @@
         "isFighterBonusFeat": {
           "type": "boolean",
           "default": false,
-          "description": "Whether this feat can be selected as a Fighter bonus feat (PHB Table 5-1)."
+          "description": "Whether this feat can be selected as a Fighter bonus feat (PHB Table 5-1). Means the heroic (1st-20th level) list; epic fighter bonus feats use tier: 'epic'."
+        },
+        "tier": {
+          "type": "string",
+          "enum": ["heroic", "epic"],
+          "default": "heroic",
+          "description": "Level band of the entry. 'epic' = Epic Level Handbook / DMG epic content usable at character level 21+ (e.g. epic feats; the Epic Fighter Bonus Feat List, ELH p.11-12)."
+        },
+        "contentLevel": {
+          "type": "string",
+          "enum": ["full", "summary", "stub"],
+          "default": "full",
+          "description": "How complete the rules text is. 'summary' = structured fields plus a short paraphrased benefit (no verbatim book text); 'stub' = name/source/prerequisites only."
+        },
+        "verification": {
+          "type": "string",
+          "enum": ["verified", "unverified"],
+          "default": "verified",
+          "description": "'unverified' when the record was imported from a secondary source and has not been checked against the rulebook."
+        },
+        "provenance": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Import origin for bulk-imported records, e.g. {'origin': 'heroforge-anew-7.4.0.1', 'sheet': 'Feats', 'row': 385}. Character-side copies of compendium entries carry a separate internal '_snapshot' object, which is never produced by the AI."
         },
         "featType": {
           "type": "string",

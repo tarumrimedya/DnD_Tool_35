@@ -184,7 +184,30 @@
       _sheetDirty = true;
       if (prevId !== nextId && !_isRestoringHistory) {
         _state.session = loadSessionFromStorage(newChar);
+        this.reconcileSrdSnapshots();
       }
+    },
+
+    /**
+     * Character-load check of tier-2 `srd-snapshot` entries in customDb (SrdCompendium.reconcileSnapshots).
+     * Unmodified snapshots follow SRD fixes automatically; edited ones get an update flag.
+     * No-op for characters without snapshots.
+     */
+    reconcileSrdSnapshots() {
+      const doc = _state.doc;
+      const comp = typeof root !== 'undefined' ? root.SrdCompendium : null;
+      if (!doc || !Array.isArray(doc.customDb) || !comp || typeof comp.reconcileSnapshots !== 'function') {
+        return Promise.resolve(null);
+      }
+      if (!doc.customDb.some(e => e && e._snapshot)) return Promise.resolve(null);
+      return comp.reconcileSnapshots(doc.customDb).then((res) => {
+        if (res && res.changed && _state.doc === doc) {
+          _sheetDirty = true;
+          this.recompute(_lastTacticalOptions);
+          if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(false);
+        }
+        return res;
+      }).catch(() => null);
     },
 
     /**
@@ -550,6 +573,7 @@
         if (docChanged && typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function' && meta.persist !== false) {
           root.saveStateToStorage(meta.cloudSync !== false);
         }
+        if (type === 'doc/replace') this.reconcileSrdSnapshots();
       }
 
       return _state.sheet;
