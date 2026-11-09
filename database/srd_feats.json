@@ -915,8 +915,8 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
-    "isFighterBonusFeat": false,
+    "source": "Complete Warrior p.105",
+    "isFighterBonusFeat": true,
     "prerequisites": "Point Blank Shot, Precise Shot, base attack bonus +3",
     "prereq": "Point Blank Shot, Precise Shot, base attack bonus +3",
     "prereqStruct": {
@@ -4135,11 +4135,11 @@
     "schemaVersion": 2,
     "name": "Tower Shield Proficiency",
     "type": "Feat",
-    "category": "Fighter",
+    "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "PHB p.102",
-    "isFighterBonusFeat": true,
+    "source": "PHB p.101",
+    "isFighterBonusFeat": false,
     "prerequisites": "Shield Proficiency",
     "prereq": "Shield Proficiency",
     "prereqStruct": {},
@@ -4148,7 +4148,7 @@
     "benefit": "Use a tower shield without taking its armor check penalty on attack rolls.",
     "tags": [
       "feat",
-      "fighter"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -12316,13 +12316,13 @@
     "schemaVersion": 2,
     "name": "Monkey Grip",
     "type": "Feat",
-    "category": "Fighter",
+    "category": "General",
     "scope": "All",
     "tier": null,
     "minLevel": null,
     "slot": "None",
     "source": "Complete Warrior p.103 / 3.5e RAW",
-    "isFighterBonusFeat": true,
+    "isFighterBonusFeat": false,
     "prerequisites": "BAB +1",
     "prereq": "BAB +1",
     "prereqStruct": {
@@ -12333,7 +12333,7 @@
     "benefit": "You can wield melee weapons one size category larger than you with a -2 penalty on attack rolls, using the same number of hands normally required for a weapon of that type.",
     "tags": [
       "feat",
-      "fighter"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -13529,7 +13529,7 @@
     "minLevel": null,
     "slot": "None",
     "source": "Tome of Battle p.32",
-    "isFighterBonusFeat": true,
+    "isFighterBonusFeat": false,
     "prerequisites": "BAB +6, Improved Unarmed Strike",
     "prereq": "BAB +6, Improved Unarmed Strike",
     "prereqStruct": {
@@ -13559,7 +13559,7 @@
     "minLevel": null,
     "slot": "None",
     "source": "Tome of Battle p.32",
-    "isFighterBonusFeat": true,
+    "isFighterBonusFeat": false,
     "prerequisites": "Str 13, 1 Stone Dragon maneuver",
     "prereq": "Str 13, 1 Stone Dragon maneuver",
     "prereqStruct": {
@@ -13675,7 +13675,7 @@
     "minLevel": null,
     "slot": "None",
     "source": "Tome of Battle p.30",
-    "isFighterBonusFeat": true,
+    "isFighterBonusFeat": false,
     "prerequisites": "Dex 13",
     "prereq": "Dex 13",
     "prereqStruct": {

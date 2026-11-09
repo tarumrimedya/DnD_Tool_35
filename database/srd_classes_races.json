@@ -20568,13 +20568,13 @@
     "maxLevel": 10,
     "bab": 1,
     "babProgression": "high",
-    "fort": "good",
+    "fort": "poor",
     "ref": "good",
-    "will": "poor",
+    "will": "good",
     "savingThrows": {
-      "fort": "high",
+      "fort": "low",
       "ref": "high",
-      "will": "low"
+      "will": "high"
     },
     "skills": 4,
     "skillPointsPerLevel": 4,
@@ -20958,11 +20958,11 @@
     "babProgression": "high",
     "fort": "good",
     "ref": "poor",
-    "will": "good",
+    "will": "poor",
     "savingThrows": {
       "fort": "high",
       "ref": "low",
-      "will": "high"
+      "will": "low"
     },
     "skills": 2,
     "skillPointsPerLevel": 2,
@@ -22479,11 +22479,11 @@
     "bab": 0.75,
     "babProgression": "med",
     "fort": "poor",
-    "ref": "good",
+    "ref": "poor",
     "will": "good",
     "savingThrows": {
       "fort": "low",
-      "ref": "high",
+      "ref": "low",
       "will": "high"
     },
     "skills": 6,
@@ -23501,11 +23501,11 @@
     "maxLevel": 20,
     "bab": 1,
     "babProgression": "high",
-    "fort": "good",
+    "fort": "poor",
     "ref": "poor",
     "will": "good",
     "savingThrows": {
-      "fort": "high",
+      "fort": "low",
       "ref": "low",
       "will": "high"
     },
@@ -24318,11 +24318,11 @@
     "maxLevel": 10,
     "bab": 0.75,
     "babProgression": "med",
-    "fort": "good",
+    "fort": "poor",
     "ref": "poor",
     "will": "good",
     "savingThrows": {
-      "fort": "high",
+      "fort": "low",
       "ref": "low",
       "will": "high"
     },

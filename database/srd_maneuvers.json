@@ -3044,7 +3044,10 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "tacticalBadges": []
+    "tacticalBadges": [],
+    "aliases": [
+      "Absolute Steel Stance"
+    ]
   },
   {
     "id": "tob-maneuver-exorcism-of-steel",

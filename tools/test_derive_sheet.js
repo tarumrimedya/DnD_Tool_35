@@ -2251,6 +2251,38 @@ function runDeriveSheetTests() {
     customToughnessPlus.featTags.includes('Fighter Bonus')
   );
 
+  // HeroForge P1: book-verified class saves & fighter bonus feat flags (HEROFORGE_VERIFICATION_TABLE.md)
+  const dbDir = path.join(__dirname, '..', 'database');
+  const p1Classes = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_races.json'), 'utf8'));
+  const p1Feats = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats.json'), 'utf8'));
+  const p1Cls = id => p1Classes.find(c => c.id === id) || {};
+  const p1SaveOk = (id, fort, ref, will) => {
+    const c = p1Cls(id);
+    const legacy = v => (v === 'high' ? 'good' : 'poor');
+    return c.savingThrows && c.savingThrows.fort === fort && c.savingThrows.ref === ref && c.savingThrows.will === will &&
+      c.fort === legacy(fort) && c.ref === legacy(ref) && c.will === legacy(will);
+  };
+  check(
+    'HeroForge P1: Class base saves match the books (Knight PHB2 T1-4, Spellthief CAd T1-3, Dervish CW T2-7, Ur-Priest CD T2-23, Jade Phoenix Mage ToB T5-5)',
+    p1SaveOk('cls-knight', 'low', 'low', 'high') &&
+    p1SaveOk('cls-spellthief', 'low', 'low', 'high') &&
+    p1SaveOk('cls-dervish', 'low', 'high', 'high') &&
+    p1SaveOk('cls-ur-priest', 'low', 'low', 'high') &&
+    p1SaveOk('cls-jade-phoenix-mage', 'high', 'low', 'low')
+  );
+  const p1Fb = id => (p1Feats.find(f => f.id === id) || {}).isFighterBonusFeat;
+  check(
+    'HeroForge P1: Fighter bonus feat flags match the books (PHB p.101, CW p.103/105, ToB Table 2-1)',
+    p1Fb('feat-tower-shield-proficiency') === false && p1Fb('feat-monkey-grip') === false &&
+    p1Fb('feat-evasive-reflexes') === false && p1Fb('feat-snap-kick') === false && p1Fb('feat-stone-power') === false &&
+    p1Fb('feat-sharp-shooting') === true && p1Fb('feat-martial-study') === true && p1Fb('feat-martial-stance') === true
+  );
+  check(
+    'HeroForge P1: Fighter feat picker trusts an explicit isFighterBonusFeat=false over the Martial/Fighter category fallback (2 predicates)',
+    (progSrc.match(/f\.isFighterBonusFeat === undefined \|\| f\.isFighterBonusFeat === null\) && \(f\.category === 'Fighter'/g) || []).length === 2 &&
+    !/isFighterBonusFeat === true \|\| f\.category === 'Fighter'/.test(progSrc)
+  );
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

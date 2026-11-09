@@ -1352,7 +1352,8 @@
 
       // Parametric classification predicates
       const hasFeatTag = (f, tagLower) => Array.isArray(f.featTags) && f.featTags.some(t => String(t).toLowerCase() === tagLower);
-      const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || hasFeatTag(f, 'fighter bonus'));
+      // An explicit isFighterBonusFeat (true/false) is authoritative; category/tag fallback only applies to legacy entries without the flag.
+      const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || ((f.isFighterBonusFeat === undefined || f.isFighterBonusFeat === null) && (f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || hasFeatTag(f, 'fighter bonus'))));
       const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || (f.source && f.source.toLowerCase().includes('campaign')));
       const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
@@ -4206,7 +4207,8 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
         // Parametric classification predicates
         const hasFeatTag = (f, tagLower) => Array.isArray(f.featTags) && f.featTags.some(t => String(t).toLowerCase() === tagLower);
-        const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || hasFeatTag(f, 'fighter bonus'));
+        // An explicit isFighterBonusFeat (true/false) is authoritative; category/tag fallback only applies to legacy entries without the flag.
+        const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || ((f.isFighterBonusFeat === undefined || f.isFighterBonusFeat === null) && (f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || hasFeatTag(f, 'fighter bonus'))));
         const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || (f.source && f.source.toLowerCase().includes('campaign')));
         const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 

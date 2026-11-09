@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "17da5bc85ad4de4d",
+  "compendiumHash": "ef646a53d42d45f0",
   "generatedAt": "2026-11-04T15:37:19.474Z",
   "totalEntries": 4984,
   "chunks": {
@@ -14,13 +14,13 @@
     "srd_feats.json": {
       "count": 452,
       "bytes": 803679,
-      "hash": "efee94471d8042fd",
+      "hash": "288ce663f298352b",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
       "count": 256,
       "bytes": 680009,
-      "hash": "8d256656e2fb8ec3",
+      "hash": "12cd39d4efd28292",
       "eagerLoad": true
     },
     "srd_combat_rules.json": {
@@ -44,7 +44,7 @@
     "srd_maneuvers.json": {
       "count": 208,
       "bytes": 265371,
-      "hash": "5f2a6d57fe49d69c",
+      "hash": "8abd450b33ddc9dc",
       "eagerLoad": true
     },
     "mic_compendium.json": {
@@ -321,7 +321,8 @@
       "t": "Feat",
       "c": "General",
       "s": "None",
-      "f": "srd_feats.json"
+      "f": "srd_feats.json",
+      "fb": 1
     },
     {
       "id": "feat-forge-ring",
@@ -1187,10 +1188,9 @@
       "id": "feat-tower-shield-proficiency",
       "n": "Tower Shield Proficiency",
       "t": "Feat",
-      "c": "Fighter",
+      "c": "General",
       "s": "None",
-      "f": "srd_feats.json",
-      "fb": 1
+      "f": "srd_feats.json"
     },
     {
       "id": "feat-martial-weapon-proficiency-all",
@@ -3353,10 +3353,9 @@
       "id": "feat-monkey-grip",
       "n": "Monkey Grip",
       "t": "Feat",
-      "c": "Fighter",
+      "c": "General",
       "s": "None",
-      "f": "srd_feats.json",
-      "fb": 1
+      "f": "srd_feats.json"
     },
     {
       "id": "feat-somatic-weaponry",
@@ -3686,8 +3685,7 @@
       "t": "Feat",
       "c": "Martial",
       "s": "None",
-      "f": "srd_feats.json",
-      "fb": 1
+      "f": "srd_feats.json"
     },
     {
       "id": "feat-stone-power",
@@ -3695,8 +3693,7 @@
       "t": "Feat",
       "c": "Martial",
       "s": "None",
-      "f": "srd_feats.json",
-      "fb": 1
+      "f": "srd_feats.json"
     },
     {
       "id": "feat-song-of-the-white-raven",
@@ -3728,8 +3725,7 @@
       "t": "Feat",
       "c": "Martial",
       "s": "None",
-      "f": "srd_feats.json",
-      "fb": 1
+      "f": "srd_feats.json"
     },
     {
       "id": "feat-extra-invocation",
