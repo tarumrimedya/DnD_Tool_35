@@ -8064,10 +8064,10 @@
 
     const STAT_KEYS_TWO_COL = [
       { key: 'str', label: 'STR', name: 'Strength' },
-      { key: 'int', label: 'INT', name: 'Intelligence' },
       { key: 'dex', label: 'DEX', name: 'Dexterity' },
-      { key: 'wis', label: 'WIS', name: 'Wisdom' },
       { key: 'con', label: 'CON', name: 'Constitution' },
+      { key: 'int', label: 'INT', name: 'Intelligence' },
+      { key: 'wis', label: 'WIS', name: 'Wisdom' },
       { key: 'cha', label: 'CHA', name: 'Charisma' }
     ];
     if (typeof window !== 'undefined') {

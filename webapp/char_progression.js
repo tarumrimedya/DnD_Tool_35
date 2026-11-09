@@ -6773,9 +6773,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (subtitle) subtitle.textContent = `${row.className} (Level ${row.level}) • Permanent +1 Ability Score`;
 
       const currentStat = getLevelStatIncrease(row);
-      const statOptions = (typeof STAT_KEYS_TWO_COL !== 'undefined' && Array.isArray(STAT_KEYS_TWO_COL))
-        ? STAT_KEYS_TWO_COL
-        : [STAT_KEYS[0], STAT_KEYS[3], STAT_KEYS[1], STAT_KEYS[4], STAT_KEYS[2], STAT_KEYS[5]];
+      const statOptions = (typeof STAT_KEYS !== 'undefined' && Array.isArray(STAT_KEYS))
+        ? STAT_KEYS
+        : [
+            { key: 'str', label: 'STR', name: 'Strength' },
+            { key: 'dex', label: 'DEX', name: 'Dexterity' },
+            { key: 'con', label: 'CON', name: 'Constitution' },
+            { key: 'int', label: 'INT', name: 'Intelligence' },
+            { key: 'wis', label: 'WIS', name: 'Wisdom' },
+            { key: 'cha', label: 'CHA', name: 'Charisma' }
+          ];
 
       grid.innerHTML = statOptions.map(s => {
         const isSelected = (currentStat === s.key);

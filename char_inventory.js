@@ -9588,8 +9588,9 @@
         }
       });
       actionsApi.register('inventory:unequip-slot-modal', (el, data, event) => {
-        if (data && data.slotKey) {
-          unequipSlot(data.slotKey);
+        const key = (data && data.slotKey) || _currentEquipSlotKey;
+        if (key) {
+          unequipSlot(key);
           closeSlotEquipModal();
         }
       });
@@ -9668,10 +9669,9 @@
         }
       });
       actionsApi.register('inventory:open-item-forge', (el, data, event) => {
-        if (window.DnDUI && typeof window.DnDUI.switchCompendiumTab === 'function') {
-          window.DnDUI.switchCompendiumTab('forge');
-        } else if (typeof openItemForgeModal === 'function') {
-          openItemForgeModal();
+        if (typeof switchTab === 'function') switchTab('tab-database');
+        if (window.RuleMaster && typeof window.RuleMaster.switchInlineMode === 'function') {
+          window.RuleMaster.switchInlineMode('forge');
         }
       });
       actionsApi.register('inventory:fill-pool-form-query', (el, data, event) => {
@@ -9757,13 +9757,6 @@
           selectBuffModalEnergy(data.energy);
         }
       });
-      actionsApi.register('inventory:unequip-slot-modal', (el, data, event) => {
-        const key = (data && data.slotKey) || _currentEquipSlotKey;
-        if (key) {
-          unequipSlot(key);
-          closeSlotEquipModal();
-        }
-      });
       actionsApi.register('inventory:close-slot-equip', (el, data, event) => {
         closeSlotEquipModal();
       });
@@ -9771,8 +9764,8 @@
         if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
       });
       actionsApi.register('inventory:switch-view', (el, data, event) => {
-        if (data && data.view && typeof switchInventoryView === 'function') {
-          switchInventoryView(data.view);
+        if (data && data.view && typeof setBodySlotsView === 'function') {
+          setBodySlotsView(data.view);
         }
       });
       actionsApi.register('inventory:open-buff-modal', (el, data, event) => {

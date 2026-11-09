@@ -10269,7 +10269,7 @@
         restoreAllPreparedSlots();
       });
       Actions.register('spells:open-slots-modal', (el, data, event) => {
-        openSpellSlotsModal(undefined, data.discipline || undefined);
+        openSpellSlotsModal(undefined, data.discipline || data.source || window.currentCompactSlotsSource || undefined);
       });
       Actions.register('spells:prepared-filter-refresh', (el, data, event) => {
         renderPreparedDisciplineView(data.hasPrepared === 'true');

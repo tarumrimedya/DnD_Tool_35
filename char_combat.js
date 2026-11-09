@@ -15849,8 +15849,8 @@
       });
       Actions.register('combat:open-inventory-weapon-compendium', (el, data, event) => {
         toggleSrdSpotlight(false);
-        if (typeof switchMainTab === 'function') switchMainTab('inventory');
-        if (typeof openCompendiumDrawer === 'function') openCompendiumDrawer('weapon');
+        if (typeof switchTab === 'function') switchTab('tab-inventory');
+        if (typeof openCharacterCompendiumDrawer === 'function') openCharacterCompendiumDrawer('weapon');
       });
       Actions.register('combat:select-spotlight-weapon', (el, data, event) => {
         if (data.weaponId !== undefined) selectSrdSpotlightWeapon(data.weaponId);
@@ -15946,12 +15946,12 @@
         }
       });
       Actions.register('combat:toggle-section', (el, data, event) => {
-        if (data.section && typeof toggleCombatSection === 'function') {
-          toggleCombatSection(data.section);
+        if (data.section && typeof toggleCockpitPanel === 'function') {
+          toggleCockpitPanel(data.section);
         }
       });
       Actions.register('combat:toggle-spell-slots-strip', (el, data, event) => {
-        if (typeof toggleCombatSpellSlotsStrip === 'function') toggleCombatSpellSlotsStrip();
+        if (typeof toggleSpellSlotsAccordion === 'function') toggleSpellSlotsAccordion();
       });
       Actions.register('combat:open-spell-slots-modal', (el, data, event) => {
         if (typeof openSpellSlotsModal === 'function') openSpellSlotsModal();
@@ -15960,43 +15960,43 @@
         if (typeof closeSpellSlotsModal === 'function') closeSpellSlotsModal();
       });
       Actions.register('combat:switch-spell-cat', (el, data, event) => {
-        if (data.cat && typeof switchCombatSpellCat === 'function') {
-          switchCombatSpellCat(data.cat);
+        if (data.cat && typeof switchCombatSpellCategory === 'function') {
+          switchCombatSpellCategory(data.cat);
         }
       });
       Actions.register('combat:toggle-spell-reorder', (el, data, event) => {
         if (typeof toggleSpellReorderMode === 'function') toggleSpellReorderMode();
       });
       Actions.register('combat:open-add-weapon-modal', (el, data, event) => {
-        if (typeof openAddWeaponModal === 'function') openAddWeaponModal();
+        if (typeof toggleSrdSpotlight === 'function') toggleSrdSpotlight(true);
       });
       Actions.register('combat:open-save-profile-modal', (el, data, event) => {
         if (typeof openSaveProfileModal === 'function') openSaveProfileModal();
       });
       Actions.register('combat:toggle-melee-mod-reorder', (el, data, event) => {
-        if (typeof toggleMeleeModifierReorderMode === 'function') toggleMeleeModifierReorderMode();
+        if (typeof toggleMeleeReorderMode === 'function') toggleMeleeReorderMode();
       });
       Actions.register('combat:toggle-ranged-mod-reorder', (el, data, event) => {
-        if (typeof toggleRangedModifierReorderMode === 'function') toggleRangedModifierReorderMode();
+        if (typeof toggleRangedReorderMode === 'function') toggleRangedReorderMode();
       });
       Actions.register('combat:roll-attack-only', (el, data, event) => {
-        if (typeof rollCombatAttackOnly === 'function') rollCombatAttackOnly();
+        if (typeof rollMainAttackOnly3D === 'function') rollMainAttackOnly3D();
       });
       Actions.register('combat:roll-damage-only', (el, data, event) => {
-        if (typeof rollCombatDamageOnly === 'function') rollCombatDamageOnly();
+        if (typeof rollMainDamageOnly3D === 'function') rollMainDamageOnly3D();
       });
       Actions.register('combat:roll-attack-and-damage', (el, data, event) => {
-        if (typeof rollCombatAttackAndDamage === 'function') rollCombatAttackAndDamage();
+        if (typeof rollFullAttackSequence3D === 'function') rollFullAttackSequence3D();
       });
       Actions.register('combat:roll-spell-attack', (el, data, event) => {
-        if (typeof rollCombatSpellAttack === 'function') rollCombatSpellAttack();
+        if (typeof initiateCombatSpellCast === 'function') initiateCombatSpellCast();
       });
       Actions.register('combat:cast-selected-spell', (el, data, event) => {
-        if (typeof castCombatSelectedSpell === 'function') castCombatSelectedSpell();
+        if (typeof initiateCombatSpellCast === 'function') initiateCombatSpellCast();
       });
       Actions.register('combat:roll-maneuver-check', (el, data, event) => {
-        if (data.type && typeof rollManeuverCheck === 'function') {
-          rollManeuverCheck(data.type);
+        if (data.type && typeof rollCombatManeuver3D === 'function') {
+          rollCombatManeuver3D(data.type);
         }
       });
       Actions.register('combat:die-click', (el, data, event) => {
@@ -16017,7 +16017,7 @@
         if (typeof rollCustomFormula === 'function') rollCustomFormula();
       });
       Actions.register('combat:save-formula-template', (el, data, event) => {
-        if (typeof addCurrentFormulaToTemplates === 'function') addCurrentFormulaToTemplates();
+        if (typeof saveCurrentFormulaTemplate === 'function') saveCurrentFormulaTemplate();
       });
       Actions.register('combat:clear-dice-history', (el, data, event) => {
         if (typeof clearDiceHistory === 'function') clearDiceHistory();
@@ -16036,7 +16036,7 @@
         }
       });
       Actions.register('combat:close-spotlight-terminal', (el, data, event) => {
-        if (typeof closeSpotlightTerminal === 'function') closeSpotlightTerminal();
+        if (typeof toggleSpotlightTerminal === 'function') toggleSpotlightTerminal(false);
       });
       Actions.register('combat:next-round', (el, data, event) => {
         if (typeof window.advanceNextRound === 'function') window.advanceNextRound();

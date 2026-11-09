@@ -385,6 +385,13 @@ function main() {
         errors++;
       }
     }
+    for (const m of text.matchAll(/\.dataset\.(?:action|changeAction|inputAction|submitAction)\s*=\s*['"]([^'"]+)['"]/g)) {
+      const act = m[1];
+      if (!registeredActions.has(act)) {
+        console.error(`[FAIL] Unregistered dataset UI action assignment in ${rel}: "${act}"`);
+        errors++;
+      }
+    }
   }
 
   // 7. Execute D&D 3.5e RAW RuleEngine & Golden DeriveSheet Automated Regression Suites
