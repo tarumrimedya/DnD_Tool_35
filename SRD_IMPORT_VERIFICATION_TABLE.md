@@ -89,6 +89,18 @@ The name-based matcher must not merge these two. P3 needs a source-aware ID rule
 
 ---
 
+## F. P1 Enrichment (Pages and Requirements)
+
+| Item | Result | Source |
+| :--- | :--- | :--- |
+| Class source pages | **60/60** classes now carry a book page (was 15/75 with a page) | Book contents pages: PHB p.3, DMG p.4, XPH p.3, ToB, PHB2, Complete Mage, CW p.4, CAr p.4 |
+| SRD-renamed psionic PrCs | Psionic Fist = *Fist of Zuoken* (XPH p.144); Slayer = *Illithid Slayer* (XPH p.146) | XPH contents |
+| PrC requirements | Frenzied Berserker, Invisible Blade, Ur-Priest now have structured requirements (alignment / BAB / feats / skills / special) | CW p.34, CW p.45, CD p.70 |
+| Feat source pages | **20** of 290 page-less feats filled. A page is applied only when the builder workbook and the 3.5 feat index agree on book + page. A record labelled SRD and matched to a non-SRD book also needs matching prerequisites. | `tools/srd_import/p1_feat_pages.py` |
+| Not applied (13) | Same-name feats with different prerequisites, e.g. epic/psionic SRD *Two-Weapon Rend*, *Mind Over Body*, *Dragon Wild Shape*, *Fleet of Foot*, *Disguise Spell*, vs their splatbook namesakes. They stay "SRD 3.5e". | — |
+| No second source (257) | Mostly XPH / ELH / DMG epic feats. Those books are scanned, and the feat index does not cover them; left unchanged. | — |
+| `prereqStruct` for 54 feats | Skipped. Feat prerequisites are evaluated from the text (`char_progression.js`); `prereqStruct` only drives the "ability to cast spells" / psionic defaults, so adding it changes nothing. | — |
+
 ## E. Open Item for the User
 
 - **Factotum Reflex save:** *Dungeonscape* is not in `FRP\D&D\Kitap`. If you can check the book or add the PDF, I will settle it. Until then I leave it unchanged.

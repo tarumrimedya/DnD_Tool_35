@@ -15,6 +15,8 @@ See `SRD_IMPORT_GAP_AUDIT_REPORT.md` and `SRD_IMPORT_VERIFICATION_TABLE.md` for 
 | Audit | `analyze.py` | Extracts the builder workbook catalogs and diffs them against `database/*.json` and the Foundry packs. |
 | Books | `pdfq.py`, `pdfimg.py` | Searches or prints a PDF text layer, and renders scanned pages to PNG for visual checks. |
 | P1 | `p1_apply.py` | Applies the book-verified class save and fighter bonus feat fixes. |
+| P1 | `featidx_parse.py`, `p1_feat_pages.py` | Parses the 3.5 feat index. Adds feat pages only where it agrees with the workbook, with prerequisite guards for same-name feats. |
+| P1 | `class_pages_from_book.py`, `classidx_pages.py`, `p1_class_pages.py` | Finds class pages in text-layer books and indexes. Applies class pages from book contents pages and the missing PrC requirements. |
 | P2 | `eqparse.py`, `eqjoin.py` | Parses the crystalkeep 3.5 Equipment Index and joins it with builder workbook `WeaponInfo.csv`. |
 | P2 | `p2_gear.py` | Builds the weapon and armor records. Weapons are kept only when both sources agree, or when the dispute was settled from the book. Armor values come from the book tables. |
 | P2 | `p2_options.py` | Builds the UA traits, the Weak Will flaw, and the Complete Scoundrel skill tricks. |

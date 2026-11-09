@@ -2405,6 +2405,27 @@ function runDeriveSheetTests() {
     (p2By('trick-hidden-blade').prereqStruct.feats || []).includes('Quick Draw') && p2By('trick-hidden-blade').cost.skillPoints === 2 &&
     boulder.subType === 'Boost' && boulder.level === 4 && boulder.discipline === 'Stone Dragon' && boulder.source === 'ToB p.81'
   );
+  // SRD Import P1 (rest): class pages from book contents, PrC requirements, cross-checked feat pages
+  const p1bClasses = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_races.json'), 'utf8')).filter(c => c.type === 'Class');
+  const p1bFeats = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats.json'), 'utf8'));
+  const p1bCls = id => p1bClasses.find(c => c.id === id) || {};
+  const p1bReq = (id, key) => (p1bCls(id).prerequisites || []).filter(r => r.key === key);
+  check(
+    'SRD Import P1: every class source has a book page (PHB/DMG/XPH/ToB/PHB2/CM/CW/CAr contents) and the three PrCs without requirements now have them (CW p.34/45, CD p.70)',
+    p1bClasses.every(c => /p\.?\s?\d/.test(String(c.source || ''))) &&
+    p1bCls('cls-wizard').source === 'SRD / PHB p.55' && p1bCls('cls-thaumaturgist').source === "Dungeon Master's Guide p.196" &&
+    p1bCls('cls-psionic-fist').source === 'Expanded Psionics Handbook p.144' && p1bCls('cls-soulknife').source === 'SRD / XPH p.26' && p1bCls('cls-crusader').source === 'Tome of Battle p.8' &&
+    (p1bReq('cls-frenzied-berserker', 'bab')[0] || {}).min === 6 && p1bReq('cls-frenzied-berserker', 'feat').length === 4 &&
+    p1bReq('cls-invisible-blade', 'skill').some(r => r.skill === 'sense_motive' && r.ranks === 6) &&
+    (p1bReq('cls-ur-priest', 'alignment')[0] || {}).allowed.join() === 'LE,NE,CE' && p1bReq('cls-ur-priest', 'skill').length === 5
+  );
+  const p1bF = id => (p1bFeats.find(f => f.id === id) || {}).source;
+  check(
+    'SRD Import P1: feat pages only where two sources agree; same-name epic/psionic SRD feats are never relabelled with a splatbook page',
+    p1bF('feat-hold-the-line') === 'Complete Warrior p.100' && p1bF('feat-improved-counterspell') === 'SRD / PHB p.95' &&
+    p1bF('feat-two-weapon-rend') === 'SRD 3.5e' && p1bF('feat-mind-over-body') === 'SRD 3.5e' && p1bF('feat-dragon-wild-shape') === 'SRD 3.5e'
+  );
+
   const p2RmSrc = fs.readFileSync(path.join(__dirname, '..', 'rule_master.js'), 'utf8');
   const uiSharedSrc = fs.readFileSync(path.join(__dirname, '..', 'ui_shared.js'), 'utf8');
   check(
