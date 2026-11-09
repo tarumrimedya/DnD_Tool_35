@@ -1696,17 +1696,38 @@
     `;
   }
 
+  // Tier-2 (lazy chunk) entries are copied into the character's customDb as an `srd-snapshot`
+  // so the sheet keeps resolving them without the chunk. Monsters are campaign data, not copied.
+  // The chunk is already in memory here: selectCompendiumEntry() loaded it via fetchEntry().
+  function snapshotLazyEntryIntoCustomDb(entry) {
+    const comp = global.SrdCompendium;
+    if (!entry || !entry.id || entry.type === 'Monster' || !comp || typeof comp.isLazyEntry !== 'function') return null;
+    if (!comp.isLazyEntry(entry.id) || !Array.isArray(global.masterDb)) return null;
+    // Already in this character's customDb (an earlier snapshot or the user's own version): use it as is.
+    const existing = global.masterDb.find(e => e && e.id === entry.id);
+    if (existing) return existing;
+    const snap = comp.snapshotLoadedEntry(entry.id);
+    if (!snap) return null;
+    comp.upsertSnapshot(global.masterDb, snap);
+    return global.masterDb.find(e => e && e.id === snap.id) || snap;
+  }
+
   function equipSelectedCompendiumEntry() {
     const entry = _drawerState.selectedEntry;
     if (!entry) return;
+    const snapshot = snapshotLazyEntryIntoCustomDb(entry);
     if (typeof _drawerState.onEquipCallback === 'function') {
-      _drawerState.onEquipCallback(entry);
+      _drawerState.onEquipCallback(snapshot || entry);
       closeCompendiumDrawer();
       return;
     }
     if (global.RuleMaster && typeof global.RuleMaster.equipItem === 'function') {
-      if (global.RuleMaster.saveEntry) global.RuleMaster.saveEntry(entry);
-      global.RuleMaster.equipItem(entry.id);
+      if (snapshot) {
+        global.RuleMaster.equipItem(snapshot);
+      } else {
+        if (global.RuleMaster.saveEntry) global.RuleMaster.saveEntry(entry);
+        global.RuleMaster.equipItem(entry); // equipItem expects the entry object (an id string crashed in ensureV2/type checks)
+      }
       closeCompendiumDrawer();
     }
   }

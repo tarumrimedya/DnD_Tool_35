@@ -14316,6 +14316,44 @@
     "schemaVersion": 2
   },
   {
+    "id": "flaw-weak-will",
+    "schemaVersion": 2,
+    "name": "Weak Will",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 92",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only",
+    "shortDescription": "-3 penalty on Will saves. Grants +1 Bonus Feat.",
+    "benefit": "-3 penalty on Will saves. Grants +1 Bonus Feat.",
+    "modifiers": [
+      {
+        "target": "save.will",
+        "value": -3,
+        "type": "Untyped"
+      }
+    ],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-3 Will Saves"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 92
+    }
+  },
+  {
     "id": "feat-shield-specialization",
     "schemaVersion": 2,
     "name": "Shield Specialization",

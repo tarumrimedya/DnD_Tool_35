@@ -2353,6 +2353,67 @@ function runDeriveSheetTests() {
     p0Idx.totalEntries === p0Idx.index.length && p0Idx.chunks['srd_feats.json'].count === p1Feats.length
   );
 
+  // HeroForge P2: splatbook gear, traits, skill tricks (lazy chunks) + Weak Will + Boulder Roll
+  const p2Gear = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_equipment_splat.json'), 'utf8'));
+  const p2Opts = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_splat.json'), 'utf8'));
+  const p2Mans = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_maneuvers.json'), 'utf8'));
+  const p2By = id => p2Gear.concat(p2Opts).find(e => e.id === id) || {};
+  const p2AllIds = [];
+  Object.keys(p0Idx.chunks).forEach(name => {
+    const data = JSON.parse(fs.readFileSync(path.join(dbDir, name), 'utf8'));
+    (Array.isArray(data) ? data : []).forEach(e => { if (e && e.id) p2AllIds.push(e.id); });
+  });
+  check(
+    'HeroForge P2: splat gear + traits/tricks live in lazy chunks; ids are unique across every chunk',
+    p0Idx.chunks['srd_equipment_splat.json'].eagerLoad === false && p0Idx.chunks['srd_feats_splat.json'].eagerLoad === false &&
+    Comp.getLazyChunkNames().includes('srd_equipment_splat.json') && Comp.getLazyChunkNames().includes('srd_feats_splat.json') &&
+    p2Gear.filter(e => e.type === 'Weapon').length === 51 && p2Gear.filter(e => e.type !== 'Weapon').length === 25 &&
+    p2Opts.filter(e => e.type === 'Trait').length === 35 && p2Opts.filter(e => e.type === 'Skill Trick').length === 42 &&
+    new Set(p2AllIds).size === p2AllIds.length
+  );
+  const p2Valid = p2Gear.concat(p2Opts).every(e =>
+    e.schemaVersion === 2 && / p\.\s?\d/.test(e.source || '') && e.contentLevel === 'summary' &&
+    ['verified', 'cross-checked'].includes(e.verification) && e.provenance && Array.isArray(e.modifiers) &&
+    (e.type !== 'Weapon' || (Array.isArray(e.modes) && e.modes.length > 0 && e.modes.every(m => /^\d+d\d+$/.test(m.damageParts[0].dice)))) &&
+    (!['Armor', 'Shield'].includes(e.type) || (e.modifiers[0] && e.modifiers[0].target === (e.type === 'Shield' ? 'ac.shield' : 'ac.armor'))));
+  check('HeroForge P2: every new record is Canonical V2 with a book page, contentLevel, verification and provenance; weapon modes and armor AC modifiers are well-formed', p2Valid);
+  const lynx = p2By('wpn-lynxpaw');
+  const lynxOff = (lynx.modes || []).find(m => m.id === 'offhand-head') || {};
+  const mtn = p2By('arm-mountain-plate');
+  check(
+    'HeroForge P2: book-settled weapon stats (Sugliin Frost T4-1, Drow Scorpion Chain RoE, Lynxpaw RotW T7-1, Foot Spike) and armor table values (RoS T7-2)',
+    p2By('wpn-sugliin').damage === '2d8' && p2By('wpn-sugliin').critMult === 2 && p2By('wpn-sugliin').weight === 20 &&
+    p2By('wpn-drow-scorpion-chain').weight === 12 && p2By('wpn-drow-scorpion-chain').ruleFlags.reach === true &&
+    lynx.damage === '1d6' && lynx.critRange === 18 && lynxOff.damageParts[0].dice === '1d4' && lynxOff.damageParts[0].type === 'Slashing' && lynxOff.critMult === 3 &&
+    p2By('wpn-foot-spike').damage === '1d4' && p2By('wpn-foot-spike').critMult === 3 &&
+    mtn.modifiers[0].value === 10 && mtn.maxDex === 0 && mtn.checkPenalty === -9 && mtn.spellFailure === 60 && mtn.weight === 225 && mtn.speed30 === '15 ft.' &&
+    p2By('arm-chitin-armor-stormwrack').modifiers[0].value === 4 && p2By('arm-chitin-armor-races-of-eberron').modifiers[0].value === 2
+  );
+  const p2Mod = (id, target) => ((p2By(id).modifiers || []).find(m => m.target === target && !m.condition) || {}).value;
+  check(
+    'HeroForge P2: UA trait modifiers (Aggressive +2 init / -1 AC, Detached, Quick, Slow) and Weak Will -3 Will (UA p.92)',
+    p2Mod('trait-aggressive', 'init') === 2 && p2Mod('trait-aggressive', 'ac') === -1 &&
+    p2Mod('trait-detached', 'save.will') === 1 && p2Mod('trait-detached', 'save.ref') === -1 &&
+    p2Mod('trait-quick', 'speed.land') === 10 && p2By('trait-quick').ruleFlags.frailHpPenalty === true &&
+    p2By('trait-slow').ruleFlags.hpPerLevel === true && p2By('trait-slow').ruleFlags.halfBaseLandSpeed === true &&
+    ((p1Feats.find(f => f.id === 'flaw-weak-will') || {}).modifiers || [])[0].value === -3
+  );
+  const boulder = p2Mans.find(e => e.id === 'tob-maneuver-boulder-roll') || {};
+  check(
+    'HeroForge P2: Skill tricks carry CS Table 3-2 prerequisites as prereqStruct; Boulder Roll is a 4th-level Stone Dragon boost (ToB p.81)',
+    JSON.stringify(p2By('trick-walk-the-walls').prereqStruct.skills) === JSON.stringify({ climb: 12, tumble: 5 }) &&
+    (p2By('trick-hidden-blade').prereqStruct.feats || []).includes('Quick Draw') && p2By('trick-hidden-blade').cost.skillPoints === 2 &&
+    boulder.subType === 'Boost' && boulder.level === 4 && boulder.discipline === 'Stone Dragon' && boulder.source === 'ToB p.81'
+  );
+  const p2RmSrc = fs.readFileSync(path.join(__dirname, '..', 'rule_master.js'), 'utf8');
+  const uiSharedSrc = fs.readFileSync(path.join(__dirname, '..', 'ui_shared.js'), 'utf8');
+  check(
+    'HeroForge P2: equipping reads V2 weapon stats (category/critRange/critMult) and lazy compendium picks are snapshotted into customDb before equip',
+    (p2RmSrc.match(/const wStats = this\.resolveWeaponStats\(item\);/g) || []).length === 2 &&
+    /snapshotLazyEntryIntoCustomDb\(entry\)/.test(uiSharedSrc) && !/equipItem\(entry\.id\)/.test(uiSharedSrc) &&
+    /SrdCompendium\.ensureEntryInCustomDb\(masterDb, lazyId\)/.test(fs.readFileSync(path.join(__dirname, '..', 'char_combat.js'), 'utf8'))
+  );
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

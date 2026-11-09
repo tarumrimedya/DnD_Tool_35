@@ -15484,6 +15484,16 @@
 
       if (item.type === 'EQUIP_ITEM') {
         _pushTerminalUndoSnapshot(`Equip ${item.entry?.name || 'Item'}`);
+        const lazyId = item.entry && item.entry.id;
+        if (lazyId && typeof SrdCompendium !== 'undefined' && typeof SrdCompendium.isLazyEntry === 'function' &&
+            SrdCompendium.isLazyEntry(lazyId) && typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
+          // Tier-2 entry: load its chunk, copy it into customDb as an srd-snapshot, then equip the full record.
+          SrdCompendium.ensureEntryInCustomDb(masterDb, lazyId).then((snap) => {
+            if (snap && typeof RuleMaster !== 'undefined' && typeof RuleMaster.equipItem === 'function') RuleMaster.equipItem(snap);
+          });
+          toggleSpotlightTerminal(false);
+          return;
+        }
         if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.equipItemWithChildren === 'function') {
           RuleMaster.equipItemWithChildren(item.entry);
         } else if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.equipItem === 'function') {

@@ -2116,6 +2116,23 @@ const RuleMaster = {
   },
 
   // Render Table with Canonical V2 Badges, Embedded Modes, and Actions
+  // Weapon stats: legacy entries keep them in `weaponStats`; Canonical V2 SRD records keep them in
+  // top-level fields (category, critRange, critMult, rangeIncrement, isLight, finessable). Read both,
+  // so an equipped SRD exotic weapon is not silently recorded as Martial with a 20/x2 critical.
+  resolveWeaponStats(item) {
+    const w = (item && item.weaponStats) || {};
+    const rf = (item && item.ruleFlags) || {};
+    const v2Cat = item && ['Simple', 'Martial', 'Exotic'].includes(item.category) ? item.category : null;
+    return Object.assign({}, w, {
+      category: w.category || v2Cat || 'Martial',
+      critMin: Number(w.critMin) || Number(item && item.critRange) || 20,
+      critMult: Number(w.critMult) || Number(item && item.critMult) || 2,
+      rangeIncrement: Number(w.rangeIncrement) || Number(item && item.rangeIncrement) || 0,
+      finessable: w.finessable !== undefined ? Boolean(w.finessable) : Boolean(item && (item.finessable || rf.finessable)),
+      isLight: w.isLight !== undefined ? Boolean(w.isLight) : Boolean(item && (item.isLight || rf.isLight))
+    });
+  },
+
   // Tier-2 SRD snapshot metadata (entries copied into customDb from lazy compendium chunks)
   getSnapshotMeta(entry) {
     const s = entry && entry._snapshot;
@@ -4907,7 +4924,7 @@ Return valid JSON only matching:
       if (!character.weapons) character.weapons = [];
       const isTwoHand = typeof RuleEngine !== 'undefined' && typeof RuleEngine.isTwoHandedWeapon === 'function' ? RuleEngine.isTwoHandedWeapon(item) : false;
       const hasOversized = typeof RuleEngine !== 'undefined' && typeof RuleEngine.hasOversizedWeaponFeat === 'function' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
-      const wStats = item.weaponStats || {};
+      const wStats = this.resolveWeaponStats(item);
       const primaryDamage = item.damageParts?.[0]?.dice || wStats.baseDamage || '1d8';
       const primaryDmgType = item.damageParts?.[0]?.type || (Array.isArray(wStats.damageTypes) ? wStats.damageTypes.join('/') : 'Slashing');
 
@@ -5346,7 +5363,7 @@ Return valid JSON only matching:
       const idx = masterDb.indexOf(rawItem);
       const item = this.ensureV2(rawItem);
       const isWeapon = item.type === 'Weapon';
-      const wStats = item.weaponStats || {};
+      const wStats = this.resolveWeaponStats(item);
       const aStats = item.armorStats || {};
       const primaryDice = item.damageParts?.[0]?.dice || wStats.baseDamage || '1d8';
       const critMin = wStats.critMin || 20;

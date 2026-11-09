@@ -457,9 +457,12 @@
             "Special Ability",
             "Racial Trait",
             "Class Feature",
-            "DM Boon"
+            "DM Boon",
+            "Flaw",
+            "Trait",
+            "Skill Trick"
           ],
-          "description": "Primary rule category of the entity."
+          "description": "Primary rule category of the entity. Flaw = Unearthed Arcana character flaw (grants a bonus feat); Trait = Unearthed Arcana character trait (benefit + drawback); Skill Trick = Complete Scoundrel skill trick (bought with skill points)."
         },
         "slot": {
           "type": "string",
@@ -795,9 +798,9 @@
         },
         "verification": {
           "type": "string",
-          "enum": ["verified", "unverified"],
+          "enum": ["verified", "cross-checked", "unverified"],
           "default": "verified",
-          "description": "'unverified' when the record was imported from a secondary source and has not been checked against the rulebook."
+          "description": "'verified' = checked against the rulebook; 'cross-checked' = two independent secondary sources agree on every structured field (e.g. HeroForge + crystalkeep equipment index); 'unverified' = single secondary source, not checked against the rulebook."
         },
         "provenance": {
           "type": ["object", "null"],

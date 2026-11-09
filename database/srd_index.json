@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "94285f05864dbe54",
+  "compendiumHash": "703474c925a6c804",
   "generatedAt": "2026-11-04T15:37:19.474Z",
-  "totalEntries": 5000,
+  "totalEntries": 5155,
   "chunks": {
     "srd_equipment.json": {
       "count": 1131,
@@ -12,9 +12,9 @@
       "eagerLoad": true
     },
     "srd_feats.json": {
-      "count": 467,
+      "count": 468,
       "bytes": 803679,
-      "hash": "288ce663f298352b",
+      "hash": "0f7e7e5e4c3d8894",
       "eagerLoad": true
     },
     "srd_classes_races.json": {
@@ -42,9 +42,9 @@
       "eagerLoad": false
     },
     "srd_maneuvers.json": {
-      "count": 208,
+      "count": 209,
       "bytes": 265371,
-      "hash": "8abd450b33ddc9dc",
+      "hash": "6510c94d7aa9beb7",
       "eagerLoad": true
     },
     "mic_compendium.json": {
@@ -70,6 +70,18 @@
       "sha256": "",
       "description": "D&D 3.5e Character & Creature Templates (Half-Dragon, Half-Celestial, Half-Fiend, Lich, Vampire, Ghost, Lycanthrope, Phrenic, Shadow, Paragon)",
       "hash": "a62b54527e352028"
+    },
+    "srd_equipment_splat.json": {
+      "count": 76,
+      "bytes": 151742,
+      "hash": "ce48fafd33e50795",
+      "eagerLoad": false
+    },
+    "srd_feats_splat.json": {
+      "count": 77,
+      "bytes": 107675,
+      "hash": "0f3fec9b94d2d0c4",
+      "eagerLoad": false
     }
   },
   "index": [
@@ -42203,6 +42215,1247 @@
       "c": "Cleric Domain",
       "s": "None",
       "f": "srd_domains.json"
+    },
+    {
+      "id": "flaw-weak-will",
+      "n": "Weak Will",
+      "t": "Flaw",
+      "c": "Flaw",
+      "s": "None",
+      "f": "srd_feats.json"
+    },
+    {
+      "id": "tob-maneuver-boulder-roll",
+      "n": "Boulder Roll",
+      "t": "Maneuver",
+      "c": "Stone Dragon",
+      "s": "None",
+      "f": "srd_maneuvers.json",
+      "l": 4
+    },
+    {
+      "id": "wpn-cutlass",
+      "n": "Cutlass",
+      "t": "Weapon",
+      "c": "Martial",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-maul",
+      "n": "Maul",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-dire-pick",
+      "n": "Dire Pick",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-great-scimitar",
+      "n": "Great Scimitar",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-warmace",
+      "n": "Warmace",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-barbed-dagger",
+      "n": "Barbed Dagger",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-throwing-hammer",
+      "n": "Throwing Hammer",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-elven-lightblade",
+      "n": "Elven Lightblade",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-drow-long-knife",
+      "n": "Drow Long Knife",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-gnome-quickrazor",
+      "n": "Gnome Quickrazor",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-flindbar",
+      "n": "Flindbar",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-ice-axe",
+      "n": "Ice Axe",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-iuak",
+      "n": "Iuak",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-quickblade-rapier",
+      "n": "Quickblade Rapier",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-ribbonweave",
+      "n": "Ribbonweave",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-scourge",
+      "n": "Scourge",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-gnome-swordcatcher",
+      "n": "Gnome Swordcatcher",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-elven-thinblade",
+      "n": "Elven Thinblade",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-tigerskull-club",
+      "n": "Tigerskull Club",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-stingray-whip",
+      "n": "Stingray Whip",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-elven-courtblade",
+      "n": "Elven Courtblade",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-goliath-greathammer",
+      "n": "Goliath Greathammer",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-greatspear",
+      "n": "Greatspear",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-double-hammer",
+      "n": "Double Hammer",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-lajatang",
+      "n": "Lajatang",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-longaxe",
+      "n": "Longaxe",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-longstaff",
+      "n": "Longstaff",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-mancatcher",
+      "n": "Mancatcher",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-heavy-poleaxe",
+      "n": "Heavy Poleaxe",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-ritiik",
+      "n": "Ritiik",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-talenta-sharrash",
+      "n": "Talenta Sharrash",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-talenta-tangat",
+      "n": "Talenta Tangat",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-dwarven-warpike",
+      "n": "Dwarven Warpike",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-aquatic-longbow",
+      "n": "Aquatic Longbow",
+      "t": "Weapon",
+      "c": "Martial",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-greater-blowgun",
+      "n": "Greater Blowgun",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-bonebow",
+      "n": "Bonebow",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-boomerang",
+      "n": "Boomerang",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-aquatic-crossbow",
+      "n": "Aquatic Crossbow",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-great-crossbow",
+      "n": "Great Crossbow",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-glot",
+      "n": "Glot",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-greatbow",
+      "n": "Greatbow",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-harpoon",
+      "n": "Harpoon",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-icechucker",
+      "n": "Icechucker",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-skipping-blade",
+      "n": "Skipping Blade",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-skiprock",
+      "n": "Skiprock",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-war-sling",
+      "n": "War Sling",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-sugliin",
+      "n": "Sugliin",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-razor-skipdisk",
+      "n": "Razor Skipdisk",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-drow-scorpion-chain",
+      "n": "Drow Scorpion Chain",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-foot-spike",
+      "n": "Foot Spike",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Main Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "wpn-lynxpaw",
+      "n": "Lynxpaw",
+      "t": "Weapon",
+      "c": "Exotic",
+      "s": "Two-Hand",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-feather-cloak",
+      "n": "Feather Cloak",
+      "t": "Armor",
+      "c": "Light",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-silk-swathes",
+      "n": "Silk Swathes",
+      "t": "Armor",
+      "c": "Light",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "shd-hide-shield",
+      "n": "Hide Shield",
+      "t": "Shield",
+      "c": "Shield",
+      "s": "Off-Hand/Shield",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-cord-armor",
+      "n": "Cord Armor",
+      "t": "Armor",
+      "c": "Light",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-sharkskin-armor",
+      "n": "Sharkskin Armor",
+      "t": "Armor",
+      "c": "Light",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-shell-armor",
+      "n": "Shell Armor",
+      "t": "Armor",
+      "c": "Medium",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-chitin-armor-stormwrack",
+      "n": "Chitin Armor (Stormwrack)",
+      "t": "Armor",
+      "c": "Medium",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-living-coral-armor",
+      "n": "Living Coral Armor",
+      "t": "Armor",
+      "c": "Medium",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-chitin-armor-races-of-eberron",
+      "n": "Chitin Armor (Races of Eberron)",
+      "t": "Armor",
+      "c": "Light",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-scorpion-breastplate",
+      "n": "Scorpion Breastplate",
+      "t": "Armor",
+      "c": "Medium",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-stone-plate",
+      "n": "Stone Plate",
+      "t": "Armor",
+      "c": "Heavy",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-heavy-plate",
+      "n": "Heavy Plate",
+      "t": "Armor",
+      "c": "Heavy",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "shd-steel-tower-shield",
+      "n": "Steel Tower Shield",
+      "t": "Shield",
+      "c": "Shield",
+      "s": "Off-Hand/Shield",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-gnome-twist-cloth",
+      "n": "Gnome Twist Cloth",
+      "t": "Armor",
+      "c": "Light",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-mammoth-leather",
+      "n": "Mammoth Leather",
+      "t": "Armor",
+      "c": "Light",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-interlocking-scale",
+      "n": "Interlocking Scale",
+      "t": "Armor",
+      "c": "Medium",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-tumblers-breastplate",
+      "n": "Tumbler's Breastplate",
+      "t": "Armor",
+      "c": "Medium",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-interlocking-plate",
+      "n": "Interlocking Plate",
+      "t": "Armor",
+      "c": "Heavy",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-battle-plate",
+      "n": "Battle Plate",
+      "t": "Armor",
+      "c": "Heavy",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "arm-mountain-plate",
+      "n": "Mountain Plate",
+      "t": "Armor",
+      "c": "Heavy",
+      "s": "Armor",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "shd-gnome-battle-cloak",
+      "n": "Gnome Battle Cloak",
+      "t": "Shield",
+      "c": "Shield",
+      "s": "Off-Hand/Shield",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "shd-extreme-wooden-shield",
+      "n": "Extreme Wooden Shield",
+      "t": "Shield",
+      "c": "Shield",
+      "s": "Off-Hand/Shield",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "shd-extreme-steel-shield",
+      "n": "Extreme Steel Shield",
+      "t": "Shield",
+      "c": "Shield",
+      "s": "Off-Hand/Shield",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "shd-gauntlet-shield",
+      "n": "Gauntlet Shield",
+      "t": "Shield",
+      "c": "Shield",
+      "s": "Off-Hand/Shield",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "shd-riders-shield",
+      "n": "Rider's Shield",
+      "t": "Shield",
+      "c": "Shield",
+      "s": "Off-Hand/Shield",
+      "f": "srd_equipment_splat.json"
+    },
+    {
+      "id": "trait-abrasive",
+      "n": "Abrasive",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-absent-minded",
+      "n": "Absent-Minded",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-aggressive",
+      "n": "Aggressive",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-brawler",
+      "n": "Brawler",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-cautious",
+      "n": "Cautious",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-detached",
+      "n": "Detached",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-dishonest",
+      "n": "Dishonest",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-distinctive",
+      "n": "Distinctive",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-easygoing",
+      "n": "Easygoing",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-farsighted",
+      "n": "Farsighted",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-focused",
+      "n": "Focused",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-hard-of-hearing",
+      "n": "Hard of Hearing",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-hardy",
+      "n": "Hardy",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-honest",
+      "n": "Honest",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-illiterate",
+      "n": "Illiterate",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-inattentive",
+      "n": "Inattentive",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-musclebound",
+      "n": "Musclebound",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-nearsighted",
+      "n": "Nearsighted",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-nightsighted",
+      "n": "Nightsighted",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-passionate",
+      "n": "Passionate",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-plucky",
+      "n": "Plucky",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-polite",
+      "n": "Polite",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-quick",
+      "n": "Quick",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-reckless",
+      "n": "Reckless",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-relentless",
+      "n": "Relentless",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-saddleborn",
+      "n": "Saddleborn",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-skinny",
+      "n": "Skinny",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-slippery",
+      "n": "Slippery",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-slow",
+      "n": "Slow",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-specialized",
+      "n": "Specialized",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-spellgifted",
+      "n": "Spellgifted",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-stout",
+      "n": "Stout",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-suspicious",
+      "n": "Suspicious",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-torpid",
+      "n": "Torpid",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trait-uncivilized",
+      "n": "Uncivilized",
+      "t": "Trait",
+      "c": "Character Trait",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-acrobatic-backstab",
+      "n": "Acrobatic Backstab",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-assume-quirk",
+      "n": "Assume Quirk",
+      "t": "Skill Trick",
+      "c": "Interaction",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-back-on-your-feet",
+      "n": "Back on Your Feet",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-clarity-of-vision",
+      "n": "Clarity of Vision",
+      "t": "Skill Trick",
+      "c": "Mental",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-clever-improviser",
+      "n": "Clever Improviser",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-collector-of-stories",
+      "n": "Collector of Stories",
+      "t": "Skill Trick",
+      "c": "Mental",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-conceal-spellcasting",
+      "n": "Conceal Spellcasting",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-corner-perch",
+      "n": "Corner Perch",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-dismount-attack",
+      "n": "Dismount Attack",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-easy-escape",
+      "n": "Easy Escape",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-escape-attack",
+      "n": "Escape Attack",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-extreme-leap",
+      "n": "Extreme Leap",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-false-theurgy",
+      "n": "False Theurgy",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-group-fake-out",
+      "n": "Group Fake-Out",
+      "t": "Skill Trick",
+      "c": "Interaction",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-healing-hands",
+      "n": "Healing Hands",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-hidden-blade",
+      "n": "Hidden Blade",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-leaping-climber",
+      "n": "Leaping Climber",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-listen-to-this",
+      "n": "Listen to This",
+      "t": "Skill Trick",
+      "c": "Mental",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-magical-appraisal",
+      "n": "Magical Appraisal",
+      "t": "Skill Trick",
+      "c": "Mental",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-mosquitos-bite",
+      "n": "Mosquito’s Bite",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-never-outnumbered",
+      "n": "Never Outnumbered",
+      "t": "Skill Trick",
+      "c": "Interaction",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-nimble-charge",
+      "n": "Nimble Charge",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-nimble-stand",
+      "n": "Nimble Stand",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-opening-tap",
+      "n": "Opening Tap",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-point-it-out",
+      "n": "Point It Out",
+      "t": "Skill Trick",
+      "c": "Mental",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-quick-escape",
+      "n": "Quick Escape",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-quick-swimmer",
+      "n": "Quick Swimmer",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-second-impression",
+      "n": "Second Impression",
+      "t": "Skill Trick",
+      "c": "Interaction",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-shrouded-dance",
+      "n": "Shrouded Dance",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-slipping-past",
+      "n": "Slipping Past",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-social-recovery",
+      "n": "Social Recovery",
+      "t": "Skill Trick",
+      "c": "Interaction",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-speedy-ascent",
+      "n": "Speedy Ascent",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-spot-the-weak-point",
+      "n": "Spot the Weak Point",
+      "t": "Skill Trick",
+      "c": "Mental",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-sudden-draw",
+      "n": "Sudden Draw",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-swift-concentration",
+      "n": "Swift Concentration",
+      "t": "Skill Trick",
+      "c": "Mental",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-timely-misdirection",
+      "n": "Timely Misdirection",
+      "t": "Skill Trick",
+      "c": "Interaction",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-tumbling-crawl",
+      "n": "Tumbling Crawl",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-twisted-charge",
+      "n": "Twisted Charge",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-up-the-hill",
+      "n": "Up the Hill",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-walk-the-walls",
+      "n": "Walk the Walls",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-wall-jumper",
+      "n": "Wall Jumper",
+      "t": "Skill Trick",
+      "c": "Movement",
+      "s": "None",
+      "f": "srd_feats_splat.json"
+    },
+    {
+      "id": "trick-whip-climber",
+      "n": "Whip Climber",
+      "t": "Skill Trick",
+      "c": "Manipulation",
+      "s": "None",
+      "f": "srd_feats_splat.json"
     }
   ]
 }

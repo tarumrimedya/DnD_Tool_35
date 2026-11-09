@@ -1,0 +1,3727 @@
+[
+  {
+    "id": "trait-abrasive",
+    "schemaVersion": 2,
+    "name": "Abrasive",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.87",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Intimidate checks.",
+    "drawback": "–1 on Diplomacy and Bluff checks.",
+    "shortDescription": "Benefit: +1 on Intimidate checks. Drawback: –1 on Diplomacy and Bluff checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Intimidate checks.</p><p><strong>Drawback:</strong> –1 on Diplomacy and Bluff checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.intimidate",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.diplomacy",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.bluff",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 87
+    }
+  },
+  {
+    "id": "trait-absent-minded",
+    "schemaVersion": 2,
+    "name": "Absent-Minded",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.87",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Knowledge checks (does not allow untrained use).",
+    "drawback": "–1 on Spot and Listen checks.",
+    "shortDescription": "Benefit: +1 on Knowledge checks (does not allow untrained use). Drawback: –1 on Spot and Listen checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Knowledge checks (does not allow untrained use).</p><p><strong>Drawback:</strong> –1 on Spot and Listen checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.knowledge",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.spot",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.listen",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 87
+    }
+  },
+  {
+    "id": "trait-aggressive",
+    "schemaVersion": 2,
+    "name": "Aggressive",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.87",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+2 on initiative checks.",
+    "drawback": "–1 penalty to Armor Class.",
+    "shortDescription": "Benefit: +2 on initiative checks. Drawback: –1 penalty to Armor Class.",
+    "description": "<p><strong>Benefit:</strong> +2 on initiative checks.</p><p><strong>Drawback:</strong> –1 penalty to Armor Class.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "init",
+        "value": 2,
+        "formula": "2",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "ac",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 87
+    }
+  },
+  {
+    "id": "trait-brawler",
+    "schemaVersion": 2,
+    "name": "Brawler",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.87",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "Not available to a character with Improved Unarmed Strike; lost if that feat is gained later.",
+    "prereq": "Not available to a character with Improved Unarmed Strike; lost if that feat is gained later.",
+    "benefit": "+1 on unarmed attack rolls and grapple checks.",
+    "drawback": "–1 on all other attack rolls.",
+    "shortDescription": "Benefit: +1 on unarmed attack rolls and grapple checks. Drawback: –1 on all other attack rolls. Special: Not available to a character with Improved Unarmed Strike; lost if that feat is gained later.",
+    "description": "<p><strong>Benefit:</strong> +1 on unarmed attack rolls and grapple checks.</p><p><strong>Drawback:</strong> –1 on all other attack rolls.</p><p><strong>Special:</strong> Not available to a character with Improved Unarmed Strike; lost if that feat is gained later.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "grapple",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "attack.all",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": "Unarmed attacks (not natural weapons)"
+      },
+      {
+        "target": "attack.all",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": "All attack rolls other than unarmed attacks and grapple checks"
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 87
+    }
+  },
+  {
+    "id": "trait-cautious",
+    "schemaVersion": 2,
+    "name": "Cautious",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.87",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "Not available to a character immune to fear; benefit lost if immunity is gained later.",
+    "prereq": "Not available to a character immune to fear; benefit lost if immunity is gained later.",
+    "benefit": "+1 additional dodge bonus to AC when fighting defensively or using total defense.",
+    "drawback": "–1 on saves against fear effects.",
+    "shortDescription": "Benefit: +1 additional dodge bonus to AC when fighting defensively or using total defense. Drawback: –1 on saves against fear effects. Special: Not available to a character immune to fear; benefit lost if immunity is gained later.",
+    "description": "<p><strong>Benefit:</strong> +1 additional dodge bonus to AC when fighting defensively or using total defense.</p><p><strong>Drawback:</strong> –1 on saves against fear effects.</p><p><strong>Special:</strong> Not available to a character immune to fear; benefit lost if immunity is gained later.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.dodge",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": "When fighting defensively or taking the total defense action"
+      },
+      {
+        "target": "save.all",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": "vs Fear"
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 87
+    }
+  },
+  {
+    "id": "trait-detached",
+    "schemaVersion": 2,
+    "name": "Detached",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.87",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Will saves.",
+    "drawback": "–1 on Reflex saves.",
+    "shortDescription": "Benefit: +1 on Will saves. Drawback: –1 on Reflex saves.",
+    "description": "<p><strong>Benefit:</strong> +1 on Will saves.</p><p><strong>Drawback:</strong> –1 on Reflex saves.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "save.will",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "save.ref",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 87
+    }
+  },
+  {
+    "id": "trait-dishonest",
+    "schemaVersion": 2,
+    "name": "Dishonest",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.87",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Bluff checks.",
+    "drawback": "–2 on Diplomacy checks.",
+    "shortDescription": "Benefit: +1 on Bluff checks. Drawback: –2 on Diplomacy checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Bluff checks.</p><p><strong>Drawback:</strong> –2 on Diplomacy checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.bluff",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.diplomacy",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 87
+    }
+  },
+  {
+    "id": "trait-distinctive",
+    "schemaVersion": 2,
+    "name": "Distinctive",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.87",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "Only with the Reputation variant (Unearthed Arcana chapter 6).",
+    "prereq": "Only with the Reputation variant (Unearthed Arcana chapter 6).",
+    "benefit": "+1 on Reputation checks (Reputation variant).",
+    "drawback": "–1 on Disguise checks.",
+    "shortDescription": "Benefit: +1 on Reputation checks (Reputation variant). Drawback: –1 on Disguise checks. Special: Only with the Reputation variant (Unearthed Arcana chapter 6).",
+    "description": "<p><strong>Benefit:</strong> +1 on Reputation checks (Reputation variant).</p><p><strong>Drawback:</strong> –1 on Disguise checks.</p><p><strong>Special:</strong> Only with the Reputation variant (Unearthed Arcana chapter 6).</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.disguise",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "reputationBonus": 1,
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 87
+    }
+  },
+  {
+    "id": "trait-easygoing",
+    "schemaVersion": 2,
+    "name": "Easygoing",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.87",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Gather Information checks.",
+    "drawback": "–1 on Intimidate and Sense Motive checks.",
+    "shortDescription": "Benefit: +1 on Gather Information checks. Drawback: –1 on Intimidate and Sense Motive checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Gather Information checks.</p><p><strong>Drawback:</strong> –1 on Intimidate and Sense Motive checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.gather_information",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.intimidate",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.sense_motive",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 87
+    }
+  },
+  {
+    "id": "trait-farsighted",
+    "schemaVersion": 2,
+    "name": "Farsighted",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.87",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Spot checks.",
+    "drawback": "–2 on Search checks.",
+    "shortDescription": "Benefit: +1 on Spot checks. Drawback: –2 on Search checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Spot checks.</p><p><strong>Drawback:</strong> –2 on Search checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.spot",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.search",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 87
+    }
+  },
+  {
+    "id": "trait-focused",
+    "schemaVersion": 2,
+    "name": "Focused",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.88",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Concentration checks.",
+    "drawback": "–1 on Spot and Listen checks.",
+    "shortDescription": "Benefit: +1 on Concentration checks. Drawback: –1 on Spot and Listen checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Concentration checks.</p><p><strong>Drawback:</strong> –1 on Spot and Listen checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.concentration",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.spot",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.listen",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 88
+    }
+  },
+  {
+    "id": "trait-hard-of-hearing",
+    "schemaVersion": 2,
+    "name": "Hard of Hearing",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.88",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Spot checks.",
+    "drawback": "–2 on Listen checks.",
+    "shortDescription": "Benefit: +1 on Spot checks. Drawback: –2 on Listen checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Spot checks.</p><p><strong>Drawback:</strong> –2 on Listen checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.spot",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.listen",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 88
+    }
+  },
+  {
+    "id": "trait-hardy",
+    "schemaVersion": 2,
+    "name": "Hardy",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.88",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Fortitude saves.",
+    "drawback": "–1 on Reflex saves.",
+    "shortDescription": "Benefit: +1 on Fortitude saves. Drawback: –1 on Reflex saves.",
+    "description": "<p><strong>Benefit:</strong> +1 on Fortitude saves.</p><p><strong>Drawback:</strong> –1 on Reflex saves.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "save.fort",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "save.ref",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 88
+    }
+  },
+  {
+    "id": "trait-honest",
+    "schemaVersion": 2,
+    "name": "Honest",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.88",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Diplomacy checks.",
+    "drawback": "–1 on Bluff and Sense Motive checks.",
+    "shortDescription": "Benefit: +1 on Diplomacy checks. Drawback: –1 on Bluff and Sense Motive checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Diplomacy checks.</p><p><strong>Drawback:</strong> –1 on Bluff and Sense Motive checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.diplomacy",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.bluff",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.sense_motive",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 88
+    }
+  },
+  {
+    "id": "trait-illiterate",
+    "schemaVersion": 2,
+    "name": "Illiterate",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.88",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "Not available if already illiterate due to race, class, or another reason.",
+    "prereq": "Not available if already illiterate due to race, class, or another reason.",
+    "benefit": "+1 on checks with one chosen skill (not Decipher Script or Forgery).",
+    "drawback": "You cannot read; spending 2 skill points makes you literate and removes the drawback.",
+    "shortDescription": "Benefit: +1 on checks with one chosen skill (not Decipher Script or Forgery). Drawback: You cannot read; spending 2 skill points makes you literate and removes the drawback. Special: Not available if already illiterate due to race, class, or another reason.",
+    "description": "<p><strong>Benefit:</strong> +1 on checks with one chosen skill (not Decipher Script or Forgery).</p><p><strong>Drawback:</strong> You cannot read; spending 2 skill points makes you literate and removes the drawback.</p><p><strong>Special:</strong> Not available if already illiterate due to race, class, or another reason.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "requiresChoice": "skill",
+      "illiterate": true,
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 88
+    }
+  },
+  {
+    "id": "trait-inattentive",
+    "schemaVersion": 2,
+    "name": "Inattentive",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.88",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "Requires the complex skill checks variant; may be taken more than once for different skills.",
+    "prereq": "Requires the complex skill checks variant; may be taken more than once for different skills.",
+    "benefit": "+1 on simple checks with one chosen skill that allows complex skill checks.",
+    "drawback": "–4 on complex skill checks with that skill.",
+    "shortDescription": "Benefit: +1 on simple checks with one chosen skill that allows complex skill checks. Drawback: –4 on complex skill checks with that skill. Special: Requires the complex skill checks variant; may be taken more than once for different skills.",
+    "description": "<p><strong>Benefit:</strong> +1 on simple checks with one chosen skill that allows complex skill checks.</p><p><strong>Drawback:</strong> –4 on complex skill checks with that skill.</p><p><strong>Special:</strong> Requires the complex skill checks variant; may be taken more than once for different skills.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "requiresChoice": "skill",
+      "complexSkillChecksVariant": true,
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 88
+    }
+  },
+  {
+    "id": "trait-musclebound",
+    "schemaVersion": 2,
+    "name": "Musclebound",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.89",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Strength-based skill checks and ability checks.",
+    "drawback": "–2 on Dexterity-based skill checks and ability checks.",
+    "shortDescription": "Benefit: +1 on Strength-based skill checks and ability checks. Drawback: –2 on Dexterity-based skill checks and ability checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Strength-based skill checks and ability checks.</p><p><strong>Drawback:</strong> –2 on Dexterity-based skill checks and ability checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.climb",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.jump",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.swim",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "ability.str_check",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.balance",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.escape_artist",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.hide",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.move_silently",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.open_lock",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.ride",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.sleight_of_hand",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.tumble",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.use_rope",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "ability.dex_check",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": "Dexterity ability checks"
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 89
+    }
+  },
+  {
+    "id": "trait-nearsighted",
+    "schemaVersion": 2,
+    "name": "Nearsighted",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.89",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Search checks.",
+    "drawback": "–1 on Spot checks.",
+    "shortDescription": "Benefit: +1 on Search checks. Drawback: –1 on Spot checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Search checks.</p><p><strong>Drawback:</strong> –1 on Spot checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.search",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.spot",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 89
+    }
+  },
+  {
+    "id": "trait-nightsighted",
+    "schemaVersion": 2,
+    "name": "Nightsighted",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.89",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "Requires darkvision as a racial ability.",
+    "prereq": "Requires darkvision as a racial ability.",
+    "benefit": "+10 feet to the range of your darkvision.",
+    "drawback": "–1 on Spot checks in areas of bright light.",
+    "shortDescription": "Benefit: +10 feet to the range of your darkvision. Drawback: –1 on Spot checks in areas of bright light. Special: Requires darkvision as a racial ability.",
+    "description": "<p><strong>Benefit:</strong> +10 feet to the range of your darkvision.</p><p><strong>Drawback:</strong> –1 on Spot checks in areas of bright light.</p><p><strong>Special:</strong> Requires darkvision as a racial ability.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.spot",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": "In bright light"
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "darkvisionBonusFt": 10,
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 89
+    }
+  },
+  {
+    "id": "trait-passionate",
+    "schemaVersion": 2,
+    "name": "Passionate",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.89",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Fortitude saves.",
+    "drawback": "–1 on Will saves.",
+    "shortDescription": "Benefit: +1 on Fortitude saves. Drawback: –1 on Will saves.",
+    "description": "<p><strong>Benefit:</strong> +1 on Fortitude saves.</p><p><strong>Drawback:</strong> –1 on Will saves.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "save.fort",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "save.will",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 89
+    }
+  },
+  {
+    "id": "trait-plucky",
+    "schemaVersion": 2,
+    "name": "Plucky",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.89",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Will saves.",
+    "drawback": "–1 on Fortitude saves.",
+    "shortDescription": "Benefit: +1 on Will saves. Drawback: –1 on Fortitude saves.",
+    "description": "<p><strong>Benefit:</strong> +1 on Will saves.</p><p><strong>Drawback:</strong> –1 on Fortitude saves.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "save.will",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "save.fort",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 89
+    }
+  },
+  {
+    "id": "trait-polite",
+    "schemaVersion": 2,
+    "name": "Polite",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.89",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Diplomacy checks.",
+    "drawback": "–2 on Intimidate checks.",
+    "shortDescription": "Benefit: +1 on Diplomacy checks. Drawback: –2 on Intimidate checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Diplomacy checks.</p><p><strong>Drawback:</strong> –2 on Intimidate checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.diplomacy",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.intimidate",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 89
+    }
+  },
+  {
+    "id": "trait-quick",
+    "schemaVersion": 2,
+    "name": "Quick",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.89",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "Requires Constitution 4 or higher.",
+    "prereq": "Requires Constitution 4 or higher.",
+    "benefit": "+10 feet to base land speed (or to your highest speed if you have no land speed).",
+    "drawback": "–1 hit point per level, including 1st (minimum 0 per level).",
+    "shortDescription": "Benefit: +10 feet to base land speed (or to your highest speed if you have no land speed). Drawback: –1 hit point per level, including 1st (minimum 0 per level). Special: Requires Constitution 4 or higher.",
+    "description": "<p><strong>Benefit:</strong> +10 feet to base land speed (or to your highest speed if you have no land speed).</p><p><strong>Drawback:</strong> –1 hit point per level, including 1st (minimum 0 per level).</p><p><strong>Special:</strong> Requires Constitution 4 or higher.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "speed.land",
+        "value": 10,
+        "formula": "10",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "frailHpPenalty": true,
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 89
+    }
+  },
+  {
+    "id": "trait-reckless",
+    "schemaVersion": 2,
+    "name": "Reckless",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.89",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on damage rolls after successful melee attacks.",
+    "drawback": "–1 on melee attack rolls.",
+    "shortDescription": "Benefit: +1 on damage rolls after successful melee attacks. Drawback: –1 on melee attack rolls.",
+    "description": "<p><strong>Benefit:</strong> +1 on damage rolls after successful melee attacks.</p><p><strong>Drawback:</strong> –1 on melee attack rolls.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "damage.melee",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "attack.melee",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 89
+    }
+  },
+  {
+    "id": "trait-relentless",
+    "schemaVersion": 2,
+    "name": "Relentless",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.90",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+2 on Constitution checks and other checks to continue tiring activities (as listed for Endurance).",
+    "drawback": "Effects that would fatigue you exhaust you instead.",
+    "shortDescription": "Benefit: +2 on Constitution checks and other checks to continue tiring activities (as listed for Endurance). Drawback: Effects that would fatigue you exhaust you instead.",
+    "description": "<p><strong>Benefit:</strong> +2 on Constitution checks and other checks to continue tiring activities (as listed for Endurance).</p><p><strong>Drawback:</strong> Effects that would fatigue you exhaust you instead.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.con_check",
+        "value": 2,
+        "formula": "2",
+        "type": "Untyped",
+        "condition": "Checks to continue tiring activities (Endurance list)"
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "fatigueBecomesExhaustion": true,
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 90
+    }
+  },
+  {
+    "id": "trait-saddleborn",
+    "schemaVersion": 2,
+    "name": "Saddleborn",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.90",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Ride checks.",
+    "drawback": "–1 on Handle Animal checks.",
+    "shortDescription": "Benefit: +1 on Ride checks. Drawback: –1 on Handle Animal checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Ride checks.</p><p><strong>Drawback:</strong> –1 on Handle Animal checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.ride",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.handle_animal",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 90
+    }
+  },
+  {
+    "id": "trait-skinny",
+    "schemaVersion": 2,
+    "name": "Skinny",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.90",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Escape Artist checks.",
+    "drawback": "–2 on Strength checks to avoid being bull rushed or overrun.",
+    "shortDescription": "Benefit: +1 on Escape Artist checks. Drawback: –2 on Strength checks to avoid being bull rushed or overrun.",
+    "description": "<p><strong>Benefit:</strong> +1 on Escape Artist checks.</p><p><strong>Drawback:</strong> –2 on Strength checks to avoid being bull rushed or overrun.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.escape_artist",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "ability.str_check",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": "vs Bull Rush / Overrun"
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 90
+    }
+  },
+  {
+    "id": "trait-slippery",
+    "schemaVersion": 2,
+    "name": "Slippery",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.90",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Escape Artist checks and grapple checks made to escape or avoid a grapple.",
+    "drawback": "–1 on all other grapple checks.",
+    "shortDescription": "Benefit: +1 on Escape Artist checks and grapple checks made to escape or avoid a grapple. Drawback: –1 on all other grapple checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Escape Artist checks and grapple checks made to escape or avoid a grapple.</p><p><strong>Drawback:</strong> –1 on all other grapple checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.escape_artist",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": "To escape a grapple"
+      },
+      {
+        "target": "grapple",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": "To escape or avoid being grappled"
+      },
+      {
+        "target": "grapple",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": "All other grapple checks"
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 90
+    }
+  },
+  {
+    "id": "trait-slow",
+    "schemaVersion": 2,
+    "name": "Slow",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.90",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "Requires a base land speed of at least 20 feet.",
+    "prereq": "Requires a base land speed of at least 20 feet.",
+    "benefit": "+1 hit point per level.",
+    "drawback": "Base land speed is halved (round down to the nearest 5-foot interval).",
+    "shortDescription": "Benefit: +1 hit point per level. Drawback: Base land speed is halved (round down to the nearest 5-foot interval). Special: Requires a base land speed of at least 20 feet.",
+    "description": "<p><strong>Benefit:</strong> +1 hit point per level.</p><p><strong>Drawback:</strong> Base land speed is halved (round down to the nearest 5-foot interval).</p><p><strong>Special:</strong> Requires a base land speed of at least 20 feet.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "hpPerLevel": true,
+      "halfBaseLandSpeed": true,
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 90
+    }
+  },
+  {
+    "id": "trait-specialized",
+    "schemaVersion": 2,
+    "name": "Specialized",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.90",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on checks with one chosen Craft, Knowledge, or Profession skill.",
+    "drawback": "–2 on all other checks with that skill group.",
+    "shortDescription": "Benefit: +1 on checks with one chosen Craft, Knowledge, or Profession skill. Drawback: –2 on all other checks with that skill group.",
+    "description": "<p><strong>Benefit:</strong> +1 on checks with one chosen Craft, Knowledge, or Profession skill.</p><p><strong>Drawback:</strong> –2 on all other checks with that skill group.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "requiresChoice": "skillSubtype",
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 90
+    }
+  },
+  {
+    "id": "trait-spellgifted",
+    "schemaVersion": 2,
+    "name": "Spellgifted",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.90",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 caster level for spells of one chosen school.",
+    "drawback": "–1 caster level for spells of all other schools.",
+    "shortDescription": "Benefit: +1 caster level for spells of one chosen school. Drawback: –1 caster level for spells of all other schools.",
+    "description": "<p><strong>Benefit:</strong> +1 caster level for spells of one chosen school.</p><p><strong>Drawback:</strong> –1 caster level for spells of all other schools.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "requiresChoice": "school",
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 90
+    }
+  },
+  {
+    "id": "trait-stout",
+    "schemaVersion": 2,
+    "name": "Stout",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.90",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+2 on Strength checks to avoid being bull rushed or overrun.",
+    "drawback": "–1 on Escape Artist checks.",
+    "shortDescription": "Benefit: +2 on Strength checks to avoid being bull rushed or overrun. Drawback: –1 on Escape Artist checks.",
+    "description": "<p><strong>Benefit:</strong> +2 on Strength checks to avoid being bull rushed or overrun.</p><p><strong>Drawback:</strong> –1 on Escape Artist checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.str_check",
+        "value": 2,
+        "formula": "2",
+        "type": "Untyped",
+        "condition": "vs Bull Rush / Overrun"
+      },
+      {
+        "target": "skill.escape_artist",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 90
+    }
+  },
+  {
+    "id": "trait-suspicious",
+    "schemaVersion": 2,
+    "name": "Suspicious",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.90",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Sense Motive checks.",
+    "drawback": "–1 on Diplomacy and Intimidate checks.",
+    "shortDescription": "Benefit: +1 on Sense Motive checks. Drawback: –1 on Diplomacy and Intimidate checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Sense Motive checks.</p><p><strong>Drawback:</strong> –1 on Diplomacy and Intimidate checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.sense_motive",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.diplomacy",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.intimidate",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 90
+    }
+  },
+  {
+    "id": "trait-torpid",
+    "schemaVersion": 2,
+    "name": "Torpid",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.90",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on saves against enchantment (compulsion) effects.",
+    "drawback": "–2 on initiative checks.",
+    "shortDescription": "Benefit: +1 on saves against enchantment (compulsion) effects. Drawback: –2 on initiative checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on saves against enchantment (compulsion) effects.</p><p><strong>Drawback:</strong> –2 on initiative checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "save.all",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": "vs Enchantment (Compulsion)"
+      },
+      {
+        "target": "init",
+        "value": -2,
+        "formula": "-2",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 90
+    }
+  },
+  {
+    "id": "trait-uncivilized",
+    "schemaVersion": 2,
+    "name": "Uncivilized",
+    "type": "Trait",
+    "category": "Character Trait",
+    "source": "Unearthed Arcana p.90",
+    "slot": "None",
+    "action": "Passive",
+    "prerequisites": "",
+    "prereq": "",
+    "benefit": "+1 on Handle Animal checks and wild empathy checks.",
+    "drawback": "–1 on Bluff, Diplomacy, and Gather Information checks.",
+    "shortDescription": "Benefit: +1 on Handle Animal checks and wild empathy checks. Drawback: –1 on Bluff, Diplomacy, and Gather Information checks.",
+    "description": "<p><strong>Benefit:</strong> +1 on Handle Animal checks and wild empathy checks.</p><p><strong>Drawback:</strong> –1 on Bluff, Diplomacy, and Gather Information checks.</p>",
+    "tags": [
+      "trait",
+      "unearthed arcana"
+    ],
+    "modifiers": [
+      {
+        "target": "skill.handle_animal",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "wildEmpathy",
+        "value": 1,
+        "formula": "1",
+        "type": "Untyped",
+        "condition": "Wild empathy checks"
+      },
+      {
+        "target": "skill.bluff",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.diplomacy",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      },
+      {
+        "target": "skill.gather_information",
+        "value": -1,
+        "formula": "-1",
+        "type": "Untyped",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isTrait": true
+    },
+    "tacticalBadges": [
+      "Character Trait"
+    ],
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 90
+    }
+  },
+  {
+    "id": "trick-acrobatic-backstab",
+    "schemaVersion": 2,
+    "name": "Acrobatic Backstab",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.84",
+    "slot": "None",
+    "prerequisites": "Tumble 12 ranks",
+    "prereq": "Tumble 12 ranks",
+    "prereqStruct": {
+      "skills": {
+        "tumble": 12
+      }
+    },
+    "benefit": "After tumbling through a foe’s space, that foe is flat-footed against your next melee attack.",
+    "shortDescription": "After tumbling through a foe’s space, that foe is flat-footed against your next melee attack.",
+    "description": "<p><strong>Prerequisite:</strong> Tumble 12 ranks.</p><p><strong>Benefit:</strong> After tumbling through a foe’s space, that foe is flat-footed against your next melee attack.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 84,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-assume-quirk",
+    "schemaVersion": 2,
+    "name": "Assume Quirk",
+    "type": "Skill Trick",
+    "category": "Interaction",
+    "source": "Complete Scoundrel p.85",
+    "slot": "None",
+    "prerequisites": "Disguise 5 ranks",
+    "prereq": "Disguise 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "disguise": 5
+      }
+    },
+    "benefit": "People familiar with the person you impersonate gain no bonus to see through your disguise.",
+    "shortDescription": "People familiar with the person you impersonate gain no bonus to see through your disguise.",
+    "description": "<p><strong>Prerequisite:</strong> Disguise 5 ranks.</p><p><strong>Benefit:</strong> People familiar with the person you impersonate gain no bonus to see through your disguise.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "interaction",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 85,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-back-on-your-feet",
+    "schemaVersion": 2,
+    "name": "Back on Your Feet",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.85",
+    "slot": "None",
+    "prerequisites": "Tumble 12 ranks",
+    "prereq": "Tumble 12 ranks",
+    "prereqStruct": {
+      "skills": {
+        "tumble": 12
+      }
+    },
+    "benefit": "Stand up from prone as an immediate action.",
+    "shortDescription": "Stand up from prone as an immediate action.",
+    "description": "<p><strong>Prerequisite:</strong> Tumble 12 ranks.</p><p><strong>Benefit:</strong> Stand up from prone as an immediate action.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 85,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-clarity-of-vision",
+    "schemaVersion": 2,
+    "name": "Clarity of Vision",
+    "type": "Skill Trick",
+    "category": "Mental",
+    "source": "Complete Scoundrel p.85",
+    "slot": "None",
+    "prerequisites": "Spot 12 ranks",
+    "prereq": "Spot 12 ranks",
+    "prereqStruct": {
+      "skills": {
+        "spot": 12
+      }
+    },
+    "benefit": "Notice invisible creatures for 1 round.",
+    "shortDescription": "Notice invisible creatures for 1 round.",
+    "description": "<p><strong>Prerequisite:</strong> Spot 12 ranks.</p><p><strong>Benefit:</strong> Notice invisible creatures for 1 round.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "mental",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 85,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-clever-improviser",
+    "schemaVersion": 2,
+    "name": "Clever Improviser",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.85",
+    "slot": "None",
+    "prerequisites": "Disable Device 5 ranks, Open Lock 5 ranks",
+    "prereq": "Disable Device 5 ranks, Open Lock 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "disable_device": 5,
+        "open_lock": 5
+      }
+    },
+    "benefit": "No penalty on Disable Device or Open Lock checks for working without tools.",
+    "shortDescription": "No penalty on Disable Device or Open Lock checks for working without tools.",
+    "description": "<p><strong>Prerequisite:</strong> Disable Device 5 ranks, Open Lock 5 ranks.</p><p><strong>Benefit:</strong> No penalty on Disable Device or Open Lock checks for working without tools.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 85,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-collector-of-stories",
+    "schemaVersion": 2,
+    "name": "Collector of Stories",
+    "type": "Skill Trick",
+    "category": "Mental",
+    "source": "Complete Scoundrel p.85",
+    "slot": "None",
+    "prerequisites": "Knowledge (any) 5 ranks",
+    "prereq": "Knowledge (any) 5 ranks",
+    "prereqStruct": {
+      "other": [
+        "Knowledge (any) 5 ranks"
+      ]
+    },
+    "benefit": "+5 on Knowledge checks made to identify creatures.",
+    "shortDescription": "+5 on Knowledge checks made to identify creatures.",
+    "description": "<p><strong>Prerequisite:</strong> Knowledge (any) 5 ranks.</p><p><strong>Benefit:</strong> +5 on Knowledge checks made to identify creatures.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "mental",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 85,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-conceal-spellcasting",
+    "schemaVersion": 2,
+    "name": "Conceal Spellcasting",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.85",
+    "slot": "None",
+    "prerequisites": "Concentration 1 rank, Sleight of Hand 5 ranks, Spellcraft 1 rank",
+    "prereq": "Concentration 1 rank, Sleight of Hand 5 ranks, Spellcraft 1 rank",
+    "prereqStruct": {
+      "skills": {
+        "concentration": 1,
+        "sleight_of_hand": 5,
+        "spellcraft": 1
+      }
+    },
+    "benefit": "Hide the fact that you are casting a spell from onlookers.",
+    "shortDescription": "Hide the fact that you are casting a spell from onlookers.",
+    "description": "<p><strong>Prerequisite:</strong> Concentration 1 rank, Sleight of Hand 5 ranks, Spellcraft 1 rank.</p><p><strong>Benefit:</strong> Hide the fact that you are casting a spell from onlookers.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 85,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-corner-perch",
+    "schemaVersion": 2,
+    "name": "Corner Perch",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.85",
+    "slot": "None",
+    "prerequisites": "Climb 8 ranks",
+    "prereq": "Climb 8 ranks",
+    "prereqStruct": {
+      "skills": {
+        "climb": 8
+      }
+    },
+    "benefit": "Brace yourself in a corner or chimney so both hands stay free.",
+    "shortDescription": "Brace yourself in a corner or chimney so both hands stay free.",
+    "description": "<p><strong>Prerequisite:</strong> Climb 8 ranks.</p><p><strong>Benefit:</strong> Brace yourself in a corner or chimney so both hands stay free.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 85,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-dismount-attack",
+    "schemaVersion": 2,
+    "name": "Dismount Attack",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.86",
+    "slot": "None",
+    "prerequisites": "Ride 5 ranks",
+    "prereq": "Ride 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "ride": 5
+      }
+    },
+    "benefit": "Leap from a moving mount and charge an enemy in the same round.",
+    "shortDescription": "Leap from a moving mount and charge an enemy in the same round.",
+    "description": "<p><strong>Prerequisite:</strong> Ride 5 ranks.</p><p><strong>Benefit:</strong> Leap from a moving mount and charge an enemy in the same round.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 86,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-easy-escape",
+    "schemaVersion": 2,
+    "name": "Easy Escape",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.86",
+    "slot": "None",
+    "prerequisites": "Medium or smaller size, Escape Artist 8 ranks",
+    "prereq": "Medium or smaller size, Escape Artist 8 ranks",
+    "prereqStruct": {
+      "skills": {
+        "escape_artist": 8
+      },
+      "other": [
+        "Medium or smaller size"
+      ]
+    },
+    "benefit": "Bonus on checks to escape a grapple or pin.",
+    "shortDescription": "Bonus on checks to escape a grapple or pin.",
+    "description": "<p><strong>Prerequisite:</strong> Medium or smaller size, Escape Artist 8 ranks.</p><p><strong>Benefit:</strong> Bonus on checks to escape a grapple or pin.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 86,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-escape-attack",
+    "schemaVersion": 2,
+    "name": "Escape Attack",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.86",
+    "slot": "None",
+    "prerequisites": "Escape Artist 8 ranks",
+    "prereq": "Escape Artist 8 ranks",
+    "prereqStruct": {
+      "skills": {
+        "escape_artist": 8
+      }
+    },
+    "benefit": "Make an attack in the same round you break free of a grapple.",
+    "shortDescription": "Make an attack in the same round you break free of a grapple.",
+    "description": "<p><strong>Prerequisite:</strong> Escape Artist 8 ranks.</p><p><strong>Benefit:</strong> Make an attack in the same round you break free of a grapple.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 86,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-extreme-leap",
+    "schemaVersion": 2,
+    "name": "Extreme Leap",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.86",
+    "slot": "None",
+    "prerequisites": "Jump 5 ranks",
+    "prereq": "Jump 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "jump": 5
+      }
+    },
+    "benefit": "A successful long jump of at least 10 feet grants 10 feet of extra movement that round.",
+    "shortDescription": "A successful long jump of at least 10 feet grants 10 feet of extra movement that round.",
+    "description": "<p><strong>Prerequisite:</strong> Jump 5 ranks.</p><p><strong>Benefit:</strong> A successful long jump of at least 10 feet grants 10 feet of extra movement that round.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 86,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-false-theurgy",
+    "schemaVersion": 2,
+    "name": "False Theurgy",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.86",
+    "slot": "None",
+    "prerequisites": "Bluff or Sleight of Hand 8 ranks, Spellcraft 8 ranks",
+    "prereq": "Bluff or Sleight of Hand 8 ranks, Spellcraft 8 ranks",
+    "prereqStruct": {
+      "skills": {
+        "spellcraft": 8
+      },
+      "other": [
+        "Bluff or Sleight of Hand 8 ranks"
+      ]
+    },
+    "benefit": "Make a spell you cast look like a different spell of the same level.",
+    "shortDescription": "Make a spell you cast look like a different spell of the same level.",
+    "description": "<p><strong>Prerequisite:</strong> Bluff or Sleight of Hand 8 ranks, Spellcraft 8 ranks.</p><p><strong>Benefit:</strong> Make a spell you cast look like a different spell of the same level.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 86,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-group-fake-out",
+    "schemaVersion": 2,
+    "name": "Group Fake-Out",
+    "type": "Skill Trick",
+    "category": "Interaction",
+    "source": "Complete Scoundrel p.87",
+    "slot": "None",
+    "prerequisites": "Bluff 8 ranks",
+    "prereq": "Bluff 8 ranks",
+    "prereqStruct": {
+      "skills": {
+        "bluff": 8
+      }
+    },
+    "benefit": "Feint against several opponents with a single check.",
+    "shortDescription": "Feint against several opponents with a single check.",
+    "description": "<p><strong>Prerequisite:</strong> Bluff 8 ranks.</p><p><strong>Benefit:</strong> Feint against several opponents with a single check.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "interaction",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 87,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-healing-hands",
+    "schemaVersion": 2,
+    "name": "Healing Hands",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.87",
+    "slot": "None",
+    "prerequisites": "Heal 5 ranks",
+    "prereq": "Heal 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "heal": 5
+      }
+    },
+    "benefit": "Stabilizing a dying creature also restores 1d6 hit points.",
+    "shortDescription": "Stabilizing a dying creature also restores 1d6 hit points.",
+    "description": "<p><strong>Prerequisite:</strong> Heal 5 ranks.</p><p><strong>Benefit:</strong> Stabilizing a dying creature also restores 1d6 hit points.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 87,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-hidden-blade",
+    "schemaVersion": 2,
+    "name": "Hidden Blade",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.87",
+    "slot": "None",
+    "prerequisites": "Sleight of Hand 5 ranks, Quick Draw",
+    "prereq": "Sleight of Hand 5 ranks, Quick Draw",
+    "prereqStruct": {
+      "skills": {
+        "sleight_of_hand": 5
+      },
+      "feats": [
+        "Quick Draw"
+      ]
+    },
+    "benefit": "Draw a concealed weapon as a move action; the target is treated as flat-footed against it.",
+    "shortDescription": "Draw a concealed weapon as a move action; the target is treated as flat-footed against it.",
+    "description": "<p><strong>Prerequisite:</strong> Sleight of Hand 5 ranks, Quick Draw.</p><p><strong>Benefit:</strong> Draw a concealed weapon as a move action; the target is treated as flat-footed against it.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 87,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-leaping-climber",
+    "schemaVersion": 2,
+    "name": "Leaping Climber",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.87",
+    "slot": "None",
+    "prerequisites": "Climb 5 ranks, Jump 5 ranks",
+    "prereq": "Climb 5 ranks, Jump 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "climb": 5,
+        "jump": 5
+      }
+    },
+    "benefit": "Add the distance of a jump to the start of a climb.",
+    "shortDescription": "Add the distance of a jump to the start of a climb.",
+    "description": "<p><strong>Prerequisite:</strong> Climb 5 ranks, Jump 5 ranks.</p><p><strong>Benefit:</strong> Add the distance of a jump to the start of a climb.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 87,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-listen-to-this",
+    "schemaVersion": 2,
+    "name": "Listen to This",
+    "type": "Skill Trick",
+    "category": "Mental",
+    "source": "Complete Scoundrel p.87",
+    "slot": "None",
+    "prerequisites": "Listen 5 ranks",
+    "prereq": "Listen 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "listen": 5
+      }
+    },
+    "benefit": "Repeat exactly something you recently overheard.",
+    "shortDescription": "Repeat exactly something you recently overheard.",
+    "description": "<p><strong>Prerequisite:</strong> Listen 5 ranks.</p><p><strong>Benefit:</strong> Repeat exactly something you recently overheard.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "mental",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 87,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-magical-appraisal",
+    "schemaVersion": 2,
+    "name": "Magical Appraisal",
+    "type": "Skill Trick",
+    "category": "Mental",
+    "source": "Complete Scoundrel p.87",
+    "slot": "None",
+    "prerequisites": "Appraise 5 ranks, Knowledge (arcana) 5 ranks, Spellcraft 12 ranks",
+    "prereq": "Appraise 5 ranks, Knowledge (arcana) 5 ranks, Spellcraft 12 ranks",
+    "prereqStruct": {
+      "skills": {
+        "appraise": 5,
+        "knowledge_arcana": 5,
+        "spellcraft": 12
+      }
+    },
+    "benefit": "Identify the properties of a magic item.",
+    "shortDescription": "Identify the properties of a magic item.",
+    "description": "<p><strong>Prerequisite:</strong> Appraise 5 ranks, Knowledge (arcana) 5 ranks, Spellcraft 12 ranks.</p><p><strong>Benefit:</strong> Identify the properties of a magic item.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "mental",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 87,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-mosquitos-bite",
+    "schemaVersion": 2,
+    "name": "Mosquito’s Bite",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.87",
+    "slot": "None",
+    "prerequisites": "Sleight of Hand 12 ranks",
+    "prereq": "Sleight of Hand 12 ranks",
+    "prereqStruct": {
+      "skills": {
+        "sleight_of_hand": 12
+      }
+    },
+    "benefit": "A flat-footed target does not notice damage you deal it with a light weapon.",
+    "shortDescription": "A flat-footed target does not notice damage you deal it with a light weapon.",
+    "description": "<p><strong>Prerequisite:</strong> Sleight of Hand 12 ranks.</p><p><strong>Benefit:</strong> A flat-footed target does not notice damage you deal it with a light weapon.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 87,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-never-outnumbered",
+    "schemaVersion": 2,
+    "name": "Never Outnumbered",
+    "type": "Skill Trick",
+    "category": "Interaction",
+    "source": "Complete Scoundrel p.87",
+    "slot": "None",
+    "prerequisites": "Intimidate 8 ranks",
+    "prereq": "Intimidate 8 ranks",
+    "prereqStruct": {
+      "skills": {
+        "intimidate": 8
+      }
+    },
+    "benefit": "Demoralize several opponents in combat with a single check.",
+    "shortDescription": "Demoralize several opponents in combat with a single check.",
+    "description": "<p><strong>Prerequisite:</strong> Intimidate 8 ranks.</p><p><strong>Benefit:</strong> Demoralize several opponents in combat with a single check.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "interaction",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 87,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-nimble-charge",
+    "schemaVersion": 2,
+    "name": "Nimble Charge",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.87",
+    "slot": "None",
+    "prerequisites": "Balance 5 ranks",
+    "prereq": "Balance 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "balance": 5
+      }
+    },
+    "benefit": "Run or charge across a difficult surface without a Balance check.",
+    "shortDescription": "Run or charge across a difficult surface without a Balance check.",
+    "description": "<p><strong>Prerequisite:</strong> Balance 5 ranks.</p><p><strong>Benefit:</strong> Run or charge across a difficult surface without a Balance check.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 87,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-nimble-stand",
+    "schemaVersion": 2,
+    "name": "Nimble Stand",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.88",
+    "slot": "None",
+    "prerequisites": "Tumble 8 ranks",
+    "prereq": "Tumble 8 ranks",
+    "prereqStruct": {
+      "skills": {
+        "tumble": 8
+      }
+    },
+    "benefit": "Stand up from prone without provoking attacks of opportunity.",
+    "shortDescription": "Stand up from prone without provoking attacks of opportunity.",
+    "description": "<p><strong>Prerequisite:</strong> Tumble 8 ranks.</p><p><strong>Benefit:</strong> Stand up from prone without provoking attacks of opportunity.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 88,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-opening-tap",
+    "schemaVersion": 2,
+    "name": "Opening Tap",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.88",
+    "slot": "None",
+    "prerequisites": "Open Lock 12 ranks",
+    "prereq": "Open Lock 12 ranks",
+    "prereqStruct": {
+      "skills": {
+        "open_lock": 12
+      }
+    },
+    "benefit": "Open a lock as a swift action.",
+    "shortDescription": "Open a lock as a swift action.",
+    "description": "<p><strong>Prerequisite:</strong> Open Lock 12 ranks.</p><p><strong>Benefit:</strong> Open a lock as a swift action.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 88,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-point-it-out",
+    "schemaVersion": 2,
+    "name": "Point It Out",
+    "type": "Skill Trick",
+    "category": "Mental",
+    "source": "Complete Scoundrel p.88",
+    "slot": "None",
+    "prerequisites": "Spot 8 ranks",
+    "prereq": "Spot 8 ranks",
+    "prereqStruct": {
+      "skills": {
+        "spot": 8
+      }
+    },
+    "benefit": "Let an ally make a free Spot check to notice something you have spotted.",
+    "shortDescription": "Let an ally make a free Spot check to notice something you have spotted.",
+    "description": "<p><strong>Prerequisite:</strong> Spot 8 ranks.</p><p><strong>Benefit:</strong> Let an ally make a free Spot check to notice something you have spotted.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "mental",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 88,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-quick-escape",
+    "schemaVersion": 2,
+    "name": "Quick Escape",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.88",
+    "slot": "None",
+    "prerequisites": "Escape Artist 12 ranks",
+    "prereq": "Escape Artist 12 ranks",
+    "prereqStruct": {
+      "skills": {
+        "escape_artist": 12
+      }
+    },
+    "benefit": "Slip out of a grapple or restraints faster than normal.",
+    "shortDescription": "Slip out of a grapple or restraints faster than normal.",
+    "description": "<p><strong>Prerequisite:</strong> Escape Artist 12 ranks.</p><p><strong>Benefit:</strong> Slip out of a grapple or restraints faster than normal.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 88,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-quick-swimmer",
+    "schemaVersion": 2,
+    "name": "Quick Swimmer",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.88",
+    "slot": "None",
+    "prerequisites": "Swim 5 ranks",
+    "prereq": "Swim 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "swim": 5
+      }
+    },
+    "benefit": "Swim 10 extra feet on a successful check.",
+    "shortDescription": "Swim 10 extra feet on a successful check.",
+    "description": "<p><strong>Prerequisite:</strong> Swim 5 ranks.</p><p><strong>Benefit:</strong> Swim 10 extra feet on a successful check.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 88,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-second-impression",
+    "schemaVersion": 2,
+    "name": "Second Impression",
+    "type": "Skill Trick",
+    "category": "Interaction",
+    "source": "Complete Scoundrel p.88",
+    "slot": "None",
+    "prerequisites": "Bluff 5 ranks, Disguise 5 ranks",
+    "prereq": "Bluff 5 ranks, Disguise 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "bluff": 5,
+        "disguise": 5
+      }
+    },
+    "benefit": "Use a Bluff check to recover a disguise that has been seen through.",
+    "shortDescription": "Use a Bluff check to recover a disguise that has been seen through.",
+    "description": "<p><strong>Prerequisite:</strong> Bluff 5 ranks, Disguise 5 ranks.</p><p><strong>Benefit:</strong> Use a Bluff check to recover a disguise that has been seen through.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "interaction",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 88,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-shrouded-dance",
+    "schemaVersion": 2,
+    "name": "Shrouded Dance",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.89",
+    "slot": "None",
+    "prerequisites": "Hide 8 ranks, Perform (dance) 5 ranks",
+    "prereq": "Hide 8 ranks, Perform (dance) 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "hide": 8,
+        "perform_dance": 5
+      }
+    },
+    "benefit": "Gain concealment for 1 round as a move action.",
+    "shortDescription": "Gain concealment for 1 round as a move action.",
+    "description": "<p><strong>Prerequisite:</strong> Hide 8 ranks, Perform (dance) 5 ranks.</p><p><strong>Benefit:</strong> Gain concealment for 1 round as a move action.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 89,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-slipping-past",
+    "schemaVersion": 2,
+    "name": "Slipping Past",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.89",
+    "slot": "None",
+    "prerequisites": "Escape Artist 5 ranks, Tumble 5 ranks",
+    "prereq": "Escape Artist 5 ranks, Tumble 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "escape_artist": 5,
+        "tumble": 5
+      }
+    },
+    "benefit": "Move through a tight space without the usual penalties.",
+    "shortDescription": "Move through a tight space without the usual penalties.",
+    "description": "<p><strong>Prerequisite:</strong> Escape Artist 5 ranks, Tumble 5 ranks.</p><p><strong>Benefit:</strong> Move through a tight space without the usual penalties.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 89,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-social-recovery",
+    "schemaVersion": 2,
+    "name": "Social Recovery",
+    "type": "Skill Trick",
+    "category": "Interaction",
+    "source": "Complete Scoundrel p.89",
+    "slot": "None",
+    "prerequisites": "Bluff 8 ranks, Diplomacy 5 ranks",
+    "prereq": "Bluff 8 ranks, Diplomacy 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "bluff": 8,
+        "diplomacy": 5
+      }
+    },
+    "benefit": "Make a Bluff check to make up for a failed Diplomacy check.",
+    "shortDescription": "Make a Bluff check to make up for a failed Diplomacy check.",
+    "description": "<p><strong>Prerequisite:</strong> Bluff 8 ranks, Diplomacy 5 ranks.</p><p><strong>Benefit:</strong> Make a Bluff check to make up for a failed Diplomacy check.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "interaction",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 89,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-speedy-ascent",
+    "schemaVersion": 2,
+    "name": "Speedy Ascent",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.89",
+    "slot": "None",
+    "prerequisites": "Climb 5 ranks",
+    "prereq": "Climb 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "climb": 5
+      }
+    },
+    "benefit": "Climb 10 extra feet on a successful check.",
+    "shortDescription": "Climb 10 extra feet on a successful check.",
+    "description": "<p><strong>Prerequisite:</strong> Climb 5 ranks.</p><p><strong>Benefit:</strong> Climb 10 extra feet on a successful check.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 89,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-spot-the-weak-point",
+    "schemaVersion": 2,
+    "name": "Spot the Weak Point",
+    "type": "Skill Trick",
+    "category": "Mental",
+    "source": "Complete Scoundrel p.89",
+    "slot": "None",
+    "prerequisites": "Spot 12 ranks",
+    "prereq": "Spot 12 ranks",
+    "prereqStruct": {
+      "skills": {
+        "spot": 12
+      }
+    },
+    "benefit": "Make your next attack against the target a touch attack.",
+    "shortDescription": "Make your next attack against the target a touch attack.",
+    "description": "<p><strong>Prerequisite:</strong> Spot 12 ranks.</p><p><strong>Benefit:</strong> Make your next attack against the target a touch attack.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "mental",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 89,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-sudden-draw",
+    "schemaVersion": 2,
+    "name": "Sudden Draw",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.89",
+    "slot": "None",
+    "prerequisites": "Sleight of Hand 8 ranks, Quick Draw",
+    "prereq": "Sleight of Hand 8 ranks, Quick Draw",
+    "prereqStruct": {
+      "skills": {
+        "sleight_of_hand": 8
+      },
+      "feats": [
+        "Quick Draw"
+      ]
+    },
+    "benefit": "Draw a concealed weapon as part of an attack of opportunity.",
+    "shortDescription": "Draw a concealed weapon as part of an attack of opportunity.",
+    "description": "<p><strong>Prerequisite:</strong> Sleight of Hand 8 ranks, Quick Draw.</p><p><strong>Benefit:</strong> Draw a concealed weapon as part of an attack of opportunity.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 89,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-swift-concentration",
+    "schemaVersion": 2,
+    "name": "Swift Concentration",
+    "type": "Skill Trick",
+    "category": "Mental",
+    "source": "Complete Scoundrel p.90",
+    "slot": "None",
+    "prerequisites": "Concentration 12 ranks",
+    "prereq": "Concentration 12 ranks",
+    "prereqStruct": {
+      "skills": {
+        "concentration": 12
+      }
+    },
+    "benefit": "Maintain concentration on a spell as a swift action.",
+    "shortDescription": "Maintain concentration on a spell as a swift action.",
+    "description": "<p><strong>Prerequisite:</strong> Concentration 12 ranks.</p><p><strong>Benefit:</strong> Maintain concentration on a spell as a swift action.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "mental",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 90,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-timely-misdirection",
+    "schemaVersion": 2,
+    "name": "Timely Misdirection",
+    "type": "Skill Trick",
+    "category": "Interaction",
+    "source": "Complete Scoundrel p.90",
+    "slot": "None",
+    "prerequisites": "Bluff 8 ranks",
+    "prereq": "Bluff 8 ranks",
+    "prereqStruct": {
+      "skills": {
+        "bluff": 8
+      }
+    },
+    "benefit": "A successful feint lets you avoid attacks of opportunity from that foe.",
+    "shortDescription": "A successful feint lets you avoid attacks of opportunity from that foe.",
+    "description": "<p><strong>Prerequisite:</strong> Bluff 8 ranks.</p><p><strong>Benefit:</strong> A successful feint lets you avoid attacks of opportunity from that foe.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "interaction",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 90,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-tumbling-crawl",
+    "schemaVersion": 2,
+    "name": "Tumbling Crawl",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.90",
+    "slot": "None",
+    "prerequisites": "Tumble 5 ranks",
+    "prereq": "Tumble 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "tumble": 5
+      }
+    },
+    "benefit": "Crawl 5 feet without provoking attacks of opportunity.",
+    "shortDescription": "Crawl 5 feet without provoking attacks of opportunity.",
+    "description": "<p><strong>Prerequisite:</strong> Tumble 5 ranks.</p><p><strong>Benefit:</strong> Crawl 5 feet without provoking attacks of opportunity.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 90,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-twisted-charge",
+    "schemaVersion": 2,
+    "name": "Twisted Charge",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.90",
+    "slot": "None",
+    "prerequisites": "Balance 5 ranks, Tumble 5 ranks",
+    "prereq": "Balance 5 ranks, Tumble 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "balance": 5,
+        "tumble": 5
+      }
+    },
+    "benefit": "Change direction once during a charge.",
+    "shortDescription": "Change direction once during a charge.",
+    "description": "<p><strong>Prerequisite:</strong> Balance 5 ranks, Tumble 5 ranks.</p><p><strong>Benefit:</strong> Change direction once during a charge.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 90,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-up-the-hill",
+    "schemaVersion": 2,
+    "name": "Up the Hill",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.90",
+    "slot": "None",
+    "prerequisites": "Balance 5 ranks, Jump 5 ranks",
+    "prereq": "Balance 5 ranks, Jump 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "balance": 5,
+        "jump": 5
+      }
+    },
+    "benefit": "Move up slopes or stairs at normal speed.",
+    "shortDescription": "Move up slopes or stairs at normal speed.",
+    "description": "<p><strong>Prerequisite:</strong> Balance 5 ranks, Jump 5 ranks.</p><p><strong>Benefit:</strong> Move up slopes or stairs at normal speed.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 90,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-walk-the-walls",
+    "schemaVersion": 2,
+    "name": "Walk the Walls",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.90",
+    "slot": "None",
+    "prerequisites": "Climb 12 ranks, Tumble 5 ranks",
+    "prereq": "Climb 12 ranks, Tumble 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "climb": 12,
+        "tumble": 5
+      }
+    },
+    "benefit": "Run straight up a wall for 1 round.",
+    "shortDescription": "Run straight up a wall for 1 round.",
+    "description": "<p><strong>Prerequisite:</strong> Climb 12 ranks, Tumble 5 ranks.</p><p><strong>Benefit:</strong> Run straight up a wall for 1 round.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 90,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-wall-jumper",
+    "schemaVersion": 2,
+    "name": "Wall Jumper",
+    "type": "Skill Trick",
+    "category": "Movement",
+    "source": "Complete Scoundrel p.90",
+    "slot": "None",
+    "prerequisites": "Climb 5 ranks, Jump 5 ranks",
+    "prereq": "Climb 5 ranks, Jump 5 ranks",
+    "prereqStruct": {
+      "skills": {
+        "climb": 5,
+        "jump": 5
+      }
+    },
+    "benefit": "Leap off a wall as if you had a running start.",
+    "shortDescription": "Leap off a wall as if you had a running start.",
+    "description": "<p><strong>Prerequisite:</strong> Climb 5 ranks, Jump 5 ranks.</p><p><strong>Benefit:</strong> Leap off a wall as if you had a running start.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "movement",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 90,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  },
+  {
+    "id": "trick-whip-climber",
+    "schemaVersion": 2,
+    "name": "Whip Climber",
+    "type": "Skill Trick",
+    "category": "Manipulation",
+    "source": "Complete Scoundrel p.90",
+    "slot": "None",
+    "prerequisites": "Use Rope 5 ranks, proficiency with whip",
+    "prereq": "Use Rope 5 ranks, proficiency with whip",
+    "prereqStruct": {
+      "skills": {
+        "use_rope": 5
+      },
+      "other": [
+        "proficiency with whip"
+      ]
+    },
+    "benefit": "Use a whip as a grappling hook.",
+    "shortDescription": "Use a whip as a grappling hook.",
+    "description": "<p><strong>Prerequisite:</strong> Use Rope 5 ranks, proficiency with whip.</p><p><strong>Benefit:</strong> Use a whip as a grappling hook.</p>",
+    "cost": {
+      "skillPoints": 2
+    },
+    "usage": "Once per encounter unless the trick states otherwise",
+    "tags": [
+      "skill trick",
+      "manipulation",
+      "complete scoundrel"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "isSkillTrick": true
+    },
+    "tier": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Complete Scoundrel",
+      "page": 90,
+      "table": "Table 3-2: Skill Tricks"
+    }
+  }
+]
