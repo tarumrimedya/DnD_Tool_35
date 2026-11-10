@@ -2947,6 +2947,13 @@ function runDeriveSheetTests() {
       recs.some(r => r.name === 'Summon Locust Swarm') &&
       abjRec && abjRec.name === '1st-level Abjuration spell of your choice' && /^Benefit 1: Choose a 1st level spell/i.test(abjRec.desc) && abjRec.source === abj.name &&
       (() => { const b = { Array, String, Number, Set, character: { grantedCapabilities: { spellsAtWill: [] } }, masterDb: [] }; vm.runInNewContext(awFnSrc + '\nr = getGrantedAtWillSpellRecords(character);', b); return b.r.length === 0; })() &&
+      // The boon only on the character (empty customDb / masterDb): its name and text still come from specialAbilities.
+      (() => {
+        const b = { Array, String, Number, Set, masterDb: [], character: { customDb: [], specialAbilities: awChar.specialAbilities, grantedCapabilities: awChar.grantedCapabilities } };
+        vm.runInNewContext(awFnSrc + '\nr = getGrantedAtWillSpellRecords(character);', b);
+        const c = b.r.find(x => x.name === 'Charm Reptiles');
+        return b.r.length === 3 && c && c.source === lord.name && /Charm Reptiles/.test(c.desc);
+      })() &&
       /id="granted-at-will-spells"/.test(ixHtml) && /renderGrantedAtWillSpells\(\)/.test(hudCdbSrc)
     );
   }

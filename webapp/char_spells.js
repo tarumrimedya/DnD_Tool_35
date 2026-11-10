@@ -5310,15 +5310,26 @@
       const grants = (charObj && charObj.grantedCapabilities && Array.isArray(charObj.grantedCapabilities.spellsAtWill))
         ? charObj.grantedCapabilities.spellsAtWill : [];
       if (!grants.length) return [];
-      const pools = [Array.isArray(charObj.customDb) ? charObj.customDb : [], (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb : []];
+      // The granting entry may live only on the character (a boon in specialAbilities carries its full record),
+      // so the character's own lists are searched as well as the DBs.
+      const asList = (v) => (Array.isArray(v) ? v.filter(x => x && typeof x === 'object') : []);
+      const pools = [
+        asList(charObj.customDb),
+        (typeof masterDb !== 'undefined') ? asList(masterDb) : [],
+        asList(charObj.specialAbilities), asList(charObj.feats), asList(charObj.legoEntries), asList(charObj.classFeatures)
+      ];
       const findById = (id) => {
         const full = String(id || '').toLowerCase();
         const short = full.split(':').pop();
+        let first = null;
         for (const pool of pools) {
           const hit = pool.find(e => e && e.id && (String(e.id).toLowerCase() === full || String(e.id).toLowerCase().split(':').pop() === short));
-          if (hit) return hit;
+          if (!hit) continue;
+          // A bare reference ({ id, name }) only names the entry; keep looking for the full record.
+          if (hit.description || hit.benefit || hit.summary) return hit;
+          if (!first) first = hit;
         }
-        return null;
+        return first;
       };
       const ordinal = (n) => (n === 0 ? '0-level' : n === 1 ? '1st-level' : n === 2 ? '2nd-level' : n === 3 ? '3rd-level' : `${n}th-level`);
       const benefitLine = (desc, label) => {
