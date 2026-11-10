@@ -143,4 +143,4 @@ The name-based matcher must not merge these two. P3 needs a source-aware ID rule
 ## E. Open Item for the User
 
 - **Factotum Reflex save:** settled (2026-11-10). The class table on srd.dndtools.org (`baseDungeon/factotum`, supplied by the user) gives good Reflex only (+2 at 1st, +12 at 20th), poor Fort and Will; `srd_classes_races.json` now has `ref: good` / `savingThrows.ref: high`.
-- **Factotum Hit Die:** the same page says **d6**; `srd_classes_races.json` has **d8**. Not changed: one web source, no book. User to confirm.
+- **Factotum Hit Die:** settled (2026-11-10). The same page says **d6**; the record had d8. The user confirmed d6, so `srd_classes_races.json` now has `hd: 6` / `hitDie: "d6"`.
