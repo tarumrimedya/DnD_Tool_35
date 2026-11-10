@@ -2668,8 +2668,29 @@ function runDeriveSheetTests() {
   check(
     'SRD Import Powers: only lazy powers are snapshotted (not eager spells or unknown buff names); the store collects power refs from spell lists and buffs; Spotlight picks resolve lazy stubs via fetchEntry',
     pwAdded.length === 1 && pwDb[0].name === 'Force Screen' && pwDb[0]._snapshot.chunk === 'srd_powers.json' &&
-    /function collectPowerRefNames\(doc\)/.test(pwStoreSrc) && /\{ t: 'Power', names: collectPowerRefNames\(doc\) \}/.test(pwStoreSrc) &&
+    /function collectPowerRefNames\(doc\)/.test(pwStoreSrc) && /\{ t: 'Power', names: spellListNames \}/.test(pwStoreSrc) &&
     !/getSpellById|getMonsterById/.test(pwUiSrc) && /await global\.SrdCompendium\.fetchEntry\(picked\.id\)/.test(pwUiSrc)
+  );
+
+  // Dragon Magic spells (exports/dragon_magic_spells_pack.json) live in the lazy srd_spells_splat.json; the four
+  // primal spells moved there from srd_spells.json. A lazy spell the character knows or has as a buff is snapshotted.
+  const ssIdx = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_index.json'), 'utf8'));
+  const ssChunk = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_spells_splat.json'), 'utf8'));
+  const ssEager = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_spells.json'), 'utf8'));
+  const ssPrimalSpeed = ssChunk.find(s => s.name === 'Primal Speed');
+  Comp.ensureChunkLoaded('srd_spells_splat.json'); // Node: synchronous
+  const ssDb = [];
+  const ssAdded = Comp.snapshotLazyRefs(ssDb, ['Wreath of Flames', 'Fireball', 'Not A Spell'], 'Spell');
+  check(
+    'Dragon Magic spells: 42 cross-checked records in the lazy srd_spells_splat.json (index rows point there, the four primal spells are no longer in srd_spells.json); Primal Speed has the book values (Druid 6 / ranger 4 / sorcerer 6, resistance bonus); only lazy spells are snapshotted; the store collects Spell refs',
+    ssChunk.length === 42 && ssChunk.every(s => s.verification === 'cross-checked' && s.provenance && s.provenance.book === 'Dragon Magic') &&
+    ssIdx.chunks['srd_spells_splat.json'].eagerLoad === false && !ssIdx.chunks['srd_spells_splat.json'].optIn &&
+    ssIdx.index.filter(r => r.f === 'srd_spells_splat.json').length === 42 &&
+    !ssEager.some(s => /^spl-primal-(hunter|instinct|senses|speed)$/.test(s.id)) &&
+    JSON.stringify(ssPrimalSpeed.learnedAt.class) === JSON.stringify({ Druid: 6, Ranger: 4, Sorcerer: 6 }) &&
+    ssPrimalSpeed.modifiers.some(m => m.target === 'save.ref' && m.type === 'resistance' && m.value === 5) &&
+    ssAdded.length === 1 && ssDb[0].name === 'Wreath of Flames' && ssDb[0]._snapshot.chunk === 'srd_spells_splat.json' &&
+    /\{ t: 'Spell', names: spellListNames \}/.test(pwStoreSrc)
   );
 
   // Hub custom DB isolation (ADR-011): a rule pack loaded in the Hub reaches only one campaign's characters.
