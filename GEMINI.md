@@ -30,7 +30,7 @@
   6. **Engine Sync:** Any V2 schema addition must immediately update `rule_master_ai_schema.json`, `normalizeEntry`, and `rule_engine.js`.
 
 ## 4. HUB & Character Sheet Isolation
-- Before applying any `hub.html` change that could affect `index.html`, `char_*.js`, `rule_engine.js`, `character_data.json`, or `gdrive_sync.js`, **warn the user of cross-impacts and get approval**. `hub.html` `fullData` and `index.html` must strictly share the Canonical V2 data contract.
+- Before applying any `hub.html` change that could affect `index.html`, `char_*.js`, `rule_engine.js`, `character_data.json`, `supabase_auth.js`, or `campaign_db.js`, **warn the user of cross-impacts and get approval**. `hub.html` `fullData` and `index.html` must strictly share the Canonical V2 data contract.
 
 ## 5. Official D&D 3.5e RAW English Standard & Bilingual Reader Shield
 - **100% English Output:** All UI labels, modals, toasts, breakdowns, and AI prompts must use official D&D 3.5e RAW English terminology (*Base Attack Bonus*, *Fortitude/Reflex/Will*, *Touch/Flat-Footed AC*, *Armor Check Penalty*, *Arcane Spell Failure*, *Full Attack*, *Two-Weapon Fighting*, *Caster Level*, *Prerequisites Not Met*).
