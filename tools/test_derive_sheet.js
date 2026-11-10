@@ -2779,7 +2779,7 @@ function runDeriveSheetTests() {
   );
 
   // Hub: a pack file attaches to the selected (root) campaign; sub-campaign characters get it, others do not.
-  const cdbHubFnSrc = hubSrc.slice(hubSrc.indexOf('function getHubRootCampaign('), hubSrc.indexOf('function exportMasterDbJson('));
+  const cdbHubFnSrc = hubSrc.slice(hubSrc.indexOf('function getHubRootCampaign('), hubSrc.indexOf('function exportCampaignBundle('));
   const cdbHubRun = (activeCampaignId, sheetCharId) => {
     const store = { dnd35_character: JSON.stringify({ id: sheetCharId, customDb: [] }) };
     const alerts = [];
@@ -3044,6 +3044,73 @@ function runDeriveSheetTests() {
     'Sheet: a character that is not in the cloud yet stays on the sheet (cloud revalidation does not swap in the last active cloud character); an unknown ?id= is not replaced by another character either',
     revalLocalOnly.out === false && revalLocalOnly.character.id === 'char_local_new' && revalNoChar.out === false && revalNoChar.character === null
   );
+
+  // Campaign bundle (campaign_db.js): export one main campaign with sub-campaigns, packs, notes and characters;
+  // import creates it when its id is unknown, and otherwise merges by id without overwriting anything.
+  {
+    const note = (id, title, text) => ({ id, title, text, tags: [], createdAt: 1, updatedAt: 1 });
+    const mkChar = (id, name, campaignId, extra) => ({ id, name, campaignId, fullData: Object.assign({ id, name, campaignId, customDb: [{ id: 'own_' + id, name: 'Own ' + name, type: 'Feat' }] }, extra || {}) });
+    const srcState = {
+      campaigns: [
+        { id: 'camp_main', cloudCampaignId: 'cloud-main', invite_code: 'SECRET', name: 'Main', isDmMode: true, packs: CampaignDb.attachPack([], boonPack, 'T'), smartNotes: [note('n1', 'Session 1', 'a')], notesList: [] },
+        { id: 'camp_sub', parentId: 'camp_main', name: 'Chapter 2', smartNotes: [note('n2', 'Clue', 'b')] },
+        { id: 'camp_other', name: 'Other', smartNotes: [note('nx', 'Other note', 'x')] }
+      ],
+      characters: [mkChar('c1', 'Hero', 'camp_main'), mkChar('c2', 'Rogue', 'camp_sub'), mkChar('cx', 'Outsider', 'camp_other')]
+    };
+    // Give c1 the pack copies, as the Hub would.
+    CampaignDb.reconcile(srcState.characters[0].fullData.customDb, srcState.campaigns[0].packs, { campaignId: 'cloud-main', used: new Set() });
+    const bundle = CampaignDb.buildCampaignBundle(srcState, 'camp_sub', '2026-11-10T10:00:00Z');
+    const bundleOk = bundle && CampaignDb.isCampaignBundle(bundle) && bundle.campaign.id === 'camp_main' && !('invite_code' in bundle.campaign) &&
+      bundle.campaign.packs.length === 1 && bundle.campaign.packs[0].entries.length === 107 &&
+      bundle.subCampaigns.length === 1 && bundle.subCampaigns[0].smartNotes[0].id === 'n2' &&
+      bundle.characters.map(c => c.id).join() === 'c1,c2' &&
+      bundle.characters[0].fullData.customDb.length === 1 && bundle.campaign.smartNotes[0].id === 'n1';
+
+    // 1. Into an empty Hub: everything is created as a local campaign.
+    const fresh = CampaignDb.importCampaignBundle({ campaigns: [], characters: [] }, bundle, { nowIso: '2026-11-11T00:00:00Z', idStamp: 'T' });
+    const freshRoot = fresh.campaigns.find(c => c.id === fresh.rootId);
+    const freshOk = fresh.report.campaignCreated && freshRoot.id === 'camp_main' && !freshRoot.cloudCampaignId &&
+      freshRoot.packs[0].inCloud === false && fresh.campaigns.find(c => c.id === 'camp_sub').parentId === 'camp_main' &&
+      fresh.characters.length === 2 && fresh.characters.find(c => c.id === 'c2').campaignId === 'camp_sub' &&
+      !fresh.characters[0].fullData.cloudCampaignId && fresh.packsChanged;
+
+    // 2. Back into the source Hub (same ids, same content): everything identical is skipped.
+    const again = CampaignDb.importCampaignBundle(srcState, bundle, { nowIso: '2026-11-11T00:00:00Z', idStamp: 'T' });
+    const r2 = again.report;
+    const againOk = !r2.campaignCreated && r2.notesSkipped === 2 && r2.notesAdded === 0 && r2.notesCopied === 0 &&
+      r2.charactersSkipped === 2 && r2.charactersCopied === 0 && r2.packsSkipped === 1 && !again.packsChanged &&
+      again.campaigns.length === 3 && again.characters.length === 3;
+
+    // 3. Same ids, changed content: copies with new ids and "(Imported <date>)"; a changed pack is a new version;
+    //    a new sub-campaign and note are added; the original records are untouched.
+    const changed = JSON.parse(JSON.stringify(bundle));
+    changed.campaign.smartNotes[0].text = 'edited';
+    changed.campaign.smartNotes.push(note('n3', 'New', 'c'));
+    changed.characters[0].fullData.hp = { current: 1 };
+    changed.campaign.packs[0].entries = changed.campaign.packs[0].entries.slice(1);
+    changed.subCampaigns.push({ id: 'camp_sub2', parentId: 'camp_main', name: 'Chapter 3', smartNotes: [] });
+    const merged = CampaignDb.importCampaignBundle(srcState, changed, { nowIso: '2026-11-11T00:00:00Z', idStamp: 'T' });
+    const r3 = merged.report;
+    const mRoot = merged.campaigns.find(c => c.id === 'camp_main');
+    const copyChar = merged.characters.find(c => /^char_imp_T_/.test(c.id));
+    const copyNote = mRoot.smartNotes.find(n => /^note_imp_T_/.test(n.id));
+    const mergedOk = r3.notesCopied === 1 && r3.notesAdded === 1 && r3.charactersCopied === 1 && r3.charactersSkipped === 1 &&
+      r3.packsUpdated === 1 && r3.subCampaignsAdded === 1 && merged.packsChanged &&
+      mRoot.packs[0].version === 2 && mRoot.packs[0].entries.length === 106 && mRoot.packs[0].inCloud === false &&
+      copyChar && copyChar.name === 'Hero (Imported 2026-11-11)' && copyChar.fullData.id === copyChar.id && copyChar.campaignId === 'camp_main' &&
+      copyChar.fullData.cloudCampaignId === 'cloud-main' &&
+      copyNote && copyNote.title === 'Session 1 (Imported 2026-11-11)' && mRoot.smartNotes.find(n => n.id === 'n1').text === 'a' &&
+      merged.campaigns.find(c => c.id === 'camp_sub2').parentId === 'camp_main' &&
+      srcState.campaigns[0].smartNotes.length === 1 && srcState.characters.length === 3;
+
+    const hubSrcB = fs.readFileSync(path.join(__dirname, '..', 'hub.html'), 'utf8');
+    check(
+      'Campaign bundle: exports the main campaign (from a sub-campaign too) with sub-campaigns, packs, notes and its characters, without the invite code or active pack copies; an unknown campaign is created locally; re-importing identical data skips everything; changed notes and characters with the same id become "(Imported <date>)" copies with new ids, a changed pack becomes a new version, new sub-campaigns and notes are added, and nothing existing is overwritten',
+      bundleOk && freshOk && againOk && mergedOk &&
+      /function exportCampaignBundle\(/.test(hubSrcB) && /CampaignDb\.isCampaignBundle\(parsed\)/.test(hubSrcB) && !/function exportMasterDbJson\(/.test(hubSrcB)
+    );
+  }
 
   CharStore.clearHistory();
 

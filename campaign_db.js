@@ -235,7 +235,201 @@
     return res;
   }
 
-  const api = { TAG, readPackFile, attachPack, removePack, mergeCloudPacks, getTag, collectUsedRefs, reconcile, contentHash };
+  // ---------------------------------------------------------------------------------------------------------------
+  // Campaign bundle: one file with a main campaign, its sub-campaigns, Campaign DB packs, notes and characters.
+  // ---------------------------------------------------------------------------------------------------------------
+  const BUNDLE_FORMAT = 'dnd35-campaign-bundle';
+
+  function notesOf(obj) {
+    if (!obj) return [];
+    if (Array.isArray(obj.smartNotes) && obj.smartNotes.length) return obj.smartNotes;
+    return Array.isArray(obj.notesList) ? obj.notesList : [];
+  }
+
+  function setNotes(obj, list) {
+    obj.smartNotes = list;
+    obj.notesList = list;
+  }
+
+  // A character's DB without the active copies of the given packs: the importing campaign re-creates those from
+  // its packs. Copies the DM removed but the character uses ('removed') and detached copies stay.
+  function stripActivePackCopies(customDb, packIds) {
+    const ids = new Set((packIds || []).map(norm));
+    return (Array.isArray(customDb) ? customDb : []).filter(e => {
+      const t = getTag(e);
+      return !(t && t.status === 'active' && ids.has(norm(t.packId)));
+    });
+  }
+
+  function characterHash(rec, packIds) {
+    const fd = clone((rec && rec.fullData) || rec || {});
+    fd.customDb = stripActivePackCopies(fd.customDb, packIds);
+    ['id', 'campaignId', 'cloudCampaignId', 'lastModified'].forEach(k => { delete fd[k]; });
+    return contentHash(fd);
+  }
+
+  /**
+   * Builds a bundle for the main campaign `rootId` (a sub-campaign id resolves to its main campaign).
+   * `state` is the Hub state `{ campaigns, characters }`. Returns null when the campaign is unknown.
+   */
+  function buildCampaignBundle(state, rootId, nowIso) {
+    const camps = (state && Array.isArray(state.campaigns)) ? state.campaigns : [];
+    let root = camps.find(c => c && (c.id === rootId || (c.cloudCampaignId && c.cloudCampaignId === rootId)));
+    if (root && root.parentId) root = camps.find(c => c && c.id === root.parentId) || root;
+    if (!root) return null;
+    const subs = camps.filter(c => c && c.parentId === root.id);
+    const scope = new Set([root.id].concat(subs.map(s => s.id)));
+    const packs = (Array.isArray(root.packs) ? root.packs : []).map(p => ({
+      packId: p.packId, name: p.name, version: p.version, entries: clone(p.entries || []), updatedAt: p.updatedAt || null
+    }));
+    const packIds = packs.map(p => p.packId);
+    const campOut = (c) => {
+      const o = clone(c);
+      delete o.packs;
+      delete o.invite_code;
+      delete o.inviteCode;
+      setNotes(o, clone(notesOf(c)));
+      return o;
+    };
+    const characters = ((state && Array.isArray(state.characters)) ? state.characters : [])
+      .filter(ch => ch && scope.has(ch.campaignId))
+      .map(ch => {
+        const o = clone(ch);
+        if (o.fullData && typeof o.fullData === 'object') o.fullData.customDb = stripActivePackCopies(o.fullData.customDb, packIds);
+        return o;
+      });
+    return {
+      format: BUNDLE_FORMAT,
+      schemaVersion: 1,
+      exportedAt: nowIso || null,
+      campaign: Object.assign(campOut(root), { packs }),
+      subCampaigns: subs.map(campOut),
+      characters
+    };
+  }
+
+  function isCampaignBundle(parsed) {
+    return Boolean(parsed && typeof parsed === 'object' && parsed.format === BUNDLE_FORMAT && parsed.campaign && parsed.campaign.id);
+  }
+
+  /**
+   * Plans the import of a bundle into a Hub state. Pure: returns `{ campaigns, characters, rootId, packsChanged,
+   * report }` built from copies; the caller saves them and uploads packs of a cloud campaign.
+   * - No campaign with the bundle's id (or cloud id): the campaign, its sub-campaigns, notes, packs and characters
+   *   are created as a local campaign.
+   * - The campaign exists: each note, sub-campaign, character and pack is matched by id. Missing ones are added.
+   *   An identical one is skipped. A different one is added as a new copy, with a new id and "(Imported <date>)"
+   *   in its name; nothing existing is overwritten. A pack with the same id is attached as a new version.
+   */
+  function importCampaignBundle(state, bundle, opts) {
+    const o = opts || {};
+    const day = String(o.nowIso || new Date().toISOString()).slice(0, 10);
+    const stamp = o.idStamp || String(Date.now());
+    let seq = 0;
+    const newId = (prefix) => `${prefix}_imp_${stamp}_${++seq}`;
+    const suffix = ` (Imported ${day})`;
+    const campaigns = clone((state && state.campaigns) || []);
+    const characters = clone((state && state.characters) || []);
+    const report = { campaignCreated: false, subCampaignsAdded: 0, notesAdded: 0, notesCopied: 0, notesSkipped: 0,
+      charactersAdded: 0, charactersCopied: 0, charactersSkipped: 0, packsAdded: 0, packsUpdated: 0, packsSkipped: 0 };
+    const bc = bundle.campaign;
+    const bPacks = Array.isArray(bc.packs) ? bc.packs : [];
+    const packIds = bPacks.map(p => p.packId);
+    const ids = [bc.id, bc.cloudCampaignId].filter(Boolean);
+    let root = campaigns.find(c => c && !c.parentId && (ids.includes(c.id) || (c.cloudCampaignId && ids.includes(c.cloudCampaignId))));
+    const idMap = new Map(); // bundle campaign id -> Hub campaign id
+    let packsChanged = false;
+
+    const mergeNotes = (target, incoming) => {
+      const list = notesOf(target).slice();
+      (incoming || []).forEach(n => {
+        if (!n || typeof n !== 'object') return;
+        const cur = list.find(x => x && x.id === n.id);
+        if (!cur) { list.push(clone(n)); report.notesAdded++; return; }
+        if (contentHash(cur) === contentHash(n)) { report.notesSkipped++; return; }
+        list.push(Object.assign(clone(n), { id: newId('note'), title: (n.title || 'Note') + suffix }));
+        report.notesCopied++;
+      });
+      setNotes(target, list);
+    };
+
+    if (!root) {
+      root = clone(bc);
+      delete root.cloudCampaignId;
+      delete root.parentId;
+      if (campaigns.some(c => c && c.id === root.id)) root.id = newId('camp');
+      root.packs = bPacks.map(p => Object.assign(clone(p), { inCloud: false }));
+      campaigns.push(root);
+      report.campaignCreated = true;
+      report.notesAdded += notesOf(root).length;
+      report.packsAdded += root.packs.length;
+      packsChanged = root.packs.length > 0;
+    } else {
+      mergeNotes(root, notesOf(bc));
+      let packs = Array.isArray(root.packs) ? root.packs.slice() : [];
+      bPacks.forEach(p => {
+        const cur = packs.find(x => x && norm(x.packId) === norm(p.packId));
+        if (cur && contentHash(cur.entries) === contentHash(p.entries)) { report.packsSkipped++; return; }
+        packs = attachPack(packs, p, o.nowIso || null);
+        const added = packs.find(x => norm(x.packId) === norm(p.packId));
+        if (added) added.inCloud = false;
+        if (cur) report.packsUpdated++; else report.packsAdded++;
+        packsChanged = true;
+      });
+      root.packs = packs;
+    }
+    idMap.set(bc.id, root.id);
+    if (bc.cloudCampaignId) idMap.set(bc.cloudCampaignId, root.id);
+
+    (Array.isArray(bundle.subCampaigns) ? bundle.subCampaigns : []).forEach(s => {
+      if (!s || !s.id) return;
+      const cur = campaigns.find(c => c && c.id === s.id);
+      if (cur && cur.parentId === root.id) {
+        mergeNotes(cur, notesOf(s));
+        idMap.set(s.id, cur.id);
+        return;
+      }
+      const sub = clone(s);
+      sub.parentId = root.id;
+      delete sub.cloudCampaignId;
+      if (cur) sub.id = newId('camp');
+      campaigns.push(sub);
+      report.subCampaignsAdded++;
+      report.notesAdded += notesOf(sub).length;
+      idMap.set(s.id, sub.id);
+    });
+
+    const rootCloud = root.cloudCampaignId || null;
+    (Array.isArray(bundle.characters) ? bundle.characters : []).forEach(ch => {
+      if (!ch || !ch.id) return;
+      const rec = clone(ch);
+      rec.campaignId = idMap.get(ch.campaignId) || root.id;
+      if (rec.fullData && typeof rec.fullData === 'object') {
+        rec.fullData.campaignId = rec.campaignId;
+        if (rootCloud) rec.fullData.cloudCampaignId = rootCloud; else delete rec.fullData.cloudCampaignId;
+      }
+      const cur = characters.find(c => c && c.id === ch.id);
+      if (!cur) { characters.push(rec); report.charactersAdded++; return; }
+      if (characterHash(cur, packIds) === characterHash(ch, packIds)) { report.charactersSkipped++; return; }
+      const id = newId('char');
+      rec.id = id;
+      rec.name = (ch.name || 'Character') + suffix;
+      rec.cloudSynced = false;
+      if (rec.fullData && typeof rec.fullData === 'object') {
+        rec.fullData.id = id;
+        rec.fullData.name = rec.name;
+        delete rec.fullData._hubId;
+        delete rec.fullData._cloudUpdatedAt;
+      }
+      characters.push(rec);
+      report.charactersCopied++;
+    });
+
+    return { campaigns, characters, rootId: root.id, packsChanged, report };
+  }
+
+  const api = { TAG, readPackFile, attachPack, removePack, mergeCloudPacks, getTag, collectUsedRefs, reconcile, contentHash,
+    BUNDLE_FORMAT, buildCampaignBundle, isCampaignBundle, importCampaignBundle };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.CampaignDb = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
