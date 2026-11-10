@@ -9,6 +9,7 @@
   <script src="rule_engine.js?v=20261105_2355"></script>
   <script src="rule_master.js?v=20261105_2355"></script>
   <script src="ui_shared.js?v=20261105_2355"></script>
+  <script src="campaign_db.js?v=20261110_01"></script>
   <script src="gdrive_sync.js?v=20261105_2355"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js?v=20261025_01"></script>
@@ -1452,6 +1453,8 @@
 
       state.campaigns = campaigns;
       state.characters = characters;
+      // Campaign DB: bring every character's campaign pack copies up to date (no-op without packs or copies).
+      if (typeof reconcileHubCampaignDbs === 'function') reconcileHubCampaignDbs({ save: false });
       saveHubStorage();
     }
 
@@ -4023,6 +4026,8 @@ CRITICAL RULES:
           c.fullData.isNpc = isNpc;
           c.fullData.campaignId = campId;
         }
+        // Moving to another campaign: take the new Campaign DB, detach the old campaign's copies.
+        reconcileHubCampaignDbs({ save: false });
         saveHubStorage();
         closeEditCharacterModal();
         renderHub();
@@ -5418,7 +5423,8 @@ CRITICAL RULES:
                 </select>
               </div>
             </div>
-            <div id="hub-dm-pack-summary" class="text-[10px] text-slate-400 font-mono">Import a `{ pack, entries: [...] }` JSON bundle or click Load DM Boons Pack to inspect character eligibility & synergy readiness.</div>
+            <div id="hub-campaign-db-packs-list" class="space-y-1"></div>
+            <div id="hub-dm-pack-summary" class="text-[10px] text-slate-400 font-mono">Select a campaign and import a `{ pack, entries: [...] }` JSON bundle to attach it to the Campaign DB and inspect character eligibility & synergy readiness.</div>
             <div id="hub-dm-pack-entries-list" class="max-h-40 overflow-y-auto space-y-1 pr-1"></div>
           </div>
 
@@ -6171,6 +6177,127 @@ CRITICAL RULES:
       return `✅ ${label} merged into ${res.targets} campaign character${res.targets === 1 ? '' : 's'}!\n• Added: ${res.added}\n• Updated: ${res.updated}`;
     }
 
+    // ── Campaign DB (CAMPAIGN_PACKS_DESIGN.md) ──
+    // A rule pack belongs to a root campaign (`camp.packs`); a sub-campaign uses its root campaign's packs.
+    // Every character in the campaign gets the pack entries as tagged copies in its own customDb (campaign_db.js).
+    function getHubRootCampaign(campId) {
+      const camps = Array.isArray(state.campaigns) ? state.campaigns : [];
+      const camp = campId ? camps.find(cp => cp && cp.id === campId) : null;
+      if (!camp) return null;
+      return camp.parentId ? (camps.find(cp => cp && cp.id === camp.parentId) || camp) : camp;
+    }
+
+    function getHubActiveRootCampaign() {
+      const a = state.activeCampaignId;
+      return (!a || a === 'all' || a === 'unassigned') ? null : getHubRootCampaign(a);
+    }
+
+    function reconcileCampaignDbForCharacter(data, campaignId) {
+      if (!window.CampaignDb || !data || typeof data !== 'object') return null;
+      if (!Array.isArray(data.customDb)) data.customDb = [];
+      const rootCamp = getHubRootCampaign(campaignId);
+      const packs = rootCamp && Array.isArray(rootCamp.packs) ? rootCamp.packs : [];
+      if (packs.length === 0 && !data.customDb.some(e => CampaignDb.getTag(e))) return null;
+      return CampaignDb.reconcile(data.customDb, packs, {
+        campaignId: rootCamp ? rootCamp.id : null,
+        used: CampaignDb.collectUsedRefs(data)
+      });
+    }
+
+    // Applies each campaign's packs to its characters and to the character open in the sheet.
+    function reconcileHubCampaignDbs(options = {}) {
+      const total = { characters: 0, added: 0, updated: 0, adopted: 0, removed: 0, keptRemoved: 0, detached: 0, skipped: [] };
+      if (!window.CampaignDb) return total;
+      let sheetChar = null;
+      try {
+        const raw = localStorage.getItem('dnd35_character');
+        sheetChar = raw ? JSON.parse(raw) : null;
+      } catch (e) {}
+      const sheetId = sheetChar && typeof sheetChar === 'object' ? (sheetChar._hubId || sheetChar.id) : null;
+      let sheetChanged = false;
+      (Array.isArray(state.characters) ? state.characters : []).forEach(c => {
+        if (!c) return;
+        const res = reconcileCampaignDbForCharacter(c.fullData || c, c.campaignId);
+        if (res) {
+          ['added', 'updated', 'adopted', 'removed', 'keptRemoved', 'detached'].forEach(k => { total[k] += res[k]; });
+          if (res.changed) total.characters++;
+          res.skipped.forEach(s => total.skipped.push(Object.assign({ character: c.name || c.id }, s)));
+        }
+        if (sheetId && sheetId === c.id) {
+          const sheetRes = reconcileCampaignDbForCharacter(sheetChar, c.campaignId);
+          if (sheetRes && sheetRes.changed) sheetChanged = true;
+        }
+      });
+      if (sheetChanged) {
+        try { localStorage.setItem('dnd35_character', JSON.stringify(sheetChar)); } catch (e) {}
+      }
+      if (options.save !== false && (total.characters > 0 || sheetChanged)) saveHubStorage();
+      return total;
+    }
+
+    function describeCampaignDbReconcile(total) {
+      let msg = `• Characters updated: ${total.characters}\n• Added: ${total.added} • Updated: ${total.updated + total.adopted} • Removed: ${total.removed}`;
+      if (total.keptRemoved) msg += `\n• Kept (in use, no longer in the pack): ${total.keptRemoved}`;
+      if (total.skipped.length) {
+        const sample = total.skipped.slice(0, 5).map(s => `${s.character}: ${s.name}`).join(', ');
+        msg += `\n⚠️ Skipped ${total.skipped.length} (a character already has its own entry with the same id or name): ${sample}${total.skipped.length > 5 ? ', ...' : ''}`;
+      }
+      return msg;
+    }
+
+    function attachPackToActiveCampaignDb(packFile) {
+      const rootCamp = getHubActiveRootCampaign();
+      if (!rootCamp) {
+        alert(`⚠️ Rule Pack "${packFile.name}" not attached: select a campaign first. A rule pack belongs to one campaign's Campaign DB and reaches every character in it.`);
+        return;
+      }
+      rootCamp.packs = CampaignDb.attachPack(rootCamp.packs, packFile, new Date().toISOString());
+      const pack = rootCamp.packs.find(p => p.packId === packFile.packId);
+      const total = reconcileHubCampaignDbs({ save: false });
+      saveHubStorage();
+      renderHub();
+      renderHubDmPackManager();
+      alert(`✅ Rule Pack "${pack.name}" v${pack.version} (${pack.entries.length} entries) attached to the Campaign DB of "${rootCamp.name}".\n${describeCampaignDbReconcile(total)}`);
+    }
+
+    function removePackFromActiveCampaignDb(packId) {
+      const rootCamp = getHubActiveRootCampaign();
+      if (!rootCamp || !Array.isArray(rootCamp.packs)) return;
+      const pack = rootCamp.packs.find(p => p.packId === packId);
+      if (!pack) return;
+      if (!confirm(`Remove Rule Pack "${pack.name}" from the Campaign DB of "${rootCamp.name}"?\n\nIts entries are removed from the campaign's characters. An entry a character uses (feat, special ability, buff, gear) is kept on that character.`)) return;
+      rootCamp.packs = CampaignDb.removePack(rootCamp.packs, packId);
+      const total = reconcileHubCampaignDbs({ save: false });
+      saveHubStorage();
+      renderHub();
+      renderHubDmPackManager();
+      alert(`✅ Rule Pack "${pack.name}" removed from the Campaign DB of "${rootCamp.name}".\n${describeCampaignDbReconcile(total)}`);
+    }
+
+    function renderHubCampaignDbPacks() {
+      const el = document.getElementById('hub-campaign-db-packs-list');
+      if (!el) return;
+      if (!el.dataset.bound) {
+        el.addEventListener('click', (ev) => {
+          const btn = ev.target.closest('[data-campaign-db-remove]');
+          if (btn) removePackFromActiveCampaignDb(btn.getAttribute('data-campaign-db-remove'));
+        });
+        el.dataset.bound = '1';
+      }
+      const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+      const rootCamp = getHubActiveRootCampaign();
+      if (!rootCamp) {
+        el.innerHTML = `<div class="text-[10px] text-slate-500 italic">🏰 Campaign DB: select a campaign to see and attach its rule packs.</div>`;
+        return;
+      }
+      const packs = Array.isArray(rootCamp.packs) ? rootCamp.packs : [];
+      const head = `<div class="text-[10px] font-bold text-amber-200">🏰 Campaign DB: ${esc(rootCamp.name || rootCamp.id)}${packs.length ? '' : ' <span class="font-normal text-slate-500 italic">(no rule packs attached)</span>'}</div>`;
+      el.innerHTML = head + packs.map(p => `<div class="flex items-center justify-between gap-2 bg-slate-900/80 border border-slate-800 rounded px-2 py-1 text-[10px]">
+          <div class="truncate"><span class="font-bold text-slate-200">📦 ${esc(p.name)}</span> <span class="text-slate-500 font-mono">v${esc(p.version)} • ${p.entries.length} entries</span></div>
+          <button type="button" data-campaign-db-remove="${esc(p.packId)}" class="px-1.5 py-0.5 rounded bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/60 text-[9px] font-bold cursor-pointer shrink-0">✕ Remove</button>
+        </div>`).join('');
+    }
+
     function exportMasterDbJson() {
       const seen = new Set();
       const combined = [];
@@ -6287,26 +6414,26 @@ CRITICAL RULES:
       const activeChar = chars.find(c => c.id === charSel.value) || chars[0] || null;
       const charData = activeChar ? (activeChar.fullData || activeChar) : null;
 
+      renderHubCampaignDbPacks();
+
+      // Entries shown: the active campaign's Campaign DB packs, the selected character's own customDb and a
+      // library imported this session. Other characters' customDb entries are not mixed in (ADR-011).
       const allEntriesMap = new Map();
-      chars.forEach(c => {
-        const db = Array.isArray(c?.fullData?.customDb) ? c.fullData.customDb : [];
-        db.forEach(e => {
-          if (e && (e.id || e.name)) allEntriesMap.set(String(e.id || e.name).toLowerCase(), e);
-        });
-      });
-      if (Array.isArray(window._hubLoadedPackEntries)) {
-        window._hubLoadedPackEntries.forEach(e => {
-          if (e && (e.id || e.name)) allEntriesMap.set(String(e.id || e.name).toLowerCase(), e);
-        });
-      }
+      const addEntry = (e) => { if (e && (e.id || e.name)) allEntriesMap.set(String(e.id || e.name).toLowerCase(), e); };
+      const rootCamp = getHubActiveRootCampaign();
+      (rootCamp && Array.isArray(rootCamp.packs) ? rootCamp.packs : []).forEach(p => (p.entries || []).forEach(addEntry));
+      (charData && Array.isArray(charData.customDb) ? charData.customDb : []).forEach(addEntry);
+      if (Array.isArray(window._hubLoadedPackEntries)) window._hubLoadedPackEntries.forEach(addEntry);
 
       const entries = Array.from(allEntriesMap.values());
       const mode = filterSel.value || 'ALL';
       let counts = { ELIGIBLE: 0, SYNERGY_READY: 0, PREREQ_MISSING: 0 };
+      // Eligibility is kept beside the entries, not written onto them (they are stored character / campaign data).
+      const eligById = new Map();
       const filtered = entries.filter(e => {
         const res = evaluateHubEntryEligibility(e, charData);
         counts[res.status] = (counts[res.status] || 0) + 1;
-        e._hubElig = res;
+        eligById.set(e, res);
         if (mode === 'ALL') return true;
         if (mode === 'ELIGIBLE') return res.eligible;
         return res.status === mode;
@@ -6318,7 +6445,7 @@ CRITICAL RULES:
         return;
       }
       listEl.innerHTML = filtered.slice(0, 60).map(e => {
-        const st = e._hubElig?.status || 'ELIGIBLE';
+        const st = eligById.get(e)?.status || 'ELIGIBLE';
         const badge = st === 'SYNERGY_READY'
           ? '<span class="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 text-[9px] font-bold">✨ Synergy Ready</span>'
           : (st === 'PREREQ_MISSING'
@@ -6346,6 +6473,9 @@ CRITICAL RULES:
             saveHubStorage();
             renderHub();
             alert('✅ Full Hub backup bundle restored successfully!');
+          } else if (window.CampaignDb && CampaignDb.readPackFile(parsed)) {
+            // A rule pack file (`{ pack, entries }`) is attached to the selected campaign's Campaign DB.
+            attachPackToActiveCampaignDb(CampaignDb.readPackFile(parsed));
           } else if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && (Array.isArray(parsed.entries) || Array.isArray(parsed.customDb) || Array.isArray(parsed.masterDb))) {
             const rawList = Array.isArray(parsed.entries) ? parsed.entries : (Array.isArray(parsed.customDb) ? parsed.customDb : parsed.masterDb);
             const packId = (typeof parsed.pack === 'object' && parsed.pack !== null)

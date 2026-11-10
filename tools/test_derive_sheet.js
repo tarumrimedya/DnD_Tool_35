@@ -2712,6 +2712,110 @@ function runDeriveSheetTests() {
     hubReplace.res.updated === 1 && hubReplace.dbOf('c_main').length === 1 && hubReplace.dbOf('c_main')[0].weight === 2
   );
 
+  // Campaign DB (CAMPAIGN_PACKS_DESIGN.md): campaign_db.js reconcile rules on the real DM Boons pack.
+  const CampaignDb = require('../campaign_db.js');
+  const boonFile = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'exports', 'dm_boons_master_db_import.json'), 'utf8'));
+  const boonPack = CampaignDb.readPackFile(boonFile);
+  const cdbPacksV1 = CampaignDb.attachPack([], boonPack, '2026-11-10T00:00:00Z');
+  const cdbDb = [{ id: 'own_homebrew', name: 'My Homebrew Sword', type: 'Weapon' }];
+  const cdbAdd = CampaignDb.reconcile(cdbDb, cdbPacksV1, { campaignId: 'camp_main', used: new Set() });
+  const cdbAgain = CampaignDb.reconcile(cdbDb, cdbPacksV1, { campaignId: 'camp_main', used: new Set() });
+  const cdbTagged = cdbDb.filter(e => CampaignDb.getTag(e));
+  check(
+    'Campaign DB: a pack file is read with its id, every entry is copied into the character customDb with a _campaignPack tag (own entries untouched), and a second reconcile changes nothing',
+    boonPack && boonPack.packId === 'pack_dm_draconic_boons' && boonPack.entries.length === 107 && cdbPacksV1[0].version === 1 &&
+    cdbAdd.added === 107 && cdbTagged.length === 107 && cdbDb[0].id === 'own_homebrew' && !CampaignDb.getTag(cdbDb[0]) &&
+    cdbTagged.every(e => e._campaignPack.campaignId === 'camp_main' && e._campaignPack.status === 'active' && e.pack === 'pack_dm_draconic_boons') &&
+    !cdbAgain.changed
+  );
+
+  // DM edits one entry and drops two (one used by the character, one not), then re-uploads -> v2.
+  const usedBoon = boonPack.entries[1], unusedBoon = boonPack.entries[2];
+  const editedPack = Object.assign({}, boonPack, {
+    entries: boonPack.entries.filter(e => e !== usedBoon && e !== unusedBoon).map((e, i) => i === 0 ? Object.assign({}, e, { description: 'DM edit' }) : e)
+  });
+  const cdbPacksV2 = CampaignDb.attachPack(cdbPacksV1, editedPack, '2026-11-11T00:00:00Z');
+  const cdbChar = { specialAbilities: [{ id: usedBoon.id.split(':').pop(), name: usedBoon.name }] };
+  const cdbV2 = CampaignDb.reconcile(cdbDb, cdbPacksV2, { campaignId: 'camp_main', used: CampaignDb.collectUsedRefs(cdbChar) });
+  const keptUsed = cdbDb.find(e => e.id === usedBoon.id);
+  check(
+    'Campaign DB: a re-upload is v2; changed entries are refreshed, an unused removed entry is deleted, a removed entry the character uses is kept as "removed"',
+    cdbPacksV2.length === 1 && cdbPacksV2[0].version === 2 &&
+    cdbV2.removed === 1 && cdbV2.keptRemoved === 1 && !cdbDb.some(e => e.id === unusedBoon.id) &&
+    keptUsed && keptUsed._campaignPack.status === 'removed' &&
+    cdbDb.find(e => e.id === boonPack.entries[0].id).description === 'DM edit' &&
+    cdbTagged.length === 107 && cdbDb.filter(e => CampaignDb.getTag(e)).length === 106
+  );
+
+  // Leaving the campaign detaches the copies; joining again re-attaches them. Hand-imported copies are adopted;
+  // a character's own same-name entry is never overwritten.
+  const cdbDetach = CampaignDb.reconcile(cdbDb, cdbPacksV2, { campaignId: null, used: new Set() });
+  const detachedCount = cdbDb.filter(e => CampaignDb.getTag(e) && e._campaignPack.status === 'detached').length;
+  const cdbRejoin = CampaignDb.reconcile(cdbDb, cdbPacksV2, { campaignId: 'camp_main', used: new Set() });
+  const handDb = boonFile.entries.slice(0, 3).map(e => Object.assign({}, e, { pack: 'pack_dm_draconic_boons' }))
+    .concat([{ id: 'mine', name: boonFile.entries[3].name, type: boonFile.entries[3].type, description: 'my own version' }]);
+  const cdbAdopt = CampaignDb.reconcile(handDb, cdbPacksV1, { campaignId: 'camp_main', used: new Set() });
+  check(
+    'Campaign DB: copies are detached (kept) when the character leaves the campaign and re-attached when it returns; hand-imported copies are adopted without duplicates; a character entry with the same name is skipped, not overwritten',
+    cdbDetach.detached === 106 && detachedCount === 106 &&
+    cdbRejoin.updated >= 105 && cdbDb.filter(e => CampaignDb.getTag(e) && e._campaignPack.status === 'detached').length === 0 &&
+    cdbAdopt.adopted === 3 && cdbAdopt.added === 103 && cdbAdopt.skipped.length === 1 &&
+    handDb.length === 107 && handDb.find(e => e.id === 'mine').description === 'my own version' && !CampaignDb.getTag(handDb.find(e => e.id === 'mine'))
+  );
+
+  // The tag does not change the rule engine: boons from tagged copies give the same sheet as a plain import.
+  const cdbFixture = loadFixture('05_dragon_blooded_boons_lvl17.json');
+  cdbFixture.feats = (cdbFixture.feats || []).concat(boonFile.entries.filter(e => e.type === 'DM Boon').map(e => ({ id: e.id, name: e.name, type: e.type })));
+  const cdbPlainDb = JSON.parse(JSON.stringify(boonFile.entries));
+  const cdbTaggedDb = [];
+  CampaignDb.reconcile(cdbTaggedDb, cdbPacksV1, { campaignId: 'camp_main', used: new Set() });
+  const cdbSheetPlain = RuleEngine.deriveSheet(JSON.parse(JSON.stringify(cdbFixture)), cdbPlainDb);
+  const cdbSheetTagged = RuleEngine.deriveSheet(JSON.parse(JSON.stringify(cdbFixture)), cdbTaggedDb);
+  const cdbSig = (s) => JSON.stringify({ ac: s.ac && [s.ac.total, s.ac.touch, s.ac.flatFooted, s.ac.natural], saves: s.saves && [s.saves.fort, s.saves.ref, s.saves.will], hp: s.hp && s.hp.max });
+  check(
+    'Campaign DB: fixture 05 with all DM boons derives the same AC, saves and HP from tagged Campaign DB copies as from a plain pack import',
+    cdbSig(cdbSheetPlain) === cdbSig(cdbSheetTagged) && cdbSheetPlain.ac.total > 23,
+    `plain=${cdbSig(cdbSheetPlain)} tagged=${cdbSig(cdbSheetTagged)}`
+  );
+
+  // Hub: a pack file attaches to the selected (root) campaign; sub-campaign characters get it, others do not.
+  const cdbHubFnSrc = hubSrc.slice(hubSrc.indexOf('function getHubRootCampaign('), hubSrc.indexOf('function exportMasterDbJson('));
+  const cdbHubRun = (activeCampaignId, sheetCharId) => {
+    const store = { dnd35_character: JSON.stringify({ id: sheetCharId, customDb: [] }) };
+    const alerts = [];
+    const sandbox = {
+      JSON, Object, Array, Map, Set, Date, Number, String,
+      CampaignDb, window: { CampaignDb },
+      state: {
+        activeCampaignId,
+        campaigns: [{ id: 'camp_main', name: 'Main' }, { id: 'camp_sub', name: 'Sub', parentId: 'camp_main' }, { id: 'camp_other', name: 'Other' }],
+        characters: [
+          { id: 'c_main', name: 'A', campaignId: 'camp_main', fullData: { customDb: [] } },
+          { id: 'c_sub', name: 'B', campaignId: 'camp_sub', fullData: { customDb: [] } },
+          { id: 'c_other', name: 'C', campaignId: 'camp_other', fullData: { customDb: [] } }
+        ]
+      },
+      localStorage: { getItem: k => store[k] || null, setItem: (k, v) => { store[k] = v; } },
+      saveHubStorage: () => {}, renderHub: () => {}, renderHubDmPackManager: () => {},
+      alert: (m) => alerts.push(m), confirm: () => true
+    };
+    vm.runInNewContext(cdbHubFnSrc + '\nattachPackToActiveCampaignDb(CampaignDb.readPackFile(packFile));', Object.assign(sandbox, { packFile: boonFile }));
+    const tagged = id => sandbox.state.characters.find(c => c.id === id).fullData.customDb.filter(e => CampaignDb.getTag(e)).length;
+    const sheetTagged = JSON.parse(store.dnd35_character).customDb.filter(e => CampaignDb.getTag(e)).length;
+    return { sandbox, tagged, sheetTagged, alerts };
+  };
+  const cdbHubSub = cdbHubRun('camp_sub', 'c_sub');
+  const cdbHubAll = cdbHubRun('all', 'c_main');
+  const cdbHubAttached = [cdbHubSub.sandbox.state.campaigns[0].packs.length, !cdbHubSub.sandbox.state.campaigns[1].packs, cdbHubSub.tagged('c_main'), cdbHubSub.tagged('c_sub'), cdbHubSub.tagged('c_other'), cdbHubSub.sheetTagged];
+  vm.runInNewContext(cdbHubFnSrc + '\nstate.activeCampaignId = "camp_main"; removePackFromActiveCampaignDb("pack_dm_draconic_boons");', cdbHubSub.sandbox);
+  check(
+    'Campaign DB (Hub): a pack attaches to the root campaign of the selected sub-campaign and reaches its characters and the sheet character; nothing is attached with "All" selected; removing the pack removes the unused copies',
+    JSON.stringify(cdbHubAttached) === JSON.stringify([1, true, 107, 107, 0, 107]) &&
+    cdbHubAll.tagged('c_main') === 0 && !cdbHubAll.sandbox.state.campaigns[0].packs && /select a campaign first/.test(cdbHubAll.alerts[0] || '') &&
+    cdbHubSub.sandbox.state.campaigns[0].packs.length === 0 && cdbHubSub.tagged('c_main') === 0 && cdbHubSub.tagged('c_sub') === 0 &&
+    !/e\._hubElig = res/.test(hubSrc) && /CampaignDb\.readPackFile\(parsed\)/.test(hubSrc)
+  );
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };
