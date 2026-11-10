@@ -457,9 +457,12 @@
             "Special Ability",
             "Racial Trait",
             "Class Feature",
-            "DM Boon"
+            "DM Boon",
+            "Flaw",
+            "Trait",
+            "Skill Trick"
           ],
-          "description": "Primary rule category of the entity."
+          "description": "Primary rule category of the entity. Flaw = Unearthed Arcana character flaw (grants a bonus feat); Trait = Unearthed Arcana character trait (benefit + drawback); Skill Trick = Complete Scoundrel skill trick (bought with skill points)."
         },
         "slot": {
           "type": "string",
@@ -779,7 +782,53 @@
         "isFighterBonusFeat": {
           "type": "boolean",
           "default": false,
-          "description": "Whether this feat can be selected as a Fighter bonus feat (PHB Table 5-1)."
+          "description": "Whether this feat can be selected as a Fighter bonus feat (PHB Table 5-1). Means the heroic (1st-20th level) list; epic fighter bonus feats use fighterBonusFeatTier: 'epic'."
+        },
+        "levelBand": {
+          "type": "string",
+          "enum": ["heroic", "epic"],
+          "default": "heroic",
+          "description": "Level band of the entry. 'epic' = Epic Level Handbook / DMG epic content usable at character level 21+. (Not 'tier': that key is the Warlock invocation grade.)"
+        },
+        "fighterBonusFeatTier": {
+          "type": "string",
+          "enum": ["epic"],
+          "description": "Set to 'epic' on feats from the Epic Fighter Bonus Feat List (ELH p.11-12): fighter bonus feat choices at fighter level 21+ only."
+        },
+        "edition": {
+          "type": "string",
+          "enum": ["3.5", "3.0", "3.5-licensed"],
+          "default": "3.5",
+          "description": "Rules edition of the source book. '3.0' and '3.5-licensed' (non-WotC licensed books) live in an opt-in chunk that is never loaded at page open."
+        },
+        "bonusFeatFor": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "Classes that may take this feat as a class bonus feat (e.g. ['Fighter', 'Psychic Warrior'])."
+        },
+        "featTypes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "default": [],
+          "description": "All feat type tags of the feat (e.g. ['General', 'Fighter'], ['Metamagic'], ['Epic'])."
+        },
+        "contentLevel": {
+          "type": "string",
+          "enum": ["full", "summary", "stub"],
+          "default": "full",
+          "description": "How complete the rules text is. 'summary' = structured fields plus a short paraphrased benefit (no verbatim book text); 'stub' = name/source/prerequisites only."
+        },
+        "verification": {
+          "type": "string",
+          "enum": ["verified", "cross-checked", "unverified"],
+          "default": "verified",
+          "description": "'verified' = checked against the rulebook; 'cross-checked' = two independent secondary sources agree on every structured field (e.g. a character-builder workbook + the crystalkeep equipment index); 'unverified' = single secondary source, not checked against the rulebook."
+        },
+        "provenance": {
+          "type": ["object", "null"],
+          "default": null,
+          "description": "Import origin for bulk-imported records, e.g. {'origin': 'builder-workbook-7.4.0.1', 'sheet': 'Feats', 'row': 385}. Character-side copies of compendium entries carry a separate internal '_snapshot' object, and copies of Campaign DB rule pack entries an internal '_campaignPack' object ({campaignId, packId, version, hash, status}); neither is ever produced by the AI."
         },
         "featType": {
           "type": "string",

@@ -3044,7 +3044,10 @@
     "damageParts": [],
     "modes": [],
     "ruleFlags": {},
-    "tacticalBadges": []
+    "tacticalBadges": [],
+    "aliases": [
+      "Absolute Steel Stance"
+    ]
   },
   {
     "id": "tob-maneuver-exorcism-of-steel",
@@ -6178,6 +6181,60 @@
     "tacticalBadges": [
       "2d6 Constitution Damage (No Save)"
     ]
+  },
+  {
+    "id": "tob-maneuver-boulder-roll",
+    "schemaVersion": 2,
+    "name": "Boulder Roll",
+    "type": "Maneuver",
+    "subType": "Boost",
+    "category": "Stone Dragon",
+    "discipline": "Stone Dragon",
+    "school": "Stone Dragon",
+    "level": 4,
+    "slot": "None",
+    "action": "Full-round",
+    "prereq": "None",
+    "range": "Personal",
+    "target": "You",
+    "duration": "Instantaneous",
+    "save": "None",
+    "source": "ToB p.81",
+    "description": "Boost an overrun attempt: +4 on the Strength check to overrun; if the check fails, the target cannot knock you prone (you stop in the last legal space you occupied). Neither the movement nor the overrun attempts provoke attacks of opportunity.",
+    "shortDescription": "Boost an overrun attempt: +4 on the Strength check to overrun; if the check fails, the target cannot knock you prone (you stop in the last legal space you occupied). Neither the movement nor the overrun attempts provoke attacks of opportunity.",
+    "benefit": "Boost an overrun attempt: +4 on the Strength check to overrun; if the check fails, the target cannot knock you prone (you stop in the last legal space you occupied). Neither the movement nor the overrun attempts provoke attacks of opportunity.",
+    "desc": "Boost an overrun attempt: +4 on the Strength check to overrun; if the check fails, the target cannot knock you prone (you stop in the last legal space you occupied). Neither the movement nor the overrun attempts provoke attacks of opportunity.",
+    "tags": [
+      "maneuver",
+      "boost",
+      "stone-dragon"
+    ],
+    "modifiers": [
+      {
+        "target": "ability.str_check",
+        "value": 4,
+        "formula": "4",
+        "type": "Untyped",
+        "condition": "Overrun attempts"
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "noAooOnOverrun": true,
+      "cannotBeTrippedOnFailedOverrun": true
+    },
+    "tacticalBadges": [
+      "+4 Overrun",
+      "No AoO"
+    ],
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Tome of Battle",
+      "page": 81
+    }
   },
   {
     "id": "tob-stance-blood-in-the-water",

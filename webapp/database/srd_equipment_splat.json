@@ -1,0 +1,5890 @@
+[
+  {
+    "id": "wpn-cutlass",
+    "schemaVersion": 2,
+    "name": "Cutlass",
+    "type": "Weapon",
+    "category": "Martial",
+    "handedness": "light",
+    "slot": "Main Hand",
+    "source": "Stormwrack p.107",
+    "cost": 15,
+    "weight": 3,
+    "critRange": 19,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Martial light melee weapon (1d6 slashing, 19–20/×2).",
+    "description": "<p>Martial light melee weapon (1d6 slashing, 19–20/×2).</p>",
+    "benefit": "Martial light melee weapon (1d6 slashing, 19–20/×2).",
+    "tags": [
+      "disarm",
+      "finessable",
+      "isLight",
+      "light",
+      "martial",
+      "slashing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-light",
+        "label": "Melee (Light)",
+        "handedness": "light",
+        "proficiency": "Martial",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "finessable": true,
+          "disarm": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "isLight": true,
+      "finessable": true,
+      "disarm": true
+    },
+    "weaponType": "Martial Light",
+    "damage": "1d6",
+    "dmgType": "Slashing",
+    "isLight": true,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "finessable": true
+  },
+  {
+    "id": "wpn-maul",
+    "schemaVersion": 2,
+    "name": "Maul",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Complete Warrior p.157",
+    "cost": 15,
+    "weight": 20,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d10 bludgeoning, ×3). Exotic in one hand; can be wielded two-handed as a martial weapon.",
+    "description": "<p>Exotic one-handed melee weapon (1d10 bludgeoning, ×3). Exotic in one hand; can be wielded two-handed as a martial weapon.</p>",
+    "benefit": "Exotic one-handed melee weapon (1d10 bludgeoning, ×3). Exotic in one hand; can be wielded two-handed as a martial weapon.",
+    "tags": [
+      "1h",
+      "bludgeoning",
+      "exotic"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d10",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "1h-exotic",
+        "label": "One-Handed (Exotic)",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d10",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {}
+      },
+      {
+        "id": "2h-martial",
+        "label": "Two-Handed (Martial)",
+        "handedness": "2h",
+        "proficiency": "Martial",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d10",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {},
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d10",
+    "dmgType": "Bludgeoning",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-dire-pick",
+    "schemaVersion": 2,
+    "name": "Dire Pick",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Complete Warrior p.157 / Complete Adventurer p.116",
+    "cost": 30,
+    "weight": 12,
+    "critRange": 20,
+    "critMult": 4,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d8 piercing, ×4). Exotic in one hand; can be wielded two-handed as a martial weapon.",
+    "description": "<p>Exotic one-handed melee weapon (1d8 piercing, ×4). Exotic in one hand; can be wielded two-handed as a martial weapon.</p>",
+    "benefit": "Exotic one-handed melee weapon (1d8 piercing, ×4). Exotic in one hand; can be wielded two-handed as a martial weapon.",
+    "tags": [
+      "1h",
+      "exotic",
+      "piercing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "1h-exotic",
+        "label": "One-Handed (Exotic)",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 4,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {}
+      },
+      {
+        "id": "2h-martial",
+        "label": "Two-Handed (Martial)",
+        "handedness": "2h",
+        "proficiency": "Martial",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 4,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {},
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d8",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Pick, Dire"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-great-scimitar",
+    "schemaVersion": 2,
+    "name": "Great Scimitar",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Sandstorm p.96",
+    "cost": 200,
+    "weight": 8,
+    "critRange": 18,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d8 slashing, 18–20/×2). Exotic in one hand; can be wielded two-handed as a martial weapon.",
+    "description": "<p>Exotic one-handed melee weapon (1d8 slashing, 18–20/×2). Exotic in one hand; can be wielded two-handed as a martial weapon.</p>",
+    "benefit": "Exotic one-handed melee weapon (1d8 slashing, 18–20/×2). Exotic in one hand; can be wielded two-handed as a martial weapon.",
+    "tags": [
+      "1h",
+      "exotic",
+      "slashing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "1h-exotic",
+        "label": "One-Handed (Exotic)",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {}
+      },
+      {
+        "id": "2h-martial",
+        "label": "Two-Handed (Martial)",
+        "handedness": "2h",
+        "proficiency": "Martial",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {},
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d8",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Scimitar, Great"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-warmace",
+    "schemaVersion": 2,
+    "name": "Warmace",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Complete Warrior p.157 / Complete Adventurer p.116",
+    "cost": 25,
+    "weight": 10,
+    "critRange": 20,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d12 bludgeoning, ×2). Exotic in one hand; can be wielded two-handed as a martial weapon.",
+    "description": "<p>Exotic one-handed melee weapon (1d12 bludgeoning, ×2). Exotic in one hand; can be wielded two-handed as a martial weapon.</p>",
+    "benefit": "Exotic one-handed melee weapon (1d12 bludgeoning, ×2). Exotic in one hand; can be wielded two-handed as a martial weapon.",
+    "tags": [
+      "1h",
+      "bludgeoning",
+      "exotic"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d12",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "1h-exotic",
+        "label": "One-Handed (Exotic)",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d12",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {}
+      },
+      {
+        "id": "2h-martial",
+        "label": "Two-Handed (Martial)",
+        "handedness": "2h",
+        "proficiency": "Martial",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d12",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {},
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d12",
+    "dmgType": "Bludgeoning",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-barbed-dagger",
+    "schemaVersion": 2,
+    "name": "Barbed Dagger",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "light",
+    "slot": "Main Hand",
+    "source": "Complete Adventurer p.115",
+    "cost": 35,
+    "weight": 1,
+    "critRange": 19,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic light melee weapon (1d4 piercing, 19–20/×2).",
+    "description": "<p>Exotic light melee weapon (1d4 piercing, 19–20/×2).</p>",
+    "benefit": "Exotic light melee weapon (1d4 piercing, 19–20/×2).",
+    "tags": [
+      "exotic",
+      "finessable",
+      "isLight",
+      "light",
+      "piercing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-light",
+        "label": "Melee (Light)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d4",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "finessable": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "isLight": true,
+      "finessable": true
+    },
+    "weaponType": "Exotic Light",
+    "damage": "1d4",
+    "dmgType": "Piercing",
+    "isLight": true,
+    "combatModifiers": [],
+    "aliases": [
+      "Dagger, Barbed"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "finessable": true
+  },
+  {
+    "id": "wpn-throwing-hammer",
+    "schemaVersion": 2,
+    "name": "Throwing Hammer",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "light",
+    "slot": "Main Hand",
+    "source": "Races of Stone p.155",
+    "cost": 30,
+    "weight": 2,
+    "critRange": 20,
+    "critMult": 2,
+    "rangeIncrement": 20,
+    "shortDescription": "Exotic light melee weapon (1d6 bludgeoning, ×2, 20 ft. range increment).",
+    "description": "<p>Exotic light melee weapon (1d6 bludgeoning, ×2, 20 ft. range increment).</p>",
+    "benefit": "Exotic light melee weapon (1d6 bludgeoning, ×2, 20 ft. range increment).",
+    "tags": [
+      "bludgeoning",
+      "exotic",
+      "finessable",
+      "isLight",
+      "light",
+      "thrown"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-light",
+        "label": "Melee (Light)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "finessable": true,
+          "thrown": true
+        }
+      },
+      {
+        "id": "thrown",
+        "label": "Thrown (20 ft.)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 1,
+        "rangeIncrement": 20,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "finessable": true,
+          "thrown": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "isLight": true,
+      "finessable": true,
+      "thrown": true
+    },
+    "weaponType": "Exotic Light",
+    "damage": "1d6",
+    "dmgType": "Bludgeoning",
+    "isLight": true,
+    "combatModifiers": [],
+    "aliases": [
+      "Hammer, Throwing"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 20,
+    "finessable": true
+  },
+  {
+    "id": "wpn-elven-lightblade",
+    "schemaVersion": 2,
+    "name": "Elven Lightblade",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "light",
+    "slot": "Main Hand",
+    "source": "Complete Warrior p.157 / Races of the Wild p.165",
+    "cost": 50,
+    "weight": 1,
+    "critRange": 18,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic light melee weapon (1d6 piercing, 18–20/×2).",
+    "description": "<p>Exotic light melee weapon (1d6 piercing, 18–20/×2).</p>",
+    "benefit": "Exotic light melee weapon (1d6 piercing, 18–20/×2).",
+    "tags": [
+      "exotic",
+      "finessable",
+      "isLight",
+      "light",
+      "piercing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-light",
+        "label": "Melee (Light)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "finessable": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "isLight": true,
+      "finessable": true
+    },
+    "weaponType": "Exotic Light",
+    "damage": "1d6",
+    "dmgType": "Piercing",
+    "isLight": true,
+    "combatModifiers": [],
+    "aliases": [
+      "Lightblade, Elven"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "finessable": true
+  },
+  {
+    "id": "wpn-drow-long-knife",
+    "schemaVersion": 2,
+    "name": "Drow Long Knife",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "light",
+    "slot": "Main Hand",
+    "source": "Races of Eberron p.171",
+    "cost": 15,
+    "weight": 2,
+    "critRange": 19,
+    "critMult": 2,
+    "rangeIncrement": 10,
+    "shortDescription": "Exotic light melee weapon (1d6 piercing, 19–20/×2, 10 ft. range increment).",
+    "description": "<p>Exotic light melee weapon (1d6 piercing, 19–20/×2, 10 ft. range increment).</p>",
+    "benefit": "Exotic light melee weapon (1d6 piercing, 19–20/×2, 10 ft. range increment).",
+    "tags": [
+      "exotic",
+      "finessable",
+      "isLight",
+      "light",
+      "piercing",
+      "thrown"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-light",
+        "label": "Melee (Light)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "finessable": true,
+          "thrown": true
+        }
+      },
+      {
+        "id": "thrown",
+        "label": "Thrown (10 ft.)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 1,
+        "rangeIncrement": 10,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "finessable": true,
+          "thrown": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "isLight": true,
+      "finessable": true,
+      "thrown": true
+    },
+    "weaponType": "Exotic Light",
+    "damage": "1d6",
+    "dmgType": "Piercing",
+    "isLight": true,
+    "combatModifiers": [],
+    "aliases": [
+      "Long Knife, Drow"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 10,
+    "finessable": true
+  },
+  {
+    "id": "wpn-gnome-quickrazor",
+    "schemaVersion": 2,
+    "name": "Gnome Quickrazor",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "light",
+    "slot": "Main Hand",
+    "source": "Races of Stone p.155",
+    "cost": 45,
+    "weight": 1,
+    "critRange": 19,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic light melee weapon (1d4 slashing, 19–20/×2).",
+    "description": "<p>Exotic light melee weapon (1d4 slashing, 19–20/×2).</p>",
+    "benefit": "Exotic light melee weapon (1d4 slashing, 19–20/×2).",
+    "tags": [
+      "exotic",
+      "finessable",
+      "isLight",
+      "light",
+      "slashing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-light",
+        "label": "Melee (Light)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d4",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "finessable": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "isLight": true,
+      "finessable": true
+    },
+    "weaponType": "Exotic Light",
+    "damage": "1d4",
+    "dmgType": "Slashing",
+    "isLight": true,
+    "combatModifiers": [],
+    "aliases": [
+      "Quickrazor, Gnome"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "finessable": true
+  },
+  {
+    "id": "wpn-flindbar",
+    "schemaVersion": 2,
+    "name": "Flindbar",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Monster Manual III p.62",
+    "cost": 30,
+    "weight": 2,
+    "critRange": 19,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (2d4 bludgeoning, 19–20/×2).",
+    "description": "<p>Exotic one-handed melee weapon (2d4 bludgeoning, 19–20/×2).</p>",
+    "benefit": "Exotic one-handed melee weapon (2d4 bludgeoning, 19–20/×2).",
+    "tags": [
+      "1h",
+      "bludgeoning",
+      "disarm",
+      "exotic"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "2d4",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-1h",
+        "label": "One-Handed",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "2d4",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "disarm": true
+        }
+      },
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "2d4",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "disarm": true,
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "disarm": true
+    },
+    "weaponType": "Exotic One-Handed",
+    "damage": "2d4",
+    "dmgType": "Bludgeoning",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-ice-axe",
+    "schemaVersion": 2,
+    "name": "Ice Axe",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Frostburn p.76",
+    "cost": 10,
+    "weight": 5,
+    "critRange": 20,
+    "critMult": 4,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d6 piercing/slashing, ×4).",
+    "description": "<p>Exotic one-handed melee weapon (1d6 piercing/slashing, ×4).</p>",
+    "benefit": "Exotic one-handed melee weapon (1d6 piercing/slashing, ×4).",
+    "tags": [
+      "1h",
+      "exotic",
+      "piercing/slashing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-1h",
+        "label": "One-Handed",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 4,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Piercing/Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {}
+      },
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 4,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Piercing/Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {},
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d6",
+    "dmgType": "Piercing/Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-iuak",
+    "schemaVersion": 2,
+    "name": "Iuak",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Frostburn p.76",
+    "cost": 12,
+    "weight": 4,
+    "critRange": 19,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d6 slashing, 19–20/×2).",
+    "description": "<p>Exotic one-handed melee weapon (1d6 slashing, 19–20/×2).</p>",
+    "benefit": "Exotic one-handed melee weapon (1d6 slashing, 19–20/×2).",
+    "tags": [
+      "1h",
+      "exotic",
+      "slashing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-1h",
+        "label": "One-Handed",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {}
+      },
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {},
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d6",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-quickblade-rapier",
+    "schemaVersion": 2,
+    "name": "Quickblade Rapier",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Complete Adventurer p.116",
+    "cost": 75,
+    "weight": 3,
+    "critRange": 18,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d6 piercing, 18–20/×2).",
+    "description": "<p>Exotic one-handed melee weapon (1d6 piercing, 18–20/×2).</p>",
+    "benefit": "Exotic one-handed melee weapon (1d6 piercing, 18–20/×2).",
+    "tags": [
+      "1h",
+      "disarm",
+      "exotic",
+      "finessable",
+      "piercing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-1h",
+        "label": "One-Handed",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "disarm": true,
+          "finessable": true
+        }
+      },
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "disarm": true,
+          "finessable": true,
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "disarm": true,
+      "finessable": true
+    },
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d6",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Rapier, Quickblade"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "finessable": true
+  },
+  {
+    "id": "wpn-ribbonweave",
+    "schemaVersion": 2,
+    "name": "Ribbonweave",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Races of Eberron p.172",
+    "cost": 70,
+    "weight": 3,
+    "critRange": 19,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d8 slashing, 19–20/×2).",
+    "description": "<p>Exotic one-handed melee weapon (1d8 slashing, 19–20/×2).</p>",
+    "benefit": "Exotic one-handed melee weapon (1d8 slashing, 19–20/×2).",
+    "tags": [
+      "1h",
+      "exotic",
+      "finessable",
+      "slashing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-1h",
+        "label": "One-Handed",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "finessable": true
+        }
+      },
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "finessable": true,
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "finessable": true
+    },
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d8",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "finessable": true
+  },
+  {
+    "id": "wpn-scourge",
+    "schemaVersion": 2,
+    "name": "Scourge",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Complete Warrior p.157",
+    "cost": 20,
+    "weight": 2,
+    "critRange": 20,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d8 slashing, ×2).",
+    "description": "<p>Exotic one-handed melee weapon (1d8 slashing, ×2).</p>",
+    "benefit": "Exotic one-handed melee weapon (1d8 slashing, ×2).",
+    "tags": [
+      "1h",
+      "disarm",
+      "exotic",
+      "slashing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-1h",
+        "label": "One-Handed",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "disarm": true
+        }
+      },
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "disarm": true,
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "disarm": true
+    },
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d8",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-gnome-swordcatcher",
+    "schemaVersion": 2,
+    "name": "Gnome Swordcatcher",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Races of Stone p.155",
+    "cost": 35,
+    "weight": 5,
+    "critRange": 19,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d6 slashing, 19–20/×2).",
+    "description": "<p>Exotic one-handed melee weapon (1d6 slashing, 19–20/×2).</p>",
+    "benefit": "Exotic one-handed melee weapon (1d6 slashing, 19–20/×2).",
+    "tags": [
+      "1h",
+      "disarm",
+      "exotic",
+      "slashing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-1h",
+        "label": "One-Handed",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "disarm": true
+        }
+      },
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "disarm": true,
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "disarm": true
+    },
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d6",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Swordcatcher, Gnome"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-elven-thinblade",
+    "schemaVersion": 2,
+    "name": "Elven Thinblade",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Complete Warrior p.158 / Races of the Wild p.165",
+    "cost": 100,
+    "weight": 3,
+    "critRange": 18,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d8 piercing, 18–20/×2).",
+    "description": "<p>Exotic one-handed melee weapon (1d8 piercing, 18–20/×2).</p>",
+    "benefit": "Exotic one-handed melee weapon (1d8 piercing, 18–20/×2).",
+    "tags": [
+      "1h",
+      "exotic",
+      "finessable",
+      "piercing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-1h",
+        "label": "One-Handed",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "finessable": true
+        }
+      },
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "finessable": true,
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "finessable": true
+    },
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d8",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Thinblade, Elven"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "finessable": true
+  },
+  {
+    "id": "wpn-tigerskull-club",
+    "schemaVersion": 2,
+    "name": "Tigerskull Club",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Frostburn p.76",
+    "cost": 15,
+    "weight": 8,
+    "critRange": 20,
+    "critMult": 4,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d8 bludgeoning & piercing, ×4).",
+    "description": "<p>Exotic one-handed melee weapon (1d8 bludgeoning & piercing, ×4).</p>",
+    "benefit": "Exotic one-handed melee weapon (1d8 bludgeoning & piercing, ×4).",
+    "tags": [
+      "1h",
+      "bludgeoning & piercing",
+      "disarm",
+      "exotic",
+      "trip"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Bludgeoning & Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-1h",
+        "label": "One-Handed",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 4,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Bludgeoning & Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "trip": true,
+          "disarm": true
+        }
+      },
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 4,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Bludgeoning & Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "trip": true,
+          "disarm": true,
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "trip": true,
+      "disarm": true
+    },
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d8",
+    "dmgType": "Bludgeoning & Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-stingray-whip",
+    "schemaVersion": 2,
+    "name": "Stingray Whip",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "1h",
+    "slot": "Main Hand",
+    "source": "Stormwrack p.107",
+    "cost": 15,
+    "weight": 3,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic one-handed melee weapon (1d6 slashing/piercing, ×3). Reach weapon.",
+    "description": "<p>Exotic one-handed melee weapon (1d6 slashing/piercing, ×3). Reach weapon.</p>",
+    "benefit": "Exotic one-handed melee weapon (1d6 slashing/piercing, ×3). Reach weapon.",
+    "tags": [
+      "1h",
+      "exotic",
+      "finessable",
+      "reach",
+      "slashing/piercing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Slashing/Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-1h",
+        "label": "One-Handed",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Slashing/Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "reach": true,
+          "finessable": true
+        }
+      },
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Slashing/Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "reach": true,
+          "finessable": true,
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "reach": true,
+      "finessable": true
+    },
+    "weaponType": "Exotic One-Handed",
+    "damage": "1d6",
+    "dmgType": "Slashing/Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Whip, Stingray"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "finessable": true
+  },
+  {
+    "id": "wpn-elven-courtblade",
+    "schemaVersion": 2,
+    "name": "Elven Courtblade",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Races of the Wild p.165",
+    "cost": 150,
+    "weight": 6,
+    "critRange": 18,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d10 piercing/slashing, 18–20/×2).",
+    "description": "<p>Exotic two-handed melee weapon (1d10 piercing/slashing, 18–20/×2).</p>",
+    "benefit": "Exotic two-handed melee weapon (1d10 piercing/slashing, 18–20/×2).",
+    "tags": [
+      "2h",
+      "exotic",
+      "finessable",
+      "piercing/slashing",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d10",
+        "bonus": 0,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d10",
+            "bonus": 0,
+            "type": "Piercing/Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "finessable": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "finessable": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d10",
+    "dmgType": "Piercing/Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Courtblade, Elven"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "finessable": true
+  },
+  {
+    "id": "wpn-goliath-greathammer",
+    "schemaVersion": 2,
+    "name": "Goliath Greathammer",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Races of Stone p.155 / Monster Manual IV p.101",
+    "cost": 30,
+    "weight": 30,
+    "critRange": 20,
+    "critMult": 4,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d12 bludgeoning, ×4).",
+    "description": "<p>Exotic two-handed melee weapon (1d12 bludgeoning, ×4).</p>",
+    "benefit": "Exotic two-handed melee weapon (1d12 bludgeoning, ×4).",
+    "tags": [
+      "2h",
+      "bludgeoning",
+      "exotic",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d12",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 4,
+        "damageParts": [
+          {
+            "dice": "1d12",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d12",
+    "dmgType": "Bludgeoning",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Greathammer, Goliath"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-greatspear",
+    "schemaVersion": 2,
+    "name": "Greatspear",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Complete Warrior p.156 / Complete Adventurer p.116",
+    "cost": 25,
+    "weight": 9,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 10,
+    "shortDescription": "Exotic two-handed melee weapon (2d6 piercing, ×3, 10 ft. range increment). Reach weapon.",
+    "description": "<p>Exotic two-handed melee weapon (2d6 piercing, ×3, 10 ft. range increment). Reach weapon.</p>",
+    "benefit": "Exotic two-handed melee weapon (2d6 piercing, ×3, 10 ft. range increment). Reach weapon.",
+    "tags": [
+      "2h",
+      "exotic",
+      "piercing",
+      "reach",
+      "thrown",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "2d6",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "reach": true,
+          "thrown": true
+        }
+      },
+      {
+        "id": "thrown",
+        "label": "Thrown (10 ft.)",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 1,
+        "rangeIncrement": 10,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "2d6",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "reach": true,
+          "thrown": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "reach": true,
+      "thrown": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "2d6",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 10
+  },
+  {
+    "id": "wpn-double-hammer",
+    "schemaVersion": 2,
+    "name": "Double Hammer",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Complete Warrior p.156",
+    "cost": 70,
+    "weight": 18,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d8/1d8 bludgeoning, ×3). Double weapon: second head 1d8 bludgeoning, ×3.",
+    "description": "<p>Exotic two-handed melee weapon (1d8/1d8 bludgeoning, ×3). Double weapon: second head 1d8 bludgeoning, ×3.</p>",
+    "benefit": "Exotic two-handed melee weapon (1d8/1d8 bludgeoning, ×3). Double weapon: second head 1d8 bludgeoning, ×3.",
+    "tags": [
+      "2h",
+      "bludgeoning",
+      "doubleWeapon",
+      "exotic",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "primary-head",
+        "label": "Primary Head (TWF)",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "doubleWeapon": true
+        }
+      },
+      {
+        "id": "offhand-head",
+        "label": "Off-Hand Head (TWF)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 0.5,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Off-Hand Head"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "doubleWeaponOffHand": true
+        }
+      },
+      {
+        "id": "2h-single",
+        "label": "Single Head (Two-Handed)",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "doubleWeapon": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "doubleWeapon": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d8",
+    "dmgType": "Bludgeoning",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Hammer, Double"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-lajatang",
+    "schemaVersion": 2,
+    "name": "Lajatang",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Complete Warrior p.157",
+    "cost": 90,
+    "weight": 7,
+    "critRange": 20,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d8/1d8 slashing, ×2). Double weapon: second head 1d8 slashing, ×2.",
+    "description": "<p>Exotic two-handed melee weapon (1d8/1d8 slashing, ×2). Double weapon: second head 1d8 slashing, ×2.</p>",
+    "benefit": "Exotic two-handed melee weapon (1d8/1d8 slashing, ×2). Double weapon: second head 1d8 slashing, ×2.",
+    "tags": [
+      "2h",
+      "doubleWeapon",
+      "exotic",
+      "slashing",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "primary-head",
+        "label": "Primary Head (TWF)",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "doubleWeapon": true
+        }
+      },
+      {
+        "id": "offhand-head",
+        "label": "Off-Hand Head (TWF)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 0.5,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Off-Hand Head"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "doubleWeaponOffHand": true
+        }
+      },
+      {
+        "id": "2h-single",
+        "label": "Single Head (Two-Handed)",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "doubleWeapon": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "doubleWeapon": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d8",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-longaxe",
+    "schemaVersion": 2,
+    "name": "Longaxe",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Complete Adventurer p.115",
+    "cost": 35,
+    "weight": 15,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d12 slashing, ×3). Reach weapon.",
+    "description": "<p>Exotic two-handed melee weapon (1d12 slashing, ×3). Reach weapon.</p>",
+    "benefit": "Exotic two-handed melee weapon (1d12 slashing, ×3). Reach weapon.",
+    "tags": [
+      "2h",
+      "exotic",
+      "reach",
+      "slashing",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d12",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d12",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "reach": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "reach": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d12",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-longstaff",
+    "schemaVersion": 2,
+    "name": "Longstaff",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Complete Adventurer p.116",
+    "cost": 15,
+    "weight": 6,
+    "critRange": 20,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d6/1d6 bludgeoning, ×2). Double weapon: second head 1d6 bludgeoning, ×2.",
+    "description": "<p>Exotic two-handed melee weapon (1d6/1d6 bludgeoning, ×2). Double weapon: second head 1d6 bludgeoning, ×2.</p>",
+    "benefit": "Exotic two-handed melee weapon (1d6/1d6 bludgeoning, ×2). Double weapon: second head 1d6 bludgeoning, ×2.",
+    "tags": [
+      "2h",
+      "bludgeoning",
+      "doubleWeapon",
+      "exotic",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "primary-head",
+        "label": "Primary Head (TWF)",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "doubleWeapon": true
+        }
+      },
+      {
+        "id": "offhand-head",
+        "label": "Off-Hand Head (TWF)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 0.5,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Off-Hand Head"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "doubleWeaponOffHand": true
+        }
+      },
+      {
+        "id": "2h-single",
+        "label": "Single Head (Two-Handed)",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "doubleWeapon": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "doubleWeapon": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d6",
+    "dmgType": "Bludgeoning",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-mancatcher",
+    "schemaVersion": 2,
+    "name": "Mancatcher",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Complete Warrior p.157",
+    "cost": 20,
+    "weight": 8,
+    "critRange": 20,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d4 bludgeoning, ×2). Reach weapon.",
+    "description": "<p>Exotic two-handed melee weapon (1d4 bludgeoning, ×2). Reach weapon.</p>",
+    "benefit": "Exotic two-handed melee weapon (1d4 bludgeoning, ×2). Reach weapon.",
+    "tags": [
+      "2h",
+      "bludgeoning",
+      "exotic",
+      "nonlethal",
+      "reach",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d4",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "reach": true,
+          "nonlethal": true,
+          "grapple": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "reach": true,
+      "nonlethal": true,
+      "grapple": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d4",
+    "dmgType": "Bludgeoning",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-heavy-poleaxe",
+    "schemaVersion": 2,
+    "name": "Heavy Poleaxe",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Complete Warrior p.156 / Complete Adventurer p.116",
+    "cost": 20,
+    "weight": 15,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (2d6 piercing/slashing, ×3). Reach weapon.",
+    "description": "<p>Exotic two-handed melee weapon (2d6 piercing/slashing, ×3). Reach weapon.</p>",
+    "benefit": "Exotic two-handed melee weapon (2d6 piercing/slashing, ×3). Reach weapon.",
+    "tags": [
+      "2h",
+      "brace",
+      "exotic",
+      "piercing/slashing",
+      "reach",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "2d6",
+            "bonus": 0,
+            "type": "Piercing/Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "reach": true,
+          "brace": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "reach": true,
+      "brace": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "2d6",
+    "dmgType": "Piercing/Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Poleaxe, Heavy"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-ritiik",
+    "schemaVersion": 2,
+    "name": "Ritiik",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Frostburn p.76",
+    "cost": 5,
+    "weight": 6,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d8 piercing, ×3).",
+    "description": "<p>Exotic two-handed melee weapon (1d8 piercing, ×3).</p>",
+    "benefit": "Exotic two-handed melee weapon (1d8 piercing, ×3).",
+    "tags": [
+      "2h",
+      "exotic",
+      "piercing",
+      "trip",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "trip": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "trip": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d8",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-talenta-sharrash",
+    "schemaVersion": 2,
+    "name": "Talenta Sharrash",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Eberron Campaign Setting p.120",
+    "cost": 18,
+    "weight": 10,
+    "critRange": 19,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d10 slashing, 19–20/×2). Reach weapon.",
+    "description": "<p>Exotic two-handed melee weapon (1d10 slashing, 19–20/×2). Reach weapon.</p>",
+    "benefit": "Exotic two-handed melee weapon (1d10 slashing, 19–20/×2). Reach weapon.",
+    "tags": [
+      "2h",
+      "exotic",
+      "reach",
+      "slashing",
+      "trip",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d10",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d10",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "reach": true,
+          "trip": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "reach": true,
+      "trip": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d10",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Sharrash, Talenta"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-talenta-tangat",
+    "schemaVersion": 2,
+    "name": "Talenta Tangat",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Eberron Campaign Setting p.120",
+    "cost": 40,
+    "weight": 8,
+    "critRange": 18,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d10 slashing, 18–20/×2).",
+    "description": "<p>Exotic two-handed melee weapon (1d10 slashing, 18–20/×2).</p>",
+    "benefit": "Exotic two-handed melee weapon (1d10 slashing, 18–20/×2).",
+    "tags": [
+      "2h",
+      "exotic",
+      "slashing",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d10",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d10",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d10",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Tangat, Talenta"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-dwarven-warpike",
+    "schemaVersion": 2,
+    "name": "Dwarven Warpike",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Races of Stone p.155",
+    "cost": 45,
+    "weight": 15,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (2d6 piercing/slashing, ×3). Reach weapon.",
+    "description": "<p>Exotic two-handed melee weapon (2d6 piercing/slashing, ×3). Reach weapon.</p>",
+    "benefit": "Exotic two-handed melee weapon (2d6 piercing/slashing, ×3). Reach weapon.",
+    "tags": [
+      "2h",
+      "brace",
+      "exotic",
+      "piercing/slashing",
+      "reach",
+      "trip",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "2d6",
+        "bonus": 0,
+        "type": "Piercing/Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "2d6",
+            "bonus": 0,
+            "type": "Piercing/Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "reach": true,
+          "trip": true,
+          "brace": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "reach": true,
+      "trip": true,
+      "brace": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "2d6",
+    "dmgType": "Piercing/Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Warpike, Dwarven"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    }
+  },
+  {
+    "id": "wpn-aquatic-longbow",
+    "schemaVersion": 2,
+    "name": "Aquatic Longbow",
+    "type": "Weapon",
+    "category": "Martial",
+    "handedness": "ranged",
+    "slot": "Two-Hand",
+    "source": "Stormwrack p.107",
+    "cost": 400,
+    "weight": 3,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 60,
+    "shortDescription": "Martial ranged weapon (1d8 piercing, ×3, 60 ft. range increment).",
+    "description": "<p>Martial ranged weapon (1d8 piercing, ×3, 60 ft. range increment).</p>",
+    "benefit": "Martial ranged weapon (1d8 piercing, ×3, 60 ft. range increment).",
+    "tags": [
+      "martial",
+      "piercing",
+      "ranged",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Martial",
+        "combatScope": "ranged",
+        "strMult": 0,
+        "rangeIncrement": 60,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true
+    },
+    "weaponType": "Martial Ranged",
+    "damage": "1d8",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Longbow, Aquatic"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 60
+  },
+  {
+    "id": "wpn-greater-blowgun",
+    "schemaVersion": 2,
+    "name": "Greater Blowgun",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Two-Hand",
+    "source": "Complete Warrior p.155 / Complete Adventurer p.116",
+    "cost": 15,
+    "weight": 2,
+    "critRange": 20,
+    "critMult": 2,
+    "rangeIncrement": 10,
+    "shortDescription": "Exotic ranged weapon (1d3 piercing, ×2, 10 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d3 piercing, ×2, 10 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d3 piercing, ×2, 10 ft. range increment).",
+    "tags": [
+      "exotic",
+      "piercing",
+      "ranged",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d3",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 0,
+        "rangeIncrement": 10,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d3",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "1d3",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Blowgun, Greater"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 10
+  },
+  {
+    "id": "wpn-bonebow",
+    "schemaVersion": 2,
+    "name": "Bonebow",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Two-Hand",
+    "source": "Frostburn p.76",
+    "cost": 250,
+    "weight": 4,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 120,
+    "shortDescription": "Exotic ranged weapon (1d10 piercing, ×3, 120 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d10 piercing, ×3, 120 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d10 piercing, ×3, 120 ft. range increment).",
+    "tags": [
+      "exotic",
+      "piercing",
+      "ranged",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d10",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 0,
+        "rangeIncrement": 120,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d10",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "1d10",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 120
+  },
+  {
+    "id": "wpn-boomerang",
+    "schemaVersion": 2,
+    "name": "Boomerang",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Main Hand",
+    "source": "Complete Warrior p.155",
+    "cost": 10,
+    "weight": 2,
+    "critRange": 20,
+    "critMult": 2,
+    "rangeIncrement": 20,
+    "shortDescription": "Exotic ranged weapon (1d4 bludgeoning, ×2, 20 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d4 bludgeoning, ×2, 20 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d4 bludgeoning, ×2, 20 ft. range increment).",
+    "tags": [
+      "bludgeoning",
+      "exotic",
+      "nonlethal",
+      "ranged",
+      "thrown"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 1,
+        "rangeIncrement": 20,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d4",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "nonlethal": true,
+          "thrown": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "nonlethal": true,
+      "thrown": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "1d4",
+    "dmgType": "Bludgeoning",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 20
+  },
+  {
+    "id": "wpn-aquatic-crossbow",
+    "schemaVersion": 2,
+    "name": "Aquatic Crossbow",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Two-Hand",
+    "source": "Stormwrack p.107",
+    "cost": 250,
+    "weight": 4,
+    "critRange": 19,
+    "critMult": 2,
+    "rangeIncrement": 40,
+    "shortDescription": "Exotic ranged weapon (1d8 piercing, 19–20/×2, 40 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d8 piercing, 19–20/×2, 40 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d8 piercing, 19–20/×2, 40 ft. range increment).",
+    "tags": [
+      "exotic",
+      "piercing",
+      "ranged",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 0,
+        "rangeIncrement": 40,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "1d8",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Crossbow, Aquatic"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 40
+  },
+  {
+    "id": "wpn-great-crossbow",
+    "schemaVersion": 2,
+    "name": "Great Crossbow",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Two-Hand",
+    "source": "Races of Stone p.154",
+    "cost": 150,
+    "weight": 14,
+    "critRange": 18,
+    "critMult": 2,
+    "rangeIncrement": 120,
+    "shortDescription": "Exotic ranged weapon (2d8 piercing, 18–20/×2, 120 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (2d8 piercing, 18–20/×2, 120 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (2d8 piercing, 18–20/×2, 120 ft. range increment).",
+    "tags": [
+      "exotic",
+      "piercing",
+      "ranged",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "2d8",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 0,
+        "rangeIncrement": 120,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "2d8",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "2d8",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Crossbow, Great"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 120
+  },
+  {
+    "id": "wpn-glot",
+    "schemaVersion": 2,
+    "name": "Glot",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Main Hand",
+    "source": "Frostburn p.76",
+    "cost": 1,
+    "weight": 1,
+    "critRange": 18,
+    "critMult": 2,
+    "rangeIncrement": 10,
+    "shortDescription": "Exotic ranged weapon (1d4 bludgeoning, 18–20/×2, 10 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d4 bludgeoning, 18–20/×2, 10 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d4 bludgeoning, 18–20/×2, 10 ft. range increment).",
+    "tags": [
+      "bludgeoning",
+      "exotic",
+      "ranged",
+      "thrown"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 1,
+        "rangeIncrement": 10,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d4",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "thrown": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "thrown": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "1d4",
+    "dmgType": "Bludgeoning",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 10
+  },
+  {
+    "id": "wpn-greatbow",
+    "schemaVersion": 2,
+    "name": "Greatbow",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Two-Hand",
+    "source": "Complete Warrior p.156 / Complete Adventurer p.116",
+    "cost": 150,
+    "weight": 6,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 120,
+    "shortDescription": "Exotic ranged weapon (1d10 piercing, ×3, 120 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d10 piercing, ×3, 120 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d10 piercing, ×3, 120 ft. range increment).",
+    "tags": [
+      "exotic",
+      "piercing",
+      "ranged",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d10",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 0,
+        "rangeIncrement": 120,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d10",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "1d10",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 120
+  },
+  {
+    "id": "wpn-harpoon",
+    "schemaVersion": 2,
+    "name": "Harpoon",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Main Hand",
+    "source": "Frostburn p.76 / Stormwrack p.107",
+    "cost": 15,
+    "weight": 10,
+    "critRange": 20,
+    "critMult": 2,
+    "rangeIncrement": 30,
+    "shortDescription": "Exotic ranged weapon (1d10 piercing, ×2, 30 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d10 piercing, ×2, 30 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d10 piercing, ×2, 30 ft. range increment).",
+    "tags": [
+      "exotic",
+      "piercing",
+      "ranged",
+      "thrown"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d10",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 1,
+        "rangeIncrement": 30,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d10",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "thrown": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "thrown": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "1d10",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 30
+  },
+  {
+    "id": "wpn-icechucker",
+    "schemaVersion": 2,
+    "name": "Icechucker",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Two-Hand",
+    "source": "Frostburn p.76",
+    "cost": 150,
+    "weight": 12,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 30,
+    "shortDescription": "Exotic ranged weapon (1d12 piercing, ×3, 30 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d12 piercing, ×3, 30 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d12 piercing, ×3, 30 ft. range increment).",
+    "tags": [
+      "exotic",
+      "piercing",
+      "ranged",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d12",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 0,
+        "rangeIncrement": 30,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d12",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "1d12",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 30
+  },
+  {
+    "id": "wpn-skipping-blade",
+    "schemaVersion": 2,
+    "name": "Skipping Blade",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Main Hand",
+    "source": "Stormwrack p.107",
+    "cost": 0.3,
+    "weight": 0.5,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 10,
+    "shortDescription": "Exotic ranged weapon (1d3 slashing, ×3, 10 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d3 slashing, ×3, 10 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d3 slashing, ×3, 10 ft. range increment).",
+    "tags": [
+      "exotic",
+      "ranged",
+      "slashing",
+      "thrown"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d3",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 1,
+        "rangeIncrement": 10,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d3",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "thrown": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "thrown": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "1d3",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 10
+  },
+  {
+    "id": "wpn-skiprock",
+    "schemaVersion": 2,
+    "name": "Skiprock",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Main Hand",
+    "source": "Races of the Wild p.165",
+    "cost": 3,
+    "weight": 0.25,
+    "critRange": 20,
+    "critMult": 2,
+    "rangeIncrement": 15,
+    "shortDescription": "Exotic ranged weapon (1d6 bludgeoning, ×2, 15 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d6 bludgeoning, ×2, 15 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d6 bludgeoning, ×2, 15 ft. range increment).",
+    "tags": [
+      "bludgeoning",
+      "exotic",
+      "ranged",
+      "thrown"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 1,
+        "rangeIncrement": 15,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "thrown": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "thrown": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "1d6",
+    "dmgType": "Bludgeoning",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 15
+  },
+  {
+    "id": "wpn-war-sling",
+    "schemaVersion": 2,
+    "name": "War Sling",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Main Hand",
+    "source": "Races of the Wild p.165",
+    "cost": 5,
+    "weight": 1,
+    "critRange": 20,
+    "critMult": 4,
+    "rangeIncrement": 50,
+    "shortDescription": "Exotic ranged weapon (1d8 bludgeoning, ×4, 50 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d8 bludgeoning, ×4, 50 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d8 bludgeoning, ×4, 50 ft. range increment).",
+    "tags": [
+      "bludgeoning",
+      "exotic",
+      "ranged"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d8",
+        "bonus": 0,
+        "type": "Bludgeoning",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 0,
+        "rangeIncrement": 50,
+        "critRange": 20,
+        "critMult": 4,
+        "damageParts": [
+          {
+            "dice": "1d8",
+            "bonus": 0,
+            "type": "Bludgeoning",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {}
+      }
+    ],
+    "ruleFlags": {},
+    "weaponType": "Exotic Ranged",
+    "damage": "1d8",
+    "dmgType": "Bludgeoning",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "file": "data/WeaponInfo.csv",
+      "crossCheck": "crystalkeep D&D 3.5 Equipment Index (2007-10-01)"
+    },
+    "range": 50
+  },
+  {
+    "id": "wpn-sugliin",
+    "schemaVersion": 2,
+    "name": "Sugliin",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Frostburn p.76",
+    "cost": 35,
+    "weight": 20,
+    "critRange": 20,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (2d8 piercing & slashing, ×2).",
+    "description": "<p>Exotic two-handed melee weapon (2d8 piercing & slashing, ×2).</p>",
+    "benefit": "Exotic two-handed melee weapon (2d8 piercing & slashing, ×2).",
+    "tags": [
+      "2h",
+      "exotic",
+      "piercing & slashing",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "2d8",
+        "bonus": 0,
+        "type": "Piercing & Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 20,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "2d8",
+            "bonus": 0,
+            "type": "Piercing & Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "2d8",
+    "dmgType": "Piercing & Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Frostburn",
+      "page": 76,
+      "hint": "builder-workbook-7.4.0.1 + crystalkeep index (conflicting)"
+    }
+  },
+  {
+    "id": "wpn-razor-skipdisk",
+    "schemaVersion": 2,
+    "name": "Razor Skipdisk",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "ranged",
+    "slot": "Main Hand",
+    "source": "Frostburn p.76",
+    "cost": 15,
+    "weight": 2,
+    "critRange": 18,
+    "critMult": 2,
+    "rangeIncrement": 10,
+    "shortDescription": "Exotic ranged weapon (1d6 slashing, 18–20/×2, 10 ft. range increment).",
+    "description": "<p>Exotic ranged weapon (1d6 slashing, 18–20/×2, 10 ft. range increment).</p>",
+    "benefit": "Exotic ranged weapon (1d6 slashing, 18–20/×2, 10 ft. range increment).",
+    "tags": [
+      "exotic",
+      "ranged",
+      "slashing",
+      "thrown"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "ranged",
+        "label": "Ranged",
+        "handedness": "ranged",
+        "proficiency": "Exotic",
+        "combatScope": "ranged",
+        "strMult": 1,
+        "rangeIncrement": 10,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "thrown": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "thrown": true
+    },
+    "weaponType": "Exotic Ranged",
+    "damage": "1d6",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Frostburn",
+      "page": 76,
+      "hint": "builder-workbook-7.4.0.1 + crystalkeep index (conflicting)"
+    },
+    "range": 10
+  },
+  {
+    "id": "wpn-drow-scorpion-chain",
+    "schemaVersion": 2,
+    "name": "Drow Scorpion Chain",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Races of Eberron p.172",
+    "cost": 25,
+    "weight": 12,
+    "critRange": 19,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d6 slashing, 19–20/×2). Reach weapon.",
+    "description": "<p>Exotic two-handed melee weapon (1d6 slashing, 19–20/×2). Reach weapon.</p>",
+    "benefit": "Exotic two-handed melee weapon (1d6 slashing, 19–20/×2). Reach weapon.",
+    "tags": [
+      "2h",
+      "exotic",
+      "reach",
+      "slashing",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Slashing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-2h",
+        "label": "Two-Handed",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 19,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "reach": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "reach": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d6",
+    "dmgType": "Slashing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [
+      "Scorpion Chain, Drow"
+    ],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Eberron",
+      "page": 172,
+      "hint": "builder-workbook-7.4.0.1 + crystalkeep index (conflicting)"
+    }
+  },
+  {
+    "id": "wpn-foot-spike",
+    "schemaVersion": 2,
+    "name": "Foot Spike",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "light",
+    "slot": "Main Hand",
+    "source": "Races of the Wild p.165",
+    "cost": 8,
+    "weight": 1,
+    "critRange": 20,
+    "critMult": 3,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic light melee weapon (1d4 piercing, ×3).",
+    "description": "<p>Exotic light melee weapon (1d4 piercing, ×3).</p>",
+    "benefit": "Exotic light melee weapon (1d4 piercing, ×3).",
+    "tags": [
+      "exotic",
+      "finessable",
+      "isLight",
+      "light",
+      "piercing"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d4",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "melee-light",
+        "label": "Melee (Light)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d4",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "finessable": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "isLight": true,
+      "finessable": true
+    },
+    "weaponType": "Exotic Light",
+    "damage": "1d4",
+    "dmgType": "Piercing",
+    "isLight": true,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of the Wild",
+      "page": 165,
+      "hint": "builder-workbook-7.4.0.1 + crystalkeep index (conflicting)"
+    },
+    "finessable": true
+  },
+  {
+    "id": "wpn-lynxpaw",
+    "schemaVersion": 2,
+    "name": "Lynxpaw",
+    "type": "Weapon",
+    "category": "Exotic",
+    "handedness": "2h",
+    "slot": "Two-Hand",
+    "source": "Races of the Wild p.165",
+    "cost": 30,
+    "weight": 4,
+    "critRange": 18,
+    "critMult": 2,
+    "rangeIncrement": 0,
+    "shortDescription": "Exotic two-handed melee weapon (1d6/1d4 piercing, 18–20/×2). Double weapon: second head 1d4 slashing, ×3.",
+    "description": "<p>Exotic two-handed melee weapon (1d6/1d4 piercing, 18–20/×2). Double weapon: second head 1d4 slashing, ×3.</p>",
+    "benefit": "Exotic two-handed melee weapon (1d6/1d4 piercing, 18–20/×2). Double weapon: second head 1d4 slashing, ×3.",
+    "tags": [
+      "2h",
+      "doubleWeapon",
+      "exotic",
+      "piercing",
+      "twoHanded"
+    ],
+    "modifiers": [],
+    "damageParts": [
+      {
+        "dice": "1d6",
+        "bonus": 0,
+        "type": "Piercing",
+        "multiplyOnCrit": true,
+        "onCritOnly": false,
+        "source": "Base"
+      }
+    ],
+    "modes": [
+      {
+        "id": "primary-head",
+        "label": "Primary Head (TWF)",
+        "handedness": "1h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "doubleWeapon": true
+        }
+      },
+      {
+        "id": "offhand-head",
+        "label": "Off-Hand Head (TWF)",
+        "handedness": "light",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 0.5,
+        "critRange": 20,
+        "critMult": 3,
+        "damageParts": [
+          {
+            "dice": "1d4",
+            "bonus": 0,
+            "type": "Slashing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Off-Hand Head"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "isLight": true,
+          "doubleWeaponOffHand": true
+        }
+      },
+      {
+        "id": "2h-single",
+        "label": "Single Head (Two-Handed)",
+        "handedness": "2h",
+        "proficiency": "Exotic",
+        "combatScope": "melee",
+        "strMult": 1.5,
+        "critRange": 18,
+        "critMult": 2,
+        "damageParts": [
+          {
+            "dice": "1d6",
+            "bonus": 0,
+            "type": "Piercing",
+            "multiplyOnCrit": true,
+            "onCritOnly": false,
+            "source": "Base"
+          }
+        ],
+        "modifiers": [],
+        "ruleFlags": {
+          "twoHanded": true,
+          "doubleWeapon": true
+        }
+      }
+    ],
+    "ruleFlags": {
+      "twoHanded": true,
+      "doubleWeapon": true
+    },
+    "weaponType": "Exotic Two-Handed",
+    "damage": "1d6",
+    "dmgType": "Piercing",
+    "isLight": false,
+    "combatModifiers": [],
+    "aliases": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of the Wild",
+      "page": 165,
+      "hint": "builder-workbook-7.4.0.1 + crystalkeep index (conflicting)"
+    }
+  },
+  {
+    "id": "arm-feather-cloak",
+    "schemaVersion": 2,
+    "name": "Feather Cloak",
+    "type": "Armor",
+    "category": "Light",
+    "slot": "Armor",
+    "source": "Sandstorm p.99",
+    "cost": 1000,
+    "weight": 3,
+    "maxDex": 6,
+    "checkPenalty": 0,
+    "spellFailure": 10,
+    "speed30": "30 ft.",
+    "speed20": "20 ft.",
+    "shortDescription": "Light armor (+2 armor bonus, max Dex +6, armor check penalty 0, arcane spell failure 10%).",
+    "description": "<p>Light armor (+2 armor bonus, max Dex +6, armor check penalty 0, arcane spell failure 10%).</p>",
+    "benefit": "Light armor (+2 armor bonus, max Dex +6, armor check penalty 0, arcane spell failure 10%).",
+    "tags": [
+      "armor",
+      "light"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 2,
+        "formula": "2",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Sandstorm",
+      "page": 99
+    }
+  },
+  {
+    "id": "arm-silk-swathes",
+    "schemaVersion": 2,
+    "name": "Silk Swathes",
+    "type": "Armor",
+    "category": "Light",
+    "slot": "Armor",
+    "source": "Sandstorm p.99",
+    "cost": 400,
+    "weight": 6,
+    "maxDex": 8,
+    "checkPenalty": 0,
+    "spellFailure": 5,
+    "speed30": "30 ft.",
+    "speed20": "20 ft.",
+    "shortDescription": "Light armor (+1 armor bonus, max Dex +8, armor check penalty 0, arcane spell failure 5%).",
+    "description": "<p>Light armor (+1 armor bonus, max Dex +8, armor check penalty 0, arcane spell failure 5%).</p>",
+    "benefit": "Light armor (+1 armor bonus, max Dex +8, armor check penalty 0, arcane spell failure 5%).",
+    "tags": [
+      "armor",
+      "light"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 1,
+        "formula": "1",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Sandstorm",
+      "page": 99
+    }
+  },
+  {
+    "id": "shd-hide-shield",
+    "schemaVersion": 2,
+    "name": "Hide Shield",
+    "type": "Shield",
+    "category": "Shield",
+    "slot": "Off-Hand/Shield",
+    "source": "Sandstorm p.99",
+    "cost": 50,
+    "weight": 30,
+    "maxDex": 4,
+    "checkPenalty": -3,
+    "spellFailure": 30,
+    "shortDescription": "Shield (+3 shield bonus, max Dex +4, armor check penalty -3, arcane spell failure 30%).",
+    "description": "<p>Shield (+3 shield bonus, max Dex +4, armor check penalty -3, arcane spell failure 30%).</p>",
+    "benefit": "Shield (+3 shield bonus, max Dex +4, armor check penalty -3, arcane spell failure 30%).",
+    "tags": [
+      "shield",
+      "shield"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 3,
+        "formula": "3",
+        "type": "shield",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Sandstorm",
+      "page": 99
+    }
+  },
+  {
+    "id": "arm-cord-armor",
+    "schemaVersion": 2,
+    "name": "Cord Armor",
+    "type": "Armor",
+    "category": "Light",
+    "slot": "Armor",
+    "source": "Stormwrack p.106",
+    "cost": 15,
+    "weight": 15,
+    "maxDex": 5,
+    "checkPenalty": -1,
+    "spellFailure": 15,
+    "speed30": "30 ft.",
+    "speed20": "20 ft.",
+    "shortDescription": "Light armor (+2 armor bonus, max Dex +5, armor check penalty -1, arcane spell failure 15%).",
+    "description": "<p>Light armor (+2 armor bonus, max Dex +5, armor check penalty -1, arcane spell failure 15%).</p>",
+    "benefit": "Light armor (+2 armor bonus, max Dex +5, armor check penalty -1, arcane spell failure 15%).",
+    "tags": [
+      "armor",
+      "light"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 2,
+        "formula": "2",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Stormwrack",
+      "page": 106
+    }
+  },
+  {
+    "id": "arm-sharkskin-armor",
+    "schemaVersion": 2,
+    "name": "Sharkskin Armor",
+    "type": "Armor",
+    "category": "Light",
+    "slot": "Armor",
+    "source": "Stormwrack p.106",
+    "cost": 85,
+    "weight": 15,
+    "maxDex": 6,
+    "checkPenalty": -1,
+    "spellFailure": 10,
+    "speed30": "30 ft.",
+    "speed20": "20 ft.",
+    "shortDescription": "Light armor (+3 armor bonus, max Dex +6, armor check penalty -1, arcane spell failure 10%). Shark teeth along the forearms, shoulders, and legs count as armor spikes; +6 circumstance bonus on Escape Artist checks against rope or similar easily cut bindings.",
+    "description": "<p>Light armor (+3 armor bonus, max Dex +6, armor check penalty -1, arcane spell failure 10%). Shark teeth along the forearms, shoulders, and legs count as armor spikes; +6 circumstance bonus on Escape Artist checks against rope or similar easily cut bindings.</p>",
+    "benefit": "Light armor (+3 armor bonus, max Dex +6, armor check penalty -1, arcane spell failure 10%). Shark teeth along the forearms, shoulders, and legs count as armor spikes; +6 circumstance bonus on Escape Artist checks against rope or similar easily cut bindings.",
+    "tags": [
+      "armor",
+      "light"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 3,
+        "formula": "3",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Stormwrack",
+      "page": 106
+    }
+  },
+  {
+    "id": "arm-shell-armor",
+    "schemaVersion": 2,
+    "name": "Shell Armor",
+    "type": "Armor",
+    "category": "Medium",
+    "slot": "Armor",
+    "source": "Stormwrack p.106",
+    "cost": 25,
+    "weight": 20,
+    "maxDex": 3,
+    "checkPenalty": -2,
+    "spellFailure": 20,
+    "speed30": "20 ft.",
+    "speed20": "15 ft.",
+    "shortDescription": "Medium armor (+3 armor bonus, max Dex +3, armor check penalty -2, arcane spell failure 20%).",
+    "description": "<p>Medium armor (+3 armor bonus, max Dex +3, armor check penalty -2, arcane spell failure 20%).</p>",
+    "benefit": "Medium armor (+3 armor bonus, max Dex +3, armor check penalty -2, arcane spell failure 20%).",
+    "tags": [
+      "armor",
+      "medium"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 3,
+        "formula": "3",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Stormwrack",
+      "page": 106
+    }
+  },
+  {
+    "id": "arm-chitin-armor-stormwrack",
+    "schemaVersion": 2,
+    "name": "Chitin Armor (Stormwrack)",
+    "type": "Armor",
+    "category": "Medium",
+    "slot": "Armor",
+    "source": "Stormwrack p.106",
+    "cost": 75,
+    "weight": 20,
+    "maxDex": 4,
+    "checkPenalty": -3,
+    "spellFailure": 30,
+    "speed30": "20 ft.",
+    "speed20": "15 ft.",
+    "shortDescription": "Medium armor (+4 armor bonus, max Dex +4, armor check penalty -3, arcane spell failure 30%).",
+    "description": "<p>Medium armor (+4 armor bonus, max Dex +4, armor check penalty -3, arcane spell failure 30%).</p>",
+    "benefit": "Medium armor (+4 armor bonus, max Dex +4, armor check penalty -3, arcane spell failure 30%).",
+    "tags": [
+      "armor",
+      "medium"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 4,
+        "formula": "4",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Stormwrack",
+      "page": 106
+    }
+  },
+  {
+    "id": "arm-living-coral-armor",
+    "schemaVersion": 2,
+    "name": "Living Coral Armor",
+    "type": "Armor",
+    "category": "Medium",
+    "slot": "Armor",
+    "source": "Stormwrack p.106",
+    "cost": 16000,
+    "weight": 30,
+    "maxDex": 3,
+    "checkPenalty": -4,
+    "spellFailure": 20,
+    "speed30": "20 ft.",
+    "speed20": "15 ft.",
+    "shortDescription": "Medium armor (+6 armor bonus, max Dex +3, armor check penalty -4, arcane spell failure 20%). Living coral armor; additional coral benefits can be grown into it for 500 gp each (see Stormwrack).",
+    "description": "<p>Medium armor (+6 armor bonus, max Dex +3, armor check penalty -4, arcane spell failure 20%). Living coral armor; additional coral benefits can be grown into it for 500 gp each (see Stormwrack).</p>",
+    "benefit": "Medium armor (+6 armor bonus, max Dex +3, armor check penalty -4, arcane spell failure 20%). Living coral armor; additional coral benefits can be grown into it for 500 gp each (see Stormwrack).",
+    "tags": [
+      "armor",
+      "medium"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 6,
+        "formula": "6",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Stormwrack",
+      "page": 106
+    }
+  },
+  {
+    "id": "arm-chitin-armor-races-of-eberron",
+    "schemaVersion": 2,
+    "name": "Chitin Armor (Races of Eberron)",
+    "type": "Armor",
+    "category": "Light",
+    "slot": "Armor",
+    "source": "Races of Eberron p.171",
+    "cost": 20,
+    "weight": 10,
+    "maxDex": 7,
+    "checkPenalty": -1,
+    "spellFailure": 5,
+    "speed30": "30 ft.",
+    "speed20": "20 ft.",
+    "shortDescription": "Light armor (+2 armor bonus, max Dex +7, armor check penalty -1, arcane spell failure 5%).",
+    "description": "<p>Light armor (+2 armor bonus, max Dex +7, armor check penalty -1, arcane spell failure 5%).</p>",
+    "benefit": "Light armor (+2 armor bonus, max Dex +7, armor check penalty -1, arcane spell failure 5%).",
+    "tags": [
+      "armor",
+      "light"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 2,
+        "formula": "2",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Eberron",
+      "page": 171
+    }
+  },
+  {
+    "id": "arm-scorpion-breastplate",
+    "schemaVersion": 2,
+    "name": "Scorpion Breastplate",
+    "type": "Armor",
+    "category": "Medium",
+    "slot": "Armor",
+    "source": "Races of Eberron p.171",
+    "cost": 300,
+    "weight": 20,
+    "maxDex": 4,
+    "checkPenalty": -3,
+    "spellFailure": 20,
+    "speed30": "20 ft.",
+    "speed20": "15 ft.",
+    "shortDescription": "Medium armor (+4 armor bonus, max Dex +4, armor check penalty -3, arcane spell failure 20%).",
+    "description": "<p>Medium armor (+4 armor bonus, max Dex +4, armor check penalty -3, arcane spell failure 20%).</p>",
+    "benefit": "Medium armor (+4 armor bonus, max Dex +4, armor check penalty -3, arcane spell failure 20%).",
+    "tags": [
+      "armor",
+      "medium"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 4,
+        "formula": "4",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Eberron",
+      "page": 171
+    }
+  },
+  {
+    "id": "arm-stone-plate",
+    "schemaVersion": 2,
+    "name": "Stone Plate",
+    "type": "Armor",
+    "category": "Heavy",
+    "slot": "Armor",
+    "source": "Races of Stone p.158",
+    "cost": 750,
+    "weight": 35,
+    "maxDex": 1,
+    "checkPenalty": -7,
+    "spellFailure": 30,
+    "speed30": "20 ft.",
+    "speed20": "15 ft.",
+    "shortDescription": "Heavy armor (+6 armor bonus, max Dex +1, armor check penalty -7, arcane spell failure 30%).",
+    "description": "<p>Heavy armor (+6 armor bonus, max Dex +1, armor check penalty -7, arcane spell failure 30%).</p>",
+    "benefit": "Heavy armor (+6 armor bonus, max Dex +1, armor check penalty -7, arcane spell failure 30%).",
+    "tags": [
+      "armor",
+      "heavy"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 6,
+        "formula": "6",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "arm-heavy-plate",
+    "schemaVersion": 2,
+    "name": "Heavy Plate",
+    "type": "Armor",
+    "category": "Heavy",
+    "slot": "Armor",
+    "source": "Races of Stone p.158",
+    "cost": 2000,
+    "weight": 100,
+    "maxDex": 0,
+    "checkPenalty": -8,
+    "spellFailure": 45,
+    "speed30": "20 ft.",
+    "speed20": "15 ft.",
+    "shortDescription": "Heavy armor (+9 armor bonus, max Dex +0, armor check penalty -8, arcane spell failure 45%).",
+    "description": "<p>Heavy armor (+9 armor bonus, max Dex +0, armor check penalty -8, arcane spell failure 45%).</p>",
+    "benefit": "Heavy armor (+9 armor bonus, max Dex +0, armor check penalty -8, arcane spell failure 45%).",
+    "tags": [
+      "armor",
+      "heavy"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 9,
+        "formula": "9",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "shd-steel-tower-shield",
+    "schemaVersion": 2,
+    "name": "Steel Tower Shield",
+    "type": "Shield",
+    "category": "Shield",
+    "slot": "Off-Hand/Shield",
+    "source": "Races of Stone p.158",
+    "cost": 75,
+    "weight": 100,
+    "maxDex": 2,
+    "checkPenalty": -10,
+    "spellFailure": 50,
+    "shortDescription": "Shield (+4 shield bonus, max Dex +2, armor check penalty -10, arcane spell failure 50%).",
+    "description": "<p>Shield (+4 shield bonus, max Dex +2, armor check penalty -10, arcane spell failure 50%).</p>",
+    "benefit": "Shield (+4 shield bonus, max Dex +2, armor check penalty -10, arcane spell failure 50%).",
+    "tags": [
+      "shield",
+      "shield"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 4,
+        "formula": "4",
+        "type": "shield",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "arm-gnome-twist-cloth",
+    "schemaVersion": 2,
+    "name": "Gnome Twist Cloth",
+    "type": "Armor",
+    "category": "Light",
+    "slot": "Armor",
+    "source": "Races of Stone p.158",
+    "cost": 150,
+    "weight": 5,
+    "maxDex": null,
+    "checkPenalty": 0,
+    "spellFailure": 5,
+    "speed30": "30 ft.",
+    "speed20": "20 ft.",
+    "shortDescription": "Exotic light armor (+1 armor bonus, max Dex —, armor check penalty 0, arcane spell failure 5%).",
+    "description": "<p>Exotic light armor (+1 armor bonus, max Dex —, armor check penalty 0, arcane spell failure 5%).</p>",
+    "benefit": "Exotic light armor (+1 armor bonus, max Dex —, armor check penalty 0, arcane spell failure 5%).",
+    "tags": [
+      "armor",
+      "light",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 1,
+        "formula": "1",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "arm-mammoth-leather",
+    "schemaVersion": 2,
+    "name": "Mammoth Leather",
+    "type": "Armor",
+    "category": "Light",
+    "slot": "Armor",
+    "source": "Races of Stone p.158",
+    "cost": 45,
+    "weight": 30,
+    "maxDex": 4,
+    "checkPenalty": -4,
+    "spellFailure": 20,
+    "speed30": "30 ft.",
+    "speed20": "20 ft.",
+    "shortDescription": "Exotic light armor (+4 armor bonus, max Dex +4, armor check penalty -4, arcane spell failure 20%).",
+    "description": "<p>Exotic light armor (+4 armor bonus, max Dex +4, armor check penalty -4, arcane spell failure 20%).</p>",
+    "benefit": "Exotic light armor (+4 armor bonus, max Dex +4, armor check penalty -4, arcane spell failure 20%).",
+    "tags": [
+      "armor",
+      "light",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 4,
+        "formula": "4",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "arm-interlocking-scale",
+    "schemaVersion": 2,
+    "name": "Interlocking Scale",
+    "type": "Armor",
+    "category": "Medium",
+    "slot": "Armor",
+    "source": "Races of Stone p.158",
+    "cost": 250,
+    "weight": 30,
+    "maxDex": 2,
+    "checkPenalty": -6,
+    "spellFailure": 30,
+    "speed30": "20 ft.",
+    "speed20": "15 ft.",
+    "shortDescription": "Exotic medium armor (+4 armor bonus, max Dex +2, armor check penalty -6, arcane spell failure 30%).",
+    "description": "<p>Exotic medium armor (+4 armor bonus, max Dex +2, armor check penalty -6, arcane spell failure 30%).</p>",
+    "benefit": "Exotic medium armor (+4 armor bonus, max Dex +2, armor check penalty -6, arcane spell failure 30%).",
+    "tags": [
+      "armor",
+      "medium",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 4,
+        "formula": "4",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "arm-tumblers-breastplate",
+    "schemaVersion": 2,
+    "name": "Tumbler's Breastplate",
+    "type": "Armor",
+    "category": "Medium",
+    "slot": "Armor",
+    "source": "Races of Stone p.158",
+    "cost": 450,
+    "weight": 30,
+    "maxDex": 4,
+    "checkPenalty": -4,
+    "spellFailure": 25,
+    "speed30": "20 ft.",
+    "speed20": "15 ft.",
+    "shortDescription": "Exotic medium armor (+5 armor bonus, max Dex +4, armor check penalty -4, arcane spell failure 25%).",
+    "description": "<p>Exotic medium armor (+5 armor bonus, max Dex +4, armor check penalty -4, arcane spell failure 25%).</p>",
+    "benefit": "Exotic medium armor (+5 armor bonus, max Dex +4, armor check penalty -4, arcane spell failure 25%).",
+    "tags": [
+      "armor",
+      "medium",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 5,
+        "formula": "5",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "arm-interlocking-plate",
+    "schemaVersion": 2,
+    "name": "Interlocking Plate",
+    "type": "Armor",
+    "category": "Heavy",
+    "slot": "Armor",
+    "source": "Races of Stone p.158",
+    "cost": 1750,
+    "weight": 50,
+    "maxDex": 0,
+    "checkPenalty": -8,
+    "spellFailure": 40,
+    "speed30": "20 ft.",
+    "speed20": "15 ft.",
+    "shortDescription": "Exotic heavy armor (+8 armor bonus, max Dex +0, armor check penalty -8, arcane spell failure 40%).",
+    "description": "<p>Exotic heavy armor (+8 armor bonus, max Dex +0, armor check penalty -8, arcane spell failure 40%).</p>",
+    "benefit": "Exotic heavy armor (+8 armor bonus, max Dex +0, armor check penalty -8, arcane spell failure 40%).",
+    "tags": [
+      "armor",
+      "heavy",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 8,
+        "formula": "8",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "arm-battle-plate",
+    "schemaVersion": 2,
+    "name": "Battle Plate",
+    "type": "Armor",
+    "category": "Heavy",
+    "slot": "Armor",
+    "source": "Races of Stone p.158",
+    "cost": 2500,
+    "weight": 125,
+    "maxDex": 1,
+    "checkPenalty": -7,
+    "spellFailure": 50,
+    "speed30": "20 ft.",
+    "speed20": "15 ft.",
+    "shortDescription": "Exotic heavy armor (+9 armor bonus, max Dex +1, armor check penalty -7, arcane spell failure 50%).",
+    "description": "<p>Exotic heavy armor (+9 armor bonus, max Dex +1, armor check penalty -7, arcane spell failure 50%).</p>",
+    "benefit": "Exotic heavy armor (+9 armor bonus, max Dex +1, armor check penalty -7, arcane spell failure 50%).",
+    "tags": [
+      "armor",
+      "heavy",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 9,
+        "formula": "9",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "arm-mountain-plate",
+    "schemaVersion": 2,
+    "name": "Mountain Plate",
+    "type": "Armor",
+    "category": "Heavy",
+    "slot": "Armor",
+    "source": "Races of Stone p.158",
+    "cost": 3250,
+    "weight": 225,
+    "maxDex": 0,
+    "checkPenalty": -9,
+    "spellFailure": 60,
+    "speed30": "15 ft.",
+    "speed20": "10 ft.",
+    "shortDescription": "Exotic heavy armor (+10 armor bonus, max Dex +0, armor check penalty -9, arcane spell failure 60%).",
+    "description": "<p>Exotic heavy armor (+10 armor bonus, max Dex +0, armor check penalty -9, arcane spell failure 60%).</p>",
+    "benefit": "Exotic heavy armor (+10 armor bonus, max Dex +0, armor check penalty -9, arcane spell failure 60%).",
+    "tags": [
+      "armor",
+      "heavy",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.armor",
+        "value": 10,
+        "formula": "10",
+        "type": "armor",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "shd-gnome-battle-cloak",
+    "schemaVersion": 2,
+    "name": "Gnome Battle Cloak",
+    "type": "Shield",
+    "category": "Shield",
+    "slot": "Off-Hand/Shield",
+    "source": "Races of Stone p.158",
+    "cost": 5,
+    "weight": 1,
+    "maxDex": null,
+    "checkPenalty": 0,
+    "spellFailure": 0,
+    "shortDescription": "Exotic shield (+1 shield bonus, max Dex —, armor check penalty 0, arcane spell failure 0%).",
+    "description": "<p>Exotic shield (+1 shield bonus, max Dex —, armor check penalty 0, arcane spell failure 0%).</p>",
+    "benefit": "Exotic shield (+1 shield bonus, max Dex —, armor check penalty 0, arcane spell failure 0%).",
+    "tags": [
+      "shield",
+      "shield",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 1,
+        "formula": "1",
+        "type": "shield",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "shd-extreme-wooden-shield",
+    "schemaVersion": 2,
+    "name": "Extreme Wooden Shield",
+    "type": "Shield",
+    "category": "Shield",
+    "slot": "Off-Hand/Shield",
+    "source": "Races of Stone p.158",
+    "cost": 10,
+    "weight": 15,
+    "maxDex": null,
+    "checkPenalty": -4,
+    "spellFailure": 15,
+    "shortDescription": "Exotic shield (+3 shield bonus, max Dex —, armor check penalty -4, arcane spell failure 15%).",
+    "description": "<p>Exotic shield (+3 shield bonus, max Dex —, armor check penalty -4, arcane spell failure 15%).</p>",
+    "benefit": "Exotic shield (+3 shield bonus, max Dex —, armor check penalty -4, arcane spell failure 15%).",
+    "tags": [
+      "shield",
+      "shield",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 3,
+        "formula": "3",
+        "type": "shield",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "shd-extreme-steel-shield",
+    "schemaVersion": 2,
+    "name": "Extreme Steel Shield",
+    "type": "Shield",
+    "category": "Shield",
+    "slot": "Off-Hand/Shield",
+    "source": "Races of Stone p.158",
+    "cost": 30,
+    "weight": 25,
+    "maxDex": null,
+    "checkPenalty": -4,
+    "spellFailure": 15,
+    "shortDescription": "Exotic shield (+3 shield bonus, max Dex —, armor check penalty -4, arcane spell failure 15%).",
+    "description": "<p>Exotic shield (+3 shield bonus, max Dex —, armor check penalty -4, arcane spell failure 15%).</p>",
+    "benefit": "Exotic shield (+3 shield bonus, max Dex —, armor check penalty -4, arcane spell failure 15%).",
+    "tags": [
+      "shield",
+      "shield",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 3,
+        "formula": "3",
+        "type": "shield",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "shd-gauntlet-shield",
+    "schemaVersion": 2,
+    "name": "Gauntlet Shield",
+    "type": "Shield",
+    "category": "Shield",
+    "slot": "Off-Hand/Shield",
+    "source": "Races of Stone p.158",
+    "cost": 50,
+    "weight": 20,
+    "maxDex": null,
+    "checkPenalty": -2,
+    "spellFailure": 35,
+    "shortDescription": "Exotic shield (+2 shield bonus, max Dex —, armor check penalty -2, arcane spell failure 35%).",
+    "description": "<p>Exotic shield (+2 shield bonus, max Dex —, armor check penalty -2, arcane spell failure 35%).</p>",
+    "benefit": "Exotic shield (+2 shield bonus, max Dex —, armor check penalty -2, arcane spell failure 35%).",
+    "tags": [
+      "shield",
+      "shield",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 2,
+        "formula": "2",
+        "type": "shield",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  },
+  {
+    "id": "shd-riders-shield",
+    "schemaVersion": 2,
+    "name": "Rider's Shield",
+    "type": "Shield",
+    "category": "Shield",
+    "slot": "Off-Hand/Shield",
+    "source": "Races of Stone p.158",
+    "cost": 75,
+    "weight": 15,
+    "maxDex": null,
+    "checkPenalty": -2,
+    "spellFailure": 15,
+    "shortDescription": "Exotic shield (+2 shield bonus, max Dex —, armor check penalty -2, arcane spell failure 15%).",
+    "description": "<p>Exotic shield (+2 shield bonus, max Dex —, armor check penalty -2, arcane spell failure 15%).</p>",
+    "benefit": "Exotic shield (+2 shield bonus, max Dex —, armor check penalty -2, arcane spell failure 15%).",
+    "tags": [
+      "shield",
+      "shield",
+      "exotic"
+    ],
+    "modifiers": [
+      {
+        "target": "ac.shield",
+        "value": 2,
+        "formula": "2",
+        "type": "shield",
+        "condition": null
+      }
+    ],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {
+      "exoticArmor": true
+    },
+    "combatModifiers": [],
+    "levelBand": "heroic",
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Races of Stone",
+      "page": 158
+    }
+  }
+]

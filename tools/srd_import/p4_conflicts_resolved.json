@@ -1,0 +1,423 @@
+[
+  {
+    "name": "Exotic Weapon Master",
+    "book": "Complete Warrior",
+    "page": 30,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Complete Warrior Table 2-9 (d10, 2 + Int, BAB +1/+2/+3, good Fort, 3 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - hd: book 10, index 8."
+  },
+  {
+    "name": "Halfling Outrider",
+    "book": "Complete Warrior",
+    "page": 38,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Warrior Table 2-13 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - skillPts: book 4, index 2."
+  },
+  {
+    "name": "Kensai",
+    "book": "Complete Warrior",
+    "page": 49,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Warrior Table 2-18 (d10, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book medium, index high."
+  },
+  {
+    "name": "Initiate of the Sevenfold Veil",
+    "book": "Complete Arcane",
+    "page": 44,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 7,
+    "status": "verified",
+    "cite": "Complete Arcane Table 2-12 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3, good Will, 7 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book low, index medium."
+  },
+  {
+    "name": "Sublime Chord",
+    "book": "Complete Arcane",
+    "page": 60,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Arcane Table 2-18 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book low, index medium."
+  },
+  {
+    "name": "Apelord",
+    "book": "Complete Adventurer",
+    "page": 22,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Adventurer Table 2-2 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book high, index medium."
+  },
+  {
+    "name": "Bearlord",
+    "book": "Complete Adventurer",
+    "page": 22,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Adventurer Table 2-2 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book high, index medium."
+  },
+  {
+    "name": "Birdlord",
+    "book": "Complete Adventurer",
+    "page": 22,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Adventurer Table 2-2 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book high, index medium."
+  },
+  {
+    "name": "Catlord",
+    "book": "Complete Adventurer",
+    "page": 22,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Adventurer Table 2-2 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book high, index medium."
+  },
+  {
+    "name": "Horselord",
+    "book": "Complete Adventurer",
+    "page": 22,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Adventurer Table 2-2 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book high, index medium."
+  },
+  {
+    "name": "Sharklord",
+    "book": "Complete Adventurer",
+    "page": 22,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Adventurer Table 2-2 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book high, index medium."
+  },
+  {
+    "name": "Snakelord",
+    "book": "Complete Adventurer",
+    "page": 22,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Adventurer Table 2-2 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book high, index medium."
+  },
+  {
+    "name": "Wolflord",
+    "book": "Complete Adventurer",
+    "page": 22,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Adventurer Table 2-2 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book high, index medium."
+  },
+  {
+    "name": "Blade Bravo",
+    "book": "Races of Stone",
+    "page": 99,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of Stone Table 5-2 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - skillPts: book 4, index 2."
+  },
+  {
+    "name": "Deepwarden",
+    "book": "Races of Stone",
+    "page": 105,
+    "hd": 12,
+    "skillPts": 6,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of Stone Table 5-5 (d12, 6 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - goodSaves: book ['fort', 'will'], index ['fort']."
+  },
+  {
+    "name": "Divine Prankster",
+    "book": "Races of Stone",
+    "page": 107,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "low",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of Stone Table 5-6 (d6, 6 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book low, index medium."
+  },
+  {
+    "name": "Divine Champion",
+    "book": "Player's Guide to Faerun",
+    "page": 49,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Player's Guide to Faerun Table 2-3 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - goodSaves: book ['fort'], index ['fort', 'ref']."
+  },
+  {
+    "name": "Divine Disciple",
+    "book": "Player's Guide to Faerun",
+    "page": 51,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Player's Guide to Faerun Table 2-4 (d8, 2 + Int, BAB +0/+1/+2/+3/+3, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book medium, index low."
+  },
+  {
+    "name": "Evereskan Tomb Guardian",
+    "book": "Player's Guide to Faerun",
+    "page": 53,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Player's Guide to Faerun Table 2-6 (d6, 4 + Int, BAB +0/+1/+2/+3/+3, good Ref, Will, 5 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - hd: book 6, index 4."
+  },
+  {
+    "name": "Maiden of Pain",
+    "book": "Player's Guide to Faerun",
+    "page": 182,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Player's Guide to Faerun Table A-6 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)",
+    "workbookAgrees": false,
+    "indexAgrees": true,
+    "note": "Workbook differs - goodSaves: book ['ref'], workbook ['will']."
+  },
+  {
+    "name": "Shaaryan Hunter",
+    "book": "Player's Guide to Faerun",
+    "page": 71,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Player's Guide to Faerun Table 2-17 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - goodSaves: book ['fort', 'ref'], index ['fort']."
+  },
+  {
+    "name": "Emissary of Barachiel",
+    "book": "Book of Exalted Deeds",
+    "page": 59,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Exalted Deeds Table 5-7 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - bab: book medium, index high; goodSaves: book ['will'], index ['fort', 'will']."
+  },
+  {
+    "name": "Fist of Raziel",
+    "book": "Book of Exalted Deeds",
+    "page": 62,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Exalted Deeds Table 5-10 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - goodSaves: book ['fort'], index ['fort', 'will']."
+  },
+  {
+    "name": "Wonderworker",
+    "book": "Book of Exalted Deeds",
+    "page": 82,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Book of Exalted Deeds Table 5-23 (d6, 4 + Int, BAB +0/+1/+1, good Will, 3 levels)",
+    "workbookAgrees": true,
+    "indexAgrees": false,
+    "note": "Crystalkeep index differs - goodSaves: book ['will'], index ['fort', 'will']."
+  }
+]

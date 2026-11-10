@@ -111,10 +111,118 @@
     let _cachedFeatCatalogWithInv = null;
     let _cachedFeatCatalogKey = '';
 
+    // Tier-2 feat chunks: 3.5 splatbook feats load on first catalog use, epic feats from character level 21,
+    // 3.0 / licensed feats only while the user has the "3.0 & Licensed" filter on (opt-in chunk).
+    // The open feat list registers itself in _featListRefresher and is redrawn once a chunk arrives.
+    let _featListRefresher = null;
+    let _featChunkCatalogVer = 0; // bumped when a lazy feat chunk arrives or the legacy filter flips (part of the catalog cache key)
+    const LEGACY_FEAT_EDITIONS = new Set(['3.0', '3.5-licensed']);
+
+    function includeLegacyFeats() {
+      return Boolean(typeof character !== 'undefined' && character && character.settings && character.settings.includeLegacyFeats);
+    }
+
+    function ensureFeatSplatChunks() {
+      const comp = (typeof window !== 'undefined') ? window.SrdCompendium : null;
+      if (!comp || !comp._ready || typeof comp.ensureChunkLoaded !== 'function' || typeof comp.isChunkLoaded !== 'function') return;
+      const lazy = typeof comp.getLazyChunkNames === 'function' ? comp.getLazyChunkNames() : [];
+      const charLevel = (typeof character !== 'undefined' && character)
+        ? (Number(character.level) || (Array.isArray(character.levelProgression) ? character.levelProgression.length : 0))
+        : 0;
+      const wanted = ['srd_feats_splat.json'];
+      if (charLevel >= 21) wanted.push('srd_feats_epic.json');
+      if (includeLegacyFeats()) wanted.push('srd_feats_legacy.json');
+      const missing = wanted.filter(n => lazy.includes(n) && !comp.isChunkLoaded(n));
+      if (missing.length === 0) return;
+      Promise.all(missing.map(n => comp.ensureChunkLoaded(n))).then(() => {
+        _featChunkCatalogVer++;
+        if (typeof _featListRefresher === 'function') {
+          try { _featListRefresher(); } catch (_) {}
+        }
+      }).catch(() => {});
+    }
+
+    // UA traits / Complete Scoundrel skill tricks from the lazy splat chunk, mapped like catalog feats.
+    // They are never part of getCombinedFeatCatalog (they do not fill feat slots).
+    function getTraitOptionCatalog(kind = null) {
+      ensureFeatSplatChunks();
+      const comp = (typeof window !== 'undefined') ? window.SrdCompendium : null;
+      if (!comp || !comp._ready || typeof comp.getAllLoaded !== 'function') return [];
+      return comp.getAllLoaded(kind ? [kind] : TRAIT_OPTION_TYPES).filter(f => f && f.name).map(f => ({
+        ...f,
+        category: f.type,
+        prereq: f.prerequisites || f.prereq || '-',
+        benefit: f.shortDescription || f.benefit || f.description || '',
+        prereqStruct: f.prereqStruct || {}
+      }));
+    }
+
+    function findTraitOptionByName(name) {
+      const key = String(name || '').toLowerCase().trim();
+      return key ? (getTraitOptionCatalog().find(f => f.name.toLowerCase().trim() === key) || null) : null;
+    }
+
+    function toggleLegacyFeats() {
+      if (typeof character === 'undefined' || !character) return;
+      if (!character.settings || typeof character.settings !== 'object') character.settings = {};
+      character.settings.includeLegacyFeats = !character.settings.includeLegacyFeats;
+      _featChunkCatalogVer++;
+      if (typeof saveStateToStorage === 'function') saveStateToStorage();
+      ensureFeatSplatChunks();
+      if (typeof _featListRefresher === 'function') _featListRefresher();
+    }
+
+    // Tier-2 class chunks (SRD import P4): splatbook base / prestige class chassis load the first time a class picker
+    // is used; 3.0 / licensed classes only while the "3.0 & Licensed" setting is on. Nothing loads at page open.
+    // Once a chunk arrives, getAvailableClassDefs() sees a new class count (its cache key) and the open lists redraw.
+    let _classChunkLoadPending = false;
+
+    function ensureClassSplatChunks() {
+      const comp = (typeof window !== 'undefined') ? window.SrdCompendium : null;
+      if (_classChunkLoadPending || !comp || !comp._ready || typeof comp.ensureChunkLoaded !== 'function' || typeof comp.isChunkLoaded !== 'function') return;
+      const lazy = typeof comp.getLazyChunkNames === 'function' ? comp.getLazyChunkNames() : [];
+      const wanted = ['srd_classes_splat.json'];
+      if (includeLegacyFeats()) wanted.push('srd_classes_legacy.json');
+      const missing = wanted.filter(n => lazy.includes(n) && !comp.isChunkLoaded(n));
+      if (missing.length === 0) return;
+      _classChunkLoadPending = true;
+      Promise.all(missing.map(n => comp.ensureChunkLoaded(n))).then(() => {
+        _classChunkLoadPending = false;
+        refreshOpenClassLists();
+      }).catch(() => { _classChunkLoadPending = false; });
+    }
+
+    function refreshOpenClassLists() {
+      try {
+        const lvlSel = document.getElementById('lvlup-class-select');
+        if (lvlSel && typeof populateLevelUpClassSelect === 'function') populateLevelUpClassSelect(lvlSel.value || null);
+        filterLevelUpClassSearch();
+        const chgSel = document.getElementById('change-class-select');
+        if (chgSel) populateChangeClassSelect(chgSel.value || null);
+        filterChangeClassSearch();
+      } catch (_) {}
+    }
+
+    // 3.0 / licensed classes stay out of the class pickers while the setting is off, unless the character already has levels in one.
+    function isClassHiddenByEdition(cName, def) {
+      if (!def || !LEGACY_FEAT_EDITIONS.has(def.edition) || includeLegacyFeats()) return false;
+      const key = String(cName || '').toLowerCase();
+      const prog = (typeof character !== 'undefined' && character && Array.isArray(character.levelProgression)) ? character.levelProgression : [];
+      return !prog.some(r => r && String(r.className || '').toLowerCase() === key);
+    }
+
+    // Reuses the caller's pill styling: filterPillClass(activeFilter) = active look, any other key = inactive look.
+    function legacyFeatsPillHtml(pillClassFn, activeFilter) {
+      const on = includeLegacyFeats();
+      const cls = pillClassFn(on ? activeFilter : '__legacy_off__');
+      return `<button type="button" data-action="progression:toggle-legacy-feats" title="Show feats from 3.0 books and licensed non-WotC 3.5 books (loaded only while this filter is on)" class="${cls}">📜 3.0 &amp; Licensed${on ? ' ✓' : ''}</button>`;
+    }
+
     function getCombinedFeatCatalog(includeInvocations = false) {
+      ensureFeatSplatChunks();
       const srdReady = Boolean(typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready);
       const dbLen = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb.length : 0;
-      const cacheKey = `${srdReady ? 1 : 0}_${(typeof window !== 'undefined' && window._srdCatalogVersion) || 0}_${dbLen}_${(typeof window !== 'undefined' && window._featCatalogCacheVer) || 0}`;
+      const cacheKey = `${srdReady ? 1 : 0}_${(typeof window !== 'undefined' && window._srdCatalogVersion) || 0}_${dbLen}_${(typeof window !== 'undefined' && window._featCatalogCacheVer) || 0}_${includeLegacyFeats() ? 1 : 0}_${_featChunkCatalogVer}`;
       if (_cachedFeatCatalogKey === cacheKey) {
         if (includeInvocations && _cachedFeatCatalogWithInv) return _cachedFeatCatalogWithInv;
         if (!includeInvocations && _cachedFeatCatalogNoInv) return _cachedFeatCatalogNoInv;
@@ -142,14 +250,31 @@
 
       // 1. Canonical V2 SrdCompendium (464 SRD Feats, UA Flaws & DM Boons with structured prerequisites)
       if (typeof window !== 'undefined' && window.SrdCompendium && window.SrdCompendium._ready) {
+        const showLegacyEditions = includeLegacyFeats();
         window.SrdCompendium.getAllLoaded(['Feat', 'Flaw', 'DM Boon', 'Special Ability']).forEach(f => {
           if (!f || !f.name) return;
-          const k = f.name.toLowerCase().trim();
+          const isLegacyEdition = LEGACY_FEAT_EDITIONS.has(f.edition);
+          // 3.0 / licensed feats stay out of the catalog unless the user turned the filter on (even if the chunk is in memory)
+          if (isLegacyEdition && !showLegacyEditions) return;
+          let k = f.name.toLowerCase().trim();
           if (!k || skipPlaceholders.has(k)) return;
           if (f.category === 'Warlock Invocation' || invocationByName.has(k)) return;
+          // Same-name different feat (e.g. PHB II vs epic Two-Weapon Rend, or a 3.0 reprint): never overwrite the
+          // entry already listed; list this one under its book-qualified alias, or "Name (Book)" for 3.0/licensed.
+          let displayName = f.name;
+          // Only imported (edition-tagged) records use this rule; core records keep their previous last-wins behaviour.
+          if (f.edition && map.has(k) && map.get(k).id !== f.id) {
+            const bookName = String(f.source || '').replace(/\s*p\.?\s*\d+.*$/i, '').trim();
+            if (Array.isArray(f.aliases) && f.aliases[0]) displayName = f.aliases[0];
+            else if (isLegacyEdition && bookName) displayName = `${f.name} (${bookName})`;
+            else return;
+            k = displayName.toLowerCase().trim();
+            if (map.has(k)) return;
+          }
           const isBoonType = (f.type === 'DM Boon' || f.type === 'Special Ability' || f.category === 'DM Boon' || (f.id && String(f.id).startsWith('pack_')));
           map.set(k, {
             ...f,
+            name: displayName,
             category: f.category || (f.type === 'DM Boon' ? 'DM Boon' : (f.type === 'Special Ability' ? 'Special Ability' : 'General')),
             prereq: f.prerequisites || f.prereq || (isBoonType && f.requires && Array.isArray(f.requires.feats) ? f.requires.feats.join(', ') : '-'),
             benefit: f.shortDescription || f.benefit || f.description || '',
@@ -257,7 +382,8 @@
           }
         });
       }
-      const resultArr = Array.from(map.values());
+      const showLegacy = includeLegacyFeats();
+      const resultArr = Array.from(map.values()).filter(f => showLegacy || !LEGACY_FEAT_EDITIONS.has(f && f.edition));
       if (includeInvocations) {
         _cachedFeatCatalogWithInv = resultArr;
       } else {
@@ -286,6 +412,7 @@
     }
 
     function renderFeatPickerList() {
+      _featListRefresher = renderFeatPickerList;
       const listEl = document.getElementById('feat-picker-list');
       if (!listEl) return;
       listEl.innerHTML = '';
@@ -989,6 +1116,28 @@
       return false;
     }
 
+    // UA character traits (UA p.86) and Complete Scoundrel skill tricks (CSc p.83) are kept in the level feat
+    // lists as "🧬 [Trait] Name" / "💪 [Skill Trick] Name"; they never consume a feat slot.
+    const TRAIT_OPTION_TYPES = ['Trait', 'Skill Trick'];
+    function getFeatOptionKind(fStr) {
+      const s = String(fStr || '');
+      if (s.includes('[Trait]')) return 'Trait';
+      if (s.includes('[Skill Trick]')) return 'Skill Trick';
+      return null;
+    }
+
+    // Fighter bonus feat list membership. An explicit isFighterBonusFeat (true/false) is authoritative for the heroic
+    // list; category/tag fallback only applies to legacy entries without the flag. Epic fighter bonus feats
+    // (fighterBonusFeatTier: 'epic', ELH p.11-12) are offered only for a slot gained at character level 21 or higher.
+    function isFighterBonusFeatEntry(f, slotCharLevel) {
+      if (!f) return false;
+      if (f.isFighterBonusFeat === true) return true;
+      if (f.fighterBonusFeatTier === 'epic') return (Number(slotCharLevel) || 0) >= 21;
+      if (f.isFighterBonusFeat === false) return false;
+      const tagged = Array.isArray(f.featTags) && f.featTags.some(t => String(t).toLowerCase() === 'fighter bonus');
+      return f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || tagged;
+    }
+
     function openQuickFeatPickerForLevel(levelIdx, preferredCategory = null, isTargetLocked = null) {
       activeQuickLevelIndex = Number(levelIdx);
       const modal = document.getElementById('quick-level-feat-modal');
@@ -1032,6 +1181,10 @@
       ((lvlObj && lvlObj.feats) || []).forEach(fStr => {
         const str = String(fStr);
         if (str.includes('+1 Stat') || str.includes('Stat:')) return;
+        if (getFeatOptionKind(str)) {
+          otherBonusFeats.push(fStr);
+          return;
+        }
         if (str.includes('[Flaw Bonus]')) {
           otherBonusFeats.push(fStr);
           flawBonusFeatsAtLevel.push(fStr);
@@ -1341,6 +1494,7 @@
     }
 
     function renderQuickFeatSearchResults() {
+      _featListRefresher = renderQuickFeatSearchResults;
       const consoleEl = document.getElementById('quick-feat-search-console');
       if (!consoleEl) return;
 
@@ -1351,14 +1505,14 @@
       const combined = getCombinedFeatCatalog();
 
       // Parametric classification predicates
-      const hasFeatTag = (f, tagLower) => Array.isArray(f.featTags) && f.featTags.some(t => String(t).toLowerCase() === tagLower);
-      const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || hasFeatTag(f, 'fighter bonus'));
+      const quickSlotCharLevel = (activeQuickLevelIndex !== null && activeQuickLevelIndex !== undefined) ? Number(activeQuickLevelIndex) + 1 : (Number(character.level) || 0);
+      const isFighterFeat = f => isFighterBonusFeatEntry(f, quickSlotCharLevel);
       const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || (f.source && f.source.toLowerCase().includes('campaign')));
       const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
       // Warlock Invocations are ONLY allowed when the slot is explicitly 'Warlock Invocation' or 'DM Boon' (NEVER in Regular Feat, Human Bonus Feat / Racial Trait, Flaw Bonus Feat, or Class Bonus Feat)
       let invocationsList = [];
-      const isStandardFeatSlot = ['Regular Feat', 'Racial Trait', 'Flaw Bonus Feat', 'Class Bonus Feat', 'Flaw'].includes(categoryVal);
+      const isStandardFeatSlot = ['Regular Feat', 'Racial Trait', 'Flaw Bonus Feat', 'Class Bonus Feat', 'Flaw', ...TRAIT_OPTION_TYPES].includes(categoryVal);
       const warlockAllowedHere = !isStandardFeatSlot && ((typeof isWarlockEnabledForLevel === 'function') ? isWarlockEnabledForLevel(activeQuickLevelIndex) : false);
       if (warlockAllowedHere) {
         const prog = character.levelProgression || [];
@@ -1395,6 +1549,8 @@
       let baseList = combined;
       if (categoryVal === 'Warlock Invocation' || activeFilter === 'INVOCATION') {
         baseList = invocationsList.length > 0 ? invocationsList : combined;
+      } else if (TRAIT_OPTION_TYPES.includes(categoryVal)) {
+        baseList = getTraitOptionCatalog(categoryVal);
       } else if (categoryVal === 'DM Boon') {
         baseList = (activeFilter === 'BOON') ? combined.filter(isBoonFeat) : combined;
       } else if (categoryVal === 'Flaw') {
@@ -1652,6 +1808,7 @@
             <button type="button" data-action="progression:set-quick-feat-filter" data-filter="FLAW" class="${filterPillClass('FLAW')}">
               ⚠️ Flaws (${countFlaw})
             </button>
+            ${legacyFeatsPillHtml(filterPillClass, activeFilter)}
             ${invocationsList.length > 0 ? `
               <button type="button" data-action="progression:set-quick-feat-filter" data-filter="INVOCATION" class="${filterPillClass('INVOCATION')}">
                 🔮 Invocation (${countInvocation})
@@ -1699,7 +1856,10 @@
         return;
       }
       const catalog = getCombinedFeatCatalog();
-      let found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
+      const pickCatVal = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
+      // UA traits / skill tricks resolve from their own catalog (never synthesized as a DM Boon)
+      let found = TRAIT_OPTION_TYPES.includes(pickCatVal) ? findTraitOptionByName(featName) : null;
+      if (!found) found = catalog.find(f => f.name.toLowerCase() === featName.toLowerCase() || f.name.toLowerCase() === featName.toLowerCase().replace(/\(.*?\)/g, '').trim());
       if (!found && window._lastQuickFeatAiV2Entry && (window._lastQuickFeatAiV2Entry.name || '').toLowerCase().trim() === featName.toLowerCase().trim()) {
         found = window._lastQuickFeatAiV2Entry;
       }
@@ -1946,7 +2106,8 @@
         featName = preSynthesizedBoon.name;
         window._lastQuickFeatAiV2Entry = preSynthesizedBoon;
       } else if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.standardizeName === 'function') {
-        const exactCat = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim());
+        const exactCat = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim())
+          || findTraitOptionByName(featName);
         if (exactCat && exactCat.name) {
           featName = exactCat.name;
         } else {
@@ -1975,9 +2136,66 @@
       let category = document.getElementById('quick-feat-category')?.value || 'Regular Feat';
       const benefit = document.getElementById('quick-feat-benefit')?.value.trim() || '';
 
-      const catalogMatch = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim());
+      let catalogMatch = getCombinedFeatCatalog(true).find(f => (f.name || '').toLowerCase().trim() === featName.toLowerCase().trim());
       if ((catalogMatch && isFlawFeat(catalogMatch)) || CANONICAL_UA_FLAW_NAMES.has(featName.toLowerCase().trim())) {
         category = 'Flaw';
+      }
+      // UA traits / skill tricks: use their own record, and file a picked trait or trick under its own category
+      const traitOptionMatch = (TRAIT_OPTION_TYPES.includes(category) || (!catalogMatch && category === 'Regular Feat')) ? findTraitOptionByName(featName) : null;
+      if (traitOptionMatch) {
+        catalogMatch = traitOptionMatch;
+        category = traitOptionMatch.type;
+      }
+
+      if (TRAIT_OPTION_TYPES.includes(category)) {
+        const prog = character.levelProgression || [];
+        const rowLevel = Number(activeQuickLevelIndex) + 1;
+        const countKind = rows => rows.reduce((n, r) => n + ((r && Array.isArray(r.feats)) ? r.feats.filter(f => getFeatOptionKind(f) === category).length : 0), 0);
+        const blockWith = (title, desc) => {
+          if (typeof showDiceTopToast === 'function') showDiceTopToast({ icon: '⚠️', title, desc, type: 'warning' });
+        };
+        if (category === 'Trait') {
+          // Unearthed Arcana p.86: a character begins play with up to two traits; adding one after 1st level needs DM approval
+          if (countKind(prog) >= 2) {
+            blockWith('Maximum 2 Character Traits (3.5e RAW)', 'Per Unearthed Arcana (p. 86), a character can have at most two traits.');
+            return;
+          }
+          if (rowLevel > 1 && !confirm(`⚠️ Per Unearthed Arcana (p. 86), traits are chosen at 1st level. Adding a trait after 1st level requires DM approval.\n\nAdd the trait "${featName}" at level ${rowLevel}?`)) {
+            return;
+          }
+        } else {
+          // Complete Scoundrel p.83: one skill trick per level; total skill tricks cannot exceed half the character level (rounded up)
+          const rowTricks = (prog[activeQuickLevelIndex] && Array.isArray(prog[activeQuickLevelIndex].feats))
+            ? prog[activeQuickLevelIndex].feats.filter(f => getFeatOptionKind(f) === 'Skill Trick').length
+            : 0;
+          if (rowTricks >= 1) {
+            blockWith('One Skill Trick per Level (3.5e RAW)', `Per Complete Scoundrel (p. 83), you cannot learn more than one skill trick at level ${rowLevel}.`);
+            return;
+          }
+          const trickCap = Math.ceil(rowLevel / 2);
+          const totalCap = Math.ceil(Math.max(rowLevel, prog.length) / 2);
+          if (countKind(prog.slice(0, rowLevel)) + 1 > trickCap || countKind(prog) + 1 > totalCap) {
+            blockWith('Skill Trick Limit Reached (3.5e RAW)', `Per Complete Scoundrel (p. 83), total skill tricks cannot exceed one-half your character level, rounded up (${trickCap} at level ${rowLevel}).`);
+            return;
+          }
+          const trickEval = (typeof checkFeatPrerequisites === 'function') ? checkFeatPrerequisites(catalogMatch || { name: featName }, 0, activeQuickLevelIndex) : null;
+          if (trickEval && !trickEval.allMet) {
+            blockWith('Prerequisites Not Met', `Prerequisites not met for "${featName}" (${trickEval.rawPrereq || 'Missing Prerequisite'}).`);
+            return;
+          }
+          // Costs 2 skill points: informative warning only (same as skill ranks over budget)
+          const isMergedSkills = character.settings?.mergeSkills !== false;
+          const trickTotalPts = calculateTotalSkillPoints(character);
+          const trickSpentPts = calculateSpentSkillPoints(character, isMergedSkills);
+          if (trickTotalPts > 0 && trickSpentPts + 2 > trickTotalPts && typeof showDiceTopToast === 'function') {
+            showDiceTopToast({
+              icon: '⚠️',
+              title: 'Skill Point Budget Exceeded',
+              breakdown: `A skill trick costs 2 skill points (Complete Scoundrel p.83). Official budget: ${trickTotalPts} (Spent: ${trickSpentPts + 2}).`,
+              total: `+${trickSpentPts + 2 - trickTotalPts}`
+            });
+          }
+        }
       }
 
       if (category === 'Flaw') {
@@ -2035,6 +2253,8 @@
       else if (category === 'Racial Trait') prefix = isExtraAddition ? '🧬 [Extra Racial] ' : '🧬 [Racial] ';
       else if (category === 'Special Ability') prefix = '✨ ';
       else if (category === 'Warlock Invocation') prefix = isExtraAddition ? '🔮 [Extra Invocation] ' : '🔮 [Invocation] ';
+      else if (category === 'Trait') prefix = '🧬 [Trait] ';
+      else if (category === 'Skill Trick') prefix = '💪 [Skill Trick] ';
       else prefix = isExtraAddition ? '🎖️ [Extra] ' : '🎖️ ';
 
       // Resolve structured V2 stat-block / AI cached / synthesized boon metadata for ANY category (including Special Ability!)
@@ -2123,10 +2343,12 @@
         featEntryPayload = {
           ...resolvedExtras,
           name: featName,
-          type: category === 'Flaw' ? 'Flaw' : 'Feat',
+          type: (category === 'Flaw' || TRAIT_OPTION_TYPES.includes(category)) ? category : 'Feat',
           category: category,
           benefit: benefit || (catalogMatch ? catalogMatch.benefit : (v2SourceObj ? v2SourceObj.benefit : '')),
-          source: category === 'Flaw'
+          source: TRAIT_OPTION_TYPES.includes(category)
+            ? (catalogMatch?.source || (category === 'Trait' ? 'Unearthed Arcana p.86' : 'Complete Scoundrel p.83'))
+            : category === 'Flaw'
             ? (catalogMatch?.source || 'Unearthed Arcana, page 91')
             : (category === 'Flaw Bonus Feat' ? `Level ${row.level} (Flaw Bonus Feat)` : (category === 'DM Boon' ? `Level ${row.level} (DM Boon)` : `Level ${row.level} (${row.className})`))
         };
@@ -2151,7 +2373,7 @@
             ...(benefit ? { benefit: benefit, description: benefit } : {})
           };
         } else {
-          const inCanonical = getCombinedFeatCatalog(true).some(f => (f.name || '').toLowerCase().trim() === clean);
+          const inCanonical = Boolean(traitOptionMatch) || getCombinedFeatCatalog(true).some(f => (f.name || '').toLowerCase().trim() === clean);
           if (!inCanonical) {
             customDbEntry = {
               ...resolvedExtras,
@@ -4195,6 +4417,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       }
 
       function renderLevelUpFeatSearchResults(slotIdx) {
+        _featListRefresher = () => renderLevelUpFeatSearchResults(slotIdx);
         const consoleEl = document.getElementById(`lvlup-feat-search-console-${slotIdx}`);
         if (!consoleEl) return;
 
@@ -4205,8 +4428,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         const combined = getCombinedFeatCatalog();
 
         // Parametric classification predicates
-        const hasFeatTag = (f, tagLower) => Array.isArray(f.featTags) && f.featTags.some(t => String(t).toLowerCase() === tagLower);
-        const isFighterFeat = f => Boolean(f.isFighterBonusFeat === true || f.category === 'Fighter' || f.category === 'Fighter Bonus' || f.category === 'Martial' || hasFeatTag(f, 'fighter bonus'));
+          const isFighterFeat = f => isFighterBonusFeatEntry(f, (character.levelProgression || []).length + 1);
         const isBoonFeat = f => Boolean(f.category === 'DM Boon' || f.category === 'DM Grant' || f.type === 'DM Grant' || f.type === 'DM Boon' || (f.source && f.source.toLowerCase().includes('campaign')));
         const isFlawFeat = f => Boolean(f.category === 'Flaw' || f.type === 'Flaw' || (f.name || '').toLowerCase().startsWith('flaw:'));
 
@@ -4417,6 +4639,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
               <button type="button" data-action="progression:set-lvlup-feat-filter" data-filter="FLAW" data-slot-idx="${slotIdx}" class="${filterPillClass('FLAW')}">
                 ⚠️ Flaw (${countFlaw})
               </button>
+              ${legacyFeatsPillHtml(filterPillClass, activeFilter)}
             </div>
             <button type="button" data-action="progression:close-lvlup-feat-console" class="text-[10px] text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 transition font-bold cursor-pointer">
               ▲ Close
@@ -5103,6 +5326,33 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       filterLevelUpClassSearch();
     }
 
+    // Class prerequisite skill keys are canonical (k_arcana, umd); older P1 records use knowledge_<field>.
+    // character.skills is an array of { key, ranks }; a Perform / Profession prerequisite without a subtype
+    // accepts the best Perform (...) / Profession (...) entry.
+    const LEGACY_PREREQ_SKILL_KEYS = {
+      knowledge_architecture: 'k_arch', knowledge_architecture_and_engineering: 'k_arch', knowledge_engineering: 'k_arch',
+      knowledge_geography: 'k_geo', knowledge_dungeoneering: 'k_dungeon', use_magic_device: 'umd'
+    };
+    function getPrereqSkillRanks(skillKey) {
+      const raw = String(skillKey || '').toLowerCase().trim();
+      const key = LEGACY_PREREQ_SKILL_KEYS[raw] || raw.replace(/^knowledge_/, 'k_');
+      const skills = character ? character.skills : null;
+      if (Array.isArray(skills)) {
+        const anySubtype = key === 'perform' || key === 'profession';
+        let best = 0;
+        skills.forEach(s => {
+          const k = String((s && s.key) || '').toLowerCase();
+          if (k === key || (anySubtype && k.startsWith(key + '_'))) best = Math.max(best, Number(s.ranks) || 0);
+        });
+        return best;
+      }
+      if (skills && typeof skills === 'object') {
+        const v = skills[key] !== undefined ? skills[key] : skills[raw];
+        return Number(v && typeof v === 'object' ? v.ranks : v) || 0;
+      }
+      return 0;
+    }
+
     function checkClassPrerequisites(className, def) {
       if (!def || !Array.isArray(def.prerequisites) || def.prerequisites.length === 0) {
         return { hasPrereqs: false, allMet: true, checks: [] };
@@ -5189,8 +5439,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             info = met ? `(${alignStr} Eligible)` : `(Current: ${alignStr})`;
           }
         } else if (req.key === 'skill' && req.skill && req.ranks) {
-          const skObj = character.skills ? character.skills[req.skill] : null;
-          const curRanks = Number(typeof skObj === 'object' ? skObj?.ranks : skObj) || 0;
+          const curRanks = getPrereqSkillRanks(req.skill);
           met = curRanks >= Number(req.ranks);
           info = `(Ranks: ${curRanks}/${req.ranks})`;
         } else if (req.key === 'race') {
@@ -5451,6 +5700,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       if (!resultsContainer) return;
       const prevScroll = resultsContainer.scrollTop;
 
+      ensureClassSplatChunks();
       const q = (document.getElementById('lvlup-class-search-input')?.value || '').trim().toLowerCase();
       const allDefs = getAvailableClassDefs();
       const selectedClass = document.getElementById('lvlup-class-select')?.value || '';
@@ -5459,6 +5709,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       Object.keys(allDefs).forEach(cName => {
         const def = allDefs[cName];
+        if (isClassHiddenByEdition(cName, def)) return;
         const isPrestige = def.type === 'Prestige Class';
         const isCustom = def.isCustom === true;
         const isBase = !isPrestige && !isCustom;
@@ -6894,6 +7145,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const sel = document.getElementById('change-class-select');
       if (!sel) return;
       sel.innerHTML = '';
+      ensureClassSplatChunks();
       const allDefs = getAvailableClassDefs();
       const officialGroup = document.createElement('optgroup');
       officialGroup.label = "Official D&D 3.5e Classes";
@@ -6903,9 +7155,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const targetSelected = (selectedClassName || '').toLowerCase();
 
       Object.keys(allDefs).sort((a, b) => a.localeCompare(b)).forEach(cName => {
+        const def = allDefs[cName];
+        if (isClassHiddenByEdition(cName, def) && cName.toLowerCase() !== targetSelected) return;
         const opt = document.createElement('option');
         opt.value = cName;
-        const def = allDefs[cName];
         const hdText = `d${def.hd} HD`;
         const babText = def.bab === 1.0 ? 'Full BAB' : (def.bab === 0.75 ? '3/4 BAB' : '1/2 BAB');
         opt.textContent = `${cName} (${hdText} • ${babText})`;
@@ -7087,6 +7340,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (!resultsContainer) return;
       const prevScroll = resultsContainer.scrollTop;
 
+      ensureClassSplatChunks();
       const q = (document.getElementById('change-class-search-input')?.value || '').trim().toLowerCase();
       const allDefs = getAvailableClassDefs();
       const selectedClass = document.getElementById('change-class-select')?.value || '';
@@ -7095,6 +7349,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       Object.keys(allDefs).forEach(cName => {
         const def = allDefs[cName];
+        if (isClassHiddenByEdition(cName, def)) return;
         const isPrestige = def.type === 'Prestige Class';
         const isCustom = def.isCustom === true;
         const isBase = !isPrestige && !isCustom;
@@ -8192,6 +8447,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         (lvl.feats || []).forEach(fStr => {
           const str = String(fStr);
           if (str.includes('+1 Stat') || str.includes('Stat:')) return; // handled by statBadgeItem
+          if (getFeatOptionKind(str)) {
+            otherBonusFeats.push(fStr);
+            return;
+          }
           if (str.includes('[Flaw Bonus]')) {
             otherBonusFeats.push(fStr);
             flawBonusFeatsAtLevel.push(fStr);
@@ -8222,6 +8481,8 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         const getOtherBonusGroupRank = (s) => {
           const str = String(s || '');
           if (str.includes('[Racial]') || str.includes('[Extra Racial]') || str.includes('[Human Bonus]')) return 1; // 1. Human / Racial Bonus
+          if (str.includes('[Trait]')) return 1.5; // 1.5 Character Traits
+          if (str.includes('[Skill Trick]')) return 5.5; // 5.5 Skill Tricks
           if (isFlawFeatString(str) && !str.includes('[Flaw Bonus]')) return 2; // 2. Character Flaws
           if (str.includes('[Flaw Bonus]')) return 3; // 3. Flaw Bonus Feats
           if (str.includes('[Invocation]') || str.includes('[Extra Invocation]') || str.includes('Invocation') || str.includes('🔮')) return 4; // 4. Warlock Invocations
@@ -8394,7 +8655,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           let bgCls = 'bg-amber-950/80 hover:bg-amber-900 text-amber-300 border-amber-600/70';
           let icon = '🌟';
           let labelText = str.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+/, '').trim();
-          if (str.includes('[Flaw Bonus]')) {
+          if (str.includes('[Trait]')) {
+            bgCls = 'bg-indigo-950 text-indigo-300 border-indigo-600';
+            icon = '🧬';
+          } else if (str.includes('[Skill Trick]')) {
+            bgCls = 'bg-sky-950 text-sky-300 border-sky-600';
+            icon = '💪';
+          } else if (str.includes('[Flaw Bonus]')) {
             bgCls = 'bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border-emerald-600/70';
             icon = '🎖️';
           } else if (isFlawFeatString(str)) {
@@ -9093,6 +9360,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         });
       }
 
+      // Each skill trick costs 2 skill points (Complete Scoundrel p.83)
+      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.countSkillTricks === 'function') {
+        totalSpent += RuleEngine.countSkillTricks(char) * 2;
+      }
       return totalSpent;
     }
 
@@ -10722,6 +10993,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
       Actions.register('progression:expand-quick-feat-results', (el, data, event) => {
         if (typeof window.expandAllQuickFeatResults === 'function') window.expandAllQuickFeatResults();
+      });
+      Actions.register('progression:toggle-legacy-feats', (el, data, event) => {
+        toggleLegacyFeats();
       });
       Actions.register('progression:set-quick-feat-filter', (el, data, event) => {
         if (data.filter) setQuickFeatSearchFilter(data.filter);

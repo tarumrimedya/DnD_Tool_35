@@ -8,7 +8,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "Complete Warrior p.100",
     "isFighterBonusFeat": false,
     "prerequisites": "Combat Reflexes, base attack bonus +2",
     "prereq": "Combat Reflexes, base attack bonus +2",
@@ -339,7 +339,7 @@
     "category": "Item Creation",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / Monster Manual p.303",
     "isFighterBonusFeat": false,
     "prerequisites": "Craft Magic Arms and Armor, Craft Wondrous Item",
     "prereq": "Craft Magic Arms and Armor, Craft Wondrous Item",
@@ -574,6 +574,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Str 25, Cleave, Great Cleave, Improved Critical (chosen weapon), Overwhelming Critical (chosen weapon), Power Attack, Weapon Focus (chosen weapon)",
     "prereq": "Str 25, Cleave, Great Cleave, Improved Critical (chosen weapon), Overwhelming Critical (chosen weapon), Power Attack, Weapon Focus (chosen weapon)",
     "prereqStruct": {
@@ -855,6 +856,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Ride 24 ranks",
     "prereq": "Ride 24 ranks",
     "prereqStruct": {
@@ -915,8 +917,8 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
-    "isFighterBonusFeat": false,
+    "source": "Complete Warrior p.105",
+    "isFighterBonusFeat": true,
     "prerequisites": "Point Blank Shot, Precise Shot, base attack bonus +3",
     "prereq": "Point Blank Shot, Precise Shot, base attack bonus +3",
     "prereqStruct": {
@@ -2160,6 +2162,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Character level 21st",
     "prereq": "Character level 21st",
     "prereqStruct": {
@@ -2768,6 +2771,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Character level 21st, Weapon Focus in the chosen weapon",
     "prereq": "Character level 21st, Weapon Focus in the chosen weapon",
     "prereqStruct": {
@@ -2794,7 +2798,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.95",
     "isFighterBonusFeat": false,
     "prerequisites": "Ability to cast spells",
     "prereq": "Ability to cast spells",
@@ -3001,7 +3005,7 @@
     "category": "Fighter",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.102",
     "isFighterBonusFeat": true,
     "prerequisites": "Proficiency with selected weapon, base attack bonus +1",
     "prereq": "Proficiency with selected weapon, base attack bonus +1",
@@ -3060,6 +3064,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dex 15, base attack bonus +9, Improved Two-Weapon Fighting, Two-Weapon Fighting",
     "prereq": "Dex 15, base attack bonus +9, Improved Two-Weapon Fighting, Two-Weapon Fighting",
     "prereqStruct": {
@@ -3119,7 +3124,7 @@
     "category": "Metamagic",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "Complete Arcane p.79",
     "isFighterBonusFeat": false,
     "prerequisites": "Any other metamagic feat, Knowledge (arcana) 5 ranks",
     "prereq": "Any other metamagic feat, Knowledge (arcana) 5 ranks",
@@ -3151,6 +3156,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dex 25, Combat Reflexes, Deflect Arrows, Improved Unarmed Strike",
     "prereq": "Dex 25, Combat Reflexes, Deflect Arrows, Improved Unarmed Strike",
     "prereqStruct": {
@@ -3233,7 +3239,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.100",
     "isFighterBonusFeat": false,
     "prerequisites": "Ability to cast spells",
     "prereq": "Ability to cast spells",
@@ -3426,7 +3432,7 @@
     "category": "Fighter",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.99",
     "isFighterBonusFeat": true,
     "prerequisites": "Weapon Proficiency (crossbow type chosen)",
     "prereq": "Weapon Proficiency (crossbow type chosen)",
@@ -3454,6 +3460,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dex 19, base attack bonus +21, Manyshot, Point Blank Shot, Rapid Shot",
     "prereq": "Dex 19, base attack bonus +21, Manyshot, Point Blank Shot, Rapid Shot",
     "prereqStruct": {
@@ -3898,6 +3905,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dex 25, Far Shot, Point Blank Shot, Spot 20 ranks",
     "prereq": "Dex 25, Far Shot, Point Blank Shot, Spot 20 ranks",
     "prereqStruct": {
@@ -4135,11 +4143,11 @@
     "schemaVersion": 2,
     "name": "Tower Shield Proficiency",
     "type": "Feat",
-    "category": "Fighter",
+    "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "PHB p.102",
-    "isFighterBonusFeat": true,
+    "source": "PHB p.101",
+    "isFighterBonusFeat": false,
     "prerequisites": "Shield Proficiency",
     "prereq": "Shield Proficiency",
     "prereqStruct": {},
@@ -4148,7 +4156,7 @@
     "benefit": "Use a tower shield without taking its armor check penalty on attack rolls.",
     "tags": [
       "feat",
-      "fighter"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -4164,7 +4172,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.97",
     "isFighterBonusFeat": false,
     "prerequisites": "-",
     "prereq": "-",
@@ -4446,6 +4454,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Character level 21st",
     "prereq": "Character level 21st",
     "prereqStruct": {
@@ -4654,6 +4663,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Con 21",
     "prereq": "Con 21",
     "prereqStruct": {
@@ -4682,7 +4692,7 @@
     "category": "Fighter",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.95",
     "isFighterBonusFeat": true,
     "prerequisites": "Proficiency with selected weapon, Weapon Focus with selected weapon, Fighter level 8th",
     "prereq": "Proficiency with selected weapon, Weapon Focus with selected weapon, Fighter level 8th",
@@ -4971,6 +4981,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Character level 21st, Cha 25, Leadership, Leadership score 25",
     "prereq": "Character level 21st, Cha 25, Leadership, Leadership score 25",
     "prereqStruct": {
@@ -5600,6 +5611,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dex 21, Combat Reflexes",
     "prereq": "Dex 21, Combat Reflexes",
     "prereqStruct": {
@@ -5656,6 +5668,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Str 23, Cleave, Great Cleave, Improved Critical (chosen weapon), Power Attack, Weapon Focus (chosen weapon)",
     "prereq": "Str 23, Cleave, Great Cleave, Improved Critical (chosen weapon), Power Attack, Weapon Focus (chosen weapon)",
     "prereqStruct": {
@@ -5995,6 +6008,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Character level 21st, Epic Weapon Focus, Weapon Focus, Weapon Specialization (all in the chosen weapon)",
     "prereq": "Character level 21st, Epic Weapon Focus, Weapon Focus, Weapon Specialization (all in the chosen weapon)",
     "prereqStruct": {
@@ -6283,6 +6297,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dex 25, Deflect Arrows, Improved Unarmed Strike",
     "prereq": "Dex 25, Deflect Arrows, Improved Unarmed Strike",
     "prereqStruct": {
@@ -6734,6 +6749,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Character level 21st, Con 25, Endurance",
     "prereq": "Character level 21st, Con 25, Endurance",
     "prereqStruct": {
@@ -6961,7 +6977,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.94",
     "isFighterBonusFeat": false,
     "prerequisites": "Ability to cast spells",
     "prereq": "Ability to cast spells",
@@ -6992,6 +7008,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Improved Initiative",
     "prereq": "Improved Initiative",
     "prereqStruct": {},
@@ -7026,6 +7043,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dex 23, Point Blank Shot, Rapid Shot, Weapon Focus (type of bow used)",
     "prereq": "Dex 23, Point Blank Shot, Rapid Shot, Weapon Focus (type of bow used)",
     "prereqStruct": {
@@ -7130,6 +7148,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Cha 25, Epic Leadership, Leadership, Diplomacy 30 ranks, must rule own kingdom and have a stronghold",
     "prereq": "Cha 25, Epic Leadership, Leadership, Diplomacy 30 ranks, must rule own kingdom and have a stronghold",
     "prereqStruct": {
@@ -7324,7 +7343,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.89",
     "isFighterBonusFeat": false,
     "prerequisites": "-",
     "prereq": "-",
@@ -7883,6 +7902,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Str 21, Dex 21, Improved Unarmed Strike, Escape Artist 15 ranks",
     "prereq": "Str 21, Dex 21, Improved Unarmed Strike, Escape Artist 15 ranks",
     "prereqStruct": {
@@ -7915,7 +7935,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "Complete Arcane p.81",
     "isFighterBonusFeat": false,
     "prerequisites": "Extend Spell",
     "prereq": "Extend Spell",
@@ -8098,6 +8118,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Character level 21st",
     "prereq": "Character level 21st",
     "prereqStruct": {
@@ -8305,6 +8326,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Int 13, Dex 23, Combat Expertise, Dodge, Mobility, Spring Attack, Whirlwind Attack",
     "prereq": "Int 13, Dex 23, Combat Expertise, Dodge, Mobility, Spring Attack, Whirlwind Attack",
     "prereqStruct": {
@@ -8334,7 +8356,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.94",
     "isFighterBonusFeat": false,
     "prerequisites": "Spell Focus, Ability to cast spells",
     "prereq": "Spell Focus, Ability to cast spells",
@@ -8467,7 +8489,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.96",
     "isFighterBonusFeat": false,
     "prerequisites": "Ability to turn or rebuke creatures",
     "prereq": "Ability to turn or rebuke creatures",
@@ -8847,7 +8869,7 @@
     "category": "Fighter",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.95",
     "isFighterBonusFeat": true,
     "prerequisites": "Proficient with weapon, base attack bonus +8",
     "prereq": "Proficient with weapon, base attack bonus +8",
@@ -8907,6 +8929,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dex 19, Wis 19, Improved Unarmed Strike, Stunning Fist",
     "prereq": "Dex 19, Wis 19, Improved Unarmed Strike, Stunning Fist",
     "prereqStruct": {
@@ -8984,6 +9007,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Combat Reflexes",
     "prereq": "Combat Reflexes",
     "prereqStruct": {},
@@ -9078,6 +9102,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dodge, Mobility, Point Blank Shot",
     "prereq": "Dodge, Mobility, Point Blank Shot",
     "prereqStruct": {},
@@ -9132,7 +9157,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "Complete Adventurer p.109",
     "isFighterBonusFeat": false,
     "prerequisites": "Bardic music",
     "prereq": "Bardic music",
@@ -9603,6 +9628,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dex 23, Point Blank Shot, Quick Draw, Rapid Shot",
     "prereq": "Dex 23, Point Blank Shot, Quick Draw, Rapid Shot",
     "prereqStruct": {
@@ -9713,7 +9739,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "Complete Warrior p.106",
     "isFighterBonusFeat": false,
     "prerequisites": "Str 13, turn or rebuke undead ability, Power Attack",
     "prereq": "Str 13, turn or rebuke undead ability, Power Attack",
@@ -9777,7 +9803,7 @@
     "category": "General",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.100",
     "isFighterBonusFeat": false,
     "prerequisites": "-",
     "prereq": "-",
@@ -9868,6 +9894,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dex 25, Greater Two-Weapon Fighting, Improved Two-Weapon Fighting, Two-Weapon Fighting",
     "prereq": "Dex 25, Greater Two-Weapon Fighting, Improved Two-Weapon Fighting, Two-Weapon Fighting",
     "prereqStruct": {
@@ -10164,6 +10191,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Dex 21, Wis 19, Deflect Arrows, Improved Unarmed Strike",
     "prereq": "Dex 21, Wis 19, Deflect Arrows, Improved Unarmed Strike",
     "prereqStruct": {
@@ -10433,6 +10461,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Quick Draw, Rapid Reload, Weapon Focus (crossbow type to be selected)",
     "prereq": "Quick Draw, Rapid Reload, Weapon Focus (crossbow type to be selected)",
     "prereqStruct": {},
@@ -10634,6 +10663,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Character level 21st",
     "prereq": "Character level 21st",
     "prereqStruct": {
@@ -10879,6 +10909,7 @@
     "slot": "None",
     "source": "SRD 3.5e",
     "isFighterBonusFeat": false,
+    "fighterBonusFeatTier": "epic",
     "prerequisites": "Improved Initiative",
     "prereq": "Improved Initiative",
     "prereqStruct": {},
@@ -11375,7 +11406,7 @@
     "category": "Fighter",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.102",
     "isFighterBonusFeat": true,
     "prerequisites": "Proficiency with selected weapon, Weapon Focus with selected weapon, fighter level 4th",
     "prereq": "Proficiency with selected weapon, Weapon Focus with selected weapon, fighter level 4th",
@@ -11789,7 +11820,7 @@
     "category": "Fighter",
     "scope": "All",
     "slot": "None",
-    "source": "SRD 3.5e",
+    "source": "SRD / PHB p.95",
     "isFighterBonusFeat": true,
     "prerequisites": "Proficiency with selected weapon, Greater Weapon Focus with selected weapon, Weapon Focus with selected weapon, Weapon Specialization with selected weapon, fighter level 12th",
     "prereq": "Proficiency with selected weapon, Greater Weapon Focus with selected weapon, Weapon Focus with selected weapon, Weapon Specialization with selected weapon, fighter level 12th",
@@ -12290,13 +12321,12 @@
     "slot": "None",
     "source": "Complete Adventurer p.111",
     "isFighterBonusFeat": true,
-    "prerequisites": "Dex 13, Two-Weapon Fighting, BAB +1",
-    "prereq": "Dex 13, Two-Weapon Fighting, BAB +1",
+    "prerequisites": "Str 13, Two-Weapon Fighting",
+    "prereq": "Str 13, Two-Weapon Fighting",
     "prereqStruct": {
       "abilities": {
-        "dex": 13
-      },
-      "bab": 1
+        "str": 13
+      }
     },
     "description": "When wielding a one-handed weapon in your off hand, you treat it as a light weapon for the purpose of determining two-weapon fighting penalties.",
     "shortDescription": "When wielding a one-handed weapon in your off hand, you treat it as a light weapon for the purpose of determining two-weapon fighting penalties.",
@@ -12316,13 +12346,13 @@
     "schemaVersion": 2,
     "name": "Monkey Grip",
     "type": "Feat",
-    "category": "Fighter",
+    "category": "General",
     "scope": "All",
     "tier": null,
     "minLevel": null,
     "slot": "None",
     "source": "Complete Warrior p.103 / 3.5e RAW",
-    "isFighterBonusFeat": true,
+    "isFighterBonusFeat": false,
     "prerequisites": "BAB +1",
     "prereq": "BAB +1",
     "prereqStruct": {
@@ -12333,7 +12363,7 @@
     "benefit": "You can wield melee weapons one size category larger than you with a -2 penalty on attack rolls, using the same number of hands normally required for a weapon of that type.",
     "tags": [
       "feat",
-      "fighter"
+      "general"
     ],
     "modifiers": [],
     "damageParts": [],
@@ -12353,12 +12383,12 @@
     "slot": "None",
     "source": "Complete Mage p.47",
     "isFighterBonusFeat": false,
-    "prerequisites": "Concentration 4 ranks, Spellcraft 4 ranks",
-    "prereq": "Concentration 4 ranks, Spellcraft 4 ranks",
+    "prerequisites": "Concentration 5 ranks, Spellcraft 5 ranks",
+    "prereq": "Concentration 5 ranks, Spellcraft 5 ranks",
     "prereqStruct": {
       "skills": {
-        "concentration": 4,
-        "spellcraft": 4
+        "concentration": 5,
+        "spellcraft": 5
       }
     },
     "description": "You can perform the somatic components of spells while holding a weapon or shield in each hand by gesturing with the weapon itself.",
@@ -13529,7 +13559,7 @@
     "minLevel": null,
     "slot": "None",
     "source": "Tome of Battle p.32",
-    "isFighterBonusFeat": true,
+    "isFighterBonusFeat": false,
     "prerequisites": "BAB +6, Improved Unarmed Strike",
     "prereq": "BAB +6, Improved Unarmed Strike",
     "prereqStruct": {
@@ -13559,7 +13589,7 @@
     "minLevel": null,
     "slot": "None",
     "source": "Tome of Battle p.32",
-    "isFighterBonusFeat": true,
+    "isFighterBonusFeat": false,
     "prerequisites": "Str 13, 1 Stone Dragon maneuver",
     "prereq": "Str 13, 1 Stone Dragon maneuver",
     "prereqStruct": {
@@ -13675,7 +13705,7 @@
     "minLevel": null,
     "slot": "None",
     "source": "Tome of Battle p.30",
-    "isFighterBonusFeat": true,
+    "isFighterBonusFeat": false,
     "prerequisites": "Dex 13",
     "prereq": "Dex 13",
     "prereqStruct": {
@@ -14314,6 +14344,44 @@
       "-1 AC"
     ],
     "schemaVersion": 2
+  },
+  {
+    "id": "flaw-weak-will",
+    "schemaVersion": 2,
+    "name": "Weak Will",
+    "type": "Flaw",
+    "category": "Flaw",
+    "source": "Unearthed Arcana, p. 92",
+    "slot": "None",
+    "slotDiff": 1,
+    "action": "Passive",
+    "prerequisites": "1st level only",
+    "shortDescription": "-3 penalty on Will saves. Grants +1 Bonus Feat.",
+    "benefit": "-3 penalty on Will saves. Grants +1 Bonus Feat.",
+    "modifiers": [
+      {
+        "target": "save.will",
+        "value": -3,
+        "type": "Untyped"
+      }
+    ],
+    "damageParts": [],
+    "ruleFlags": {
+      "isFlaw": true,
+      "grantsBonusFeat": 1
+    },
+    "tacticalBadges": [
+      "Flaw (+1 Bonus Feat)",
+      "-3 Will Saves"
+    ],
+    "contentLevel": "summary",
+    "verification": "verified",
+    "provenance": {
+      "origin": "rulebook",
+      "book": "Unearthed Arcana",
+      "page": 92
+    },
+    "levelBand": "heroic"
   },
   {
     "id": "feat-shield-specialization",

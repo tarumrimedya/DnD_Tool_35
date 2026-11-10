@@ -1874,6 +1874,21 @@ const RuleEngine = {
     ].join('\n\n');
   },
 
+  // Feat-list rows that are not feats: UA character traits (UA p.86) and Complete Scoundrel skill tricks
+  // (CSc p.83). They never consume a feat slot.
+  isTraitOrSkillTrickRef(fStr) {
+    const s = String(fStr || '');
+    return s.includes('[Trait]') || s.includes('[Skill Trick]');
+  },
+
+  // Skill tricks learned on active levels; each costs 2 skill points (Complete Scoundrel p.83).
+  countSkillTricks(w) {
+    const rows = Array.isArray(w?.levelProgression) ? w.levelProgression : [];
+    return rows.reduce((n, row) => (row && row.active !== false && Array.isArray(row.feats))
+      ? n + row.feats.filter(f => String(f || '').includes('[Skill Trick]')).length
+      : n, 0);
+  },
+
   // Declarative Compendium & Master DB lookup helper (O(1) ID/BaseItemId priority per Rule #10.4)
   getMasterDbEntry(itemOrName, typeFilter = null) {
     if (!itemOrName) return null;
@@ -7033,6 +7048,14 @@ const RuleEngine = {
     let srdClass = (comp && typeof comp.getClass === 'function')
       ? comp.getClass(className)
       : null;
+    // A class from a lazy (tier-2) chunk that is not loaded resolves from its srd-snapshot in the character's customDb.
+    if (!srdClass) {
+      const snapDb = (Array.isArray(this._activeCustomDb) && this._activeCustomDb.length > 0 ? this._activeCustomDb : null)
+        || (typeof window !== 'undefined' && Array.isArray(window.masterDb) ? window.masterDb : null);
+      srdClass = snapDb
+        ? (snapDb.find(m => m && m._snapshot && m.type === 'Class' && String(m.name || '').toLowerCase().trim() === lowerKey) || null)
+        : null;
+    }
     if (!srdClass && comp && typeof comp.getClass === 'function' && /\([^)]+\)/.test(className)) {
       const baseClassName = String(className).replace(/\s*\([^)]+\)\s*/g, '').trim();
       if (baseClassName) srdClass = comp.getClass(baseClassName);
@@ -7076,6 +7099,10 @@ const RuleEngine = {
       prerequisites: Array.isArray(srdClass.prerequisites) && srdClass.prerequisites.length > 0 ? srdClass.prerequisites : (localDef?.prerequisites || []),
       classSkills: Array.isArray(srdClass.classSkills) && srdClass.classSkills.length > 0 ? srdClass.classSkills : (localDef?.classSkills || [])
     });
+    if (!merged.type) {
+      merged.isPrestige = Boolean(srdClass.isPrestige || srdClass.category === 'Prestige');
+      merged.type = merged.isPrestige ? 'Prestige Class' : 'Base Class';
+    }
     if (this.DND35_CLASS_DEFS && srdClass.name) {
       this.DND35_CLASS_DEFS[srdClass.name] = merged;
       this.DND35_CLASS_DEFS[String(srdClass.name).toLowerCase().trim()] = merged;
@@ -9751,7 +9778,7 @@ const RuleEngine = {
 
       featsArr.forEach(fStr => {
         const s = String(fStr || '');
-        if (!s || s.includes('+1 Stat') || s.includes('Stat:')) return;
+        if (!s || s.includes('+1 Stat') || s.includes('Stat:') || this.isTraitOrSkillTrickRef(s)) return;
         if (s.includes('[Flaw]') || /^⚠️\s*\[Flaw\]/i.test(s)) {
           if (isActive) flawSlotsEarned++;
         } else if (s.includes('[Flaw Bonus]')) {
@@ -9794,7 +9821,9 @@ const RuleEngine = {
         if (isLevelQualifiesForFeat(l, featMode)) regularSlotsEarned++;
       }
       if (isHuman) bonusSlotsEarned++;
-      regularFeatsTaken = Array.isArray(w.feats) ? w.feats.length : 0;
+      regularFeatsTaken = Array.isArray(w.feats)
+        ? w.feats.filter(f => !(f && typeof f === 'object' && (f.type === 'Trait' || f.type === 'Skill Trick'))).length
+        : 0;
     }
 
     const activeLevelsCount = rows.length > 0
@@ -9829,6 +9858,8 @@ const RuleEngine = {
       const isCls = sk.isClassSkill !== false && sk.classSkill !== false && sk.isClass !== false;
       spentSkillPoints += isCls ? ranks : (ranks * 2);
     });
+    const skillTrickCount = this.countSkillTricks(w);
+    spentSkillPoints += skillTrickCount * 2;
     const remainingSkillPoints = totalSkillPoints - spentSkillPoints;
 
     // Features view
@@ -9928,6 +9959,8 @@ const RuleEngine = {
         totalSkillPoints,
         spentSkillPoints,
         remainingSkillPoints,
+        skillTrickCount,
+        skillTrickPoints: skillTrickCount * 2,
         isOverBudget: totalSkillPoints > 0 && remainingSkillPoints < 0
       },
       featuresView: {

@@ -14,6 +14,67 @@
 
   const MAX_HISTORY_STEPS = 20;
 
+  // V2 type a feat-list reference resolves against: UA traits ("🧬 [Trait] Name") and Complete Scoundrel
+  // skill tricks ("💪 [Skill Trick] Name") live in the feat lists but are their own record types.
+  const FEAT_REF_TYPES = ['Feat', 'Trait', 'Skill Trick'];
+  function featRefTypeOf(f) {
+    if (f && typeof f === 'object' && (f.type === 'Trait' || f.type === 'Skill Trick')) return f.type;
+    const s = String(typeof f === 'string' ? f : '');
+    if (s.includes('[Trait]')) return 'Trait';
+    if (s.includes('[Skill Trick]')) return 'Skill Trick';
+    return 'Feat';
+  }
+
+  // Names of every feat the character references (doc.feats[] objects/strings + levelProgression[].feats),
+  // limited to one V2 type ('Feat' by default; 'Trait' / 'Skill Trick' for those rows).
+  function collectFeatRefNames(doc, refType = 'Feat') {
+    const out = new Set();
+    const add = (f) => {
+      if (featRefTypeOf(f) !== refType) return;
+      const raw = typeof f === 'string' ? f : (f && (f.name || f.featName));
+      // levelProgression stores display strings such as "🎖️ Aberration Banemagic" / "🌟 [DM Boon] Name"
+      // (same cleanup as char_progression cleanFeatNameString)
+      const n = String(raw || '').replace(/^[^A-Za-z0-9(]+(\[.*?\])?\s*/, '').trim();
+      if (n) out.add(n);
+    };
+    if (doc && Array.isArray(doc.feats)) doc.feats.forEach(add);
+    if (doc && Array.isArray(doc.levelProgression)) {
+      doc.levelProgression.forEach((row) => { if (row && Array.isArray(row.feats)) row.feats.forEach(add); });
+    }
+    return Array.from(out);
+  }
+
+  // Class names the character has levels in (levelProgression[].className; doc.classes "Fighter 3 / Alienist 2"
+  // for characters without a progression). Classes from lazy chunks (SRD import P4) are snapshotted like feats.
+  function collectClassRefNames(doc) {
+    const out = new Set();
+    if (doc && Array.isArray(doc.levelProgression)) {
+      doc.levelProgression.forEach((row) => { const n = String((row && row.className) || '').trim(); if (n) out.add(n); });
+    }
+    if (out.size === 0 && doc && typeof doc.classes === 'string') {
+      doc.classes.split('/').forEach((part) => { const n = part.replace(/\s+\d+\s*$/, '').trim(); if (n) out.add(n); });
+    }
+    return Array.from(out);
+  }
+
+  // Names in the character's spell lists and buffs. Psionic powers live in the lazy srd_powers.json, so a power
+  // the character knows or has active is snapshotted like a feat; names that are not powers never match a Power row.
+  function collectPowerRefNames(doc) {
+    const out = new Set();
+    const add = (e) => { const n = String(typeof e === 'string' ? e : ((e && e.name) || '')).trim(); if (n) out.add(n); };
+    const sc = (doc && doc.spellcasting) || {};
+    [doc && doc.spells, doc && doc.buffs, sc.knownSpells, sc.preparedSpells, sc.divineSpells].forEach((list) => {
+      if (Array.isArray(list)) list.forEach(add);
+    });
+    return Array.from(out);
+  }
+
+  // Every lazy-chunk reference type the character can hold: feat-list rows, class levels and psionic powers.
+  function collectSrdRefGroups(doc) {
+    return FEAT_REF_TYPES.map(t => ({ t, names: collectFeatRefNames(doc, t) }))
+      .concat([{ t: 'Class', names: collectClassRefNames(doc) }, { t: 'Power', names: collectPowerRefNames(doc) }]);
+  }
+
   function resolveRuleEngine() {
     if (typeof root !== 'undefined' && root.RuleEngine) return root.RuleEngine;
     if (typeof RuleEngine !== 'undefined') return RuleEngine;
@@ -184,7 +245,42 @@
       _sheetDirty = true;
       if (prevId !== nextId && !_isRestoringHistory) {
         _state.session = loadSessionFromStorage(newChar);
+        this.reconcileSrdSnapshots();
       }
+    },
+
+    /**
+     * Character-load check of tier-2 `srd-snapshot` entries in customDb (SrdCompendium.reconcileSnapshots).
+     * Unmodified snapshots follow SRD fixes automatically; edited ones get an update flag.
+     * No-op for characters without snapshots.
+     */
+    reconcileSrdSnapshots() {
+      const doc = _state.doc;
+      const comp = typeof root !== 'undefined' ? root.SrdCompendium : null;
+      if (!doc || !Array.isArray(doc.customDb) || !comp || typeof comp.reconcileSnapshots !== 'function') {
+        return Promise.resolve(null);
+      }
+      // Feats referenced by name that no longer resolve from memory (lazy chunk not loaded, no snapshot yet):
+      // load their chunk once and snapshot them (migration path; also covers opt-in 3.0 / licensed feats).
+      const canResolve = typeof comp.resolveMissingRefs === 'function' && typeof comp.getByName === 'function';
+      const hasSnapshotNamed = (n, t) => doc.customDb.some(e => e && e._snapshot && e.type === t && String(e.name || '').toLowerCase().trim() === n.toLowerCase());
+      const unresolvedByType = collectSrdRefGroups(doc).map(g => ({
+        t: g.t,
+        names: canResolve ? g.names.filter(n => !comp.getByName(n, g.t) && !comp.getByName(n) && !hasSnapshotNamed(n, g.t)) : []
+      })).filter(g => g.names.length > 0);
+      const hasSnapshots = doc.customDb.some(e => e && e._snapshot);
+      if (!hasSnapshots && unresolvedByType.length === 0) return Promise.resolve(null);
+      const migrate = unresolvedByType.reduce((p, g) => p.then(acc => comp.resolveMissingRefs(doc.customDb, g.names, g.t)
+        .then(ids => acc.concat(ids || []))), Promise.resolve([]));
+      return migrate.then((added) => comp.reconcileSnapshots(doc.customDb).then((res) => {
+        const changed = (res && res.changed) || (Array.isArray(added) && added.length > 0);
+        if (changed && _state.doc === doc) {
+          _sheetDirty = true;
+          this.recompute(_lastTacticalOptions);
+          if (typeof root.saveStateToStorage === 'function') root.saveStateToStorage(false);
+        }
+        return Object.assign({}, res, { migrated: added || [] });
+      })).catch(() => null);
     },
 
     /**
@@ -211,6 +307,12 @@
         root.masterDb = _state.doc.customDb;
       }
       const db = _state.doc.customDb;
+      // Feats picked from lazy (tier-2) chunks this session get an srd-snapshot in customDb right away,
+      // so export / cloud sync / the next page load resolve them without the chunk.
+      const comp = typeof root !== 'undefined' ? root.SrdCompendium : null;
+      if (comp && typeof comp.snapshotLazyRefs === 'function') {
+        collectSrdRefGroups(_state.doc).forEach(g => comp.snapshotLazyRefs(db, g.names, g.t));
+      }
       const sheetView = engine.deriveSheet(_state.doc, {
         masterDb: db,
         customDb: db,
@@ -550,6 +652,7 @@
         if (docChanged && typeof root !== 'undefined' && typeof root.saveStateToStorage === 'function' && meta.persist !== false) {
           root.saveStateToStorage(meta.cloudSync !== false);
         }
+        if (type === 'doc/replace') this.reconcileSrdSnapshots();
       }
 
       return _state.sheet;

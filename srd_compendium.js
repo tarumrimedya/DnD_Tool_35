@@ -226,14 +226,123 @@
     }
   }
 
+  // Node (tests / tooling) has no fetch-backed chunk loading: read database files synchronously.
+  function isNodeSyncEnv() {
+    return typeof require === 'function' && (typeof window === 'undefined' || typeof window.fetch !== 'function');
+  }
+
+  function nodeReadDatabaseJson(fileName) {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const p = path.resolve(__dirname, 'database', fileName);
+      return fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /**
+   * Lazy tier = every chunk flagged `eagerLoad: false` in srd_index.json (index-driven),
+   * plus the static LAZY_CHUNKS fallback for when the index is not available yet.
+   */
+  function getLazyChunkNames() {
+    const out = new Set(LAZY_CHUNKS);
+    const chunks = _indexData && _indexData.chunks;
+    if (chunks && typeof chunks === 'object') {
+      Object.keys(chunks).forEach((name) => {
+        const meta = chunks[name];
+        if (meta && meta.eagerLoad === false && !EAGER_CHUNKS.includes(name)) out.add(name);
+      });
+    }
+    return Array.from(out);
+  }
+
+  /** Opt-in chunks (index meta `optIn: true`, e.g. 3.0 / licensed content): loaded only on explicit request. */
+  function getOptInChunkNames() {
+    const chunks = (_indexData && _indexData.chunks) || {};
+    return Object.keys(chunks).filter((name) => chunks[name] && chunks[name].optIn === true);
+  }
+
+  // id -> index row, rebuilt whenever a different index payload is loaded
+  let _indexRowsById = null;
+  let _indexRowsSource = null;
+  function indexRowById(id) {
+    const rows = _indexData && Array.isArray(_indexData.index) ? _indexData.index : null;
+    if (!rows) return null;
+    if (_indexRowsSource !== rows) {
+      _indexRowsById = new Map();
+      for (let i = 0; i < rows.length; i++) if (rows[i] && rows[i].id) _indexRowsById.set(rows[i].id, rows[i]);
+      _indexRowsSource = rows;
+    }
+    return _indexRowsById.get(id) || null;
+  }
+
+  // --------------------------------------------------------------------------
+  // SRD SNAPSHOTS (tier-2 entries copied into character.customDb)
+  // --------------------------------------------------------------------------
+  const SNAPSHOT_ORIGIN = 'srd-snapshot';
+
+  function isSnapshot(entry) {
+    return Boolean(entry && entry._snapshot && entry._snapshot.origin === SNAPSHOT_ORIGIN);
+  }
+
+  // Deterministic JSON. Excluded so they never count as user edits: keys starting with "_"
+  // (snapshot meta, UI scratch such as _originalIndex / _fuzzyScore) and empty defaults
+  // (null, [], {}) that normalizers like RuleMaster.ensureV2 add to entries in place.
+  function isEmptyDefault(v) {
+    return v === undefined || v === null ||
+      (Array.isArray(v) && v.length === 0) ||
+      (typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 0);
+  }
+
+  function stableStringify(value) {
+    if (value === null || typeof value !== 'object') return JSON.stringify(value === undefined ? null : value);
+    if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`;
+    const keys = Object.keys(value).filter((k) => k.charAt(0) !== '_' && !isEmptyDefault(value[k])).sort();
+    return `{${keys.map((k) => `${JSON.stringify(k)}:${stableStringify(value[k])}`).join(',')}}`;
+  }
+
+  // FNV-1a 32-bit over the stable JSON: change detection only, not security.
+  function contentHash(entry) {
+    const s = stableStringify(entry || null);
+    let h = 0x811c9dc5;
+    for (let i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    return h.toString(16).padStart(8, '0');
+  }
+
+  function buildSnapshot(src) {
+    const copy = safeClone(src);
+    Object.keys(copy).forEach((k) => { if (k.charAt(0) === '_') delete copy[k]; });
+    const idxHit = indexRowById(src.id);
+    const chunkName = idxHit && idxHit.f ? idxHit.f : null;
+    const chunkMeta = chunkName && _indexData && _indexData.chunks ? _indexData.chunks[chunkName] : null;
+    copy._snapshot = {
+      origin: SNAPSHOT_ORIGIN,
+      srcId: src.id,
+      chunk: chunkName,
+      // Chunk file hash at copy time: while srd_index.json reports the same hash, the source cannot have
+      // changed, so a character load does not need to download the chunk to reconcile this snapshot.
+      chunkHash: chunkMeta && chunkMeta.hash ? chunkMeta.hash : null,
+      srcHash: contentHash(src),
+      takenAt: new Date().toISOString(),
+      status: 'current'
+    };
+    return copy;
+  }
+
   let _nodeSyncInitialized = false;
   function ensureNodeSyncLoaded() {
     if (_nodeSyncInitialized || _byId.size > 0) return;
-    if (typeof require === 'function' && (typeof window === 'undefined' || typeof window.fetch !== 'function')) {
+    if (isNodeSyncEnv()) {
       _nodeSyncInitialized = true;
       try {
         const fs = require('fs');
         const path = require('path');
+        if (!_indexData) _indexData = nodeReadDatabaseJson('srd_index.json');
         for (const chunk of EAGER_CHUNKS) {
           const p = path.resolve(__dirname, 'database', chunk);
           if (fs.existsSync(p)) {
@@ -281,10 +390,6 @@
 
       _initPromise = (async () => {
         try {
-          const chunksToLoad = options.preloadAll
-            ? [...EAGER_CHUNKS, ...LAZY_CHUNKS]
-            : EAGER_CHUNKS;
-
           // 1. IndexedDB-First (Stale-While-Revalidate): Resolve in ~10ms without blocking on network
           const cachedIdx = await idbGet('srd_index.json');
           if (cachedIdx && cachedIdx.data) {
@@ -303,6 +408,12 @@
             console.warn('[SrdCompendium] srd_index.json unavailable.');
             return false;
           }
+
+          // Lazy chunk names are derived from the index, so they are resolved after it loads.
+          const optIn = getOptInChunkNames();
+          const chunksToLoad = options.preloadAll
+            ? [...EAGER_CHUNKS, ...getLazyChunkNames().filter((n) => !optIn.includes(n))]
+            : EAGER_CHUNKS;
 
           // 2. Load eager chunks in parallel from IndexedDB cache (falling back to network only if missing)
           await Promise.all(chunksToLoad.map((fname) => SrdCompendium.ensureChunkLoaded(fname)));
@@ -382,6 +493,17 @@
       if (_loadedChunks.has(fileName)) return true;
       if (_chunkPromises.has(fileName)) return _chunkPromises.get(fileName);
 
+      if (isNodeSyncEnv()) {
+        ensureNodeSyncLoaded();
+        if (_loadedChunks.has(fileName)) return true;
+        const records = nodeReadDatabaseJson(fileName);
+        if (!records) return false;
+        if (fileName === 'srd_companions.json') _companionsData = records;
+        registerEntries(records);
+        _loadedChunks.add(fileName);
+        return records;
+      }
+
       const p = (async () => {
         const meta = _indexData && _indexData.chunks && _indexData.chunks[fileName];
         const expectedHash = meta ? meta.hash : null;
@@ -454,7 +576,8 @@
      * Async lookup that automatically lazy-loads `srd_spells.json` or `srd_monsters.json` if needed.
      */
     async fetchEntry(idOrName, typeFilter = null) {
-      await SrdCompendium.init();
+      if (isNodeSyncEnv()) ensureNodeSyncLoaded();
+      else await SrdCompendium.init();
       let found = SrdCompendium.getById(idOrName) || SrdCompendium.getByName(idOrName, typeFilter);
       if (found) return found;
 
@@ -470,6 +593,228 @@
         }
       }
       return found || null;
+    },
+
+    // ------------------------------------------------------------------------
+    // TIERED LOOKUP + CHARACTER SNAPSHOTS
+    // Tier 1: eager chunks (always in memory). Tier 2: lazy chunks (index-listed,
+    // loaded on demand). An entry picked from a lazy chunk is copied into the
+    // character's customDb as an `srd-snapshot`, so deriveSheet always resolves it
+    // synchronously, offline, and in exported / synced characters.
+    // ------------------------------------------------------------------------
+
+    /** Names of chunks loaded on demand (index `eagerLoad: false`). */
+    getLazyChunkNames() {
+      return getLazyChunkNames();
+    },
+
+    /** Lazy chunks that are never auto-loaded (index `optIn: true`). */
+    getOptInChunkNames() {
+      return getOptInChunkNames();
+    },
+
+    /**
+     * Synchronous: for every referenced name that currently resolves to an SRD record from a lazy
+     * chunk (i.e. the chunk is in memory this session), make sure an `srd-snapshot` exists in customDb.
+     * Keeps characters self-contained (export / sync / next page load) without waiting for a reload.
+     * Returns the ids added.
+     */
+    snapshotLazyRefs(customDb, names, typeFilter = null) {
+      const added = [];
+      if (!Array.isArray(customDb) || !Array.isArray(names) || names.length === 0) return added;
+      const lazy = getLazyChunkNames();
+      if (lazy.length === 0) return added;
+      const have = new Set(customDb.map((e) => e && e.id).filter(Boolean));
+      for (let i = 0; i < names.length; i++) {
+        const nm = String(names[i] || '').trim();
+        if (!nm) continue;
+        const nKey = normalizeNameKey(nm);
+        const rec = (typeFilter && _byTypeAndName.get(`${String(typeFilter).toLowerCase()}:${nKey}`)) || _byName.get(nKey);
+        if (!rec || !rec.id || have.has(rec.id) || _byId.get(rec.id) !== rec) continue;
+        const row = indexRowById(rec.id);
+        if (!row || !row.f || !lazy.includes(row.f)) continue;
+        customDb.push(buildSnapshot(rec));
+        have.add(rec.id);
+        added.push(rec.id);
+      }
+      return added;
+    },
+
+    isChunkLoaded(fileName) {
+      return _loadedChunks.has(fileName);
+    },
+
+    /** Index row (`{id, n, t, c, f, ...}`) for an id or name, optionally type-filtered. */
+    findIndexEntry(idOrName, typeFilter = null) {
+      if (!idOrName) return null;
+      if (!_indexData && isNodeSyncEnv()) ensureNodeSyncLoaded();
+      const idx = _indexData && Array.isArray(_indexData.index) ? _indexData.index : null;
+      if (!idx) return null;
+      const raw = String(idOrName).trim();
+      const byId = indexRowById(raw);
+      if (byId) return byId;
+      const nKey = normalizeNameKey(raw);
+      const tLow = typeFilter ? String(typeFilter).toLowerCase() : null;
+      for (let i = 0; i < idx.length; i++) {
+        const it = idx[i];
+        if (!it) continue;
+        if (it.id === raw) return it;
+        if (normalizeNameKey(it.n) === nKey && (!tLow || String(it.t || '').toLowerCase() === tLow)) return it;
+      }
+      return null;
+    },
+
+    /** True when the entry lives in a lazy (tier 2) chunk. */
+    isLazyEntry(idOrName, typeFilter = null) {
+      const it = SrdCompendium.findIndexEntry(idOrName, typeFilter);
+      return Boolean(it && it.f && getLazyChunkNames().includes(it.f));
+    },
+
+    /** Stable content hash of an entry, ignoring snapshot metadata. */
+    contentHash(entry) {
+      return contentHash(entry);
+    },
+
+    /**
+     * Loads the entry (lazy chunk if needed) and returns a detached copy tagged with
+     * `_snapshot: { origin: 'srd-snapshot', srcId, chunk, srcHash, takenAt }`.
+     */
+    async snapshotEntry(idOrName, typeFilter = null) {
+      const src = await SrdCompendium.fetchEntry(idOrName, typeFilter);
+      if (!src) return null;
+      return buildSnapshot(src);
+    },
+
+    /** Synchronous variant for entries whose chunk is already in memory. */
+    snapshotLoadedEntry(idOrName, typeFilter = null) {
+      const raw = String(idOrName || '').trim();
+      const src = _byId.get(raw) || (() => {
+        const hit = SrdCompendium.getByName(raw, typeFilter);
+        return hit && _byId.get(hit.id) === hit ? hit : null;
+      })();
+      return src ? buildSnapshot(src) : null;
+    },
+
+    /**
+     * Inserts or refreshes a snapshot in a customDb array. A user-authored entry with the
+     * same id (no `_snapshot`) is never overwritten. Returns 'added' | 'updated' | 'kept'.
+     */
+    upsertSnapshot(customDb, snapshot) {
+      if (!Array.isArray(customDb) || !snapshot || !snapshot.id) return 'kept';
+      const i = customDb.findIndex((e) => e && e.id === snapshot.id);
+      if (i < 0) {
+        customDb.push(snapshot);
+        return 'added';
+      }
+      const existing = customDb[i];
+      if (!isSnapshot(existing)) return 'kept';
+      if (contentHash(existing) !== existing._snapshot.srcHash) return 'kept';
+      customDb[i] = snapshot;
+      return 'updated';
+    },
+
+    /**
+     * Copies an index-listed entry into the customDb when it lives in a lazy chunk.
+     * Eager (tier 1) entries are not copied: they are always in memory.
+     */
+    async ensureEntryInCustomDb(customDb, idOrName, typeFilter = null) {
+      if (!Array.isArray(customDb) || !SrdCompendium.isLazyEntry(idOrName, typeFilter)) return null;
+      const snap = await SrdCompendium.snapshotEntry(idOrName, typeFilter);
+      if (!snap) return null;
+      SrdCompendium.upsertSnapshot(customDb, snap);
+      return customDb.find((e) => e && e.id === snap.id) || snap;
+    },
+
+    /**
+     * Character-load reconciliation of `srd-snapshot` entries against the current SRD data:
+     * - unmodified + SRD changed  -> refreshed in place ('autoUpdated')
+     * - user-modified + SRD changed -> kept, flagged `_snapshot.status = 'update-available'`
+     * - source no longer in the SRD -> kept, flagged 'orphaned'
+     */
+    async reconcileSnapshots(customDb) {
+      if (Array.isArray(customDb)) {
+        const needed = new Set();
+        const chunks = (_indexData && _indexData.chunks) || {};
+        customDb.forEach((e) => {
+          if (!isSnapshot(e) || !e._snapshot.chunk || _loadedChunks.has(e._snapshot.chunk)) return;
+          const current = chunks[e._snapshot.chunk] && chunks[e._snapshot.chunk].hash;
+          // Unchanged chunk since the copy was taken: nothing to reconcile, keep the chunk unloaded.
+          if (e._snapshot.chunkHash && current && e._snapshot.chunkHash === current) return;
+          needed.add(e._snapshot.chunk);
+        });
+        for (const chunk of needed) {
+          try { await SrdCompendium.ensureChunkLoaded(chunk); } catch (_) {}
+        }
+      }
+      return SrdCompendium.reconcileSnapshotsSync(customDb);
+    },
+
+    /** Synchronous core of reconcileSnapshots: assumes the snapshot source chunks are loaded. */
+    reconcileSnapshotsSync(customDb) {
+      const result = { checked: 0, autoUpdated: [], updateAvailable: [], orphaned: [], changed: false };
+      if (!Array.isArray(customDb)) return result;
+      for (let i = 0; i < customDb.length; i++) {
+        const e = customDb[i];
+        if (!isSnapshot(e)) continue;
+        result.checked++;
+        const meta = e._snapshot;
+        if (meta.chunk && !_loadedChunks.has(meta.chunk)) continue; // source unavailable right now: leave as is
+        const src = _byId.get(meta.srcId || e.id) || null;
+        let status;
+        if (!src) {
+          status = 'orphaned';
+          result.orphaned.push(e.id);
+        } else {
+          const latest = contentHash(src);
+          if (latest === meta.srcHash) {
+            status = 'current';
+          } else if (contentHash(e) === meta.srcHash) {
+            customDb[i] = buildSnapshot(src);
+            result.autoUpdated.push(e.id);
+            result.changed = true;
+            continue;
+          } else {
+            status = 'update-available';
+            result.updateAvailable.push(e.id);
+          }
+        }
+        if (meta.status !== status) {
+          meta.status = status;
+          result.changed = true;
+        }
+      }
+      return result;
+    },
+
+    /**
+     * Migration path: snapshots referenced names that no longer resolve from memory
+     * (e.g. after a chunk moved to the lazy tier). Returns the ids that were added.
+     */
+    async resolveMissingRefs(customDb, names, typeFilter = null) {
+      const added = [];
+      if (!Array.isArray(customDb) || !Array.isArray(names)) return added;
+      const seen = new Set();
+      for (let i = 0; i < names.length; i++) {
+        const name = String(names[i] || '').trim();
+        const key = normalizeNameKey(name);
+        if (!name || seen.has(key)) continue;
+        seen.add(key);
+        if (SrdCompendium.getByName(name, typeFilter)) continue;
+        const snap = await SrdCompendium.ensureEntryInCustomDb(customDb, name, typeFilter);
+        if (snap) added.push(snap.id);
+      }
+      return added;
+    },
+
+    /** Removes a snapshot's update flag by refreshing it to the current SRD version. */
+    applySnapshotUpdate(customDb, id) {
+      if (!Array.isArray(customDb)) return false;
+      const i = customDb.findIndex((e) => e && e.id === id);
+      if (i < 0 || !isSnapshot(customDb[i])) return false;
+      const src = _byId.get(customDb[i]._snapshot.srcId || id);
+      if (!src) return false;
+      customDb[i] = buildSnapshot(src);
+      return true;
     },
 
     /**

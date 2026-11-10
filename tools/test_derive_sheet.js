@@ -10,6 +10,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const vm = require('vm');
 
 const RuleEngine = require('../rule_engine.js');
 const CharStore = require('../char_store.js');
@@ -2249,6 +2250,678 @@ function runDeriveSheetTests() {
     stackFeatSheet.hp.max === baseHpBeforeVigor + 10 &&
     customToughnessPlus.isFighterBonusFeat === true &&
     customToughnessPlus.featTags.includes('Fighter Bonus')
+  );
+
+  // SRD Import P1: book-verified class saves & fighter bonus feat flags (SRD_IMPORT_VERIFICATION_TABLE.md)
+  const dbDir = path.join(__dirname, '..', 'database');
+  const p1Classes = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_races.json'), 'utf8'));
+  const p1Feats = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats.json'), 'utf8'));
+  const p1Cls = id => p1Classes.find(c => c.id === id) || {};
+  const p1SaveOk = (id, fort, ref, will) => {
+    const c = p1Cls(id);
+    const legacy = v => (v === 'high' ? 'good' : 'poor');
+    return c.savingThrows && c.savingThrows.fort === fort && c.savingThrows.ref === ref && c.savingThrows.will === will &&
+      c.fort === legacy(fort) && c.ref === legacy(ref) && c.will === legacy(will);
+  };
+  check(
+    'SRD Import P1: Class base saves match the books (Knight PHB2 T1-4, Spellthief CAd T1-3, Dervish CW T2-7, Ur-Priest CD T2-23, Jade Phoenix Mage ToB T5-5)',
+    p1SaveOk('cls-knight', 'low', 'low', 'high') &&
+    p1SaveOk('cls-spellthief', 'low', 'low', 'high') &&
+    p1SaveOk('cls-dervish', 'low', 'high', 'high') &&
+    p1SaveOk('cls-ur-priest', 'low', 'low', 'high') &&
+    p1SaveOk('cls-jade-phoenix-mage', 'high', 'low', 'low')
+  );
+  const p1Fb = id => (p1Feats.find(f => f.id === id) || {}).isFighterBonusFeat;
+  check(
+    'SRD Import P1: Fighter bonus feat flags match the books (PHB p.101, CW p.103/105, ToB Table 2-1)',
+    p1Fb('feat-tower-shield-proficiency') === false && p1Fb('feat-monkey-grip') === false &&
+    p1Fb('feat-evasive-reflexes') === false && p1Fb('feat-snap-kick') === false && p1Fb('feat-stone-power') === false &&
+    p1Fb('feat-sharp-shooting') === true && p1Fb('feat-martial-study') === true && p1Fb('feat-martial-stance') === true
+  );
+  check(
+    'SRD Import P1: Fighter feat picker trusts an explicit isFighterBonusFeat=false over the Martial/Fighter category fallback (both pickers use one helper)',
+    /if \(f\.isFighterBonusFeat === false\) return false;\s*const tagged/.test(progSrc) &&
+    (progSrc.match(/const isFighterFeat = f => isFighterBonusFeatEntry\(f, /g) || []).length === 2 &&
+    !/isFighterBonusFeat === true \|\| f\.category === 'Fighter'/.test(progSrc)
+  );
+
+  // SRD Import P0: tiered lookup (index-driven lazy chunks) + srd-snapshot lifecycle in customDb
+  require('../srd_compendium.js');
+  const Comp = globalThis.SrdCompendium;
+  const p0Clone = o => JSON.parse(JSON.stringify(o));
+  Comp.getById('feat-power-attack'); // Node: synchronous load of index + eager chunks
+  const lazyNames = Comp.getLazyChunkNames();
+  check(
+    'SRD Import P0: Lazy tier is derived from srd_index.json eagerLoad:false (monsters lazy, feats eager) and isLazyEntry() follows it',
+    lazyNames.includes('srd_monsters.json') && !lazyNames.includes('srd_feats.json') &&
+    Comp.isLazyEntry('mst-nightwalker') === true && Comp.isLazyEntry('feat-power-attack') === false &&
+    (Comp.findIndexEntry('Nightwalker', 'Monster') || {}).f === 'srd_monsters.json'
+  );
+  Comp.ensureChunkLoaded('srd_monsters.json'); // Node path registers synchronously
+  const nwSrc = Comp.getById('mst-nightwalker');
+  const nwSnap = Comp.snapshotLoadedEntry('mst-nightwalker');
+  check(
+    'SRD Import P0: snapshotLoadedEntry() copies a lazy entry with _snapshot {origin, srcId, chunk, srcHash} and the copy hashes equal to its source',
+    Boolean(nwSrc) && Boolean(nwSnap) && nwSnap !== nwSrc &&
+    nwSnap._snapshot.origin === 'srd-snapshot' && nwSnap._snapshot.srcId === 'mst-nightwalker' &&
+    nwSnap._snapshot.chunk === 'srd_monsters.json' && nwSnap._snapshot.srcHash === Comp.contentHash(nwSrc) &&
+    Comp.contentHash(nwSnap) === nwSnap._snapshot.srcHash
+  );
+  const p0Db = [];
+  const homebrewDb = [{ id: 'mst-nightwalker', name: 'My Nightwalker', type: 'Monster' }];
+  check(
+    'SRD Import P0: upsertSnapshot() adds, refreshes unmodified copies, and never overwrites a homebrew entry with the same id',
+    Comp.upsertSnapshot(p0Db, p0Clone(nwSnap)) === 'added' && p0Db.length === 1 &&
+    Comp.upsertSnapshot(p0Db, p0Clone(nwSnap)) === 'updated' && p0Db.length === 1 &&
+    Comp.upsertSnapshot(homebrewDb, p0Clone(nwSnap)) === 'kept' && homebrewDb[0].name === 'My Nightwalker'
+  );
+  const p0Current = p0Clone(nwSnap);
+  p0Current.defenses = []; // empty default added by RuleMaster.ensureV2 must not count as a user edit
+  p0Current._originalIndex = 4; // UI scratch field must not count either
+  const p0CurrentRes = Comp.reconcileSnapshotsSync([p0Current]);
+  check(
+    'SRD Import P0: reconcile keeps an up-to-date copy as current (empty defaults and _scratch fields are not edits)',
+    p0CurrentRes.checked === 1 && p0CurrentRes.changed === false && p0Current._snapshot.status === 'current'
+  );
+  const p0Stale = p0Clone(nwSnap);
+  p0Stale.hp = 1;
+  p0Stale._snapshot.srcHash = Comp.contentHash(p0Stale); // unedited copy of an older SRD version
+  const p0Edited = p0Clone(nwSnap);
+  p0Edited._snapshot.srcHash = '00000000';
+  p0Edited.hp = 999; // user edit on top of an older SRD version
+  const p0Orphan = p0Clone(nwSnap);
+  p0Orphan.id = 'mst-not-in-srd';
+  p0Orphan._snapshot.srcId = 'mst-not-in-srd';
+  const p0DbA = [p0Stale, p0Orphan];
+  const p0DbB = [p0Edited];
+  const p0ResA = Comp.reconcileSnapshotsSync(p0DbA);
+  const p0ResB = Comp.reconcileSnapshotsSync(p0DbB);
+  check(
+    'SRD Import P0: reconcile auto-updates unedited stale copies, flags edited ones update-available, and flags missing sources orphaned',
+    p0ResA.autoUpdated.includes('mst-nightwalker') && p0DbA[0].hp === nwSrc.hp && p0DbA[0]._snapshot.status === 'current' &&
+    p0ResA.orphaned.includes('mst-not-in-srd') && p0DbA[1]._snapshot.status === 'orphaned' &&
+    p0ResB.updateAvailable.includes('mst-nightwalker') && p0DbB[0].hp === 999 && p0DbB[0]._snapshot.status === 'update-available'
+  );
+  check(
+    'SRD Import P0: applySnapshotUpdate() replaces an edited copy with the current SRD version',
+    Comp.applySnapshotUpdate(p0DbB, 'mst-nightwalker') === true && p0DbB[0].hp === nwSrc.hp && p0DbB[0]._snapshot.status === 'current'
+  );
+  const p0Idx = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_index.json'), 'utf8'));
+  const p0Row = id => p0Idx.index.find(r => r.id === id) || {};
+  check(
+    'SRD Import P0: srd_index.json lists every chunk record in short form (missing feats/domain rows added, template rows carry n/t/f)',
+    p0Row('feat-agile-shield-fighter').f === 'srd_feats.json' && p0Row('dom-dragon').f === 'srd_domains.json' &&
+    p0Row('tmpl-celestial').n === 'Celestial Creature' && p0Row('tmpl-celestial').t === 'Template' && p0Row('tmpl-celestial').f === 'srd_templates.json' &&
+    p0Idx.totalEntries === p0Idx.index.length && p0Idx.chunks['srd_feats.json'].count === p1Feats.length
+  );
+
+  // SRD Import P2: splatbook gear, traits, skill tricks (lazy chunks) + Weak Will + Boulder Roll
+  const p2Gear = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_equipment_splat.json'), 'utf8'));
+  const p2Opts = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_splat.json'), 'utf8')).filter(e => e.type === 'Trait' || e.type === 'Skill Trick');
+  const p2Mans = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_maneuvers.json'), 'utf8'));
+  const p2By = id => p2Gear.concat(p2Opts).find(e => e.id === id) || {};
+  const p2AllIds = [];
+  Object.keys(p0Idx.chunks).forEach(name => {
+    const data = JSON.parse(fs.readFileSync(path.join(dbDir, name), 'utf8'));
+    (Array.isArray(data) ? data : []).forEach(e => { if (e && e.id) p2AllIds.push(e.id); });
+  });
+  check(
+    'SRD Import P2: splat gear + traits/tricks live in lazy chunks; ids are unique across every chunk',
+    p0Idx.chunks['srd_equipment_splat.json'].eagerLoad === false && p0Idx.chunks['srd_feats_splat.json'].eagerLoad === false &&
+    Comp.getLazyChunkNames().includes('srd_equipment_splat.json') && Comp.getLazyChunkNames().includes('srd_feats_splat.json') &&
+    p2Gear.filter(e => e.type === 'Weapon').length === 51 && p2Gear.filter(e => e.type !== 'Weapon').length === 25 &&
+    p2Opts.filter(e => e.type === 'Trait').length === 35 && p2Opts.filter(e => e.type === 'Skill Trick').length === 42 &&
+    new Set(p2AllIds).size === p2AllIds.length
+  );
+  const p2Valid = p2Gear.concat(p2Opts).every(e =>
+    e.schemaVersion === 2 && / p\.\s?\d/.test(e.source || '') && e.contentLevel === 'summary' &&
+    ['verified', 'cross-checked'].includes(e.verification) && e.provenance && Array.isArray(e.modifiers) &&
+    (e.type !== 'Weapon' || (Array.isArray(e.modes) && e.modes.length > 0 && e.modes.every(m => /^\d+d\d+$/.test(m.damageParts[0].dice)))) &&
+    (!['Armor', 'Shield'].includes(e.type) || (e.modifiers[0] && e.modifiers[0].target === (e.type === 'Shield' ? 'ac.shield' : 'ac.armor'))));
+  check('SRD Import P2: every new record is Canonical V2 with a book page, contentLevel, verification and provenance; weapon modes and armor AC modifiers are well-formed', p2Valid);
+  const lynx = p2By('wpn-lynxpaw');
+  const lynxOff = (lynx.modes || []).find(m => m.id === 'offhand-head') || {};
+  const mtn = p2By('arm-mountain-plate');
+  check(
+    'SRD Import P2: book-settled weapon stats (Sugliin Frost T4-1, Drow Scorpion Chain RoE, Lynxpaw RotW T7-1, Foot Spike) and armor table values (RoS T7-2)',
+    p2By('wpn-sugliin').damage === '2d8' && p2By('wpn-sugliin').critMult === 2 && p2By('wpn-sugliin').weight === 20 &&
+    p2By('wpn-drow-scorpion-chain').weight === 12 && p2By('wpn-drow-scorpion-chain').ruleFlags.reach === true &&
+    lynx.damage === '1d6' && lynx.critRange === 18 && lynxOff.damageParts[0].dice === '1d4' && lynxOff.damageParts[0].type === 'Slashing' && lynxOff.critMult === 3 &&
+    p2By('wpn-foot-spike').damage === '1d4' && p2By('wpn-foot-spike').critMult === 3 &&
+    mtn.modifiers[0].value === 10 && mtn.maxDex === 0 && mtn.checkPenalty === -9 && mtn.spellFailure === 60 && mtn.weight === 225 && mtn.speed30 === '15 ft.' &&
+    p2By('arm-chitin-armor-stormwrack').modifiers[0].value === 4 && p2By('arm-chitin-armor-races-of-eberron').modifiers[0].value === 2
+  );
+  const p2Mod = (id, target) => ((p2By(id).modifiers || []).find(m => m.target === target && !m.condition) || {}).value;
+  check(
+    'SRD Import P2: UA trait modifiers (Aggressive +2 init / -1 AC, Detached, Quick, Slow) and Weak Will -3 Will (UA p.92)',
+    p2Mod('trait-aggressive', 'init') === 2 && p2Mod('trait-aggressive', 'ac') === -1 &&
+    p2Mod('trait-detached', 'save.will') === 1 && p2Mod('trait-detached', 'save.ref') === -1 &&
+    p2Mod('trait-quick', 'speed.land') === 10 && p2By('trait-quick').ruleFlags.frailHpPenalty === true &&
+    p2By('trait-slow').ruleFlags.hpPerLevel === true && p2By('trait-slow').ruleFlags.halfBaseLandSpeed === true &&
+    ((p1Feats.find(f => f.id === 'flaw-weak-will') || {}).modifiers || [])[0].value === -3
+  );
+  const boulder = p2Mans.find(e => e.id === 'tob-maneuver-boulder-roll') || {};
+  check(
+    'SRD Import P2: Skill tricks carry CS Table 3-2 prerequisites as prereqStruct; Boulder Roll is a 4th-level Stone Dragon boost (ToB p.81)',
+    JSON.stringify(p2By('trick-walk-the-walls').prereqStruct.skills) === JSON.stringify({ climb: 12, tumble: 5 }) &&
+    (p2By('trick-hidden-blade').prereqStruct.feats || []).includes('Quick Draw') && p2By('trick-hidden-blade').cost.skillPoints === 2 &&
+    boulder.subType === 'Boost' && boulder.level === 4 && boulder.discipline === 'Stone Dragon' && boulder.source === 'ToB p.81'
+  );
+  // SRD Import P3: splatbook feats in lazy chunks; 3.0 / licensed content opt-in only
+  const p3Splat = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_splat.json'), 'utf8')).filter(f => f.type === 'Feat');
+  const p3Epic = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_epic.json'), 'utf8'));
+  const p3Legacy = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_legacy.json'), 'utf8'));
+  const p3All = p3Splat.concat(p3Epic, p3Legacy);
+  check(
+    'SRD Import P3: 3.5 heroic / epic / legacy feats are split by edition and level band; the legacy chunk is opt-in and excluded from preloadAll',
+    p3Splat.length > 1500 && p3Splat.every(f => f.edition === '3.5' && f.levelBand === 'heroic') &&
+    p3Epic.length > 0 && p3Epic.every(f => f.edition === '3.5' && f.levelBand === 'epic' && f.isFighterBonusFeat === false) &&
+    p3Legacy.length > 300 && p3Legacy.every(f => f.edition === '3.0' || f.edition === '3.5-licensed') &&
+    p0Idx.chunks['srd_feats_legacy.json'].optIn === true && p0Idx.chunks['srd_feats_splat.json'].eagerLoad === false &&
+    Comp.getOptInChunkNames().includes('srd_feats_legacy.json') && !Comp.getOptInChunkNames().includes('srd_feats_splat.json')
+  );
+  check(
+    'SRD Import P3: no Dragon Magazine, placeholder, header or "xN" rows; every feat has a book source, a summary benefit, verification and provenance; no Warlock "tier" key',
+    p3All.every(f => !/Dragon Magazine/i.test(f.source) && !/ x\d$|Feats$/.test(f.name) && f.benefit && f.benefit.length > 3 &&
+      ['cross-checked', 'unverified'].includes(f.verification) && f.provenance && f.contentLevel === 'summary' && !('tier' in f)) &&
+    p3All.filter(f => f.verification === 'cross-checked').length > 600
+  );
+  Comp.ensureChunkLoaded('srd_feats_splat.json'); // Node: synchronous
+  const p3Db = [];
+  const p3Added = Comp.snapshotLazyRefs(p3Db, ['Acrobatic Strike', 'Power Attack', 'Not A Real Feat'], 'Feat');
+  const rendPh2 = Comp.getByName("Two-Weapon Rend (Player's Handbook II)");
+  check(
+    'SRD Import P3: snapshotLazyRefs copies only lazy-chunk feats (not eager SRD feats) into customDb; book-qualified aliases resolve same-name feats',
+    p3Added.length === 1 && p3Db.length === 1 && p3Db[0].name === 'Acrobatic Strike' && p3Db[0]._snapshot.chunk === 'srd_feats_splat.json' &&
+    Comp.snapshotLazyRefs(p3Db, ['Acrobatic Strike'], 'Feat').length === 0 &&
+    Boolean(rendPh2) && rendPh2.id === 'feat-two-weapon-rend-ph2' && /base attack bonus \+11/.test(rendPh2.prerequisites) &&
+    (Comp.getById('feat-two-weapon-rend') || {}).prerequisites.includes('+9')
+  );
+  const p3ChunkHash = p0Idx.chunks['srd_feats_splat.json'].hash;
+  check(
+    'SRD Import P3: snapshots record the chunk hash so an unchanged chunk is never downloaded just to reconcile; prefixed level-row feat names are cleaned',
+    p3Db[0]._snapshot.chunkHash === p3ChunkHash && Boolean(p3ChunkHash) &&
+    /e\._snapshot\.chunkHash === current\) return;/.test(fs.readFileSync(path.join(__dirname, '..', 'srd_compendium.js'), 'utf8')) &&
+    /replace\(\/\^\[\^A-Za-z0-9\(\]\+\(\\\[\.\*\?\\\]\)\?\\s\*\/, ''\)/.test(fs.readFileSync(path.join(__dirname, '..', 'char_store.js'), 'utf8'))
+  );
+  const p3ProgSrc = fs.readFileSync(path.join(__dirname, '..', 'char_progression.js'), 'utf8');
+  const p3StoreSrc = fs.readFileSync(path.join(__dirname, '..', 'char_store.js'), 'utf8');
+  check(
+    'SRD Import P3: feat catalog loads splat chunks on demand, hides 3.0/licensed unless toggled, and the store snapshots referenced lazy feats',
+    /function ensureFeatSplatChunks\(\)/.test(p3ProgSrc) && /getCombinedFeatCatalog\(includeInvocations = false\) \{\s*ensureFeatSplatChunks\(\);/.test(p3ProgSrc) &&
+    /LEGACY_FEAT_EDITIONS\.has\(f && f\.edition\)/.test(p3ProgSrc) && /'progression:toggle-legacy-feats'/.test(p3ProgSrc) &&
+    /return FEAT_REF_TYPES\.map\(t => \(\{ t, names: collectFeatRefNames\(doc, t\) \}\)\)/.test(p3StoreSrc) &&
+    /collectSrdRefGroups\(_state\.doc\)\.forEach\(g => comp\.snapshotLazyRefs\(db, g\.names, g\.t\)\)/.test(p3StoreSrc)
+  );
+
+  // SRD Import P3 (rest): book-checked prerequisite conflicts and the ELH epic fighter bonus feat list
+  const p3bFeats = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats.json'), 'utf8'));
+  const p3bF = id => p3bFeats.find(f => f.id === id) || {};
+  check(
+    'SRD Import P3: prerequisite conflicts settled from the books (Somatic Weaponry CM p.47: 5 ranks; Oversized TWF CAd p.111: Str 13; Master Staff ELH p.62: Spellcraft 15)',
+    p3bF('feat-somatic-weaponry').prerequisites === 'Concentration 5 ranks, Spellcraft 5 ranks' &&
+    p3bF('feat-somatic-weaponry').prereqStruct.skills.spellcraft === 5 &&
+    p3bF('feat-oversized-two-weapon-fighting').prerequisites === 'Str 13, Two-Weapon Fighting' &&
+    p3bF('feat-oversized-two-weapon-fighting').prereqStruct.abilities.str === 13 && !p3bF('feat-oversized-two-weapon-fighting').prereqStruct.abilities.dex &&
+    /Spellcraft 15 ranks/.test(p3bF('feat-master-staff').prerequisites)
+  );
+  const p3bEpicFtr = p3bFeats.filter(f => f.fighterBonusFeatTier === 'epic');
+  check(
+    'SRD Import P3: the 31 ELH epic fighter bonus feats carry fighterBonusFeatTier "epic" (not the heroic flag) and are offered only for slots at character level 21+',
+    p3bEpicFtr.length === 31 && p3bEpicFtr.every(f => f.isFighterBonusFeat !== true) &&
+    p3bEpicFtr.some(f => f.id === 'feat-two-weapon-rend') && p3bEpicFtr.some(f => f.id === 'feat-armor-skin') &&
+    /if \(f\.fighterBonusFeatTier === 'epic'\) return \(Number\(slotCharLevel\) \|\| 0\) >= 21;/.test(progSrc)
+  );
+
+  // SRD Import P3 (rest): UA traits and Complete Scoundrel skill tricks on the character
+  const p3tSplat = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats_splat.json'), 'utf8'));
+  const p3tTrait = p3tSplat.find(e => e.id === 'trait-abrasive');
+  const p3tTrick = p3tSplat.find(e => e.id === 'trick-acrobatic-backstab');
+  const p3tChar = {
+    level: 2, race: 'Elf', abilities: { cha: 10 },
+    levelProgression: [
+      { level: 1, className: 'Rogue', active: true, feats: ['🎖️ Dodge', '🧬 [Trait] Abrasive', '💪 [Skill Trick] Acrobatic Backstab'] },
+      { level: 2, className: 'Rogue', active: true, feats: [] }
+    ],
+    skills: [{ key: 'tumble', ranks: 3, isClass: true }],
+    feats: [{ name: 'Dodge', type: 'Feat' }, JSON.parse(JSON.stringify(p3tTrait)), JSON.parse(JSON.stringify(p3tTrick))]
+  };
+  const p3tView = RuleEngine.deriveProgressionView(p3tChar, []);
+  const p3tNoTrait = JSON.parse(JSON.stringify(p3tChar));
+  p3tNoTrait.feats = p3tNoTrait.feats.filter(f => f.type !== 'Trait');
+  p3tNoTrait.levelProgression[0].feats = p3tNoTrait.levelProgression[0].feats.filter(f => !f.includes('[Trait]'));
+  check(
+    'SRD Import P3: traits and skill tricks never use a feat slot; each skill trick costs 2 skill points (CSc p.83)',
+    p3tView.featSlotsView.regularFeatsTaken === 1 && p3tView.featSlotsView.openRegularSlots === 0 &&
+    p3tView.skillBudgetsView.skillTrickCount === 1 && p3tView.skillBudgetsView.spentPoints === 5 &&
+    RuleEngine.countSkillTricks(p3tChar) === 1 && RuleEngine.isTraitOrSkillTrickRef('🧬 [Trait] Abrasive')
+  );
+  check(
+    'SRD Import P3: a chosen trait applies its benefit and drawback (Abrasive: +1 Intimidate, -1 Bluff, UA p.87)',
+    RuleEngine.evaluateSkillBonus(p3tChar, 'intimidate', 'Intimidate', 'cha').total -
+      RuleEngine.evaluateSkillBonus(p3tNoTrait, 'intimidate', 'Intimidate', 'cha').total === 1 &&
+    RuleEngine.evaluateSkillBonus(p3tChar, 'bluff', 'Bluff', 'cha').total -
+      RuleEngine.evaluateSkillBonus(p3tNoTrait, 'bluff', 'Bluff', 'cha').total === -1
+  );
+  check(
+    'SRD Import P3: quick feat picker offers Trait / Skill Trick categories with the RAW limits (2 traits, 1 trick per level, half level rounded up) and type-aware snapshots',
+    /value=\\"Trait\\" id=\\"quick-feat-opt-trait\\"/.test(fs.readFileSync(path.join(__dirname, '..', 'char_modals.js'), 'utf8')) &&
+    /value=\\"Skill Trick\\" id=\\"quick-feat-opt-skill-trick\\"/.test(fs.readFileSync(path.join(__dirname, '..', 'char_modals.js'), 'utf8')) &&
+    /if \(countKind\(prog\) >= 2\)/.test(progSrc) && /const trickCap = Math\.ceil\(rowLevel \/ 2\);/.test(progSrc) &&
+    /else if \(category === 'Trait'\) prefix = '🧬 \[Trait\] ';/.test(progSrc) &&
+    /const FEAT_REF_TYPES = \['Feat', 'Trait', 'Skill Trick'\];/.test(p3StoreSrc)
+  );
+
+  // SRD Import P1 (rest): class pages from book contents, PrC requirements, cross-checked feat pages
+  const p1bClasses = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_races.json'), 'utf8')).filter(c => c.type === 'Class');
+  const p1bFeats = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_feats.json'), 'utf8'));
+  const p1bCls = id => p1bClasses.find(c => c.id === id) || {};
+  const p1bReq = (id, key) => (p1bCls(id).prerequisites || []).filter(r => r.key === key);
+  check(
+    'SRD Import P1: every class source has a book page (PHB/DMG/XPH/ToB/PHB2/CM/CW/CAr contents) and the three PrCs without requirements now have them (CW p.34/45, CD p.70)',
+    p1bClasses.every(c => /p\.?\s?\d/.test(String(c.source || ''))) &&
+    p1bCls('cls-wizard').source === 'SRD / PHB p.55' && p1bCls('cls-thaumaturgist').source === "Dungeon Master's Guide p.196" &&
+    p1bCls('cls-psionic-fist').source === 'Expanded Psionics Handbook p.144' && p1bCls('cls-soulknife').source === 'SRD / XPH p.26' && p1bCls('cls-crusader').source === 'Tome of Battle p.8' &&
+    (p1bReq('cls-frenzied-berserker', 'bab')[0] || {}).min === 6 && p1bReq('cls-frenzied-berserker', 'feat').length === 4 &&
+    p1bReq('cls-invisible-blade', 'skill').some(r => r.skill === 'sense_motive' && r.ranks === 6) &&
+    (p1bReq('cls-ur-priest', 'alignment')[0] || {}).allowed.join() === 'LE,NE,CE' && p1bReq('cls-ur-priest', 'skill').length === 5
+  );
+  const p1bF = id => (p1bFeats.find(f => f.id === id) || {}).source;
+  check(
+    'SRD Import P1: feat pages only where two sources agree; same-name epic/psionic SRD feats are never relabelled with a splatbook page',
+    p1bF('feat-hold-the-line') === 'Complete Warrior p.100' && p1bF('feat-improved-counterspell') === 'SRD / PHB p.95' &&
+    p1bF('feat-two-weapon-rend') === 'SRD 3.5e' && p1bF('feat-mind-over-body') === 'SRD 3.5e' && p1bF('feat-dragon-wild-shape') === 'SRD 3.5e'
+  );
+
+  const p2RmSrc = fs.readFileSync(path.join(__dirname, '..', 'rule_master.js'), 'utf8');
+  const uiSharedSrc = fs.readFileSync(path.join(__dirname, '..', 'ui_shared.js'), 'utf8');
+  check(
+    'SRD Import P2: equipping reads V2 weapon stats (category/critRange/critMult) and lazy compendium picks are snapshotted into customDb before equip',
+    (p2RmSrc.match(/const wStats = this\.resolveWeaponStats\(item\);/g) || []).length === 2 &&
+    /snapshotLazyEntryIntoCustomDb\(entry\)/.test(uiSharedSrc) && !/equipItem\(entry\.id\)/.test(uiSharedSrc) &&
+    /SrdCompendium\.ensureEntryInCustomDb\(masterDb, lazyId\)/.test(fs.readFileSync(path.join(__dirname, '..', 'char_combat.js'), 'utf8'))
+  );
+
+  // SRD Import P4: splatbook base / prestige class chassis in lazy chunks; 3.0 / licensed classes opt-in only
+  const p4Splat = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_splat.json'), 'utf8'));
+  const p4Legacy = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_legacy.json'), 'utf8'));
+  const p4All = p4Splat.concat(p4Legacy);
+  const p4Core = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_races.json'), 'utf8')).filter(c => c.type === 'Class');
+  const p4NameKey = n => String(n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const p4Names = p4All.concat(p4Core).map(c => p4NameKey(c.name));
+  const p4Ids = p4All.concat(p4Core).map(c => c.id);
+  check(
+    'SRD Import P4: class chunks are lazy (legacy opt-in, never in preloadAll or the eager set); class ids and names are unique across all class chunks',
+    p4Splat.length > 150 && p4Splat.every(c => c.edition === '3.5') && p4Legacy.length > 0 && p4Legacy.every(c => c.edition === '3.0' || c.edition === '3.5-licensed') &&
+    p0Idx.chunks['srd_classes_splat.json'].eagerLoad === false && !p0Idx.chunks['srd_classes_splat.json'].optIn &&
+    p0Idx.chunks['srd_classes_legacy.json'].eagerLoad === false && p0Idx.chunks['srd_classes_legacy.json'].optIn === true &&
+    Comp.getOptInChunkNames().includes('srd_classes_legacy.json') && Comp.getLazyChunkNames().includes('srd_classes_splat.json') &&
+    !Comp.isChunkLoaded('srd_classes_splat.json') && !Comp.isChunkLoaded('srd_classes_legacy.json') &&
+    new Set(p4Names).size === p4Names.length && new Set(p4Ids).size === p4Ids.length &&
+    p4Legacy.some(c => c.name === 'Samurai (Oriental Adventures)') && p4Splat.some(c => c.name === 'Samurai' && c.source === 'Complete Warrior p.8')
+  );
+  const p4By = id => p4All.find(c => c.id === id) || {};
+  const p4Chassis = (id, hd, bab, saves, skills, maxLevel, prc) => {
+    const c = p4By(id);
+    return c.hd === hd && c.hitDie === `d${hd}` && c.bab === bab && `${c.fort[0]}${c.ref[0]}${c.will[0]}` === saves &&
+      c.skillPointsPerLevel === skills && c.skills === skills && c.maxLevel === maxLevel && c.isPrestige === prc &&
+      c.type === 'Class' && c.contentLevel === 'stub' && c.schemaVersion === 2;
+  };
+  check(
+    'SRD Import P4: chassis values (Alienist CAr p.21 d4 1/2 BAB good Will 2 sp; Samurai CW p.8 d10 full BAB good Fort 2 sp 20 levels) and the 5 book-settled classes',
+    p4Chassis('cls-alienist', 4, 0.5, 'ppg', 2, 10, true) && p4Chassis('cls-samurai', 10, 1, 'gpp', 2, 20, false) &&
+    p4Chassis('cls-evangelist', 6, 0.75, 'ppg', 6, 5, true) && p4Chassis('cls-rainbow-servant', 4, 0.5, 'ppg', 2, 10, true) &&
+    p4Chassis('cls-void-disciple', 6, 0.5, 'ppg', 2, 13, true) && p4Chassis('cls-moonspeaker', 8, 0.75, 'gpg', 4, 12, true) &&
+    p4Chassis('cls-reforged', 8, 0.75, 'ppg', 4, 3, true) &&
+    ['cls-evangelist', 'cls-rainbow-servant', 'cls-void-disciple', 'cls-moonspeaker', 'cls-reforged'].every(id => p4By(id).verification === 'verified' && p4By(id).provenance.book) &&
+    p4All.every(c => ['verified', 'cross-checked', 'unverified'].includes(c.verification) && c.provenance && c.source) &&
+    p4All.filter(c => c.isPrestige).every(c => c.verification !== 'unverified')
+  );
+  check(
+    'SRD Import P4: requirements are structured; "must be female" is a special requirement, not a race (Yathrinshee PGtF p.187)',
+    (p4By('cls-alienist').prerequisites || []).length > 0 &&
+    p4All.every(c => (c.prerequisites || []).every(r => r.key !== 'race' || !/^(fe)?male$/i.test(r.val))) &&
+    (p4By('cls-yathrinshee').prerequisites || []).some(r => r.key === 'race' && r.val === 'Drow') &&
+    (p4By('cls-yathrinshee').prerequisites || []).some(r => r.key === 'special' && /female/i.test(r.text)) &&
+    p4All.every(c => (c.prerequisites || []).every(r => r.key !== 'skill' || /^[a-z_]+$/.test(r.skill)))
+  );
+  // A character with levels in a lazy class resolves it from its srd-snapshot while the chunk is not loaded.
+  const p4Snap = Object.assign(JSON.parse(JSON.stringify(p4By('cls-alienist'))), {
+    _snapshot: { origin: 'srd-snapshot', srcId: 'cls-alienist', chunk: 'srd_classes_splat.json', chunkHash: p0Idx.chunks['srd_classes_splat.json'].hash, status: 'current' }
+  });
+  const p4Char = {
+    name: 'P4 Alienist Test', level: 7, race: 'Human', abilities: { str: 10, dex: 10, con: 10, int: 16, wis: 10, cha: 10 },
+    levelProgression: [1, 2, 3, 4, 5].map(l => ({ level: l, className: 'Wizard', active: true, feats: [] }))
+      .concat([6, 7].map(l => ({ level: l, className: 'Alienist', active: true, feats: [] })))
+  };
+  RuleEngine.deriveSheet(p4Char, { customDb: [p4Snap] });
+  const p4Def = RuleEngine.getClassDef('Alienist') || {};
+  const p4Prog = RuleEngine.calculateProgression(p4Char.levelProgression, { system: 'standard' });
+  check(
+    'SRD Import P4: a lazy class on the character resolves from its customDb snapshot without the chunk (Alienist d4, 1/2 BAB, good Will, prestige)',
+    !Comp.isChunkLoaded('srd_classes_splat.json') && !Comp.getClass('Alienist') &&
+    p4Def.hd === 4 && p4Def.bab === 0.5 && p4Def.will === 'good' && p4Def.fort === 'poor' && p4Def.maxLevel === 10 &&
+    p4Def.isPrestige === true && p4Def.type === 'Prestige Class' && p4Prog.classCounts && p4Prog.classCounts.Alienist === 2
+  );
+  const p4StoreSrc = fs.readFileSync(path.join(__dirname, '..', 'char_store.js'), 'utf8');
+  const p4SpellsSrc = fs.readFileSync(path.join(__dirname, '..', 'char_spells.js'), 'utf8');
+  check(
+    'SRD Import P4: the store snapshots class refs (levelProgression className / doc.classes) and getAvailableClassDefs types snapshots as official prestige/base classes',
+    /function collectClassRefNames\(doc\)/.test(p4StoreSrc) && /\.concat\(\[\{ t: 'Class', names: collectClassRefNames\(doc\) \}, /.test(p4StoreSrc) &&
+    /const isSnap = Boolean\(c\._snapshot\) && c\.type === 'Class';/.test(p4SpellsSrc) && /isCustom: !isSnap,/.test(p4SpellsSrc) &&
+    Boolean(RuleEngine.DND35_CLASS_DEFS.alienist) && /if \(k === k\.toLowerCase\(\) && displayKeysLower\.has\(k\)\) return;/.test(p4SpellsSrc)
+  );
+  const p4ProgSrc = fs.readFileSync(path.join(__dirname, '..', 'char_progression.js'), 'utf8');
+  const p4EnsureCalls = (p4ProgSrc.match(/\n\s*ensureClassSplatChunks\(\);/g) || []).length;
+  check(
+    'SRD Import P4: class chunks load only from the class pickers (never at page open); 3.0 / licensed classes follow the "3.0 & Licensed" setting',
+    /function ensureClassSplatChunks\(\)/.test(p4ProgSrc) && p4EnsureCalls === 3 &&
+    /if \(typeof ensureClassSplatChunks === 'function'\) ensureClassSplatChunks\(\);\s*const allDefs = getAvailableClassDefs\(\);/.test(p4SpellsSrc) &&
+    /if \(includeLegacyFeats\(\)\) wanted\.push\('srd_classes_legacy\.json'\);/.test(p4ProgSrc) &&
+    (p4ProgSrc.match(/if \(isClassHiddenByEdition\(cName, def\)/g) || []).length === 3 &&
+    !/ensureClassSplatChunks/.test(fs.readFileSync(path.join(__dirname, '..', 'srd_compendium.js'), 'utf8'))
+  );
+  // Class prerequisite skill ranks: character.skills is an array; older P1 records use knowledge_<field> keys.
+  const p4SkillSrc = p4ProgSrc.slice(p4ProgSrc.indexOf('const LEGACY_PREREQ_SKILL_KEYS'), p4ProgSrc.indexOf('function checkClassPrerequisites('));
+  const p4Ranks = (skills, key) => new Function('character', `${p4SkillSrc}\nreturn getPrereqSkillRanks(${JSON.stringify(key)});`)({ skills });
+  const p4Skills = [{ key: 'k_arcana', ranks: 8 }, { key: 'k_planes', ranks: 4 }, { key: 'perform_oratory', ranks: 6 }, { key: 'umd', ranks: 2 }];
+  check(
+    'SRD Import P4: class skill prerequisites read ranks from the skills array (knowledge_arcana -> k_arcana, any Perform subtype, legacy object map)',
+    p4Ranks(p4Skills, 'k_arcana') === 8 && p4Ranks(p4Skills, 'knowledge_arcana') === 8 && p4Ranks(p4Skills, 'knowledge_planes') === 4 &&
+    p4Ranks(p4Skills, 'perform') === 6 && p4Ranks(p4Skills, 'use_magic_device') === 2 && p4Ranks(p4Skills, 'spellcraft') === 0 &&
+    p4Ranks({ k_religion: { ranks: 5 } }, 'knowledge_religion') === 5 &&
+    /const curRanks = getPrereqSkillRanks\(req\.skill\);/.test(p4ProgSrc) && !/character\.skills\[req\.skill\]/.test(p4ProgSrc)
+  );
+
+  // SRD Import: psionic powers in their own lazy chunk (out of the eager srd_spells.json)
+  const pwChunk = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_powers.json'), 'utf8'));
+  const pwSpells = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_spells.json'), 'utf8'));
+  const pwIdx = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_index.json'), 'utf8'));
+  const pwRows = pwIdx.index.filter(r => r.t === 'Power');
+  check(
+    'SRD Import Powers: the 440 XPH powers live only in the lazy srd_powers.json (not eager, not opt-in); srd_spells.json keeps spells only; index rows point at the new chunk',
+    pwChunk.length === 440 && pwChunk.every(p => p.type === 'Power' && p.id && p.schemaVersion === 2) &&
+    !pwSpells.some(s => s.type === 'Power') && pwSpells.length > 600 &&
+    pwIdx.chunks['srd_powers.json'].eagerLoad === false && !pwIdx.chunks['srd_powers.json'].optIn &&
+    pwRows.length === 440 && pwRows.every(r => r.f === 'srd_powers.json') &&
+    Comp.getLazyChunkNames().includes('srd_powers.json') && !Comp.isChunkLoaded('srd_powers.json') &&
+    !Comp.getByName('Force Screen')
+  );
+  // A psionic buff on the character resolves from its srd-snapshot while the chunk is not loaded.
+  const pwSrc = pwChunk.find(p => p.name === 'Force Screen');
+  const pwSnap = Object.assign(JSON.parse(JSON.stringify(pwSrc)), {
+    _snapshot: { origin: 'srd-snapshot', srcId: pwSrc.id, chunk: 'srd_powers.json', chunkHash: pwIdx.chunks['srd_powers.json'].hash, status: 'current' }
+  });
+  const pwChar = { name: 'P Powers Test', level: 3, abilities: { int: 14 }, buffs: [{ name: 'Force Screen', active: true }] };
+  RuleEngine.deriveSheet(pwChar, { customDb: [pwSnap] });
+  const pwSpec = RuleEngine.resolveSpellBuffSpec({ name: 'Force Screen' }, pwChar, 3);
+  check(
+    'SRD Import Powers: an active psionic buff (Force Screen, +4 shield) resolves from the customDb snapshot without the powers chunk',
+    !Comp.isChunkLoaded('srd_powers.json') && pwSpec && pwSpec.isBuffSpell === true &&
+    (pwSpec.modifiers || []).some(m => m && m.target === 'ac.shield' && Number(m.value) === 4)
+  );
+  Comp.ensureChunkLoaded('srd_powers.json'); // Node: synchronous
+  const pwDb = [];
+  const pwAdded = Comp.snapshotLazyRefs(pwDb, ['Force Screen', 'Fireball', 'Rage'], 'Power');
+  const pwStoreSrc = fs.readFileSync(path.join(__dirname, '..', 'char_store.js'), 'utf8');
+  const pwUiSrc = fs.readFileSync(path.join(__dirname, '..', 'ui_shared.js'), 'utf8');
+  check(
+    'SRD Import Powers: only lazy powers are snapshotted (not eager spells or unknown buff names); the store collects power refs from spell lists and buffs; Spotlight picks resolve lazy stubs via fetchEntry',
+    pwAdded.length === 1 && pwDb[0].name === 'Force Screen' && pwDb[0]._snapshot.chunk === 'srd_powers.json' &&
+    /function collectPowerRefNames\(doc\)/.test(pwStoreSrc) && /\{ t: 'Power', names: collectPowerRefNames\(doc\) \}/.test(pwStoreSrc) &&
+    !/getSpellById|getMonsterById/.test(pwUiSrc) && /await global\.SrdCompendium\.fetchEntry\(picked\.id\)/.test(pwUiSrc)
+  );
+
+  // Hub custom DB isolation (ADR-011): a rule pack loaded in the Hub reaches only one campaign's characters.
+  const hubSrc = fs.readFileSync(path.join(__dirname, '..', 'hub.html'), 'utf8');
+  const hubFnSrc = hubSrc.slice(hubSrc.indexOf('function getHubCampaignScopeIds('), hubSrc.indexOf('function describeHubDbMergeResult('));
+  const hubRun = (activeCampaignId, sheetCharId, entries, campArg) => {
+    const store = { dnd35_character: JSON.stringify({ id: sheetCharId, customDb: [] }) };
+    const sandbox = {
+      JSON,
+      state: {
+        activeCampaignId,
+        campaigns: [{ id: 'camp_main' }, { id: 'camp_sub', parentId: 'camp_main' }, { id: 'camp_other' }],
+        characters: [
+          { id: 'c_main', campaignId: 'camp_main', fullData: { customDb: [{ id: 'x1', name: 'Shared Name', type: 'Item', weight: 5 }] } },
+          { id: 'c_sub', campaignId: 'camp_sub', fullData: { customDb: [] } },
+          { id: 'c_other', campaignId: 'camp_other', fullData: { customDb: [] } },
+          { id: 'c_free', campaignId: null, fullData: { customDb: [] } }
+        ]
+      },
+      localStorage: { getItem: k => store[k] || null, setItem: (k, v) => { store[k] = v; } },
+      saveHubStorage: () => {}
+    };
+    vm.runInNewContext(hubFnSrc + '\nresult = mergeEntriesIntoHubCharacters(entries, campArg);', Object.assign(sandbox, { entries, campArg: campArg || null }));
+    const dbOf = id => sandbox.state.characters.find(c => c.id === id).fullData.customDb;
+    return { res: sandbox.result, dbOf, sheetDb: JSON.parse(store.dnd35_character).customDb };
+  };
+  const hubPack = [{ id: 'pack:boon_a', name: 'Boon A', type: 'DM Boon' }, { id: 'pack:feat_shared', name: 'Shared Name', type: 'Feat' }];
+  const hubAll = hubRun('all', 'c_free', hubPack);
+  const hubMain = hubRun('camp_main', 'c_other', hubPack);
+  const hubSheet = hubRun('camp_main', 'c_main', hubPack);
+  const hubEmpty = hubRun('camp_main', 'c_main', hubPack, 'camp_empty');
+  const hubReplace = hubRun('camp_main', 'c_other', [{ id: 'x1', name: 'Shared Name', type: 'Item', weight: 2 }]);
+  check(
+    'Hub custom DB isolation: a pack goes only to the active campaign and its sub-campaigns (never every character, never with "All" selected or an empty campaign); the sheet character gets it only when targeted; same-name entries of other types stay separate and a same-id entry is replaced',
+    hubAll.res.targets === 0 && ['c_main', 'c_sub', 'c_other', 'c_free'].every(id => !hubAll.dbOf(id).some(e => e.id === 'pack:boon_a')) && hubAll.sheetDb.length === 0 &&
+    hubMain.res.targets === 2 && hubMain.dbOf('c_sub').length === 2 && hubMain.dbOf('c_other').length === 0 && hubMain.dbOf('c_free').length === 0 && hubMain.sheetDb.length === 0 &&
+    hubMain.dbOf('c_main').length === 3 && hubMain.dbOf('c_main').find(e => e.id === 'x1').weight === 5 &&
+    hubSheet.sheetDb.length === 2 &&
+    hubEmpty.res.targets === 0 && hubEmpty.dbOf('c_main').length === 1 &&
+    hubReplace.res.updated === 1 && hubReplace.dbOf('c_main').length === 1 && hubReplace.dbOf('c_main')[0].weight === 2
+  );
+
+  // Campaign DB (CAMPAIGN_PACKS_DESIGN.md): campaign_db.js reconcile rules on the real DM Boons pack.
+  const CampaignDb = require('../campaign_db.js');
+  const boonFile = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'exports', 'dm_boons_master_db_import.json'), 'utf8'));
+  const boonPack = CampaignDb.readPackFile(boonFile);
+  const cdbPacksV1 = CampaignDb.attachPack([], boonPack, '2026-11-10T00:00:00Z');
+  const cdbDb = [{ id: 'own_homebrew', name: 'My Homebrew Sword', type: 'Weapon' }];
+  const cdbAdd = CampaignDb.reconcile(cdbDb, cdbPacksV1, { campaignId: 'camp_main', used: new Set() });
+  const cdbAgain = CampaignDb.reconcile(cdbDb, cdbPacksV1, { campaignId: 'camp_main', used: new Set() });
+  const cdbTagged = cdbDb.filter(e => CampaignDb.getTag(e));
+  check(
+    'Campaign DB: a pack file is read with its id, every entry is copied into the character customDb with a _campaignPack tag (own entries untouched), and a second reconcile changes nothing',
+    boonPack && boonPack.packId === 'pack_dm_draconic_boons' && boonPack.entries.length === 107 && cdbPacksV1[0].version === 1 &&
+    cdbAdd.added === 107 && cdbTagged.length === 107 && cdbDb[0].id === 'own_homebrew' && !CampaignDb.getTag(cdbDb[0]) &&
+    cdbTagged.every(e => e._campaignPack.campaignId === 'camp_main' && e._campaignPack.status === 'active' && e.pack === 'pack_dm_draconic_boons') &&
+    !cdbAgain.changed
+  );
+
+  // DM edits one entry and drops two (one used by the character, one not), then re-uploads -> v2.
+  const usedBoon = boonPack.entries[1], unusedBoon = boonPack.entries[2];
+  const editedPack = Object.assign({}, boonPack, {
+    entries: boonPack.entries.filter(e => e !== usedBoon && e !== unusedBoon).map((e, i) => i === 0 ? Object.assign({}, e, { description: 'DM edit' }) : e)
+  });
+  const cdbPacksV2 = CampaignDb.attachPack(cdbPacksV1, editedPack, '2026-11-11T00:00:00Z');
+  const cdbChar = { specialAbilities: [{ id: usedBoon.id.split(':').pop(), name: usedBoon.name }] };
+  const cdbV2 = CampaignDb.reconcile(cdbDb, cdbPacksV2, { campaignId: 'camp_main', used: CampaignDb.collectUsedRefs(cdbChar) });
+  const keptUsed = cdbDb.find(e => e.id === usedBoon.id);
+  check(
+    'Campaign DB: a re-upload is v2; changed entries are refreshed, an unused removed entry is deleted, a removed entry the character uses is kept as "removed"',
+    cdbPacksV2.length === 1 && cdbPacksV2[0].version === 2 &&
+    cdbV2.removed === 1 && cdbV2.keptRemoved === 1 && !cdbDb.some(e => e.id === unusedBoon.id) &&
+    keptUsed && keptUsed._campaignPack.status === 'removed' &&
+    cdbDb.find(e => e.id === boonPack.entries[0].id).description === 'DM edit' &&
+    cdbTagged.length === 107 && cdbDb.filter(e => CampaignDb.getTag(e)).length === 106
+  );
+
+  // Leaving the campaign detaches the copies; joining again re-attaches them. Hand-imported copies are adopted;
+  // a character's own same-name entry is never overwritten.
+  const cdbDetach = CampaignDb.reconcile(cdbDb, cdbPacksV2, { campaignId: null, used: new Set() });
+  const detachedCount = cdbDb.filter(e => CampaignDb.getTag(e) && e._campaignPack.status === 'detached').length;
+  const cdbRejoin = CampaignDb.reconcile(cdbDb, cdbPacksV2, { campaignId: 'camp_main', used: new Set() });
+  const handDb = boonFile.entries.slice(0, 3).map(e => Object.assign({}, e, { pack: 'pack_dm_draconic_boons' }))
+    .concat([{ id: 'mine', name: boonFile.entries[3].name, type: boonFile.entries[3].type, description: 'my own version' }]);
+  const cdbAdopt = CampaignDb.reconcile(handDb, cdbPacksV1, { campaignId: 'camp_main', used: new Set() });
+  check(
+    'Campaign DB: copies are detached (kept) when the character leaves the campaign and re-attached when it returns; hand-imported copies are adopted without duplicates; a character entry with the same name is skipped, not overwritten',
+    cdbDetach.detached === 106 && detachedCount === 106 &&
+    cdbRejoin.updated >= 105 && cdbDb.filter(e => CampaignDb.getTag(e) && e._campaignPack.status === 'detached').length === 0 &&
+    cdbAdopt.adopted === 3 && cdbAdopt.added === 103 && cdbAdopt.skipped.length === 1 &&
+    handDb.length === 107 && handDb.find(e => e.id === 'mine').description === 'my own version' && !CampaignDb.getTag(handDb.find(e => e.id === 'mine'))
+  );
+
+  // The tag does not change the rule engine: boons from tagged copies give the same sheet as a plain import.
+  const cdbFixture = loadFixture('05_dragon_blooded_boons_lvl17.json');
+  cdbFixture.feats = (cdbFixture.feats || []).concat(boonFile.entries.filter(e => e.type === 'DM Boon').map(e => ({ id: e.id, name: e.name, type: e.type })));
+  const cdbPlainDb = JSON.parse(JSON.stringify(boonFile.entries));
+  const cdbTaggedDb = [];
+  CampaignDb.reconcile(cdbTaggedDb, cdbPacksV1, { campaignId: 'camp_main', used: new Set() });
+  const cdbSheetPlain = RuleEngine.deriveSheet(JSON.parse(JSON.stringify(cdbFixture)), cdbPlainDb);
+  const cdbSheetTagged = RuleEngine.deriveSheet(JSON.parse(JSON.stringify(cdbFixture)), cdbTaggedDb);
+  const cdbSig = (s) => JSON.stringify({ ac: s.ac && [s.ac.total, s.ac.touch, s.ac.flatFooted, s.ac.natural], saves: s.saves && [s.saves.fort, s.saves.ref, s.saves.will], hp: s.hp && s.hp.max });
+  check(
+    'Campaign DB: fixture 05 with all DM boons derives the same AC, saves and HP from tagged Campaign DB copies as from a plain pack import',
+    cdbSig(cdbSheetPlain) === cdbSig(cdbSheetTagged) && cdbSheetPlain.ac.total > 23,
+    `plain=${cdbSig(cdbSheetPlain)} tagged=${cdbSig(cdbSheetTagged)}`
+  );
+
+  // Hub: a pack file attaches to the selected (root) campaign; sub-campaign characters get it, others do not.
+  const cdbHubFnSrc = hubSrc.slice(hubSrc.indexOf('function getHubRootCampaign('), hubSrc.indexOf('function exportMasterDbJson('));
+  const cdbHubRun = (activeCampaignId, sheetCharId) => {
+    const store = { dnd35_character: JSON.stringify({ id: sheetCharId, customDb: [] }) };
+    const alerts = [];
+    const sandbox = {
+      JSON, Object, Array, Map, Set, Date, Number, String,
+      CampaignDb, window: { CampaignDb },
+      state: {
+        activeCampaignId,
+        campaigns: [{ id: 'camp_main', name: 'Main' }, { id: 'camp_sub', name: 'Sub', parentId: 'camp_main' }, { id: 'camp_other', name: 'Other' }],
+        characters: [
+          { id: 'c_main', name: 'A', campaignId: 'camp_main', fullData: { customDb: [] } },
+          { id: 'c_sub', name: 'B', campaignId: 'camp_sub', fullData: { customDb: [] } },
+          { id: 'c_other', name: 'C', campaignId: 'camp_other', fullData: { customDb: [] } }
+        ]
+      },
+      localStorage: { getItem: k => store[k] || null, setItem: (k, v) => { store[k] = v; } },
+      saveHubStorage: () => {}, renderHub: () => {}, renderHubDmPackManager: () => {},
+      alert: (m) => alerts.push(m), confirm: () => true
+    };
+    vm.runInNewContext(cdbHubFnSrc + '\nattachPackToActiveCampaignDb(CampaignDb.readPackFile(packFile));', Object.assign(sandbox, { packFile: boonFile }));
+    const tagged = id => sandbox.state.characters.find(c => c.id === id).fullData.customDb.filter(e => CampaignDb.getTag(e)).length;
+    const sheetTagged = JSON.parse(store.dnd35_character).customDb.filter(e => CampaignDb.getTag(e)).length;
+    return { sandbox, tagged, sheetTagged, alerts };
+  };
+  const cdbHubSub = cdbHubRun('camp_sub', 'c_sub');
+  const cdbHubAll = cdbHubRun('all', 'c_main');
+  const cdbHubAttached = [cdbHubSub.sandbox.state.campaigns[0].packs.length, !cdbHubSub.sandbox.state.campaigns[1].packs, cdbHubSub.tagged('c_main'), cdbHubSub.tagged('c_sub'), cdbHubSub.tagged('c_other'), cdbHubSub.sheetTagged];
+  vm.runInNewContext(cdbHubFnSrc + '\nstate.activeCampaignId = "camp_main"; removePackFromActiveCampaignDb("pack_dm_draconic_boons");', cdbHubSub.sandbox);
+  check(
+    'Campaign DB (Hub): a pack attaches to the root campaign of the selected sub-campaign and reaches its characters and the sheet character; nothing is attached with "All" selected; removing the pack removes the unused copies',
+    JSON.stringify(cdbHubAttached) === JSON.stringify([1, true, 107, 107, 0, 107]) &&
+    cdbHubAll.tagged('c_main') === 0 && !cdbHubAll.sandbox.state.campaigns[0].packs && /select a campaign first/.test(cdbHubAll.alerts[0] || '') &&
+    cdbHubSub.sandbox.state.campaigns[0].packs.length === 0 && cdbHubSub.tagged('c_main') === 0 && cdbHubSub.tagged('c_sub') === 0 &&
+    !/e\._hubElig = res/.test(hubSrc) && /CampaignDb\.readPackFile\(parsed\)/.test(hubSrc)
+  );
+
+  // Campaign DB phase 2 (cloud): a fake SupabaseAuth whose calls settle synchronously, so the Hub code runs in vm.
+  const syncOk = (v) => ({ then(f) { return syncOk(f ? f(v) : v); }, catch() { return this; } });
+  const syncFail = (e) => ({ then(f, r) { return r ? syncOk(r(e)) : syncFail(e); }, catch(r) { return syncOk(r(e)); } });
+  const cdbCloudRun = (opts) => {
+    const store = { dnd35_character: JSON.stringify({ id: 'c_none', customDb: [] }) };
+    const calls = [], alerts = [];
+    const fakeAuth = {
+      isLocalMode: () => Boolean(opts.localMode),
+      upsertCampaignPack: (cid, p) => { calls.push(['upsert', cid, p.packId, p.version]); return opts.failWrite ? syncFail(new Error('RLS denied')) : syncOk(true); },
+      deleteCampaignPack: (cid, pid) => { calls.push(['delete', cid, pid]); return opts.failWrite ? syncFail(new Error('RLS denied')) : syncOk(true); }
+    };
+    const sandbox = {
+      JSON, Object, Array, Map, Set, Date, Number, String,
+      CampaignDb, SupabaseAuth: fakeAuth, window: { CampaignDb, SupabaseAuth: fakeAuth },
+      state: {
+        activeCampaignId: 'local_main',
+        campaigns: [{ id: 'local_main', name: 'Main', cloudCampaignId: 'cloud-uuid-1', packs: opts.packs || [] }],
+        characters: [
+          { id: 'c_dm_npc', name: 'NPC', campaignId: 'cloud-uuid-1', fullData: { customDb: [] } },
+          { id: 'c_player', name: 'Player', campaignId: 'cloud-uuid-other', fullData: { customDb: (opts.playerDb || []) } }
+        ]
+      },
+      localStorage: { getItem: k => store[k] || null, setItem: (k, v) => { store[k] = v; } },
+      saveHubStorage: () => {}, renderHub: () => {}, renderHubDmPackManager: () => {},
+      alert: (m) => alerts.push(m), confirm: () => true
+    };
+    vm.runInNewContext(cdbHubFnSrc + '\n' + opts.code, Object.assign(sandbox, { packFile: boonFile }));
+    return { sandbox, calls, alerts, npcDb: sandbox.state.characters[0].fullData.customDb, playerDb: sandbox.state.characters[1].fullData.customDb };
+  };
+  const cdbCloudAttach = cdbCloudRun({ code: 'attachPackToActiveCampaignDb(CampaignDb.readPackFile(packFile));' });
+  const cdbCloudFail = cdbCloudRun({ failWrite: true, code: 'attachPackToActiveCampaignDb(CampaignDb.readPackFile(packFile));' });
+  const cdbCloudOffline = cdbCloudRun({ localMode: true, code: 'attachPackToActiveCampaignDb(CampaignDb.readPackFile(packFile));' });
+  const cdbPlayerCopy = [{ id: 'x', name: 'Copy', _campaignPack: { campaignId: 'cloud-uuid-other', packId: 'p', version: 1, hash: 'h', status: 'active' } }];
+  const cdbCloudRemove = cdbCloudRun({ playerDb: cdbPlayerCopy, packs: [Object.assign({}, cdbPacksV1[0], { inCloud: true })],
+    code: 'reconcileHubCampaignDbs({ save: false }); removePackFromActiveCampaignDb("pack_dm_draconic_boons");' });
+  const cdbOfflineRemove = cdbCloudRun({ localMode: true, packs: [Object.assign({}, cdbPacksV1[0], { inCloud: true })],
+    code: 'removePackFromActiveCampaignDb("pack_dm_draconic_boons");' });
+  check(
+    'Campaign DB (cloud): attaching to a cloud campaign writes campaign_packs first and tags copies with the cloud id; a failed write changes nothing; signed out it is kept as not uploaded; removing deletes the cloud row (refused while signed out); a player character in another DM\'s campaign is left alone',
+    JSON.stringify(cdbCloudAttach.calls) === JSON.stringify([['upsert', 'cloud-uuid-1', 'pack_dm_draconic_boons', 1]]) &&
+    cdbCloudAttach.sandbox.state.campaigns[0].packs[0].inCloud === true &&
+    cdbCloudAttach.npcDb.length === 107 && cdbCloudAttach.npcDb.every(e => e._campaignPack.campaignId === 'cloud-uuid-1') &&
+    cdbCloudFail.sandbox.state.campaigns[0].packs.length === 0 && cdbCloudFail.npcDb.length === 0 && /not attached: RLS denied/.test(cdbCloudFail.alerts[0] || '') &&
+    cdbCloudOffline.calls.length === 0 && cdbCloudOffline.sandbox.state.campaigns[0].packs[0].inCloud === false && cdbCloudOffline.npcDb.length === 107 &&
+    JSON.stringify(cdbCloudRemove.calls) === JSON.stringify([['delete', 'cloud-uuid-1', 'pack_dm_draconic_boons']]) &&
+    cdbCloudRemove.sandbox.state.campaigns[0].packs.length === 0 && cdbCloudRemove.npcDb.length === 0 &&
+    cdbCloudRemove.playerDb.length === 1 && cdbCloudRemove.playerDb[0]._campaignPack.status === 'active' &&
+    cdbOfflineRemove.calls.length === 0 && cdbOfflineRemove.sandbox.state.campaigns[0].packs.length === 1 && /Sign in to remove/.test(cdbOfflineRemove.alerts[0] || '')
+  );
+
+  const cdbMerged = CampaignDb.mergeCloudPacks(
+    [{ packId: 'from_other_device', version: 3, entries: [] }, { packId: 'edited_offline', version: 1, entries: [] }],
+    [{ packId: 'edited_offline', version: 2, entries: [], inCloud: false }, { packId: 'phase1_local', version: 1, entries: [] }, { packId: 'deleted_elsewhere', version: 1, entries: [], inCloud: true }],
+    new Set(['edited_offline']));
+  const cdbM = (id) => cdbMerged.find(p => p.packId === id);
+  check(
+    'Campaign DB (cloud sync): the cloud list wins, packs not yet in the cloud are laid over it (uploaded ones become cloud packs, failed ones stay pending), and a cloud pack deleted on another device is dropped',
+    cdbMerged.length === 3 && cdbM('from_other_device').inCloud === true && cdbM('edited_offline').version === 2 && cdbM('edited_offline').inCloud === true &&
+    cdbM('phase1_local').inCloud === false && !cdbM('deleted_elsewhere') &&
+    /await pullCloudCampaignDbs\(\)/.test(hubSrc) && /if \(sc && sc\.parentId === oldId\) sc\.parentId = cloudCamp\.id;/.test(hubSrc)
+  );
+
+  // Campaign DB phase 3 (character sheet): char_hud.js runs in vm with a fake SupabaseAuth.
+  const hudCdbSrc = fs.readFileSync(path.join(__dirname, '..', 'char_hud.js'), 'utf8');
+  const hudCdbFnSrc = hudCdbSrc.slice(hudCdbSrc.indexOf('// ── Campaign DB (CAMPAIGN_PACKS_DESIGN.md, phase 3)'), hudCdbSrc.indexOf('function initCampaignRealtimeListener('));
+  const cdbSheetRun = (opts) => {
+    const calls = [], toasts = [];
+    let saved = 0, rendered = 0;
+    const fakeAuth = {
+      isLocalMode: () => Boolean(opts.localMode),
+      fetchCampaignPacks: (cid) => { calls.push(['fetch', cid]); return new Promise(() => {}); },
+      subscribeCampaignPacks: (cid) => { calls.push(['subscribe', cid]); return {}; },
+      unsubscribeCampaignPacks: (cid) => { calls.push(['unsubscribe', cid]); }
+    };
+    const sandbox = {
+      JSON, Object, Array, Map, Set, Date, Number, String, Boolean, console,
+      CampaignDb, window: { CampaignDb, SupabaseAuth: fakeAuth },
+      character: opts.character, masterDb: [], packsV1: cdbPacksV1,
+      saveStateToStorage: () => { saved++; }, renderAll: () => { rendered++; },
+      showDiceTopToast: (t) => toasts.push(t)
+    };
+    vm.runInNewContext(hudCdbFnSrc + '\n' + opts.code, sandbox);
+    return { sandbox, calls, toasts, saved: () => saved, rendered: () => rendered };
+  };
+  const cdbSheetChar = () => ({ id: 'p1', cloudCampaignId: 'cloud-uuid-1', campaignName: 'Test Camp', customDb: [{ id: 'mine', name: 'My Own Feat', type: 'Feat' }],
+    specialAbilities: [{ id: boonPack.entries[5].id, name: boonPack.entries[5].name }] });
+  const cdbSheetInit = cdbSheetRun({ character: cdbSheetChar(), code: 'initCampaignDbSync(character.cloudCampaignId, "load");' });
+  const cdbSheetOffline = cdbSheetRun({ localMode: true, character: cdbSheetChar(), code: 'initCampaignDbSync(character.cloudCampaignId, "load");' });
+  // Packs arrive; then the DM removes the whole pack (the used boon stays as "removed"); then the player leaves.
+  const cdbSheetApply = cdbSheetRun({ character: cdbSheetChar(), code:
+    'result = applyCampaignDbPacks("cloud-uuid-1", packsV1, "realtime"); firstDb = character.customDb.slice(); firstMaster = masterDb;' +
+    'result2 = applyCampaignDbPacks("cloud-uuid-1", [], "realtime"); detachCampaignDb("cloud-uuid-1");' });
+  const cdbSheetDb = cdbSheetApply.sandbox.firstDb;
+  const cdbSheetAfter = cdbSheetApply.sandbox.character.customDb;
+  check(
+    'Campaign DB (sheet): a character in a cloud campaign subscribes to and fetches its packs (nothing while signed out); the packs become tagged copies next to the character\'s own entries, with a save, a re-render and a toast; a used entry the DM removes is kept; leaving the campaign detaches the copies',
+    JSON.stringify(cdbSheetInit.calls) === JSON.stringify([['subscribe', 'cloud-uuid-1'], ['fetch', 'cloud-uuid-1']]) &&
+    cdbSheetOffline.calls.length === 0 &&
+    cdbSheetApply.sandbox.result.added === 107 && cdbSheetDb.length === 108 && cdbSheetDb[0].id === 'mine' &&
+    cdbSheetApply.sandbox.firstMaster === cdbSheetApply.sandbox.character.customDb && cdbSheetApply.saved() >= 1 && cdbSheetApply.rendered() >= 1 &&
+    /107 added/.test(cdbSheetApply.toasts[0] && cdbSheetApply.toasts[0].breakdown || '') &&
+    cdbSheetApply.sandbox.result2.removed === 106 && cdbSheetApply.sandbox.result2.keptRemoved === 1 &&
+    cdbSheetAfter.length === 2 && cdbSheetAfter[1]._campaignPack.status === 'detached' &&
+    /initCampaignDbSync\(character\.cloudCampaignId, 'load'\)/.test(hudCdbSrc) && /initCampaignDbSync\(result\.campaign\.id, 'join'\)/.test(hudCdbSrc) &&
+    /detachCampaignDb\(character\.cloudCampaignId\);\s*character\.cloudCampaignId = null;/.test(hudCdbSrc) &&
+    (() => { const ix = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8'); return ix.indexOf('campaign_db.js') > 0 && ix.indexOf('campaign_db.js') < ix.indexOf('char_hud.js'); })()
   );
 
   CharStore.clearHistory();

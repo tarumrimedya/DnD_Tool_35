@@ -1,0 +1,807 @@
+[
+  {
+    "id": "feat-combat-insight",
+    "schemaVersion": 2,
+    "name": "Combat Insight",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Warrior p.151",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Combat Expertise, Epic Prowess, base attack bonus +15",
+    "prereq": "Combat Expertise, Epic Prowess, base attack bonus +15",
+    "benefit": "When you wield a melee weapon, add Int mod instead of Str mod to damage rolls. (Conditional)",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 410
+    }
+  },
+  {
+    "id": "feat-epic-combat-expertise",
+    "schemaVersion": 2,
+    "name": "Epic Combat Expertise",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Warrior p.151",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Int 19, Combat Expertise, base attack bonus +21",
+    "prereq": "Int 19, Combat Expertise, base attack bonus +21",
+    "benefit": "When using the attack or full attack action in melee, you may take up to a -5 penalty to attack and add the same amount as a dodge bonus to AC to you and an adjacent ally. The effect lasts until your next turn.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 414
+    }
+  },
+  {
+    "id": "feat-epic-sunder",
+    "schemaVersion": 2,
+    "name": "Epic Sunder",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Warrior p.151",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Str 25, Epic Prowess, Improved Sunder, Power Attack",
+    "prereq": "Str 25, Epic Prowess, Improved Sunder, Power Attack",
+    "benefit": "On a sunder attack double any damage derived from strength. When trying to break an object with sudden force you gain +4 on the strength check.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 421
+    }
+  },
+  {
+    "id": "feat-wield-oversized-weapon",
+    "schemaVersion": 2,
+    "name": "Wield Oversized Weapon",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Warrior p.153",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Str 25, Monkey Grip, base attack bonus +21",
+    "prereq": "Str 25, Monkey Grip, base attack bonus +21",
+    "benefit": "You can treat any weapon as if it were one category smaller and lighter for determining the effort needed to wield it.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 428
+    }
+  },
+  {
+    "id": "feat-epic-devotion",
+    "schemaVersion": 2,
+    "name": "Epic Devotion",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Divine p.89",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Wis 21, Iron Will, alignment different then the chosen component, patron deity who doesn't accept clerics who have the chosen component.",
+    "prereq": "Wis 21, Iron Will, alignment different then the chosen component, patron deity who doesn't accept clerics who have the chosen component.",
+    "benefit": "You gain +4 bonus on save vs. spells with the chosen alignment component. You can take this feat multiple times, each time choosing a new alignment component.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 502
+    }
+  },
+  {
+    "id": "feat-improved-skirmish",
+    "schemaVersion": 2,
+    "name": "Improved Skirmish",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Adventurer p.192",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Skirmish +4d6/+4 AC",
+    "prereq": "Skirmish +4d6/+4 AC",
+    "benefit": "Gain bonus AC or Skirmish damage.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 714
+    }
+  },
+  {
+    "id": "feat-improved-sudden-strike",
+    "schemaVersion": 2,
+    "name": "Improved Sudden Strike",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Adventurer p.192",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Sudden Strike +8d6",
+    "prereq": "Sudden Strike +8d6",
+    "benefit": "Add 1d6 to your sudden strike damage.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 715
+    }
+  },
+  {
+    "id": "feat-legendary-acrobat",
+    "schemaVersion": 2,
+    "name": "Legendary Acrobat",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Adventurer p.192",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Dex 21, Balance 24 ranks, Tumble 24 ranks",
+    "prereq": "Dex 21, Balance 24 ranks, Tumble 24 ranks",
+    "benefit": "Ignore all check penalties for accelerated movement while balancing, accelerated tumbling, or for running while balancing on narrow surfaces.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 716
+    }
+  },
+  {
+    "id": "feat-automatic-quicken-power",
+    "schemaVersion": 2,
+    "name": "Automatic Quicken Power",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.157",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Quicken Power, Psicraft 30 ranks, Ability to manifest 9th level powers",
+    "prereq": "Quicken Power, Psicraft 30 ranks, Ability to manifest 9th level powers",
+    "benefit": "You may quicken all 1st level powers without expending your psionic focus (must be psionically focused)",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 878
+    }
+  },
+  {
+    "id": "feat-epic-power-penetration",
+    "schemaVersion": 2,
+    "name": "Epic Power Penetration",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.157",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Greater Power Penetration, Power Penetration",
+    "prereq": "Greater Power Penetration, Power Penetration",
+    "benefit": "+2 bonus on manifester level checks to overcome a creatures power resistance.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 881
+    }
+  },
+  {
+    "id": "feat-epic-psionic-endowment",
+    "schemaVersion": 2,
+    "name": "Epic Psionic Endowment",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.157",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Greater Psionic Endowment, Psionic Endowment, ability to manifest at least one 9th level power",
+    "prereq": "Greater Psionic Endowment, Psionic Endowment, ability to manifest at least one 9th level power",
+    "benefit": "Expend focus to add 1 to save DC against a power you manifest.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 882
+    }
+  },
+  {
+    "id": "feat-improved-combat-manifestation",
+    "schemaVersion": 2,
+    "name": "Improved Combat Manifestation",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.157",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Combat Manifestation, Concentration 25 ranks",
+    "prereq": "Combat Manifestation, Concentration 25 ranks",
+    "benefit": "Gain bonus equal to 1/2 your manifester level on concentration checks to manifest on the defensive.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 883
+    }
+  },
+  {
+    "id": "feat-improved-overchannel",
+    "schemaVersion": 2,
+    "name": "Improved Overchannel",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Complete Psionic p.157",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Overchannel, Psicraft 25 ranks",
+    "prereq": "Overchannel, Psicraft 25 ranks",
+    "benefit": "Take damage to raise you effective manifester level.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 884
+    }
+  },
+  {
+    "id": "feat-axiomatic-strike-pgtf",
+    "schemaVersion": 2,
+    "name": "Axiomatic Strike",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Player's Guide to Faerun p.135",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Smite Anarchy class feature, any lawful alignment",
+    "prereq": "Smite Anarchy class feature, any lawful alignment",
+    "benefit": "Weapons you wield are treated as axiomatic.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 2199
+    }
+  },
+  {
+    "id": "feat-chosen-weapon-specialization",
+    "schemaVersion": 2,
+    "name": "Chosen Weapon Specialization",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Player's Guide to Faerun p.135",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "War domain, Epic Prowess, Weapon Focus with deity's chosen weapon",
+    "prereq": "War domain, Epic Prowess, Weapon Focus with deity's chosen weapon",
+    "benefit": "+2 on weapon damage with deity's chosen weapon.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 2200
+    }
+  },
+  {
+    "id": "feat-divine-spell-penetration",
+    "schemaVersion": 2,
+    "name": "Divine Spell Penetration",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Player's Guide to Faerun p.135",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Wis 21, Improved Alignment-Based Casting, domain of chosen alignment, alignment matching chosen component, ability to cast 9th level divine spells",
+    "prereq": "Wis 21, Improved Alignment-Based Casting, domain of chosen alignment, alignment matching chosen component, ability to cast 9th level divine spells",
+    "benefit": "+4 bonus on caster level checks to overcome SR, when you cast spells with the chosen alignment.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 2201
+    }
+  },
+  {
+    "id": "feat-enhance-effect",
+    "schemaVersion": 2,
+    "name": "Enhance Effect",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Player's Guide to Faerun p.135",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Knowledge (arcana) 30 ranks, Spellcraft 30 ranks, Skill Focus (spellcraft), metamagic effect class ability",
+    "prereq": "Knowledge (arcana) 30 ranks, Spellcraft 30 ranks, Skill Focus (spellcraft), metamagic effect class ability",
+    "benefit": "Change any variable (except point of origin) of a persistent spell effect that is currently in place.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 2202
+    }
+  },
+  {
+    "id": "feat-epic-counterspell",
+    "schemaVersion": 2,
+    "name": "Epic Counterspell",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Player's Guide to Faerun p.135",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Spellcraft 30 ranks, Combat Reflexes, Improved Counterspell, Improved Initiative, Quicken Spell, Reactive Counterspell",
+    "prereq": "Spellcraft 30 ranks, Combat Reflexes, Improved Counterspell, Improved Initiative, Quicken Spell, Reactive Counterspell",
+    "benefit": "Counterspell any number of times per round without a readied action.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 2203
+    }
+  },
+  {
+    "id": "feat-epic-spellfire-wielder",
+    "schemaVersion": 2,
+    "name": "Epic Spellfire Wielder",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Player's Guide to Faerun p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Concentration 20 ranks, Endurance, Spellfire Wielder",
+    "prereq": "Concentration 20 ranks, Endurance, Spellfire Wielder",
+    "benefit": "Your con score is considered 4 higher for the purpose of determining your limit of stored spellfire energy levels.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 2205
+    }
+  },
+  {
+    "id": "feat-improved-cooperative-metamagic",
+    "schemaVersion": 2,
+    "name": "Improved Cooperative Metamagic",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Player's Guide to Faerun p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Spellcraft 30 ranks, Silent Spell, Still Spell, Quicken Spell, cooperative metamagic class feature",
+    "prereq": "Spellcraft 30 ranks, Silent Spell, Still Spell, Quicken Spell, cooperative metamagic class feature",
+    "benefit": "You can use you cooperative metamagic ability to add Silent, Still or Quicken Spell to your ally's spell.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 2206
+    }
+  },
+  {
+    "id": "feat-improved-snatch-spell",
+    "schemaVersion": 2,
+    "name": "Improved Snatch Spell",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Player's Guide to Faerun p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Knowledge (arcana) 40 ranks, Spellcraft 40 ranks, Epic Skill Focus (spellcraft), snatch spell class feature",
+    "prereq": "Knowledge (arcana) 40 ranks, Spellcraft 40 ranks, Epic Skill Focus (spellcraft), snatch spell class feature",
+    "benefit": "Control spells when you use you seize concentration or snatch spell ability.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 2207
+    }
+  },
+  {
+    "id": "feat-improved-spellpool-access",
+    "schemaVersion": 2,
+    "name": "Improved Spellpool Access",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Player's Guide to Faerun p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Knowledge (arcana) 30 ranks, Spellcraft 30 ranks, ability to cast spells from a spellpool",
+    "prereq": "Knowledge (arcana) 30 ranks, Spellcraft 30 ranks, ability to cast spells from a spellpool",
+    "benefit": "Your chances of a desired spell being available in the spellpool is greater.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 2208
+    }
+  },
+  {
+    "id": "feat-inscribe-epic-rune",
+    "schemaVersion": 2,
+    "name": "Inscribe Epic Rune",
+    "type": "Feat",
+    "category": "Epic",
+    "featTypes": [
+      "Epic"
+    ],
+    "scope": "All",
+    "slot": "None",
+    "source": "Player's Guide to Faerun p.136",
+    "isFighterBonusFeat": false,
+    "bonusFeatFor": [],
+    "prerequisites": "Int 19, Craft (any appropriate for runecasting) 24 ranks, Inscribe Rune",
+    "prereq": "Int 19, Craft (any appropriate for runecasting) 24 ranks, Inscribe Rune",
+    "benefit": "Inscribe rune that exceed normal limits.",
+    "tags": [
+      "feat",
+      "epic"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "levelBand": "epic",
+    "edition": "3.5",
+    "contentLevel": "summary",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Feats",
+      "row": 2209
+    }
+  }
+]

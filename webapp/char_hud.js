@@ -1095,6 +1095,7 @@
       }
       if (character?.cloudCampaignId && typeof initCampaignRealtimeListener === 'function') {
         initCampaignRealtimeListener(character.cloudCampaignId);
+        initCampaignDbSync(character.cloudCampaignId, 'load');
       }
     }
 
@@ -1594,6 +1595,7 @@
           saveStateToStorage();
           updateCampaignNavButton();
           initCampaignRealtimeListener(result.campaign.id);
+          initCampaignDbSync(result.campaign.id, 'join');
           closeJoinCampaignModal();
 
           if (typeof showDiceTopToast === 'function') {
@@ -1629,6 +1631,7 @@
         console.warn('leaveCampaign warning:', e);
       }
 
+      detachCampaignDb(character.cloudCampaignId);
       character.cloudCampaignId = null;
       character.campaignInviteCode = null;
       character.campaignName = null;
@@ -1648,6 +1651,99 @@
         if (btnText) btnText.textContent = 'Campaign';
         if (badge) badge.textContent = 'Not Linked';
       }
+    }
+
+    // ── Campaign DB (CAMPAIGN_PACKS_DESIGN.md, phase 3) ──
+    // The sheet keeps the character's copies of its cloud campaign's rule packs current (campaign_db.js).
+    // Copies of a Hub-only (local) campaign are kept current by the Hub; without a cloud campaign the sheet
+    // does not touch them.
+    let _campaignDbSyncSeq = 0;
+    let _campaignDbSubscribedId = null;
+
+    function campaignDbCloudReady() {
+      return Boolean(window.CampaignDb && window.SupabaseAuth && typeof window.SupabaseAuth.fetchCampaignPacks === 'function'
+        && !(typeof window.SupabaseAuth.isLocalMode === 'function' && window.SupabaseAuth.isLocalMode()));
+    }
+
+    function refreshAfterCampaignDbChange() {
+      masterDb = character.customDb;
+      saveStateToStorage(true);
+      if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
+        try { RuleMaster.renderTable(); } catch (e) {}
+      }
+      if (typeof renderAll === 'function') renderAll();
+    }
+
+    async function syncCampaignDbFromCloud(reason) {
+      const campId = character && character.cloudCampaignId;
+      if (!campId || !campaignDbCloudReady()) return null;
+      const seq = ++_campaignDbSyncSeq;
+      let packs;
+      try {
+        packs = await window.SupabaseAuth.fetchCampaignPacks(campId);
+      } catch (err) {
+        if (!err.missingTable) console.warn('Campaign DB sync:', err.message || err);
+        return null;
+      }
+      // A newer sync started, or the sheet switched character / campaign while this one was loading.
+      if (seq !== _campaignDbSyncSeq || !character || character.cloudCampaignId !== campId) return null;
+      return applyCampaignDbPacks(campId, packs, reason);
+    }
+
+    function applyCampaignDbPacks(campId, packs, reason) {
+      if (!Array.isArray(character.customDb)) character.customDb = [];
+      const res = CampaignDb.reconcile(character.customDb, packs, {
+        campaignId: campId,
+        used: CampaignDb.collectUsedRefs(character)
+      });
+      if (!res.changed) return res;
+      refreshAfterCampaignDbChange();
+      if (reason !== 'load' && typeof showDiceTopToast === 'function') {
+        const parts = [];
+        if (res.added) parts.push(`${res.added} added`);
+        if (res.updated + res.adopted) parts.push(`${res.updated + res.adopted} updated`);
+        if (res.removed) parts.push(`${res.removed} removed`);
+        if (res.keptRemoved) parts.push(`${res.keptRemoved} kept (in use, removed by the DM)`);
+        showDiceTopToast({
+          title: 'Campaign DB Updated',
+          formula: character.campaignName || 'Campaign rule packs',
+          breakdown: parts.join(' • ') || 'Rule pack entries refreshed.',
+          total: 'OK',
+          icon: '🏰'
+        });
+      }
+      if (res.skipped.length) {
+        console.warn('Campaign DB: skipped entries that clash with this character\'s own entries:', res.skipped.map(s => s.name));
+      }
+      return res;
+    }
+
+    function initCampaignDbSync(campaignId, reason) {
+      if (!campaignId || !campaignDbCloudReady()) return;
+      if (typeof window.SupabaseAuth.subscribeCampaignPacks === 'function') {
+        if (_campaignDbSubscribedId && _campaignDbSubscribedId !== campaignId) {
+          window.SupabaseAuth.unsubscribeCampaignPacks(_campaignDbSubscribedId);
+        }
+        _campaignDbSubscribedId = campaignId;
+        window.SupabaseAuth.subscribeCampaignPacks(campaignId, () => { syncCampaignDbFromCloud('realtime'); });
+      }
+      syncCampaignDbFromCloud(reason || 'load');
+    }
+
+    // Leaving the campaign: the copies stay on the character, marked detached, and are no longer updated.
+    function detachCampaignDb(campaignId) {
+      _campaignDbSyncSeq++;
+      if (_campaignDbSubscribedId && window.SupabaseAuth && typeof window.SupabaseAuth.unsubscribeCampaignPacks === 'function') {
+        window.SupabaseAuth.unsubscribeCampaignPacks(_campaignDbSubscribedId);
+      }
+      _campaignDbSubscribedId = null;
+      if (!window.CampaignDb || !character || !Array.isArray(character.customDb)) return;
+      let changed = false;
+      character.customDb.forEach(e => {
+        const t = CampaignDb.getTag(e);
+        if (t && t.campaignId === campaignId && t.status !== 'detached') { t.status = 'detached'; changed = true; }
+      });
+      if (changed) refreshAfterCampaignDbChange();
     }
 
     function initCampaignRealtimeListener(campaignId) {
