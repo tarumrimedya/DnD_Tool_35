@@ -27,11 +27,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 410
+      "row": 410,
+      "book": "Complete Warrior p.151"
     }
   },
   {
@@ -62,11 +63,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 414
+      "row": 414,
+      "book": "Complete Warrior p.151"
     }
   },
   {
@@ -97,11 +99,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 421
+      "row": 421,
+      "book": "Complete Warrior p.151"
     }
   },
   {
@@ -132,11 +135,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 428
+      "row": 428,
+      "book": "Complete Warrior p.153"
     }
   },
   {
@@ -153,8 +157,8 @@
     "source": "Complete Divine p.89",
     "isFighterBonusFeat": false,
     "bonusFeatFor": [],
-    "prerequisites": "Wis 21, Iron Will, alignment different then the chosen component, patron deity who doesn't accept clerics who have the chosen component.",
-    "prereq": "Wis 21, Iron Will, alignment different then the chosen component, patron deity who doesn't accept clerics who have the chosen component.",
+    "prerequisites": "Wis 21, Iron Will, alignment different from the chosen component, patron deity who does not accept clerics who have the chosen component",
+    "prereq": "Wis 21, Iron Will, alignment different from the chosen component, patron deity who does not accept clerics who have the chosen component",
     "benefit": "You gain +4 bonus on save vs. spells with the chosen alignment component. You can take this feat multiple times, each time choosing a new alignment component.",
     "tags": [
       "feat",
@@ -167,11 +171,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 502
+      "row": 502,
+      "book": "Complete Divine p.89"
     }
   },
   {
@@ -202,11 +207,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 714
+      "row": 714,
+      "book": "Complete Adventurer p.192"
     }
   },
   {
@@ -223,8 +229,8 @@
     "source": "Complete Adventurer p.192",
     "isFighterBonusFeat": false,
     "bonusFeatFor": [],
-    "prerequisites": "Sudden Strike +8d6",
-    "prereq": "Sudden Strike +8d6",
+    "prerequisites": "Sudden strike +8d6",
+    "prereq": "Sudden strike +8d6",
     "benefit": "Add 1d6 to your sudden strike damage.",
     "tags": [
       "feat",
@@ -237,11 +243,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 715
+      "row": 715,
+      "book": "Complete Adventurer p.192"
     }
   },
   {
@@ -272,11 +279,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 716
+      "row": 716,
+      "book": "Complete Adventurer p.192"
     }
   },
   {
@@ -307,11 +315,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 878
+      "row": 878,
+      "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
     }
   },
   {
@@ -342,11 +351,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 881
+      "row": 881,
+      "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
     }
   },
   {
@@ -377,11 +387,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 882
+      "row": 882,
+      "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
     }
   },
   {
@@ -412,11 +423,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 883
+      "row": 883,
+      "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
     }
   },
   {
@@ -447,11 +459,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 884
+      "row": 884,
+      "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
     }
   },
   {
@@ -468,8 +481,8 @@
     "source": "Player's Guide to Faerun p.135",
     "isFighterBonusFeat": false,
     "bonusFeatFor": [],
-    "prerequisites": "Smite Anarchy class feature, any lawful alignment",
-    "prereq": "Smite Anarchy class feature, any lawful alignment",
+    "prerequisites": "Smite anarchy class feature, any lawful alignment",
+    "prereq": "Smite anarchy class feature, any lawful alignment",
     "benefit": "Weapons you wield are treated as axiomatic.",
     "tags": [
       "feat",
@@ -482,11 +495,12 @@
     "levelBand": "epic",
     "edition": "3.5",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 2199
+      "row": 2199,
+      "book": "Player's Guide to Faerun p.135"
     }
   },
   {

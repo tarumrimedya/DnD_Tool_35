@@ -239,8 +239,8 @@
     "source": "Book of Vile Darkness p.48",
     "isFighterBonusFeat": false,
     "bonusFeatFor": [],
-    "prerequisites": "Base Will  +5, Int 15, Cha 15",
-    "prereq": "Base Will  +5, Int 15, Cha 15",
+    "prerequisites": "Base Will save bonus +5, Int 15, Cha 15",
+    "prereq": "Base Will save bonus +5, Int 15, Cha 15",
     "benefit": "The character can use the Dark Speech to bring loathing and fear to others, to help cast evil spells and create evil magic items, and to weaken physical objects.",
     "tags": [
       "feat",
@@ -253,11 +253,12 @@
     "levelBand": "heroic",
     "edition": "3.0",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 2018
+      "row": 2018,
+      "book": "Book of Vile Darkness p.48"
     }
   },
   {
@@ -323,11 +324,12 @@
     "levelBand": "heroic",
     "edition": "3.0",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 2020
+      "row": 2020,
+      "book": "Book of Vile Darkness p.49"
     }
   },
   {
@@ -463,11 +465,12 @@
     "levelBand": "heroic",
     "edition": "3.0",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 2024
+      "row": 2024,
+      "book": "Book of Vile Darkness p.50"
     }
   },
   {
@@ -498,11 +501,12 @@
     "levelBand": "heroic",
     "edition": "3.0",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 2025
+      "row": 2025,
+      "book": "Book of Vile Darkness p.50"
     }
   },
   {
@@ -603,11 +607,12 @@
     "levelBand": "heroic",
     "edition": "3.0",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 2031
+      "row": 2031,
+      "book": "Book of Vile Darkness p.50"
     }
   },
   {
@@ -4995,8 +5000,8 @@
     "source": "Oriental Adventures p.61",
     "isFighterBonusFeat": false,
     "bonusFeatFor": [],
-    "prerequisites": "Human, Unicorn clan",
-    "prereq": "Human, Unicorn clan",
+    "prerequisites": "Unicorn clan",
+    "prereq": "Unicorn clan",
     "benefit": "You gain a +3 bonus to Diplomacy checks.",
     "tags": [
       "feat",
@@ -5009,11 +5014,12 @@
     "levelBand": "heroic",
     "edition": "3.0",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 2847
+      "row": 2847,
+      "book": "Oriental Adventures p.61"
     }
   },
   {
@@ -5975,8 +5981,8 @@
     "source": "Oriental Adventures p.65",
     "isFighterBonusFeat": false,
     "bonusFeatFor": [],
-    "prerequisites": "Human, Crab clan",
-    "prereq": "Human, Crab clan",
+    "prerequisites": "Crab clan",
+    "prereq": "Crab clan",
     "benefit": "You gain a +2 bonus on Balance and Profession (sailor) checks.",
     "tags": [
       "feat",
@@ -5989,11 +5995,12 @@
     "levelBand": "heroic",
     "edition": "3.0",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 2876
+      "row": 2876,
+      "book": "Oriental Adventures p.65"
     }
   },
   {
@@ -8579,11 +8586,12 @@
     "levelBand": "heroic",
     "edition": "3.0",
     "contentLevel": "summary",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Feats",
-      "row": 3417
+      "row": 3417,
+      "crossCheck": "srd.dndtools.org Feat Index (srd/tools/toolsFeatIndex.html), 2026-11-10"
     }
   },
   {

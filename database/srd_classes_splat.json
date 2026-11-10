@@ -1028,11 +1028,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (archivist.html), 2026-11-10"
     }
   },
   {
@@ -1096,11 +1097,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (ardent.html), 2026-11-10"
     }
   },
   {
@@ -1353,11 +1355,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (artificer.html), 2026-11-10"
     }
   },
   {
@@ -2296,11 +2299,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (binder.html), 2026-11-10"
     }
   },
   {
@@ -7552,11 +7556,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (divineMind.html), 2026-11-10"
     }
   },
   {
@@ -8549,11 +8554,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (dragonfireAdept.html), 2026-11-10"
     }
   },
   {
@@ -15446,8 +15452,8 @@
     "isPrestige": false,
     "source": "Miniatures Handbook",
     "role": "Base Class",
-    "hd": 8,
-    "hitDie": "d8",
+    "hd": 6,
+    "hitDie": "d6",
     "maxLevel": 20,
     "bab": 0.5,
     "babProgression": "low",
@@ -15493,11 +15499,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (baseMh/healer.html), 2026-11-10: Hit Die d6 taken from the site (workbook had d8; Miniatures Handbook not in the user's library)"
     }
   },
   {
@@ -17204,11 +17211,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (incarnate.html), 2026-11-10"
     }
   },
   {
@@ -19456,11 +19464,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (lurk.html), 2026-11-10"
     }
   },
   {
@@ -21985,11 +21994,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (mystic.html), 2026-11-10"
     }
   },
   {
@@ -22661,11 +22671,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (noble.html), 2026-11-10"
     }
   },
   {
@@ -28182,11 +28193,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (shadowcaster.html), 2026-11-10"
     }
   },
   {
@@ -28905,11 +28917,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (shugenja.html), 2026-11-10"
     }
   },
   {
@@ -29529,11 +29542,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (soulborn.html), 2026-11-10"
     }
   },
   {
@@ -30200,11 +30214,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (spiritShaman.html), 2026-11-10"
     }
   },
   {
@@ -33327,11 +33342,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (totemist.html), 2026-11-10"
     }
   },
   {
@@ -33603,11 +33619,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (truenamer.html), 2026-11-10"
     }
   },
   {
@@ -36517,11 +36534,12 @@
     "ruleFlags": {},
     "edition": "3.5",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (wujen.html), 2026-11-10"
     }
   },
   {
