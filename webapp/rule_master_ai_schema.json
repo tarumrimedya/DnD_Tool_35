@@ -828,7 +828,7 @@
         "provenance": {
           "type": ["object", "null"],
           "default": null,
-          "description": "Import origin for bulk-imported records, e.g. {'origin': 'builder-workbook-7.4.0.1', 'sheet': 'Feats', 'row': 385}. Character-side copies of compendium entries carry a separate internal '_snapshot' object, which is never produced by the AI."
+          "description": "Import origin for bulk-imported records, e.g. {'origin': 'builder-workbook-7.4.0.1', 'sheet': 'Feats', 'row': 385}. Character-side copies of compendium entries carry a separate internal '_snapshot' object, and copies of Campaign DB rule pack entries an internal '_campaignPack' object ({campaignId, packId, version, hash, status}); neither is ever produced by the AI."
         },
         "featType": {
           "type": "string",

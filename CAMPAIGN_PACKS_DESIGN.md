@@ -1,6 +1,14 @@
 # Campaign DB: shared campaign rule DB (design)
 
-Status: approved (2026-11-10): the whole pack is copied to each character, and a pack file uploaded in the Hub attaches to the campaign. Phase 1 is implemented (`campaign_db.js`, Hub local campaigns). Phase 2 is implemented (cloud table, `supabase_auth.js`, Hub DM side); the SQL must be run once in Supabase (below). Phase 3 (player sheet) is open.
+Status: approved (2026-11-10): the whole pack is copied to each character, and a pack file uploaded in the Hub attaches to the campaign. Phase 1 is implemented (`campaign_db.js`, Hub local campaigns). Phase 2 is implemented (cloud table, `supabase_auth.js`, Hub DM side); the SQL was run in Supabase on 2026-11-10. Phase 3 is implemented (character sheet); a live test on a cloud campaign is still open.
+
+## Phase 3 behaviour (character sheet, `char_hud.js`)
+
+- **Load and join:** a character with `cloudCampaignId` subscribes to its campaign's `campaign_packs` (Realtime) and fetches the packs when it loads and when it joins a campaign; the copies are reconciled, the character is saved and the sheet re-renders.
+- **DM changes a pack:** the Realtime event makes the sheet fetch and reconcile again, with a "Campaign DB Updated" toast (added / updated / removed / kept).
+- **Leaving the campaign:** the copies of that campaign are marked detached and stay on the character.
+- **Signed out, or no cloud campaign:** nothing is fetched and the copies are left as they are (a Hub-only campaign is kept current by the Hub).
+- **Master DB table:** a copy shows "🏰 Campaign DB", "⚠️ Removed by DM" or "📴 Campaign DB (Detached)".
 
 ## Phase 2 setup (once)
 

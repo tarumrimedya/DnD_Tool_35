@@ -2139,6 +2139,20 @@ const RuleMaster = {
     return s && s.origin === 'srd-snapshot' ? s : null;
   },
 
+  // Campaign DB copies (campaign_db.js): entries the character gets from its campaign's rule packs
+  getCampaignPackBadgeHtml(entry) {
+    const t = entry && entry._campaignPack;
+    if (!t || typeof t !== 'object' || !t.packId) return '';
+    const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    if (t.status === 'removed') {
+      return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-950/90 text-amber-300 border border-amber-600/60" title="The DM removed this entry from rule pack ${esc(t.packId)}; it is kept because this character uses it">⚠️ Removed by DM</span>`;
+    }
+    if (t.status === 'detached') {
+      return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-800 text-slate-300 border border-slate-600/60" title="This character is no longer in the campaign; the copy is kept and no longer updated">📴 Campaign DB (Detached)</span>`;
+    }
+    return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-950/80 text-indigo-300 border border-indigo-700/50" title="From the campaign's rule pack ${esc(t.packId)} v${esc(t.version)}; follows the DM's updates">🏰 Campaign DB</span>`;
+  },
+
   getSnapshotBadgeHtml(entry) {
     const snap = this.getSnapshotMeta(entry);
     if (!snap) return '';
@@ -2344,7 +2358,7 @@ const RuleMaster = {
         }
         return badges;
       })();
-      const snapshotBadgeHtml = this.getSnapshotBadgeHtml(rawItem);
+      const snapshotBadgeHtml = this.getSnapshotBadgeHtml(rawItem) + this.getCampaignPackBadgeHtml(rawItem);
 
       tr.innerHTML = `
         <td class="py-2.5 px-2.5 text-center">

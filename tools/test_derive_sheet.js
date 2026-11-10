@@ -2878,6 +2878,52 @@ function runDeriveSheetTests() {
     /await pullCloudCampaignDbs\(\)/.test(hubSrc) && /if \(sc && sc\.parentId === oldId\) sc\.parentId = cloudCamp\.id;/.test(hubSrc)
   );
 
+  // Campaign DB phase 3 (character sheet): char_hud.js runs in vm with a fake SupabaseAuth.
+  const hudCdbSrc = fs.readFileSync(path.join(__dirname, '..', 'char_hud.js'), 'utf8');
+  const hudCdbFnSrc = hudCdbSrc.slice(hudCdbSrc.indexOf('// ── Campaign DB (CAMPAIGN_PACKS_DESIGN.md, phase 3)'), hudCdbSrc.indexOf('function initCampaignRealtimeListener('));
+  const cdbSheetRun = (opts) => {
+    const calls = [], toasts = [];
+    let saved = 0, rendered = 0;
+    const fakeAuth = {
+      isLocalMode: () => Boolean(opts.localMode),
+      fetchCampaignPacks: (cid) => { calls.push(['fetch', cid]); return new Promise(() => {}); },
+      subscribeCampaignPacks: (cid) => { calls.push(['subscribe', cid]); return {}; },
+      unsubscribeCampaignPacks: (cid) => { calls.push(['unsubscribe', cid]); }
+    };
+    const sandbox = {
+      JSON, Object, Array, Map, Set, Date, Number, String, Boolean, console,
+      CampaignDb, window: { CampaignDb, SupabaseAuth: fakeAuth },
+      character: opts.character, masterDb: [], packsV1: cdbPacksV1,
+      saveStateToStorage: () => { saved++; }, renderAll: () => { rendered++; },
+      showDiceTopToast: (t) => toasts.push(t)
+    };
+    vm.runInNewContext(hudCdbFnSrc + '\n' + opts.code, sandbox);
+    return { sandbox, calls, toasts, saved: () => saved, rendered: () => rendered };
+  };
+  const cdbSheetChar = () => ({ id: 'p1', cloudCampaignId: 'cloud-uuid-1', campaignName: 'Test Camp', customDb: [{ id: 'mine', name: 'My Own Feat', type: 'Feat' }],
+    specialAbilities: [{ id: boonPack.entries[5].id, name: boonPack.entries[5].name }] });
+  const cdbSheetInit = cdbSheetRun({ character: cdbSheetChar(), code: 'initCampaignDbSync(character.cloudCampaignId, "load");' });
+  const cdbSheetOffline = cdbSheetRun({ localMode: true, character: cdbSheetChar(), code: 'initCampaignDbSync(character.cloudCampaignId, "load");' });
+  // Packs arrive; then the DM removes the whole pack (the used boon stays as "removed"); then the player leaves.
+  const cdbSheetApply = cdbSheetRun({ character: cdbSheetChar(), code:
+    'result = applyCampaignDbPacks("cloud-uuid-1", packsV1, "realtime"); firstDb = character.customDb.slice(); firstMaster = masterDb;' +
+    'result2 = applyCampaignDbPacks("cloud-uuid-1", [], "realtime"); detachCampaignDb("cloud-uuid-1");' });
+  const cdbSheetDb = cdbSheetApply.sandbox.firstDb;
+  const cdbSheetAfter = cdbSheetApply.sandbox.character.customDb;
+  check(
+    'Campaign DB (sheet): a character in a cloud campaign subscribes to and fetches its packs (nothing while signed out); the packs become tagged copies next to the character\'s own entries, with a save, a re-render and a toast; a used entry the DM removes is kept; leaving the campaign detaches the copies',
+    JSON.stringify(cdbSheetInit.calls) === JSON.stringify([['subscribe', 'cloud-uuid-1'], ['fetch', 'cloud-uuid-1']]) &&
+    cdbSheetOffline.calls.length === 0 &&
+    cdbSheetApply.sandbox.result.added === 107 && cdbSheetDb.length === 108 && cdbSheetDb[0].id === 'mine' &&
+    cdbSheetApply.sandbox.firstMaster === cdbSheetApply.sandbox.character.customDb && cdbSheetApply.saved() >= 1 && cdbSheetApply.rendered() >= 1 &&
+    /107 added/.test(cdbSheetApply.toasts[0] && cdbSheetApply.toasts[0].breakdown || '') &&
+    cdbSheetApply.sandbox.result2.removed === 106 && cdbSheetApply.sandbox.result2.keptRemoved === 1 &&
+    cdbSheetAfter.length === 2 && cdbSheetAfter[1]._campaignPack.status === 'detached' &&
+    /initCampaignDbSync\(character\.cloudCampaignId, 'load'\)/.test(hudCdbSrc) && /initCampaignDbSync\(result\.campaign\.id, 'join'\)/.test(hudCdbSrc) &&
+    /detachCampaignDb\(character\.cloudCampaignId\);\s*character\.cloudCampaignId = null;/.test(hudCdbSrc) &&
+    (() => { const ix = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8'); return ix.indexOf('campaign_db.js') > 0 && ix.indexOf('campaign_db.js') < ix.indexOf('char_hud.js'); })()
+  );
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };
