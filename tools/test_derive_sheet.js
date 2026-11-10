@@ -3095,6 +3095,18 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Legacy Vercel KV sync is retired (ADR-039): no module, endpoint, script tag or call may come back.
+  {
+    const root = path.join(__dirname, '..');
+    const srcFiles = ['index.html', 'hub.html', 'login.html', 'char_hud.js', 'char_spells.js', 'char_inventory.js', 'char_combat.js', 'char_progression.js', 'char_modals.js', 'supabase_auth.js', 'rule_master.js', 'ui_shared.js'];
+    const hits = srcFiles.filter(f => fs.existsSync(path.join(root, f)) && /\bCloudSync\.|GDriveSync|gdrive_sync\.js|vault-lock-modal|\/api\/storage/.test(fs.readFileSync(path.join(root, f), 'utf8')));
+    check(
+      'Legacy KV sync retired: gdrive_sync.js and api/storage.js are gone, and no page or module loads or calls CloudSync / GDriveSync / the PIN vault',
+      !fs.existsSync(path.join(root, 'gdrive_sync.js')) && !fs.existsSync(path.join(root, 'api', 'storage.js')) && hits.length === 0,
+      `still referenced in: ${hits.join(', ')}`
+    );
+  }
+
   // Google sign-in redirect: Supabase needs an absolute URL on this origin ("?redirect=/hub" used to be sent as is,
   // so a preview deployment fell back to the Site URL and never got the session).
   {

@@ -29,7 +29,6 @@ const SOURCE_FILES = [
   'hub_notes.js',
   'hub_dice.js',
   'hub_ai.js',
-  'gdrive_sync.js',
   'supabase_auth.js',
   'dice3d.js'
 ];

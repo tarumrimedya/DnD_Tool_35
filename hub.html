@@ -8,19 +8,18 @@
   <script src="srd_compendium.js?v=20261105_2355"></script>
   <script src="rule_engine.js?v=20261110_r12"></script>
   <script src="rule_master.js?v=20261105_2355"></script>
-  <script src="ui_shared.js?v=20261105_2355"></script>
+  <script src="ui_shared.js?v=20261110_r15"></script>
   <script src="campaign_db.js?v=20261110_03"></script>
-  <script src="gdrive_sync.js?v=20261105_2355"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js?v=20261110_r14"></script>
   <!-- Prefetch Character Sheet & Domain Modules during Hub Idle Time -->
   <link rel="prefetch" href="index.html">
-  <link rel="prefetch" href="char_modals.js?v=20261105_2355">
-  <link rel="prefetch" href="char_hud.js?v=20261105_2355">
+  <link rel="prefetch" href="char_modals.js?v=20261110_r15">
+  <link rel="prefetch" href="char_hud.js?v=20261110_r15">
   <link rel="prefetch" href="char_combat.js?v=20261105_2355">
-  <link rel="prefetch" href="char_spells.js?v=20261110_r13">
+  <link rel="prefetch" href="char_spells.js?v=20261110_r15">
   <link rel="prefetch" href="char_progression.js?v=20261105_2355">
-  <link rel="prefetch" href="char_inventory.js?v=20261105_2355">
+  <link rel="prefetch" href="char_inventory.js?v=20261110_r15">
   <!-- Three.js & 3D Dice Roller Engine -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -169,7 +168,7 @@
           </div>
 
           <!-- Bulut Senkron Durumu (3. Satır - Simetrik & Eşit Genişlik) -->
-          <div id="sync-status-pill" onclick="if(window.SupabaseAuth) SupabaseAuth.handlePillClick(); else if(window.CloudSync) CloudSync.connect()" title="Check / synchronize Cloud status" class="cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 w-full h-9 whitespace-nowrap shadow-sm transition">
+          <div id="sync-status-pill" onclick="if(window.SupabaseAuth) SupabaseAuth.handlePillClick()" title="Check / synchronize Cloud status" class="cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 px-2.5 py-1 rounded-xl text-[10px] sm:text-[11px] font-medium bg-emerald-950/80 text-emerald-300 border border-emerald-600 w-full h-9 whitespace-nowrap shadow-sm transition">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
             <span id="sync-status-text">🟢 <span class="hidden sm:inline">Cloud </span>Synced</span>
           </div>
@@ -1469,17 +1468,9 @@
           latestDmEvent: state.latestDmEvent || null,
           lastSaved: new Date().toISOString()
         }));
+        // Campaigns and notes go to Supabase user_hub_state; characters sync through public.characters
+        // (syncCloudUserHub). `isDmModeFast` only mattered for the retired Vercel KV push.
         if (triggerCloudSync && typeof scheduleUserHubStateSync === 'function') scheduleUserHubStateSync();
-        if (triggerCloudSync && window.CloudSync) {
-          if (isDmModeFast && typeof window.CloudSync.pushToCloud === 'function') {
-            clearTimeout(window.CloudSync.autoSaveTimer);
-            window.CloudSync.autoSaveTimer = setTimeout(() => {
-              window.CloudSync.pushToCloud(true);
-            }, 300);
-          } else if (typeof window.CloudSync.saveDataDebounced === 'function') {
-            window.CloudSync.saveDataDebounced();
-          }
-        }
       } catch (err) {
         console.error('Hub storage save error:', err);
       }
@@ -4993,13 +4984,6 @@ CRITICAL RULES:
         try { initTabVisibilitySync(); } catch (e) { console.warn('initTabVisibilitySync error:', e); }
       }
 
-      if (window.CloudSync && typeof window.CloudSync.init === 'function') {
-        try {
-          await window.CloudSync.init();
-        } catch (e) {
-          console.warn('CloudSync init in hub error:', e);
-        }
-      }
     });
   </script>
 

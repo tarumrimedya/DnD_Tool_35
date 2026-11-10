@@ -10,7 +10,7 @@ Campaign notes (DM Logs, Campaign Logs), local campaigns and sub-campaigns used 
 - **When:** at the start of every Hub cloud sync, and 2.5 s after a Hub save.
 - **Merge** (`campaign_db.js mergeHubCampaignState`, three-way per campaign): each campaign keeps the hash of its last synced version. If only one side changed since then, that side wins; if both changed, the other device's fields with this device's on top and the notes merged by id (newer `updatedAt` wins). A deleted campaign travels as an id; a campaign missing from the row is never treated as deleted.
 - **Until the SQL runs:** the sync stops quietly after the first "table is not installed" error; nothing else changes.
-- **Moving off KV:** a device that still syncs through KV uploads its campaigns and notes on its first Hub sync with this code while signed in. After that, KV can be removed.
+- **Moving off KV:** done 2026-11-10. The device that still wrote to KV signed in with this code and its campaigns reached `user_hub_state`; then the KV layer (`gdrive_sync.js`, `api/storage.js`, the PIN vault modal and the Sync tab's KV card) was removed. The Upstash data stays in Vercel as a backup.
 
 ## Campaign bundle (export / import, Hub)
 
