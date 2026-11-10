@@ -3045,6 +3045,26 @@ function runDeriveSheetTests() {
     revalLocalOnly.out === false && revalLocalOnly.character.id === 'char_local_new' && revalNoChar.out === false && revalNoChar.character === null
   );
 
+  // Google sign-in redirect: Supabase needs an absolute URL on this origin ("?redirect=/hub" used to be sent as is,
+  // so a preview deployment fell back to the Site URL and never got the session).
+  {
+    const authSrc = fs.readFileSync(path.join(__dirname, '..', 'supabase_auth.js'), 'utf8');
+    const a = authSrc.indexOf('resolveAuthRedirect(customRedirectUrl, origin) {');
+    const body = authSrc.slice(a, authSrc.indexOf('\n  },', a) + 4);
+    const box = { URL, String };
+    vm.runInNewContext('const o = {' + body + '};\nr = [' +
+      'o.resolveAuthRedirect("/hub", "https://preview.example.app"),' +
+      'o.resolveAuthRedirect("/character?id=c1", "https://preview.example.app"),' +
+      'o.resolveAuthRedirect(null, "https://preview.example.app"),' +
+      'o.resolveAuthRedirect("https://evil.example.com/hub", "https://preview.example.app"),' +
+      'o.resolveAuthRedirect("https://preview.example.app/hub", "https://preview.example.app")];', box);
+    check(
+      'Sign-in redirect: a relative ?redirect= is sent to Supabase as an absolute URL on this origin; none falls back to /hub; another origin is refused',
+      JSON.stringify(box.r) === JSON.stringify(['https://preview.example.app/hub', 'https://preview.example.app/character?id=c1', 'https://preview.example.app/hub', 'https://preview.example.app/hub', 'https://preview.example.app/hub']) &&
+      /this\.resolveAuthRedirect\(customRedirectUrl, window\.location\.origin\)/.test(authSrc)
+    );
+  }
+
   // Campaign bundle (campaign_db.js): export one main campaign with sub-campaigns, packs, notes and characters;
   // import creates it when its id is unknown, and otherwise merges by id without overwriting anything.
   {

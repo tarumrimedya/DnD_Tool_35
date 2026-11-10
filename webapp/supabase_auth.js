@@ -89,6 +89,17 @@ const SupabaseAuth = {
     return session ? session.user : null;
   },
 
+  resolveAuthRedirect(customRedirectUrl, origin) {
+    const fallback = `${origin}/hub`;
+    if (!customRedirectUrl) return fallback;
+    try {
+      const url = new URL(String(customRedirectUrl), origin);
+      return url.origin === origin ? url.href : fallback;
+    } catch (e) {
+      return fallback;
+    }
+  },
+
   async signInWithGoogle(customRedirectUrl = null) {
     const client = this.getClient();
     if (!client) {
@@ -100,8 +111,10 @@ const SupabaseAuth = {
     this.setLocalMode(false);
 
     // Yönlendirme adresi belirleme
-    const origin = window.location.origin;
-    const targetUrl = customRedirectUrl || `${origin}/hub`;
+    // Supabase needs an absolute redirect URL: a relative one (the login page passes "?redirect=/hub") does not
+    // match the allow list, so Supabase falls back to the project Site URL and a preview deployment never receives
+    // the session. Resolve it against this origin; anything on another origin falls back to this origin's /hub.
+    const targetUrl = this.resolveAuthRedirect(customRedirectUrl, window.location.origin);
 
     const { data, error } = await client.auth.signInWithOAuth({
       provider: 'google',
