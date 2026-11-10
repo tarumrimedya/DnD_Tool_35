@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "ff25a9e938b33a65",
+  "compendiumHash": "65a5402c6d860081",
   "generatedAt": "2026-11-04T15:37:19.474Z",
-  "totalEntries": 7652,
+  "totalEntries": 7690,
   "chunks": {
     "srd_equipment.json": {
       "count": 1131,
@@ -30,9 +30,9 @@
       "eagerLoad": true
     },
     "srd_spells.json": {
-      "count": 699,
-      "bytes": 1425408,
-      "hash": "8db89ba9a78540cb",
+      "count": 695,
+      "bytes": 1419458,
+      "hash": "dcf6f4fe2a291210",
       "eagerLoad": true
     },
     "srd_monsters.json": {
@@ -113,6 +113,12 @@
       "count": 440,
       "hash": "790cf44baade09cb",
       "bytes": 787583,
+      "eagerLoad": false
+    },
+    "srd_spells_splat.json": {
+      "count": 42,
+      "hash": "72c4640c5ca23356",
+      "bytes": 70904,
       "eagerLoad": false
     }
   },
@@ -41660,7 +41666,7 @@
       "t": "Spell",
       "c": "Transmutation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_spells_splat.json",
       "l": 1
     },
     {
@@ -41669,7 +41675,7 @@
       "t": "Spell",
       "c": "Transmutation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_spells_splat.json",
       "l": 2
     },
     {
@@ -41678,7 +41684,7 @@
       "t": "Spell",
       "c": "Transmutation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_spells_splat.json",
       "l": 3
     },
     {
@@ -41687,7 +41693,7 @@
       "t": "Spell",
       "c": "Transmutation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_spells_splat.json",
       "l": 4
     },
     {
@@ -63607,6 +63613,348 @@
       "c": "Prestige",
       "s": "None",
       "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "spl-justice-of-the-wyrm-king",
+      "n": "Justice of the Wyrm King",
+      "t": "Spell",
+      "c": "Abjuration",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 7
+    },
+    {
+      "id": "spl-kiss-of-draconic-defiance",
+      "n": "Kiss of Draconic Defiance",
+      "t": "Spell",
+      "c": "Abjuration",
+      "s": "Fortitude negates; see text",
+      "f": "srd_spells_splat.json",
+      "l": 7
+    },
+    {
+      "id": "spl-call-of-the-twilight-defender",
+      "n": "Call of the Twilight Defender",
+      "t": "Spell",
+      "c": "Conjuration",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 6
+    },
+    {
+      "id": "spl-undying-vigor-of-the-dragonlords",
+      "n": "Undying Vigor of the Dragonlords",
+      "t": "Spell",
+      "c": "Conjuration",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 5
+    },
+    {
+      "id": "spl-detect-dragonblood",
+      "n": "Detect Dragonblood",
+      "t": "Spell",
+      "c": "Divination",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 1
+    },
+    {
+      "id": "spl-eyes-of-the-oracle",
+      "n": "Eyes of the Oracle",
+      "t": "Spell",
+      "c": "Divination",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 6
+    },
+    {
+      "id": "spl-firestride-exhalation",
+      "n": "Firestride Exhalation",
+      "t": "Spell",
+      "c": "Conjuration/Evocation",
+      "s": "Reflex half",
+      "f": "srd_spells_splat.json",
+      "l": 4
+    },
+    {
+      "id": "spl-passage-of-the-shifting-sands",
+      "n": "Passage of the Shifting Sands",
+      "t": "Spell",
+      "c": "Transmutation/Evocation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 4
+    },
+    {
+      "id": "spl-rot-of-ages",
+      "n": "Rot of Ages",
+      "t": "Spell",
+      "c": "Conjuration/Necromancy",
+      "s": "Fortitude partial",
+      "f": "srd_spells_splat.json",
+      "l": 1
+    },
+    {
+      "id": "spl-vision-of-the-omniscient-eye",
+      "n": "Vision of the Omniscient Eye",
+      "t": "Spell",
+      "c": "Divination/Evocation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 3
+    },
+    {
+      "id": "spl-adoration-of-the-frightful",
+      "n": "Adoration of the Frightful",
+      "t": "Spell",
+      "c": "Enchantment",
+      "s": "Will negates",
+      "f": "srd_spells_splat.json",
+      "l": 2
+    },
+    {
+      "id": "spl-mind-of-the-labyrinth",
+      "n": "Mind of the Labyrinth",
+      "t": "Spell",
+      "c": "Enchantment",
+      "s": "None; see text",
+      "f": "srd_spells_splat.json",
+      "l": 8
+    },
+    {
+      "id": "spl-trance-of-the-verdant-domain",
+      "n": "Trance of the Verdant Domain",
+      "t": "Spell",
+      "c": "Enchantment",
+      "s": "Will negates",
+      "f": "srd_spells_splat.json",
+      "l": 3
+    },
+    {
+      "id": "spl-dragoneye-rune",
+      "n": "Dragoneye Rune",
+      "t": "Spell",
+      "c": "Universal",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 2
+    },
+    {
+      "id": "spl-glorious-master-of-the-elements",
+      "n": "Glorious Master of the Elements",
+      "t": "Spell",
+      "c": "Evocation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 7
+    },
+    {
+      "id": "spl-haze-of-smoldering-stone",
+      "n": "Haze of Smoldering Stone",
+      "t": "Spell",
+      "c": "Evocation",
+      "s": "Reflex half",
+      "f": "srd_spells_splat.json",
+      "l": 6
+    },
+    {
+      "id": "spl-wreath-of-flames",
+      "n": "Wreath of Flames",
+      "t": "Spell",
+      "c": "Evocation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 3
+    },
+    {
+      "id": "spl-burst-of-glacial-wrath",
+      "n": "Burst of Glacial Wrath",
+      "t": "Spell",
+      "c": "Evocation/Transmutation",
+      "s": "Fortitude half",
+      "f": "srd_spells_splat.json",
+      "l": 9
+    },
+    {
+      "id": "spl-ferocity-of-sanguine-rage",
+      "n": "Ferocity of Sanguine Rage",
+      "t": "Spell",
+      "c": "Transmutation/Divination",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 3
+    },
+    {
+      "id": "spl-lord-of-the-sky",
+      "n": "Lord of the Sky",
+      "t": "Spell",
+      "c": "Evocation/Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 5
+    },
+    {
+      "id": "spl-wingblast",
+      "n": "Wingblast",
+      "t": "Spell",
+      "c": "Evocation/Transmutation",
+      "s": "None or Fortitude negates; see text",
+      "f": "srd_spells_splat.json",
+      "l": 3
+    },
+    {
+      "id": "spl-curse-of-the-elemental-lords",
+      "n": "Curse of the Elemental Lords",
+      "t": "Spell",
+      "c": "Necromancy",
+      "s": "Will negates",
+      "f": "srd_spells_splat.json",
+      "l": 4
+    },
+    {
+      "id": "spl-aspect-of-the-chromatic-dragon",
+      "n": "Aspect of the Chromatic Dragon",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 8
+    },
+    {
+      "id": "spl-aspect-of-the-platinum-dragon",
+      "n": "Aspect of the Platinum Dragon",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 7
+    },
+    {
+      "id": "spl-channel-the-dragon",
+      "n": "Channel the Dragon",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 7
+    },
+    {
+      "id": "spl-dragonshape-least",
+      "n": "Dragonshape, Least",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 3
+    },
+    {
+      "id": "spl-dragonshape-lesser",
+      "n": "Dragonshape, Lesser",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 6
+    },
+    {
+      "id": "spl-form-of-the-desert-hunter",
+      "n": "Form of the Desert Hunter",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 5
+    },
+    {
+      "id": "spl-hoard-gullet",
+      "n": "Hoard Gullet",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 1
+    },
+    {
+      "id": "spl-magic-of-the-dragonheart",
+      "n": "Magic of the Dragonheart",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 2
+    },
+    {
+      "id": "spl-mark-of-the-enlightened-soul",
+      "n": "Mark of the Enlightened Soul",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 4
+    },
+    {
+      "id": "spl-path-of-frost",
+      "n": "Path of Frost",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "Reflex negates",
+      "f": "srd_spells_splat.json",
+      "l": 1
+    },
+    {
+      "id": "spl-soul-of-anarchy",
+      "n": "Soul of Anarchy",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 2
+    },
+    {
+      "id": "spl-soul-of-light",
+      "n": "Soul of Light",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 2
+    },
+    {
+      "id": "spl-soul-of-order",
+      "n": "Soul of Order",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 1
+    },
+    {
+      "id": "spl-soul-of-shadow",
+      "n": "Soul of Shadow",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 2
+    },
+    {
+      "id": "spl-touch-of-the-blackened-soul",
+      "n": "Touch of the Blackened Soul",
+      "t": "Spell",
+      "c": "Transmutation",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 4
+    },
+    {
+      "id": "spl-arcane-spellsurge",
+      "n": "Arcane Spellsurge",
+      "t": "Spell",
+      "c": "Universal",
+      "s": "None",
+      "f": "srd_spells_splat.json",
+      "l": 7
     }
   ]
 }

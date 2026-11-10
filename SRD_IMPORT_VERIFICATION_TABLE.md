@@ -140,6 +140,15 @@ The name-based matcher must not merge these two. P3 needs a source-aware ID rule
 | Loading | Spotlight finds powers through the index and loads the chunk when one is picked (`fetchEntry`). The autocomplete pick called `getSpellById` / `getMonsterById`, which do not exist; it now uses `fetchEntry` for every lazy record. |
 | Snapshots | Powers named in the character's spell lists or buffs are snapshotted into customDb, so an active psionic buff (e.g. *Force Screen*) keeps its modifiers without the chunk. |
 
+## J. Dragon Magic Spells (`srd_spells_splat.json`)
+
+| Item | Result |
+| :--- | :--- |
+| Source | `exports/dragon_magic_spells_pack.json` (42 spells, *Dragon Magic*), imported by `tools/srd_import/spells_splat_dragon_magic.js` (idempotent) into the lazy, not opt-in `srd_spells_splat.json`. |
+| Check | All 42 match the srd.dndtools.org Spell Index on school, subschool, descriptors and every class level (2026-11-10): `verification: "cross-checked"`, `provenance.crossCheck` names the index. |
+| Primal spells | *Primal Hunter / Instinct / Senses / Speed* were already in `srd_spells.json` with wrong class levels (e.g. Primal Speed Druid 4 / Wizard 4; the book is Druid 6, ranger 4, sorcerer 6, no wizard) and *Primal Speed* had a competence bonus on Reflex saves (the book: resistance). User decision: the pack versions are kept and the old ones removed; `srd_spells.json` now holds 695 spells. |
+| Snapshots | Spells named in the character's spell lists or buffs that live in a lazy chunk are snapshotted into customDb (the Power snapshot rule now also covers Spell rows), so an active *Primal Instinct* keeps working without the chunk. |
+
 ## E. Open Item for the User
 
 - **Factotum Reflex save:** settled (2026-11-10). The class table on srd.dndtools.org (`baseDungeon/factotum`, supplied by the user) gives good Reflex only (+2 at 1st, +12 at 20th), poor Fort and Will; `srd_classes_races.json` now has `ref: good` / `savingThrows.ref: high`.

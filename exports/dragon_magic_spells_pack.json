@@ -1,0 +1,2023 @@
+{
+  "schemaVersion": 2,
+  "pack": {
+    "id": "pack_dragon_magic_spells",
+    "name": "Dragon Magic Spells",
+    "author": "Dragon Magic (WotC 2006)",
+    "version": "1.0.0",
+    "totalEntries": 42
+  },
+  "entries": [
+    {
+      "id": "spl-justice-of-the-wyrm-king",
+      "schemaVersion": 2,
+      "name": "Justice of the Wyrm King",
+      "type": "Spell",
+      "category": "Abjuration",
+      "school": "Abjuration",
+      "subschool": "",
+      "descriptors": "force",
+      "level": 7,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 7,
+          "Wizard": 7
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 swift action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "5 rounds",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "A force field deals 4d6 damage to anyone who hits you with a nonreach melee weapon.",
+      "description": "For the duration, each creature that strikes you with a nonreach melee weapon takes 4d6 points of force damage. A sorcerer may sacrifice one extra sorcerer spell slot (up to 9th level) while casting; the retaliatory damage rises by 2 per level of that slot.",
+      "modifiers": [],
+      "damageParts": [
+        {
+          "dice": "4d6",
+          "bonus": 0,
+          "type": "Force",
+          "multiplyOnCrit": false,
+          "onCritOnly": false,
+          "source": "Justice of the Wyrm King (retaliation)"
+        }
+      ],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "abjuration",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-kiss-of-draconic-defiance",
+      "schemaVersion": 2,
+      "name": "Kiss of Draconic Defiance",
+      "type": "Spell",
+      "category": "Abjuration",
+      "school": "Abjuration",
+      "subschool": "",
+      "descriptors": "",
+      "level": 7,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 7,
+          "Wizard": 7
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "40 ft.",
+      "area": "40-ft.-radius emanation centered on you",
+      "target": "",
+      "duration": "Concentration + 1 round or until expended",
+      "save": "Fortitude negates; see text",
+      "sr": true,
+      "shortDescription": "Enemies casting in the area must save or lose the spell; you can counter one spell of 5th level or lower.",
+      "description": "An enemy that tries to cast a spell inside the emanation must succeed on a Fortitude save or lose the spell with no effect; a creature that saves is immune for 24 hours. Spell resistance is checked on its first attempt. Once while the spell lasts, you can counter a spell of 5th level or lower cast from inside the area as an immediate action (no slot or Spellcraft check needed), which ends this spell.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "abjuration",
+        "dragon_magic"
+      ]
+    },
+    {
+      "id": "spl-call-of-the-twilight-defender",
+      "schemaVersion": 2,
+      "name": "Call of the Twilight Defender",
+      "type": "Spell",
+      "category": "Conjuration",
+      "school": "Conjuration",
+      "subschool": "summoning",
+      "descriptors": "",
+      "level": 6,
+      "learnedAt": {
+        "class": {
+          "Druid": 6,
+          "Sorcerer": 6,
+          "Wizard": 6
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 full round",
+      "components": [
+        "V"
+      ],
+      "range": "Close (25 ft. + 5 ft./2 levels)",
+      "area": "",
+      "target": "",
+      "duration": "1 round/level",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Summon a twilight guardian that fights for you and can sacrifice itself to heal you.",
+      "description": "Works like summon nature's ally, but summons one twilight guardian. As a standard action the guardian can touch you to destroy itself, healing you for half of its remaining hit points. Learning this spell grants a +1 competence bonus on Knowledge (nature) checks.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "conjuration",
+        "dragon_magic"
+      ],
+      "effect": "One twilight guardian"
+    },
+    {
+      "id": "spl-undying-vigor-of-the-dragonlords",
+      "schemaVersion": 2,
+      "name": "Undying Vigor of the Dragonlords",
+      "type": "Spell",
+      "category": "Conjuration",
+      "school": "Conjuration",
+      "subschool": "healing",
+      "descriptors": "",
+      "level": 5,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 5
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "heal",
+      "castingTime": "1 full round",
+      "components": [
+        "V"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "Instantaneous",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Heal yourself of 5d6 damage; sacrifice an extra slot for +1d6 per slot level.",
+      "description": "You heal 5d6 points of damage. While casting you may sacrifice one more sorcerer spell slot (up to 9th level) to add 1d6 healing per level of that slot. The healing is arcane, not positive energy, so it works the same for undead casters. Dragonblood subtype: +1 point of healing per die.",
+      "modifiers": [],
+      "damageParts": [
+        {
+          "dice": "5d6",
+          "bonus": 0,
+          "type": "Healing",
+          "multiplyOnCrit": false,
+          "onCritOnly": false,
+          "source": "Undying Vigor of the Dragonlords"
+        }
+      ],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "conjuration",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-detect-dragonblood",
+      "schemaVersion": 2,
+      "name": "Detect Dragonblood",
+      "type": "Spell",
+      "category": "Divination",
+      "school": "Divination",
+      "subschool": "",
+      "descriptors": "",
+      "level": 1,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 1,
+          "Wizard": 1
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "60 ft.",
+      "area": "Cone-shaped emanation",
+      "target": "",
+      "duration": "Concentration, up to 10 min./level (D)",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Detect creatures of the dragon type or dragonblood subtype within 60 ft.",
+      "description": "Works like detect evil, but reveals auras of dragons and dragonblooded creatures (presence, then number and strongest aura, then each aura's power and location). Aura strength depends on Hit Dice. A Knowledge (arcana) check (DC 10 + target's HD) tells a dragon from a dragonblooded creature in line of sight.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "divination",
+        "dragon_magic"
+      ]
+    },
+    {
+      "id": "spl-eyes-of-the-oracle",
+      "schemaVersion": 2,
+      "name": "Eyes of the Oracle",
+      "type": "Spell",
+      "category": "Divination",
+      "school": "Divination",
+      "subschool": "",
+      "descriptors": "",
+      "level": 6,
+      "learnedAt": {
+        "class": {
+          "Cleric": 6,
+          "Sorcerer": 6,
+          "Wizard": 6,
+          "Wu Jen": 6
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S",
+        "M"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 round/level or until expended",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "+2 insight bonus to AC and on Reflex saves; ready one standard action at the end of your turn.",
+      "description": "You gain a +2 insight bonus to Armor Class and on Reflex saves. At the end of each of your turns you can ready one standard action no matter what else you did that turn; taking the readied action ends the spell. Dragonblood subtype: the bonuses are +3.",
+      "modifiers": [
+        {
+          "target": "ac.total",
+          "value": 2,
+          "formula": "2",
+          "type": "insight",
+          "condition": null
+        },
+        {
+          "target": "save.ref",
+          "value": 2,
+          "formula": "2",
+          "type": "insight",
+          "condition": null
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "divination",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-firestride-exhalation",
+      "schemaVersion": 2,
+      "name": "Firestride Exhalation",
+      "type": "Spell",
+      "category": "Conjuration/Evocation",
+      "school": "Conjuration/Evocation",
+      "subschool": "teleportation",
+      "descriptors": "fire",
+      "level": 4,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 4,
+          "Wizard": 4,
+          "Wu Jen": 4
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "spellsave",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "30 ft.; see text",
+      "area": "Cone-shaped burst; see text",
+      "target": "",
+      "duration": "Instantaneous",
+      "save": "Reflex half",
+      "sr": true,
+      "shortDescription": "8d6 fire in a 30-ft. cone; you may teleport to any space inside the cone.",
+      "description": "You breathe a 30-ft. cone of fire for 8d6 fire damage (Reflex half). When casting you may also teleport, with your gear and familiar, to any unoccupied space that overlaps the cone; you take no damage from the spell.",
+      "modifiers": [],
+      "damageParts": [
+        {
+          "dice": "8d6",
+          "bonus": 0,
+          "type": "Fire",
+          "multiplyOnCrit": false,
+          "onCritOnly": false,
+          "source": "Firestride Exhalation"
+        }
+      ],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "conjuration",
+        "dragon_magic"
+      ]
+    },
+    {
+      "id": "spl-passage-of-the-shifting-sands",
+      "schemaVersion": 2,
+      "name": "Passage of the Shifting Sands",
+      "type": "Spell",
+      "category": "Transmutation/Evocation",
+      "school": "Transmutation/Evocation",
+      "subschool": "",
+      "descriptors": "air",
+      "level": 4,
+      "learnedAt": {
+        "class": {
+          "Druid": 4,
+          "Sorcerer": 4,
+          "Wizard": 4
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 minute/level (D) or until expended",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Become a sand cloud with fly 40 ft. (perfect); end it to release a gust of wind.",
+      "description": "You become a cloud of sand that otherwise works like gaseous form, flying at 40 ft. (perfect) and losing other movement modes. Ending your move in another creature's space blinds it for 1 round (Fortitude negates, no SR). As a swift action you can release a gust of wind, which ends this spell.",
+      "modifiers": [
+        {
+          "target": "speed.fly",
+          "value": 40,
+          "formula": "40",
+          "type": "enhancement",
+          "condition": null
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {
+        "flySpeed": 40,
+        "passiveDefenseLabel": "Sand Cloud: Fly 40 ft. (Perfect)"
+      },
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-rot-of-ages",
+      "schemaVersion": 2,
+      "name": "Rot of Ages",
+      "type": "Spell",
+      "category": "Conjuration/Necromancy",
+      "school": "Conjuration/Necromancy",
+      "subschool": "creation",
+      "descriptors": "",
+      "level": 1,
+      "learnedAt": {
+        "class": {
+          "Druid": 1,
+          "Sorcerer": 1,
+          "Wizard": 1
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action; see text",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Close (25 ft. + 5 ft./2 levels)",
+      "area": "",
+      "target": "One creature",
+      "duration": "2 rounds",
+      "save": "Fortitude partial",
+      "sr": false,
+      "shortDescription": "Target is sickened for 2 rounds and others have concealment against it.",
+      "description": "A cloud of rot surrounds the target: it is sickened for 2 rounds (Fortitude negates the sickness) and every other creature has concealment against it either way. Nonliving creatures ignore the sickness. A living target that fails a save against a second casting is nauseated while both effects last.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "conjuration",
+        "dragon_magic"
+      ]
+    },
+    {
+      "id": "spl-vision-of-the-omniscient-eye",
+      "schemaVersion": 2,
+      "name": "Vision of the Omniscient Eye",
+      "type": "Spell",
+      "category": "Divination/Evocation",
+      "school": "Divination/Evocation",
+      "subschool": "",
+      "descriptors": "light",
+      "level": 3,
+      "learnedAt": {
+        "class": {
+          "Bard": 3,
+          "Cleric": 3,
+          "Druid": 3,
+          "Sorcerer": 3,
+          "Wizard": 3
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 minute/level",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "+10 insight bonus on Spot checks and immunity to being dazzled or blinded.",
+      "description": "You gain a +10 insight bonus on Spot checks and cannot be dazzled or blinded. If you can also see invisible creatures, you can end the spell as a swift action to outline an invisible creature or object within 60 ft. with faerie fire for 1 minute. Learning this spell grants a +1 competence bonus on Spot checks.",
+      "modifiers": [
+        {
+          "target": "skill.spot",
+          "value": 10,
+          "formula": "10",
+          "type": "insight",
+          "condition": null
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "divination",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-adoration-of-the-frightful",
+      "schemaVersion": 2,
+      "name": "Adoration of the Frightful",
+      "type": "Spell",
+      "category": "Enchantment",
+      "school": "Enchantment",
+      "subschool": "charm",
+      "descriptors": "mind-affecting",
+      "level": 2,
+      "learnedAt": {
+        "class": {
+          "Bard": 3,
+          "Cleric": 3,
+          "Hexblade": 2,
+          "Sorcerer": 3,
+          "Wizard": 3
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V"
+      ],
+      "range": "60 ft.",
+      "area": "60-ft.-radius emanation centered on you",
+      "target": "",
+      "duration": "1 minute/level",
+      "save": "Will negates",
+      "sr": true,
+      "shortDescription": "Shaken, frightened, or panicked creatures near you become friendly.",
+      "description": "Any creature in the emanation that is shaken, frightened, or panicked has its attitude toward you set to friendly. The effect ends for a creature when its fear ends or when you or an ally act against it. Learning this spell grants a +1 competence bonus on Diplomacy checks.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "enchantment",
+        "dragon_magic"
+      ]
+    },
+    {
+      "id": "spl-mind-of-the-labyrinth",
+      "schemaVersion": 2,
+      "name": "Mind of the Labyrinth",
+      "type": "Spell",
+      "category": "Enchantment",
+      "school": "Enchantment",
+      "subschool": "compulsion",
+      "descriptors": "mind-affecting",
+      "level": 8,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 8,
+          "Wizard": 8
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 hour/level or until expended",
+      "save": "None; see text",
+      "sr": false,
+      "shortDescription": "Enemies who target your mind are confused; you can dominate one of them.",
+      "description": "An enemy that targets you with a mind-affecting spell or ability is confused for 1 round (Will DC 18 + your Int modifier negates and grants immunity to this casting). As an immediate action you can dominate person (1 hour) one humanoid that cast a mind-affecting spell on you, which ends this spell. Learning this spell grants a +1 competence bonus on Bluff checks.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "enchantment",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-trance-of-the-verdant-domain",
+      "schemaVersion": 2,
+      "name": "Trance of the Verdant Domain",
+      "type": "Spell",
+      "category": "Enchantment",
+      "school": "Enchantment",
+      "subschool": "compulsion",
+      "descriptors": "mind-affecting",
+      "level": 3,
+      "learnedAt": {
+        "class": {
+          "Hexblade": 3,
+          "Sorcerer": 4,
+          "Wizard": 4
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "30 ft.",
+      "area": "",
+      "target": "One creature",
+      "duration": "Instantaneous",
+      "save": "Will negates",
+      "sr": true,
+      "shortDescription": "Fascinate one creature for 3 rounds; it takes -2 on saves against your mind-affecting effects.",
+      "description": "The target is fascinated for 3 rounds and takes a -2 penalty on saves against mind-affecting effects you create.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "enchantment",
+        "dragon_magic"
+      ]
+    },
+    {
+      "id": "spl-dragoneye-rune",
+      "schemaVersion": 2,
+      "name": "Dragoneye Rune",
+      "type": "Spell",
+      "category": "Universal",
+      "school": "Universal",
+      "subschool": "",
+      "descriptors": "",
+      "level": 2,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 2,
+          "Wizard": 2,
+          "Wu Jen": 2
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Touch",
+      "area": "",
+      "target": "",
+      "duration": "Permanent",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Place an invisible personal mark you can scry on and locate.",
+      "description": "Works like arcane mark with two additions: the marked object or creature counts as familiar to you for divination (scrying), and three times per day as a swift action you learn its direction and distance (nothing if it is dead or on another plane). Dragonblood subtype: the mark grants a +2 bonus on saves against scrying by other dragonblooded creatures.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "universal",
+        "dragon_magic"
+      ],
+      "effect": "One personal rune or mark, all of which must fit within 1 sq. ft."
+    },
+    {
+      "id": "spl-glorious-master-of-the-elements",
+      "schemaVersion": 2,
+      "name": "Glorious Master of the Elements",
+      "type": "Spell",
+      "category": "Evocation",
+      "school": "Evocation",
+      "subschool": "",
+      "descriptors": "acid, cold, electricity, fire",
+      "level": 7,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 7,
+          "Wizard": 7
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "rsak",
+      "castingTime": "1 standard action",
+      "components": [],
+      "range": "60 ft.",
+      "area": "",
+      "target": "One creature",
+      "duration": "5 rounds",
+      "save": "None",
+      "sr": true,
+      "shortDescription": "Each round, a ranged touch attack deals 1d6 per two caster levels (max 10d6) of a chosen energy.",
+      "description": "For the duration, as a standard action you can make a ranged touch attack against a target within 60 ft. for 1d6 points of acid, cold, electricity, or fire damage (chosen per attack) per two caster levels (maximum 10d6). Each hit on the same target adds a cumulative +2 to later damage rolls from this spell against it. Dragonblood subtype: d8s instead of d6s (maximum 10d8).",
+      "modifiers": [],
+      "damageParts": [
+        {
+          "dice": "(min(10, floor(@cl / 2)))d6",
+          "bonus": 0,
+          "type": "Energy (chosen)",
+          "multiplyOnCrit": false,
+          "onCritOnly": false,
+          "source": "Glorious Master of the Elements"
+        }
+      ],
+      "modes": [],
+      "ruleFlags": {
+        "energyChoice": true
+      },
+      "tags": [
+        "spell",
+        "evocation",
+        "dragon_magic"
+      ]
+    },
+    {
+      "id": "spl-haze-of-smoldering-stone",
+      "schemaVersion": 2,
+      "name": "Haze of Smoldering Stone",
+      "type": "Spell",
+      "category": "Evocation",
+      "school": "Evocation",
+      "subschool": "",
+      "descriptors": "fire",
+      "level": 6,
+      "learnedAt": {
+        "class": {
+          "Druid": 7,
+          "Sorcerer": 6,
+          "Wizard": 6,
+          "Wu Jen": 6
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "spellsave",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "60 ft.",
+      "area": "Cone-shaped burst",
+      "target": "",
+      "duration": "Instantaneous",
+      "save": "Reflex half",
+      "sr": true,
+      "shortDescription": "4d6 bludgeoning and 8d6 fire in a 60-ft. cone.",
+      "description": "A 60-ft. cone of burning stones deals 4d6 bludgeoning and 8d6 fire damage (Reflex half). Casting it again before the end of your next turn deals 5d6 bludgeoning and 10d6 fire instead. Learning this spell grants resistance to fire 3, which stacks with other fire resistance.",
+      "modifiers": [],
+      "damageParts": [
+        {
+          "dice": "4d6",
+          "bonus": 0,
+          "type": "Bludgeoning",
+          "multiplyOnCrit": false,
+          "onCritOnly": false,
+          "source": "Haze of Smoldering Stone"
+        },
+        {
+          "dice": "8d6",
+          "bonus": 0,
+          "type": "Fire",
+          "multiplyOnCrit": false,
+          "onCritOnly": false,
+          "source": "Haze of Smoldering Stone"
+        }
+      ],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "evocation",
+        "dragon_magic"
+      ]
+    },
+    {
+      "id": "spl-wreath-of-flames",
+      "schemaVersion": 2,
+      "name": "Wreath of Flames",
+      "type": "Spell",
+      "category": "Evocation",
+      "school": "Evocation",
+      "subschool": "",
+      "descriptors": "fire",
+      "level": 3,
+      "learnedAt": {
+        "class": {
+          "Druid": 3,
+          "Sorcerer": 3,
+          "Wizard": 3,
+          "Wu Jen": 3
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 round/level",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Adjacent enemies take 1d6 fire each turn; your melee attacks deal +1d6 fire.",
+      "description": "At the end of each of your turns, every enemy adjacent to you or in your space takes 1d6 fire damage. Your melee attacks deal an extra 1d6 fire damage.",
+      "modifiers": [],
+      "damageParts": [
+        {
+          "dice": "1d6",
+          "bonus": 0,
+          "type": "Fire",
+          "multiplyOnCrit": false,
+          "onCritOnly": false,
+          "source": "Wreath of Flames (adjacent enemies, end of your turn)"
+        }
+      ],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "evocation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-burst-of-glacial-wrath",
+      "schemaVersion": 2,
+      "name": "Burst of Glacial Wrath",
+      "type": "Spell",
+      "category": "Evocation/Transmutation",
+      "school": "Evocation/Transmutation",
+      "subschool": "",
+      "descriptors": "cold",
+      "level": 9,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 9,
+          "Wizard": 9
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "spellsave",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "30 ft.",
+      "area": "Cone-shaped burst",
+      "target": "",
+      "duration": "Instantaneous",
+      "save": "Fortitude half",
+      "sr": true,
+      "shortDescription": "1d6 cold per caster level (max 25d6) in a 30-ft. cone; creatures reduced below 0 hp freeze solid.",
+      "description": "Deals 1d6 cold damage per caster level (maximum 25d6), Fortitude half. A living creature reduced to -1 hp or lower is turned to ice instead of dying (the spell cannot drop it below -9): it gains hardness 10, immunity to cold and electricity, and vulnerability to fire; fire that brings it to -10 hp melts and kills it. Learning this spell grants resistance to cold 5, which stacks with other cold resistance.",
+      "modifiers": [],
+      "damageParts": [
+        {
+          "dice": "(min(25, @cl))d6",
+          "bonus": 0,
+          "type": "Cold",
+          "multiplyOnCrit": false,
+          "onCritOnly": false,
+          "source": "Burst of Glacial Wrath"
+        }
+      ],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "evocation",
+        "dragon_magic"
+      ]
+    },
+    {
+      "id": "spl-ferocity-of-sanguine-rage",
+      "schemaVersion": 2,
+      "name": "Ferocity of Sanguine Rage",
+      "type": "Spell",
+      "category": "Transmutation/Divination",
+      "school": "Transmutation/Divination",
+      "subschool": "",
+      "descriptors": "",
+      "level": 3,
+      "learnedAt": {
+        "class": {
+          "Assassin": 4,
+          "Sorcerer": 3,
+          "Wizard": 3
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 round/level or until expended",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Morale bonus on melee damage equal to half your caster level; end it for a true strike.",
+      "description": "You gain a morale bonus on melee damage rolls (weapons and natural attacks) equal to 1/2 your caster level. As a standard action you can gain a true strike effect for one attack, which ends this spell. Dragonblood subtype: cast at +1 caster level.",
+      "modifiers": [
+        {
+          "target": "damage.melee",
+          "value": 0,
+          "formula": "floor(@cl / 2)",
+          "type": "morale",
+          "condition": null
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-lord-of-the-sky",
+      "schemaVersion": 2,
+      "name": "Lord of the Sky",
+      "type": "Spell",
+      "category": "Evocation/Transmutation",
+      "school": "Evocation/Transmutation",
+      "subschool": "",
+      "descriptors": "electricity",
+      "level": 5,
+      "learnedAt": {
+        "class": {
+          "Shugenja": 5,
+          "Sorcerer": 5,
+          "Wizard": 5
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "rsak",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 minute/level",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Fly 40 ft. (good); swift-action lightning against airborne foes halves their fly speed.",
+      "description": "You fly at 40 ft. with good maneuverability (30 ft. in medium or heavy armor or load); if you already fly 40 ft. or faster, your speed rises by 10 ft. and maneuverability improves to good. While airborne, as a swift action you can make a ranged touch attack against an airborne creature within 60 ft. for 1 electricity damage per caster level (maximum 20) that halves its fly speed (does not stack). As a standard action you can release a lightning bolt, which ends this spell. Dragonblood subtype: fly 60 ft. (40 ft. encumbered), or +10 ft. if you already fly 60 ft.",
+      "modifiers": [
+        {
+          "target": "speed.fly",
+          "value": 40,
+          "formula": "40",
+          "type": "enhancement",
+          "condition": null
+        }
+      ],
+      "damageParts": [
+        {
+          "dice": "min(20, @cl)",
+          "bonus": 0,
+          "type": "Electricity",
+          "multiplyOnCrit": false,
+          "onCritOnly": false,
+          "source": "Lord of the Sky (swift ranged touch)"
+        }
+      ],
+      "modes": [],
+      "ruleFlags": {
+        "flySpeed": 40,
+        "passiveDefenseLabel": "Lord of the Sky: Fly 40 ft. (Good)"
+      },
+      "tags": [
+        "spell",
+        "evocation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-wingblast",
+      "schemaVersion": 2,
+      "name": "Wingblast",
+      "type": "Spell",
+      "category": "Evocation/Transmutation",
+      "school": "Evocation/Transmutation",
+      "subschool": "",
+      "descriptors": "air",
+      "level": 3,
+      "learnedAt": {
+        "class": {
+          "Druid": 3,
+          "Shugenja": 3,
+          "Sorcerer": 3,
+          "Wizard": 3
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "See text",
+      "area": "",
+      "target": "",
+      "duration": "1 round/level (D) or until expended; see text",
+      "save": "None or Fortitude negates; see text",
+      "sr": false,
+      "shortDescription": "Mist wings let you fly; end them for a gust of wind or an obscuring mist.",
+      "description": "You fly at your base land speed (maximum 60 ft.) with good maneuverability, even with a medium or heavy load or armor. As a swift action you can end the spell (and fall, if flying) to create either a 60-ft. line gust of wind (Fortitude negates, SR applies) or a 20-ft.-radius obscuring mist centered on you that lasts 1 minute.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {
+        "passiveDefenseLabel": "Wingblast: Fly = land speed (max 60 ft., Good)"
+      },
+      "tags": [
+        "spell",
+        "evocation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self",
+      "effect": "See text"
+    },
+    {
+      "id": "spl-curse-of-the-elemental-lords",
+      "schemaVersion": 2,
+      "name": "Curse of the Elemental Lords",
+      "type": "Spell",
+      "category": "Necromancy",
+      "school": "Necromancy",
+      "subschool": "",
+      "descriptors": "",
+      "level": 4,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 4,
+          "Wizard": 4
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 swift action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Medium (100 ft. + 10 ft./level)",
+      "area": "",
+      "target": "One creature/4 levels",
+      "duration": "24 hours",
+      "save": "Will negates",
+      "sr": true,
+      "shortDescription": "Cursed targets take +1d6 damage from your spells of one chosen energy type.",
+      "description": "Choose acid, cold, electricity, or fire. Your spells of that energy type deal an extra 1d6 damage to each cursed creature (not to weapon effects or other characters' attacks). Sacrificing one extra sorcerer slot (up to 9th level) adds +1 per level of that slot. Cannot be dispelled, only removed as a curse. Dragonblood subtype: the bonus also applies to your breath weapon of that type.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {
+        "energyChoice": true
+      },
+      "tags": [
+        "spell",
+        "necromancy",
+        "dragon_magic"
+      ]
+    },
+    {
+      "id": "spl-aspect-of-the-chromatic-dragon",
+      "schemaVersion": 2,
+      "name": "Aspect of the Chromatic Dragon",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "polymorph",
+      "descriptors": "evil",
+      "level": 8,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 8
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 swift action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 round/level (D)",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Take the form of an aspect of Tiamat and gain 100 temporary hit points.",
+      "description": "You take the form of an aspect of Tiamat (Dragon Magic polymorph rules) and gain 100 temporary hit points that vanish when the spell ends. Only evil-aligned characters can cast this spell (Evil component).",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self",
+      "tempHpFormula": "100"
+    },
+    {
+      "id": "spl-aspect-of-the-platinum-dragon",
+      "schemaVersion": 2,
+      "name": "Aspect of the Platinum Dragon",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "polymorph",
+      "descriptors": "good",
+      "level": 7,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 7
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 swift action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 round/level (D)",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Take the form of an aspect of Bahamut and gain 110 temporary hit points.",
+      "description": "You take the form of an aspect of Bahamut (Dragon Magic polymorph rules) and gain 110 temporary hit points that vanish when the spell ends. Only good-aligned characters can cast this spell (Good component).",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self",
+      "tempHpFormula": "110"
+    },
+    {
+      "id": "spl-channel-the-dragon",
+      "schemaVersion": 2,
+      "name": "Channel the Dragon",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "",
+      "level": 7,
+      "learnedAt": {
+        "class": {
+          "Wu Jen": 7
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 full round",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 round/level",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Gain a breath weapon and a defense based on your favored element.",
+      "description": "You gain a 15-ft. cone breath weapon (standard action, usable every 1d4 rounds, no SR) and a defense by favored element: Earth: slow 1d6 rounds (Will negates), DR 5/adamantine. Fire: 7d6 fire (Reflex half), fire resistance 30. Metal: paralysis 1 round (Will negates), DR 5/adamantine. Water: 7d6 cold (Reflex half), cold resistance 30. Wood: 7d6 acid (Reflex half), acid resistance 30.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-dragonshape-least",
+      "schemaVersion": 2,
+      "name": "Dragonshape, Least",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "polymorph",
+      "descriptors": "",
+      "level": 3,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 3,
+          "Wizard": 3
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 swift action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 round/level (D)",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Take the form of a Tiny pseudodragon.",
+      "description": "You take the form of a pseudodragon (Dragon Magic polymorph rules).",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-dragonshape-lesser",
+      "schemaVersion": 2,
+      "name": "Dragonshape, Lesser",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "polymorph",
+      "descriptors": "",
+      "level": 6,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 6,
+          "Wizard": 6
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 swift action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 round/level (D)",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Take the form of a Large young red dragon and gain 60 temporary hit points.",
+      "description": "You take the form of a Large young red dragon (Dragon Magic polymorph rules) and gain 60 temporary hit points that vanish when the spell ends.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self",
+      "tempHpFormula": "60"
+    },
+    {
+      "id": "spl-form-of-the-desert-hunter",
+      "schemaVersion": 2,
+      "name": "Form of the Desert Hunter",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "polymorph",
+      "descriptors": "",
+      "level": 5,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 5,
+          "Wizard": 5
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 swift action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 round/level (D)",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Take the form of a dragonne and gain 30 temporary hit points.",
+      "description": "You take the form of a dragonne (Dragon Magic polymorph rules) and gain 30 temporary hit points that vanish when the spell ends.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self",
+      "tempHpFormula": "30"
+    },
+    {
+      "id": "spl-hoard-gullet",
+      "schemaVersion": 2,
+      "name": "Hoard Gullet",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "",
+      "level": 1,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 1,
+          "Wizard": 1
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 hour/level",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "A magical second stomach stores swallowed objects like a bag of holding.",
+      "description": "You can swallow and carry objects at least three size categories smaller than you, up to 100 lb. and 10 cu. ft. per caster level (maximum 1,000 lb. and 100 cu. ft.); otherwise it works like a bag of holding. Expelling everything is a full-round action, and all contents come out when the spell ends. A new casting replaces the previous one.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-magic-of-the-dragonheart",
+      "schemaVersion": 2,
+      "name": "Magic of the Dragonheart",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "",
+      "level": 2,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 2
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 hour/level",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Count as having two more draconic feats; skill bonus with your Draconic Heritage skill.",
+      "description": "No effect without draconic feats. You count as having two more draconic feats for their benefits, and this spell counts as a spell of level 1/2 your caster level for draconic feat effects. With Draconic Heritage, you gain a competence bonus equal to 1/2 your caster level (maximum +10) on the class skill that feat grants.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-mark-of-the-enlightened-soul",
+      "schemaVersion": 2,
+      "name": "Mark of the Enlightened Soul",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "good",
+      "level": 4,
+      "learnedAt": {
+        "class": {
+          "Cleric": 4,
+          "Sorcerer": 4,
+          "Wizard": 4
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 swift action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "3 rounds or until ended",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Your spells gain the good descriptor and deal +50% damage to evil creatures.",
+      "description": "Your spells gain the good descriptor, and your spells of 3rd level or lower deal +50% damage to evil-aligned creatures. Sacrificing a sorcerer slot of 5th-9th level raises the affected spell level to that slot's level minus 1. A good dragonblooded caster can end the spell as a swift action to gain protection from evil on itself.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-path-of-frost",
+      "schemaVersion": 2,
+      "name": "Path of Frost",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "cold",
+      "level": 1,
+      "learnedAt": {
+        "class": {
+          "Druid": 1,
+          "Sorcerer": 1,
+          "Wizard": 1
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action; see text",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "30 ft.",
+      "area": "One 5-ft. square/level (max 5), beginning adjacent to your space (S)",
+      "target": "",
+      "duration": "1 round/level",
+      "save": "Reflex negates",
+      "sr": false,
+      "shortDescription": "Icy squares cost double movement, can trip, and deal 1 cold damage.",
+      "description": "Each icy square costs 2 squares of movement unless the creature makes a DC 10 Balance check; failing by 5 or more also knocks it prone. A creature starting its turn in or entering an icy square takes 1 cold damage per square. Only works on solid ground. Squares covered by two castings deal 2 cold damage (no further stacking).",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ]
+    },
+    {
+      "id": "spl-primal-hunter",
+      "schemaVersion": 2,
+      "name": "Primal Hunter",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "",
+      "level": 1,
+      "learnedAt": {
+        "class": {
+          "Druid": 2,
+          "Ranger": 1,
+          "Sorcerer": 2
+        }
+      },
+      "source": "Dragon Magic p.71",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "24 hours",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "+5 competence bonus on Climb, Jump, and Swim checks.",
+      "description": "You gain a +5 competence bonus on Climb, Jump, and Swim checks. With one other primal spell active you gain uncanny dodge; with all four you gain improved uncanny dodge (barbarian level = caster level for flanking). Dragonblood subtype: cast as a swift action.",
+      "modifiers": [
+        {
+          "target": "skill.climb",
+          "value": 5,
+          "formula": "5",
+          "type": "competence",
+          "condition": null
+        },
+        {
+          "target": "skill.jump",
+          "value": 5,
+          "formula": "5",
+          "type": "competence",
+          "condition": null
+        },
+        {
+          "target": "skill.swim",
+          "value": 5,
+          "formula": "5",
+          "type": "competence",
+          "condition": null
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {
+        "primalSpell": true
+      },
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-primal-instinct",
+      "schemaVersion": 2,
+      "name": "Primal Instinct",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "",
+      "level": 2,
+      "learnedAt": {
+        "class": {
+          "Druid": 3,
+          "Ranger": 2,
+          "Sorcerer": 3
+        }
+      },
+      "source": "Dragon Magic p.71",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "24 hours",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "+5 competence bonus on initiative and Survival checks.",
+      "description": "You gain a +5 competence bonus on initiative and Survival checks. With one other primal spell active you gain uncanny dodge; with all four you gain improved uncanny dodge. Dragonblood subtype: also +5 competence on one chosen Knowledge skill, treated as trained.",
+      "modifiers": [
+        {
+          "target": "initiative",
+          "value": 5,
+          "formula": "5",
+          "type": "competence",
+          "condition": null
+        },
+        {
+          "target": "skill.survival",
+          "value": 5,
+          "formula": "5",
+          "type": "competence",
+          "condition": null
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {
+        "primalSpell": true
+      },
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-primal-senses",
+      "schemaVersion": 2,
+      "name": "Primal Senses",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "",
+      "level": 3,
+      "learnedAt": {
+        "class": {
+          "Druid": 4,
+          "Ranger": 3,
+          "Sorcerer": 4
+        }
+      },
+      "source": "Dragon Magic p.71",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "24 hours",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Low-light vision and +5 competence bonus on Listen and Spot checks.",
+      "description": "You gain low-light vision and a +5 competence bonus on Listen and Spot checks. With one other primal spell active you gain uncanny dodge; with all four you gain improved uncanny dodge. Dragonblood subtype: also blindsense 10 ft.",
+      "modifiers": [
+        {
+          "target": "skill.listen",
+          "value": 5,
+          "formula": "5",
+          "type": "competence",
+          "condition": null
+        },
+        {
+          "target": "skill.spot",
+          "value": 5,
+          "formula": "5",
+          "type": "competence",
+          "condition": null
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {
+        "primalSpell": true,
+        "lowLightVision": true
+      },
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-primal-speed",
+      "schemaVersion": 2,
+      "name": "Primal Speed",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "",
+      "level": 4,
+      "learnedAt": {
+        "class": {
+          "Druid": 6,
+          "Ranger": 4,
+          "Sorcerer": 6
+        }
+      },
+      "source": "Dragon Magic p.71",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "24 hours",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "+5 resistance bonus on Reflex saves and +10 ft. enhancement bonus to speed.",
+      "description": "You gain a +5 resistance bonus on Reflex saves and a +10-ft. enhancement bonus to all your speeds. With one other primal spell active you gain uncanny dodge; with all four you gain improved uncanny dodge. Dragonblood subtype: cast as an immediate action.",
+      "modifiers": [
+        {
+          "target": "save.ref",
+          "value": 5,
+          "formula": "5",
+          "type": "resistance",
+          "condition": null
+        },
+        {
+          "target": "speed.land",
+          "value": 10,
+          "formula": "10",
+          "type": "enhancement",
+          "condition": null
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {
+        "primalSpell": true
+      },
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-soul-of-anarchy",
+      "schemaVersion": 2,
+      "name": "Soul of Anarchy",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "chaotic",
+      "level": 2,
+      "learnedAt": {
+        "class": {
+          "Bard": 2,
+          "Sorcerer": 2,
+          "Wizard": 2
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 hour",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "+5 on Escape Artist and to resist grapples; natural weapons and you count as chaotic.",
+      "description": "You gain a +5 competence bonus on Escape Artist checks and on grapple checks to resist or escape a grapple. Your natural weapons count as chaotic for overcoming DR, and you count as chaotic for alignment-based effects. With soul of light: DR 3/evil or lawful; with soul of shadow: DR 3/good or lawful. Counters and dispels soul of order.",
+      "modifiers": [
+        {
+          "target": "skill.escape_artist",
+          "value": 5,
+          "formula": "5",
+          "type": "competence",
+          "condition": null
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-soul-of-light",
+      "schemaVersion": 2,
+      "name": "Soul of Light",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "good",
+      "level": 2,
+      "learnedAt": {
+        "class": {
+          "Cleric": 3,
+          "Paladin": 2
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 hour",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Conjuration (healing) spells cast by or on you heal +2 per spell level.",
+      "description": "Healing spells you cast or receive can heal extra points equal to twice the spell's level; one that heals 10 or more also removes fatigue (or reduces exhaustion to fatigue). With soul of anarchy: DR 3/evil or lawful; with soul of order: DR 3/chaotic or evil. Counters and dispels soul of shadow.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-soul-of-order",
+      "schemaVersion": 2,
+      "name": "Soul of Order",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "lawful",
+      "level": 1,
+      "learnedAt": {
+        "class": {
+          "Paladin": 1,
+          "Sorcerer": 2,
+          "Wizard": 2
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 hour",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "+2 morale bonus on Will saves against enchantments; natural weapons and you count as lawful.",
+      "description": "You gain a +2 morale bonus on Will saves against enchantment effects. Your natural weapons count as lawful for overcoming DR, and you count as lawful for alignment-based effects. With soul of light: DR 3/chaotic or evil; with soul of shadow: DR 3/chaotic or good. Counters and dispels soul of anarchy.",
+      "modifiers": [
+        {
+          "target": "save.will",
+          "value": 2,
+          "formula": "2",
+          "type": "morale",
+          "condition": "vs. enchantment effects"
+        }
+      ],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-soul-of-shadow",
+      "schemaVersion": 2,
+      "name": "Soul of Shadow",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "evil",
+      "level": 2,
+      "learnedAt": {
+        "class": {
+          "Blackguard": 2,
+          "Cleric": 3
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 hour",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Inflict spells cast by or on you deal +2 per spell level.",
+      "description": "Inflict spells you cast or receive can deal extra damage equal to twice the spell's level; casting one that deals 10 or more to a target also removes your fatigue (or reduces exhaustion to fatigue). With soul of anarchy: DR 3/good or lawful; with soul of order: DR 3/chaotic or good. Counters and dispels soul of light.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-touch-of-the-blackened-soul",
+      "schemaVersion": 2,
+      "name": "Touch of the Blackened Soul",
+      "type": "Spell",
+      "category": "Transmutation",
+      "school": "Transmutation",
+      "subschool": "",
+      "descriptors": "evil",
+      "level": 4,
+      "learnedAt": {
+        "class": {
+          "Cleric": 4,
+          "Sorcerer": 4,
+          "Wizard": 4
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 swift action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "3 rounds or until ended",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Your spells gain the evil descriptor and deal +50% damage to good creatures.",
+      "description": "Your spells gain the evil descriptor, and your spells of 3rd level or lower deal +50% damage to good-aligned creatures. A sorcerer can sacrifice a slot of 5th-9th level to raise the affected spell level to that slot's level minus 1. An evil dragonblooded caster can end the spell as a swift action to gain protection from good on itself.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "transmutation",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    },
+    {
+      "id": "spl-arcane-spellsurge",
+      "schemaVersion": 2,
+      "name": "Arcane Spellsurge",
+      "type": "Spell",
+      "category": "Universal",
+      "school": "Universal",
+      "subschool": "",
+      "descriptors": "",
+      "level": 7,
+      "learnedAt": {
+        "class": {
+          "Sorcerer": 7,
+          "Wizard": 7,
+          "Wu Jen": 7
+        }
+      },
+      "source": "Dragon Magic",
+      "actionType": "other",
+      "castingTime": "1 standard action",
+      "components": [
+        "V",
+        "S"
+      ],
+      "range": "Personal",
+      "area": "",
+      "target": "You",
+      "duration": "1 round/level",
+      "save": "None",
+      "sr": false,
+      "shortDescription": "Your arcane spells cast faster: standard becomes swift, full round becomes standard.",
+      "description": "Arcane casting times shrink: 1 standard action becomes 1 swift action, 1 full round becomes 1 standard action, and 2-10 rounds become 1 round less. Longer or unlisted casting times are unaffected. You cannot opt out, so the one-swift-action-per-round limit applies. Does not stack with other casting-time reductions. Dragonblood subtype: cast as a swift action.",
+      "modifiers": [],
+      "damageParts": [],
+      "modes": [],
+      "ruleFlags": {},
+      "tags": [
+        "spell",
+        "universal",
+        "dragon_magic"
+      ],
+      "buffTargetMode": "self"
+    }
+  ]
+}

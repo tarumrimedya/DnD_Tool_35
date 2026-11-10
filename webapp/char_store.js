@@ -69,10 +69,13 @@
     return Array.from(out);
   }
 
-  // Every lazy-chunk reference type the character can hold: feat-list rows, class levels and psionic powers.
+  // Every lazy-chunk reference type the character can hold: feat-list rows, class levels, psionic powers and
+  // spells from lazy chunks (srd_spells_splat.json, e.g. Dragon Magic). The same spell-list and buff names are
+  // matched against Power rows and Spell rows; only rows that live in a lazy chunk are snapshotted.
   function collectSrdRefGroups(doc) {
+    const spellListNames = collectPowerRefNames(doc);
     return FEAT_REF_TYPES.map(t => ({ t, names: collectFeatRefNames(doc, t) }))
-      .concat([{ t: 'Class', names: collectClassRefNames(doc) }, { t: 'Power', names: collectPowerRefNames(doc) }]);
+      .concat([{ t: 'Class', names: collectClassRefNames(doc) }, { t: 'Power', names: spellListNames }, { t: 'Spell', names: spellListNames }]);
   }
 
   function resolveRuleEngine() {

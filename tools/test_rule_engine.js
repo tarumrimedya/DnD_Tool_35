@@ -310,8 +310,14 @@ function runRuleEngineTests() {
 
     const ghSpec = RuleEngine.resolveSpellBuffSpec({ name: 'Greater Heroism' }, null, 11);
     assert.ok(ghSpec && ghSpec.isBuffSpell && ghSpec.tempHpFormula === 'min(20, @cl)', 'Greater Heroism must resolve via comma-inverted Compendium alias');
+    // Primal Instinct (Dragon Magic) lives in the lazy srd_spells_splat.json: it resolves once the chunk is loaded
+    // (Spotlight / fetchEntry in the browser; a character that uses it carries an srd-snapshot).
+    const comp = globalThis.SrdCompendium;
+    const primalRow = comp && comp.findIndexEntry('Primal Instinct', 'Spell');
+    assert.ok(primalRow && primalRow.f === 'srd_spells_splat.json', 'Primal Instinct must be indexed in srd_spells_splat.json');
+    comp.ensureChunkLoaded('srd_spells_splat.json'); // Node: synchronous
     const primalSpec = RuleEngine.resolveSpellBuffSpec({ name: 'Primal Instinct' }, null, 8);
-    assert.ok(primalSpec && primalSpec.isBuffSpell && primalSpec.ruleFlags?.primalSpell === true, 'Primal Instinct must resolve from srd_spells.json');
+    assert.ok(primalSpec && primalSpec.isBuffSpell && primalSpec.ruleFlags?.primalSpell === true, 'Primal Instinct must resolve from srd_spells_splat.json');
   });
 
   return { passed, elapsedMs: Date.now() - startMs };
