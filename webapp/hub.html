@@ -4315,12 +4315,18 @@ CRITICAL RULES:
           charsInCamp.forEach(c => {
             c.campaignId = cloudCamp.id;
           });
+          // Sub-campaigns keep pointing at their main campaign under its new id (they share its Campaign DB).
+          state.campaigns.forEach(sc => {
+            if (sc && sc.parentId === oldId) sc.parentId = cloudCamp.id;
+          });
           if (state.activeCampaignId === oldId) {
             state.activeCampaignId = cloudCamp.id;
           }
           saveHubStorage();
           renderHub();
           openCampaignInviteModal(camp.id);
+          // Campaign DB: upload the packs attached while the campaign was local, then re-tag the copies.
+          pullCloudCampaignDbs().catch(e => console.warn('Campaign DB upload after migration:', e));
         }
       } catch (err) {
         console.error('migrateCampaignToCloud error:', err);
@@ -4710,6 +4716,8 @@ CRITICAL RULES:
           saveHubStorage(false);
           renderHub();
         }
+        // Campaign DB: take the cloud campaigns' rule packs and apply them to their characters.
+        try { await pullCloudCampaignDbs(); } catch (cdbErr) { console.warn('Campaign DB pull warning:', cdbErr); }
         if (window.SupabaseAuth) {
           window.SupabaseAuth.updateSyncStatusPill('cloud_synced');
         }
@@ -6180,9 +6188,10 @@ CRITICAL RULES:
     // ── Campaign DB (CAMPAIGN_PACKS_DESIGN.md) ──
     // A rule pack belongs to a root campaign (`camp.packs`); a sub-campaign uses its root campaign's packs.
     // Every character in the campaign gets the pack entries as tagged copies in its own customDb (campaign_db.js).
+    // A character can carry the local campaign id or, after the campaign moved to the cloud, its cloud id.
     function getHubRootCampaign(campId) {
       const camps = Array.isArray(state.campaigns) ? state.campaigns : [];
-      const camp = campId ? camps.find(cp => cp && cp.id === campId) : null;
+      const camp = campId ? camps.find(cp => cp && (cp.id === campId || (cp.cloudCampaignId && cp.cloudCampaignId === campId))) : null;
       if (!camp) return null;
       return camp.parentId ? (camps.find(cp => cp && cp.id === camp.parentId) || camp) : camp;
     }
@@ -6192,14 +6201,29 @@ CRITICAL RULES:
       return (!a || a === 'all' || a === 'unassigned') ? null : getHubRootCampaign(a);
     }
 
+    // Copies are tagged with the cloud campaign id when there is one: the character sheet only knows that id.
+    function getCampaignDbKey(rootCamp) {
+      return rootCamp ? (rootCamp.cloudCampaignId || rootCamp.id) : null;
+    }
+
+    // The cloud campaign the packs are stored in, when the DM is signed in.
+    function getCampaignDbCloudId(rootCamp) {
+      if (!rootCamp || !rootCamp.cloudCampaignId || !window.SupabaseAuth) return null;
+      if (typeof SupabaseAuth.isLocalMode === 'function' && SupabaseAuth.isLocalMode()) return null;
+      return typeof SupabaseAuth.upsertCampaignPack === 'function' ? rootCamp.cloudCampaignId : null;
+    }
+
     function reconcileCampaignDbForCharacter(data, campaignId) {
       if (!window.CampaignDb || !data || typeof data !== 'object') return null;
       if (!Array.isArray(data.customDb)) data.customDb = [];
       const rootCamp = getHubRootCampaign(campaignId);
+      // A campaign this Hub does not hold (a player's character in another DM's campaign): the character sheet
+      // keeps those copies current, so they are left alone here.
+      if (campaignId && !rootCamp) return null;
       const packs = rootCamp && Array.isArray(rootCamp.packs) ? rootCamp.packs : [];
       if (packs.length === 0 && !data.customDb.some(e => CampaignDb.getTag(e))) return null;
       return CampaignDb.reconcile(data.customDb, packs, {
-        campaignId: rootCamp ? rootCamp.id : null,
+        campaignId: getCampaignDbKey(rootCamp),
         used: CampaignDb.collectUsedRefs(data)
       });
     }
@@ -6245,19 +6269,38 @@ CRITICAL RULES:
       return msg;
     }
 
+    function applyCampaignDbPacks(rootCamp, nextPacks) {
+      rootCamp.packs = nextPacks;
+      const total = reconcileHubCampaignDbs({ save: false });
+      saveHubStorage();
+      renderHub();
+      renderHubDmPackManager();
+      return total;
+    }
+
+    // Cloud campaign: the pack is written to campaign_packs first and kept locally only when that succeeds.
+    // Local campaign, or signed out: kept locally with inCloud = false and uploaded by the next cloud sync.
     function attachPackToActiveCampaignDb(packFile) {
       const rootCamp = getHubActiveRootCampaign();
       if (!rootCamp) {
         alert(`⚠️ Rule Pack "${packFile.name}" not attached: select a campaign first. A rule pack belongs to one campaign's Campaign DB and reaches every character in it.`);
         return;
       }
-      rootCamp.packs = CampaignDb.attachPack(rootCamp.packs, packFile, new Date().toISOString());
-      const pack = rootCamp.packs.find(p => p.packId === packFile.packId);
-      const total = reconcileHubCampaignDbs({ save: false });
-      saveHubStorage();
-      renderHub();
-      renderHubDmPackManager();
-      alert(`✅ Rule Pack "${pack.name}" v${pack.version} (${pack.entries.length} entries) attached to the Campaign DB of "${rootCamp.name}".\n${describeCampaignDbReconcile(total)}`);
+      const nextPacks = CampaignDb.attachPack(rootCamp.packs, packFile, new Date().toISOString());
+      const pack = nextPacks.find(p => p.packId === packFile.packId);
+      const finish = (cloudNote) => {
+        const total = applyCampaignDbPacks(rootCamp, nextPacks);
+        alert(`✅ Rule Pack "${pack.name}" v${pack.version} (${pack.entries.length} entries) attached to the Campaign DB of "${rootCamp.name}".${cloudNote}\n${describeCampaignDbReconcile(total)}`);
+      };
+      const cloudId = getCampaignDbCloudId(rootCamp);
+      if (!cloudId) {
+        pack.inCloud = false;
+        finish(rootCamp.cloudCampaignId ? '\n☁️ Not in the cloud yet: it is uploaded the next time the Hub syncs while you are signed in.' : '');
+        return;
+      }
+      return SupabaseAuth.upsertCampaignPack(cloudId, pack)
+        .then(() => { pack.inCloud = true; finish('\n☁️ Saved to the cloud campaign.'); })
+        .catch(err => alert(`❌ Rule Pack "${pack.name}" not attached: ${err.message}`));
     }
 
     function removePackFromActiveCampaignDb(packId) {
@@ -6265,13 +6308,61 @@ CRITICAL RULES:
       if (!rootCamp || !Array.isArray(rootCamp.packs)) return;
       const pack = rootCamp.packs.find(p => p.packId === packId);
       if (!pack) return;
+      const cloudId = getCampaignDbCloudId(rootCamp);
+      if (pack.inCloud === true && !cloudId) {
+        alert(`⚠️ Rule Pack "${pack.name}" is stored in the cloud campaign. Sign in to remove it.`);
+        return;
+      }
       if (!confirm(`Remove Rule Pack "${pack.name}" from the Campaign DB of "${rootCamp.name}"?\n\nIts entries are removed from the campaign's characters. An entry a character uses (feat, special ability, buff, gear) is kept on that character.`)) return;
-      rootCamp.packs = CampaignDb.removePack(rootCamp.packs, packId);
-      const total = reconcileHubCampaignDbs({ save: false });
-      saveHubStorage();
-      renderHub();
-      renderHubDmPackManager();
-      alert(`✅ Rule Pack "${pack.name}" removed from the Campaign DB of "${rootCamp.name}".\n${describeCampaignDbReconcile(total)}`);
+      const finish = () => {
+        const total = applyCampaignDbPacks(rootCamp, CampaignDb.removePack(rootCamp.packs, packId));
+        alert(`✅ Rule Pack "${pack.name}" removed from the Campaign DB of "${rootCamp.name}".\n${describeCampaignDbReconcile(total)}`);
+      };
+      if (!cloudId) { finish(); return; }
+      return SupabaseAuth.deleteCampaignPack(cloudId, packId)
+        .then(finish)
+        .catch(err => alert(`❌ Rule Pack "${pack.name}" not removed: ${err.message}`));
+    }
+
+    // Cloud -> Hub: the cloud campaign's packs replace the local list. Packs not confirmed in the cloud yet
+    // (attached offline, before the campaign moved to the cloud, or in phase 1) are uploaded first.
+    async function pullCloudCampaignDbs() {
+      if (!window.CampaignDb) return false;
+      const sig = (list) => (list || []).map(p => `${p.packId}@${p.version}#${(p.entries || []).length}${p.inCloud === true ? 'c' : 'l'}`).sort().join('|');
+      let changed = false;
+      const roots = (Array.isArray(state.campaigns) ? state.campaigns : []).filter(cp => cp && !cp.parentId && getCampaignDbCloudId(cp));
+      for (const camp of roots) {
+        const cloudId = getCampaignDbCloudId(camp);
+        let cloudPacks;
+        try {
+          cloudPacks = await SupabaseAuth.fetchCampaignPacks(cloudId);
+        } catch (err) {
+          if (!err.missingTable) console.warn('Campaign DB pull:', err.message);
+          continue;
+        }
+        const local = Array.isArray(camp.packs) ? camp.packs : [];
+        const uploaded = new Set();
+        for (const p of local.filter(lp => lp && lp.inCloud !== true)) {
+          try {
+            await SupabaseAuth.upsertCampaignPack(cloudId, p);
+            uploaded.add(p.packId);
+          } catch (err) {
+            console.warn('Campaign DB upload:', err.message);
+          }
+        }
+        const next = CampaignDb.mergeCloudPacks(cloudPacks, local, uploaded);
+        if (sig(local) !== sig(next)) {
+          camp.packs = next;
+          changed = true;
+        }
+      }
+      if (changed) {
+        reconcileHubCampaignDbs({ save: false });
+        saveHubStorage();
+        renderHub();
+        if (typeof renderHubDmPackManager === 'function') renderHubDmPackManager();
+      }
+      return changed;
     }
 
     function renderHubCampaignDbPacks() {
@@ -6293,7 +6384,7 @@ CRITICAL RULES:
       const packs = Array.isArray(rootCamp.packs) ? rootCamp.packs : [];
       const head = `<div class="text-[10px] font-bold text-amber-200">🏰 Campaign DB: ${esc(rootCamp.name || rootCamp.id)}${packs.length ? '' : ' <span class="font-normal text-slate-500 italic">(no rule packs attached)</span>'}</div>`;
       el.innerHTML = head + packs.map(p => `<div class="flex items-center justify-between gap-2 bg-slate-900/80 border border-slate-800 rounded px-2 py-1 text-[10px]">
-          <div class="truncate"><span class="font-bold text-slate-200">📦 ${esc(p.name)}</span> <span class="text-slate-500 font-mono">v${esc(p.version)} • ${p.entries.length} entries</span></div>
+          <div class="truncate"><span class="font-bold text-slate-200">📦 ${esc(p.name)}</span> <span class="text-slate-500 font-mono">v${esc(p.version)} • ${p.entries.length} entries • ${p.inCloud === true ? '☁️ cloud' : (rootCamp.cloudCampaignId ? '⏳ not uploaded' : '💾 local')}</span></div>
           <button type="button" data-campaign-db-remove="${esc(p.packId)}" class="px-1.5 py-0.5 rounded bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800/60 text-[9px] font-bold cursor-pointer shrink-0">✕ Remove</button>
         </div>`).join('');
     }

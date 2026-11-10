@@ -1,6 +1,23 @@
 # Campaign DB: shared campaign rule DB (design)
 
-Status: approved (2026-11-10): the whole pack is copied to each character, and a pack file uploaded in the Hub attaches to the campaign. Phase 1 is implemented (`campaign_db.js`, Hub local campaigns); phases 2 and 3 are open.
+Status: approved (2026-11-10): the whole pack is copied to each character, and a pack file uploaded in the Hub attaches to the campaign. Phase 1 is implemented (`campaign_db.js`, Hub local campaigns). Phase 2 is implemented (cloud table, `supabase_auth.js`, Hub DM side); the SQL must be run once in Supabase (below). Phase 3 (player sheet) is open.
+
+## Phase 2 setup (once)
+
+1. Supabase dashboard → SQL Editor → New query.
+2. Paste `tools/supabase/campaign_packs.sql` and run it. It is safe to run again.
+3. Open the Hub signed in. Packs already attached to a cloud campaign in phase 1 are uploaded by the next Hub cloud sync.
+
+Until the table exists, attaching a pack to a cloud campaign fails with "The Campaign DB cloud table is not installed" and nothing changes; local campaigns work as in phase 1.
+
+## Phase 2 behaviour
+
+- **Attach / remove on a cloud campaign:** written to `campaign_packs` first; the Hub changes only when the write succeeds.
+- **Signed out:** attaching keeps the pack locally as "not uploaded" and the next sync uploads it. A pack already in the cloud cannot be removed while signed out.
+- **Hub cloud sync:** the cloud list replaces the local one (a pack deleted on another device disappears); packs not uploaded yet are uploaded first; then every character in the campaign is reconciled.
+- **Copies** are tagged with the cloud campaign id, which is the id the character sheet knows.
+- **Characters in a campaign this Hub does not hold** (a player's character in another DM's campaign) are left alone; the sheet keeps them current (phase 3).
+- **Moving a campaign to the cloud** uploads its packs. Its sub-campaigns now follow the main campaign's new id; before, their `parentId` kept the old local id.
 
 Naming: **Campaign DB** is the campaign's shared rule database, one of the search sources next to the built-in SRD data, the extra (lazy / opt-in) data and AI. A DM rule pack (e.g. the DM Boons pack) is one unit inside it; the cloud table is `campaign_packs` because it stores one row per pack.
 

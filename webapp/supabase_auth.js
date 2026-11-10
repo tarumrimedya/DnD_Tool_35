@@ -662,6 +662,93 @@ const SupabaseAuth = {
     return data || [];
   },
 
+  // ── Campaign DB: rule packs shared by a campaign (table campaign_packs, tools/supabase/campaign_packs.sql) ──
+
+  _campaignPackError(error) {
+    const code = error && (error.code || '');
+    const msg = String((error && error.message) || error || '');
+    const missingTable = code === 'PGRST205' || code === '42P01' || (/campaign_packs/.test(msg) && /(does not exist|schema cache|not find)/i.test(msg));
+    const err = new Error(missingTable
+      ? 'The Campaign DB cloud table is not installed. Run tools/supabase/campaign_packs.sql once in the Supabase SQL Editor.'
+      : `Campaign DB cloud error: ${msg || 'unknown error'}`);
+    err.missingTable = missingTable;
+    err.code = code;
+    return err;
+  },
+
+  /** Packs of a cloud campaign: [{ packId, name, version, entries, updatedAt }]. Throws on a read error. */
+  async fetchCampaignPacks(campaignId) {
+    const client = this.getClient();
+    if (!client || !campaignId) return [];
+    const { data, error } = await client
+      .from('campaign_packs')
+      .select('pack_id, name, version, entries, updated_at')
+      .eq('campaign_id', campaignId)
+      .order('pack_id', { ascending: true });
+    if (error) throw this._campaignPackError(error);
+    return (data || []).map(r => ({
+      packId: r.pack_id,
+      name: r.name || r.pack_id,
+      version: Number(r.version) || 1,
+      entries: Array.isArray(r.entries) ? r.entries : [],
+      updatedAt: r.updated_at || null
+    }));
+  },
+
+  /** DM only (RLS): inserts or replaces one pack of a cloud campaign. Throws on error. */
+  async upsertCampaignPack(campaignId, pack) {
+    const client = this.getClient();
+    if (!client) throw this._campaignPackError('Supabase client is not available.');
+    const { error } = await client
+      .from('campaign_packs')
+      .upsert({
+        campaign_id: campaignId,
+        pack_id: pack.packId,
+        name: pack.name || pack.packId,
+        version: Number(pack.version) || 1,
+        entries: pack.entries || []
+      }, { onConflict: 'campaign_id,pack_id' });
+    if (error) throw this._campaignPackError(error);
+    return true;
+  },
+
+  /** DM only (RLS): removes one pack from a cloud campaign. Throws on error. */
+  async deleteCampaignPack(campaignId, packId) {
+    const client = this.getClient();
+    if (!client) throw this._campaignPackError('Supabase client is not available.');
+    const { error } = await client
+      .from('campaign_packs')
+      .delete()
+      .eq('campaign_id', campaignId)
+      .eq('pack_id', packId);
+    if (error) throw this._campaignPackError(error);
+    return true;
+  },
+
+  /** Calls handlePackChange() whenever a pack of the campaign is added, changed or removed (character sheet, phase 3). */
+  subscribeCampaignPacks(campaignId, handlePackChange) {
+    const client = this.getClient();
+    if (!client || !campaignId) return null;
+    const key = `packs_${campaignId}`;
+    if (this._activeChannels[key]) this.unsubscribeCampaignPacks(campaignId);
+    const channel = client.channel(`campaign_packs_${campaignId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'campaign_packs', filter: `campaign_id=eq.${campaignId}` }, () => {
+        if (typeof handlePackChange === 'function') handlePackChange();
+      })
+      .subscribe();
+    this._activeChannels[key] = channel;
+    return channel;
+  },
+
+  unsubscribeCampaignPacks(campaignId) {
+    const key = `packs_${campaignId}`;
+    const channel = this._activeChannels[key];
+    if (!channel) return;
+    const client = this.getClient();
+    if (client) client.removeChannel(channel);
+    delete this._activeChannels[key];
+  },
+
   /**
    * DM Yetkisi: Oyuncunun canını doğrudan ve anında bulutta günceller
    */

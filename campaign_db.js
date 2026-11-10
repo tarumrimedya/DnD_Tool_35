@@ -90,6 +90,20 @@
     return (Array.isArray(packs) ? packs : []).filter(p => p && norm(p.packId) !== norm(packId));
   }
 
+  /**
+   * A cloud campaign's pack list after a sync: the cloud packs (`inCloud: true`), with the local packs that were
+   * not confirmed in the cloud yet laid over them. `uploadedIds` holds the ones whose upload just succeeded; the
+   * others stay `inCloud: false` and are uploaded again by the next sync.
+   */
+  function mergeCloudPacks(cloudPacks, localPacks, uploadedIds) {
+    const up = uploadedIds instanceof Set ? uploadedIds : new Set(uploadedIds || []);
+    let next = (Array.isArray(cloudPacks) ? cloudPacks : []).map(p => Object.assign({}, p, { inCloud: true }));
+    (Array.isArray(localPacks) ? localPacks : []).filter(p => p && p.packId && p.inCloud !== true).forEach(p => {
+      next = next.filter(np => norm(np.packId) !== norm(p.packId)).concat([Object.assign({}, p, { inCloud: up.has(p.packId) })]);
+    });
+    return next;
+  }
+
   function getTag(entry) {
     const t = entry && entry[TAG];
     return t && typeof t === 'object' && t.packId ? t : null;
@@ -221,7 +235,7 @@
     return res;
   }
 
-  const api = { TAG, readPackFile, attachPack, removePack, getTag, collectUsedRefs, reconcile, contentHash };
+  const api = { TAG, readPackFile, attachPack, removePack, mergeCloudPacks, getTag, collectUsedRefs, reconcile, contentHash };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.CampaignDb = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

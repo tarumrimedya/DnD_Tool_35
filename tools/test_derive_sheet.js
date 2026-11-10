@@ -2816,6 +2816,68 @@ function runDeriveSheetTests() {
     !/e\._hubElig = res/.test(hubSrc) && /CampaignDb\.readPackFile\(parsed\)/.test(hubSrc)
   );
 
+  // Campaign DB phase 2 (cloud): a fake SupabaseAuth whose calls settle synchronously, so the Hub code runs in vm.
+  const syncOk = (v) => ({ then(f) { return syncOk(f ? f(v) : v); }, catch() { return this; } });
+  const syncFail = (e) => ({ then(f, r) { return r ? syncOk(r(e)) : syncFail(e); }, catch(r) { return syncOk(r(e)); } });
+  const cdbCloudRun = (opts) => {
+    const store = { dnd35_character: JSON.stringify({ id: 'c_none', customDb: [] }) };
+    const calls = [], alerts = [];
+    const fakeAuth = {
+      isLocalMode: () => Boolean(opts.localMode),
+      upsertCampaignPack: (cid, p) => { calls.push(['upsert', cid, p.packId, p.version]); return opts.failWrite ? syncFail(new Error('RLS denied')) : syncOk(true); },
+      deleteCampaignPack: (cid, pid) => { calls.push(['delete', cid, pid]); return opts.failWrite ? syncFail(new Error('RLS denied')) : syncOk(true); }
+    };
+    const sandbox = {
+      JSON, Object, Array, Map, Set, Date, Number, String,
+      CampaignDb, SupabaseAuth: fakeAuth, window: { CampaignDb, SupabaseAuth: fakeAuth },
+      state: {
+        activeCampaignId: 'local_main',
+        campaigns: [{ id: 'local_main', name: 'Main', cloudCampaignId: 'cloud-uuid-1', packs: opts.packs || [] }],
+        characters: [
+          { id: 'c_dm_npc', name: 'NPC', campaignId: 'cloud-uuid-1', fullData: { customDb: [] } },
+          { id: 'c_player', name: 'Player', campaignId: 'cloud-uuid-other', fullData: { customDb: (opts.playerDb || []) } }
+        ]
+      },
+      localStorage: { getItem: k => store[k] || null, setItem: (k, v) => { store[k] = v; } },
+      saveHubStorage: () => {}, renderHub: () => {}, renderHubDmPackManager: () => {},
+      alert: (m) => alerts.push(m), confirm: () => true
+    };
+    vm.runInNewContext(cdbHubFnSrc + '\n' + opts.code, Object.assign(sandbox, { packFile: boonFile }));
+    return { sandbox, calls, alerts, npcDb: sandbox.state.characters[0].fullData.customDb, playerDb: sandbox.state.characters[1].fullData.customDb };
+  };
+  const cdbCloudAttach = cdbCloudRun({ code: 'attachPackToActiveCampaignDb(CampaignDb.readPackFile(packFile));' });
+  const cdbCloudFail = cdbCloudRun({ failWrite: true, code: 'attachPackToActiveCampaignDb(CampaignDb.readPackFile(packFile));' });
+  const cdbCloudOffline = cdbCloudRun({ localMode: true, code: 'attachPackToActiveCampaignDb(CampaignDb.readPackFile(packFile));' });
+  const cdbPlayerCopy = [{ id: 'x', name: 'Copy', _campaignPack: { campaignId: 'cloud-uuid-other', packId: 'p', version: 1, hash: 'h', status: 'active' } }];
+  const cdbCloudRemove = cdbCloudRun({ playerDb: cdbPlayerCopy, packs: [Object.assign({}, cdbPacksV1[0], { inCloud: true })],
+    code: 'reconcileHubCampaignDbs({ save: false }); removePackFromActiveCampaignDb("pack_dm_draconic_boons");' });
+  const cdbOfflineRemove = cdbCloudRun({ localMode: true, packs: [Object.assign({}, cdbPacksV1[0], { inCloud: true })],
+    code: 'removePackFromActiveCampaignDb("pack_dm_draconic_boons");' });
+  check(
+    'Campaign DB (cloud): attaching to a cloud campaign writes campaign_packs first and tags copies with the cloud id; a failed write changes nothing; signed out it is kept as not uploaded; removing deletes the cloud row (refused while signed out); a player character in another DM\'s campaign is left alone',
+    JSON.stringify(cdbCloudAttach.calls) === JSON.stringify([['upsert', 'cloud-uuid-1', 'pack_dm_draconic_boons', 1]]) &&
+    cdbCloudAttach.sandbox.state.campaigns[0].packs[0].inCloud === true &&
+    cdbCloudAttach.npcDb.length === 107 && cdbCloudAttach.npcDb.every(e => e._campaignPack.campaignId === 'cloud-uuid-1') &&
+    cdbCloudFail.sandbox.state.campaigns[0].packs.length === 0 && cdbCloudFail.npcDb.length === 0 && /not attached: RLS denied/.test(cdbCloudFail.alerts[0] || '') &&
+    cdbCloudOffline.calls.length === 0 && cdbCloudOffline.sandbox.state.campaigns[0].packs[0].inCloud === false && cdbCloudOffline.npcDb.length === 107 &&
+    JSON.stringify(cdbCloudRemove.calls) === JSON.stringify([['delete', 'cloud-uuid-1', 'pack_dm_draconic_boons']]) &&
+    cdbCloudRemove.sandbox.state.campaigns[0].packs.length === 0 && cdbCloudRemove.npcDb.length === 0 &&
+    cdbCloudRemove.playerDb.length === 1 && cdbCloudRemove.playerDb[0]._campaignPack.status === 'active' &&
+    cdbOfflineRemove.calls.length === 0 && cdbOfflineRemove.sandbox.state.campaigns[0].packs.length === 1 && /Sign in to remove/.test(cdbOfflineRemove.alerts[0] || '')
+  );
+
+  const cdbMerged = CampaignDb.mergeCloudPacks(
+    [{ packId: 'from_other_device', version: 3, entries: [] }, { packId: 'edited_offline', version: 1, entries: [] }],
+    [{ packId: 'edited_offline', version: 2, entries: [], inCloud: false }, { packId: 'phase1_local', version: 1, entries: [] }, { packId: 'deleted_elsewhere', version: 1, entries: [], inCloud: true }],
+    new Set(['edited_offline']));
+  const cdbM = (id) => cdbMerged.find(p => p.packId === id);
+  check(
+    'Campaign DB (cloud sync): the cloud list wins, packs not yet in the cloud are laid over it (uploaded ones become cloud packs, failed ones stay pending), and a cloud pack deleted on another device is dropped',
+    cdbMerged.length === 3 && cdbM('from_other_device').inCloud === true && cdbM('edited_offline').version === 2 && cdbM('edited_offline').inCloud === true &&
+    cdbM('phase1_local').inCloud === false && !cdbM('deleted_elsewhere') &&
+    /await pullCloudCampaignDbs\(\)/.test(hubSrc) && /if \(sc && sc\.parentId === oldId\) sc\.parentId = cloudCamp\.id;/.test(hubSrc)
+  );
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };
