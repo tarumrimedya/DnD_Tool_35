@@ -132,6 +132,14 @@ The name-based matcher must not merge these two. P3 needs a source-aware ID rule
 | Skill requirement fix | Class skill requirements read 0 ranks for everyone (`character.skills` is an array, it was indexed by key). Ranks are now looked up by `key`; the older `knowledge_<field>` keys map to `k_<field>`, and a Perform / Profession requirement accepts any subtype. |
 | Lower-case duplicate fix | A class resolved by `getClassDef` before the picker hydrated (e.g. from a snapshot) showed up twice in the pickers ("Alienist" and "alienist"). The lower-case lookup aliases are no longer listed. |
 
+## I. Psionic Powers Chunk
+
+| Item | Result |
+| :--- | :--- |
+| Split | The 440 XPH SRD powers moved from the eager `srd_spells.json` (now 699 spells) into the lazy `srd_powers.json` (about 0.7 MB less loaded at page open). No record changed. |
+| Loading | Spotlight finds powers through the index and loads the chunk when one is picked (`fetchEntry`). The autocomplete pick called `getSpellById` / `getMonsterById`, which do not exist; it now uses `fetchEntry` for every lazy record. |
+| Snapshots | Powers named in the character's spell lists or buffs are snapshotted into customDb, so an active psionic buff (e.g. *Force Screen*) keeps its modifiers without the chunk. |
+
 ## E. Open Item for the User
 
 - **Factotum Reflex save:** *Dungeonscape* is not in `FRP\D&D\Kitap`. If you can check the book or add the PDF, I will settle it. Until then I leave it unchanged.

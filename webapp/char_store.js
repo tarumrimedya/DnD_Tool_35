@@ -57,10 +57,22 @@
     return Array.from(out);
   }
 
-  // Every lazy-chunk reference type the character can hold: feat-list rows plus class levels.
+  // Names in the character's spell lists and buffs. Psionic powers live in the lazy srd_powers.json, so a power
+  // the character knows or has active is snapshotted like a feat; names that are not powers never match a Power row.
+  function collectPowerRefNames(doc) {
+    const out = new Set();
+    const add = (e) => { const n = String(typeof e === 'string' ? e : ((e && e.name) || '')).trim(); if (n) out.add(n); };
+    const sc = (doc && doc.spellcasting) || {};
+    [doc && doc.spells, doc && doc.buffs, sc.knownSpells, sc.preparedSpells, sc.divineSpells].forEach((list) => {
+      if (Array.isArray(list)) list.forEach(add);
+    });
+    return Array.from(out);
+  }
+
+  // Every lazy-chunk reference type the character can hold: feat-list rows, class levels and psionic powers.
   function collectSrdRefGroups(doc) {
     return FEAT_REF_TYPES.map(t => ({ t, names: collectFeatRefNames(doc, t) }))
-      .concat([{ t: 'Class', names: collectClassRefNames(doc) }]);
+      .concat([{ t: 'Class', names: collectClassRefNames(doc) }, { t: 'Power', names: collectPowerRefNames(doc) }]);
   }
 
   function resolveRuleEngine() {

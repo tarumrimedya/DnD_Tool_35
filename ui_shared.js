@@ -462,13 +462,11 @@
 
       let fullEntry = picked;
       if (!picked._isAssembledLego && global.SrdCompendium) {
-        if (picked.category === 'Spell' || picked.category === 'Power') {
-          fullEntry = await global.SrdCompendium.getSpellById(picked.id) || picked;
-        } else if (picked.category === 'Monster') {
-          fullEntry = await global.SrdCompendium.getMonsterById(picked.id) || picked;
-        } else {
-          fullEntry = global.SrdCompendium.getById(picked.id) || picked;
-        }
+        // Records from lazy chunks (monsters, splat feats, psionic powers...) arrive as index stubs:
+        // fetchEntry loads the owning chunk and returns the full record.
+        fullEntry = global.SrdCompendium.getById(picked.id)
+          || (typeof global.SrdCompendium.fetchEntry === 'function' ? await global.SrdCompendium.fetchEntry(picked.id) : null)
+          || picked;
       }
 
       if (typeof options.onSelect === 'function') {

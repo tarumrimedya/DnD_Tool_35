@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "f37a4248ac03ae97",
+  "compendiumHash": "310eda99b03b64b0",
   "generatedAt": "2026-11-04T15:37:19.474Z",
   "totalEntries": 7652,
   "chunks": {
@@ -30,9 +30,9 @@
       "eagerLoad": true
     },
     "srd_spells.json": {
-      "count": 1139,
-      "bytes": 2179406,
-      "hash": "1a258bc5b493f265",
+      "count": 699,
+      "bytes": 1425408,
+      "hash": "8db89ba9a78540cb",
       "eagerLoad": true
     },
     "srd_monsters.json": {
@@ -108,6 +108,12 @@
       "bytes": 164362,
       "eagerLoad": false,
       "optIn": true
+    },
+    "srd_powers.json": {
+      "count": 440,
+      "hash": "790cf44baade09cb",
+      "bytes": 787583,
+      "eagerLoad": false
     }
   },
   "index": [
@@ -10652,7 +10658,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -10661,7 +10667,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -10670,7 +10676,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -10679,7 +10685,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -10688,7 +10694,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -10697,7 +10703,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -10706,7 +10712,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -10715,7 +10721,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -10724,7 +10730,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -10733,7 +10739,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -10742,7 +10748,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -10751,7 +10757,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -10760,7 +10766,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -10769,7 +10775,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -10778,7 +10784,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -10787,7 +10793,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -10796,7 +10802,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -10805,7 +10811,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -10814,7 +10820,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -10823,7 +10829,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -10832,7 +10838,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -10841,7 +10847,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -10850,7 +10856,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -10859,7 +10865,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -10868,7 +10874,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -10877,7 +10883,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -10886,7 +10892,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -10895,7 +10901,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -10904,7 +10910,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -10913,7 +10919,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -10922,7 +10928,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -10931,7 +10937,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -10940,7 +10946,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -10949,7 +10955,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -10958,7 +10964,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -10967,7 +10973,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -10976,7 +10982,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -10985,7 +10991,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -10994,7 +11000,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -11003,7 +11009,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11012,7 +11018,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11021,7 +11027,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11030,7 +11036,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11039,7 +11045,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11048,7 +11054,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -11057,7 +11063,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11066,7 +11072,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11075,7 +11081,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11084,7 +11090,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -11093,7 +11099,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11102,7 +11108,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11111,7 +11117,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11120,7 +11126,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -11129,7 +11135,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11138,7 +11144,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11147,7 +11153,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11156,7 +11162,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11165,7 +11171,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11174,7 +11180,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11183,7 +11189,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -11192,7 +11198,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11201,7 +11207,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11210,7 +11216,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -11219,7 +11225,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11228,7 +11234,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -11237,7 +11243,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -11246,7 +11252,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11255,7 +11261,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -11264,7 +11270,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11273,7 +11279,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11282,7 +11288,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11291,7 +11297,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -11300,7 +11306,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -11309,7 +11315,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -11318,7 +11324,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11327,7 +11333,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11336,7 +11342,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -11345,7 +11351,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11354,7 +11360,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11363,7 +11369,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -11372,7 +11378,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -11381,7 +11387,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11390,7 +11396,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -11399,7 +11405,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 0
     },
     {
@@ -11408,7 +11414,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11417,7 +11423,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11426,7 +11432,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -11435,7 +11441,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11444,7 +11450,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11453,7 +11459,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11462,7 +11468,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11471,7 +11477,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11480,7 +11486,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11489,7 +11495,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11498,7 +11504,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11507,7 +11513,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11516,7 +11522,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11525,7 +11531,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -11534,7 +11540,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11543,7 +11549,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -11552,7 +11558,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11561,7 +11567,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -11570,7 +11576,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11579,7 +11585,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11588,7 +11594,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11597,7 +11603,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11606,7 +11612,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11615,7 +11621,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -11624,7 +11630,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11633,7 +11639,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -11642,7 +11648,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11651,7 +11657,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 0
     },
     {
@@ -11660,7 +11666,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11669,7 +11675,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -11678,7 +11684,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11687,7 +11693,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 0
     },
     {
@@ -11696,7 +11702,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11705,7 +11711,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -11714,7 +11720,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11723,7 +11729,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11732,7 +11738,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11741,7 +11747,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11750,7 +11756,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -11759,7 +11765,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11768,7 +11774,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11777,7 +11783,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11786,7 +11792,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -11795,7 +11801,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11804,7 +11810,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11813,7 +11819,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -11822,7 +11828,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11831,7 +11837,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11840,7 +11846,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11849,7 +11855,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -11858,7 +11864,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11867,7 +11873,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11876,7 +11882,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11885,7 +11891,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -11894,7 +11900,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -11903,7 +11909,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11912,7 +11918,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -11921,7 +11927,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11930,7 +11936,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -11939,7 +11945,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -11948,7 +11954,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11957,7 +11963,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -11966,7 +11972,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -11975,7 +11981,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -11984,7 +11990,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -11993,7 +11999,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12002,7 +12008,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12011,7 +12017,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -12020,7 +12026,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12029,7 +12035,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12038,7 +12044,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12047,7 +12053,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -12056,7 +12062,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -12065,7 +12071,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12074,7 +12080,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -12083,7 +12089,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12092,7 +12098,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12101,7 +12107,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12110,7 +12116,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -12119,7 +12125,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12128,7 +12134,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -12137,7 +12143,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -12146,7 +12152,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12155,7 +12161,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 0
     },
     {
@@ -12164,7 +12170,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12173,7 +12179,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -12182,7 +12188,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -12191,7 +12197,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -12200,7 +12206,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12209,7 +12215,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -12218,7 +12224,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -12227,7 +12233,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12236,7 +12242,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -12245,7 +12251,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -12254,7 +12260,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -12263,7 +12269,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -12272,7 +12278,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12281,7 +12287,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -12290,7 +12296,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -12299,7 +12305,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12308,7 +12314,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12317,7 +12323,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12326,7 +12332,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -12335,7 +12341,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12344,7 +12350,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 0
     },
     {
@@ -12353,7 +12359,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -12362,7 +12368,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -12371,7 +12377,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12380,7 +12386,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12389,7 +12395,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12398,7 +12404,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12407,7 +12413,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12416,7 +12422,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12425,7 +12431,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12434,7 +12440,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -12443,7 +12449,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 0
     },
     {
@@ -12452,7 +12458,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12461,7 +12467,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12470,7 +12476,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -12479,7 +12485,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12488,7 +12494,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -12497,7 +12503,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -12506,7 +12512,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12515,7 +12521,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12524,7 +12530,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -12533,7 +12539,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -12542,7 +12548,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12551,7 +12557,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12560,7 +12566,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -12569,7 +12575,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12578,7 +12584,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -12587,7 +12593,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -12596,7 +12602,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -12605,7 +12611,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12614,7 +12620,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12623,7 +12629,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12632,7 +12638,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12641,7 +12647,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -12650,7 +12656,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12659,7 +12665,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -12668,7 +12674,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12677,7 +12683,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12686,7 +12692,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12695,7 +12701,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 0
     },
     {
@@ -12704,7 +12710,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12713,7 +12719,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12722,7 +12728,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12731,7 +12737,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12740,7 +12746,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12749,7 +12755,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12758,7 +12764,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12767,7 +12773,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -12776,7 +12782,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -12785,7 +12791,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12794,7 +12800,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12803,7 +12809,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12812,7 +12818,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12821,7 +12827,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -12830,7 +12836,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12839,7 +12845,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12848,7 +12854,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -12857,7 +12863,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12866,7 +12872,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -12875,7 +12881,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -12884,7 +12890,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -12893,7 +12899,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -12902,7 +12908,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12911,7 +12917,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -12920,7 +12926,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -12929,7 +12935,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -12938,7 +12944,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12947,7 +12953,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -12956,7 +12962,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -12965,7 +12971,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -12974,7 +12980,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -12983,7 +12989,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -12992,7 +12998,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13001,7 +13007,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13010,7 +13016,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13019,7 +13025,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -13028,7 +13034,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13037,7 +13043,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13046,7 +13052,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -13055,7 +13061,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -13064,7 +13070,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13073,7 +13079,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13082,7 +13088,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13091,7 +13097,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -13100,7 +13106,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -13109,7 +13115,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13118,7 +13124,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13127,7 +13133,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13136,7 +13142,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13145,7 +13151,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -13154,7 +13160,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13163,7 +13169,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13172,7 +13178,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13181,7 +13187,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -13190,7 +13196,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13199,7 +13205,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -13208,7 +13214,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -13217,7 +13223,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13226,7 +13232,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13235,7 +13241,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -13244,7 +13250,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -13253,7 +13259,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13262,7 +13268,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13271,7 +13277,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13280,7 +13286,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -13289,7 +13295,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13298,7 +13304,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13307,7 +13313,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -13316,7 +13322,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13325,7 +13331,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -13334,7 +13340,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13343,7 +13349,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13352,7 +13358,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13361,7 +13367,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13370,7 +13376,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -13379,7 +13385,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13388,7 +13394,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13397,7 +13403,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13406,7 +13412,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13415,7 +13421,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -13424,7 +13430,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13433,7 +13439,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13442,7 +13448,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13451,7 +13457,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -13460,7 +13466,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13469,7 +13475,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13478,7 +13484,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -13487,7 +13493,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13496,7 +13502,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13505,7 +13511,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13514,7 +13520,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13523,7 +13529,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -13532,7 +13538,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13541,7 +13547,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -13550,7 +13556,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13559,7 +13565,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13568,7 +13574,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -13577,7 +13583,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13586,7 +13592,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13595,7 +13601,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13604,7 +13610,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -13613,7 +13619,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13622,7 +13628,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13631,7 +13637,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 0
     },
     {
@@ -13640,7 +13646,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13649,7 +13655,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13658,7 +13664,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13667,7 +13673,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -13676,7 +13682,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13685,7 +13691,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -13694,7 +13700,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -13703,7 +13709,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13712,7 +13718,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -13721,7 +13727,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -13730,7 +13736,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13739,7 +13745,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -13748,7 +13754,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13757,7 +13763,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -13766,7 +13772,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13775,7 +13781,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13784,7 +13790,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -13793,7 +13799,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -13802,7 +13808,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -13811,7 +13817,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13820,7 +13826,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13829,7 +13835,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13838,7 +13844,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13847,7 +13853,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13856,7 +13862,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13865,7 +13871,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13874,7 +13880,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13883,7 +13889,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -13892,7 +13898,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13901,7 +13907,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -13910,7 +13916,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13919,7 +13925,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -13928,7 +13934,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -13937,7 +13943,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13946,7 +13952,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13955,7 +13961,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13964,7 +13970,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13973,7 +13979,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -13982,7 +13988,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -13991,7 +13997,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -14000,7 +14006,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14009,7 +14015,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -14018,7 +14024,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14027,7 +14033,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14036,7 +14042,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -14045,7 +14051,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -14054,7 +14060,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -14063,7 +14069,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14072,7 +14078,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -14081,7 +14087,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -14090,7 +14096,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -14099,7 +14105,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 0
     },
     {
@@ -14108,7 +14114,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -14117,7 +14123,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -14126,7 +14132,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -14135,7 +14141,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -14144,7 +14150,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -14153,7 +14159,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14162,7 +14168,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -14171,7 +14177,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -14180,7 +14186,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -14189,7 +14195,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -14198,7 +14204,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -14207,7 +14213,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -14216,7 +14222,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -14225,7 +14231,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -14234,7 +14240,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -14243,7 +14249,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -14252,7 +14258,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -14261,7 +14267,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14270,7 +14276,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -14279,7 +14285,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -14288,7 +14294,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -14297,7 +14303,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14306,7 +14312,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14315,7 +14321,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -14324,7 +14330,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -14333,7 +14339,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -14342,7 +14348,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -14351,7 +14357,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -14360,7 +14366,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -14369,7 +14375,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -14378,7 +14384,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -14387,7 +14393,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 0
     },
     {
@@ -14396,7 +14402,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 9
     },
     {
@@ -14405,7 +14411,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 8
     },
     {
@@ -14414,7 +14420,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -14423,7 +14429,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -14432,7 +14438,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14441,7 +14447,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14450,7 +14456,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14459,7 +14465,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14468,7 +14474,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -14477,7 +14483,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 6
     },
     {
@@ -14486,7 +14492,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -14495,7 +14501,7 @@
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -14504,7 +14510,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -14513,7 +14519,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -14522,7 +14528,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 3
     },
     {
@@ -14531,7 +14537,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -14540,7 +14546,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {
@@ -14549,7 +14555,7 @@
       "t": "Power",
       "c": "Kin",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -14558,7 +14564,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 5
     },
     {
@@ -14567,7 +14573,7 @@
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 7
     },
     {
@@ -14576,7 +14582,7 @@
       "t": "Power",
       "c": "Telepathy",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 4
     },
     {
@@ -14585,7 +14591,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 0
     },
     {
@@ -14594,7 +14600,7 @@
       "t": "Power",
       "c": "Clairsentience",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 2
     },
     {
@@ -14603,7 +14609,7 @@
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
-      "f": "srd_spells.json",
+      "f": "srd_powers.json",
       "l": 1
     },
     {

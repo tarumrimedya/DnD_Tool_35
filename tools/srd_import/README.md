@@ -27,6 +27,7 @@ See `SRD_IMPORT_GAP_AUDIT_REPORT.md` and `SRD_IMPORT_VERIFICATION_TABLE.md` for 
 | P4 | `p4_classidx.py` | Parses the crystalkeep Prestige / Base class index PDFs (word positions) into `clsidx.json`. |
 | P4 | `p4_classes.py` | Builds the base and prestige class chassis from the workbook. Prestige classes are kept only when the class index agrees or the book table was read (`p4_book_verified.json`, `p4_conflicts_resolved.json`; book values override the workbook); same-name classes get a book-qualified name. |
 | P4 | `p4_assemble.py` | Writes `srd_classes_splat.json` (3.5) and `srd_classes_legacy.json` (3.0 and licensed, `optIn`), checks ids and names are unique across class chunks, and registers them in the index. |
+| Powers | `powers_split.py` | Moves the 440 XPH psionic powers from the eager `srd_spells.json` into the lazy `srd_powers.json` and re-points their index rows. Powers load through Spotlight (`fetchEntry`); a power the character knows or has active is snapshotted into customDb. |
 
 After any change, run `node tools/verify_and_sync.js` (or the Docker command in `CLAUDE.md`). It fills the index rows, counts, and hashes, and runs the regression suites.
 

@@ -2606,7 +2606,7 @@ function runDeriveSheetTests() {
   const p4SpellsSrc = fs.readFileSync(path.join(__dirname, '..', 'char_spells.js'), 'utf8');
   check(
     'SRD Import P4: the store snapshots class refs (levelProgression className / doc.classes) and getAvailableClassDefs types snapshots as official prestige/base classes',
-    /function collectClassRefNames\(doc\)/.test(p4StoreSrc) && /\.concat\(\[\{ t: 'Class', names: collectClassRefNames\(doc\) \}\]\)/.test(p4StoreSrc) &&
+    /function collectClassRefNames\(doc\)/.test(p4StoreSrc) && /\.concat\(\[\{ t: 'Class', names: collectClassRefNames\(doc\) \}, /.test(p4StoreSrc) &&
     /const isSnap = Boolean\(c\._snapshot\) && c\.type === 'Class';/.test(p4SpellsSrc) && /isCustom: !isSnap,/.test(p4SpellsSrc) &&
     Boolean(RuleEngine.DND35_CLASS_DEFS.alienist) && /if \(k === k\.toLowerCase\(\) && displayKeysLower\.has\(k\)\) return;/.test(p4SpellsSrc)
   );
@@ -2630,6 +2630,45 @@ function runDeriveSheetTests() {
     p4Ranks(p4Skills, 'perform') === 6 && p4Ranks(p4Skills, 'use_magic_device') === 2 && p4Ranks(p4Skills, 'spellcraft') === 0 &&
     p4Ranks({ k_religion: { ranks: 5 } }, 'knowledge_religion') === 5 &&
     /const curRanks = getPrereqSkillRanks\(req\.skill\);/.test(p4ProgSrc) && !/character\.skills\[req\.skill\]/.test(p4ProgSrc)
+  );
+
+  // SRD Import: psionic powers in their own lazy chunk (out of the eager srd_spells.json)
+  const pwChunk = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_powers.json'), 'utf8'));
+  const pwSpells = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_spells.json'), 'utf8'));
+  const pwIdx = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_index.json'), 'utf8'));
+  const pwRows = pwIdx.index.filter(r => r.t === 'Power');
+  check(
+    'SRD Import Powers: the 440 XPH powers live only in the lazy srd_powers.json (not eager, not opt-in); srd_spells.json keeps spells only; index rows point at the new chunk',
+    pwChunk.length === 440 && pwChunk.every(p => p.type === 'Power' && p.id && p.schemaVersion === 2) &&
+    !pwSpells.some(s => s.type === 'Power') && pwSpells.length > 600 &&
+    pwIdx.chunks['srd_powers.json'].eagerLoad === false && !pwIdx.chunks['srd_powers.json'].optIn &&
+    pwRows.length === 440 && pwRows.every(r => r.f === 'srd_powers.json') &&
+    Comp.getLazyChunkNames().includes('srd_powers.json') && !Comp.isChunkLoaded('srd_powers.json') &&
+    !Comp.getByName('Force Screen')
+  );
+  // A psionic buff on the character resolves from its srd-snapshot while the chunk is not loaded.
+  const pwSrc = pwChunk.find(p => p.name === 'Force Screen');
+  const pwSnap = Object.assign(JSON.parse(JSON.stringify(pwSrc)), {
+    _snapshot: { origin: 'srd-snapshot', srcId: pwSrc.id, chunk: 'srd_powers.json', chunkHash: pwIdx.chunks['srd_powers.json'].hash, status: 'current' }
+  });
+  const pwChar = { name: 'P Powers Test', level: 3, abilities: { int: 14 }, buffs: [{ name: 'Force Screen', active: true }] };
+  RuleEngine.deriveSheet(pwChar, { customDb: [pwSnap] });
+  const pwSpec = RuleEngine.resolveSpellBuffSpec({ name: 'Force Screen' }, pwChar, 3);
+  check(
+    'SRD Import Powers: an active psionic buff (Force Screen, +4 shield) resolves from the customDb snapshot without the powers chunk',
+    !Comp.isChunkLoaded('srd_powers.json') && pwSpec && pwSpec.isBuffSpell === true &&
+    (pwSpec.modifiers || []).some(m => m && m.target === 'ac.shield' && Number(m.value) === 4)
+  );
+  Comp.ensureChunkLoaded('srd_powers.json'); // Node: synchronous
+  const pwDb = [];
+  const pwAdded = Comp.snapshotLazyRefs(pwDb, ['Force Screen', 'Fireball', 'Rage'], 'Power');
+  const pwStoreSrc = fs.readFileSync(path.join(__dirname, '..', 'char_store.js'), 'utf8');
+  const pwUiSrc = fs.readFileSync(path.join(__dirname, '..', 'ui_shared.js'), 'utf8');
+  check(
+    'SRD Import Powers: only lazy powers are snapshotted (not eager spells or unknown buff names); the store collects power refs from spell lists and buffs; Spotlight picks resolve lazy stubs via fetchEntry',
+    pwAdded.length === 1 && pwDb[0].name === 'Force Screen' && pwDb[0]._snapshot.chunk === 'srd_powers.json' &&
+    /function collectPowerRefNames\(doc\)/.test(pwStoreSrc) && /\{ t: 'Power', names: collectPowerRefNames\(doc\) \}/.test(pwStoreSrc) &&
+    !/getSpellById|getMonsterById/.test(pwUiSrc) && /await global\.SrdCompendium\.fetchEntry\(picked\.id\)/.test(pwUiSrc)
   );
 
   CharStore.clearHistory();
