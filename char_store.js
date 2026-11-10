@@ -44,6 +44,25 @@
     return Array.from(out);
   }
 
+  // Class names the character has levels in (levelProgression[].className; doc.classes "Fighter 3 / Alienist 2"
+  // for characters without a progression). Classes from lazy chunks (SRD import P4) are snapshotted like feats.
+  function collectClassRefNames(doc) {
+    const out = new Set();
+    if (doc && Array.isArray(doc.levelProgression)) {
+      doc.levelProgression.forEach((row) => { const n = String((row && row.className) || '').trim(); if (n) out.add(n); });
+    }
+    if (out.size === 0 && doc && typeof doc.classes === 'string') {
+      doc.classes.split('/').forEach((part) => { const n = part.replace(/\s+\d+\s*$/, '').trim(); if (n) out.add(n); });
+    }
+    return Array.from(out);
+  }
+
+  // Every lazy-chunk reference type the character can hold: feat-list rows plus class levels.
+  function collectSrdRefGroups(doc) {
+    return FEAT_REF_TYPES.map(t => ({ t, names: collectFeatRefNames(doc, t) }))
+      .concat([{ t: 'Class', names: collectClassRefNames(doc) }]);
+  }
+
   function resolveRuleEngine() {
     if (typeof root !== 'undefined' && root.RuleEngine) return root.RuleEngine;
     if (typeof RuleEngine !== 'undefined') return RuleEngine;
@@ -232,9 +251,10 @@
       // Feats referenced by name that no longer resolve from memory (lazy chunk not loaded, no snapshot yet):
       // load their chunk once and snapshot them (migration path; also covers opt-in 3.0 / licensed feats).
       const canResolve = typeof comp.resolveMissingRefs === 'function' && typeof comp.getByName === 'function';
-      const unresolvedByType = FEAT_REF_TYPES.map(t => ({
-        t,
-        names: canResolve ? collectFeatRefNames(doc, t).filter(n => !comp.getByName(n, t) && !comp.getByName(n)) : []
+      const hasSnapshotNamed = (n, t) => doc.customDb.some(e => e && e._snapshot && e.type === t && String(e.name || '').toLowerCase().trim() === n.toLowerCase());
+      const unresolvedByType = collectSrdRefGroups(doc).map(g => ({
+        t: g.t,
+        names: canResolve ? g.names.filter(n => !comp.getByName(n, g.t) && !comp.getByName(n) && !hasSnapshotNamed(n, g.t)) : []
       })).filter(g => g.names.length > 0);
       const hasSnapshots = doc.customDb.some(e => e && e._snapshot);
       if (!hasSnapshots && unresolvedByType.length === 0) return Promise.resolve(null);
@@ -279,7 +299,7 @@
       // so export / cloud sync / the next page load resolve them without the chunk.
       const comp = typeof root !== 'undefined' ? root.SrdCompendium : null;
       if (comp && typeof comp.snapshotLazyRefs === 'function') {
-        FEAT_REF_TYPES.forEach(t => comp.snapshotLazyRefs(db, collectFeatRefNames(_state.doc, t), t));
+        collectSrdRefGroups(_state.doc).forEach(g => comp.snapshotLazyRefs(db, g.names, g.t));
       }
       const sheetView = engine.deriveSheet(_state.doc, {
         masterDb: db,

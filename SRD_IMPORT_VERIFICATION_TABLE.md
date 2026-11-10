@@ -116,6 +116,21 @@ The name-based matcher must not merge these two. P3 needs a source-aware ID rule
 | Traits and skill tricks on the character | The quick feat picker has **Character Trait** and **Skill Trick** categories. Picks are stored as `🧬 [Trait] Name` / `💪 [Skill Trick] Name` and never use a feat slot. **Traits** (UA p.86): at most two; a trait added after 1st level asks for DM approval; the benefit and drawback modifiers apply. **Skill tricks** (CSc p.83): one per level; the total cannot exceed half the character level, rounded up; prerequisites are checked; each costs 2 skill points in both budgets. Picked records are snapshotted into customDb by type. |
 | `tier` → `levelBand` | The P0/P2 field `tier` collided with the Warlock invocation grade (`tier`), so the feat picker would have shown "heroic Invocation". It is renamed to `levelBand` everywhere, including on Weak Will. |
 
+## H. P4 Base and Prestige Class Chassis
+
+| Item | Result |
+| :--- | :--- |
+| 3.5 WotC classes | **195** in `srd_classes_splat.json` (lazy; loaded the first time a class picker is used: Level Up or Change Class). Nothing loads at page open. |
+| 3.0 + licensed non-WotC 3.5 classes | **13** in `srd_classes_legacy.json`. The chunk is opt-in: loaded and listed only while the "📜 3.0 & Licensed" setting is on (the feat filter setting is reused). A class the character already has stays listed. |
+| Content | Chassis only (`contentLevel: "stub"`): Hit Die, BAB, good/poor saves, skill points, class skills, max level, structured requirements. `features` is empty. |
+| Verification | 160 prestige classes are **cross-checked** (workbook and the crystalkeep 3.5 class index agree on book, HD, BAB, saves, skill points; the index gives max level and page). 5 prestige classes are **verified** from the book (Evangelist CD Table 2-10, Rainbow Servant CD p.54, Void Disciple CD p.72, Moonspeaker RoE Table 7-3, Reforged RoE Table 7-7). Of the 43 base classes, *Samurai* (CW p.8) is cross-checked; 42 are **unverified** (single source; max level 20, racial paragons 3). |
+| Not imported | 389 prestige classes with no index entry, 29 open workbook/index conflicts. Book verification runs separately (`SRD_IMPORT_P4_PRC_AGENT_BRIEF.md`). |
+| Same-name classes (2) | The 3.5 WotC class keeps the plain name; the other is renamed with its book: *Samurai (Oriental Adventures)*, *Exemplar (Player's Companion)*. Characters store classes by name, so names must be unique. |
+| Requirement parsing fix | "Must be female" (Yathrinshee PGtF p.187 and two others) was parsed as a race requirement; it is now a special requirement. |
+| Snapshots | A class from a lazy chunk on the character (`levelProgression[].className`, or `doc.classes`) is copied into customDb as an `srd-snapshot`. `RuleEngine.getClassDef` and `getAvailableClassDefs` resolve it from there without the chunk, typed as an official prestige/base class. |
+| Skill requirement fix | Class skill requirements read 0 ranks for everyone (`character.skills` is an array, it was indexed by key). Ranks are now looked up by `key`; the older `knowledge_<field>` keys map to `k_<field>`, and a Perform / Profession requirement accepts any subtype. |
+| Lower-case duplicate fix | A class resolved by `getClassDef` before the picker hydrated (e.g. from a snapshot) showed up twice in the pickers ("Alienist" and "alienist"). The lower-case lookup aliases are no longer listed. |
+
 ## E. Open Item for the User
 
 - **Factotum Reflex save:** *Dungeonscape* is not in `FRP\D&D\Kitap`. If you can check the book or add the PDF, I will settle it. Until then I leave it unchanged.

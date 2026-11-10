@@ -131,7 +131,7 @@ def requirement(line):
         if k:
             return {'text': f'Skill: {sk.strip()} {n} ranks', 'key': 'skill', 'skill': k, 'ranks': int(n)}
     m = re.match(r'^(?:race:\s*|must be (?:an?\s+)?)([A-Z][A-Za-z\- ]+?)$', s, re.I)
-    if m and not alt and 'alignment' not in low and len(m.group(1).split()) <= 3 and not re.search(r'\b(able|member|accepted|of|in|at)\b', m.group(1).lower()):
+    if m and not alt and 'alignment' not in low and len(m.group(1).split()) <= 3 and not re.search(r'\b(able|member|accepted|of|in|at|male|female)\b', m.group(1).lower()):
         return {'text': f'Race: {m.group(1).strip()}', 'key': 'race', 'val': m.group(1).strip()}
     if ('alignment' in low or re.match(r'^any\s+non-?\s*(lawful|chaotic|good|evil|neutral)$|^any\s+(lawful|chaotic|good|evil|neutral)$', low)) and not alt:
         codes = alignment_codes(low)
@@ -219,6 +219,24 @@ for c in R['classes']:
     out['legacy' if edition != '3.5' else 'splat'].append(rec)
     stat['kept ' + ('prestige' if is_prc else 'base')] += 1
     stat['verification ' + rec['verification']] += 1
+
+# Characters store classes by name (levelProgression[].className), so a name must be unique. When a 3.5 WotC class
+# and a 3.0 / licensed class share a name (Samurai, Exemplar), the 3.5 one keeps the plain name and id; the other
+# becomes "Name (Book Title)".
+by_name = collections.defaultdict(list)
+for recs in out.values():
+    for r in recs: by_name[key(r['name'])].append(r)
+for group in by_name.values():
+    if len(group) < 2: continue
+    keep = next((r for r in group if r['edition'] == '3.5'), None)
+    assert keep and sum(r['edition'] == '3.5' for r in group) == 1, [r['name'] for r in group]
+    keep['id'] = 'cls-' + slug(keep['name'])
+    for r in group:
+        if r is keep: continue
+        title = re.sub(r' p\.\d+$', '', r['source'])
+        r['name'] = f"{r['name']} ({title})"
+        r['id'] = 'cls-' + slug(r['name'])
+        stat['renamed for a name clash'] += 1
 
 os.makedirs(OUT, exist_ok=True)
 for b, recs in out.items():

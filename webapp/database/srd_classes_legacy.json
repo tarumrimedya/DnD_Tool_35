@@ -1,0 +1,1026 @@
+[
+  {
+    "id": "cls-deep-diviner",
+    "schemaVersion": 2,
+    "name": "Deep Diviner",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Underdark p.32",
+    "role": "Prestige Class",
+    "hd": 4,
+    "hitDie": "d4",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "profession",
+      "spellcraft",
+      "survival",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Knowledge (Underdark local) 8 ranks",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Survival 2 ranks",
+        "key": "skill",
+        "skill": "survival",
+        "ranks": 2
+      },
+      {
+        "text": "Feat: Spell Focus (Divination)",
+        "key": "feat",
+        "name": "Spell Focus (Divination)"
+      },
+      {
+        "text": "Special: Ability to cast 2nd level arcane spells",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": "crystalkeep-3.5-class-index"
+    }
+  },
+  {
+    "id": "cls-drow-judicator",
+    "schemaVersion": 2,
+    "name": "Drow Judicator",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Underdark p.33",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "handle_animal",
+      "heal",
+      "intimidate",
+      "k_arcana",
+      "k_religion",
+      "profession",
+      "ride",
+      "spellcraft",
+      "survival"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Drow",
+        "key": "special"
+      },
+      {
+        "text": "Alignment: Any evil",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Intimidate 4 ranks",
+        "key": "skill",
+        "skill": "intimidate",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Knowledge (religion) 4 ranks",
+        "key": "skill",
+        "skill": "k_religion",
+        "ranks": 4
+      },
+      {
+        "text": "Feat: Combat Reflexes",
+        "key": "feat",
+        "name": "Combat Reflexes"
+      },
+      {
+        "text": "Feat: Loth's Meat",
+        "key": "feat",
+        "name": "Loth's Meat"
+      },
+      {
+        "text": "Special: Ability to cast 1st level arcane or divine spells",
+        "key": "special"
+      },
+      {
+        "text": "Special: Must survive the rights of enrty",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": "crystalkeep-3.5-class-index"
+    }
+  },
+  {
+    "id": "cls-exemplar-players-companion",
+    "schemaVersion": 2,
+    "name": "Exemplar (Player's Companion)",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Player's Companion",
+    "role": "Base Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 20,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "disguise",
+      "heal",
+      "intimidate",
+      "move_silently",
+      "perform",
+      "ride",
+      "sense_motive",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5-licensed",
+    "contentLevel": "stub",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null
+    }
+  },
+  {
+    "id": "cls-friar",
+    "schemaVersion": 2,
+    "name": "Friar",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Player's Companion",
+    "role": "Base Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "concentration",
+      "diplomacy",
+      "heal",
+      "intimidate",
+      "k_religion",
+      "listen",
+      "perform",
+      "profession",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5-licensed",
+    "contentLevel": "stub",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null
+    }
+  },
+  {
+    "id": "cls-imaskari-vengeance-taker",
+    "schemaVersion": 2,
+    "name": "Imaskari Vengeance Taker",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Underdark p.37",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "bluff",
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "escape_artist",
+      "gather_information",
+      "hide",
+      "jump",
+      "k_arcana",
+      "listen",
+      "move_silently",
+      "open_lock",
+      "profession",
+      "search",
+      "sleight_of_hand",
+      "spellcraft",
+      "spot",
+      "survival",
+      "swim",
+      "tumble",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Hide 4 ranks",
+        "key": "skill",
+        "skill": "hide",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Move Silently 5 ranks",
+        "key": "skill",
+        "skill": "move_silently",
+        "ranks": 5
+      },
+      {
+        "text": "Skill: Survival 2 ranks",
+        "key": "skill",
+        "skill": "survival",
+        "ranks": 2
+      },
+      {
+        "text": "Feat: Track",
+        "key": "feat",
+        "name": "Track"
+      },
+      {
+        "text": "Special: Ability to cast 3rd level arcane spells",
+        "key": "special"
+      },
+      {
+        "text": "Special: Must have slain an enemy for revenge, must also swear oath to obey code",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": "crystalkeep-3.5-class-index"
+    }
+  },
+  {
+    "id": "cls-inventor",
+    "schemaVersion": 2,
+    "name": "Inventor",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Player's Companion",
+    "role": "Base Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 20,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "disable_device",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "listen",
+      "open_lock",
+      "profession",
+      "search",
+      "spot",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5-licensed",
+    "contentLevel": "stub",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null
+    }
+  },
+  {
+    "id": "cls-magnifico",
+    "schemaVersion": 2,
+    "name": "Magnifico",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Player's Companion",
+    "role": "Base Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [
+      "appraise",
+      "bluff",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "disguise",
+      "gather_information",
+      "intimidate",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nobility",
+      "k_religion",
+      "perform",
+      "ride",
+      "sense_motive"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5-licensed",
+    "contentLevel": "stub",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null
+    }
+  },
+  {
+    "id": "cls-mariner",
+    "schemaVersion": 2,
+    "name": "Mariner",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Age of Mortals",
+    "role": "Base Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 20,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [
+      "balance",
+      "bluff",
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "escape_artist",
+      "gather_information",
+      "jump",
+      "k_local",
+      "k_nature",
+      "profession",
+      "spot",
+      "survival",
+      "swim",
+      "tumble",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.5-licensed",
+    "contentLevel": "stub",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null
+    }
+  },
+  {
+    "id": "cls-prime-underdark-guide",
+    "schemaVersion": 2,
+    "name": "Prime Underdark Guide",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Underdark p.40",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "escape_artist",
+      "gather_information",
+      "heal",
+      "hide",
+      "k_geo",
+      "k_local",
+      "k_nature",
+      "listen",
+      "move_silently",
+      "sense_motive",
+      "spellcraft",
+      "spot",
+      "survival",
+      "tumble",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Balance 2 ranks",
+        "key": "skill",
+        "skill": "balance",
+        "ranks": 2
+      },
+      {
+        "text": "Skill: Climb 8 ranks",
+        "key": "skill",
+        "skill": "climb",
+        "ranks": 8
+      },
+      {
+        "text": "Skill: Diplomacy 5 ranks",
+        "key": "skill",
+        "skill": "diplomacy",
+        "ranks": 5
+      },
+      {
+        "text": "Skill: Gather Information 5 ranks",
+        "key": "skill",
+        "skill": "gather_information",
+        "ranks": 5
+      },
+      {
+        "text": "Special: Knowledge (Underdak local) 5 ranks",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Survival 5 ranks",
+        "key": "skill",
+        "skill": "survival",
+        "ranks": 5
+      },
+      {
+        "text": "Skill: Use Rope 2 ranks",
+        "key": "skill",
+        "skill": "use_rope",
+        "ranks": 2
+      },
+      {
+        "text": "Feat: Alertness",
+        "key": "feat",
+        "name": "Alertness"
+      },
+      {
+        "text": "Feat: Track",
+        "key": "feat",
+        "name": "Track"
+      },
+      {
+        "text": "Special: Must know 4 languages",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": "crystalkeep-3.5-class-index"
+    }
+  },
+  {
+    "id": "cls-samurai-oriental-adventures",
+    "schemaVersion": 2,
+    "name": "Samurai (Oriental Adventures)",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Oriental Adventures",
+    "role": "Base Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 20,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "intimidate",
+      "jump",
+      "perform",
+      "profession",
+      "ride",
+      "sense_motive",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null
+    }
+  },
+  {
+    "id": "cls-shaman",
+    "schemaVersion": 2,
+    "name": "Shaman",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Oriental Adventures",
+    "role": "Base Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "heal",
+      "k_arcana",
+      "profession",
+      "spellcraft"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null
+    }
+  },
+  {
+    "id": "cls-sohei",
+    "schemaVersion": 2,
+    "name": "Sohei",
+    "type": "Class",
+    "category": "Base",
+    "isPrestige": false,
+    "source": "Oriental Adventures",
+    "role": "Base Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 20,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "heal",
+      "k_religion",
+      "profession"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "base"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "unverified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null
+    }
+  },
+  {
+    "id": "cls-vermin-keeper",
+    "schemaVersion": 2,
+    "name": "Vermin Keeper",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Underdark p.44",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "handle_animal",
+      "k_nature",
+      "profession",
+      "spellcraft",
+      "spot",
+      "survival",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Handle Animal 8 ranks",
+        "key": "skill",
+        "skill": "handle_animal",
+        "ranks": 8
+      },
+      {
+        "text": "Skill: Knowledge (nature) 8 ranks",
+        "key": "skill",
+        "skill": "k_nature",
+        "ranks": 8
+      },
+      {
+        "text": "Feat: Iron Will",
+        "key": "feat",
+        "name": "Iron Will"
+      },
+      {
+        "text": "Special: Wild Shape Ability",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "cross-checked",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": "crystalkeep-3.5-class-index"
+    }
+  }
+]

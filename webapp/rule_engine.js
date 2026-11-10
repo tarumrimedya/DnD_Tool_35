@@ -7048,6 +7048,14 @@ const RuleEngine = {
     let srdClass = (comp && typeof comp.getClass === 'function')
       ? comp.getClass(className)
       : null;
+    // A class from a lazy (tier-2) chunk that is not loaded resolves from its srd-snapshot in the character's customDb.
+    if (!srdClass) {
+      const snapDb = (Array.isArray(this._activeCustomDb) && this._activeCustomDb.length > 0 ? this._activeCustomDb : null)
+        || (typeof window !== 'undefined' && Array.isArray(window.masterDb) ? window.masterDb : null);
+      srdClass = snapDb
+        ? (snapDb.find(m => m && m._snapshot && m.type === 'Class' && String(m.name || '').toLowerCase().trim() === lowerKey) || null)
+        : null;
+    }
     if (!srdClass && comp && typeof comp.getClass === 'function' && /\([^)]+\)/.test(className)) {
       const baseClassName = String(className).replace(/\s*\([^)]+\)\s*/g, '').trim();
       if (baseClassName) srdClass = comp.getClass(baseClassName);
@@ -7091,6 +7099,10 @@ const RuleEngine = {
       prerequisites: Array.isArray(srdClass.prerequisites) && srdClass.prerequisites.length > 0 ? srdClass.prerequisites : (localDef?.prerequisites || []),
       classSkills: Array.isArray(srdClass.classSkills) && srdClass.classSkills.length > 0 ? srdClass.classSkills : (localDef?.classSkills || [])
     });
+    if (!merged.type) {
+      merged.isPrestige = Boolean(srdClass.isPrestige || srdClass.category === 'Prestige');
+      merged.type = merged.isPrestige ? 'Prestige Class' : 'Base Class';
+    }
     if (this.DND35_CLASS_DEFS && srdClass.name) {
       this.DND35_CLASS_DEFS[srdClass.name] = merged;
       this.DND35_CLASS_DEFS[String(srdClass.name).toLowerCase().trim()] = merged;

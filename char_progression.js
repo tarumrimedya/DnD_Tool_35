@@ -172,6 +172,45 @@
       if (typeof _featListRefresher === 'function') _featListRefresher();
     }
 
+    // Tier-2 class chunks (SRD import P4): splatbook base / prestige class chassis load the first time a class picker
+    // is used; 3.0 / licensed classes only while the "3.0 & Licensed" setting is on. Nothing loads at page open.
+    // Once a chunk arrives, getAvailableClassDefs() sees a new class count (its cache key) and the open lists redraw.
+    let _classChunkLoadPending = false;
+
+    function ensureClassSplatChunks() {
+      const comp = (typeof window !== 'undefined') ? window.SrdCompendium : null;
+      if (_classChunkLoadPending || !comp || !comp._ready || typeof comp.ensureChunkLoaded !== 'function' || typeof comp.isChunkLoaded !== 'function') return;
+      const lazy = typeof comp.getLazyChunkNames === 'function' ? comp.getLazyChunkNames() : [];
+      const wanted = ['srd_classes_splat.json'];
+      if (includeLegacyFeats()) wanted.push('srd_classes_legacy.json');
+      const missing = wanted.filter(n => lazy.includes(n) && !comp.isChunkLoaded(n));
+      if (missing.length === 0) return;
+      _classChunkLoadPending = true;
+      Promise.all(missing.map(n => comp.ensureChunkLoaded(n))).then(() => {
+        _classChunkLoadPending = false;
+        refreshOpenClassLists();
+      }).catch(() => { _classChunkLoadPending = false; });
+    }
+
+    function refreshOpenClassLists() {
+      try {
+        const lvlSel = document.getElementById('lvlup-class-select');
+        if (lvlSel && typeof populateLevelUpClassSelect === 'function') populateLevelUpClassSelect(lvlSel.value || null);
+        filterLevelUpClassSearch();
+        const chgSel = document.getElementById('change-class-select');
+        if (chgSel) populateChangeClassSelect(chgSel.value || null);
+        filterChangeClassSearch();
+      } catch (_) {}
+    }
+
+    // 3.0 / licensed classes stay out of the class pickers while the setting is off, unless the character already has levels in one.
+    function isClassHiddenByEdition(cName, def) {
+      if (!def || !LEGACY_FEAT_EDITIONS.has(def.edition) || includeLegacyFeats()) return false;
+      const key = String(cName || '').toLowerCase();
+      const prog = (typeof character !== 'undefined' && character && Array.isArray(character.levelProgression)) ? character.levelProgression : [];
+      return !prog.some(r => r && String(r.className || '').toLowerCase() === key);
+    }
+
     // Reuses the caller's pill styling: filterPillClass(activeFilter) = active look, any other key = inactive look.
     function legacyFeatsPillHtml(pillClassFn, activeFilter) {
       const on = includeLegacyFeats();
@@ -5287,6 +5326,33 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       filterLevelUpClassSearch();
     }
 
+    // Class prerequisite skill keys are canonical (k_arcana, umd); older P1 records use knowledge_<field>.
+    // character.skills is an array of { key, ranks }; a Perform / Profession prerequisite without a subtype
+    // accepts the best Perform (...) / Profession (...) entry.
+    const LEGACY_PREREQ_SKILL_KEYS = {
+      knowledge_architecture: 'k_arch', knowledge_architecture_and_engineering: 'k_arch', knowledge_engineering: 'k_arch',
+      knowledge_geography: 'k_geo', knowledge_dungeoneering: 'k_dungeon', use_magic_device: 'umd'
+    };
+    function getPrereqSkillRanks(skillKey) {
+      const raw = String(skillKey || '').toLowerCase().trim();
+      const key = LEGACY_PREREQ_SKILL_KEYS[raw] || raw.replace(/^knowledge_/, 'k_');
+      const skills = character ? character.skills : null;
+      if (Array.isArray(skills)) {
+        const anySubtype = key === 'perform' || key === 'profession';
+        let best = 0;
+        skills.forEach(s => {
+          const k = String((s && s.key) || '').toLowerCase();
+          if (k === key || (anySubtype && k.startsWith(key + '_'))) best = Math.max(best, Number(s.ranks) || 0);
+        });
+        return best;
+      }
+      if (skills && typeof skills === 'object') {
+        const v = skills[key] !== undefined ? skills[key] : skills[raw];
+        return Number(v && typeof v === 'object' ? v.ranks : v) || 0;
+      }
+      return 0;
+    }
+
     function checkClassPrerequisites(className, def) {
       if (!def || !Array.isArray(def.prerequisites) || def.prerequisites.length === 0) {
         return { hasPrereqs: false, allMet: true, checks: [] };
@@ -5373,8 +5439,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             info = met ? `(${alignStr} Eligible)` : `(Current: ${alignStr})`;
           }
         } else if (req.key === 'skill' && req.skill && req.ranks) {
-          const skObj = character.skills ? character.skills[req.skill] : null;
-          const curRanks = Number(typeof skObj === 'object' ? skObj?.ranks : skObj) || 0;
+          const curRanks = getPrereqSkillRanks(req.skill);
           met = curRanks >= Number(req.ranks);
           info = `(Ranks: ${curRanks}/${req.ranks})`;
         } else if (req.key === 'race') {
@@ -5635,6 +5700,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       if (!resultsContainer) return;
       const prevScroll = resultsContainer.scrollTop;
 
+      ensureClassSplatChunks();
       const q = (document.getElementById('lvlup-class-search-input')?.value || '').trim().toLowerCase();
       const allDefs = getAvailableClassDefs();
       const selectedClass = document.getElementById('lvlup-class-select')?.value || '';
@@ -5643,6 +5709,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       Object.keys(allDefs).forEach(cName => {
         const def = allDefs[cName];
+        if (isClassHiddenByEdition(cName, def)) return;
         const isPrestige = def.type === 'Prestige Class';
         const isCustom = def.isCustom === true;
         const isBase = !isPrestige && !isCustom;
@@ -7078,6 +7145,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const sel = document.getElementById('change-class-select');
       if (!sel) return;
       sel.innerHTML = '';
+      ensureClassSplatChunks();
       const allDefs = getAvailableClassDefs();
       const officialGroup = document.createElement('optgroup');
       officialGroup.label = "Official D&D 3.5e Classes";
@@ -7087,9 +7155,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const targetSelected = (selectedClassName || '').toLowerCase();
 
       Object.keys(allDefs).sort((a, b) => a.localeCompare(b)).forEach(cName => {
+        const def = allDefs[cName];
+        if (isClassHiddenByEdition(cName, def) && cName.toLowerCase() !== targetSelected) return;
         const opt = document.createElement('option');
         opt.value = cName;
-        const def = allDefs[cName];
         const hdText = `d${def.hd} HD`;
         const babText = def.bab === 1.0 ? 'Full BAB' : (def.bab === 0.75 ? '3/4 BAB' : '1/2 BAB');
         opt.textContent = `${cName} (${hdText} • ${babText})`;
@@ -7271,6 +7340,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (!resultsContainer) return;
       const prevScroll = resultsContainer.scrollTop;
 
+      ensureClassSplatChunks();
       const q = (document.getElementById('change-class-search-input')?.value || '').trim().toLowerCase();
       const allDefs = getAvailableClassDefs();
       const selectedClass = document.getElementById('change-class-select')?.value || '';
@@ -7279,6 +7349,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       Object.keys(allDefs).forEach(cName => {
         const def = allDefs[cName];
+        if (isClassHiddenByEdition(cName, def)) return;
         const isPrestige = def.type === 'Prestige Class';
         const isCustom = def.isCustom === true;
         const isBase = !isPrestige && !isCustom;

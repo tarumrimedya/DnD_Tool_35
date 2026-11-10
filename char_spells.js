@@ -8482,7 +8482,11 @@
       const all = {};
       Object.assign(all, DND35_BASE_CLASS_DEFS);
       if (typeof RuleEngine !== 'undefined' && RuleEngine.DND35_CLASS_DEFS) {
-        Object.keys(RuleEngine.DND35_CLASS_DEFS).forEach(k => {
+        // RuleEngine.getClassDef also caches each class under its lower-case name; those lookup aliases are not classes.
+        const engineKeys = Object.keys(RuleEngine.DND35_CLASS_DEFS);
+        const displayKeysLower = new Set(engineKeys.filter(k => k !== k.toLowerCase()).map(k => k.toLowerCase()));
+        engineKeys.forEach(k => {
+          if (k === k.toLowerCase() && displayKeysLower.has(k)) return;
           all[k] = Object.assign({}, RuleEngine.DND35_CLASS_DEFS[k], all[k]);
         });
       }
@@ -8522,6 +8526,8 @@
             description: (c.description && !/<[a-z][\s\S]*>/i.test(c.description)) ? c.description : (c.shortDescription || prev.description || (c.description ? c.description.replace(/<img[^>]*>/gi, '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '')),
             role: c.role || prev.role || (isPrestige ? 'Prestige Class' : 'Base Class'),
             source: c.source || prev.source || 'SRD 3.5e',
+            edition: c.edition || prev.edition || '3.5',
+            contentLevel: c.contentLevel || prev.contentLevel || null,
             type: isPrestige ? 'Prestige Class' : 'Base Class',
             isPrestige
           });
@@ -8650,6 +8656,9 @@
         }
         masterDb.filter(m => m && (m.type === 'Class' || m.category === 'Class' || m.type === 'Prestige Class') && !isBogusClassName(m.name)).forEach(c => {
           if (c && c.name && !all[c.name]) {
+            // srd-snapshot of a lazy-chunk class (chunk not loaded): an official class, typed from isPrestige.
+            const isSnap = Boolean(c._snapshot) && c.type === 'Class';
+            const snapPrestige = isSnap && Boolean(c.isPrestige || c.category === 'Prestige');
             all[c.name] = {
               hd: Number(c.hd) || 8,
               bab: Number(c.bab) || 0.75,
@@ -8657,7 +8666,7 @@
               ref: c.ref || 'poor',
               will: c.will || 'poor',
               skills: Number(c.skills) || 2,
-              maxLevel: Number(c.maxLevel) || (c.type === 'Prestige Class' ? 10 : 20),
+              maxLevel: Number(c.maxLevel) || ((c.type === 'Prestige Class' || snapPrestige) ? 10 : 20),
               classSkills: Array.isArray(c.classSkills) ? c.classSkills : [],
               features: c.features || {},
               bonusFeatLevels: Array.isArray(c.bonusFeatLevels) ? c.bonusFeatLevels : [],
@@ -8666,8 +8675,9 @@
               description: c.description || c.desc || '',
               role: c.role || '',
               source: c.source || 'Master DB',
-              type: c.type || 'Prestige Class',
-              isCustom: true
+              type: isSnap ? (snapPrestige ? 'Prestige Class' : 'Base Class') : (c.type || 'Prestige Class'),
+              isCustom: !isSnap,
+              ...(isSnap ? { id: c.id, isPrestige: snapPrestige, edition: c.edition || '3.5', contentLevel: c.contentLevel || null } : {})
             };
           }
         });
@@ -8703,6 +8713,7 @@
       const select = document.getElementById('lvlup-class-select');
       if (!select) return;
 
+      if (typeof ensureClassSplatChunks === 'function') ensureClassSplatChunks();
       const allDefs = getAvailableClassDefs();
       const defaultClass = (character.classes?.split(' ')[0]) || (character.levelProgression?.[0]?.className) || 'Fighter';
       const currentVal = selectedClass || select.value || defaultClass;
@@ -8720,6 +8731,7 @@
 
       Object.keys(allDefs).sort((a, b) => a.localeCompare(b)).forEach(cName => {
         const def = allDefs[cName];
+        if (typeof isClassHiddenByEdition === 'function' && isClassHiddenByEdition(cName, def) && cName.toLowerCase() !== String(currentVal).toLowerCase()) return;
         const opt = document.createElement('option');
         opt.value = cName;
 

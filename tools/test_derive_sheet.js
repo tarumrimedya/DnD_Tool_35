@@ -2449,7 +2449,8 @@ function runDeriveSheetTests() {
     'SRD Import P3: feat catalog loads splat chunks on demand, hides 3.0/licensed unless toggled, and the store snapshots referenced lazy feats',
     /function ensureFeatSplatChunks\(\)/.test(p3ProgSrc) && /getCombinedFeatCatalog\(includeInvocations = false\) \{\s*ensureFeatSplatChunks\(\);/.test(p3ProgSrc) &&
     /LEGACY_FEAT_EDITIONS\.has\(f && f\.edition\)/.test(p3ProgSrc) && /'progression:toggle-legacy-feats'/.test(p3ProgSrc) &&
-    /FEAT_REF_TYPES\.forEach\(t => comp\.snapshotLazyRefs\(db, collectFeatRefNames\(_state\.doc, t\), t\)\)/.test(p3StoreSrc)
+    /return FEAT_REF_TYPES\.map\(t => \(\{ t, names: collectFeatRefNames\(doc, t\) \}\)\)/.test(p3StoreSrc) &&
+    /collectSrdRefGroups\(_state\.doc\)\.forEach\(g => comp\.snapshotLazyRefs\(db, g\.names, g\.t\)\)/.test(p3StoreSrc)
   );
 
   // SRD Import P3 (rest): book-checked prerequisite conflicts and the ELH epic fighter bonus feat list
@@ -2538,6 +2539,97 @@ function runDeriveSheetTests() {
     (p2RmSrc.match(/const wStats = this\.resolveWeaponStats\(item\);/g) || []).length === 2 &&
     /snapshotLazyEntryIntoCustomDb\(entry\)/.test(uiSharedSrc) && !/equipItem\(entry\.id\)/.test(uiSharedSrc) &&
     /SrdCompendium\.ensureEntryInCustomDb\(masterDb, lazyId\)/.test(fs.readFileSync(path.join(__dirname, '..', 'char_combat.js'), 'utf8'))
+  );
+
+  // SRD Import P4: splatbook base / prestige class chassis in lazy chunks; 3.0 / licensed classes opt-in only
+  const p4Splat = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_splat.json'), 'utf8'));
+  const p4Legacy = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_legacy.json'), 'utf8'));
+  const p4All = p4Splat.concat(p4Legacy);
+  const p4Core = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_classes_races.json'), 'utf8')).filter(c => c.type === 'Class');
+  const p4NameKey = n => String(n || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const p4Names = p4All.concat(p4Core).map(c => p4NameKey(c.name));
+  const p4Ids = p4All.concat(p4Core).map(c => c.id);
+  check(
+    'SRD Import P4: class chunks are lazy (legacy opt-in, never in preloadAll or the eager set); class ids and names are unique across all class chunks',
+    p4Splat.length > 150 && p4Splat.every(c => c.edition === '3.5') && p4Legacy.length > 0 && p4Legacy.every(c => c.edition === '3.0' || c.edition === '3.5-licensed') &&
+    p0Idx.chunks['srd_classes_splat.json'].eagerLoad === false && !p0Idx.chunks['srd_classes_splat.json'].optIn &&
+    p0Idx.chunks['srd_classes_legacy.json'].eagerLoad === false && p0Idx.chunks['srd_classes_legacy.json'].optIn === true &&
+    Comp.getOptInChunkNames().includes('srd_classes_legacy.json') && Comp.getLazyChunkNames().includes('srd_classes_splat.json') &&
+    !Comp.isChunkLoaded('srd_classes_splat.json') && !Comp.isChunkLoaded('srd_classes_legacy.json') &&
+    new Set(p4Names).size === p4Names.length && new Set(p4Ids).size === p4Ids.length &&
+    p4Legacy.some(c => c.name === 'Samurai (Oriental Adventures)') && p4Splat.some(c => c.name === 'Samurai' && c.source === 'Complete Warrior p.8')
+  );
+  const p4By = id => p4All.find(c => c.id === id) || {};
+  const p4Chassis = (id, hd, bab, saves, skills, maxLevel, prc) => {
+    const c = p4By(id);
+    return c.hd === hd && c.hitDie === `d${hd}` && c.bab === bab && `${c.fort[0]}${c.ref[0]}${c.will[0]}` === saves &&
+      c.skillPointsPerLevel === skills && c.skills === skills && c.maxLevel === maxLevel && c.isPrestige === prc &&
+      c.type === 'Class' && c.contentLevel === 'stub' && c.schemaVersion === 2;
+  };
+  check(
+    'SRD Import P4: chassis values (Alienist CAr p.21 d4 1/2 BAB good Will 2 sp; Samurai CW p.8 d10 full BAB good Fort 2 sp 20 levels) and the 5 book-settled classes',
+    p4Chassis('cls-alienist', 4, 0.5, 'ppg', 2, 10, true) && p4Chassis('cls-samurai', 10, 1, 'gpp', 2, 20, false) &&
+    p4Chassis('cls-evangelist', 6, 0.75, 'ppg', 6, 5, true) && p4Chassis('cls-rainbow-servant', 4, 0.5, 'ppg', 2, 10, true) &&
+    p4Chassis('cls-void-disciple', 6, 0.5, 'ppg', 2, 13, true) && p4Chassis('cls-moonspeaker', 8, 0.75, 'gpg', 4, 12, true) &&
+    p4Chassis('cls-reforged', 8, 0.75, 'ppg', 4, 3, true) &&
+    ['cls-evangelist', 'cls-rainbow-servant', 'cls-void-disciple', 'cls-moonspeaker', 'cls-reforged'].every(id => p4By(id).verification === 'verified' && p4By(id).provenance.book) &&
+    p4All.every(c => ['verified', 'cross-checked', 'unverified'].includes(c.verification) && c.provenance && c.source) &&
+    p4All.filter(c => c.isPrestige).every(c => c.verification !== 'unverified')
+  );
+  check(
+    'SRD Import P4: requirements are structured; "must be female" is a special requirement, not a race (Yathrinshee PGtF p.187)',
+    (p4By('cls-alienist').prerequisites || []).length > 0 &&
+    p4All.every(c => (c.prerequisites || []).every(r => r.key !== 'race' || !/^(fe)?male$/i.test(r.val))) &&
+    (p4By('cls-yathrinshee').prerequisites || []).some(r => r.key === 'race' && r.val === 'Drow') &&
+    (p4By('cls-yathrinshee').prerequisites || []).some(r => r.key === 'special' && /female/i.test(r.text)) &&
+    p4All.every(c => (c.prerequisites || []).every(r => r.key !== 'skill' || /^[a-z_]+$/.test(r.skill)))
+  );
+  // A character with levels in a lazy class resolves it from its srd-snapshot while the chunk is not loaded.
+  const p4Snap = Object.assign(JSON.parse(JSON.stringify(p4By('cls-alienist'))), {
+    _snapshot: { origin: 'srd-snapshot', srcId: 'cls-alienist', chunk: 'srd_classes_splat.json', chunkHash: p0Idx.chunks['srd_classes_splat.json'].hash, status: 'current' }
+  });
+  const p4Char = {
+    name: 'P4 Alienist Test', level: 7, race: 'Human', abilities: { str: 10, dex: 10, con: 10, int: 16, wis: 10, cha: 10 },
+    levelProgression: [1, 2, 3, 4, 5].map(l => ({ level: l, className: 'Wizard', active: true, feats: [] }))
+      .concat([6, 7].map(l => ({ level: l, className: 'Alienist', active: true, feats: [] })))
+  };
+  RuleEngine.deriveSheet(p4Char, { customDb: [p4Snap] });
+  const p4Def = RuleEngine.getClassDef('Alienist') || {};
+  const p4Prog = RuleEngine.calculateProgression(p4Char.levelProgression, { system: 'standard' });
+  check(
+    'SRD Import P4: a lazy class on the character resolves from its customDb snapshot without the chunk (Alienist d4, 1/2 BAB, good Will, prestige)',
+    !Comp.isChunkLoaded('srd_classes_splat.json') && !Comp.getClass('Alienist') &&
+    p4Def.hd === 4 && p4Def.bab === 0.5 && p4Def.will === 'good' && p4Def.fort === 'poor' && p4Def.maxLevel === 10 &&
+    p4Def.isPrestige === true && p4Def.type === 'Prestige Class' && p4Prog.classCounts && p4Prog.classCounts.Alienist === 2
+  );
+  const p4StoreSrc = fs.readFileSync(path.join(__dirname, '..', 'char_store.js'), 'utf8');
+  const p4SpellsSrc = fs.readFileSync(path.join(__dirname, '..', 'char_spells.js'), 'utf8');
+  check(
+    'SRD Import P4: the store snapshots class refs (levelProgression className / doc.classes) and getAvailableClassDefs types snapshots as official prestige/base classes',
+    /function collectClassRefNames\(doc\)/.test(p4StoreSrc) && /\.concat\(\[\{ t: 'Class', names: collectClassRefNames\(doc\) \}\]\)/.test(p4StoreSrc) &&
+    /const isSnap = Boolean\(c\._snapshot\) && c\.type === 'Class';/.test(p4SpellsSrc) && /isCustom: !isSnap,/.test(p4SpellsSrc) &&
+    Boolean(RuleEngine.DND35_CLASS_DEFS.alienist) && /if \(k === k\.toLowerCase\(\) && displayKeysLower\.has\(k\)\) return;/.test(p4SpellsSrc)
+  );
+  const p4ProgSrc = fs.readFileSync(path.join(__dirname, '..', 'char_progression.js'), 'utf8');
+  const p4EnsureCalls = (p4ProgSrc.match(/\n\s*ensureClassSplatChunks\(\);/g) || []).length;
+  check(
+    'SRD Import P4: class chunks load only from the class pickers (never at page open); 3.0 / licensed classes follow the "3.0 & Licensed" setting',
+    /function ensureClassSplatChunks\(\)/.test(p4ProgSrc) && p4EnsureCalls === 3 &&
+    /if \(typeof ensureClassSplatChunks === 'function'\) ensureClassSplatChunks\(\);\s*const allDefs = getAvailableClassDefs\(\);/.test(p4SpellsSrc) &&
+    /if \(includeLegacyFeats\(\)\) wanted\.push\('srd_classes_legacy\.json'\);/.test(p4ProgSrc) &&
+    (p4ProgSrc.match(/if \(isClassHiddenByEdition\(cName, def\)/g) || []).length === 3 &&
+    !/ensureClassSplatChunks/.test(fs.readFileSync(path.join(__dirname, '..', 'srd_compendium.js'), 'utf8'))
+  );
+  // Class prerequisite skill ranks: character.skills is an array; older P1 records use knowledge_<field> keys.
+  const p4SkillSrc = p4ProgSrc.slice(p4ProgSrc.indexOf('const LEGACY_PREREQ_SKILL_KEYS'), p4ProgSrc.indexOf('function checkClassPrerequisites('));
+  const p4Ranks = (skills, key) => new Function('character', `${p4SkillSrc}\nreturn getPrereqSkillRanks(${JSON.stringify(key)});`)({ skills });
+  const p4Skills = [{ key: 'k_arcana', ranks: 8 }, { key: 'k_planes', ranks: 4 }, { key: 'perform_oratory', ranks: 6 }, { key: 'umd', ranks: 2 }];
+  check(
+    'SRD Import P4: class skill prerequisites read ranks from the skills array (knowledge_arcana -> k_arcana, any Perform subtype, legacy object map)',
+    p4Ranks(p4Skills, 'k_arcana') === 8 && p4Ranks(p4Skills, 'knowledge_arcana') === 8 && p4Ranks(p4Skills, 'knowledge_planes') === 4 &&
+    p4Ranks(p4Skills, 'perform') === 6 && p4Ranks(p4Skills, 'use_magic_device') === 2 && p4Ranks(p4Skills, 'spellcraft') === 0 &&
+    p4Ranks({ k_religion: { ranks: 5 } }, 'knowledge_religion') === 5 &&
+    /const curRanks = getPrereqSkillRanks\(req\.skill\);/.test(p4ProgSrc) && !/character\.skills\[req\.skill\]/.test(p4ProgSrc)
   );
 
   CharStore.clearHistory();
