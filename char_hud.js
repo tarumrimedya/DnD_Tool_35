@@ -877,11 +877,15 @@
             console.warn('Network fetch of character_data.json failed:', fetchErr);
           }
         }
+        // saveStateToStorage() writes masterDb into character.customDb. Until it is bound to the character being
+        // loaded, masterDb is still the empty startup array, so a save during hydration would wipe the DB.
+        bindMasterDbToLoadedCharacter();
         if (!character) {
           if (defaultChar) {
             character = JSON.parse(JSON.stringify(defaultChar));
             character.id = character._hubId || 'char_active_player';
             character._hubId = character.id;
+            bindMasterDbToLoadedCharacter();
             saveStateToStorage(false, true);
           }
         } else {
@@ -983,6 +987,7 @@
           }
           if (window.SchemaMigrator && typeof window.SchemaMigrator.upgradeCharacterToV2 === 'function' && character.schemaVersion !== 2) {
             character = window.SchemaMigrator.upgradeCharacterToV2(character);
+            bindMasterDbToLoadedCharacter();
             updated = true;
           }
           if (updated) saveStateToStorage(false);
@@ -1248,6 +1253,14 @@
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') flushPendingStorageSave();
     });
+
+    // Points masterDb at the loaded character's own customDb (ADR-011). Called whenever the load path picks or
+    // replaces `character`, before anything can save.
+    function bindMasterDbToLoadedCharacter() {
+      if (!character) return;
+      if (!Array.isArray(character.customDb)) character.customDb = [];
+      masterDb = character.customDb;
+    }
 
     function saveStateToStorage(triggerCloudSync = true, immediate = false) {
       if (!character) return;

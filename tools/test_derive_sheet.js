@@ -2958,6 +2958,26 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Sheet load: masterDb must be bound to the loaded character before any hydration save, or the save writes the
+  // empty startup masterDb over character.customDb (a Hub-created or migrated character lost its whole DB).
+  {
+    const bindStart = hudCdbSrc.indexOf('function bindMasterDbToLoadedCharacter(');
+    const bindFn = hudCdbSrc.slice(bindStart, hudCdbSrc.indexOf('\n    function ', bindStart + 10));
+    const box = { Array, character: { customDb: [{ id: 'keep_me', name: 'Keep Me' }] }, masterDb: [] };
+    vm.runInNewContext('let masterDbRef = null;\n' + bindFn.replace(/masterDb = character\.customDb;/, 'masterDb = character.customDb; masterDbRef = masterDb;') + '\nbindMasterDbToLoadedCharacter(); bound = masterDbRef;', box);
+    const loadSrc = hudCdbSrc.slice(hudCdbSrc.indexOf('// 2. Load Character-Scoped Custom DB') - 6000, hudCdbSrc.indexOf('// 2. Load Character-Scoped Custom DB'));
+    const firstBind = loadSrc.indexOf('bindMasterDbToLoadedCharacter();');
+    const defaultSave = loadSrc.indexOf('saveStateToStorage(false, true);');
+    const hydrateSave = loadSrc.indexOf('if (updated) saveStateToStorage(false);');
+    const migrate = loadSrc.indexOf('upgradeCharacterToV2(character);');
+    check(
+      'Sheet load: masterDb is bound to the loaded character\'s customDb before the default-character save and the hydration save, and again after the V2 upgrade replaces the character, so opening a Hub-created or migrated character keeps its DB',
+      Array.isArray(box.bound) && box.bound.length === 1 && box.bound[0].id === 'keep_me' &&
+      firstBind > 0 && defaultSave > firstBind && hydrateSave > firstBind &&
+      loadSrc.indexOf('bindMasterDbToLoadedCharacter();', migrate) > migrate && loadSrc.indexOf('bindMasterDbToLoadedCharacter();', migrate) < hydrateSave
+    );
+  }
+
   // Sheet: campaign Realtime HP events. The old row carries only the primary key, so every save of the character's
   // row reaches onHpChange; only a newer last_dm_hp_update_ts with a real HP change is a DM event.
   const hudSliceFn = (startMarker, endMarker) => {
