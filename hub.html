@@ -9,10 +9,10 @@
   <script src="rule_engine.js?v=20261110_r12"></script>
   <script src="rule_master.js?v=20261105_2355"></script>
   <script src="ui_shared.js?v=20261105_2355"></script>
-  <script src="campaign_db.js?v=20261110_02"></script>
+  <script src="campaign_db.js?v=20261110_03"></script>
   <script src="gdrive_sync.js?v=20261105_2355"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase_auth.js?v=20261110_r13"></script>
+  <script src="supabase_auth.js?v=20261110_r14"></script>
   <!-- Prefetch Character Sheet & Domain Modules during Hub Idle Time -->
   <link rel="prefetch" href="index.html">
   <link rel="prefetch" href="char_modals.js?v=20261105_2355">
@@ -1453,6 +1453,7 @@
 
       state.campaigns = campaigns;
       state.characters = characters;
+      state.deletedCampaignIds = (loadedDb && Array.isArray(loadedDb.deletedCampaignIds)) ? loadedDb.deletedCampaignIds : [];
       // Campaign DB: bring every character's campaign pack copies up to date (no-op without packs or copies).
       if (typeof reconcileHubCampaignDbs === 'function') reconcileHubCampaignDbs({ save: false });
       saveHubStorage();
@@ -1464,9 +1465,11 @@
         localStorage.setItem(HUB_STORAGE_KEY, JSON.stringify({
           campaigns: state.campaigns,
           characters: state.characters,
+          deletedCampaignIds: Array.isArray(state.deletedCampaignIds) ? state.deletedCampaignIds : [],
           latestDmEvent: state.latestDmEvent || null,
           lastSaved: new Date().toISOString()
         }));
+        if (triggerCloudSync && typeof scheduleUserHubStateSync === 'function') scheduleUserHubStateSync();
         if (triggerCloudSync && window.CloudSync) {
           if (isDmModeFast && typeof window.CloudSync.pushToCloud === 'function') {
             clearTimeout(window.CloudSync.autoSaveTimer);
@@ -4446,6 +4449,9 @@ CRITICAL RULES:
       if (confirm(`Are you sure you want to delete campaign "${camp.name}"?\n\nThis will permanently delete the campaign from both this device and your cloud account.`)) {
         const cloudId = camp.cloudCampaignId || (camp.id && camp.id.includes('-') ? camp.id : null);
 
+        // Remembered so the other devices drop it too (user_hub_state); a missing campaign alone is never a deletion.
+        if (!Array.isArray(state.deletedCampaignIds)) state.deletedCampaignIds = [];
+        if (!state.deletedCampaignIds.includes(campId)) state.deletedCampaignIds.push(campId);
         state.campaigns = state.campaigns.filter(c => c.id !== campId && (!cloudId || c.cloudCampaignId !== cloudId));
         if (state.activeCampaignId === campId || (cloudId && state.activeCampaignId === cloudId)) {
           state.activeCampaignId = 'all';
@@ -4537,6 +4543,12 @@ CRITICAL RULES:
           } catch (e) {}
         }
         const tombstoneSet = new Set(tombstones.map(t => String(t).trim()));
+
+        // Campaigns and their notes from the user's Hub state row (other devices), before the cloud campaign
+        // metadata below, so the campaigns table keeps the last word on a cloud campaign's name and mode.
+        if (typeof syncUserHubState === 'function') {
+          try { await syncUserHubState(); } catch (hsErr) { console.warn('Hub state sync warning:', hsErr); }
+        }
 
         // Yerel state içerisindeki mezar taşı bulunan (başka cihazda silinmiş) karakterleri derhal ayıkla
         const hadTombstonedChars = state.characters.some(c => tombstoneSet.has(c.id));
@@ -6439,6 +6451,50 @@ CRITICAL RULES:
         `• Characters added: ${r.charactersAdded} • Copied: ${r.charactersCopied} • Skipped: ${r.charactersSkipped}\n` +
         `• Rule packs added: ${r.packsAdded} • New version: ${r.packsUpdated} • Skipped: ${r.packsSkipped}\n` +
         describeCampaignDbReconcile(total));
+    }
+
+    // Hub state sync (Supabase public.user_hub_state, tools/supabase/user_hub_state.sql): the user's campaigns
+    // (local, cloud, sub-campaigns) with their notes on every device. campaign_db.js mergeHubCampaignState does a
+    // three-way merge per campaign; a deleted campaign travels as an id in state.deletedCampaignIds.
+    let _hubStateSyncRunning = false;
+    let _hubStateSyncAgain = false;
+    let _hubStateSyncTimer = null;
+    let _hubStateTableMissing = false;
+
+    async function syncUserHubState() {
+      if (!window.CampaignDb || typeof CampaignDb.mergeHubCampaignState !== 'function') return false;
+      if (!window.SupabaseAuth || typeof SupabaseAuth.fetchUserHubState !== 'function' || SupabaseAuth.isLocalMode()) return false;
+      if (_hubStateTableMissing) return false;
+      if (_hubStateSyncRunning) { _hubStateSyncAgain = true; return false; }
+      _hubStateSyncRunning = true;
+      try {
+        const row = await SupabaseAuth.fetchUserHubState();
+        const merged = CampaignDb.mergeHubCampaignState(state.campaigns, state.deletedCampaignIds, row);
+        state.campaigns = merged.campaigns;
+        state.deletedCampaignIds = merged.deleted;
+        if (!row || merged.cloudChanged) await SupabaseAuth.upsertUserHubState(merged.upload, merged.uploadDeleted);
+        const a = state.activeCampaignId;
+        if (a && a !== 'all' && a !== 'unassigned' && !state.campaigns.some(c => c.id === a || c.cloudCampaignId === a)) state.activeCampaignId = 'all';
+        saveHubStorage(false);
+        if (merged.localChanged) renderHub();
+        return true;
+      } catch (err) {
+        if (err && err.missingTable) {
+          _hubStateTableMissing = true;
+          console.warn(err.message);
+        } else {
+          console.warn('Hub state sync warning:', err);
+        }
+        return false;
+      } finally {
+        _hubStateSyncRunning = false;
+        if (_hubStateSyncAgain) { _hubStateSyncAgain = false; scheduleUserHubStateSync(); }
+      }
+    }
+
+    function scheduleUserHubStateSync(delayMs = 2500) {
+      clearTimeout(_hubStateSyncTimer);
+      _hubStateSyncTimer = setTimeout(() => { syncUserHubState(); }, delayMs);
     }
 
     function evaluateHubEntryEligibility(entry, charData) {

@@ -428,8 +428,89 @@
     return { campaigns, characters, rootId: root.id, packsChanged, report };
   }
 
+  // ---------------------------------------------------------------------------------------------------------------
+  // Hub state sync (Supabase user_hub_state): the user's campaigns and their notes on every device.
+  // ---------------------------------------------------------------------------------------------------------------
+  const SYNC_KEY = '_hubSyncHash';
+
+  // What a campaign looks like in the cloud row: no local sync marker, and no packs for a cloud campaign
+  // (public.campaign_packs owns those). The hash ignores `_` keys, so the marker never changes it.
+  function cloudFormOfCampaign(c) {
+    const o = clone(c);
+    delete o[SYNC_KEY];
+    if (o.cloudCampaignId) delete o.packs;
+    return o;
+  }
+
+  function mergeNotesById(localList, cloudList) {
+    const out = [];
+    const byId = new Map();
+    (cloudList || []).concat(localList || []).forEach(n => {
+      if (!n || typeof n !== 'object') return;
+      const key = n.id || JSON.stringify(n);
+      const prev = byId.get(key);
+      if (!prev) { byId.set(key, n); out.push(key); return; }
+      if (Number(n.updatedAt || 0) >= Number(prev.updatedAt || 0)) byId.set(key, n);
+    });
+    return out.map(k => clone(byId.get(k)));
+  }
+
+  /**
+   * Three-way merge of the Hub's campaigns with the cloud row. Each local campaign keeps the hash it had at its
+   * last sync (`_hubSyncHash`), so a side that did not change since then takes the other side's version:
+   * - only this device changed it: the local version is kept and uploaded;
+   * - only another device changed it: the cloud version is taken (a cloud campaign keeps its local packs);
+   * - both changed: the cloud fields with the local ones on top, notes merged by id (newer updatedAt wins);
+   * - present on one side only: kept (a deletion travels as an id in `deleted`, never by absence).
+   * Returns `{ campaigns, deleted, upload, uploadDeleted, localChanged, cloudChanged }`.
+   */
+  function mergeHubCampaignState(localCampaigns, localDeleted, cloudRow) {
+    const cloud = cloudRow && typeof cloudRow === 'object' ? cloudRow : {};
+    const cloudCamps = Array.isArray(cloud.campaigns) ? cloud.campaigns : [];
+    const deletedList = [];
+    (Array.isArray(cloud.deletedCampaignIds) ? cloud.deletedCampaignIds : []).concat(Array.isArray(localDeleted) ? localDeleted : [])
+      .forEach(id => { if (id && !deletedList.includes(id)) deletedList.push(id); });
+    const deleted = new Set(deletedList);
+    const locals = (Array.isArray(localCampaigns) ? localCampaigns : []).filter(c => c && c.id);
+    const order = [];
+    const L = new Map(), C = new Map();
+    locals.forEach(c => { L.set(c.id, c); if (!order.includes(c.id)) order.push(c.id); });
+    cloudCamps.forEach(c => { if (c && c.id) { C.set(c.id, c); if (!order.includes(c.id)) order.push(c.id); } });
+
+    const merged = [];
+    order.forEach(id => {
+      if (deleted.has(id)) return;
+      const l = L.get(id), c = C.get(id);
+      let out;
+      if (l && !c) out = clone(l);
+      else if (!l && c) out = clone(c);
+      else {
+        const hL = contentHash(cloudFormOfCampaign(l)), hC = contentHash(cloudFormOfCampaign(c));
+        const base = l[SYNC_KEY] || null;
+        if (hL === hC || (base && hL !== base && hC === base)) out = clone(l);
+        else if (base && hL === base) {
+          out = clone(c);
+          if (c.cloudCampaignId && Array.isArray(l.packs)) out.packs = clone(l.packs);
+        } else {
+          out = Object.assign(clone(c), clone(l));
+          setNotes(out, mergeNotesById(notesOf(l), notesOf(c)));
+        }
+      }
+      out[SYNC_KEY] = contentHash(cloudFormOfCampaign(out));
+      merged.push(out);
+    });
+
+    const upload = merged.map(cloudFormOfCampaign);
+    // Order-independent: two devices may list the same campaigns in a different order.
+    const sig = (list) => stableStringify((list || []).map(cloudFormOfCampaign).sort((x, y) => String(x.id).localeCompare(String(y.id))));
+    const localChanged = sig(merged) !== sig(locals) || locals.length !== merged.length;
+    const cloudChanged = sig(upload) !== sig(cloudCamps) ||
+      stableStringify(deletedList) !== stableStringify(Array.isArray(cloud.deletedCampaignIds) ? cloud.deletedCampaignIds : []);
+    return { campaigns: merged, deleted: deletedList.slice(-500), upload, uploadDeleted: deletedList.slice(-500), localChanged, cloudChanged };
+  }
+
   const api = { TAG, readPackFile, attachPack, removePack, mergeCloudPacks, getTag, collectUsedRefs, reconcile, contentHash,
-    BUNDLE_FORMAT, buildCampaignBundle, isCampaignBundle, importCampaignBundle };
+    BUNDLE_FORMAT, buildCampaignBundle, isCampaignBundle, importCampaignBundle, mergeHubCampaignState };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (root) root.CampaignDb = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -2,6 +2,16 @@
 
 Status: approved (2026-11-10): the whole pack is copied to each character, and a pack file uploaded in the Hub attaches to the campaign. Phase 1 is implemented (`campaign_db.js`, Hub local campaigns). Phase 2 is implemented (cloud table, `supabase_auth.js`, Hub DM side); the SQL was run in Supabase on 2026-11-10. Phase 3 is implemented (character sheet). Live test on the cloud campaign "Test Camp" (Vercel preview, 2026-11-10): attach, sheet load, Realtime update, in-use entry kept as removed, detach and rejoin, sub-campaign root and anon RLS passed. It found that Supabase Realtime does not filter DELETE events, so the sheet missed a pack removal; the sheet now listens to DELETE unfiltered and re-fetches.
 
+## Hub state sync (campaigns and notes on every device)
+
+Campaign notes (DM Logs, Campaign Logs), local campaigns and sub-campaigns used to travel between devices only through the legacy Vercel KV sync. They now live in Supabase `public.user_hub_state` (`tools/supabase/user_hub_state.sql`, run once): one row per user, readable and writable only by that user, so DM notes never reach players.
+
+- **Row:** `campaigns` (every Hub campaign with its notes; packs only for local campaigns, since `campaign_packs` owns a cloud campaign's packs) and `deleted_campaign_ids`.
+- **When:** at the start of every Hub cloud sync, and 2.5 s after a Hub save.
+- **Merge** (`campaign_db.js mergeHubCampaignState`, three-way per campaign): each campaign keeps the hash of its last synced version. If only one side changed since then, that side wins; if both changed, the other device's fields with this device's on top and the notes merged by id (newer `updatedAt` wins). A deleted campaign travels as an id; a campaign missing from the row is never treated as deleted.
+- **Until the SQL runs:** the sync stops quietly after the first "table is not installed" error; nothing else changes.
+- **Moving off KV:** a device that still syncs through KV uploads its campaigns and notes on its first Hub sync with this code while signed in. After that, KV can be removed.
+
 ## Campaign bundle (export / import, Hub)
 
 The Hub settings card "Campaign (DB, Notes, Characters)" replaces the old "Master DB (Library)" export, which merged every character's DB into one file. `campaign_db.js` builds and plans it; `hub.html` (`exportCampaignBundle`, `importCampaignBundleFile`) applies it.

@@ -3045,6 +3045,56 @@ function runDeriveSheetTests() {
     revalLocalOnly.out === false && revalLocalOnly.character.id === 'char_local_new' && revalNoChar.out === false && revalNoChar.character === null
   );
 
+  // Hub state sync (user_hub_state): campaigns and notes on every device, three-way merge per campaign.
+  {
+    const M = CampaignDb.mergeHubCampaignState;
+    const nt = (id, text, t) => ({ id, title: id, text, updatedAt: t || 1 });
+    const camp = (id, notes, extra) => Object.assign({ id, name: id, smartNotes: notes, notesList: notes }, extra || {});
+    // Device A, first sync, no row yet: everything uploads; markers are set; packs of a cloud campaign stay local.
+    const a0 = [camp('c_local', [nt('n1', 'a')], { packs: [{ packId: 'p', entries: [] }] }), camp('c_cloud', [nt('n2', 'b')], { cloudCampaignId: 'uuid-1', packs: [{ packId: 'q', entries: [] }] })];
+    const s1 = M(a0, [], null);
+    const up1 = s1.upload;
+    const firstOk = s1.cloudChanged && up1.length === 2 && !('packs' in up1[1]) && Array.isArray(up1[0].packs) &&
+      s1.campaigns.every(c => c._hubSyncHash) && !up1.some(c => '_hubSyncHash' in c);
+    const row = { campaigns: up1, deletedCampaignIds: [] };
+    // Nothing changed since: no work.
+    const s2 = M(s1.campaigns, [], row);
+    const idleOk = !s2.localChanged && !s2.cloudChanged;
+    // Device B never synced, has its own campaign and a different version of c_local: union, notes merged.
+    const b0 = [camp('c_phone', [nt('n9', 'p')]), camp('c_local', [nt('n1', 'a'), nt('n3', 'phone note', 5)])];
+    const s3 = M(b0, [], row);
+    const cl3 = s3.campaigns.find(c => c.id === 'c_local');
+    const unionOk = s3.campaigns.map(c => c.id).sort().join() === 'c_cloud,c_local,c_phone' && cl3.smartNotes.map(n => n.id).sort().join() === 'n1,n3' && s3.cloudChanged;
+    const row2 = { campaigns: s3.upload, deletedCampaignIds: s3.deleted };
+    // Back on A (unchanged since its sync): it takes the cloud version; the cloud campaign keeps A's local packs.
+    const s4 = M(s1.campaigns, [], row2);
+    const cl4 = s4.campaigns.find(c => c.id === 'c_local');
+    const takeCloudOk = s4.localChanged && !s4.cloudChanged && cl4.smartNotes.length === 2 && s4.campaigns.some(c => c.id === 'c_phone') &&
+      s4.campaigns.find(c => c.id === 'c_cloud').packs[0].packId === 'q';
+    // A edits a note while the cloud did not change: local wins and is uploaded.
+    const a5 = JSON.parse(JSON.stringify(s4.campaigns));
+    a5.find(c => c.id === 'c_local').smartNotes[0].text = 'edited on A';
+    const s5 = M(a5, [], row2);
+    const keepLocalOk = s5.cloudChanged && s5.upload.find(c => c.id === 'c_local').smartNotes[0].text === 'edited on A';
+    // A deletes c_phone: it leaves A, the row carries the id, and B drops it on its next sync.
+    const s6 = M(s5.campaigns.filter(c => c.id !== 'c_phone'), ['c_phone'], { campaigns: s5.upload, deletedCampaignIds: [] });
+    const s7 = M(s3.campaigns, [], { campaigns: s6.upload, deletedCampaignIds: s6.uploadDeleted });
+    const deleteOk = s6.uploadDeleted.includes('c_phone') && !s6.upload.some(c => c.id === 'c_phone') && !s7.campaigns.some(c => c.id === 'c_phone');
+    // A campaign missing from the row without a deletion id is kept (absence is never a deletion).
+    const s8 = M(s1.campaigns, [], { campaigns: [], deletedCampaignIds: [] });
+    const absentOk = s8.campaigns.length === 2 && s8.cloudChanged;
+
+    const hubSrcS = fs.readFileSync(path.join(__dirname, '..', 'hub.html'), 'utf8');
+    const authSrcS = fs.readFileSync(path.join(__dirname, '..', 'supabase_auth.js'), 'utf8');
+    check(
+      'Hub state sync: first sync uploads campaigns with notes (packs only for local campaigns); an unchanged pair does nothing; two devices are unioned with notes merged by id; a side that did not change takes the other side; a local edit wins; a deletion travels as an id; a campaign missing from the row is kept; the Hub syncs on load and after saves and records deletions',
+      firstOk && idleOk && unionOk && takeCloudOk && keepLocalOk && deleteOk && absentOk &&
+      /await syncUserHubState\(\)/.test(hubSrcS) && /scheduleUserHubStateSync\(\)/.test(hubSrcS) && /state\.deletedCampaignIds\.push\(campId\)/.test(hubSrcS) &&
+      /deletedCampaignIds: Array\.isArray\(state\.deletedCampaignIds\)/.test(hubSrcS) &&
+      /from\('user_hub_state'\)/.test(authSrcS) && fs.existsSync(path.join(__dirname, 'supabase', 'user_hub_state.sql'))
+    );
+  }
+
   // Google sign-in redirect: Supabase needs an absolute URL on this origin ("?redirect=/hub" used to be sent as is,
   // so a preview deployment fell back to the Site URL and never got the session).
   {

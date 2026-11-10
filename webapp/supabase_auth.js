@@ -689,6 +689,58 @@ const SupabaseAuth = {
     return err;
   },
 
+  _hubStateError(error) {
+    const code = error && (error.code || '');
+    const msg = String((error && error.message) || error || '');
+    const missingTable = code === 'PGRST205' || code === '42P01' || (/user_hub_state/.test(msg) && /(does not exist|schema cache|not find)/i.test(msg));
+    const err = new Error(missingTable
+      ? 'The Hub state cloud table is not installed. Run tools/supabase/user_hub_state.sql once in the Supabase SQL Editor.'
+      : `Hub state cloud error: ${msg || 'unknown error'}`);
+    err.missingTable = missingTable;
+    err.code = code;
+    return err;
+  },
+
+  /**
+   * The signed-in user's Hub state row (campaigns with notes, deleted campaign ids), or null when there is none
+   * yet, the user is signed out or in local mode. Throws on a read error (err.missingTable before the SQL runs).
+   */
+  async fetchUserHubState() {
+    if (this.isLocalMode()) return null;
+    const client = this.getClient();
+    const user = await this.getUser();
+    if (!client || !user || user.id === 'local_offline_user') return null;
+    const { data, error } = await client
+      .from('user_hub_state')
+      .select('campaigns, deleted_campaign_ids, updated_at')
+      .eq('owner_user_id', user.id)
+      .maybeSingle();
+    if (error) throw this._hubStateError(error);
+    if (!data) return null;
+    return {
+      campaigns: Array.isArray(data.campaigns) ? data.campaigns : [],
+      deletedCampaignIds: Array.isArray(data.deleted_campaign_ids) ? data.deleted_campaign_ids : [],
+      updatedAt: data.updated_at || null
+    };
+  },
+
+  /** Writes the signed-in user's Hub state row. Returns false when signed out / local. Throws on error. */
+  async upsertUserHubState(campaigns, deletedCampaignIds) {
+    if (this.isLocalMode()) return false;
+    const client = this.getClient();
+    const user = await this.getUser();
+    if (!client || !user || user.id === 'local_offline_user') return false;
+    const { error } = await client
+      .from('user_hub_state')
+      .upsert({
+        owner_user_id: user.id,
+        campaigns: Array.isArray(campaigns) ? campaigns : [],
+        deleted_campaign_ids: Array.isArray(deletedCampaignIds) ? deletedCampaignIds : []
+      }, { onConflict: 'owner_user_id' });
+    if (error) throw this._hubStateError(error);
+    return true;
+  },
+
   /** Packs of a cloud campaign: [{ packId, name, version, entries, updatedAt }]. Throws on a read error. */
   async fetchCampaignPacks(campaignId) {
     const client = this.getClient();
