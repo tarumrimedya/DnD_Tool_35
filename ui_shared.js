@@ -1761,11 +1761,11 @@
         return;
       }
 
-      // 2. Close topmost visible dialog modal (excluding Vault PIN Lock Modal)
+      // 2. Close topmost visible dialog modal
       const candidates = Array.from(
         document.querySelectorAll('[role="dialog"]:not(.hidden), [id$="-modal"]:not(.hidden), [id^="modal-"]:not(.hidden)')
       ).filter((el) => {
-        if (!el || el.id === 'vault-lock-modal') return false;
+        if (!el) return false;
         const style = global.getComputedStyle ? global.getComputedStyle(el) : null;
         return !style || (style.display !== 'none' && style.visibility !== 'hidden');
       });

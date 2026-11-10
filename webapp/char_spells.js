@@ -3756,11 +3756,6 @@
         saveStateToStorage(true);
       }
       renderSpellSlots();
-      if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
-        window.CloudSync.pushImmediate();
-      } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
-        window.GDriveSync.pushToCloud(true);
-      }
       showDiceTopToast({
         icon: '✨',
         title: 'Spell Slots',
@@ -5119,11 +5114,6 @@
       }
       if (typeof consumeActionEconomy === 'function') consumeActionEconomy('swift', 'Recover Maneuvers');
       renderManeuvers();
-      if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
-        window.CloudSync.pushImmediate();
-      } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
-        window.GDriveSync.pushToCloud(true);
-      }
       showDiceTopToast({
         icon: '⚔️',
         title: 'Maneuvers Recovered',

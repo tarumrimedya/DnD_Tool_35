@@ -44,7 +44,6 @@ const CORE_FILES = [
   'rule_master.js',
   'rule_master_ai_schema.json',
   'ui_shared.js',
-  'gdrive_sync.js',
   'supabase_auth.js',
   'srd_compendium.js',
   'campaign_db.js',
@@ -293,7 +292,7 @@ function main() {
       const htmlLine = cmRaw.split('\n').find(l => l.includes('const DEFERRED_MODALS_HTML = '));
       if (htmlLine) {
         const modalHtml = JSON.parse(htmlLine.replace(/^\s*const DEFERRED_MODALS_HTML = /, '').replace(/;\s*$/, ''));
-        const topIds = ['modal-weapon-profile-settings','modal-spell-weapon-target','attack-decision-toast','modal-pin-details','modal-pin-category-picker','modal-spell-slots-manager','feat-detail-modal','quick-level-feat-modal','change-level-class-modal','level-stat-picker-modal','create-custom-class-modal','feat-picker-modal','stat-distribution-modal','npc-statblock-modal','planned-level-choice-modal','level-up-modal','add-buff-modal','skill-consolidation-modal','custom-skill-modal','periodic-hp-modal','slot-equip-modal','spell-maneuver-modal','add-pool-item-modal','join-campaign-modal','settings-modal','vault-lock-modal'];
+        const topIds = ['modal-weapon-profile-settings','modal-spell-weapon-target','attack-decision-toast','modal-pin-details','modal-pin-category-picker','modal-spell-slots-manager','feat-detail-modal','quick-level-feat-modal','change-level-class-modal','level-stat-picker-modal','create-custom-class-modal','feat-picker-modal','stat-distribution-modal','npc-statblock-modal','planned-level-choice-modal','level-up-modal','add-buff-modal','skill-consolidation-modal','custom-skill-modal','periodic-hp-modal','slot-equip-modal','spell-maneuver-modal','add-pool-item-modal','join-campaign-modal','settings-modal'];
         for (let i = 0; i < topIds.length; i++) {
           const s = modalHtml.indexOf('<div id="' + topIds[i] + '"');
           const e = (i + 1 < topIds.length) ? modalHtml.indexOf('<div id="' + topIds[i + 1] + '"') : modalHtml.length;
@@ -322,7 +321,7 @@ function main() {
     'index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js',
     'char_progression.js', 'char_inventory.js', 'rule_engine.js',
     'char_store.js', 'ui_components.js', 'design_tokens.css',
-    'rule_master.js', 'ui_shared.js', 'hub.html', 'gdrive_sync.js',
+    'rule_master.js', 'ui_shared.js', 'hub.html',
     'supabase_auth.js', 'login.html', 'rule_master_ai_schema.json'
   ];
   const trCharRegex = /[çğıöşüÇĞİÖŞÜ]|\\u013[01]|\\u011[eEfF]|\\u015[eEfF]|\\u00[fFdDcCeE][6cC7]/;
@@ -366,7 +365,7 @@ function main() {
     'lvl_up_gorunum.html'
   ]);
   const RATCHET_LIMITS = {
-    'index.html':         { inlineEvents: 187, windowAssigns: 0 },
+    'index.html':         { inlineEvents: 183, windowAssigns: 0 },
     'char_hud.js':        { inlineEvents: 0,   windowAssigns: 48 },
     'char_combat.js':     { inlineEvents: 0,   windowAssigns: 82 },
     'char_spells.js':     { inlineEvents: 0,   windowAssigns: 68 },
@@ -379,7 +378,6 @@ function main() {
     'ui_shared.js':       { inlineEvents: 29,  windowAssigns: 0 },
     'hub.html':           { inlineEvents: 203, windowAssigns: 11 },
     'login.html':         { inlineEvents: 2,   windowAssigns: 0 },
-    'gdrive_sync.js':     { inlineEvents: 0,   windowAssigns: 2 },
     'supabase_auth.js':   { inlineEvents: 8,   windowAssigns: 1 },
     'srd_compendium.js':  { inlineEvents: 0,   windowAssigns: 0 },
     'campaign_db.js':     { inlineEvents: 0,   windowAssigns: 0 },

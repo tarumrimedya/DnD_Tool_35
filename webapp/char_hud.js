@@ -317,10 +317,6 @@
         const authUser = await authPromise;
         if (!authUser) return;
       }
-      try { await CloudSync.init(); } catch (e) {}
-      if (window.CloudSync && typeof window.CloudSync.startLiveSyncPolling === 'function') {
-        window.CloudSync.startLiveSyncPolling(8000);
-      }
       try { initCharacterRealtimeSync(); } catch (e) {}
       try { initTabVisibilitySync(); } catch (e) {}
     });
@@ -1210,9 +1206,6 @@
       if (!_pendingCloudSync || !character) return;
       _pendingCloudSync = false;
 
-      if (window.GDriveSync) {
-        window.GDriveSync.scheduleAutoSave();
-      }
       if (window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
         if (!character.id) {
           character.id = character._hubId || 'char_active_player';
@@ -1532,9 +1525,6 @@
             character.lastModified = res.updated_at;
             _commitLocalStorageSave();
           }
-          if (window.CloudSync && (window.CloudSync.configured || window.CloudSync.serverAvailable)) {
-            try { await window.CloudSync.pushToCloud(true); } catch (csErr) {}
-          }
           if (typeof showDiceTopToast === 'function') {
             const msg = `"${character.name}" saved to the cloud successfully!`;
             showDiceTopToast({
@@ -1810,21 +1800,6 @@
 
       // Update & verify Gemini API key live status badge in settings
       verifySettingsGeminiApiKey(false);
-
-      // Update Vercel / Upstash Cloud UI in settings
-      if (window.CloudSync) {
-        CloudSync.populateSettingsInputs();
-        if (CloudSync.isSyncing || CloudSync.isInitializing) {
-          CloudSync.updateStatusUI('syncing');
-        } else if (CloudSync.pinRequired && !CloudSync.authenticated) {
-          CloudSync.updateStatusUI('locked');
-        } else if (CloudSync.configured && CloudSync.authenticated) {
-          CloudSync.updateStatusUI('synced');
-        } else {
-          CloudSync.updateStatusUI('unconfigured');
-          CloudSync.init();
-        }
-      }
 
       // Update House Rules Checkboxes & Skill Consolidation UI
       const noCrit = document.getElementById('house-no-crit-confirm');
@@ -9872,8 +9847,6 @@ function renderManualStatsPanel() {
       window.Actions.register('hud:sync-pill-click', (el, data, event) => {
         if (window.SupabaseAuth && typeof window.SupabaseAuth.handlePillClick === 'function') {
           window.SupabaseAuth.handlePillClick();
-        } else if (window.CloudSync && typeof window.CloudSync.connect === 'function') {
-          window.CloudSync.connect();
         }
       });
       window.Actions.register('hud:clear-temp-hp', (el, data, event) => {

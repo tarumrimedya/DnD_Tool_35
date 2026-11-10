@@ -1534,11 +1534,6 @@
 
       try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in rest:', e); }
       try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in rest:', e); }
-      if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
-        window.CloudSync.pushImmediate();
-      } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
-        window.GDriveSync.pushToCloud(true);
-      }
       try { if (typeof renderManeuvers === "function") renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in rest:', e); }
       try { if (typeof renderSpellSlots === "function") renderSpellSlots(); } catch (e) { console.warn('renderSpellSlots error in rest:', e); }
       try { renderAll(); } catch (e) { console.warn('renderAll error in rest:', e); }
@@ -1862,11 +1857,6 @@
       character.lastModified = new Date().toISOString();
       try { updateRoundDisplays(); } catch (e) { console.warn('updateRoundDisplays error in short rest:', e); }
       try { saveStateToStorage(true); } catch (e) { console.warn('saveStateToStorage error in short rest:', e); }
-      if (window.CloudSync && typeof window.CloudSync.pushImmediate === 'function') {
-        window.CloudSync.pushImmediate();
-      } else if (window.GDriveSync && typeof window.GDriveSync.pushToCloud === 'function') {
-        window.GDriveSync.pushToCloud(true);
-      }
       try { if (typeof renderManeuvers === 'function') renderManeuvers(); } catch (e) { console.warn('renderManeuvers error in short rest:', e); }
       try { renderAll(); } catch (e) { console.warn('renderAll error in short rest:', e); }
 
