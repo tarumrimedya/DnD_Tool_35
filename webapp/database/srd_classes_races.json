@@ -21583,11 +21583,11 @@
     "bab": 0.75,
     "babProgression": "med",
     "fort": "poor",
-    "ref": "poor",
+    "ref": "good",
     "will": "poor",
     "savingThrows": {
       "fort": "low",
-      "ref": "low",
+      "ref": "high",
       "will": "low"
     },
     "skills": 6,
