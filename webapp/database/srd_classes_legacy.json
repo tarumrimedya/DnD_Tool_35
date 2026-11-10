@@ -1,5 +1,856 @@
 [
   {
+    "id": "cls-akodo-champion",
+    "schemaVersion": 2,
+    "name": "Akodo Champion",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.220",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "intimidate",
+      "jump",
+      "k_history",
+      "k_nobility",
+      "perform",
+      "profession",
+      "ride",
+      "sense_motive",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Member of the Lion Clan",
+        "key": "special"
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Knowledge (History) 4 ranks",
+        "key": "skill",
+        "skill": "k_history",
+        "ranks": 4
+      },
+      {
+        "text": "Feat: Iron Will",
+        "key": "feat",
+        "name": "Iron Will"
+      },
+      {
+        "text": "Feat: Kiai Shout",
+        "key": "feat",
+        "name": "Kiai Shout"
+      },
+      {
+        "text": "Special: Weapon Focus (katana)",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 11-4 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-battle-maiden",
+    "schemaVersion": 2,
+    "name": "Battle Maiden",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.35",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "handle_animal",
+      "profession",
+      "ride"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Female",
+        "key": "special"
+      },
+      {
+        "text": "Base Attack Bonus: +7",
+        "key": "bab",
+        "min": 7
+      },
+      {
+        "text": "Skill: Handle Animal 5 ranks",
+        "key": "skill",
+        "skill": "handle_animal",
+        "ranks": 5
+      },
+      {
+        "text": "Skill: Ride 10 ranks",
+        "key": "skill",
+        "skill": "ride",
+        "ranks": 10
+      },
+      {
+        "text": "Feat: Mounted Combat",
+        "key": "feat",
+        "name": "Mounted Combat"
+      },
+      {
+        "text": "Feat: Ride-By Attack",
+        "key": "feat",
+        "name": "Ride-By Attack"
+      },
+      {
+        "text": "Feat: Spirited Charge",
+        "key": "feat",
+        "name": "Spirited Charge"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-2 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-battlerager",
+    "schemaVersion": 2,
+    "name": "Battlerager",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Races of Faerun p.179",
+    "role": "Prestige Class",
+    "hd": 12,
+    "hitDie": "d12",
+    "maxLevel": 5,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "handle_animal",
+      "intimidate",
+      "jump",
+      "k_religion",
+      "listen",
+      "perform",
+      "ride",
+      "survival",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Race: Dwarf",
+        "key": "race",
+        "val": "Dwarf"
+      },
+      {
+        "text": "Alignment: Must be of any Non-Lawful Alignment",
+        "key": "alignment",
+        "allowed": [
+          "NG",
+          "CG",
+          "TN",
+          "CN",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Intimidate 8 ranks",
+        "key": "skill",
+        "skill": "intimidate",
+        "ranks": 8
+      },
+      {
+        "text": "Skill: Knowledge (religion) 2 ranks",
+        "key": "skill",
+        "skill": "k_religion",
+        "ranks": 2
+      },
+      {
+        "text": "Skill: Perform 2 ranks",
+        "key": "skill",
+        "skill": "perform",
+        "ranks": 2
+      },
+      {
+        "text": "Feat: Cleave",
+        "key": "feat",
+        "name": "Cleave"
+      },
+      {
+        "text": "Feat: Endurance",
+        "key": "feat",
+        "name": "Endurance"
+      },
+      {
+        "text": "Feat: Power Attack",
+        "key": "feat",
+        "name": "Power Attack"
+      },
+      {
+        "text": "Special: Ability to rage",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Races of Faerun Table A-6 (d12, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)"
+    }
+  },
+  {
+    "id": "cls-bayushi-deceiver",
+    "schemaVersion": 2,
+    "name": "Bayushi Deceiver",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.225",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [
+      "balance",
+      "bluff",
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "forgery",
+      "gather_information",
+      "hide",
+      "intimidate",
+      "jump",
+      "k_nobility",
+      "listen",
+      "move_silently",
+      "perform",
+      "profession",
+      "search",
+      "sense_motive",
+      "spot",
+      "swim",
+      "tumble",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Member of the Scorpion Clan",
+        "key": "special"
+      },
+      {
+        "text": "Special: Nonlawful alignment",
+        "key": "special"
+      },
+      {
+        "text": "Base Attack Bonus: +3",
+        "key": "bab",
+        "min": 3
+      },
+      {
+        "text": "Skill: Bluff 8 ranks",
+        "key": "skill",
+        "skill": "bluff",
+        "ranks": 8
+      },
+      {
+        "text": "Skill: Diplomacy 8 ranks",
+        "key": "skill",
+        "skill": "diplomacy",
+        "ranks": 8
+      },
+      {
+        "text": "Feat: Improved Initiative",
+        "key": "feat",
+        "name": "Improved Initiative"
+      },
+      {
+        "text": "Special: 2d6 Sneak Attack damage",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 11-6 (d8, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-blade-dancer",
+    "schemaVersion": 2,
+    "name": "Blade Dancer",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.37",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "balance",
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "escape_artist",
+      "jump",
+      "perform",
+      "profession",
+      "ride",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +7",
+        "key": "bab",
+        "min": 7
+      },
+      {
+        "text": "Skill: Jump 12 ranks",
+        "key": "skill",
+        "skill": "jump",
+        "ranks": 12
+      },
+      {
+        "text": "Skill: Tumble 12 ranks",
+        "key": "skill",
+        "skill": "tumble",
+        "ranks": 12
+      },
+      {
+        "text": "Feat: Dodge",
+        "key": "feat",
+        "name": "Dodge"
+      },
+      {
+        "text": "Feat: Mobility",
+        "key": "feat",
+        "name": "Mobility"
+      },
+      {
+        "text": "Feat: Spring Attack",
+        "key": "feat",
+        "name": "Spring Attack"
+      },
+      {
+        "text": "Special: Able to cast arcane or divine spells",
+        "key": "special"
+      },
+      {
+        "text": "Special: Proficiency with any sword (not checked)",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-4 (d8, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-breachgnome",
+    "schemaVersion": 2,
+    "name": "Breachgnome",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Races of Faerun p.181",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 5,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "bluff",
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "handle_animal",
+      "hide",
+      "jump",
+      "listen",
+      "spot",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Race: Gnome",
+        "key": "race",
+        "val": "Gnome"
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Listen 5 ranks",
+        "key": "skill",
+        "skill": "listen",
+        "ranks": 5
+      },
+      {
+        "text": "Skill: Spot 5 ranks",
+        "key": "skill",
+        "skill": "spot",
+        "ranks": 5
+      },
+      {
+        "text": "Feat: Combat Reflexes",
+        "key": "feat",
+        "name": "Combat Reflexes"
+      },
+      {
+        "text": "Feat: Dodge",
+        "key": "feat",
+        "name": "Dodge"
+      },
+      {
+        "text": "Feat: Improved Initiative",
+        "key": "feat",
+        "name": "Improved Initiative"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Races of Faerun Table A-8 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Ref, 5 levels)"
+    }
+  },
+  {
+    "id": "cls-cancer-mage",
+    "schemaVersion": 2,
+    "name": "Cancer Mage",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.52",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [
+      "balance",
+      "bluff",
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "disable_device",
+      "disguise",
+      "escape_artist",
+      "gather_information",
+      "heal",
+      "hide",
+      "intimidate",
+      "jump",
+      "k_nature",
+      "listen",
+      "move_silently",
+      "profession",
+      "ride",
+      "search",
+      "sense_motive",
+      "sleight_of_hand",
+      "spot",
+      "swim",
+      "tumble",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: You must be of any evil alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Special: Base Fortitude save of at least +5",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Heal 3 ranks",
+        "key": "skill",
+        "skill": "heal",
+        "ranks": 3
+      },
+      {
+        "text": "Skill: Hide 6 ranks",
+        "key": "skill",
+        "skill": "hide",
+        "ranks": 6
+      },
+      {
+        "text": "Skill: Knowledge (nature) 2 ranks",
+        "key": "skill",
+        "skill": "k_nature",
+        "ranks": 2
+      },
+      {
+        "text": "Skill: Move Silently 6 ranks",
+        "key": "skill",
+        "skill": "move_silently",
+        "ranks": 6
+      },
+      {
+        "text": "Feat: Great Fortitude",
+        "key": "feat",
+        "name": "Great Fortitude"
+      },
+      {
+        "text": "Feat: Poison Immunity",
+        "key": "feat",
+        "name": "Poison Immunity"
+      },
+      {
+        "text": "Feat: Toughness",
+        "key": "feat",
+        "name": "Toughness"
+      },
+      {
+        "text": "Special: Must have fallen victim to the ravages of a disease and must have taken damage from a poison",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-1 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-daidoji-bodyguard",
+    "schemaVersion": 2,
+    "name": "Daidoji Bodyguard",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.215",
+    "role": "Prestige Class",
+    "hd": 12,
+    "hitDie": "d12",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "decipher_script",
+      "diplomacy",
+      "disguise",
+      "forgery",
+      "gather_information",
+      "intimidate",
+      "listen",
+      "search",
+      "sense_motive",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Member of the Crane Clan",
+        "key": "special"
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Feat: Improved Initiative",
+        "key": "feat",
+        "name": "Improved Initiative"
+      },
+      {
+        "text": "Feat: Dodge",
+        "key": "feat",
+        "name": "Dodge"
+      },
+      {
+        "text": "Feat: Toughness",
+        "key": "feat",
+        "name": "Toughness"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 11-2 (d12, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
+    }
+  },
+  {
     "id": "cls-deep-diviner",
     "schemaVersion": 2,
     "name": "Deep Diviner",
@@ -86,6 +937,928 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": "crystalkeep-3.5-class-index"
+    }
+  },
+  {
+    "id": "cls-demonologist",
+    "schemaVersion": 2,
+    "name": "Demonologist",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.54",
+    "role": "Prestige Class",
+    "hd": 4,
+    "hitDie": "d4",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "concentration",
+      "decipher_script",
+      "k_arcana",
+      "k_religion",
+      "k_planes",
+      "ride",
+      "sense_motive",
+      "spellcraft"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: You must be of Chaotic Evil alignment",
+        "key": "alignment",
+        "allowed": [
+          "CE"
+        ]
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 4 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Knowledge (the Planes) 8 ranks",
+        "key": "skill",
+        "skill": "k_planes",
+        "ranks": 8
+      },
+      {
+        "text": "Feat: Evil Brand",
+        "key": "feat",
+        "name": "Evil Brand"
+      },
+      {
+        "text": "Feat: Sacrificial Mastery",
+        "key": "feat",
+        "name": "Sacrificial Mastery"
+      },
+      {
+        "text": "Feat: Malign Spell Focus",
+        "key": "feat",
+        "name": "Malign Spell Focus"
+      },
+      {
+        "text": "Special: Must be able to cast at least six arcane spells of the Conjuration school, one of which must be at least 3rd level",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-2 (d4, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-devoted-defender",
+    "schemaVersion": 2,
+    "name": "Devoted Defender",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Sword and Fist p.13",
+    "role": "Prestige Class",
+    "hd": 12,
+    "hitDie": "d12",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "bluff",
+      "climb",
+      "jump",
+      "listen",
+      "profession",
+      "search",
+      "sense_motive",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Spot 4 ranks",
+        "key": "skill",
+        "skill": "spot",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Sense Motive 4 ranks",
+        "key": "skill",
+        "skill": "sense_motive",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Search 4 ranks",
+        "key": "skill",
+        "skill": "search",
+        "ranks": 4
+      },
+      {
+        "text": "Feat: Alertness",
+        "key": "feat",
+        "name": "Alertness"
+      },
+      {
+        "text": "Special: Weapon Focus (any melee weapon) feat (not checked)",
+        "key": "special"
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Sword and Fist Table 2-2 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-diabolist",
+    "schemaVersion": 2,
+    "name": "Diabolist",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.56",
+    "role": "Prestige Class",
+    "hd": 4,
+    "hitDie": "d4",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "bluff",
+      "concentration",
+      "diplomacy",
+      "intimidate",
+      "k_arcana",
+      "k_planes",
+      "spellcraft",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: You must be of Lawful Evil alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE"
+        ]
+      },
+      {
+        "text": "Special: Base Will save bonus +5",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Bluff 3 ranks",
+        "key": "skill",
+        "skill": "bluff",
+        "ranks": 3
+      },
+      {
+        "text": "Skill: Intimidate 3 ranks",
+        "key": "skill",
+        "skill": "intimidate",
+        "ranks": 3
+      },
+      {
+        "text": "Skill: Knowledge (the Planes) 8 ranks",
+        "key": "skill",
+        "skill": "k_planes",
+        "ranks": 8
+      },
+      {
+        "text": "Feat: Evil Brand",
+        "key": "feat",
+        "name": "Evil Brand"
+      },
+      {
+        "text": "Feat: Corrupt Spell",
+        "key": "feat",
+        "name": "Corrupt Spell"
+      },
+      {
+        "text": "Special: Must be able to cast Shriveling",
+        "key": "special"
+      },
+      {
+        "text": "Special: Must off your soul - but not necessarily your loyalty - to the forces of hell in exchange for power. When you die (permanently) your soul becomes the possession of a powerful devil. The devil uses the soul as it sees fit",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-3 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-disciple-of-asmodeus",
+    "schemaVersion": 2,
+    "name": "Disciple of Asmodeus",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.57",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "concentration",
+      "decipher_script",
+      "diplomacy",
+      "gather_information",
+      "hide",
+      "intimidate",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "listen",
+      "search",
+      "sense_motive",
+      "spellcraft",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: You must be of Lawful Evil or Neutral Evil alignment",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Bluff 4 ranks",
+        "key": "skill",
+        "skill": "bluff",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Diplomacy 5 ranks",
+        "key": "skill",
+        "skill": "diplomacy",
+        "ranks": 5
+      },
+      {
+        "text": "Skill: Sense Motive 4 ranks",
+        "key": "skill",
+        "skill": "sense_motive",
+        "ranks": 4
+      },
+      {
+        "text": "Feat: Disciple of Darkness",
+        "key": "feat",
+        "name": "Disciple of Darkness"
+      },
+      {
+        "text": "Feat: Evil Brand",
+        "key": "feat",
+        "name": "Evil Brand"
+      },
+      {
+        "text": "Feat: Leadership",
+        "key": "feat",
+        "name": "Leadership"
+      },
+      {
+        "text": "Special: The sect of Asmodeus initiates its disciples in a horrific rite that involves the sacrifice of an intelligent being. The sacrifice must be of someone with royal blood or of similar political signifigance",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-4 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-disciple-of-baalzebul",
+    "schemaVersion": 2,
+    "name": "Disciple of Baalzebul",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.58",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [
+      "appraise",
+      "balance",
+      "climb",
+      "decipher_script",
+      "diplomacy",
+      "disable_device",
+      "disguise",
+      "escape_artist",
+      "gather_information",
+      "hide",
+      "intimidate",
+      "jump",
+      "k_religion",
+      "listen",
+      "move_silently",
+      "open_lock",
+      "profession",
+      "ride",
+      "search",
+      "sense_motive",
+      "sleight_of_hand",
+      "spot",
+      "umd"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: You must be of Any Evil alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Skill: Bluff 10 ranks",
+        "key": "skill",
+        "skill": "bluff",
+        "ranks": 10
+      },
+      {
+        "text": "Skill: Diplomacy 4 ranks",
+        "key": "skill",
+        "skill": "diplomacy",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Gather Information 4 ranks",
+        "key": "skill",
+        "skill": "gather_information",
+        "ranks": 4
+      },
+      {
+        "text": "Feat: Disciple of Darkness",
+        "key": "feat",
+        "name": "Disciple of Darkness"
+      },
+      {
+        "text": "Special: The sect of Baalzebul initiates new disciples in a terrible rite that involves the sacrifice of an intelligent being. The ritual must take place in the home of the victim",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-5 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-disciple-of-dispater",
+    "schemaVersion": 2,
+    "name": "Disciple of Dispater",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.60",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "climb",
+      "disable_device",
+      "disguise",
+      "escape_artist",
+      "hide",
+      "intimidate",
+      "jump",
+      "k_religion",
+      "listen",
+      "move_silently",
+      "profession",
+      "ride",
+      "search",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: You must be of Any Evil alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +6",
+        "key": "bab",
+        "min": 6
+      },
+      {
+        "text": "Feat: Disciple of Darkness",
+        "key": "feat",
+        "name": "Disciple of Darkness"
+      },
+      {
+        "text": "Feat: Combat Expertise",
+        "key": "feat",
+        "name": "Combat Expertise"
+      },
+      {
+        "text": "Feat: Power Attack",
+        "key": "feat",
+        "name": "Power Attack"
+      },
+      {
+        "text": "Special: Dispater's sect initiates new disciples in a terrible ritual that involves the sacrifice of an intelligent being atop an alter made of iron. The ritual must take place in the presence of an erinyes, who reports back to Dispater afterward",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-6 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-disciple-of-mammon",
+    "schemaVersion": 2,
+    "name": "Disciple of Mammon",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.60",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "appraise",
+      "balance",
+      "disable_device",
+      "disguise",
+      "escape_artist",
+      "forgery",
+      "hide",
+      "intimidate",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "listen",
+      "move_silently",
+      "open_lock",
+      "profession",
+      "search",
+      "sleight_of_hand",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: You must be of Any Evil alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +4",
+        "key": "bab",
+        "min": 4
+      },
+      {
+        "text": "Skill: Appraise 6 ranks",
+        "key": "skill",
+        "skill": "appraise",
+        "ranks": 6
+      },
+      {
+        "text": "Skill: Open Lock 4 ranks",
+        "key": "skill",
+        "skill": "open_lock",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Sleight of Hand 4 ranks",
+        "key": "skill",
+        "skill": "sleight_of_hand",
+        "ranks": 4
+      },
+      {
+        "text": "Feat: Disciple of Darkness",
+        "key": "feat",
+        "name": "Disciple of Darkness"
+      },
+      {
+        "text": "Special: You must go through a disgusting and humiliating sexual ritual and betray your closest friend to an evil end before you can properly serve your new master",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-7 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-disciple-of-mephistopheles",
+    "schemaVersion": 2,
+    "name": "Disciple of Mephistopheles",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.62",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "climb",
+      "disable_device",
+      "disguise",
+      "escape_artist",
+      "hide",
+      "intimidate",
+      "jump",
+      "k_religion",
+      "listen",
+      "move_silently",
+      "profession",
+      "ride",
+      "search",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: You must be of Any Evil alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +6",
+        "key": "bab",
+        "min": 6
+      },
+      {
+        "text": "Feat: Disciple of Darkness",
+        "key": "feat",
+        "name": "Disciple of Darkness"
+      },
+      {
+        "text": "Feat: Evil Brand",
+        "key": "feat",
+        "name": "Evil Brand"
+      },
+      {
+        "text": "Special: The sect of Mephistopheles welcomes new disciples with a terrible ritual that invovles the sacrifice of an intelligent being in magical fire",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-8 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-divine-agent",
+    "schemaVersion": 2,
+    "name": "Divine Agent",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Manual of the Planes p.24",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "disguise",
+      "gather_information",
+      "heal",
+      "intimidate",
+      "k_religion",
+      "profession",
+      "search",
+      "sense_motive",
+      "spellcraft",
+      "spot",
+      "umd"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +4",
+        "key": "bab",
+        "min": 4
+      },
+      {
+        "text": "Special: 7 ranks in Knowledge (religon)",
+        "key": "special"
+      },
+      {
+        "text": "Special: Able to cast 2nd-level divine spells",
+        "key": "special"
+      },
+      {
+        "text": "Special: You must have made peaceful contact with your deity or its direct agents",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Manual of the Planes Table 3-3 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)"
     }
   },
   {
@@ -199,6 +1972,91 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": "crystalkeep-3.5-class-index"
+    }
+  },
+  {
+    "id": "cls-eunuch-warlock",
+    "schemaVersion": 2,
+    "name": "Eunuch Warlock",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.38",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "disguise",
+      "forgery",
+      "gather_information",
+      "k_arcana",
+      "profession",
+      "spellcraft"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Male",
+        "key": "special"
+      },
+      {
+        "text": "Special: Evil alignment",
+        "key": "special"
+      },
+      {
+        "text": "Feat: Spell Focus",
+        "key": "feat",
+        "name": "Spell Focus"
+      },
+      {
+        "text": "Special: Able to cast 5th level arcane spells",
+        "key": "special"
+      },
+      {
+        "text": "Special: Must be a eunuch in the Emperor's service (not checked)",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-5 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
     }
   },
   {
@@ -322,6 +2180,951 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": null
+    }
+  },
+  {
+    "id": "cls-gatecrasher",
+    "schemaVersion": 2,
+    "name": "Gatecrasher",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Manual of the Planes p.26",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 8,
+    "skillPointsPerLevel": 8,
+    "classSkills": [
+      "appraise",
+      "balance",
+      "bluff",
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "decipher_script",
+      "diplomacy",
+      "disable_device",
+      "disguise",
+      "escape_artist",
+      "forgery",
+      "gather_information",
+      "hide",
+      "intimidate",
+      "jump",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "listen",
+      "move_silently",
+      "open_lock",
+      "perform",
+      "profession",
+      "search",
+      "sense_motive",
+      "sleight_of_hand",
+      "spot",
+      "tumble",
+      "umd",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: Must be of any Non-Lawful alignment",
+        "key": "alignment",
+        "allowed": [
+          "NG",
+          "CG",
+          "TN",
+          "CN",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +4",
+        "key": "bab",
+        "min": 4
+      },
+      {
+        "text": "Skill: Knowledge (the planes) 4 ranks",
+        "key": "skill",
+        "skill": "k_planes",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Use Magic Device 8 ranks",
+        "key": "skill",
+        "skill": "umd",
+        "ranks": 8
+      },
+      {
+        "text": "Special: You must have visited two planes of existance other than your native plane",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Manual of the Planes Table 3-4 (d6, 8 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-gnome-artificer",
+    "schemaVersion": 2,
+    "name": "Gnome Artificer",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Magic of Faerun p.24",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "appraise",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "disable_device",
+      "k_arch",
+      "listen",
+      "profession",
+      "search",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Race: Gnome or Race: Human & Region: Lantan",
+        "key": "special"
+      },
+      {
+        "text": "Special: 8 ranks in Craft (armorsmithing, weaponsmithing, blacksmithing, metalworking, gemcutting, locksmithing, or trapmaking)",
+        "key": "special"
+      },
+      {
+        "text": "Special: 4 ranks in any two other Craft skills from the previous list",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Disable Device 2 ranks",
+        "key": "skill",
+        "skill": "disable_device",
+        "ranks": 2
+      },
+      {
+        "text": "Skill: Knowledge (Arch & Eng) 4 ranks",
+        "key": "skill",
+        "skill": "k_arch",
+        "ranks": 4
+      },
+      {
+        "text": "Special: 3 ranks in Profession (Apothecary, Engineer, or Siege Engineer)",
+        "key": "special"
+      },
+      {
+        "text": "Feat: Lightning Reflexes",
+        "key": "feat",
+        "name": "Lightning Reflexes"
+      },
+      {
+        "text": "Feat: Skill Focus (Craft)",
+        "key": "feat",
+        "name": "Skill Focus (Craft)"
+      },
+      {
+        "text": "Special: Able to cast 1st-level arcane spells",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Magic of Faerun Table 3-1 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-great-rift-skyguard",
+    "schemaVersion": 2,
+    "name": "Great Rift Skyguard",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Races of Faerun p.183",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "handle_animal",
+      "heal",
+      "intimidate",
+      "jump",
+      "profession",
+      "ride",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Race: Gold Dwarf",
+        "key": "race",
+        "val": "Gold Dwarf"
+      },
+      {
+        "text": "Skill: Handle Animal 4 ranks",
+        "key": "skill",
+        "skill": "handle_animal",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Jump 4 ranks",
+        "key": "skill",
+        "skill": "jump",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Ride 8 ranks",
+        "key": "skill",
+        "skill": "ride",
+        "ranks": 8
+      },
+      {
+        "text": "Feat: Mounted Combat",
+        "key": "feat",
+        "name": "Mounted Combat"
+      },
+      {
+        "text": "Feat: Toughness",
+        "key": "feat",
+        "name": "Toughness"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Races of Faerun Table A-10 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-guild-wizard-of-waterdeep",
+    "schemaVersion": 2,
+    "name": "Guild Wizard of Waterdeep",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Magic of Faerun p.26",
+    "role": "Prestige Class",
+    "hd": 4,
+    "hitDie": "d4",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "profession",
+      "spellcraft"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: 4 ranks in Craft (alchemy)",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 8 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 8
+      },
+      {
+        "text": "Skill: Spellcraft 8 ranks",
+        "key": "skill",
+        "skill": "spellcraft",
+        "ranks": 8
+      },
+      {
+        "text": "Feat: Scribe Scroll",
+        "key": "feat",
+        "name": "Scribe Scroll"
+      },
+      {
+        "text": "Special: Any one metamagic feat",
+        "key": "special"
+      },
+      {
+        "text": "Special: Either Spell Penetration or Spell Focus (choice of school) Feat",
+        "key": "special"
+      },
+      {
+        "text": "Special: Ability to craft 3rd-level arcane spells",
+        "key": "special"
+      },
+      {
+        "text": "Special: Prospective members must pay an initiation fee of 1,000gp",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Magic of Faerun Table 3-2 (d4, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-harper-mage",
+    "schemaVersion": 2,
+    "name": "Harper Mage",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Magic of Faerun p.28",
+    "role": "Prestige Class",
+    "hd": 4,
+    "hitDie": "d4",
+    "maxLevel": 5,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "decipher_script",
+      "diplomacy",
+      "disguise",
+      "gather_information",
+      "heal",
+      "hide",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "listen",
+      "move_silently",
+      "perform",
+      "profession",
+      "ride",
+      "sense_motive",
+      "spellcraft",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Concentration 4 ranks",
+        "key": "skill",
+        "skill": "concentration",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 8 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 8
+      },
+      {
+        "text": "Special: 4 ranks in Knowledge (any other)",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Sense Motive 2 ranks",
+        "key": "skill",
+        "skill": "sense_motive",
+        "ranks": 2
+      },
+      {
+        "text": "Skill: Spellcraft 8 ranks",
+        "key": "skill",
+        "skill": "spellcraft",
+        "ranks": 8
+      },
+      {
+        "text": "Feat: Alertness",
+        "key": "feat",
+        "name": "Alertness"
+      },
+      {
+        "text": "Feat: Education",
+        "key": "feat",
+        "name": "Education"
+      },
+      {
+        "text": "Feat: Extend Spell",
+        "key": "feat",
+        "name": "Extend Spell"
+      },
+      {
+        "text": "Special: Able to cast 3st-level arcane spells",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Magic of Faerun Table 3-3 (d4, 4 + Int, BAB +0/+1/+1/+2/+2, good Will, 5 levels)"
+    }
+  },
+  {
+    "id": "cls-harper-priest",
+    "schemaVersion": 2,
+    "name": "Harper Priest",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Magic of Faerun p.29",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 5,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "handle_animal",
+      "heal",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "listen",
+      "perform",
+      "profession",
+      "sense_motive",
+      "spellcraft",
+      "spot",
+      "survival",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Diplomacy 4 ranks",
+        "key": "skill",
+        "skill": "diplomacy",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 4 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Knowledge (religion) 8 ranks",
+        "key": "skill",
+        "skill": "k_religion",
+        "ranks": 8
+      },
+      {
+        "text": "Skill: Spellcraft 8 ranks",
+        "key": "skill",
+        "skill": "spellcraft",
+        "ranks": 8
+      },
+      {
+        "text": "Feat: Alertness",
+        "key": "feat",
+        "name": "Alertness"
+      },
+      {
+        "text": "Feat: Iron Will",
+        "key": "feat",
+        "name": "Iron Will"
+      },
+      {
+        "text": "Special: Able to cast 3st-level arcane spells",
+        "key": "special"
+      },
+      {
+        "text": "Special: Sponsorship by a member of the Harpers, approval of the High Harpers. Also, you patron deity must be nonevil and not one devoted to wanton destruction",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Magic of Faerun Table 3-4 (d8, 4 + Int, BAB +0/+1/+2/+3/+3, good Fort, Will, 5 levels)"
+    }
+  },
+  {
+    "id": "cls-henshin-mystic",
+    "schemaVersion": 2,
+    "name": "Henshin Mystic",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.40",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "escape_artist",
+      "heal",
+      "jump",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "listen",
+      "perform",
+      "profession",
+      "spellcraft",
+      "swim",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +7",
+        "key": "bab",
+        "min": 7
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 6 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 6
+      },
+      {
+        "text": "Skill: Knowledge (religion) 13 ranks",
+        "key": "skill",
+        "skill": "k_religion",
+        "ranks": 13
+      },
+      {
+        "text": "Special: Purity of Body class ability",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-6 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-hida-defender",
+    "schemaVersion": 2,
+    "name": "Hida Defender",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.212",
+    "role": "Prestige Class",
+    "hd": 12,
+    "hitDie": "d12",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "handle_animal",
+      "intimidate",
+      "jump",
+      "ride",
+      "sense_motive",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Member of the Crab Clan",
+        "key": "special"
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Special: Armor proficiency (heavy)",
+        "key": "special"
+      },
+      {
+        "text": "Feat: Power Attack",
+        "key": "feat",
+        "name": "Power Attack"
+      },
+      {
+        "text": "Special: Weapon Focus (battleaxe, warhammer, or greatclub)",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 11-1 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-iaijutsu-master",
+    "schemaVersion": 2,
+    "name": "Iaijutsu Master",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.41",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "escape_artist",
+      "jump",
+      "perform",
+      "profession",
+      "ride",
+      "sense_motive",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +6",
+        "key": "bab",
+        "min": 6
+      },
+      {
+        "text": "Special: 9 ranks in Iaijutsu Focus",
+        "key": "special"
+      },
+      {
+        "text": "Feat: Improved Initiative",
+        "key": "feat",
+        "name": "Improved Initiative"
+      },
+      {
+        "text": "Feat: Quick Draw",
+        "key": "feat",
+        "name": "Quick Draw"
+      },
+      {
+        "text": "Special: Weapon Focus (katana)",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-7 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)"
     }
   },
   {
@@ -502,6 +3305,368 @@
     }
   },
   {
+    "id": "cls-kishi-charger",
+    "schemaVersion": 2,
+    "name": "Kishi Charger",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.42",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "handle_animal",
+      "intimidate",
+      "jump",
+      "listen",
+      "perform",
+      "profession",
+      "ride",
+      "sense_motive",
+      "spellcraft",
+      "survival",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +6",
+        "key": "bab",
+        "min": 6
+      },
+      {
+        "text": "Skill: Ride 9 ranks",
+        "key": "skill",
+        "skill": "ride",
+        "ranks": 9
+      },
+      {
+        "text": "Feat: Mounted Combat",
+        "key": "feat",
+        "name": "Mounted Combat"
+      },
+      {
+        "text": "Feat: Ride-By Attack",
+        "key": "feat",
+        "name": "Ride-By Attack"
+      },
+      {
+        "text": "Feat: Spirited Charge",
+        "key": "feat",
+        "name": "Spirited Charge"
+      },
+      {
+        "text": "Special: Weapon proficiency (lance)",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-8 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-lasher",
+    "schemaVersion": 2,
+    "name": "Lasher",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Sword and Fist p.25",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "balance",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "escape_artist",
+      "intimidate",
+      "jump",
+      "spot",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Use Rope 2 ranks",
+        "key": "skill",
+        "skill": "use_rope",
+        "ranks": 2
+      },
+      {
+        "text": "Special: Craft (Leatherworking) 2 ranks",
+        "key": "special"
+      },
+      {
+        "text": "Special: Exotic Weapon Proficiency (whip or whip-like weapon)",
+        "key": "special"
+      },
+      {
+        "text": "Special: Weapon Focus (whip or whip-like weapon)",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Sword and Fist Table 2-10 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-lifedrinker",
+    "schemaVersion": 2,
+    "name": "Lifedrinker",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.63",
+    "role": "Prestige Class",
+    "hd": 12,
+    "hitDie": "d12",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "hide",
+      "k_arcana",
+      "listen",
+      "move_silently",
+      "profession",
+      "search",
+      "sense_motive",
+      "spellcraft",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: You must be of Any Evil alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 6 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 6
+      },
+      {
+        "text": "Skill: Spellcraft 6 ranks",
+        "key": "skill",
+        "skill": "spellcraft",
+        "ranks": 6
+      },
+      {
+        "text": "Race: vampire",
+        "key": "race",
+        "val": "vampire"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-9 (d12, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-mage-killer",
+    "schemaVersion": 2,
+    "name": "Mage-Killer",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Magic of Faerun p.33",
+    "role": "Prestige Class",
+    "hd": 4,
+    "hitDie": "d4",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "gather_information",
+      "intimidate",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "spellcraft"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Spellcraft 10 ranks",
+        "key": "skill",
+        "skill": "spellcraft",
+        "ranks": 10
+      },
+      {
+        "text": "Feat: Great Fortitude",
+        "key": "feat",
+        "name": "Great Fortitude"
+      },
+      {
+        "text": "Feat: Lightning Reflexes",
+        "key": "feat",
+        "name": "Lightning Reflexes"
+      },
+      {
+        "text": "Feat: Combat Casting",
+        "key": "feat",
+        "name": "Combat Casting"
+      },
+      {
+        "text": "Special: Martial Weapon Proficiency (any)",
+        "key": "special"
+      },
+      {
+        "text": "Special: Ability to cast 4th-level Arcane or Divine",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Magic of Faerun Table 3-7 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
+    }
+  },
+  {
     "id": "cls-magnifico",
     "schemaVersion": 2,
     "name": "Magnifico",
@@ -569,6 +3734,96 @@
     }
   },
   {
+    "id": "cls-mantis-mercenary",
+    "schemaVersion": 2,
+    "name": "Mantis Mercenary",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.231",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 5,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "balance",
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "intimidate",
+      "jump",
+      "profession",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Member of the Mantis clan",
+        "key": "special"
+      },
+      {
+        "text": "Alignment: Any Neutral alignment",
+        "key": "alignment",
+        "allowed": [
+          "NG",
+          "LN",
+          "TN",
+          "CN",
+          "NE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Feat: Dodge",
+        "key": "feat",
+        "name": "Dodge"
+      },
+      {
+        "text": "Special: Weapon Focus in any of the following weapons: Chijiriki, Jitte, Kama, Kusari-Gama, Manriki-Gusari, Nunchaku, Sai, Shikomi-Zue, Siangham, Tonfa",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 11-9 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)"
+    }
+  },
+  {
     "id": "cls-mariner",
     "schemaVersion": 2,
     "name": "Mariner",
@@ -633,6 +3888,920 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": null
+    }
+  },
+  {
+    "id": "cls-master-alchemist",
+    "schemaVersion": 2,
+    "name": "Master Alchemist",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Magic of Faerun p.34",
+    "role": "Prestige Class",
+    "hd": 4,
+    "hitDie": "d4",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "k_arcana",
+      "profession",
+      "spellcraft"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: 10 ranks in Craft (alchemy)",
+        "key": "special"
+      },
+      {
+        "text": "Special: 10 rank in Spellcraft",
+        "key": "special"
+      },
+      {
+        "text": "Feat: Brew Potion",
+        "key": "feat",
+        "name": "Brew Potion"
+      },
+      {
+        "text": "Feat: Skill Focus (craft)",
+        "key": "feat",
+        "name": "Skill Focus (craft)"
+      },
+      {
+        "text": "Special: Ability to cast 4th-level Arcane or Divine spells",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Magic of Faerun Table 3-8 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-mirumoto-niten-master",
+    "schemaVersion": 2,
+    "name": "Mirumoto Niten Master",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.218",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "balance",
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "intimidate",
+      "jump",
+      "k_arcana",
+      "perform",
+      "profession",
+      "ride",
+      "sense_motive",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Member of the Dragon Clan",
+        "key": "special"
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 3 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 3
+      },
+      {
+        "text": "Special: Exotic Weapon Proficiency (Katana)",
+        "key": "special"
+      },
+      {
+        "text": "Feat: Combat Expertise",
+        "key": "feat",
+        "name": "Combat Expertise"
+      },
+      {
+        "text": "Feat: Two Weapon Fighting",
+        "key": "feat",
+        "name": "Two Weapon Fighting"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 11-3 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-mortal-hunter",
+    "schemaVersion": 2,
+    "name": "Mortal Hunter",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.64",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "climb",
+      "concentration",
+      "disguise",
+      "hide",
+      "jump",
+      "k_arcana",
+      "k_religion",
+      "k_planes",
+      "listen",
+      "move_silently",
+      "search",
+      "sense_motive",
+      "spot",
+      "survival"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Race: Outsider",
+        "key": "race",
+        "val": "Outsider"
+      },
+      {
+        "text": "Alignment: You must be of Any Evil alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Move Silently 3 ranks",
+        "key": "skill",
+        "skill": "move_silently",
+        "ranks": 3
+      },
+      {
+        "text": "Skill: Survival 5 ranks",
+        "key": "skill",
+        "skill": "survival",
+        "ranks": 5
+      },
+      {
+        "text": "Feat: Alertness",
+        "key": "feat",
+        "name": "Alertness"
+      },
+      {
+        "text": "Feat: Mortalbane",
+        "key": "feat",
+        "name": "Mortalbane"
+      },
+      {
+        "text": "Feat: Track",
+        "key": "feat",
+        "name": "Track"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-10 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-moto-avenger",
+    "schemaVersion": 2,
+    "name": "Moto Avenger",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.228",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "handle_animal",
+      "intimidate",
+      "jump",
+      "profession",
+      "ride",
+      "sense_motive",
+      "spellcraft",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Member of the Unicorn Clan",
+        "key": "special"
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Ride 8 ranks",
+        "key": "skill",
+        "skill": "ride",
+        "ranks": 8
+      },
+      {
+        "text": "Feat: Mounted Combat",
+        "key": "feat",
+        "name": "Mounted Combat"
+      },
+      {
+        "text": "Feat: Spirited Charge",
+        "key": "feat",
+        "name": "Spirited Charge"
+      },
+      {
+        "text": "Feat: Trample",
+        "key": "feat",
+        "name": "Trample"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 11-8 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-mystic-wanderer",
+    "schemaVersion": 2,
+    "name": "Mystic Wanderer",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Magic of Faerun p.36",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "heal",
+      "k_arcana",
+      "k_nature",
+      "k_religion",
+      "profession",
+      "spellcraft"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: Must be of Any Non-Lawful Alignment",
+        "key": "alignment",
+        "allowed": [
+          "NG",
+          "CG",
+          "TN",
+          "CN",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Special: 3 ranks in Craft (alchemy)",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Diplomacy 8 ranks",
+        "key": "skill",
+        "skill": "diplomacy",
+        "ranks": 8
+      },
+      {
+        "text": "Skill: Knowledge (nature) 3 ranks",
+        "key": "skill",
+        "skill": "k_nature",
+        "ranks": 3
+      },
+      {
+        "text": "Skill: Perform 3 ranks",
+        "key": "skill",
+        "skill": "perform",
+        "ranks": 3
+      },
+      {
+        "text": "Skill: Profession (herbalist) 3 ranks",
+        "key": "skill",
+        "skill": "profession",
+        "ranks": 3
+      },
+      {
+        "text": "Feat: Iron Will",
+        "key": "feat",
+        "name": "Iron Will"
+      },
+      {
+        "text": "Special: Ability to cast 2th-level Divine Spells",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Magic of Faerun Table 3-9 (d8, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-ninja-spy",
+    "schemaVersion": 2,
+    "name": "Ninja Spy",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.43",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 6,
+    "skillPointsPerLevel": 6,
+    "classSkills": [
+      "balance",
+      "bluff",
+      "climb",
+      "diplomacy",
+      "disable_device",
+      "disguise",
+      "escape_artist",
+      "gather_information",
+      "hide",
+      "intimidate",
+      "jump",
+      "listen",
+      "move_silently",
+      "open_lock",
+      "sense_motive",
+      "sleight_of_hand",
+      "spot",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Nongood, nonchaotic alignment",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Bluff 10 ranks",
+        "key": "skill",
+        "skill": "bluff",
+        "ranks": 10
+      },
+      {
+        "text": "Skill: Disguise 7 ranks",
+        "key": "skill",
+        "skill": "disguise",
+        "ranks": 7
+      },
+      {
+        "text": "Skill: Hide 7 ranks",
+        "key": "skill",
+        "skill": "hide",
+        "ranks": 7
+      },
+      {
+        "text": "Skill: Tumble 7 ranks",
+        "key": "skill",
+        "skill": "tumble",
+        "ranks": 7
+      },
+      {
+        "text": "Feat: Dodge",
+        "key": "feat",
+        "name": "Dodge"
+      },
+      {
+        "text": "Special: Evasion class feature",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-9 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-orc-warlord",
+    "schemaVersion": 2,
+    "name": "Orc Warlord",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Races of Faerun p.184",
+    "role": "Prestige Class",
+    "hd": 12,
+    "hitDie": "d12",
+    "maxLevel": 5,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "bluff",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "intimidate",
+      "jump",
+      "listen",
+      "ride",
+      "sense_motive",
+      "spot",
+      "survival"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Must be an Orc or Half-Orc",
+        "key": "special"
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Alignment: Must be of Any Non-Good Alignment",
+        "key": "alignment",
+        "allowed": [
+          "LN",
+          "TN",
+          "CN",
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Skill: Intimidate 8 ranks",
+        "key": "skill",
+        "skill": "intimidate",
+        "ranks": 8
+      },
+      {
+        "text": "Skill: Ride 5 ranks",
+        "key": "skill",
+        "skill": "ride",
+        "ranks": 5
+      },
+      {
+        "text": "Skill: Survival 5 ranks",
+        "key": "skill",
+        "skill": "survival",
+        "ranks": 5
+      },
+      {
+        "text": "Special: Blood of the Warlord Feat or Might Makes Right Feat",
+        "key": "special"
+      },
+      {
+        "text": "Feat: Leadership",
+        "key": "feat",
+        "name": "Leadership"
+      },
+      {
+        "text": "Special: Barbarian Rage ability",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Races of Faerun Table A-11 (d12, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, Will, 5 levels)"
+    }
+  },
+  {
+    "id": "cls-planar-champion",
+    "schemaVersion": 2,
+    "name": "Planar Champion",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Manual of the Planes p.28",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "handle_animal",
+      "hide",
+      "intimidate",
+      "jump",
+      "k_planes",
+      "listen",
+      "move_silently",
+      "profession",
+      "ride",
+      "search",
+      "spot",
+      "survival",
+      "swim",
+      "umd"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Knowledge (the planes) 4 ranks",
+        "key": "skill",
+        "skill": "k_planes",
+        "ranks": 4
+      },
+      {
+        "text": "Feat: Weapon Specializtion",
+        "key": "feat",
+        "name": "Weapon Specializtion"
+      },
+      {
+        "text": "Special: You must have visited at least two planes other than your native plane",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Manual of the Planes Table 3-5 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-planeshifter",
+    "schemaVersion": 2,
+    "name": "Planeshifter",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Manual of the Planes p.30",
+    "role": "Prestige Class",
+    "hd": 4,
+    "hitDie": "d4",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "gather_information",
+      "intimidate",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "perform",
+      "profession",
+      "ride",
+      "search",
+      "spellcraft",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Concentration 10 ranks",
+        "key": "skill",
+        "skill": "concentration",
+        "ranks": 10
+      },
+      {
+        "text": "Skill: Knowledge (the planes) 4 ranks",
+        "key": "skill",
+        "skill": "k_planes",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Spellcraft 10 ranks",
+        "key": "skill",
+        "skill": "spellcraft",
+        "ranks": 10
+      },
+      {
+        "text": "Feat: Craft Wonderous Item",
+        "key": "feat",
+        "name": "Craft Wonderous Item"
+      },
+      {
+        "text": "Special: Must be able to cast 5th-level Arcane spells",
+        "key": "special"
+      },
+      {
+        "text": "Special: Must have visited an Inner or Outer plane",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Manual of the Planes Table 3-6 (d4, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, 10 levels)"
     }
   },
   {
@@ -825,6 +4994,106 @@
     }
   },
   {
+    "id": "cls-shadow-scout",
+    "schemaVersion": 2,
+    "name": "Shadow Scout",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.44",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "hide",
+      "jump",
+      "k_nature",
+      "listen",
+      "move_silently",
+      "profession",
+      "ride",
+      "search",
+      "spot",
+      "survival",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +4",
+        "key": "bab",
+        "min": 4
+      },
+      {
+        "text": "Skill: Hide 9 ranks",
+        "key": "skill",
+        "skill": "hide",
+        "ranks": 9
+      },
+      {
+        "text": "Skill: Move Silently 9 ranks",
+        "key": "skill",
+        "skill": "move_silently",
+        "ranks": 9
+      },
+      {
+        "text": "Skill: Spot 5 ranks",
+        "key": "skill",
+        "skill": "spot",
+        "ranks": 5
+      },
+      {
+        "text": "Feat: Run",
+        "key": "feat",
+        "name": "Run"
+      },
+      {
+        "text": "Feat: Track",
+        "key": "feat",
+        "name": "Track"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-10 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
+    }
+  },
+  {
     "id": "cls-shaman",
     "schemaVersion": 2,
     "name": "Shaman",
@@ -883,6 +5152,355 @@
     }
   },
   {
+    "id": "cls-shapeshifter",
+    "schemaVersion": 2,
+    "name": "Shapeshifter",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.45",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "handle_animal",
+      "k_nature",
+      "profession",
+      "spellcraft",
+      "survival",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +3",
+        "key": "bab",
+        "min": 3
+      },
+      {
+        "text": "Skill: Concentration 10 ranks",
+        "key": "skill",
+        "skill": "concentration",
+        "ranks": 10
+      },
+      {
+        "text": "Special: Must know the Polymorph spell or have a natural shapechanging ability (not checked)",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-11 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-shiba-protector",
+    "schemaVersion": 2,
+    "name": "Shiba Protector",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.222",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "intimidate",
+      "jump",
+      "perform",
+      "profession",
+      "ride",
+      "sense_motive",
+      "spellcraft",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Member of the Phoenix Clan",
+        "key": "special"
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Knowledge (religion) 4 ranks",
+        "key": "skill",
+        "skill": "k_religion",
+        "ranks": 4
+      },
+      {
+        "text": "Feat: Alertness",
+        "key": "feat",
+        "name": "Alertness"
+      },
+      {
+        "text": "Feat: Combat Expertise",
+        "key": "feat",
+        "name": "Combat Expertise"
+      },
+      {
+        "text": "Feat: Iron Will",
+        "key": "feat",
+        "name": "Iron Will"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 11-5 (d10, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-shintao-monk",
+    "schemaVersion": 2,
+    "name": "Shintao Monk",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.46",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "good",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "balance",
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "escape_artist",
+      "heal",
+      "jump",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "listen",
+      "perform",
+      "profession",
+      "spellcraft",
+      "swim",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: Lawful Good alignment",
+        "key": "alignment",
+        "allowed": [
+          "LG"
+        ]
+      },
+      {
+        "text": "Special: Base Will save bonus +4",
+        "key": "special"
+      },
+      {
+        "text": "Special: 8 ranks in Knowledge Religion",
+        "key": "special"
+      },
+      {
+        "text": "Special: Still Mind class feature",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-12 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-singh-rager",
+    "schemaVersion": 2,
+    "name": "Singh Rager",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.48",
+    "role": "Prestige Class",
+    "hd": 12,
+    "hitDie": "d12",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "handle_animal",
+      "intimidate",
+      "jump",
+      "k_history",
+      "ride",
+      "sense_motive",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +7",
+        "key": "bab",
+        "min": 7
+      },
+      {
+        "text": "Feat: Iron Will",
+        "key": "feat",
+        "name": "Iron Will"
+      },
+      {
+        "text": "Feat: Kiai Shout",
+        "key": "feat",
+        "name": "Kiai Shout"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-13 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
+    }
+  },
+  {
     "id": "cls-sohei",
     "schemaVersion": 2,
     "name": "Sohei",
@@ -938,6 +5556,864 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": null
+    }
+  },
+  {
+    "id": "cls-soul-eater",
+    "schemaVersion": 2,
+    "name": "Soul Eater",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.66",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "climb",
+      "concentration",
+      "hide",
+      "intimidate",
+      "jump",
+      "listen",
+      "move_silently",
+      "profession",
+      "search",
+      "spellcraft",
+      "spot",
+      "swim",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Race: living nonhumanoid",
+        "key": "race",
+        "val": "living nonhumanoid"
+      },
+      {
+        "text": "Alignment: You must be of Any Evil alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 2 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 2
+      },
+      {
+        "text": "Feat: Alertness",
+        "key": "feat",
+        "name": "Alertness"
+      },
+      {
+        "text": "Special: Weapon Focus feat (claw or other natural weapon)",
+        "key": "special"
+      },
+      {
+        "text": "Special: Special",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-11 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-spelldancer",
+    "schemaVersion": 2,
+    "name": "Spelldancer",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Magic of Faerun p.37",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 5,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "jump",
+      "k_arcana",
+      "perform",
+      "profession",
+      "spellcraft",
+      "swim",
+      "tumble"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Concentration 4 ranks",
+        "key": "skill",
+        "skill": "concentration",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Perform (dance) 6 ranks",
+        "key": "skill",
+        "skill": "perform",
+        "ranks": 6
+      },
+      {
+        "text": "Skill: Tumble 4 ranks",
+        "key": "skill",
+        "skill": "tumble",
+        "ranks": 4
+      },
+      {
+        "text": "Feat: Combat Casting",
+        "key": "feat",
+        "name": "Combat Casting"
+      },
+      {
+        "text": "Feat: Dodge",
+        "key": "feat",
+        "name": "Dodge"
+      },
+      {
+        "text": "Feat: Endurance",
+        "key": "feat",
+        "name": "Endurance"
+      },
+      {
+        "text": "Feat: Mobility",
+        "key": "feat",
+        "name": "Mobility"
+      },
+      {
+        "text": "Special: Ability to cast 3rd-level Arcane Spells",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Magic of Faerun Table 3-10 (d6, 4 + Int, BAB +0/+1/+1/+2/+2, good Ref, Will, 5 levels)"
+    }
+  },
+  {
+    "id": "cls-spellfire-channeler",
+    "schemaVersion": 2,
+    "name": "Spellfire Channeler",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Magic of Faerun p.39",
+    "role": "Prestige Class",
+    "hd": 4,
+    "hitDie": "d4",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "bluff",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "disguise",
+      "heal",
+      "intimidate",
+      "k_arcana",
+      "profession",
+      "sense_motive",
+      "spellcraft",
+      "survival"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Concentration 8 ranks",
+        "key": "skill",
+        "skill": "concentration",
+        "ranks": 8
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 2 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 2
+      },
+      {
+        "text": "Skill: Spellcraft 2 ranks",
+        "key": "skill",
+        "skill": "spellcraft",
+        "ranks": 2
+      },
+      {
+        "text": "Feat: Endurance",
+        "key": "feat",
+        "name": "Endurance"
+      },
+      {
+        "text": "Feat: Spellfire Wielder",
+        "key": "feat",
+        "name": "Spellfire Wielder"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Magic of Faerun Table 3-11 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-spellsinger",
+    "schemaVersion": 2,
+    "name": "Spellsinger",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Races of Faerun p.186",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 5,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "poor",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "decipher_script",
+      "diplomacy",
+      "disguise",
+      "gather_information",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "perform",
+      "profession",
+      "spellcraft",
+      "umd"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: You must have at least 1/8th elven blood",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 8 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 8
+      },
+      {
+        "text": "Skill: Perform 8 ranks",
+        "key": "skill",
+        "skill": "perform",
+        "ranks": 8
+      },
+      {
+        "text": "Feat: Improved Counterspell",
+        "key": "feat",
+        "name": "Improved Counterspell"
+      },
+      {
+        "text": "Feat: Skill Focus (perform)",
+        "key": "feat",
+        "name": "Skill Focus (perform)"
+      },
+      {
+        "text": "Special: Ability to cast 1st-level arcane spells without preparation",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Races of Faerun Table A-12 (d6, 4 + Int, BAB +0/+1/+2/+3/+3, good Ref, Will, 5 levels)"
+    }
+  },
+  {
+    "id": "cls-thrall-of-demogorgon",
+    "schemaVersion": 2,
+    "name": "Thrall Of Demogorgon",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.67",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "climb",
+      "concentration",
+      "intimidate",
+      "jump",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "move_silently",
+      "profession",
+      "search",
+      "sense_motive",
+      "spot",
+      "swim",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: Must be of Chaotic Evil Alignment",
+        "key": "alignment",
+        "allowed": [
+          "CE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 2 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 2
+      },
+      {
+        "text": "Skill: Knowledge (religion) 2 ranks",
+        "key": "skill",
+        "skill": "k_religion",
+        "ranks": 2
+      },
+      {
+        "text": "Special: 2 ranks in Knowledge (any other)",
+        "key": "special"
+      },
+      {
+        "text": "Feat: Willing Deformity",
+        "key": "feat",
+        "name": "Willing Deformity"
+      },
+      {
+        "text": "Feat: Thrall to Demon",
+        "key": "feat",
+        "name": "Thrall to Demon"
+      },
+      {
+        "text": "Special: A thrall of Demogorgon is initiated in a horrific rite that involves the sacrifice of an intelligent being dedicated to Demogorgon. This ceremony must take place on unhallowed ground, at night, in the presence of a demon",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-12 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-thrall-of-grazzt",
+    "schemaVersion": 2,
+    "name": "Thrall Of Graz'zt",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.68",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "concentration",
+      "diplomacy",
+      "gather_information",
+      "hide",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "listen",
+      "move_silently",
+      "open_lock",
+      "perform",
+      "search",
+      "sense_motive",
+      "sleight_of_hand",
+      "spellcraft",
+      "spot",
+      "umd"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: Must be of Any Evil Alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 5 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 5
+      },
+      {
+        "text": "Skill: Bluff 2 ranks",
+        "key": "skill",
+        "skill": "bluff",
+        "ranks": 2
+      },
+      {
+        "text": "Skill: Diplomacy 2 ranks",
+        "key": "skill",
+        "skill": "diplomacy",
+        "ranks": 2
+      },
+      {
+        "text": "Feat: Thrall to Demon",
+        "key": "feat",
+        "name": "Thrall to Demon"
+      },
+      {
+        "text": "Feat: Violate Spell",
+        "key": "feat",
+        "name": "Violate Spell"
+      },
+      {
+        "text": "Special: Must be able to cast 3rd-level spells with the evil descriptor",
+        "key": "special"
+      },
+      {
+        "text": "Special: Graz'zt's followers initiate new thralls in a horrific rite that involves the sacrifice of an intelligent being. This rite must be performed within an area of magical darkness under the influence of a desecrate or unhallow spell",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-13 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-thrall-of-juiblex",
+    "schemaVersion": 2,
+    "name": "Thrall Of Juiblex",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.70",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "good",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "disguise",
+      "escape_artist",
+      "intimidate",
+      "jump",
+      "k_religion",
+      "listen",
+      "move_silently",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: Must be of Any Evil Alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Special: Base Fortitude save bonus +6 or greater",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Escape Artist 5 ranks",
+        "key": "skill",
+        "skill": "escape_artist",
+        "ranks": 5
+      },
+      {
+        "text": "Feat: Thrall to Demon",
+        "key": "feat",
+        "name": "Thrall to Demon"
+      },
+      {
+        "text": "Feat: Willing Deformity",
+        "key": "feat",
+        "name": "Willing Deformity"
+      },
+      {
+        "text": "Special: Must have been polymorphed or experienced some sort of shapechanging experience",
+        "key": "special"
+      },
+      {
+        "text": "Special: The thrall of Juiblex is initiated by sacrificing an intelligent being. At least 3 oozes, slimes or puddings must be present for the ritual. The victim of the sacrificial ritual must be dissolved in acid",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-14 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-thrall-of-orcus",
+    "schemaVersion": 2,
+    "name": "Thrall of Orcus",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.71",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "bluff",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "hide",
+      "intimidate",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "move_silently",
+      "profession",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: Must be of Any Evil Alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +4",
+        "key": "bab",
+        "min": 4
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 2 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 2
+      },
+      {
+        "text": "Skill: Knowledge (religion) 2 ranks",
+        "key": "skill",
+        "skill": "k_religion",
+        "ranks": 2
+      },
+      {
+        "text": "Feat: Lichloved",
+        "key": "feat",
+        "name": "Lichloved"
+      },
+      {
+        "text": "Feat: Thrall to Demon",
+        "key": "feat",
+        "name": "Thrall to Demon"
+      },
+      {
+        "text": "Special: Must be able to cast a spell of the Necromancy school",
+        "key": "special"
+      },
+      {
+        "text": "Special: The sacrifice of an intelligent being is the centerpiece of the Initiation ritual that takes place in complete darkness atop an alter made of at least 30 skulls",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-15 (d8, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
     }
   },
   {
@@ -1021,6 +6497,782 @@
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
       "index": "crystalkeep-3.5-class-index"
+    }
+  },
+  {
+    "id": "cls-vermin-lord",
+    "schemaVersion": 2,
+    "name": "Vermin Lord",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.73",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "poor",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "climb",
+      "concentration",
+      "hide",
+      "k_nature",
+      "listen",
+      "move_silently",
+      "perform",
+      "search",
+      "sleight_of_hand",
+      "spellcraft",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: Must be of Any Evil Alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Skill: Hide 3 ranks",
+        "key": "skill",
+        "skill": "hide",
+        "ranks": 3
+      },
+      {
+        "text": "Skill: Knowledge (nature) 2 ranks",
+        "key": "skill",
+        "skill": "k_nature",
+        "ranks": 2
+      },
+      {
+        "text": "Skill: Move Silently 3 ranks",
+        "key": "skill",
+        "skill": "move_silently",
+        "ranks": 3
+      },
+      {
+        "text": "Feat: Verminfriend",
+        "key": "feat",
+        "name": "Verminfriend"
+      },
+      {
+        "text": "Special: Must be able to cast the Giant Vermin spell",
+        "key": "special"
+      },
+      {
+        "text": "Special: The verminlord must be ordained by an intelligent evil creature with a physical resemblance to vermin",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-17 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-war-wizard-of-cormyr",
+    "schemaVersion": 2,
+    "name": "War Wizard of Cormyr",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Magic of Faerun p.40",
+    "role": "Prestige Class",
+    "hd": 4,
+    "hitDie": "d4",
+    "maxLevel": 5,
+    "bab": 0.5,
+    "babProgression": "low",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "k_arcana",
+      "k_arch",
+      "k_dungeon",
+      "k_geo",
+      "k_history",
+      "k_local",
+      "k_nature",
+      "k_nobility",
+      "k_religion",
+      "k_planes",
+      "profession",
+      "spellcraft"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Spellcraft 10 ranks",
+        "key": "skill",
+        "skill": "spellcraft",
+        "ranks": 10
+      },
+      {
+        "text": "Feat: Enlarge Spell",
+        "key": "feat",
+        "name": "Enlarge Spell"
+      },
+      {
+        "text": "Feat: Widen Spell",
+        "key": "feat",
+        "name": "Widen Spell"
+      },
+      {
+        "text": "Feat: Martial Weapon Proficiency",
+        "key": "feat",
+        "name": "Martial Weapon Proficiency"
+      },
+      {
+        "text": "Special: Ability to cast 4th-level arcane spells",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Magic of Faerun Table 3-12 (d4, 2 + Int, BAB +0/+1/+1/+2/+2, good Fort, Will, 5 levels)"
+    }
+  },
+  {
+    "id": "cls-warrior-of-darkness",
+    "schemaVersion": 2,
+    "name": "Warrior Of Darkness",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Book of Vile Darkness p.75",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "climb",
+      "concentration",
+      "hide",
+      "jump",
+      "k_arcana",
+      "k_planes",
+      "move_silently",
+      "ride",
+      "spellcraft"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Alignment: Must be of Any Evil Alignment",
+        "key": "alignment",
+        "allowed": [
+          "LE",
+          "NE",
+          "CE"
+        ]
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Knowledge (arcana) 3 ranks",
+        "key": "skill",
+        "skill": "k_arcana",
+        "ranks": 3
+      },
+      {
+        "text": "Special: Speak Language (Abyssal or Infernal)",
+        "key": "special"
+      },
+      {
+        "text": "Feat: Iron Will",
+        "key": "feat",
+        "name": "Iron Will"
+      },
+      {
+        "text": "Special: Must endure a week of painful and scarring black magic rituals performed in solitude, the secrets of which take months of study and research",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Book of Vile Darkness Table 5-18 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-warrior-skald",
+    "schemaVersion": 2,
+    "name": "Warrior Skald",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Races of Faerun p.187",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "bluff",
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "diplomacy",
+      "escape_artist",
+      "hide",
+      "jump",
+      "listen",
+      "move_silently",
+      "perform",
+      "profession",
+      "sense_motive",
+      "swim"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Skill: Concentration 6 ranks",
+        "key": "skill",
+        "skill": "concentration",
+        "ranks": 6
+      },
+      {
+        "text": "Skill: Perform 9 ranks",
+        "key": "skill",
+        "skill": "perform",
+        "ranks": 9
+      },
+      {
+        "text": "Feat: Power Attack",
+        "key": "feat",
+        "name": "Power Attack"
+      },
+      {
+        "text": "Feat: Cleave",
+        "key": "feat",
+        "name": "Cleave"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Races of Faerun Table A-13 (d6, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-warsling-sniper",
+    "schemaVersion": 2,
+    "name": "Warsling Sniper",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Races of Faerun p.188",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 6,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "climb",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "hide",
+      "move_silently",
+      "profession",
+      "sense_motive",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Race: Halfling",
+        "key": "race",
+        "val": "Halfling"
+      },
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Special: 3 ranks in Craft (weaponsmith)",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Hide 4 ranks",
+        "key": "skill",
+        "skill": "hide",
+        "ranks": 4
+      },
+      {
+        "text": "Skill: Spot 6 ranks",
+        "key": "skill",
+        "skill": "spot",
+        "ranks": 6
+      },
+      {
+        "text": "Special: Exotic Weapon Proficiency (sling, war) Feat",
+        "key": "special"
+      },
+      {
+        "text": "Feat: Exotic Weapon Proficiency (skiprock)",
+        "key": "feat",
+        "name": "Exotic Weapon Proficiency (skiprock)"
+      },
+      {
+        "text": "Feat: Point Blank Shot",
+        "key": "feat",
+        "name": "Point Blank Shot"
+      },
+      {
+        "text": "Feat: Precise Shot",
+        "key": "feat",
+        "name": "Precise Shot"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Races of Faerun Table A-14 (d6, 2 + Int, BAB +1/+2/+3/+4/+5/+6, good Ref, 6 levels)"
+    }
+  },
+  {
+    "id": "cls-weapon-master-kensei",
+    "schemaVersion": 2,
+    "name": "Weapon Master (Kensei)",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.53",
+    "role": "Prestige Class",
+    "hd": 10,
+    "hitDie": "d10",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 2,
+    "skillPointsPerLevel": 2,
+    "classSkills": [
+      "intimidate",
+      "listen",
+      "sense_motive",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Skill: Intimidate 4 ranks",
+        "key": "skill",
+        "skill": "intimidate",
+        "ranks": 4
+      },
+      {
+        "text": "Feat: Dodge",
+        "key": "feat",
+        "name": "Dodge"
+      },
+      {
+        "text": "Feat: Mobility",
+        "key": "feat",
+        "name": "Mobility"
+      },
+      {
+        "text": "Feat: Combat Expertise",
+        "key": "feat",
+        "name": "Combat Expertise"
+      },
+      {
+        "text": "Feat: Combat Reflexes",
+        "key": "feat",
+        "name": "Combat Reflexes"
+      },
+      {
+        "text": "Feat: Weapon Focus",
+        "key": "feat",
+        "name": "Weapon Focus"
+      },
+      {
+        "text": "Feat: Whirlwind Attack",
+        "key": "feat",
+        "name": "Whirlwind Attack"
+      },
+      {
+        "text": "Special: Must own a masterwork weapon of choice (not checked)",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-16 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-witch-hunter",
+    "schemaVersion": 2,
+    "name": "Witch Hunter",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.54",
+    "role": "Prestige Class",
+    "hd": 8,
+    "hitDie": "d8",
+    "maxLevel": 10,
+    "bab": 1,
+    "babProgression": "high",
+    "fort": "good",
+    "ref": "poor",
+    "will": "good",
+    "savingThrows": {
+      "fort": "high",
+      "ref": "low",
+      "will": "high"
+    },
+    "skills": 4,
+    "skillPointsPerLevel": 4,
+    "classSkills": [
+      "climb",
+      "concentration",
+      "craft_alchemy",
+      "craft_armor",
+      "craft_weapon",
+      "heal",
+      "hide",
+      "jump",
+      "k_arcana",
+      "k_local",
+      "k_religion",
+      "listen",
+      "move_silently",
+      "profession",
+      "search",
+      "sense_motive",
+      "spellcraft",
+      "spot",
+      "survival",
+      "swim",
+      "use_rope"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Base Attack Bonus: +5",
+        "key": "bab",
+        "min": 5
+      },
+      {
+        "text": "Special: 10 ranks in Knowledge (arcana) or Knowledge (Shadowlands)",
+        "key": "special"
+      },
+      {
+        "text": "Feat: Track",
+        "key": "feat",
+        "name": "Track"
+      },
+      {
+        "text": "Special: Able to cast Magic Circle against Taint or Magic Circle against Evil (not checked)",
+        "key": "special"
+      },
+      {
+        "text": "Special: Must have been selected and trained by another Witch Hunter (not checked)",
+        "key": "special"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-17 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)"
+    }
+  },
+  {
+    "id": "cls-yakuza",
+    "schemaVersion": 2,
+    "name": "Yakuza",
+    "type": "Class",
+    "category": "Prestige",
+    "isPrestige": true,
+    "source": "Oriental Adventures p.55",
+    "role": "Prestige Class",
+    "hd": 6,
+    "hitDie": "d6",
+    "maxLevel": 10,
+    "bab": 0.75,
+    "babProgression": "medium",
+    "fort": "poor",
+    "ref": "good",
+    "will": "poor",
+    "savingThrows": {
+      "fort": "low",
+      "ref": "high",
+      "will": "low"
+    },
+    "skills": 8,
+    "skillPointsPerLevel": 8,
+    "classSkills": [
+      "bluff",
+      "diplomacy",
+      "disable_device",
+      "forgery",
+      "gather_information",
+      "hide",
+      "intimidate",
+      "listen",
+      "move_silently",
+      "open_lock",
+      "sense_motive",
+      "sleight_of_hand",
+      "spot"
+    ],
+    "bonusFeatLevels": [],
+    "bonusFeatContract": null,
+    "bonusFeatContracts": null,
+    "prerequisites": [
+      {
+        "text": "Special: Nonchaotic, nongood alignment",
+        "key": "special"
+      },
+      {
+        "text": "Skill: Bluff 10 ranks",
+        "key": "skill",
+        "skill": "bluff",
+        "ranks": 10
+      },
+      {
+        "text": "Skill: Gather Information 10 ranks",
+        "key": "skill",
+        "skill": "gather_information",
+        "ranks": 10
+      },
+      {
+        "text": "Skill: Hide 7 ranks",
+        "key": "skill",
+        "skill": "hide",
+        "ranks": 7
+      },
+      {
+        "text": "Feat: Dodge",
+        "key": "feat",
+        "name": "Dodge"
+      }
+    ],
+    "features": {},
+    "description": "",
+    "shortDescription": "",
+    "tags": [
+      "class",
+      "prestige"
+    ],
+    "modifiers": [],
+    "damageParts": [],
+    "modes": [],
+    "ruleFlags": {},
+    "edition": "3.0",
+    "contentLevel": "stub",
+    "verification": "verified",
+    "provenance": {
+      "origin": "builder-workbook-7.4.0.1",
+      "sheet": "Class_Info",
+      "index": null,
+      "book": "Oriental Adventures Table 3-18 (d6, 8 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)"
     }
   }
 ]

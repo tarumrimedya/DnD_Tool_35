@@ -65,6 +65,18 @@ BOOK_SETTLED = {
     'Reforged': {'cite': 'Races of Eberron Table 7-7 (BAB +0/+1/+2, good Will)'},
 }
 
+# Class tables read from the books (tools/srd_import/p4_book_verified.json for prestige classes the index does not list,
+# p4_conflicts_resolved.json for workbook / index conflicts). When a class is here, its HD, skill points, BAB, saves,
+# max level and page come from the book table; verification becomes "verified" and the citation is kept in provenance.
+BOOKV = {}
+_here = os.path.dirname(os.path.abspath(__file__))
+def _bkey(n): return re.sub(r'[^a-z0-9]', '', re.sub(r'\(.*?\)', '', str(n).lower().replace('’', "'")))
+for _fn in ('p4_book_verified.json', 'p4_conflicts_resolved.json'):
+    _p = os.path.join(_here, _fn)
+    if os.path.exists(_p):
+        for _r in json.load(open(_p, encoding='utf-8')):
+            if _r.get('status') == 'verified': BOOKV[(_bkey(_r['name']), re.sub(r'[^a-z0-9]', '', _r['book'].lower()))] = _r
+
 key = lambda n: re.sub(r'[^a-z0-9]', '', re.sub(r'\(.*?\)', '', str(n).lower().replace('’', "'")))
 tkey = lambda t: re.sub(r'[^a-z0-9]', '', str(t).lower())
 slug = lambda s: re.sub(r'[^a-z0-9]+', '-', str(s).lower().replace("'", '').replace('’', '')).strip('-')
@@ -178,10 +190,16 @@ for c in R['classes']:
     good = [s for s in ('fort', 'ref', 'will') if c.get(s) == 'high']
     same_book = [r for r in idx_by_key.get(key(name), []) if tkey(IDX_BOOK.get(r['book'], '')) == tkey(title)]
     agree = [r for r in same_book if r['hd'] == hd and r['skillPts'] == sp and r['bab'] == bab and set(r['goodSaves']) == set(good)]
+    bv = BOOKV.get((key(name), tkey(title)))
+    if bv:
+        if (hd, sp, bab, set(good)) != (bv['hd'], bv['skillPts'], bv['bab'], set(bv['goodSaves'])): stat['workbook value replaced by the book'] += 1
+        hd, sp, bab, good = bv['hd'], bv['skillPts'], bv['bab'], list(bv['goodSaves'])
+        same_book = agree = [{'page': bv['page'], 'maxLevel': bv['maxLevel']}]
+        stat['class table read from the book'] += 1
     if is_prc and not same_book:
         stat['prestige without index entry'] += 1; skipped['prestige without index entry'].append(f'{name} ({title})'); continue
-    settled = BOOK_SETTLED.get(name) if same_book and not agree else None
-    if settled:
+    settled = {'cite': bv['cite']} if bv else (BOOK_SETTLED.get(name) if same_book and not agree else None)
+    if settled and not bv:
         agree = [dict(same_book[0], hd=hd, skillPts=sp, bab=bab, goodSaves=good)]
         stat['conflict settled from the book'] += 1
     if same_book and not agree:
@@ -213,7 +231,7 @@ for c in R['classes']:
         'description': '', 'shortDescription': '', 'tags': ['class', 'prestige' if is_prc else 'base'],
         'modifiers': [], 'damageParts': [], 'modes': [], 'ruleFlags': {},
         'edition': edition, 'contentLevel': 'stub', 'verification': 'verified' if settled else ('cross-checked' if ix else 'unverified'),
-        'provenance': {'origin': 'builder-workbook-7.4.0.1', 'sheet': 'Class_Info', 'index': 'crystalkeep-3.5-class-index' if ix else None,
+        'provenance': {'origin': 'builder-workbook-7.4.0.1', 'sheet': 'Class_Info', 'index': 'crystalkeep-3.5-class-index' if ix and not bv else None,
                        **({'book': settled['cite']} if settled else {})},
     }
     out['legacy' if edition != '3.5' else 'splat'].append(rec)

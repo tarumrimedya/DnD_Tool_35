@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "7254e28bb898d39b",
+  "compendiumHash": "f37a4248ac03ae97",
   "generatedAt": "2026-11-04T15:37:19.474Z",
-  "totalEntries": 7385,
+  "totalEntries": 7652,
   "chunks": {
     "srd_equipment.json": {
       "count": 1131,
@@ -97,15 +97,15 @@
       "optIn": true
     },
     "srd_classes_splat.json": {
-      "count": 195,
-      "hash": "d19d47ab07cacef0",
-      "bytes": 385759,
+      "count": 400,
+      "hash": "9fd1b502ccc1d7a2",
+      "bytes": 819548,
       "eagerLoad": false
     },
     "srd_classes_legacy.json": {
-      "count": 13,
-      "hash": "29bfe7598ba892d2",
-      "bytes": 21854,
+      "count": 75,
+      "hash": "0a79696b55a7dd40",
+      "bytes": 164362,
       "eagerLoad": false,
       "optIn": true
     }
@@ -61461,6 +61461,2142 @@
     {
       "id": "cls-vermin-keeper",
       "n": "Vermin Keeper",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-abolisher",
+      "n": "Abolisher",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-anarchic-initiate",
+      "n": "Anarchic Initiate",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-anima-mage",
+      "n": "Anima Mage",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-apelord",
+      "n": "Apelord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-ardent-dilettante",
+      "n": "Ardent Dilettante",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-ashworm-dragoon",
+      "n": "Ashworm Dragoon",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-astral-dancer",
+      "n": "Astral Dancer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-atavist",
+      "n": "Atavist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-avenging-executioner",
+      "n": "Avenging Executioner",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-battle-trickster",
+      "n": "Battle Trickster",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-bearlord",
+      "n": "Bearlord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-birdlord",
+      "n": "Birdlord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-black-blood-hunter",
+      "n": "Black Blood Hunter",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-blade-bravo",
+      "n": "Blade Bravo",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-bloodclaw-master",
+      "n": "Bloodclaw Master",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-bloodscaled-fury",
+      "n": "Bloodscaled Fury",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-catlord",
+      "n": "Catlord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-chaotician",
+      "n": "Chaotician",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-cipher-adept",
+      "n": "Cipher Adept",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-cloaked-dancer",
+      "n": "Cloaked Dancer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-cloud-anchorite",
+      "n": "Cloud Anchorite",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-combat-medic",
+      "n": "Combat Medic",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-combat-trapsmith",
+      "n": "Combat Trapsmith",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-corrupt-avenger",
+      "n": "Corrupt Avenger",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-cryokineticist",
+      "n": "Cryokineticist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-darkrunner",
+      "n": "Darkrunner",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dawncaller",
+      "n": "Dawncaller",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-death-delver",
+      "n": "Death Delver",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-deaths-chosen",
+      "n": "Death's Chosen",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-deepstone-sentinel",
+      "n": "Deepstone Sentinel",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-deepwarden",
+      "n": "Deepwarden",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-defiant",
+      "n": "Defiant",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-diamond-dragon",
+      "n": "Diamond Dragon",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dirgesinger",
+      "n": "Dirgesinger",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-disciple-of-ashardalon",
+      "n": "Disciple of Ashardalon",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-disciple-of-thyrm",
+      "n": "Disciple of Thyrm",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-disciple-of-the-eye",
+      "n": "Disciple of the Eye",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dispassionate-watcher-of-chronepsis",
+      "n": "Dispassionate Watcher of Chronepsis",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-divine-champion",
+      "n": "Divine Champion",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-divine-disciple",
+      "n": "Divine Disciple",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-divine-prankster",
+      "n": "Divine Prankster",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-doomlord",
+      "n": "DoomLord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dracolexi",
+      "n": "Dracolexi",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dracolyte",
+      "n": "Dracolyte",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dragon-ascendant",
+      "n": "Dragon Ascendant",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dragon-descendant",
+      "n": "Dragon Descendant",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dragon-devotee",
+      "n": "Dragon Devotee",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dragon-lord",
+      "n": "Dragon Lord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dragonheart-mage",
+      "n": "Dragonheart Mage",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dragonkith",
+      "n": "Dragonkith",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dragonrider",
+      "n": "Dragonrider",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dragonslayer",
+      "n": "Dragonslayer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dragonsong-lyrist",
+      "n": "Dragonsong Lyrist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dragonstalker",
+      "n": "Dragonstalker",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dread-commando",
+      "n": "Dread Commando",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dread-witch",
+      "n": "Dread Witch",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-dweomerkeeper",
+      "n": "Dweomerkeeper",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-ebon-saint",
+      "n": "Ebon Saint",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-ectopic-adept",
+      "n": "Ectopic Adept",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-eldritch-disciple",
+      "n": "Eldritch Disciple",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-eldritch-theurge",
+      "n": "Eldritch Theurge",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-elemental-master",
+      "n": "Elemental Master",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-elemental-warrior",
+      "n": "Elemental Warrior",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-elocater",
+      "n": "Elocater",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-emissary-of-barachiel",
+      "n": "Emissary of Barachiel",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-enlightened-spirit",
+      "n": "Enlightened Spirit",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-ephemeral-exemplar",
+      "n": "Ephemeral Exemplar",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-eternal-blade",
+      "n": "Eternal Blade",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-evereskan-tomb-guardian",
+      "n": "Evereskan Tomb Guardian",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-exotic-weapon-master",
+      "n": "Exotic Weapon Master",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-fatemaker",
+      "n": "Fatemaker",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-fiend-blooded",
+      "n": "Fiend-Blooded",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-fist-of-raziel",
+      "n": "Fist of Raziel",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-fist-of-zuoken",
+      "n": "Fist of Zuoken",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-fist-of-the-forest",
+      "n": "Fist of the Forest",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-flayerspawn-psychic",
+      "n": "Flayerspawn Psychic",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-fleshwarper",
+      "n": "Fleshwarper",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-fochulcan-lyrist",
+      "n": "Fochulcan Lyrist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-forest-reeve",
+      "n": "Forest Reeve",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-fortunes-friend",
+      "n": "Fortune's Friend",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-frost-mage",
+      "n": "Frost Mage",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-frostrager",
+      "n": "Frostrager",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-goliath-liberator",
+      "n": "Goliath Liberator",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-gray-guard",
+      "n": "Gray Guard",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-halfling-outrider",
+      "n": "Halfling Outrider",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-hand-of-the-winged-masters",
+      "n": "Hand of the Winged Masters",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-hathran",
+      "n": "Hathran",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-hellbreaker",
+      "n": "Hellbreaker",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-hellfire-warlock",
+      "n": "Hellfire Warlock",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-hellreaver",
+      "n": "Hellreaver",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-hidecarved-dragon",
+      "n": "Hidecarved Dragon",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-hoardstealer",
+      "n": "Hoardstealer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-holt-warden",
+      "n": "Holt Warden",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-holy-scourge",
+      "n": "Holy Scourge",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-horselord",
+      "n": "Horselord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-hulking-hurler",
+      "n": "Hulking Hurler",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-illithid-slayer",
+      "n": "Illithid Slayer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-illumine-soul",
+      "n": "Illumine Soul",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-incandescent-champion",
+      "n": "Incandescent Champion",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-incarnum-blade",
+      "n": "Incarnum Blade",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-initiate-of-the-draconic-mysteries",
+      "n": "Initiate of the Draconic Mysteries",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-initiate-of-the-sevenfold-veil",
+      "n": "Initiate of the Sevenfold Veil",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-iron-mind",
+      "n": "Iron Mind",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-ironsoul-forgemaster",
+      "n": "Ironsoul Forgemaster",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-justiciar",
+      "n": "Justiciar",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-keeper-of-the-cerulean-sign",
+      "n": "Keeper of the Cerulean Sign",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-kensai",
+      "n": "Kensai",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-knight-of-the-iron-glacier",
+      "n": "Knight of the Iron Glacier",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-knight-of-the-pearl",
+      "n": "Knight of the Pearl",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-knight-of-the-sacred-seal",
+      "n": "Knight of the Sacred Seal",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-legendary-captain",
+      "n": "Legendary Captain",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-legendary-leader",
+      "n": "Legendary Leader",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-leviathan-hunter",
+      "n": "Leviathan Hunter",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-lord-of-tides",
+      "n": "Lord of Tides",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-loredelver",
+      "n": "Loredelver",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-lurking-terror",
+      "n": "Lurking Terror",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-lyric-thaumaturge",
+      "n": "Lyric Thaumaturge",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-magical-trickster",
+      "n": "Magical Trickster",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-maiden-of-pain",
+      "n": "Maiden of Pain",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-malconvoker",
+      "n": "Malconvoker",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-master-of-nine",
+      "n": "Master Of Nine",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-master-specialist",
+      "n": "Master Specialist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-master-vampire",
+      "n": "Master Vampire",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-master-of-masks",
+      "n": "Master of Masks",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-master-of-radiance",
+      "n": "Master of Radiance",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-master-of-shrouds",
+      "n": "Master of Shrouds",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-mountebank",
+      "n": "Mountebank",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-mythic-exemplar",
+      "n": "Mythic Exemplar",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-necrocarnate",
+      "n": "Necrocarnate",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-nightmare-spinner",
+      "n": "Nightmare Spinner",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-ordained-champion",
+      "n": "Ordained Champion",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-pact-bound-adept",
+      "n": "Pact-bound Adept",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-pale-master",
+      "n": "Pale Master",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-paragnostic-apostle",
+      "n": "Paragnostic Apostle",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-paragnostic-initiate",
+      "n": "Paragnostic Initiate",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-peregrine-runner",
+      "n": "Peregrine Runner",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-platinum-knight",
+      "n": "Platinum Knight",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-primeval",
+      "n": "Primeval",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-psibond-agent",
+      "n": "Psibond Agent",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-purifier-of-the-hallowed-doctrine",
+      "n": "Purifier of the Hallowed Doctrine",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-quori-nightmare",
+      "n": "Quori Nightmare",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-rimefire-witch",
+      "n": "Rimefire Witch",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-risen-martyr",
+      "n": "Risen Martyr",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-ruby-knight-vindicator",
+      "n": "Ruby Knight Vindicator",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-sacred-purifier",
+      "n": "Sacred Purifier",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-sacred-warder-of-bahamut",
+      "n": "Sacred Warder of Bahamut",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-sanctified-mind",
+      "n": "Sanctified Mind",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-sanctified-one",
+      "n": "Sanctified One",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-sand-shaper",
+      "n": "Sand Shaper",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-sapphire-hierarch",
+      "n": "Sapphire Hierarch",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-scarlet-corsair",
+      "n": "Scarlet Corsair",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-scion-of-dantalion",
+      "n": "Scion of Dantalion",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-scion-of-tem-et-nu",
+      "n": "Scion of Tem-Et-Nu",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-scorpion-heritor",
+      "n": "Scorpion Heritor",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-sea-witch",
+      "n": "Sea Witch",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-shaaryan-hunter",
+      "n": "Shaaryan Hunter",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-shadow-sentinel",
+      "n": "Shadow Sentinel",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-shadow-sun-ninja",
+      "n": "Shadow Sun Ninja",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-shadowmind",
+      "n": "Shadowmind",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-shadowspy",
+      "n": "Shadowspy",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-shadowstriker",
+      "n": "Shadowstriker",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-sharklord",
+      "n": "Sharklord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-shining-blade-of-heironeous",
+      "n": "Shining Blade of Heironeous",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-singer-of-concordance",
+      "n": "Singer of Concordance",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-skypledged",
+      "n": "Skypledged",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-snakelord",
+      "n": "Snakelord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-soulbow",
+      "n": "Soulbow",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-soulcaster",
+      "n": "Soulcaster",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-soulguard",
+      "n": "Soulguard",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-spellwarp-sniper",
+      "n": "Spellwarp Sniper",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-spinemeld-warrior",
+      "n": "Spinemeld Warrior",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-squire-of-legend",
+      "n": "Squire of Legend",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-stoneblessed",
+      "n": "Stoneblessed",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-stonespeaker-guardian",
+      "n": "Stonespeaker Guardian",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-storm-disciple",
+      "n": "Storm Disciple",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-stormcaster",
+      "n": "Stormcaster",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-stormsinger",
+      "n": "Stormsinger",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-stormtalon",
+      "n": "Stormtalon",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-sublime-chord",
+      "n": "Sublime Chord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-swift-wing",
+      "n": "Swift Wing",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-tainted-scholar",
+      "n": "Tainted Scholar",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-talon-of-tiamat",
+      "n": "Talon of Tiamat",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-tenebrous-apostate",
+      "n": "Tenebrous Apostate",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-thrallheard",
+      "n": "Thrallheard",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-tomb-warden",
+      "n": "Tomb Warden",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-topaz-guardian",
+      "n": "Topaz Guardian",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-totem-rager",
+      "n": "Totem Rager",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-true-necromancer",
+      "n": "True Necromancer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-ultimate-magus",
+      "n": "Ultimate Magus",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-umbral-disciple",
+      "n": "Umbral Disciple",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-uncanny-trickster",
+      "n": "Uncanny Trickster",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-unholy-ravager-of-tiamat",
+      "n": "Unholy Ravager of Tiamat",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-unseen-seer",
+      "n": "Unseen Seer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-visionary-seeker",
+      "n": "Visionary Seeker",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-walker-in-the-waste",
+      "n": "Walker in the Waste",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-war-weaver",
+      "n": "War Weaver",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-wavekeeper",
+      "n": "Wavekeeper",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-wild-soul",
+      "n": "Wild Soul",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-winterhaunt-of-iborghu",
+      "n": "Winterhaunt of Iborghu",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-witch-slayer",
+      "n": "Witch Slayer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-witchborn-binder",
+      "n": "Witchborn Binder",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-wolflord",
+      "n": "Wolflord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-wonderworker",
+      "n": "Wonderworker",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-wyrm-wizard",
+      "n": "Wyrm Wizard",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-zerth-cenobite",
+      "n": "Zerth Cenobite",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_splat.json"
+    },
+    {
+      "id": "cls-akodo-champion",
+      "n": "Akodo Champion",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-battle-maiden",
+      "n": "Battle Maiden",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-battlerager",
+      "n": "Battlerager",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-bayushi-deceiver",
+      "n": "Bayushi Deceiver",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-blade-dancer",
+      "n": "Blade Dancer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-breachgnome",
+      "n": "Breachgnome",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-cancer-mage",
+      "n": "Cancer Mage",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-daidoji-bodyguard",
+      "n": "Daidoji Bodyguard",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-demonologist",
+      "n": "Demonologist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-devoted-defender",
+      "n": "Devoted Defender",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-diabolist",
+      "n": "Diabolist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-disciple-of-asmodeus",
+      "n": "Disciple of Asmodeus",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-disciple-of-baalzebul",
+      "n": "Disciple of Baalzebul",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-disciple-of-dispater",
+      "n": "Disciple of Dispater",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-disciple-of-mammon",
+      "n": "Disciple of Mammon",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-disciple-of-mephistopheles",
+      "n": "Disciple of Mephistopheles",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-divine-agent",
+      "n": "Divine Agent",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-eunuch-warlock",
+      "n": "Eunuch Warlock",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-gatecrasher",
+      "n": "Gatecrasher",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-gnome-artificer",
+      "n": "Gnome Artificer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-great-rift-skyguard",
+      "n": "Great Rift Skyguard",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-guild-wizard-of-waterdeep",
+      "n": "Guild Wizard of Waterdeep",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-harper-mage",
+      "n": "Harper Mage",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-harper-priest",
+      "n": "Harper Priest",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-henshin-mystic",
+      "n": "Henshin Mystic",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-hida-defender",
+      "n": "Hida Defender",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-iaijutsu-master",
+      "n": "Iaijutsu Master",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-kishi-charger",
+      "n": "Kishi Charger",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-lasher",
+      "n": "Lasher",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-lifedrinker",
+      "n": "Lifedrinker",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-mage-killer",
+      "n": "Mage-Killer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-mantis-mercenary",
+      "n": "Mantis Mercenary",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-master-alchemist",
+      "n": "Master Alchemist",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-mirumoto-niten-master",
+      "n": "Mirumoto Niten Master",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-mortal-hunter",
+      "n": "Mortal Hunter",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-moto-avenger",
+      "n": "Moto Avenger",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-mystic-wanderer",
+      "n": "Mystic Wanderer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-ninja-spy",
+      "n": "Ninja Spy",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-orc-warlord",
+      "n": "Orc Warlord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-planar-champion",
+      "n": "Planar Champion",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-planeshifter",
+      "n": "Planeshifter",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-shadow-scout",
+      "n": "Shadow Scout",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-shapeshifter",
+      "n": "Shapeshifter",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-shiba-protector",
+      "n": "Shiba Protector",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-shintao-monk",
+      "n": "Shintao Monk",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-singh-rager",
+      "n": "Singh Rager",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-soul-eater",
+      "n": "Soul Eater",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-spelldancer",
+      "n": "Spelldancer",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-spellfire-channeler",
+      "n": "Spellfire Channeler",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-spellsinger",
+      "n": "Spellsinger",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-thrall-of-demogorgon",
+      "n": "Thrall Of Demogorgon",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-thrall-of-grazzt",
+      "n": "Thrall Of Graz'zt",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-thrall-of-juiblex",
+      "n": "Thrall Of Juiblex",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-thrall-of-orcus",
+      "n": "Thrall of Orcus",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-vermin-lord",
+      "n": "Vermin Lord",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-war-wizard-of-cormyr",
+      "n": "War Wizard of Cormyr",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-warrior-of-darkness",
+      "n": "Warrior Of Darkness",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-warrior-skald",
+      "n": "Warrior Skald",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-warsling-sniper",
+      "n": "Warsling Sniper",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-weapon-master-kensei",
+      "n": "Weapon Master (Kensei)",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-witch-hunter",
+      "n": "Witch Hunter",
+      "t": "Class",
+      "c": "Prestige",
+      "s": "None",
+      "f": "srd_classes_legacy.json"
+    },
+    {
+      "id": "cls-yakuza",
+      "n": "Yakuza",
       "t": "Class",
       "c": "Prestige",
       "s": "None",

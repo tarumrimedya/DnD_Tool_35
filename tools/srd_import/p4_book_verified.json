@@ -1,0 +1,4019 @@
+[
+  {
+    "name": "Hulking Hurler",
+    "book": "Complete Warrior",
+    "page": 40,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Complete Warrior Table 2-14 (d10, 2 + Int, BAB +1/+2/+3, good Ref, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Justiciar",
+    "book": "Complete Warrior",
+    "page": 47,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Warrior Table 2-17 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dweomerkeeper",
+    "book": "Complete Divine",
+    "page": 194,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Divine class table (d6, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Shining Blade of Heironeous",
+    "book": "Complete Divine",
+    "page": 63,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Divine Table 2-20 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Fochulcan Lyrist",
+    "book": "Complete Adventurer",
+    "page": 47,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "high",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Adventurer Table 2-10 (d6, 6 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Shadowmind",
+    "book": "Complete Adventurer",
+    "page": 74,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Adventurer Table 2-20 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Anarchic Initiate",
+    "book": "Complete Psionic",
+    "page": 17,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Psionic Table 2-1 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Ebon Saint",
+    "book": "Complete Psionic",
+    "page": 22,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Psionic Table 2-2 (d6, 4 + Int, BAB +0/+1/+2/+3/+3, good Ref, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Ectopic Adept",
+    "book": "Complete Psionic",
+    "page": 26,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Psionic Table 2-3 (d4, 2 + Int, BAB +0/+1/+1/+2/+2, good Will, 5 levels)",
+    "workbookAgrees": false,
+    "note": "Workbook differs - bab: book low, workbook medium."
+  },
+  {
+    "name": "Flayerspawn Psychic",
+    "book": "Complete Psionic",
+    "page": 30,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Psionic Table 2-4 (d6, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Illumine Soul",
+    "book": "Complete Psionic",
+    "page": 33,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Psionic Table 2-5 (d10, 4 + Int, BAB +0/+1/+2/+3/+3, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Soulbow",
+    "book": "Complete Psionic",
+    "page": 36,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Psionic Table 2-6 (d10, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Storm Disciple",
+    "book": "Complete Psionic",
+    "page": 40,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Psionic Table 2-7 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Zerth Cenobite",
+    "book": "Complete Psionic",
+    "page": 43,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Psionic Table 2-8 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Eldritch Disciple",
+    "book": "Complete Mage",
+    "page": 53,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Mage class table (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Eldritch Theurge",
+    "book": "Complete Mage",
+    "page": 57,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Mage Table 3-3 (d4, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Enlightened Spirit",
+    "book": "Complete Mage",
+    "page": 60,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Mage class table (d6, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Holy Scourge",
+    "book": "Complete Mage",
+    "page": 64,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Mage Table 3-5 (d6, 2 + Int, BAB +0/+1/+1/+2/+2, good Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Lyric Thaumaturge",
+    "book": "Complete Mage",
+    "page": 67,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Mage class table (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Master Specialist",
+    "book": "Complete Mage",
+    "page": 70,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Mage class table (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Nightmare Spinner",
+    "book": "Complete Mage",
+    "page": 74,
+    "hd": 4,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Mage Table 3-8 (d4, 4 + Int, BAB +0/+1/+1/+2/+2, good Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Ultimate Magus",
+    "book": "Complete Mage",
+    "page": 77,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Mage Table 3-9 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Unseen Seer",
+    "book": "Complete Mage",
+    "page": 81,
+    "hd": 4,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Mage Table 3-10 (d4, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Wild Soul",
+    "book": "Complete Mage",
+    "page": 84,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Mage Table 3-11 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Avenging Executioner",
+    "book": "Complete Scoundrel",
+    "page": 24,
+    "hd": 8,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-2 (d8, 6 + Int, BAB +0/+1/+2/+3/+3, good Ref, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Battle Trickster",
+    "book": "Complete Scoundrel",
+    "page": 28,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-3 (d10, 4 + Int, BAB +1/+2/+3, good Fort, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Cloaked Dancer",
+    "book": "Complete Scoundrel",
+    "page": 31,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-4 (d6, 6 + Int, BAB +0/+1/+2/+3/+3, good Ref, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Combat Trapsmith",
+    "book": "Complete Scoundrel",
+    "page": 34,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-5 (d6, 6 + Int, BAB +0/+1/+2/+3/+3, good Fort, Ref, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Fortune's Friend",
+    "book": "Complete Scoundrel",
+    "page": 39,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "low",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-7 (d6, 6 + Int, BAB +0/+1/+1/+2/+2, good Ref, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Gray Guard",
+    "book": "Complete Scoundrel",
+    "page": 41,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-8 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Magical Trickster",
+    "book": "Complete Scoundrel",
+    "page": 45,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-9 (d6, 4 + Int, BAB +0/+1/+1, good Will, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Malconvoker",
+    "book": "Complete Scoundrel",
+    "page": 49,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 9,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-10 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4, good Will, 9 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Master of Masks",
+    "book": "Complete Scoundrel",
+    "page": 53,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-11 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Mountebank",
+    "book": "Complete Scoundrel",
+    "page": 57,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-12 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Psibond Agent",
+    "book": "Complete Scoundrel",
+    "page": 61,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-13 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Spellwarp Sniper",
+    "book": "Complete Scoundrel",
+    "page": 65,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-14 (d6, 4 + Int, BAB +0/+1/+2/+3/+3, good Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Uncanny Trickster",
+    "book": "Complete Scoundrel",
+    "page": 67,
+    "hd": 6,
+    "skillPts": 8,
+    "bab": "medium",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Complete Scoundrel Table 2-15 (d6, 8 + Int, BAB +0/+1/+2, good Ref, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Fist of the Forest",
+    "book": "Complete Champion",
+    "page": 80,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Complete Champion Table 2-2 (d10, 2 + Int, BAB +1/+2/+3, good Fort, Ref, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Forest Reeve",
+    "book": "Complete Champion",
+    "page": 82,
+    "hd": 10,
+    "skillPts": 6,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Champion Table 2-3 (d10, 6 + Int, BAB +1/+2/+3/+4/+5, good Ref, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Holt Warden",
+    "book": "Complete Champion",
+    "page": 84,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Champion Table 2-4 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Mythic Exemplar",
+    "book": "Complete Champion",
+    "page": 86,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Champion Table 2-5 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good no good saves, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Ordained Champion",
+    "book": "Complete Champion",
+    "page": 90,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Champion Table 2-6 (d8, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Paragnostic Apostle",
+    "book": "Complete Champion",
+    "page": 94,
+    "hd": 4,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Champion Table 2-7 (d4, 4 + Int, BAB +0/+1/+1/+2/+2, good Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Paragnostic Initiate",
+    "book": "Complete Champion",
+    "page": 97,
+    "hd": 8,
+    "skillPts": 6,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Complete Champion Table 2-8 (d8, 6 + Int, BAB +1/+2/+3, good Fort, Ref, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Sanctified One",
+    "book": "Complete Champion",
+    "page": 99,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Complete Champion Table 2-9 (d8, 2 + Int, BAB +0/+1/+2/+3/+3, good Fort, Ref, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Shadowspy",
+    "book": "Complete Champion",
+    "page": 105,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Complete Champion Table 2-10 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Shadowstriker",
+    "book": "Complete Champion",
+    "page": 108,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Complete Champion Table 2-11 (d10, 2 + Int, BAB +1/+2/+3, good Fort, Will, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Squire of Legend",
+    "book": "Complete Champion",
+    "page": 110,
+    "hd": 8,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [],
+    "maxLevel": 2,
+    "status": "verified",
+    "cite": "Complete Champion Table 2-12 (d8, 6 + Int, BAB +0/+1, good no good saves, 2 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dawncaller",
+    "book": "Races of Stone",
+    "page": 103,
+    "hd": 8,
+    "skillPts": 6,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of Stone Table 5-4 (d8, 6 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Goliath Liberator",
+    "book": "Races of Stone",
+    "page": 112,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Races of Stone Table 5-8 (d10, 4 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Iron Mind",
+    "book": "Races of Stone",
+    "page": 114,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of Stone Table 5-9 (d10, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Peregrine Runner",
+    "book": "Races of Stone",
+    "page": 116,
+    "hd": 8,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of Stone Table 5-10 (d8, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Stoneblessed",
+    "book": "Races of Stone",
+    "page": 122,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Races of Stone Table 5-13 (d8, 2 + Int, BAB +0/+1/+2, good Fort, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Stonespeaker Guardian",
+    "book": "Races of Stone",
+    "page": 127,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Races of Stone Table 5-15 (d8, 4 + Int, BAB +0/+1/+2/+3/+3, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Loredelver",
+    "book": "Races of Destiny",
+    "page": 117,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "low",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of Destiny Table 5-3 (d6, 6 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Shadow Sentinel",
+    "book": "Races of Destiny",
+    "page": 137,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of Destiny Table 5-7 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Skypledged",
+    "book": "Races of the Wild",
+    "page": 126,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of the Wild Table 5-5 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Stormtalon",
+    "book": "Races of the Wild",
+    "page": 131,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of the Wild Table 5-6 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Disciple of the Eye",
+    "book": "Races of the Dragon",
+    "page": 75,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Races of the Dragon Table 5-2 (d8, 4 + Int, BAB +0/+1/+2/+3/+3, good Fort, Ref, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dracolexi",
+    "book": "Races of the Dragon",
+    "page": 79,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of the Dragon Table 5-3 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dragon Devotee",
+    "book": "Races of the Dragon",
+    "page": 84,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Races of the Dragon Table 5-4 (d6, 4 + Int, BAB +0/+1/+2/+3/+3, good Fort, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dragonheart Mage",
+    "book": "Races of the Dragon",
+    "page": 88,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of the Dragon Table 5-5 (d6, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Singer of Concordance",
+    "book": "Races of the Dragon",
+    "page": 91,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of the Dragon Table 5-6 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Cloud Anchorite",
+    "book": "Frostburn",
+    "page": 52,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Frostburn Table 3-2 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Cryokineticist",
+    "book": "Frostburn",
+    "page": 54,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Frostburn Table 3-3 (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Disciple of Thyrm",
+    "book": "Frostburn",
+    "page": 56,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Frostburn Table 3-4 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Frost Mage",
+    "book": "Frostburn",
+    "page": 58,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Frostburn Table 3-5 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Frostrager",
+    "book": "Frostburn",
+    "page": 60,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Frostburn Table 3-6 (d12, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Knight of the Iron Glacier",
+    "book": "Frostburn",
+    "page": 62,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Frostburn Table 3-7 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Primeval",
+    "book": "Frostburn",
+    "page": 65,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Frostburn Table 3-8 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Rimefire Witch",
+    "book": "Frostburn",
+    "page": 67,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Frostburn Table 3-9 (d6, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Stormsinger",
+    "book": "Frostburn",
+    "page": 70,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Frostburn Table 3-10 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Winterhaunt of Iborghu",
+    "book": "Frostburn",
+    "page": 73,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Frostburn Table 3-11 (d8, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Ashworm Dragoon",
+    "book": "Sandstorm",
+    "page": 66,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Sandstorm Table 3-2 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Lord of Tides",
+    "book": "Sandstorm",
+    "page": 70,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Sandstorm Table 3-3 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Sand Shaper",
+    "book": "Sandstorm",
+    "page": 76,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Sandstorm Table 3-4 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Scion of Tem-Et-Nu",
+    "book": "Sandstorm",
+    "page": 82,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Sandstorm Table 3-5 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Scorpion Heritor",
+    "book": "Sandstorm",
+    "page": 86,
+    "hd": 6,
+    "skillPts": 8,
+    "bab": "medium",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Sandstorm Table 3-6 (d6, 8 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Walker in the Waste",
+    "book": "Sandstorm",
+    "page": 89,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Sandstorm Table 3-7 (d6, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Knight of the Pearl",
+    "book": "Stormwrack",
+    "page": 52,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Stormwrack Table 3-3 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Legendary Captain",
+    "book": "Stormwrack",
+    "page": 56,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Stormwrack Table 3-4 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Leviathan Hunter",
+    "book": "Stormwrack",
+    "page": 61,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Stormwrack Table 3-5 (d10, 4 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Scarlet Corsair",
+    "book": "Stormwrack",
+    "page": 65,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Stormwrack Table 3-6 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Sea Witch",
+    "book": "Stormwrack",
+    "page": 68,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Stormwrack Table 3-7 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Stormcaster",
+    "book": "Stormwrack",
+    "page": 72,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Stormwrack Table 3-8 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Wavekeeper",
+    "book": "Stormwrack",
+    "page": 76,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Stormwrack Table 3-9 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Combat Medic",
+    "book": "Heroes of Battle",
+    "page": 99,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Heroes of Battle Table 5-2 (d6, 2 + Int, BAB +0/+1/+1/+2/+2, good Ref, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dread Commando",
+    "book": "Heroes of Battle",
+    "page": 103,
+    "hd": 8,
+    "skillPts": 6,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Heroes of Battle Table 5-3 (d8, 6 + Int, BAB +1/+2/+3/+4/+5, good Ref, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Legendary Leader",
+    "book": "Heroes of Battle",
+    "page": 107,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Heroes of Battle Table 5-4 (d8, 4 + Int, BAB +0/+1/+2/+3/+3, good Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "War Weaver",
+    "book": "Heroes of Battle",
+    "page": 111,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Heroes of Battle Table 5-5 (d4, 2 + Int, BAB +0/+1/+1/+2/+2, good Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Corrupt Avenger",
+    "book": "Heroes of Horror",
+    "page": 88,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Heroes of Horror Table 5-3 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Death Delver",
+    "book": "Heroes of Horror",
+    "page": 93,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Heroes of Horror Table 5-4 (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dread Witch",
+    "book": "Heroes of Horror",
+    "page": 98,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Heroes of Horror Table 5-5 (d4, 2 + Int, BAB +0/+1/+1/+2/+2, good Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Fiend-Blooded",
+    "book": "Heroes of Horror",
+    "page": 102,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Heroes of Horror Table 5-6 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Purifier of the Hallowed Doctrine",
+    "book": "Heroes of Horror",
+    "page": 108,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Heroes of Horror Table 5-7 (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Tainted Scholar",
+    "book": "Heroes of Horror",
+    "page": 113,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Heroes of Horror Table 5-8 (d6, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Bloodclaw Master",
+    "book": "Tome of Battle",
+    "page": 96,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Tome of Battle Table 5-1 (d12, 2 + Int, BAB +0/+1/+2/+3/+3, good Fort, Ref, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Deepstone Sentinel",
+    "book": "Tome of Battle",
+    "page": 105,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Tome of Battle Table 5-3 (d10, 2 + Int, BAB +0/+1/+2/+3/+3, good Fort, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Eternal Blade",
+    "book": "Tome of Battle",
+    "page": 109,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Tome of Battle Table 5-4 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Master Of Nine",
+    "book": "Tome of Battle",
+    "page": 119,
+    "hd": 8,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Tome of Battle Table 5-6 (d8, 6 + Int, BAB +0/+1/+2/+3/+3, good Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Ruby Knight Vindicator",
+    "book": "Tome of Battle",
+    "page": 122,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Tome of Battle Table 5-7 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Shadow Sun Ninja",
+    "book": "Tome of Battle",
+    "page": 126,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Tome of Battle Table 5-8 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Anima Mage",
+    "book": "Tome of Magic",
+    "page": 50,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Tome of Magic Table 1-3 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Knight of the Sacred Seal",
+    "book": "Tome of Magic",
+    "page": 54,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Tome of Magic Table 1-4 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Scion of Dantalion",
+    "book": "Tome of Magic",
+    "page": 60,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Tome of Magic Table 1-5 (d8, 2 + Int, BAB +0/+1/+2/+3/+3, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Tenebrous Apostate",
+    "book": "Tome of Magic",
+    "page": 63,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Tome of Magic Table 1-6 (d8, 2 + Int, BAB +0/+1/+2/+3/+3, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Witch Slayer",
+    "book": "Tome of Magic",
+    "page": 67,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Tome of Magic Table 1-7 (d8, 4 + Int, BAB +1/+2/+3/+4/+5, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Incandescent Champion",
+    "book": "Magic of Incarnum",
+    "page": 115,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Incarnum Table 6-1 (d10, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Incarnum Blade",
+    "book": "Magic of Incarnum",
+    "page": 121,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Magic of Incarnum Table 6-2 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Ironsoul Forgemaster",
+    "book": "Magic of Incarnum",
+    "page": 126,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Incarnum Table 6-3 (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Necrocarnate",
+    "book": "Magic of Incarnum",
+    "page": 132,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 13,
+    "status": "verified",
+    "cite": "Magic of Incarnum Table 6-4 (d6, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5…, good Will, 13 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Sapphire Hierarch",
+    "book": "Magic of Incarnum",
+    "page": 136,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Incarnum Table 6-5 (d6, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Soulcaster",
+    "book": "Magic of Incarnum",
+    "page": 142,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Incarnum Table 6-6 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Spinemeld Warrior",
+    "book": "Magic of Incarnum",
+    "page": 147,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Incarnum Table 6-7 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Totem Rager",
+    "book": "Magic of Incarnum",
+    "page": 153,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Incarnum Table 6-8 (d10, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Umbral Disciple",
+    "book": "Magic of Incarnum",
+    "page": 158,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Incarnum Table 6-9 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Witchborn Binder",
+    "book": "Magic of Incarnum",
+    "page": 162,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Incarnum Table 6-10 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Elocater",
+    "book": "Expanded Psionics Handbook",
+    "page": 142,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Expanded Psionics Handbook Table 6-2 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Fist of Zuoken",
+    "book": "Expanded Psionics Handbook",
+    "page": 144,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Expanded Psionics Handbook Table 6-3 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Illithid Slayer",
+    "book": "Expanded Psionics Handbook",
+    "page": 146,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Expanded Psionics Handbook Table 6-4 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Thrallheard",
+    "book": "Expanded Psionics Handbook",
+    "page": 152,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Expanded Psionics Handbook Table 6-8 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Defiant",
+    "book": "Planar Handbook",
+    "page": 44,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Planar Handbook Table 3-1 (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "DoomLord",
+    "book": "Planar Handbook",
+    "page": 47,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Planar Handbook Table 3-2 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Fatemaker",
+    "book": "Planar Handbook",
+    "page": 50,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Planar Handbook Table 3-3 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Visionary Seeker",
+    "book": "Planar Handbook",
+    "page": 53,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Planar Handbook Table 3-4 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Ardent Dilettante",
+    "book": "Planar Handbook",
+    "page": 55,
+    "hd": 8,
+    "skillPts": 6,
+    "bab": "low",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Planar Handbook Table 3-5 (d8, 6 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Cipher Adept",
+    "book": "Planar Handbook",
+    "page": 58,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Planar Handbook Table 3-6 (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Chaotician",
+    "book": "Planar Handbook",
+    "page": 61,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Planar Handbook Table 3-7 (d10, 4 + Int, BAB +1/+2/+3/+4/+5, good Ref, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Astral Dancer",
+    "book": "Planar Handbook",
+    "page": 63,
+    "hd": 8,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Planar Handbook Table 3-8 (d8, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Elemental Warrior",
+    "book": "Planar Handbook",
+    "page": 65,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Planar Handbook Table 3-9 (d10, 2 + Int, BAB +0/+1/+2/+3/+3, good Fort, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Black Blood Hunter",
+    "book": "Player's Guide to Faerun",
+    "page": 177,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Player's Guide to Faerun Table A-2 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Hathran",
+    "book": "Player's Guide to Faerun",
+    "page": 59,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Player's Guide to Faerun Table 2-10 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Gnome Artificer",
+    "book": "Magic of Faerun",
+    "page": 24,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Faerun Table 3-1 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Guild Wizard of Waterdeep",
+    "book": "Magic of Faerun",
+    "page": 26,
+    "hd": 4,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Faerun Table 3-2 (d4, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Harper Mage",
+    "book": "Magic of Faerun",
+    "page": 28,
+    "hd": 4,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Magic of Faerun Table 3-3 (d4, 4 + Int, BAB +0/+1/+1/+2/+2, good Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Harper Priest",
+    "book": "Magic of Faerun",
+    "page": 29,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Magic of Faerun Table 3-4 (d8, 4 + Int, BAB +0/+1/+2/+3/+3, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Mage-Killer",
+    "book": "Magic of Faerun",
+    "page": 33,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Faerun Table 3-7 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Master Alchemist",
+    "book": "Magic of Faerun",
+    "page": 34,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Faerun Table 3-8 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Mystic Wanderer",
+    "book": "Magic of Faerun",
+    "page": 36,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Faerun Table 3-9 (d8, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Spelldancer",
+    "book": "Magic of Faerun",
+    "page": 37,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Magic of Faerun Table 3-10 (d6, 4 + Int, BAB +0/+1/+1/+2/+2, good Ref, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Spellfire Channeler",
+    "book": "Magic of Faerun",
+    "page": 39,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Magic of Faerun Table 3-11 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "War Wizard of Cormyr",
+    "book": "Magic of Faerun",
+    "page": 40,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Magic of Faerun Table 3-12 (d4, 2 + Int, BAB +0/+1/+1/+2/+2, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Battlerager",
+    "book": "Races of Faerun",
+    "page": 179,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Races of Faerun Table A-6 (d12, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Breachgnome",
+    "book": "Races of Faerun",
+    "page": 181,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Races of Faerun Table A-8 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Ref, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Great Rift Skyguard",
+    "book": "Races of Faerun",
+    "page": 183,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of Faerun Table A-10 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Orc Warlord",
+    "book": "Races of Faerun",
+    "page": 184,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Races of Faerun Table A-11 (d12, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Spellsinger",
+    "book": "Races of Faerun",
+    "page": 186,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Races of Faerun Table A-12 (d6, 4 + Int, BAB +0/+1/+2/+3/+3, good Ref, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Warrior Skald",
+    "book": "Races of Faerun",
+    "page": 187,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of Faerun Table A-13 (d6, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Warsling Sniper",
+    "book": "Races of Faerun",
+    "page": 188,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 6,
+    "status": "verified",
+    "cite": "Races of Faerun Table A-14 (d6, 2 + Int, BAB +1/+2/+3/+4/+5/+6, good Ref, 6 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Atavist",
+    "book": "Races of Eberron",
+    "page": 133,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Races of Eberron Table 7-1 (d10, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Quori Nightmare",
+    "book": "Races of Eberron",
+    "page": 148,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Races of Eberron Table 7-4 (d8, 4 + Int, BAB +0/+1/+2/+3/+3, good Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Akodo Champion",
+    "book": "Oriental Adventures",
+    "page": 220,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 11-4 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Battle Maiden",
+    "book": "Oriental Adventures",
+    "page": 35,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-2 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Bayushi Deceiver",
+    "book": "Oriental Adventures",
+    "page": 225,
+    "hd": 8,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 11-6 (d8, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Blade Dancer",
+    "book": "Oriental Adventures",
+    "page": 37,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-4 (d8, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Daidoji Bodyguard",
+    "book": "Oriental Adventures",
+    "page": 215,
+    "hd": 12,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 11-2 (d12, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Eunuch Warlock",
+    "book": "Oriental Adventures",
+    "page": 38,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-5 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Henshin Mystic",
+    "book": "Oriental Adventures",
+    "page": 40,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-6 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Hida Defender",
+    "book": "Oriental Adventures",
+    "page": 212,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 11-1 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Iaijutsu Master",
+    "book": "Oriental Adventures",
+    "page": 41,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-7 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Kishi Charger",
+    "book": "Oriental Adventures",
+    "page": 42,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-8 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Mantis Mercenary",
+    "book": "Oriental Adventures",
+    "page": 231,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 11-9 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Mirumoto Niten Master",
+    "book": "Oriental Adventures",
+    "page": 218,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 11-3 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Moto Avenger",
+    "book": "Oriental Adventures",
+    "page": 228,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 11-8 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Ninja Spy",
+    "book": "Oriental Adventures",
+    "page": 43,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-9 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Shadow Scout",
+    "book": "Oriental Adventures",
+    "page": 44,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-10 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Shapeshifter",
+    "book": "Oriental Adventures",
+    "page": 45,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-11 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Shiba Protector",
+    "book": "Oriental Adventures",
+    "page": 222,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 11-5 (d10, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Shintao Monk",
+    "book": "Oriental Adventures",
+    "page": 46,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-12 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Singh Rager",
+    "book": "Oriental Adventures",
+    "page": 48,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-13 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Weapon Master (Kensei)",
+    "book": "Oriental Adventures",
+    "page": 53,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-16 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)",
+    "workbookAgrees": null,
+    "note": "Not in the workbook under this name."
+  },
+  {
+    "name": "Witch Hunter",
+    "book": "Oriental Adventures",
+    "page": 54,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-17 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Yakuza",
+    "book": "Oriental Adventures",
+    "page": 55,
+    "hd": 6,
+    "skillPts": 8,
+    "bab": "medium",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Oriental Adventures Table 3-18 (d6, 8 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dracolyte",
+    "book": "Draconomicon",
+    "page": 122,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Draconomicon Table 3-3 (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dragonkith",
+    "book": "Draconomicon",
+    "page": 123,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Draconomicon Table 3-4 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dragonrider",
+    "book": "Draconomicon",
+    "page": 124,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Draconomicon Table 3-5 (d10, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dragonslayer",
+    "book": "Draconomicon",
+    "page": 125,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Draconomicon Table 3-6 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dragonsong Lyrist",
+    "book": "Draconomicon",
+    "page": 127,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Draconomicon Table 3-7 (d6, 4 + Int, BAB +0/+1/+2/+3/+3, good Ref, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dragonstalker",
+    "book": "Draconomicon",
+    "page": 128,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Draconomicon Table 3-8 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Hoardstealer",
+    "book": "Draconomicon",
+    "page": 130,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Draconomicon Table 3-9 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, 10 levels)",
+    "workbookAgrees": false,
+    "note": "Workbook differs - goodSaves: book ['ref'], workbook ['ref', 'will']."
+  },
+  {
+    "name": "Initiate of the Draconic Mysteries",
+    "book": "Draconomicon",
+    "page": 131,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Draconomicon Table 3-10 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Platinum Knight",
+    "book": "Draconomicon",
+    "page": 133,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Draconomicon Table 3-11 (d8, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Talon of Tiamat",
+    "book": "Draconomicon",
+    "page": 134,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Draconomicon Table 3-12 (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Bloodscaled Fury",
+    "book": "Draconomicon",
+    "page": 86,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 12,
+    "status": "verified",
+    "cite": "Draconomicon Table 2-4 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10…, good Fort, 12 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Disciple of Ashardalon",
+    "book": "Draconomicon",
+    "page": 87,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 12,
+    "status": "verified",
+    "cite": "Draconomicon Table 2-5 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10…, good Fort, Will, 12 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dispassionate Watcher of Chronepsis",
+    "book": "Draconomicon",
+    "page": 89,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 12,
+    "status": "verified",
+    "cite": "Draconomicon Table 2-6 (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7…, good Fort, Will, 12 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dragon Ascendant",
+    "book": "Draconomicon",
+    "page": 90,
+    "hd": 12,
+    "skillPts": 6,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 12,
+    "status": "verified",
+    "cite": "Draconomicon Table 2-7 (d12, 6 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10…, good Fort, Ref, Will, 12 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Elemental Master",
+    "book": "Draconomicon",
+    "page": 92,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 12,
+    "status": "verified",
+    "cite": "Draconomicon Table 2-8 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10…, good Fort, Ref, Will, 12 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Hidecarved Dragon",
+    "book": "Draconomicon",
+    "page": 94,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 12,
+    "status": "verified",
+    "cite": "Draconomicon Table 2-9 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10…, good Fort, Ref, Will, 12 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Sacred Warder of Bahamut",
+    "book": "Draconomicon",
+    "page": 96,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 12,
+    "status": "verified",
+    "cite": "Draconomicon Table 2-10 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10…, good Fort, Will, 12 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Unholy Ravager of Tiamat",
+    "book": "Draconomicon",
+    "page": 97,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 12,
+    "status": "verified",
+    "cite": "Draconomicon Table 2-11 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10…, good Fort, Will, 12 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Diamond Dragon",
+    "book": "Dragon Magic",
+    "page": 30,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Dragon Magic Table 2-3 (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dragon Descendant",
+    "book": "Dragon Magic",
+    "page": 34,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Dragon Magic Table 2-4 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dragon Lord",
+    "book": "Dragon Magic",
+    "page": 38,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Dragon Magic Table 2-5 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Hand of the Winged Masters",
+    "book": "Dragon Magic",
+    "page": 43,
+    "hd": 8,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Dragon Magic Table 2-6 (d8, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Pact-bound Adept",
+    "book": "Dragon Magic",
+    "page": 46,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Dragon Magic Table 2-7 (d4, 2 + Int, BAB +0/+1/+1/+2/+2, good Ref, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Swift Wing",
+    "book": "Dragon Magic",
+    "page": 50,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Dragon Magic Table 2-8 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Wyrm Wizard",
+    "book": "Dragon Magic",
+    "page": 55,
+    "hd": 4,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Dragon Magic Table 2-9 (d4, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Hellbreaker",
+    "book": "Fiendish Codex II",
+    "page": 86,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Fiendish Codex II Table 3-2 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Hellfire Warlock",
+    "book": "Fiendish Codex II",
+    "page": 89,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Fiendish Codex II Table 3-3 (d6, 2 + Int, BAB +0/+1/+2, good Will, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Hellreaver",
+    "book": "Fiendish Codex II",
+    "page": 92,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Fiendish Codex II Table 3-4 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Soulguard",
+    "book": "Fiendish Codex II",
+    "page": 95,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Fiendish Codex II Table 3-5 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Death's Chosen",
+    "book": "Libris Mortis",
+    "page": 42,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Libris Mortis Table 3-1 (d10, 2 + Int, BAB +1/+2/+3, good Fort, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Dirgesinger",
+    "book": "Libris Mortis",
+    "page": 43,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Libris Mortis Table 3-2 (d6, 4 + Int, BAB +0/+1/+2/+3/+3, good Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Master of Radiance",
+    "book": "Libris Mortis",
+    "page": 44,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Libris Mortis Table 3-3 (d8, 4 + Int, BAB +0/+1/+2/+3/+3, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Master of Shrouds",
+    "book": "Libris Mortis",
+    "page": 46,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Libris Mortis Table 3-4 (d8, 2 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Pale Master",
+    "book": "Libris Mortis",
+    "page": 47,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Libris Mortis Table 3-5 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Sacred Purifier",
+    "book": "Libris Mortis",
+    "page": 49,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Libris Mortis Table 3-6 (d8, 2 + Int, BAB +0/+1/+2/+3/+3, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "True Necromancer",
+    "book": "Libris Mortis",
+    "page": 51,
+    "hd": 6,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 14,
+    "status": "verified",
+    "cite": "Libris Mortis Table 3-7 (d6, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5…, good Will, 14 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Ephemeral Exemplar",
+    "book": "Libris Mortis",
+    "page": 53,
+    "hd": 12,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Libris Mortis Table 3-8 (d12, 4 + Int, BAB +0/+1/+1, good Will, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Lurking Terror",
+    "book": "Libris Mortis",
+    "page": 54,
+    "hd": 12,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Libris Mortis Table 3-9 (d12, 4 + Int, BAB +0/+1/+2, good Will, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Master Vampire",
+    "book": "Libris Mortis",
+    "page": 55,
+    "hd": 12,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Libris Mortis Table 3-10 (d12, 4 + Int, BAB +0/+1/+1, good Fort, Will, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Tomb Warden",
+    "book": "Libris Mortis",
+    "page": 57,
+    "hd": 12,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 3,
+    "status": "verified",
+    "cite": "Libris Mortis Table 3-11 (d12, 4 + Int, BAB +1/+2/+3, good Fort, 3 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Abolisher",
+    "book": "Lords of Madness",
+    "page": 182,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Lords of Madness Table 9-4 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Darkrunner",
+    "book": "Lords of Madness",
+    "page": 186,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Lords of Madness Table 9-5 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Fleshwarper",
+    "book": "Lords of Madness",
+    "page": 189,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Lords of Madness Table 9-6 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Keeper of the Cerulean Sign",
+    "book": "Lords of Madness",
+    "page": 194,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Lords of Madness Table 9-7 (d6, 6 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Sanctified Mind",
+    "book": "Lords of Madness",
+    "page": 198,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 6,
+    "status": "verified",
+    "cite": "Lords of Madness Table 9-8 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6, good Fort, Will, 6 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Topaz Guardian",
+    "book": "Lords of Madness",
+    "page": 203,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 5,
+    "status": "verified",
+    "cite": "Lords of Madness Table 9-9 (d8, 2 + Int, BAB +1/+2/+3/+4/+5, good Fort, Will, 5 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Cancer Mage",
+    "book": "Book of Vile Darkness",
+    "page": 52,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-1 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Demonologist",
+    "book": "Book of Vile Darkness",
+    "page": 54,
+    "hd": 4,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-2 (d4, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Diabolist",
+    "book": "Book of Vile Darkness",
+    "page": 56,
+    "hd": 4,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-3 (d4, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Disciple of Asmodeus",
+    "book": "Book of Vile Darkness",
+    "page": 57,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-4 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Disciple of Baalzebul",
+    "book": "Book of Vile Darkness",
+    "page": 58,
+    "hd": 6,
+    "skillPts": 6,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-5 (d6, 6 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": "Printed BAB at 9th/10th level is +7/+8 (standard 3/4 progression gives +6/+7)."
+  },
+  {
+    "name": "Disciple of Dispater",
+    "book": "Book of Vile Darkness",
+    "page": 60,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-6 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Disciple of Mammon",
+    "book": "Book of Vile Darkness",
+    "page": 60,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-7 (d6, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": "Printed BAB is +1/+2/+3/+3/+4/+5/+6/+6/+7/+8, one higher than the standard 3/4 progression at every level."
+  },
+  {
+    "name": "Disciple of Mephistopheles",
+    "book": "Book of Vile Darkness",
+    "page": 62,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-8 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Lifedrinker",
+    "book": "Book of Vile Darkness",
+    "page": 63,
+    "hd": 12,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-9 (d12, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Fort, Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Mortal Hunter",
+    "book": "Book of Vile Darkness",
+    "page": 64,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-10 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Soul Eater",
+    "book": "Book of Vile Darkness",
+    "page": 66,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-11 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Thrall Of Demogorgon",
+    "book": "Book of Vile Darkness",
+    "page": 67,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-12 (d8, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Thrall Of Graz'zt",
+    "book": "Book of Vile Darkness",
+    "page": 68,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-13 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Thrall Of Juiblex",
+    "book": "Book of Vile Darkness",
+    "page": 70,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-14 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Thrall of Orcus",
+    "book": "Book of Vile Darkness",
+    "page": 71,
+    "hd": 8,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-15 (d8, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Vermin Lord",
+    "book": "Book of Vile Darkness",
+    "page": 73,
+    "hd": 6,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-17 (d6, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Warrior Of Darkness",
+    "book": "Book of Vile Darkness",
+    "page": 75,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Vile Darkness Table 5-18 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Risen Martyr",
+    "book": "Book of Exalted Deeds",
+    "page": 68,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "low",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Book of Exalted Deeds Table 5-14 (d12, 2 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": "The table also has a 0th level row (Spiritual Body); BAB/save values follow levels 1-10."
+  },
+  {
+    "name": "Divine Agent",
+    "book": "Manual of the Planes",
+    "page": 24,
+    "hd": 8,
+    "skillPts": 4,
+    "bab": "medium",
+    "goodSaves": [
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Manual of the Planes Table 3-3 (d8, 4 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Will, 10 levels)",
+    "workbookAgrees": false,
+    "note": "Workbook differs - bab: book medium, workbook high; goodSaves: book ['will'], workbook ['fort', 'will']."
+  },
+  {
+    "name": "Gatecrasher",
+    "book": "Manual of the Planes",
+    "page": 26,
+    "hd": 6,
+    "skillPts": 8,
+    "bab": "medium",
+    "goodSaves": [
+      "ref",
+      "will"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Manual of the Planes Table 3-4 (d6, 8 + Int, BAB +0/+1/+2/+3/+3/+4/+5/+6/+6/+7, good Ref, Will, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Planar Champion",
+    "book": "Manual of the Planes",
+    "page": 28,
+    "hd": 10,
+    "skillPts": 4,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Manual of the Planes Table 3-5 (d10, 4 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Planeshifter",
+    "book": "Manual of the Planes",
+    "page": 30,
+    "hd": 4,
+    "skillPts": 4,
+    "bab": "low",
+    "goodSaves": [
+      "fort"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Manual of the Planes Table 3-6 (d4, 4 + Int, BAB +0/+1/+1/+2/+2/+3/+3/+4/+4/+5, good Fort, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Devoted Defender",
+    "book": "Sword and Fist",
+    "page": 13,
+    "hd": 12,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "fort",
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Sword and Fist Table 2-2 (d12, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Fort, Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  },
+  {
+    "name": "Lasher",
+    "book": "Sword and Fist",
+    "page": 25,
+    "hd": 10,
+    "skillPts": 2,
+    "bab": "high",
+    "goodSaves": [
+      "ref"
+    ],
+    "maxLevel": 10,
+    "status": "verified",
+    "cite": "Sword and Fist Table 2-10 (d10, 2 + Int, BAB +1/+2/+3/+4/+5/+6/+7/+8/+9/+10, good Ref, 10 levels)",
+    "workbookAgrees": true,
+    "note": ""
+  }
+]
