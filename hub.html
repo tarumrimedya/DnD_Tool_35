@@ -4912,12 +4912,20 @@ CRITICAL RULES:
               const v2Entry = (window.RuleMaster && typeof window.RuleMaster.normalizeEntry === 'function')
                 ? window.RuleMaster.normalizeEntry(entry)
                 : entry;
-              mergeEntriesIntoHubCharacters([v2Entry], preferredCampaignId);
-              showHubDiceToast({
-                title: '⚒️ Custom DB Updated',
-                text: `"${v2Entry.name}" added to campaign character custom databases!`,
-                color: 'indigo'
-              });
+              const addRes = mergeEntriesIntoHubCharacters([v2Entry], preferredCampaignId);
+              showHubDiceToast(addRes.targets > 0
+                ? {
+                    title: '⚒️ Custom DB Updated',
+                    text: `"${v2Entry.name}" added to ${addRes.targets} campaign character custom database${addRes.targets === 1 ? '' : 's'}!`,
+                    color: 'indigo'
+                  }
+                : {
+                    title: '⚠️ Custom DB Not Updated',
+                    text: addRes.campaignId
+                      ? `"${v2Entry.name}" not added: the selected campaign has no characters.`
+                      : `"${v2Entry.name}" not added: select a campaign first.`,
+                    color: 'amber'
+                  });
             } catch (e) {
               console.warn('Hub Custom DB add warning:', e);
             }
@@ -6095,55 +6103,72 @@ CRITICAL RULES:
       a.remove();
     }
 
+    // Character-scoped custom DB contract (ADR-011): an entry or rule pack reaches only the characters of ONE campaign
+    // (the given one, else the active one) and its sub-campaigns. With no campaign scope, or no characters in it,
+    // nothing is written; it never spills over to every character in the Hub.
+    function getHubCampaignScopeIds(campId) {
+      if (!campId) return [];
+      const camps = Array.isArray(state.campaigns) ? state.campaigns : [];
+      return [campId].concat(camps.filter(cp => cp && cp.parentId === campId).map(cp => cp.id));
+    }
+
+    // Same match rule as the character sheet import (mergeEntriesIntoCharacterCustomDb): same id, or same name with a
+    // compatible type. The incoming entry replaces the old one, so no stale fields survive and two entries of different
+    // types that share a name are never blended.
+    function upsertHubCustomDbEntry(db, rawEntry) {
+      const entry = JSON.parse(JSON.stringify(rawEntry));
+      const norm = v => String(v || '').toLowerCase().trim();
+      const id = norm(entry.id), name = norm(entry.name), type = norm(entry.type);
+      const exIdx = db.findIndex(m => {
+        if (!m) return false;
+        if (id && norm(m.id) && id === norm(m.id)) return true;
+        const mType = norm(m.type);
+        return name && norm(m.name) === name && (!type || !mType || type === mType);
+      });
+      if (exIdx >= 0) { db[exIdx] = entry; return 'updated'; }
+      db.push(entry);
+      return 'added';
+    }
+
     function mergeEntriesIntoHubCharacters(entries, campaignId = null) {
-      if (!Array.isArray(entries) || entries.length === 0) return 0;
+      const result = { added: 0, updated: 0, targets: 0, campaignId: null };
+      if (!Array.isArray(entries) || entries.length === 0) return result;
       const targetCamp = campaignId || ((state.activeCampaignId && state.activeCampaignId !== 'all' && state.activeCampaignId !== 'unassigned')
         ? state.activeCampaignId
         : null);
-      let targets = Array.isArray(state.characters) ? state.characters : [];
-      if (targetCamp) {
-        const filtered = targets.filter(c => c && c.campaignId === targetCamp);
-        if (filtered.length > 0) targets = filtered;
-      }
-      let addedCount = 0;
+      result.campaignId = targetCamp;
+      const scopeIds = getHubCampaignScopeIds(targetCamp);
+      const targets = (Array.isArray(state.characters) ? state.characters : []).filter(c => c && scopeIds.includes(c.campaignId));
+      result.targets = targets.length;
+      if (targets.length === 0) return result;
+      const validEntries = entries.filter(e => e && typeof e === 'object' && e.name);
       targets.forEach(c => {
-        if (!c) return;
         const data = c.fullData || c;
         if (!Array.isArray(data.customDb)) data.customDb = [];
-        entries.forEach(rawEntry => {
-          if (!rawEntry || !rawEntry.name) return;
-          const cleanName = String(rawEntry.name).toLowerCase().trim();
-          const exIdx = data.customDb.findIndex(m => m && ((rawEntry.id && m.id === rawEntry.id) || String(m.name || '').toLowerCase().trim() === cleanName));
-          if (exIdx >= 0) {
-            data.customDb[exIdx] = { ...data.customDb[exIdx], ...JSON.parse(JSON.stringify(rawEntry)) };
-          } else {
-            data.customDb.push(JSON.parse(JSON.stringify(rawEntry)));
-            addedCount++;
-          }
-        });
+        validEntries.forEach(rawEntry => { result[upsertHubCustomDbEntry(data.customDb, rawEntry)]++; });
       });
+      // The character open in the sheet gets the entries only when it is one of the targets.
       try {
         const activeRaw = localStorage.getItem('dnd35_character');
-        if (activeRaw) {
-          const activeChar = JSON.parse(activeRaw);
-          if (activeChar && typeof activeChar === 'object') {
-            if (!Array.isArray(activeChar.customDb)) activeChar.customDb = [];
-            entries.forEach(rawEntry => {
-              if (!rawEntry || !rawEntry.name) return;
-              const cleanName = String(rawEntry.name).toLowerCase().trim();
-              const exIdx = activeChar.customDb.findIndex(m => m && ((rawEntry.id && m.id === rawEntry.id) || String(m.name || '').toLowerCase().trim() === cleanName));
-              if (exIdx >= 0) {
-                activeChar.customDb[exIdx] = { ...activeChar.customDb[exIdx], ...JSON.parse(JSON.stringify(rawEntry)) };
-              } else {
-                activeChar.customDb.push(JSON.parse(JSON.stringify(rawEntry)));
-              }
-            });
-            localStorage.setItem('dnd35_character', JSON.stringify(activeChar));
-          }
+        const activeChar = activeRaw ? JSON.parse(activeRaw) : null;
+        const activeId = activeChar && typeof activeChar === 'object' ? (activeChar._hubId || activeChar.id) : null;
+        if (activeId && targets.some(c => c.id === activeId)) {
+          if (!Array.isArray(activeChar.customDb)) activeChar.customDb = [];
+          validEntries.forEach(rawEntry => upsertHubCustomDbEntry(activeChar.customDb, rawEntry));
+          localStorage.setItem('dnd35_character', JSON.stringify(activeChar));
         }
       } catch (e) {}
       saveHubStorage();
-      return addedCount;
+      return result;
+    }
+
+    function describeHubDbMergeResult(res, label) {
+      if (!res || res.targets === 0) {
+        return res && res.campaignId
+          ? `⚠️ ${label} not added: the selected campaign has no characters.`
+          : `⚠️ ${label} not added: select a campaign first. Custom DB entries are stored per character, so they are added only to the characters of one campaign.`;
+      }
+      return `✅ ${label} merged into ${res.targets} campaign character${res.targets === 1 ? '' : 's'}!\n• Added: ${res.added}\n• Updated: ${res.updated}`;
     }
 
     function exportMasterDbJson() {
@@ -6334,10 +6359,10 @@ CRITICAL RULES:
               return normPack ? Object.assign({}, item, { pack: normPack }) : item;
             });
             window._hubLoadedPackEntries = stamped;
-            mergeEntriesIntoHubCharacters(stamped);
+            const packRes = mergeEntriesIntoHubCharacters(stamped);
             renderHub();
             renderHubDmPackManager();
-            alert(`✅ Rule Pack${packId ? ' "' + packId + '"' : ''} merged into characters (${stamped.length} entries)!`);
+            alert(describeHubDbMergeResult(packRes, `Rule Pack${packId ? ' "' + packId + '"' : ''} (${stamped.length} entries)`));
           } else if (parsed.name && (parsed.stats || parsed.abilities || parsed.classes)) {
             const newChar = {
               id: parsed.id || ('char_' + Date.now()),
@@ -6356,10 +6381,10 @@ CRITICAL RULES:
             alert(`✅ Character "${parsed.name}" imported successfully!`);
           } else if (Array.isArray(parsed)) {
             if (parsed.length > 0 && (parsed[0].benefit !== undefined || parsed[0].modifiers !== undefined || parsed[0].category !== undefined)) {
-              mergeEntriesIntoHubCharacters(parsed);
+              const libRes = mergeEntriesIntoHubCharacters(parsed);
               renderHub();
               renderHubDmPackManager();
-              alert(`✅ Custom DB library merged into characters (${parsed.length} entries)!`);
+              alert(describeHubDbMergeResult(libRes, `Custom DB library (${parsed.length} entries)`));
             } else {
               parsed.forEach(c => {
                 if (c && c.id && !state.characters.some(it => it.id === c.id)) {

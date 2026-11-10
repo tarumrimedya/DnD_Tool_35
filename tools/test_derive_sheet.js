@@ -10,6 +10,7 @@
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');
+const vm = require('vm');
 
 const RuleEngine = require('../rule_engine.js');
 const CharStore = require('../char_store.js');
@@ -2669,6 +2670,46 @@ function runDeriveSheetTests() {
     pwAdded.length === 1 && pwDb[0].name === 'Force Screen' && pwDb[0]._snapshot.chunk === 'srd_powers.json' &&
     /function collectPowerRefNames\(doc\)/.test(pwStoreSrc) && /\{ t: 'Power', names: collectPowerRefNames\(doc\) \}/.test(pwStoreSrc) &&
     !/getSpellById|getMonsterById/.test(pwUiSrc) && /await global\.SrdCompendium\.fetchEntry\(picked\.id\)/.test(pwUiSrc)
+  );
+
+  // Hub custom DB isolation (ADR-011): a rule pack loaded in the Hub reaches only one campaign's characters.
+  const hubSrc = fs.readFileSync(path.join(__dirname, '..', 'hub.html'), 'utf8');
+  const hubFnSrc = hubSrc.slice(hubSrc.indexOf('function getHubCampaignScopeIds('), hubSrc.indexOf('function describeHubDbMergeResult('));
+  const hubRun = (activeCampaignId, sheetCharId, entries, campArg) => {
+    const store = { dnd35_character: JSON.stringify({ id: sheetCharId, customDb: [] }) };
+    const sandbox = {
+      JSON,
+      state: {
+        activeCampaignId,
+        campaigns: [{ id: 'camp_main' }, { id: 'camp_sub', parentId: 'camp_main' }, { id: 'camp_other' }],
+        characters: [
+          { id: 'c_main', campaignId: 'camp_main', fullData: { customDb: [{ id: 'x1', name: 'Shared Name', type: 'Item', weight: 5 }] } },
+          { id: 'c_sub', campaignId: 'camp_sub', fullData: { customDb: [] } },
+          { id: 'c_other', campaignId: 'camp_other', fullData: { customDb: [] } },
+          { id: 'c_free', campaignId: null, fullData: { customDb: [] } }
+        ]
+      },
+      localStorage: { getItem: k => store[k] || null, setItem: (k, v) => { store[k] = v; } },
+      saveHubStorage: () => {}
+    };
+    vm.runInNewContext(hubFnSrc + '\nresult = mergeEntriesIntoHubCharacters(entries, campArg);', Object.assign(sandbox, { entries, campArg: campArg || null }));
+    const dbOf = id => sandbox.state.characters.find(c => c.id === id).fullData.customDb;
+    return { res: sandbox.result, dbOf, sheetDb: JSON.parse(store.dnd35_character).customDb };
+  };
+  const hubPack = [{ id: 'pack:boon_a', name: 'Boon A', type: 'DM Boon' }, { id: 'pack:feat_shared', name: 'Shared Name', type: 'Feat' }];
+  const hubAll = hubRun('all', 'c_free', hubPack);
+  const hubMain = hubRun('camp_main', 'c_other', hubPack);
+  const hubSheet = hubRun('camp_main', 'c_main', hubPack);
+  const hubEmpty = hubRun('camp_main', 'c_main', hubPack, 'camp_empty');
+  const hubReplace = hubRun('camp_main', 'c_other', [{ id: 'x1', name: 'Shared Name', type: 'Item', weight: 2 }]);
+  check(
+    'Hub custom DB isolation: a pack goes only to the active campaign and its sub-campaigns (never every character, never with "All" selected or an empty campaign); the sheet character gets it only when targeted; same-name entries of other types stay separate and a same-id entry is replaced',
+    hubAll.res.targets === 0 && ['c_main', 'c_sub', 'c_other', 'c_free'].every(id => !hubAll.dbOf(id).some(e => e.id === 'pack:boon_a')) && hubAll.sheetDb.length === 0 &&
+    hubMain.res.targets === 2 && hubMain.dbOf('c_sub').length === 2 && hubMain.dbOf('c_other').length === 0 && hubMain.dbOf('c_free').length === 0 && hubMain.sheetDb.length === 0 &&
+    hubMain.dbOf('c_main').length === 3 && hubMain.dbOf('c_main').find(e => e.id === 'x1').weight === 5 &&
+    hubSheet.sheetDb.length === 2 &&
+    hubEmpty.res.targets === 0 && hubEmpty.dbOf('c_main').length === 1 &&
+    hubReplace.res.updated === 1 && hubReplace.dbOf('c_main').length === 1 && hubReplace.dbOf('c_main')[0].weight === 2
   );
 
   CharStore.clearHistory();
