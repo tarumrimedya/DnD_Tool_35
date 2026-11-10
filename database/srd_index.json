@@ -1,9 +1,9 @@
 {
   "schemaVersion": 2,
   "version": "2.0.0",
-  "compendiumHash": "65a5402c6d860081",
+  "compendiumHash": "3d927a0ccb9041f4",
   "generatedAt": "2026-11-04T15:37:19.474Z",
-  "totalEntries": 7690,
+  "totalEntries": 7537,
   "chunks": {
     "srd_equipment.json": {
       "count": 1131,
@@ -80,38 +80,38 @@
     "srd_feats_splat.json": {
       "count": 1719,
       "bytes": 1612274,
-      "hash": "91632a7499338fcc",
+      "hash": "1690b94297e174c3",
       "eagerLoad": false
     },
     "srd_feats_epic.json": {
       "count": 23,
-      "hash": "3245a34fe1de6d58",
+      "hash": "898d23f9ab089041",
       "bytes": 22480,
       "eagerLoad": false
     },
     "srd_feats_legacy.json": {
       "count": 357,
-      "hash": "a8d09b6e15d80d19",
+      "hash": "2d45ae74a38bd048",
       "bytes": 331283,
       "eagerLoad": false,
       "optIn": true
     },
     "srd_classes_splat.json": {
       "count": 400,
-      "hash": "9fd1b502ccc1d7a2",
+      "hash": "ec5f82cc05d7103a",
       "bytes": 819548,
       "eagerLoad": false
     },
     "srd_classes_legacy.json": {
       "count": 75,
-      "hash": "0a79696b55a7dd40",
+      "hash": "11a6f6c58da7e765",
       "bytes": 164362,
       "eagerLoad": false,
       "optIn": true
     },
     "srd_powers.json": {
-      "count": 440,
-      "hash": "790cf44baade09cb",
+      "count": 287,
+      "hash": "d9684b3b46d94427",
       "bytes": 787583,
       "eagerLoad": false
     },
@@ -10677,24 +10677,6 @@
       "l": 5
     },
     {
-      "id": "pwr-etherealness",
-      "n": "Etherealness",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
-    },
-    {
-      "id": "pwr-intrusive-sense-link",
-      "n": "Intrusive Sense Link",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
       "id": "pwr-anchored-navigation",
       "n": "Anchored Navigation",
       "t": "Power",
@@ -10704,55 +10686,31 @@
       "l": 4
     },
     {
-      "id": "pwr-true-seeing",
-      "n": "True Seeing",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
-    },
-    {
-      "id": "pwr-bite-of-the-tiger",
-      "n": "Bite of the Tiger",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
       "id": "pwr-ethereal-jaunt-psionic",
       "n": "Ethereal Jaunt, Psionic",
       "t": "Power",
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 7
+      "l": 7,
+      "a": [
+        "Ethereal Jaunt"
+      ]
     },
     {
       "id": "pwr-ectoplasmic-cocoon",
       "n": "Ectoplasmic Cocoon",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
     },
     {
-      "id": "pwr-lesser-mindlink",
-      "n": "Lesser Mindlink",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
       "id": "pwr-truevenom-weapon",
       "n": "Truevenom Weapon",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
@@ -10769,15 +10727,6 @@
     {
       "id": "pwr-ecto-protection",
       "n": "Ecto Protection",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
-      "id": "pwr-hear-light",
-      "n": "Hear Light",
       "t": "Power",
       "c": "Metacreativity",
       "s": "None",
@@ -10803,19 +10752,10 @@
       "l": 5
     },
     {
-      "id": "pwr-astral-construct-i",
-      "n": "Astral Construct I",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
       "id": "pwr-hammer",
       "n": "Hammer",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -10839,24 +10779,6 @@
       "l": 1
     },
     {
-      "id": "pwr-telekinetic-sphere",
-      "n": "Telekinetic Sphere",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 8
-    },
-    {
-      "id": "pwr-astral-construct-iv",
-      "n": "Astral Construct IV",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
       "id": "pwr-metaconcert",
       "n": "Metaconcert",
       "t": "Power",
@@ -10869,7 +10791,7 @@
       "id": "pwr-energy-conversion",
       "n": "Energy Conversion",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 7
@@ -10878,37 +10800,19 @@
       "id": "pwr-energy-burst",
       "n": "Energy Burst",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
     },
     {
-      "id": "pwr-polymorph-self",
-      "n": "Polymorph Self",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
       "id": "pwr-fuse-flesh",
       "n": "Fuse Flesh",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
-    },
-    {
-      "id": "pwr-lesser-metaphysical-weapon",
-      "n": "Lesser Metaphysical Weapon",
       "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 1
+      "l": 6
     },
     {
       "id": "pwr-personality-parasite",
@@ -10923,10 +10827,13 @@
       "id": "pwr-major-creation-psionic",
       "n": "Major Creation, Psionic",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 5
+      "l": 5,
+      "a": [
+        "Major Creation"
+      ]
     },
     {
       "id": "pwr-identify-psionic",
@@ -10935,7 +10842,10 @@
       "c": "Clairsentience",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 2
+      "l": 2,
+      "a": [
+        "Identify"
+      ]
     },
     {
       "id": "pwr-telempathic-projection",
@@ -10947,24 +10857,6 @@
       "l": 1
     },
     {
-      "id": "pwr-psycholuminescence",
-      "n": "Psycholuminescence",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
-      "id": "pwr-mind-blank",
-      "n": "Mind Blank",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 8
-    },
-    {
       "id": "pwr-crisis-of-breath",
       "n": "Crisis of Breath",
       "t": "Power",
@@ -10972,33 +10864,6 @@
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
-    },
-    {
-      "id": "pwr-probability-travel",
-      "n": "Probability Travel",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
-    },
-    {
-      "id": "pwr-true-domination",
-      "n": "True Domination",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 8
-    },
-    {
-      "id": "pwr-shapechange",
-      "n": "Shapechange",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
     },
     {
       "id": "pwr-ultrablast",
@@ -11010,19 +10875,10 @@
       "l": 7
     },
     {
-      "id": "pwr-poison-sense",
-      "n": "Poison Sense",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
       "id": "pwr-psionic-lions-charge",
-      "n": "Psionic Lion's Charge",
+      "n": "Psionic Lion’s Charge",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -11034,16 +10890,10 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 5
-    },
-    {
-      "id": "pwr-sending",
-      "n": "Sending",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
+      "l": 5,
+      "a": [
+        "Teleport"
+      ]
     },
     {
       "id": "pwr-trace-teleport",
@@ -11055,28 +10905,10 @@
       "l": 4
     },
     {
-      "id": "pwr-mass-domination",
-      "n": "Mass Domination",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
-    },
-    {
       "id": "pwr-dissolving-weapon",
       "n": "Dissolving Weapon",
       "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-recall-pain",
-      "n": "Recall Pain",
-      "t": "Power",
-      "c": "Clairsentience",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -11085,7 +10917,7 @@
       "id": "pwr-biofeedback",
       "n": "Biofeedback",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -11103,7 +10935,7 @@
       "id": "pwr-sustenance",
       "n": "Sustenance",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -11127,67 +10959,13 @@
       "l": 2
     },
     {
-      "id": "pwr-disintegrate",
-      "n": "Disintegrate",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
-    },
-    {
-      "id": "pwr-painful-touch",
-      "n": "Painful Touch",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-astral-construct-v",
-      "n": "Astral Construct V",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
-    },
-    {
-      "id": "pwr-charm-person",
-      "n": "Charm Person",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
-      "id": "pwr-greater-concussion",
-      "n": "Greater Concussion",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
       "id": "pwr-control-air",
       "n": "Control Air",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
-    },
-    {
-      "id": "pwr-brilliant-blast",
-      "n": "Brilliant Blast",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
     },
     {
       "id": "pwr-disintegrate-psionic",
@@ -11196,25 +10974,19 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 6
+      "l": 6,
+      "a": [
+        "Disintegrate"
+      ]
     },
     {
       "id": "pwr-energy-stun",
       "n": "Energy Stun",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
-    },
-    {
-      "id": "pwr-astral-construct-iii",
-      "n": "Astral Construct III",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
     },
     {
       "id": "pwr-decerebrate",
@@ -11235,15 +11007,6 @@
       "l": 4
     },
     {
-      "id": "pwr-mass-suggestion",
-      "n": "Mass Suggestion",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
-    },
-    {
       "id": "pwr-bend-reality",
       "n": "Bend Reality",
       "t": "Power",
@@ -11253,19 +11016,10 @@
       "l": 8
     },
     {
-      "id": "pwr-vigilance",
-      "n": "Vigilance",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
       "id": "pwr-ectoplasmic-cocoon-mass",
       "n": "Ectoplasmic Cocoon, Mass",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 7
@@ -11283,7 +11037,7 @@
       "id": "pwr-vigor",
       "n": "Vigor",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -11301,10 +11055,13 @@
       "id": "pwr-iron-body-psionic",
       "n": "Iron Body, Psionic",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 8
+      "l": 8,
+      "a": [
+        "Iron Body"
+      ]
     },
     {
       "id": "pwr-timeless-body",
@@ -11319,7 +11076,7 @@
       "id": "pwr-energy-wave",
       "n": "Energy Wave",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 7
@@ -11328,7 +11085,7 @@
       "id": "pwr-weapon-of-energy",
       "n": "Weapon of Energy",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
@@ -11352,31 +11109,13 @@
       "l": 9
     },
     {
-      "id": "pwr-see-invisibility",
-      "n": "See Invisibility",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
       "id": "pwr-painful-strike",
       "n": "Painful Strike",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
-    },
-    {
-      "id": "pwr-phase-door",
-      "n": "Phase Door",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
     },
     {
       "id": "pwr-reality-revision",
@@ -11388,15 +11127,6 @@
       "l": 9
     },
     {
-      "id": "pwr-firefall",
-      "n": "Firefall",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
       "id": "pwr-overland-flight-psionic",
       "n": "Overland Flight, Psionic",
       "t": "Power",
@@ -11404,15 +11134,6 @@
       "s": "None",
       "f": "srd_powers.json",
       "l": 6
-    },
-    {
-      "id": "pwr-detect-poison",
-      "n": "Detect Poison",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 0
     },
     {
       "id": "pwr-cloud-mind",
@@ -11424,46 +11145,10 @@
       "l": 2
     },
     {
-      "id": "pwr-see-sound",
-      "n": "See Sound",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
-      "id": "pwr-power-turning",
-      "n": "Power Turning",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
-    },
-    {
-      "id": "pwr-sense-psionics",
-      "n": "Sense Psionics",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
-    },
-    {
-      "id": "pwr-undead-sense",
-      "n": "Undead Sense",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
       "id": "pwr-inertial-armor",
       "n": "Inertial Armor",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -11472,7 +11157,7 @@
       "id": "pwr-psionic-revivify",
       "n": "Psionic Revivify",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 5
@@ -11490,7 +11175,7 @@
       "id": "pwr-control-sound",
       "n": "Control Sound",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -11499,7 +11184,7 @@
       "id": "pwr-duodimensional-claw",
       "n": "Duodimensional Claw",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -11508,7 +11193,7 @@
       "id": "pwr-hail-of-crystals",
       "n": "Hail of Crystals",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 5
@@ -11517,7 +11202,7 @@
       "id": "pwr-far-hand",
       "n": "Far Hand",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -11547,31 +11232,16 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-astral-construct-vi",
-      "n": "Astral Construct VI",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
-    },
-    {
-      "id": "pwr-spider-climb",
-      "n": "Spider Climb",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
+      "l": 2,
+      "a": [
+        "Levitate"
+      ]
     },
     {
       "id": "pwr-matter-manipulation",
       "n": "Matter Manipulation",
       "t": "Power",
-      "c": "Kin",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 8
@@ -11580,28 +11250,10 @@
       "id": "pwr-keen-edge-psionic",
       "n": "Keen Edge, Psionic",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
-    },
-    {
-      "id": "pwr-adamant-grasp",
-      "n": "Adamant Grasp",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
-      "id": "pwr-valor",
-      "n": "Valor",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
     },
     {
       "id": "pwr-astral-traveler",
@@ -11631,19 +11283,10 @@
       "l": 6
     },
     {
-      "id": "pwr-improved-biofeedback",
-      "n": "Improved Biofeedback",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
       "id": "pwr-form-of-doom",
       "n": "Form of Doom",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 6
@@ -11652,28 +11295,10 @@
       "id": "pwr-claw-of-energy",
       "n": "Claw of Energy",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
-    },
-    {
-      "id": "pwr-finger-of-fire",
-      "n": "Finger of Fire",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 0
-    },
-    {
-      "id": "pwr-cone-of-sound",
-      "n": "Cone of Sound",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
     },
     {
       "id": "pwr-mind-blank-psionic",
@@ -11682,7 +11307,10 @@
       "c": "Telepathy",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 8
+      "l": 8,
+      "a": [
+        "Mind Blank"
+      ]
     },
     {
       "id": "pwr-ego-whip",
@@ -11694,31 +11322,13 @@
       "l": 2
     },
     {
-      "id": "pwr-lesser-natural-armor",
-      "n": "Lesser Natural Armor",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 0
-    },
-    {
       "id": "pwr-telekinetic-thrust",
       "n": "Telekinetic Thrust",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
-    },
-    {
-      "id": "pwr-improved-telekinesis",
-      "n": "Improved Telekinesis",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
     },
     {
       "id": "pwr-sensitivity-to-psychic-impressions",
@@ -11730,19 +11340,10 @@
       "l": 2
     },
     {
-      "id": "pwr-feather-fall",
-      "n": "Feather Fall",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
       "id": "pwr-energy-adaptation",
       "n": "Energy Adaptation",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
@@ -11751,7 +11352,7 @@
       "id": "pwr-energy-retort",
       "n": "Energy Retort",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -11769,7 +11370,7 @@
       "id": "pwr-psychofeedback",
       "n": "Psychofeedback",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 5
@@ -11778,7 +11379,7 @@
       "id": "pwr-concealing-amorpha-greater",
       "n": "Concealing Amorpha, Greater",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -11790,31 +11391,16 @@
       "c": "Clairsentience",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-greater-emulation",
-      "n": "Greater Emulation",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
-    },
-    {
-      "id": "pwr-lesser-domination",
-      "n": "Lesser Domination",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
+      "l": 2,
+      "a": [
+        "Darkvision"
+      ]
     },
     {
       "id": "pwr-telekinetic-maneuver",
       "n": "Telekinetic Maneuver",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
@@ -11835,7 +11421,10 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 4
+      "l": 4,
+      "a": [
+        "Dimension Door"
+      ]
     },
     {
       "id": "pwr-feat-leech",
@@ -11850,100 +11439,28 @@
       "id": "pwr-telekinetic-force",
       "n": "Telekinetic Force",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
-    },
-    {
-      "id": "pwr-dissolution",
-      "n": "Dissolution",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
-    },
-    {
-      "id": "pwr-lesser-concussion",
-      "n": "Lesser Concussion",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
-      "id": "pwr-tailor-memory",
-      "n": "Tailor Memory",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
     },
     {
       "id": "pwr-entangling-ectoplasm",
       "n": "Entangling Ectoplasm",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
     },
     {
-      "id": "pwr-fatal-attraction",
-      "n": "Fatal Attraction",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
-      "id": "pwr-nondetection",
-      "n": "Nondetection",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
-      "id": "pwr-energy-barrier",
-      "n": "Energy Barrier",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
-    },
-    {
-      "id": "pwr-improved-vigor",
-      "n": "Improved Vigor",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
-    },
-    {
       "id": "pwr-swarm-of-crystals",
       "n": "Swarm of Crystals",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
-    },
-    {
-      "id": "pwr-flaming-shroud",
-      "n": "Flaming Shroud",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
     },
     {
       "id": "pwr-etherealness-psionic",
@@ -11952,22 +11469,16 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 9
-    },
-    {
-      "id": "pwr-ectoplasmic-armor",
-      "n": "Ectoplasmic Armor",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
+      "l": 9,
+      "a": [
+        "Etherealness"
+      ]
     },
     {
       "id": "pwr-grip-of-iron",
       "n": "Grip of Iron",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -11976,25 +11487,16 @@
       "id": "pwr-restore-extremity",
       "n": "Restore Extremity",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 5
     },
     {
-      "id": "pwr-knock",
-      "n": "Knock",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
       "id": "pwr-true-metabolism",
       "n": "True Metabolism",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 8
@@ -12003,34 +11505,7 @@
       "id": "pwr-psychic-vampire",
       "n": "Psychic Vampire",
       "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
-      "id": "pwr-dimensional-anchor",
-      "n": "Dimensional Anchor",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
-      "id": "pwr-plane-shift",
-      "n": "Plane Shift",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
-    },
-    {
-      "id": "pwr-freedom-of-movement",
-      "n": "Freedom of Movement",
-      "t": "Power",
-      "c": "Psychoportation",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
@@ -12042,7 +11517,10 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 2
+      "l": 2,
+      "a": [
+        "Knock"
+      ]
     },
     {
       "id": "pwr-float",
@@ -12052,15 +11530,6 @@
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
-    },
-    {
-      "id": "pwr-true-concussion",
-      "n": "True Concussion",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
     },
     {
       "id": "pwr-aura-alteration",
@@ -12078,7 +11547,10 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 4
+      "l": 4,
+      "a": [
+        "Fly"
+      ]
     },
     {
       "id": "pwr-phase-door-psionic",
@@ -12087,13 +11559,16 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 7
+      "l": 7,
+      "a": [
+        "Phase Door"
+      ]
     },
     {
       "id": "pwr-body-adjustment",
       "n": "Body Adjustment",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -12111,7 +11586,7 @@
       "id": "pwr-inertial-barrier",
       "n": "Inertial Barrier",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
@@ -12120,19 +11595,10 @@
       "id": "pwr-exhalation-of-the-black-dragon",
       "n": "Exhalation of the Black Dragon",
       "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
-      "id": "pwr-burning-ray",
-      "n": "Burning Ray",
-      "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 2
+      "l": 3
     },
     {
       "id": "pwr-banishment-psionic",
@@ -12141,7 +11607,10 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 6
+      "l": 6,
+      "a": [
+        "Banishment"
+      ]
     },
     {
       "id": "pwr-dimension-slide",
@@ -12156,37 +11625,19 @@
       "id": "pwr-control-body",
       "n": "Control Body",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
     },
     {
-      "id": "pwr-daze",
-      "n": "Daze",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 0
-    },
-    {
       "id": "pwr-energy-adaptation-specified",
       "n": "Energy Adaptation, Specified",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
-    },
-    {
-      "id": "pwr-true-telekinesis",
-      "n": "True Telekinesis",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
     },
     {
       "id": "pwr-hypercognition",
@@ -12225,15 +11676,6 @@
       "l": 3
     },
     {
-      "id": "pwr-invisibility-purge",
-      "n": "Invisibility Purge",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
       "id": "pwr-sense-link-forced",
       "n": "Sense Link, Forced",
       "t": "Power",
@@ -12258,22 +11700,16 @@
       "c": "Clairsentience",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 6
-    },
-    {
-      "id": "pwr-teleport",
-      "n": "Teleport",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
+      "l": 6,
+      "a": [
+        "Contingency"
+      ]
     },
     {
       "id": "pwr-suspend-life",
       "n": "Suspend Life",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 6
@@ -12288,19 +11724,10 @@
       "l": 2
     },
     {
-      "id": "pwr-sense-psychoportation",
-      "n": "Sense Psychoportation",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
       "id": "pwr-ectoplasmic-shambler",
       "n": "Ectoplasmic Shambler",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 5
@@ -12312,7 +11739,10 @@
       "c": "Telepathy",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 1
+      "l": 1,
+      "a": [
+        "Daze"
+      ]
     },
     {
       "id": "pwr-destiny-dissonance",
@@ -12327,7 +11757,7 @@
       "id": "pwr-synesthete",
       "n": "Synesthete",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -12345,28 +11775,10 @@
       "id": "pwr-control-flames",
       "n": "Control Flames",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
-    },
-    {
-      "id": "pwr-verve",
-      "n": "Verve",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 0
-    },
-    {
-      "id": "pwr-rejuvenation",
-      "n": "Rejuvenation",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
     },
     {
       "id": "pwr-sequester-psionic",
@@ -12375,22 +11787,16 @@
       "c": "Clairsentience",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 7
-    },
-    {
-      "id": "pwr-glide",
-      "n": "Glide",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
+      "l": 7,
+      "a": [
+        "Sequester"
+      ]
     },
     {
       "id": "pwr-elfsight",
       "n": "Elfsight",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -12399,7 +11805,7 @@
       "id": "pwr-animal-affinity",
       "n": "Animal Affinity",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -12408,7 +11814,7 @@
       "id": "pwr-energy-ray",
       "n": "Energy Ray",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -12420,25 +11826,10 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 4
-    },
-    {
-      "id": "pwr-grease",
-      "n": "Grease",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
-      "id": "pwr-sudden-minor-creation",
-      "n": "Sudden Minor Creation",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
+      "l": 4,
+      "a": [
+        "Dismissal"
+      ]
     },
     {
       "id": "pwr-divert-teleport",
@@ -12448,15 +11839,6 @@
       "s": "None",
       "f": "srd_powers.json",
       "l": 7
-    },
-    {
-      "id": "pwr-inkling",
-      "n": "Inkling",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 0
     },
     {
       "id": "pwr-dissipating-touch",
@@ -12480,7 +11862,7 @@
       "id": "pwr-eradicate-invisibility",
       "n": "Eradicate Invisibility",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -12495,19 +11877,10 @@
       "l": 2
     },
     {
-      "id": "pwr-improved-fabricate",
-      "n": "Improved Fabricate",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
-    },
-    {
       "id": "pwr-dispelling-buffer",
       "n": "Dispelling Buffer",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 6
@@ -12534,34 +11907,16 @@
       "id": "pwr-crystallize",
       "n": "Crystallize",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 6
     },
     {
-      "id": "pwr-thrall",
-      "n": "Thrall",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
-    },
-    {
-      "id": "pwr-invisibility",
-      "n": "Invisibility",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
       "id": "pwr-share-pain",
       "n": "Share Pain",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -12579,7 +11934,7 @@
       "id": "pwr-empathic-transfer",
       "n": "Empathic Transfer",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -12591,13 +11946,16 @@
       "c": "Clairsentience",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 5
+      "l": 5,
+      "a": [
+        "True Seeing"
+      ]
     },
     {
       "id": "pwr-leech-field",
       "n": "Leech Field",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 5
@@ -12606,7 +11964,7 @@
       "id": "pwr-genesis",
       "n": "Genesis",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 9
@@ -12621,28 +11979,10 @@
       "l": 2
     },
     {
-      "id": "pwr-sever-the-tie",
-      "n": "Sever the Tie",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-amplified-invisibility",
-      "n": "Amplified Invisibility",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
       "id": "pwr-matter-agitation",
       "n": "Matter Agitation",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -12651,25 +11991,7 @@
       "id": "pwr-astral-seed",
       "n": "Astral Seed",
       "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 8
-    },
-    {
-      "id": "pwr-ecto-puppet",
-      "n": "Ecto Puppet",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-astral-construct-viii",
-      "n": "Astral Construct VIII",
-      "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 8
@@ -12678,7 +12000,7 @@
       "id": "pwr-concussion-blast",
       "n": "Concussion Blast",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -12696,25 +12018,7 @@
       "id": "pwr-body-equilibrium",
       "n": "Body Equilibrium",
       "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-far-punch",
-      "n": "Far Punch",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 0
-    },
-    {
-      "id": "pwr-augury",
-      "n": "Augury",
-      "t": "Power",
-      "c": "Clairsentience",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -12738,15 +12042,6 @@
       "l": 4
     },
     {
-      "id": "pwr-concussion",
-      "n": "Concussion",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
       "id": "pwr-call-weaponry",
       "n": "Call Weaponry",
       "t": "Power",
@@ -12768,7 +12063,7 @@
       "id": "pwr-chameleon",
       "n": "Chameleon",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -12777,43 +12072,16 @@
       "id": "pwr-metamorphosis-greater",
       "n": "Metamorphosis, Greater",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 9
     },
     {
-      "id": "pwr-improved-clairtangency",
-      "n": "Improved Clairtangency",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 8
-    },
-    {
-      "id": "pwr-dismissal",
-      "n": "Dismissal",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
-      "id": "pwr-mass-concussion",
-      "n": "Mass Concussion",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
       "id": "pwr-concealing-amorpha",
       "n": "Concealing Amorpha",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -12837,37 +12105,10 @@
       "l": 7
     },
     {
-      "id": "pwr-combat-prescience",
-      "n": "Combat Prescience",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-feel-sound",
-      "n": "Feel Sound",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
-      "id": "pwr-improved-anchored-navigation",
-      "n": "Improved Anchored Navigation",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
-    },
-    {
       "id": "pwr-wall-of-ectoplasm",
       "n": "Wall of Ectoplasm",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
@@ -12876,7 +12117,7 @@
       "id": "pwr-fiery-discorporation",
       "n": "Fiery Discorporation",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 5
@@ -12891,37 +12132,19 @@
       "l": 3
     },
     {
-      "id": "pwr-greater-domination",
-      "n": "Greater Domination",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
-    },
-    {
       "id": "pwr-dispel-psionics",
       "n": "Dispel Psionics",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
     },
     {
-      "id": "pwr-astral-construct-ii",
-      "n": "Astral Construct II",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
       "id": "pwr-shadow-body",
       "n": "Shadow Body",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 8
@@ -12948,55 +12171,19 @@
       "id": "pwr-metamorphosis",
       "n": "Metamorphosis",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
-    },
-    {
-      "id": "pwr-shield-of-prudence",
-      "n": "Shield of Prudence",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
     },
     {
       "id": "pwr-body-purification",
       "n": "Body Purification",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
-    },
-    {
-      "id": "pwr-call-cohort",
-      "n": "Call Cohort",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
-      "id": "pwr-sequester",
-      "n": "Sequester",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
-    },
-    {
-      "id": "pwr-identify",
-      "n": "Identify",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
     },
     {
       "id": "pwr-danger-sense",
@@ -13011,37 +12198,22 @@
       "id": "pwr-hustle",
       "n": "Hustle",
       "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-claws-of-the-bear",
-      "n": "Claws of the Bear",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-greater-biocurrent",
-      "n": "Greater Biocurrent",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
-    },
-    {
-      "id": "pwr-minor-creation",
-      "n": "Minor Creation",
-      "t": "Power",
       "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 1
+      "l": 2
+    },
+    {
+      "id": "pwr-minor-creation",
+      "n": "Minor Creation, Psionic",
+      "t": "Power",
+      "c": "Metacreativity",
+      "s": "None",
+      "f": "srd_powers.json",
+      "l": 1,
+      "a": [
+        "Minor Creation"
+      ]
     },
     {
       "id": "pwr-steadfast-perception",
@@ -13062,15 +12234,6 @@
       "l": 5
     },
     {
-      "id": "pwr-monster-domination",
-      "n": "Monster Domination",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
-    },
-    {
       "id": "pwr-mindlink",
       "n": "Mindlink",
       "t": "Power",
@@ -13083,43 +12246,36 @@
       "id": "pwr-astral-construct",
       "n": "Astral Construct",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 1
-    },
-    {
-      "id": "pwr-astral-steed",
-      "n": "Astral Steed",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
+      "l": 1,
+      "a": [
+        "Astral Construct I",
+        "Astral Construct IV",
+        "Astral Construct V",
+        "Astral Construct III",
+        "Astral Construct VI",
+        "Astral Construct VIII",
+        "Astral Construct II",
+        "Astral Construct VII",
+        "Astral Construct IX"
+      ]
     },
     {
       "id": "pwr-null-psionics-field",
       "n": "Null Psionics Field",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 6
     },
     {
-      "id": "pwr-contingency",
-      "n": "Contingency",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
-    },
-    {
       "id": "pwr-control-light",
       "n": "Control Light",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -13128,7 +12284,7 @@
       "id": "pwr-energy-push",
       "n": "Energy Push",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -13155,7 +12311,7 @@
       "id": "pwr-assimilate",
       "n": "Assimilate",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 9
@@ -13164,7 +12320,7 @@
       "id": "pwr-my-light",
       "n": "My Light",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -13173,7 +12329,7 @@
       "id": "pwr-create-sound",
       "n": "Create Sound",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -13186,42 +12342,6 @@
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
-    },
-    {
-      "id": "pwr-detonation",
-      "n": "Detonation",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
-    },
-    {
-      "id": "pwr-darkvision",
-      "n": "Darkvision",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-ethereal-jaunt",
-      "n": "Ethereal Jaunt",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
-    },
-    {
-      "id": "pwr-major-creation",
-      "n": "Major Creation",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
     },
     {
       "id": "pwr-time-hop",
@@ -13245,25 +12365,16 @@
       "id": "pwr-energy-current",
       "n": "Energy Current",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 5
     },
     {
-      "id": "pwr-mass-cocoon",
-      "n": "Mass Cocoon",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
-    },
-    {
       "id": "pwr-thicken-skin",
       "n": "Thicken Skin",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -13272,55 +12383,28 @@
       "id": "pwr-share-pain-forced",
       "n": "Share Pain, Forced",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
-    },
-    {
-      "id": "pwr-feel-light",
-      "n": "Feel Light",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
     },
     {
       "id": "pwr-fission",
       "n": "Fission",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 7
     },
     {
-      "id": "pwr-duodimensional-hand",
-      "n": "Duodimensional Hand",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
       "id": "pwr-truevenom",
       "n": "Truevenom",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
-    },
-    {
-      "id": "pwr-astral-projection",
-      "n": "Astral Projection",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
     },
     {
       "id": "pwr-detect-hostile-intent",
@@ -13344,7 +12428,7 @@
       "id": "pwr-prevenom",
       "n": "Prevenom",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -13353,7 +12437,7 @@
       "id": "pwr-vampiric-blade",
       "n": "Vampiric Blade",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -13371,19 +12455,10 @@
       "id": "pwr-stomp",
       "n": "Stomp",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
-    },
-    {
-      "id": "pwr-iron-body",
-      "n": "Iron Body",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 8
     },
     {
       "id": "pwr-thought-shield",
@@ -13398,7 +12473,7 @@
       "id": "pwr-dismiss-ectoplasm",
       "n": "Dismiss Ectoplasm",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -13407,7 +12482,7 @@
       "id": "pwr-strength-of-my-enemy",
       "n": "Strength of My Enemy",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -13434,25 +12509,16 @@
       "id": "pwr-immovability",
       "n": "Immovability",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
     },
     {
-      "id": "pwr-charm-monster",
-      "n": "Charm Monster",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
       "id": "pwr-quintessence",
       "n": "Quintessence",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
@@ -13461,7 +12527,7 @@
       "id": "pwr-fabricate-greater-psionic",
       "n": "Fabricate, Greater Psionic",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 6
@@ -13488,7 +12554,7 @@
       "id": "pwr-reddopsi",
       "n": "Reddopsi",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 7
@@ -13497,7 +12563,7 @@
       "id": "pwr-force-screen",
       "n": "Force Screen",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -13512,64 +12578,28 @@
       "l": 1
     },
     {
-      "id": "pwr-suggestion",
-      "n": "Suggestion",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
       "id": "pwr-psionic-scent",
       "n": "Psionic Scent",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
-    },
-    {
-      "id": "pwr-breath-of-the-dragon",
-      "n": "Breath of the Dragon",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
     },
     {
       "id": "pwr-evade-burst",
       "n": "Evade Burst",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
     },
     {
-      "id": "pwr-improved-etherealness",
-      "n": "Improved Etherealness",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 8
-    },
-    {
       "id": "pwr-dissolving-touch",
       "n": "Dissolving Touch",
       "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-clairaudience-clairvoyance",
-      "n": "Clairaudience/Clairvoyance",
-      "t": "Power",
-      "c": "Clairsentience",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -13596,55 +12626,22 @@
       "id": "pwr-fabricate-psionic",
       "n": "Fabricate, Psionic",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 4
+      "l": 4,
+      "a": [
+        "Fabricate"
+      ]
     },
     {
       "id": "pwr-energy-bolt",
       "n": "Energy Bolt",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
-    },
-    {
-      "id": "pwr-astral-construct-vii",
-      "n": "Astral Construct VII",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
-    },
-    {
-      "id": "pwr-create-food-and-water",
-      "n": "Create Food and Water",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
-      "id": "pwr-negate-psionics",
-      "n": "Negate Psionics",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
-      "id": "pwr-trinket",
-      "n": "Trinket",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 0
     },
     {
       "id": "pwr-suggestion-psionic",
@@ -13653,7 +12650,10 @@
       "c": "Telepathy",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 2
+      "l": 2,
+      "a": [
+        "Suggestion"
+      ]
     },
     {
       "id": "pwr-dimensional-anchor-psionic",
@@ -13662,16 +12662,10 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 4
-    },
-    {
-      "id": "pwr-biocurrent",
-      "n": "Biocurrent",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
+      "l": 4,
+      "a": [
+        "Dimensional Anchor"
+      ]
     },
     {
       "id": "pwr-cloud-mind-mass",
@@ -13695,7 +12689,7 @@
       "id": "pwr-affinity-field",
       "n": "Affinity Field",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 9
@@ -13704,19 +12698,10 @@
       "id": "pwr-oak-body",
       "n": "Oak Body",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 5
-    },
-    {
-      "id": "pwr-displacement",
-      "n": "Displacement",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
     },
     {
       "id": "pwr-mind-switch-true",
@@ -13726,15 +12711,6 @@
       "s": "None",
       "f": "srd_powers.json",
       "l": 9
-    },
-    {
-      "id": "pwr-matter-rearrangement",
-      "n": "Matter Rearrangement",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
     },
     {
       "id": "pwr-mind-thrust",
@@ -13758,19 +12734,10 @@
       "id": "pwr-expansion",
       "n": "Expansion",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
-    },
-    {
-      "id": "pwr-ablating",
-      "n": "Ablating",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
     },
     {
       "id": "pwr-empathy",
@@ -13782,19 +12749,10 @@
       "l": 1
     },
     {
-      "id": "pwr-forced-mindlink",
-      "n": "Forced Mindlink",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
       "id": "pwr-breath-of-the-black-dragon",
       "n": "Breath of the Black Dragon",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 6
@@ -13809,15 +12767,6 @@
       "l": 7
     },
     {
-      "id": "pwr-levitate",
-      "n": "Levitate",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
       "id": "pwr-missive",
       "n": "Missive",
       "t": "Power",
@@ -13830,7 +12779,7 @@
       "id": "pwr-crystal-shard",
       "n": "Crystal Shard",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -13845,15 +12794,6 @@
       "l": 1
     },
     {
-      "id": "pwr-dimension-door",
-      "n": "Dimension Door",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
       "id": "pwr-conceal-thoughts",
       "n": "Conceal Thoughts",
       "t": "Power",
@@ -13863,37 +12803,10 @@
       "l": 1
     },
     {
-      "id": "pwr-fabricate",
-      "n": "Fabricate",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
-      "id": "pwr-domination",
-      "n": "Domination",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
-      "id": "pwr-expanded-vision",
-      "n": "Expanded Vision",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
       "id": "pwr-tornado-blast",
       "n": "Tornado Blast",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 9
@@ -13920,25 +12833,16 @@
       "id": "pwr-bite-of-the-wolf",
       "n": "Bite of the Wolf",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
     },
     {
-      "id": "pwr-temporal-velocity",
-      "n": "Temporal Velocity",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
-    },
-    {
       "id": "pwr-restoration-psionic",
       "n": "Restoration, Psionic",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 6
@@ -13947,16 +12851,7 @@
       "id": "pwr-claws-of-the-beast",
       "n": "Claws of the Beast",
       "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
-      "id": "pwr-know-location",
-      "n": "Know Location",
-      "t": "Power",
-      "c": "Clairsentience",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -13965,7 +12860,7 @@
       "id": "pwr-control-object",
       "n": "Control Object",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -13983,7 +12878,7 @@
       "id": "pwr-graft-weapon",
       "n": "Graft Weapon",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -14001,7 +12896,7 @@
       "id": "pwr-ectoplasmic-form",
       "n": "Ectoplasmic Form",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -14019,7 +12914,7 @@
       "id": "pwr-energy-ball",
       "n": "Energy Ball",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
@@ -14043,24 +12938,6 @@
       "l": 1
     },
     {
-      "id": "pwr-detect-thoughts",
-      "n": "Detect Thoughts",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 2
-    },
-    {
-      "id": "pwr-fly",
-      "n": "Fly",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
       "id": "pwr-fate-link",
       "n": "Fate Link",
       "t": "Power",
@@ -14073,46 +12950,22 @@
       "id": "pwr-grease-psionic",
       "n": "Grease, Psionic",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 1
+      "l": 1,
+      "a": [
+        "Grease"
+      ]
     },
     {
       "id": "pwr-intellect-fortress",
       "n": "Intellect Fortress",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
-    },
-    {
-      "id": "pwr-astral-construct-ix",
-      "n": "Astral Construct IX",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
-    },
-    {
-      "id": "pwr-mind-store",
-      "n": "Mind Store",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 8
-    },
-    {
-      "id": "pwr-control-shadow",
-      "n": "Control Shadow",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 0
     },
     {
       "id": "pwr-teleport-psionic-greater",
@@ -14127,7 +12980,7 @@
       "id": "pwr-incarnate",
       "n": "Incarnate",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 5
@@ -14139,7 +12992,10 @@
       "c": "Clairsentience",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 4
+      "l": 4,
+      "a": [
+        "Divination"
+      ]
     },
     {
       "id": "pwr-astral-caravan",
@@ -14154,16 +13010,19 @@
       "id": "pwr-telekinetic-sphere-psionic",
       "n": "Telekinetic Sphere, Psionic",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 8
+      "l": 8,
+      "a": [
+        "Telekinetic Sphere"
+      ]
     },
     {
       "id": "pwr-prevenom-weapon",
       "n": "Prevenom Weapon",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -14172,10 +13031,10 @@
       "id": "pwr-true-creation",
       "n": "True Creation",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 8
+      "l": 9
     },
     {
       "id": "pwr-time-regression",
@@ -14196,31 +13055,13 @@
       "l": 4
     },
     {
-      "id": "pwr-banishment",
-      "n": "Banishment",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
-    },
-    {
       "id": "pwr-fusion",
       "n": "Fusion",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 8
-    },
-    {
-      "id": "pwr-divination",
-      "n": "Divination",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
     },
     {
       "id": "pwr-co-opt-concentration",
@@ -14238,13 +13079,16 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 5
+      "l": 5,
+      "a": [
+        "Plane Shift"
+      ]
     },
     {
       "id": "pwr-energy-cone",
       "n": "Energy Cone",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -14253,7 +13097,7 @@
       "id": "pwr-touchsight",
       "n": "Touchsight",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -14262,7 +13106,7 @@
       "id": "pwr-psionic-repair-damage",
       "n": "Psionic Repair Damage",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -14298,7 +13142,7 @@
       "id": "pwr-energy-missile",
       "n": "Energy Missile",
       "t": "Power",
-      "c": "Kin",
+      "c": "Psychokinesis",
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
@@ -14307,7 +13151,7 @@
       "id": "pwr-metaphysical-weapon",
       "n": "Metaphysical Weapon",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -14316,28 +13160,10 @@
       "id": "pwr-bolt",
       "n": "Bolt",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
-    },
-    {
-      "id": "pwr-confidante",
-      "n": "Confidante",
-      "t": "Power",
-      "c": "Telepathy",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 9
-    },
-    {
-      "id": "pwr-emulate-power",
-      "n": "Emulate Power",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
     },
     {
       "id": "pwr-time-hop-mass",
@@ -14356,15 +13182,6 @@
       "s": "None",
       "f": "srd_powers.json",
       "l": 2
-    },
-    {
-      "id": "pwr-natural-armor",
-      "n": "Natural Armor",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
     },
     {
       "id": "pwr-moment-of-prescience-psionic",
@@ -14394,15 +13211,6 @@
       "l": 3
     },
     {
-      "id": "pwr-talons",
-      "n": "Talons",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 0
-    },
-    {
       "id": "pwr-microcosm",
       "n": "Microcosm",
       "t": "Power",
@@ -14410,15 +13218,6 @@
       "s": "None",
       "f": "srd_powers.json",
       "l": 9
-    },
-    {
-      "id": "pwr-foresight",
-      "n": "Foresight",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 8
     },
     {
       "id": "pwr-id-insinuation",
@@ -14430,28 +13229,10 @@
       "l": 2
     },
     {
-      "id": "pwr-whitefire",
-      "n": "Whitefire",
-      "t": "Power",
-      "c": "Psychometabolism",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 3
-    },
-    {
       "id": "pwr-metaphysical-claw",
       "n": "Metaphysical Claw",
       "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
-      "id": "pwr-combat-precognition",
-      "n": "Combat Precognition",
-      "t": "Power",
-      "c": "Clairsentience",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -14466,15 +13247,6 @@
       "l": 1
     },
     {
-      "id": "pwr-lesser-body-adjustment",
-      "n": "Lesser Body Adjustment",
-      "t": "Power",
-      "c": "Metacreativity",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
       "id": "pwr-false-sensory-input",
       "n": "False Sensory Input",
       "t": "Power",
@@ -14482,15 +13254,6 @@
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
-    },
-    {
-      "id": "pwr-improved-fly",
-      "n": "Improved Fly",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 6
     },
     {
       "id": "pwr-inflict-pain",
@@ -14505,7 +13268,7 @@
       "id": "pwr-energy-wall",
       "n": "Energy Wall",
       "t": "Power",
-      "c": "Psychometabolism",
+      "c": "Metacreativity",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -14520,19 +13283,10 @@
       "l": 2
     },
     {
-      "id": "pwr-telekinesis",
-      "n": "Telekinesis",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 4
-    },
-    {
       "id": "pwr-claws-of-the-vampire",
       "n": "Claws of the Vampire",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 3
@@ -14544,43 +13298,19 @@
       "c": "Psychoportation",
       "s": "None",
       "f": "srd_powers.json",
-      "l": 4
-    },
-    {
-      "id": "pwr-steadfast-gaze",
-      "n": "Steadfast Gaze",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 1
-    },
-    {
-      "id": "pwr-clairtangency",
-      "n": "Clairtangency",
-      "t": "Power",
-      "c": "Kin",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 5
+      "l": 4,
+      "a": [
+        "Freedom of Movement"
+      ]
     },
     {
       "id": "pwr-adapt-body",
       "n": "Adapt Body",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 5
-    },
-    {
-      "id": "pwr-teleport-without-error",
-      "n": "Teleport without Error",
-      "t": "Power",
-      "c": "Psychoportation",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 7
     },
     {
       "id": "pwr-schism",
@@ -14590,15 +13320,6 @@
       "s": "None",
       "f": "srd_powers.json",
       "l": 4
-    },
-    {
-      "id": "pwr-know-direction",
-      "n": "Know Direction",
-      "t": "Power",
-      "c": "Clairsentience",
-      "s": "None",
-      "f": "srd_powers.json",
-      "l": 0
     },
     {
       "id": "pwr-clairvoyant-sense",
@@ -14613,7 +13334,7 @@
       "id": "pwr-compression",
       "n": "Compression",
       "t": "Power",
-      "c": "Metacreativity",
+      "c": "Psychometabolism",
       "s": "None",
       "f": "srd_powers.json",
       "l": 1
@@ -46819,11 +45540,14 @@
     },
     {
       "id": "feat-elemental-adapt",
-      "n": "Elemental Adapt",
+      "n": "Elemental Adept",
       "t": "Feat",
       "c": "General",
       "s": "None",
-      "f": "srd_feats_splat.json"
+      "f": "srd_feats_splat.json",
+      "a": [
+        "Elemental Adapt"
+      ]
     },
     {
       "id": "feat-energy-abjuration",
@@ -56742,11 +55466,14 @@
     },
     {
       "id": "feat-persistant-refusal",
-      "n": "Persistant Refusal",
+      "n": "Persistent Refusal",
       "t": "Feat",
       "c": "Divine",
       "s": "None",
-      "f": "srd_feats_splat.json"
+      "f": "srd_feats_splat.json",
+      "a": [
+        "Persistant Refusal"
+      ]
     },
     {
       "id": "feat-pious-defiance",

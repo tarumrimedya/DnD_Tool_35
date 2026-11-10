@@ -3830,7 +3830,7 @@
     "type": "Class",
     "category": "Base",
     "isPrestige": false,
-    "source": "Age of Mortals",
+    "source": "Dragonlance Campaign Setting",
     "role": "Base Class",
     "hd": 8,
     "hitDie": "d8",
@@ -3883,11 +3883,12 @@
     "ruleFlags": {},
     "edition": "3.5-licensed",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (baseDragonlance/mariner.html), 2026-11-10: book taken from the site (workbook had Age of Mortals; neither book in the user's library); chassis agrees"
     }
   },
   {
@@ -5144,11 +5145,12 @@
     "ruleFlags": {},
     "edition": "3.0",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "verified",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "book": "Oriental Adventures Table 2-3, p.23 (d6, 4 + Int, BAB +15 at 20th, good Will only; the site table shows good Fort, the book wins)"
     }
   },
   {
@@ -5551,11 +5553,12 @@
     "ruleFlags": {},
     "edition": "3.0",
     "contentLevel": "stub",
-    "verification": "unverified",
+    "verification": "cross-checked",
     "provenance": {
       "origin": "builder-workbook-7.4.0.1",
       "sheet": "Class_Info",
-      "index": null
+      "index": null,
+      "crossCheck": "srd.dndtools.org class table (sohei.html), 2026-11-10"
     }
   },
   {

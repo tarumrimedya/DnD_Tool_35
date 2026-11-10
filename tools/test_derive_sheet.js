@@ -2423,7 +2423,8 @@ function runDeriveSheetTests() {
   check(
     'SRD Import P3: no Dragon Magazine, placeholder, header or "xN" rows; every feat has a book source, a summary benefit, verification and provenance; no Warlock "tier" key',
     p3All.every(f => !/Dragon Magazine/i.test(f.source) && !/ x\d$|Feats$/.test(f.name) && f.benefit && f.benefit.length > 3 &&
-      ['cross-checked', 'unverified'].includes(f.verification) && f.provenance && f.contentLevel === 'summary' && !('tier' in f)) &&
+      ['verified', 'cross-checked', 'unverified'].includes(f.verification) && f.provenance && f.contentLevel === 'summary' && !('tier' in f) &&
+      (f.verification !== 'verified' || /p\.\d+$/.test(f.provenance.book || ''))) &&
     p3All.filter(f => f.verification === 'cross-checked').length > 600
   );
   Comp.ensureChunkLoaded('srd_feats_splat.json'); // Node: synchronous
@@ -2639,11 +2640,11 @@ function runDeriveSheetTests() {
   const pwIdx = JSON.parse(fs.readFileSync(path.join(dbDir, 'srd_index.json'), 'utf8'));
   const pwRows = pwIdx.index.filter(r => r.t === 'Power');
   check(
-    'SRD Import Powers: the 440 XPH powers live only in the lazy srd_powers.json (not eager, not opt-in); srd_spells.json keeps spells only; index rows point at the new chunk',
-    pwChunk.length === 440 && pwChunk.every(p => p.type === 'Power' && p.id && p.schemaVersion === 2) &&
+    'SRD Import Powers: the 287 XPH powers (3.5 psionics SRD, no 3.0 Psionics Handbook leftovers) live only in the lazy srd_powers.json (not eager, not opt-in); srd_spells.json keeps spells only; index rows point at the new chunk',
+    pwChunk.length === 287 && pwChunk.every(p => p.type === 'Power' && p.id && p.schemaVersion === 2 && p.verification === 'cross-checked') &&
     !pwSpells.some(s => s.type === 'Power') && pwSpells.length > 600 &&
     pwIdx.chunks['srd_powers.json'].eagerLoad === false && !pwIdx.chunks['srd_powers.json'].optIn &&
-    pwRows.length === 440 && pwRows.every(r => r.f === 'srd_powers.json') &&
+    pwRows.length === 287 && pwRows.every(r => r.f === 'srd_powers.json') &&
     Comp.getLazyChunkNames().includes('srd_powers.json') && !Comp.isChunkLoaded('srd_powers.json') &&
     !Comp.getByName('Force Screen')
   );
