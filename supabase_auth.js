@@ -731,10 +731,14 @@ const SupabaseAuth = {
     if (!client || !campaignId) return null;
     const key = `packs_${campaignId}`;
     if (this._activeChannels[key]) this.unsubscribeCampaignPacks(campaignId);
+    const notify = () => { if (typeof handlePackChange === 'function') handlePackChange(); };
+    // Supabase Realtime does not apply filters to DELETE events, so a filtered '*' listener never sees the DM
+    // removing a pack. DELETE is heard unfiltered; the handler re-fetches this campaign's packs (RLS-checked),
+    // so a delete in another campaign only costs one extra fetch.
     const channel = client.channel(`campaign_packs_${campaignId}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'campaign_packs', filter: `campaign_id=eq.${campaignId}` }, () => {
-        if (typeof handlePackChange === 'function') handlePackChange();
-      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'campaign_packs', filter: `campaign_id=eq.${campaignId}` }, notify)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'campaign_packs', filter: `campaign_id=eq.${campaignId}` }, notify)
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'campaign_packs' }, notify)
       .subscribe();
     this._activeChannels[key] = channel;
     return channel;

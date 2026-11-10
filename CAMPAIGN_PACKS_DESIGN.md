@@ -1,6 +1,6 @@
 # Campaign DB: shared campaign rule DB (design)
 
-Status: approved (2026-11-10): the whole pack is copied to each character, and a pack file uploaded in the Hub attaches to the campaign. Phase 1 is implemented (`campaign_db.js`, Hub local campaigns). Phase 2 is implemented (cloud table, `supabase_auth.js`, Hub DM side); the SQL was run in Supabase on 2026-11-10. Phase 3 is implemented (character sheet); a live test on a cloud campaign is still open.
+Status: approved (2026-11-10): the whole pack is copied to each character, and a pack file uploaded in the Hub attaches to the campaign. Phase 1 is implemented (`campaign_db.js`, Hub local campaigns). Phase 2 is implemented (cloud table, `supabase_auth.js`, Hub DM side); the SQL was run in Supabase on 2026-11-10. Phase 3 is implemented (character sheet). Live test on the cloud campaign "Test Camp" (Vercel preview, 2026-11-10): attach, sheet load, Realtime update, in-use entry kept as removed, detach and rejoin, sub-campaign root and anon RLS passed. It found that Supabase Realtime does not filter DELETE events, so the sheet missed a pack removal; the sheet now listens to DELETE unfiltered and re-fetches.
 
 ## Phase 3 behaviour (character sheet, `char_hud.js`)
 
