@@ -2924,6 +2924,100 @@ function runDeriveSheetTests() {
     (() => { const ix = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8'); return ix.indexOf('campaign_db.js') > 0 && ix.indexOf('campaign_db.js') < ix.indexOf('char_hud.js'); })()
   );
 
+  // Sheet: spells granted at will (DM boons) are listed as records. Named spells keep the boon's text when no DB
+  // entry exists (Charm Reptiles is not SRD); a school/level filter grant is listed as that choice with its benefit line.
+  {
+    const awChar = JSON.parse(JSON.stringify(f05Raw));
+    awChar.customDb = boonPack.entries.map(e => JSON.parse(JSON.stringify(e)));
+    const lord = awChar.customDb.find(e => /boon_lord_of_reptiles$/.test(e.id));
+    const abj = awChar.customDb.find(e => /boon_of_abjuration_lesser$/.test(e.id));
+    awChar.specialAbilities = (awChar.specialAbilities || []).concat([JSON.parse(JSON.stringify(lord)), JSON.parse(JSON.stringify(abj))]);
+    RuleEngine.recalculateCharacter(awChar, awChar.customDb);
+    const spellsSrc = fs.readFileSync(path.join(__dirname, '..', 'char_spells.js'), 'utf8');
+    const awFnSrc = spellsSrc.slice(spellsSrc.indexOf('function getGrantedAtWillSpellRecords('), spellsSrc.indexOf('function renderGrantedAtWillSpells('));
+    const awBox = { Array, String, Number, Set, character: awChar, masterDb: [] };
+    vm.runInNewContext(awFnSrc + '\nrecs = getGrantedAtWillSpellRecords(character);', awBox);
+    const recs = awBox.recs || [];
+    const charm = recs.find(r => r.name === 'Charm Reptiles');
+    const abjRec = recs.find(r => r.isChoice && r.school === 'Abjuration');
+    const ixHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    check(
+      'Sheet: DM boon spell_at_will grants become At Will records: Lord of Reptiles lists Charm Reptiles and Summon Locust Swarm with the boon text, Boon of Abjuration Lesser lists "1st-level Abjuration spell of your choice" with its Benefit 1 line; nothing without such a boon',
+      recs.length === 3 && charm && charm.source === lord.name && /Charm Reptiles/.test(charm.desc) &&
+      recs.some(r => r.name === 'Summon Locust Swarm') &&
+      abjRec && abjRec.name === '1st-level Abjuration spell of your choice' && /^Benefit 1: Choose a 1st level spell/i.test(abjRec.desc) && abjRec.source === abj.name &&
+      (() => { const b = { Array, String, Number, Set, character: { grantedCapabilities: { spellsAtWill: [] } }, masterDb: [] }; vm.runInNewContext(awFnSrc + '\nr = getGrantedAtWillSpellRecords(character);', b); return b.r.length === 0; })() &&
+      /id="granted-at-will-spells"/.test(ixHtml) && /renderGrantedAtWillSpells\(\)/.test(hudCdbSrc)
+    );
+  }
+
+  // Sheet: campaign Realtime HP events. The old row carries only the primary key, so every save of the character's
+  // row reaches onHpChange; only a newer last_dm_hp_update_ts with a real HP change is a DM event.
+  const hudSliceFn = (startMarker, endMarker) => {
+    const a = hudCdbSrc.indexOf(startMarker);
+    return hudCdbSrc.slice(a, hudCdbSrc.indexOf(endMarker, a + startMarker.length));
+  };
+  const hpListenerSrc = hudSliceFn('function initCampaignRealtimeListener(', '\n    function ');
+  const hpRun = (hp, evts) => {
+    const got = [];
+    let handlers = null;
+    const sandbox = {
+      Number, character: { id: 'p1', name: 'Hero', hp },
+      window: {
+        SupabaseAuth: { subscribeCampaignRealtime: (cid, h) => { handlers = h; } },
+        handleIncomingDmHpEvent: (e) => got.push(e)
+      }
+    };
+    vm.runInNewContext(hpListenerSrc + '\ninitCampaignRealtimeListener("camp-1");', sandbox);
+    evts.forEach(e => handlers.onHpChange(e));
+    return { got, hp: sandbox.character.hp };
+  };
+  const hpAutosave = hpRun({ current: 14, max: 155, temp: 0, _lastDmUpdateTs: 1000 }, [
+    { characterId: 'p1', currentHp: 14, tempHp: 0, lastDmHpUpdateTs: 1000 },
+    { characterId: 'p1', currentHp: 14, tempHp: 0, lastDmHpUpdateTs: undefined }
+  ]);
+  const hpDm = hpRun({ current: 14, max: 155, temp: 0, _lastDmUpdateTs: 1000 }, [
+    { characterId: 'other', currentHp: 1, tempHp: 0, lastDmHpUpdateTs: 5000 },
+    { characterId: 'p1', currentHp: 20, tempHp: 0, lastDmHpUpdateTs: 2000 }
+  ]);
+  const hpSame = hpRun({ current: 14, max: 155, temp: 0, _lastDmUpdateTs: 1000 }, [
+    { characterId: 'p1', currentHp: 14, tempHp: 0, lastDmHpUpdateTs: 3000 }
+  ]);
+  const hpOlderThanPlayer = hpRun({ current: 30, max: 155, temp: 0, _lastDmUpdateTs: 1000, _lastPlayerChangeTs: 4000 }, [
+    { characterId: 'p1', currentHp: 14, tempHp: 0, lastDmHpUpdateTs: 3000 }
+  ]);
+  check(
+    'Sheet: a campaign Realtime save of the character\'s row (autosave, Hub sync) is not a DM HP event; a newer DM write with an HP change gives a complete event (delta, max HP, timestamp); an unchanged HP only records the timestamp; a DM write older than the player\'s own change is ignored',
+    hpAutosave.got.length === 0 &&
+    hpDm.got.length === 1 && hpDm.got[0].delta === 6 && hpDm.got[0].maxHp === 155 && hpDm.got[0].timestamp === 2000 && hpDm.got[0].currentHp === 20 &&
+    hpSame.got.length === 0 && hpSame.hp._lastDmUpdateTs === 3000 &&
+    hpOlderThanPlayer.got.length === 0
+  );
+
+  // Sheet: cloud revalidation never swaps the requested (or already shown) character for another cloud character.
+  // Run synchronously: the suite is synchronous, so the async function is de-asynced in the sandbox
+  // (the fake cloud returns its rows directly).
+  const revalSrc = hudSliceFn('async function revalidateCharacterFromCloudInBackground(', '\n    async function ').split('\n    function ')[0]
+    .replace(/^async /, '').replace(/\bawait\s+/g, '');
+  const revalRun = (search, character) => {
+    const sandbox = {
+      URLSearchParams, Array, Number, Date, JSON, Math, console, character,
+      localStorage: { getItem: () => 'char_magnus', setItem: () => {} },
+      window: {
+        location: { search },
+        SupabaseAuth: { isLocalMode: () => false, fetchUserCharacters: () => [{ id: 'char_magnus', name: 'Magnus', full_data: { name: 'Magnus' } }] }
+      }
+    };
+    vm.runInNewContext(revalSrc + '\nout = revalidateCharacterFromCloudInBackground(' + JSON.stringify(new URLSearchParams(search).get('id')) + ');', sandbox);
+    return sandbox;
+  };
+  const revalLocalOnly = revalRun('?id=char_local_new', { id: 'char_local_new', name: 'Local Hero' });
+  const revalNoChar = revalRun('?id=char_missing', null);
+  check(
+    'Sheet: a character that is not in the cloud yet stays on the sheet (cloud revalidation does not swap in the last active cloud character); an unknown ?id= is not replaced by another character either',
+    revalLocalOnly.out === false && revalLocalOnly.character.id === 'char_local_new' && revalNoChar.out === false && revalNoChar.character === null
+  );
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };

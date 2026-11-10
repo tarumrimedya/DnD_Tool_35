@@ -556,6 +556,11 @@
         if (reqId) {
           matchedCloud = cloudChars.find(c => c.id === reqId);
         }
+        // The sheet asked for one character (?id=) or already shows one: a cloud row with another id must never
+        // replace it. A character that is not uploaded yet stays local. The fallbacks below only pick a character
+        // when the sheet has none and no id was asked for.
+        const explicitId = new URLSearchParams(window.location.search).get('id');
+        if (!matchedCloud && (explicitId || character)) return false;
         if (!matchedCloud) {
           const activeId = localStorage.getItem('dnd35_active_character_id');
           if (activeId) {
@@ -1751,17 +1756,33 @@
 
       window.SupabaseAuth.subscribeCampaignRealtime(campaignId, {
         onHpChange: (evt) => {
-          if (evt && (evt.characterId === character.id || evt.characterId === character._hubId || (character.name && evt.charName === character.name))) {
-            if (typeof window.handleIncomingDmHpEvent === 'function') {
-              window.handleIncomingDmHpEvent({
-                type: 'DM_HP_UPDATE',
-                charId: evt.characterId,
-                currentHp: evt.currentHp,
-                tempHp: evt.tempHp || 0,
-                lastHpUpdateTs: evt.lastDmHpUpdateTs || Date.now(),
-                charName: character.name
-              });
-            }
+          if (!evt || !character || (evt.characterId !== character.id && evt.characterId !== character._hubId)) return;
+          // Realtime's old row carries only the primary key, so every save of this character's row (the player's
+          // own autosave, the Hub syncing it) reaches here. Only a DM HP write moves last_dm_hp_update_ts past
+          // what this sheet already applied or changed itself; anything else is not a DM event.
+          const hp = character.hp || {};
+          const dmTs = Number(evt.lastDmHpUpdateTs) || 0;
+          if (!dmTs || dmTs <= (Number(hp._lastDmUpdateTs) || 0) || dmTs <= (Number(hp._lastPlayerChangeTs) || 0)) return;
+          const newHp = Number(evt.currentHp);
+          const newTemp = Number(evt.tempHp) || 0;
+          const curHp = Number(hp.current);
+          if (!Number.isFinite(newHp)) return;
+          const delta = Number.isFinite(curHp) ? newHp - curHp : 0;
+          if (delta === 0 && newTemp === (Number(hp.temp) || 0)) {
+            hp._lastDmUpdateTs = dmTs;
+            return;
+          }
+          if (typeof window.handleIncomingDmHpEvent === 'function') {
+            window.handleIncomingDmHpEvent({
+              type: 'DM_HP_UPDATE',
+              charId: evt.characterId,
+              delta: delta,
+              currentHp: newHp,
+              maxHp: Number(hp.max) || newHp,
+              tempHp: newTemp,
+              timestamp: dmTs,
+              charName: character.name
+            });
           }
         }
       });
@@ -2329,6 +2350,7 @@
           try { renderSpellSlots(); } catch (e) { console.error('renderSpellSlots error:', e); }
           try { renderManeuvers(); } catch (e) { console.error('renderManeuvers error:', e); }
           try { renderKnownSpells(); } catch (e) { console.error('renderKnownSpells error:', e); }
+          try { if (typeof renderGrantedAtWillSpells === 'function') renderGrantedAtWillSpells(); } catch (e) { console.error('renderGrantedAtWillSpells error:', e); }
           break;
         case 'tab-core':
         case 'tab-skills':
