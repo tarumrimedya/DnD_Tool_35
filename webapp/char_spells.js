@@ -5302,6 +5302,123 @@
       return Math.max(0, knownCount);
     }
 
+    // Spells granted at will by an entry's `grants` (grantType "spell_at_will", e.g. DM boons). They carry no
+    // math, so they are listed as records with their description: a named spell (targetId) resolves to the DB /
+    // SRD entry when one exists, else it keeps the granting entry's text; a filter grant ("a 1st-level Abjuration
+    // spell you know") is listed as that choice with the granting entry's benefit line.
+    function getGrantedAtWillSpellRecords(charObj) {
+      const grants = (charObj && charObj.grantedCapabilities && Array.isArray(charObj.grantedCapabilities.spellsAtWill))
+        ? charObj.grantedCapabilities.spellsAtWill : [];
+      if (!grants.length) return [];
+      // The granting entry may live only on the character (a boon in specialAbilities carries its full record),
+      // so the character's own lists are searched as well as the DBs.
+      const asList = (v) => (Array.isArray(v) ? v.filter(x => x && typeof x === 'object') : []);
+      const pools = [
+        asList(charObj.customDb),
+        (typeof masterDb !== 'undefined') ? asList(masterDb) : [],
+        asList(charObj.specialAbilities), asList(charObj.feats), asList(charObj.legoEntries), asList(charObj.classFeatures)
+      ];
+      const findById = (id) => {
+        const full = String(id || '').toLowerCase();
+        const short = full.split(':').pop();
+        let first = null;
+        for (const pool of pools) {
+          const hit = pool.find(e => e && e.id && (String(e.id).toLowerCase() === full || String(e.id).toLowerCase().split(':').pop() === short));
+          if (!hit) continue;
+          // A bare reference ({ id, name }) only names the entry; keep looking for the full record.
+          if (hit.description || hit.benefit || hit.summary) return hit;
+          if (!first) first = hit;
+        }
+        return first;
+      };
+      const ordinal = (n) => (n === 0 ? '0-level' : n === 1 ? '1st-level' : n === 2 ? '2nd-level' : n === 3 ? '3rd-level' : `${n}th-level`);
+      const benefitLine = (desc, label) => {
+        const text = String(desc || '');
+        if (!label) return text;
+        const line = text.split(/\r?\n/).find(l => l.toLowerCase().includes(String(label).toLowerCase()));
+        return line ? line.replace(/^[^A-Za-z]*/, '') : text;
+      };
+      const seen = new Set();
+      const out = [];
+      grants.forEach(g => {
+        if (!g) return;
+        const src = findById(g.source);
+        const srcName = (src && src.name) || String(g.source || '').split(':').pop();
+        const srcDesc = src ? (src.description || src.benefit || '') : '';
+        let rec;
+        if (g.targetId) {
+          const humanName = String(g.targetId).split(':').pop().replace(/[_-]+/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+          const spell = findById(g.targetId)
+            || (typeof findMasterItem === 'function' ? findMasterItem(humanName) : null);
+          rec = {
+            key: `${g.source}|${g.targetId}`,
+            name: (spell && spell.name) || humanName,
+            school: (spell && spell.school) || '',
+            level: spell && spell.level !== undefined && spell.level !== null && spell.level !== '' ? String(spell.level) : '',
+            desc: (spell && (spell.description || spell.benefit || spell.summary)) || srcDesc,
+            inDb: Boolean(spell)
+          };
+        } else if (g.filter && (g.filter.school || g.filter.level !== undefined)) {
+          const lvl = Number(g.filter.level);
+          const school = g.filter.school || '';
+          rec = {
+            key: `${g.source}|${school}|${g.filter.level}`,
+            name: `${Number.isFinite(lvl) ? ordinal(lvl) + ' ' : ''}${school ? school + ' ' : ''}spell of your choice`.replace(/^./, c => c.toUpperCase()),
+            school,
+            level: Number.isFinite(lvl) ? String(lvl) : '',
+            desc: benefitLine(srcDesc, g.sourceLabel),
+            inDb: false,
+            isChoice: true
+          };
+        } else {
+          return;
+        }
+        if (seen.has(rec.key)) return;
+        seen.add(rec.key);
+        rec.source = srcName;
+        out.push(rec);
+      });
+      return out;
+    }
+
+    function renderGrantedAtWillSpells() {
+      const host = document.getElementById('granted-at-will-spells');
+      if (!host) return;
+      const recs = getGrantedAtWillSpellRecords(character);
+      if (!recs.length) {
+        host.classList.add('hidden');
+        host.innerHTML = '';
+        return;
+      }
+      const esc = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      host.classList.remove('hidden');
+      host.innerHTML = `
+        <div class="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/40 shadow">
+          <div class="bg-slate-900/80 px-4 py-2.5 text-xs font-bold text-amber-300 flex justify-between items-center border-b border-slate-800">
+            <div class="flex items-center gap-2">
+              <span>✨</span>
+              <span class="uppercase tracking-wider">At Will (Granted)</span>
+            </div>
+            <span class="text-[11px] text-slate-400 font-normal">No slot used • from DM boons and granting abilities</span>
+          </div>
+          <div class="divide-y divide-slate-800">
+            ${recs.map(r => `
+              <div class="px-4 py-2.5 text-xs">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-bold text-white">🔮 ${esc(r.name)}</span>
+                  ${r.level !== '' && !r.isChoice ? `<span class="badge bg-slate-900 text-slate-300 border border-slate-700 text-[10px] font-mono">Lvl ${esc(r.level)}</span>` : ''}
+                  ${r.school ? `<span class="badge bg-purple-950/60 text-purple-300 border border-purple-800/80 text-[10px] font-semibold">${esc(r.school)}</span>` : ''}
+                  <span class="badge bg-amber-950/90 text-amber-300 border border-amber-600/80 text-[10px] font-bold">At Will</span>
+                  <span class="text-[10px] text-slate-400">Source: ${esc(r.source)}</span>
+                </div>
+                ${r.desc ? `<p class="text-[11px] text-slate-300 mt-1 whitespace-pre-line">${esc(r.desc)}</p>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
     // Known Spells
     function renderKnownSpells() {
       renderSpellsCockpit();

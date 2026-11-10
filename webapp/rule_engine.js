@@ -1041,7 +1041,7 @@ const RuleEngine = {
             grantedCapabilities.unlockedEntities.push(g.targetId);
           }
         } else if (g.grantType === 'spell_at_will') {
-          grantedCapabilities.spellsAtWill.push({ source: e.id, targetId: g.targetId, filter: g.filter || null });
+          grantedCapabilities.spellsAtWill.push({ source: e.id, targetId: g.targetId, filter: g.filter || null, sourceLabel: g.sourceLabel || null });
         } else if (g.grantType === 'proficiency') {
           grantedCapabilities.proficiencies.push(g.targetId || g.value);
         } else if (g.grantType === 'sense') {

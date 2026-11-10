@@ -2,6 +2,14 @@
 
 Status: approved (2026-11-10): the whole pack is copied to each character, and a pack file uploaded in the Hub attaches to the campaign. Phase 1 is implemented (`campaign_db.js`, Hub local campaigns). Phase 2 is implemented (cloud table, `supabase_auth.js`, Hub DM side); the SQL was run in Supabase on 2026-11-10. Phase 3 is implemented (character sheet). Live test on the cloud campaign "Test Camp" (Vercel preview, 2026-11-10): attach, sheet load, Realtime update, in-use entry kept as removed, detach and rejoin, sub-campaign root and anon RLS passed. It found that Supabase Realtime does not filter DELETE events, so the sheet missed a pack removal; the sheet now listens to DELETE unfiltered and re-fetches.
 
+## Campaign bundle (export / import, Hub)
+
+The Hub settings card "Campaign (DB, Notes, Characters)" replaces the old "Master DB (Library)" export, which merged every character's DB into one file. `campaign_db.js` builds and plans it; `hub.html` (`exportCampaignBundle`, `importCampaignBundleFile`) applies it.
+
+- **File:** `{ format: "dnd35-campaign-bundle", schemaVersion: 1, exportedAt, campaign, subCampaigns, characters }`. `campaign` is the main campaign (a selected sub-campaign resolves to it) with its notes and Campaign DB `packs`; `subCampaigns` carry their own notes; `characters` are the Hub's characters in the campaign and its sub-campaigns. The invite code is left out, and so are the characters' active Campaign DB copies (the packs re-create them). Characters other players own in a cloud campaign are not in the DM's Hub, so they are not in the file.
+- **Import, campaign id (or cloud id) unknown:** the campaign, sub-campaigns, notes, packs and characters are created as a local campaign. "Move to Cloud" uploads it.
+- **Import, campaign exists:** notes, sub-campaigns, characters and packs are matched by id. Missing: added. Identical: skipped (a re-import changes nothing). Different: a new copy with a new id and "(Imported YYYY-MM-DD)" in its title or name; nothing existing is overwritten. A pack with the same `packId` and different entries is attached as a new version (a copy would duplicate entry ids); on a cloud campaign it is uploaded, and the campaign's characters are reconciled.
+
 ## Phase 3 behaviour (character sheet, `char_hud.js`)
 
 - **Load and join:** a character with `cloudCampaignId` subscribes to its campaign's `campaign_packs` (Realtime) and fetches the packs when it loads and when it joins a campaign; the copies are reconciled, the character is saved and the sheet re-renders.

@@ -6,10 +6,10 @@
   <title>D&D 3.5e Character & Campaign Command Center (Hub)</title>
   <link rel="stylesheet" href="tailwind_compiled.css?v=20261106_2000">
   <script src="srd_compendium.js?v=20261105_2355"></script>
-  <script src="rule_engine.js?v=20261105_2355"></script>
+  <script src="rule_engine.js?v=20261110_r12"></script>
   <script src="rule_master.js?v=20261105_2355"></script>
   <script src="ui_shared.js?v=20261105_2355"></script>
-  <script src="campaign_db.js?v=20261110_01"></script>
+  <script src="campaign_db.js?v=20261110_02"></script>
   <script src="gdrive_sync.js?v=20261105_2355"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js?v=20261110_r12"></script>
@@ -18,7 +18,7 @@
   <link rel="prefetch" href="char_modals.js?v=20261105_2355">
   <link rel="prefetch" href="char_hud.js?v=20261105_2355">
   <link rel="prefetch" href="char_combat.js?v=20261105_2355">
-  <link rel="prefetch" href="char_spells.js?v=20261105_2355">
+  <link rel="prefetch" href="char_spells.js?v=20261110_r13">
   <link rel="prefetch" href="char_progression.js?v=20261105_2355">
   <link rel="prefetch" href="char_inventory.js?v=20261105_2355">
   <!-- Three.js & 3D Dice Roller Engine -->
@@ -5404,10 +5404,10 @@ CRITICAL RULES:
 
             <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800 space-y-1.5">
               <div class="font-bold text-slate-300 flex items-center gap-1">
-                <span>📚</span> <span>Master DB (Library)</span>
+                <span>🏰</span> <span>Campaign (DB, Notes, Characters)</span>
               </div>
               <div class="flex gap-1.5">
-                <button onclick="exportMasterDbJson()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition cursor-pointer">💾 Export</button>
+                <button onclick="exportCampaignBundle()" title="Exports the selected campaign: sub-campaigns, Campaign DB rule packs, notes and characters" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition cursor-pointer">💾 Export</button>
                 <button onclick="document.getElementById('settings-json-file-input').click()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition cursor-pointer">📂 Import</button>
               </div>
             </div>
@@ -6389,29 +6389,56 @@ CRITICAL RULES:
         </div>`).join('');
     }
 
-    function exportMasterDbJson() {
-      const seen = new Set();
-      const combined = [];
-      (Array.isArray(state.characters) ? state.characters : []).forEach(c => {
-        const db = (c && c.fullData && Array.isArray(c.fullData.customDb))
-          ? c.fullData.customDb
-          : (c && Array.isArray(c.customDb) ? c.customDb : []);
-        db.forEach(entry => {
-          if (!entry || !entry.name) return;
-          const k = entry.id || String(entry.name).toLowerCase().trim();
-          if (!seen.has(k)) {
-            seen.add(k);
-            combined.push(entry);
-          }
-        });
-      });
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(combined, null, 2));
+    // Campaign bundle: the selected main campaign with its sub-campaigns, Campaign DB packs, notes and the Hub's
+    // characters in it, in one file (campaign_db.js buildCampaignBundle). Replaces the old "all character DBs merged" export.
+    function exportCampaignBundle() {
+      const rootCamp = getHubActiveRootCampaign();
+      if (!rootCamp || !window.CampaignDb) {
+        alert('⚠️ Select a campaign first. The export holds one campaign: its sub-campaigns, Campaign DB rule packs, notes and characters.');
+        return;
+      }
+      const bundle = CampaignDb.buildCampaignBundle(state, rootCamp.id, new Date().toISOString());
+      if (!bundle) return;
+      const slugName = String(rootCamp.name || 'campaign').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'campaign';
+      const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = dataStr;
-      a.download = `dnd35_master_db_${new Date().toISOString().slice(0, 10)}.json`;
+      a.href = url;
+      a.download = `campaign_${slugName}_${new Date().toISOString().slice(0, 10)}.json`;
       document.body.appendChild(a);
       a.click();
       a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    async function importCampaignBundleFile(bundle) {
+      const bc = bundle.campaign;
+      const counts = `${(bundle.subCampaigns || []).length} sub-campaign(s), ${(bc.packs || []).length} rule pack(s), ${(bundle.characters || []).length} character(s)`;
+      if (!confirm(`Import campaign "${bc.name || bc.id}" (${counts})?\n\nA campaign with the same id is merged: missing notes, sub-campaigns, characters and packs are added, identical ones are skipped, and a different one with the same id is added as a new copy marked "(Imported <date>)". Nothing is overwritten; a changed rule pack becomes a new version.`)) return;
+      const plan = CampaignDb.importCampaignBundle(state, bundle, { nowIso: new Date().toISOString() });
+      state.campaigns = plan.campaigns;
+      state.characters = plan.characters;
+      state.activeCampaignId = plan.rootId;
+      const rootCamp = state.campaigns.find(c => c.id === plan.rootId);
+      let cloudNote = '';
+      const cloudId = getCampaignDbCloudId(rootCamp);
+      if (plan.packsChanged && cloudId && Array.isArray(rootCamp.packs)) {
+        let failed = 0;
+        for (const p of rootCamp.packs.filter(p => p && p.inCloud === false)) {
+          try { await SupabaseAuth.upsertCampaignPack(cloudId, p); p.inCloud = true; } catch (err) { failed++; }
+        }
+        cloudNote = failed ? `\n☁️ ${failed} rule pack(s) not uploaded yet; the next Hub sync retries.` : '\n☁️ Rule packs saved to the cloud campaign.';
+      }
+      const total = reconcileHubCampaignDbs({ save: false });
+      saveHubStorage(true);
+      renderHub();
+      const r = plan.report;
+      alert(`✅ Campaign "${rootCamp ? rootCamp.name : bc.name}" ${r.campaignCreated ? 'created' : 'merged'}.${cloudNote}\n` +
+        `• Sub-campaigns added: ${r.subCampaignsAdded}\n` +
+        `• Notes added: ${r.notesAdded} • Copied (same id, different): ${r.notesCopied} • Skipped (identical): ${r.notesSkipped}\n` +
+        `• Characters added: ${r.charactersAdded} • Copied: ${r.charactersCopied} • Skipped: ${r.charactersSkipped}\n` +
+        `• Rule packs added: ${r.packsAdded} • New version: ${r.packsUpdated} • Skipped: ${r.packsSkipped}\n` +
+        describeCampaignDbReconcile(total));
     }
 
     function evaluateHubEntryEligibility(entry, charData) {
@@ -6558,7 +6585,9 @@ CRITICAL RULES:
       reader.onload = function(e) {
         try {
           const parsed = JSON.parse(e.target.result);
-          if (parsed.characters && parsed.campaigns) {
+          if (window.CampaignDb && CampaignDb.isCampaignBundle(parsed)) {
+            importCampaignBundleFile(parsed);
+          } else if (parsed.characters && parsed.campaigns) {
             state = parsed;
             window.state = state;
             saveHubStorage();

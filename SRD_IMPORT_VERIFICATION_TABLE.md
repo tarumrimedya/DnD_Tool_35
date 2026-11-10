@@ -21,9 +21,9 @@
 | Ur-Priest | `savingThrows.fort` | high | **low** (good Will only) | ✅ | CD p.70, Table 2–23 | High |
 | Jade Phoenix Mage | `savingThrows.will` | high | **low** (good Fort only) | ✅ | ToB Table 5–5 | High |
 | Warmage | n/a | n/a | **No conflict.** WB "War Mage" is a different class: an *Age of Mortals* (Dragonlance) prestige class. | ❌ | Name-match false positive | High |
-| Factotum | `savingThrows.ref` | low | WB says high | ⏸ | *Dungeonscape* is not in the library | **Low.** User to confirm. |
+| Factotum | `savingThrows.ref` | low | **high** (good Ref only; Fort and Will poor) | ✅ | Dungeonscape class table via srd.dndtools.org `baseDungeon/factotum` (user-supplied, 2026-11-10) | High |
 
-**Result: The workbook was right in all 6 verifiable save conflicts; JF was wrong.**
+**Result: The workbook was right in all 7 save conflicts; JF was wrong.**
 
 ---
 
@@ -142,4 +142,5 @@ The name-based matcher must not merge these two. P3 needs a source-aware ID rule
 
 ## E. Open Item for the User
 
-- **Factotum Reflex save:** *Dungeonscape* is not in `FRP\D&D\Kitap`. If you can check the book or add the PDF, I will settle it. Until then I leave it unchanged.
+- **Factotum Reflex save:** settled (2026-11-10). The class table on srd.dndtools.org (`baseDungeon/factotum`, supplied by the user) gives good Reflex only (+2 at 1st, +12 at 20th), poor Fort and Will; `srd_classes_races.json` now has `ref: good` / `savingThrows.ref: high`.
+- **Factotum Hit Die:** the same page says **d6**; `srd_classes_races.json` has **d8**. Not changed: one web source, no book. User to confirm.

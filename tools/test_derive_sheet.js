@@ -2779,7 +2779,7 @@ function runDeriveSheetTests() {
   );
 
   // Hub: a pack file attaches to the selected (root) campaign; sub-campaign characters get it, others do not.
-  const cdbHubFnSrc = hubSrc.slice(hubSrc.indexOf('function getHubRootCampaign('), hubSrc.indexOf('function exportMasterDbJson('));
+  const cdbHubFnSrc = hubSrc.slice(hubSrc.indexOf('function getHubRootCampaign('), hubSrc.indexOf('function exportCampaignBundle('));
   const cdbHubRun = (activeCampaignId, sheetCharId) => {
     const store = { dnd35_character: JSON.stringify({ id: sheetCharId, customDb: [] }) };
     const alerts = [];
@@ -2923,6 +2923,194 @@ function runDeriveSheetTests() {
     /detachCampaignDb\(character\.cloudCampaignId\);\s*character\.cloudCampaignId = null;/.test(hudCdbSrc) &&
     (() => { const ix = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8'); return ix.indexOf('campaign_db.js') > 0 && ix.indexOf('campaign_db.js') < ix.indexOf('char_hud.js'); })()
   );
+
+  // Sheet: spells granted at will (DM boons) are listed as records. Named spells keep the boon's text when no DB
+  // entry exists (Charm Reptiles is not SRD); a school/level filter grant is listed as that choice with its benefit line.
+  {
+    const awChar = JSON.parse(JSON.stringify(f05Raw));
+    awChar.customDb = boonPack.entries.map(e => JSON.parse(JSON.stringify(e)));
+    const lord = awChar.customDb.find(e => /boon_lord_of_reptiles$/.test(e.id));
+    const abj = awChar.customDb.find(e => /boon_of_abjuration_lesser$/.test(e.id));
+    awChar.specialAbilities = (awChar.specialAbilities || []).concat([JSON.parse(JSON.stringify(lord)), JSON.parse(JSON.stringify(abj))]);
+    RuleEngine.recalculateCharacter(awChar, awChar.customDb);
+    const spellsSrc = fs.readFileSync(path.join(__dirname, '..', 'char_spells.js'), 'utf8');
+    const awFnSrc = spellsSrc.slice(spellsSrc.indexOf('function getGrantedAtWillSpellRecords('), spellsSrc.indexOf('function renderGrantedAtWillSpells('));
+    const awBox = { Array, String, Number, Set, character: awChar, masterDb: [] };
+    vm.runInNewContext(awFnSrc + '\nrecs = getGrantedAtWillSpellRecords(character);', awBox);
+    const recs = awBox.recs || [];
+    const charm = recs.find(r => r.name === 'Charm Reptiles');
+    const abjRec = recs.find(r => r.isChoice && r.school === 'Abjuration');
+    const ixHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+    check(
+      'Sheet: DM boon spell_at_will grants become At Will records: Lord of Reptiles lists Charm Reptiles and Summon Locust Swarm with the boon text, Boon of Abjuration Lesser lists "1st-level Abjuration spell of your choice" with its Benefit 1 line; nothing without such a boon',
+      recs.length === 3 && charm && charm.source === lord.name && /Charm Reptiles/.test(charm.desc) &&
+      recs.some(r => r.name === 'Summon Locust Swarm') &&
+      abjRec && abjRec.name === '1st-level Abjuration spell of your choice' && /^Benefit 1: Choose a 1st level spell/i.test(abjRec.desc) && abjRec.source === abj.name &&
+      (() => { const b = { Array, String, Number, Set, character: { grantedCapabilities: { spellsAtWill: [] } }, masterDb: [] }; vm.runInNewContext(awFnSrc + '\nr = getGrantedAtWillSpellRecords(character);', b); return b.r.length === 0; })() &&
+      // The boon only on the character (empty customDb / masterDb): its name and text still come from specialAbilities.
+      (() => {
+        const b = { Array, String, Number, Set, masterDb: [], character: { customDb: [], specialAbilities: awChar.specialAbilities, grantedCapabilities: awChar.grantedCapabilities } };
+        vm.runInNewContext(awFnSrc + '\nr = getGrantedAtWillSpellRecords(character);', b);
+        const c = b.r.find(x => x.name === 'Charm Reptiles');
+        return b.r.length === 3 && c && c.source === lord.name && /Charm Reptiles/.test(c.desc);
+      })() &&
+      /id="granted-at-will-spells"/.test(ixHtml) && /renderGrantedAtWillSpells\(\)/.test(hudCdbSrc)
+    );
+  }
+
+  // Sheet load: masterDb must be bound to the loaded character before any hydration save, or the save writes the
+  // empty startup masterDb over character.customDb (a Hub-created or migrated character lost its whole DB).
+  {
+    const bindStart = hudCdbSrc.indexOf('function bindMasterDbToLoadedCharacter(');
+    const bindFn = hudCdbSrc.slice(bindStart, hudCdbSrc.indexOf('\n    function ', bindStart + 10));
+    const box = { Array, character: { customDb: [{ id: 'keep_me', name: 'Keep Me' }] }, masterDb: [] };
+    vm.runInNewContext('let masterDbRef = null;\n' + bindFn.replace(/masterDb = character\.customDb;/, 'masterDb = character.customDb; masterDbRef = masterDb;') + '\nbindMasterDbToLoadedCharacter(); bound = masterDbRef;', box);
+    const loadSrc = hudCdbSrc.slice(hudCdbSrc.indexOf('// 2. Load Character-Scoped Custom DB') - 6000, hudCdbSrc.indexOf('// 2. Load Character-Scoped Custom DB'));
+    const firstBind = loadSrc.indexOf('bindMasterDbToLoadedCharacter();');
+    const defaultSave = loadSrc.indexOf('saveStateToStorage(false, true);');
+    const hydrateSave = loadSrc.indexOf('if (updated) saveStateToStorage(false);');
+    const migrate = loadSrc.indexOf('upgradeCharacterToV2(character);');
+    check(
+      'Sheet load: masterDb is bound to the loaded character\'s customDb before the default-character save and the hydration save, and again after the V2 upgrade replaces the character, so opening a Hub-created or migrated character keeps its DB',
+      Array.isArray(box.bound) && box.bound.length === 1 && box.bound[0].id === 'keep_me' &&
+      firstBind > 0 && defaultSave > firstBind && hydrateSave > firstBind &&
+      loadSrc.indexOf('bindMasterDbToLoadedCharacter();', migrate) > migrate && loadSrc.indexOf('bindMasterDbToLoadedCharacter();', migrate) < hydrateSave
+    );
+  }
+
+  // Sheet: campaign Realtime HP events. The old row carries only the primary key, so every save of the character's
+  // row reaches onHpChange; only a newer last_dm_hp_update_ts with a real HP change is a DM event.
+  const hudSliceFn = (startMarker, endMarker) => {
+    const a = hudCdbSrc.indexOf(startMarker);
+    return hudCdbSrc.slice(a, hudCdbSrc.indexOf(endMarker, a + startMarker.length));
+  };
+  const hpListenerSrc = hudSliceFn('function initCampaignRealtimeListener(', '\n    function ');
+  const hpRun = (hp, evts) => {
+    const got = [];
+    let handlers = null;
+    const sandbox = {
+      Number, character: { id: 'p1', name: 'Hero', hp },
+      window: {
+        SupabaseAuth: { subscribeCampaignRealtime: (cid, h) => { handlers = h; } },
+        handleIncomingDmHpEvent: (e) => got.push(e)
+      }
+    };
+    vm.runInNewContext(hpListenerSrc + '\ninitCampaignRealtimeListener("camp-1");', sandbox);
+    evts.forEach(e => handlers.onHpChange(e));
+    return { got, hp: sandbox.character.hp };
+  };
+  const hpAutosave = hpRun({ current: 14, max: 155, temp: 0, _lastDmUpdateTs: 1000 }, [
+    { characterId: 'p1', currentHp: 14, tempHp: 0, lastDmHpUpdateTs: 1000 },
+    { characterId: 'p1', currentHp: 14, tempHp: 0, lastDmHpUpdateTs: undefined }
+  ]);
+  const hpDm = hpRun({ current: 14, max: 155, temp: 0, _lastDmUpdateTs: 1000 }, [
+    { characterId: 'other', currentHp: 1, tempHp: 0, lastDmHpUpdateTs: 5000 },
+    { characterId: 'p1', currentHp: 20, tempHp: 0, lastDmHpUpdateTs: 2000 }
+  ]);
+  const hpSame = hpRun({ current: 14, max: 155, temp: 0, _lastDmUpdateTs: 1000 }, [
+    { characterId: 'p1', currentHp: 14, tempHp: 0, lastDmHpUpdateTs: 3000 }
+  ]);
+  const hpOlderThanPlayer = hpRun({ current: 30, max: 155, temp: 0, _lastDmUpdateTs: 1000, _lastPlayerChangeTs: 4000 }, [
+    { characterId: 'p1', currentHp: 14, tempHp: 0, lastDmHpUpdateTs: 3000 }
+  ]);
+  check(
+    'Sheet: a campaign Realtime save of the character\'s row (autosave, Hub sync) is not a DM HP event; a newer DM write with an HP change gives a complete event (delta, max HP, timestamp); an unchanged HP only records the timestamp; a DM write older than the player\'s own change is ignored',
+    hpAutosave.got.length === 0 &&
+    hpDm.got.length === 1 && hpDm.got[0].delta === 6 && hpDm.got[0].maxHp === 155 && hpDm.got[0].timestamp === 2000 && hpDm.got[0].currentHp === 20 &&
+    hpSame.got.length === 0 && hpSame.hp._lastDmUpdateTs === 3000 &&
+    hpOlderThanPlayer.got.length === 0
+  );
+
+  // Sheet: cloud revalidation never swaps the requested (or already shown) character for another cloud character.
+  // Run synchronously: the suite is synchronous, so the async function is de-asynced in the sandbox
+  // (the fake cloud returns its rows directly).
+  const revalSrc = hudSliceFn('async function revalidateCharacterFromCloudInBackground(', '\n    async function ').split('\n    function ')[0]
+    .replace(/^async /, '').replace(/\bawait\s+/g, '');
+  const revalRun = (search, character) => {
+    const sandbox = {
+      URLSearchParams, Array, Number, Date, JSON, Math, console, character,
+      localStorage: { getItem: () => 'char_magnus', setItem: () => {} },
+      window: {
+        location: { search },
+        SupabaseAuth: { isLocalMode: () => false, fetchUserCharacters: () => [{ id: 'char_magnus', name: 'Magnus', full_data: { name: 'Magnus' } }] }
+      }
+    };
+    vm.runInNewContext(revalSrc + '\nout = revalidateCharacterFromCloudInBackground(' + JSON.stringify(new URLSearchParams(search).get('id')) + ');', sandbox);
+    return sandbox;
+  };
+  const revalLocalOnly = revalRun('?id=char_local_new', { id: 'char_local_new', name: 'Local Hero' });
+  const revalNoChar = revalRun('?id=char_missing', null);
+  check(
+    'Sheet: a character that is not in the cloud yet stays on the sheet (cloud revalidation does not swap in the last active cloud character); an unknown ?id= is not replaced by another character either',
+    revalLocalOnly.out === false && revalLocalOnly.character.id === 'char_local_new' && revalNoChar.out === false && revalNoChar.character === null
+  );
+
+  // Campaign bundle (campaign_db.js): export one main campaign with sub-campaigns, packs, notes and characters;
+  // import creates it when its id is unknown, and otherwise merges by id without overwriting anything.
+  {
+    const note = (id, title, text) => ({ id, title, text, tags: [], createdAt: 1, updatedAt: 1 });
+    const mkChar = (id, name, campaignId, extra) => ({ id, name, campaignId, fullData: Object.assign({ id, name, campaignId, customDb: [{ id: 'own_' + id, name: 'Own ' + name, type: 'Feat' }] }, extra || {}) });
+    const srcState = {
+      campaigns: [
+        { id: 'camp_main', cloudCampaignId: 'cloud-main', invite_code: 'SECRET', name: 'Main', isDmMode: true, packs: CampaignDb.attachPack([], boonPack, 'T'), smartNotes: [note('n1', 'Session 1', 'a')], notesList: [] },
+        { id: 'camp_sub', parentId: 'camp_main', name: 'Chapter 2', smartNotes: [note('n2', 'Clue', 'b')] },
+        { id: 'camp_other', name: 'Other', smartNotes: [note('nx', 'Other note', 'x')] }
+      ],
+      characters: [mkChar('c1', 'Hero', 'camp_main'), mkChar('c2', 'Rogue', 'camp_sub'), mkChar('cx', 'Outsider', 'camp_other')]
+    };
+    // Give c1 the pack copies, as the Hub would.
+    CampaignDb.reconcile(srcState.characters[0].fullData.customDb, srcState.campaigns[0].packs, { campaignId: 'cloud-main', used: new Set() });
+    const bundle = CampaignDb.buildCampaignBundle(srcState, 'camp_sub', '2026-11-10T10:00:00Z');
+    const bundleOk = bundle && CampaignDb.isCampaignBundle(bundle) && bundle.campaign.id === 'camp_main' && !('invite_code' in bundle.campaign) &&
+      bundle.campaign.packs.length === 1 && bundle.campaign.packs[0].entries.length === 107 &&
+      bundle.subCampaigns.length === 1 && bundle.subCampaigns[0].smartNotes[0].id === 'n2' &&
+      bundle.characters.map(c => c.id).join() === 'c1,c2' &&
+      bundle.characters[0].fullData.customDb.length === 1 && bundle.campaign.smartNotes[0].id === 'n1';
+
+    // 1. Into an empty Hub: everything is created as a local campaign.
+    const fresh = CampaignDb.importCampaignBundle({ campaigns: [], characters: [] }, bundle, { nowIso: '2026-11-11T00:00:00Z', idStamp: 'T' });
+    const freshRoot = fresh.campaigns.find(c => c.id === fresh.rootId);
+    const freshOk = fresh.report.campaignCreated && freshRoot.id === 'camp_main' && !freshRoot.cloudCampaignId &&
+      freshRoot.packs[0].inCloud === false && fresh.campaigns.find(c => c.id === 'camp_sub').parentId === 'camp_main' &&
+      fresh.characters.length === 2 && fresh.characters.find(c => c.id === 'c2').campaignId === 'camp_sub' &&
+      !fresh.characters[0].fullData.cloudCampaignId && fresh.packsChanged;
+
+    // 2. Back into the source Hub (same ids, same content): everything identical is skipped.
+    const again = CampaignDb.importCampaignBundle(srcState, bundle, { nowIso: '2026-11-11T00:00:00Z', idStamp: 'T' });
+    const r2 = again.report;
+    const againOk = !r2.campaignCreated && r2.notesSkipped === 2 && r2.notesAdded === 0 && r2.notesCopied === 0 &&
+      r2.charactersSkipped === 2 && r2.charactersCopied === 0 && r2.packsSkipped === 1 && !again.packsChanged &&
+      again.campaigns.length === 3 && again.characters.length === 3;
+
+    // 3. Same ids, changed content: copies with new ids and "(Imported <date>)"; a changed pack is a new version;
+    //    a new sub-campaign and note are added; the original records are untouched.
+    const changed = JSON.parse(JSON.stringify(bundle));
+    changed.campaign.smartNotes[0].text = 'edited';
+    changed.campaign.smartNotes.push(note('n3', 'New', 'c'));
+    changed.characters[0].fullData.hp = { current: 1 };
+    changed.campaign.packs[0].entries = changed.campaign.packs[0].entries.slice(1);
+    changed.subCampaigns.push({ id: 'camp_sub2', parentId: 'camp_main', name: 'Chapter 3', smartNotes: [] });
+    const merged = CampaignDb.importCampaignBundle(srcState, changed, { nowIso: '2026-11-11T00:00:00Z', idStamp: 'T' });
+    const r3 = merged.report;
+    const mRoot = merged.campaigns.find(c => c.id === 'camp_main');
+    const copyChar = merged.characters.find(c => /^char_imp_T_/.test(c.id));
+    const copyNote = mRoot.smartNotes.find(n => /^note_imp_T_/.test(n.id));
+    const mergedOk = r3.notesCopied === 1 && r3.notesAdded === 1 && r3.charactersCopied === 1 && r3.charactersSkipped === 1 &&
+      r3.packsUpdated === 1 && r3.subCampaignsAdded === 1 && merged.packsChanged &&
+      mRoot.packs[0].version === 2 && mRoot.packs[0].entries.length === 106 && mRoot.packs[0].inCloud === false &&
+      copyChar && copyChar.name === 'Hero (Imported 2026-11-11)' && copyChar.fullData.id === copyChar.id && copyChar.campaignId === 'camp_main' &&
+      copyChar.fullData.cloudCampaignId === 'cloud-main' &&
+      copyNote && copyNote.title === 'Session 1 (Imported 2026-11-11)' && mRoot.smartNotes.find(n => n.id === 'n1').text === 'a' &&
+      merged.campaigns.find(c => c.id === 'camp_sub2').parentId === 'camp_main' &&
+      srcState.campaigns[0].smartNotes.length === 1 && srcState.characters.length === 3;
+
+    const hubSrcB = fs.readFileSync(path.join(__dirname, '..', 'hub.html'), 'utf8');
+    check(
+      'Campaign bundle: exports the main campaign (from a sub-campaign too) with sub-campaigns, packs, notes and its characters, without the invite code or active pack copies; an unknown campaign is created locally; re-importing identical data skips everything; changed notes and characters with the same id become "(Imported <date>)" copies with new ids, a changed pack becomes a new version, new sub-campaigns and notes are added, and nothing existing is overwritten',
+      bundleOk && freshOk && againOk && mergedOk &&
+      /function exportCampaignBundle\(/.test(hubSrcB) && /CampaignDb\.isCampaignBundle\(parsed\)/.test(hubSrcB) && !/function exportMasterDbJson\(/.test(hubSrcB)
+    );
+  }
 
   CharStore.clearHistory();
 
