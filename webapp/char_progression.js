@@ -9883,9 +9883,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       modal.classList.remove('hidden');
       renderClericDomainPickerList();
 
-      if (window.SrdCompendium && typeof window.SrdCompendium.ensureChunkLoaded === 'function') {
-        window.SrdCompendium.ensureChunkLoaded('srd_spells.json').then(() => {
-          renderClericDomainPickerList();
+      // Every chunk with Spell rows (srd_spells.json, srd_spells_splat.json, ...), found through the index.
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded(['Spell']).then((arrived) => {
+          if (arrived.length) renderClericDomainPickerList();
         }).catch(() => {});
       }
     }

@@ -2308,8 +2308,8 @@
       if (window.SrdCompendium && typeof window.SrdCompendium.init === 'function') {
         try {
           await window.SrdCompendium.init();
-          await window.SrdCompendium.ensureChunkLoaded('srd_combat_rules.json');
-          await window.SrdCompendium.ensureChunkLoaded('srd_spells.json');
+          // Conditions, buffs and spells from every chunk that holds them (index-driven; matches the list below).
+          await window.SrdCompendium.ensureTypesLoaded(['Condition', 'Buff', 'Spell']);
         } catch (_) {}
       }
 
@@ -6886,11 +6886,31 @@
         .trim();
     }
 
+    // Record types the gear picker lists; every chunk holding them (srd_equipment.json, srd_equipment_splat.json,
+    // mic_compendium.json, ...) is found through the index.
+    const GEAR_PICKER_TYPES = ['Weapon', 'Armor', 'Shield', 'Item', 'MagicItem', 'AugmentationCrystal', 'Tool', 'Consumable', 'Ammo', 'Gear'];
+
+    // Redraws the open Add Item list once lazy gear chunks arrive.
+    function refreshPoolPickerIfOpen() {
+      const modal = document.getElementById('add-pool-item-modal');
+      if (!modal || modal.classList.contains('hidden')) return;
+      const q = (document.getElementById('pool-modal-search')?.value || '').trim();
+      if (q && typeof executePoolMasterDbSearch === 'function') executePoolMasterDbSearch(q);
+      else if (typeof renderUnaddedMasterDbItems === 'function') renderUnaddedMasterDbItems(_currentPoolCategoryFilter || 'all');
+    }
+
     function getUnifiedEquipmentCatalog() {
       const mLen = Array.isArray(masterDb) ? masterDb.length : 0;
       const bLen = (typeof window !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) ? window.BUNDLED_SRD_CORE_CATALOG.length : 0;
       const srdReady = Boolean(typeof window !== 'undefined' && window.SrdCompendium && typeof window.SrdCompendium.isReady === 'function' && window.SrdCompendium.isReady());
-      const cacheKey = `${mLen}:${bLen}:${srdReady ? 1 : 0}`;
+      if (srdReady && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded(GEAR_PICKER_TYPES).then((arrived) => {
+          if (arrived.length) refreshPoolPickerIfOpen();
+        }).catch(() => {});
+      }
+      // The loaded-record count changes when a chunk arrives, so the cache is rebuilt with the new records.
+      const loadedN = (srdReady && typeof window.SrdCompendium.getLoadedEntryCount === 'function') ? window.SrdCompendium.getLoadedEntryCount() : 0;
+      const cacheKey = `${mLen}:${bLen}:${srdReady ? 1 : 0}:${loadedN}`;
 
       if (_cachedUnifiedEquipmentCatalog && _cachedUnifiedCatalogKey === cacheKey) {
         return _cachedUnifiedEquipmentCatalog;
