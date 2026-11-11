@@ -970,7 +970,7 @@
 
     selectHtml += `
         </select>
-        <span class="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[8px] text-indigo-300">▼</span>
+        <span class="pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-indigo-300">▼</span>
       </div>
     `;
     badgeEl.innerHTML = selectHtml;
@@ -1360,14 +1360,14 @@
     let html = `
       <div class="px-2.5 py-1.5 bg-slate-950/90 text-[10px] font-bold text-slate-400 flex items-center justify-between border-b border-slate-800">
         <span class="flex items-center gap-1"><span class="text-indigo-400 font-bold">#</span> <span>Etiket Tamamlama</span></span>
-        <span class="text-[9px] font-mono text-slate-500">↑↓ Select • Enter Insert</span>
+        <span class="text-[10px] font-mono text-slate-500">↑↓ Select • Enter Insert</span>
       </div>
       <div class="max-h-52 overflow-y-auto custom-scrollbar p-1 space-y-0.5">
     `;
 
     _activeCandidates.forEach((item, idx) => {
       const isSelected = idx === _selectedIndex;
-      const countBadge = item.count > 0 ? `<span class="text-[9px] text-slate-400 font-mono">(${item.count})</span>` : '';
+      const countBadge = item.count > 0 ? `<span class="text-[10px] text-slate-400 font-mono">(${item.count})</span>` : '';
       const labelBadge = item.label ? `<span class="text-[10px] text-slate-400 truncate max-w-[90px]">${item.label}</span>` : '';
 
       html += `
@@ -1527,7 +1527,7 @@
         html += `
           <button type="button" onclick="HubNotes.setTagFilter('${tag}')" class="px-2 py-0.5 rounded-md border transition cursor-pointer flex items-center gap-1 ${active ? 'bg-indigo-600 border-indigo-400 text-white font-bold shadow' : colorClass}">
             <span>${tag}</span>
-            <span class="opacity-75 text-[9px]">(${count})</span>
+            <span class="opacity-75 text-[10px]">(${count})</span>
           </button>
         `;
       });
@@ -2319,7 +2319,7 @@ RULES:
               <span class="text-xs font-bold truncate text-indigo-200" title="${escapeHtml(cardTitle)}">${escapeHtml(cardTitle)}</span>
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
-              <span class="text-[9px] text-slate-500 font-mono">${formatTimeAgo(note.updatedAt || note.createdAt)}</span>
+              <span class="text-[10px] text-slate-500 font-mono">${formatTimeAgo(note.updatedAt || note.createdAt)}</span>
               <button type="button" onclick="HubNotes.deleteNote('${note.id}', event)" class="p-1 text-slate-500 hover:text-rose-400 rounded text-xs transition cursor-pointer" title="Delete Log">✕</button>
             </div>
           </div>

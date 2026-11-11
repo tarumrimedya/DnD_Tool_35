@@ -2145,12 +2145,12 @@ const RuleMaster = {
     if (!t || typeof t !== 'object' || !t.packId) return '';
     const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     if (t.status === 'removed') {
-      return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-950/90 text-amber-300 border border-amber-600/60" title="The DM removed this entry from rule pack ${esc(t.packId)}; it is kept because this character uses it">⚠️ Removed by DM</span>`;
+      return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-950/90 text-amber-300 border border-amber-600/60" title="The DM removed this entry from rule pack ${esc(t.packId)}; it is kept because this character uses it">⚠️ Removed by DM</span>`;
     }
     if (t.status === 'detached') {
-      return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-800 text-slate-300 border border-slate-600/60" title="This character is no longer in the campaign; the copy is kept and no longer updated">📴 Campaign DB (Detached)</span>`;
+      return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-600/60" title="This character is no longer in the campaign; the copy is kept and no longer updated">📴 Campaign DB (Detached)</span>`;
     }
-    return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-950/80 text-indigo-300 border border-indigo-700/50" title="From the campaign's rule pack ${esc(t.packId)} v${esc(t.version)}; follows the DM's updates">🏰 Campaign DB</span>`;
+    return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-950/80 text-indigo-300 border border-indigo-700/50" title="From the campaign's rule pack ${esc(t.packId)} v${esc(t.version)}; follows the DM's updates">🏰 Campaign DB</span>`;
   },
 
   getSnapshotBadgeHtml(entry) {
@@ -2158,13 +2158,13 @@ const RuleMaster = {
     if (!snap) return '';
     const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     if (snap.status === 'update-available') {
-      return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-950/90 text-amber-300 border border-amber-600/60" title="The SRD version changed after this copy was edited">🔔 Update Available</span>`
-        + `<button type="button" data-action="mdb:apply-snapshot-update" data-id="${esc(entry.id)}" class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-700 hover:bg-amber-600 text-white border border-amber-500/60 transition cursor-pointer" title="Replace this copy with the current SRD version (your edits are discarded)">⬆️ Apply Update</button>`;
+      return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-950/90 text-amber-300 border border-amber-600/60" title="The SRD version changed after this copy was edited">🔔 Update Available</span>`
+        + `<button type="button" data-action="mdb:apply-snapshot-update" data-id="${esc(entry.id)}" class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-700 hover:bg-amber-600 text-white border border-amber-500/60 transition cursor-pointer" title="Replace this copy with the current SRD version (your edits are discarded)">⬆️ Apply Update</button>`;
     }
     if (snap.status === 'orphaned') {
-      return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-950/80 text-rose-300 border border-rose-800/60" title="The source entry is no longer in the SRD compendium">⚠️ Not in SRD</span>`;
+      return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-950/80 text-rose-300 border border-rose-800/60" title="The source entry is no longer in the SRD compendium">⚠️ Not in SRD</span>`;
     }
-    return `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-sky-950/80 text-sky-300 border border-sky-700/50" title="Copied from the SRD compendium; follows SRD fixes automatically while unedited">📥 SRD Copy</span>`;
+    return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-950/80 text-sky-300 border border-sky-700/50" title="Copied from the SRD compendium; follows SRD fixes automatically while unedited">📥 SRD Copy</span>`;
   },
 
   applySnapshotUpdate(id) {
@@ -2346,15 +2346,15 @@ const RuleMaster = {
         if (item.pack) {
           const packStr = (typeof item.pack === 'object' && item.pack !== null) ? String(item.pack.id || item.pack.name || '') : String(item.pack || '');
           if (packStr) {
-            badges += `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-950/80 text-indigo-300 border border-indigo-700/50">📦 ${esc(packStr)}</span>`;
+            badges += `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-950/80 text-indigo-300 border border-indigo-700/50">📦 ${esc(packStr)}</span>`;
           }
         }
         if (elig.status === 'SYNERGY_READY') {
-          badges += `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-600/60" title="Auto-Unlock / Synergy Prerequisite Met">✨ Synergy Ready</span>`;
+          badges += `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-950/90 text-emerald-300 border border-emerald-600/60" title="Auto-Unlock / Synergy Prerequisite Met">✨ Synergy Ready</span>`;
         } else if (elig.status === 'PREREQ_MISSING') {
-          badges += `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-950/80 text-rose-300 border border-rose-800/60" title="Prerequisites Not Met">🔒 Prereq Missing</span>`;
+          badges += `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-950/80 text-rose-300 border border-rose-800/60" title="Prerequisites Not Met">🔒 Prereq Missing</span>`;
         } else if (item.requires) {
-          badges += `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-teal-950/80 text-teal-300 border border-teal-700/50" title="Prerequisites Met">✅ Eligible</span>`;
+          badges += `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-950/80 text-teal-300 border border-teal-700/50" title="Prerequisites Met">✅ Eligible</span>`;
         }
         return badges;
       })();
@@ -2368,7 +2368,7 @@ const RuleMaster = {
           <div class="font-bold text-white flex items-center gap-1.5 flex-wrap">
             ${isDeity && item.icon ? `<span>${item.icon}</span>` : ''}
             <span>${item.name}</span>
-            ${modesCount > 0 ? `<span class="px-2 py-0.5 rounded text-[9px] font-bold bg-purple-950 text-purple-300 border border-purple-800">⚡ ${modesCount} Mod</span>` : ''}
+            ${modesCount > 0 ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-800">⚡ ${modesCount} Mod</span>` : ''}
             ${eligBadgeHtml}
             ${snapshotBadgeHtml}
           </div>
@@ -6144,15 +6144,15 @@ Return valid JSON only matching:
 
           ${statPills.length > 0 ? `
             <div class="flex flex-wrap items-center gap-1">
-              <span class="text-[9px] uppercase font-bold text-slate-400">Effects:</span>
-              ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 font-mono text-[9px] font-bold">${p}</span>`).join('')}
+              <span class="text-[10px] uppercase font-bold text-slate-400">Effects:</span>
+              ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 font-mono text-[10px] font-bold">${p}</span>`).join('')}
             </div>
           ` : ''}
 
           ${modes.length > 0 ? `
             <div class="flex flex-wrap items-center gap-1">
-              <span class="text-[9px] uppercase font-bold text-purple-300">Sub-Modes:</span>
-              ${modes.map(m => `<span class="badge bg-purple-950 text-purple-200 border border-purple-700 font-mono text-[9px]">⚡ ${m.name}</span>`).join('')}
+              <span class="text-[10px] uppercase font-bold text-purple-300">Sub-Modes:</span>
+              ${modes.map(m => `<span class="badge bg-purple-950 text-purple-200 border border-purple-700 font-mono text-[10px]">⚡ ${m.name}</span>`).join('')}
             </div>
           ` : ''}
 
@@ -7040,7 +7040,7 @@ Return valid JSON only matching:
       bodyHtml = `
         <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
           <div>
-            <label class="text-[9px] text-cyan-300 font-bold uppercase block mb-0.5">Defense Kind</label>
+            <label class="text-[10px] text-cyan-300 font-bold uppercase block mb-0.5">Defense Kind</label>
             <select id="im-prim-def-kind" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
               <option value="resistance">Resistance</option>
               <option value="immunity">Immunity</option>
@@ -7051,7 +7051,7 @@ Return valid JSON only matching:
             </select>
           </div>
           <div>
-            <label class="text-[9px] text-cyan-300 font-bold uppercase block mb-0.5">Target / Element</label>
+            <label class="text-[10px] text-cyan-300 font-bold uppercase block mb-0.5">Target / Element</label>
             <select id="im-prim-def-target" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
               <option value="acid">Acid</option>
               <option value="cold">Cold</option>
@@ -7063,11 +7063,11 @@ Return valid JSON only matching:
             </select>
           </div>
           <div>
-            <label class="text-[9px] text-cyan-300 font-bold uppercase block mb-0.5">Value / Ratio</label>
+            <label class="text-[10px] text-cyan-300 font-bold uppercase block mb-0.5">Value / Ratio</label>
             <input id="im-prim-def-val" type="number" step="0.5" value="10" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
           </div>
           <div>
-            <label class="text-[9px] text-cyan-300 font-bold uppercase block mb-0.5">DR Bypass (if DR)</label>
+            <label class="text-[10px] text-cyan-300 font-bold uppercase block mb-0.5">DR Bypass (if DR)</label>
             <input id="im-prim-def-bypass" type="text" value="-" placeholder="- | magic | adamantine" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
           </div>
         </div>`;
@@ -7075,11 +7075,11 @@ Return valid JSON only matching:
       bodyHtml = `
         <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
           <div>
-            <label class="text-[9px] text-amber-300 font-bold uppercase block mb-0.5">Resource / Cooldown Name</label>
+            <label class="text-[10px] text-amber-300 font-bold uppercase block mb-0.5">Resource / Cooldown Name</label>
             <input id="im-prim-res-name" type="text" value="Breath Recharge" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
           </div>
           <div>
-            <label class="text-[9px] text-amber-300 font-bold uppercase block mb-0.5">Recharge Period</label>
+            <label class="text-[10px] text-amber-300 font-bold uppercase block mb-0.5">Recharge Period</label>
             <select id="im-prim-res-period" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
               <option value="rounds">Rounds (Dice Cooldown)</option>
               <option value="encounter">Per Encounter</option>
@@ -7087,11 +7087,11 @@ Return valid JSON only matching:
             </select>
           </div>
           <div>
-            <label class="text-[9px] text-amber-300 font-bold uppercase block mb-0.5">Cooldown Dice (if Rounds)</label>
+            <label class="text-[10px] text-amber-300 font-bold uppercase block mb-0.5">Cooldown Dice (if Rounds)</label>
             <input id="im-prim-res-dice" type="text" value="1d4+1" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
           </div>
           <div>
-            <label class="text-[9px] text-amber-300 font-bold uppercase block mb-0.5">Max Charges</label>
+            <label class="text-[10px] text-amber-300 font-bold uppercase block mb-0.5">Max Charges</label>
             <input id="im-prim-res-max" type="number" value="3" min="1" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
           </div>
         </div>`;
@@ -7099,11 +7099,11 @@ Return valid JSON only matching:
       bodyHtml = `
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div>
-            <label class="text-[9px] text-purple-300 font-bold uppercase block mb-0.5">Mode / Reaction Name</label>
+            <label class="text-[10px] text-purple-300 font-bold uppercase block mb-0.5">Mode / Reaction Name</label>
             <input id="im-prim-mode-name" type="text" value="Reactive Shield" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
           </div>
           <div>
-            <label class="text-[9px] text-purple-300 font-bold uppercase block mb-0.5">Action Economy</label>
+            <label class="text-[10px] text-purple-300 font-bold uppercase block mb-0.5">Action Economy</label>
             <select id="im-prim-mode-action" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
               <option value="immediate">Immediate Action</option>
               <option value="swift">Swift Action</option>
@@ -7114,7 +7114,7 @@ Return valid JSON only matching:
             </select>
           </div>
           <div>
-            <label class="text-[9px] text-purple-300 font-bold uppercase block mb-0.5">Reaction Trigger</label>
+            <label class="text-[10px] text-purple-300 font-bold uppercase block mb-0.5">Reaction Trigger</label>
             <select id="im-prim-mode-trigger" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
               <option value="on_spell_targeted">On Spell Targeted</option>
               <option value="on_hit">On Hit</option>
@@ -7127,7 +7127,7 @@ Return valid JSON only matching:
       bodyHtml = `
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div>
-            <label class="text-[9px] text-emerald-300 font-bold uppercase block mb-0.5">Grant Type</label>
+            <label class="text-[10px] text-emerald-300 font-bold uppercase block mb-0.5">Grant Type</label>
             <select id="im-prim-grant-type" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
               <option value="sense">Sense (Darkvision / Blindsense)</option>
               <option value="aura">Aura</option>
@@ -7137,11 +7137,11 @@ Return valid JSON only matching:
             </select>
           </div>
           <div>
-            <label class="text-[9px] text-emerald-300 font-bold uppercase block mb-0.5">Capability ID / Name</label>
+            <label class="text-[10px] text-emerald-300 font-bold uppercase block mb-0.5">Capability ID / Name</label>
             <input id="im-prim-grant-id" type="text" value="darkvision" placeholder="darkvision | blindsense" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
           </div>
           <div>
-            <label class="text-[9px] text-emerald-300 font-bold uppercase block mb-0.5">Range / Value (ft.)</label>
+            <label class="text-[10px] text-emerald-300 font-bold uppercase block mb-0.5">Range / Value (ft.)</label>
             <input id="im-prim-grant-val" type="number" value="60" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
           </div>
         </div>`;
@@ -7149,11 +7149,11 @@ Return valid JSON only matching:
       bodyHtml = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div>
-            <label class="text-[9px] text-pink-300 font-bold uppercase block mb-0.5">Choice Label</label>
+            <label class="text-[10px] text-pink-300 font-bold uppercase block mb-0.5">Choice Label</label>
             <input id="im-prim-choice-label" type="text" value="Choose Energy Type" class="w-full bg-slate-900 border border-pink-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
           </div>
           <div>
-            <label class="text-[9px] text-pink-300 font-bold uppercase block mb-0.5">Comma-Separated Options</label>
+            <label class="text-[10px] text-pink-300 font-bold uppercase block mb-0.5">Comma-Separated Options</label>
             <input id="im-prim-choice-opts" type="text" value="acid, cold, electricity, fire, sonic" class="w-full bg-slate-900 border border-pink-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
           </div>
         </div>`;
@@ -7161,7 +7161,7 @@ Return valid JSON only matching:
       bodyHtml = `
         <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
           <div>
-            <label class="text-[9px] text-sky-300 font-bold uppercase block mb-0.5">Target Stat Path</label>
+            <label class="text-[10px] text-sky-300 font-bold uppercase block mb-0.5">Target Stat Path</label>
             <select id="im-prim-sub-target" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
               <option value="save.will.abilityMod">save.will.abilityMod (Will Ability)</option>
               <option value="save.ref.abilityMod">save.ref.abilityMod (Reflex Ability)</option>
@@ -7172,7 +7172,7 @@ Return valid JSON only matching:
             </select>
           </div>
           <div>
-            <label class="text-[9px] text-sky-300 font-bold uppercase block mb-0.5">Operation</label>
+            <label class="text-[10px] text-sky-300 font-bold uppercase block mb-0.5">Operation</label>
             <select id="im-prim-sub-op" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
               <option value="max">max (Use Higher)</option>
               <option value="replace">replace (Override)</option>
@@ -7180,11 +7180,11 @@ Return valid JSON only matching:
             </select>
           </div>
           <div>
-            <label class="text-[9px] text-sky-300 font-bold uppercase block mb-0.5">Formula</label>
+            <label class="text-[10px] text-sky-300 font-bold uppercase block mb-0.5">Formula</label>
             <input id="im-prim-sub-formula" type="text" value="@chaMod" placeholder="@chaMod | max(0, @intMod)" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
           </div>
           <div>
-            <label class="text-[9px] text-sky-300 font-bold uppercase block mb-0.5">Optional Cap Formula</label>
+            <label class="text-[10px] text-sky-300 font-bold uppercase block mb-0.5">Optional Cap Formula</label>
             <input id="im-prim-sub-cap" type="text" value="" placeholder="@level (optional)" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
           </div>
         </div>`;
@@ -7364,11 +7364,11 @@ Return valid JSON only matching:
         : `<div class="text-slate-400">Live Sheet Delta: <span class="text-emerald-300 font-semibold">Validated (0 AST syntax errors)</span></div>`;
     }
 
-    const nodesPills = (imap.boundUiTargets || imap.nodes || []).map(n => `<span class="px-1.5 py-0.5 rounded bg-emerald-950 border border-emerald-700/60 text-emerald-300 font-mono text-[9px]">🔗 ${escHtml(n)}</span>`).join(' ');
+    const nodesPills = (imap.boundUiTargets || imap.nodes || []).map(n => `<span class="px-1.5 py-0.5 rounded bg-emerald-950 border border-emerald-700/60 text-emerald-300 font-mono text-[10px]">🔗 ${escHtml(n)}</span>`).join(' ');
     previewBox.innerHTML = `
       <div class="flex flex-wrap items-center justify-between gap-1">
         <span class="font-bold text-emerald-300">⚡ Dry-Run Passed: "${escHtml(draft.name || 'Draft Entry')}"</span>
-        <span class="text-[9px] font-mono text-slate-400">Schema v2.5 • ${(draft.defenses || []).length} Def • ${(draft.resources || []).length} Res • ${(draft.modes || []).length} Modes</span>
+        <span class="text-[10px] font-mono text-slate-400">Schema v2.5 • ${(draft.defenses || []).length} Def • ${(draft.resources || []).length} Res • ${(draft.modes || []).length} Modes</span>
       </div>
       ${deltaHtml}
       <div class="flex flex-wrap items-center gap-1 pt-0.5">
@@ -7496,7 +7496,7 @@ Return valid JSON only matching:
           <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none">
             <input type="checkbox" value="${e.id}" ${isChecked ? 'checked' : ''} onchange="RuleMaster.updateInlineForgePreview()" class="mdb-forge-enh-chk rounded text-amber-500 bg-slate-950 border-slate-700">
             <span class="text-[11px] font-semibold text-slate-200 truncate" title="${e.shortDescription || e.name}">${e.name}</span>
-            <span class="text-[9px] font-mono text-amber-400 ml-auto shrink-0">${bonusEq}</span>
+            <span class="text-[10px] font-mono text-amber-400 ml-auto shrink-0">${bonusEq}</span>
           </label>
         `;
       }).join('');
@@ -7673,11 +7673,11 @@ Return valid JSON only matching:
         </div>
         <div class="flex items-center gap-3 text-right shrink-0">
           <div>
-            <div class="text-[9px] text-slate-400 uppercase font-bold">Market Price</div>
+            <div class="text-[10px] text-slate-400 uppercase font-bold">Market Price</div>
             <div class="text-xs sm:text-sm font-black font-mono text-amber-400">${Number(item.priceGp ?? item.cost ?? 0).toLocaleString('en-US')} gp</div>
           </div>
           <div>
-            <div class="text-[9px] text-slate-400 uppercase font-bold">Weight</div>
+            <div class="text-[10px] text-slate-400 uppercase font-bold">Weight</div>
             <div class="text-xs sm:text-sm font-bold font-mono text-slate-200">${item.weightLb ?? item.weight ?? 0} lb.</div>
           </div>
         </div>
@@ -8226,7 +8226,7 @@ Return valid JSON only matching:
             <div class="p-2 rounded-lg bg-amber-950/40 border border-amber-500/40 space-y-1">
               <div class="text-[11px] font-bold text-amber-300 flex items-center justify-between">
                 <span>💪 Ability Score Increase (+1)</span>
-                <span class="badge bg-amber-900 text-amber-200 border border-amber-600 font-mono text-[9px] font-bold">+1 ${recommendedStat.toUpperCase()}</span>
+                <span class="badge bg-amber-900 text-amber-200 border border-amber-600 font-mono text-[10px] font-bold">+1 ${recommendedStat.toUpperCase()}</span>
               </div>
               <p class="text-[11px] text-amber-100/90 leading-relaxed">${statReason}</p>
               <button type="button" onclick="applyCopilotStat('${recommendedStat}')" class="w-full mt-1 py-1 rounded bg-amber-600/30 hover:bg-amber-600 text-amber-200 hover:text-white border border-amber-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
@@ -8243,7 +8243,7 @@ Return valid JSON only matching:
           <div class="p-2 rounded-lg bg-purple-950/40 border border-purple-500/40 space-y-1">
             <div class="text-[11px] font-bold text-purple-300 flex items-center justify-between">
               <span>🎯 Recommended Feat</span>
-              <span class="badge bg-purple-900 text-purple-200 border border-purple-600 font-mono text-[9px] font-bold">${recommendedFeat}</span>
+              <span class="badge bg-purple-900 text-purple-200 border border-purple-600 font-mono text-[10px] font-bold">${recommendedFeat}</span>
             </div>
             <p class="text-[11px] text-purple-100/90 leading-relaxed">${featBenefit}</p>
             <div class="text-[10px] text-purple-400 italic">Prerequisites: ${featPrereq}</div>
@@ -8376,7 +8376,7 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
             <span class="font-bold text-purple-300 flex items-center gap-1.5">
               <span>🧙‍♂️🤖</span><span>Rule Master AI Level-Up Recommendation (Level ${targetLevel})</span>
             </span>
-            <span class="badge bg-purple-950 text-purple-300 border border-purple-600 font-mono text-[9px] font-bold">Gemini RAW AI</span>
+            <span class="badge bg-purple-950 text-purple-300 border border-purple-600 font-mono text-[10px] font-bold">Gemini RAW AI</span>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 my-2">
