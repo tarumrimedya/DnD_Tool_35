@@ -7561,7 +7561,6 @@
       const speedInput = document.getElementById('profile-edit-speed');
       if (speedInput && raceObj.baseSpeed) speedInput.value = raceObj.baseSpeed;
 
-      const escapedRaceName = raceObj.name.replace(/'/g, "\'");
 
       card.innerHTML = `
         <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">

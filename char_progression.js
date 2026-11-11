@@ -452,7 +452,6 @@
 
         const itemDiv = document.createElement('div');
         itemDiv.className = `p-3 rounded-xl border transition flex items-start justify-between gap-3 ${isOwned ? 'bg-slate-900/40 border-emerald-800/50' : (isQualified ? 'bg-slate-950/80 border-slate-800 hover:border-purple-500/60' : 'bg-slate-950/40 border-slate-800/70 opacity-75')}`;
-        const safeName = f.name.replace(/'/g, "\\'");
         itemDiv.innerHTML = `
           <div class="space-y-1 flex-1">
             <div class="flex flex-wrap items-center gap-2">
@@ -843,7 +842,7 @@
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="text-amber-400 font-bold text-[10px] uppercase tracking-wide">Selected:</span>
                 <span class="font-extrabold text-white truncate">${currentTarget}</span>
-                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-amber-900/80 text-amber-300 font-mono">${meta}</span>` : ''}
+                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-amber-900/80 text-amber-300 font-mono">${UI.escapeHtml(meta)}</span>` : ''}
               </div>
               <button type="button" data-action="progression:clear-quick-feat-target" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
             </div>
@@ -861,7 +860,7 @@
       if (filteredEquipped.length === 0 && filteredCompendium.length === 0) {
         resultsEl.innerHTML = `
           <div class="p-3 text-center text-slate-400 text-xs">
-            No matching base weapon found for "<strong>${q}</strong>".
+            No matching base weapon found for "<strong>${UI.escapeHtml(q)}</strong>".
           </div>
         `;
         return;
@@ -879,13 +878,12 @@
         filteredEquipped.forEach(w => {
           const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
           const meta = getWeaponDisplayMeta(w);
-          const safeW = w.replace(/'/g, "\\'");
           html += `
             <button type="button" data-action="progression:select-quick-feat-target" data-weapon="${String(w || '').replace(/"/g, '&quot;')}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
-                <span class="font-bold text-white text-xs group-hover:text-amber-200 truncate">${w}</span>
+                <span class="font-bold text-white text-xs group-hover:text-amber-200 truncate">${UI.escapeHtml(w)}</span>
                 <span class="text-[10px] px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold shrink-0">Equipped</span>
-                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${UI.escapeHtml(meta)}</span>` : ''}
               </div>
               ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-amber-300 font-bold shrink-0">Select ➔</span>'}
             </button>
@@ -903,12 +901,11 @@
         filteredCompendium.forEach(w => {
           const isSel = (currentTarget || '').toLowerCase() === w.toLowerCase();
           const meta = getWeaponDisplayMeta(w);
-          const safeW = w.replace(/'/g, "\\'");
           html += `
             <button type="button" data-action="progression:select-quick-feat-target" data-weapon="${String(w || '').replace(/"/g, '&quot;')}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
-                <span class="font-bold text-white text-xs group-hover:text-purple-200 truncate">${w}</span>
-                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+                <span class="font-bold text-white text-xs group-hover:text-purple-200 truncate">${UI.escapeHtml(w)}</span>
+                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${UI.escapeHtml(meta)}</span>` : ''}
               </div>
               ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-purple-300 font-bold shrink-0">Select ➔</span>'}
             </button>
@@ -1711,7 +1708,6 @@
         listHtml = visibleItems.map(({ item, pEval }) => {
           const isAlreadyKnown = Boolean(pEval.isAlreadyKnownFromClass);
           const isQualified = pEval.allMet && !isAlreadyKnown;
-          const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
           let badgeClass = 'bg-rose-950/80 text-rose-300 border-rose-600/60';
           let badgeText = '⚠️ Prereqs Not Met';
           if (isAlreadyKnown) {
@@ -2748,7 +2744,7 @@
 
       if (statusEl) {
         statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-indigo-950/80 border border-indigo-600/60 text-indigo-200 block animate-pulse';
-        statusEl.innerHTML = `<span>⏳</span> <span>Searching "${query}"...</span>`;
+        statusEl.innerHTML = `<span>⏳</span> <span>Searching "${UI.escapeHtml(query)}"...</span>`;
       }
 
       // 0. Check if query is a Structured Ability Stat Block or direct DM Boon / Skill / Stat Grant
@@ -2919,7 +2915,7 @@
         } else {
           if (statusEl) {
             statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-rose-950/80 border border-rose-600/60 text-rose-200 block';
-            statusEl.innerHTML = `<span>❌</span> No official D&D 3.5e rule found for "${query}".`;
+            statusEl.innerHTML = `<span>❌</span> No official D&D 3.5e rule found for "${UI.escapeHtml(query)}".`;
           }
         }
       } catch (err) {
@@ -2957,7 +2953,7 @@
 
       if (statusEl) {
         statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-indigo-950/80 border border-indigo-600/60 text-indigo-200 block animate-pulse';
-        statusEl.innerHTML = `<span>⏳</span> <span>Searching class "${query}"...</span>`;
+        statusEl.innerHTML = `<span>⏳</span> <span>Searching class "${UI.escapeHtml(query)}"...</span>`;
       }
 
       const qLower = query.toLowerCase();
@@ -3195,7 +3191,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       if (statusEl) {
         statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-amber-950/80 border border-amber-600/60 text-amber-200 block';
-        statusEl.innerHTML = `<span>⚠️</span> "${query}" was not found in the local compendium and no Gemini API key is configured; added with balanced default stats (d8 HD, 3/4 BAB). You can customize it via "Add Custom / Prestige Class".`;
+        statusEl.innerHTML = `<span>⚠️</span> "${UI.escapeHtml(query)}" was not found in the local compendium and no Gemini API key is configured; added with balanced default stats (d8 HD, 3/4 BAB). You can customize it via "Add Custom / Prestige Class".`;
       }
     }
 
@@ -4306,7 +4302,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   </span>
                   <select data-change-action="progression:lvlup-feat-target" data-slot-idx="${idx}" class="flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-white font-bold focus:outline-none focus:border-amber-500">
                     <option value="">-- Select a Weapon --</option>
-                    ${targetList.map(w => `<option value="${w}" ${curTarget.toLowerCase() === w.toLowerCase() ? 'selected' : ''}>${w}</option>`).join('')}
+                    ${targetList.map(w => `<option value="${UI.escapeHtml(w)}" ${curTarget.toLowerCase() === w.toLowerCase() ? 'selected' : ''}>${UI.escapeHtml(w)}</option>`).join('')}
                   </select>
                 </div>
               `;
@@ -4550,7 +4546,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           listHtml = filteredItems.map(({ item, pEval }) => {
             const isAlreadyKnown = Boolean(pEval.isAlreadyKnownFromClass);
             const isQualified = pEval.allMet && !isAlreadyKnown;
-            const safeName = (item.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
             let badgeClass = 'bg-rose-950/80 text-rose-300 border-rose-600/60';
             let badgeText = '⚠️ Prereqs Not Met';
             if (isAlreadyKnown) {
@@ -4790,7 +4785,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
         if (statusEl) {
           statusEl.className = 'text-xs p-2.5 rounded-lg bg-indigo-950/90 border border-indigo-500/80 text-indigo-200 block animate-pulse';
-          statusEl.innerHTML = `<span>⚡</span> <span>Scanning D&D 3.5e sourcebooks for "${query}"...</span>`;
+          statusEl.innerHTML = `<span>⚡</span> <span>Scanning D&D 3.5e sourcebooks for "${UI.escapeHtml(query)}"...</span>`;
         }
 
         const apiKey = (typeof RuleMaster !== 'undefined' && RuleMaster.getApiKey)
@@ -5066,7 +5061,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       if (preview) {
         const featBadges = featList.length > 0 
           ? featList.map(fName => {
-              const safe = fName.replace(/'/g, "\\'");
               const cornerBadge = getFeatPinCornerBadgeHtml(fName);
               return `<button type="button" data-action="progression:show-feat-detail" data-feat-name="${String(fName || '').replace(/"/g, '&quot;')}" class="relative inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600/80 hover:bg-emerald-900 transition" title="View rule details"><span>✨</span><span class="pr-2">${fName}</span>${cornerBadge}</button>`;
             }).join(' ')
@@ -5542,7 +5536,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
     function generateClassProgressionHtml(className, def) {
       const maxLvl = getClassMaxLevel(def);
-      const safeName = className.replace(/'/g, "\\'");
       const hasFeatures = def.features && Object.keys(def.features).length > 0;
 
       let rows = '';
@@ -5764,11 +5757,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       if (matched.length === 0) {
         if (q) {
-          const safeQuery = q.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+          const safeQuery = UI.escapeHtml(q);
           resultsContainer.innerHTML = `
             <div class="p-3.5 text-center space-y-2.5 bg-slate-950/80 rounded-xl border border-purple-500/40 shadow-xl">
               <div class="text-slate-200 text-xs font-semibold">
-                🔍 Class &quot;<span class="text-amber-300 font-bold">${q}</span>&quot; not found in local compendium.
+                🔍 Class &quot;<span class="text-amber-300 font-bold">${UI.escapeHtml(q)}</span>&quot; not found in local compendium.
               </div>
               <p class="text-[10px] text-slate-400 max-w-md mx-auto leading-relaxed">
                 Scan official D&D 3.5e RAW sourcebooks (PHB, Complete series, Tome of Battle, DMG, etc.) to automatically fetch this class and save it to Master DB.
@@ -5857,7 +5850,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         if (def.will === 'good') goodSaves.push('Will');
         const savesText = goodSaves.length === 3 ? 'All Good Saves' : (goodSaves.length > 0 ? `Good: ${goodSaves.join('/')}` : 'Poor Saves');
 
-        const safeName = cName.replace(/'/g, "\\'");
 
         let prereqHtml = '';
         if (prereqResult.hasPrereqs) {
@@ -5950,11 +5942,11 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       });
 
       if (q) {
-        const safeQuery = q.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+        const safeQuery = UI.escapeHtml(q);
         htmlOutput += `
           <div class="mt-2 p-2.5 rounded-xl bg-slate-950/90 border border-purple-500/30 flex flex-wrap items-center justify-between gap-2">
             <div class="text-[10px] text-slate-300">
-              <span>🔮 Looking for another splatbook / variant class matching <b class="text-amber-300">"${q}"</b>?</span>
+              <span>🔮 Looking for another splatbook / variant class matching <b class="text-amber-300">"${UI.escapeHtml(q)}"</b>?</span>
             </div>
             <div class="flex items-center gap-1.5">
               <button type="button" data-action="progression:open-custom-class-modal" class="bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40 font-bold text-[10px] px-2.5 py-1 rounded-lg flex items-center gap-1 transition cursor-pointer">
@@ -7402,7 +7394,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           resultsContainer.innerHTML = `
             <div class="p-3.5 text-center space-y-2.5 bg-slate-950/80 rounded-xl border border-purple-500/40 shadow-xl">
               <div class="text-slate-200 text-xs font-semibold">
-                🔍 Class &quot;<span class="text-amber-300 font-bold">${q}</span>&quot; not found in local compendium.
+                🔍 Class &quot;<span class="text-amber-300 font-bold">${UI.escapeHtml(q)}</span>&quot; not found in local compendium.
               </div>
               <p class="text-[10px] text-slate-400 max-w-md mx-auto leading-relaxed">
                 Scan official D&D 3.5e RAW sourcebooks (PHB, Complete series, Tome of Battle, DMG, etc.) to automatically fetch this class and save it to Master DB.
@@ -7410,7 +7402,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               <div class="pt-1 flex items-center justify-center gap-2">
                 <button type="button" data-action="progression:search-or-add-class-rm" class="bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95 cursor-pointer border border-purple-400/40">
                   <span>🔮</span>
-                  <span>Fetch "${q}" via Rule Master AI</span>
+                  <span>Fetch "${UI.escapeHtml(q)}" via Rule Master AI</span>
                 </button>
               </div>
             </div>
@@ -7491,7 +7483,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         if (def.will === 'good') goodSaves.push('Will');
         const savesText = goodSaves.length === 3 ? 'All Good Saves' : (goodSaves.length > 0 ? `Good: ${goodSaves.join('/')}` : 'Poor Saves');
 
-        const safeName = cName.replace(/'/g, "\\'");
 
         let prereqHtml = '';
         if (prereqResult.hasPrereqs) {
@@ -7677,7 +7668,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const featBadges = featList.length > 0 
         ? featList.map(fName => {
-            const safe = fName.replace(/'/g, "\\'");
             const cornerBadge = typeof getFeatPinCornerBadgeHtml === 'function' ? getFeatPinCornerBadgeHtml(fName) : '';
             return `<button type="button" data-action="progression:show-feat-detail" data-feat-name="${String(fName || '').replace(/"/g, '&quot;')}" class="relative inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-300 border border-emerald-600/80 hover:bg-emerald-900 transition cursor-pointer" title="View rule details"><span>✨</span><span class="pr-2">${fName}</span>${cornerBadge}</button>`;
           }).join(' ')
@@ -10006,14 +9996,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
 
       if (entries.length === 0) {
-        const safeQ = query.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+        const safeQ = UI.escapeAttr(query);
         listEl.innerHTML = `
           <div class="py-10 text-center space-y-3">
             <span class="text-3xl block">⚜️</span>
-            <p class="text-xs text-slate-300">No domain matching "<strong>${query}</strong>" found in compendium.</p>
+            <p class="text-xs text-slate-300">No domain matching "<strong>${UI.escapeHtml(query)}</strong>" found in compendium.</p>
             <button type="button" data-action="progression:open-custom-domain-editor" data-domain-name="${safeQ}" class="px-4 py-2 bg-gradient-to-r from-purple-700 to-indigo-700 hover:from-purple-600 hover:to-indigo-600 text-white font-extrabold text-xs rounded-xl shadow-lg transition inline-flex items-center gap-2 cursor-pointer active:scale-95">
               <span>🔮</span>
-              <span>Create / Rule Master AI "${query}" Domain</span>
+              <span>Create / Rule Master AI "${UI.escapeHtml(query)}" Domain</span>
             </button>
           </div>
         `;

@@ -397,6 +397,17 @@ const RuleMaster = {
       .replace(/'/g, '&#39;');
   },
 
+  /**
+   * Escapes a value for a quoted JavaScript string inside an inline handler attribute, as in
+   * `RuleMaster.fn('${RuleMaster.escapeJsString(name)}')`. Every character outside a
+   * small safe set becomes a `\uXXXX` escape, so neither the HTML attribute nor the JS string can
+   * be broken out of, and the handler receives the original text.
+   */
+  escapeJsString(val) {
+    if (val === null || val === undefined || val === false) return '';
+    return String(val).replace(/[^A-Za-z0-9 _.,:;!?()\[\]@#%^*+=|~\/-]/g, ch => '\\u' + ch.charCodeAt(0).toString(16).padStart(4, '0'));
+  },
+
   getEntrySummaryPills(entry) {
     if (!entry || typeof entry !== 'object') return [];
     const v2 = this.ensureV2(entry);
@@ -2268,7 +2279,7 @@ const RuleMaster = {
       const selKey = this.getEntrySelectionKey(item, idx);
       filteredKeys.push(selKey);
       const isSelected = this.selectedIds.has(selKey);
-      const escapedKey = selKey.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const escapedKey = RuleMaster.escapeJsString(selKey);
 
       const tr = document.createElement('tr');
       tr.className = `hover:bg-slate-800/50 transition border-b border-slate-800/80 ${isSelected ? 'bg-amber-950/20' : ''}`;
@@ -2348,7 +2359,7 @@ const RuleMaster = {
         `;
       }
 
-      const safeItemNameJs = String(item.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const safeItemNameJs = RuleMaster.escapeJsString(item.name || '');
 
       const eligBadgeHtml = (() => {
         if (!item.requires && !item.pack) return '';
@@ -2398,7 +2409,7 @@ const RuleMaster = {
           ${bonusScopeCellHtml}
         </td>
         <td class="py-2.5 px-3 font-mono text-xs font-bold text-emerald-400">
-          ${statsSummary}
+          ${RuleMaster.escapeHtml(statsSummary)}
         </td>
         <td class="py-2.5 px-3 text-slate-300 text-[11px] max-w-xs">
           <div class="line-clamp-2" title="${RuleMaster.escapeHtml(descText || '-')}">${RuleMaster.escapeHtml(descText)}</div>
@@ -5410,7 +5421,7 @@ Return valid JSON only matching:
               <div class="text-[10px] text-slate-400 mt-0.5">📚 ${RuleMaster.escapeHtml(item.source || 'PHB')} • Slot: <b>${item.slot || 'Main Hand'}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.type}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button onclick="toggleUniversalPin({ name: '${RuleMaster.escapeJsString(item.name)}', type: 'Feat', action: 'Passive', desc: '${RuleMaster.escapeJsString(item.benefit || item.description || '')}', badge: '${RuleMaster.escapeJsString(item.type)}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
               <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
@@ -5433,8 +5444,8 @@ Return valid JSON only matching:
             <span class="text-amber-400 font-bold">${item.cost || 0} gp • ${item.weight || 0} lbs</span>
             <div class="flex gap-1.5">
               ${isWeapon ? `
-                <button onclick="RuleMaster.equipWeaponSlot('${item.name.replace(/'/g, "\\'")}', 'Main Hand')" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Main Hand</button>
-                <button onclick="RuleMaster.equipWeaponSlot('${item.name.replace(/'/g, "\\'")}', 'Off-Hand')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Off-Hand</button>
+                <button onclick="RuleMaster.equipWeaponSlot('${RuleMaster.escapeJsString(item.name)}', 'Main Hand')" class="bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Main Hand</button>
+                <button onclick="RuleMaster.equipWeaponSlot('${RuleMaster.escapeJsString(item.name)}', 'Off-Hand')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold px-2 py-1 rounded transition">⚡ Off-Hand</button>
               ` : `
                 <button onclick="RuleMaster.equipToCharacter(${idx})" class="bg-sky-950 hover:bg-sky-900 border border-sky-700 text-sky-200 text-[10px] font-bold px-2 py-1 rounded transition">🛡️ Equip</button>
               `}
@@ -5497,7 +5508,7 @@ Return valid JSON only matching:
               </div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.type}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button onclick="toggleUniversalPin({ name: '${RuleMaster.escapeJsString(item.name)}', type: 'Feat', action: 'Passive', desc: '${RuleMaster.escapeJsString(item.benefit || item.description || '')}', badge: '${RuleMaster.escapeJsString(item.type)}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
               <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
@@ -5566,7 +5577,7 @@ Return valid JSON only matching:
               <div class="text-[10px] text-slate-400 mt-0.5">📚 ${RuleMaster.escapeHtml(item.source || 'PHB')} • Category: <b>${item.role || 'General'}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: 'Feat' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button onclick="toggleUniversalPin({ name: '${RuleMaster.escapeJsString(item.name)}', type: 'Feat', action: 'Passive', desc: '${RuleMaster.escapeJsString(item.benefit || item.description || '')}', badge: 'Feat' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
               <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
@@ -5640,7 +5651,7 @@ Return valid JSON only matching:
               <div class="text-[10px] text-slate-400 mt-0.5">📚 ${RuleMaster.escapeHtml(item.source || 'MIC')} • Bonus: <b>${primaryBonusType}</b></div>
             </div>
             <div class="flex items-center gap-1">
-              <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${primaryBonusType}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
+              <button onclick="toggleUniversalPin({ name: '${RuleMaster.escapeJsString(item.name)}', type: 'Feat', action: 'Passive', desc: '${RuleMaster.escapeJsString(item.benefit || item.description || '')}', badge: '${RuleMaster.escapeJsString(primaryBonusType)}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
               <button onclick="RuleMaster.openModalWithData(masterDb[${idx}], ${idx})" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-sky-300 text-xs transition" title="Edit">✏️</button>
             </div>
           </div>
@@ -8242,7 +8253,7 @@ Return valid JSON only matching:
                 <span class="badge bg-amber-900 text-amber-200 border border-amber-600 font-mono text-[10px] font-bold">+1 ${recommendedStat.toUpperCase()}</span>
               </div>
               <p class="text-[11px] text-amber-100/90 leading-relaxed">${statReason}</p>
-              <button type="button" onclick="applyCopilotStat('${recommendedStat}')" class="w-full mt-1 py-1 rounded bg-amber-600/30 hover:bg-amber-600 text-amber-200 hover:text-white border border-amber-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
+              <button type="button" onclick="applyCopilotStat('${RuleMaster.escapeJsString(recommendedStat)}')" class="w-full mt-1 py-1 rounded bg-amber-600/30 hover:bg-amber-600 text-amber-200 hover:text-white border border-amber-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
                 <span>⚡</span><span>Select This Ability (+1 ${recommendedStat.toUpperCase()})</span>
               </button>
             </div>
@@ -8260,7 +8271,7 @@ Return valid JSON only matching:
             </div>
             <p class="text-[11px] text-purple-100/90 leading-relaxed">${featBenefit}</p>
             <div class="text-[10px] text-purple-400 italic">Prerequisites: ${featPrereq}</div>
-            <button type="button" onclick="applyCopilotFeat('${recommendedFeat}', '${featBenefit.replace(/'/g, "\\'")}', '${featCategory}')" class="w-full mt-1 py-1 rounded bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
+            <button type="button" onclick="applyCopilotFeat('${RuleMaster.escapeJsString(recommendedFeat)}', '${RuleMaster.escapeJsString(featBenefit)}', '${RuleMaster.escapeJsString(featCategory)}')" class="w-full mt-1 py-1 rounded bg-purple-600/30 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/50 text-[10px] font-bold transition flex items-center justify-center gap-1 cursor-pointer">
               <span>⚡</span><span>Fill Feat Slot</span>
             </button>
           </div>
@@ -8269,14 +8280,14 @@ Return valid JSON only matching:
         <div class="p-2 rounded-lg bg-indigo-950/30 border border-indigo-500/30 space-y-1">
           <div class="text-[11px] font-bold text-indigo-300 flex items-center justify-between">
             <span>⚔️ Tactical Synergy & Class Guide</span>
-            <button type="button" onclick="applyCopilotNotes('${notes.replace(/'/g, "\\'")}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">Copy to Notes</button>
+            <button type="button" onclick="applyCopilotNotes('${RuleMaster.escapeJsString(notes)}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">Copy to Notes</button>
           </div>
           <p class="text-[11px] text-slate-300 leading-relaxed">${notes}</p>
         </div>
 
         <div class="flex items-center justify-between pt-1">
           <span class="text-[10px] text-slate-500 italic">💡 Add a Gemini API Key for deep tactical analysis across all 3.5e splatbooks.</span>
-          <button type="button" onclick="applyCopilotAll({ recommendedFeat: '${recommendedFeat}', featBenefit: '${featBenefit.replace(/'/g, "\\'")}', featCategory: '${featCategory}', recommendedStat: '${recommendedStat || ''}', notes: '${notes.replace(/'/g, "\\'")}' })" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3 py-1 rounded-lg shadow flex items-center gap-1 transition cursor-pointer">
+          <button type="button" onclick="applyCopilotAll({ recommendedFeat: '${RuleMaster.escapeJsString(recommendedFeat)}', featBenefit: '${RuleMaster.escapeJsString(featBenefit)}', featCategory: '${RuleMaster.escapeJsString(featCategory)}', recommendedStat: '${RuleMaster.escapeJsString(recommendedStat || '')}', notes: '${RuleMaster.escapeJsString(notes)}' })" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3 py-1 rounded-lg shadow flex items-center gap-1 transition cursor-pointer">
             <span>🚀</span><span>Apply All Recommendations</span>
           </button>
         </div>
@@ -8399,7 +8410,7 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
                   <div class="text-[10px] font-bold text-amber-400 uppercase">Recommended Ability:</div>
                   <div class="text-xs font-black text-white">+1 ${recStat.toUpperCase()}</div>
                 </div>
-                <button type="button" onclick="applyCopilotStat('${recStat}')" class="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] shadow transition cursor-pointer">
+                <button type="button" onclick="applyCopilotStat('${RuleMaster.escapeJsString(recStat)}')" class="px-2.5 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] shadow transition cursor-pointer">
                   Apply
                 </button>
               </div>
@@ -8411,7 +8422,7 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
                   <div class="text-[10px] font-bold text-purple-300 uppercase">Recommended Feat:</div>
                   <div class="text-xs font-black text-white truncate" title="${recFeat}">${recFeat}</div>
                 </div>
-                <button type="button" onclick="applyCopilotFeat('${recFeat}', '${featBenefit.replace(/'/g, "\\'")}', '${featCategory}')" class="px-2.5 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white font-bold text-[10px] shadow transition cursor-pointer shrink-0">
+                <button type="button" onclick="applyCopilotFeat('${RuleMaster.escapeJsString(recFeat)}', '${RuleMaster.escapeJsString(featBenefit)}', '${RuleMaster.escapeJsString(featCategory)}')" class="px-2.5 py-1 rounded bg-purple-600 hover:bg-purple-500 text-white font-bold text-[10px] shadow transition cursor-pointer shrink-0">
                   Fill Slot
                 </button>
               </div>
@@ -8423,10 +8434,10 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
           </div>
 
           <div class="flex items-center justify-between pt-2 border-t border-purple-900/50">
-            <button type="button" onclick="applyCopilotNotes('${notes.replace(/'/g, "\\'")}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">
+            <button type="button" onclick="applyCopilotNotes('${RuleMaster.escapeJsString(notes)}')" class="text-[10px] text-indigo-300 hover:text-white underline cursor-pointer">
               📝 Add Recommendation Note
             </button>
-            <button type="button" onclick="applyCopilotAll({ recommendedFeat: '${recFeat}', featBenefit: '${featBenefit.replace(/'/g, "\\'")}', featCategory: '${featCategory}', recommendedStat: '${recStat || ''}', notes: '${notes.replace(/'/g, "\\'")}' })" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition cursor-pointer active:scale-95">
+            <button type="button" onclick="applyCopilotAll({ recommendedFeat: '${RuleMaster.escapeJsString(recFeat)}', featBenefit: '${RuleMaster.escapeJsString(featBenefit)}', featCategory: '${RuleMaster.escapeJsString(featCategory)}', recommendedStat: '${RuleMaster.escapeJsString(recStat || '')}', notes: '${RuleMaster.escapeJsString(notes)}' })" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-[11px] px-3.5 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 transition cursor-pointer active:scale-95">
               <span>⚡</span><span>Apply All Recommendations</span>
             </button>
           </div>

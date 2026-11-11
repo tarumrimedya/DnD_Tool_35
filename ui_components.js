@@ -37,6 +37,18 @@
       .replace(/\r/g, '&#13;');
   }
 
+  /**
+   * Escapes a value for a quoted JavaScript string inside an inline handler attribute, as in
+   * `fn('${UI.escapeJsString(name)}')`. Every character outside a small safe set
+   * becomes a `\uXXXX` escape, so the result holds no quote, backslash, angle bracket or
+   * ampersand: neither the HTML attribute parser nor the JS string parser can be broken out of,
+   * and the handler receives the original text.
+   */
+  function escapeJsString(val) {
+    if (val === null || val === undefined || val === false) return '';
+    return String(val).replace(/[^A-Za-z0-9 _.,:;!?()\[\]@#%^*+=|~\/-]/g, ch => '\\u' + ch.charCodeAt(0).toString(16).padStart(4, '0'));
+  }
+
   function raw(str) {
     const out = (str === null || str === undefined || str === false) ? '' : String(str);
     return {
@@ -363,6 +375,7 @@
   const UI = {
     escapeHtml,
     escapeAttr,
+    escapeJsString,
     raw,
     html,
     render,

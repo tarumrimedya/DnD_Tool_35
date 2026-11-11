@@ -326,8 +326,8 @@
         const total = item.ranks + statMod + item.misc + acpVal + buffSkillMod;
         const maxRankAllowed = item.isClass ? maxClassRank : maxCrossRank;
         const isOverRank = item.ranks > maxRankAllowed;
-        const safeName = item.name.replace(/'/g, "\\'");
-        const safeSubtitle = (item.subtitle || '').replace(/'/g, "\\'");
+        const safeName = UI.escapeAttr(item.name);
+        const safeSubtitle = UI.escapeAttr(item.subtitle || '');
 
         const statLabels = { str: 'STR', dex: 'DEX', con: 'CON', int: 'INT', wis: 'WIS', cha: 'CHA' };
         const statDisplay = statLabels[(item.stat || '').toLowerCase()] || String(item.stat || '').toUpperCase().replace('İ', 'I');
@@ -350,7 +350,7 @@
           <!-- Skill Name & Components -->
           <td class="py-2 px-3 align-middle">
             <div class="font-bold ${item.isClass ? 'text-amber-300' : 'text-white'} flex items-center gap-2 flex-wrap">
-              ${getUniversalPinButtonHtml({ name: safeName, type: 'Skill', action: 'Check', desc: `${safeName} skill check (${total >= 0 ? '+' : ''}${total})`, badge: `${total >= 0 ? '+' : ''}${total} Check` })}
+              ${getUniversalPinButtonHtml({ name: item.name, type: 'Skill', action: 'Check', desc: `${item.name} skill check (${total >= 0 ? '+' : ''}${total})`, badge: `${total >= 0 ? '+' : ''}${total} Check` })}
               <span>${UI.escapeHtml(item.name)}</span>
               ${item.isConsolidated ? '<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px]">Consolidated</span>' : ''}
               ${item.isClass ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[10px] font-mono">Class</span>' : ''}
@@ -960,7 +960,7 @@
         }
 
         const isPinned = Boolean(buff.pinnedToCombat);
-        const safeBuffId = String(buff.id || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const safeBuffId = UI.escapeAttr(String(buff.id || ''));
         const pinBtnClasses = isPinned
           ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.45)] hover:bg-emerald-900 hover:border-emerald-400 ring-1 ring-emerald-500/40'
           : 'bg-slate-900/50 text-slate-500 hover:text-slate-200 border-slate-700/60 hover:border-slate-500 opacity-50 hover:opacity-100 hover:bg-slate-800';

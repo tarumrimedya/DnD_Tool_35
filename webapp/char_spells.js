@@ -10232,7 +10232,7 @@
             mergedV2.action ||
             mergedV2.actionType ||
             'standard'
-          ).replace(/'/g, "\\'");
+          );
           if (hasDmg) {
             mergedV2.damageParts.forEach(dp => {
               if (!dp || !dp.dice) return;

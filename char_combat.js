@@ -2022,7 +2022,6 @@
               : 'border-slate-800 bg-slate-900/80 hover:border-amber-700/80';
           }
 
-          const safeName = sp.name.replace(/'/g, "\\'");
           const attrName = String(sp.name || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
           const reorderControls = window.spellReorderModeActive ? `
             <div class="flex items-center gap-1 shrink-0" data-action="combat:noop-stop">
@@ -6156,7 +6155,6 @@
         const mat = item.material || 'Standard';
         const inWeapons = isAlreadyInWeapons(item);
         const badgeColor = isShield ? 'border-sky-500/40 text-sky-300 bg-sky-950/40' : (isTwoHand ? 'border-amber-500/40 text-amber-300 bg-amber-950/40' : 'border-emerald-500/40 text-emerald-300 bg-emerald-950/40');
-        const escapedId = String(item.id || idx).replace(/'/g, "\\'");
 
         return `
           <div class="flex items-center justify-between p-2.5 hover:bg-slate-800/80 rounded-lg transition gap-2 border mb-1">
@@ -12954,17 +12952,6 @@
       }
 
       const isPinned = category !== null;
-      const safeName = itemName.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      const safeType = (item.type || item.sourceType || 'Item').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      const safeAction = (item.action || 'Standard').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-      const safeDesc = (item.desc || item.benefit || item.notes || '')
-        .replace(/\\/g, '\\\\')
-        .replace(/'/g, "\\'")
-        .replace(/\n/g, ' ')
-        .replace(/\r/g, '');
-      const safeBadge = (item.badge || item.damageDice || '')
-        .replace(/\\/g, '\\\\')
-        .replace(/'/g, "\\'");
 
       let colorClasses = '';
       let tooltip = '';
@@ -13012,7 +12999,7 @@
       const attrPinBadge = String(item.badge || item.damageDice || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 
       return `
-        <button type="button" data-action="combat:toggle-universal-pin" data-pin-name="${attrPinName}" data-pin-type="${attrPinType}" data-pin-action="${attrPinAction}" data-pin-desc="${attrPinDesc}" data-pin-badge="${attrPinBadge}" class="${extraClass} inline-flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${colorClasses}" title="${tooltip}">
+        <button type="button" data-action="combat:toggle-universal-pin" data-pin-name="${attrPinName}" data-pin-type="${attrPinType}" data-pin-action="${attrPinAction}" data-pin-desc="${attrPinDesc}" data-pin-badge="${attrPinBadge}" class="${extraClass} inline-flex items-center justify-center rounded-lg border transition-all cursor-pointer shrink-0 ${colorClasses}" title="${UI.escapeAttr(tooltip)}">
           ${iconSvg}
         </button>
       `;
@@ -13531,7 +13518,6 @@
         const critBadge = item.isCrit
           ? `<span class="badge bg-rose-600 text-white font-black text-[10px] animate-pulse">⚡ CRITICAL ${item.critDamage ? '(' + item.critDamage + ' Dmg)' : ''}</span>`
           : '';
-        const safeFormula = (item.formula || '').replace(/'/g, "\\'");
 
         return `
           <div class="p-2.5 sm:p-3 rounded-xl border ${critClass} flex flex-wrap items-center justify-between gap-2.5 transition">
