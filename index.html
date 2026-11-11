@@ -9,6 +9,15 @@
     if ('scrollRestoration' in history) {
       try { history.scrollRestoration = 'manual'; } catch (e) {}
     }
+    // iOS zooms the page when an input with text under 16px gets focus. maximum-scale=1 stops that
+    // focus zoom; iOS still lets the user pinch-zoom. Other browsers keep the unrestricted viewport,
+    // because Android would lose pinch zoom with this value.
+    (function () {
+      var isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (!isIos) return;
+      var viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0');
+    })();
   </script>
   
   <!-- Static Compiled Tailwind CSS (Zero Runtime JIT Overhead) -->
