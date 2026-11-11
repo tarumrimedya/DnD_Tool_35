@@ -602,7 +602,7 @@
                         <div class="flex items-center gap-2 min-w-0">
                           <span class="badge bg-rose-950 text-rose-300 border border-rose-800 text-[10px] font-bold font-mono px-1.5 py-0.5 shrink-0">${m.discipline || 'Iron Heart'} ${m.level || 1}</span>
                           <div class="flex flex-col min-w-0">
-                            <span class="text-xs font-bold ${isExpended ? 'line-through text-slate-400' : 'text-white'} truncate">${m.name}</span>
+                            <span class="text-xs font-bold ${isExpended ? 'line-through text-slate-400' : 'text-white'} truncate">${UI.escapeHtml(m.name)}</span>
                             <span class="text-[10px] text-slate-400 font-mono">${actionLabel}</span>
                           </div>
                         </div>
@@ -2052,7 +2052,7 @@
                 ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80'
                 : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80';
               const shortText = spontMode === 'inflict' ? `Inflict ${spontInfo.formula}` : `Cure ${spontInfo.formula}`;
-              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[10px] leading-none inline-flex items-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${sp.name}' into '${spontInfo.name}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
+              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[10px] leading-none inline-flex items-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${UI.escapeAttr(sp.name)}' into '${UI.escapeAttr(spontInfo.name)}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
             } else if (params.save && params.save !== 'None') {
               bottomRightHtml = `<span class="truncate shrink-0 font-mono text-[10px] text-slate-500">${params.save}</span>`;
             }
@@ -2068,12 +2068,12 @@
               <div class="flex items-center justify-between w-full gap-1">
                 <div class="flex items-center gap-1 min-w-0">
                   <span class="text-[10px] font-mono font-bold px-1 rounded border uppercase tracking-wider shrink-0 ${srcBadgeClass}">${srcBadgeLabel}</span>
-                  <span class="text-[10px] font-mono text-slate-300 font-bold uppercase truncate">${params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level)}</span>
+                  <span class="text-[10px] font-mono text-slate-300 font-bold uppercase truncate">${UI.escapeHtml(params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level))}</span>
                 </div>
                 ${params.dice ? `<span class="text-[10px] text-slate-200 font-mono font-bold shrink-0 truncate">${params.dice}</span>` : ''}
               </div>
               <div class="text-[11px] ${titleColorClass} truncate my-0.5">
-                ${sp.name}
+                ${UI.escapeHtml(sp.name)}
               </div>
               <div class="flex items-center justify-between w-full text-[10px] text-slate-400 mt-0.5 gap-1">
                 <span class="truncate">${params.action}</span>
@@ -2667,7 +2667,7 @@
             </div>
             <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
               <div class="text-[10px] font-bold ${epRem > 0 ? 'text-teal-300 group-hover:text-white' : 'text-slate-500'} leading-tight truncate w-full">
-                <span class="mr-0.5 text-[10px]">${ep.icon || '⚜️'}</span>${ep.label}
+                <span class="mr-0.5 text-[10px]">${ep.icon || '⚜️'}</span>${UI.escapeHtml(ep.label)}
               </div>
               <div class="text-[10px] ${epRem > 0 ? 'text-amber-300 font-bold' : 'text-slate-500'} font-mono mt-1 truncate w-full">${turnDomainInfo.turningCheckFormula} • ${turnDomainInfo.turningDamageFormula} HD</div>
             </div>
@@ -2696,7 +2696,7 @@
             </div>
             <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
               <div class="text-[10px] ${isBuffActive ? 'font-black text-white' : (pwRem > 0 ? 'font-bold text-amber-200 group-hover:text-white' : 'font-bold text-slate-500')} leading-tight truncate w-full">
-                <span class="mr-0.5 text-[10px]">${pw.icon || '⚜️'}</span>${pw.name}
+                <span class="mr-0.5 text-[10px]">${pw.icon || '⚜️'}</span>${UI.escapeHtml(pw.name)}
               </div>
               <div class="text-[10px] ${isBuffActive ? 'text-amber-200 font-bold' : (pwRem > 0 ? 'text-slate-400' : 'text-slate-500')} font-mono mt-1 truncate w-full">${subLabel}</div>
             </div>
@@ -2729,9 +2729,9 @@
                 </div>
                 <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
                   <div class="text-[10px] ${isActive ? 'font-black text-white' : 'font-bold text-amber-200 group-hover:text-white'} leading-tight truncate w-full">
-                    <span class="mr-0.5 text-[10px]">${df.icon}</span>${df.name}
+                    <span class="mr-0.5 text-[10px]">${df.icon}</span>${UI.escapeHtml(df.name)}
                   </div>
-                  <div class="text-[10px] ${isActive ? 'text-amber-200 font-bold' : 'text-slate-400'} font-mono mt-1 truncate w-full">${df.desc}</div>
+                  <div class="text-[10px] ${isActive ? 'text-amber-200 font-bold' : 'text-slate-400'} font-mono mt-1 truncate w-full">${UI.escapeHtml(df.desc)}</div>
                 </div>
               </button>
             `);
@@ -2780,9 +2780,9 @@
 
             <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
               <div class="text-[10px] ${isActive ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full">
-                <span class="mr-0.5 text-[10px]">${icon}</span>${mod.name}
+                <span class="mr-0.5 text-[10px]">${icon}</span>${UI.escapeHtml(mod.name)}
               </div>
-              <div class="text-[10px] ${isActive ? `${valueColor} font-bold` : 'text-slate-400'} font-mono mt-1 truncate w-full">${mod.desc}</div>
+              <div class="text-[10px] ${isActive ? `${valueColor} font-bold` : 'text-slate-400'} font-mono mt-1 truncate w-full">${UI.escapeHtml(mod.desc)}</div>
             </div>
           </div>
         `;
@@ -3237,7 +3237,7 @@
             </div>
             <div class="flex justify-between items-baseline font-mono border-t border-purple-900/60 pt-1.5 mt-1">
               <span class="text-xs text-slate-300">Base Damage Dice Progression: <span class="line-through text-slate-500">${castData.oldDice}</span> ➔ <strong class="text-amber-300 text-sm font-black">${castData.newDice}</strong></span>
-              <span class="text-xs text-purple-300 font-bold">Duration: ${castData.durationText}</span>
+              <span class="text-xs text-purple-300 font-bold">Duration: ${UI.escapeHtml(castData.durationText)}</span>
             </div>
             <div class="text-[10px] text-slate-400 mt-1">Effective weapon damage size increased by ${castData.sizeSteps} step(s) at CL ${castData.cl}. Automatically applied in the Combat Cockpit.</div>
           `;
@@ -3264,7 +3264,7 @@
           <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-3 text-xs space-y-2 font-mono">
             <div class="flex items-center justify-between text-slate-300 border-b border-slate-800/80 pb-1.5">
               <span>🔮 Spell & Slot Level:</span>
-              <span class="font-bold text-white">${spell.name} (Level ${castData.finalLvl} ${sourceLabels[castData.slotSource] || ''} Slot)</span>
+              <span class="font-bold text-white">${UI.escapeHtml(spell.name)} (Level ${castData.finalLvl} ${sourceLabels[castData.slotSource] || ''} Slot)</span>
             </div>
             ${(castData.isSizeModifier && castData.targetWeaponName) ? `
             <div class="flex items-center justify-between text-purple-300 border-b border-slate-800/80 pb-1.5">
@@ -3279,7 +3279,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-300">
               <div><span class="text-slate-500">Range:</span> <span class="text-slate-200 font-semibold">${castData.rangeText}</span></div>
               <div><span class="text-slate-500">Target:</span> <span class="text-slate-200 font-semibold">${castData.targetText}</span></div>
-              <div><span class="text-slate-500">Duration:</span> <span class="text-slate-200 font-semibold">${castData.durationText}</span></div>
+              <div><span class="text-slate-500">Duration:</span> <span class="text-slate-200 font-semibold">${UI.escapeHtml(castData.durationText)}</span></div>
               <div><span class="text-slate-500">Components:</span> <span class="text-slate-200 font-semibold">${castData.componentsText}</span></div>
             </div>
             <div class="flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-1.5 text-[11px]">
@@ -3325,7 +3325,7 @@
       const descEl = document.getElementById('spell-target-modal-desc');
       if (descEl) {
         descEl.innerHTML = `
-          <strong>${spell.name}</strong> applies to a touched bludgeoning melee weapon. 
+          <strong>${UI.escapeHtml(spell.name)}</strong> applies to a touched bludgeoning melee weapon. 
           At your current Caster Level (<strong>CL ${cl}</strong>), the weapon's effective damage size increases by <strong>+${steps} step(s)</strong>. 
           Please select the weapon you want to imbue:
         `;
@@ -5258,7 +5258,7 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span class="text-xs ${is1 ? 'text-amber-400' : 'text-slate-500'}">⚔️</span>
-              <span class="text-xs font-black truncate ${is1 ? 'text-white' : 'text-slate-300'}">${s1.name || 'Main Hand'}</span>
+              <span class="text-xs font-black truncate ${is1 ? 'text-white' : 'text-slate-300'}">${UI.escapeHtml(s1.name || 'Main Hand')}</span>
               ${is1 ? `<span class="text-[10px] font-black px-1.5 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">ACTIVE</span>` : ''}
               ${s1MainStats?.enhancementBonus ? `<span class="text-[10px] font-black px-1.5 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">+${s1MainStats.enhancementBonus} Magic</span>` : ''}
               ${s1MainStats?.keen ? `<span class="text-[10px] font-bold px-1.5 rounded bg-red-950/60 text-red-300 border border-red-500/50">🩸 Keen</span>` : ''}
@@ -5266,7 +5266,7 @@
             </div>
             <!-- Equipment & Grip -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${s1.mainWeapon || 'None'}</span>
+              <span class="${is1 ? 'text-amber-300 font-bold' : 'text-slate-400 font-bold'}">${UI.escapeHtml(s1.mainWeapon || 'None')}</span>
               <span class="text-slate-500">(${s1MainStats?.isShield ? 'Shield' : effectiveS1Grip})</span>
             </div>
             <!-- Row 1: Modified Weapon Damage or Shield Defense -->
@@ -5316,7 +5316,7 @@
             </div>
             <!-- Equipment Info -->
             <div class="text-[10px] text-slate-500 truncate mt-0.5 font-mono">
-              <span>${s1.mainWeapon || 'Weapon'} (2-Hand)</span>
+              <span>${UI.escapeHtml(s1.mainWeapon || 'Weapon')} (2-Hand)</span>
             </div>
             <!-- Description -->
             <div class="text-[10px] text-slate-600 mt-0.5 font-mono">
@@ -5345,7 +5345,7 @@
             </div>
             <!-- Equipment & Type -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-amber-200/90 font-bold'}">${s1.mainWeapon}</span>
+              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-amber-200/90 font-bold'}">${UI.escapeHtml(s1.mainWeapon)}</span>
               <span class="text-slate-500">(${is2 ? 'Off-Hand Light' : '2-Hand Grip'})</span>
             </div>
             <!-- Row 1: Weapon Damage -->
@@ -5376,14 +5376,14 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5">
               <span class="text-xs ${is2 ? 'text-sky-400' : 'text-slate-500'}">${isCard2Shield ? '🛡️' : '🗡️'}</span>
-              <span class="text-xs font-black truncate ${is2 ? 'text-white' : 'text-slate-300'}">${s2.name || 'Off-Hand'}</span>
+              <span class="text-xs font-black truncate ${is2 ? 'text-white' : 'text-slate-300'}">${UI.escapeHtml(s2.name || 'Off-Hand')}</span>
               ${is2 ? `<span class="text-[10px] font-black px-1.5 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">${isDual ? (isCard2Shield ? 'ACTIVE (Shield)' : 'ACTIVE (TWF)') : 'ACTIVE'}</span>` : ''}
               ${s2OffStats?.enhancementBonus ? `<span class="text-[10px] font-black px-1.5 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">+${s2OffStats.enhancementBonus} Magic</span>` : ''}
               ${s2OffStats?.keen ? `<span class="text-[10px] font-bold px-1.5 rounded bg-red-950/60 text-red-300 border border-red-500/50">🩸 Keen</span>` : ''}
             </div>
             <!-- Equipment & Type -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
-              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${s2.mainWeapon || 'None'}</span>
+              <span class="${is2 ? 'text-sky-300 font-bold' : 'text-slate-400 font-bold'}">${UI.escapeHtml(s2.mainWeapon || 'None')}</span>
               <span class="text-slate-500">(${isCard2Shield ? 'Shield' : (!s2.mainWeapon || s2.mainWeapon === 'None' || s2.mainWeapon === '-' ? 'Empty' : 'Off-Hand')})</span>
             </div>
             <!-- Row 1: Weapon Damage or Shield Defense -->
@@ -5851,7 +5851,7 @@
       if (wepsList.length > 0) {
         optionsHtml += '<optgroup label="⚔️ Weapons">';
         wepsList.forEach(w => {
-          optionsHtml += `<option value="${w.name}">${w.name} (Weapon)</option>`;
+          optionsHtml += `<option value="${UI.escapeAttr(w.name)}">${UI.escapeHtml(w.name)} (Weapon)</option>`;
         });
         optionsHtml += '</optgroup>';
       }
@@ -5859,7 +5859,7 @@
       if (shieldsList.length > 0) {
         optionsHtml += '<optgroup label="🛡️ Shields">';
         shieldsList.forEach(s => {
-          optionsHtml += `<option value="${s.name}">${s.name} (Shield)</option>`;
+          optionsHtml += `<option value="${UI.escapeAttr(s.name)}">${UI.escapeHtml(s.name)} (Shield)</option>`;
         });
         optionsHtml += '</optgroup>';
       }
@@ -6163,9 +6163,9 @@
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-xs">${isShield ? '🛡️' : (isTwoHand ? '⚔️' : '🗡️')}</span>
-                <span class="text-xs font-bold text-white truncate">${item.name}</span>
+                <span class="text-xs font-bold text-white truncate">${UI.escapeHtml(item.name)}</span>
                 <span class="text-[10px] font-semibold px-1.5 rounded border ${badgeColor}">
-                  ${item.weaponType || item.category || (isShield ? 'Shield' : 'Weapon')}
+                  ${UI.escapeHtml(item.weaponType || item.category || (isShield ? 'Shield' : 'Weapon'))}
                 </span>
                 ${enh > 0 ? `<span class="text-[10px] font-bold px-1.5 rounded bg-amber-950/60 border border-amber-500/50 text-amber-300">${enhStr}</span>` : ''}
                 ${mat !== 'Standard' ? `<span class="text-[10px] px-1.5 rounded bg-slate-800 border border-slate-600 text-slate-300">${mat}</span>` : ''}
@@ -6900,12 +6900,12 @@
         const reorderControls = window.meleeReorderModeActive ? `
           <div class="flex items-center justify-between px-0.5 text-[10px] text-slate-500 leading-none shrink-0 w-full">
             <button type="button" data-action="combat:melee-mod-move" data-idx="${idx}" data-delta="-1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Move Left">◀</button>
-            <span class="text-[10px] text-slate-400 font-mono truncate max-w-[45px]">${mod.source || ''}</span>
+            <span class="text-[10px] text-slate-400 font-mono truncate max-w-[45px]">${UI.escapeHtml(mod.source || '')}</span>
             <button type="button" data-action="combat:melee-mod-move" data-idx="${idx}" data-delta="1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= dynamicMods.length - 1 ? 'disabled' : ''} title="Move Right">▶</button>
           </div>
         ` : `
           <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
-            <span class="text-[10px] font-mono ${mod.active ? 'text-rose-400 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${mod.source || ''}</span>
+            <span class="text-[10px] font-mono ${mod.active ? 'text-rose-400 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${UI.escapeHtml(mod.source || '')}</span>
           </div>
         `;
 
@@ -6918,7 +6918,7 @@
           ${reorderControls}
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full">${mod.name}</div>
+            <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full">${UI.escapeHtml(mod.name)}</div>
             <div class="text-[10px] ${mod.active ? 'text-amber-300 font-bold' : bonusColor} font-mono mt-1">${bonusStr}</div>
           </div>
         </div>
@@ -7004,11 +7004,11 @@
              data-combat-tooltip="${c.id}" data-tooltip-cat="defense"
              class="${c.active ? activeClass : inactiveClass}">
           <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
-            <span class="text-[10px] font-mono ${c.active ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${c.source}</span>
+            <span class="text-[10px] font-mono ${c.active ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${UI.escapeHtml(c.source)}</span>
           </div>
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] ${c.active ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full">${c.name}</div>
+            <div class="text-[10px] ${c.active ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full">${UI.escapeHtml(c.name)}</div>
             <div class="text-[10px] ${c.active ? 'text-indigo-200 font-bold' : 'text-indigo-400'} font-mono mt-1">${c.bonusStr}</div>
           </div>
         </div>
@@ -7311,7 +7311,7 @@
         weaponSelect.innerHTML = allRanged.map(w => {
           const isSel = w.name === activeWep.name;
           const badge = w.source.includes('Inventory') || w.source.includes('Equipped') ? '🎒 ' : '';
-          return `<option value="${w.name}" ${isSel ? 'selected' : ''}>${badge}${w.name} (${w.dice} • ${w.range})</option>`;
+          return `<option value="${UI.escapeAttr(w.name)}" ${isSel ? 'selected' : ''}>${badge}${UI.escapeHtml(w.name)} (${w.dice} • ${UI.escapeHtml(w.range)})</option>`;
         }).join('');
       }
 
@@ -7383,7 +7383,7 @@
           const isSelected = (curSel === item.name || curSel === item.ammoVal || curSel === `inv_${item.name}`);
           const isDepleted = qty <= 0;
           const icon = isDepleted ? '⚠️' : '🏹';
-          return `<option value="${item.name}" ${isSelected ? 'selected' : ''} ${isDepleted ? 'class="text-rose-400 font-bold"' : ''}>${icon} ${item.name}</option>`;
+          return `<option value="${UI.escapeAttr(item.name)}" ${isSelected ? 'selected' : ''} ${isDepleted ? 'class="text-rose-400 font-bold"' : ''}>${icon} ${UI.escapeHtml(item.name)}</option>`;
         }).join('');
       }
 
@@ -7546,12 +7546,12 @@
         const reorderControls = window.rangedReorderModeActive ? `
           <div class="flex items-center justify-between px-0.5 text-[10px] text-slate-500 leading-none shrink-0 w-full">
             <button type="button" data-action="combat:ranged-mod-move" data-idx="${idx}" data-delta="-1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Move Left">◀</button>
-            <span class="text-[10px] text-slate-400 font-mono truncate max-w-[45px]">${mod.source}</span>
+            <span class="text-[10px] text-slate-400 font-mono truncate max-w-[45px]">${UI.escapeHtml(mod.source)}</span>
             <button type="button" data-action="combat:ranged-mod-move" data-idx="${idx}" data-delta="1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= qualifiedRangedList.length - 1 ? 'disabled' : ''} title="Move Right">▶</button>
           </div>
         ` : `
           <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
-            <span class="text-[10px] font-mono ${mod.active ? 'text-amber-400 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${mod.source}</span>
+            <span class="text-[10px] font-mono ${mod.active ? 'text-amber-400 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${UI.escapeHtml(mod.source)}</span>
           </div>
         `;
 
@@ -7563,7 +7563,7 @@
           ${reorderControls}
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
-            <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full">${mod.name}</div>
+            <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full">${UI.escapeHtml(mod.name)}</div>
             <div class="text-[10px] ${mod.active ? 'text-amber-300 font-bold' : 'text-amber-400'} font-mono mt-1">${mod.bonusStr}</div>
           </div>
         </div>
@@ -8615,7 +8615,7 @@
 
             return `
               <button type="button" data-action="combat:attack-chain-roll" data-idx="${idx}" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
-                <div class="text-[10px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
+                <div class="text-[10px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${UI.escapeHtml(item.label)}</div>
                 <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
                 <div class="text-[10px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Ranged'}</div>
               </button>
@@ -8817,7 +8817,7 @@
 
           return `
             <button type="button" data-action="combat:attack-chain-roll" data-idx="${idx}" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
-              <div class="text-[10px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
+              <div class="text-[10px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${UI.escapeHtml(item.label)}</div>
               <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
               <div class="text-[10px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Standard'}</div>
             </button>
@@ -9172,7 +9172,7 @@
           div.innerHTML = `
             <div class="flex justify-between items-center mb-1">
               <div class="flex items-center gap-1.5">
-                <span class="font-bold text-white">${atk.label || ('Strike ' + atk.idx)}</span>
+                <span class="font-bold text-white">${UI.escapeHtml(atk.label || ('Strike ' + atk.idx))}</span>
                 ${tagBadge}
               </div>
               ${atk.isCrit ? '<span class="badge bg-rose-600 text-white animate-pulse inline-flex items-center gap-1">' + getD20IconSvg('w-3.5 h-3.5') + '<span>CRITICAL</span></span>' : (atk.d20 === 20 ? '<span class="badge bg-amber-500 text-black">NAT 20</span>' : '')}
@@ -10388,7 +10388,7 @@
             return `
               <button type="button" ${actionAttrs} title="${safeTip}" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold border ${it.bgClass} shadow-sm transition active:scale-95 cursor-pointer">
                 <span>${it.icon}</span>
-                <span class="truncate max-w-[180px]">${it.label}</span>
+                <span class="truncate max-w-[180px]">${UI.escapeHtml(it.label)}</span>
               </button>
             `;
           }).join('');
@@ -10435,17 +10435,17 @@
               ? `<span class="text-[10px] font-mono ${clBonusInfo.bonus > 0 ? 'text-teal-300 bg-teal-950/80 border-teal-600/60 font-bold' : 'text-slate-400 bg-slate-950 border-slate-800'} px-1 rounded border" title="${clBonusInfo.sources?.length ? clBonusInfo.sources.join(', ') : `Caster Level ${bCl}`}">CL ${bCl}</span>`
               : '';
             const wepBadge = b.targetWeapon
-              ? `<span class="text-[10px] font-bold px-1.5 rounded bg-amber-950/90 text-amber-300 border border-amber-600/50">⚔️ ${b.targetWeapon}</span>`
+              ? `<span class="text-[10px] font-bold px-1.5 rounded bg-amber-950/90 text-amber-300 border border-amber-600/50">⚔️ ${UI.escapeHtml(b.targetWeapon)}</span>`
               : '';
             const energyBadge = b.chosenEnergy
-              ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-950/90 text-sky-300 border border-sky-600/50">${b.chosenEnergy}</span>`
+              ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-950/90 text-sky-300 border border-sky-600/50">${UI.escapeHtml(b.chosenEnergy)}</span>`
               : '';
             const pinBtnClasses = isPinned
               ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.45)] hover:bg-emerald-900 hover:border-emerald-400 ring-1 ring-emerald-500/40'
               : 'bg-slate-900/50 text-slate-500 hover:text-slate-200 border-slate-700/60 hover:border-slate-500 opacity-50 hover:opacity-100 hover:bg-slate-800';
             const pinBtnTitle = isPinned
-              ? `📌 Pinned to Combat Cockpit (${b.name}) - Click to unpin`
-              : `📌 Pin to Combat Cockpit (${b.name}) - Keep visible when inactive`;
+              ? `📌 Pinned to Combat Cockpit (${UI.escapeAttr(b.name)}) - Click to unpin`
+              : `📌 Pin to Combat Cockpit (${UI.escapeAttr(b.name)}) - Keep visible when inactive`;
             const pinIconSvg = isPinned
               ? `<svg class="w-3 h-3 fill-current" viewBox="0 0 24 24"><path d="M16 3a1 1 0 0 1 .117 1.993L16 5v4.586l1.707 1.707a1 1 0 0 1 .286.602L18 12a1 1 0 0 1-.883.993L17 13h-4v7a1 1 0 0 1-1.993.117L11 20v-7H7a1 1 0 0 1-.993-.883L6 12a1 1 0 0 1 .206-.602L7.914 9.68l.086-.094V5a1 1 0 0 1-.117-1.993L8 3h8z"/></svg>`
               : `<svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"></line><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"></path></svg>`;
@@ -10456,13 +10456,13 @@
                   <span class="w-3.5 h-3.5 rounded flex items-center justify-center text-[10px] font-black border shrink-0 ${isAct ? 'bg-emerald-600 border-emerald-400 text-white' : 'bg-slate-900 border-slate-600 text-transparent'}">✓</span>
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 flex-wrap">
-                      <span class="text-[11px] font-bold ${isAct ? 'text-emerald-300' : 'text-slate-300'} truncate">${b.name || 'Buff'}</span>
+                      <span class="text-[11px] font-bold ${isAct ? 'text-emerald-300' : 'text-slate-300'} truncate">${UI.escapeHtml(b.name || 'Buff')}</span>
                       ${wepBadge}
                       ${energyBadge}
                       ${clBadge}
-                      ${durText ? `<span class="text-[10px] font-mono text-slate-400 bg-slate-950 px-1 rounded border border-slate-800">${durText}</span>` : ''}
+                      ${durText ? `<span class="text-[10px] font-mono text-slate-400 bg-slate-950 px-1 rounded border border-slate-800">${UI.escapeHtml(durText)}</span>` : ''}
                     </div>
-                    <div class="text-[10px] ${isAct ? 'text-amber-300/90' : 'text-slate-400'} truncate">${summaryText}</div>
+                    <div class="text-[10px] ${isAct ? 'text-amber-300/90' : 'text-slate-400'} truncate">${UI.escapeHtml(summaryText)}</div>
                   </div>
                 </button>
                 <div class="flex items-center gap-1 shrink-0">
@@ -11046,8 +11046,8 @@
         const safeName = cs.name.replace(/"/g, '&quot;');
         const modColor = info.total >= 0 ? 'text-emerald-400' : 'text-rose-400';
         return `
-          <button type="button" data-action="combat:skill-roll" data-skill-name="${safeName}" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/50 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between gap-1.5 transition cursor-pointer" title="Roll 1d20${info.formatted} ${cs.label} Check">
-            <span class="truncate">${cs.label}</span>
+          <button type="button" data-action="combat:skill-roll" data-skill-name="${safeName}" class="bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/50 rounded px-2 py-1.5 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between gap-1.5 transition cursor-pointer" title="Roll 1d20${info.formatted} ${UI.escapeAttr(cs.label)} Check">
+            <span class="truncate">${UI.escapeHtml(cs.label)}</span>
             <span class="font-mono font-bold ${modColor} text-xs shrink-0">${info.formatted}</span>
           </button>
         `;
@@ -11058,11 +11058,11 @@
         const safeName = String(pin.name).replace(/"/g, '&quot;');
         const modColor = info.total >= 0 ? 'text-sky-300' : 'text-rose-400';
         return `
-          <div data-action="combat:skill-roll" data-skill-name="${safeName}" class="bg-sky-950/35 hover:bg-sky-900/50 border border-sky-800/70 hover:border-sky-400 rounded px-2 py-1.5 text-left text-xs text-sky-100 hover:text-white flex items-center justify-between gap-1 transition cursor-pointer group" title="Roll 1d20${info.formatted} ${pin.name} Check">
-            <span class="truncate font-medium">${pin.name}</span>
+          <div data-action="combat:skill-roll" data-skill-name="${safeName}" class="bg-sky-950/35 hover:bg-sky-900/50 border border-sky-800/70 hover:border-sky-400 rounded px-2 py-1.5 text-left text-xs text-sky-100 hover:text-white flex items-center justify-between gap-1 transition cursor-pointer group" title="Roll 1d20${info.formatted} ${UI.escapeAttr(pin.name)} Check">
+            <span class="truncate font-medium">${UI.escapeHtml(pin.name)}</span>
             <div class="flex items-center gap-1 shrink-0">
               <span class="font-mono font-bold ${modColor} text-xs">${info.formatted}</span>
-              <button type="button" data-action="combat:skill-unpin" data-skill-name="${safeName}" class="text-slate-500 hover:text-rose-400 text-[11px] font-bold px-0.5 leading-none transition cursor-pointer" title="Unpin ${pin.name} from Combat Skills">×</button>
+              <button type="button" data-action="combat:skill-unpin" data-skill-name="${safeName}" class="text-slate-500 hover:text-rose-400 text-[11px] font-bold px-0.5 leading-none transition cursor-pointer" title="Unpin ${UI.escapeAttr(pin.name)} from Combat Skills">×</button>
             </div>
           </div>
         `;
@@ -11202,14 +11202,14 @@
                 <div class="min-w-0 flex-1">
                   <div class="text-xs font-bold text-amber-200 flex items-center gap-1.5 truncate">
                     <span>${icon}</span>
-                    <span class="truncate">${item.name}</span>
+                    <span class="truncate">${UI.escapeHtml(item.name)}</span>
                     ${isSlot ? `<span class="text-[10px] font-mono px-1 rounded bg-slate-800 text-amber-300 border border-slate-700 uppercase">${slotKey}</span>` : ''}
                     ${active ? `<span class="px-1.5 rounded text-[10px] font-extrabold bg-cyan-950 text-cyan-300 border border-cyan-400 shadow-sm animate-pulse">⚡ ACTIVE</span>` : ''}
                   </div>
                   <div class="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                     <span class="text-slate-500">Daily:</span>
                     <span class="font-mono font-bold text-amber-400 bg-amber-950/90 px-1.5 py-0.5 rounded border border-amber-600/50 shadow-inner">⚡ ${dc.current}/${dc.max}</span>
-                    <span class="text-slate-500">${dc.unit || 'rounds'}</span>
+                    <span class="text-slate-500">${UI.escapeHtml(dc.unit || 'rounds')}</span>
                   </div>
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
@@ -11239,13 +11239,13 @@
               <div class="min-w-0 flex-1">
                 <div class="text-xs font-bold text-amber-200 flex items-center gap-1.5 truncate">
                   <span>${icon}</span>
-                  <span class="truncate">${item.name}</span>
+                  <span class="truncate">${UI.escapeHtml(item.name)}</span>
                   ${isSlot ? `<span class="text-[10px] font-mono px-1 rounded bg-slate-800 text-amber-300 border border-slate-700 uppercase">${slotKey}</span>` : ''}
                 </div>
                 <div class="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                   <span class="text-slate-500">Daily:</span>
                   <span class="font-mono font-bold text-amber-400 bg-amber-950/90 px-1.5 py-0.5 rounded border border-amber-600/50 shadow-inner">⚡ ${dc.current}/${dc.max}</span>
-                  <span class="text-slate-500">${dc.unit || 'charges'}</span>
+                  <span class="text-slate-500">${UI.escapeHtml(dc.unit || 'charges')}</span>
                 </div>
               </div>
               <div class="flex items-center gap-1 shrink-0">
@@ -11289,9 +11289,9 @@
               <div class="min-w-0 flex-1">
                 <div class="text-xs font-bold text-white flex items-center gap-1.5 truncate">
                   <span>${icon}</span>
-                  <span class="truncate">${item.name}</span>
+                  <span class="truncate">${UI.escapeHtml(item.name)}</span>
                 </div>
-                <div class="text-[10px] text-slate-400">Qty: <strong class="text-amber-400 font-mono">${item.qty || 1}</strong> • ${item.desc ? item.desc.slice(0, 32) + '...' : ''}</div>
+                <div class="text-[10px] text-slate-400">Qty: <strong class="text-amber-400 font-mono">${item.qty || 1}</strong> • ${UI.escapeHtml(item.desc ? item.desc.slice(0, 32) + '...' : '')}</div>
               </div>
               <button type="button" data-action="combat:consume-cockpit-item" data-encoded-name="${encodeURIComponent(item.name)}" class="shrink-0 py-1 px-2.5 bg-gradient-to-r ${btnColor} text-white font-extrabold text-[11px] rounded-lg shadow transition active:scale-95 flex items-center gap-1 cursor-pointer" ${(item.qty || 1) <= 0 ? 'disabled' : ''}>
                 <span>${icon}</span>
@@ -11419,7 +11419,7 @@
         const remaining = Math.max(0, (s.daily || 0) - (s.used || 0));
         return `
           <div class="flex items-center justify-between bg-slate-900/60 border border-slate-800 rounded px-2 py-1 text-xs">
-            <span class="font-bold text-purple-300 text-[11px]">${s.name}: <strong class="font-mono text-white">${remaining}/${s.daily}</strong></span>
+            <span class="font-bold text-purple-300 text-[11px]">${UI.escapeHtml(s.name)}: <strong class="font-mono text-white">${remaining}/${s.daily}</strong></span>
             <button type="button" data-action="combat:spend-mini-spell-slot" data-slot-idx="${idx}" class="text-[10px] font-bold text-purple-300 hover:text-white bg-purple-950/60 hover:bg-purple-900 border border-purple-800/80 px-2 py-0.5 rounded transition" ${remaining <= 0 ? 'disabled' : ''}>
               ✨ Expend (-1)
             </button>
@@ -11450,7 +11450,7 @@
         return `
           <div class="px-2 py-1 rounded text-[11px] font-bold border flex items-center gap-1 ${isExpended ? 'bg-slate-900/40 border-slate-800 text-slate-500 line-through' : 'bg-indigo-950/50 border-indigo-500/60 text-indigo-300'}">
             <span>${isExpended ? '🔄' : '⚡'}</span>
-            <span>${m.name}</span>
+            <span>${UI.escapeHtml(m.name)}</span>
           </div>
         `;
       }).join('');
@@ -11714,7 +11714,7 @@
           summaryGrid.innerHTML = `
             <div class="p-3 rounded-lg border ${isCrit ? 'bg-rose-950/50 border-rose-500' : (isFumble ? 'bg-slate-900 border-rose-700/60' : 'bg-slate-900 border-amber-700/60')} space-y-1.5">
               <div class="flex justify-between items-center">
-                <span class="font-bold text-white text-xs">${atk.name} Attack Roll</span>
+                <span class="font-bold text-white text-xs">${UI.escapeHtml(atk.name)} Attack Roll</span>
                 ${isCrit ? '<span class="badge bg-amber-500 text-black font-black text-[10px]">NAT 20 / CRITICAL</span>' : (isFumble ? '<span class="badge bg-rose-600 text-white font-black text-[10px]">NAT 1 / FUMBLE</span>' : '')}
               </div>
               <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1">
@@ -11932,10 +11932,10 @@
       const icon = isRanged ? '🏹' : '⚔️';
       container.innerHTML = profiles.map(prof => `
         <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 border border-slate-700 hover:border-amber-500/80 text-xs text-amber-300 transition group shadow-sm select-none">
-          <button type="button" data-action="combat:apply-saved-profile" data-profile-id="${prof.id}" class="font-bold flex items-center gap-1 cursor-pointer text-left" title="Apply Profile: ${prof.name}">
+          <button type="button" data-action="combat:apply-saved-profile" data-profile-id="${prof.id}" class="font-bold flex items-center gap-1 cursor-pointer text-left" title="Apply Profile: ${UI.escapeAttr(prof.name)}">
             <span>${icon}</span>
-            <span class="hover:underline">${prof.name}</span>
-            <span class="text-[10px] text-slate-400 font-mono">(${prof.summary || 'Mod'})</span>
+            <span class="hover:underline">${UI.escapeHtml(prof.name)}</span>
+            <span class="text-[10px] text-slate-400 font-mono">(${UI.escapeHtml(prof.summary || 'Mod')})</span>
           </button>
           <button type="button" data-action="combat:delete-saved-profile" data-profile-id="${prof.id}" class="w-4 h-4 rounded-full bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white flex items-center justify-center text-[11px] font-bold transition ml-0.5 cursor-pointer" title="Delete Profile">×</button>
         </div>
@@ -12214,7 +12214,7 @@
             <label class="flex items-center justify-between p-1.5 rounded bg-slate-950/80 border border-slate-800 cursor-pointer">
               <div class="flex items-center gap-2">
                 <input type="checkbox" id="decision-mod-check-${idx}" ${mod.active ? 'checked' : ''} class="w-3.5 h-3.5 rounded text-rose-500 border-slate-700 focus:ring-0">
-                <span class="text-xs font-bold text-white">${mod.name}</span>
+                <span class="text-xs font-bold text-white">${UI.escapeHtml(mod.name)}</span>
               </div>
               <span class="font-mono text-[10px] text-amber-300 font-bold">${mod.dice || '-'}</span>
             </label>
@@ -12469,10 +12469,10 @@
               </span>
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-1.5">
-                  <span class="text-xs font-bold text-white truncate">${pin.name}</span>
+                  <span class="text-xs font-bold text-white truncate">${UI.escapeHtml(pin.name)}</span>
                   <span class="text-[10px] font-bold px-1.5 rounded bg-slate-800 text-slate-400 shrink-0">${formatActionShort(pin.action)}</span>
                 </div>
-                <div class="text-[10px] text-amber-300/80 font-mono truncate">${pin.badge || pin.desc || ''}</div>
+                <div class="text-[10px] text-amber-300/80 font-mono truncate">${UI.escapeHtml(pin.badge || pin.desc || '')}</div>
               </div>
             </div>
 
@@ -12486,10 +12486,10 @@
             <!-- Desktop Floating Tooltip -->
             <div class="pin-tooltip pointer-events-none absolute left-0 bottom-full mb-1.5 z-40 hidden group-hover:block bg-slate-950 border border-slate-700 rounded-xl p-3 shadow-2xl max-w-xs w-64 text-xs text-slate-200 backdrop-blur-md">
               <div class="font-extrabold text-white text-xs mb-1 flex items-center justify-between">
-                <span>${pin.name}</span>
+                <span>${UI.escapeHtml(pin.name)}</span>
                 <span class="text-[10px] font-mono text-purple-300">${pin.sourceType || ''}</span>
               </div>
-              <p class="text-[11px] text-slate-300 leading-snug">${pin.desc || 'No detailed description available.'}</p>
+              <p class="text-[11px] text-slate-300 leading-snug">${UI.escapeHtml(pin.desc || 'No detailed description available.')}</p>
               <div class="text-[10px] text-slate-500 mt-1 italic">Mobile: Tap &amp; hold = Details • Long press = Reorder</div>
             </div>
           </div>
@@ -13537,7 +13537,7 @@
           <div class="p-2.5 sm:p-3 rounded-xl border ${critClass} flex flex-wrap items-center justify-between gap-2.5 transition">
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs font-bold text-white">${item.title}</span>
+                <span class="text-xs font-bold text-white">${UI.escapeHtml(item.title)}</span>
                 <span class="text-[10px] text-slate-400 font-mono">${item.timestamp}</span>
                 ${critBadge}
               </div>

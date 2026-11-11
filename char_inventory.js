@@ -351,11 +351,11 @@
           <td class="py-2 px-3 align-middle">
             <div class="font-bold ${item.isClass ? 'text-amber-300' : 'text-white'} flex items-center gap-2 flex-wrap">
               ${getUniversalPinButtonHtml({ name: safeName, type: 'Skill', action: 'Check', desc: `${safeName} skill check (${total >= 0 ? '+' : ''}${total})`, badge: `${total >= 0 ? '+' : ''}${total} Check` })}
-              <span>${item.name}</span>
+              <span>${UI.escapeHtml(item.name)}</span>
               ${item.isConsolidated ? '<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px]">Consolidated</span>' : ''}
               ${item.isClass ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[10px] font-mono">Class</span>' : ''}
             </div>
-            ${item.subtitle ? `<div class="text-[10px] text-emerald-400/80 font-mono mt-0.5">↳ ${item.subtitle}</div>` : ''}
+            ${item.subtitle ? `<div class="text-[10px] text-emerald-400/80 font-mono mt-0.5">↳ ${UI.escapeHtml(item.subtitle)}</div>` : ''}
           </td>
 
           <!-- Stat -->
@@ -458,17 +458,17 @@
       const penaltyInfo = bd.penalty > 0 ? `<div class="flex justify-between py-1 border-b border-slate-800 text-rose-400 font-bold"><span class="text-rose-300">Defense Penalties (Charge/Stance):</span><span>-${bd.penalty}</span></div>` : '';
       
       const armorSourceStr = (Array.isArray(bd.sources?.armor) && bd.sources.armor.length > 0 && bd.sources.armor[0].source) 
-        ? ` <span class="text-[10px] text-sky-400 font-normal">(${bd.sources.armor[0].source})</span>`
+        ? ` <span class="text-[10px] text-sky-400 font-normal">(${UI.escapeHtml(bd.sources.armor[0].source)})</span>`
         : (bd.armorCategory && bd.armorCategory !== 'None' ? ` <span class="text-[10px] text-sky-500 font-normal">(${bd.armorCategory})</span>` : '');
 
       const shieldSourceStr = (Array.isArray(bd.sources?.shield) && bd.sources.shield.length > 0)
         ? (bd.sources.shield.length > 1
-            ? ` <span class="text-[10px] text-sky-400 font-normal">(${bd.sources.shield.map(s => `${s.source} +${s.val}`).join(', ')})</span>`
-            : (bd.sources.shield[0].source ? ` <span class="text-[10px] text-sky-400 font-normal">(${bd.sources.shield[0].source})</span>` : ''))
+            ? ` <span class="text-[10px] text-sky-400 font-normal">(${bd.sources.shield.map(s => `${UI.escapeHtml(s.source)} +${s.val}`).join(', ')})</span>`
+            : (bd.sources.shield[0].source ? ` <span class="text-[10px] text-sky-400 font-normal">(${UI.escapeHtml(bd.sources.shield[0].source)})</span>` : ''))
         : '';
 
       const deflSourceStr = (Array.isArray(bd.sources?.deflection) && bd.sources.deflection.length > 0 && bd.sources.deflection[0].source)
-        ? ` <span class="text-[10px] text-indigo-300 font-normal">(${bd.sources.deflection[0].source})</span>`
+        ? ` <span class="text-[10px] text-indigo-300 font-normal">(${UI.escapeHtml(bd.sources.deflection[0].source)})</span>`
         : '';
 
       let naturalDetail = '';
@@ -480,7 +480,7 @@
           }).join(', ');
           naturalDetail = ` <span class="text-[10px] text-slate-500 font-normal">(${natItems})</span>`;
         } else if (bd.sources.natural[0].source) {
-          naturalDetail = ` <span class="text-[10px] text-teal-300 font-normal">(${bd.sources.natural[0].source})</span>`;
+          naturalDetail = ` <span class="text-[10px] text-teal-300 font-normal">(${UI.escapeHtml(bd.sources.natural[0].source)})</span>`;
         }
       }
 
@@ -497,7 +497,7 @@
             const sign = (Number(c.val) || 0) >= 0 ? '+' : '';
             const typeStr = c.type && c.type !== 'Untyped' ? ` ${c.type}` : '';
             const condStr = c.condition ? ` (${c.condition})` : '';
-            const srcStr = c.source ? ` <span class="text-slate-400 font-normal">— ${c.source}</span>` : '';
+            const srcStr = c.source ? ` <span class="text-slate-400 font-normal">— ${UI.escapeHtml(c.source)}</span>` : '';
             return `<div class="flex items-center justify-between text-[11px] bg-indigo-950/40 border border-indigo-500/30 rounded px-2 py-0.5 text-indigo-200"><span class="font-semibold">${sign}${c.val}${typeStr} AC <span class="text-amber-300 font-bold">${condStr}</span>${srcStr}</span></div>`;
           }).join('')}
         </div>
@@ -584,7 +584,7 @@
           const isDebuff = b.isDebuff || b.bonusType === 'Penalty' || b.negativeLevels;
           bonusNotes.push(`
             <div class="flex items-center justify-between py-0.5 ${isDebuff ? 'text-rose-300 font-semibold' : 'text-amber-300'}">
-              <span>${isDebuff ? '🩸' : '✨'} ${b.name || 'Active Effect'}: ${bNotes.join(', ')}</span>
+              <span>${isDebuff ? '🩸' : '✨'} ${UI.escapeHtml(b.name || 'Active Effect')}: ${bNotes.join(', ')}</span>
             </div>
           `);
         }
@@ -618,7 +618,7 @@
           const sign = (Number(cs.val) || 0) >= 0 ? '+' : '';
           const typeStr = cs.type && cs.type !== 'Untyped' ? ` ${cs.type}` : '';
           const condStr = cs.condition ? ` (${cs.condition})` : '';
-          const srcStr = cs.source ? ` — ${cs.source}` : '';
+          const srcStr = cs.source ? ` — ${UI.escapeHtml(cs.source)}` : '';
           bonusNotes.push(`<div class="py-0.5 text-indigo-200 font-semibold">🛡️ Situational Save: ${sign}${cs.val}${typeStr} to ${cs.target || 'All Saves'} <span class="text-amber-300 font-bold">${condStr}</span><span class="text-slate-400 font-normal">${srcStr}</span></div>`);
         });
       }
@@ -660,7 +660,7 @@
           const colorClass = item.val > 0 ? 'text-sky-400' : (item.val < 0 ? 'text-rose-400' : 'text-slate-400');
           return `
             <div class="flex justify-between py-0.5 border-b border-slate-800/80">
-              <span class="text-slate-400">${item.source}:</span>
+              <span class="text-slate-400">${UI.escapeHtml(item.source)}:</span>
               <span class="${colorClass} font-bold">${valStr}</span>
             </div>
           `;
@@ -673,7 +673,7 @@
             <span class="text-amber-400 text-sm font-black">${netAtk >= 0 ? '+' : ''}${netAtk}</span>
           </div>
           <div class="flex justify-between text-[11px] text-slate-400 pt-0.5">
-            <span>Active Weapon: <strong class="text-slate-200">${activeWep.name || 'Unarmed Strike'}</strong></span>
+            <span>Active Weapon: <strong class="text-slate-200">${UI.escapeHtml(activeWep.name || 'Unarmed Strike')}</strong></span>
             <span>Full Attack: <strong class="text-amber-300">${iterativesText}</strong></span>
           </div>
         `;
@@ -865,7 +865,7 @@
         // Summary badges (Canonical V2 modifiers, ruleFlags, summary + Legacy fields)
         const badges = [];
         if (isDebuff) badges.push(`<span class="bg-rose-950 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">🩸 DEBUFF</span>`);
-        if (buff.targetWeapon) badges.push(`<span class="bg-amber-950 text-amber-200 border border-amber-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">⚔️ ${buff.targetWeapon}</span>`);
+        if (buff.targetWeapon) badges.push(`<span class="bg-amber-950 text-amber-200 border border-amber-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">⚔️ ${UI.escapeHtml(buff.targetWeapon)}</span>`);
         if (buff.chosenEnergy) badges.push(`<span class="bg-orange-950 text-orange-200 border border-orange-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">🔥 ${buff.chosenEnergy}</span>`);
         if (buff.negativeLevels) badges.push(`<span class="bg-rose-950 text-rose-200 border border-rose-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">-${buff.negativeLevels} Level Drain</span>`);
 
@@ -917,7 +917,7 @@
         if (rf.loseDexToAC) badges.push(`<span class="bg-rose-950 text-rose-200 border border-rose-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">⚠️ Lose DEX to AC</span>`);
         if (rf.halfSpeed) badges.push(`<span class="bg-rose-950 text-rose-200 border border-rose-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">🥾 Half Speed</span>`);
         if (buff.summary && badges.length <= 2) {
-          badges.push(`<span class="bg-slate-800 text-emerald-300 border border-slate-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${buff.summary}</span>`);
+          badges.push(`<span class="bg-slate-800 text-emerald-300 border border-slate-700 px-1.5 py-0.5 rounded font-mono font-bold text-[10px]">${UI.escapeHtml(buff.summary)}</span>`);
         }
         const buffDescText = buff.notes || buff.description || rf.actionRestriction || '';
         const buffDurDisplay = buff.durationText || buff.duration || (buff.rounds ? `${buff.rounds} Rounds` : 'Permanent');
@@ -949,7 +949,7 @@
                   if (c.clPenalty) cMods.push(`-${c.clPenalty} CL`);
                   return `
                     <div class="flex items-center justify-between py-0.5 text-[10px] text-slate-300">
-                      <span class="font-sans">${c.name}</span>
+                      <span class="font-sans">${UI.escapeHtml(c.name)}</span>
                       <span class="font-mono text-rose-400 font-bold ml-2">${cMods.join(', ')}</span>
                     </div>
                   `;
@@ -983,8 +983,8 @@
               <div class="flex items-center gap-2.5 min-w-0">
                 <input type="checkbox" ${isAct ? 'checked' : ''} data-change-action="inventory:toggle-buff-active" data-buff-id="${safeBuffId}" class="w-4 h-4 rounded shrink-0 ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'} cursor-pointer">
                 <div class="min-w-0 flex items-center gap-1.5 flex-wrap">
-                  <span class="font-bold text-xs truncate ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
-                  <span class="text-[10px] px-1.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
+                  <span class="font-bold text-xs truncate ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${UI.escapeHtml(buff.name)}</span>
+                  <span class="text-[10px] px-1.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${UI.escapeHtml(buff.source || (isDebuff ? 'Debuff' : 'Buff'))}</span>
                 </div>
               </div>
 
@@ -1029,10 +1029,10 @@
               <div class="flex items-center justify-between gap-1.5">
                 <label class="flex items-center gap-2 cursor-pointer select-none">
                   <input type="checkbox" ${isAct ? 'checked' : ''} data-change-action="inventory:toggle-buff-active" data-buff-id="${safeBuffId}" class="w-4 h-4 rounded ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'}">
-                  <span class="font-bold text-xs ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
+                  <span class="font-bold text-xs ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${UI.escapeHtml(buff.name)}</span>
                 </label>
                 <div class="flex items-center gap-1">
-                  <span class="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${UI.escapeHtml(buff.source || (isDebuff ? 'Debuff' : 'Buff'))}</span>
                   ${buffPinBtnHtml}
                   <button data-action="inventory:delete-buff" data-buff-id="${safeBuffId}" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
                 </div>
@@ -2135,14 +2135,14 @@
         const normSel = String(selectedTarget || 'ability.str').trim();
         return BUFF_V2_TARGET_GROUPS.map(grp => `
           <optgroup label="${grp.group}">
-            ${grp.options.map(opt => `<option value="${opt.value}" ${opt.value === normSel ? 'selected' : ''}>${opt.label}</option>`).join('')}
+            ${grp.options.map(opt => `<option value="${opt.value}" ${opt.value === normSel ? 'selected' : ''}>${UI.escapeHtml(opt.label)}</option>`).join('')}
           </optgroup>
         `).join('');
       };
 
       const buildTypeOptions = (selectedType) => {
         const normType = String(selectedType || (currentBuffModalMode === 'debuff' ? 'penalty' : 'enhancement')).toLowerCase().trim();
-        return BUFF_V2_BONUS_TYPES.map(t => `<option value="${t.value}" ${t.value === normType ? 'selected' : ''}>${t.label}</option>`).join('');
+        return BUFF_V2_BONUS_TYPES.map(t => `<option value="${t.value}" ${t.value === normType ? 'selected' : ''}>${UI.escapeHtml(t.label)}</option>`).join('');
       };
 
       listEl.innerHTML = _buffModalV2Modifiers.map((mod, idx) => {
@@ -2230,7 +2230,7 @@
         const idleCls = 'bg-slate-900 text-slate-400 border-slate-700 hover:text-slate-200 hover:border-slate-600';
         return `
           <button type="button" data-action="inventory:toggle-buff-rule-flag" data-flag-key="${f.key}" class="px-2 py-1 rounded-lg text-[10px] font-bold border transition cursor-pointer ${active ? activeCls : idleCls}">
-            ${f.label}
+            ${UI.escapeHtml(f.label)}
           </button>
         `;
       }).join('');
@@ -2261,7 +2261,7 @@
 
       container.innerHTML = list.map((item, idx) => `
         <button type="button" data-action="inventory:buff-quick-pick" data-pick-idx="${idx}" class="${chipCls}">
-          ${item.label}
+          ${UI.escapeHtml(item.label)}
         </button>
       `).join('');
     }
@@ -2537,7 +2537,7 @@
         return `
           <div data-buff-spot-idx="${idx}" data-action="inventory:pick-buff-spotlight" data-spot-idx="${idx}" class="p-2.5 cursor-pointer transition flex flex-col gap-1 ${isSel ? 'bg-indigo-950 text-white' : 'bg-slate-950 hover:bg-slate-900 text-slate-200'}">
             <div class="flex items-center justify-between gap-2">
-              <span class="font-bold text-xs text-amber-300 truncate">${item.name}</span>
+              <span class="font-bold text-xs text-amber-300 truncate">${UI.escapeHtml(item.name)}</span>
               <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-[10px] font-mono text-purple-300 shrink-0">${item._spotlightKind || item.type || 'SRD 3.5e'}</span>
             </div>
             ${pills.length > 0 ? `<div class="flex flex-wrap gap-1">${pills.join('')}</div>` : ''}
@@ -2748,7 +2748,7 @@
       }
 
       if (emptyBox) emptyBox.classList.add('hidden');
-      if (titleEl) titleEl.innerHTML = `<span>✨</span><span>${entry.name}</span>`;
+      if (titleEl) titleEl.innerHTML = `<span>✨</span><span>${UI.escapeHtml(entry.name)}</span>`;
       if (descEl) descEl.textContent = cleanDesc || '';
       if (sourceEl) sourceEl.textContent = entry._spotlightKind || entry.source || 'SRD 3.5e';
       if (spotRds) spotRds.value = rounds !== null && rounds !== undefined ? rounds : '';
@@ -2807,7 +2807,7 @@
         if (spec && spec.targetMode === 'weapon') {
           const weapons = (character?.weapons || []).filter(w => w && w.name && w.name !== '-');
           if (weapons.length > 0) {
-            weaponSelect.innerHTML = weapons.map(w => `<option value="${w.name}">⚔️ ${w.name}</option>`).join('');
+            weaponSelect.innerHTML = weapons.map(w => `<option value="${UI.escapeAttr(w.name)}">⚔️ ${UI.escapeHtml(w.name)}</option>`).join('');
           } else {
             weaponSelect.innerHTML = `<option value="">-- No Personal Weapon Equipped --</option>`;
           }
@@ -2999,7 +2999,7 @@
         if (c.clPenalty) cMods.push(`-${c.clPenalty} CL`);
         return `
           <div class="flex items-center justify-between p-1.5 rounded bg-slate-900 border border-slate-800 text-[11px]">
-            <span class="text-slate-200 font-sans font-medium">${c.name}</span>
+            <span class="text-slate-200 font-sans font-medium">${UI.escapeHtml(c.name)}</span>
             <span class="text-rose-400 font-mono font-bold">${cMods.join(', ')}</span>
           </div>
         `;
@@ -3655,7 +3655,7 @@
           let conflictNotice = '';
           if (def.key === 'offHand' && character.twoHandedConflict) {
             conflictNotice = `<div class="text-[10px] text-amber-400 font-semibold mt-0.5 flex items-center gap-1">
-              <span>⚠️</span> <span>Two-handed weapon (${character.twoHandedConflict.mainHand}) occupies both hands (Suppressed)</span>
+              <span>⚠️</span> <span>Two-handed weapon (${UI.escapeHtml(character.twoHandedConflict.mainHand)}) occupies both hands (Suppressed)</span>
             </div>`;
           }
 
@@ -3667,19 +3667,19 @@
             </td>
             <td class="py-2.5 px-3 text-center align-middle text-lg">${def.icon}</td>
             <td class="py-2.5 px-3 align-middle font-bold text-slate-300">
-              <div>${def.name}</div>
+              <div>${UI.escapeHtml(def.name)}</div>
               ${conflictNotice}
             </td>
             <td class="py-2.5 px-3 align-middle font-bold ${isOccupied ? 'text-white' : 'text-slate-500 italic'}">
               ${(() => {
                 if (!isOccupied) return '(Empty Slot)';
                 const pw = getEquipmentProficiencyWarning(slotData);
-                return `<div class="flex items-center gap-1.5"><span>${slotData.name}</span>${pw ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${pw.tooltip}">⚠️</span>` : ''}</div>`;
+                return `<div class="flex items-center gap-1.5"><span>${UI.escapeHtml(slotData.name)}</span>${pw ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${UI.escapeAttr(pw.tooltip)}">⚠️</span>` : ''}</div>`;
               })()}
             </td>
             <td class="py-2.5 px-3 align-middle text-slate-300 text-xs">
               ${isOccupied ? renderGearItemStatsBadgesHtml(slotData, { compact: true }) : ''}
-              <div>${slotData.desc || '-'}</div>
+              <div>${UI.escapeHtml(slotData.desc || '-')}</div>
             </td>
             <td class="py-2.5 px-3 text-center align-middle font-mono text-slate-400">${isOccupied ? slotData.weight + ' lb' : '-'}</td>
             <td class="py-2.5 px-3 text-center align-middle font-mono text-amber-400">${isOccupied ? slotData.cost + ' GP' : '-'}</td>
@@ -4642,7 +4642,7 @@
               <circle id="sil-halo-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="9" fill="${color}" fill-opacity="0.22" stroke="${color}" stroke-opacity="0.4" stroke-width="1" class="transition-all duration-300 pointer-events-none"/>
               <circle id="sil-node-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="5" fill="${color}" stroke="#0b1329" stroke-width="1.8" class="transition-all duration-300 group-hover:scale-125"/>
               <circle id="sil-glint-${slotKey}" cx="${pt.cx}" cy="${pt.cy}" r="1.5" fill="#ffffff" class="pointer-events-none"/>
-              <title>${pt.label}: ${isOccupied ? character.bodySlots[slotKey].name : '(Empty Slot - Click to equip)'}</title>
+              <title>${UI.escapeHtml(pt.label)}: ${UI.escapeHtml(isOccupied ? character.bodySlots[slotKey].name : '(Empty Slot - Click to equip)')}</title>
             </g>
           `;
         }
@@ -4710,7 +4710,7 @@
                 </button>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="text-[10px] sm:text-[10px] font-extrabold uppercase tracking-wider text-sky-400">${def.trName || def.name}</span>
+                    <span class="text-[10px] sm:text-[10px] font-extrabold uppercase tracking-wider text-sky-400">${UI.escapeHtml(def.trName || def.name)}</span>
                     ${slotData.active ? '<span class="px-1.5 rounded text-[10px] font-bold bg-sky-950 text-sky-300 border border-sky-600/40">ACTIVE</span>' : '<span class="px-1.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">INACTIVE</span>'}
                     ${(() => {
                       const dailyC = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.normalizeItemDailyCharges === 'function')
@@ -4720,7 +4720,7 @@
                       const isRound = (dailyC.unit === 'rounds' || dailyC.unit === 'tur' || dailyC.unit === 'turn');
                       const activeBuff = isRound && (typeof isItemBuffActive === 'function') && isItemBuffActive(slotData);
                       return `
-                        <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-500/50 shadow-sm" title="Daily Remaining: ${dailyC.current}/${dailyC.max} ${dailyC.unit || 'charges'}">
+                        <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-500/50 shadow-sm" title="Daily Remaining: ${dailyC.current}/${dailyC.max} ${UI.escapeAttr(dailyC.unit || 'charges')}">
                           <span>⚡ ${dailyC.current}/${dailyC.max}</span>
                           <button type="button" data-action="inventory:spend-slot-charge" data-slot-key="${slotKey}" data-amount="1" title="Spend 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current <= 0 ? 'disabled' : ''}>-</button>
                           <button type="button" data-action="inventory:restore-slot-charge" data-slot-key="${slotKey}" data-amount="1" title="Restore 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current >= dailyC.max ? 'disabled' : ''}>+</button>
@@ -4735,13 +4735,13 @@
                       `;
                     })()}
                   </div>
-                  <div class="text-xs font-bold text-white truncate group-hover:text-amber-300 transition flex items-center gap-1" title="${slotData.name}">
-                    <span class="truncate">${slotData.name}</span>
-                    ${(() => { const pw = getEquipmentProficiencyWarning(slotData); return pw ? `<span class="text-rose-400 text-[11px] shrink-0" title="${pw.tooltip}">⚠️</span>` : ''; })()}
+                  <div class="text-xs font-bold text-white truncate group-hover:text-amber-300 transition flex items-center gap-1" title="${UI.escapeAttr(slotData.name)}">
+                    <span class="truncate">${UI.escapeHtml(slotData.name)}</span>
+                    ${(() => { const pw = getEquipmentProficiencyWarning(slotData); return pw ? `<span class="text-rose-400 text-[11px] shrink-0" title="${UI.escapeAttr(pw.tooltip)}">⚠️</span>` : ''; })()}
                   </div>
                   ${renderGearItemStatsBadgesHtml(slotData, { compact: true, minimal: true })}
                   <div class="text-[10px] sm:text-[10px] text-slate-400 truncate flex items-center gap-2">
-                    ${slotData.desc ? `<span class="truncate max-w-[120px] sm:max-w-[160px]">${slotData.desc}</span>` : ''}
+                    ${slotData.desc ? `<span class="truncate max-w-[120px] sm:max-w-[160px]">${UI.escapeHtml(slotData.desc)}</span>` : ''}
                     <span class="font-mono text-slate-500">${slotData.weight ? slotData.weight + ' lb' : ''}</span>
                     <span class="font-mono text-amber-400/80">${slotData.cost ? slotData.cost + ' GP' : ''}</span>
                   </div>
@@ -4772,7 +4772,7 @@
                   ${def.icon}
                 </div>
                 <div class="min-w-0">
-                  <div class="text-[10px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-400 transition">${def.trName || def.name}</div>
+                  <div class="text-[10px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-400 transition">${UI.escapeHtml(def.trName || def.name)}</div>
                   <div class="text-xs text-slate-500 italic group-hover:text-sky-300 transition">(Empty Slot)</div>
                 </div>
               </div>
@@ -4844,7 +4844,7 @@
               <div class="flex items-center justify-between gap-2 min-w-0">
                 <div class="flex items-center gap-1.5 min-w-0 flex-1">
                   <span class="${isDoubleTwfActive ? 'text-sky-400' : 'text-amber-400'} font-bold text-[10px] shrink-0">OFF-HAND:</span>
-                  <span class="font-bold truncate">${mh.name}</span>
+                  <span class="font-bold truncate">${UI.escapeHtml(mh.name)}</span>
                 </div>
                 <span class="text-[10px] font-black px-1.5 py-0.5 rounded shrink-0 ${isDoubleTwfActive ? 'bg-sky-500 text-slate-950' : 'bg-amber-950/80 text-amber-300 border border-amber-700/60'}">${isDoubleTwfActive ? '⚔️ TWF ON' : '2H • Click for TWF'}</span>
               </div>
@@ -4855,11 +4855,11 @@
           // Regular Two-Handed Weapon occupies BOTH slots and locks Off-Hand
           offHandBadgeHtml = `
             <div class="h-full min-w-0 flex flex-col justify-start gap-1.5 px-3 py-2 rounded-xl bg-slate-950/70 border border-slate-800 text-slate-400 text-xs select-none opacity-80"
-                 title="Both hands are occupied by two-handed weapon ${mh.name}">
+                 title="Both hands are occupied by two-handed weapon ${UI.escapeAttr(mh.name)}">
               <div class="flex items-center justify-between gap-2 min-w-0">
                 <div class="flex items-center gap-1.5 min-w-0 flex-1">
                   <span class="text-amber-500/80 font-bold text-[10px] shrink-0">OFF-HAND:</span>
-                  <span class="font-bold truncate">🔒 ${mh.name}</span>
+                  <span class="font-bold truncate">🔒 ${UI.escapeHtml(mh.name)}</span>
                 </div>
                 <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 shrink-0">2-Hand Grip</span>
               </div>
@@ -4872,7 +4872,7 @@
               <div class="flex items-center justify-between gap-2 min-w-0">
                 <div class="flex items-center gap-1.5 min-w-0 flex-1">
                   <span class="text-amber-400 font-bold text-[10px] shrink-0">OFF-HAND:</span>
-                  <span class="font-bold truncate">${ohHas ? oh.name : '+ Equip Off-Hand'}</span>
+                  <span class="font-bold truncate">${UI.escapeHtml(ohHas ? oh.name : '+ Equip Off-Hand')}</span>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
                   ${ohHas && isForgeEditableItem(oh) ? `<button type="button" data-action="inventory:forge-slot-item" data-slot-key="offHand" title="Customize Off-Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
@@ -4898,7 +4898,7 @@
                 <div class="flex items-center justify-between gap-2 min-w-0">
                   <div class="flex items-center gap-1.5 min-w-0 flex-1">
                     <span class="text-sky-400 font-bold text-[10px] shrink-0">MAIN HAND:</span>
-                    <span class="font-bold truncate">${mhHas ? mh.name : '+ Equip Main Hand'}</span>
+                    <span class="font-bold truncate">${UI.escapeHtml(mhHas ? mh.name : '+ Equip Main Hand')}</span>
                     ${mhIsDouble ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60 shrink-0">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
                   </div>
                   <div class="flex items-center gap-1 shrink-0">
@@ -4936,7 +4936,7 @@
       const iconEl = document.getElementById('slot-equip-modal-icon');
       const subEl = document.getElementById('slot-equip-modal-subtitle');
 
-      if (titleEl) titleEl.textContent = `Equip Item: ${def.trName || def.name}`;
+      if (titleEl) titleEl.textContent = `Equip Item: ${UI.escapeHtml(def.trName || def.name)}`;
       if (iconEl) iconEl.textContent = def.icon;
       if (subEl) subEl.textContent = `Allowed categories: ${def.allowed.join(', ')}`;
 
@@ -4977,7 +4977,7 @@
         if (footerUnequipBtn) {
           if (hasEquipped) {
             footerUnequipBtn.classList.remove('hidden');
-            footerUnequipBtn.innerHTML = `<span>✕</span><span>Unequip ${currentSlotData.name}</span>`;
+            footerUnequipBtn.innerHTML = `<span>✕</span><span>Unequip ${UI.escapeHtml(currentSlotData.name)}</span>`;
             footerUnequipBtn.setAttribute('data-action', 'inventory:unequip-slot-modal');
             footerUnequipBtn.setAttribute('data-slot-key', _currentEquipSlotKey);
           } else {
@@ -4991,10 +4991,10 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">Currently Equipped</span>
-              <span class="text-xs font-extrabold text-white truncate">${currentSlotData.name}</span>
+              <span class="text-xs font-extrabold text-white truncate">${UI.escapeHtml(currentSlotData.name)}</span>
             </div>
             ${renderGearItemStatsBadgesHtml(currentSlotData, { compact: true })}
-            <div class="text-[10px] text-slate-300 truncate mt-0.5">${currentSlotData.desc || 'Equipped in ' + (def?.trName || def?.name || _currentEquipSlotKey)}</div>
+            <div class="text-[10px] text-slate-300 truncate mt-0.5">${UI.escapeHtml(currentSlotData.desc || 'Equipped in ' + (def?.trName || def?.name || _currentEquipSlotKey))}</div>
           </div>
           <div class="flex items-center gap-1.5 shrink-0">
             ${isForgeEditableItem(currentSlotData) ? `
@@ -5041,7 +5041,7 @@
           <div class="py-6 text-center space-y-3">
             <div class="text-3xl text-slate-600">🎒</div>
             <p class="text-xs text-slate-400">
-              No ${hasEquipped ? 'other ' : ''}eligible items found in your inventory pool for <strong>${def?.trName || def?.name || 'this slot'}</strong>.
+              No ${hasEquipped ? 'other ' : ''}eligible items found in your inventory pool for <strong>${UI.escapeHtml(def?.trName || def?.name || 'this slot')}</strong>.
             </p>
             <div class="pt-2 flex flex-wrap items-center justify-center gap-2">
               <button data-action="inventory:open-add-pool-from-equip" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold transition shadow cursor-pointer">
@@ -5059,11 +5059,11 @@
         <div class="p-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-sky-500/60 transition flex items-center justify-between gap-3">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-bold text-white">${item.name}</span>
-              <span class="text-[10px] font-bold px-1.5 rounded bg-purple-950 text-purple-300 border border-purple-800/60">${item.category}</span>
+              <span class="text-xs font-bold text-white">${UI.escapeHtml(item.name)}</span>
+              <span class="text-[10px] font-bold px-1.5 rounded bg-purple-950 text-purple-300 border border-purple-800/60">${UI.escapeHtml(item.category)}</span>
             </div>
             ${renderGearItemStatsBadgesHtml(item, { compact: true })}
-            <div class="text-[10px] text-slate-400 truncate mt-0.5">${item.desc || 'No properties specified'}</div>
+            <div class="text-[10px] text-slate-400 truncate mt-0.5">${UI.escapeHtml(item.desc || 'No properties specified')}</div>
             <div class="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5">
               <span>Weight: <strong class="text-slate-300 font-mono">${item.weight || 0} lb</strong></span>
               <span>•</span>
@@ -5192,7 +5192,7 @@
                     <div class="flex items-center justify-between border-b border-slate-800 pb-1.5 mb-1.5">
                       <div class="flex items-center gap-1.5 text-xs font-bold text-amber-300 uppercase tracking-wide">
                         <span>${slotDef.icon}</span>
-                        <span>${slotDef.name}</span>
+                        <span>${UI.escapeHtml(slotDef.name)}</span>
                       </div>
                       <span class="text-[10px] font-mono px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold">EQUIPPED</span>
                     </div>
@@ -5227,7 +5227,7 @@
                     <div class="flex items-center justify-between border-b border-slate-800/60 pb-1.5 mb-1.5">
                       <div class="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-wide">
                         <span>${slotDef.icon}</span>
-                        <span>${slotDef.name}</span>
+                        <span>${UI.escapeHtml(slotDef.name)}</span>
                       </div>
                       <span class="text-[10px] font-mono px-1.5 rounded bg-slate-900 text-slate-500 border border-slate-800">EMPTY</span>
                     </div>
@@ -5938,7 +5938,7 @@
       const profWarn = getEquipmentProficiencyWarning(item);
       if (profWarn) {
         const warnText = minimal ? profWarn.minimalLabel : profWarn.shortLabel;
-        coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-rose-950/90 text-rose-300 border-rose-500/80 shadow-sm" title="${profWarn.tooltip}"><span>⚠️ ${warnText}</span></span>`);
+        coreParts.push(`<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} bg-rose-950/90 text-rose-300 border-rose-500/80 shadow-sm" title="${UI.escapeAttr(profWarn.tooltip)}"><span>⚠️ ${warnText}</span></span>`);
       }
 
       if (isWeapon) {
@@ -6150,16 +6150,16 @@
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-900/60 transition border-b border-slate-800/80';
         tr.innerHTML = `
-          <td class="py-2 px-3 align-middle font-semibold text-purple-400">${item.category}</td>
+          <td class="py-2 px-3 align-middle font-semibold text-purple-400">${UI.escapeHtml(item.category)}</td>
           <td class="py-2 px-3 align-middle font-bold text-white">
             <div class="flex items-center gap-1.5">
-              <span>${item.name}</span>
-              ${profWarn ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${profWarn.tooltip}">⚠️</span>` : ''}
+              <span>${UI.escapeHtml(item.name)}</span>
+              ${profWarn ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${UI.escapeAttr(profWarn.tooltip)}">⚠️</span>` : ''}
             </div>
           </td>
           <td class="py-2 px-3 align-middle text-slate-300 text-xs">
             ${statsBadgesHtml}
-            <div>${item.desc || '-'}</div>
+            <div>${UI.escapeHtml(item.desc || '-')}</div>
           </td>
           <td class="py-2 px-3 text-center align-middle font-mono">
             <div class="flex items-center justify-center gap-1">
@@ -7080,7 +7080,7 @@
           : 'bg-slate-900/80 text-slate-400 hover:bg-slate-800 hover:text-white border-slate-800 font-semibold';
         return `
           <button type="button" data-action="inventory:pool-category-tab" data-category="${t.key}" class="px-2.5 py-1 rounded-md border text-[10px] whitespace-nowrap transition flex items-center gap-1 cursor-pointer ${activeClass}">
-            <span>${t.label}</span>
+            <span>${UI.escapeHtml(t.label)}</span>
             <span class="text-[10px] px-1 rounded-full ${isActive ? 'bg-amber-500/20 text-amber-200' : 'bg-slate-950 text-slate-400'}">${t.count}</span>
           </button>
         `;
@@ -7111,9 +7111,9 @@
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-1.5 min-w-0 flex-1">
               <span class="text-base shrink-0">${icon}</span>
-              <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
+              <h4 class="text-xs font-bold text-white truncate">${UI.escapeHtml(item.name)}</h4>
               ${item._isSynthesizedLego ? `<span class="text-[10px] bg-indigo-950/90 text-indigo-300 border border-indigo-500/60 px-1.5 rounded font-bold shrink-0">⚒️ Instant Lego Assembly</span>` : ''}
-              ${profWarn ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${profWarn.tooltip}">⚠️</span>` : ''}
+              ${profWarn ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${UI.escapeAttr(profWarn.tooltip)}">⚠️</span>` : ''}
               ${inInv ? `<span class="text-[10px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 rounded font-semibold shrink-0">✓ Owned</span>` : ''}
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
@@ -7499,7 +7499,7 @@
               <div class="flex items-center gap-2 min-w-0">
                 <span class="text-base">${icon}</span>
                 <div>
-                  <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
+                  <h4 class="text-xs font-bold text-white truncate">${UI.escapeHtml(item.name)}</h4>
                   <div class="flex flex-wrap items-center gap-1.5 text-[10px] mt-0.5">
                     <span class="bg-purple-500/20 text-purple-300 border border-purple-500/40 px-1.5 rounded font-semibold">${cat}</span>
                     <span class="bg-slate-800 text-slate-300 px-1.5 rounded">${item.slot || 'Slotless'}</span>
@@ -8855,7 +8855,7 @@
         }
 
         return {
-          label: `${diceIcon}<span>${opt.label}</span>`,
+          label: `${diceIcon}<span>${UI.escapeHtml(opt.label)}</span>`,
           className: btnClass,
           onClick: () => {
             if (!canAfford) {

@@ -4376,7 +4376,7 @@
                 <span class="text-sm shrink-0">${r.icon || '🧬'}</span>
                 <div class="truncate">
                   <div class="text-xs font-bold flex items-center gap-1.5">
-                    <span class="truncate">${r.label || r.name}</span>
+                    <span class="truncate">${UI.escapeHtml(r.label || r.name)}</span>
                     ${isSelected ? '<span class="text-[10px] px-1 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
                   </div>
                   <div class="text-[10px] text-slate-400 font-mono truncate">
@@ -4927,7 +4927,7 @@
               <span class="text-sm shrink-0">${s.icon}</span>
               <div class="truncate">
                 <div class="text-xs font-bold flex items-center gap-1.5">
-                  <span class="truncate">${s.label}</span>
+                  <span class="truncate">${UI.escapeHtml(s.label)}</span>
                   ${isSelected ? '<span class="text-[10px] px-1 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
                 </div>
                 <div class="text-[10px] text-purple-300/80 font-mono truncate">
@@ -5025,7 +5025,7 @@
           <button type="button" data-action="hud:select-gender" data-gender-id="${g.id}" class="w-full text-left px-2.5 py-1.5 rounded-lg flex items-center justify-between transition cursor-pointer group active:scale-[0.99] ${selectedClasses}">
             <div class="flex items-center gap-2 min-w-0">
               <span class="text-xs font-bold shrink-0 ${g.iconClass}">${g.icon}</span>
-              <span class="text-xs font-bold truncate">${g.label}</span>
+              <span class="text-xs font-bold truncate">${UI.escapeHtml(g.label)}</span>
               ${isSelected ? '<span class="text-[10px] px-1 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
             </div>
             <span class="text-xs text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity ml-1 shrink-0">➔</span>
@@ -5157,7 +5157,7 @@
               <span class="text-[10px] font-mono font-black px-1.5 rounded bg-slate-950 border border-slate-700 text-purple-300">${a.shortCode}</span>
             </div>
             <div class="min-w-0">
-              <div class="text-xs font-black text-white group-hover:text-purple-200 truncate">${a.label}</div>
+              <div class="text-xs font-black text-white group-hover:text-purple-200 truncate">${UI.escapeHtml(a.label)}</div>
               <div class="text-[10px] text-purple-300/80 font-semibold truncate">${a.archetype}</div>
             </div>
             <div class="flex items-center justify-between gap-1 pt-0.5 border-t border-slate-800/60">
@@ -5627,8 +5627,8 @@
                 <span class="text-sm shrink-0">${d.icon || '☀️'}</span>
                 <div class="truncate">
                   <div class="text-xs font-bold flex items-center gap-1.5">
-                    <span class="truncate">${d.name}</span>
-                    <span class="text-[10px] text-slate-400 font-normal truncate">(${d.title || d.name})</span>
+                    <span class="truncate">${UI.escapeHtml(d.name)}</span>
+                    <span class="text-[10px] text-slate-400 font-normal truncate">(${UI.escapeHtml(d.title || d.name)})</span>
                     ${alignCompatBadge}
                     ${isSelected ? '<span class="text-[10px] px-1 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
                   </div>
@@ -7547,10 +7547,10 @@
       const traitsList = Array.isArray(raceObj.traits)
         ? raceObj.traits.map(t => `
             <div class="text-[10px] text-slate-300">
-              <strong class="text-amber-400 font-bold">${t.name}:</strong> <span>${t.desc}</span>
+              <strong class="text-amber-400 font-bold">${UI.escapeHtml(t.name)}:</strong> <span>${UI.escapeHtml(t.desc)}</span>
             </div>
           `).join('')
-        : `<p class="text-[10px] text-slate-300">${raceObj.benefit || ''}</p>`;
+        : `<p class="text-[10px] text-slate-300">${UI.escapeHtml(raceObj.benefit || '')}</p>`;
 
       // Auto-update size & speed inputs in form
       const sizeInput = document.getElementById('profile-edit-size');
@@ -7567,7 +7567,7 @@
         <div class="flex items-center justify-between border-b border-slate-800 pb-1.5">
           <div class="flex items-center gap-1.5">
             <span class="text-sm">🧬</span>
-            <span class="text-xs font-black text-amber-400 uppercase tracking-wide">${raceObj.name}</span>
+            <span class="text-xs font-black text-amber-400 uppercase tracking-wide">${UI.escapeHtml(raceObj.name)}</span>
             <span class="text-[10px] px-1.5 rounded bg-slate-900 border border-slate-700 text-slate-300 font-bold">${raceObj.size || 'Medium'} Size • ${raceObj.baseSpeed || 30} ft Speed</span>
           </div>
           <span class="text-[10px] font-mono text-slate-500">D&D 3.5e RAW SRD</span>
@@ -8371,9 +8371,9 @@ function renderManualStatsPanel() {
         return `
           <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="w-10 text-center font-black text-xs font-mono px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800 text-purple-300">${s.label}</span>
+              <span class="w-10 text-center font-black text-xs font-mono px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800 text-purple-300">${UI.escapeHtml(s.label)}</span>
               <div>
-                <div class="text-[11px] font-bold text-slate-200 leading-tight">${s.name}</div>
+                <div class="text-[11px] font-bold text-slate-200 leading-tight">${UI.escapeHtml(s.name)}</div>
                 <div class="text-[10px] text-slate-400 font-mono">Mod: <strong class="${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${modStr}</strong></div>
               </div>
             </div>
@@ -8527,10 +8527,10 @@ function renderManualStatsPanel() {
         return `
           <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="w-10 text-center font-black text-xs font-mono px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800 text-purple-300">${s.label}</span>
+              <span class="w-10 text-center font-black text-xs font-mono px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800 text-purple-300">${UI.escapeHtml(s.label)}</span>
               <div>
                 <div class="flex items-center gap-2">
-                  <span class="text-xs font-bold text-slate-200">${s.name}</span>
+                  <span class="text-xs font-bold text-slate-200">${UI.escapeHtml(s.name)}</span>
                   <span class="text-[10px] text-slate-400 font-mono">Mod: <strong class="${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${modStr}</strong></span>
                 </div>
                 <div class="text-[10px] text-purple-300/80 font-mono">Cost: <strong class="text-amber-400">${cost} pt</strong> ${val < 18 ? `(Next +1: ${nextCost} pt)` : '(Max 18)'}</div>
@@ -8720,7 +8720,7 @@ function renderManualStatsPanel() {
           if (!r) {
             return `
               <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex flex-col items-center justify-between">
-                <span class="text-[10px] font-mono text-purple-300 uppercase px-1.5 rounded bg-purple-950 border border-purple-800">${s.label}</span>
+                <span class="text-[10px] font-mono text-purple-300 uppercase px-1.5 rounded bg-purple-950 border border-purple-800">${UI.escapeHtml(s.label)}</span>
                 <div class="text-lg font-black text-slate-500 font-mono my-1">-</div>
                 <div class="text-[10px] text-slate-500 font-mono">Unassigned</div>
               </div>
@@ -8737,8 +8737,8 @@ function renderManualStatsPanel() {
           return `
             <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex flex-col items-center justify-between">
               <div class="w-full flex items-center justify-between">
-                <span class="text-[10px] font-mono text-purple-300 uppercase px-1.5 rounded bg-purple-950 border border-purple-800">${s.label}</span>
-                <button type="button" data-action="hud:reroll-single-4d6" data-roll-id="${r.id}" class="text-slate-400 hover:text-amber-300 active:scale-95 text-xs p-0.5 rounded hover:bg-slate-800 transition cursor-pointer" title="Reroll 4d6 for ${s.label} only (auto-rerolls if two or more 1s are rolled)">⚡</button>
+                <span class="text-[10px] font-mono text-purple-300 uppercase px-1.5 rounded bg-purple-950 border border-purple-800">${UI.escapeHtml(s.label)}</span>
+                <button type="button" data-action="hud:reroll-single-4d6" data-roll-id="${r.id}" class="text-slate-400 hover:text-amber-300 active:scale-95 text-xs p-0.5 rounded hover:bg-slate-800 transition cursor-pointer" title="Reroll 4d6 for ${UI.escapeAttr(s.label)} only (auto-rerolls if two or more 1s are rolled)">⚡</button>
               </div>
               <div class="text-lg font-black text-amber-400 font-mono my-1">${r.total}</div>
               <div class="flex items-center gap-1 justify-center">${diceHtml}</div>
@@ -8764,9 +8764,9 @@ function renderManualStatsPanel() {
           return `
             <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="w-10 text-center font-black text-xs font-mono px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800 text-purple-300">${s.label}</span>
+                <span class="w-10 text-center font-black text-xs font-mono px-1.5 py-0.5 rounded bg-purple-950/70 border border-purple-800 text-purple-300">${UI.escapeHtml(s.label)}</span>
                 <div>
-                  <div class="text-[11px] font-bold text-slate-200 leading-tight">${s.name}</div>
+                  <div class="text-[11px] font-bold text-slate-200 leading-tight">${UI.escapeHtml(s.name)}</div>
                   <div class="text-[10px] text-slate-400 font-mono">Final: <strong class="text-amber-400 font-bold">${val}</strong> (${modStr})</div>
                 </div>
               </div>
@@ -8845,7 +8845,7 @@ function renderManualStatsPanel() {
 
         return `
           <div class="bg-slate-900 border border-slate-800 rounded-lg p-1.5 flex flex-col items-center">
-            <span class="text-[10px] text-slate-400 font-bold">${s.label}</span>
+            <span class="text-[10px] text-slate-400 font-bold">${UI.escapeHtml(s.label)}</span>
             <span class="text-sm font-black text-amber-400">${finalScore}</span>
             <span class="text-[10px] font-bold ${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${modStr}</span>
             <div class="text-[10px] text-slate-500 font-mono mt-0.5">
@@ -9338,7 +9338,7 @@ function renderManualStatsPanel() {
         return `
           <button type="button" data-action="hud:apply-periodic-preset" data-index="${idx}" class="px-2 py-1 rounded text-[10px] font-bold border transition flex items-center gap-1 ${colorClass} cursor-pointer active:scale-95 shadow-sm">
             <span>${p.icon}</span>
-            <span>${p.name}</span>
+            <span>${UI.escapeHtml(p.name)}</span>
             <span class="opacity-75 font-mono">(${sign}${p.amount} / ${durLabel})</span>
           </button>
         `;
