@@ -4,7 +4,7 @@
   "char_spells.js": 6,
   "char_progression.js": 0,
   "char_inventory.js": 0,
-  "rule_master.js": 55,
-  "ui_shared.js": 1,
-  "hub_notes.js": 3
+  "rule_master.js": 4,
+  "ui_shared.js": 0,
+  "hub_notes.js": 2
 }

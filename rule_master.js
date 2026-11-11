@@ -383,6 +383,20 @@ const RuleMaster = {
   },
 
   // Helper: Extract Canonical V2 Stat & Damage Summary Pills for UI rendering
+  /**
+   * Escapes a value for HTML text or a quoted attribute. This file is loaded by both the sheet and
+   * the Hub, and the Hub has no `UI` helpers, so entry names and descriptions are escaped here.
+   */
+  escapeHtml(val) {
+    if (val === null || val === undefined || val === false) return '';
+    return String(val)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  },
+
   getEntrySummaryPills(entry) {
     if (!entry || typeof entry !== 'object') return [];
     const v2 = this.ensureV2(entry);
@@ -2334,7 +2348,6 @@ const RuleMaster = {
         `;
       }
 
-      const safeDescAttr = String(descText || '-').replace(/"/g, '&quot;');
       const safeItemNameJs = String(item.name || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
       const eligBadgeHtml = (() => {
@@ -2366,17 +2379,17 @@ const RuleMaster = {
         </td>
         <td class="py-2.5 px-3">
           <div class="font-bold text-white flex items-center gap-1.5 flex-wrap">
-            ${isDeity && item.icon ? `<span>${item.icon}</span>` : ''}
-            <span>${item.name}</span>
+            ${isDeity && item.icon ? `<span>${RuleMaster.escapeHtml(item.icon)}</span>` : ''}
+            <span>${RuleMaster.escapeHtml(item.name)}</span>
             ${modesCount > 0 ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-950 text-purple-300 border border-purple-800">⚡ ${modesCount} Mod</span>` : ''}
             ${eligBadgeHtml}
             ${snapshotBadgeHtml}
           </div>
-          <div class="text-[10px] text-slate-400 font-mono mt-0.5">${isDeity ? (item.title ? `${item.title} • ${item.category || 'Custom'}` : (item.category || item.source || 'Custom')) : (item.source || 'Custom')}</div>
+          <div class="text-[10px] text-slate-400 font-mono mt-0.5">${isDeity ? (item.title ? `${RuleMaster.escapeHtml(item.title)} • ${RuleMaster.escapeHtml(item.category || 'Custom')}` : RuleMaster.escapeHtml(item.category || item.source || 'Custom')) : RuleMaster.escapeHtml(item.source || 'Custom')}</div>
         </td>
         <td class="py-2.5 px-3">
-          <span class="badge ${typeBadgeClass}">${item.type ? this.capitalizeIdentifier(item.type) : 'Other'}</span>
-          ${item.discipline && item.discipline !== '-' ? `<span class="badge bg-rose-950 text-rose-300 border border-rose-800 block mt-1 w-max">${this.capitalizeIdentifier(item.discipline)}</span>` : ''}
+          <span class="badge ${typeBadgeClass}">${RuleMaster.escapeHtml(item.type ? this.capitalizeIdentifier(item.type) : 'Other')}</span>
+          ${item.discipline && item.discipline !== '-' ? `<span class="badge bg-rose-950 text-rose-300 border border-rose-800 block mt-1 w-max">${RuleMaster.escapeHtml(this.capitalizeIdentifier(item.discipline))}</span>` : ''}
         </td>
         <td class="py-2.5 px-3 text-slate-300 text-xs">
           ${slotCellHtml}
@@ -2388,7 +2401,7 @@ const RuleMaster = {
           ${statsSummary}
         </td>
         <td class="py-2.5 px-3 text-slate-300 text-[11px] max-w-xs">
-          <div class="line-clamp-2" title="${safeDescAttr}">${descText}</div>
+          <div class="line-clamp-2" title="${RuleMaster.escapeHtml(descText || '-')}">${RuleMaster.escapeHtml(descText)}</div>
         </td>
         <td class="py-2.5 px-3 text-center">
           <div class="flex items-center justify-center gap-1">
@@ -4415,8 +4428,8 @@ Return valid JSON only matching:
       const dbInfo = this.getExistingSiteDbInfo(localFound[0]);
       if (statusText) {
         statusText.innerHTML = dbInfo.exists
-          ? `✅ <b>"${localFound[0].name}"</b> already exists in the site database (<b>${dbInfo.sourceLabel}</b>). Direct duplicate addition is locked — click <b>Change &amp; Add</b> to customize and save a modified version.`
-          : `⚡ <b>"${localFound[0].name}"</b> assembled instantaneously via V2 Item Assembler (0 ms, Zero Tokens).`;
+          ? `✅ <b>"${RuleMaster.escapeHtml(localFound[0].name)}"</b> already exists in the site database (<b>${dbInfo.sourceLabel}</b>). Direct duplicate addition is locked — click <b>Change &amp; Add</b> to customize and save a modified version.`
+          : `⚡ <b>"${RuleMaster.escapeHtml(localFound[0].name)}"</b> assembled instantaneously via V2 Item Assembler (0 ms, Zero Tokens).`;
       }
       if (btn) btn.disabled = false;
       return;
@@ -4702,7 +4715,7 @@ Return valid JSON only matching:
         specificBadges.push(`<span class="badge bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">Level ${item.level}</span>`);
       }
       if (item.school && item.school !== '-') {
-        specificBadges.push(`<span class="badge bg-indigo-950 text-indigo-300 border border-indigo-800 text-[10px]">${item.school}</span>`);
+        specificBadges.push(`<span class="badge bg-indigo-950 text-indigo-300 border border-indigo-800 text-[10px]">${RuleMaster.escapeHtml(item.school)}</span>`);
       }
       if (item.discipline && item.discipline !== '-') {
         specificBadges.push(`<span class="badge bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">${item.discipline}</span>`);
@@ -4716,17 +4729,17 @@ Return valid JSON only matching:
           <div class="flex flex-wrap items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-sm font-extrabold text-white">${item.name}</span>
+                <span class="text-sm font-extrabold text-white">${RuleMaster.escapeHtml(item.name)}</span>
                 <span class="badge ${badgeClass}">${item.type}</span>
                 ${specificBadges.join(' ')}
               </div>
               <div class="flex items-center gap-2 text-[11px] text-slate-400 mt-1 flex-wrap">
-                <span>📚 <b>${item.source || 'Core 3.5e'}</b></span>
+                <span>📚 <b>${RuleMaster.escapeHtml(item.source || 'Core 3.5e')}</b></span>
                 <span>•</span>
                 <span>Slot: <b>${item.slot || 'None'}</b></span>
                 <span>•</span>
                 <span>Type: <b>${primaryBonusType}</b></span>
-                ${item.range && item.range !== '-' ? `<span>•</span><span>Range: <b class="text-cyan-400">${item.range}</b></span>` : ''}
+                ${item.range && item.range !== '-' ? `<span>•</span><span>Range: <b class="text-cyan-400">${RuleMaster.escapeHtml(item.range)}</b></span>` : ''}
               </div>
             </div>
 
@@ -4767,18 +4780,18 @@ Return valid JSON only matching:
           ${modes.length > 0 ? `
             <div class="flex flex-wrap items-center gap-1.5">
               <span class="text-[10px] uppercase font-bold text-purple-300">Sub-Modes:</span>
-              ${modes.map(m => `<span class="badge bg-purple-950/80 text-purple-200 border border-purple-700/60 font-mono text-[10px]">⚡ ${m.name}</span>`).join('')}
+              ${modes.map(m => `<span class="badge bg-purple-950/80 text-purple-200 border border-purple-700/60 font-mono text-[10px]">⚡ ${RuleMaster.escapeHtml(m.name)}</span>`).join('')}
             </div>
           ` : ''}
 
           <div class="text-xs text-slate-300 bg-slate-950/80 p-3 rounded-lg border border-slate-800/80 leading-relaxed font-sans">
-            ${item.benefit || item.description || 'No description provided.'}
+            ${RuleMaster.escapeHtml(item.benefit || item.description || 'No description provided.')}
           </div>
 
           <div class="flex flex-wrap items-center justify-between text-[11px] text-slate-400 pt-1">
             <div class="flex items-center gap-3">
               <span>Action: <b class="text-amber-400">${item.action || 'Passive'}</b></span>
-              <span>Duration/Use: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
+              <span>Duration/Use: <b class="text-purple-300">${RuleMaster.escapeHtml(item.duration || 'Continuous')}</b></span>
             </div>
             <div class="flex items-center gap-3">
               <span>Weight: <b class="text-slate-300">${item.weight || 0} lbs</b></span>
@@ -5391,10 +5404,10 @@ Return valid JSON only matching:
           <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-1.5">
-                <span class="text-sm font-extrabold text-white">${item.name}</span>
+                <span class="text-sm font-extrabold text-white">${RuleMaster.escapeHtml(item.name)}</span>
                 <span class="badge ${isWeapon ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-sky-950 text-sky-300 border border-sky-800'}">${item.type}</span>
               </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Slot: <b>${item.slot || 'Main Hand'}</b></div>
+              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${RuleMaster.escapeHtml(item.source || 'PHB')} • Slot: <b>${item.slot || 'Main Hand'}</b></div>
             </div>
             <div class="flex items-center gap-1">
               <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${item.type}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
@@ -5414,7 +5427,7 @@ Return valid JSON only matching:
             ${statPills.map(p => `<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-800">${p}</span>`).join('')}
           </div>
 
-          <p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">${item.benefit || item.description || '-'}</p>
+          <p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">${RuleMaster.escapeHtml(item.benefit || item.description || '-')}</p>
 
           <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
             <span class="text-amber-400 font-bold">${item.cost || 0} gp • ${item.weight || 0} lbs</span>
@@ -5473,14 +5486,14 @@ Return valid JSON only matching:
           <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-sm font-extrabold text-white">${item.name}</span>
+                <span class="text-sm font-extrabold text-white">${RuleMaster.escapeHtml(item.name)}</span>
                 <span class="badge ${isSpell ? 'bg-purple-950 text-purple-300 border border-purple-800' : 'bg-rose-950 text-rose-300 border border-rose-800'}">${item.type}</span>
                 ${item.level !== undefined && item.level !== '' ? `<span class="badge bg-amber-950 text-amber-300 border border-amber-800 text-[10px] font-bold">Level ${item.level}</span>` : ''}
                 ${Array.isArray(item.modes) && item.modes.length > 0 ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-700 text-[10px]">⚡ ${item.modes.length} Mode(s)</span>` : ''}
               </div>
               <div class="text-[10px] text-slate-400 mt-0.5">
-                ${isSpell ? `School: <b class="text-purple-300">${item.school || 'Universal'}</b>` : `Discipline: <b class="text-rose-300">${item.discipline || 'Tome of Battle'}</b>`}
-                • 📚 ${item.source || 'PHB/ToB'}
+                ${isSpell ? `School: <b class="text-purple-300">${RuleMaster.escapeHtml(item.school || 'Universal')}</b>` : `Discipline: <b class="text-rose-300">${item.discipline || 'Tome of Battle'}</b>`}
+                • 📚 ${RuleMaster.escapeHtml(item.source || 'PHB/ToB')}
               </div>
             </div>
             <div class="flex items-center gap-1">
@@ -5491,11 +5504,11 @@ Return valid JSON only matching:
 
           <div class="flex flex-wrap gap-2 text-[10px] text-slate-400">
             <span>Action: <b class="text-amber-300">${item.action || 'Standard Action'}</b></span>
-            <span>Duration: <b class="text-slate-300">${item.duration || 'Instantaneous'}</b></span>
+            <span>Duration: <b class="text-slate-300">${RuleMaster.escapeHtml(item.duration || 'Instantaneous')}</b></span>
             ${primaryDice ? `<span>Dice: <b class="text-rose-400 font-mono">${primaryDice}</b></span>` : ''}
           </div>
 
-          <p class="text-[11px] text-slate-300 line-clamp-3 leading-relaxed bg-slate-950/40 p-2 rounded border border-slate-800/80">${item.benefit || item.description || '-'}</p>
+          <p class="text-[11px] text-slate-300 line-clamp-3 leading-relaxed bg-slate-950/40 p-2 rounded border border-slate-800/80">${RuleMaster.escapeHtml(item.benefit || item.description || '-')}</p>
 
           <div class="flex items-center justify-end pt-2 border-t border-slate-800">
             ${isSpell ? `
@@ -5546,11 +5559,11 @@ Return valid JSON only matching:
           <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-sm font-extrabold text-white">${item.name}</span>
+                <span class="text-sm font-extrabold text-white">${RuleMaster.escapeHtml(item.name)}</span>
                 <span class="badge bg-amber-950 text-amber-300 border border-amber-800">${item.type}</span>
                 ${item.isFighterBonusFeat ? `<span class="badge bg-rose-950 text-rose-300 border border-rose-800 text-[10px]">⚔️ Fighter Bonus</span>` : ''}
               </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'PHB'} • Category: <b>${item.role || 'General'}</b></div>
+              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${RuleMaster.escapeHtml(item.source || 'PHB')} • Category: <b>${item.role || 'General'}</b></div>
             </div>
             <div class="flex items-center gap-1">
               <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: 'Feat' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
@@ -5560,7 +5573,7 @@ Return valid JSON only matching:
 
           ${item.prereq && item.prereq !== '-' ? `
             <div class="bg-slate-950/60 border border-slate-800 px-2.5 py-1.5 rounded text-[10px] text-amber-300">
-              <span class="font-bold text-slate-400 uppercase">Prerequisites:</span> ${item.prereq}
+              <span class="font-bold text-slate-400 uppercase">Prerequisites:</span> ${RuleMaster.escapeHtml(item.prereq)}
             </div>
           ` : ''}
 
@@ -5570,7 +5583,7 @@ Return valid JSON only matching:
             </div>
           ` : ''}
 
-          <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-950/40 p-2.5 rounded border border-slate-800/80">${item.benefit || item.description || '-'}</p>
+          <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-950/40 p-2.5 rounded border border-slate-800/80">${RuleMaster.escapeHtml(item.benefit || item.description || '-')}</p>
 
           <div class="flex items-center justify-between pt-2 border-t border-slate-800">
             <span class="text-[10px] text-slate-500">Scope: ${item.scope || 'General'}</span>
@@ -5620,11 +5633,11 @@ Return valid JSON only matching:
           <div class="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-1.5 flex-wrap">
-                <span class="text-sm font-extrabold text-white">${item.name}</span>
+                <span class="text-sm font-extrabold text-white">${RuleMaster.escapeHtml(item.name)}</span>
                 <span class="badge ${isPotion ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-teal-950 text-teal-300 border border-teal-800'}">${item.type}</span>
                 <span class="badge bg-slate-800 text-slate-300 text-[10px]">${item.slot || 'Slotless'}</span>
               </div>
-              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${item.source || 'MIC'} • Bonus: <b>${primaryBonusType}</b></div>
+              <div class="text-[10px] text-slate-400 mt-0.5">📚 ${RuleMaster.escapeHtml(item.source || 'MIC')} • Bonus: <b>${primaryBonusType}</b></div>
             </div>
             <div class="flex items-center gap-1">
               <button onclick="toggleUniversalPin({ name: '${item.name.replace(/'/g, "\\'")}', type: 'Feat', action: 'Passive', desc: '${(item.benefit || item.description || '').replace(/'/g, "\\'")}', badge: '${primaryBonusType}' })" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-amber-400 text-xs transition" title="Pin / Unpin to Combat Cockpit">📌</button>
@@ -5638,7 +5651,7 @@ Return valid JSON only matching:
             </div>
           ` : ''}
 
-          <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-950/40 p-2.5 rounded border border-slate-800/80">${item.benefit || item.description || '-'}</p>
+          <p class="text-[11px] text-slate-300 leading-relaxed bg-slate-950/40 p-2.5 rounded border border-slate-800/80">${RuleMaster.escapeHtml(item.benefit || item.description || '-')}</p>
 
           <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
             <span class="text-amber-400 font-bold">${item.cost || 0} gp • ${item.weight || 0} lbs</span>
@@ -5674,11 +5687,11 @@ Return valid JSON only matching:
                 <span class="text-xl">👑</span>
                 <div>
                   <div class="flex items-center gap-2">
-                    <span class="text-sm font-extrabold text-white">${parent.name}</span>
+                    <span class="text-sm font-extrabold text-white">${RuleMaster.escapeHtml(parent.name)}</span>
                     <span class="badge ${this.getTypeBadgeClass(parent.type)}">${parent.type}</span>
                     <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-bold">⚡ ${modes.length} Embedded Mode(s)</span>
                   </div>
-                  <div class="text-[10px] text-slate-400">📚 ${parent.source || 'Core 3.5e'} • Slot: <b>${parent.slot || 'None'}</b></div>
+                  <div class="text-[10px] text-slate-400">📚 ${RuleMaster.escapeHtml(parent.source || 'Core 3.5e')} • Slot: <b>${parent.slot || 'None'}</b></div>
                 </div>
               </div>
               <div class="flex gap-1.5">
@@ -5698,11 +5711,11 @@ Return valid JSON only matching:
                     <div class="flex items-center justify-between">
                       <div class="flex items-center gap-1.5">
                         <span class="text-purple-400 font-bold font-mono">⚡</span>
-                        <span class="text-xs font-bold text-purple-200">${mode.name}</span>
+                        <span class="text-xs font-bold text-purple-200">${RuleMaster.escapeHtml(mode.name)}</span>
                         <span class="badge bg-slate-800 text-slate-400 text-[10px]">${mode.actionType || 'standard'}</span>
                       </div>
                     </div>
-                    <div class="text-[11px] text-slate-300">${mode.benefit || '-'}</div>
+                    <div class="text-[11px] text-slate-300">${RuleMaster.escapeHtml(mode.benefit || '-')}</div>
                     ${modeDice ? `<div class="text-[10px] font-mono text-emerald-400 inline-flex items-center gap-1">${typeof getFormulaDiceIconSvg === 'function' ? getFormulaDiceIconSvg(modeDice, 'w-3 h-3 text-emerald-400 shrink-0') : ''}<span>Dice: ${modeDice}</span></div>` : ''}
                   </div>
                 `;
@@ -5790,7 +5803,7 @@ Return valid JSON only matching:
         const isExternal = src.url && src.url.startsWith('http');
         div.innerHTML = `
           <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-white">${src.priority}. ${src.name}</span>
+            <span class="text-xs font-bold text-white">${src.priority}. ${RuleMaster.escapeHtml(src.name)}</span>
             <span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700">${src.status}</span>
           </div>
           <div class="text-[11px] text-slate-400">${src.scope}</div>
@@ -5822,8 +5835,8 @@ Return valid JSON only matching:
             <span class="font-mono font-bold text-xs text-amber-400">${b.code}</span>
             <span class="badge bg-slate-800 text-slate-400">${b.cat}</span>
           </div>
-          <div class="text-xs font-bold text-white">${b.name}</div>
-          <div class="text-[10px] text-slate-400 mt-1">${b.note}</div>
+          <div class="text-xs font-bold text-white">${RuleMaster.escapeHtml(b.name)}</div>
+          <div class="text-[10px] text-slate-400 mt-1">${RuleMaster.escapeHtml(b.note)}</div>
         `;
         bookContainer.appendChild(div);
       });
@@ -6011,8 +6024,8 @@ Return valid JSON only matching:
       const dbInfo = this.getExistingSiteDbInfo(localHits[0]);
       if (st) {
         st.innerHTML = dbInfo.exists
-          ? `✅ <b>"${localHits[0].name}"</b> already exists in the site database (<b>${dbInfo.sourceLabel}</b>). Direct duplicate addition to Master DB is disabled — click <b>Change &amp; Add</b> to customize and save a modified version.`
-          : `⚡ <b>"${localHits[0].name}"</b> assembled instantaneously via V2 Item Assembler (0 ms, Zero Tokens).`;
+          ? `✅ <b>"${RuleMaster.escapeHtml(localHits[0].name)}"</b> already exists in the site database (<b>${dbInfo.sourceLabel}</b>). Direct duplicate addition to Master DB is disabled — click <b>Change &amp; Add</b> to customize and save a modified version.`
+          : `⚡ <b>"${RuleMaster.escapeHtml(localHits[0].name)}"</b> assembled instantaneously via V2 Item Assembler (0 ms, Zero Tokens).`;
       }
       const lb = document.getElementById('inline-ai-loading-box');
       if (lb) lb.classList.remove('hidden');
@@ -6072,7 +6085,7 @@ Return valid JSON only matching:
         <div class="flex items-center gap-2">
           <span class="text-base">${newEntriesCount === 0 ? '📌' : '✨'}</span>
           <div>
-            <div class="text-xs font-bold ${newEntriesCount === 0 ? 'text-amber-300' : 'text-white'}">${newEntriesCount === 0 ? (entries.length === 1 ? `"${entries[0].name}" Already Exists in Site Database (${firstDbInfo.sourceLabel})` : `${entries.length} Rule(s) Already Exist in Site Database`) : `${entries.length} Canonical V2 Rule(s) Parsed`}</div>
+            <div class="text-xs font-bold ${newEntriesCount === 0 ? 'text-amber-300' : 'text-white'}">${newEntriesCount === 0 ? (entries.length === 1 ? `"${RuleMaster.escapeHtml(entries[0].name)}" Already Exists in Site Database (${firstDbInfo.sourceLabel})` : `${entries.length} Rule(s) Already Exist in Site Database`) : `${entries.length} Canonical V2 Rule(s) Parsed`}</div>
             <div class="text-[10px] text-slate-400">${newEntriesCount === 0 ? 'Direct duplicate addition to Master DB is disabled — click "Change & Add" to customize and save a modified version' : 'Parent entry and embedded modes can be added together'}</div>
           </div>
         </div>
@@ -6107,11 +6120,11 @@ Return valid JSON only matching:
           <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs md:text-sm font-extrabold text-white">${item.name}</span>
+                <span class="text-xs md:text-sm font-extrabold text-white">${RuleMaster.escapeHtml(item.name)}</span>
                 <span class="badge ${badgeClass} text-[10px]">${item.type}</span>
                 ${dbInfo.exists ? `<span class="badge bg-amber-950/90 text-amber-300 border border-amber-500/60 text-[10px] font-bold">📌 Already in ${dbInfo.inMasterDb ? 'Custom Master DB' : 'Site Database'}</span>` : ''}
                 ${modes.length > 0 ? `<span class="badge bg-purple-950 text-purple-200 border border-purple-600 text-[10px] font-bold">⚡ ${modes.length} Embedded Mode(s)</span>` : ''}
-                <span class="text-[10px] text-slate-400">📚 <b>${item.source || 'PHB'}</b></span>
+                <span class="text-[10px] text-slate-400">📚 <b>${RuleMaster.escapeHtml(item.source || 'PHB')}</b></span>
                 <span class="text-[10px] text-slate-400">• Slot: <b>${item.slot || 'None'}</b></span>
               </div>
             </div>
@@ -6152,18 +6165,18 @@ Return valid JSON only matching:
           ${modes.length > 0 ? `
             <div class="flex flex-wrap items-center gap-1">
               <span class="text-[10px] uppercase font-bold text-purple-300">Sub-Modes:</span>
-              ${modes.map(m => `<span class="badge bg-purple-950 text-purple-200 border border-purple-700 font-mono text-[10px]">⚡ ${m.name}</span>`).join('')}
+              ${modes.map(m => `<span class="badge bg-purple-950 text-purple-200 border border-purple-700 font-mono text-[10px]">⚡ ${RuleMaster.escapeHtml(m.name)}</span>`).join('')}
             </div>
           ` : ''}
 
           <div class="text-xs text-slate-300 leading-relaxed bg-slate-900/80 p-2.5 rounded border border-slate-800">
-            ${item.benefit || item.description || '-'}
+            ${RuleMaster.escapeHtml(item.benefit || item.description || '-')}
           </div>
 
           <div class="flex flex-wrap items-center justify-between text-[10px] text-slate-400 pt-0.5">
             <div>
               <span>Action: <b class="text-amber-400">${item.action || 'Passive'}</b></span> • 
-              <span>Duration: <b class="text-purple-300">${item.duration || 'Continuous'}</b></span>
+              <span>Duration: <b class="text-purple-300">${RuleMaster.escapeHtml(item.duration || 'Continuous')}</b></span>
             </div>
             <div>
               <span>Weight: <b>${item.weight || 0} lbs</b></span> • 
@@ -7459,7 +7472,7 @@ Return valid JSON only matching:
       crystals.sort((a, b) => String(a.name || '').localeCompare(String(b.name || '')));
       let optHtml = '<option value="">No Augmentation Crystal Attached</option>';
       optHtml += crystals.map(c =>
-        `<option value="${c.id}">${c.name} (${Number(c.cost || 0).toLocaleString('en-US')} gp)</option>`
+        `<option value="${c.id}">${RuleMaster.escapeHtml(c.name)} (${Number(c.cost || 0).toLocaleString('en-US')} gp)</option>`
       ).join('');
       crysSel.innerHTML = optHtml;
       if (currentVal && crystals.some(c => c.id === currentVal)) {
@@ -7495,7 +7508,7 @@ Return valid JSON only matching:
         return `
           <label class="flex items-center gap-1.5 p-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-amber-500/50 cursor-pointer select-none">
             <input type="checkbox" value="${e.id}" ${isChecked ? 'checked' : ''} onchange="RuleMaster.updateInlineForgePreview()" class="mdb-forge-enh-chk rounded text-amber-500 bg-slate-950 border-slate-700">
-            <span class="text-[11px] font-semibold text-slate-200 truncate" title="${e.shortDescription || e.name}">${e.name}</span>
+            <span class="text-[11px] font-semibold text-slate-200 truncate" title="${RuleMaster.escapeHtml(e.shortDescription || e.name)}">${RuleMaster.escapeHtml(e.name)}</span>
             <span class="text-[10px] font-mono text-amber-400 ml-auto shrink-0">${bonusEq}</span>
           </label>
         `;
@@ -7548,14 +7561,14 @@ Return valid JSON only matching:
     if (currentFilter === 'all' || currentFilter === 'Armor') {
       if (armorList.length > 0) {
         html += `<optgroup label="🛡️ Armor &amp; Shields">` +
-          armorList.map(item => `<option value="${item.id}">${item.name} (${item.type || item.category || 'Gear'})</option>`).join('') +
+          armorList.map(item => `<option value="${item.id}">${RuleMaster.escapeHtml(item.name)} (${RuleMaster.escapeHtml(item.type || item.category || 'Gear')})</option>`).join('') +
           `</optgroup>`;
       }
     }
     if (currentFilter === 'all' || currentFilter === 'Weapon') {
       if (weaponList.length > 0) {
         html += `<optgroup label="⚔️ Weapons">` +
-          weaponList.map(item => `<option value="${item.id}">${item.name} (${item.type || item.category || 'Gear'})</option>`).join('') +
+          weaponList.map(item => `<option value="${item.id}">${RuleMaster.escapeHtml(item.name)} (${RuleMaster.escapeHtml(item.type || item.category || 'Gear')})</option>`).join('') +
           `</optgroup>`;
       }
     }
@@ -7669,7 +7682,7 @@ Return valid JSON only matching:
             <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold">V2 ASSEMBLED ITEM</span>
             <span class="text-[10px] font-mono text-slate-400 truncate">ID: ${item.id}</span>
           </div>
-          <h4 class="text-sm sm:text-base font-black text-white mt-0.5 truncate">${item.name}</h4>
+          <h4 class="text-sm sm:text-base font-black text-white mt-0.5 truncate">${RuleMaster.escapeHtml(item.name)}</h4>
         </div>
         <div class="flex items-center gap-3 text-right shrink-0">
           <div>
@@ -8577,7 +8590,7 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
         return `
           <div class="p-2.5 rounded-lg bg-slate-950 border border-slate-800 space-y-1">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-white">${r.name}</span>
+              <span class="font-bold text-white">${RuleMaster.escapeHtml(r.name)}</span>
               <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${badgeColor}">
                 ${badgeIcon} ${r.status}
               </span>
