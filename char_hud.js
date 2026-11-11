@@ -338,7 +338,7 @@
         _geminiVerifiedState = 'empty';
         _geminiVerifiedModel = '';
         if (liveBadge) {
-          liveBadge.innerHTML = '<span class="text-amber-400">🟡 Anahtar Girilmedi</span>';
+          liveBadge.innerHTML = '<span class="text-amber-400">🟡 No API Key Set</span>';
         }
         if (maskedSpan) {
           maskedSpan.innerHTML = '<span class="text-amber-400">Not Configured (Get Free Key)</span>';

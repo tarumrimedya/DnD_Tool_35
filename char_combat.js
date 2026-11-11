@@ -13129,6 +13129,29 @@
       };
     }
 
+    /**
+     * Plain-text notification (`info` | `success` | `warning` | `error`) rendered through the
+     * shared top toast. The message is escaped and wraps instead of truncating.
+     */
+    function showToast(message, type = 'info', options = {}) {
+      const kinds = {
+        info: { title: 'Notice', icon: 'ℹ️' },
+        success: { title: 'Done', icon: '✅' },
+        warning: { title: 'Warning', icon: '⚠️' },
+        error: { title: 'Error', icon: '❌' }
+      };
+      const kind = kinds[type] || kinds.info;
+      const holder = document.createElement('div');
+      holder.textContent = String(message == null ? '' : message);
+      const urgent = type === 'warning' || type === 'error';
+      return showDiceTopToast({
+        title: options.title || kind.title,
+        breakdown: holder.innerHTML,
+        icon: kind.icon,
+        wrap: true
+      }, { stack: true, dismissMs: options.dismissMs || (urgent ? 6000 : 4000) });
+    }
+
     let _diceToastTimer = null;
     function showDiceTopToast(entry, options = {}) {
       if (!entry) return null;
@@ -13247,7 +13270,7 @@
             <span class="truncate">${title}</span>
             ${isCrit ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black shrink-0 animate-pulse">CRITICAL!</span>' : ''}
           </div>
-          <div class="text-xs text-slate-300 font-mono truncate" title="${breakdown.replace(/"/g, '&quot;')}">
+          <div class="text-xs text-slate-300 font-mono ${entry.wrap ? '' : 'truncate'}"${entry.wrap ? ' style="white-space: normal; overflow-wrap: anywhere;"' : ''} title="${breakdown.replace(/"/g, '&quot;')}">
             ${breakdown}
           </div>
           ${hasActions ? `<div id="dice-toast-actions-bar" class="flex flex-wrap items-center gap-1.5 mt-2 pt-1.5 border-t border-slate-700/80"></div>` : ''}
