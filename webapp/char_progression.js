@@ -8886,19 +8886,19 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 ${classItemsHtml ? `
                   <div class="space-y-1">
                     <div class="text-[10px] font-bold uppercase tracking-wider text-sky-400/90">Class Features</div>
-                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">${classItemsHtml}</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; align-items: center;">${classItemsHtml}</div>
                   </div>
                 ` : ''}
                 ${featItemsHtml ? `
                   <div class="space-y-1">
                     <div class="text-[10px] font-bold uppercase tracking-wider text-emerald-400/90">Feats</div>
-                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">${featItemsHtml}</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; align-items: center;">${featItemsHtml}</div>
                   </div>
                 ` : ''}
                 ${bonusItemsHtml ? `
                   <div class="space-y-1">
                     <div class="text-[10px] font-bold uppercase tracking-wider text-amber-400/90">Bonus &amp; Ability</div>
-                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">${bonusItemsHtml}</div>
+                    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; align-items: center;">${bonusItemsHtml}</div>
                   </div>
                 ` : ''}
               </div>
