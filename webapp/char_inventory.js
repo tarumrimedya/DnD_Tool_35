@@ -352,8 +352,8 @@
             <div class="font-bold ${item.isClass ? 'text-amber-300' : 'text-white'} flex items-center gap-2 flex-wrap">
               ${getUniversalPinButtonHtml({ name: safeName, type: 'Skill', action: 'Check', desc: `${safeName} skill check (${total >= 0 ? '+' : ''}${total})`, badge: `${total >= 0 ? '+' : ''}${total} Check` })}
               <span>${item.name}</span>
-              ${item.isConsolidated ? '<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px]">Consolidated</span>' : ''}
-              ${item.isClass ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[8px] font-mono">Class</span>' : ''}
+              ${item.isConsolidated ? '<span class="badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px]">Consolidated</span>' : ''}
+              ${item.isClass ? '<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[10px] font-mono">Class</span>' : ''}
             </div>
             ${item.subtitle ? `<div class="text-[10px] text-emerald-400/80 font-mono mt-0.5">↳ ${item.subtitle}</div>` : ''}
           </td>
@@ -387,7 +387,7 @@
               <span class="w-6 text-center font-bold ${isOverRank ? 'text-rose-400 animate-pulse' : (item.ranks > 0 ? 'text-sky-300' : 'text-slate-500')}">${item.ranks}</span>
               <button data-action="inventory:adjust-skill-rank" data-skill-key="${item.key}" data-delta="1" class="w-4 h-4 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] leading-none">+</button>
             </div>
-            <div class="text-[9px] text-slate-500 font-mono">/ ${maxRankAllowed}</div>
+            <div class="text-[10px] text-slate-500 font-mono">/ ${maxRankAllowed}</div>
           </td>
 
           <!-- Stat Mod -->
@@ -984,7 +984,7 @@
                 <input type="checkbox" ${isAct ? 'checked' : ''} data-change-action="inventory:toggle-buff-active" data-buff-id="${safeBuffId}" class="w-4 h-4 rounded shrink-0 ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'} cursor-pointer">
                 <div class="min-w-0 flex items-center gap-1.5 flex-wrap">
                   <span class="font-bold text-xs truncate ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
-                  <span class="text-[9px] px-1.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
+                  <span class="text-[10px] px-1.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
                 </div>
               </div>
 
@@ -1032,7 +1032,7 @@
                   <span class="font-bold text-xs ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
                 </label>
                 <div class="flex items-center gap-1">
-                  <span class="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
                   ${buffPinBtnHtml}
                   <button data-action="inventory:delete-buff" data-buff-id="${safeBuffId}" class="text-slate-500 hover:text-rose-400 p-0.5 text-xs transition" title="Delete ${isDebuff ? 'Debuff' : 'Buff'}">🗑️</button>
                 </div>
@@ -2519,14 +2519,14 @@
             : `${m.value || m.formula} ${m.target}`;
           if (lbl) {
             const isNeg = String(lbl).trim().startsWith('-');
-            pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold border ${isNeg ? 'bg-rose-950 text-rose-300 border-rose-700' : 'bg-indigo-950 text-indigo-200 border-indigo-700'}">${lbl}</span>`);
+            pills.push(`<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold border ${isNeg ? 'bg-rose-950 text-rose-300 border-rose-700' : 'bg-indigo-950 text-indigo-200 border-indigo-700'}">${lbl}</span>`);
           }
         });
 
         if (spec && spec.summaryText && pills.length === 0) {
-          pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-700">${spec.summaryText}</span>`);
+          pills.push(`<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-700">${spec.summaryText}</span>`);
         } else if (item.ruleFlags?.actionRestriction) {
-          pills.push(`<span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-rose-950 text-rose-300 border border-rose-700">⚠️ ${item.ruleFlags.actionRestriction.slice(0, 48)}</span>`);
+          pills.push(`<span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-rose-950 text-rose-300 border border-rose-700">⚠️ ${item.ruleFlags.actionRestriction.slice(0, 48)}</span>`);
         }
 
         const desc = String(item.shortDescription || item.benefit || item.description || '')
@@ -2538,7 +2538,7 @@
           <div data-buff-spot-idx="${idx}" data-action="inventory:pick-buff-spotlight" data-spot-idx="${idx}" class="p-2.5 cursor-pointer transition flex flex-col gap-1 ${isSel ? 'bg-indigo-950 text-white' : 'bg-slate-950 hover:bg-slate-900 text-slate-200'}">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-xs text-amber-300 truncate">${item.name}</span>
-              <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-[9px] font-mono text-purple-300 shrink-0">${item._spotlightKind || item.type || 'SRD 3.5e'}</span>
+              <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-[10px] font-mono text-purple-300 shrink-0">${item._spotlightKind || item.type || 'SRD 3.5e'}</span>
             </div>
             ${pills.length > 0 ? `<div class="flex flex-wrap gap-1">${pills.join('')}</div>` : ''}
             ${desc ? `<div class="text-[10px] text-slate-400 line-clamp-1">${desc}</div>` : ''}
@@ -4710,8 +4710,8 @@
                 </button>
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-sky-400">${def.trName || def.name}</span>
-                    ${slotData.active ? '<span class="px-1.5 rounded text-[8px] font-bold bg-sky-950 text-sky-300 border border-sky-600/40">ACTIVE</span>' : '<span class="px-1.5 rounded text-[8px] font-bold bg-slate-800 text-slate-400 border border-slate-700">INACTIVE</span>'}
+                    <span class="text-[10px] sm:text-[10px] font-extrabold uppercase tracking-wider text-sky-400">${def.trName || def.name}</span>
+                    ${slotData.active ? '<span class="px-1.5 rounded text-[10px] font-bold bg-sky-950 text-sky-300 border border-sky-600/40">ACTIVE</span>' : '<span class="px-1.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">INACTIVE</span>'}
                     ${(() => {
                       const dailyC = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.normalizeItemDailyCharges === 'function')
                         ? RuleEngine.normalizeItemDailyCharges(slotData)
@@ -4720,7 +4720,7 @@
                       const isRound = (dailyC.unit === 'rounds' || dailyC.unit === 'tur' || dailyC.unit === 'turn');
                       const activeBuff = isRound && (typeof isItemBuffActive === 'function') && isItemBuffActive(slotData);
                       return `
-                        <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-500/50 shadow-sm" title="Daily Remaining: ${dailyC.current}/${dailyC.max} ${dailyC.unit || 'charges'}">
+                        <div class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-950/90 text-amber-300 border border-amber-500/50 shadow-sm" title="Daily Remaining: ${dailyC.current}/${dailyC.max} ${dailyC.unit || 'charges'}">
                           <span>⚡ ${dailyC.current}/${dailyC.max}</span>
                           <button type="button" data-action="inventory:spend-slot-charge" data-slot-key="${slotKey}" data-amount="1" title="Spend 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current <= 0 ? 'disabled' : ''}>-</button>
                           <button type="button" data-action="inventory:restore-slot-charge" data-slot-key="${slotKey}" data-amount="1" title="Restore 1 Charge" class="hover:text-white px-0.5 transition font-extrabold cursor-pointer" ${dailyC.current >= dailyC.max ? 'disabled' : ''}>+</button>
@@ -4728,7 +4728,7 @@
                         ${isRound ? `
                           <button type="button" data-action="${activeBuff ? 'inventory:discharge-daily-round' : 'inventory:cast-daily-round'}" data-encoded-name="${encodeURIComponent(slotData.name)}" data-slot-key="${slotKey}"
                                   title="${activeBuff ? 'End Effect' : 'Spend 1 Charge & Activate'}"
-                                  class="px-1.5 py-0.5 rounded text-[8px] font-bold transition flex items-center gap-0.5 cursor-pointer shadow-sm ${activeBuff ? 'bg-rose-950 text-rose-300 border border-rose-500 hover:bg-rose-900 animate-pulse' : 'bg-emerald-950 text-emerald-300 border border-emerald-600 hover:bg-emerald-900'}">
+                                  class="px-1.5 py-0.5 rounded text-[10px] font-bold transition flex items-center gap-0.5 cursor-pointer shadow-sm ${activeBuff ? 'bg-rose-950 text-rose-300 border border-rose-500 hover:bg-rose-900 animate-pulse' : 'bg-emerald-950 text-emerald-300 border border-emerald-600 hover:bg-emerald-900'}">
                             <span>${activeBuff ? '🛑 End' : '✨ Cast'}</span>
                           </button>
                         ` : ''}
@@ -4740,7 +4740,7 @@
                     ${(() => { const pw = getEquipmentProficiencyWarning(slotData); return pw ? `<span class="text-rose-400 text-[11px] shrink-0" title="${pw.tooltip}">⚠️</span>` : ''; })()}
                   </div>
                   ${renderGearItemStatsBadgesHtml(slotData, { compact: true, minimal: true })}
-                  <div class="text-[9px] sm:text-[10px] text-slate-400 truncate flex items-center gap-2">
+                  <div class="text-[10px] sm:text-[10px] text-slate-400 truncate flex items-center gap-2">
                     ${slotData.desc ? `<span class="truncate max-w-[120px] sm:max-w-[160px]">${slotData.desc}</span>` : ''}
                     <span class="font-mono text-slate-500">${slotData.weight ? slotData.weight + ' lb' : ''}</span>
                     <span class="font-mono text-amber-400/80">${slotData.cost ? slotData.cost + ' GP' : ''}</span>
@@ -4772,7 +4772,7 @@
                   ${def.icon}
                 </div>
                 <div class="min-w-0">
-                  <div class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-400 transition">${def.trName || def.name}</div>
+                  <div class="text-[10px] sm:text-[10px] font-bold uppercase tracking-wider text-slate-500 group-hover:text-slate-400 transition">${def.trName || def.name}</div>
                   <div class="text-xs text-slate-500 italic group-hover:text-sky-300 transition">(Empty Slot)</div>
                 </div>
               </div>
@@ -4846,7 +4846,7 @@
                   <span class="${isDoubleTwfActive ? 'text-sky-400' : 'text-amber-400'} font-bold text-[10px] shrink-0">OFF-HAND:</span>
                   <span class="font-bold truncate">${mh.name}</span>
                 </div>
-                <span class="text-[9px] font-black px-1.5 py-0.5 rounded shrink-0 ${isDoubleTwfActive ? 'bg-sky-500 text-slate-950' : 'bg-amber-950/80 text-amber-300 border border-amber-700/60'}">${isDoubleTwfActive ? '⚔️ TWF ON' : '2H • Click for TWF'}</span>
+                <span class="text-[10px] font-black px-1.5 py-0.5 rounded shrink-0 ${isDoubleTwfActive ? 'bg-sky-500 text-slate-950' : 'bg-amber-950/80 text-amber-300 border border-amber-700/60'}">${isDoubleTwfActive ? '⚔️ TWF ON' : '2H • Click for TWF'}</span>
               </div>
               ${mhStatsHtml}
             </div>
@@ -4861,7 +4861,7 @@
                   <span class="text-amber-500/80 font-bold text-[10px] shrink-0">OFF-HAND:</span>
                   <span class="font-bold truncate">🔒 ${mh.name}</span>
                 </div>
-                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 shrink-0">2-Hand Grip</span>
+                <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-500 border border-slate-800 shrink-0">2-Hand Grip</span>
               </div>
             </div>
           `;
@@ -4899,7 +4899,7 @@
                   <div class="flex items-center gap-1.5 min-w-0 flex-1">
                     <span class="text-sky-400 font-bold text-[10px] shrink-0">MAIN HAND:</span>
                     <span class="font-bold truncate">${mhHas ? mh.name : '+ Equip Main Hand'}</span>
-                    ${mhIsDouble ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60 shrink-0">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
+                    ${mhIsDouble ? `<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-900 text-sky-300 border border-sky-800/60 shrink-0">${isDoubleTwfActive ? '1-Hand' : '2-Hand'}</span>` : ''}
                   </div>
                   <div class="flex items-center gap-1 shrink-0">
                     ${mhHas && isForgeEditableItem(mh) ? `<button type="button" data-action="inventory:forge-slot-item" data-slot-key="mainHand" title="Customize Main Hand in Item Forge" class="w-6 h-6 rounded-md bg-amber-950/80 hover:bg-amber-800 border border-amber-600/70 text-amber-300 hover:text-white text-xs inline-flex items-center justify-center shrink-0 transition cursor-pointer">⚒️</button>` : ''}
@@ -4990,7 +4990,7 @@
         <div class="p-3 rounded-xl bg-sky-950/40 border border-sky-500/60 flex items-center justify-between gap-3 mb-2 shadow-sm">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2 flex-wrap">
-              <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">Currently Equipped</span>
+              <span class="text-[10px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">Currently Equipped</span>
               <span class="text-xs font-extrabold text-white truncate">${currentSlotData.name}</span>
             </div>
             ${renderGearItemStatsBadgesHtml(currentSlotData, { compact: true })}
@@ -5060,11 +5060,11 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
               <span class="text-xs font-bold text-white">${item.name}</span>
-              <span class="text-[9px] font-bold px-1.5 rounded bg-purple-950 text-purple-300 border border-purple-800/60">${item.category}</span>
+              <span class="text-[10px] font-bold px-1.5 rounded bg-purple-950 text-purple-300 border border-purple-800/60">${item.category}</span>
             </div>
             ${renderGearItemStatsBadgesHtml(item, { compact: true })}
             <div class="text-[10px] text-slate-400 truncate mt-0.5">${item.desc || 'No properties specified'}</div>
-            <div class="text-[9px] text-slate-500 flex items-center gap-2 mt-0.5">
+            <div class="text-[10px] text-slate-500 flex items-center gap-2 mt-0.5">
               <span>Weight: <strong class="text-slate-300 font-mono">${item.weight || 0} lb</strong></span>
               <span>•</span>
               <span>Value: <strong class="text-amber-400 font-mono">${item.cost || 0} GP</strong></span>
@@ -5183,8 +5183,8 @@
             const isOccupied = Boolean(item && item.name && item.name !== '-');
 
             if (isOccupied) {
-              const acBadge = (item.acBonus || item.armorBonus) ? `<span class="px-1.5 rounded font-mono text-[9px] bg-sky-950 text-sky-300 border border-sky-700 font-bold">+${(item.acBonus || item.armorBonus) + (item.enhancementBonus || 0)} AC</span>` : '';
-              const enhBadge = item.enhancementBonus ? `<span class="px-1.5 rounded font-mono text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold">+${item.enhancementBonus} Magic</span>` : '';
+              const acBadge = (item.acBonus || item.armorBonus) ? `<span class="px-1.5 rounded font-mono text-[10px] bg-sky-950 text-sky-300 border border-sky-700 font-bold">+${(item.acBonus || item.armorBonus) + (item.enhancementBonus || 0)} AC</span>` : '';
+              const enhBadge = item.enhancementBonus ? `<span class="px-1.5 rounded font-mono text-[10px] bg-amber-950 text-amber-300 border border-amber-700 font-bold">+${item.enhancementBonus} Magic</span>` : '';
 
               return `
                 <div class="bg-slate-900/90 border border-amber-500/60 rounded-xl p-3 shadow-md flex flex-col justify-between space-y-2">
@@ -5194,7 +5194,7 @@
                         <span>${slotDef.icon}</span>
                         <span>${slotDef.name}</span>
                       </div>
-                      <span class="text-[9px] font-mono px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold">EQUIPPED</span>
+                      <span class="text-[10px] font-mono px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold">EQUIPPED</span>
                     </div>
                     <div class="flex items-start justify-between gap-2">
                       <div class="min-w-0">
@@ -5202,7 +5202,7 @@
                         <div class="flex items-center gap-1 flex-wrap mt-1">
                           ${acBadge}
                           ${enhBadge}
-                          ${item.weight ? `<span class="text-[9px] text-slate-400 font-mono">${item.weight} lbs</span>` : ''}
+                          ${item.weight ? `<span class="text-[10px] text-slate-400 font-mono">${item.weight} lbs</span>` : ''}
                         </div>
                         <div class="text-[10px] text-slate-400 mt-1 line-clamp-2">${safeEscapeHtml(item.desc || item.benefit || slotDef.hint)}</div>
                       </div>
@@ -5229,7 +5229,7 @@
                         <span>${slotDef.icon}</span>
                         <span>${slotDef.name}</span>
                       </div>
-                      <span class="text-[9px] font-mono px-1.5 rounded bg-slate-900 text-slate-500 border border-slate-800">EMPTY</span>
+                      <span class="text-[10px] font-mono px-1.5 rounded bg-slate-900 text-slate-500 border border-slate-800">EMPTY</span>
                     </div>
                     <p class="text-[10px] text-slate-500 italic min-h-[30px]">${slotDef.hint}</p>
                   </div>
@@ -5375,7 +5375,7 @@
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-xs font-bold text-white truncate">${safeEscapeHtml(item.name)}</span>
-                <span class="text-[9px] px-1.5 rounded bg-slate-950 text-slate-400 border border-slate-700 uppercase font-mono">${safeEscapeHtml(item.category || 'Gear')}</span>
+                <span class="text-[10px] px-1.5 rounded bg-slate-950 text-slate-400 border border-slate-700 uppercase font-mono">${safeEscapeHtml(item.category || 'Gear')}</span>
                 ${acBadge(acBonus)}
                 ${enhBadge(enhBonus)}
               </div>
@@ -5389,10 +5389,10 @@
       }).join('');
 
       function acBadge(b) {
-        return b ? `<span class="text-[9px] font-mono font-bold px-1.5 rounded bg-sky-950 text-sky-300 border border-sky-700">${b}</span>` : '';
+        return b ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-sky-950 text-sky-300 border border-sky-700">${b}</span>` : '';
       }
       function enhBadge(b) {
-        return b ? `<span class="text-[9px] font-mono font-bold px-1.5 rounded bg-amber-950 text-amber-300 border border-amber-700">${b}</span>` : '';
+        return b ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-amber-950 text-amber-300 border border-amber-700">${b}</span>` : '';
       }
     }
 
@@ -7081,7 +7081,7 @@
         return `
           <button type="button" data-action="inventory:pool-category-tab" data-category="${t.key}" class="px-2.5 py-1 rounded-md border text-[10px] whitespace-nowrap transition flex items-center gap-1 cursor-pointer ${activeClass}">
             <span>${t.label}</span>
-            <span class="text-[9px] px-1 rounded-full ${isActive ? 'bg-amber-500/20 text-amber-200' : 'bg-slate-950 text-slate-400'}">${t.count}</span>
+            <span class="text-[10px] px-1 rounded-full ${isActive ? 'bg-amber-500/20 text-amber-200' : 'bg-slate-950 text-slate-400'}">${t.count}</span>
           </button>
         `;
       }).join('');
@@ -7103,7 +7103,7 @@
       const btnId = isSearchMode ? `btn-add-search-${idx}` : `btn-add-pool-${idx}`;
       const escWarn = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       const parseWarnHtml = (Array.isArray(item._parseWarnings) && item._parseWarnings.length > 0)
-        ? `<div class="flex flex-wrap gap-1">${item._parseWarnings.map(w => `<span class="text-[9px] bg-amber-950/90 text-amber-300 border border-amber-500/50 px-1.5 py-0.5 rounded font-mono font-semibold">⚠️ ${escWarn(w)}</span>`).join('')}</div>`
+        ? `<div class="flex flex-wrap gap-1">${item._parseWarnings.map(w => `<span class="text-[10px] bg-amber-950/90 text-amber-300 border border-amber-500/50 px-1.5 py-0.5 rounded font-mono font-semibold">⚠️ ${escWarn(w)}</span>`).join('')}</div>`
         : '';
 
       return `
@@ -7112,9 +7112,9 @@
             <div class="flex items-center gap-1.5 min-w-0 flex-1">
               <span class="text-base shrink-0">${icon}</span>
               <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
-              ${item._isSynthesizedLego ? `<span class="text-[9px] bg-indigo-950/90 text-indigo-300 border border-indigo-500/60 px-1.5 rounded font-bold shrink-0">⚒️ Instant Lego Assembly</span>` : ''}
+              ${item._isSynthesizedLego ? `<span class="text-[10px] bg-indigo-950/90 text-indigo-300 border border-indigo-500/60 px-1.5 rounded font-bold shrink-0">⚒️ Instant Lego Assembly</span>` : ''}
               ${profWarn ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${profWarn.tooltip}">⚠️</span>` : ''}
-              ${inInv ? `<span class="text-[9px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 rounded font-semibold shrink-0">✓ Owned</span>` : ''}
+              ${inInv ? `<span class="text-[10px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 rounded font-semibold shrink-0">✓ Owned</span>` : ''}
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               ${isForgeEditableItem(item) ? `

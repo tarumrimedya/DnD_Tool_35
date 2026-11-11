@@ -128,7 +128,7 @@
                 <button id="btn-header-cmd-terminal" type="button" data-action="hud:toggle-spotlight-terminal" class="ui-btn-sm h-7 px-2.5 sm:px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-cyan-300 border hover:border-cyan-400 font-mono font-bold text-xs shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0" title="Open Rule Master Command Terminal (Ctrl+K or /)">
                   <span>⌘</span>
                   <span>Terminal</span>
-                  <span class="hidden sm:inline px-1 py-0.5 rounded bg-slate-950 text-[9px] text-cyan-400 border border-slate-700">Ctrl+K</span>
+                  <span class="hidden sm:inline px-1 py-0.5 rounded bg-slate-950 text-[10px] text-cyan-400 border border-slate-700">Ctrl+K</span>
                 </button>
               </div>
               
@@ -216,7 +216,7 @@
           <span>🩸</span>
           <span>HIT POINTS <span class="hidden sm:inline">(HP)</span></span>
         </span>
-        <span id="hp-condition-badge" class="badge bg-emerald-900/60 text-emerald-300 border border-emerald-600 text-[9px] sm:text-[10px] px-1.5 py-0.5 whitespace-nowrap shrink-0">Healthy</span>
+        <span id="hp-condition-badge" class="badge bg-emerald-900/60 text-emerald-300 border border-emerald-600 text-[10px] sm:text-[10px] px-1.5 py-0.5 whitespace-nowrap shrink-0">Healthy</span>
       </div>
 
       <!-- Current / Max HP Display -->
@@ -250,7 +250,7 @@
       <button data-action="hud:open-periodic-hp" class="ui-btn-sm h-7 w-full mt-1.5 px-2 rounded-md bg-amber-500/15 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 hover:text-amber-200 border border-amber-500/40 text-[11px] font-bold flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer select-none" title="Add & manage per-round Damage or Healing over Time (DoT / HoT)">
         <span class="text-xs">⏱️</span>
         <span class="truncate">Periodic HP (DoT/HoT)</span>
-        <span id="hp-periodic-badge" class="hidden text-[9px] px-1.5 rounded font-bold font-mono bg-amber-500/30 text-amber-200 border border-amber-400/50 animate-pulse ml-0.5 shrink-0"></span>
+        <span id="hp-periodic-badge" class="hidden text-[10px] px-1.5 rounded font-bold font-mono bg-amber-500/30 text-amber-200 border border-amber-400/50 animate-pulse ml-0.5 shrink-0"></span>
       </button>
 
       <!-- Active Periodic Effects List (DoT / HoT) -->
@@ -270,15 +270,15 @@
       <div class="grid grid-cols-3 gap-1 text-center my-1">
         <div class="bg-slate-900/70 p-1.5 rounded-md border border-slate-800">
           <div id="ac-total-display" class="text-xl font-extrabold text-amber-400 font-mono">--</div>
-          <div class="text-[9px] text-slate-400 font-semibold uppercase">Total</div>
+          <div class="text-[10px] text-slate-400 font-semibold uppercase">Total</div>
         </div>
         <div class="bg-slate-900/70 p-1.5 rounded-md border border-slate-800">
           <div id="ac-touch-display" class="text-lg font-bold text-sky-400 font-mono">--</div>
-          <div class="text-[9px] text-slate-400 font-semibold uppercase">Touch</div>
+          <div class="text-[10px] text-slate-400 font-semibold uppercase">Touch</div>
         </div>
         <div class="bg-slate-900/70 p-1.5 rounded-md border border-slate-800">
           <div id="ac-flat-display" class="text-lg font-bold text-slate-400 font-mono">--</div>
-          <div class="text-[9px] text-slate-400 font-semibold uppercase">Flat-F.</div>
+          <div class="text-[10px] text-slate-400 font-semibold uppercase">Flat-F.</div>
         </div>
       </div>
       <div id="ac-notes-display" class="h-7 flex items-center justify-center text-[10px] text-indigo-300 text-center truncate bg-slate-950/50 rounded-md px-2 border border-slate-800/60" title="AC Breakdown">Calculating...</div>
@@ -295,15 +295,15 @@
       <div class="grid grid-cols-3 gap-1 text-center my-1">
         <button data-action="hud:roll-save" data-save-key="Fortitude" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded-md border border-slate-800 transition cursor-pointer group" title="Roll Fortitude Save">
           <div id="save-fort-display" class="text-lg font-bold text-emerald-400 font-mono group-hover:scale-105 transition-transform">--</div>
-          <div class="text-[9px] text-slate-400 font-semibold uppercase">🛡️ FORT</div>
+          <div class="text-[10px] text-slate-400 font-semibold uppercase">🛡️ FORT</div>
         </button>
         <button data-action="hud:roll-save" data-save-key="Reflex" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded-md border border-slate-800 transition cursor-pointer group" title="Roll Reflex Save">
           <div id="save-ref-display" class="text-lg font-bold text-sky-400 font-mono group-hover:scale-105 transition-transform">--</div>
-          <div class="text-[9px] text-slate-400 font-semibold uppercase">⚡ REF</div>
+          <div class="text-[10px] text-slate-400 font-semibold uppercase">⚡ REF</div>
         </button>
         <button data-action="hud:roll-save" data-save-key="Will" class="bg-slate-900/70 hover:bg-slate-800 p-1.5 rounded-md border border-slate-800 transition cursor-pointer group" title="Roll Will Save">
           <div id="save-will-display" class="text-lg font-bold text-purple-400 font-mono group-hover:scale-105 transition-transform">--</div>
-          <div class="text-[9px] text-slate-400 font-semibold uppercase">🧠 WILL</div>
+          <div class="text-[10px] text-slate-400 font-semibold uppercase">🧠 WILL</div>
         </button>
       </div>
       <div id="saves-subtitle-notes" class="h-7 flex items-center justify-center text-[10px] text-amber-300 text-center truncate bg-slate-950/50 rounded-md px-2 border border-slate-800/60">Click to roll dice</div>
@@ -314,7 +314,7 @@
       <div class="min-h-[20px] text-xs font-bold text-amber-400 flex items-center gap-1 mb-1 truncate">⚡ INITIATIVE</div>
       <div class="bg-slate-900/70 p-1.5 rounded-md border border-slate-800 flex flex-col items-center justify-center my-1">
         <div id="vitals-init-total" class="text-xl sm:text-2xl font-extrabold text-amber-400 font-mono leading-tight">+3</div>
-        <div id="vitals-init-dex" class="text-[9px] text-slate-400 font-semibold uppercase mt-0.5">Dex Mod +3</div>
+        <div id="vitals-init-dex" class="text-[10px] text-slate-400 font-semibold uppercase mt-0.5">Dex Mod +3</div>
       </div>
       <button data-action="hud:roll-initiative" class="ui-btn-sm h-7 w-full bg-amber-500/20 hover:bg-amber-500 text-amber-300 hover:text-slate-950 border border-amber-500/50 rounded-md text-[11px] font-bold font-mono transition flex items-center justify-center gap-1 shadow active:scale-95 cursor-pointer" title="Roll 1d20 Initiative">
         <span class="inline-flex items-center"><svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
@@ -478,7 +478,7 @@
                 <div class="bg-slate-900/60 border border-slate-800 rounded-lg p-2">
                   <div class="flex items-center justify-between text-[10px] font-bold text-slate-400 mb-1">
                     <span id="active-profile-box-title">SAVED COMBAT PROFILES (MELEE)</span>
-                    <span class="text-amber-400 font-mono text-[9px]" id="active-profile-count">0 Saved</span>
+                    <span class="text-amber-400 font-mono text-[10px]" id="active-profile-count">0 Saved</span>
                   </div>
                   <div id="active-profile-pills-preview" class="flex flex-wrap gap-1.5 min-h-[24px]">
                     <!-- Populated dynamically -->
@@ -554,13 +554,13 @@
                         <span class="font-black text-amber-400 text-[10px]">MAIN HAND</span>
                       </div>
                       <div>
-                        <label class="text-[8px] uppercase font-bold text-slate-500 block">Main Hand Loadout (Weapon / Shield)</label>
+                        <label class="text-[10px] uppercase font-bold text-slate-500 block">Main Hand Loadout (Weapon / Shield)</label>
                         <select id="set1-main-select" data-change-action="combat:save-weapon-set" data-set-num="1" class="ui-input-sm h-7 w-full bg-slate-900 text-amber-200 font-bold text-[11px] rounded border border-slate-700 px-1.5 cursor-pointer">
                           <!-- Populated dynamically -->
                         </select>
                       </div>
                       <div>
-                        <label class="text-[8px] uppercase font-bold text-slate-500 block">Grip</label>
+                        <label class="text-[10px] uppercase font-bold text-slate-500 block">Grip</label>
                         <select id="set1-grip-select" data-change-action="combat:save-weapon-set" data-set-num="1" class="ui-input-sm h-7 w-full bg-slate-900 text-slate-200 font-bold text-[10px] rounded border border-slate-700 px-1.5 cursor-pointer">
                           <option value="1-Hand">1-Hand</option>
                           <option value="2-Hand">2-Hand</option>
@@ -574,12 +574,12 @@
                         <span class="font-black text-sky-400 text-[10px]">OFF-HAND</span>
                       </div>
                       <div>
-                        <label class="text-[8px] uppercase font-bold text-slate-500 block">Off-Hand Loadout (Weapon / Shield)</label>
+                        <label class="text-[10px] uppercase font-bold text-slate-500 block">Off-Hand Loadout (Weapon / Shield)</label>
                         <select id="set2-main-select" data-change-action="combat:save-weapon-set" data-set-num="2" class="ui-input-sm h-7 w-full bg-slate-900 text-sky-200 font-bold text-[11px] rounded border border-slate-700 px-1.5 cursor-pointer">
                           <!-- Populated dynamically -->
                         </select>
                       </div>
-                      <div id="set2-weapon-editor-hint" class="text-[9px] text-slate-400 italic pt-1">
+                      <div id="set2-weapon-editor-hint" class="text-[10px] text-slate-400 italic pt-1">
                         * Equipped in the off-hand for Two-Weapon Fighting (TWF) or shield defense.
                       </div>
                     </div>
@@ -620,7 +620,7 @@
                 <div class="flex items-center justify-between bg-slate-900/80 border border-rose-500/30 rounded-md px-2.5 py-1">
                   <div class="flex items-center gap-2">
                     <span class="text-xs font-bold text-rose-400">Power Attack</span>
-                    <span class="text-[9px] text-slate-400 font-normal" id="pa-explanation">(-BAB Att / +1x Dmg)</span>
+                    <span class="text-[10px] text-slate-400 font-normal" id="pa-explanation">(-BAB Att / +1x Dmg)</span>
                   </div>
                   <div class="flex items-center gap-1.5">
                     <button type="button" aria-label="Decrease Power Attack" data-action="combat:power-attack" data-delta="-1" class="ui-btn-icon-sm w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center cursor-pointer">-</button>
@@ -650,7 +650,7 @@
                     <span>RANGED ATTACK &amp; AMMUNITION MODIFIERS</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span class="text-[9px] text-slate-400 font-normal" id="ranged-mod-explanation">DEX Mod (+3) active</span>
+                    <span class="text-[10px] text-slate-400 font-normal" id="ranged-mod-explanation">DEX Mod (+3) active</span>
                     <button type="button" id="btn-ranged-reorder-toggle" data-action="combat:toggle-ranged-reorder" class="ui-btn-xs h-6 px-2 text-[10px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 rounded border border-slate-800 transition" title="Reorder ranged combat modifiers">
                       <span>⇄</span>
                       <span id="ranged-reorder-btn-text">Reorder</span>
@@ -702,7 +702,7 @@
                 <span>🐾</span> COMPANION &amp; MOUNT COMBAT
               </span>
               <div class="flex items-center gap-1.5 shrink-0">
-                <span id="combat-companion-hp-badge" class="text-[9px] font-mono font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-emerald-400">HP: --/--</span>
+                <span id="combat-companion-hp-badge" class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-emerald-400">HP: --/--</span>
                 <button type="button" data-action="combat:toggle-panel" data-panel="companion" id="btn-collapse-companion" class="ui-btn-icon-sm w-6 h-6 text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-md border border-slate-700 text-xs font-bold flex items-center justify-center cursor-pointer transition" title="Collapse/Expand Panel">
                   <span>▴</span>
                 </button>
@@ -798,7 +798,7 @@
                   <div id="combat-spell-damage-preview" class="text-xs font-mono font-black text-amber-300 leading-tight truncate text-center my-0.5">--</div>
 
                   <!-- 3. Satır: Büyü Özellikleri - Kurtarma Zarı / Dokunma Atışı • SR & Menzil -->
-                  <div class="flex items-center justify-center gap-1.5 text-[9px] font-mono leading-tight truncate text-center">
+                  <div class="flex items-center justify-center gap-1.5 text-[10px] font-mono leading-tight truncate text-center">
                     <span id="combat-spell-dc-display" class="font-bold text-emerald-400 truncate">--</span>
                     <span class="text-slate-600 font-normal">•</span>
                     <span id="combat-spell-sr-target-display" class="text-slate-400 truncate">--</span>
@@ -813,7 +813,7 @@
                       <span id="main-spell-btn-icon">⚡</span>
                       <span id="main-spell-btn-text">CAST</span>
                     </div>
-                    <div id="main-spell-btn-sub" class="text-[8px] font-mono text-purple-200/90 font-bold leading-tight mt-0.5 text-center">
+                    <div id="main-spell-btn-sub" class="text-[10px] font-mono text-purple-200/90 font-bold leading-tight mt-0.5 text-center">
                       <span class="block">Standard</span>
                       <span class="block">Action</span>
                     </div>
@@ -828,10 +828,10 @@
                   <div class="flex items-center gap-1.5">
                     <span>⚡</span>
                     <span>CASTER TACTICAL MODIFIERS</span>
-                    <span id="spell-modifiers-count-badge" class="bg-slate-900 text-purple-300 border border-purple-700/50 font-mono font-bold text-[9px] px-1.5 py-0.5 rounded">0</span>
+                    <span id="spell-modifiers-count-badge" class="bg-slate-900 text-purple-300 border border-purple-700/50 font-mono font-bold text-[10px] px-1.5 py-0.5 rounded">0</span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span class="text-[9px] text-amber-400 font-mono" id="metamagic-action-note">(Standard Action)</span>
+                    <span class="text-[10px] text-amber-400 font-mono" id="metamagic-action-note">(Standard Action)</span>
                     <button type="button" id="toggle-spell-modifiers-btn" data-action="combat:toggle-spell-mods-expand" class="ui-btn-xs h-6 px-2 text-[10px] text-purple-400 hover:text-white bg-slate-900 hover:bg-slate-800 rounded border border-purple-800/60 transition cursor-pointer hidden">
                       Show More ▾
                     </button>
@@ -851,7 +851,7 @@
                     <span>✨</span>
                     <span>SPELL LEVELS</span>
                   </span>
-                  <span id="combat-spell-level-filter-indicator" class="text-[9px] font-mono text-purple-300 font-bold">All</span>
+                  <span id="combat-spell-level-filter-indicator" class="text-[10px] font-mono text-purple-300 font-bold">All</span>
                 </div>
                 <div id="combat-spell-slots-strip" class="flex flex-col sm:flex-row gap-1.5 w-full items-stretch">
                   <!-- Populated dynamically with compact level buttons: Tümü, 0, 1, 2, 3... -->
@@ -867,7 +867,7 @@
                       <span>⇄</span>
                       <span id="spell-reorder-btn-text">Reorder</span>
                     </button>
-                    <span id="combat-spell-count-badge" class="text-[9px] font-mono text-purple-400 font-bold">0 Spells</span>
+                    <span id="combat-spell-count-badge" class="text-[10px] font-mono text-purple-400 font-bold">0 Spells</span>
                   </div>
                 </div>
 
@@ -919,15 +919,15 @@
               <!-- AC Breakdown Triad -->
               <div class="grid grid-cols-3 gap-2 bg-slate-950/80 border border-slate-800 rounded-lg p-2.5 text-center">
                 <div>
-                  <div class="text-[9px] uppercase font-bold text-slate-400">Normal AC</div>
+                  <div class="text-[10px] uppercase font-bold text-slate-400">Normal AC</div>
                   <div id="cockpit-ac-normal" class="text-xl font-black text-amber-400 font-mono mt-0.5">21</div>
                 </div>
                 <div>
-                  <div class="text-[9px] uppercase font-bold text-slate-400">Touch AC</div>
+                  <div class="text-[10px] uppercase font-bold text-slate-400">Touch AC</div>
                   <div id="cockpit-ac-touch" class="text-xl font-black text-sky-400 font-mono mt-0.5">16</div>
                 </div>
                 <div>
-                  <div class="text-[9px] uppercase font-bold text-slate-400">Flat-Footed</div>
+                  <div class="text-[10px] uppercase font-bold text-slate-400">Flat-Footed</div>
                   <div id="cockpit-ac-flat" class="text-xl font-black text-slate-400 font-mono mt-0.5">18</div>
                 </div>
               </div>
@@ -939,7 +939,7 @@
                     <span>🛡️</span>
                     <span>SPECIAL DEFENSES &amp; RESISTANCES</span>
                   </span>
-                  <span id="cockpit-special-def-count" class="text-[9px] font-mono bg-indigo-950 text-indigo-300 border border-indigo-700/60 px-1.5 py-0.5 rounded font-bold">0</span>
+                  <span id="cockpit-special-def-count" class="text-[10px] font-mono bg-indigo-950 text-indigo-300 border border-indigo-700/60 px-1.5 py-0.5 rounded font-bold">0</span>
                 </div>
                 <div id="cockpit-special-def-list" class="flex flex-wrap gap-1.5">
                   <!-- Dynamically populated by renderSpecialDefenses() -->
@@ -954,7 +954,7 @@
                     <span>ACTIVE SPELL &amp; TACTICAL BUFFS</span>
                   </span>
                   <div class="flex items-center gap-1.5">
-                    <span id="cockpit-active-buffs-count" class="text-[9px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-700/60 px-1.5 py-0.5 rounded font-bold">0</span>
+                    <span id="cockpit-active-buffs-count" class="text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-700/60 px-1.5 py-0.5 rounded font-bold">0</span>
                     <button type="button" data-action="combat:open-add-buff" class="ui-btn-xs h-6 px-2 text-[10px] font-bold bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 rounded transition cursor-pointer" title="Add Custom Buff / Condition">+ Buff</button>
                   </div>
                 </div>
@@ -975,7 +975,7 @@
                       <span>Shield Block</span>
                       <span>⚡</span>
                     </div>
-                    <div class="text-[9px] text-slate-400 mt-0.5">+4 Shield AC (1 Attack)</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">+4 Shield AC (1 Attack)</div>
                   </button>
 
                   <!-- AoO -->
@@ -984,7 +984,7 @@
                       <span>Attack of Opportunity</span>
                       <span id="aoo-bonus-badge" class="font-mono text-[10px] text-amber-400">+0</span>
                     </div>
-                    <div class="text-[9px] text-slate-400 mt-0.5">Roll AoO Reaction</div>
+                    <div class="text-[10px] text-slate-400 mt-0.5">Roll AoO Reaction</div>
                   </button>
                 </div>
               </div>
@@ -994,9 +994,9 @@
                 <div class="min-h-[24px] text-[10px] font-bold text-sky-400 uppercase tracking-wide flex items-center justify-between">
                   <div class="flex items-center gap-1.5">
                     <span>🎯 COMBAT SKILLS</span>
-                    <span id="combat-skills-pins-badge" class="bg-slate-900 text-sky-300 border border-sky-700/50 font-mono font-bold text-[9px] px-1.5 py-0.5 rounded">4</span>
+                    <span id="combat-skills-pins-badge" class="bg-slate-900 text-sky-300 border border-sky-700/50 font-mono font-bold text-[10px] px-1.5 py-0.5 rounded">4</span>
                   </div>
-                  <span class="text-[9px] text-slate-500 font-normal normal-case">Click to Roll 1d20 • 📌 Pin from Skills</span>
+                  <span class="text-[10px] text-slate-500 font-normal normal-case">Click to Roll 1d20 • 📌 Pin from Skills</span>
                 </div>
                 <div id="combat-skills-grid" class="grid grid-cols-2 gap-1.5">
                   <button data-action="combat:roll-skill" data-skill-name="Concentration" class="h-8 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-md px-2 text-left text-xs text-slate-200 hover:text-white flex items-center justify-between transition cursor-pointer">
@@ -1028,9 +1028,9 @@
                 <div class="min-h-[24px] text-[10px] font-bold text-indigo-400 uppercase tracking-wide flex items-center justify-between">
                   <div class="flex items-center gap-1.5">
                     <span>⚡ POSITIONAL &amp; DEFENSIVE MODIFIERS</span>
-                    <span id="defense-pins-badge" class="bg-slate-900 text-indigo-300 border border-indigo-700/50 font-mono font-bold text-[9px] px-1.5 py-0.5 rounded">0</span>
+                    <span id="defense-pins-badge" class="bg-slate-900 text-indigo-300 border border-indigo-700/50 font-mono font-bold text-[10px] px-1.5 py-0.5 rounded">0</span>
                   </div>
-                  <span class="text-[9px] text-slate-400" id="ce-explanation">(-X Attack / +X Dodge AC)</span>
+                  <span class="text-[10px] text-slate-400" id="ce-explanation">(-X Attack / +X Dodge AC)</span>
                 </div>
                 
                 <!-- Combat Expertise Stepper -->
@@ -1067,7 +1067,7 @@
                 <span>🧪</span> QUICK CONSUMABLES &amp; POTION BELT
               </span>
               <div class="flex items-center gap-1.5 shrink-0">
-                <span class="text-[9px] text-slate-400 font-semibold">One-Click Use</span>
+                <span class="text-[10px] text-slate-400 font-semibold">One-Click Use</span>
                 <button type="button" data-action="combat:toggle-panel" data-panel="consumables" id="btn-collapse-consumables" class="ui-btn-icon-sm w-6 h-6 text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-md border border-slate-700 text-xs font-bold flex items-center justify-center cursor-pointer transition" title="Collapse/Expand Panel">
                   <span>▴</span>
                 </button>
@@ -1981,7 +1981,7 @@
                   <button type="button" id="sil-menu-btn" onclick="toggleSilhouetteMenu(event)" title="Silhouette, custom image upload, positioning, and anchor point settings" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-sky-950/80 hover:bg-sky-900 border border-sky-600/60 hover:border-sky-400 text-sky-200 hover:text-white text-xs font-bold transition inline-flex items-center gap-1.5 shadow-sm cursor-pointer">
                     <span>⚙️</span>
                     <span>Silhouette Settings</span>
-                    <span class="text-[9px] text-sky-400 font-mono">▼</span>
+                    <span class="text-[10px] text-sky-400 font-mono">▼</span>
                   </button>
 
                   <!-- Dropdown Popover -->
@@ -2245,22 +2245,22 @@
             <div class="bg-slate-900/90 border border-slate-700 rounded-lg p-2">
               <div class="text-[10px] text-slate-400 uppercase font-sans font-bold">Total Weight</div>
               <div id="inv-total-weight" class="text-lg font-black text-amber-400 my-0.5">38.2 lbs</div>
-              <div class="text-[9px] text-slate-500">Equipped + Carried</div>
+              <div class="text-[10px] text-slate-500">Equipped + Carried</div>
             </div>
             <div class="bg-slate-900/90 border border-slate-700 rounded-lg p-2">
               <div class="text-[10px] text-slate-400 uppercase font-sans font-bold">Light Load Limit</div>
               <div id="inv-light-limit" class="text-lg font-bold text-emerald-400 my-0.5">58 lbs</div>
-              <div class="text-[9px] text-slate-500">No Speed or ACP penalty</div>
+              <div class="text-[10px] text-slate-500">No Speed or ACP penalty</div>
             </div>
             <div class="bg-slate-900/90 border border-slate-700 rounded-lg p-2">
               <div class="text-[10px] text-slate-400 uppercase font-sans font-bold">Med / Heavy Load</div>
               <div id="inv-heavy-limit" class="text-lg font-bold text-orange-400 my-0.5">116 / 175 lbs</div>
-              <div class="text-[9px] text-slate-500">Max Dex & Speed reduced</div>
+              <div class="text-[10px] text-slate-500">Max Dex & Speed reduced</div>
             </div>
             <div class="bg-slate-900/90 border border-slate-700 rounded-lg p-2">
               <div class="text-[10px] text-slate-400 uppercase font-sans font-bold">Lift / Drag</div>
               <div id="inv-lift-limit" class="text-lg font-bold text-sky-400 my-0.5">350 / 875 lbs</div>
-              <div class="text-[9px] text-slate-500">2x Lift / 5x Drag</div>
+              <div class="text-[10px] text-slate-500">2x Lift / 5x Drag</div>
             </div>
           </div>
 
@@ -2309,7 +2309,7 @@
                   <p class="text-[10px] text-slate-400 truncate">Instant V2 Compendium Search, PDF/Book Text Parser &amp; Modular Item Builder</p>
                 </div>
               </div>
-              <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[9px] shrink-0">RAW 3.5e • V2 Schema</span>
+              <span class="badge bg-purple-950 text-purple-300 border border-purple-800 text-[10px] shrink-0">RAW 3.5e • V2 Schema</span>
             </div>
 
             <!-- 4 Equal Symmetrical Mode Toggle Tabs (Calmed surface so Spotlight Command Bar is primary focal point) -->
@@ -2774,7 +2774,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-1.5">
                   <div class="flex items-center gap-1.5">
                     <span class="text-xs font-extrabold text-indigo-300 uppercase tracking-wider">🧩 V2.5 Universal Rule Forge (6-Primitive Lego Studio)</span>
-                    <span class="px-1.5 py-0.5 rounded bg-indigo-950/80 border border-indigo-700/60 text-[9px] font-mono text-indigo-200">Zero-Token</span>
+                    <span class="px-1.5 py-0.5 rounded bg-indigo-950/80 border border-indigo-700/60 text-[10px] font-mono text-indigo-200">Zero-Token</span>
                   </div>
                   <div class="flex items-center gap-1.5">
                     <select id="im-v25-pattern-select" data-change-action="forge:apply-lego-pattern" class="h-7 bg-slate-900 border border-indigo-500/50 rounded-lg px-2 text-[10px] text-indigo-200 font-semibold focus:outline-none">
@@ -3308,7 +3308,7 @@
                 <div>
                   <h4 class="text-xs md:text-sm font-bold text-white flex items-center gap-2">
                     <span>🧙‍♂️🤖 Rule Master AI Free-Text Rule Parser</span>
-                    <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[9px]">PDF / OCR / Rulebook Text</span>
+                    <span class="badge bg-indigo-950 text-indigo-300 border border-indigo-700 text-[10px]">PDF / OCR / Rulebook Text</span>
                   </h4>
                   <p class="text-[10px] text-slate-400">Paste raw rule text copied from a book or PDF; Rule Master AI will parse it into the V2 schema.</p>
                 </div>
@@ -3629,35 +3629,35 @@
                 <div class="grid grid-cols-4 gap-2 mb-3">
                   <button type="button" onclick="selectDiceColor('#851316', 'Ruby Red')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Ruby Red">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #851316;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Ruby</span>
+                    <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Ruby</span>
                   </button>
                   <button type="button" onclick="selectDiceColor('#1d4ed8', 'Sapphire Blue')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Sapphire Blue">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #1d4ed8;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Sapphire</span>
+                    <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Sapphire</span>
                   </button>
                   <button type="button" onclick="selectDiceColor('#047857', 'Emerald Green')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Emerald Green">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #047857;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Emerald</span>
+                    <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Emerald</span>
                   </button>
                   <button type="button" onclick="selectDiceColor('#7e22ce', 'Amethyst Purple')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Amethyst Purple">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #7e22ce;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Amethyst</span>
+                    <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Amethyst</span>
                   </button>
                   <button type="button" onclick="selectDiceColor('#d97706', 'Amber Gold')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Amber Gold">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #d97706;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Amber</span>
+                    <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Amber</span>
                   </button>
                   <button type="button" onclick="selectDiceColor('#0891b2', 'Glacier Cyan')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Glacier Cyan">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #0891b2;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Glacier</span>
+                    <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Glacier</span>
                   </button>
                   <button type="button" onclick="selectDiceColor('#18181b', 'Obsidian Black')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Obsidian Black">
                     <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #18181b;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Obsidian</span>
+                    <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Obsidian</span>
                   </button>
                   <button type="button" onclick="selectDiceColor('#f8fafc', 'Ivory White')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Ivory White">
                     <span class="w-7 h-7 rounded-full shadow-md border border-slate-400 block group-hover:scale-110 transition-transform" style="background-color: #f8fafc;"></span>
-                    <span class="text-[9px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Ivory</span>
+                    <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Ivory</span>
                   </button>
                 </div>
 
@@ -3823,27 +3823,27 @@
 
   <!-- MOBILE BOTTOM NAVIGATION -->
   <nav role="tablist" aria-label="Character sheet sections" class="md:hidden fixed bottom-0 left-0 right-0 bg-dndCard/95 backdrop-blur border-t border-dndBorder z-50 flex items-center justify-around py-1.5 px-0.5 shadow-2xl">
-    <button onclick="switchTab('tab-combat')" id="mobile-tab-btn-combat" role="tab" aria-controls="tab-combat" aria-selected="true" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-rose-500 py-0.5 px-1 transition">
+    <button onclick="switchTab('tab-combat')" id="mobile-tab-btn-combat" role="tab" aria-controls="tab-combat" aria-selected="true" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-rose-500 py-0.5 px-1 transition">
       <span class="text-sm">⚔️</span>
       <span>Combat</span>
     </button>
-    <button onclick="switchTab('tab-spells')" id="mobile-tab-btn-spells" role="tab" aria-controls="tab-spells" aria-selected="false" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
+    <button onclick="switchTab('tab-spells')" id="mobile-tab-btn-spells" role="tab" aria-controls="tab-spells" aria-selected="false" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400 py-0.5 px-1 transition">
       <span class="text-sm">🔮</span>
       <span>Spells</span>
     </button>
-    <button onclick="switchTab('tab-defense')" id="mobile-tab-btn-defense" role="tab" aria-controls="tab-defense" aria-selected="false" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
+    <button onclick="switchTab('tab-defense')" id="mobile-tab-btn-defense" role="tab" aria-controls="tab-defense" aria-selected="false" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400 py-0.5 px-1 transition">
       <span class="text-sm">🛡️</span>
       <span>Defense</span>
     </button>
-    <button onclick="switchTab('tab-inventory')" id="mobile-tab-btn-inventory" role="tab" aria-controls="tab-inventory" aria-selected="false" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
+    <button onclick="switchTab('tab-inventory')" id="mobile-tab-btn-inventory" role="tab" aria-controls="tab-inventory" aria-selected="false" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400 py-0.5 px-1 transition">
       <span class="text-sm">🎒</span>
       <span>Gear</span>
     </button>
-    <button onclick="switchTab('tab-core')" id="mobile-tab-btn-core" role="tab" aria-controls="tab-core" aria-selected="false" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
+    <button onclick="switchTab('tab-core')" id="mobile-tab-btn-core" role="tab" aria-controls="tab-core" aria-selected="false" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400 py-0.5 px-1 transition">
       <span class="text-sm">👤</span>
       <span>Character</span>
     </button>
-    <button onclick="switchTab('tab-dice')" id="mobile-tab-btn-dice" role="tab" aria-controls="tab-dice" aria-selected="false" class="mobile-tab-btn flex flex-col items-center text-[9px] font-bold text-slate-400 py-0.5 px-1 transition">
+    <button onclick="switchTab('tab-dice')" id="mobile-tab-btn-dice" role="tab" aria-controls="tab-dice" aria-selected="false" class="mobile-tab-btn flex flex-col items-center text-[10px] font-bold text-slate-400 py-0.5 px-1 transition">
       <span class="w-5 h-5 flex items-center justify-center">
         <svg class="w-4 h-4 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
@@ -3884,11 +3884,11 @@
   <script defer src="hub_notes.js?v=20261109_r11"></script>
   <script defer src="dice3d.js?v=20261109_r11"></script>
 
-  <script defer src="char_hud.js?v=20261111_r19"></script>
-  <script defer src="char_combat.js?v=20261111_r19"></script>
-  <script defer src="char_spells.js?v=20261111_r19"></script>
-  <script defer src="char_progression.js?v=20261111_r19"></script>
-  <script defer src="char_inventory.js?v=20261111_r19"></script>
+  <script defer src="char_hud.js?v=20261111_r20"></script>
+  <script defer src="char_combat.js?v=20261111_r20"></script>
+  <script defer src="char_spells.js?v=20261111_r20"></script>
+  <script defer src="char_progression.js?v=20261111_r20"></script>
+  <script defer src="char_inventory.js?v=20261111_r20"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" onclick="hideSpellHoverTooltip()" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     
@@ -3904,10 +3904,10 @@
         </div>
       </div>
       <!-- Kaynak, Sınıf & Okul Bilgisi -->
-      <div class="flex items-center justify-between gap-2 text-[9px] font-mono text-slate-400 px-0.5">
+      <div class="flex items-center justify-between gap-2 text-[10px] font-mono text-slate-400 px-0.5">
         <div class="flex items-center gap-1.5 min-w-0 flex-wrap">
           <span id="spell-tooltip-source-class" class="text-purple-300 font-bold truncate">Spontaneous • Sorcerer</span>
-          <span id="spell-tooltip-school" class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0">1. Lvl • Evocation [Force]</span>
+          <span id="spell-tooltip-school" class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0">1. Lvl • Evocation [Force]</span>
         </div>
         <span id="spell-tooltip-cl-badge" class="text-amber-400/90 font-bold shrink-0">CL 16</span>
       </div>
@@ -3916,17 +3916,17 @@
     <!-- 2. ETKİ / HASAR & KURTARMA ZARI (2 KUTU) -->
     <div class="grid grid-cols-2 gap-1.5 text-[10px]">
       <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
-        <span class="text-slate-400 block text-[8px] uppercase font-bold tracking-wider">🎯 EFFECT / DAMAGE</span>
+        <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">🎯 EFFECT / DAMAGE</span>
         <span id="spell-tooltip-effect" class="font-mono font-extrabold text-amber-300 text-[11px] block mt-0.5 truncate">5 Missiles (5d4+5 Force)</span>
       </div>
       <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800">
-        <span class="text-slate-400 block text-[8px] uppercase font-bold tracking-wider">🛡️ SAVING THROW</span>
+        <span class="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">🛡️ SAVING THROW</span>
         <span id="spell-tooltip-save" class="font-mono font-extrabold text-emerald-400 text-[11px] block mt-0.5 truncate">None</span>
       </div>
     </div>
 
     <!-- 3. TAKTİKSEL PARAMETRELER (2 SÜTUN, 3 SATIR) -->
-    <div class="bg-slate-900/60 rounded-lg p-2 border border-slate-800/80 grid grid-cols-2 gap-x-2 gap-y-1 text-[9px] font-mono">
+    <div class="bg-slate-900/60 rounded-lg p-2 border border-slate-800/80 grid grid-cols-2 gap-x-2 gap-y-1 text-[10px] font-mono">
       <!-- Satır 1: Eylem & Süre -->
       <div class="truncate">
         <span class="text-slate-400">⏱️ Action:</span>
@@ -3957,7 +3957,7 @@
     </div>
 
     <!-- 4. AÇIKLAMA & DİNAMİK ÖLÇEKLENME -->
-    <div id="spell-tooltip-desc" class="text-[9px] text-slate-300 leading-relaxed border-t border-slate-800/80 pt-1.5 max-h-28 overflow-y-auto pr-1">
+    <div id="spell-tooltip-desc" class="text-[10px] text-slate-300 leading-relaxed border-t border-slate-800/80 pt-1.5 max-h-28 overflow-y-auto pr-1">
       Description
     </div>
   </div>
@@ -3967,25 +3967,25 @@
     <div class="flex items-center justify-between border-b border-slate-800 pb-1.5 gap-2">
       <div class="flex items-center gap-1.5 min-w-0">
         <div id="mod-tooltip-title" class="font-black text-white text-xs truncate">Modifier Name</div>
-        <span id="mod-tooltip-type" class="text-[9px] font-mono font-bold px-1.5 rounded bg-sky-950 text-sky-300 border border-sky-800 shrink-0">Type</span>
+        <span id="mod-tooltip-type" class="text-[10px] font-mono font-bold px-1.5 rounded bg-sky-950 text-sky-300 border border-sky-800 shrink-0">Type</span>
       </div>
       <button type="button" onclick="hideCombatModifierHoverTooltip(); event.stopPropagation();" class="text-slate-400 hover:text-white px-1.5 py-0.5 text-xs font-bold leading-none cursor-pointer rounded bg-slate-900 hover:bg-slate-800 border border-slate-700/60" title="Close">✕</button>
     </div>
     <div class="grid grid-cols-2 gap-1 text-[10px]">
       <div class="bg-slate-900/80 p-1.5 rounded border border-slate-800">
-        <span id="mod-tooltip-label-1" class="text-slate-400 block text-[8px] uppercase font-bold">🎯 Damage / Effect</span>
+        <span id="mod-tooltip-label-1" class="text-slate-400 block text-[10px] uppercase font-bold">🎯 Damage / Effect</span>
         <span id="mod-tooltip-val-1" class="font-mono font-bold text-amber-300 text-[10px]">+2 Melee</span>
       </div>
       <div class="bg-slate-900/80 p-1.5 rounded border border-slate-800">
-        <span id="mod-tooltip-label-2" class="text-slate-400 block text-[8px] uppercase font-bold">🛡️ Defense / Condition</span>
+        <span id="mod-tooltip-label-2" class="text-slate-400 block text-[10px] uppercase font-bold">🛡️ Defense / Condition</span>
         <span id="mod-tooltip-val-2" class="font-mono font-bold text-emerald-400 text-[10px]">Normal</span>
       </div>
     </div>
-    <div class="flex items-center justify-between text-[9px] text-slate-300 font-mono px-0.5">
+    <div class="flex items-center justify-between text-[10px] text-slate-300 font-mono px-0.5">
       <span>⚡ Source: <span id="mod-tooltip-source" class="text-white font-bold">Rule</span></span>
       <span>⏱️ <span id="mod-tooltip-action" class="text-amber-300">Standard</span></span>
     </div>
-    <div id="mod-tooltip-desc" class="text-[9px] text-slate-400 leading-relaxed border-t border-slate-800/80 pt-1">
+    <div id="mod-tooltip-desc" class="text-[10px] text-slate-400 leading-relaxed border-t border-slate-800/80 pt-1">
       Description
     </div>
   </div>
