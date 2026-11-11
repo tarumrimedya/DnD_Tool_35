@@ -1,0 +1,10 @@
+{
+  "hooks": [
+    "tab-btn", "tab-content", "mobile-tab-btn", "round-counter-badge", "im-feat-tag-chk",
+    "mdb-subtab-btn", "mdb-subtab-content", "pin-card", "pin-tooltip", "slot-anchor-node", "is-editing"
+  ],
+  "unresolved": [
+    "scrollbar-thin", "custom-scroll"
+  ],
+  "pendingRebuild": []
+}

@@ -843,7 +843,7 @@
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="text-amber-400 font-bold text-[10px] uppercase tracking-wide">Selected:</span>
                 <span class="font-extrabold text-white truncate">${currentTarget}</span>
-                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-900/80 text-amber-300 font-mono">${meta}</span>` : ''}
+                ${meta ? `<span class="text-[9px] px-1.5 rounded bg-amber-900/80 text-amber-300 font-mono">${meta}</span>` : ''}
               </div>
               <button type="button" data-action="progression:clear-quick-feat-target" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
             </div>
@@ -881,11 +881,11 @@
           const meta = getWeaponDisplayMeta(w);
           const safeW = w.replace(/'/g, "\\'");
           html += `
-            <button type="button" data-action="progression:select-quick-feat-target" data-weapon="${String(w || '').replace(/"/g, '&quot;')}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent hover:border-amber-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+            <button type="button" data-action="progression:select-quick-feat-target" data-weapon="${String(w || '').replace(/"/g, '&quot;')}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="font-bold text-white text-xs group-hover:text-amber-200 truncate">${w}</span>
-                <span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold shrink-0">Equipped</span>
-                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+                <span class="text-[9px] px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold shrink-0">Equipped</span>
+                ${meta ? `<span class="text-[9px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
               </div>
               ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-amber-300 font-bold shrink-0">Select ➔</span>'}
             </button>
@@ -908,7 +908,7 @@
             <button type="button" data-action="progression:select-quick-feat-target" data-weapon="${String(w || '').replace(/"/g, '&quot;')}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="font-bold text-white text-xs group-hover:text-purple-200 truncate">${w}</span>
-                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+                ${meta ? `<span class="text-[9px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
               </div>
               ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-purple-300 font-bold shrink-0">Select ➔</span>'}
             </button>
@@ -1728,7 +1728,7 @@
               ? `<div class="flex flex-wrap items-center gap-1 text-[9px] pt-1">
                    <span class="text-slate-400 font-semibold">Prereq:</span>
                    ${pEval.checks.map(c => `
-                     <span class="px-1 py-0.2 rounded font-mono ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/40' : 'bg-rose-950 text-rose-200 border border-rose-600 font-bold'}">
+                     <span class="px-1 rounded font-mono ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/40' : 'bg-rose-950 text-rose-200 border border-rose-600 font-bold'}">
                        ${c.label} ${c.met ? '✓' : '✗'}
                      </span>
                    `).join('')}
@@ -1763,10 +1763,10 @@
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-white text-xs">${item.name}</span>
-                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${badgeClass}">
+                  <span class="text-[9px] font-bold px-1.5 rounded border ${badgeClass}">
                     ${badgeText}
                   </span>
-                  <span class="text-[9px] text-indigo-300 bg-indigo-950/70 border border-indigo-700/50 px-1.5 py-0.2 rounded">
+                  <span class="text-[9px] text-indigo-300 bg-indigo-950/70 border border-indigo-700/50 px-1.5 rounded">
                     ${item.tier ? `${item.tier} Invocation` : (item.category || 'Feat')}
                   </span>
                   <span class="text-[9px] text-slate-400 font-mono">
@@ -1829,7 +1829,7 @@
         <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
           <button type="button"
                   data-action="progression:trigger-rm-quick-feat"
-                  class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-600 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 border border-purple-400/40 shadow transition cursor-pointer active:scale-98">
+                  class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-600 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 border border-purple-400/40 shadow transition cursor-pointer">
             <span>⚡</span>
             <span>Fetch via Rule Master AI: "${query || 'New 3.5e Feat'}" (3.5e Compendium)</span>
           </button>
@@ -4567,7 +4567,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 ? `<div class="flex flex-wrap items-center gap-1 text-[9px] pt-1">
                      <span class="text-slate-400 font-semibold">Prereq:</span>
                      ${pEval.checks.map(c => `
-                       <span class="px-1 py-0.2 rounded font-mono ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/40' : 'bg-rose-950 text-rose-300 border border-rose-600/50'}">
+                       <span class="px-1 rounded font-mono ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/40' : 'bg-rose-950 text-rose-300 border border-rose-600/50'}">
                          ${c.label} ${c.met ? '✓' : '✗'}
                        </span>
                      `).join('')}
@@ -4601,10 +4601,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                 <div class="flex items-center justify-between gap-2">
                   <div class="flex items-center gap-2 flex-wrap">
                     <span class="font-bold text-white text-xs">${item.name}</span>
-                    <span class="text-[9px] font-bold px-1.5 py-0.2 rounded border ${badgeClass}">
+                    <span class="text-[9px] font-bold px-1.5 rounded border ${badgeClass}">
                       ${badgeText}
                     </span>
-                    <span class="text-[9px] text-indigo-300 bg-indigo-950/70 border border-indigo-700/50 px-1.5 py-0.2 rounded">
+                    <span class="text-[9px] text-indigo-300 bg-indigo-950/70 border border-indigo-700/50 px-1.5 rounded">
                       ${item.category || 'Feat'}
                     </span>
                     <span class="text-[9px] text-slate-400 font-mono">
@@ -4655,7 +4655,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
           <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
             <button type="button"
                     data-action="progression:trigger-rm-lvlup-slot" data-slot-idx="${slotIdx}"
-                    class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-600 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 border border-purple-400/40 shadow transition cursor-pointer active:scale-98">
+                    class="w-full py-2 px-3 rounded-lg bg-gradient-to-r from-purple-700 via-indigo-700 to-purple-800 hover:from-purple-600 hover:to-indigo-600 text-white font-bold text-xs flex items-center justify-center gap-2 border border-purple-400/40 shadow transition cursor-pointer">
               <span>⚡</span>
               <span>Fetch via Rule Master AI: "${query || 'New 3.5e Feat'}" (3.5e Compendium)</span>
             </button>
@@ -5285,13 +5285,13 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       }
       if (badgeEl) {
         if (isPrestige) {
-          badgeEl.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-600/50';
+          badgeEl.className = 'text-[9px] font-bold px-1.5 rounded bg-amber-950 text-amber-300 border border-amber-600/50';
           badgeEl.textContent = '👑 Prestige';
         } else if (isCustom) {
-          badgeEl.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-600/50';
+          badgeEl.className = 'text-[9px] font-bold px-1.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-600/50';
           badgeEl.textContent = '⚙️ Custom Class';
         } else {
-          badgeEl.className = 'text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-600/50';
+          badgeEl.className = 'text-[9px] font-bold px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600/50';
           badgeEl.textContent = '🛡️ Base Class';
         }
       }
@@ -5815,7 +5815,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   <span>🛡️</span>
                   <span>Base Classes</span>
                 </span>
-                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-950/80 text-purple-300 border border-purple-700/50">${count} Classes</span>
+                <span class="text-[9px] font-mono px-1.5 rounded bg-purple-950/80 text-purple-300 border border-purple-700/50">${count} Classes</span>
               </div>
             `;
           } else if (item.priority === 2) {
@@ -5826,7 +5826,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   <span>👑</span>
                   <span>Qualified Prestige Classes (Prerequisites Met)</span>
                 </span>
-                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/60">${count} Classes</span>
+                <span class="text-[9px] font-mono px-1.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/60">${count} Classes</span>
               </div>
             `;
           } else if (item.priority === 3) {
@@ -5837,7 +5837,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   <span>🔒</span>
                   <span>Other Prestige Classes (Prerequisites Not Met)</span>
                 </span>
-                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-700/60">${count} Classes</span>
+                <span class="text-[9px] font-mono px-1.5 rounded bg-amber-950/80 text-amber-300 border border-amber-700/60">${count} Classes</span>
               </div>
             `;
           }
@@ -5895,7 +5895,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
                   <div class="flex items-center gap-1.5 flex-wrap">
                     <span class="font-bold text-white text-xs group-hover:text-emerald-300 transition">${cName}</span>
                     ${typeBadge}
-                    ${def.source ? `<span class="text-[9px] text-slate-400 bg-slate-900 px-1.5 py-0.2 rounded border border-slate-800 font-mono">${def.source}</span>` : ''}
+                    ${def.source ? `<span class="text-[9px] text-slate-400 bg-slate-900 px-1.5 rounded border border-slate-800 font-mono">${def.source}</span>` : ''}
                   </div>
                   ${def.role ? `<div class="text-[10px] text-indigo-300">${def.role}</div>` : ''}
                 </div>
@@ -5936,10 +5936,10 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
             <!-- Stats Bar -->
             <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-300 pt-0.5 font-mono">
-              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-amber-300 font-bold">d${def.hd} HD</span>
-              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-sky-300">${babText}</span>
-              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-emerald-300">${savesText}</span>
-              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-purple-300">${def.skills || 2}+INT Skills</span>
+              <span class="px-1.5 rounded bg-slate-900 border border-slate-800 text-amber-300 font-bold">d${def.hd} HD</span>
+              <span class="px-1.5 rounded bg-slate-900 border border-slate-800 text-sky-300">${babText}</span>
+              <span class="px-1.5 rounded bg-slate-900 border border-slate-800 text-emerald-300">${savesText}</span>
+              <span class="px-1.5 rounded bg-slate-900 border border-slate-800 text-purple-300">${def.skills || 2}+INT Skills</span>
             </div>
 
             ${cleanDesc ? `<p class="text-[10px] text-slate-400 leading-relaxed">${cleanDesc.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
@@ -7449,7 +7449,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   <span>🛡️</span>
                   <span>Base Classes</span>
                 </span>
-                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-purple-950/80 text-purple-300 border border-purple-700/50">${count} Classes</span>
+                <span class="text-[9px] font-mono px-1.5 rounded bg-purple-950/80 text-purple-300 border border-purple-700/50">${count} Classes</span>
               </div>
             `;
           } else if (item.priority === 2) {
@@ -7460,7 +7460,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   <span>👑</span>
                   <span>Qualified Prestige Classes (Prerequisites Met)</span>
                 </span>
-                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/60">${count} Classes</span>
+                <span class="text-[9px] font-mono px-1.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/60">${count} Classes</span>
               </div>
             `;
           } else if (item.priority === 3) {
@@ -7471,7 +7471,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   <span>🔒</span>
                   <span>Other Prestige Classes (Prerequisites Not Met)</span>
                 </span>
-                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-amber-950/80 text-amber-300 border border-amber-700/60">${count} Classes</span>
+                <span class="text-[9px] font-mono px-1.5 rounded bg-amber-950/80 text-amber-300 border border-amber-700/60">${count} Classes</span>
               </div>
             `;
           }
@@ -7529,7 +7529,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   <div class="flex items-center gap-1.5 flex-wrap">
                     <span class="font-bold text-white text-xs group-hover:text-emerald-300 transition">${cName}</span>
                     ${typeBadge}
-                    ${def.source ? `<span class="text-[9px] text-slate-400 bg-slate-900 px-1.5 py-0.2 rounded border border-slate-800 font-mono">${def.source}</span>` : ''}
+                    ${def.source ? `<span class="text-[9px] text-slate-400 bg-slate-900 px-1.5 rounded border border-slate-800 font-mono">${def.source}</span>` : ''}
                   </div>
                   ${def.role ? `<div class="text-[10px] text-indigo-300">${def.role}</div>` : ''}
                 </div>
@@ -7570,10 +7570,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
             <!-- Stats Bar -->
             <div class="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-300 pt-0.5 font-mono">
-              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-amber-300 font-bold">d${def.hd} HD</span>
-              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-sky-300">${babText}</span>
-              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-emerald-300">${savesText}</span>
-              <span class="px-1.5 py-0.2 rounded bg-slate-900 border border-slate-800 text-purple-300">${def.skills || 2}+INT Skills</span>
+              <span class="px-1.5 rounded bg-slate-900 border border-slate-800 text-amber-300 font-bold">d${def.hd} HD</span>
+              <span class="px-1.5 rounded bg-slate-900 border border-slate-800 text-sky-300">${babText}</span>
+              <span class="px-1.5 rounded bg-slate-900 border border-slate-800 text-emerald-300">${savesText}</span>
+              <span class="px-1.5 rounded bg-slate-900 border border-slate-800 text-purple-300">${def.skills || 2}+INT Skills</span>
             </div>
 
             ${cleanDesc ? `<p class="text-[10px] text-slate-400 leading-relaxed">${cleanDesc.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
@@ -8083,7 +8083,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                   <div class="flex items-center gap-2 flex-wrap min-w-0">
                     <span class="text-xs font-black text-amber-300 truncate">${safeEscapeHtml(stats.customName)}</span>
                     <span class="text-[10px] text-slate-400 font-mono truncate">(${safeEscapeHtml(stats.baseName)} • ${typeLabel})</span>
-                    <span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-700/60">${stats.totalHd} HD</span>
+                    <span class="text-[9px] font-mono font-bold px-1.5 rounded bg-amber-950 text-amber-300 border border-amber-700/60">${stats.totalHd} HD</span>
                   </div>
                 </div>
                 <div class="flex items-center gap-1.5 shrink-0">
@@ -8249,16 +8249,16 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                       let borderCls = 'border-purple-600/60 hover:border-purple-400 text-purple-200 bg-purple-950/80 hover:bg-purple-900';
                       const tUpper = (a.type || '').toUpperCase();
                       if (tUpper === 'EX') {
-                        typeBadge = '<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-amber-900/80 text-amber-300 border border-amber-600/50">Ex</span>';
+                        typeBadge = '<span class="text-[9px] px-1 rounded font-mono font-bold bg-amber-900/80 text-amber-300 border border-amber-600/50">Ex</span>';
                         borderCls = 'border-amber-600/50 hover:border-amber-400 text-amber-200 bg-amber-950/60 hover:bg-amber-900/80';
                       } else if (tUpper === 'SU') {
-                        typeBadge = '<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-purple-900/80 text-purple-300 border border-purple-600/50">Su</span>';
+                        typeBadge = '<span class="text-[9px] px-1 rounded font-mono font-bold bg-purple-900/80 text-purple-300 border border-purple-600/50">Su</span>';
                         borderCls = 'border-purple-600/50 hover:border-purple-400 text-purple-200 bg-purple-950/70 hover:bg-purple-900/80';
                       } else if (tUpper === 'SP') {
-                        typeBadge = '<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-sky-900/80 text-sky-300 border border-sky-600/50">Sp</span>';
+                        typeBadge = '<span class="text-[9px] px-1 rounded font-mono font-bold bg-sky-900/80 text-sky-300 border border-sky-600/50">Sp</span>';
                         borderCls = 'border-sky-600/50 hover:border-sky-400 text-sky-200 bg-sky-950/70 hover:bg-sky-900/80';
                       } else if (a.type) {
-                        typeBadge = `<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-600/50">${safeEscapeHtml(a.type)}</span>`;
+                        typeBadge = `<span class="text-[9px] px-1 rounded font-mono font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-600/50">${safeEscapeHtml(a.type)}</span>`;
                       }
                       return `
                         <button type="button" data-action="progression:show-feat-detail" data-feat-name="${String(a.name || '').replace(/"/g, '&quot;')}" data-feat-type="ability" title="${safeTip}" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border shadow-sm transition active:scale-95 cursor-pointer text-left ${borderCls}">
@@ -8780,7 +8780,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
             </div>
           </td>
           <td class="py-2 px-1.5 align-top text-left" style="width: 18%;">
-            <div class="min-h-6 flex items-center font-sans font-bold text-white text-xs leading-tight break-words line-clamp-2" title="${lvl.className}-${classLevelSoFar}">${lvl.className}-${classLevelSoFar}</div>
+            <div class="flex items-center font-sans font-bold text-white text-xs leading-tight break-words line-clamp-2" title="${lvl.className}-${classLevelSoFar}">${lvl.className}-${classLevelSoFar}</div>
           </td>
           <td class="py-2 px-0.5 align-top text-center" style="width: 3.6%;">
             <div class="h-6 flex items-center justify-center text-slate-400 font-bold text-xs">${lvl.hd}</div>
@@ -8870,7 +8870,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 ${idx > 0 ? `<button data-action="progression:delete-level-row" data-level-idx="${idx}" class="ui-btn-icon-sm bg-rose-950/70 hover:bg-rose-900 border border-rose-700/70 text-rose-300" title="Delete this level">🗑️</button>` : ''}
               </div>
             </div>
-            <div class="flex flex-wrap items-center gap-x-2.5 gap-y-1 px-2 py-1 rounded-lg bg-slate-900/90 border border-slate-800/90 font-mono text-[10px]">
+            <div class="flex flex-wrap items-center gap-y-1 px-2 py-1 rounded-lg bg-slate-900/90 border border-slate-800/90 font-mono text-[10px]">
               <span class="text-slate-400 font-bold">HD: <strong class="text-slate-200">${lvl.hd}</strong></span>
               <span class="text-slate-700">•</span>
               <span class="text-emerald-400 font-bold" title="Level Hit Die: +${lvl.hpGain} | Con: ${conModStr}">HP: +${lvl.hpGain}</span>
@@ -9539,7 +9539,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           const core = DND35_CORE_SKILLS.find(s => s.key === cKey);
           const name = core ? core.name : cKey;
           return `
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 hover:bg-slate-750 text-slate-200 border border-slate-700 shadow-xs">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-200 border border-slate-700">
               <span>${name}</span>
               <button type="button" data-action="progression:scm-remove-skill" data-group-idx="${gIdx}" data-skill-key="${cKey}" class="text-rose-400 hover:text-rose-200 font-bold ml-0.5 text-xs cursor-pointer" title="Remove ${name} from this group">&times;</button>
             </span>
@@ -9566,7 +9566,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                        value="${(group.name || '').replace(/"/g, '&quot;')}"
                        data-input-action="progression:scm-group-name" data-group-idx="${gIdx}"
                        placeholder="Group Name..."
-                       class="bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded px-2 py-0.5 text-xs text-white font-bold flex-1 min-w-[100px]" />
+                       class="bg-slate-950 border border-slate-700 focus:border-emerald-500 rounded px-2 py-0.5 text-xs text-white font-bold flex-1" />
               </div>
               <div class="flex items-center gap-1.5 shrink-0">
                 <select data-change-action="progression:scm-group-stat" data-group-idx="${gIdx}"
@@ -9593,7 +9593,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
                 ACP: <strong class="${group.acp ? 'text-rose-400' : 'text-emerald-400'}">${group.acp ? 'Yes (-ACP)' : 'No'}</strong>
               </span>
               <select data-change-action="progression:scm-add-skill" data-group-idx="${gIdx}"
-                      class="bg-slate-950 border border-slate-700 hover:border-slate-600 rounded px-2 py-0.5 text-[10px] text-slate-300 font-semibold focus:outline-none cursor-pointer max-w-[190px]">
+                      class="bg-slate-950 border border-slate-700 hover:border-slate-600 rounded px-2 py-0.5 text-[10px] text-slate-300 font-semibold focus:outline-none cursor-pointer">
                 <option value="">+ Add Skill...</option>
                 ${selectOptions}
               </select>
@@ -10831,10 +10831,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           <button type="button" data-action="progression:toggle-companion-spotlight" data-open="false" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-sm cursor-pointer">✕</button>
         </div>
 
-        <div class="my-3">
+        <div>
           <div class="ui-spotlight-well ui-spotlight-amber rounded-xl p-1.5 flex items-center gap-2 border border-amber-500/50 bg-slate-900/90">
             <span class="text-amber-400 pl-2">🔍</span>
-            <input type="text" id="companion-spotlight-input" value="${safeEscapeHtml(query)}" data-input-action="progression:companion-spotlight-search" placeholder="Search companion creature, animal, or vermin..." class="flex-1 bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none py-1">
+            <input type="text" id="companion-spotlight-input" value="${safeEscapeHtml(query)}" data-input-action="progression:companion-spotlight-search" placeholder="Search companion creature, animal, or vermin..." class="flex-1 bg-transparent text-xs text-white focus:outline-none py-1">
             ${query ? `<button type="button" data-action="progression:companion-spotlight-clear" class="text-xs text-slate-400 hover:text-white px-2">✕</button>` : ''}
           </div>
         </div>
@@ -10848,11 +10848,11 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           const reqText = a.minLevel ? ` (Req Lvl ${a.minLevel})` : (a.levelAdj ? ` (Adj ${a.levelAdj})` : '');
           const bonusText = a.masterBonusText ? ` • [${a.masterBonusText}]` : '';
           return `
-            <div data-action="progression:select-companion-spotlight" data-animal-id="${safeEscapeHtml(a.id)}" class="p-2.5 rounded-lg border transition cursor-pointer flex items-center justify-between gap-2 ${isSelected ? 'bg-amber-950/70 border-amber-500/60 text-white' : 'bg-slate-900/60 hover:bg-slate-850 border-slate-800 text-slate-200'}">
+            <div data-action="progression:select-companion-spotlight" data-animal-id="${safeEscapeHtml(a.id)}" class="p-2.5 rounded-lg border transition cursor-pointer flex items-center justify-between gap-2 ${isSelected ? 'bg-amber-950/70 border-amber-500/60 text-white' : 'bg-slate-900/60 border-slate-800 text-slate-200'}">
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-bold text-amber-300 truncate">${a.name}</span>
-                  ${reqText ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-950 border border-slate-700 text-slate-400">${reqText}</span>` : ''}
+                  ${reqText ? `<span class="text-[9px] font-mono px-1.5 rounded bg-slate-950 border border-slate-700 text-slate-400">${reqText}</span>` : ''}
                 </div>
                 ${bonusText ? `<div class="text-[10px] text-purple-300 mt-0.5 truncate">${bonusText}</div>` : ''}
               </div>

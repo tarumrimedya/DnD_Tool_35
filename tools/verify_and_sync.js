@@ -467,6 +467,22 @@ function main() {
     }
   }
 
+  // 6d. Undefined CSS Class Gate (the stylesheet is pre-compiled; a class with no rule does nothing)
+  try {
+    const { findUndefinedClasses } = require('./css_class_gate.js');
+    const classGate = findUndefinedClasses(ROOT);
+    for (const u of classGate.undefinedClasses) {
+      console.error(`[FAIL] Undefined CSS class "${u.token}" (${u.count} use(s), first at ${u.first}). Use an existing compiled class or an inline style, or rebuild tailwind_compiled.css.`);
+      errors++;
+    }
+    for (const t of classGate.staleAllowlist) {
+      console.log(`📉 tools/css_class_allowlist.json can be tightened: "${t}" now has a CSS rule.`);
+    }
+  } catch (cgErr) {
+    console.error(`[FAIL] CSS class gate crashed: ${cgErr.message}`);
+    errors++;
+  }
+
   // 7. Execute D&D 3.5e RAW RuleEngine & Golden DeriveSheet Automated Regression Suites
   let ruleTestRes = { passed: 0, elapsedMs: 0 };
   let deriveTestRes = { passed: 0, elapsedMs: 0 };

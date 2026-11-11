@@ -984,7 +984,7 @@
                 <input type="checkbox" ${isAct ? 'checked' : ''} data-change-action="inventory:toggle-buff-active" data-buff-id="${safeBuffId}" class="w-4 h-4 rounded shrink-0 ${isDebuff ? 'text-rose-600 focus:ring-rose-500' : 'text-indigo-600 focus:ring-0'} cursor-pointer">
                 <div class="min-w-0 flex items-center gap-1.5 flex-wrap">
                   <span class="font-bold text-xs truncate ${isAct ? (isDebuff ? 'text-rose-200' : 'text-white') : 'text-slate-400'}">${buff.name}</span>
-                  <span class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
+                  <span class="text-[9px] px-1.5 rounded font-mono font-bold ${isDebuff ? 'bg-rose-950 text-rose-300 border border-rose-800' : 'bg-slate-800 text-purple-300 border border-slate-700'}">${buff.source || (isDebuff ? 'Debuff' : 'Buff')}</span>
                 </div>
               </div>
 
@@ -3721,8 +3721,8 @@
       const btnSil = document.getElementById('btn-body-view-silhouette');
       const btnComp = document.getElementById('btn-body-view-companion');
 
-      const activeBtnClass = 'w-full sm:w-28 md:w-32 h-8 sm:h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
-      const inactiveBtnClass = 'w-full sm:w-28 md:w-32 h-8 sm:h-full px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
+      const activeBtnClass = 'w-full sm:w-28 md:w-32 h-8 px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 bg-sky-600 text-white shadow font-bold cursor-pointer whitespace-nowrap';
+      const inactiveBtnClass = 'w-full sm:w-28 md:w-32 h-8 px-2.5 rounded-md transition inline-flex items-center justify-center gap-1.5 text-slate-400 hover:text-white cursor-pointer whitespace-nowrap';
 
       if (currentBodySlotsView === 'companion') {
         if (listView) listView.classList.add('hidden');
@@ -4654,7 +4654,7 @@
 
           <svg id="sil-main-svg" viewBox="0 0 460 520" preserveAspectRatio="none"
                class="w-full h-full select-none ${isSilhouetteTransformActive() ? 'cursor-grab' : ''}">
-            <image id="sil-bg-image" href="${imgSrc}" xlink:href="${imgSrc}" x="${imgX}" y="${imgY}" width="${imgW}" height="${imgH}" preserveAspectRatio="none" class="pointer-events-none filter contrast-110 brightness-105" />
+            <image id="sil-bg-image" href="${imgSrc}" xlink:href="${imgSrc}" x="${imgX}" y="${imgY}" width="${imgW}" height="${imgH}" preserveAspectRatio="none" class="pointer-events-none filter brightness-105" />
 
             <g class="pointer-events-auto">
               ${nodesMarkup}
@@ -4711,7 +4711,7 @@
                 <div class="min-w-0 flex-1">
                   <div class="flex items-center gap-1.5 flex-wrap">
                     <span class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-sky-400">${def.trName || def.name}</span>
-                    ${slotData.active ? '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-sky-950 text-sky-300 border border-sky-600/40">ACTIVE</span>' : '<span class="px-1.5 py-0.2 rounded text-[8px] font-bold bg-slate-800 text-slate-400 border border-slate-700">INACTIVE</span>'}
+                    ${slotData.active ? '<span class="px-1.5 rounded text-[8px] font-bold bg-sky-950 text-sky-300 border border-sky-600/40">ACTIVE</span>' : '<span class="px-1.5 rounded text-[8px] font-bold bg-slate-800 text-slate-400 border border-slate-700">INACTIVE</span>'}
                     ${(() => {
                       const dailyC = (typeof RuleEngine !== 'undefined' && typeof RuleEngine.normalizeItemDailyCharges === 'function')
                         ? RuleEngine.normalizeItemDailyCharges(slotData)
@@ -5060,7 +5060,7 @@
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-2">
               <span class="text-xs font-bold text-white">${item.name}</span>
-              <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800/60">${item.category}</span>
+              <span class="text-[9px] font-bold px-1.5 rounded bg-purple-950 text-purple-300 border border-purple-800/60">${item.category}</span>
             </div>
             ${renderGearItemStatsBadgesHtml(item, { compact: true })}
             <div class="text-[10px] text-slate-400 truncate mt-0.5">${item.desc || 'No properties specified'}</div>
@@ -5183,8 +5183,8 @@
             const isOccupied = Boolean(item && item.name && item.name !== '-');
 
             if (isOccupied) {
-              const acBadge = (item.acBonus || item.armorBonus) ? `<span class="px-1.5 py-0.2 rounded font-mono text-[9px] bg-sky-950 text-sky-300 border border-sky-700 font-bold">+${(item.acBonus || item.armorBonus) + (item.enhancementBonus || 0)} AC</span>` : '';
-              const enhBadge = item.enhancementBonus ? `<span class="px-1.5 py-0.2 rounded font-mono text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold">+${item.enhancementBonus} Magic</span>` : '';
+              const acBadge = (item.acBonus || item.armorBonus) ? `<span class="px-1.5 rounded font-mono text-[9px] bg-sky-950 text-sky-300 border border-sky-700 font-bold">+${(item.acBonus || item.armorBonus) + (item.enhancementBonus || 0)} AC</span>` : '';
+              const enhBadge = item.enhancementBonus ? `<span class="px-1.5 rounded font-mono text-[9px] bg-amber-950 text-amber-300 border border-amber-700 font-bold">+${item.enhancementBonus} Magic</span>` : '';
 
               return `
                 <div class="bg-slate-900/90 border border-amber-500/60 rounded-xl p-3 shadow-md flex flex-col justify-between space-y-2">
@@ -5194,7 +5194,7 @@
                         <span>${slotDef.icon}</span>
                         <span>${slotDef.name}</span>
                       </div>
-                      <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold">EQUIPPED</span>
+                      <span class="text-[9px] font-mono px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold">EQUIPPED</span>
                     </div>
                     <div class="flex items-start justify-between gap-2">
                       <div class="min-w-0">
@@ -5229,7 +5229,7 @@
                         <span>${slotDef.icon}</span>
                         <span>${slotDef.name}</span>
                       </div>
-                      <span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-900 text-slate-500 border border-slate-800">EMPTY</span>
+                      <span class="text-[9px] font-mono px-1.5 rounded bg-slate-900 text-slate-500 border border-slate-800">EMPTY</span>
                     </div>
                     <p class="text-[10px] text-slate-500 italic min-h-[30px]">${slotDef.hint}</p>
                   </div>
@@ -5375,7 +5375,7 @@
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-xs font-bold text-white truncate">${safeEscapeHtml(item.name)}</span>
-                <span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 border border-slate-700 uppercase font-mono">${safeEscapeHtml(item.category || 'Gear')}</span>
+                <span class="text-[9px] px-1.5 rounded bg-slate-950 text-slate-400 border border-slate-700 uppercase font-mono">${safeEscapeHtml(item.category || 'Gear')}</span>
                 ${acBadge(acBonus)}
                 ${enhBadge(enhBonus)}
               </div>
@@ -5389,10 +5389,10 @@
       }).join('');
 
       function acBadge(b) {
-        return b ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-sky-950 text-sky-300 border border-sky-700">${b}</span>` : '';
+        return b ? `<span class="text-[9px] font-mono font-bold px-1.5 rounded bg-sky-950 text-sky-300 border border-sky-700">${b}</span>` : '';
       }
       function enhBadge(b) {
-        return b ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-700">${b}</span>` : '';
+        return b ? `<span class="text-[9px] font-mono font-bold px-1.5 rounded bg-amber-950 text-amber-300 border border-amber-700">${b}</span>` : '';
       }
     }
 
@@ -7081,7 +7081,7 @@
         return `
           <button type="button" data-action="inventory:pool-category-tab" data-category="${t.key}" class="px-2.5 py-1 rounded-md border text-[10px] whitespace-nowrap transition flex items-center gap-1 cursor-pointer ${activeClass}">
             <span>${t.label}</span>
-            <span class="text-[9px] px-1 py-0.2 rounded-full ${isActive ? 'bg-amber-500/20 text-amber-200' : 'bg-slate-950 text-slate-400'}">${t.count}</span>
+            <span class="text-[9px] px-1 rounded-full ${isActive ? 'bg-amber-500/20 text-amber-200' : 'bg-slate-950 text-slate-400'}">${t.count}</span>
           </button>
         `;
       }).join('');
@@ -7112,9 +7112,9 @@
             <div class="flex items-center gap-1.5 min-w-0 flex-1">
               <span class="text-base shrink-0">${icon}</span>
               <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
-              ${item._isSynthesizedLego ? `<span class="text-[9px] bg-indigo-950/90 text-indigo-300 border border-indigo-500/60 px-1.5 py-0.2 rounded font-bold shrink-0">⚒️ Instant Lego Assembly</span>` : ''}
+              ${item._isSynthesizedLego ? `<span class="text-[9px] bg-indigo-950/90 text-indigo-300 border border-indigo-500/60 px-1.5 rounded font-bold shrink-0">⚒️ Instant Lego Assembly</span>` : ''}
               ${profWarn ? `<span class="text-rose-400 text-xs shrink-0 cursor-help" title="${profWarn.tooltip}">⚠️</span>` : ''}
-              ${inInv ? `<span class="text-[9px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.2 rounded font-semibold shrink-0">✓ Owned</span>` : ''}
+              ${inInv ? `<span class="text-[9px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-1.5 rounded font-semibold shrink-0">✓ Owned</span>` : ''}
             </div>
             <div class="flex items-center gap-1.5 shrink-0">
               ${isForgeEditableItem(item) ? `
@@ -7130,8 +7130,8 @@
             </div>
           </div>
           <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
-            <span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-semibold">${cat}</span>
-            <span class="bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded">${item.slot || 'Slotless'}</span>
+            <span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 rounded font-semibold">${cat}</span>
+            <span class="bg-slate-800 text-slate-300 px-1.5 rounded">${item.slot || 'Slotless'}</span>
             <span class="text-slate-400 font-mono">${weight} lbs</span>
             <span class="text-amber-400 font-mono">${cost} gp</span>
             <span class="text-slate-500 font-serif italic">${source}</span>
@@ -7501,8 +7501,8 @@
                 <div>
                   <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
                   <div class="flex flex-wrap items-center gap-1.5 text-[10px] mt-0.5">
-                    <span class="bg-purple-500/20 text-purple-300 border border-purple-500/40 px-1.5 py-0.2 rounded font-semibold">${cat}</span>
-                    <span class="bg-slate-800 text-slate-300 px-1.5 py-0.2 rounded">${item.slot || 'Slotless'}</span>
+                    <span class="bg-purple-500/20 text-purple-300 border border-purple-500/40 px-1.5 rounded font-semibold">${cat}</span>
+                    <span class="bg-slate-800 text-slate-300 px-1.5 rounded">${item.slot || 'Slotless'}</span>
                     <span class="text-slate-400 font-mono">${weight} lbs</span>
                     <span class="text-amber-400 font-mono">${cost} gp</span>
                     <span class="text-purple-300 font-serif italic">📚 ${source}</span>
