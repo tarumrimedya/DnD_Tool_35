@@ -10985,11 +10985,11 @@
           const ranks = Math.max(0, ...compSkills.map(s => Number(s.ranks) || 0));
           const misc = Math.max(0, ...compSkills.map(s => Number(s.misc) || 0));
           const statMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.[conDef.stat] || 10) : 0;
-          const acpVal = conDef.acp ? (character.acBreakdown?.acp || 0) : 0;
+          const acpVal = conDef.acp ? Math.min(0, Number(character.acBreakdown?.acp) || 0) : 0;
           const evalSkillObj = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateSkillBonus)
             ? RuleEngine.evaluateSkillBonus(character, conDef.key, conDef.name, conDef.stat)
             : { total: Number(character.buffSkillBonus) || 0 };
-          const total = ranks + statMod + misc - acpVal + (Number(evalSkillObj.total) || 0);
+          const total = ranks + statMod + misc + acpVal + (Number(evalSkillObj.total) || 0);
           return {
             name: skillName,
             total,
@@ -11009,11 +11009,11 @@
       }
 
       const statMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.[sk.stat] || 10) : 0;
-      const acpVal = sk.acp ? (character.acBreakdown?.acp || 0) : 0;
+      const acpVal = sk.acp ? Math.min(0, Number(character.acBreakdown?.acp) || 0) : 0;
       const evalSkillObj = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateSkillBonus)
         ? RuleEngine.evaluateSkillBonus(character, sk.key || sk.name, sk.name, sk.stat)
         : { total: Number(character.buffSkillBonus) || 0 };
-      const total = (Number(sk.ranks) || 0) + statMod + (Number(sk.misc) || 0) - acpVal + (Number(evalSkillObj.total) || 0);
+      const total = (Number(sk.ranks) || 0) + statMod + (Number(sk.misc) || 0) + acpVal + (Number(evalSkillObj.total) || 0);
       return {
         name: sk.name || skillName,
         total,

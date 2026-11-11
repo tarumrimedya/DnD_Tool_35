@@ -312,7 +312,7 @@
 
       displayItems.forEach(item => {
         const statMod = RuleEngine.getAbilityMod(character.abilities?.[item.stat] || 10);
-        const acpVal = item.acp ? (character.acBreakdown?.acp || 0) : 0;
+        const acpVal = item.acp ? Math.min(0, Number(character.acBreakdown?.acp) || 0) : 0;
 
         // Scope & Stacking Aware Item/Buff Bonus Calculation
         const evalSkillObj = (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateSkillBonus)
@@ -323,7 +323,7 @@
           ? evalSkillObj.breakdown.join(' • ') 
           : (buffSkillMod !== 0 ? `Bonus: ${buffSkillMod}` : 'No active item or spell bonus');
 
-        const total = item.ranks + statMod + item.misc - acpVal + buffSkillMod;
+        const total = item.ranks + statMod + item.misc + acpVal + buffSkillMod;
         const maxRankAllowed = item.isClass ? maxClassRank : maxCrossRank;
         const isOverRank = item.ranks > maxRankAllowed;
         const safeName = item.name.replace(/'/g, "\\'");
@@ -396,8 +396,8 @@
           </td>
 
           <!-- ACP -->
-          <td class="py-2 px-2 text-center align-middle font-mono ${item.acp ? (acpVal > 0 ? 'text-amber-400 font-bold' : 'text-slate-500') : 'text-slate-700'}">
-            ${item.acp ? (acpVal > 0 ? '-' + acpVal : '0') : '-'}
+          <td class="py-2 px-2 text-center align-middle font-mono ${item.acp ? (acpVal < 0 ? 'text-amber-400 font-bold' : 'text-slate-500') : 'text-slate-700'}">
+            ${item.acp ? (acpVal < 0 ? String(acpVal) : '0') : '-'}
           </td>
 
           <!-- Buff / Debuff Bonus -->
