@@ -338,7 +338,7 @@
         _geminiVerifiedState = 'empty';
         _geminiVerifiedModel = '';
         if (liveBadge) {
-          liveBadge.innerHTML = '<span class="text-amber-400">🟡 Anahtar Girilmedi</span>';
+          liveBadge.innerHTML = '<span class="text-amber-400">🟡 No API Key Set</span>';
         }
         if (maskedSpan) {
           maskedSpan.innerHTML = '<span class="text-amber-400">Not Configured (Get Free Key)</span>';
@@ -2401,22 +2401,26 @@
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove(...TAB_ACTIVE_CLASSES);
         btn.classList.add(...TAB_INACTIVE_CLASSES);
+        btn.setAttribute('aria-selected', 'false');
       });
       const activeBtn = document.getElementById(tabId.replace('tab-', 'tab-btn-'));
       if (activeBtn) {
         activeBtn.classList.remove(...TAB_INACTIVE_CLASSES);
         activeBtn.classList.add(...TAB_ACTIVE_CLASSES);
+        activeBtn.setAttribute('aria-selected', 'true');
       }
 
       // Mobile Bottom Navigation Buttons
       document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
         btn.classList.remove('text-rose-500');
         btn.classList.add('text-slate-400');
+        btn.setAttribute('aria-selected', 'false');
       });
       const activeMobileBtn = document.getElementById(tabId.replace('tab-', 'mobile-tab-btn-'));
       if (activeMobileBtn) {
         activeMobileBtn.classList.remove('text-slate-400');
         activeMobileBtn.classList.add('text-rose-500');
+        activeMobileBtn.setAttribute('aria-selected', 'true');
       }
 
       // Render target tab immediately if marked dirty
@@ -2932,7 +2936,7 @@
               return `${sign} ${ca.type || 'Bonus'} AC ${ca.condition} [${ca.source}]`;
             });
             acNotesEl.textContent = shortCondParts.join(' • ');
-            acNotesEl.className = 'h-7 flex items-center justify-center text-[10px] text-teal-300 font-semibold text-center truncate bg-slate-950/50 rounded-md px-2 border border-teal-800/50';
+            acNotesEl.className = 'h-7 flex items-center justify-center text-[10px] text-teal-300 font-semibold text-center truncate bg-slate-950/50 rounded-md px-2 border';
             acNotesEl.title = `Situational AC Bonuses (Not Added to Base AC): ${fullCondParts.join(' • ')} | Base AC Breakdown: ${detailedParts.join(' • ')} (Base 10)`;
           } else {
             acNotesEl.textContent = 'No situational AC bonuses';
@@ -3338,7 +3342,7 @@
         if (fallbackIcon) fallbackIcon.textContent = emoji;
         if (statusBadge) {
           statusBadge.textContent = 'Dynamic Icon';
-          statusBadge.className = 'badge bg-slate-800 text-slate-400 border border-slate-700 text-[9px]';
+          statusBadge.className = 'badge bg-slate-800 text-slate-400 border border-slate-700 text-[10px]';
         }
         if (removeBtn) removeBtn.classList.add('hidden');
         if (gridGuide) gridGuide.classList.add('hidden');
@@ -3353,7 +3357,7 @@
         if (miniFallback) miniFallback.classList.add('hidden');
         if (statusBadge) {
           statusBadge.textContent = 'Custom Image Active';
-          statusBadge.className = 'badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[9px] font-bold';
+          statusBadge.className = 'badge bg-emerald-950 text-emerald-300 border border-emerald-700 text-[10px] font-bold';
         }
         if (removeBtn) removeBtn.classList.remove('hidden');
         if (gridGuide) gridGuide.classList.remove('hidden');
@@ -3547,7 +3551,7 @@
         if (layer) layer.style.display = 'none';
         if (statusBadge) {
           statusBadge.textContent = 'Default Theme';
-          statusBadge.className = 'badge bg-slate-800 text-slate-400 border border-slate-700 text-[9px]';
+          statusBadge.className = 'badge bg-slate-800 text-slate-400 border border-slate-700 text-[10px]';
         }
         if (clearBtn) clearBtn.classList.add('hidden');
         if (miniImg) miniImg.style.backgroundImage = 'none';
@@ -3593,7 +3597,7 @@
       // Update UI controls in modal
       if (statusBadge) {
         statusBadge.textContent = 'Custom Image Active';
-        statusBadge.className = 'badge bg-purple-950 text-purple-300 border border-purple-700 text-[9px] font-bold';
+        statusBadge.className = 'badge bg-purple-950 text-purple-300 border border-purple-700 text-[10px] font-bold';
       }
       if (clearBtn) clearBtn.classList.remove('hidden');
       if (fitSel) fitSel.value = fit;
@@ -3867,7 +3871,7 @@
                 ${activeTmpls.map(t => `
                   <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-900/60 text-white border border-purple-500/70 font-bold text-[11px] shadow-sm">
                     <span>${escapeRaceHtml(t.name)}</span>
-                    <span class="text-[9px] font-mono text-purple-200 bg-purple-950/80 px-1 rounded">LA +${Number(t.levelAdjustment) || 0}</span>
+                    <span class="text-[10px] font-mono text-purple-200 bg-purple-950/80 px-1 rounded">LA +${Number(t.levelAdjustment) || 0}</span>
                     <button type="button" data-action="hud:quick-remove-template" data-template-id="${escapeRaceHtml(t.id)}" class="text-purple-300 hover:text-rose-400 font-black ml-0.5 cursor-pointer" title="Remove ${escapeRaceHtml(t.name)}">✕</button>
                   </span>
                 `).join('')}
@@ -4012,7 +4016,7 @@
               <span class="text-sm">🔮</span>
               <span class="text-xs font-black text-purple-300 uppercase tracking-wide">Rule Master AI • Custom D&D 3.5e Race Lookup</span>
             </div>
-            <span class="text-[9px] font-mono text-purple-400 bg-purple-950 px-1.5 py-0.2 rounded border border-purple-700/60">D&D 3.5e RAW</span>
+            <span class="text-[10px] font-mono text-purple-400 bg-purple-950 px-1.5 rounded border border-purple-700/60">D&D 3.5e RAW</span>
           </div>
           <p class="text-[10px] text-slate-300 leading-relaxed">
             Search any official D&D 3.5e sourcebook (Eberron, Races of Stone, Races of the Wild, Monster Manual, etc.) and apply ability modifiers, size, speed, and racial traits directly to your character.
@@ -4044,7 +4048,7 @@
               <span class="text-sm">🔍</span>
               <span class="text-xs font-bold text-slate-200">"${escaped}" Not Found in Local Compendium</span>
             </div>
-            <span class="text-[9px] font-mono text-purple-400 bg-purple-950 px-1.5 py-0.2 rounded border border-purple-700/60">Rule Master AI</span>
+            <span class="text-[10px] font-mono text-purple-400 bg-purple-950 px-1.5 rounded border border-purple-700/60">Rule Master AI</span>
           </div>
           <p class="text-[10px] text-slate-400 leading-relaxed">
             Would you like to fetch this race from official D&D 3.5e sources (with ability modifiers, size, speed, and racial traits) via Rule Master AI?
@@ -4353,9 +4357,9 @@
       for (const [catName, items] of Object.entries(categories)) {
         html += `
           <div class="pt-1">
-            <div class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-purple-400/90 flex items-center justify-between border-b border-purple-900/30 mb-1">
+            <div class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-400/90 flex items-center justify-between border-b border-purple-900/30 mb-1">
               <span>${catName}</span>
-              <span class="text-[8px] font-mono text-slate-500">${items.length}</span>
+              <span class="text-[10px] font-mono text-slate-500">${items.length}</span>
             </div>
             <div class="space-y-0.5">
         `;
@@ -4373,9 +4377,9 @@
                 <div class="truncate">
                   <div class="text-xs font-bold flex items-center gap-1.5">
                     <span class="truncate">${r.label || r.name}</span>
-                    ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
+                    ${isSelected ? '<span class="text-[10px] px-1 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
                   </div>
-                  <div class="text-[9px] text-slate-400 font-mono truncate">
+                  <div class="text-[10px] text-slate-400 font-mono truncate">
                     ${r.size || 'Medium'} Size • ${r.speed || 30} ft Speed
                   </div>
                 </div>
@@ -4399,7 +4403,7 @@
                 <span class="text-base shrink-0">🔮</span>
                 <div>
                   <div class="text-xs font-bold text-purple-200 group-hover:text-white">Other (Search Custom Race via Rule Master AI...)</div>
-                  <div class="text-[9px] text-purple-400/80 font-mono">Official D&D 3.5e races such as Thri-Kreen, Catfolk, Illumian, etc.</div>
+                  <div class="text-[10px] text-purple-400/80 font-mono">Official D&D 3.5e races such as Thri-Kreen, Catfolk, Illumian, etc.</div>
                 </div>
               </div>
               <span class="text-xs text-purple-300 font-bold group-hover:translate-x-0.5 transition-transform">➔</span>
@@ -4633,14 +4637,14 @@
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="text-sm shrink-0">${isSelected ? '✅' : '🧬'}</span>
                 <span class="font-extrabold text-xs truncate ${isSelected ? 'text-purple-200' : 'text-white'}">${escapeRaceHtml(t.name)}</span>
-                <span class="px-1.5 py-0.2 rounded text-[9px] font-semibold bg-slate-950 text-slate-300 border border-slate-700 shrink-0">${escapeRaceHtml(acq)}</span>
+                <span class="px-1.5 rounded text-[10px] font-semibold bg-slate-950 text-slate-300 border border-slate-700 shrink-0">${escapeRaceHtml(acq)}</span>
               </div>
               <div class="flex items-center gap-1 shrink-0 font-mono text-[10px]">
                 <span class="px-1.5 py-0.5 rounded bg-purple-950 text-purple-200 border border-purple-600/60 font-bold">LA +${la}</span>
                 ${cr > 0 ? `<span class="px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-700/60 font-bold">CR +${cr}</span>` : ''}
               </div>
             </div>
-            ${pills.length > 0 ? `<div class="flex flex-wrap items-center gap-1 text-[10px] font-mono">${pills.map(p => `<span class="px-1.5 py-0.2 rounded bg-slate-950/90 text-emerald-300 border border-slate-800">${escapeRaceHtml(p)}</span>`).join('')}</div>` : ''}
+            ${pills.length > 0 ? `<div class="flex flex-wrap items-center gap-1 text-[10px] font-mono">${pills.map(p => `<span class="px-1.5 rounded bg-slate-950/90 text-emerald-300 border border-slate-800">${escapeRaceHtml(p)}</span>`).join('')}</div>` : ''}
             <div class="text-[10px] text-slate-400 line-clamp-1">${escapeRaceHtml(t.shortDescription || '')}</div>
           </button>
         `;
@@ -4705,9 +4709,9 @@
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-sm">🧬</span>
                 <span class="font-extrabold text-white text-xs">${escapeRaceHtml(t.name)}</span>
-                <span class="text-[10px] px-1.5 py-0.2 rounded bg-purple-950 text-purple-200 border border-purple-700/60 font-mono font-bold">LA +${la}</span>
-                ${cr > 0 ? `<span class="text-[10px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-700/60 font-mono font-bold">CR +${cr}</span>` : ''}
-                ${t.creatureType ? `<span class="text-[10px] px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 font-semibold">${escapeRaceHtml(t.creatureType)}</span>` : ''}
+                <span class="text-[10px] px-1.5 rounded bg-purple-950 text-purple-200 border border-purple-700/60 font-mono font-bold">LA +${la}</span>
+                ${cr > 0 ? `<span class="text-[10px] px-1.5 rounded bg-amber-950 text-amber-300 border border-amber-700/60 font-mono font-bold">CR +${cr}</span>` : ''}
+                ${t.creatureType ? `<span class="text-[10px] px-1.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-700/60 font-semibold">${escapeRaceHtml(t.creatureType)}</span>` : ''}
                 <span class="text-[10px] text-slate-400 font-mono">(${escapeRaceHtml(t.source || 'SRD 3.5e')})</span>
               </div>
               <button type="button" data-action="hud:remove-modal-template" data-template-id="${escapeRaceHtml(t.id)}" class="px-2 py-0.5 rounded bg-rose-950/80 hover:bg-rose-900 text-rose-300 hover:text-white border border-rose-700/60 text-[10px] font-bold transition cursor-pointer">✕ Remove</button>
@@ -4924,9 +4928,9 @@
               <div class="truncate">
                 <div class="text-xs font-bold flex items-center gap-1.5">
                   <span class="truncate">${s.label}</span>
-                  ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
+                  ${isSelected ? '<span class="text-[10px] px-1 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
                 </div>
-                <div class="text-[9px] text-purple-300/80 font-mono truncate">
+                <div class="text-[10px] text-purple-300/80 font-mono truncate">
                   ${s.acMod} • ${s.hideMod} • Space: ${s.space}
                 </div>
               </div>
@@ -5022,7 +5026,7 @@
             <div class="flex items-center gap-2 min-w-0">
               <span class="text-xs font-bold shrink-0 ${g.iconClass}">${g.icon}</span>
               <span class="text-xs font-bold truncate">${g.label}</span>
-              ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
+              ${isSelected ? '<span class="text-[10px] px-1 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
             </div>
             <span class="text-xs text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity ml-1 shrink-0">➔</span>
           </button>
@@ -5135,9 +5139,9 @@
           const compat = checkClericDeityAlignmentCompatibility(a.id, deityMeta);
           if (compat) {
             if (compat.compatible) {
-              compatBadge = '<span class="text-[8px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 px-1 py-0.2 rounded truncate" title="' + escapeDeityHtml(compat.reason || 'Deity Compatible') + '">✓ Compatible</span>';
+              compatBadge = '<span class="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 px-1 rounded truncate" title="' + escapeDeityHtml(compat.reason || 'Deity Compatible') + '">✓ Compatible</span>';
             } else {
-              compatBadge = '<span class="text-[8px] font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-700/80 px-1 py-0.2 rounded truncate" title="' + escapeDeityHtml(compat.reason || 'Deity Conflict') + '">⚠️ Conflict</span>';
+              compatBadge = '<span class="text-[10px] font-mono font-bold text-amber-400 bg-amber-950/80 border border-amber-700/80 px-1 rounded truncate" title="' + escapeDeityHtml(compat.reason || 'Deity Conflict') + '">⚠️ Conflict</span>';
             }
           }
         }
@@ -5150,15 +5154,15 @@
           <button type="button" data-action="hud:select-alignment" data-align-id="${escapeDeityHtml(a.id)}" class="p-2.5 rounded-xl border flex flex-col justify-between gap-1.5 transition cursor-pointer group active:scale-95 text-left ${selectedClasses}">
             <div class="flex items-center justify-between gap-1">
               <span class="text-lg shrink-0">${a.icon}</span>
-              <span class="text-[9px] font-mono font-black px-1.5 py-0.2 rounded bg-slate-950 border border-slate-700 text-purple-300">${a.shortCode}</span>
+              <span class="text-[10px] font-mono font-black px-1.5 rounded bg-slate-950 border border-slate-700 text-purple-300">${a.shortCode}</span>
             </div>
             <div class="min-w-0">
               <div class="text-xs font-black text-white group-hover:text-purple-200 truncate">${a.label}</div>
               <div class="text-[10px] text-purple-300/80 font-semibold truncate">${a.archetype}</div>
             </div>
             <div class="flex items-center justify-between gap-1 pt-0.5 border-t border-slate-800/60">
-              ${compatBadge ? compatBadge : '<span class="text-[8px] text-slate-500 font-mono">' + a.axis + '</span>'}
-              ${isSelected ? '<span class="text-[8px] font-mono font-bold text-white bg-purple-600 px-1 py-0.2 rounded shrink-0">Active</span>' : ''}
+              ${compatBadge ? compatBadge : '<span class="text-[10px] text-slate-500 font-mono">' + a.axis + '</span>'}
+              ${isSelected ? '<span class="text-[10px] font-mono font-bold text-white bg-purple-600 px-1 rounded shrink-0">Active</span>' : ''}
             </div>
           </button>
         `;
@@ -5591,9 +5595,9 @@
       for (const [catName, items] of Object.entries(categories)) {
         html += `
           <div class="pt-1">
-            <div class="px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-purple-400/90 flex items-center justify-between border-b border-purple-900/30 mb-1">
+            <div class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-purple-400/90 flex items-center justify-between border-b border-purple-900/30 mb-1">
               <span>${catName}</span>
-              <span class="text-[8px] font-mono text-slate-500">${items.length}</span>
+              <span class="text-[10px] font-mono text-slate-500">${items.length}</span>
             </div>
             <div class="space-y-0.5">
         `;
@@ -5610,10 +5614,10 @@
           if (compat && d.alignment && d.alignment !== 'Any') {
             if (compat.compatible) {
               alignCompatBadge = compat.stepDistance === 0
-                ? `<span class="text-[9px] px-1 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/70 font-mono shrink-0" title="${escapeDeityHtml(compat.reason)}">✓ Exact Align</span>`
-                : `<span class="text-[9px] px-1 py-0.2 rounded bg-sky-950/80 text-sky-300 border border-sky-700/70 font-mono shrink-0" title="${escapeDeityHtml(compat.reason)}">✓ 1-Step OK</span>`;
+                ? `<span class="text-[10px] px-1 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-700/70 font-mono shrink-0" title="${escapeDeityHtml(compat.reason)}">✓ Exact Align</span>`
+                : `<span class="text-[10px] px-1 rounded bg-sky-950/80 text-sky-300 border border-sky-700/70 font-mono shrink-0" title="${escapeDeityHtml(compat.reason)}">✓ 1-Step OK</span>`;
             } else if (isClericChar) {
-              alignCompatBadge = `<span class="text-[9px] px-1 py-0.2 rounded bg-rose-950/80 text-rose-300 border border-rose-700/70 font-mono shrink-0" title="${escapeDeityHtml(compat.reason)}">⚠️ >1 Step</span>`;
+              alignCompatBadge = `<span class="text-[10px] px-1 rounded bg-rose-950/80 text-rose-300 border border-rose-700/70 font-mono shrink-0" title="${escapeDeityHtml(compat.reason)}">⚠️ >1 Step</span>`;
             }
           }
 
@@ -5624,11 +5628,11 @@
                 <div class="truncate">
                   <div class="text-xs font-bold flex items-center gap-1.5">
                     <span class="truncate">${d.name}</span>
-                    <span class="text-[9px] text-slate-400 font-normal truncate">(${d.title || d.name})</span>
+                    <span class="text-[10px] text-slate-400 font-normal truncate">(${d.title || d.name})</span>
                     ${alignCompatBadge}
-                    ${isSelected ? '<span class="text-[9px] px-1 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
+                    ${isSelected ? '<span class="text-[10px] px-1 rounded bg-purple-950 text-purple-300 border border-purple-700 font-mono">Selected</span>' : ''}
                   </div>
-                  <div class="text-[9px] text-purple-300/80 font-mono truncate">
+                  <div class="text-[10px] text-purple-300/80 font-mono truncate">
                     ${d.alignment || 'Any'} • Weapon: ${d.weapon || '-'} • Domains: ${domainList}
                   </div>
                 </div>
@@ -5647,7 +5651,7 @@
       if (q && !filtered.some(d => d.name.toLowerCase() === q)) {
         html += `
           <div class="pt-1.5 border-t border-purple-900/40 mt-1 space-y-1">
-            <button type="button" data-action="hud:search-deity-ai" data-query="${escapeDeityHtml(filterText)}" data-close-dropdown="1" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-purple-950/50 hover:bg-purple-900/70 border border-purple-500/40 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+            <button type="button" data-action="hud:search-deity-ai" data-query="${escapeDeityHtml(filterText)}" data-close-dropdown="1" class="w-full text-left px-2.5 py-1.5 rounded-lg bg-purple-950/50 border border-purple-500/40 text-purple-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
               <div class="flex items-center gap-2">
                 <span class="text-sm shrink-0">🔮</span>
                 <span class="text-xs font-bold text-purple-200 group-hover:text-white">Fetch "${escapeDeityHtml(filterText)}" via Rule Master AI (Auto-Fill Editor)</span>
@@ -5668,12 +5672,12 @@
       if (!q || 'diğer'.includes(q) || 'other'.includes(q) || 'ai'.includes(q) || 'custom'.includes(q) || 'rule master'.includes(q)) {
         html += `
           <div class="pt-1 border-t border-purple-900/40 mt-1 space-y-1">
-            <button type="button" data-action="hud:open-custom-deity-editor" data-close-dropdown="1" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-amber-950/60 to-purple-950/60 hover:from-amber-900/70 hover:to-purple-900/70 border border-amber-500/50 hover:border-amber-400 text-amber-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
+            <button type="button" data-action="hud:open-custom-deity-editor" data-close-dropdown="1" class="w-full text-left px-2.5 py-2 rounded-lg bg-gradient-to-r from-amber-950/60 hover:from-amber-900/70 border border-amber-500/50 hover:border-amber-400 text-amber-200 flex items-center justify-between transition cursor-pointer group active:scale-[0.99]">
               <div class="flex items-center gap-2">
                 <span class="text-base shrink-0">✨</span>
                 <div>
                   <div class="text-xs font-bold text-amber-200 group-hover:text-white">Create Custom Deity / Patron (Manual Editor)</div>
-                  <div class="text-[9px] text-amber-400/80 font-mono">Custom cult power, draconic patron, or forgotten faith</div>
+                  <div class="text-[10px] text-amber-400/80 font-mono">Custom cult power, draconic patron, or forgotten faith</div>
                 </div>
               </div>
               <span class="text-xs text-amber-300 font-bold group-hover:translate-x-0.5 transition-transform">➔</span>
@@ -5683,7 +5687,7 @@
                 <span class="text-base shrink-0">🔮</span>
                 <div>
                   <div class="text-xs font-bold text-purple-200 group-hover:text-white">Other (Search Official Deity via Rule Master AI...)</div>
-                  <div class="text-[9px] text-purple-400/80 font-mono">Official deities such as Kelemvor, Mystra, Tempus, Bane, Lolth, etc.</div>
+                  <div class="text-[10px] text-purple-400/80 font-mono">Official deities such as Kelemvor, Mystra, Tempus, Bane, Lolth, etc.</div>
                 </div>
               </div>
               <span class="text-xs text-purple-300 font-bold group-hover:translate-x-0.5 transition-transform">➔</span>
@@ -5749,7 +5753,7 @@
         grid.querySelectorAll('button[data-icon]').forEach(btn => {
           const i = btn.getAttribute('data-icon');
           if (i === icon) {
-            btn.className = 'w-8 h-8 rounded-lg flex items-center justify-center text-base border transition bg-amber-500/20 border-amber-400 text-white shadow-sm scale-110 cursor-pointer';
+            btn.className = 'w-8 h-8 rounded-lg flex items-center justify-center text-base border transition bg-amber-500/20 border-amber-400 text-white shadow-sm cursor-pointer';
           } else {
             btn.className = 'w-8 h-8 rounded-lg flex items-center justify-center text-base border transition bg-slate-900 border-slate-700/80 hover:bg-slate-800 text-slate-300 hover:border-slate-500 cursor-pointer';
           }
@@ -6762,10 +6766,10 @@
       }
       const inDb = isWeaponInDb(clean);
       if (inDb) {
-        badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
+        badgeEl.innerHTML = '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
       } else {
         const safe = escapeDeityHtml(clean);
-        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Weapon" data-entry-name="${safe}" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch weapon via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
+        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Weapon" data-entry-name="${safe}" class="text-[10px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch weapon via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
       }
     }
 
@@ -6855,10 +6859,10 @@
       }
       const inDb = isSlaInDb(clean);
       if (inDb) {
-        badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
+        badgeEl.innerHTML = '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
       } else {
         const safe = escapeDeityHtml(clean);
-        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Special Ability" data-entry-name="${safe}" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch ability via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
+        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Special Ability" data-entry-name="${safe}" class="text-[10px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch ability via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
       }
     }
 
@@ -6872,10 +6876,10 @@
       }
       const inDb = isFeatInDb(clean);
       if (inDb) {
-        badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
+        badgeEl.innerHTML = '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1.5 py-0.5">✓ In DB</span>';
       } else {
         const safe = escapeDeityHtml(clean);
-        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Feat" data-entry-name="${safe}" class="text-[9px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch feat via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
+        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Feat" data-entry-name="${safe}" class="text-[10px] font-bold text-amber-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1.5 py-0.5 transition cursor-pointer flex items-center gap-1 active:scale-95" title="Fetch feat via Rule Master AI and add to Master DB"><span>➕</span> <span>Fetch via AI</span></button>`;
       }
     }
 
@@ -6889,10 +6893,10 @@
       }
       const inDb = isSpellInDb(clean);
       if (inDb) {
-        badgeEl.innerHTML = '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1 py-0.5">✓ DB</span>';
+        badgeEl.innerHTML = '<span class="text-[10px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-700/80 rounded px-1 py-0.5">✓ DB</span>';
       } else {
         const safe = escapeDeityHtml(clean);
-        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Spell" data-entry-name="${safe}" data-level="${lvl}" class="text-[9px] font-bold text-emerald-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1 py-0.5 transition cursor-pointer active:scale-95" title="Not in DB — Click to fetch via Rule Master AI & add to Master DB">➕ AI</button>`;
+        badgeEl.innerHTML = `<button type="button" data-action="hud:fetch-missing-domain-entry" data-entry-type="Spell" data-entry-name="${safe}" data-level="${lvl}" class="text-[10px] font-bold text-emerald-300 hover:text-white bg-amber-950/90 hover:bg-amber-900 border border-amber-600/80 rounded px-1 py-0.5 transition cursor-pointer active:scale-95" title="Not in DB — Click to fetch via Rule Master AI & add to Master DB">➕ AI</button>`;
       }
     }
 
@@ -7126,9 +7130,9 @@
       }
 
       const clearBtnHtml = !q ? `
-        <button type="button" data-action="hud:select-domain-spotlight-item" data-item-name="" class="w-full text-left p-2 rounded-xl bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800/80 hover:border-rose-500/50 transition flex items-center justify-between gap-3 group cursor-pointer">
+        <button type="button" data-action="hud:select-domain-spotlight-item" data-item-name="" class="w-full text-left p-2 rounded-xl bg-slate-950/80 hover:bg-rose-950/40 border border-slate-800/80 transition flex items-center justify-between gap-3 group cursor-pointer">
           <span class="font-bold text-slate-400 group-hover:text-rose-200 text-xs">— None (Clear Selection) —</span>
-          <span class="text-[10px] text-slate-500 group-hover:text-rose-300 font-mono">Clear ✕</span>
+          <span class="text-[10px] text-slate-500 font-mono">Clear ✕</span>
         </button>
       ` : '';
 
@@ -7141,12 +7145,12 @@
         const desc = item.benefit || item.shortDescription || item.description || item.desc || '';
 
         return `
-          <button type="button" data-action="hud:select-domain-spotlight-item" data-item-name="${safeName}" class="w-full text-left p-2 rounded-xl bg-slate-900/60 hover:bg-purple-950/70 border border-slate-800/80 hover:border-purple-500/60 transition flex items-start justify-between gap-3 group cursor-pointer active:scale-[0.99]">
+          <button type="button" data-action="hud:select-domain-spotlight-item" data-item-name="${safeName}" class="w-full text-left p-2 rounded-xl bg-slate-900/60 border border-slate-800/80 hover:border-purple-500/60 transition flex items-start justify-between gap-3 group cursor-pointer active:scale-[0.99]">
             <div class="space-y-0.5 flex-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-bold text-white text-xs group-hover:text-purple-200">${escapeDeityHtml(name)}</span>
-                ${meta1 ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 border border-slate-800 text-purple-300 font-mono">${escapeDeityHtml(meta1)}</span>` : ''}
-                ${meta2 ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-950/80 border border-amber-700 text-amber-300 font-bold font-mono">${escapeDeityHtml(meta2)}</span>` : ''}
+                ${meta1 ? `<span class="text-[10px] px-1.5 rounded bg-slate-950 border border-slate-800 text-purple-300 font-mono">${escapeDeityHtml(meta1)}</span>` : ''}
+                ${meta2 ? `<span class="text-[10px] px-1.5 rounded bg-amber-950/80 border border-amber-700 text-amber-300 font-bold font-mono">${escapeDeityHtml(meta2)}</span>` : ''}
               </div>
               ${desc ? `<p class="text-[10px] text-slate-400 line-clamp-1">${escapeDeityHtml(desc)}</p>` : ''}
             </div>
@@ -7564,13 +7568,13 @@
           <div class="flex items-center gap-1.5">
             <span class="text-sm">🧬</span>
             <span class="text-xs font-black text-amber-400 uppercase tracking-wide">${raceObj.name}</span>
-            <span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-900 border border-slate-700 text-slate-300 font-bold">${raceObj.size || 'Medium'} Size • ${raceObj.baseSpeed || 30} ft Speed</span>
+            <span class="text-[10px] px-1.5 rounded bg-slate-900 border border-slate-700 text-slate-300 font-bold">${raceObj.size || 'Medium'} Size • ${raceObj.baseSpeed || 30} ft Speed</span>
           </div>
-          <span class="text-[9px] font-mono text-slate-500">D&D 3.5e RAW SRD</span>
+          <span class="text-[10px] font-mono text-slate-500">D&D 3.5e RAW SRD</span>
         </div>
 
         <div class="flex items-center gap-2 flex-wrap">
-          <span class="text-[9px] uppercase font-bold text-slate-400">Racial Ability Adjustments:</span>
+          <span class="text-[10px] uppercase font-bold text-slate-400">Racial Ability Adjustments:</span>
           ${statBadges}
         </div>
 
@@ -7888,7 +7892,7 @@
       }
 
       container.innerHTML = _npcStudioAbilities.map((a, idx) => {
-        const typeBadge = a.type ? `<span class="text-[9px] px-1 py-0.2 rounded font-mono font-bold bg-purple-900/80 text-purple-300 border border-purple-600/50">${safeEscapeHtml(a.type)}</span>` : '';
+        const typeBadge = a.type ? `<span class="text-[10px] px-1 rounded font-mono font-bold bg-purple-900/80 text-purple-300 border border-purple-600/50">${safeEscapeHtml(a.type)}</span>` : '';
         return `
           <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-purple-950/80 border border-purple-700/60 text-purple-200 shadow-sm">
             <span class="shrink-0">⚡</span>
@@ -7946,7 +7950,7 @@
           <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-sky-950/80 border border-sky-700/60 text-sky-200 shadow-sm">
             <span class="shrink-0">🔮</span>
             <span class="font-bold truncate max-w-[140px]">${safeEscapeHtml(sName)}</span>
-            ${sLvl !== '' ? `<span class="text-[9px] font-mono text-sky-400">Lvl ${sLvl}</span>` : ''}
+            ${sLvl !== '' ? `<span class="text-[10px] font-mono text-sky-400">Lvl ${sLvl}</span>` : ''}
             <button type="button" data-action="hud:remove-npc-spell" data-index="${idx}" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Remove spell">&times;</button>
           </div>
         `;
@@ -7992,7 +7996,7 @@
           <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs bg-rose-950/80 border border-rose-700/60 text-rose-200 shadow-sm">
             <span class="shrink-0">⚔️</span>
             <span class="font-bold truncate max-w-[140px]">${safeEscapeHtml(mName)}</span>
-            ${mLvl !== '' ? `<span class="text-[9px] font-mono text-rose-400">Lvl ${mLvl}</span>` : ''}
+            ${mLvl !== '' ? `<span class="text-[10px] font-mono text-rose-400">Lvl ${mLvl}</span>` : ''}
             <button type="button" data-action="hud:remove-npc-maneuver" data-index="${idx}" class="text-slate-400 hover:text-rose-400 ml-1 text-sm font-black transition cursor-pointer" title="Remove maneuver">&times;</button>
           </div>
         `;
@@ -8716,7 +8720,7 @@ function renderManualStatsPanel() {
           if (!r) {
             return `
               <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex flex-col items-center justify-between">
-                <span class="text-[9px] font-mono text-purple-300 uppercase px-1.5 py-0.2 rounded bg-purple-950 border border-purple-800">${s.label}</span>
+                <span class="text-[10px] font-mono text-purple-300 uppercase px-1.5 rounded bg-purple-950 border border-purple-800">${s.label}</span>
                 <div class="text-lg font-black text-slate-500 font-mono my-1">-</div>
                 <div class="text-[10px] text-slate-500 font-mono">Unassigned</div>
               </div>
@@ -8733,7 +8737,7 @@ function renderManualStatsPanel() {
           return `
             <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-2 flex flex-col items-center justify-between">
               <div class="w-full flex items-center justify-between">
-                <span class="text-[9px] font-mono text-purple-300 uppercase px-1.5 py-0.2 rounded bg-purple-950 border border-purple-800">${s.label}</span>
+                <span class="text-[10px] font-mono text-purple-300 uppercase px-1.5 rounded bg-purple-950 border border-purple-800">${s.label}</span>
                 <button type="button" data-action="hud:reroll-single-4d6" data-roll-id="${r.id}" class="text-slate-400 hover:text-amber-300 active:scale-95 text-xs p-0.5 rounded hover:bg-slate-800 transition cursor-pointer" title="Reroll 4d6 for ${s.label} only (auto-rerolls if two or more 1s are rolled)">⚡</button>
               </div>
               <div class="text-lg font-black text-amber-400 font-mono my-1">${r.total}</div>
@@ -8841,10 +8845,10 @@ function renderManualStatsPanel() {
 
         return `
           <div class="bg-slate-900 border border-slate-800 rounded-lg p-1.5 flex flex-col items-center">
-            <span class="text-[9px] text-slate-400 font-bold">${s.label}</span>
+            <span class="text-[10px] text-slate-400 font-bold">${s.label}</span>
             <span class="text-sm font-black text-amber-400">${finalScore}</span>
             <span class="text-[10px] font-bold ${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${modStr}</span>
-            <div class="text-[8px] text-slate-500 font-mono mt-0.5">
+            <div class="text-[10px] text-slate-500 font-mono mt-0.5">
               <span>T:${baseScore}</span>
               ${racialMod !== 0 ? `<span class="${racialMod > 0 ? 'text-emerald-400' : 'text-rose-400'} ml-0.5" title="Racial Ability Adjustment">${racialMod > 0 ? '+' + racialMod : racialMod}</span>` : ''}
               ${templateMod !== 0 ? `<span class="${templateMod > 0 ? 'text-sky-400' : 'text-rose-400'} ml-0.5" title="Template Ability Adjustment">${templateMod > 0 ? '+' + templateMod : templateMod}</span>` : ''}
@@ -9504,7 +9508,7 @@ function renderManualStatsPanel() {
               <span class="font-mono font-bold">${rate}</span>
             </div>
             <div class="flex items-center gap-2 shrink-0 ml-1">
-              <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-900/90 text-slate-300 font-mono font-bold border border-slate-700">${dur}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-900/90 text-slate-300 font-mono font-bold border border-slate-700">${dur}</span>
               <button type="button" data-action="hud:remove-periodic-effect" data-eff-id="${eff.id}" class="text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded px-1.5 py-0.5 text-xs font-bold transition cursor-pointer" title="Remove">✕</button>
             </div>
           </div>
@@ -9559,7 +9563,7 @@ function renderManualStatsPanel() {
               <span class="font-mono font-black ${textClass}">${rateText}</span>
             </div>
             <div class="flex items-center gap-1 shrink-0 ml-1">
-              <span class="text-[9px] px-1 py-0.2 rounded bg-slate-900/90 border border-slate-700 text-slate-300 font-mono font-bold">${durText}</span>
+              <span class="text-[10px] px-1 rounded bg-slate-900/90 border border-slate-700 text-slate-300 font-mono font-bold">${durText}</span>
               <button type="button" data-action="hud:remove-periodic-effect" data-eff-id="${eff.id}" class="text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded px-1 transition text-xs font-bold cursor-pointer" title="Remove Effect">✕</button>
             </div>
           </div>

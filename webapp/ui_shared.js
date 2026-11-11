@@ -118,9 +118,9 @@
       const bonusStr = bonus > 0 ? (dice ? `+${bonus}` : `+${bonus}`) : (bonus < 0 ? `${bonus}` : '');
       const formulaDisplay = `${dice}${bonusStr}`;
       const critTag = part.onCritOnly
-        ? `<span class="ml-0.5 px-1 rounded bg-amber-500/20 text-amber-300 text-[9px] font-black" title="Triggers Only on Critical Hits (Burst)">⚡CRIT</span>`
-        : (part.multiplyOnCrit ? `<span class="opacity-70 text-[9px]" title="Multiplied on Critical Hit">×Crit</span>` : '');
-      const srcTag = showSource && part.source ? `<span class="opacity-65 text-[9px]">(${escapeHtml(part.source)})</span>` : '';
+        ? `<span class="ml-0.5 px-1 rounded bg-amber-500/20 text-amber-300 text-[10px] font-black" title="Triggers Only on Critical Hits (Burst)">⚡CRIT</span>`
+        : (part.multiplyOnCrit ? `<span class="opacity-70 text-[10px]" title="Multiplied on Critical Hit">×Crit</span>` : '');
+      const srcTag = showSource && part.source ? `<span class="opacity-65 text-[10px]">(${escapeHtml(part.source)})</span>` : '';
 
       const sizeCls = compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-[11px]';
       return `<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} ${style.cls}" title="${escapeHtml((part.source ? part.source + ' • ' : '') + (part.type || 'Physical'))}">${dieSvg}<span>${escapeHtml(formulaDisplay)}</span><span class="font-sans font-semibold opacity-90">${escapeHtml(style.label)}</span>${critTag}${srcTag}</span>`;
@@ -183,7 +183,7 @@
         ? 'bg-rose-950/70 text-rose-300 border-rose-700/60'
         : 'bg-emerald-950/70 text-emerald-300 border-emerald-700/60';
 
-      return `<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} ${colorCls}" title="${escapeHtml(tLabel + ' ' + valDisplay + typeStr + condStr)}"><span>${escapeHtml(valDisplay)} ${escapeHtml(tLabel)}</span><span class="font-sans font-normal opacity-80 text-[9px]">${escapeHtml(typeStr)}</span></span>`;
+      return `<span class="inline-flex items-center gap-1 rounded-md border font-mono font-bold ${sizeCls} ${colorCls}" title="${escapeHtml(tLabel + ' ' + valDisplay + typeStr + condStr)}"><span>${escapeHtml(valDisplay)} ${escapeHtml(tLabel)}</span><span class="font-sans font-normal opacity-80 text-[10px]">${escapeHtml(typeStr)}</span></span>`;
     }).filter(Boolean).join(' ');
   }
 
@@ -225,7 +225,7 @@
     }
 
     if (badges.length === 0) return '';
-    const sizeCls = options.compact ? 'px-1.5 py-0.5 text-[9px]' : 'px-2 py-0.5 text-[10px]';
+    const sizeCls = options.compact ? 'px-1.5 py-0.5 text-[10px]' : 'px-2 py-0.5 text-[10px]';
     return badges.map(b =>
       `<span class="inline-flex items-center gap-1 rounded-md border font-semibold ${sizeCls} ${b.cls}"><span>${b.icon}</span><span>${escapeHtml(b.text)}</span></span>`
     ).join(' ');
@@ -253,7 +253,7 @@
       const label = mode.label || mode.name || mode.id;
       const costHpBadge = mode.costHp ? ` <span class="text-rose-300 font-mono">(-${mode.costHp}🩸)</span>` : '';
       const dmgPreview = Array.isArray(mode.damageParts) && mode.damageParts.length > 0
-        ? ` <span class="opacity-80 font-mono text-[9px]">[${mode.damageParts.map(p => p.dice || (p.bonus > 0 ? '+' + p.bonus : p.bonus)).filter(Boolean).join('+')}]</span>`
+        ? ` <span class="opacity-80 font-mono text-[10px]">[${mode.damageParts.map(p => p.dice || (p.bonus > 0 ? '+' + p.bonus : p.bonus)).filter(Boolean).join('+')}]</span>`
         : '';
 
       const clickAttr = onSelectJsTemplate
@@ -436,7 +436,7 @@
           <div data-idx="${idx}" class="p-2.5 cursor-pointer transition flex flex-col gap-1 ${isSel ? 'bg-indigo-950/90 text-white' : 'hover:bg-slate-900 text-slate-200'}">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-xs text-amber-300 truncate">${escapeHtml(fullEntry.name)}</span>
-              <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-[9px] font-mono text-indigo-300 shrink-0">${escapeHtml(catLabel)}</span>
+              <span class="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-700 text-[10px] font-mono text-indigo-300 shrink-0">${escapeHtml(catLabel)}</span>
             </div>
             ${(dmgHtml || modHtml) ? `<div class="flex flex-wrap gap-1">${dmgHtml} ${modHtml}</div>` : ''}
             ${fullEntry.shortDescription ? `<div class="text-[10px] text-slate-400 line-clamp-1">${escapeHtml(fullEntry.shortDescription)}</div>` : ''}
@@ -847,7 +847,7 @@
         <label class="${labelCls}" title="${escapeHtml(titleAttr)}">
           <input type="checkbox" value="${e.id}" ${isChecked ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="DnDUI.onForgeControlChange()" class="dnd-forge-enh-chk rounded text-amber-500 bg-slate-900 border-slate-700">
           <span class="text-[11px] font-semibold ${isChecked ? 'text-amber-200' : 'text-slate-200'} truncate">${e.label || e.name}</span>
-          <span class="text-[9px] font-mono ${isLocked ? 'text-slate-500' : 'text-amber-400'} ml-auto">${isLocked ? '🔒' + e.bonusEq : e.bonusEq}</span>
+          <span class="text-[10px] font-mono ${isLocked ? 'text-slate-500' : 'text-amber-400'} ml-auto">${isLocked ? '🔒' + e.bonusEq : e.bonusEq}</span>
         </label>
       `;
     }).join('');
@@ -1406,7 +1406,7 @@
     const tokenBar = typeof document !== 'undefined' ? document.getElementById('dnd-ui-compendium-token-bar') : null;
     if (tokenBar) {
       if (chips.length > 0) {
-        let html = `<span class="text-slate-500 font-bold uppercase text-[9px]">Tokens:</span>` +
+        let html = `<span class="text-slate-500 font-bold uppercase text-[10px]">Tokens:</span>` +
           chips.map(c => `<span class="px-1.5 py-0.5 rounded border font-bold ${c.color}">${escapeHtml(c.label)}</span>`).join('');
         if (working) {
           html += `<span class="px-1.5 py-0.5 rounded border bg-slate-900 text-slate-300 border-slate-700">QUERY: "${escapeHtml(working)}"</span>`;
@@ -1577,22 +1577,22 @@
     listEl.innerHTML = _drawerState.results.map((r, idx) => {
       let badgesHtml = '';
       if (r._instantForgeSynthesis) {
-        badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-600/60 text-[9px] font-mono font-bold">⚒️ Instant Forge Assembly</span>`;
+        badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-600/60 text-[10px] font-mono font-bold">⚒️ Instant Forge Assembly</span>`;
       }
       if (Array.isArray(r._parseWarnings) && r._parseWarnings.length > 0) {
         r._parseWarnings.forEach(w => {
-          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-500/50 text-[9px] font-mono font-semibold">⚠️ ${escapeHtml(w)}</span>`;
+          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-amber-950/90 text-amber-300 border border-amber-500/50 text-[10px] font-mono font-semibold">⚠️ ${escapeHtml(w)}</span>`;
         });
       }
       const hasPrereqOrFeat = Boolean(r.requires || (r.prereq && r.prereq !== '-') || r.type === 'Feat' || r.type === 'DM Boon');
       if (hasPrereqOrFeat && global.RuleMaster && typeof global.RuleMaster.evaluateEntryEligibilityForCharacter === 'function') {
         const elig = global.RuleMaster.evaluateEntryEligibilityForCharacter(r);
         if (elig.status === 'SYNERGY_READY') {
-          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-emerald-950/90 text-emerald-300 border border-emerald-600/60 text-[9px] font-mono font-bold">✨ Synergy Ready</span>`;
+          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-emerald-950/90 text-emerald-300 border border-emerald-600/60 text-[10px] font-mono font-bold">✨ Synergy Ready</span>`;
         } else if (elig.status === 'PREREQ_MISSING') {
-          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-rose-950/90 text-rose-300 border border-rose-700/60 text-[9px] font-mono font-bold">🔒 Missing Prereq</span>`;
+          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-rose-950/90 text-rose-300 border border-rose-700/60 text-[10px] font-mono font-bold">🔒 Missing Prereq</span>`;
         } else if (r.requires || (r.prereq && r.prereq !== '-')) {
-          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-teal-950/90 text-teal-300 border border-teal-700/60 text-[9px] font-mono font-bold">✅ Eligible</span>`;
+          badgesHtml += `<span class="px-1.5 py-0.5 rounded bg-teal-950/90 text-teal-300 border border-teal-700/60 text-[10px] font-mono font-bold">✅ Eligible</span>`;
         }
       }
       return `

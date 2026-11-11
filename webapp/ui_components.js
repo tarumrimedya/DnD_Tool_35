@@ -135,7 +135,7 @@
       mono = false
     } = opts;
     const vClass = BADGE_VARIANTS[variant] || variant || BADGE_VARIANTS.slate;
-    const sizeClass = size === 'sm' ? 'text-[10px] px-1.5 py-0.2' : 'text-[9px] px-1.5 py-0.2';
+    const sizeClass = size === 'sm' ? 'text-[10px] px-1.5 py-0.2' : 'text-[10px] px-1.5 py-0.2';
     const monoClass = mono ? 'font-mono' : '';
     const classes = ['badge', vClass, sizeClass, monoClass, className].filter(Boolean).join(' ');
     return html`<span class="${classes}">${text}</span>`;
@@ -311,7 +311,7 @@
           const tbClass = item.tagBadge.variant === 'damage'
             ? 'bg-rose-950 text-rose-300 border border-rose-700'
             : 'bg-emerald-950 text-emerald-300 border border-emerald-700';
-          tagBadgeTpl = html`<span class="badge ${tbClass} text-[9px] font-mono">${item.tagBadge.text}</span>`;
+          tagBadgeTpl = html`<span class="badge ${tbClass} text-[10px] font-mono">${item.tagBadge.text}</span>`;
         }
 
         const targetId = item.sourceType === 'pool'
@@ -323,9 +323,9 @@
             <div class="min-w-0 flex-1">
               <div class="text-xs font-bold text-white flex items-center gap-1.5 flex-wrap">
                 <span>${item.name}</span>
-                <span class="badge ${group.badgeBg} text-[9px] font-bold px-1.5 py-0.2">${group.badgeText}</span>
-                ${item.isBelt ? html`<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[9px]">On Belt</span>` : ''}
-                ${item.fromSlot ? html`<span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[9px]">Equipped</span>` : ''}
+                <span class="badge ${group.badgeBg} text-[10px] font-bold px-1.5 py-0.2">${group.badgeText}</span>
+                ${item.isBelt ? html`<span class="badge bg-amber-950 text-amber-300 border border-amber-700 text-[10px]">On Belt</span>` : ''}
+                ${item.fromSlot ? html`<span class="badge bg-sky-950 text-sky-300 border border-sky-700 text-[10px]">Equipped</span>` : ''}
                 ${tagBadgeTpl}
               </div>
               <div class="text-[10px] text-slate-300 break-words mt-1 flex items-center gap-2 flex-wrap">

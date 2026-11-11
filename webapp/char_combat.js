@@ -329,10 +329,10 @@
       if (indicatorEl) {
         if (activeFilter === 'all' || activeFilter === null || activeFilter === undefined) {
           indicatorEl.textContent = 'All';
-          indicatorEl.className = 'text-[9px] font-mono text-purple-300 font-bold';
+          indicatorEl.className = 'text-[10px] font-mono text-purple-300 font-bold';
         } else {
           indicatorEl.textContent = activeFilter === 0 ? '0 (Cantrip)' : `Level ${activeFilter}`;
-          indicatorEl.className = 'text-[9px] font-mono text-amber-300 font-extrabold';
+          indicatorEl.className = 'text-[10px] font-mono text-amber-300 font-extrabold';
         }
       }
 
@@ -580,7 +580,7 @@
                   <span>⚡</span>
                   <span>Readied Maneuver Deck (${readiedCount} / ${maxReadied})</span>
                 </span>
-                <button type="button" data-action="combat:recover-all-maneuvers-modal" class="text-[9px] px-2 py-0.5 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 font-bold transition cursor-pointer flex items-center gap-1" title="Recover all expended maneuvers">
+                <button type="button" data-action="combat:recover-all-maneuvers-modal" class="text-[10px] px-2 py-0.5 rounded bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border border-emerald-700 font-bold transition cursor-pointer flex items-center gap-1" title="Recover all expended maneuvers">
                   <span>🔄</span>
                   <span>Recover All</span>
                 </button>
@@ -600,15 +600,15 @@
                     return `
                       <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border ${isReadied ? (isExpended ? 'border-rose-900/60 bg-rose-950/20' : 'border-rose-700/80 bg-rose-950/40') : 'border-slate-800/80'} transition">
                         <div class="flex items-center gap-2 min-w-0">
-                          <span class="badge bg-rose-950 text-rose-300 border border-rose-800 text-[9px] font-bold font-mono px-1.5 py-0.5 shrink-0">${m.discipline || 'Iron Heart'} ${m.level || 1}</span>
+                          <span class="badge bg-rose-950 text-rose-300 border border-rose-800 text-[10px] font-bold font-mono px-1.5 py-0.5 shrink-0">${m.discipline || 'Iron Heart'} ${m.level || 1}</span>
                           <div class="flex flex-col min-w-0">
                             <span class="text-xs font-bold ${isExpended ? 'line-through text-slate-400' : 'text-white'} truncate">${m.name}</span>
-                            <span class="text-[9px] text-slate-400 font-mono">${actionLabel}</span>
+                            <span class="text-[10px] text-slate-400 font-mono">${actionLabel}</span>
                           </div>
                         </div>
                         <div class="flex items-center gap-1.5 shrink-0">
                           ${isReadied && isExpended ? `
-                            <span class="text-[9px] font-mono text-rose-400 font-bold px-1.5 py-0.5 rounded bg-rose-950 border border-rose-800">Expended</span>
+                            <span class="text-[10px] font-mono text-rose-400 font-bold px-1.5 py-0.5 rounded bg-rose-950 border border-rose-800">Expended</span>
                           ` : ''}
                           ${isReadied ? `
                             <button type="button" data-action="combat:toggle-maneuver-readied-modal" data-name="${escape(m.name)}" class="px-2 py-1 rounded-lg bg-emerald-950 hover:bg-rose-950 text-emerald-300 hover:text-rose-300 border border-emerald-700 hover:border-rose-700 text-[10px] font-bold cursor-pointer transition">
@@ -1351,18 +1351,18 @@
       // Theme colors based on spell source
       let sourceLabel = 'Spontaneous • Sorcerer';
       let themeBorder = 'border-purple-500/80';
-      let schoolBadgeClass = 'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800';
+      let schoolBadgeClass = 'text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800';
       let iconColor = 'text-purple-400';
 
       if (src === 'prepared') {
         sourceLabel = 'Prepared • Wizard';
         themeBorder = 'border-sky-500/80';
-        schoolBadgeClass = 'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800';
+        schoolBadgeClass = 'text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800';
         iconColor = 'text-sky-400';
       } else if (src === 'divine') {
         sourceLabel = 'Divine • Cleric';
         themeBorder = 'border-amber-500/80';
-        schoolBadgeClass = 'text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800';
+        schoolBadgeClass = 'text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800';
         iconColor = 'text-amber-400';
       }
 
@@ -1833,19 +1833,19 @@
       if (typeEl) {
         typeEl.textContent = data.type;
         if (data.color === 'indigo') {
-          typeEl.className = 'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 shrink-0';
+          typeEl.className = 'text-[10px] font-mono font-bold px-1.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800 shrink-0';
           tooltip.className = 'fixed z-[200] pointer-events-auto bg-slate-950/95 border border-indigo-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none';
         } else if (data.color === 'purple') {
-          typeEl.className = 'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0';
+          typeEl.className = 'text-[10px] font-mono font-bold px-1.5 rounded bg-purple-950 text-purple-300 border border-purple-800 shrink-0';
           tooltip.className = 'fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none';
         } else if (data.color === 'rose') {
-          typeEl.className = 'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-rose-950 text-rose-300 border border-rose-800 shrink-0';
+          typeEl.className = 'text-[10px] font-mono font-bold px-1.5 rounded bg-rose-950 text-rose-300 border border-rose-800 shrink-0';
           tooltip.className = 'fixed z-[200] pointer-events-auto bg-slate-950/95 border border-rose-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none';
         } else if (data.color === 'sky') {
-          typeEl.className = 'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-sky-950 text-sky-300 border border-sky-800 shrink-0';
+          typeEl.className = 'text-[10px] font-mono font-bold px-1.5 rounded bg-sky-950 text-sky-300 border border-sky-800 shrink-0';
           tooltip.className = 'fixed z-[200] pointer-events-auto bg-slate-950/95 border border-sky-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none';
         } else {
-          typeEl.className = 'text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-800 shrink-0';
+          typeEl.className = 'text-[10px] font-mono font-bold px-1.5 rounded bg-amber-950 text-amber-300 border border-amber-800 shrink-0';
           tooltip.className = 'fixed z-[200] pointer-events-auto bg-slate-950/95 border border-amber-500/80 rounded-xl p-3 shadow-2xl max-w-xs text-xs space-y-1.5 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none';
         }
       }
@@ -1976,7 +1976,7 @@
             const remColor = remaining > 0 ? textColor : 'text-rose-400 opacity-60';
 
             sourceBadges.push(`
-              <span class="inline-flex items-center gap-1 font-mono text-[9px] font-bold ${remColor}">
+              <span class="inline-flex items-center gap-1 font-mono text-[10px] font-bold ${remColor}">
                 <span>${src.shortLabel}</span>
                 <span>${remaining}/${daily}</span>
               </span>
@@ -1986,7 +1986,7 @@
 
         const slotBadgeHtml = sourceBadges.length > 0
           ? `<div class="flex items-center gap-1.5 flex-wrap">${sourceBadges.join('<span class="text-slate-600 font-normal">•</span>')}</div>`
-          : `<span class="font-mono text-[9px] text-slate-500">No Slots</span>`;
+          : `<span class="font-mono text-[10px] text-slate-500">No Slots</span>`;
 
         const cardsHtml = lvlSpells.map(sp => {
           const srcKey = sp._spellSource || (typeof getSpellSlotSource === 'function' ? getSpellSlotSource(sp) : 'spontaneous');
@@ -2052,9 +2052,9 @@
                 ? 'bg-rose-950/90 hover:bg-rose-800 text-rose-300 hover:text-white border-rose-600/80'
                 : 'bg-emerald-950/90 hover:bg-emerald-800 text-emerald-300 hover:text-white border-emerald-600/80';
               const shortText = spontMode === 'inflict' ? `Inflict ${spontInfo.formula}` : `Cure ${spontInfo.formula}`;
-              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[8px] leading-none inline-flex items-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${sp.name}' into '${spontInfo.name}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
+              bottomRightHtml = `<button type="button" data-action="combat:cast-cleric-spontaneous" data-spell-name="${attrName}" data-level="${lvl}" class="px-1.5 py-0.5 rounded border ${btnColorCls} font-mono font-bold text-[10px] leading-none inline-flex items-center gap-0.5 shrink-0 cursor-pointer transition shadow-sm" title="Cleric Spontaneous Conversion: Convert '${sp.name}' into '${spontInfo.name}' (${spontInfo.formula})"><span>${spontInfo.icon}</span><span>${shortText}</span></button>`;
             } else if (params.save && params.save !== 'None') {
-              bottomRightHtml = `<span class="truncate shrink-0 font-mono text-[8px] text-slate-500">${params.save}</span>`;
+              bottomRightHtml = `<span class="truncate shrink-0 font-mono text-[10px] text-slate-500">${params.save}</span>`;
             }
           }
 
@@ -2067,15 +2067,15 @@
                  class="p-2 rounded-xl border ${activeBorder} transition flex flex-col justify-between cursor-pointer min-h-[58px] group relative select-none">
               <div class="flex items-center justify-between w-full gap-1">
                 <div class="flex items-center gap-1 min-w-0">
-                  <span class="text-[7px] font-mono font-bold px-1 py-0.2 rounded border uppercase tracking-wider shrink-0 ${srcBadgeClass}">${srcBadgeLabel}</span>
-                  <span class="text-[8px] font-mono text-slate-300 font-bold uppercase truncate">${params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level)}</span>
+                  <span class="text-[10px] font-mono font-bold px-1 rounded border uppercase tracking-wider shrink-0 ${srcBadgeClass}">${srcBadgeLabel}</span>
+                  <span class="text-[10px] font-mono text-slate-300 font-bold uppercase truncate">${params.school || (sp.level === 0 ? 'Cantrip' : 'Lvl ' + sp.level)}</span>
                 </div>
-                ${params.dice ? `<span class="text-[9px] text-slate-200 font-mono font-bold shrink-0 truncate">${params.dice}</span>` : ''}
+                ${params.dice ? `<span class="text-[10px] text-slate-200 font-mono font-bold shrink-0 truncate">${params.dice}</span>` : ''}
               </div>
               <div class="text-[11px] ${titleColorClass} truncate my-0.5">
                 ${sp.name}
               </div>
-              <div class="flex items-center justify-between w-full text-[8px] text-slate-400 mt-0.5 gap-1">
+              <div class="flex items-center justify-between w-full text-[10px] text-slate-400 mt-0.5 gap-1">
                 <span class="truncate">${params.action}</span>
                 ${bottomRightHtml}
               </div>
@@ -2089,7 +2089,7 @@
               <div class="flex items-center gap-2 min-w-0">
                 <span class="w-2.5 h-2.5 rounded-full ${theme ? theme.dot : 'bg-purple-400'} shrink-0"></span>
                 <span class="${theme ? theme.text : 'text-slate-200'} uppercase tracking-wider font-extrabold text-[10px] truncate">${lvlTitle}</span>
-                <span class="text-[9px] text-slate-400 font-normal shrink-0">DC ${dc}</span>
+                <span class="text-[10px] text-slate-400 font-normal shrink-0">DC ${dc}</span>
               </div>
               <div class="shrink-0 ml-1.5">
                 ${slotBadgeHtml}
@@ -2583,12 +2583,12 @@
              data-combat-tooltip="defensiveCast"
              data-tooltip-cat="spell"
              class="relative ${isDefensiveActive ? 'border-2 border-indigo-400 bg-indigo-950 text-white shadow-[0_0_12px_rgba(129,140,248,0.35)] ring-1 ring-indigo-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-indigo-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
-          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-            <span class="text-[8px] font-mono ${isDefensiveActive ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Action</span>
+          <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+            <span class="text-[10px] font-mono ${isDefensiveActive ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Action</span>
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
             <div class="text-[10px] ${isDefensiveActive ? 'font-black text-white' : 'font-bold text-indigo-400'} leading-tight truncate w-full">Defensive Cast</div>
-            <div class="text-[9px] ${isDefensiveActive ? 'text-indigo-200 font-bold' : 'text-slate-400'} font-mono mt-1" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • No AoO</div>
+            <div class="text-[10px] ${isDefensiveActive ? 'text-indigo-200 font-bold' : 'text-slate-400'} font-mono mt-1" id="defensive-casting-dc-hint">DC ${15 + currentLvl} • No AoO</div>
           </div>
         </div>
       `;
@@ -2599,14 +2599,14 @@
                 data-combat-tooltip="srCheck"
                 data-tooltip-cat="spell"
                 class="relative border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60 rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
-          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-            <span class="text-[8px] font-mono text-purple-400 font-bold truncate max-w-[75px]">Check</span>
+          <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+            <span class="text-[10px] font-mono text-purple-400 font-bold truncate max-w-[75px]">Check</span>
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
             <div class="text-[10px] font-bold text-purple-300 group-hover:text-white leading-tight truncate w-full">
-              <span class="mr-0.5 text-[9px]">⚡</span>Roll SR Check
+              <span class="mr-0.5 text-[10px]">⚡</span>Roll SR Check
             </div>
-            <div class="text-[9px] text-amber-400 font-mono font-bold mt-1">1d20 + ${totalSrBonus} vs SR</div>
+            <div class="text-[10px] text-amber-400 font-mono font-bold mt-1">1d20 + ${totalSrBonus} vs SR</div>
           </div>
         </button>
       `;
@@ -2639,14 +2639,14 @@
                   data-combat-tooltip="turnUndead"
                   data-tooltip-cat="spell"
                   class="relative border ${borderCls} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
-            <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-              <span class="text-[8px] font-mono ${badgeCls} truncate max-w-[85px]">Channel (${turnRem}/${turnMax})</span>
+            <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+              <span class="text-[10px] font-mono ${badgeCls} truncate max-w-[85px]">Channel (${turnRem}/${turnMax})</span>
             </div>
             <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
               <div class="text-[10px] font-bold ${titleCls} leading-tight truncate w-full">
-                <span class="mr-0.5 text-[9px]">${isRebuke ? '💀' : '☀️'}</span>${isRebuke ? 'Rebuke Undead' : 'Turn Undead'}
+                <span class="mr-0.5 text-[10px]">${isRebuke ? '💀' : '☀️'}</span>${isRebuke ? 'Rebuke Undead' : 'Turn Undead'}
               </div>
-              <div class="text-[9px] ${turnRem > 0 ? 'text-sky-300 font-bold' : 'text-slate-500'} font-mono mt-1 truncate w-full">${turnDomainInfo.turningCheckFormula} • ${turnDomainInfo.turningDamageFormula} HD</div>
+              <div class="text-[10px] ${turnRem > 0 ? 'text-sky-300 font-bold' : 'text-slate-500'} font-mono mt-1 truncate w-full">${turnDomainInfo.turningCheckFormula} • ${turnDomainInfo.turningDamageFormula} HD</div>
             </div>
           </button>
         `);
@@ -2662,14 +2662,14 @@
                   data-combat-tooltip="elemTurn_${safePoolId}"
                   data-tooltip-cat="spell"
                   class="relative border ${epRem > 0 ? 'border-slate-800 bg-slate-900 text-slate-300 hover:border-teal-500/70' : 'border-slate-800/60 bg-slate-950/60 text-slate-500 opacity-60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
-            <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-              <span class="text-[8px] font-mono ${epRem > 0 ? 'text-teal-400 font-bold' : 'text-slate-500'} truncate max-w-[85px]">${ep.domain} (${epRem}/${ep.maxUses})</span>
+            <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+              <span class="text-[10px] font-mono ${epRem > 0 ? 'text-teal-400 font-bold' : 'text-slate-500'} truncate max-w-[85px]">${ep.domain} (${epRem}/${ep.maxUses})</span>
             </div>
             <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
               <div class="text-[10px] font-bold ${epRem > 0 ? 'text-teal-300 group-hover:text-white' : 'text-slate-500'} leading-tight truncate w-full">
-                <span class="mr-0.5 text-[9px]">${ep.icon || '⚜️'}</span>${ep.label}
+                <span class="mr-0.5 text-[10px]">${ep.icon || '⚜️'}</span>${ep.label}
               </div>
-              <div class="text-[9px] ${epRem > 0 ? 'text-amber-300 font-bold' : 'text-slate-500'} font-mono mt-1 truncate w-full">${turnDomainInfo.turningCheckFormula} • ${turnDomainInfo.turningDamageFormula} HD</div>
+              <div class="text-[10px] ${epRem > 0 ? 'text-amber-300 font-bold' : 'text-slate-500'} font-mono mt-1 truncate w-full">${turnDomainInfo.turningCheckFormula} • ${turnDomainInfo.turningDamageFormula} HD</div>
             </div>
           </button>
         `);
@@ -2691,14 +2691,14 @@
                   data-combat-tooltip="domPower_${safePwId}"
                   data-tooltip-cat="spell"
                   class="relative ${activeCls} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
-            <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-              <span class="text-[8px] font-mono ${isBuffActive ? 'text-amber-300 font-bold' : (pwRem > 0 ? 'text-amber-400 font-bold' : 'text-slate-500')} truncate max-w-[85px]">${pw.domain} (${pwRem}/${pw.maxUses})</span>
+            <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+              <span class="text-[10px] font-mono ${isBuffActive ? 'text-amber-300 font-bold' : (pwRem > 0 ? 'text-amber-400 font-bold' : 'text-slate-500')} truncate max-w-[85px]">${pw.domain} (${pwRem}/${pw.maxUses})</span>
             </div>
             <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
               <div class="text-[10px] ${isBuffActive ? 'font-black text-white' : (pwRem > 0 ? 'font-bold text-amber-200 group-hover:text-white' : 'font-bold text-slate-500')} leading-tight truncate w-full">
-                <span class="mr-0.5 text-[9px]">${pw.icon || '⚜️'}</span>${pw.name}
+                <span class="mr-0.5 text-[10px]">${pw.icon || '⚜️'}</span>${pw.name}
               </div>
-              <div class="text-[9px] ${isBuffActive ? 'text-amber-200 font-bold' : (pwRem > 0 ? 'text-slate-400' : 'text-slate-500')} font-mono mt-1 truncate w-full">${subLabel}</div>
+              <div class="text-[10px] ${isBuffActive ? 'text-amber-200 font-bold' : (pwRem > 0 ? 'text-slate-400' : 'text-slate-500')} font-mono mt-1 truncate w-full">${subLabel}</div>
             </div>
           </button>
         `);
@@ -2724,14 +2724,14 @@
                       data-combat-tooltip="divineFeat_${df.key}"
                       data-tooltip-cat="spell"
                       class="relative ${activeCls} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer w-full">
-                <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-                  <span class="text-[8px] font-mono ${isActive ? 'text-amber-300 font-bold' : 'text-amber-400 font-bold'} truncate max-w-[85px]">${isActive ? 'Active (1 Rd)' : 'Divine (-1 Turn)'}</span>
+                <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+                  <span class="text-[10px] font-mono ${isActive ? 'text-amber-300 font-bold' : 'text-amber-400 font-bold'} truncate max-w-[85px]">${isActive ? 'Active (1 Rd)' : 'Divine (-1 Turn)'}</span>
                 </div>
                 <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
                   <div class="text-[10px] ${isActive ? 'font-black text-white' : 'font-bold text-amber-200 group-hover:text-white'} leading-tight truncate w-full">
-                    <span class="mr-0.5 text-[9px]">${df.icon}</span>${df.name}
+                    <span class="mr-0.5 text-[10px]">${df.icon}</span>${df.name}
                   </div>
-                  <div class="text-[9px] ${isActive ? 'text-amber-200 font-bold' : 'text-slate-400'} font-mono mt-1 truncate w-full">${df.desc}</div>
+                  <div class="text-[10px] ${isActive ? 'text-amber-200 font-bold' : 'text-slate-400'} font-mono mt-1 truncate w-full">${df.desc}</div>
                 </div>
               </button>
             `);
@@ -2774,15 +2774,15 @@
                data-combat-tooltip="${safeId}"
                data-tooltip-cat="spell"
                class="relative ${isActive ? activeBorder : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-purple-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
-            <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-              <span class="text-[8px] font-mono ${isActive ? `${badgeColor} font-bold` : 'text-slate-500'} truncate max-w-[75px]">${badgeLabel}</span>
+            <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+              <span class="text-[10px] font-mono ${isActive ? `${badgeColor} font-bold` : 'text-slate-500'} truncate max-w-[75px]">${badgeLabel}</span>
             </div>
 
             <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
               <div class="text-[10px] ${isActive ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full">
-                <span class="mr-0.5 text-[9px]">${icon}</span>${mod.name}
+                <span class="mr-0.5 text-[10px]">${icon}</span>${mod.name}
               </div>
-              <div class="text-[9px] ${isActive ? `${valueColor} font-bold` : 'text-slate-400'} font-mono mt-1 truncate w-full">${mod.desc}</div>
+              <div class="text-[10px] ${isActive ? `${valueColor} font-bold` : 'text-slate-400'} font-mono mt-1 truncate w-full">${mod.desc}</div>
             </div>
           </div>
         `;
@@ -2870,13 +2870,13 @@
       if (metaNote) {
         if (isQuicken) {
           metaNote.textContent = '(Quicken: Swift Action)';
-          metaNote.className = 'text-[9px] text-rose-400 font-bold';
+          metaNote.className = 'text-[10px] text-rose-400 font-bold';
         } else if (isMetamagicActive) {
           metaNote.textContent = '(Spontaneous: Full-Round)';
-          metaNote.className = 'text-[9px] text-amber-400 font-bold';
+          metaNote.className = 'text-[10px] text-amber-400 font-bold';
         } else {
           metaNote.textContent = '(Standard Action)';
-          metaNote.className = 'text-[9px] text-slate-400';
+          metaNote.className = 'text-[10px] text-slate-400';
         }
       }
 
@@ -2918,13 +2918,13 @@
       if (actionEl) {
         if (isQuicken) {
           actionEl.textContent = 'Swift Action (Quicken)';
-          actionEl.className = 'text-[9px] font-mono font-bold text-rose-400';
+          actionEl.className = 'text-[10px] font-mono font-bold text-rose-400';
         } else if (isMetamagicActive) {
           actionEl.textContent = 'Full-Round (Spontaneous)';
-          actionEl.className = 'text-[9px] font-mono font-bold text-amber-400';
+          actionEl.className = 'text-[10px] font-mono font-bold text-amber-400';
         } else {
           actionEl.textContent = spell.action || 'Standard Action';
-          actionEl.className = 'text-[9px] font-mono font-bold text-amber-400';
+          actionEl.className = 'text-[10px] font-mono font-bold text-amber-400';
         }
       }
 
@@ -3030,10 +3030,10 @@
       if (metaBadgeEl) {
         if (isMetamagicActive) {
           metaBadgeEl.textContent = `✨ ${metamagicTags.join(' • ')}`;
-          metaBadgeEl.className = 'text-[8px] text-purple-300 font-bold truncate';
+          metaBadgeEl.className = 'text-[10px] text-purple-300 font-bold truncate';
         } else {
           metaBadgeEl.textContent = 'Metamagic: None';
-          metaBadgeEl.className = 'text-[8px] text-slate-500 truncate';
+          metaBadgeEl.className = 'text-[10px] text-slate-500 truncate';
         }
       }
 
@@ -3073,14 +3073,14 @@
         if (btnSub) {
           if (isQuicken) {
             btnSub.innerHTML = '<span class="block">Swift</span><span class="block">Action</span>';
-            btnSub.className = 'text-[8px] font-mono text-rose-300 font-bold leading-tight mt-0.5 text-center';
+            btnSub.className = 'text-[10px] font-mono text-rose-300 font-bold leading-tight mt-0.5 text-center';
           } else if (isMetamagicActive && slotSource === 'spontaneous') {
             btnSub.innerHTML = '<span class="block">Full-Round</span><span class="block">Action</span>';
-            btnSub.className = 'text-[8px] font-mono text-amber-300 font-bold leading-tight mt-0.5 text-center';
+            btnSub.className = 'text-[10px] font-mono text-amber-300 font-bold leading-tight mt-0.5 text-center';
           } else {
             const actStr = (spell.action || '').toLowerCase().includes('swift') ? 'Swift' : 'Standard';
             btnSub.innerHTML = `<span class="block">${actStr}</span><span class="block">Action</span>`;
-            btnSub.className = 'text-[8px] font-mono text-purple-200/90 font-bold leading-tight mt-0.5 text-center';
+            btnSub.className = 'text-[10px] font-mono text-purple-200/90 font-bold leading-tight mt-0.5 text-center';
           }
         }
       }
@@ -3151,7 +3151,7 @@
             <div class="flex justify-between items-center mb-1">
               <div class="flex items-center gap-1.5">
                 <span class="font-bold text-white">${castData.atkType === 'ranged_touch' ? 'Ranged Touch' : 'Melee Touch'}</span>
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-600/50 font-bold uppercase">Atk</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-600/50 font-bold uppercase">Atk</span>
               </div>
               ${isCrit ? '<span class="badge bg-amber-500 text-black font-black">NAT 20 / CRITICAL</span>' : ''}
             </div>
@@ -3172,9 +3172,9 @@
             <div class="flex justify-between items-center mb-1">
               <div class="flex items-center gap-1.5">
                 <span class="font-bold text-white">Spell Resistance (SR)</span>
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-950/60 text-purple-300 border border-purple-600/50 font-bold uppercase">SR</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-950/60 text-purple-300 border border-purple-600/50 font-bold uppercase">SR</span>
               </div>
-              <span class="text-[9px] font-mono text-purple-300 font-bold">CL ${castData.cl}</span>
+              <span class="text-[10px] font-mono text-purple-300 font-bold">CL ${castData.cl}</span>
             </div>
             <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
               <span class="text-xs text-slate-400">SR: <strong class="text-purple-400 text-base font-black">${castData.totalSr}</strong></span>
@@ -3192,7 +3192,7 @@
           concDiv.innerHTML = `
             <div class="flex justify-between items-center mb-1">
               <span class="font-bold text-white">Defensive Casting</span>
-              <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${castData.concPassed ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-rose-950 text-rose-300 border border-rose-600'}">${castData.concPassed ? 'Passed ✓' : 'Failed ✗'}</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded font-bold ${castData.concPassed ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-rose-950 text-rose-300 border border-rose-600'}">${castData.concPassed ? 'Passed ✓' : 'Failed ✗'}</span>
             </div>
             <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
               <span class="text-xs text-slate-400">Concentration: <strong class="text-indigo-300 text-base font-black">${castData.totalConc}</strong></span>
@@ -3211,9 +3211,9 @@
           <div class="flex justify-between items-center mb-1">
             <div class="flex items-center gap-1.5">
               <span class="font-bold text-white">Saving Throw</span>
-              <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-600/50 font-bold uppercase">DC</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-600/50 font-bold uppercase">DC</span>
             </div>
-            <span class="text-[9px] font-mono font-bold text-emerald-300 truncate">${hasSave ? castData.saveType : 'None'}</span>
+            <span class="text-[10px] font-mono font-bold text-emerald-300 truncate">${hasSave ? castData.saveType : 'None'}</span>
           </div>
           <div class="flex justify-between items-baseline font-mono border-t border-slate-800 pt-1.5 mt-1">
             <span class="text-xs text-slate-400">DC: <strong class="text-emerald-400 text-base font-black">DC ${castData.saveDc}</strong></span>
@@ -3231,7 +3231,7 @@
             <div class="flex justify-between items-center mb-1">
               <div class="flex items-center gap-1.5">
                 <span class="font-bold text-white">✨ Effective Weapon Size Increase (RAW D&D 3.5e)</span>
-                <span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-900/80 text-purple-200 border border-purple-600/60 font-bold uppercase">+${castData.sizeSteps} Size Step(s)</span>
+                <span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-900/80 text-purple-200 border border-purple-600/60 font-bold uppercase">+${castData.sizeSteps} Size Step(s)</span>
               </div>
               <span class="text-[10px] font-mono font-bold text-amber-300">${castData.targetWeaponName}</span>
             </div>
@@ -3347,7 +3347,7 @@
               <div class="space-y-0.5">
                 <div class="flex items-center gap-2">
                   <span class="font-bold text-white text-xs group-hover:text-purple-300 transition">${safeEscapeHtml(w.name)}</span>
-                  ${isCurrentActive ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-950 text-amber-300 border border-amber-600/50 font-bold">Equipped</span>' : ''}
+                  ${isCurrentActive ? '<span class="text-[10px] px-1.5 rounded bg-amber-950 text-amber-300 border border-amber-600/50 font-bold">Equipped</span>' : ''}
                 </div>
                 <div class="text-[10px] text-slate-400 font-mono">Type: ${safeEscapeHtml(w.dmgType || 'Bludgeoning')} • Grip: ${safeEscapeHtml(w.grip || '1-Hand')}</div>
               </div>
@@ -4849,10 +4849,10 @@
             ? RuleEngine.evaluateAbilitySaveDc({ dcFormula: ab.dcFormula, benefit: ab.benefit }, char)
             : null;
           if (dcEval) {
-            dcBadgeHtml = `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/25 text-amber-200 border border-amber-500/50">🛡️ ${esc(ab.save || 'Save')} DC ${dcEval.dc}</span>`;
+            dcBadgeHtml = `<span class="text-[10px] font-black px-1.5 rounded bg-amber-500/25 text-amber-200 border border-amber-500/50">🛡️ ${esc(ab.save || 'Save')} DC ${dcEval.dc}</span>`;
             dcSummaryStr = `${ab.save || 'Save'} DC ${dcEval.dc} [${dcEval.breakdown}]`;
           } else if (ab.save) {
-            dcBadgeHtml = `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-200 border border-amber-500/40">🛡️ ${esc(ab.save)}</span>`;
+            dcBadgeHtml = `<span class="text-[10px] font-bold px-1.5 rounded bg-amber-500/20 text-amber-200 border border-amber-500/40">🛡️ ${esc(ab.save)}</span>`;
             dcSummaryStr = ab.save;
           }
         }
@@ -4861,42 +4861,42 @@
 
         return `
         <!-- SPECIAL ATTACK / BREATH WEAPON CARD -->
-        <div data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${isOnCooldown ? 'bg-gradient-to-r from-purple-950/50 to-slate-900/90 border-purple-500/60 text-purple-200 shadow-md' : 'bg-gradient-to-r from-emerald-950/60 to-slate-900/90 border-emerald-500/80 text-emerald-100 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-500/30 hover:border-emerald-400'}">
+        <div data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="p-2.5 rounded-xl border transition-all cursor-pointer select-none flex items-center justify-between gap-2 ${isOnCooldown ? 'bg-gradient-to-r to-slate-900/90 border-purple-500/60 text-purple-200 shadow-md' : 'bg-gradient-to-r to-slate-900/90 border-emerald-500/80 text-emerald-100 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-500/30 hover:border-emerald-400'}">
           <div class="min-w-0 flex-1">
             <div class="flex items-center gap-1.5 flex-wrap">
               <span class="text-xs">${isOnCooldown ? '⏳' : '🔥'}</span>
               <span class="text-xs font-black truncate text-white">${esc(ab.name)}</span>
               ${isOnCooldown
-                ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-purple-500/30 text-purple-200 border border-purple-400/60">⏳ COOLDOWN: ${remainingRounds} ${remainingRounds === 1 ? 'ROUND' : 'ROUNDS'} LEFT (R${readyRound})</span>`
-                : `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-emerald-500/30 text-emerald-300 border border-emerald-500/50">READY</span>`
+                ? `<span class="text-[10px] font-black px-1.5 rounded text-purple-200 border border-purple-400/60">⏳ COOLDOWN: ${remainingRounds} ${remainingRounds === 1 ? 'ROUND' : 'ROUNDS'} LEFT (R${readyRound})</span>`
+                : `<span class="text-[10px] font-black px-1.5 rounded text-emerald-300 border border-emerald-500/50">READY</span>`
               }
               ${dcBadgeHtml}
-              ${ab.range ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-sky-950/70 text-sky-300 border border-sky-500/50">📏 ${esc(ab.range)}</span>` : ''}
+              ${ab.range ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-950/70 text-sky-300 border border-sky-500/50">📏 ${esc(ab.range)}</span>` : ''}
             </div>
             <!-- Row 1: Damage & Save Breakdown -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
-              <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Damage:</span>
+              <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
               <span class="font-bold text-amber-300">${esc(dmgFormula)} ${esc(dmgType)}</span>
-              ${dcSummaryStr ? `<span class="text-slate-600">•</span><span class="text-amber-200/90 text-[9px]">${esc(dcSummaryStr)}</span>` : ''}
+              ${dcSummaryStr ? `<span class="text-slate-600">•</span><span class="text-amber-200/90 text-[10px]">${esc(dcSummaryStr)}</span>` : ''}
             </div>
             <!-- Row 2: Action & Recharge -->
-            <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
-              <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Action:</span>
+            <div class="text-[10px] font-mono flex items-center gap-1.5 flex-wrap">
+              <span class="text-slate-500 font-sans uppercase text-[10px] tracking-wider">Action:</span>
               <span class="text-slate-300 font-semibold">${esc(ab.action || 'Standard Action')}</span>
               ${ab.recharge ? `<span class="text-slate-600">•</span><span class="text-purple-300">⏳ Recharge: ${esc(ab.recharge)}</span>` : ''}
             </div>
           </div>
           <div class="shrink-0 flex items-center gap-1.5">
             ${isOnCooldown ? `
-              <button type="button" data-action="combat:special-attack-ready" data-ability-key="${safeKeyAttr}" class="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 border border-purple-500/50 transition cursor-pointer" title="Clear cooldown and mark Ready">
+              <button type="button" data-action="combat:special-attack-ready" data-ability-key="${safeKeyAttr}" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-purple-200 border border-purple-500/50 transition cursor-pointer" title="Clear cooldown and mark Ready">
                 ↺ Ready
               </button>
             ` : (ab.rechargeDice ? `
-              <button type="button" data-action="combat:special-attack-recharge" data-ability-key="${safeKeyAttr}" class="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/50 transition cursor-pointer" title="Roll Recharge Cooldown (${esc(ab.rechargeDice)}) only">
+              <button type="button" data-action="combat:special-attack-recharge" data-ability-key="${safeKeyAttr}" class="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-800 hover:bg-indigo-900 text-indigo-200 border border-indigo-500/50 transition cursor-pointer" title="Roll Recharge Cooldown (${esc(ab.rechargeDice)}) only">
                 ⏳ ${esc(ab.rechargeDice)}
               </button>
             ` : '')}
-            <button type="button" data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="text-[10px] font-black px-2.5 py-1.5 rounded-lg ${isOnCooldown ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'} shadow transition active:scale-95 cursor-pointer flex items-center gap-1">
+            <button type="button" data-action="combat:special-attack-roll" data-ability-key="${safeKeyAttr}" class="text-[10px] font-black px-2.5 py-1.5 rounded-lg ${isOnCooldown ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500 text-slate-950'} shadow transition active:scale-95 cursor-pointer flex items-center gap-1">
               <span>🔥</span>
               <span>Roll ${esc(dmgFormula)}</span>
             </button>
@@ -5259,10 +5259,10 @@
             <div class="flex items-center gap-1.5">
               <span class="text-xs ${is1 ? 'text-amber-400' : 'text-slate-500'}">⚔️</span>
               <span class="text-xs font-black truncate ${is1 ? 'text-white' : 'text-slate-300'}">${s1.name || 'Main Hand'}</span>
-              ${is1 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">ACTIVE</span>` : ''}
-              ${s1MainStats?.enhancementBonus ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">+${s1MainStats.enhancementBonus} Magic</span>` : ''}
-              ${s1MainStats?.keen ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-red-950/60 text-red-300 border border-red-500/50">🩸 Keen</span>` : ''}
-              ${mainIsDouble ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-700/50">Double Weapon</span>` : (isTwoHandLocked ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-900/40 text-amber-400 border border-amber-700/50">2H Weapon</span>` : '')}
+              ${is1 ? `<span class="text-[10px] font-black px-1.5 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">ACTIVE</span>` : ''}
+              ${s1MainStats?.enhancementBonus ? `<span class="text-[10px] font-black px-1.5 rounded bg-amber-500/30 text-amber-300 border border-amber-500/50">+${s1MainStats.enhancementBonus} Magic</span>` : ''}
+              ${s1MainStats?.keen ? `<span class="text-[10px] font-bold px-1.5 rounded bg-red-950/60 text-red-300 border border-red-500/50">🩸 Keen</span>` : ''}
+              ${mainIsDouble ? `<span class="text-[10px] font-bold px-1.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-700/50">Double Weapon</span>` : (isTwoHandLocked ? `<span class="text-[10px] font-bold px-1.5 rounded bg-amber-900/40 text-amber-400 border border-amber-700/50">2H Weapon</span>` : '')}
             </div>
             <!-- Equipment & Grip -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
@@ -5272,22 +5272,22 @@
             <!-- Row 1: Modified Weapon Damage or Shield Defense -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
               ${s1MainStats?.isShield ? `
-                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Defense:</span>
+                <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Defense:</span>
                 <span class="font-bold text-emerald-400">${s1MainStats?.shieldAcText || '+1 Shield AC'}</span>
               ` : `
-                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Damage:</span>
+                <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
                 <span class="font-bold ${is1 ? 'text-amber-300' : 'text-slate-300'}">${s1MainStats?.dmgStr || '1d6+3'}</span>
-                ${s1MainStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">⚡ Modified</span>` : ''}
-                ${s1MainStats?.isFinesse ? `<span class="text-emerald-400 text-[9px] font-sans font-bold">• DEX (+${s1MainStats.finesseMod}) Finesse</span>` : ''}
+                ${s1MainStats?.hasExtraMods ? `<span class="text-[10px] font-bold px-1.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40">⚡ Modified</span>` : ''}
+                ${s1MainStats?.isFinesse ? `<span class="text-emerald-400 text-[10px] font-sans font-bold">• DEX (+${s1MainStats.finesseMod}) Finesse</span>` : ''}
               `}
             </div>
             <!-- Row 2: Critical & Damage Type -->
-            <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
+            <div class="text-[10px] font-mono flex items-center gap-1.5 flex-wrap">
               ${s1MainStats?.isShield ? `
-                <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Type:</span>
+                <span class="text-slate-500 font-sans uppercase text-[10px] tracking-wider">Type:</span>
                 <span class="text-slate-300 font-medium">Shield Defense</span>
               ` : `
-                <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Crit &amp; Type:</span>
+                <span class="text-slate-500 font-sans uppercase text-[10px] tracking-wider">Crit &amp; Type:</span>
                 <span class="${is1 ? 'text-white' : 'text-slate-300'} font-semibold font-mono">${s1MainStats?.critStr || '18-20 / x2'}</span>
                 <span class="text-slate-600">•</span>
                 <span class="${is1 ? 'text-amber-200/90' : 'text-slate-400'}">${s1MainStats?.dmgType || 'Piercing'}</span>
@@ -5295,7 +5295,7 @@
             </div>
           </div>
           <div class="shrink-0 text-right">
-            <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg ${is1 ? 'bg-amber-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
+            <span class="text-[10px] font-bold px-2.5 py-1 rounded-lg ${is1 ? 'bg-amber-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
               ${is1 ? 'Equipped' : 'Equip'}
             </span>
           </div>
@@ -5312,19 +5312,19 @@
             <div class="flex items-center gap-1.5">
               <span class="text-xs text-slate-600">🔒</span>
               <span class="text-xs font-bold text-slate-400">Off-Hand (2-Hand Grip)</span>
-              <span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-950/50 text-amber-500 border border-amber-900/50">Occupied</span>
+              <span class="text-[10px] font-bold px-1.5 rounded bg-amber-950/50 text-amber-500 border border-amber-900/50">Occupied</span>
             </div>
             <!-- Equipment Info -->
             <div class="text-[10px] text-slate-500 truncate mt-0.5 font-mono">
               <span>${s1.mainWeapon || 'Weapon'} (2-Hand)</span>
             </div>
             <!-- Description -->
-            <div class="text-[9px] text-slate-600 mt-0.5 font-mono">
+            <div class="text-[10px] text-slate-600 mt-0.5 font-mono">
               <span>* Both hands occupied by two-handed weapon</span>
             </div>
           </div>
           <div class="shrink-0 text-right">
-            <span class="text-[9px] font-bold px-2 py-1 rounded-lg bg-slate-900 text-slate-600 border border-slate-800">
+            <span class="text-[10px] font-bold px-2 py-1 rounded-lg bg-slate-900 text-slate-600 border border-slate-800">
               2H Grip
             </span>
           </div>
@@ -5339,8 +5339,8 @@
               <span class="text-xs ${is2 ? 'text-sky-400' : 'text-amber-400'}">🗡️</span>
               <span class="text-xs font-black truncate ${is2 ? 'text-white' : 'text-slate-200'}">Off-Hand (Secondary Head)</span>
               ${is2
-                ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">ACTIVE (TWF)</span>`
-                : `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-amber-950/60 text-amber-300 border border-amber-700/60">2-Hand Grip • Click for TWF</span>`
+                ? `<span class="text-[10px] font-black px-1.5 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">ACTIVE (TWF)</span>`
+                : `<span class="text-[10px] font-bold px-1.5 rounded bg-amber-950/60 text-amber-300 border border-amber-700/60">2-Hand Grip • Click for TWF</span>`
               }
             </div>
             <!-- Equipment & Type -->
@@ -5350,20 +5350,20 @@
             </div>
             <!-- Row 1: Weapon Damage -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
-              <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Damage:</span>
+              <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
               <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${s2OffStats?.dmgStr || '1d8'}</span>
-              ${s2OffStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ Modified</span>` : ''}
+              ${s2OffStats?.hasExtraMods ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ Modified</span>` : ''}
             </div>
             <!-- Row 2: Critical & Damage Type -->
-            <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
-              <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Crit &amp; Type:</span>
+            <div class="text-[10px] font-mono flex items-center gap-1.5 flex-wrap">
+              <span class="text-slate-500 font-sans uppercase text-[10px] tracking-wider">Crit &amp; Type:</span>
               <span class="${is2 ? 'text-white' : 'text-slate-300'} font-semibold font-mono">${s2OffStats?.critStr || '20 / x2'}</span>
               <span class="text-slate-600">•</span>
               <span class="${is2 ? 'text-sky-200/90' : 'text-slate-400'}">${s2OffStats?.dmgType || 'Bludgeoning'}</span>
             </div>
           </div>
           <div class="shrink-0 text-right">
-            <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-amber-300 border border-amber-500/40 hover:bg-sky-950 hover:text-sky-200'}">
+            <span class="text-[10px] font-bold px-2.5 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-amber-300 border border-amber-500/40 hover:bg-sky-950 hover:text-sky-200'}">
               ${is2 ? 'TWF Active' : 'Enable TWF'}
             </span>
           </div>
@@ -5377,9 +5377,9 @@
             <div class="flex items-center gap-1.5">
               <span class="text-xs ${is2 ? 'text-sky-400' : 'text-slate-500'}">${isCard2Shield ? '🛡️' : '🗡️'}</span>
               <span class="text-xs font-black truncate ${is2 ? 'text-white' : 'text-slate-300'}">${s2.name || 'Off-Hand'}</span>
-              ${is2 ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">${isDual ? (isCard2Shield ? 'ACTIVE (Shield)' : 'ACTIVE (TWF)') : 'ACTIVE'}</span>` : ''}
-              ${s2OffStats?.enhancementBonus ? `<span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">+${s2OffStats.enhancementBonus} Magic</span>` : ''}
-              ${s2OffStats?.keen ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-red-950/60 text-red-300 border border-red-500/50">🩸 Keen</span>` : ''}
+              ${is2 ? `<span class="text-[10px] font-black px-1.5 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">${isDual ? (isCard2Shield ? 'ACTIVE (Shield)' : 'ACTIVE (TWF)') : 'ACTIVE'}</span>` : ''}
+              ${s2OffStats?.enhancementBonus ? `<span class="text-[10px] font-black px-1.5 rounded bg-sky-500/30 text-sky-300 border border-sky-500/50">+${s2OffStats.enhancementBonus} Magic</span>` : ''}
+              ${s2OffStats?.keen ? `<span class="text-[10px] font-bold px-1.5 rounded bg-red-950/60 text-red-300 border border-red-500/50">🩸 Keen</span>` : ''}
             </div>
             <!-- Equipment & Type -->
             <div class="text-[10px] text-slate-400 truncate mt-0.5 font-mono">
@@ -5389,21 +5389,21 @@
             <!-- Row 1: Weapon Damage or Shield Defense -->
             <div class="text-[10px] font-mono mt-0.5 flex items-center gap-1.5 flex-wrap">
               ${isCard2Shield ? `
-                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Defense:</span>
+                <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Defense:</span>
                 <span class="font-bold text-emerald-400">${s2OffStats?.shieldAcText || '+1 Shield AC'}</span>
               ` : `
-                <span class="text-slate-400 font-sans text-[9px] uppercase tracking-wider">Damage:</span>
+                <span class="text-slate-400 font-sans text-[10px] uppercase tracking-wider">Damage:</span>
                 <span class="font-bold ${is2 ? 'text-sky-300' : 'text-slate-300'}">${s2OffStats?.dmgStr || '1d4'}</span>
-                ${s2OffStats?.hasExtraMods ? `<span class="text-[8px] font-bold px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ Modified</span>` : ''}
+                ${s2OffStats?.hasExtraMods ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-500/20 text-sky-300 border border-sky-500/40">⚡ Modified</span>` : ''}
               `}
             </div>
             <!-- Row 2: Critical & Damage Type -->
-            <div class="text-[9px] font-mono flex items-center gap-1.5 flex-wrap">
+            <div class="text-[10px] font-mono flex items-center gap-1.5 flex-wrap">
               ${isCard2Shield ? `
-                <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Type:</span>
+                <span class="text-slate-500 font-sans uppercase text-[10px] tracking-wider">Type:</span>
                 <span class="text-slate-300 font-medium">Shield Defense</span>
               ` : `
-                <span class="text-slate-500 font-sans uppercase text-[8px] tracking-wider">Crit &amp; Type:</span>
+                <span class="text-slate-500 font-sans uppercase text-[10px] tracking-wider">Crit &amp; Type:</span>
                 <span class="${is2 ? 'text-white' : 'text-slate-300'} font-semibold font-mono">${s2OffStats?.critStr || '19-20 / x2'}</span>
                 <span class="text-slate-600">•</span>
                 <span class="${is2 ? 'text-sky-200/90' : 'text-slate-400'}">${s2OffStats?.dmgType || 'Piercing'}</span>
@@ -5411,7 +5411,7 @@
             </div>
           </div>
           <div class="shrink-0 text-right">
-            <span class="text-[9px] font-bold px-2.5 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
+            <span class="text-[10px] font-bold px-2.5 py-1 rounded-lg ${is2 ? 'bg-sky-500 text-slate-950 font-black shadow' : 'bg-slate-800 text-slate-400 hover:text-slate-200'}">
               ${is2 ? 'Equipped' : 'Equip'}
             </span>
           </div>
@@ -5433,7 +5433,7 @@
               <div class="font-bold">⚔️ Main Hand: ${character?.activeWeapon || 'Rapier +2'}</div>
               <div class="text-[10px] text-slate-400 font-mono">1d6+3 • 18-20/x2 • Piercing</div>
             </div>
-            <span class="text-[9px] font-bold px-2 py-0.5 rounded bg-amber-500/30 text-amber-300">ACTIVE</span>
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/30 text-amber-300">ACTIVE</span>
           </div>
         `;
       }
@@ -6121,7 +6121,7 @@
           <div class="p-6 text-center text-slate-400 bg-slate-900/90 rounded-xl border border-slate-700/60 shadow-xl">
             <div class="text-2xl mb-2">🎒</div>
             <div class="text-sm font-semibold text-slate-200 mb-1">No matching weapon or shield found in your Inventory.</div>
-            <div class="text-xs text-slate-400 mb-4">Only weapons and shields currently carried in your inventory can be equipped to combat slots.</div>
+            <div class="text-xs text-slate-400">Only weapons and shields currently carried in your inventory can be equipped to combat slots.</div>
             <button type="button" data-action="combat:open-inventory-weapon-compendium" class="px-3.5 py-1.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs rounded-lg shadow-lg transition active:scale-95 cursor-pointer inline-flex items-center gap-1.5">
               <span>🎒</span>
               <span>Open Inventory Compendium to Add Weapons</span>
@@ -6159,16 +6159,16 @@
         const escapedId = String(item.id || idx).replace(/'/g, "\\'");
 
         return `
-          <div class="flex items-center justify-between p-2.5 hover:bg-slate-800/80 rounded-lg transition gap-2 border border-slate-800/50 mb-1">
+          <div class="flex items-center justify-between p-2.5 hover:bg-slate-800/80 rounded-lg transition gap-2 border mb-1">
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-1.5 flex-wrap">
                 <span class="text-xs">${isShield ? '🛡️' : (isTwoHand ? '⚔️' : '🗡️')}</span>
                 <span class="text-xs font-bold text-white truncate">${item.name}</span>
-                <span class="text-[9px] font-semibold px-1.5 py-0.2 rounded border ${badgeColor}">
+                <span class="text-[10px] font-semibold px-1.5 rounded border ${badgeColor}">
                   ${item.weaponType || item.category || (isShield ? 'Shield' : 'Weapon')}
                 </span>
-                ${enh > 0 ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-950/60 border border-amber-500/50 text-amber-300">${enhStr}</span>` : ''}
-                ${mat !== 'Standard' ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 border border-slate-600 text-slate-300">${mat}</span>` : ''}
+                ${enh > 0 ? `<span class="text-[10px] font-bold px-1.5 rounded bg-amber-950/60 border border-amber-500/50 text-amber-300">${enhStr}</span>` : ''}
+                ${mat !== 'Standard' ? `<span class="text-[10px] px-1.5 rounded bg-slate-800 border border-slate-600 text-slate-300">${mat}</span>` : ''}
               </div>
               <div class="text-[10px] text-slate-400 font-mono mt-1 flex items-center gap-2 flex-wrap">
                 <span>Dice: <strong class="text-amber-300 font-bold">${diceStr}</strong></span>
@@ -6179,7 +6179,7 @@
             </div>
             <div class="shrink-0 flex items-center gap-1.5">
               ${inWeapons ? `<span class="text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-950/60 border border-emerald-500/40">In Combat</span>` : ''}
-              <button type="button" data-action="combat:select-spotlight-weapon" data-weapon-id="${String(item.id || idx).replace(/"/g, '&quot;')}" class="px-2.5 py-1 ${inWeapons ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-emerald-600 hover:bg-emerald-500 text-white'} active:scale-95 font-extrabold text-[11px] rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
+              <button type="button" data-action="combat:select-spotlight-weapon" data-weapon-id="${String(item.id || idx).replace(/"/g, '&quot;')}" class="px-2.5 py-1 ${inWeapons ? 'bg-slate-700 text-slate-200' : 'bg-emerald-600 hover:bg-emerald-500 text-white'} active:scale-95 font-extrabold text-[11px] rounded-lg shadow transition flex items-center gap-1 cursor-pointer">
                 <span>${inWeapons ? '🔄' : '➕'}</span>
                 <span>${inWeapons ? 'Equip / Re-sync' : 'Equip to Combat'}</span>
               </button>
@@ -6445,7 +6445,7 @@
       const wepName = setObj?.mainWeapon;
 
       if (!wepName || wepName === 'None') {
-        container.innerHTML = '<span class="text-[9px] text-slate-500 italic">No equipment selected.</span>';
+        container.innerHTML = '<span class="text-[10px] text-slate-500 italic">No equipment selected.</span>';
         return;
       }
 
@@ -6470,7 +6470,7 @@
         const label = prop.dice ? `${prop.icon} ${prop.name} (+${prop.dice})` : `${prop.icon} ${prop.name}`;
 
         return `
-          <button type="button" data-action="combat:weapon-elemental-toggle" data-set-num="${setNum}" data-prop-id="${prop.id}" class="px-2 py-0.5 rounded text-[9px] font-bold border transition flex items-center gap-1 cursor-pointer select-none ${badgeClass}">
+          <button type="button" data-action="combat:weapon-elemental-toggle" data-set-num="${setNum}" data-prop-id="${prop.id}" class="px-2 py-0.5 rounded text-[10px] font-bold border transition flex items-center gap-1 cursor-pointer select-none ${badgeClass}">
             <span>${label}</span>
           </button>
         `;
@@ -6828,12 +6828,12 @@
         <div data-action="combat:melee-fixed-toggle" data-mod-key="flanking"
              data-combat-tooltip="flanking" data-tooltip-cat="melee"
              class="relative ${flanking ? 'border-2 border-sky-400 bg-sky-950 text-white shadow-[0_0_12px_rgba(56,189,248,0.35)] ring-1 ring-sky-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-sky-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
-          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-            <span class="text-[8px] font-mono ${flanking ? 'text-sky-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Positional</span>
+          <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+            <span class="text-[10px] font-mono ${flanking ? 'text-sky-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Positional</span>
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
             <div class="text-[10px] ${flanking ? 'font-black text-white' : 'font-bold text-sky-400'} leading-tight truncate w-full">Flanking</div>
-            <div class="text-[9px] ${flanking ? 'text-sky-200 font-bold' : 'text-slate-400'} font-mono mt-1">+2 Melee</div>
+            <div class="text-[10px] ${flanking ? 'text-sky-200 font-bold' : 'text-slate-400'} font-mono mt-1">+2 Melee</div>
           </div>
         </div>
         `,
@@ -6841,12 +6841,12 @@
         <div data-action="combat:melee-fixed-toggle" data-mod-key="charge"
              data-combat-tooltip="charge" data-tooltip-cat="melee"
              class="relative ${charge ? 'border-2 border-rose-400 bg-rose-950 text-white shadow-[0_0_12px_rgba(251,113,133,0.35)] ring-1 ring-rose-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-rose-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
-          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-            <span class="text-[8px] font-mono ${charge ? 'text-rose-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Action</span>
+          <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+            <span class="text-[10px] font-mono ${charge ? 'text-rose-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Action</span>
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
             <div class="text-[10px] ${charge ? 'font-black text-white' : 'font-bold text-rose-400'} leading-tight truncate w-full">Charge</div>
-            <div class="text-[9px] ${charge ? 'text-rose-200 font-bold' : 'text-slate-400'} font-mono mt-1">+2 Atk / -2 AC</div>
+            <div class="text-[10px] ${charge ? 'text-rose-200 font-bold' : 'text-slate-400'} font-mono mt-1">+2 Atk / -2 AC</div>
           </div>
         </div>
         `,
@@ -6854,12 +6854,12 @@
         <div data-action="combat:melee-fixed-toggle" data-mod-key="higherGround"
              data-combat-tooltip="higherGround" data-tooltip-cat="melee"
              class="relative ${hg ? 'border-2 border-amber-400 bg-amber-950 text-white shadow-[0_0_12px_rgba(251,191,36,0.35)] ring-1 ring-amber-400/30' : 'border border-slate-800 bg-slate-900 text-slate-300 hover:border-amber-500/60'} rounded-lg p-1.5 transition flex flex-col justify-between text-center select-none min-h-[64px] group cursor-pointer">
-          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-            <span class="text-[8px] font-mono ${hg ? 'text-amber-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Positional</span>
+          <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+            <span class="text-[10px] font-mono ${hg ? 'text-amber-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">Positional</span>
           </div>
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
             <div class="text-[10px] ${hg ? 'font-black text-white' : 'font-bold text-amber-400'} leading-tight truncate w-full">Higher Gr.</div>
-            <div class="text-[9px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} font-mono mt-1">+1 Melee</div>
+            <div class="text-[10px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} font-mono mt-1">+1 Melee</div>
           </div>
         </div>
         `
@@ -6878,9 +6878,9 @@
       if (meleeBtnText) meleeBtnText.textContent = window.meleeReorderModeActive ? 'Done ✓' : 'Reorder';
       if (meleeBtn) {
         if (window.meleeReorderModeActive) {
-          meleeBtn.className = 'text-[9px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
+          meleeBtn.className = 'text-[10px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
         } else {
-          meleeBtn.className = 'text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
+          meleeBtn.className = 'text-[10px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
         }
       }
 
@@ -6898,14 +6898,14 @@
         const actualIdx = character.activeModifiers.indexOf(mod);
 
         const reorderControls = window.meleeReorderModeActive ? `
-          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0 w-full">
+          <div class="flex items-center justify-between px-0.5 text-[10px] text-slate-500 leading-none shrink-0 w-full">
             <button type="button" data-action="combat:melee-mod-move" data-idx="${idx}" data-delta="-1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Move Left">◀</button>
-            <span class="text-[8px] text-slate-400 font-mono truncate max-w-[45px]">${mod.source || ''}</span>
+            <span class="text-[10px] text-slate-400 font-mono truncate max-w-[45px]">${mod.source || ''}</span>
             <button type="button" data-action="combat:melee-mod-move" data-idx="${idx}" data-delta="1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= dynamicMods.length - 1 ? 'disabled' : ''} title="Move Right">▶</button>
           </div>
         ` : `
-          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-            <span class="text-[8px] font-mono ${mod.active ? 'text-rose-400 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${mod.source || ''}</span>
+          <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+            <span class="text-[10px] font-mono ${mod.active ? 'text-rose-400 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${mod.source || ''}</span>
           </div>
         `;
 
@@ -6919,7 +6919,7 @@
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
             <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full">${mod.name}</div>
-            <div class="text-[9px] ${mod.active ? 'text-amber-300 font-bold' : bonusColor} font-mono mt-1">${bonusStr}</div>
+            <div class="text-[10px] ${mod.active ? 'text-amber-300 font-bold' : bonusColor} font-mono mt-1">${bonusStr}</div>
           </div>
         </div>
         `;
@@ -7003,13 +7003,13 @@
         <div data-action="combat:defense-mod-toggle" data-mod-id="${c.id}"
              data-combat-tooltip="${c.id}" data-tooltip-cat="defense"
              class="${c.active ? activeClass : inactiveClass}">
-          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-            <span class="text-[8px] font-mono ${c.active ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${c.source}</span>
+          <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+            <span class="text-[10px] font-mono ${c.active ? 'text-indigo-300 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${c.source}</span>
           </div>
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
             <div class="text-[10px] ${c.active ? 'font-black text-white' : 'font-bold text-slate-200'} leading-tight truncate w-full">${c.name}</div>
-            <div class="text-[9px] ${c.active ? 'text-indigo-200 font-bold' : 'text-indigo-400'} font-mono mt-1">${c.bonusStr}</div>
+            <div class="text-[10px] ${c.active ? 'text-indigo-200 font-bold' : 'text-indigo-400'} font-mono mt-1">${c.bonusStr}</div>
           </div>
         </div>
       `).join('');
@@ -7506,19 +7506,19 @@
         `
         <div data-action="combat:ranged-mod-toggle" data-mod-key="rangedHigherGround" class="relative ${hg ? 'border border-amber-500 bg-amber-950/60 text-white shadow-md shadow-amber-950/50 ring-1 ring-amber-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-amber-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${hg ? 'text-white font-black' : 'text-amber-400'} leading-tight">Higher Gr.</div>
-          <div class="text-[9px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} mt-1">+1 Ranged</div>
+          <div class="text-[10px] ${hg ? 'text-amber-200 font-bold' : 'text-slate-400'} mt-1">+1 Ranged</div>
         </div>
         `,
         `
         <div data-action="combat:ranged-mod-toggle" data-mod-key="targetInMelee" class="relative ${tinM ? 'border border-rose-500 bg-rose-950/60 text-white shadow-md shadow-rose-950/50 ring-1 ring-rose-500/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-rose-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${tinM ? 'text-white font-black' : 'text-rose-400'} leading-tight">Firing into Melee</div>
-          <div class="text-[9px] ${tinM ? 'text-rose-200 font-bold' : 'text-slate-400'} mt-1">${hasPrecise ? '⚡ No Penalty (Precise)' : '-4 Atk (Melee)'}</div>
+          <div class="text-[10px] ${tinM ? 'text-rose-200 font-bold' : 'text-slate-400'} mt-1">${hasPrecise ? '⚡ No Penalty (Precise)' : '-4 Atk (Melee)'}</div>
         </div>
         `,
         `
         <div data-action="combat:ranged-mod-toggle" data-mod-key="coverPenalty" class="relative ${cvr ? 'border border-slate-400 bg-slate-800/80 text-white shadow-md shadow-slate-900/50 ring-1 ring-slate-400/40' : 'border border-slate-800 bg-slate-900 text-slate-400 hover:border-slate-500/60'} rounded-lg p-2 cursor-pointer transition flex flex-col justify-center items-center text-center select-none min-h-[64px]">
           <div class="text-[11px] font-bold ${cvr ? 'text-white font-black' : 'text-slate-300'} leading-tight">Target in Cover</div>
-          <div class="text-[9px] ${cvr ? 'text-slate-100 font-bold' : 'text-slate-400'} mt-1">-4 Atk (Cover)</div>
+          <div class="text-[10px] ${cvr ? 'text-slate-100 font-bold' : 'text-slate-400'} mt-1">-4 Atk (Cover)</div>
         </div>
         `
       ];
@@ -7529,9 +7529,9 @@
       if (rangedBtnText) rangedBtnText.textContent = window.rangedReorderModeActive ? 'Done ✓' : 'Reorder';
       if (rangedBtn) {
         if (window.rangedReorderModeActive) {
-          rangedBtn.className = 'text-[9px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
+          rangedBtn.className = 'text-[10px] text-emerald-300 bg-emerald-950/70 hover:bg-emerald-900 font-bold flex items-center gap-1 cursor-pointer px-2 py-0.5 rounded border border-emerald-600 transition';
         } else {
-          rangedBtn.className = 'text-[9px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
+          rangedBtn.className = 'text-[10px] text-amber-400 hover:text-amber-200 font-bold flex items-center gap-1 cursor-pointer bg-slate-900 hover:bg-slate-800 px-2 py-0.5 rounded border border-slate-800 transition';
         }
       }
 
@@ -7544,14 +7544,14 @@
 
       const dynamicCardsHtml = visibleMods.map((mod, idx) => {
         const reorderControls = window.rangedReorderModeActive ? `
-          <div class="flex items-center justify-between px-0.5 text-[9px] text-slate-500 leading-none shrink-0 w-full">
+          <div class="flex items-center justify-between px-0.5 text-[10px] text-slate-500 leading-none shrink-0 w-full">
             <button type="button" data-action="combat:ranged-mod-move" data-idx="${idx}" data-delta="-1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx <= 0 ? 'disabled' : ''} title="Move Left">◀</button>
-            <span class="text-[8px] text-slate-400 font-mono truncate max-w-[45px]">${mod.source}</span>
+            <span class="text-[10px] text-slate-400 font-mono truncate max-w-[45px]">${mod.source}</span>
             <button type="button" data-action="combat:ranged-mod-move" data-idx="${idx}" data-delta="1" class="hover:text-amber-400 p-0.5 disabled:opacity-20 cursor-pointer" ${idx >= qualifiedRangedList.length - 1 ? 'disabled' : ''} title="Move Right">▶</button>
           </div>
         ` : `
-          <div class="flex items-center justify-center px-0.5 text-[9px] leading-none shrink-0 w-full">
-            <span class="text-[8px] font-mono ${mod.active ? 'text-amber-400 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${mod.source}</span>
+          <div class="flex items-center justify-center px-0.5 text-[10px] leading-none shrink-0 w-full">
+            <span class="text-[10px] font-mono ${mod.active ? 'text-amber-400 font-bold' : 'text-slate-500'} truncate max-w-[75px]">${mod.source}</span>
           </div>
         `;
 
@@ -7564,7 +7564,7 @@
 
           <div class="flex-1 flex flex-col justify-center items-center px-0.5 my-auto">
             <div class="text-[10px] font-bold ${mod.active ? 'text-white font-extrabold' : 'text-slate-200'} leading-tight truncate w-full">${mod.name}</div>
-            <div class="text-[9px] ${mod.active ? 'text-amber-300 font-bold' : 'text-amber-400'} font-mono mt-1">${mod.bonusStr}</div>
+            <div class="text-[10px] ${mod.active ? 'text-amber-300 font-bold' : 'text-amber-400'} font-mono mt-1">${mod.bonusStr}</div>
           </div>
         </div>
         `;
@@ -8615,21 +8615,21 @@
 
             return `
               <button type="button" data-action="combat:attack-chain-roll" data-idx="${idx}" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
-                <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
+                <div class="text-[10px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
                 <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
-                <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Ranged'}</div>
+                <div class="text-[10px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Ranged'}</div>
               </button>
             `;
           }).join('');
 
           const fullAttackBtnHtml = `
             <button type="button" data-action="combat:full-attack-roll" data-custom="false" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group">
-              <div class="text-[9px] uppercase tracking-wider text-red-100/90 font-sans font-bold truncate flex items-center justify-center gap-0.5 leading-tight">
+              <div class="text-[10px] uppercase tracking-wider text-red-100/90 font-sans font-bold truncate flex items-center justify-center gap-0.5 leading-tight">
                 <span>🏹</span>
                 <span class="truncate">Full</span>
               </div>
               <div class="text-xs sm:text-sm md:text-base font-black text-white font-mono leading-tight my-0.5 truncate">Attack</div>
-              <div class="text-[8px] font-sans text-red-200/90 font-bold truncate leading-tight">Full Round</div>
+              <div class="text-[10px] font-sans text-red-200/90 font-bold truncate leading-tight">Full Round</div>
             </button>
           `;
 
@@ -8817,21 +8817,21 @@
 
           return `
             <button type="button" data-action="combat:attack-chain-roll" data-idx="${idx}" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 ${bgClass} active:scale-95 border ${isLocked ? 'border-slate-800 opacity-50 cursor-not-allowed' : colorBorder + ' cursor-pointer'} rounded-lg flex flex-col items-center justify-center text-center font-mono transition shadow group shrink-0">
-              <div class="text-[9px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
+              <div class="text-[10px] uppercase tracking-wider ${subtitleColor} font-sans font-bold truncate leading-tight">${item.label}</div>
               <div class="text-xs sm:text-sm md:text-base font-black ${textColor} font-mono leading-tight my-0.5">${item.bonus >= 0 ? '+' : ''}${item.bonus}</div>
-              <div class="text-[8px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Standard'}</div>
+              <div class="text-[10px] font-sans text-slate-400 group-hover:text-slate-300 font-bold truncate leading-tight">${item.handLabel || 'Standard'}</div>
             </button>
           `;
         }).join('');
 
         const fullAttackBtn = `
           <button type="button" data-action="combat:full-attack-roll" data-custom="false" class="${btnBasisClass} min-h-[58px] py-1 px-1.5 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 active:scale-95 text-white rounded-lg shadow-md border border-red-400/50 flex flex-col items-center justify-center transition cursor-pointer text-center shrink-0 group">
-            <div class="text-[9px] uppercase tracking-wider text-red-100/90 font-sans font-bold truncate flex items-center justify-center gap-0.5 leading-tight">
+            <div class="text-[10px] uppercase tracking-wider text-red-100/90 font-sans font-bold truncate flex items-center justify-center gap-0.5 leading-tight">
               <span>⚔️</span>
               <span class="truncate">Full</span>
             </div>
             <div class="text-xs sm:text-sm md:text-base font-black text-white font-mono leading-tight my-0.5 truncate">Attack</div>
-            <div class="text-[8px] font-sans text-red-200/90 font-bold truncate leading-tight">Full Round</div>
+            <div class="text-[10px] font-sans text-red-200/90 font-bold truncate leading-tight">Full Round</div>
           </button>
         `;
 
@@ -9154,14 +9154,14 @@
         if (summaryGrid) {
           const div = document.createElement('div');
           let borderClass = 'border-slate-700 bg-slate-900';
-          let tagBadge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-600/50 font-bold">Main Hand</span>';
+          let tagBadge = '<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-300 border border-amber-600/50 font-bold">Main Hand</span>';
 
           if (atk.badgeColor === 'cyan') {
             borderClass = 'border-cyan-800/60 bg-cyan-950/20';
-            tagBadge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-600/50 font-bold">Off-Hand</span>';
+            tagBadge = '<span class="text-[10px] px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-600/50 font-bold">Off-Hand</span>';
           } else if (atk.badgeColor === 'purple') {
             borderClass = 'border-purple-800/60 bg-purple-950/20';
-            tagBadge = '<span class="text-[9px] px-1.5 py-0.5 rounded bg-purple-950/60 text-purple-300 border border-purple-600/50 font-bold">Flurry</span>';
+            tagBadge = '<span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-950/60 text-purple-300 border border-purple-600/50 font-bold">Flurry</span>';
           }
 
           if (atk.isCrit) {
@@ -10432,13 +10432,13 @@
               ? RuleEngine.getSpellCasterLevelBonus(b, character)
               : { bonus: 0, sources: [] };
             const clBadge = (b.source === 'Spell' || spec?.isBuffSpell)
-              ? `<span class="text-[9px] font-mono ${clBonusInfo.bonus > 0 ? 'text-teal-300 bg-teal-950/80 border-teal-600/60 font-bold' : 'text-slate-400 bg-slate-950 border-slate-800'} px-1 py-0.2 rounded border" title="${clBonusInfo.sources?.length ? clBonusInfo.sources.join(', ') : `Caster Level ${bCl}`}">CL ${bCl}</span>`
+              ? `<span class="text-[10px] font-mono ${clBonusInfo.bonus > 0 ? 'text-teal-300 bg-teal-950/80 border-teal-600/60 font-bold' : 'text-slate-400 bg-slate-950 border-slate-800'} px-1 rounded border" title="${clBonusInfo.sources?.length ? clBonusInfo.sources.join(', ') : `Caster Level ${bCl}`}">CL ${bCl}</span>`
               : '';
             const wepBadge = b.targetWeapon
-              ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-amber-950/90 text-amber-300 border border-amber-600/50">⚔️ ${b.targetWeapon}</span>`
+              ? `<span class="text-[10px] font-bold px-1.5 rounded bg-amber-950/90 text-amber-300 border border-amber-600/50">⚔️ ${b.targetWeapon}</span>`
               : '';
             const energyBadge = b.chosenEnergy
-              ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-sky-950/90 text-sky-300 border border-sky-600/50">${b.chosenEnergy}</span>`
+              ? `<span class="text-[10px] font-bold px-1.5 rounded bg-sky-950/90 text-sky-300 border border-sky-600/50">${b.chosenEnergy}</span>`
               : '';
             const pinBtnClasses = isPinned
               ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.45)] hover:bg-emerald-900 hover:border-emerald-400 ring-1 ring-emerald-500/40'
@@ -10453,14 +10453,14 @@
             return `
               <div class="flex items-center justify-between gap-2 px-2 py-1.5 rounded-lg border transition ${isAct ? 'bg-slate-900/90 border-emerald-500/40' : 'bg-slate-950/60 border-slate-800/80 opacity-75 hover:opacity-100'}">
                 <button type="button" data-action="combat:buff-toggle" data-buff-idx="${idx}" class="flex items-center gap-2 text-left flex-1 min-w-0 cursor-pointer" title="${isAct ? 'Click to toggle buff Off' : 'Click to toggle buff On'}">
-                  <span class="w-3.5 h-3.5 rounded flex items-center justify-center text-[9px] font-black border shrink-0 ${isAct ? 'bg-emerald-600 border-emerald-400 text-white' : 'bg-slate-900 border-slate-600 text-transparent'}">✓</span>
+                  <span class="w-3.5 h-3.5 rounded flex items-center justify-center text-[10px] font-black border shrink-0 ${isAct ? 'bg-emerald-600 border-emerald-400 text-white' : 'bg-slate-900 border-slate-600 text-transparent'}">✓</span>
                   <div class="min-w-0 flex-1">
                     <div class="flex items-center gap-1.5 flex-wrap">
                       <span class="text-[11px] font-bold ${isAct ? 'text-emerald-300' : 'text-slate-300'} truncate">${b.name || 'Buff'}</span>
                       ${wepBadge}
                       ${energyBadge}
                       ${clBadge}
-                      ${durText ? `<span class="text-[9px] font-mono text-slate-400 bg-slate-950 px-1 py-0.2 rounded border border-slate-800">${durText}</span>` : ''}
+                      ${durText ? `<span class="text-[10px] font-mono text-slate-400 bg-slate-950 px-1 rounded border border-slate-800">${durText}</span>` : ''}
                     </div>
                     <div class="text-[10px] ${isAct ? 'text-amber-300/90' : 'text-slate-400'} truncate">${summaryText}</div>
                   </div>
@@ -10656,7 +10656,7 @@
         const statusDetail = document.getElementById('offhand-status-detail');
         if (modeBadge) {
           modeBadge.textContent = '🔒 Two-Handed Weapon';
-          modeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-400 border border-amber-800';
+          modeBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-400 border border-amber-800';
         }
         if (statusMain) statusMain.textContent = 'Off-Hand Locked';
         if (statusDetail) {
@@ -10702,7 +10702,7 @@
       if (currentVal === 'None' || !currentVal) {
         if (modeBadge) {
           modeBadge.textContent = 'Free Hand';
-          modeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800';
+          modeBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800';
         }
         if (statusMain) statusMain.textContent = 'None / Empty';
         if (statusDetail) {
@@ -10715,7 +10715,7 @@
         if (isShield) {
           if (modeBadge) {
             modeBadge.textContent = '🛡️ Shield Equipped';
-            modeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-700/50';
+            modeBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-700/50';
           }
           if (statusMain) statusMain.textContent = `Shield: ${offHandItem.name}`;
           const acBonus = offHandItem.armorBonus || offHandItem.shieldBonus || (offHandItem.name.includes('+1') ? 2 : 1);
@@ -10728,7 +10728,7 @@
           const secondWep = (character.weapons || []).find(w => w.name === currentVal);
           if (modeBadge) {
             modeBadge.textContent = '⚔️ Off-Hand Weapon (TWF)';
-            modeBadge.className = 'text-[9px] font-bold px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-700/50';
+            modeBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-700/50';
           }
           if (statusMain) statusMain.textContent = `Weapon: ${currentVal}`;
           const dmgDice = secondWep?.damage || '1d4';
@@ -11203,8 +11203,8 @@
                   <div class="text-xs font-bold text-amber-200 flex items-center gap-1.5 truncate">
                     <span>${icon}</span>
                     <span class="truncate">${item.name}</span>
-                    ${isSlot ? `<span class="text-[8px] font-mono px-1 py-0.2 rounded bg-slate-800 text-amber-300 border border-slate-700 uppercase">${slotKey}</span>` : ''}
-                    ${active ? `<span class="px-1.5 py-0.2 rounded text-[8px] font-extrabold bg-cyan-950 text-cyan-300 border border-cyan-400 shadow-sm animate-pulse">⚡ ACTIVE</span>` : ''}
+                    ${isSlot ? `<span class="text-[10px] font-mono px-1 rounded bg-slate-800 text-amber-300 border border-slate-700 uppercase">${slotKey}</span>` : ''}
+                    ${active ? `<span class="px-1.5 rounded text-[10px] font-extrabold bg-cyan-950 text-cyan-300 border border-cyan-400 shadow-sm animate-pulse">⚡ ACTIVE</span>` : ''}
                   </div>
                   <div class="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                     <span class="text-slate-500">Daily:</span>
@@ -11240,7 +11240,7 @@
                 <div class="text-xs font-bold text-amber-200 flex items-center gap-1.5 truncate">
                   <span>${icon}</span>
                   <span class="truncate">${item.name}</span>
-                  ${isSlot ? `<span class="text-[8px] font-mono px-1 py-0.2 rounded bg-slate-800 text-amber-300 border border-slate-700 uppercase">${slotKey}</span>` : ''}
+                  ${isSlot ? `<span class="text-[10px] font-mono px-1 rounded bg-slate-800 text-amber-300 border border-slate-700 uppercase">${slotKey}</span>` : ''}
                 </div>
                 <div class="text-[10px] text-slate-400 flex items-center gap-1.5 mt-0.5">
                   <span class="text-slate-500">Daily:</span>
@@ -11540,7 +11540,7 @@
                 <span class="text-xs font-black text-amber-300 truncate">${safeEscapeHtml(stats.customName)}</span>
                 <span class="text-[10px] text-slate-400 font-mono truncate">(${safeEscapeHtml(stats.baseName)} • ${typeLabel})</span>
               </div>
-              <div class="text-[9px] text-slate-400 font-mono">
+              <div class="text-[10px] text-slate-400 font-mono">
                 Level Bracket: <strong class="text-white">${stats.effectiveLevel}</strong> • Size: <strong class="text-slate-300">${stats.size}</strong>
               </div>
             </div>
@@ -11581,29 +11581,29 @@
         <!-- 3-Column Defensive & Mobility Strip -->
         <div class="grid grid-cols-3 gap-1.5 text-center font-mono">
           <div class="bg-slate-950/80 p-1.5 rounded-lg border border-slate-800">
-            <div class="text-[9px] uppercase font-bold text-slate-400">Armor Class</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400">Armor Class</div>
             <div class="text-sm font-black text-amber-300">${stats.ac.total}</div>
-            <div class="text-[8px] text-slate-500">Touch ${stats.ac.touch} • FF ${stats.ac.flatFooted}</div>
+            <div class="text-[10px] text-slate-500">Touch ${stats.ac.touch} • FF ${stats.ac.flatFooted}</div>
           </div>
           <div class="bg-slate-950/80 p-1.5 rounded-lg border border-slate-800">
-            <div class="text-[9px] uppercase font-bold text-slate-400">Saving Throws</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400">Saving Throws</div>
             <div class="text-xs font-black text-emerald-400">
               +${stats.saves.fort} / +${stats.saves.ref} / +${stats.saves.will}
             </div>
-            <div class="text-[8px] text-slate-500">Fort / Ref / Will</div>
+            <div class="text-[10px] text-slate-500">Fort / Ref / Will</div>
           </div>
           <div class="bg-slate-950/80 p-1.5 rounded-lg border border-slate-800">
-            <div class="text-[9px] uppercase font-bold text-slate-400">Speed &amp; BAB</div>
+            <div class="text-[10px] uppercase font-bold text-slate-400">Speed &amp; BAB</div>
             <div class="text-xs font-black text-sky-300">${stats.speed.land} ft</div>
-            <div class="text-[8px] text-slate-500">BAB: +${stats.bab}</div>
+            <div class="text-[10px] text-slate-500">BAB: +${stats.bab}</div>
           </div>
         </div>
 
         <!-- Attacks Rotation Buttons -->
         <div class="space-y-1">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-amber-400 flex items-center justify-between">
+          <div class="text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center justify-between">
             <span>⚔️ ATTACK ROTATIONS (ROLL TO-HIT &amp; DAMAGE)</span>
-            <span class="text-slate-500 font-mono text-[8px]">${stats.attacks.length} Attacks</span>
+            <span class="text-slate-500 font-mono text-[10px]">${stats.attacks.length} Attacks</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             ${stats.attacks.map((atk, idx) => `
@@ -11640,7 +11640,7 @@
             </button>
           ` : ''}
           ${stats.specialAbilities.map(sa => `
-            <span class="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700">${safeEscapeHtml(sa)}</span>
+            <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700">${safeEscapeHtml(sa)}</span>
           `).join('')}
         </div>
       `;
@@ -12437,7 +12437,7 @@
         const autoShort = autoShortMap[autoResolved] || 'Auto';
 
         const quickDrawerSelect = `
-          <select data-change-action="combat:pin-drawer-change" data-pin-name="${safePinNameAttr}" class="text-[9px] font-mono bg-slate-950 text-slate-300 border border-slate-700/80 rounded px-1.5 py-0.5 cursor-pointer hover:border-amber-500 transition shrink-0" title="Change Combat Drawer">
+          <select data-change-action="combat:pin-drawer-change" data-pin-name="${safePinNameAttr}" class="text-[10px] font-mono bg-slate-950 text-slate-300 border border-slate-700/80 rounded px-1.5 py-0.5 cursor-pointer hover:border-amber-500 transition shrink-0" title="Change Combat Drawer">
             <option value="auto" ${pin.pinTarget === 'auto' || !pin.pinTarget ? 'selected' : ''}>🎯 Auto (Rule Engine)</option>
             <option value="offense_spell" ${pin.pinTarget === 'offense_spell' ? 'selected' : ''}>⚔️ Spell: Offense</option>
             <option value="spell_control" ${pin.pinTarget === 'spell_control' ? 'selected' : ''}>🕸️ Spell: Control</option>
@@ -12448,7 +12448,7 @@
           </select>
         `;
 
-        const activeCardBorder = pin.active ? 'border-emerald-500/80 ring-1 ring-emerald-500/60 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-900/90 hover:bg-slate-850';
+        const activeCardBorder = pin.active ? 'border-emerald-500/80 ring-1 ring-emerald-500/60 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-900/90';
 
         const reorderControls = isReorder ? `
           <div class="flex items-center gap-1 shrink-0">
@@ -12470,7 +12470,7 @@
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-1.5">
                   <span class="text-xs font-bold text-white truncate">${pin.name}</span>
-                  <span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 shrink-0">${formatActionShort(pin.action)}</span>
+                  <span class="text-[10px] font-bold px-1.5 rounded bg-slate-800 text-slate-400 shrink-0">${formatActionShort(pin.action)}</span>
                 </div>
                 <div class="text-[10px] text-amber-300/80 font-mono truncate">${pin.badge || pin.desc || ''}</div>
               </div>
@@ -12490,7 +12490,7 @@
                 <span class="text-[10px] font-mono text-purple-300">${pin.sourceType || ''}</span>
               </div>
               <p class="text-[11px] text-slate-300 leading-snug">${pin.desc || 'No detailed description available.'}</p>
-              <div class="text-[9px] text-slate-500 mt-1 italic">Mobile: Tap &amp; hold = Details • Long press = Reorder</div>
+              <div class="text-[10px] text-slate-500 mt-1 italic">Mobile: Tap &amp; hold = Details • Long press = Reorder</div>
             </div>
           </div>
         `;
@@ -13129,6 +13129,29 @@
       };
     }
 
+    /**
+     * Plain-text notification (`info` | `success` | `warning` | `error`) rendered through the
+     * shared top toast. The message is escaped and wraps instead of truncating.
+     */
+    function showToast(message, type = 'info', options = {}) {
+      const kinds = {
+        info: { title: 'Notice', icon: 'ℹ️' },
+        success: { title: 'Done', icon: '✅' },
+        warning: { title: 'Warning', icon: '⚠️' },
+        error: { title: 'Error', icon: '❌' }
+      };
+      const kind = kinds[type] || kinds.info;
+      const holder = document.createElement('div');
+      holder.textContent = String(message == null ? '' : message);
+      const urgent = type === 'warning' || type === 'error';
+      return showDiceTopToast({
+        title: options.title || kind.title,
+        breakdown: holder.innerHTML,
+        icon: kind.icon,
+        wrap: true
+      }, { stack: true, dismissMs: options.dismissMs || (urgent ? 6000 : 4000) });
+    }
+
     let _diceToastTimer = null;
     function showDiceTopToast(entry, options = {}) {
       if (!entry) return null;
@@ -13140,6 +13163,8 @@
       if (!container) {
         container = document.createElement('div');
         container.id = 'dice-top-toast-container';
+        container.setAttribute('role', 'status');
+        container.setAttribute('aria-live', 'polite');
         container.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col items-center gap-2 pointer-events-none transition-all duration-300 max-w-[94vw] sm:max-w-md w-max';
         document.body.appendChild(container);
       } else {
@@ -13247,7 +13272,7 @@
             <span class="truncate">${title}</span>
             ${isCrit ? '<span class="text-[10px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black shrink-0 animate-pulse">CRITICAL!</span>' : ''}
           </div>
-          <div class="text-xs text-slate-300 font-mono truncate" title="${breakdown.replace(/"/g, '&quot;')}">
+          <div class="text-xs text-slate-300 font-mono ${entry.wrap ? '' : 'truncate'}"${entry.wrap ? ' style="white-space: normal; overflow-wrap: anywhere;"' : ''} title="${breakdown.replace(/"/g, '&quot;')}">
             ${breakdown}
           </div>
           ${hasActions ? `<div id="dice-toast-actions-bar" class="flex flex-wrap items-center gap-1.5 mt-2 pt-1.5 border-t border-slate-700/80"></div>` : ''}
@@ -14572,19 +14597,19 @@
       }
       if (/^spell\s*:/i.test(rest)) {
         const arg = rest.replace(/^spell\s*:\s*/i, '').trim();
-        tokens.push({ kind: 'cmd', label: 'Spell', cls: 'bg-violet-950 text-violet-300 border-violet-700' });
+        tokens.push({ kind: 'cmd', label: 'Spell', cls: '' });
         if (arg) tokens.push({ kind: 'arg', label: arg, cls: 'bg-slate-900 text-slate-200 border-slate-700' });
         return { cmd: 'spell', level, arg, tokens };
       }
       if (/^buff\s*:/i.test(rest)) {
         const arg = rest.replace(/^buff\s*:\s*/i, '').trim();
-        tokens.push({ kind: 'cmd', label: 'Buff', cls: 'bg-pink-950 text-pink-300 border-pink-700' });
+        tokens.push({ kind: 'cmd', label: 'Buff', cls: 'text-pink-300 border-pink-700' });
         if (arg) tokens.push({ kind: 'arg', label: arg, cls: 'bg-slate-900 text-slate-200 border-slate-700' });
         return { cmd: 'buff', level, arg, tokens };
       }
       if (/^stat\s*:/i.test(rest)) {
         const arg = rest.replace(/^stat\s*:\s*/i, '').trim();
-        tokens.push({ kind: 'cmd', label: 'Stat', cls: 'bg-lime-950 text-lime-300 border-lime-700' });
+        tokens.push({ kind: 'cmd', label: 'Stat', cls: 'text-lime-300' });
         if (arg) tokens.push({ kind: 'arg', label: arg.toUpperCase(), cls: 'bg-slate-900 text-lime-200 border-slate-700' });
         return { cmd: 'stat', level, arg, tokens };
       }
@@ -14851,10 +14876,10 @@
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-white text-xs">${_escTermHtml(b.name)}</span>
-                  <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' : 'bg-amber-950 text-amber-300 border border-amber-700') : 'bg-purple-950 text-purple-300 border border-purple-800'}">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' : 'bg-amber-950 text-amber-300 border border-amber-700') : 'bg-purple-950 text-purple-300 border border-purple-800'}">
                     ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? '✨ Synergy Ready' : `Requires: ${_escTermHtml(reqFeats.join(' + ') || 'Prerequisites')}`) : _escTermHtml(b.type || 'DM Boon')}
                   </span>
-                  ${isOwned ? '<span class="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 text-[9px] font-bold">✅ Owned</span>' : ''}
+                  ${isOwned ? '<span class="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 text-[10px] font-bold">✅ Owned</span>' : ''}
                 </div>
                 <p class="text-[11px] text-slate-400 truncate mt-0.5">${_escTermHtml(b.benefit || b.description || '')}</p>
               </div>
@@ -14955,7 +14980,7 @@
           });
 
           const prereqPills = (m.pEval.checks || []).map(c =>
-            `<span class="px-1.5 py-0.5 rounded font-mono text-[9px] ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/50' : 'bg-rose-950 text-rose-300 border border-rose-700/60 font-bold'}">${_escTermHtml(c.label)} ${c.met ? '✓' : '✗'}</span>`
+            `<span class="px-1.5 py-0.5 rounded font-mono text-[10px] ${c.met ? 'bg-emerald-950 text-emerald-300 border border-emerald-700/50' : 'bg-rose-950 text-rose-300 border border-rose-700/60 font-bold'}">${_escTermHtml(c.label)} ${c.met ? '✓' : '✗'}</span>`
           ).join('');
 
           return `
@@ -14963,9 +14988,9 @@
               <div class="min-w-0 flex-1 space-y-1">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-white text-xs">${_escTermHtml(f.name)}</span>
-                  <span class="px-1.5 py-0.5 rounded text-[9px] font-bold ${isQual ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' : 'bg-rose-950 text-rose-300 border border-rose-700'}">${isQual ? '✅ Qualified' : '⚠️ Prereq / DM Override'}</span>
-                  <span class="px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 text-[9px] font-mono">Lvl ${targetLvl} • ${_escTermHtml(slotMode)}</span>
-                  ${f.isFighterBonusFeat ? '<span class="px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 text-[9px]">⚔️ Fighter Bonus</span>' : ''}
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${isQual ? 'bg-emerald-950 text-emerald-300 border border-emerald-700' : 'bg-rose-950 text-rose-300 border border-rose-700'}">${isQual ? '✅ Qualified' : '⚠️ Prereq / DM Override'}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 text-[10px] font-mono">Lvl ${targetLvl} • ${_escTermHtml(slotMode)}</span>
+                  ${f.isFighterBonusFeat ? '<span class="px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800 text-[10px]">⚔️ Fighter Bonus</span>' : ''}
                 </div>
                 ${prereqPills ? `<div class="flex flex-wrap gap-1">${prereqPills}</div>` : ''}
                 <p class="text-[11px] text-slate-400 truncate">${_escTermHtml(f.benefit || '')}</p>
@@ -15028,7 +15053,7 @@
           });
 
           const targetBadges = (interactionMap.boundUiTargets || interactionMap.nodes || []).map(t =>
-            `<span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-700/70 font-mono text-[10px] font-bold">🔗 ${_escTermHtml(t)}</span>`
+            `<span class="px-2 py-0.5 rounded bg-cyan-950 text-cyan-300 border font-mono text-[10px] font-bold">🔗 ${_escTermHtml(t)}</span>`
           ).join('');
 
           const linkRows = (interactionMap.links || []).map(l =>
@@ -15087,7 +15112,7 @@
               <div class="min-w-0 flex-1">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="font-bold text-white text-xs">${_escTermHtml(b.name)}</span>
-                  <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-amber-950 text-amber-300 border border-amber-700') : 'bg-purple-950 text-purple-300 border border-purple-800'}">
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? 'bg-emerald-950 text-emerald-300 border border-emerald-600' : 'bg-amber-950 text-amber-300 border border-amber-700') : 'bg-purple-950 text-purple-300 border border-purple-800'}">
                     ${(reqFeats.length > 0 || hasV25Pred) ? (reqMet ? '✅ Synergy Unlocked!' : `🔒 Requires: ${_escTermHtml(reqFeats.join(' + ') || 'Prerequisites')}`) : 'Base Draconic / Lesser Boon'}
                   </span>
                 </div>
@@ -15232,7 +15257,7 @@
           hits = [RuleMaster.canonicalDictionary[subQ]];
         }
         if (hits.length === 0) {
-          resultsEl.innerHTML = `<div class="p-3 text-slate-400 text-xs">No spells matched "${_escTermHtml(subQ)}". Try <code class="text-violet-300">spell: Haste</code> or <code class="text-violet-300">spell: Fireball</code>.</div>`;
+          resultsEl.innerHTML = `<div class="p-3 text-slate-400 text-xs">No spells matched "${_escTermHtml(subQ)}". Try <code>spell: Haste</code> or <code>spell: Fireball</code>.</div>`;
           return;
         }
         resultsEl.innerHTML = hits.slice(0, 8).map((sp, idx) => {
@@ -15240,10 +15265,10 @@
           return `
             <div data-action="combat:exec-spotlight-item" data-item-idx="${idx}" class="p-2.5 rounded-xl border transition cursor-pointer flex items-center justify-between gap-2 ${idx === 0 ? 'bg-slate-900 border-violet-500/80' : 'bg-slate-900/50 border-slate-800'}">
               <div class="min-w-0 flex-1">
-                <div class="text-xs font-bold text-white">🔮 ${_escTermHtml(sp.name)} <span class="text-[10px] font-mono text-violet-300">(${_escTermHtml(sp.school || 'Spell')} • Lvl ${_escTermHtml(sp.level ?? parsedCmd.level ?? 1)})</span></div>
+                <div class="text-xs font-bold text-white">🔮 ${_escTermHtml(sp.name)} <span class="text-[10px] font-mono">(${_escTermHtml(sp.school || 'Spell')} • Lvl ${_escTermHtml(sp.level ?? parsedCmd.level ?? 1)})</span></div>
                 <div class="text-[11px] text-slate-400 truncate">${_escTermHtml(sp.benefit || sp.description || '')}</div>
               </div>
-              <span class="px-2 py-1 rounded bg-violet-950 text-violet-300 border border-violet-700 font-mono text-[10px] font-bold">Learn ↵</span>
+              <span class="px-2 py-1 rounded border font-mono text-[10px] font-bold">Learn ↵</span>
             </div>
           `;
         }).join('');
@@ -15323,7 +15348,7 @@
                 <div class="text-xs font-bold text-white">${b.active ? '🟢' : '⚪'} ${_escTermHtml(b.name)}</div>
                 <div class="text-[11px] text-slate-400">${b.active ? 'Currently Active — Press Enter to deactivate' : 'Inactive — Press Enter to activate'}</div>
               </div>
-              <span class="px-2 py-1 rounded bg-pink-950 text-pink-300 border border-pink-700 font-mono text-[10px] font-bold">Toggle ↵</span>
+              <span class="px-2 py-1 rounded text-pink-300 border border-pink-700 font-mono text-[10px] font-bold">Toggle ↵</span>
             </div>
           `);
         });
@@ -15337,7 +15362,7 @@
                 <div class="text-xs font-bold text-white">✨ Add &amp; Activate Buff: ${_escTermHtml(tpl.name)}</div>
                 <div class="text-[11px] text-slate-400 line-clamp-1">${_escTermHtml(tpl.summary || 'Canonical V2 Buff')}</div>
               </div>
-              <span class="px-2 py-1 rounded bg-pink-950 text-pink-300 border border-pink-700 font-mono text-[10px] font-bold">Activate ↵</span>
+              <span class="px-2 py-1 rounded text-pink-300 border border-pink-700 font-mono text-[10px] font-bold">Activate ↵</span>
             </div>
           `);
         });
@@ -15368,12 +15393,12 @@
         const curBase = Number(character?.baseAbilities?.[abilKey] ?? character?.abilities?.[abilKey] ?? 10);
         const nextBase = isSet ? numVal : (curBase + numVal);
         resultsEl.innerHTML = `
-          <div data-action="combat:exec-spotlight-item" data-item-idx="0" class="p-3 rounded-xl bg-slate-900 border border-lime-500/80 flex items-center justify-between cursor-pointer">
+          <div data-action="combat:exec-spotlight-item" data-item-idx="0" class="p-3 rounded-xl bg-slate-900 border flex items-center justify-between cursor-pointer">
             <div>
               <div class="text-xs font-bold text-white">💪 Adjust Base ${abilKey.toUpperCase()}: ${curBase} → <span class="text-lime-300">${nextBase}</span></div>
               <div class="text-[11px] text-slate-400">Updates base ability score and recalculates all dependent D&amp;D 3.5e modifiers, saves, and AC.</div>
             </div>
-            <span class="px-2.5 py-1 rounded bg-lime-950 text-lime-300 border border-lime-700 font-mono text-xs font-bold">Apply ↵</span>
+            <span class="px-2.5 py-1 rounded text-lime-300 border font-mono text-xs font-bold">Apply ↵</span>
           </div>
         `;
         return;

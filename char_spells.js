@@ -847,7 +847,7 @@
               </div>
               <div class="h-7 w-px bg-slate-800 mx-1 sm:mx-1.5 shrink-0"></div>
               <div class="flex flex-col items-end shrink-0">
-                <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Slots Left</span>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Slots Left</span>
                 <span class="text-xs sm:text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${s.daily}</span>
               </div>
             </div>
@@ -865,7 +865,7 @@
               </div>
               <div class="h-7 w-px bg-slate-800/60 mx-1 sm:mx-1.5 shrink-0"></div>
               <div class="flex flex-col items-end shrink-0">
-                <span class="text-[9px] text-slate-600 uppercase tracking-wider font-semibold">Slots Left</span>
+                <span class="text-[10px] text-slate-600 uppercase tracking-wider font-semibold">Slots Left</span>
                 <span class="text-xs sm:text-sm font-black font-mono text-slate-600 whitespace-nowrap">🔒 0 / 0</span>
               </div>
             </div>
@@ -969,7 +969,7 @@
                 ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>📖</span>
                 <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
-                ${!hasActiveSlot ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
+                ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
               </div>
             </td>
             <td class="py-2.5 px-3 text-slate-300">
@@ -1875,7 +1875,7 @@
               </div>
               <div class="h-7 w-px bg-slate-800 mx-1.5 shrink-0"></div>
               <div class="flex flex-col items-end shrink-0">
-                <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Slots Left</span>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Slots Left</span>
                 <span class="text-xs sm:text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${s.daily}</span>
               </div>
             </div>
@@ -1893,7 +1893,7 @@
               </div>
               <div class="h-7 w-px bg-slate-800/60 mx-1.5 shrink-0"></div>
               <div class="flex flex-col items-end shrink-0">
-                <span class="text-[9px] text-slate-600 uppercase tracking-wider font-semibold">Slots Left</span>
+                <span class="text-[10px] text-slate-600 uppercase tracking-wider font-semibold">Slots Left</span>
                 <span class="text-xs sm:text-sm font-black font-mono text-slate-600 whitespace-nowrap">🔒 0 / 0</span>
               </div>
             </div>
@@ -2053,7 +2053,7 @@
                 <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
                 ${domainBadgeHtml}
                 ${clBoostBadgeHtml}
-                ${!hasActiveSlot ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
+                ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
               </div>
             </td>
             <td class="py-2.5 px-3 text-slate-300">
@@ -2214,7 +2214,7 @@
           } h-8 px-2.5 rounded-lg border text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer" title="${turnTitle} (PHB p. 159): Check ${turnDomainInfo.turningCheckFormula}, Turning Damage ${turnDomainInfo.turningDamageFormula} HD (Cleric Lvl ${turnDomainInfo.effectiveTurningLevel})${turnBonusTip}">
             <span>${isRebuke ? '💀' : '☀️'}</span>
             <span>${isRebuke ? 'Rebuke Undead' : 'Turn Undead'}</span>
-            <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-950/80 border border-slate-700">${turnRem}/${turnMax}</span>
+            <span class="font-mono text-[10px] px-1.5 rounded bg-slate-950/80 border border-slate-700">${turnRem}/${turnMax}</span>
           </button>
         ` : '';
 
@@ -2224,12 +2224,12 @@
           return `
             <button type="button" data-action="spells:roll-turn-undead" data-pool-id="${ep.id}" class="${
               rem > 0
-                ? 'bg-teal-950/90 hover:bg-teal-800 text-teal-200 border-teal-500/80 shadow'
+                ? 'bg-teal-950/90 text-teal-200 border-teal-500/80 shadow'
                 : 'bg-slate-900 text-slate-500 border-slate-800 opacity-50 cursor-not-allowed'
             } h-8 px-2.5 rounded-lg border text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer" title="${ep.domain} Domain Elemental Turning: Check ${turnDomainInfo.turningCheckFormula}, Damage ${turnDomainInfo.turningDamageFormula} HD">
               <span>${ep.icon}</span>
               <span>${ep.label}</span>
-              <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-950/80 border border-slate-700">${rem}/${ep.maxUses}</span>
+              <span class="font-mono text-[10px] px-1.5 rounded bg-slate-950/80 border border-slate-700">${rem}/${ep.maxUses}</span>
             </button>
           `;
         }).join('');
@@ -2246,13 +2246,13 @@
             } h-8 px-2.5 rounded-lg border text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer" title="${pw.domain} Domain Granted Power (${pw.actionType}): ${pw.summary}">
               <span>${pw.icon}</span>
               <span>${pw.name}</span>
-              <span class="font-mono text-[10px] px-1.5 py-0.2 rounded bg-slate-950/80 border border-slate-700">${rem}/${pw.maxUses}${unit === 'rds/day' ? ' rds' : ''}</span>
+              <span class="font-mono text-[10px] px-1.5 rounded bg-slate-950/80 border border-slate-700">${rem}/${pw.maxUses}${unit === 'rds/day' ? ' rds' : ''}</span>
             </button>
           `;
         }).join('');
 
         domainPowersStripHtml = `
-          <div class="bg-slate-950/85 border border-yellow-600/40 rounded-xl p-2.5 space-y-2 shadow">
+          <div class="bg-slate-950/85 border rounded-xl p-2.5 space-y-2 shadow">
             <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] px-1">
               <span class="text-yellow-300 font-bold uppercase tracking-wider flex items-center gap-1.5">
                 <span>⚜️</span>
@@ -3607,7 +3607,7 @@
         tabsContainer.innerHTML = sources.map(s => {
           const isAct = s.key === activeSource.key;
           return `
-            <button type="button" data-action="spells:switch-compact-source" data-source="${s.key}" class="text-[9px] px-2 py-0.5 rounded font-bold transition cursor-pointer flex items-center gap-1 ${isAct ? `${s.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">
+            <button type="button" data-action="spells:switch-compact-source" data-source="${s.key}" class="text-[10px] px-2 py-0.5 rounded font-bold transition cursor-pointer flex items-center gap-1 ${isAct ? `${s.tagClass} border shadow-sm` : 'bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800'}">
               <span>${s.icon}</span>
               <span>${s.shortLabel}</span>
             </button>
@@ -3668,7 +3668,7 @@
             <div class="h-7 w-px bg-slate-800 mx-1 sm:mx-1.5 shrink-0"></div>
 
             <div class="flex flex-col items-end shrink-0">
-              <span class="text-[9px] text-slate-400 uppercase tracking-wider font-semibold">Slots Left</span>
+              <span class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Slots Left</span>
               <span class="text-xs sm:text-sm font-black font-mono ${remaining > 0 ? 'text-emerald-400' : 'text-rose-500'} whitespace-nowrap">${remaining} / ${daily}</span>
             </div>
           `;
@@ -3689,7 +3689,7 @@
             <div class="h-7 w-px bg-slate-800/60 mx-1 sm:mx-1.5 shrink-0"></div>
 
             <div class="flex flex-col items-end shrink-0">
-              <span class="text-[9px] text-slate-600 uppercase tracking-wider font-semibold">Slots Left</span>
+              <span class="text-[10px] text-slate-600 uppercase tracking-wider font-semibold">Slots Left</span>
               <span class="text-xs sm:text-sm font-black font-mono text-slate-600 whitespace-nowrap">🔒 0 / 0</span>
             </div>
           `;
@@ -3992,7 +3992,7 @@
 
       const toast = document.createElement('div');
       toast.id = 'spell-precast-choice-toast';
-      toast.className = 'dice-toast-item pointer-events-auto transform -translate-y-8 opacity-0 transition-all duration-300 ease-out bg-slate-900/98 border-2 border-amber-500/80 rounded-2xl p-3.5 sm:p-4 backdrop-blur-md flex flex-col gap-2.5 text-white max-w-[94vw] sm:max-w-md w-full select-none shadow-[0_0_30px_rgba(245,158,11,0.25)]';
+      toast.className = 'dice-toast-item pointer-events-auto transform -translate-y-8 opacity-0 transition-all duration-300 ease-out border-2 border-amber-500/80 rounded-2xl p-3.5 sm:p-4 backdrop-blur-md flex flex-col gap-2.5 text-white max-w-[94vw] sm:max-w-md w-full select-none shadow-[0_0_30px_rgba(245,158,11,0.25)]';
 
       let btnsHtml = '';
       options.forEach((opt, idx) => {
@@ -4683,7 +4683,7 @@
               <div class="flex items-center gap-2 whitespace-nowrap">
                 <span>⚔️</span>
                 <span class="${isOverLevel ? 'text-slate-400' : 'text-white'}">${m.name}</span>
-                ${isOverLevel ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">IL Too Low (Max: ${initInfo.maxManeuverLvl})</span>` : ''}
+                ${isOverLevel ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">IL Too Low (Max: ${initInfo.maxManeuverLvl})</span>` : ''}
               </div>
             </td>
             <td class="py-2.5 px-3 text-slate-300">
@@ -4944,7 +4944,7 @@
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[10px] font-bold font-mono">Lvl ${mLvl}</span>
                   <span class="text-xs font-extrabold text-white">${m.name}</span>
-                  <span class="badge bg-slate-950 text-rose-300 border border-rose-800/70 text-[10px] font-semibold">${m.discipline || 'Iron Heart'}</span>
+                  <span class="badge bg-slate-950 text-rose-300 border text-[10px] font-semibold">${m.discipline || 'Iron Heart'}</span>
                   <span class="text-[10px] text-amber-300 font-semibold">${m.action || 'Standard Action'}</span>
                   ${dmgExpr ? `<span class="badge bg-amber-950/90 text-amber-300 border border-amber-700/70 text-[10px] font-mono font-bold">${dmgExpr}</span>` : ''}
                 </div>
@@ -4962,7 +4962,7 @@
       }
 
       modal.innerHTML = `
-        <div class="bg-slate-950 border border-rose-500/70 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <div class="bg-slate-950 border border-rose-500/70 rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden flex flex-col">
           <div class="bg-gradient-to-r from-rose-950/80 via-slate-900 to-slate-950 px-4 py-3 border-b border-slate-800 flex items-center justify-between gap-3">
             <div class="flex items-center gap-2.5">
               <div class="w-8 h-8 rounded-lg bg-rose-900/70 border border-rose-500/60 flex items-center justify-center text-base">⚡</div>
@@ -5582,7 +5582,7 @@
               ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
               <span>🔮</span>
               <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
-              ${!hasActiveSlot ? `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
+              ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
             </div>
           </td>
           <td class="py-2.5 px-3 text-slate-300">
@@ -7564,14 +7564,14 @@
           div.innerHTML = `
             <div class="flex items-center justify-between">
               <span class="text-[10px] font-bold text-slate-400 uppercase">${s.label}</span>
-              ${bonusDiff !== 0 ? `<span class="text-[9px] font-mono px-1 rounded ${bonusDiff > 0 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">${bonusDiff > 0 ? '+' + bonusDiff : bonusDiff}</span>` : ''}
+              ${bonusDiff !== 0 ? `<span class="text-[10px] font-mono px-1 rounded ${bonusDiff > 0 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">${bonusDiff > 0 ? '+' + bonusDiff : bonusDiff}</span>` : ''}
             </div>
             <div class="text-xl sm:text-2xl font-black text-amber-400 font-mono my-0.5">${score}</div>
             <div class="flex items-center justify-between text-xs font-mono">
               <span class="${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${mod >= 0 ? '+' : ''}${mod}</span>
-              ${bonusDiff !== 0 ? `<span class="text-[9px] text-slate-500 font-sans">Taban: ${base}</span>` : ''}
+              ${bonusDiff !== 0 ? `<span class="text-[10px] text-slate-500 font-sans">Taban: ${base}</span>` : ''}
             </div>
-            ${sourceText ? `<div class="text-[9px] text-emerald-400/90 truncate mt-1 pt-1 border-t border-slate-800" title="${sourceText}">✨ ${sourceText}</div>` : ''}
+            ${sourceText ? `<div class="text-[10px] text-emerald-400/90 truncate mt-1 pt-1 border-t border-slate-800" title="${sourceText}">✨ ${sourceText}</div>` : ''}
           `;
           container.appendChild(div);
         });
@@ -7871,12 +7871,12 @@
               ? 'bg-emerald-950/50 border-emerald-600/60 text-emerald-200 hover:border-purple-400'
               : 'bg-slate-950/90 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-600');
           const statusBadge = isBoon && hasClass
-            ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-600 text-white">🌟 Boon + Class (CL ${activeLevels})</span>`
+            ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-purple-600 text-white">🌟 Boon + Class (CL ${activeLevels})</span>`
             : (isBoon
-              ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-purple-600 text-white">🌟 DM Boon (CL ${activeLevels})</span>`
+              ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-purple-600 text-white">🌟 DM Boon (CL ${activeLevels})</span>`
               : (hasClass
-                ? `<span class="text-[9px] font-mono font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-600/50">Class Lvl ${d.classLvl}</span>`
-                : `<span class="text-[9px] font-mono px-1.5 py-0.2 rounded bg-slate-900 text-slate-500 border border-slate-800">+ Add Boon</span>`));
+                ? `<span class="text-[10px] font-mono font-bold px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600/50">Class Lvl ${d.classLvl}</span>`
+                : `<span class="text-[10px] font-mono px-1.5 rounded bg-slate-900 text-slate-500 border border-slate-800">+ Add Boon</span>`));
 
           return `
             <button type="button" data-action="spells:toggle-dm-boon" data-discipline="${d.key}" class="p-2 rounded-xl border text-left transition flex items-center justify-between gap-2 cursor-pointer active:scale-95 ${activeClass}" title="Click to toggle ${d.label} as a DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
@@ -7911,7 +7911,7 @@
                 <span>${d.icon}</span>
                 <span>${d.short}</span>
               </span>
-              <span class="font-mono text-[9px] px-1.5 py-0.2 rounded bg-black/30 shrink-0">${stateText}</span>
+              <span class="font-mono text-[10px] px-1.5 rounded shrink-0">${stateText}</span>
             </button>
           `;
         }).join('');
@@ -8034,7 +8034,7 @@
         }
         if (casterTypeHint) {
           casterTypeHint.textContent = 'RAW: Auto-detected from Class';
-          casterTypeHint.className = 'text-[9px] font-mono text-emerald-400 font-bold transition';
+          casterTypeHint.className = 'text-[10px] font-mono text-emerald-400 font-bold transition';
         }
         const autoDisc = resolvePreferredMagicDiscipline(character);
         if (autoDisc && casterTypeSel.querySelector(`option[value="${autoDisc}"]`)) {
@@ -8048,7 +8048,7 @@
         }
         if (casterTypeHint) {
           casterTypeHint.textContent = boons.length > 1 ? `${boons.length} DM Boons Active` : 'DM Boon Override';
-          casterTypeHint.className = 'text-[9px] font-mono text-purple-300 font-bold transition';
+          casterTypeHint.className = 'text-[10px] font-mono text-purple-300 font-bold transition';
         }
         const boonSelectVal = (character?.settings?.casterTypeExplicit === true && character?.settings?.casterType)
           ? character.settings.casterType
@@ -8952,7 +8952,7 @@
             <select id="custom-class-template-select" data-change-action="spells:custom-class-template-change" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-emerald-300 font-bold">
               <option value="">-- Start from Blank Custom Class --</option>
             </select>
-            <button type="button" data-action="spells:custom-class-load-template" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg border border-indigo-400/40 transition cursor-pointer">
+            <button type="button" data-action="spells:custom-class-load-template" class="hover:bg-indigo-600 text-white font-bold text-[11px] px-3 py-1.5 rounded-lg border border-indigo-400/40 transition cursor-pointer">
               Load Template
             </button>
           </div>
@@ -9428,9 +9428,9 @@
       const safeTarget = escape(cleanTarget);
 
       if (isActive) {
-        return `<span data-action="spells:toggle-feat-pin" data-target="${safeTarget}" class="absolute top-0.5 right-0.5 inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[9px] border border-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.85)] pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: ACTIVE (+Bonus applied). Click to deactivate!"><span class="text-[9px]">✓</span><span>Active</span></span>`;
+        return `<span data-action="spells:toggle-feat-pin" data-target="${safeTarget}" class="absolute top-0.5 right-0.5 inline-flex items-center gap-1 px-1.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] border border-emerald-300 shadow-[0_0_8px_rgba(16,185,129,0.85)] pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: ACTIVE (+Bonus applied). Click to deactivate!"><span class="text-[10px]">✓</span><span>Active</span></span>`;
       } else {
-        return `<span data-action="spells:toggle-feat-pin" data-target="${safeTarget}" class="absolute top-0.5 right-0.5 inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-[9px] border border-slate-700 shadow pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: INACTIVE. Click to activate!"><span class="text-[8px]">⚪</span><span>Inactive</span></span>`;
+        return `<span data-action="spells:toggle-feat-pin" data-target="${safeTarget}" class="absolute top-0.5 right-0.5 inline-flex items-center gap-0.5 px-1.5 rounded-full bg-slate-900/90 hover:bg-slate-800 text-slate-400 hover:text-white font-bold text-[10px] border border-slate-700 shadow pointer-events-auto z-10 cursor-pointer transition active:scale-95" title="📌 Combat Mode: INACTIVE. Click to activate!"><span class="text-[10px]">⚪</span><span>Inactive</span></span>`;
       }
     }
 
@@ -9643,7 +9643,7 @@
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="text-amber-400 font-bold text-[10px] uppercase tracking-wide">Selected:</span>
                 <span class="font-extrabold text-white truncate">${currentTarget}</span>
-                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-900/80 text-amber-300 font-mono">${meta}</span>` : ''}
+                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-amber-900/80 text-amber-300 font-mono">${meta}</span>` : ''}
               </div>
               <button type="button" data-action="spells:clear-feat-target-weapon" class="text-[10px] text-amber-400 hover:text-white underline cursor-pointer ml-2 shrink-0">Change</button>
             </div>
@@ -9671,7 +9671,7 @@
 
       if (filteredEquipped.length > 0) {
         html += `
-          <div class="px-2 py-1 text-[9px] font-bold text-amber-300 uppercase tracking-wider flex items-center justify-between bg-slate-900/90 rounded">
+          <div class="px-2 py-1 text-[10px] font-bold text-amber-300 uppercase tracking-wider flex items-center justify-between bg-slate-900/90 rounded">
             <span>⚔️ Equipped / Inventory Weapons</span>
             <span class="text-slate-400 font-mono">${filteredEquipped.length}</span>
           </div>
@@ -9681,11 +9681,11 @@
           const meta = metaFn(w);
           const safeW = escape(w);
           html += `
-            <button type="button" data-action="spells:select-feat-target-weapon" data-weapon="${safeW}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent hover:border-amber-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
+            <button type="button" data-action="spells:select-feat-target-weapon" data-weapon="${safeW}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-amber-950/40 border border-transparent text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="font-bold text-white text-xs group-hover:text-amber-200 truncate">${w}</span>
-                <span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold shrink-0">Equipped</span>
-                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+                <span class="text-[10px] px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-700/60 font-bold shrink-0">Equipped</span>
+                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
               </div>
               ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-amber-300 font-bold shrink-0">Select ➔</span>'}
             </button>
@@ -9695,7 +9695,7 @@
 
       if (filteredCompendium.length > 0) {
         html += `
-          <div class="px-2 py-1 text-[9px] font-bold text-purple-300 uppercase tracking-wider flex items-center justify-between bg-slate-900/90 rounded mt-1">
+          <div class="px-2 py-1 text-[10px] font-bold text-purple-300 uppercase tracking-wider flex items-center justify-between bg-slate-900/90 rounded mt-1">
             <span>📚 All D&D 3.5e Base Weapons</span>
             <span class="text-slate-400 font-mono">${filteredCompendium.length}</span>
           </div>
@@ -9708,7 +9708,7 @@
             <button type="button" data-action="spells:select-feat-target-weapon" data-weapon="${safeW}" class="w-full text-left p-1.5 rounded-lg ${isSel ? 'bg-amber-950/90 border border-amber-500 text-amber-200' : 'bg-slate-900/50 hover:bg-purple-950/40 border border-transparent hover:border-purple-600/50 text-slate-200'} transition flex items-center justify-between gap-2 group cursor-pointer active:scale-[0.99]">
               <div class="flex items-center gap-1.5 min-w-0">
                 <span class="font-bold text-white text-xs group-hover:text-purple-200 truncate">${w}</span>
-                ${meta ? `<span class="text-[9px] px-1.5 py-0.2 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
+                ${meta ? `<span class="text-[10px] px-1.5 rounded bg-slate-950 text-slate-400 font-mono shrink-0">${meta}</span>` : ''}
               </div>
               ${isSel ? '<span class="text-xs text-amber-400 font-bold shrink-0">Selected ✓</span>' : '<span class="text-xs text-slate-500 group-hover:text-purple-300 font-bold shrink-0">Select ➔</span>'}
             </button>
@@ -10251,7 +10251,7 @@
             const safeRFormula = escape(String(mergedV2.rechargeDice));
             const safeRLabel = escape(`${title} — Recharge Cooldown`);
             buttonsHtml.push(`
-              <button type="button" data-action="spells:roll-ability-tactical-dice" data-formula="${safeRFormula}" data-label="${safeRLabel}" data-mode="recharge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-950/90 hover:bg-indigo-800 text-indigo-100 border border-indigo-600/70 shadow transition active:scale-95 cursor-pointer">
+              <button type="button" data-action="spells:roll-ability-tactical-dice" data-formula="${safeRFormula}" data-label="${safeRLabel}" data-mode="recharge" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-indigo-950/90 border border-indigo-600/70 shadow transition active:scale-95 cursor-pointer">
                 <span>⏳</span>
                 <span>Roll Recharge (${safeEscapeHtml(mergedV2.rechargeDice)} rounds)</span>
               </button>
