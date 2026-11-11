@@ -2694,6 +2694,38 @@ function runDeriveSheetTests() {
     /\{ t: 'Spell', names: spellListNames \}/.test(pwStoreSrc)
   );
 
+  // Pickers load records by type, not by file name: every chunk holding Spell / gear rows is found through the
+  // index, so a new lazy chunk (srd_spells_splat.json, srd_equipment_splat.json) shows up without code changes.
+  {
+    const spellFiles = Comp.getChunksForTypes(['Spell']).sort();
+    const pickerFiles = Comp.getChunksForTypes(['Spell', 'Maneuver', 'Stance']).sort();
+    const gearFiles = Comp.getChunksForTypes(['Weapon', 'Armor', 'Shield']);
+    const featFilesDefault = Comp.getChunksForTypes(['Feat']);
+    const featFilesOptIn = Comp.getChunksForTypes(['Feat'], true);
+    const spellsSrc = fs.readFileSync(path.join(__dirname, '..', 'char_spells.js'), 'utf8');
+    const progSrc = fs.readFileSync(path.join(__dirname, '..', 'char_progression.js'), 'utf8');
+    const invSrc = fs.readFileSync(path.join(__dirname, '..', 'char_inventory.js'), 'utf8');
+    check(
+      'Pickers load by type: Spell rows map to srd_spells.json + srd_spells_splat.json, the spell picker also gets srd_maneuvers.json, gear includes srd_equipment_splat.json, opt-in feat chunks only on request; the spell, domain, buff and gear pickers ask for types instead of naming files',
+      JSON.stringify(spellFiles) === JSON.stringify(['srd_spells.json', 'srd_spells_splat.json']) &&
+      pickerFiles.includes('srd_maneuvers.json') && pickerFiles.includes('srd_spells_splat.json') &&
+      gearFiles.includes('srd_equipment_splat.json') &&
+      !featFilesDefault.includes('srd_feats_legacy.json') && featFilesOptIn.includes('srd_feats_legacy.json') &&
+      typeof Comp.getLoadedEntryCount() === 'number' &&
+      !/ensureChunkLoaded\('srd_spells\.json'\)/.test(spellsSrc + progSrc + invSrc) &&
+      /ensureTypesLoaded\(SPELL_PICKER_TYPES\)/.test(spellsSrc) && /ensureTypesLoaded\(\['Spell'\]\)/.test(progSrc) &&
+      /ensureTypesLoaded\(GEAR_PICKER_TYPES\)/.test(invSrc) && /ensureTypesLoaded\(\['Condition', 'Buff', 'Spell'\]\)/.test(invSrc)
+    );
+    // A spell fetched by Rule Master AI from a filtered picker (e.g. a level 0 slot) must stay visible: the picker
+    // widens only the filters that hide it and says why (Ghost Trap, level 3, fetched from a level 0 slot).
+    check(
+      'Spell picker AI fetch: the fetched record is revealed (renderSpellPickerResults returns its matches; revealFetchedPickerEntries widens type, level and class filters that hide it) instead of being saved to the DB and left invisible',
+      /function revealFetchedPickerEntries\(entries, pickerType\)/.test(spellsSrc) &&
+      /const relaxNote = revealFetchedPickerEntries\(entries, type\);/.test(spellsSrc) &&
+      (spellsSrc.match(/return matches;/g) || []).length === 2 && /if \(!container\) return \[\];/.test(spellsSrc)
+    );
+  }
+
   // Hub custom DB isolation (ADR-011): a rule pack loaded in the Hub reaches only one campaign's characters.
   const hubSrc = fs.readFileSync(path.join(__dirname, '..', 'hub.html'), 'utf8');
   const hubFnSrc = hubSrc.slice(hubSrc.indexOf('function getHubCampaignScopeIds('), hubSrc.indexOf('function describeHubDbMergeResult('));

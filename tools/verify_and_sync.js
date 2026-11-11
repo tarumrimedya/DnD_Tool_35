@@ -22,6 +22,20 @@ const { runRuleEngineTests } = require('./test_rule_engine');
 const { runDeriveSheetTests } = require('./test_derive_sheet');
 
 const ROOT = path.resolve(__dirname, '..');
+
+// Copies src to dst only when the content differs. On Docker Desktop for Windows (bind-mounted repo),
+// fs.copyFileSync now and then fails with EINVAL and leaves dst deleted; fall back to read + write then.
+function syncCopy(src, dst) {
+  const data = fs.readFileSync(src);
+  if (fs.existsSync(dst)) {
+    try { if (fs.readFileSync(dst).equals(data)) return; } catch (_) {}
+  }
+  try {
+    syncCopy(src, dst);
+  } catch (err) {
+    fs.writeFileSync(dst, data);
+  }
+}
 const WEBAPP = path.join(ROOT, 'webapp');
 
 const CORE_FILES = [
@@ -83,7 +97,7 @@ function main() {
   const indexPath = path.join(ROOT, 'index.html');
   const charPath = path.join(ROOT, 'character.html');
   if (fs.existsSync(indexPath)) {
-    fs.copyFileSync(indexPath, charPath);
+    syncCopy(indexPath, charPath);
   }
 
   // 2. Sync all CORE_FILES -> webapp/
@@ -91,7 +105,7 @@ function main() {
     const src = path.join(ROOT, rel);
     const dst = path.join(WEBAPP, rel);
     if (fs.existsSync(src)) {
-      fs.copyFileSync(src, dst);
+      syncCopy(src, dst);
     }
   }
 
@@ -189,7 +203,7 @@ function main() {
     const src = path.join(ROOT, 'database', rel);
     const dst = path.join(WEBAPP, 'database', rel);
     if (fs.existsSync(src) && fs.existsSync(path.dirname(dst))) {
-      fs.copyFileSync(src, dst);
+      syncCopy(src, dst);
     }
   }
 
@@ -368,7 +382,7 @@ function main() {
     'index.html':         { inlineEvents: 183, windowAssigns: 0 },
     'char_hud.js':        { inlineEvents: 0,   windowAssigns: 48 },
     'char_combat.js':     { inlineEvents: 0,   windowAssigns: 82 },
-    'char_spells.js':     { inlineEvents: 0,   windowAssigns: 68 },
+    'char_spells.js':     { inlineEvents: 0,   windowAssigns: 67 },
     'char_progression.js':{ inlineEvents: 0,   windowAssigns: 46 },
     'char_inventory.js':  { inlineEvents: 0,   windowAssigns: 41 },
     'rule_engine.js':     { inlineEvents: 0,   windowAssigns: 1 },

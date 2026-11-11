@@ -5824,12 +5824,10 @@
       const modal = document.getElementById('spell-maneuver-modal');
       if (modal) modal.classList.remove('hidden');
 
-      if (window.SrdCompendium && typeof window.SrdCompendium.ensureChunkLoaded === 'function') {
-        Promise.all([
-          window.SrdCompendium.ensureChunkLoaded('srd_spells.json'),
-          window.SrdCompendium.ensureChunkLoaded('srd_maneuvers.json')
-        ]).then(() => {
-          renderSpellPickerResults();
+      // Every chunk with Spell / Maneuver / Stance rows (srd_spells.json, srd_spells_splat.json, srd_maneuvers.json, ...).
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded(SPELL_PICKER_TYPES).then((arrived) => {
+          if (arrived.length) renderSpellPickerResults();
         }).catch(() => {});
       }
     }
@@ -6122,6 +6120,9 @@
       if (low === 'ft' && item.area) return String(item.area).trim();
       return r;
     }
+
+    // Record types the spell / maneuver picker lists; the chunks holding them are found through the index.
+    const SPELL_PICKER_TYPES = ['Spell', 'Maneuver', 'Stance'];
 
     function getCombinedSpellManeuverCatalog() {
       const seen = new Set();
@@ -6422,17 +6423,15 @@
       }
     }
 
+    // Returns the records the list shows (all matches, not only the first 60), so a caller can tell whether a
+    // record it just added is visible under the current filters.
     function renderSpellPickerResults() {
       const container = document.getElementById('spell-picker-results-container');
-      if (!container) return;
+      if (!container) return [];
 
-      if (window.SrdCompendium && typeof window.SrdCompendium.ensureChunkLoaded === 'function' && !window._srdSpellsChunkRequested) {
-        window._srdSpellsChunkRequested = true;
-        Promise.all([
-          window.SrdCompendium.ensureChunkLoaded('srd_spells.json'),
-          window.SrdCompendium.ensureChunkLoaded('srd_maneuvers.json')
-        ]).then(() => {
-          renderSpellPickerResults();
+      if (window.SrdCompendium && typeof window.SrdCompendium.ensureTypesLoaded === 'function') {
+        window.SrdCompendium.ensureTypesLoaded(SPELL_PICKER_TYPES).then((arrived) => {
+          if (arrived.length) renderSpellPickerResults();
         }).catch(() => {});
       }
 
@@ -6605,7 +6604,7 @@
             <p class="text-[11px] text-slate-500">Click the <strong>Rule Master AI</strong> button below to fetch it directly from the 3.5e rulebooks.</p>
           </div>
         `;
-        return;
+        return matches;
       }
 
       const totalMatches = matches.length;
@@ -6802,6 +6801,7 @@
         foot.textContent = `Showing top 60 of ${totalMatches} entries — use search or filters above to narrow results`;
         container.appendChild(foot);
       }
+      return matches;
     }
 
     function addMasterDbItemToCharacter(escapedName) {
@@ -7171,6 +7171,47 @@
       }
     }
 
+    // A record just fetched by Rule Master AI must be visible. The picker is often filtered (the slot's level when
+    // opened from an empty slot, the class source, the record type), and the fetched record can fall outside it,
+    // e.g. a 3rd-level spell fetched from a level 0 slot. Widen only the filters that hide it, redraw, and return a
+    // note saying what changed ('' when it was visible).
+    function revealFetchedPickerEntries(entries, pickerType) {
+      const wanted = (Array.isArray(entries) ? entries : []).filter(e => e && e.name);
+      const shown = renderSpellPickerResults();
+      const isShown = (e) => shown.some(m => String(m.name || '').toLowerCase() === String(e.name).toLowerCase());
+      const target = wanted.find(e => !isShown(e));
+      if (!target) return '';
+      const notes = [];
+      const eType = String(target.type || '').toLowerCase();
+      const typeKey = eType.includes('stance') ? 'Stance' : (eType.includes('maneuver') ? 'Maneuver' : (eType.includes('spell') ? 'Spell' : null));
+      if (typeKey && typeKey !== pickerType) {
+        setSpellPickerType(typeKey);
+        notes.push(`It is a ${typeKey.toLowerCase()}, so the list now shows ${typeKey.toLowerCase()}s.`);
+      }
+      const levelSel = document.getElementById('spell-picker-level-filter');
+      if (levelSel && levelSel.value !== 'all') {
+        const pool = window._spellPickerTargetPool || 'spontaneous';
+        const srcSel = document.getElementById('spell-picker-source-filter');
+        const src = srcSel && srcSel.value !== 'auto' ? srcSel.value : resolveAutoSpellFilterSource(pool);
+        const lvl = typeKey === 'Spell' || (!typeKey && pickerType === 'Spell')
+          ? resolveSpellLevelForPool(target, pool, src)
+          : (target.level !== undefined ? Number(target.level) : null);
+        const hasOpt = lvl !== null && lvl !== undefined && [...levelSel.options].some(o => o.value === String(lvl));
+        levelSel.value = hasOpt ? String(lvl) : 'all';
+        notes.push(hasOpt ? `It is level ${lvl}, so the list now shows level ${lvl}.` : 'The level filter was cleared to show it.');
+      }
+      if (!isShown(target) || notes.length) {
+        let after = renderSpellPickerResults();
+        const srcSel = document.getElementById('spell-picker-source-filter');
+        if (!after.some(m => String(m.name || '').toLowerCase() === String(target.name).toLowerCase()) && srcSel && srcSel.value !== 'all') {
+          srcSel.value = [...srcSel.options].some(o => o.value === 'all') ? 'all' : srcSel.value;
+          notes.push('Its class list does not match this filter, so all classes are shown.');
+          after = renderSpellPickerResults();
+        }
+      }
+      return notes.join(' ');
+    }
+
     async function triggerSpellPickerAiSearch() {
       const q = (document.getElementById('spell-picker-search')?.value || '').trim();
       const type = window._currentSpellPickerType || 'Spell';
@@ -7222,11 +7263,11 @@
         });
 
         saveStateToStorage();
-        renderSpellPickerResults();
+        const relaxNote = revealFetchedPickerEntries(entries, type);
         showDiceTopToast({
           icon: '✨',
           title: 'Rule Master',
-          breakdown: `"${q}" found and saved to Master DB!`,
+          breakdown: `"${q}" found and saved to Master DB!${relaxNote ? ' ' + relaxNote : ''}`,
           total: '+1 Entry'
         });
       } catch (err) {

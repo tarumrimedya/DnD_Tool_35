@@ -264,6 +264,35 @@
     return Object.keys(chunks).filter((name) => chunks[name] && chunks[name].optIn === true);
   }
 
+  /**
+   * Chunk files that hold index rows of the given record types (index-driven, so a new lazy chunk such as
+   * srd_spells_splat.json is found without code changes). Opt-in chunks are left out unless `includeOptIn`.
+   * Pickers ask for types, never for file names.
+   */
+  let _chunksByTypeCache = null;
+  let _chunksByTypeSource = null;
+  function getChunksForTypes(types, includeOptIn = false) {
+    const idx = _indexData && Array.isArray(_indexData.index) ? _indexData.index : null;
+    if (!idx) return [];
+    if (_chunksByTypeSource !== _indexData) {
+      _chunksByTypeCache = new Map();
+      idx.forEach((row) => {
+        if (!row || !row.f || !row.t) return;
+        const t = String(row.t).toLowerCase();
+        if (!_chunksByTypeCache.has(t)) _chunksByTypeCache.set(t, new Set());
+        _chunksByTypeCache.get(t).add(row.f);
+      });
+      _chunksByTypeSource = _indexData;
+    }
+    const optIn = includeOptIn ? [] : getOptInChunkNames();
+    const out = new Set();
+    (Array.isArray(types) ? types : [types]).forEach((t) => {
+      const files = _chunksByTypeCache.get(String(t || '').toLowerCase());
+      if (files) files.forEach((f) => { if (!optIn.includes(f)) out.add(f); });
+    });
+    return Array.from(out);
+  }
+
   // id -> index row, rebuilt whenever a different index payload is loaded
   let _indexRowsById = null;
   let _indexRowsSource = null;
@@ -611,6 +640,30 @@
     /** Lazy chunks that are never auto-loaded (index `optIn: true`). */
     getOptInChunkNames() {
       return getOptInChunkNames();
+    },
+
+    /** Number of records currently in memory; changes whenever a chunk arrives (use it in picker cache keys). */
+    getLoadedEntryCount() {
+      return _byId.size;
+    },
+
+    /** Chunk files holding index rows of these record types (opt-in chunks only with `includeOptIn`). */
+    getChunksForTypes(types, includeOptIn = false) {
+      if (!_indexData && isNodeSyncEnv()) ensureNodeSyncLoaded();
+      return getChunksForTypes(types, includeOptIn);
+    },
+
+    /**
+     * Loads every chunk that holds records of these types (eager and lazy; opt-in only with `includeOptIn`).
+     * Resolves to the file names that were not loaded before (empty when nothing new arrived), so a picker
+     * redraws only when it gets new records: `ensureTypesLoaded(['Spell']).then(f => f.length && redraw())`.
+     */
+    async ensureTypesLoaded(types, includeOptIn = false) {
+      if (!_indexData && isNodeSyncEnv()) ensureNodeSyncLoaded();
+      const missing = getChunksForTypes(types, includeOptIn).filter((f) => !_loadedChunks.has(f));
+      if (missing.length === 0) return [];
+      await Promise.all(missing.map((f) => SrdCompendium.ensureChunkLoaded(f)));
+      return missing;
     },
 
     /**
