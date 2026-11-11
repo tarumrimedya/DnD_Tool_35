@@ -13163,6 +13163,8 @@
       if (!container) {
         container = document.createElement('div');
         container.id = 'dice-top-toast-container';
+        container.setAttribute('role', 'status');
+        container.setAttribute('aria-live', 'polite');
         container.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[10000] flex flex-col items-center gap-2 pointer-events-none transition-all duration-300 max-w-[94vw] sm:max-w-md w-max';
         document.body.appendChild(container);
       } else {

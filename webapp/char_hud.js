@@ -2401,22 +2401,26 @@
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove(...TAB_ACTIVE_CLASSES);
         btn.classList.add(...TAB_INACTIVE_CLASSES);
+        btn.setAttribute('aria-selected', 'false');
       });
       const activeBtn = document.getElementById(tabId.replace('tab-', 'tab-btn-'));
       if (activeBtn) {
         activeBtn.classList.remove(...TAB_INACTIVE_CLASSES);
         activeBtn.classList.add(...TAB_ACTIVE_CLASSES);
+        activeBtn.setAttribute('aria-selected', 'true');
       }
 
       // Mobile Bottom Navigation Buttons
       document.querySelectorAll('.mobile-tab-btn').forEach(btn => {
         btn.classList.remove('text-rose-500');
         btn.classList.add('text-slate-400');
+        btn.setAttribute('aria-selected', 'false');
       });
       const activeMobileBtn = document.getElementById(tabId.replace('tab-', 'mobile-tab-btn-'));
       if (activeMobileBtn) {
         activeMobileBtn.classList.remove('text-slate-400');
         activeMobileBtn.classList.add('text-rose-500');
+        activeMobileBtn.setAttribute('aria-selected', 'true');
       }
 
       // Render target tab immediately if marked dirty
