@@ -2533,10 +2533,98 @@ const RuleMaster = {
   },
 
   _failedGeminiModels: new Set(),
+  _retiredGeminiModelsLoaded: false,
+  _RETIRED_GEMINI_MODELS_KEY: 'dnd35_gemini_retired_models',
+  _RETIRED_GEMINI_MODEL_TTL_MS: 7 * 24 * 60 * 60 * 1000,
+  // Used only when the live model list cannot be fetched.
+  _fallbackGeminiModels: ['gemini-3.5-flash', 'gemini-3.5-flash-lite', 'gemini-3.8-flash'],
+
+  // Models the API refused as retired are remembered for a week, so they are not tried first again
+  // after every reload. The API can still list a model it no longer serves to this key.
+  _loadRetiredGeminiModels() {
+    if (this._retiredGeminiModelsLoaded) return;
+    this._retiredGeminiModelsLoaded = true;
+    try {
+      const saved = JSON.parse(localStorage.getItem(this._RETIRED_GEMINI_MODELS_KEY) || '{}');
+      const now = Date.now();
+      Object.keys(saved || {}).forEach(model => {
+        if (now - Number(saved[model]) < this._RETIRED_GEMINI_MODEL_TTL_MS) this._failedGeminiModels.add(model);
+      });
+    } catch (e) {
+      console.warn('Could not read the retired Gemini model list:', e.message);
+    }
+  },
+
+  markGeminiModelRetired(model) {
+    const lower = String(model || '').toLowerCase().trim();
+    if (!lower) return;
+    this._loadRetiredGeminiModels();
+    this._failedGeminiModels.add(lower);
+    this._discoveredApiModels = null;
+    this._cachedTaskModels = {};
+    try {
+      const saved = JSON.parse(localStorage.getItem(this._RETIRED_GEMINI_MODELS_KEY) || '{}') || {};
+      saved[lower] = Date.now();
+      localStorage.setItem(this._RETIRED_GEMINI_MODELS_KEY, JSON.stringify(saved));
+      localStorage.removeItem('dnd35_gemini_discovered_models');
+      localStorage.removeItem('dnd35_gemini_routing_matrix');
+    } catch (e) {
+      console.warn('Could not save the retired Gemini model list:', e.message);
+    }
+  },
+
+  isGeminiModelRetiredError(status, message) {
+    const lower = String(message || '').toLowerCase();
+    return status === 404 ||
+      lower.includes('not found') ||
+      lower.includes('no longer available') ||
+      lower.includes('deprecated') ||
+      lower.includes('is not supported');
+  },
+
+  // Task models first, then the other usable models of the live list (newest first), so a query
+  // does not stop after three models when some of them have just been retired.
+  _expandGeminiCandidates(taskModels, maxModels = 6) {
+    const verOf = (name) => {
+      const match = String(name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
+      return match ? parseFloat(match[1]) : 0;
+    };
+    const out = [];
+    (taskModels || []).forEach(m => { if (m && !this._isDeprecatedGeminiModel(m) && !out.includes(m)) out.push(m); });
+    let discovered = Array.isArray(this._discoveredApiModels) ? this._discoveredApiModels : null;
+    if (!discovered) {
+      try {
+        const parsed = JSON.parse(localStorage.getItem('dnd35_gemini_discovered_models') || 'null');
+        if (Array.isArray(parsed)) discovered = parsed;
+      } catch (e) {
+        discovered = null;
+      }
+    }
+    (discovered || [])
+      .filter(m => m && !this._isDeprecatedGeminiModel(m) && !out.includes(m))
+      .sort((a, b) => verOf(b) - verOf(a))
+      .forEach(m => out.push(m));
+    return out.slice(0, maxModels);
+  },
+
+  // One readable message for a failed query: the real failure first, retired models as a note.
+  _summarizeGeminiErrors(attempts) {
+    const list = Array.isArray(attempts) ? attempts : [];
+    if (list.length === 0) return '';
+    const retired = list.filter(a => a.retired).map(a => a.model);
+    const other = list.filter(a => !a.retired);
+    if (other.length === 0) {
+      return `Every model that was tried is retired for this API key (${retired.join(', ')}). Open Settings and refresh the Gemini model list.`;
+    }
+    const last = other[other.length - 1];
+    const note = retired.length > 0 ? ` Skipped retired models: ${retired.join(', ')}.` : '';
+    return `${last.message}${note}`;
+  },
 
   _isDeprecatedGeminiModel(m) {
     if (!m || typeof m !== 'string') return true;
     const lower = m.toLowerCase().trim();
+    this._loadRetiredGeminiModels();
     if (this._failedGeminiModels && this._failedGeminiModels.has(lower)) return true;
     return /^gemini-(?:1\.0|1\.5|2\.0)(?:-|$)/i.test(lower) ||
            /^gemini-2\.5-pro(?:-|$)/i.test(lower) ||
@@ -2546,7 +2634,7 @@ const RuleMaster = {
 
   // Helper: Sanitize and deduplicate models cascade, using pure dynamic models when available and fallbackList only when empty
   _sanitizeModelList(list) {
-    const fallbackList = ['gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash-lite', 'gemini-3.1-pro-preview'];
+    const fallbackList = this._fallbackGeminiModels;
     let discovered = Array.isArray(this._discoveredApiModels) ? this._discoveredApiModels : null;
     if (!discovered) {
       try {
@@ -2566,9 +2654,9 @@ const RuleMaster = {
       validInput = inDiscovered.length > 0 ? inDiscovered : cleanDiscovered;
     }
     let models = [...new Set(validInput.length > 0 ? validInput : fallbackList.filter(m => !this._isDeprecatedGeminiModel(m)))];
-    // If gemini-3.1-flash-lite is at index 0, move a reliable 2.5 or 3 flash model to index 0 so it doesn't hang
+    // If gemini-3.1-flash-lite is at index 0, move a full flash model to index 0 so it doesn't hang
     if (models[0] && models[0].includes('3.1-flash-lite')) {
-      const betterIdx = models.findIndex(m => (m.includes('2.5-flash') || m.includes('3-flash')) && !m.includes('3.1'));
+      const betterIdx = models.findIndex(m => m.includes('flash') && !m.includes('lite'));
       if (betterIdx > 0) {
         const [better] = models.splice(betterIdx, 1);
         models.unshift(better);
@@ -2583,7 +2671,7 @@ const RuleMaster = {
       const match = (name || '').match(/gemini-(\d+(?:\.\d+)?)-/i);
       return match ? parseFloat(match[1]) : 0.0;
     }
-    const fallbackList = ['gemini-2.5-flash', 'gemini-3-flash-preview', 'gemini-2.5-flash-lite', 'gemini-3.1-pro-preview'];
+    const fallbackList = this._fallbackGeminiModels;
     // Filter out hanging, experimental, or deprecated models (e.g. 2.0-flash, 2.5-pro, 3.1-flash-lite)
     const cleanedModels = (Array.isArray(apiModels) ? apiModels.slice() : [])
       .filter(m => m && !m.toLowerCase().includes('3.1-flash-lite') && !this._isDeprecatedGeminiModel(m));
@@ -2594,10 +2682,12 @@ const RuleMaster = {
     const flashModels = sorted.filter(m => m.toLowerCase().includes('flash') && !m.toLowerCase().includes('lite'));
     const proModels = sorted.filter(m => m.toLowerCase().includes('pro'));
 
-    const flash25 = flashModels.find(m => m.includes('2.5-flash')) || flashModels[0] || sorted[0];
-    const flash30 = flashModels.find(m => !m.includes('2.5-flash')) || flashModels[1] || flashModels[0] || sorted[0];
-    const lite25 = liteModels.find(m => m.includes('2.5-flash-lite')) || liteModels[0] || flash25;
-    const pro31 = proModels[0] || flash30 || flash25;
+    // Newest version first in every family. No version is pinned: a pinned 2.5 family kept being
+    // tried after Google retired it.
+    // A newer generation comes before an older one; within one generation, flash before lite.
+    const isLite = (m) => (m.toLowerCase().includes('lite') ? 1 : 0);
+    const fastModels = [...flashModels, ...liteModels].sort((a, b) => (parseVer(b) - parseVer(a)) || (isLite(a) - isLite(b)));
+    const proNewest = proModels[0] || fastModels[0] || sorted[0];
 
     const pick3 = (candidates) => {
       const pool = [...candidates, ...flashModels, ...liteModels, ...proModels, ...sorted];
@@ -2613,9 +2703,9 @@ const RuleMaster = {
     };
 
     return {
-      QUICK_SEARCH: pick3([flash25, flash30, lite25, ...flashModels, ...liteModels]),
-      RULE_AUDIT: pick3([pro31, flash25, flash30, proModels[1], lite25]),
-      IMPORT_BATCH: pick3([flash25, flash30, lite25, pro31])
+      QUICK_SEARCH: pick3(fastModels),
+      RULE_AUDIT: pick3([proNewest, ...fastModels.slice(0, 2), proModels[1], ...fastModels.slice(2)]),
+      IMPORT_BATCH: pick3([...fastModels.slice(0, 3), proNewest])
     };
   },
 
@@ -4242,10 +4332,13 @@ Return valid JSON only matching:
     }
 
     const promptText = this.buildTargetedAiPrompt(cleanQuery, effectiveCategory);
-    const availableModels = this._sanitizeModelList(await this.getAvailableGeminiModels(apiKey, false, 'QUICK_SEARCH'));
+    const taskModels = this._sanitizeModelList(await this.getAvailableGeminiModels(apiKey, false, 'QUICK_SEARCH'));
+    const availableModels = this._expandGeminiCandidates(taskModels);
     let lastError = null;
+    const attemptErrors = [];
 
     for (const model of availableModels) {
+      if (this._isDeprecatedGeminiModel(model)) continue;
       if (statusTextEl) {
         statusTextEl.textContent = `Querying "${cleanQuery}" ➔ ${model}...`;
       }
@@ -4318,41 +4411,28 @@ Return valid JSON only matching:
               }
             } catch (pErr) {
               lastError = `JSON Parse Error (${model}): ${pErr.message}`;
+              attemptErrors.push({ model, message: lastError, retired: false });
             }
           }
         } else {
           const errJson = await response.json().catch(() => ({}));
           lastError = errJson.error?.message || `HTTP ${response.status} (${model})`;
-          const errLower = String(lastError || '').toLowerCase();
-          if (
-            response.status === 404 ||
-            errLower.includes('not found') ||
-            errLower.includes('no longer available') ||
-            errLower.includes('deprecated') ||
-            errLower.includes('is not supported')
-          ) {
-            if (this._failedGeminiModels && model) {
-              this._failedGeminiModels.add(String(model).toLowerCase().trim());
-            }
-            this._discoveredApiModels = null;
-            this._cachedTaskModels = {};
-            try {
-              localStorage.removeItem('dnd35_gemini_discovered_models');
-              localStorage.removeItem('dnd35_gemini_routing_matrix');
-            } catch (e) {}
-          }
+          const retired = this.isGeminiModelRetiredError(response.status, lastError);
+          attemptErrors.push({ model, message: lastError, retired });
+          if (retired) this.markGeminiModelRetired(model);
         }
       } catch (netErr) {
         clearTimeout(timeoutId);
         if (netErr && netErr.name === 'AbortError') {
-          lastError = `Timeout (6s) - ${model} did not respond.`;
+          lastError = `Timeout (12s) - ${model} did not respond.`;
         } else {
           lastError = `${netErr.message} (${model})`;
         }
+        attemptErrors.push({ model, message: lastError, retired: false });
       }
     }
 
-    throw new Error(lastError || `No official D&D 3.5e rule or item found for "${query}".`);
+    throw new Error(this._summarizeGeminiErrors(attemptErrors) || lastError || `No official D&D 3.5e rule or item found for "${query}".`);
   },
 
   async queryAiRule() {
