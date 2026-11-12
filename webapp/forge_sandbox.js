@@ -229,6 +229,7 @@
     { key: 'prereqs', title: 'Gatekeeper Prerequisites', icon: '🏛️' },
     { key: 'chassis', title: 'Physical Chassis & Assembly', icon: '⚔️' },
     { key: 'modifiers', title: 'Passive Modifiers, Penalties & State Locks', icon: '✨' },
+    { key: 'effects', title: 'Effect Blocks (Bonus, Damage, Defense, Size, Tier, Roll Table)', icon: '🧩' },
     { key: 'powers', title: 'Powers, Spells & Activated Sub-Abilities', icon: '⚡' },
     { key: 'delivery', title: 'Delivery, Damage & Resolution', icon: '🔮' },
     { key: 'lifecycle', title: 'Usage, Duration & Stacks', icon: '⚡' },
@@ -241,15 +242,17 @@
     { id: 'weapon', name: 'Weapon', icon: '⚔️', facets: ['identity', 'chassis', 'modifiers'], item: true },
     { id: 'armor', name: 'Armor / Shield', icon: '🛡️', facets: ['identity', 'chassis', 'modifiers', 'defenses'], item: true },
     { id: 'wondrous', name: 'Wondrous / Ring / Staff / Consumable', icon: '💎', facets: ['identity', 'modifiers', 'powers'], item: true },
-    { id: 'spell', name: 'Spell / Power', icon: '🔮', facets: ['identity', 'delivery', 'lifecycle'] },
+    { id: 'spell', name: 'Spell / Power', icon: '🔮', facets: ['identity', 'delivery', 'lifecycle', 'effects'] },
     { id: 'feat', name: 'Feat / Boon', icon: '📜', facets: ['identity', 'prereqs', 'modifiers'] },
-    { id: 'buff', name: 'Buff / Condition', icon: '✨', facets: ['identity', 'modifiers', 'lifecycle', 'defenses'] },
+    { id: 'buff', name: 'Buff / Condition', icon: '✨', facets: ['identity', 'modifiers', 'effects', 'lifecycle', 'defenses'] },
     { id: 'class', name: 'Class / Prestige Class', icon: '💎', facets: ['identity', 'prereqs', 'progression', 'grants'] },
     { id: 'deity', name: 'Deity', icon: '🏛️', facets: ['identity', 'grants'] },
     { id: 'domain', name: 'Domain', icon: '✨', facets: ['identity', 'grants'] }
   ];
   const BP_BY_ID = {}; BLUEPRINTS.forEach((b) => { BP_BY_ID[b.id] = b; });
   const isItemBp = (bp) => !!(BP_BY_ID[bp] && BP_BY_ID[bp].item);
+  // Consumable is derived (no checkbox): depleting subtypes or any 'charges' usage mode
+  const isConsumable = (en) => /Potion|Scroll|Wand/.test(en.item.subtype) || en.lifecycle.use.mode === 'charges' || en.powers.some((p) => p.use.mode === 'charges');
 
   // --------------------------------------------------------------------------
   // 3. Entry model (Canonical V2.5)
@@ -282,18 +285,18 @@
       chassis: blankChassis(bp.id === 'armor' ? 'armor' : 'weapon'),
       modifiers: [], substitutions: [],
       locks: { loseDex: false, flatFooted: false, cannotAct: false, blinded: false, entangled: false, negLevel: false, extraAttack: false },
-      powers: [],
-      delivery: { action: 'Standard', range: 'Close (25 ft. + 5 ft./2 levels)', area: '', target: '', attack: 'none', save: { type: 'None', effect: 'Half', dcMode: 'spell', stat: 'int', flat: 15 }, sr: 'Yes', damage: blankDamage(bp.id === 'spell'), extras: [] },
-      lifecycle: { use: blankUse('atwill'), duration: 'instant', durValue: 1, durText: '', stackable: false, maxStacks: 5, ongoingOn: false, ongoing: { kind: 'dot', dice: '1d6', type: 'Fire', value: 2 } },
+      powers: [], effects: [], buffKind: 'Buff',
+      delivery: { action: 'Standard', range: 'Close (25 ft. + 5 ft./2 levels)', area: '', target: '', attack: 'none', attackOn: false, save: { type: 'None', effect: 'Half', dcMode: 'spell', stat: 'int', flat: 15 }, sr: 'Yes', damage: blankDamage(false), extras: [] },
+      lifecycle: { use: blankUse('atwill'), duration: 'instant', durValue: 1, durText: '', dismissible: false, stackable: false, maxStacks: 5, ongoingOn: false, ongoing: { kind: 'dot', dice: '1d6', type: 'Fire', value: 2 } },
       defenses: { dr: [], energy: [], srOn: false, sr: { mode: 'flat', value: 15 }, concealment: 0, reactionOn: false, reaction: '' },
-      progression: { mode: 'prestige', maxLevel: 10, hitDie: 8, bab: '3/4', good: { fort: false, ref: false, will: false }, skillPts: 2, levels: blankLevels(), pattern: { name: 'Sneak Attack', start: 1, every: 2, scale: '+1d6' } },
-      grants: { deityAlign: 'NG', favoredWeapon: 'Mace, Heavy', grantedPower: '', grantedUses: '1/day', ladder: ['', '', '', '', '', '', '', '', ''], featGrants: [], domains: [], deities: [] }
+      progression: { mode: 'prestige', maxLevel: 10, hitDie: 8, bab: '3/4', good: { fort: false, ref: false, will: false }, skillPts: 2, classSkills: [], levels: blankLevels(), pattern: { name: 'Sneak Attack', start: 1, every: 2, scale: '+1d6' } },
+      grants: { deityAlign: 'NG', favoredWeapon: 'Mace, Heavy', portfolio: '', dogma: '', grantedPowerName: '', gpUse: blankUse('passive'), grantedPower: '', grantedUses: '1/day', ladder: ['', '', '', '', '', '', '', '', ''], featGrants: [], domains: [], deities: [] }
     };
   }
   const M = (target, value, type, condition, formula) => ({ id: uid('m'), target: target, value: value, formula: formula || 'flat', type: type || 'Untyped', condition: condition || '' });
   const ALT = (o) => Object.assign({ id: uid('a'), kind: 'ability', ability: 'str', min: 13, skill: 'skill.tumble', feat: '', levelKind: 'casterLevel', cls: '', align: 'Any Good', text: '' }, o);
   function blankPower(kind, o) {
-    return Object.assign({ id: uid('pw'), kind: kind, name: kind === 'inline' ? 'New Power' : '', ref: null, grantMode: 'cast', use: blankUse('perDay'), action: 'Standard', cl: 5, dc: 0, duration: '', attack: 'none', range: '', area: '',
+    return Object.assign({ id: uid('pw'), kind: kind, name: kind === 'inline' ? 'New Power' : '', ref: null, grantMode: 'cast', use: blankUse('perDay'), action: 'Standard', cl: 5, dc: 0, duration: '', attack: 'none', attackOn: false, range: '', area: '',
       save: { type: 'None', effect: 'Negates' }, damage: blankDamage(false), modifiers: [], text: '', exportStandalone: false }, o || {});
   }
   const FEATURE = (name, o) => Object.assign({ id: uid('f'), kind: 'ref', name: name, abilityType: 'Ex', text: '', refId: '' }, o || {});
@@ -337,7 +340,7 @@
       e.powers = [
         blankPower('attached', { name: 'Feather Fall', ref: spellRef(ff), action: 'Free', use: blankUse('atwill'), cl: 9, grantMode: 'cast' }),
         blankPower('attached', { name: 'Dimension Door', ref: spellRef(dd), action: 'Standard', use: Object.assign(blankUse('perDay'), { n: 1 }), cl: 9, grantMode: 'cast' }),
-        blankPower('inline', { name: 'Arcane Blast', action: 'Standard', use: Object.assign(blankUse('perDay'), { n: 3 }), cl: 9, attack: 'ranged-touch', range: '60 ft.', duration: 'Instantaneous',
+        blankPower('inline', { name: 'Arcane Blast', action: 'Standard', use: Object.assign(blankUse('perDay'), { n: 3 }), cl: 9, attack: 'ranged-touch', attackOn: true, range: '60 ft.', duration: 'Instantaneous',
           damage: { on: true, count: 1, die: 'd6', type: 'Force', scaling: 'perCL', per: 2, start: 1, max: 5 }, text: 'A bolt of raw force leaps from the cloak’s clasp.' })
       ];
       return e; } },
@@ -367,7 +370,7 @@
       const e = blankEntry('spell');
       Object.assign(e, { name: 'Scorching Ray', source: 'PHB p.274', tags: ['#Fire'], text: 'Blast enemies with fiery rays: one ray, plus one additional ray for every four levels beyond 3rd (maximum three rays at 11th level).' });
       e.spell = { classes: [{ cls: 'Sor/Wiz', lvl: 2 }], school: 'Evocation', descriptors: ['Fire'], comps: { V: true, S: true, M: false, F: false, DF: false, XP: false } };
-      Object.assign(e.delivery, { action: 'Standard', range: 'Close (25 ft. + 5 ft./2 levels)', area: 'One or more rays', attack: 'ranged-touch', sr: 'Yes' });
+      Object.assign(e.delivery, { action: 'Standard', range: 'Close (25 ft. + 5 ft./2 levels)', area: 'One or more rays', attack: 'ranged-touch', attackOn: true, sr: 'Yes' });
       e.delivery.damage = { on: true, count: 4, die: 'd6', type: 'Fire', scaling: 'flat', per: 4, start: 3, max: 3 };
       e.delivery.extras = [{ id: uid('x'), kind: 'rays', text: '+1 ray per 4 CL beyond 3rd (max 3 rays at CL 11)' }];
       return e; } },
@@ -434,6 +437,91 @@
   function spellRef(s) { return s ? { id: s.id, name: s.name, levelText: s.levelText || '', level: num(s.level, 1), school: s.school || '', desc: s.desc || '', range: s.range || '', save: s.save || '' } : null; }
   function crystalIdByName(name) { const c = CAT.crystals.find((x) => x.name.toLowerCase() === name.toLowerCase()); return c ? c.id : ''; }
 
+  // ---- Effect blocks (shared by Scratch Lego + Classic views) ----
+  const BLOCK_TYPES = {
+    bonus: { icon: '📊', label: 'Bonus', color: 'b-blue' }, damage: { icon: '💥', label: 'Damage / Heal / Temp HP', color: 'b-red' }, defense: { icon: '🛡️', label: 'Immunity / DR / Resist / Sense', color: 'b-green' },
+    size: { icon: '📏', label: 'Size Change', color: 'b-purple' }, rule: { icon: '📜', label: 'Rule Effect', color: 'b-slate' },
+    tier: { icon: '🔶', label: 'CL Tier C-Block', color: 'c-teal', container: 'branches' }, synergy: { icon: '🔶', label: 'Synergy C-Block', color: 'c-teal', container: 'kids' }, table: { icon: '🎯', label: 'Roll Table C-Block', color: 'c-amber', container: 'rows' }
+  };
+  function BLK(type, o) {
+    const base = { id: uid('b'), type: type };
+    const d = {
+      bonus: { targets: ['atk.all'], value: 1, btype: 'Morale', scaling: 'flat', per: 3, min: 1, max: 3, condition: '' },
+      damage: { kind: 'Damage', dice: '1d6', dmgType: 'Fire', perOn: false, amount: 1, per: 1, max: 10, save: '' },
+      defense: { mode: 'Immunity', what: 'Fear', value: 0 },
+      size: { steps: 1 }, rule: { text: '' },
+      tier: { branches: [{ id: uid('br'), cond: 'CL ≤ 11', kids: [] }] }, synergy: { cond: 'If 2+ active #Primal effects', kids: [] },
+      table: { die: '1d8', rows: [{ id: uid('r'), roll: '1', kids: [] }] }
+    }[type] || {};
+    return Object.assign(base, clone(d), o || {});
+  }
+  const SIZE_STEPS = { '-2': 'Shrink 2 categories', '-1': 'Shrink 1 category', '1': '+1 Size Category (e.g. Medium → Large)', '2': '+2 Size Categories' };
+  function blockText(b) {
+    switch (b.type) {
+      case 'bonus': {
+        const t = b.targets.map((x) => TARGET_LABEL[x] || x).join(', ') || '(no target)';
+        const v = b.scaling === 'perCL' ? '+' + num(b.value, 1) + ' per ' + num(b.per, 1) + ' CL (min +' + num(b.min) + ', max +' + num(b.max) + ')' : sgn(num(b.value));
+        return v + ' ' + b.btype + ' → ' + t + (b.condition ? ' (' + b.condition + ')' : '');
+      }
+      case 'damage': {
+        const dice = String(b.dice || '').trim();
+        const per = b.perOn ? (dice ? ' + ' : '') + num(b.amount, 1) + ' per ' + (num(b.per, 1) === 1 ? '' : num(b.per) + ' ') + 'CL (max +' + num(b.max) + ')' : '';
+        return (b.kind === 'Damage' ? '' : b.kind + ': ') + (dice || (b.perOn ? '' : '0')) + per + (b.kind === 'Damage' ? ' ' + b.dmgType + ' damage' : '') + (b.save ? ' • ' + b.save : '');
+      }
+      case 'defense': return b.mode + ': ' + (['DR', 'Energy Resistance', 'Spell Resistance'].indexOf(b.mode) >= 0 ? num(b.value) + (b.mode === 'DR' ? '/' : ' ') : '') + (b.mode === 'Spell Resistance' ? '' : b.what);
+      case 'size': return 'Size: ' + (SIZE_STEPS[String(b.steps)] || (sgn(num(b.steps)) + ' categories'));
+      case 'rule': return b.text || 'Rule effect (empty)';
+      case 'tier': return 'CL Tier: ' + b.branches.map((br) => br.cond + ' → ' + (br.kids.map(blockText).join(' + ') || '—')).join(' | ');
+      case 'synergy': return b.cond + ' → ' + (b.kids.map(blockText).join(' + ') || '—');
+      case 'table': return 'Roll ' + b.die + ': ' + b.rows.map((r) => '[' + r.roll + '] ' + (r.kids.map(blockText).join(' + ') || '—')).join(' ');
+      default: return b.type;
+    }
+  }
+
+  // ---- 6 benchmark spells ----
+  function spellBase(name, src, classes, school, desc, comps, env) {
+    const e = blankEntry('spell');
+    Object.assign(e, { name: name, source: src, text: desc });
+    e.spell = { classes: classes.map((c) => ({ cls: c[0], lvl: c[1] })), school: school, descriptors: env.desc || [], comps: Object.assign({ V: false, S: false, M: false, F: false, DF: false, XP: false }, comps) };
+    Object.assign(e.delivery, { action: env.action || 'Standard', range: env.range || 'Touch', area: env.area || '', sr: env.sr || 'Yes (harmless)' });
+    e.delivery.save = Object.assign(e.delivery.save, env.save || { type: 'None', effect: 'Negates' });
+    Object.assign(e.lifecycle, env.life || {});
+    return e;
+  }
+  PRESETS.push(
+    { id: 'gheroism', icon: '✨', label: 'Greater Heroism (+4 Morale, Fear Immunity, Temp HP per CL)', build() {
+      const e = spellBase('Greater Heroism', 'PHB p.240', [['Brd', 5], ['Sor/Wiz', 6]], 'Enchantment', 'Imbues a creature with great bravery and morale in battle.', { V: true, S: true }, { desc: ['Mind-Affecting'], range: 'Touch', area: 'Creature touched', save: { type: 'Will', effect: 'Negates (harmless)' }, life: { duration: 'minPerLevel', durValue: 1 } });
+      e.effects = [BLK('bonus', { targets: ['atk.all', 'save.all', 'skill.all'], value: 4, btype: 'Morale' }), BLK('defense', { mode: 'Immunity', what: 'Fear' }), BLK('damage', { kind: 'Temp HP', dice: '', perOn: true, amount: 1, per: 1, max: 20 })];
+      return e; } },
+    { id: 'aid', icon: '💚', label: 'Aid (+1 Morale, 1d8 + 1/CL Temp HP)', build() {
+      const e = spellBase('Aid', 'PHB p.196', [['Clr', 2], ['Good', 2], ['Luck', 2]], 'Enchantment', 'The subject gains a +1 morale bonus on attack rolls and saves against fear effects, plus temporary hit points equal to 1d8 + caster level (maximum +10 at 10th).', { V: true, S: true, DF: true }, { desc: ['Mind-Affecting'], range: 'Touch', area: 'Living creature touched', save: { type: 'None', effect: 'Negates' }, life: { duration: 'minPerLevel', durValue: 1 } });
+      e.effects = [BLK('bonus', { targets: ['atk.all'], value: 1, btype: 'Morale' }), BLK('bonus', { targets: ['save.all'], value: 1, btype: 'Morale', condition: 'vs Fear' }), BLK('damage', { kind: 'Temp HP', dice: '1d8', perOn: true, amount: 1, per: 1, max: 10 })];
+      return e; } },
+    { id: 'dfavor', icon: '⚔️', label: 'Divine Favor (+1 Luck per 3 CL, max +3)', build() {
+      const e = spellBase('Divine Favor', 'PHB p.224', [['Clr', 1], ['Pal', 1]], 'Evocation', 'You gain a +1 luck bonus on attack and weapon damage rolls for every three caster levels (minimum +1, maximum +3).', { V: true, S: true, DF: true }, { range: 'Personal', area: 'You', sr: 'No', life: { duration: 'text', durText: '1 minute' } });
+      e.effects = [BLK('bonus', { targets: ['atk.all', 'dmg.all'], value: 1, btype: 'Luck', scaling: 'perCL', per: 3, min: 1, max: 3, condition: 'weapon damage' })];
+      return e; } },
+    { id: 'rmight', icon: '📏', label: 'Righteous Might (Size +1, CL Tier DR C-Block)', build() {
+      const e = spellBase('Righteous Might', 'PHB p.273', [['Clr', 5], ['Strength', 5]], 'Transmutation', 'You grow to Large size, gaining +4 size bonuses to Strength and Constitution, +2 enhancement bonus to natural armor, and damage reduction based on caster level.', { V: true, S: true, DF: true }, { range: 'Personal', area: 'You', sr: 'No', life: { duration: 'roundsPerLevel', durValue: 1, dismissible: true } });
+      e.effects = [BLK('size', { steps: 1 }), BLK('bonus', { targets: ['str', 'con'], value: 4, btype: 'Size' }), BLK('bonus', { targets: ['ac.natural'], value: 2, btype: 'Enhancement' }),
+        BLK('tier', { branches: [{ id: uid('br'), cond: 'CL ≤ 11', kids: [BLK('defense', { mode: 'DR', value: 3, what: 'evil or good' })] }, { id: uid('br'), cond: 'CL 12–14', kids: [BLK('defense', { mode: 'DR', value: 6, what: 'evil or good' })] }, { id: uid('br'), cond: 'CL ≥ 15', kids: [BLK('defense', { mode: 'DR', value: 9, what: 'evil or good' })] }] })];
+      return e; } },
+    { id: 'prismatic', icon: '🎯', label: 'Prismatic Spray (1d8 Roll Table C-Block)', build() {
+      const e = spellBase('Prismatic Spray', 'PHB p.264', [['Sor/Wiz', 7]], 'Evocation', 'Seven shimmering rays spring from your hand. Creatures of 8 HD or less are blinded for 2d4 rounds. Each creature is struck by one or more rays.', { V: true, S: true }, { range: '60 ft.', area: 'Cone-shaped burst', sr: 'Yes', save: { type: 'None', effect: 'Negates' }, life: { duration: 'instant' } });
+      const R = (roll, kids) => ({ id: uid('r'), roll: roll, kids: kids });
+      e.effects = [BLK('rule', { text: 'Every creature of 8 HD or less in the area is blinded for 2d4 rounds.' }), BLK('table', { die: '1d8', rows: [
+        R('1', [BLK('damage', { dice: '20', dmgType: 'Fire', save: 'Reflex half' })]), R('2', [BLK('damage', { dice: '40', dmgType: 'Acid', save: 'Reflex half' })]), R('3', [BLK('damage', { dice: '80', dmgType: 'Electricity', save: 'Reflex half' })]),
+        R('4', [BLK('rule', { text: 'Green — Poison: dies (Fortitude partial: 1d6 Con damage instead)' })]), R('5', [BLK('rule', { text: 'Blue — Turned to stone (Fortitude negates)' })]),
+        R('6', [BLK('rule', { text: 'Indigo — Insane, as insanity spell (Will negates)' })]), R('7', [BLK('rule', { text: 'Violet — Sent to another plane (Will negates)' })]), R('8', [BLK('rule', { text: 'Struck by two rays; roll twice more, ignoring any further 8 results' })])] })];
+      return e; } },
+    { id: 'primal', icon: '👁️', label: 'Primal Senses (+5 Listen/Spot, Low-Light, Synergy C-Block)', build() {
+      const e = spellBase('Primal Senses', 'Dragon Magic p.71', [['Drd', 3], ['Rgr', 3], ['Sor/Wiz', 3]], 'Transmutation', 'Low-light vision and +5 competence bonus on Listen and Spot checks. Combined with another Primal spell you gain uncanny dodge.', { V: true, S: true }, { range: 'Personal', area: 'You', sr: 'No', life: { duration: 'text', durText: '24 hours' } });
+      e.tags = ['#Primal'];
+      e.effects = [BLK('bonus', { targets: ['skill.listen', 'skill.spot'], value: 5, btype: 'Competence' }), BLK('defense', { mode: 'Sense', what: 'Low-Light Vision' }),
+        BLK('synergy', { cond: 'If 2+ active #Primal effects', kids: [BLK('bonus', { targets: ['initiative'], value: 5, btype: 'Competence' }), BLK('defense', { mode: 'Sense', what: 'Uncanny Dodge' })] })];
+      return e; } }
+  );
+
   // --------------------------------------------------------------------------
   // 5. App state & persistence
   // --------------------------------------------------------------------------
@@ -449,9 +537,9 @@
     templates: Array.isArray(persisted.templates) ? persisted.templates : [],
     livingTags: Array.isArray(persisted.livingTags) ? persisted.livingTags : [],
     customBonusTypes: Array.isArray(persisted.customBonusTypes) ? persisted.customBonusTypes : [],
-    house: Object.assign({ critCap: 0 }, persisted.house || {}),
+    house: { critCap: 0 }, // engine-ready; Stage 2 feeds house rules from the Character Sheet
     spot: null,
-    ui: { facetOpen: {}, cardOpen: {}, jsonOpen: false, attachOpen: false, tplSaveOpen: false, newTplName: '', houseOpen: false, customTypeOpen: false, customType: { name: '', stacks: false, lostFF: false },
+    ui: { viewMode: 'scratch', facetOpen: {}, cardOpen: {}, jsonOpen: false, attachOpen: false, tplSaveOpen: false, newTplName: '', houseOpen: false, customTypeOpen: false, customType: { name: '', stacks: false, lostFF: false },
       dmgDraft: { count: 1, die: 'd6', type: 'Fire', crit: 'normal', cond: '' }, extraDraft: 'rays' }
   };
 
@@ -599,6 +687,8 @@
       case 'level': return (a.levelKind === 'casterLevel' ? 'Caster Level' : a.levelKind === 'charLevel' ? 'Character Level' : (a.cls || 'Class') + ' Level') + ' ' + num(a.min);
       case 'alignment': return a.align;
       case 'custom': return a.text ? 'DM: ' + a.text : 'Custom Story / DM Requirement (unset)';
+      case 'spellcasting': return 'Ability to cast ' + (a.cls || 'any') + ' spells of level ' + num(a.min);
+      case 'deity': return 'Patron Deity: ' + (a.feat || '(unset)');
       default: return '?';
     }
   }
@@ -631,6 +721,7 @@
   const ATTACK_LABEL = { none: 'No Attack Roll', 'melee-touch': 'Melee Touch Attack', 'ranged-touch': 'Ranged Touch Attack (Ray / Orb)', weapon: 'Weapon Attack' };
   function useText(u) {
     switch (u.mode) {
+      case 'passive': return 'Passive';
       case 'atwill': return 'At-Will';
       case 'perDay': return num(u.n) + '/day';
       case 'perEncounter': return num(u.n) + '/encounter';
@@ -713,7 +804,7 @@
         seg.push(d.action + (d.action === 'Passive' || d.action === 'Reaction' ? '' : ' Action'));
         if (d.range) seg.push(d.range);
         if (d.area) seg.push(d.area);
-        if (d.attack !== 'none') seg.push(ATTACK_LABEL[d.attack]);
+        if (d.attackOn && d.attack !== 'none') seg.push(ATTACK_LABEL[d.attack]);
         const dc = dcText(en); if (dc) seg.push(dc);
         if (en.blueprint === 'spell') seg.push('SR ' + d.sr);
         const dm = damageText(d.damage); if (dm) seg.push(dm);
@@ -723,12 +814,12 @@
     if (has('lifecycle')) {
       const l = en.lifecycle;
       if (l.use.mode !== 'atwill') seg.push(useText(l.use));
-      if (l.duration !== 'instant' || en.blueprint === 'spell') seg.push('Duration ' + durationText(l));
+      if (l.duration !== 'instant' || en.blueprint === 'spell') seg.push('Duration ' + durationText(l) + (l.dismissible ? ' (D)' : ''));
       if (l.stackable) seg.push('Stackable ×' + l.maxStacks);
       if (l.ongoingOn) seg.push(l.ongoing.kind === 'dot' ? 'Ongoing ' + l.ongoing.dice + ' ' + l.ongoing.type + '/round' : 'Fast Healing ' + l.ongoing.value);
     }
     if (isItemBp(en.blueprint) && !has('chassis')) {
-      seg.push(en.item.subtype + ' • ' + en.item.slot + (en.item.consumable ? ' • Consumable' : '') + (num(en.item.cl) ? ' • CL ' + num(en.item.cl) : ''));
+      seg.push(en.item.subtype + ' • ' + en.item.slot + (isConsumable(en) ? ' • Consumable' : '') + (num(en.item.cl) ? ' • CL ' + num(en.item.cl) : ''));
     }
     if (has('progression')) {
       const p = en.progression;
@@ -763,6 +854,7 @@
     }
     if (has('chassis')) { const v = chassisView(en.chassis); v.dr.forEach((x) => pills.push(['amber', '🛡️ DR ' + x.value + '/' + x.bypass])); v.energy.forEach((x) => pills.push(['amber', '🛡️ Resist ' + x.type + ' ' + x.value])); if (v.sr) pills.push(['purple', '🛡️ SR ' + v.sr]); }
     if (has('prereqs') && en.prereqs.length) pills.push(['indigo', '🏛️ Prerequisites: ' + prereqText(en.prereqs)]);
+    if (has('effects')) en.effects.forEach((b) => pills.push([{ bonus: 'indigo', damage: 'rose', defense: 'emerald', size: 'purple', rule: 'dim', tier: 'sky', synergy: 'sky', table: 'amber' }[b.type] || 'dim', BLOCK_TYPES[b.type].icon + ' ' + blockText(b)]));
     if (has('powers')) en.powers.forEach((pw) => pills.push([pw.kind === 'attached' ? 'purple' : 'amber', powerSummary(pw)]));
     if (has('grants')) {
       const g = en.grants;
@@ -800,6 +892,8 @@
       case 'level': return { kind: a.levelKind, className: a.levelKind === 'classLevel' ? a.cls : undefined, min: num(a.min) };
       case 'alignment': return { kind: 'alignment', value: a.align };
       case 'custom': return { kind: 'custom', text: a.text };
+      case 'spellcasting': return { kind: 'spellcasting', tradition: a.cls || 'any', spellLevel: num(a.min) };
+      case 'deity': return { kind: 'patronDeity', name: a.feat };
       default: return a;
     }
   }
@@ -809,7 +903,7 @@
     if (num(pw.cl)) o.casterLevel = num(pw.cl);
     if (num(pw.dc)) o.saveDC = num(pw.dc);
     if (pw.duration) o.duration = pw.duration;
-    if (pw.attack !== 'none') o.attack = pw.attack;
+    if (pw.attackOn && pw.attack !== 'none') o.attack = pw.attack;
     if (pw.range) o.range = pw.range;
     if (pw.area) o.area = pw.area;
     if (pw.save && pw.save.type !== 'None') o.save = { type: pw.save.type, effect: pw.save.effect };
@@ -819,6 +913,13 @@
     if (pw.exportStandalone) o.exportStandalone = true;
     return o;
   }
+  function exportBlock(b) {
+    const o = Object.assign({}, b); delete o.id; o.summary = blockText(b);
+    if (b.kids) { o.effects = b.kids.map(exportBlock); delete o.kids; }
+    if (b.branches) o.branches = b.branches.map((br) => ({ cond: br.cond, effects: br.kids.map(exportBlock) }));
+    if (b.rows) o.rows = b.rows.map((r) => ({ roll: r.roll, effects: r.kids.map(exportBlock) }));
+    return o;
+  }
   function exportFeature(f) { const o = { kind: f.kind, name: f.name }; if (f.refId) o.refId = f.refId; if (f.kind === 'inline') { o.abilityType = f.abilityType; if (f.text) o.text = f.text; } return o; }
   function exportEntry(en) {
     const F = en.facets, has = (k) => F.indexOf(k) >= 0;
@@ -826,7 +927,7 @@
     if (en.origin.mode !== 'new') out.origin = { mode: en.origin.mode, srdId: en.origin.srdId, srdName: en.origin.srdName };
     if (en.text) out.text = en.text;
     if (en.blueprint === 'feat') out.timesSelectable = en.repeat.mode === 'upto' ? num(en.repeat.n) : en.repeat.mode === 'per' ? 'perWeaponOrSchool' : 1;
-    if (isItemBp(en.blueprint)) { out.item = { subtype: en.item.subtype, slot: en.item.slot, consumable: !!en.item.consumable }; if (!has('chassis')) { out.item.price = num(en.item.price); out.item.casterLevel = num(en.item.cl); } }
+    if (isItemBp(en.blueprint)) { out.item = { subtype: en.item.subtype, slot: en.item.slot, consumable: isConsumable(en) }; if (!has('chassis')) { out.item.price = num(en.item.price); out.item.casterLevel = num(en.item.cl); } }
     if (en.blueprint === 'spell') out.spell = { classLevels: en.spell.classes.map((c) => ({ class: c.cls, level: num(c.lvl) })), school: en.spell.school, descriptors: en.spell.descriptors.slice(), components: Object.keys(en.spell.comps).filter((k) => en.spell.comps[k]) };
     if (has('prereqs')) out.prerequisites = { all: en.prereqs.map((r) => ({ anyOf: r.alts.map(cleanAlt) })), text: prereqText(en.prereqs) };
     if (has('chassis')) {
@@ -845,16 +946,18 @@
       const flags = Object.keys(en.locks).filter((k) => en.locks[k]); if (flags.length) out.ruleFlags = flags;
     }
     if (has('powers')) out.powers = en.powers.map(exportPower);
+    if (has('effects')) out.effects = en.effects.map(exportBlock);
+    if (en.blueprint === 'buff') out.buffKind = en.buffKind;
     if (has('delivery')) {
       const d = en.delivery;
-      out.delivery = { action: d.action, range: d.range || null, area: d.area || null, attack: d.attack, spellResistance: d.sr };
+      out.delivery = { action: d.action, range: d.range || null, area: d.area || null, attack: d.attackOn ? d.attack : 'none', spellResistance: d.sr };
       if (d.save.type !== 'None') out.delivery.save = { type: d.save.type, effect: d.save.effect, dc: dcText(en) };
       const dmg = exportDamage(d.damage); if (dmg) out.delivery.damage = dmg;
       if (d.extras.length) out.delivery.rules = d.extras.map((x) => ({ kind: x.kind, text: x.text }));
     }
     if (has('lifecycle')) {
       const l = en.lifecycle;
-      out.lifecycle = { usage: exportUse(l.use), duration: l.duration, durationText: durationText(l) };
+      out.lifecycle = { usage: exportUse(l.use), duration: l.duration, durationText: durationText(l), dismissible: !!l.dismissible };
       if (l.stackable) out.lifecycle.maxStacks = num(l.maxStacks);
       if (l.ongoingOn) out.lifecycle.ongoing = l.ongoing.kind === 'dot' ? { kind: 'dot', dice: l.ongoing.dice, type: l.ongoing.type.toLowerCase() } : { kind: 'fastHealing', value: num(l.ongoing.value) };
     }
@@ -867,13 +970,13 @@
     }
     if (has('progression')) {
       const p = en.progression;
-      out.progression = { mode: p.mode, maxLevel: p.maxLevel, hitDie: 'd' + p.hitDie, bab: p.bab, goodSaves: ['fort', 'ref', 'will'].filter((s) => p.good[s]), skillPointsPerLevel: num(p.skillPts),
+      out.progression = { mode: p.mode, maxLevel: p.maxLevel, hitDie: 'd' + p.hitDie, bab: p.bab, goodSaves: ['fort', 'ref', 'will'].filter((s) => p.good[s]), skillPointsPerLevel: num(p.skillPts), classSkills: (p.classSkills || []).slice(),
         levels: p.levels.slice(0, p.maxLevel).map((l, i) => ({ level: i + 1, bab: classBAB(p.bab, i + 1), fort: p.good.fort ? goodSave(i + 1) : poorSave(i + 1), ref: p.good.ref ? goodSave(i + 1) : poorSave(i + 1), will: p.good.will ? goodSave(i + 1) : poorSave(i + 1), features: l.features.map(exportFeature), spellcasting: l.spell ? '+1 level of existing spellcasting class' : null })) };
     }
     if (has('grants')) {
       const g = en.grants, o = {};
-      if (en.blueprint === 'deity') Object.assign(o, { alignment: g.deityAlign, clericAlignments: ALIGNS.filter((a) => clericLegal(g.deityAlign, a)), favoredWeapon: g.favoredWeapon });
-      if (en.blueprint === 'domain') Object.assign(o, { grantedPower: g.grantedPower ? { text: g.grantedPower, uses: g.grantedUses } : null, spellLadder: g.ladder.map((s, i) => ({ level: i + 1, spell: s || null })).filter((x) => x.spell) });
+      if (en.blueprint === 'deity') Object.assign(o, { alignment: g.deityAlign, clericAlignments: ALIGNS.filter((a) => clericLegal(g.deityAlign, a)), favoredWeapon: g.favoredWeapon, portfolio: g.portfolio || null, dogma: g.dogma || null });
+      if (en.blueprint === 'domain') Object.assign(o, { grantedPower: g.grantedPower || g.grantedPowerName ? { name: g.grantedPowerName || null, text: g.grantedPower, usage: exportUse(g.gpUse) } : null, spellLadder: g.ladder.map((s, i) => ({ level: i + 1, spell: s || null })).filter((x) => x.spell) });
       if (g.domains.length) o.domains = g.domains.map((d) => (d.kind === 'ref' ? { kind: 'ref', name: d.name, refId: d.refId || null } : { kind: 'inline', name: d.name, grantedPower: d.grantedPower, spellLadder: d.ladder.map((s, i) => ({ level: i + 1, spell: s || null })).filter((x) => x.spell) }));
       if (g.deities.length) o.deities = g.deities.map((d) => ({ kind: d.kind, name: d.name, alignment: d.align, favoredWeapon: d.favoredWeapon }));
       if (g.featGrants.length) o.bonusFeats = g.featGrants.map((x) => ({ count: num(x.count), pool: x.pool, level: num(x.level) }));
@@ -1116,7 +1219,7 @@
     return '<div class="fs-card' + (open ? ' open' : '') + '"><div class="fs-card-sum" data-action="toggle-card" data-key="' + esc(key) + '"><span class="fs-chev" style="transform:rotate(' + (open ? 90 : 0) + 'deg)">▶</span><span class="fs-grow">' + summaryHtml + '</span>' + (extraHead || '') + '</div><div class="fs-card-edit">' + editHtml + '</div></div>';
   }
   const datalists = () => '<datalist id="fs-dice-list">' + opts(DIE_LIST.filter((d) => d !== 'flat'), '') + '</datalist><datalist id="fs-range-list">' + opts(RANGES, '') + '</datalist><datalist id="fs-area-list">' + opts(AREAS, '') + '</datalist>' +
-    '<datalist id="fs-weapon-names">' + opts(CAT.weapons.map((w) => baseName(w)), '') + '</datalist><datalist id="fs-spell-names">' + opts(CAT.spells.slice(0, 800).map((s) => s.name), '') + '</datalist>';
+    '<datalist id="fs-defense-list">' + opts(DEF_LIST, '') + '</datalist><datalist id="fs-deity-list">' + opts(CAT.deities.map((d) => d.name), '') + '</datalist><datalist id="fs-weapon-names">' + opts(CAT.weapons.map((w) => baseName(w)), '') + '</datalist><datalist id="fs-spell-names">' + opts(CAT.spells.slice(0, 800).map((s) => s.name), '') + '</datalist>';
 
   // --------------------------------------------------------------------------
   // 11. Universal Spotlight Combobox (fs-spotlight)
@@ -1139,11 +1242,15 @@
   const SPOT = {
     load: {
       ph: '🔍 Load Example or Existing SRD / MIC / Custom Entry…',
-      search(q) {
-        const pre = rank(PRESETS, q, (p) => p.label, null, 12).map((p) => SI('⭐ Curated Presets', p.id, p.icon + ' ' + p.label, 'Preset', '', { preset: p.id }));
-        if (!String(q || '').trim()) return pre;
+      layers: ['All', 'Presets', 'SRD', 'MIC', 'Saved'],
+      search(q, ctx, layer) {
+        layer = layer || 'All';
+        if (layer === 'Saved') return rank(S.templates, q, (t) => t.name, null, 30).map((t) => SI('📌 Saved Templates', t.id, t.name, (BP_BY_ID[t.base] || {}).name || 'Template', t.facets.length + ' sections', { tpl: t.id }));
+        const pre = layer === 'All' || layer === 'Presets' ? rank(PRESETS, q, (p) => p.label, null, 20).map((p) => SI('⭐ Curated Presets', p.id, p.icon + ' ' + p.label, 'Preset', '', { preset: p.id })) : [];
+        if (layer === 'Presets' || (!String(q || '').trim() && layer === 'All')) return pre;
         const out = pre.slice();
-        const add = (group, list, badgeFn, descFn, type, lim) => rank(list, q, (x) => x.name, descFn, lim || 6).forEach((x) => out.push(SI(group, x.id, x.name, badgeFn(x), short(descFn(x)), { srd: x, type: type })));
+        const isMic = (x) => /Magic Item Compendium|MIC/i.test(String(x.src || x.source || ''));
+        const add = (group, list, badgeFn, descFn, type, lim) => rank(list.filter((x) => layer === 'All' || (layer === 'MIC' ? isMic(x) : !isMic(x))), q, (x) => x.name, descFn, lim || 6).forEach((x) => out.push(SI(group, x.id, x.name, badgeFn(x), short(descFn(x)), { srd: x, type: type })));
         add('⚔️ Weapons', CAT.weapons, (x) => gp(x.cost), (x) => x.desc || x.dice + ' ' + x.dmgType, 'Weapon');
         add('🛡️ Armor & Shields', CAT.armors, (x) => gp(x.cost), (x) => x.desc || '+' + x.armorBonus + ' ' + x.type, 'Armor');
         add('💎 Magic Items (SRD / MIC)', CAT.magicItems, (x) => gp(x.cost), (x) => x.shortDescription || '', 'MagicItem', 8);
@@ -1155,6 +1262,7 @@
       },
       pick(it) {
         if (it.data.preset) { ACT['load-preset']({ dataset: { id: it.data.preset } }); return; }
+        if (it.data.tpl) { setBlueprint(it.data.tpl); return; }
         const raw = it.data.srd.raw || it.data.srd;
         const type = it.data.type === 'Armor' ? (raw.type === 'Shield' ? 'Shield' : 'Armor') : it.data.type;
         const en = hydrate(Object.assign({}, raw, { type: raw.type || type, id: raw.id || it.data.srd.id, name: raw.name || it.data.srd.name }));
@@ -1172,31 +1280,35 @@
       pick(it) { setEntry('chassis.baseId', it.data.id); renderAll(); }
     },
     ench: {
-      ph: '🔍 Search special abilities (DMG + MIC): Keen, Holy, Shadow…',
-      search(q) {
-        const ch = S.entry.chassis, v = chassisView(ch);
-        return rank(CAT.enchants.filter((e) => enchApplies(e, v.kind) && ch.enchantments.indexOf(e.id) < 0), q, (e) => e.name, (e) => e.desc, 40)
+      ph: '🔍 + Enchantment (DMG + MIC): Keen, Holy, Shadow…',
+      layers: ['All', '+1..+5 Bonus', 'Flat GP', 'MIC', 'DMG'],
+      search(q, ctx, layer) {
+        const ch = S.entry.chassis, v = chassisView(ch), L = layer || 'All';
+        const lf = (e) => L === 'All' || (L === 'Flat GP' ? !e.plus : L === '+1..+5 Bonus' ? !!e.plus : L === 'MIC' ? /MIC|Magic Item Compendium/i.test(e.src) : !/MIC|Magic Item Compendium/i.test(e.src));
+        return rank(CAT.enchants.filter((e) => enchApplies(e, v.kind) && ch.enchantments.indexOf(e.id) < 0 && lf(e)), q, (e) => e.name, (e) => e.desc, 40)
           .map((e) => SI(e.plus ? 'Bonus-Equivalent (+' + e.plus + ')' : 'Flat Price', e.id, e.name, e.plus ? '+' + e.plus + ' bonus' : gp(e.gp), short(e.desc, 120) + ' • ' + e.src, { id: e.id }));
       },
       pick(it) { addEnchantment(it.data.id); }
     },
     crystal: {
-      ph: '🔍 Search MIC augment crystals…',
-      search(q) {
-        const v = chassisView(S.entry.chassis);
-        return rank(CAT.crystals.filter((c) => crystalApplies(c, v.kind)), q, (c) => c.name, (c) => c.tiers.join(' '), 40)
+      ph: '🔍 + MIC Augment Crystal…',
+      layers: ['All', 'Least', 'Lesser', 'Greater'],
+      search(q, ctx, layer) {
+        const v = chassisView(S.entry.chassis), ti = CRYSTAL_TIERS.indexOf(String(layer || '').toLowerCase());
+        return rank(CAT.crystals.filter((c) => crystalApplies(c, v.kind) && (ti < 0 || c.cost[ti] != null)), q, (c) => c.name, (c) => c.tiers.join(' '), 40)
           .map((c) => SI(c.on === 'weapon' ? 'Weapon Crystals' : 'Armor / Shield Crystals', c.id, c.name, c.cost.map((x, i) => (x == null ? null : cap1(CRYSTAL_TIERS[i]) + ' ' + gp(x))).filter(Boolean).join(' / '), short(c.tiers.find(Boolean) || '', 120) + ' • ' + c.src, { id: c.id }));
       },
       pick(it) { const c = crystalById(it.data.id); S.entry.chassis.crystal = { id: c.id, tier: CRYSTAL_TIERS[Math.max(0, c.cost.findIndex((x) => x != null))] }; renderAll(); }
     },
     prereq: {
       ph: '🔍 Feat, #TagPool, special ability or DM requirement…',
-      search(q, ctx) {
-        const out = [];
+      layers: ['All', 'Feats', '#Pools', 'Abilities'],
+      search(q, ctx, layer) {
+        const out = [], L = layer || 'All';
         const tags = allTags().filter((t) => !q || t.toLowerCase().indexOf(String(q).toLowerCase().replace(/^#?/, '#')) >= 0 || t.toLowerCase().indexOf(String(q).toLowerCase()) >= 0).slice(0, 8);
-        tags.forEach((t) => out.push(SI('#Tag Pools (any feat from pool)', t, t, 'Pool', 'Any feat carrying this tag satisfies the requirement', { feat: t })));
-        rank(CAT.feats, q, (f) => f.name, (f) => f.desc, 15).forEach((f) => out.push(SI(f.custom ? 'Custom DB Feats' : 'Feats', f.id, f.name, f.custom ? 'Custom' : (f.tags[0] || 'Feat'), short(f.prereq ? 'Prerequisites: ' + f.prereq : f.desc), { feat: f.name })));
-        rank(CAT.special, q, (f) => f.name, (f) => f.desc, 6).forEach((f) => out.push(SI('Special Abilities / DM Boons', f.id, f.name, f.cat, short(f.desc), { feat: f.name })));
+        if (L === 'All' || L === '#Pools') tags.forEach((t) => out.push(SI('#Tag Pools (any feat from pool)', t, t, 'Pool', 'Any feat carrying this tag satisfies the requirement', { feat: t })));
+        if (L === 'All' || L === 'Feats') rank(CAT.feats, q, (f) => f.name, (f) => f.desc, 15).forEach((f) => out.push(SI(f.custom ? 'Custom DB Feats' : 'Feats', f.id, f.name, f.custom ? 'Custom' : (f.tags[0] || 'Feat'), short(f.prereq ? 'Prerequisites: ' + f.prereq : f.desc), { feat: f.name })));
+        if (L === 'All' || L === 'Abilities') rank(CAT.special, q, (f) => f.name, (f) => f.desc, 6).forEach((f) => out.push(SI('Special Abilities / DM Boons', f.id, f.name, f.cat, short(f.desc), { feat: f.name })));
         if (String(q || '').trim()) out.push(SI('Custom Story / DM Requirement', 'custom', '📜 Custom requirement: "' + q + '"', 'DM', 'Free-text story requirement checked by the DM', { custom: String(q).trim() }));
         return out;
       },
@@ -1207,12 +1319,13 @@
       }
     },
     tag: {
-      ph: '🔍 Add #Tag (standard taxonomy or create a custom pool)…',
-      search(q) {
-        const s = String(q || '').trim(), out = [];
+      ph: '🔍 + #Tag (standard taxonomy or create a custom pool)…',
+      layers: ['All', 'Feat Pools', 'Item / Boon', 'Descriptors', 'Custom'],
+      search(q, ctx, layer) {
+        const s = String(q || '').trim(), out = [], L = layer || 'All';
         const norm = s ? (s[0] === '#' ? s : '#' + s).replace(/\s+/g, '') : '';
-        STANDARD_TAGS.forEach((g) => g[1].filter((t) => S.entry.tags.indexOf(t) < 0 && (!s || t.toLowerCase().indexOf(norm.toLowerCase()) >= 0)).forEach((t) => out.push(SI(g[0], t, t, 'Standard', '', { tag: t }))));
-        S.livingTags.filter((t) => S.entry.tags.indexOf(t) < 0 && (!s || t.toLowerCase().indexOf(norm.toLowerCase()) >= 0)).forEach((t) => out.push(SI('Custom Pools', t, t, 'Custom', '', { tag: t })));
+        STANDARD_TAGS.filter((g) => L === 'All' || L === g[0]).forEach((g) => g[1].filter((t) => S.entry.tags.indexOf(t) < 0 && (!s || t.toLowerCase().indexOf(norm.toLowerCase()) >= 0)).forEach((t) => out.push(SI(g[0], t, t, 'Standard', '', { tag: t }))));
+        S.livingTags.filter((t) => (L === 'All' || L === 'Custom') && S.entry.tags.indexOf(t) < 0 && (!s || t.toLowerCase().indexOf(norm.toLowerCase()) >= 0)).forEach((t) => out.push(SI('Custom Pools', t, t, 'Custom', '', { tag: t })));
         if (norm && norm.length > 1 && !allTags().some((t) => t.toLowerCase() === norm.toLowerCase())) out.push(SI('Create', 'new', '+ Create Custom Pool ' + norm, 'New', 'Reusable living tag pool, selectable in Prerequisites & Bonus Feat Grants', { tag: norm, create: true }));
         return out;
       },
@@ -1225,8 +1338,11 @@
     },
     power: {
       ph: '🔍 + Attach Existing Spell / Ability (SRD + Custom DB)…',
-      search(q) {
-        const out = rank(CAT.spells, q, (s) => s.name, (s) => s.desc, 25).map((s) => SI(s.custom ? 'Custom DB Spells' : 'Spells', s.id, s.name, s.levelText || 'Level ' + s.level, short(s.school + ' • ' + s.desc), { spell: s }));
+      layers: ['All', 'SRD', 'Custom', 'Lvl 0–3', 'Lvl 4–9'],
+      search(q, ctx, layer) {
+        const L = layer || 'All';
+        const lf = (s) => L === 'All' || (L === 'SRD' ? !s.custom : L === 'Custom' ? !!s.custom : L === 'Lvl 0–3' ? num(s.level) <= 3 : num(s.level) >= 4);
+        const out = rank(CAT.spells.filter(lf), q, (s) => s.name, (s) => s.desc, 25).map((s) => SI(s.custom ? 'Custom DB Spells' : 'Spells', s.id, s.name, s.levelText || 'Level ' + s.level, short(s.school + ' • ' + s.desc), { spell: s }));
         rank(CAT.special, q, (f) => f.name, (f) => f.desc, 6).forEach((f) => out.push(SI('Special Abilities', f.id, f.name, f.cat, short(f.desc), { special: f })));
         return out;
       },
@@ -1270,15 +1386,19 @@
     if (!S.spot) return;
     const dd = document.querySelector('[data-spot-dd="' + (S.spot.key + '|' + S.spot.ctx).replace(/"/g, '\\"') + '"]');
     if (!dd) return;
-    const items = SPOT[S.spot.key].search(S.spot.q, S.spot.ctx);
+    const def = SPOT[S.spot.key];
+    const layers = typeof def.layers === 'function' ? def.layers(S.spot.ctx) : def.layers;
+    if (layers && !S.spot.layer) S.spot.layer = layers[0];
+    const items = def.search(S.spot.q, S.spot.ctx, S.spot.layer);
     S.spot.items = items;
     if (S.spot.idx >= items.length) S.spot.idx = Math.max(0, items.length - 1);
     let last = '';
-    dd.innerHTML = items.length ? items.map((it, i) => {
+    const pills = layers && layers.length > 1 ? '<div class="fs-spot-layers">' + layers.map((l) => '<span class="fs-spot-layer' + (l === S.spot.layer ? ' on' : '') + '" data-spot-layer="' + esc(l) + '">' + esc(l) + '</span>').join('') + '</div>' : '';
+    dd.innerHTML = pills + (items.length ? items.map((it, i) => {
       const head = it.group !== last ? '<div class="fs-spot-group">' + esc(it.group) + '</div>' : '';
       last = it.group;
       return head + '<div class="fs-spot-item' + (i === S.spot.idx ? ' active' : '') + '" data-spot-pick="' + i + '"><div class="fs-spot-row"><b>' + esc(it.label) + '</b>' + (it.badge ? '<span class="fs-pill dim">' + esc(it.badge) + '</span>' : '') + '</div>' + (it.desc ? '<div class="fs-spot-desc">' + esc(it.desc) + '</div>' : '') + '</div>';
-    }).join('') : '<div class="fs-spot-empty">No matches' + (CAT.srdLoaded ? '' : ' in the offline seed catalog (serve over http:// to search the full SRD)') + '.</div>';
+    }).join('') : '<div class="fs-spot-empty">No matches' + (CAT.srdLoaded ? '' : ' in the offline seed catalog (serve over http:// to search the full SRD)') + '.</div>');
     dd.classList.add('open');
     const act = dd.querySelector('.fs-spot-item.active'); if (act && act.scrollIntoView) act.scrollIntoView({ block: 'nearest' });
   }
@@ -1330,18 +1450,16 @@
     const curTpl = S.entry.templateId || '';
     const catSel = '<select class="fs-sel" data-topcat="1" style="width:auto;min-width:190px" title="Category / Template"><optgroup label="Category">' + opts(BLUEPRINTS.map((b) => [b.id, b.icon + ' ' + b.name]), curTpl ? '' : S.entry.blueprint) + '</optgroup>' +
       (S.templates.length ? '<optgroup label="📌 Saved Templates">' + opts(S.templates.map((t) => [t.id, t.name]), curTpl) + '</optgroup>' : '') + '</select>';
-    const house = S.ui.houseOpen ? '<div class="fs-pop"><div class="fs-section-label" style="margin-top:0">⚙️ House Rules</div>' + field('Max Weapon Crit Threat Range', sel('critCap', S.house.critCap, [[0, 'Standard RAW (No Cap, e.g. 15–20)'], [16, 'House Rule Cap: 16–20'], [17, 'House Rule Cap: 17–20']], { scope: 'house', num: true })) +
-      '<div class="fs-hint" style="margin-top:6px">Weapons store baseCritRange + Keen; the effective threat range is computed and capped live.</div>' + (S.templates.length ? '<div class="fs-section-label">📌 Saved Templates</div><div class="fs-row">' + S.templates.map((t) => '<span class="fs-pill purple">' + esc(t.name) + '<span class="fs-x" data-action="delete-template" data-id="' + esc(t.id) + '">×</span></span>').join('') + '</div>' : '') + '</div>' : '';
     const save = S.ui.tplSaveOpen ? '<span class="fs-row" style="gap:4px">' + inp('newTplName', S.ui.newTplName, { scope: 'ui', ph: 'Template name…', style: 'width:150px', enter: 'save-template' }) + btn('save-template', 'Save', 'fs-xs fs-emerald') + btn('toggle-tpl-save', '✕', 'fs-xs fs-ghost') + '</span>' : btn('toggle-tpl-save', '📌 Save Template', 'fs-xs');
     const status = CAT.srdLoaded ? '<span class="fs-pill emerald" title="SrdCompendium + master_db.json">📚 SRD ' + CAT.srdCount.toLocaleString('en-US') + (CAT.customCount ? ' + ' + CAT.customCount + ' custom' : '') + '</span>' : '<span class="fs-pill dim" title="Serve over http:// to load srd_compendium.js data">📚 Offline seed</span>';
-    $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">' + DICE_SVG + ' Living Facet Studio</div>' + catSel +
-      '<div class="fs-top-spot">' + spotHtml('load', 'top') + '</div>' +
-      '<span class="fs-rel">' + btn('toggle-house', '⚙️ House Rules' + (S.house.critCap ? ' •' : ''), 'fs-xs' + (S.ui.houseOpen ? ' fs-on' : '')) + house + '</span>' + save + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>';
+    const view = '<span class="fs-seg">' + btn('set-view', '🧩 Scratch Lego', S.ui.viewMode === 'scratch' ? 'fs-on' : 'fs-ghost', { v: 'scratch' }) + btn('set-view', '📋 Classic Facets', S.ui.viewMode === 'classic' ? 'fs-on' : 'fs-ghost', { v: 'classic' }) + '</span>';
+    $('#fs-topbar').innerHTML = '<div class="fs-topbar-row"><div class="fs-title">' + DICE_SVG + ' Living Facet Studio</div>' + view + catSel +
+      '<div class="fs-top-spot">' + spotHtml('load', 'top') + '</div>' + save + btn('new-entry', '✨ Blank', 'fs-xs') + status + '</div>';
   }
   function renderLiveHeader() {
     const en = S.entry, bp = BP_BY_ID[en.blueprint] || BLUEPRINTS[0], has = (k) => en.facets.indexOf(k) >= 0;
     let sub = bp.name.split(' /')[0];
-    if (isItemBp(en.blueprint)) sub = (en.item.consumable ? 'Consumable • ' : '') + en.item.subtype + (has('chassis') ? '' : ' • ' + en.item.slot.split(' /')[0]);
+    if (isItemBp(en.blueprint)) sub = (isConsumable(en) ? 'Consumable • ' : '') + en.item.subtype + (has('chassis') ? '' : ' • ' + en.item.slot.split(' /')[0]);
     if (en.blueprint === 'spell') sub = 'Spell' + (en.spell.classes.length ? ' • ' + spellLevelText(en.spell) : '');
     if (en.blueprint === 'class') sub = en.progression.mode === 'prestige' ? 'Prestige Class' : en.progression.mode === 'base' ? 'Base Class' : 'Legacy Progression';
     let l1 = '<span class="fs-live-icon">' + bp.icon + '</span><span class="fs-live-name">' + esc(entryName(en)) + '</span><span class="fs-pill indigo">' + esc(sub) + '</span>' +
@@ -1362,7 +1480,7 @@
   // --------------------------------------------------------------------------
   const SKILL_OPTS = SKILLS.map((s) => [skillKey(s[0]), s[0]]);
   const ABIL_OPTS = ABILITIES.map((a) => [a[0], a[1]]);
-  const USE_MODES = [['atwill', 'At-Will'], ['perDay', 'X / Day'], ['perEncounter', 'X / Encounter'], ['charges', 'X Charges'], ['spellSlot', 'Expend Spell Slot (Level 0–9)'], ['resourcePool', 'Expend Resource Pool (Turn Undead / Ki / Custom)'], ['cooldown', 'Cooldown Recharge Dice']];
+  const USE_MODES = [['passive', 'Passive (Always On)'], ['atwill', '♾️ At-Will'], ['perDay', '🔄 X / Day (Resets Daily)'], ['perEncounter', '⚡ X / Encounter'], ['charges', '🧪 X Charges / Uses (Depletes — Potion/Scroll/Wand)'], ['spellSlot', '🔮 Expend Spell Slot'], ['resourcePool', '🔥 Expend Pool (Turn Undead / Bardic / Ki)'], ['cooldown', '⏳ Cooldown Rounds (e.g. 1d4)']];
   function usageEditor(p, u) {
     let param = '';
     if (['perDay', 'perEncounter', 'charges'].indexOf(u.mode) >= 0) param = inp(p + '.n', u.n, { num: true, min: 1, max: 50, style: 'width:70px' });
@@ -1388,7 +1506,7 @@
     if (isItemBp(en.blueprint)) {
       h += '<div class="fs-section-label">Item Classification</div><div class="fs-grid4">' + field('Subtype', sel('item.subtype', en.item.subtype, ITEM_SUBTYPES)) + field('Body Slot', sel('item.slot', en.item.slot, BODY_SLOTS)) +
         (en.facets.indexOf('chassis') < 0 ? field('Market Price (gp)', inp('item.price', en.item.price, { num: true, min: 0 })) + field('Caster Level', inp('item.cl', en.item.cl, { num: true, min: 0, max: 30 })) : field('Market Price', '<span class="fs-pill amber" style="height:var(--input-sm-h)">' + gp(chassisView(en.chassis).gpTotal) + ' (computed)</span>')) + '</div>' +
-        '<div class="fs-row" style="margin-top:6px">' + chk('item.consumable', en.item.consumable, 'Consumable (used up on activation)') + '</div>';
+        '';
     }
     if (en.blueprint === 'spell') {
       const sp = en.spell;
@@ -1415,9 +1533,11 @@
       case 'level': body = sel(p + 'levelKind', a.levelKind, [['casterLevel', 'Caster Level'], ['charLevel', 'Character Level'], ['classLevel', 'Class Level']], { narrow: true }) + (a.levelKind === 'classLevel' ? inp(p + 'cls', a.cls, { ph: 'Fighter', style: 'width:90px' }) : '') + sel(p + 'min', a.min, range(1, 20).map((n) => [n, '≥ ' + n]), { narrow: true, num: true }); break;
       case 'alignment': body = sel(p + 'align', a.align, ALIGN_REQS.map((x) => [x, ALIGN_NAMES[x] || x]), { narrow: true }); break;
       case 'custom': body = inp(p + 'text', a.text, { ph: 'e.g. Must have slain a dragon; DM approval', style: 'width:300px' }); break;
+      case 'spellcasting': body = sel(p + 'cls', a.cls || 'any', [['any', 'Any'], ['arcane', 'Arcane'], ['divine', 'Divine']], { narrow: true }) + sel(p + 'min', a.min, range(0, 9).map((n) => [n, 'Spell Level ' + n]), { narrow: true, num: true }); break;
+      case 'deity': body = inp(p + 'feat', a.feat, { list: 'fs-deity-list', ph: 'Pelor', style: 'width:180px' }); break;
     }
     return '<div class="fs-row" style="margin-top:4px">' + (ai > 0 ? '<span class="fs-or">OR</span>' : '') +
-      sel(p + 'kind', a.kind, [['ability', 'Ability Score'], ['bab', 'Base Attack Bonus'], ['skill', 'Skill Ranks'], ['feat', 'Feat / Tag Pool / Ability'], ['level', 'Caster / Class Level'], ['alignment', 'Alignment'], ['custom', 'Custom Story / DM Requirement']], { narrow: true }) +
+      sel(p + 'kind', a.kind, [['ability', 'Ability Score'], ['bab', 'Base Attack Bonus'], ['skill', 'Skill Ranks'], ['feat', 'Feat / Tag Pool / Ability'], ['level', 'Caster / Class Level'], ['alignment', 'Alignment'], ['spellcasting', 'Spellcasting'], ['deity', 'Patron Deity'], ['custom', 'Special / DM Requirement']], { narrow: true }) +
       body + btn('remove-alt', '×', 'fs-xs fs-ghost', { ri: ri, ai: ai }) + '</div>';
   }
   function facetPrereqs(en) {
@@ -1499,10 +1619,11 @@
     let h = ref + '<div class="fs-grid4">' + (pw.kind === 'inline' ? field('Power Name', inp(p + '.name', pw.name)) : field('Grant Mode', sel(p + '.grantMode', pw.grantMode, [['cast', 'Cast from Item / SLA'], ['known', 'Add to Spells Known / Spell List'], ['slot', 'Expend Own Spell Slot (Runestaff)']]))) +
       field('Action', sel(p + '.action', pw.action, ACTIONS)) + field('Caster Level', inp(p + '.cl', pw.cl, { num: true, min: 0, max: 30 })) + field('Save DC (0 = per spell)', inp(p + '.dc', pw.dc, { num: true, min: 0 })) + '</div>' +
       '<div class="fs-row" style="margin-top:6px"><span class="fs-label-mini">Independent Usage</span>' + usageEditor(p + '.use', pw.use) + '</div>' +
-      '<div class="fs-grid4" style="margin-top:6px">' + field('Attack Roll', sel(p + '.attack', pw.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]]))) + field('Range', inp(p + '.range', pw.range, { list: 'fs-range-list', ph: pw.ref && pw.ref.range ? pw.ref.range : '—' })) +
+      '<div class="fs-grid3" style="margin-top:6px">' + field('Range', inp(p + '.range', pw.range, { list: 'fs-range-list', ph: pw.ref && pw.ref.range ? pw.ref.range : '—' })) +
       field('Area / Target', inp(p + '.area', pw.area, { list: 'fs-area-list' })) + field('Duration', inp(p + '.duration', pw.duration, { ph: 'Instantaneous, 1 round/level…' })) + '</div>' +
-      '<div class="fs-row" style="margin-top:6px">' + sel(p + '.save.type', pw.save.type, ['None', 'Fortitude', 'Reflex', 'Will'], { narrow: true }) + (pw.save.type !== 'None' ? sel(p + '.save.effect', pw.save.effect, ['Negates', 'Half', 'Partial', 'Negates (harmless)', 'Disbelief'], { narrow: true }) : '') + '</div>' +
-      damageEditor(p + '.damage', pw.damage, 'pw-dmg', i) +
+      (pw.attackOn ? '<div class="fs-row" style="margin-top:6px"><span class="fs-label-mini">🎯 Attack & Save</span>' + sel(p + '.attack', pw.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]]), { narrow: true }) + sel(p + '.save.type', pw.save.type, ['None', 'Fortitude', 'Reflex', 'Will'], { narrow: true }) + (pw.save.type !== 'None' ? sel(p + '.save.effect', pw.save.effect, ['Negates', 'Half', 'Partial', 'Negates (harmless)', 'Disbelief'], { narrow: true }) : '') + btn('toggle-flag', '×', 'fs-xs fs-ghost', { p: p + '.attackOn' }) + '</div>' : '') +
+      (pw.damage.on ? damageEditor(p + '.damage', pw.damage, 'pw-dmg', i) : '') +
+      '<div class="fs-row" style="margin-top:6px">' + (pw.attackOn ? '' : btn('toggle-flag', '+ 🎯 Attack & Save', 'fs-xs fs-dashed', { p: p + '.attackOn' })) + (pw.damage.on ? '' : btn('toggle-flag', '+ 💥 Damage', 'fs-xs fs-dashed', { p: p + '.damage.on' })) + '</div>' +
       '<div class="fs-section-label">Activated Buff / Debuff Modifiers</div>' + (pw.modifiers.length ? modRows(p + '.modifiers', pw.modifiers, 'pm:' + pw.id + ':') : '') + btn('add-mod', '+ Add Activated Modifier', 'fs-xs fs-dashed', { p: p + '.modifiers' }) +
       '<div class="fs-section-label">Rule Effect Text</div><textarea class="fs-in" data-bind="' + p + '.text" placeholder="What happens when activated…">' + esc(pw.text) + '</textarea>' +
       '<div class="fs-row" style="margin-top:6px">' + (pw.kind === 'inline' ? chk(p + '.exportStandalone', pw.exportStandalone, '📌 Also export as standalone Custom DB entry') : '') + btn('move-power', '↑', 'fs-xs', { i: i, d: -1 }) + btn('move-power', '↓', 'fs-xs', { i: i, d: 1 }) + btn('remove-power', 'Delete Power', 'fs-xs fs-rose', { i: i }) + '</div>';
@@ -1518,8 +1639,8 @@
     const d = en.delivery;
     const extras = d.extras.map((x, i) => card('x:' + x.id, '📜 <b>' + esc(EXTRA_KINDS[x.kind] || 'Rule') + ':</b> ' + live('x-sum', i), '<div class="fs-row">' + inp('delivery.extras.' + i + '.text', x.text, { style: 'flex:1;min-width:240px', ph: 'Rule detail…' }) + btn('remove-extra', 'Delete', 'fs-xs fs-rose', { i: i }) + '</div>')).join('');
     return '<div class="fs-grid4">' + field('Action', sel('delivery.action', d.action, ACTIONS)) + field('Range', inp('delivery.range', d.range, { list: 'fs-range-list' })) + field('Area / Target', inp('delivery.area', d.area, { list: 'fs-area-list' })) +
-      field('Attack Roll', sel('delivery.attack', d.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]]))) + '</div>' +
-      damageEditor('delivery.damage', d.damage, 'dmg-main') +
+      field('Attack Roll', d.attackOn ? '<span class="fs-row" style="gap:3px">' + sel('delivery.attack', d.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]])) + btn('toggle-flag', '×', 'fs-xs fs-ghost', { p: 'delivery.attackOn' }) + '</span>' : btn('toggle-flag', '+ 🎯 Attack Roll', 'fs-xs fs-dashed', { p: 'delivery.attackOn' })) + '</div>' +
+      (d.damage.on ? damageEditor('delivery.damage', d.damage, 'dmg-main') : '<div class="fs-row" style="margin-top:8px">' + btn('toggle-flag', '+ 💥 Damage / Healing & Scaling', 'fs-xs fs-dashed', { p: 'delivery.damage.on' }) + '</div>') +
       '<div class="fs-section-label">Saving Throw & Spell Resistance</div><div class="fs-row">' + sel('delivery.save.type', d.save.type, [['None', 'No Saving Throw'], 'Fortitude', 'Reflex', 'Will'], { narrow: true }) +
       (d.save.type !== 'None' ? sel('delivery.save.effect', d.save.effect, ['Negates', 'Half', 'Partial', 'Negates (harmless)', 'Disbelief'], { narrow: true }) + sel('delivery.save.dcMode', d.save.dcMode, [['spell', 'DC 10 + Spell Level + Stat'], ['hd', 'DC 10 + 1/2 HD + Stat'], ['flat', 'Flat DC']], { narrow: true }) +
         (d.save.dcMode === 'flat' ? inp('delivery.save.flat', d.save.flat, { num: true, style: 'width:70px' }) : sel('delivery.save.stat', d.save.stat, ABIL_KEYS.map((k) => [k, k.toUpperCase()]), { narrow: true })) : '') +
@@ -1532,7 +1653,7 @@
     const l = en.lifecycle, dur = ['rounds', 'roundsPerLevel', 'minPerLevel', 'hourPerLevel'].indexOf(l.duration) >= 0;
     return '<div class="fs-row"><span class="fs-label-mini">Usage</span>' + usageEditor('lifecycle.use', l.use) + '</div>' +
       '<div class="fs-row" style="margin-top:6px"><span class="fs-label-mini">Duration</span>' + sel('lifecycle.duration', l.duration, DURATIONS, { narrow: true }) +
-      (dur ? inp('lifecycle.durValue', l.durValue, { num: true, min: 1, style: 'width:70px' }) : '') + (l.duration === 'text' ? inp('lifecycle.durText', l.durText, { ph: 'Until landing or 1 round/level', style: 'width:240px' }) : '') + '</div>' +
+      (dur ? inp('lifecycle.durValue', l.durValue, { num: true, min: 1, style: 'width:70px' }) : '') + (l.duration === 'text' ? inp('lifecycle.durText', l.durText, { ph: 'Until landing or 1 round/level', style: 'width:240px' }) : '') + chk('lifecycle.dismissible', l.dismissible, 'Dismissible (D)') + '</div>' +
       '<div class="fs-row" style="margin-top:8px">' + chk('lifecycle.stackable', l.stackable, 'Stackable ×N') + (l.stackable ? sel('lifecycle.maxStacks', l.maxStacks, range(1, 20).map((n) => [n, 'Max Stacks ' + n]), { narrow: true, num: true }) : '') + chk('lifecycle.ongoingOn', l.ongoingOn, 'Ongoing Start-of-Turn Effect') + '</div>' +
       (l.ongoingOn ? '<div class="fs-row" style="margin-top:6px">' + sel('lifecycle.ongoing.kind', l.ongoing.kind, [['dot', '🩸 DOT Damage'], ['fastHeal', '💚 Fast Healing']], { narrow: true }) +
         (l.ongoing.kind === 'dot' ? inp('lifecycle.ongoing.dice', l.ongoing.dice, { ph: '1d6', style: 'width:80px' }) + sel('lifecycle.ongoing.type', l.ongoing.type, DAMAGE_TYPES, { narrow: true }) : inp('lifecycle.ongoing.value', l.ongoing.value, { num: true, style: 'width:70px' }) + '<span class="fs-hint">HP / round</span>') + '</div>' : '');
@@ -1571,6 +1692,7 @@
       '<div class="fs-section-label">🔁 Repeating Pattern Generator</div><div class="fs-row">' + inp('progression.pattern.name', p.pattern.name, { ph: 'Feature name', style: 'width:150px' }) +
       '<span class="fs-hint">start</span>' + sel('progression.pattern.start', p.pattern.start, range(1, p.maxLevel), { narrow: true, num: true }) + '<span class="fs-hint">every</span>' + sel('progression.pattern.every', p.pattern.every, range(1, 10), { narrow: true, num: true }) +
       '<span class="fs-hint">scaling</span>' + inp('progression.pattern.scale', p.pattern.scale, { ph: '+1d6 or +1', style: 'width:80px' }) + btn('gen-pattern', '⚡ Generate Rows', 'fs-xs fs-primary') + '</div>' +
+      '<div class="fs-section-label">🧩 Class Skills</div><div class="fs-row">' + p.classSkills.map((s, i) => '<span class="fs-pill emerald">' + esc(s) + '<span class="fs-x" data-action="remove-skill" data-i="' + i + '">×</span></span>').join('') + spotHtml('skill', 'classic', { style: 'width:180px' }) + Object.keys(SKILL_PACKAGES).map((k) => btn('skill-pkg', '+ ' + k, 'fs-xs', { k: k })).join('') + '</div>' +
       '<div class="fs-scroll-x" style="margin-top:8px"><table class="fs-table"><thead><tr><th>Lvl</th><th>BAB</th><th>Fort</th><th>Ref</th><th>Will</th><th>Features (click to edit)</th><th title="+1 Level of Existing Spellcasting Class">+1 Spellcasting</th></tr></thead><tbody>' + rows + '</tbody></table></div>';
   }
 
@@ -1588,13 +1710,13 @@
   }
   function facetGrants(en) {
     const g = en.grants;
-    if (en.blueprint === 'domain') return '<div class="fs-section-label" style="margin-top:0">Granted Power</div><textarea class="fs-in" data-bind="grants.grantedPower" placeholder="Describe the granted power…">' + esc(g.grantedPower) + '</textarea>' +
-      '<div class="fs-row" style="margin-top:6px">' + field('Uses', inp('grants.grantedUses', g.grantedUses, { ph: '1/day' }), 'width:140px') + '</div><div class="fs-section-label">📜 Domain Spell Ladder (Levels 1–9)</div>' + ladderEditor('grants.ladder', g.ladder, false);
+    if (en.blueprint === 'domain') return '<div class="fs-grid2">' + field('Granted Power Name', inp('grants.grantedPowerName', g.grantedPowerName)) + field('Usage', usageEditor('grants.gpUse', g.gpUse)) + '</div>' + '<div class="fs-section-label">Granted Power Rules</div><textarea class="fs-in" data-bind="grants.grantedPower" placeholder="Describe the granted power…">' + esc(g.grantedPower) + '</textarea>' +
+      '<div class="fs-section-label">📜 Domain Spell Ladder (Levels 1–9)</div>' + ladderEditor('grants.ladder', g.ladder, false);
     let h = '';
     if (en.blueprint === 'deity') {
       const grid = '<div class="fs-align">' + ALIGNS.map((a) => '<button type="button" data-action="set-deity-align" data-a="' + a + '" class="' + (a === g.deityAlign ? 'deity' : clericLegal(g.deityAlign, a) ? 'legal' : '') + '" title="' + ALIGN_NAMES[a] + '">' + a + '</button>').join('') + '</div>';
       h += '<div class="fs-row" style="align-items:flex-start;gap:16px"><div><div class="fs-section-label" style="margin-top:0">Deity Alignment</div>' + grid + '<div class="fs-hint" style="margin-top:4px;max-width:210px">Green = legal Cleric alignments (one step on one axis): ' + ALIGNS.filter((a) => clericLegal(g.deityAlign, a)).join(', ') + '</div></div>' +
-        '<div style="flex:1;min-width:240px">' + field('Favored Weapon', inp('grants.favoredWeapon', g.favoredWeapon, { list: 'fs-weapon-names' })) + '</div></div>';
+        '<div style="flex:1;min-width:240px">' + field('Favored Weapon', inp('grants.favoredWeapon', g.favoredWeapon, { list: 'fs-weapon-names' })) + field('Portfolio', inp('grants.portfolio', g.portfolio)) + field('Worshippers / Dogma', inp('grants.dogma', g.dogma)) + '</div></div>';
     } else {
       const ds = g.deities.map((d, i) => card('dt:' + d.id, '🏛️ ' + live('deity-sum', i) + ' <span class="fs-pill ' + (d.kind === 'inline' ? 'amber' : 'dim') + '">' + (d.kind === 'inline' ? 'Inline' : 'PHB') + '</span>',
         '<div class="fs-grid3">' + field('Deity Name', inp('grants.deities.' + i + '.name', d.name)) + field('Alignment', sel('grants.deities.' + i + '.align', d.align, ALIGNS.map((a) => [a, ALIGN_NAMES[a]]))) + field('Favored Weapon', inp('grants.deities.' + i + '.favoredWeapon', d.favoredWeapon, { list: 'fs-weapon-names' })) + '</div>' +
@@ -1610,7 +1732,7 @@
     return h;
   }
 
-  const FACET_RENDER = { identity: facetIdentity, prereqs: facetPrereqs, chassis: facetChassis, modifiers: facetModifiers, powers: facetPowers, delivery: facetDelivery, lifecycle: facetLifecycle, defenses: facetDefenses, progression: facetProgression, grants: facetGrants };
+  const FACET_RENDER = { identity: facetIdentity, prereqs: facetPrereqs, chassis: facetChassis, modifiers: facetModifiers, effects: (en) => facetEffects(en), powers: facetPowers, delivery: facetDelivery, lifecycle: facetLifecycle, defenses: facetDefenses, progression: facetProgression, grants: facetGrants };
   function facetMeta(en, k) {
     switch (k) {
       case 'identity': return en.tags.length + ' tags';
@@ -1618,6 +1740,7 @@
       case 'chassis': { const v = chassisView(en.chassis); return sgn(v.effective) + ' / +10 • ' + gp(v.gpTotal); }
       case 'modifiers': return en.modifiers.length + ' modifiers • ' + Object.keys(en.locks).filter((x) => en.locks[x]).length + ' locks';
       case 'powers': return en.powers.length + ' sub-abilities';
+      case 'effects': return en.effects.length + ' blocks';
       case 'delivery': return en.delivery.action + (damageText(en.delivery.damage) ? ' • ' + damageText(en.delivery.damage) : '');
       case 'lifecycle': return useText(en.lifecycle.use) + ' • ' + durationText(en.lifecycle);
       case 'defenses': return (en.defenses.dr.length + en.defenses.energy.length + (en.defenses.srOn ? 1 : 0)) + ' entries';
@@ -1628,6 +1751,7 @@
   }
   function renderFacets() {
     const en = S.entry;
+    if (S.ui.viewMode === 'scratch') { $('#fs-facets').innerHTML = renderScratch(); return; }
     const active = FACETS.filter((f) => en.facets.indexOf(f.key) >= 0);
     let h = datalists() + active.map((f) => {
       const open = S.ui.facetOpen[f.key] !== false;
@@ -1646,6 +1770,243 @@
     $('#fs-json-wrap').innerHTML = '<div class="fs-facet-head" data-action="toggle-json"><span class="fs-chev">▶</span><span>📜</span><span class="fs-facet-title">Canonical V2.5 JSON Output Inspector</span><span class="fs-facet-meta">' + (open ? btn('copy-json', 'Copy JSON', 'fs-xs') : 'click to expand') + '</span></div>' +
       '<div class="fs-facet-body"><pre class="fs-json" id="fs-json-pre">' + (open ? esc(JSON.stringify(exportEntry(S.entry), null, 2)) : '') + '</pre></div>';
   }
+
+
+  // --------------------------------------------------------------------------
+  // 14b. Effect blocks — shared controls for Scratch Lego + Classic views
+  // --------------------------------------------------------------------------
+  const DEF_MODES = ['Immunity', 'Condition Immunity', 'DR', 'Energy Resistance', 'Spell Resistance', 'Sense', 'Vulnerability'];
+  const DEF_LIST = ['Fear', 'Poison', 'Sleep', 'Paralysis', 'Disease', 'Mind-Affecting', 'Death Effects', 'Low-Light Vision', 'Darkvision 60 ft.', 'Blindsense 30 ft.', 'Tremorsense 30 ft.', 'Uncanny Dodge', 'evil or good', 'magic', 'Fire', 'Cold', 'Acid', 'Electricity', 'Sonic'];
+  function targetChips(list, p) {
+    return list.map((t, i) => '<span class="fs-pill indigo">' + esc(TARGET_LABEL[t] || t) + '<span class="fs-x" data-action="remove-target" data-p="' + p + '" data-i="' + i + '">×</span></span>').join('') +
+      '<select class="fs-sel fs-narrow" data-push="' + p + '"><option value="">+ Target</option>' + TARGET_GROUPS.map((g) => '<optgroup label="' + esc(g[0]) + '">' + opts(g[1], '') + '</optgroup>').join('') + '</select>';
+  }
+  function blockControls(b, p) {
+    switch (b.type) {
+      case 'bonus': return targetChips(b.targets, p + '.targets') + inp(p + '.value', b.value, { num: true, style: 'width:56px' }) + sel(p + '.btype', b.btype, bonusTypeOpts().map((o) => [o[0], o[0]]), { narrow: true }) +
+        sel(p + '.scaling', b.scaling, [['flat', 'Flat'], ['perCL', 'Per X CL']], { narrow: true }) +
+        (b.scaling === 'perCL' ? '<span class="lego-lbl">every</span>' + sel(p + '.per', b.per, range(1, 10).map((n) => [n, n + ' CL']), { narrow: true, num: true }) + '<span class="lego-lbl">min</span>' + inp(p + '.min', b.min, { num: true, style: 'width:50px' }) + '<span class="lego-lbl">max</span>' + inp(p + '.max', b.max, { num: true, style: 'width:50px' }) : '') +
+        inp(p + '.condition', b.condition, { ph: 'condition (vs Fear)', style: 'width:140px' });
+      case 'damage': return sel(p + '.kind', b.kind, ['Damage', 'Healing', 'Temp HP'], { narrow: true }) + inp(p + '.dice', b.dice, { list: 'fs-dice-list', ph: '1d8 / 20', style: 'width:76px' }) +
+        (b.kind === 'Damage' ? sel(p + '.dmgType', b.dmgType, DAMAGE_TYPES.slice(0, 16), { narrow: true }) : '') + chk(p + '.perOn', b.perOn, '+ per CL') +
+        (b.perOn ? inp(p + '.amount', b.amount, { num: true, style: 'width:50px' }) + '<span class="lego-lbl">per</span>' + sel(p + '.per', b.per, range(1, 10).map((n) => [n, n + ' CL']), { narrow: true, num: true }) + '<span class="lego-lbl">max +</span>' + inp(p + '.max', b.max, { num: true, style: 'width:50px' }) : '') +
+        (b.kind === 'Damage' ? inp(p + '.save', b.save, { ph: 'save (Reflex half)', style: 'width:130px' }) : '');
+      case 'defense': return sel(p + '.mode', b.mode, DEF_MODES, { narrow: true }) + (['DR', 'Energy Resistance', 'Spell Resistance'].indexOf(b.mode) >= 0 ? inp(p + '.value', b.value, { num: true, style: 'width:56px' }) : '') +
+        (b.mode === 'Spell Resistance' ? '' : inp(p + '.what', b.what, { list: 'fs-defense-list', style: 'width:150px', ph: 'Fear / evil or good / Low-Light Vision' }));
+      case 'size': return sel(p + '.steps', b.steps, [[-2, SIZE_STEPS['-2']], [-1, SIZE_STEPS['-1']], [1, SIZE_STEPS['1']], [2, SIZE_STEPS['2']]], { narrow: true, num: true });
+      case 'rule': return inp(p + '.text', b.text, { ph: 'Rule effect text…', style: 'flex:1;min-width:220px' });
+      case 'synergy': return inp(p + '.cond', b.cond, { ph: 'If 2+ active #Primal effects', style: 'width:230px' });
+      case 'table': return '<span class="lego-lbl">Roll</span>' + inp(p + '.die', b.die, { list: 'fs-dice-list', style: 'width:66px' });
+      default: return '';
+    }
+  }
+  function blockPalette(listPath, containers, compact) {
+    const types = Object.keys(BLOCK_TYPES).filter((t) => containers || !BLOCK_TYPES[t].container);
+    return '<div class="lego-palette' + (compact ? ' compact' : '') + '">' + (compact ? '' : '<span class="lego-lbl">+ Snap Block:</span>') + types.map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="' + listPath + '" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
+  }
+  const delBtn = (action, data) => '<button type="button" class="lego-del" data-action="' + action + '"' + Object.keys(data).map((k) => ' data-' + k + '="' + esc(data[k]) + '"').join('') + ' title="Remove">✕</button>';
+  function scratchBlocks(list, listPath) {
+    return list.map((b, i) => {
+      const p = listPath + '.' + i, T = BLOCK_TYPES[b.type];
+      const head = '<span class="lego-lbl">' + T.icon + ' ' + esc(T.label) + ':</span>' + blockControls(b, p) + delBtn('remove-block', { p: listPath, i: i });
+      if (!T.container) return '<div class="lego-block lego-tab ' + T.color + '">' + head + '</div>';
+      let inner = '';
+      if (T.container === 'kids') inner = scratchBlocks(b.kids, p + '.kids') + blockPalette(p + '.kids', false, true);
+      if (T.container === 'branches') inner = b.branches.map((br, bi) => cBlock('c-sub', '<span class="lego-lbl">If</span>' + inp(p + '.branches.' + bi + '.cond', br.cond, { style: 'width:120px' }) + delBtn('remove-branch', { p: p + '.branches', i: bi }),
+        scratchBlocks(br.kids, p + '.branches.' + bi + '.kids') + blockPalette(p + '.branches.' + bi + '.kids', false, true))).join('') + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-branch" data-p="' + p + '.branches">+ CL Tier Branch</button>';
+      if (T.container === 'rows') inner = b.rows.map((r, ri) => cBlock('c-sub', '<span class="lego-lbl">On</span>' + inp(p + '.rows.' + ri + '.roll', r.roll, { style: 'width:52px' }) + delBtn('remove-row', { p: p + '.rows', i: ri }),
+        scratchBlocks(r.kids, p + '.rows.' + ri + '.kids') + blockPalette(p + '.rows.' + ri + '.kids', false, true))).join('') + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-row" data-p="' + p + '.rows">+ Table Row</button>';
+      return cBlock(T.color, head, inner);
+    }).join('');
+  }
+  function cBlock(color, head, inner) { return '<div class="lego-c ' + color + '"><div class="c-top">' + head + '</div><div class="c-mouth"><div class="c-spine"></div><div class="c-inner">' + inner + '</div></div><div class="c-bot lego-tab"></div></div>'; }
+  function classicBlocks(list, listPath) {
+    return list.map((b, i) => {
+      const p = listPath + '.' + i, T = BLOCK_TYPES[b.type];
+      let inner = '<div class="fs-row">' + blockControls(b, p) + btn('remove-block', 'Delete', 'fs-xs fs-rose', { p: listPath, i: i }) + '</div>';
+      if (T.container === 'kids') inner += '<div class="fs-nest">' + classicBlocks(b.kids, p + '.kids') + blockPalette(p + '.kids', false, true) + '</div>';
+      if (T.container === 'branches') inner += b.branches.map((br, bi) => '<div class="fs-nest"><div class="fs-row"><span class="fs-label-mini">If</span>' + inp(p + '.branches.' + bi + '.cond', br.cond, { style: 'width:140px' }) + btn('remove-branch', '×', 'fs-xs fs-ghost', { p: p + '.branches', i: bi }) + '</div>' + classicBlocks(br.kids, p + '.branches.' + bi + '.kids') + blockPalette(p + '.branches.' + bi + '.kids', false, true) + '</div>').join('') + btn('add-branch', '+ CL Tier Branch', 'fs-xs fs-dashed', { p: p + '.branches' });
+      if (T.container === 'rows') inner += b.rows.map((r, ri) => '<div class="fs-nest"><div class="fs-row"><span class="fs-label-mini">On roll</span>' + inp(p + '.rows.' + ri + '.roll', r.roll, { style: 'width:60px' }) + btn('remove-row', '×', 'fs-xs fs-ghost', { p: p + '.rows', i: ri }) + '</div>' + classicBlocks(r.kids, p + '.rows.' + ri + '.kids') + blockPalette(p + '.rows.' + ri + '.kids', false, true) + '</div>').join('') + btn('add-row', '+ Table Row', 'fs-xs fs-dashed', { p: p + '.rows' });
+      return card('blk:' + b.id, T.icon + ' <b>' + esc(T.label) + ':</b> ' + esc(blockText(b)), inner);
+    }).join('');
+  }
+  function facetEffects(en) {
+    return (en.effects.length ? classicBlocks(en.effects, 'effects') : '<div class="fs-hint">No effect blocks yet. Snap Bonus, Damage / Temp HP, Defense, Size, CL Tier, Synergy or Roll Table blocks.</div>') + blockPalette('effects', true);
+  }
+
+  // --------------------------------------------------------------------------
+  // 14c. Scratch Lego view — 9 fill-in-the-blank category templates
+  // --------------------------------------------------------------------------
+  const L = (t) => '<span class="lego-lbl">' + t + '</span>';
+  const hat = (color, inner) => '<div class="lego-hat lego-tab ' + color + '">' + inner + '</div>';
+  const stack = (color, inner) => '<div class="lego-block lego-tab ' + color + '">' + inner + '</div>';
+  function tagSockets(en) { return L('Tags') + en.tags.map((t, i) => '<span class="fs-pill purple">' + esc(t) + '<span class="fs-x" data-action="remove-tag" data-i="' + i + '">×</span></span>').join('') + spotHtml('tag', 'identity', { style: 'width:200px', ph: '🔍 + #Tag' }); }
+  function modStacks(en) {
+    return en.modifiers.map((m, i) => stack('b-blue', L('📊 Bonus:') + selGroups('modifiers.' + i + '.target', m.target, TARGET_GROUPS) + inp('modifiers.' + i + '.value', m.value, { num: true, style: 'width:56px' }) +
+      sel('modifiers.' + i + '.type', m.type, bonusTypeOpts().map((o) => [o[0], o[0]]), { narrow: true }) + inp('modifiers.' + i + '.condition', m.condition, { ph: 'condition', style: 'width:120px' }) + delBtn('remove-mod', { p: 'modifiers', i: i }))).join('');
+  }
+  function prereqCBlock(en, title) {
+    const rows = en.prereqs.map((r, ri) => cBlock('c-sub', '<span class="lego-lbl">' + (ri ? 'AND' : 'Require') + '</span>' + delBtn('remove-prereq', { ri: ri }),
+      r.alts.map((a, ai) => stack('b-slate', altEditor(ri, ai, a))).join('') + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-or" data-ri="' + ri + '">+Or</button>')).join('');
+    return cBlock('c-amber', L('🦖 ' + title) + '<span class="fs-hint" style="color:#fde68a">' + esc(prereqText(en.prereqs) || 'none — open to all') + '</span>', rows + '<button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-prereq">+ Add Prerequisite (AND)</button>');
+  }
+  function enchCBlock(en) {
+    const ch = en.chassis, v = chassisView(ch), cr = v.crystal;
+    const enchs = v.enchs.map((e) => stack('b-green', L('✨ ' + esc(e.name)) + '<span class="fs-pill dim">' + (e.plus ? '+' + e.plus + ' bonus' : gp(e.gp)) + '</span><span class="lego-desc">' + esc(short(e.desc, 80)) + '</span>' + delBtn('remove-ench', { id: e.id }))).join('');
+    const crystal = cr ? stack('b-purple', L('💎 ' + esc(cr.c.name)) + sel('chassis.crystal.tier', cr.tier, CRYSTAL_TIERS.map((t, i) => [t, cap1(t) + (cr.c.cost[i] == null ? ' — n/a' : ' — ' + gp(cr.c.cost[i]))]), { narrow: true }) + '<span class="lego-desc">' + esc(short(cr.text, 70)) + '</span>' + delBtn('remove-crystal', {})) : stack('b-purple', L('💎 Crystal') + spotHtml('crystal', 'chassis', { style: 'width:260px' }));
+    return cBlock('c-amber', L('🦖 Enchantments & Crystal') + '<span class="fs-pill ' + (v.effective > 10 ? 'rose' : 'emerald') + '">' + sgn(v.effective) + ' / +10</span><span class="fs-pill amber">💰 ' + gp(v.gpTotal) + '</span>',
+      enchs + stack('b-green', L('✨ Enchantment') + spotHtml('ench', 'chassis', { style: 'width:300px' })) + crystal + v.warnings.map((w) => '<div class="fs-warn" style="font-size:12px">⚠️ ' + esc(w) + '</div>').join(''));
+  }
+  function powerCBlock(pw, i) {
+    const p = 'powers.' + i;
+    const head = L('⚡ Sub-Power:') + (pw.kind === 'inline' ? inp(p + '.name', pw.name, { style: 'width:160px' }) : '<span class="fs-pill purple">🔮 ' + esc(pw.ref ? pw.ref.name : pw.name) + '</span>') + usageEditor(p + '.use', pw.use) + sel(p + '.action', pw.action, ACTIONS, { narrow: true }) + L('CL') + inp(p + '.cl', pw.cl, { num: true, style: 'width:50px' }) +
+      btn('move-power', '↑', 'fs-xs fs-ghost', { i: i, d: -1 }) + delBtn('remove-power', { i: i });
+    let kids = '';
+    if (pw.kind === 'attached') kids += stack('b-purple', L('🔮 Cast Spell:') + '<span class="fs-pill purple">' + esc(pw.ref ? pw.ref.name + ' (' + (pw.ref.levelText || 'Lvl ' + pw.ref.level) + ')' : pw.name) + '</span>' + sel(p + '.grantMode', pw.grantMode, [['cast', 'Cast from Item / SLA'], ['known', 'Add to Spells Known'], ['slot', 'Expend Own Slot (Runestaff)']], { narrow: true }));
+    pw.modifiers.forEach((m, mi) => { kids += stack('b-blue', L('📊 Bonus:') + selGroups(p + '.modifiers.' + mi + '.target', m.target, TARGET_GROUPS) + inp(p + '.modifiers.' + mi + '.value', m.value, { num: true, style: 'width:56px' }) + sel(p + '.modifiers.' + mi + '.type', m.type, bonusTypeOpts().map((o) => [o[0], o[0]]), { narrow: true }) + delBtn('remove-mod', { p: p + '.modifiers', i: mi })); });
+    if (pw.damage.on) kids += stack('b-red', L('💥 Damage:') + inp(p + '.damage.count', pw.damage.count, { num: true, style: 'width:50px' }) + inp(p + '.damage.die', pw.damage.die, { list: 'fs-dice-list', style: 'width:66px' }) + sel(p + '.damage.type', pw.damage.type, DAMAGE_TYPES, { narrow: true }) +
+      sel(p + '.damage.scaling', pw.damage.scaling, [['flat', 'Flat'], ['perCL', 'Per X CL']], { narrow: true }) + (pw.damage.scaling === 'perCL' ? L('every') + sel(p + '.damage.per', pw.damage.per, range(1, 10).map((n) => [n, n + ' CL']), { narrow: true, num: true }) + L('max') + sel(p + '.damage.max', pw.damage.max, range(1, 30), { narrow: true, num: true }) : '') + '<span class="lego-desc">' + live('pw-dmg', i) + '</span>' + delBtn('toggle-flag', { p: p + '.damage.on' }));
+    if (pw.attackOn) kids += stack('b-red', L('🎯 Attack & Save:') + sel(p + '.attack', pw.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]]), { narrow: true }) + inp(p + '.range', pw.range, { list: 'fs-range-list', ph: 'Range', style: 'width:110px' }) +
+      sel(p + '.save.type', pw.save.type, ['None', 'Fortitude', 'Reflex', 'Will'], { narrow: true }) + (pw.save.type !== 'None' ? sel(p + '.save.effect', pw.save.effect, ['Negates', 'Half', 'Partial', 'Negates (harmless)'], { narrow: true }) + L('DC') + inp(p + '.dc', pw.dc, { num: true, style: 'width:50px' }) : '') + delBtn('toggle-flag', { p: p + '.attackOn' }));
+    if (pw.ruleOn || pw.text) kids += stack('b-slate', L('📜 Rule Effect:') + inp(p + '.text', pw.text, { ph: 'What happens…', style: 'flex:1;min-width:240px' }));
+    kids += '<div class="lego-palette compact">' + '<button type="button" class="lego-add b-blue" data-action="add-mod" data-p="' + p + '.modifiers">+ 📊 Bonus</button>' + (pw.damage.on ? '' : '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="' + p + '.damage.on">+ 💥 Damage</button>') +
+      (pw.attackOn ? '' : '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="' + p + '.attackOn">+ 🎯 Attack & Save</button>') + (pw.ruleOn || pw.text ? '' : '<button type="button" class="lego-add b-slate" data-action="toggle-flag" data-p="' + p + '.ruleOn">+ 📜 Rule Effect</button>') + '</div>';
+    return cBlock('c-amber', head, kids);
+  }
+  function effectsArea(en, containers) {
+    return scratchBlocks(en.effects, 'effects') + blockPalette('effects', containers);
+  }
+  function scratchWeaponArmor(en) {
+    const ch = en.chassis, v = chassisView(ch), isW = ch.kind === 'weapon';
+    let h = hat('h-indigo', L(isW ? '⚔️ Weapon' : '🛡️ Armor / Shield') + inp('name', en.name, { ph: v.name, style: 'width:230px' }) + L('Base') + spotHtml('base', 'chassis', { style: 'width:210px', ph: '🔍 ' + baseName(v.base) }) +
+      L('Material') + sel('chassis.material', ch.material, MATERIALS.map((m) => [m.id, m.name]), { narrow: true }) + L('Enh') + sel('chassis.enhancement', ch.enhancement, range(0, 5).map((n) => [n, sgn(n)]), { narrow: true, num: true }) + '<div class="lego-row">' + tagSockets(en) + '</div>');
+    if (isW) {
+      const w = ch.weapon;
+      h += stack('b-blue', L('🧩 Weapon Chassis:') + L('Damage') + inp('chassis.weapon.dice', w.dice, { list: 'fs-dice-list', style: 'width:70px' }) + sel('chassis.weapon.dmgType', w.dmgType, DAMAGE_TYPES.slice(0, 3), { narrow: true }) +
+        L('Crit') + sel('chassis.weapon.critRange', w.critRange, [[20, '20'], [19, '19–20'], [18, '18–20'], [17, '17–20'], [15, '15–20']], { narrow: true, num: true }) + '<span>/</span>' + sel('chassis.weapon.critMult', w.critMult, [[2, '×2'], [3, '×3'], [4, '×4']], { narrow: true, num: true }) +
+        sel('chassis.weapon.handed', w.handed, ['Light', 'One-Handed', 'Two-Handed'], { narrow: true }) + L('Range') + inp('chassis.weapon.range', w.range, { num: true, style: 'width:56px' }) + '<span class="fs-pill sky">' + esc(v.critText) + (v.keen ? ' (Keen)' : '') + '</span>');
+    } else {
+      const a = ch.armor;
+      h += stack('b-blue', L('🧩 Armor Stats:') + L('AC') + inp('chassis.armor.armorBonus', a.armorBonus, { num: true, style: 'width:50px' }) + L('Max Dex') + inp('chassis.armor.maxDex', a.maxDex, { num: true, style: 'width:50px' }) + L('ACP') + inp('chassis.armor.acp', a.acp, { num: true, style: 'width:50px' }) +
+        L('ASF %') + inp('chassis.armor.asf', a.asf, { num: true, style: 'width:50px' }) + '<span class="lego-desc">After material: Max Dex ' + (v.armor.maxDex >= 99 ? '—' : sgn(v.armor.maxDex)) + ' • ACP ' + v.armor.acp + ' • ASF ' + v.armor.asf + '% • ' + v.armor.type + '</span>');
+    }
+    h += enchCBlock(en);
+    if (isW) h += (ch.damageParts || []).map((p, i) => stack('b-red', L('🩸 Extra Damage:') + inp('chassis.damageParts.' + i + '.count', p.count, { num: true, style: 'width:50px' }) + sel('chassis.damageParts.' + i + '.die', p.die, [['d4', 'd4'], ['d6', 'd6'], ['d8', 'd8'], ['d10', 'd10'], ['d12', 'd12'], ['flat', 'Flat']], { narrow: true }) +
+      sel('chassis.damageParts.' + i + '.type', p.type, DAMAGE_TYPES, { narrow: true }) + sel('chassis.damageParts.' + i + '.crit', p.crit, [['normal', 'Normal'], ['multiply', '×Crit'], ['onCritOnly', 'On Crit Only']], { narrow: true }) + inp('chassis.damageParts.' + i + '.cond', p.cond || '', { ph: 'vs Undead', style: 'width:120px' }) + delBtn('remove-dmg', { i: i }))).join('');
+    return h + modStacks(en) + effectsArea(en, false);
+  }
+  function scratchWondrous(en) {
+    const kinds = ['Wondrous Item', 'Ring', 'Rod', 'Staff', 'Wand', 'Potion / Oil', 'Scroll', 'Artifact / Relic'];
+    let h = hat('h-indigo', L('💎 Item') + inp('name', en.name, { ph: 'Item name', style: 'width:220px' }) + L('Kind') + sel('item.subtype', en.item.subtype, kinds, { narrow: true }) + L('Slot') + sel('item.slot', en.item.slot, BODY_SLOTS, { narrow: true }) +
+      L('Price') + inp('item.price', en.item.price, { num: true, style: 'width:90px' }) + L('gp • CL') + inp('item.cl', en.item.cl, { num: true, style: 'width:50px' }) + '<div class="lego-row">' + tagSockets(en) + '</div>');
+    h += modStacks(en) + scratchBlocks(en.effects, 'effects') + en.powers.map(powerCBlock).join('');
+    h += '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Bonus</button><button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Activated Sub-Power (C-Block)</button>' +
+      Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus' && !BLOCK_TYPES[t].container).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') +
+      '<div style="width:280px">' + spotHtml('power', 'powers', { ph: '🔍 + Attach Existing Spell (Sub-Power)' }) + '</div></div>';
+    return h;
+  }
+  function scratchSpell(en) {
+    const sp = en.spell, d = en.delivery, l = en.lifecycle;
+    let h = hat('h-violet', L('🔮 Spell') + inp('name', en.name, { ph: 'Spell name', style: 'width:200px' }) + L('Class/Lvl') + sp.classes.map((c, i) => '<span class="fs-pill indigo" style="padding:2px 4px"><input class="fs-in" style="width:70px" data-bind="spell.classes.' + i + '.cls" list="fs-spellcls-list" value="' + esc(c.cls) + '">' + sel('spell.classes.' + i + '.lvl', c.lvl, range(0, 9), { num: true, style: 'width:52px' }) + '<span class="fs-x" data-action="remove-spellcls" data-i="' + i + '">×</span></span>').join('') +
+      '<datalist id="fs-spellcls-list">' + opts(SPELL_CLASSES, '') + '</datalist><button type="button" class="fs-btn fs-xs fs-dashed" data-action="add-spellcls">+</button>' + L('School') + sel('spell.school', sp.school, SCHOOLS, { narrow: true }) +
+      '<div class="lego-row">' + L('Descriptors') + sp.descriptors.map((x, i) => '<span class="fs-pill rose">[' + esc(x) + ']<span class="fs-x" data-action="remove-descriptor" data-i="' + i + '">×</span></span>').join('') + spotHtml('descriptor', 'spell', { style: 'width:190px', ph: '🔍 + Fire, Fear…' }) +
+      L('Components') + ['V', 'S', 'M', 'F', 'DF', 'XP'].map((k) => '<button type="button" class="lego-pill' + (sp.comps[k] ? ' on' : '') + '" data-action="toggle-comp" data-k="' + k + '">' + k + '</button>').join('') + '</div><div class="lego-row">' + tagSockets(en) + '</div>');
+    h += stack('b-teal', L('🧩 Casting Envelope:') + L('Cast Time') + sel('delivery.action', d.action, ACTIONS, { narrow: true }) + L('Range') + inp('delivery.range', d.range, { list: 'fs-range-list', style: 'width:170px' }) + L('Target/Area') + inp('delivery.area', d.area, { list: 'fs-area-list', style: 'width:150px' }) +
+      L('Duration') + sel('lifecycle.duration', l.duration, DURATIONS, { narrow: true }) + (['rounds', 'roundsPerLevel', 'minPerLevel', 'hourPerLevel'].indexOf(l.duration) >= 0 ? inp('lifecycle.durValue', l.durValue, { num: true, style: 'width:46px' }) : '') + (l.duration === 'text' ? inp('lifecycle.durText', l.durText, { style: 'width:110px' }) : '') + chk('lifecycle.dismissible', l.dismissible, '(D)') +
+      L('Save') + sel('delivery.save.type', d.save.type, [['None', 'None'], 'Fortitude', 'Reflex', 'Will'], { narrow: true }) + (d.save.type !== 'None' ? sel('delivery.save.effect', d.save.effect, ['Negates', 'Half', 'Partial', 'Negates (harmless)', 'Disbelief'], { narrow: true }) : '') + L('SR') + sel('delivery.sr', d.sr, ['Yes', 'No', 'Yes (harmless)', 'Yes (object)', 'See text'], { narrow: true }) +
+      L('Usage') + usageEditor('lifecycle.use', l.use));
+    if (d.damage.on) h += stack('b-red', L('💥 Spell Damage:') + inp('delivery.damage.count', d.damage.count, { num: true, style: 'width:50px' }) + inp('delivery.damage.die', d.damage.die, { list: 'fs-dice-list', style: 'width:66px' }) + sel('delivery.damage.type', d.damage.type, DAMAGE_TYPES, { narrow: true }) +
+      sel('delivery.damage.scaling', d.damage.scaling, [['flat', 'Flat'], ['perCL', 'Per X CL']], { narrow: true }) + (d.damage.scaling === 'perCL' ? L('every') + sel('delivery.damage.per', d.damage.per, range(1, 10).map((n) => [n, n + ' CL']), { narrow: true, num: true }) + L('from') + sel('delivery.damage.start', d.damage.start, range(1, 20).map((n) => [n, 'CL ' + n]), { narrow: true, num: true }) + L('max') + sel('delivery.damage.max', d.damage.max, range(1, 30), { narrow: true, num: true }) : '') +
+      '<span class="lego-desc">' + live('dmg-main') + '</span>' + delBtn('toggle-flag', { p: 'delivery.damage.on' }));
+    if (d.attackOn) h += stack('b-red', L('🎯 Attack Roll:') + sel('delivery.attack', d.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]]), { narrow: true }) + delBtn('toggle-flag', { p: 'delivery.attackOn' }));
+    h += scratchBlocks(en.effects, 'effects');
+    h += '<div class="lego-palette"><span class="lego-lbl">+ Snap Effect Block:</span>' + (d.damage.on ? '' : '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="delivery.damage.on">+ 💥 Scaling Spell Damage</button>') + (d.attackOn ? '' : '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="delivery.attackOn">+ 🎯 Attack Roll</button>') +
+      Object.keys(BLOCK_TYPES).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
+    return h;
+  }
+  function scratchFeat(en) {
+    return hat('h-indigo', L('📜 Feat') + inp('name', en.name, { ph: 'Feat name', style: 'width:220px' }) + L('Repeatable') + sel('repeat.mode', en.repeat.mode, [['once', '1x Only'], ['upto', 'Up to N times'], ['per', 'Per Weapon / School']], { narrow: true }) + (en.repeat.mode === 'upto' ? sel('repeat.n', en.repeat.n, range(2, 20), { narrow: true, num: true }) : '') + '<div class="lego-row">' + tagSockets(en) + '</div>') +
+      prereqCBlock(en, 'Prerequisites') + modStacks(en) + scratchBlocks(en.effects, 'effects') + en.powers.map(powerCBlock).join('') +
+      '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Benefit Bonus</button><button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Granted Power (C-Block)</button>' +
+      Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus').map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '<div style="width:260px">' + spotHtml('power', 'powers', { ph: '🔍 + Granted Spell' }) + '</div></div>';
+  }
+  function scratchBuff(en) {
+    const l = en.lifecycle;
+    return hat('h-rose', L('✨') + sel('buffKind', en.buffKind, ['Buff', 'Condition', 'Curse'], { narrow: true }) + inp('name', en.name, { ph: 'Name', style: 'width:210px' }) + L('Duration') + sel('lifecycle.duration', l.duration, DURATIONS, { narrow: true }) +
+      (['rounds', 'roundsPerLevel', 'minPerLevel', 'hourPerLevel'].indexOf(l.duration) >= 0 ? inp('lifecycle.durValue', l.durValue, { num: true, style: 'width:46px' }) : '') + chk('lifecycle.stackable', l.stackable, 'Stackable ×N') + (l.stackable ? sel('lifecycle.maxStacks', l.maxStacks, range(1, 20), { narrow: true, num: true }) : '') + '<div class="lego-row">' + tagSockets(en) + '</div>') +
+      modStacks(en) + stack('b-slate', L('🩸 State Locks:') + Object.keys(LOCK_LABEL).map((k) => chk('locks.' + k, en.locks[k], esc(LOCK_LABEL[k].split(' (')[0]))).join('')) + scratchBlocks(en.effects, 'effects') +
+      '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Bonus / Penalty</button>' + Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus').map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
+  }
+  const SKILL_PACKAGES = { Martial: ['Climb', 'Intimidate', 'Jump', 'Ride', 'Swim'], Arcane: ['Concentration', 'Craft', 'Decipher Script', 'Knowledge', 'Spellcraft'], Divine: ['Concentration', 'Diplomacy', 'Heal', 'Knowledge', 'Spellcraft'], Skirmisher: ['Balance', 'Hide', 'Listen', 'Move Silently', 'Spot', 'Tumble'] };
+  function scratchClass(en) {
+    const p = en.progression;
+    let h = hat('h-emerald', L('💎') + sel('progression.mode', p.mode, [['base', 'Base Class (1–20)'], ['prestige', 'Prestige Class (1–10)']], { narrow: true }) + inp('name', en.name, { ph: 'Class name', style: 'width:180px' }) + L('HD') + sel('progression.hitDie', p.hitDie, [4, 6, 8, 10, 12].map((n) => [n, 'd' + n]), { narrow: true, num: true }) +
+      L('BAB') + sel('progression.bab', p.bab, [['full', 'Full 1/1'], ['3/4', 'Med 3/4'], ['1/2', 'Poor 1/2']], { narrow: true }) + L('Good Saves') + ['fort', 'ref', 'will'].map((s) => '<button type="button" class="lego-pill' + (p.good[s] ? ' on' : '') + '" data-action="toggle-flag" data-p="progression.good.' + s + '">' + { fort: 'Fort', ref: 'Ref', will: 'Will' }[s] + '</button>').join('') +
+      L('Skill Pts') + sel('progression.skillPts', p.skillPts, [2, 4, 6, 8].map((n) => [n, n + ' + Int']), { narrow: true, num: true }) + '<div class="lego-row">' + tagSockets(en) + '</div>');
+    h += prereqCBlock(en, 'Entry Prerequisites');
+    h += stack('b-blue', L('🔁 Every') + sel('progression.pattern.every', p.pattern.every, range(1, 10), { narrow: true, num: true }) + L('levels from Lvl') + sel('progression.pattern.start', p.pattern.start, range(1, p.maxLevel), { narrow: true, num: true }) + L('grant') + inp('progression.pattern.name', p.pattern.name, { style: 'width:140px' }) + L('scaling') + inp('progression.pattern.scale', p.pattern.scale, { style: 'width:70px' }) + btn('gen-pattern', '⚡ Apply to Levels', 'fs-xs fs-primary'));
+    const rows = p.levels.slice(0, p.maxLevel).map((l, i) => {
+      const Lv = i + 1;
+      const chips = l.features.map((f, fi) => '<span class="fs-pill ' + (f.kind === 'inline' ? 'amber' : f.kind === 'pattern' ? 'sky' : 'indigo') + '" data-action="toggle-card" data-key="ft:' + f.id + '" style="cursor:pointer">' + (f.kind === 'inline' ? '✨ ' : '') + live('feat-sum', i + ':' + fi) + '<span class="fs-x" data-action="remove-feature" data-l="' + i + '" data-f="' + fi + '">×</span></span>').join('');
+      const editors = l.features.map((f, fi) => (S.ui.cardOpen['ft:' + f.id] ? '<div class="lego-sub">' + inp('progression.levels.' + i + '.features.' + fi + '.name', f.name, { style: 'width:170px' }) + sel('progression.levels.' + i + '.features.' + fi + '.abilityType', f.abilityType || 'Ex', ['Ex', 'Su', 'Sp', '—'], { narrow: true }) + inp('progression.levels.' + i + '.features.' + fi + '.text', f.text || '', { ph: 'Feature rules text…', style: 'flex:1;min-width:200px' }) + '</div>' : '')).join('');
+      return stack('b-slate', '<b class="lego-lvl">Lvl ' + Lv + '</b><span class="lego-desc">BAB ' + sgn(classBAB(p.bab, Lv)) + ' • F ' + sgn(p.good.fort ? goodSave(Lv) : poorSave(Lv)) + ' / R ' + sgn(p.good.ref ? goodSave(Lv) : poorSave(Lv)) + ' / W ' + sgn(p.good.will ? goodSave(Lv) : poorSave(Lv)) + '</span>' + chips +
+        spotHtml('feature', i, { style: 'width:160px', ph: '🔍 + Feature / Feat' }) + btn('add-feature-inline', '✨ + Inline', 'fs-xs fs-dashed', { l: i }) + chk('progression.levels.' + i + '.spell', l.spell, '✓ +1 Spellcasting') + editors);
+    }).join('');
+    h += cBlock('c-teal', L('🦖 Level Progression (1–' + p.maxLevel + ')'), rows);
+    h += stack('b-green', L('🧩 Class Skills:') + p.classSkills.map((s, i) => '<span class="fs-pill emerald">' + esc(s) + '<span class="fs-x" data-action="remove-skill" data-i="' + i + '">×</span></span>').join('') + spotHtml('skill', 'class', { style: 'width:170px', ph: '🔍 + Add Skill' }) +
+      Object.keys(SKILL_PACKAGES).map((k) => btn('skill-pkg', '+ ' + k, 'fs-xs', { k: k })).join(''));
+    h += stack('b-purple', L('🎯 Bonus Feat Grants:') + en.grants.featGrants.map((x, i) => '<span class="fs-pill indigo">' + sel('grants.featGrants.' + i + '.level', x.level, range(1, 20).map((n) => [n, 'L' + n]), { num: true, style: 'width:56px' }) + ' ×' + x.count + ' from ' + sel('grants.featGrants.' + i + '.pool', x.pool, allTags(), { style: 'width:130px' }) + '<span class="fs-x" data-action="remove-grant" data-i="' + i + '">×</span></span>').join('') + btn('add-grant', '+ Grant', 'fs-xs fs-dashed'));
+    return h;
+  }
+  function alignGrid(g) { return '<div class="fs-align">' + ALIGNS.map((a) => '<button type="button" data-action="set-deity-align" data-a="' + a + '" class="' + (a === g.deityAlign ? 'deity' : clericLegal(g.deityAlign, a) ? 'legal' : '') + '" title="' + ALIGN_NAMES[a] + '">' + a + '</button>').join('') + '</div>'; }
+  function scratchDeity(en) {
+    const g = en.grants;
+    let h = hat('h-amber', '<div class="lego-row">' + L('🏛️ Deity') + inp('name', en.name, { ph: 'Deity name', style: 'width:220px' }) + L('Favored Weapon') + spotHtml('favwpn', 'deity', { style: 'width:200px', ph: '🔍 ' + (g.favoredWeapon || 'Select Base Weapon') }) + '</div>' +
+      '<div class="lego-row" style="align-items:flex-start">' + L('Alignment') + alignGrid(g) + '<span class="lego-desc">Legal Cleric alignments (1 step): ' + ALIGNS.filter((a) => clericLegal(g.deityAlign, a)).join(', ') + '</span></div><div class="lego-row">' + tagSockets(en) + '</div>');
+    const doms = g.domains.map((d, i) => stack('b-purple', L('✨ Domain:') + (d.kind === 'inline' ? inp('grants.domains.' + i + '.name', d.name, { style: 'width:140px' }) + inp('grants.domains.' + i + '.grantedPower', d.grantedPower, { ph: 'Granted power…', style: 'flex:1;min-width:200px' }) : '<span class="fs-pill purple">' + esc(d.name) + '</span><span class="lego-desc">' + esc(short(d.grantedPower, 90)) + '</span>') + delBtn('remove-domain', { i: i }))).join('');
+    let empty = ''; for (let k = 0; k < Math.max(1, 2 - g.domains.length); k++) empty += stack('b-purple', L('✨ Domain:') + spotHtml('domain', 'slot' + k, { style: 'width:260px', ph: '🔍 Pick SRD / Custom Domain' }));
+    h += cBlock('c-amber', L('🦖 Granted Domains'), doms + empty + btn('add-domain-inline', '✨ + Inline New Domain', 'fs-xs fs-dashed'));
+    h += stack('b-slate', L('🧩 Portfolio & Dogma:') + L('Portfolio') + inp('grants.portfolio', g.portfolio, { ph: 'Sun, light, strength, healing', style: 'width:220px' }) + L('Worshippers / Dogma') + inp('grants.dogma', g.dogma, { ph: 'Those who wish to see evil vanquished…', style: 'flex:1;min-width:220px' }));
+    return h;
+  }
+  function scratchDomain(en) {
+    const g = en.grants;
+    let h = hat('h-violet', L('✨ Domain') + inp('name', en.name, { ph: 'Domain name', style: 'width:220px' }) + '<div class="lego-row">' + tagSockets(en) + '</div>');
+    h += stack('b-blue', L('🧩 Granted Power:') + inp('grants.grantedPowerName', g.grantedPowerName, { ph: 'Power name (e.g. Greater Turning)', style: 'width:200px' }) + L('Usage') + usageEditor('grants.gpUse', g.gpUse) + inp('grants.grantedPower', g.grantedPower, { ph: 'Rule summary…', style: 'flex:1;min-width:240px' }));
+    h += scratchBlocks(en.effects, 'effects') + '<div class="lego-palette compact"><button type="button" class="lego-add b-blue" data-action="add-block" data-p="effects" data-t="bonus">+ 📊 Bonus (granted power)</button></div>';
+    h += cBlock('c-teal', L('🦖 Domain Spell Ladder (1st–9th)'), g.ladder.map((s, i) => stack('b-slate', '<b class="lego-lvl">Lvl ' + (i + 1) + '</b>' + (s ? '<span class="fs-pill purple">🔮 ' + esc(s) + '<span class="fs-x" data-action="clear-ladder" data-i="' + i + '">×</span></span>' : '') + spotHtml('ladder', i, { style: 'width:240px', ph: '🔍 Pick Spell (Lvl ' + (i + 1) + ')' }))).join(''));
+    return h;
+  }
+  function renderScratch() {
+    const en = S.entry;
+    const fn = { weapon: scratchWeaponArmor, armor: scratchWeaponArmor, wondrous: scratchWondrous, spell: scratchSpell, feat: scratchFeat, buff: scratchBuff, class: scratchClass, deity: scratchDeity, domain: scratchDomain }[en.blueprint] || scratchWondrous;
+    return datalists() + '<div class="lego-canvas"><div class="lego-stack">' + fn(en) + '</div>' +
+      '<div class="fs-row" style="margin-top:12px"><span class="fs-label-mini">Rules Text</span><input class="fs-in" data-bind="text" value="' + esc(en.text) + '" placeholder="Official / custom rules text…" style="flex:1;min-width:260px"></div></div>';
+  }
+
+  // Extra spotlights for the templates
+  Object.assign(SPOT, {
+    ladder: {
+      ph: '🔍 Pick Spell…',
+      layers: (ctx) => ['Lvl ' + (num(ctx) + 1), 'All SRD'],
+      search(q, ctx, layer) {
+        const lvl = num(ctx) + 1;
+        const lf = (s) => layer === 'All SRD' || num(s.level) === lvl || new RegExp('\\b' + lvl + '\\b').test(s.levelText || '');
+        return rank(CAT.spells.filter(lf), q, (s) => s.name, (s) => s.desc, 30).map((s) => SI('Spells', s.id, s.name, s.levelText || 'Level ' + s.level, short(s.school + ' • ' + s.desc), { name: s.name }));
+      },
+      pick(it, ctx) { S.entry.grants.ladder[num(ctx)] = it.data.name; renderAll(); }
+    },
+    skill: {
+      ph: '🔍 + Add Skill',
+      search(q) { return rank(SKILLS.filter((s) => S.entry.progression.classSkills.indexOf(s[0]) < 0).map((s) => ({ name: s[0], ab: s[1] })), q, (s) => s.name, null, 36).map((s) => SI('3.5e Skills', s.name, s.name, s.ab.toUpperCase(), '', { name: s.name })); },
+      pick(it) { S.entry.progression.classSkills.push(it.data.name); renderAll(); }
+    },
+    favwpn: {
+      ph: '🔍 Select Base Weapon',
+      search(q) { return rank(CAT.weapons, q, (w) => w.name, null, 30).map((w) => SI(w.category + ' Weapons', w.id, baseName(w), w.dice, w.handed, { name: baseName(w) })); },
+      pick(it) { S.entry.grants.favoredWeapon = it.data.name; renderAll(); }
+    }
+  });
 
   // --------------------------------------------------------------------------
   // 15. Render orchestration
@@ -1711,8 +2072,14 @@
     if (!STD_TAG_SET.has(t) && S.livingTags.indexOf(t) < 0) { S.livingTags.push(t); saveLS(); toast('Custom pool ' + t + ' created — selectable in Prerequisites & Bonus Feat Grants'); }
     renderAll();
   }
+  function scaffold(en) {
+    // Fill-in-the-blank starter blocks for the Scratch templates
+    if (en.blueprint === 'wondrous' && !en.powers.length) en.powers.push(blankPower('inline', { name: '', use: Object.assign(blankUse('perDay'), { n: 1 }) }));
+    if ((en.blueprint === 'feat' || en.blueprint === 'class') && !en.prereqs.length) en.prereqs.push({ id: uid('p'), alts: [ALT({ kind: en.blueprint === 'class' ? 'bab' : 'ability', min: en.blueprint === 'class' ? 5 : 13 })] });
+    return en;
+  }
   function setBlueprint(id) {
-    if (BP_BY_ID[id]) { loadEntry(blankEntry(id)); renderAll(); return; }
+    if (BP_BY_ID[id]) { loadEntry(scaffold(blankEntry(id))); renderAll(); return; }
     const t = S.templates.find((x) => x.id === id);
     if (t) { const en = clone(t.entry); en.id = uid('custom'); en.templateId = t.id; loadEntry(en); toast('Template loaded: ' + t.name); renderAll(); }
   }
@@ -1729,8 +2096,19 @@
       else toast('Clipboard unavailable — select the JSON manually', 'warn');
     },
     'load-preset': (el) => { const p = PRESETS.find((x) => x.id === el.dataset.id); if (!p) return; loadEntry(p.build(), p.id); toast('Preset loaded: ' + p.label); renderAll(); },
-    'new-entry': () => { loadEntry(blankEntry(S.entry.blueprint)); renderAll(); },
-    'toggle-house': () => { S.ui.houseOpen = !S.ui.houseOpen; renderTopbar(); },
+    'new-entry': () => { loadEntry(scaffold(blankEntry(S.entry.blueprint))); renderAll(); },
+    'set-view': (el) => { S.ui.viewMode = el.dataset.v; S.ui.cardOpen = {}; renderAll(); toast(el.dataset.v === 'scratch' ? '🧩 Scratch Lego view — same live entry' : '📋 Classic Facets view — same live entry'); },
+    'add-block': (el) => { const list = getPath(S.entry, el.dataset.p); const b = BLK(el.dataset.t); list.push(b); if (el.dataset.p === 'effects' && S.entry.facets.indexOf('effects') < 0) S.entry.facets.push('effects'); S.ui.cardOpen['blk:' + b.id] = true; renderAll(); },
+    'remove-block': (el) => { getPath(S.entry, el.dataset.p).splice(num(el.dataset.i), 1); renderAll(); },
+    'add-branch': (el) => { getPath(S.entry, el.dataset.p).push({ id: uid('br'), cond: 'CL ≥ 15', kids: [] }); renderAll(); },
+    'remove-branch': (el) => { getPath(S.entry, el.dataset.p).splice(num(el.dataset.i), 1); renderAll(); },
+    'add-row': (el) => { const rows = getPath(S.entry, el.dataset.p); rows.push({ id: uid('r'), roll: String(rows.length + 1), kids: [] }); renderAll(); },
+    'remove-row': (el) => { getPath(S.entry, el.dataset.p).splice(num(el.dataset.i), 1); renderAll(); },
+    'remove-target': (el) => { getPath(S.entry, el.dataset.p).splice(num(el.dataset.i), 1); renderAll(); },
+    'toggle-flag': (el) => { setEntry(el.dataset.p, !getPath(S.entry, el.dataset.p)); renderAll(); },
+    'skill-pkg': (el) => { const cs = S.entry.progression.classSkills; SKILL_PACKAGES[el.dataset.k].forEach((s) => { if (cs.indexOf(s) < 0) cs.push(s); }); renderAll(); },
+    'remove-skill': (el) => { S.entry.progression.classSkills.splice(num(el.dataset.i), 1); renderAll(); },
+    'clear-ladder': (el) => { S.entry.grants.ladder[num(el.dataset.i)] = ''; renderAll(); },
     'toggle-tpl-save': () => { S.ui.tplSaveOpen = !S.ui.tplSaveOpen; S.ui.newTplName = S.ui.newTplName || S.entry.name || ''; renderTopbar(); const i = document.querySelector('[data-uibind="newTplName"]'); if (i) i.focus(); },
     'save-template': () => {
       const name = String(S.ui.newTplName || '').trim();
@@ -1797,7 +2175,6 @@
     if (el.dataset.t === 'num') v = num(v);
     if (el.dataset.bind) setEntry(el.dataset.bind, v);
     else if (el.dataset.uibind) setPath(S.ui, el.dataset.uibind, v);
-    else if (el.dataset.house) { S.house[el.dataset.house] = v; saveLS(); }
     else return;
     if (full) renderAll(); else renderLive();
   }
@@ -1810,11 +2187,13 @@
     const root = document.getElementById('fs-app');
     root.addEventListener('click', (ev) => {
       const el = ev.target.closest('[data-action]');
-      if (!el || !root.contains(el)) { if (S.ui.houseOpen && !ev.target.closest('.fs-rel')) { S.ui.houseOpen = false; renderTopbar(); } return; }
+      if (!el || !root.contains(el)) return;
       const fn = ACT[el.dataset.action];
       if (fn) fn(el, ev);
     });
     root.addEventListener('mousedown', (ev) => {
+      const lay = ev.target.closest('[data-spot-layer]');
+      if (lay && S.spot) { ev.preventDefault(); S.spot.layer = lay.dataset.spotLayer; S.spot.idx = 0; renderSpotDD(); return; }
       const it = ev.target.closest('[data-spot-pick]');
       if (!it) return;
       ev.preventDefault();
@@ -1834,6 +2213,7 @@
     root.addEventListener('change', (ev) => {
       const el = ev.target;
       if (el.dataset.topcat) { setBlueprint(el.value); return; }
+      if (el.dataset.push) { if (el.value) { getPath(S.entry, el.dataset.push).push(el.value); renderAll(); } return; }
       if (el.type === 'checkbox' || el.tagName === 'SELECT') handleBind(el, true);
     });
     root.addEventListener('keydown', (ev) => {

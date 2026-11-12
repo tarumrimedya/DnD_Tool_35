@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Living Facet Studio — Rule Forge 3.0 Sandbox (D&amp;D 3.5e)</title>
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="./tailwind_compiled.css">
 <link rel="stylesheet" href="./design_tokens.css">
 <style>
@@ -91,8 +92,16 @@
   @media (max-width: 640px) { .fs-grid3, .fs-grid4 { grid-template-columns: repeat(2, minmax(0,1fr)); } .fs-grid2 { grid-template-columns: minmax(0,1fr); } }
   .fs-field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
   .fs-field > span { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-dim); font-weight: 700; }
-  .fs-in, .fs-sel { height: var(--input-sm-h); border-radius: 7px; border: 1px solid var(--border-default); background: var(--bg-surface); color: var(--text-primary); font-size: 12px; padding: 0 7px; min-width: 0; width: 100%; box-sizing: border-box; }
-  .fs-in:focus, .fs-sel:focus { outline: none; border-color: var(--accent-indigo); box-shadow: 0 0 0 2px rgba(99,102,241,.25); }
+  /* ===== 3 unmistakable control shapes (iPad Safari safe, both views) ===== */
+  /* 1. Text / Number socket: dark recessed inset */
+  .fs-in { height: var(--input-sm-h); border-radius: 7px; border: 1px solid #3b4a63; background: #070b14; color: var(--text-primary); font-size: 12px; padding: 0 8px; min-width: 0; width: 100%; box-sizing: border-box; box-shadow: inset 0 2px 4px rgba(0,0,0,.7), inset 0 0 0 1px rgba(0,0,0,.35); -webkit-appearance: none; appearance: none; }
+  .fs-in::placeholder { color: #6b7a93; font-style: italic; }
+  /* 2. Dropdown socket: elevated pill with always-visible chevron */
+  .fs-sel { height: var(--input-sm-h); border-radius: 8px; border: 1px solid rgba(255,255,255,.28); background-color: #1e293b; color: #fef3c7; font-size: 12px; font-weight: 600; padding: 0 26px 0 9px; min-width: 0; width: 100%; box-sizing: border-box; box-shadow: 0 2px 0 rgba(0,0,0,.45); cursor: pointer;
+    -webkit-appearance: none; -moz-appearance: none; appearance: none; background-repeat: no-repeat; background-position: right 8px center; background-size: 10px 10px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1 3l4 4 4-4' fill='none' stroke='%23fde68a' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  .fs-sel option, .fs-sel optgroup { background: #0f172a; color: #f8fafc; }
+  .fs-in:focus, .fs-sel:focus { outline: none; border-color: var(--accent-indigo); box-shadow: 0 0 0 2px rgba(99,102,241,.3); }
   .fs-in.fs-narrow, .fs-sel.fs-narrow { width: auto; min-width: 58px; }
   textarea.fs-in { height: auto; min-height: 54px; padding: 6px 7px; resize: vertical; font-family: inherit; }
   .fs-check { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-secondary); cursor: pointer; padding: 3px 8px; border-radius: 7px; border: 1px solid var(--border-subtle); background: var(--bg-surface); }
@@ -113,9 +122,15 @@
   .fs-bd-row { display: flex; justify-content: space-between; gap: 8px; padding: 1px 0; }
   .fs-bd-row .src { color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-  /* Spotlight combobox */
+  /* 3. Layered Spotlight / DB socket: indigo, leading search + trailing chevron */
   .fs-spot { position: relative; min-width: 0; }
-  .fs-spot-in { padding-left: 9px; }
+  .fs-spot-in { padding-left: 9px; padding-right: 26px; border: 1px solid #6366f1 !important; background-color: #14123a !important; color: #c7d2fe; font-weight: 600;
+    background-repeat: no-repeat; background-position: right 8px center; background-size: 10px 10px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1 3l4 4 4-4' fill='none' stroke='%23a5b4fc' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); }
+  .fs-spot-in::placeholder { color: #a5b4fc; font-style: normal; opacity: .85; }
+  .fs-spot-layers { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 4px 6px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 4px; }
+  .fs-spot-layer { font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border-default); color: var(--text-muted); cursor: pointer; }
+  .fs-spot-layer.on { background: #312e81; border-color: #818cf8; color: #e0e7ff; }
   .fs-spot-dd { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 70; max-height: 340px; overflow-y: auto; border-radius: 12px; background: rgba(11, 18, 36, 0.98); border: 1px solid var(--border-default); box-shadow: 0 18px 44px rgba(0,0,0,.65); backdrop-filter: blur(10px); padding: 4px; min-width: 280px; }
   .fs-spot-dd.open { display: block; }
   .fs-spot-group { font-size: 9.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-dim); font-weight: 800; padding: 6px 8px 3px; }
@@ -145,6 +160,51 @@
   .fs-toast.warn { border-color: rgba(245,158,11,.6); }
   .fs-toast.err { border-color: rgba(244,63,94,.6); }
   .fs-dice-svg { width: 14px; height: 14px; display: inline-block; vertical-align: -2px; }
+  .fs-seg { display: inline-flex; gap: 2px; padding: 2px; border-radius: 10px; background: #0b1224; border: 1px solid var(--border-default); }
+  .fs-nest { margin: 6px 0 2px 14px; padding-left: 10px; border-left: 3px solid rgba(20,184,166,.45); }
+
+  /* ===== Scratch Lego view (Hat + Stack + C-Block interlocking geometry) ===== */
+  .lego-canvas { margin-top: 12px; padding: 14px; border-radius: 14px; background: rgba(15, 23, 42, .75); border: 1px solid var(--border-subtle); }
+  .lego-stack { display: flex; flex-direction: column; gap: 0; }
+  .lego-hat { position: relative; border-radius: 18px 18px 8px 8px; padding: 10px 12px 12px; color: #f8fafc; border: 1px solid rgba(165,180,252,.45); z-index: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; }
+  .h-indigo { background: linear-gradient(135deg, #4338ca, #312e81); box-shadow: 0 3px 0 #1e1b4b; }
+  .h-violet { background: linear-gradient(135deg, #7c3aed, #4c1d95); box-shadow: 0 3px 0 #2e1065; }
+  .h-emerald { background: linear-gradient(135deg, #059669, #064e3b); box-shadow: 0 3px 0 #022c22; }
+  .h-amber { background: linear-gradient(135deg, #d97706, #78350f); box-shadow: 0 3px 0 #451a03; }
+  .h-rose { background: linear-gradient(135deg, #e11d48, #881337); box-shadow: 0 3px 0 #4c0519; }
+  .lego-tab::after { content: ""; position: absolute; left: 22px; bottom: -7px; width: 28px; height: 7px; background: inherit; border-left: 1px solid rgba(255,255,255,.3); border-right: 1px solid rgba(255,255,255,.3); border-bottom: 1px solid rgba(255,255,255,.3); border-radius: 0 0 5px 5px; z-index: 6; }
+  .lego-block { position: relative; margin-top: 4px; padding: 10px 12px 11px; border-radius: 6px 8px 8px 6px; color: #f8fafc; border: 1px solid rgba(255,255,255,.22); display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
+  .b-blue { background: #1d4ed8; box-shadow: 0 3px 0 #1e3a8a; } .b-red { background: #be123c; box-shadow: 0 3px 0 #881337; }
+  .b-green { background: #047857; box-shadow: 0 3px 0 #064e3b; } .b-purple { background: #6d28d9; box-shadow: 0 3px 0 #4c1d95; }
+  .b-teal { background: #0f766e; box-shadow: 0 3px 0 #134e4a; } .b-slate { background: #334155; box-shadow: 0 3px 0 #1e293b; }
+  .lego-c { position: relative; margin-top: 4px; border-radius: 6px 8px 8px 6px; color: #f8fafc; }
+  .c-amber .c-top, .c-amber .c-spine, .c-amber .c-bot, .lego-add.c-amber { background: #b45309; border-color: rgba(253,230,138,.35); }
+  .c-teal .c-top, .c-teal .c-spine, .c-teal .c-bot, .lego-add.c-teal { background: #0f766e; border-color: rgba(153,246,228,.35); }
+  .c-sub .c-top, .c-sub .c-spine, .c-sub .c-bot { background: #475569; border-color: rgba(203,213,225,.3); }
+  .c-top { padding: 9px 12px; border-radius: 6px 8px 8px 0; border: 1px solid; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; }
+  .c-mouth { display: flex; align-items: stretch; }
+  .c-spine { width: 16px; flex-shrink: 0; border-left: 1px solid; border-right: 1px solid; }
+  .c-inner { flex: 1; min-width: 0; padding: 6px 0 6px 8px; display: flex; flex-direction: column; gap: 3px; }
+  .c-bot { height: 12px; border-radius: 0 6px 8px 6px; border: 1px solid; position: relative; }
+  .lego-lbl { font-size: 12px; font-weight: 700; color: rgba(255,255,255,.92); white-space: nowrap; }
+  .lego-desc { font-size: 11.5px; font-weight: 500; color: rgba(255,255,255,.78); }
+  .lego-lvl { min-width: 46px; }
+  .lego-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; width: 100%; }
+  .lego-sub { display: flex; flex-wrap: wrap; gap: 6px; width: 100%; padding: 6px; border-radius: 8px; background: rgba(0,0,0,.25); }
+  .lego-del { margin-left: auto; background: transparent; border: none; color: rgba(255,255,255,.75); cursor: pointer; font-size: 13px; }
+  .lego-del:hover { color: #fff; }
+  .lego-palette { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--border-default); }
+  .lego-palette.compact { margin-top: 4px; padding-top: 4px; border-top: none; }
+  .lego-add { border: 1px solid rgba(255,255,255,.25); color: #fff; font-size: 11.5px; font-weight: 700; padding: 4px 9px; border-radius: 7px; cursor: pointer; }
+  .lego-add:hover { filter: brightness(1.15); }
+  .lego-palette.compact .lego-add { font-size: 10.5px; padding: 2px 7px; opacity: .9; }
+  .lego-pill { border: 1px solid rgba(255,255,255,.35); background: rgba(0,0,0,.3); color: #e2e8f0; font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 999px; cursor: pointer; }
+  .lego-pill.on { background: #fde68a; color: #422006; border-color: #fde68a; }
+  .lego-block .fs-in, .lego-hat .fs-in, .c-top .fs-in { width: auto; border-radius: 999px; border-color: rgba(148,163,184,.55); }
+  .lego-block .fs-sel, .lego-hat .fs-sel, .c-top .fs-sel { width: auto; background-color: rgba(15,23,42,.72); }
+  .lego-block .fs-check, .lego-hat .fs-check, .c-top .fs-check { background: rgba(0,0,0,.28); border-color: rgba(255,255,255,.3); color: #fff; }
+  .lego-hat .fs-align button { height: 32px; }
+  .lego-hat .fs-align { grid-template-columns: repeat(3, 54px); }
 </style>
 </head>
 <body class="min-h-screen bg-slate-950">
