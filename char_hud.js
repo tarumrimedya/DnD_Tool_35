@@ -1631,7 +1631,7 @@
 
     async function leaveCurrentCampaign() {
       if (!character.cloudCampaignId) return;
-      if (!confirm('Are you sure you want to leave this campaign?')) return;
+      if (!(await DnDUI.confirm('Are you sure you want to leave this campaign?', { tone: 'danger' }))) return;
 
       try {
         await window.SupabaseAuth.leaveCampaign(character.cloudCampaignId, character.id);
@@ -2232,8 +2232,8 @@
       }
     }
 
-    function clearSettingsApiKey() {
-      if (confirm('Are you sure you want to delete your Gemini API key?')) {
+    async function clearSettingsApiKey() {
+      if ((await DnDUI.confirm('Are you sure you want to delete your Gemini API key?', { tone: 'danger' }))) {
         localStorage.removeItem('gemini_api_key');
         localStorage.removeItem('dnd35_gemini_discovered_models');
         const input = document.getElementById('settings-gemini-api-key');
@@ -3157,13 +3157,13 @@
       }
     }
 
-    function promptPortraitUrl() {
+    async function promptPortraitUrl() {
       const current = character?.portrait && !character.portrait.startsWith('data:') ? character.portrait : '';
-      const url = prompt('Enter an image URL for the character portrait:\n(e.g., https://example.com/character.jpg)', current);
+      const url = await DnDUI.prompt('Enter an image URL for the character portrait:\n(e.g., https://example.com/character.jpg)', current, { inputType: 'url' });
       if (url === null) return;
       const clean = url.trim();
       if (!clean) {
-        removeCharacterPortrait();
+        await removeCharacterPortrait();
       } else {
         if (!character) character = {};
         character.portrait = clean;
@@ -3174,9 +3174,9 @@
       }
     }
 
-    function removeCharacterPortrait() {
+    async function removeCharacterPortrait() {
       if (character?.portrait) {
-        if (!confirm('Are you sure you want to remove the custom portrait and revert to the dynamic class icon?')) return;
+        if (!(await DnDUI.confirm('Are you sure you want to remove the custom portrait and revert to the dynamic class icon?', { tone: 'danger' }))) return;
         delete character.portrait;
         delete character.portraitPosition;
         delete character.portraitFit;
@@ -3641,13 +3641,13 @@
       }
     }
 
-    function promptWallpaperUrl() {
+    async function promptWallpaperUrl() {
       const current = character?.wallpaper?.image && !character.wallpaper.image.startsWith('data:') ? character.wallpaper.image : '';
-      const url = prompt('Enter an image URL for the page background:\n(e.g., https://images.unsplash.com/photo-xxx.jpg)', current);
+      const url = await DnDUI.prompt('Enter an image URL for the page background:\n(e.g., https://images.unsplash.com/photo-xxx.jpg)', current, { inputType: 'url' });
       if (url === null) return;
       const clean = url.trim();
       if (!clean) {
-        clearWallpaper();
+        await clearWallpaper();
       } else {
         initWallpaperIfEmpty();
         character.wallpaper.image = clean;
@@ -3656,9 +3656,9 @@
       }
     }
 
-    function clearWallpaper() {
+    async function clearWallpaper() {
       if (character?.wallpaper?.image) {
-        if (!confirm('Are you sure you want to remove the custom page background?')) return;
+        if (!(await DnDUI.confirm('Are you sure you want to remove the custom page background?', { tone: 'danger' }))) return;
       }
       if (character) {
         character.wallpaper = null;
@@ -4078,7 +4078,7 @@
         }
       }
       if (!q) {
-        const entered = prompt('Enter the name of the official D&D 3.5e race you want to search:\n(e.g., Warforged, Goliath, Drow, Catfolk, Thri-Kreen, Kenku)');
+        const entered = await DnDUI.prompt('Enter the name of the official D&D 3.5e race you want to search:\n(e.g., Warforged, Goliath, Drow, Catfolk, Thri-Kreen, Kenku)');
         if (entered && entered.trim()) {
           q = entered.trim();
         } else {
@@ -6141,7 +6141,7 @@
         }
       }
       if (!q) {
-        const entered = prompt('Enter the name of the official D&D 3.5e deity you want to search:\n(e.g., Kelemvor, Mystra, Tempus, Bane, Lolth, Asmodeus, Helm, Sune)');
+        const entered = await DnDUI.prompt('Enter the name of the official D&D 3.5e deity you want to search:\n(e.g., Kelemvor, Mystra, Tempus, Bane, Lolth, Asmodeus, Helm, Sune)');
         if (entered && entered.trim()) {
           q = entered.trim();
         } else {
@@ -8862,8 +8862,24 @@ function renderManualStatsPanel() {
       }
     }
 
-    function saveStatDistribution() {
+    async function saveStatDistribution() {
       if (!character) return;
+
+      // 2. Point Buy kontrolü (eğer stat modu pointbuy ise)
+      // Asked before any profile field is written, so a cancel leaves the character untouched
+      // and nothing below runs until the player answers.
+      if (statDistState.mode === 'pointbuy') {
+        const budget = statDistState.pointBuyBudget || 28;
+        let spent = 0;
+        STAT_KEYS.forEach(s => {
+          spent += getPointBuyCost(Number(statDistState.workingAbilities[s.key]) || 8);
+        });
+        if (spent > budget) {
+          const proceed = (await DnDUI.confirm(`⚠️ Point Buy budget exceeded! (${spent}/${budget} points spent)\n\nDo you still want to save these ability scores?`));
+          if (!proceed) return;
+          if (!character) return;
+        }
+      }
 
       // 1. Kimlik ve profil alanlarini kaydet
       const getVal = id => document.getElementById(id)?.value?.trim();
@@ -8966,19 +8982,6 @@ function renderManualStatsPanel() {
 
       const newSpeed = parseInt(document.getElementById('profile-edit-speed')?.value);
       if (!isNaN(newSpeed) && newSpeed > 0) character.baseSpeed = newSpeed;
-
-      // 2. Point Buy kontrolü (eğer stat modu pointbuy ise)
-      if (statDistState.mode === 'pointbuy') {
-        const budget = statDistState.pointBuyBudget || 28;
-        let spent = 0;
-        STAT_KEYS.forEach(s => {
-          spent += getPointBuyCost(Number(statDistState.workingAbilities[s.key]) || 8);
-        });
-        if (spent > budget) {
-          const proceed = confirm(`⚠️ Point Buy budget exceeded! (${spent}/${budget} points spent)\n\nDo you still want to save these ability scores?`);
-          if (!proceed) return;
-        }
-      }
 
       // 3. Taban statları uygula (via CharStore reducer for Undo/Redo support)
       const nextBaseAbilities = {};
@@ -9464,9 +9467,9 @@ function renderManualStatsPanel() {
       renderPeriodicModalActiveList();
     }
 
-    function clearAllPeriodicHpEffects() {
+    async function clearAllPeriodicHpEffects() {
       if (!character || !Array.isArray(character.periodicHpEffects) || character.periodicHpEffects.length === 0) return;
-      if (confirm('Are you sure you want to clear all active periodic HP effects (DoT / HoT)?')) {
+      if ((await DnDUI.confirm('Are you sure you want to clear all active periodic HP effects (DoT / HoT)?', { tone: 'danger' }))) {
         character.periodicHpEffects = [];
         saveStateToStorage(true);
         renderAll();

@@ -485,7 +485,7 @@
       }
     }
 
-    function selectFeatFromPicker(featName) {
+    async function selectFeatFromPicker(featName) {
       const catalog = getCombinedFeatCatalog();
       const entry = catalog.find(c => c.name.toLowerCase() === featName.toLowerCase()) || {
         name: featName,
@@ -561,12 +561,12 @@
       }
 
       if (character.level > 1 && isFlaw) {
-        const proceed = confirm(`⚠️ Per D&D 3.5e Unearthed Arcana RAW, Flaws may only be selected at 1st level during character creation. Your current character level is ${character.level}.\n\nDo you still want to add the flaw "${entry.name}"?`);
+        const proceed = (await DnDUI.confirm(`⚠️ Per D&D 3.5e Unearthed Arcana RAW, Flaws may only be selected at 1st level during character creation. Your current character level is ${character.level}.\n\nDo you still want to add the flaw "${entry.name}"?`));
         if (!proceed) return;
       }
 
       if (character.level > 1 && isRacial) {
-        const proceed = confirm(`⚠️ Racial traits are normally determined at 1st level. Your current level is ${character.level}.\n\nDo you still want to add "${entry.name}"?`);
+        const proceed = (await DnDUI.confirm(`⚠️ Racial traits are normally determined at 1st level. Your current level is ${character.level}.\n\nDo you still want to add "${entry.name}"?`));
         if (!proceed) return;
       }
 
@@ -2061,11 +2061,16 @@
       modal.classList.remove('hidden');
     }
 
-    function confirmQuickLevelFeat(explicitFeatName = null) {
+    async function confirmQuickLevelFeat(explicitFeatName = null) {
       if (activeQuickLevelIndex === null || activeQuickLevelIndex === undefined) {
         console.warn("No valid level selected!");
         return;
       }
+      // The trait confirmation below awaits the player; closing the quick-feat modal resets this
+      // shared state, so everything after that await uses these values from the start of the call.
+      const quickLevelIndexAtStart = activeQuickLevelIndex;
+      const quickTargetLockedAtStart = isQuickFeatTargetLocked;
+      const quickTargetSlotAtStart = activeQuickFeatTargetSlot;
       if (!Array.isArray(character.levelProgression)) {
         character.levelProgression = [];
       }
@@ -2156,7 +2161,7 @@
             blockWith('Maximum 2 Character Traits (3.5e RAW)', 'Per Unearthed Arcana (p. 86), a character can have at most two traits.');
             return;
           }
-          if (rowLevel > 1 && !confirm(`⚠️ Per Unearthed Arcana (p. 86), traits are chosen at 1st level. Adding a trait after 1st level requires DM approval.\n\nAdd the trait "${featName}" at level ${rowLevel}?`)) {
+          if (rowLevel > 1 && !(await DnDUI.confirm(`⚠️ Per Unearthed Arcana (p. 86), traits are chosen at 1st level. Adding a trait after 1st level requires DM approval.\n\nAdd the trait "${featName}" at level ${rowLevel}?`))) {
             return;
           }
         } else {
@@ -2235,12 +2240,13 @@
         return;
       }
 
-      const targetLvlIdx = activeQuickLevelIndex;
-      const row = character.levelProgression[activeQuickLevelIndex];
+      const targetLvlIdx = quickLevelIndexAtStart;
+      const row = character.levelProgression[targetLvlIdx];
+      if (!row) return;
       if (!Array.isArray(row.feats)) row.feats = [];
       if (!Array.isArray(row.specialAbilities)) row.specialAbilities = [];
 
-      const isExtraAddition = !isQuickFeatTargetLocked || !activeQuickFeatTargetSlot;
+      const isExtraAddition = !quickTargetLockedAtStart || !quickTargetSlotAtStart;
       let prefix = '';
       if (category === 'Class Bonus Feat') prefix = isExtraAddition ? '⚔️ [Extra Bonus] ' : '⚔️ [Bonus] ';
       else if (category === 'DM Boon') prefix = '🌟 [DM Boon] ';
@@ -6695,14 +6701,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       }
     }
 
-    function undoLastLevel() {
+    async function undoLastLevel() {
       const prog = character.levelProgression || [];
       if (prog.length <= 1) {
         showToast('Character level cannot be reduced below Level 1.', 'error', { wrap: true });
         return;
       }
       const last = prog[prog.length - 1];
-      if (!confirm(`Are you sure you want to undo Level ${last.level} (${last.className})?`)) return;
+      if (!(await DnDUI.confirm(`Are you sure you want to undo Level ${last.level} (${last.className})?`, { tone: 'danger' }))) return;
 
       prog.pop();
 
@@ -6805,7 +6811,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       return toggleLevelActive(idx);
     }
 
-    function deleteLevelRow(idx) {
+    async function deleteLevelRow(idx) {
       const prog = character.levelProgression || [];
       if (idx < 0 || idx >= prog.length) return;
       if (prog.length <= 1) {
@@ -6813,7 +6819,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         return;
       }
       const row = prog[idx];
-      if (!confirm(`Are you sure you want to delete Level ${row.level} (${row.className})?`)) return;
+      if (!(await DnDUI.confirm(`Are you sure you want to delete Level ${row.level} (${row.className})?`, { tone: 'danger' }))) return;
 
       const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
       if (usedStore) {
@@ -7925,13 +7931,13 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       renderCoreFeatsAndSpecialAbilities();
     }
 
-    function openAddSpecialAbilityPrompt() {
-      const name = prompt('Special Ability or Racial Trait Name (e.g., Breath Weapon, Darkvision, Frightful Presence):');
+    async function openAddSpecialAbilityPrompt() {
+      const name = await DnDUI.prompt('Special Ability or Racial Trait Name (e.g., Breath Weapon, Darkvision, Frightful Presence):');
       if (!name || !name.trim()) return;
       const cleanName = name.trim();
-      const typeChoice = prompt('Ability Type: Ex (Extraordinary), Su (Supernatural), Sp (Spell-Like), or General:', 'Ex');
+      const typeChoice = await DnDUI.prompt('Ability Type: Ex (Extraordinary), Su (Supernatural), Sp (Spell-Like), or General:', 'Ex');
       const cleanType = (typeChoice || '').trim();
-      const benefit = prompt(`Rule description or effect for "${cleanName}":`, '');
+      const benefit = await DnDUI.prompt(`Rule description or effect for "${cleanName}":`, '');
       
       if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
       const existing = character.specialAbilities.find(a => (typeof a === 'string' ? a : (a?.name || '')).toLowerCase() === cleanName.toLowerCase());
@@ -10714,9 +10720,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
     }
 
-    function dismissCompanion() {
+    async function dismissCompanion() {
       if (!character || !character.companion) return;
-      if (!confirm(`Are you sure you want to dismiss ${character.companion.name || 'your companion'}?`)) return;
+      if (!(await DnDUI.confirm(`Are you sure you want to dismiss ${character.companion.name || 'your companion'}?`, { tone: 'danger' }))) return;
 
       character.companion = null;
       if (Array.isArray(character.specialAbilities)) {

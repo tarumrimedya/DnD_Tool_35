@@ -10320,14 +10320,17 @@
       window.currentFeatTargetConfig = null;
     }
 
-    function removeCurrentViewedFeat() {
+    async function removeCurrentViewedFeat() {
       if (!currentViewedFeatName) return;
       const target = currentViewedFeatName.toLowerCase().trim();
       const cleanTarget = target.replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').trim();
 
       if (currentFeatSourceLevelIndex !== null && character.levelProgression && character.levelProgression[currentFeatSourceLevelIndex]) {
+        const sourceLevelIndex = currentFeatSourceLevelIndex;
         const row = character.levelProgression[currentFeatSourceLevelIndex];
-        if (!confirm(`Are you sure you want to remove "${cleanTarget || currentViewedFeatName}" from Level ${row.level || (currentFeatSourceLevelIndex + 1)}?`)) return;
+        if (!(await DnDUI.confirm(`Are you sure you want to remove "${cleanTarget || currentViewedFeatName}" from Level ${row.level || (currentFeatSourceLevelIndex + 1)}?`, { tone: 'danger' }))) return;
+        // The level row may have been replaced while the dialog was open; only edit the row the player confirmed.
+        if (!character.levelProgression || character.levelProgression[sourceLevelIndex] !== row) return;
 
         if (Array.isArray(row.feats)) {
           row.feats = row.feats.filter(f => {
@@ -10374,7 +10377,7 @@
         return;
       }
 
-      if (!confirm(`Are you sure you want to remove "${cleanTarget || currentViewedFeatName}" from your character?`)) return;
+      if (!(await DnDUI.confirm(`Are you sure you want to remove "${cleanTarget || currentViewedFeatName}" from your character?`, { tone: 'danger' }))) return;
       if (Array.isArray(character.feats)) {
         character.feats = character.feats.filter(f => {
           const s = String(typeof f === 'string' ? f : f.name).replace(/^[🌟🎖️⚔️⚠️🔮💪🧬✨\s]+(\[.*?\])?\s*/, '').toLowerCase().trim();
@@ -10392,18 +10395,6 @@
       saveStateToStorage(true);
       renderLevelProgression();
       renderAll();
-
-      if (typeof showDiceTopToast === 'function') {
-        const formula = `1d${def.hd}`;
-        showDiceTopToast({
-          icon: '⚡',
-          title: `Level ${nextLvl} Planned (${targetClass})`,
-          breakdown: (nextLvl === 1)
-            ? `1st-Level RAW Rule: Maximum Hit Die (+${hpGain} HP)`
-            : `Hit Die Rolled: ${formula} ➔ ${rollHp} (+ CON ${conMod >= 0 ? '+' + conMod : conMod})`, 
-          total: `+${hpGain} HP`
-        }, { autoDismiss: true, dismissMs: 4000 });
-      }
     }
 
     // =========================================================================

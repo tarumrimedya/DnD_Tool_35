@@ -807,7 +807,7 @@
   /**
    * Delete Note
    */
-  function deleteNote(noteId, event) {
+  async function deleteNote(noteId, event) {
     if (event) {
       if (typeof event.preventDefault === 'function') event.preventDefault();
       if (typeof event.stopPropagation === 'function') event.stopPropagation();
@@ -819,7 +819,7 @@
     const actualId = noteId || _selectedModalNoteId || (target.notesList && target.notesList[0] && target.notesList[0].id);
     if (!actualId) return;
 
-    if (!confirm('Are you sure you want to delete this note?')) return;
+    if (!(await DnDUI.confirm('Are you sure you want to delete this note?', { tone: 'danger' }))) return;
 
     // 1. Notu yerel listeden kaldır
     target.notesList = (target.notesList || []).filter(n => n.id !== actualId);
@@ -1975,7 +1975,7 @@
   async function callGeminiForNotes({ systemPrompt, userPrompt, onProgress }) {
     let apiKey = localStorage.getItem('gemini_api_key') || (window.RuleMaster && typeof window.RuleMaster.getApiKey === 'function' ? window.RuleMaster.getApiKey() : '');
     if (!apiKey) {
-      apiKey = prompt('⚡ Enter your Google AI Studio Gemini API Key for the AI Note Synthesizer:\n(Stored locally in your browser only)');
+      apiKey = await DnDUI.prompt('⚡ Enter your Google AI Studio Gemini API Key for the AI Note Synthesizer:\n(Stored locally in your browser only)', '', { inputType: 'password' });
       if (!apiKey || !apiKey.trim()) throw new Error('No API key entered.');
       apiKey = apiKey.trim();
       localStorage.setItem('gemini_api_key', apiKey);

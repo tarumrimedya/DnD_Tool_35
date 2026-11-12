@@ -5160,7 +5160,7 @@
     }
     window.resetSpecialAttackCooldown = resetSpecialAttackCooldown;
 
-    function triggerReactiveLegoModeFromCockpit(entryId, modeId) {
+    async function triggerReactiveLegoModeFromCockpit(entryId, modeId) {
       if (!character || typeof RuleEngine === 'undefined' || typeof RuleEngine.triggerLegoMode !== 'function') return;
       const evalModes = character.evaluatedModes || (typeof RuleEngine.evaluateLegoCharacter === 'function' ? RuleEngine.evaluateLegoCharacter(character)?.modes : []) || [];
       const mode = evalModes.find(m => m && (m.entryId === entryId || String(m.entryId || '').split(':').pop() === entryId) && m.id === modeId)
@@ -5171,7 +5171,7 @@
         for (let i = 0; i < mode.inputs.length; i++) {
           const inp = mode.inputs[i];
           const defVal = inp.default !== undefined ? inp.default : 1;
-          const raw = window.prompt(`${inp.label || inp.id}:`, String(defVal));
+          const raw = await DnDUI.prompt(`${inp.label || inp.id}:`, String(defVal), { inputType: 'number' });
           if (raw === null) return; // User cancelled prompt -> abort before snapshot or spending action
           const numVal = Number(raw);
           inputValues[inp.id] = Number.isFinite(numVal) ? numVal : defVal;
@@ -11833,7 +11833,7 @@
       });
     }
 
-    function triggerCockpitLongRest() {
+    async function triggerCockpitLongRest() {
       if (character?.tactical?.abilityCooldowns) {
         character.tactical.abilityCooldowns = {};
       }
@@ -11841,7 +11841,7 @@
         performLongRest();
         return;
       }
-      if (confirm('🌙 Take a Long Rest (8 Hours) and restore HP, all daily spell slots, and maneuvers?')) {
+      if ((await DnDUI.confirm('🌙 Take a Long Rest (8 Hours) and restore HP, all daily spell slots, and maneuvers?'))) {
         // Refill HP
         if (character.hp) character.hp.current = character.hp.max || 44;
         // Refill spell slots
@@ -13433,8 +13433,8 @@
       showDiceTopToast(record);
     }
 
-    function clearDiceHistory() {
-      if (!confirm('Are you sure you want to clear the entire roll history?')) return;
+    async function clearDiceHistory() {
+      if (!(await DnDUI.confirm('Are you sure you want to clear the entire roll history?', { tone: 'danger' }))) return;
       window.diceRollHistory = [];
       try {
         localStorage.removeItem('dnd_dice_history');
@@ -13918,7 +13918,7 @@
       }
     }
 
-    function saveCurrentFormulaTemplate() {
+    async function saveCurrentFormulaTemplate() {
       const input = document.getElementById('dice-custom-formula-input');
       const formula = (input?.value || '').trim();
       if (!formula) {
@@ -13927,7 +13927,7 @@
       }
 
       const defaultName = formula.length > 28 ? formula.slice(0, 25) + '...' : formula;
-      const name = prompt('Enter a name for this dice template:', defaultName);
+      const name = await DnDUI.prompt('Enter a name for this dice template:', defaultName);
       if (!name || !name.trim()) return;
 
       const templates = loadFormulaTemplates();
@@ -15402,7 +15402,7 @@
       executeSpotlightTerminalItem(itemIdx);
     }
 
-    function executeSpotlightTerminalItem(idx = _spotlightTerminalActiveIndex) {
+    async function executeSpotlightTerminalItem(idx = _spotlightTerminalActiveIndex) {
       const item = _spotlightTerminalItems[idx];
       if (!item) return;
 
@@ -15418,7 +15418,8 @@
         const benEl = document.getElementById('quick-feat-benefit');
         if (benEl) benEl.value = item.feat.benefit || '';
         if (typeof confirmQuickLevelFeat === 'function') {
-          confirmQuickLevelFeat(item.feat.name);
+          // May wait on an in-page trait confirmation; save, render and close only after it settles.
+          await confirmQuickLevelFeat(item.feat.name);
         } else if (typeof learnFeatObject === 'function') {
           learnFeatObject(item.feat);
         }
@@ -15505,10 +15506,11 @@
           toggleSpotlightTerminal(false);
           return;
         }
+        // equipItem may wait on an in-page flaw / racial trait confirmation; close the terminal after it settles.
         if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.equipItemWithChildren === 'function') {
-          RuleMaster.equipItemWithChildren(item.entry);
+          await RuleMaster.equipItemWithChildren(item.entry);
         } else if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.equipItem === 'function') {
-          RuleMaster.equipItem(item.entry);
+          await RuleMaster.equipItem(item.entry);
         }
         toggleSpotlightTerminal(false);
         return;
