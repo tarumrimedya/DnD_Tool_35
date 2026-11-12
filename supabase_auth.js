@@ -1296,6 +1296,145 @@ ${this._lastSyncErrorHtml()}
 
     this._activeChannels[channelName] = channel;
     return channel;
+  },
+
+  // ===========================================================================
+  // Live Hit Points fast lane (Realtime Broadcast on private channels).
+  // Topics: hp:user:<auth user id> (own devices), hp:campaign:<campaign id> (campaign members).
+  // Policies: tools/supabase/hp_live_broadcast.sql. When a channel cannot be joined (policies not
+  // applied, offline, timeout) it is logged once and dropped; the database save path still carries HP.
+  // ===========================================================================
+  _hpLive: { channels: {}, senderId: '', warned: false },
+
+  /** Random id for this tab, sent with every HP event so a tab can ignore its own echo. */
+  getHpLiveSenderId() {
+    if (!this._hpLive.senderId) {
+      this._hpLive.senderId = 'tab_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    }
+    return this._hpLive.senderId;
+  },
+
+  /** Resolves to 'hp:user:<auth user id>', or null in Local Mode / when signed out. */
+  async getHpLiveUserTopic() {
+    if (this.isLocalMode()) return null;
+    const user = await this.getUser();
+    if (!user || !user.id || user.id === 'local_offline_user') return null;
+    return `hp:user:${user.id}`;
+  },
+
+  getHpLiveCampaignTopic(campaignId) {
+    return campaignId ? `hp:campaign:${campaignId}` : null;
+  },
+
+  _warnHpLiveOnce(topic, reason, err) {
+    if (this._hpLive.warned) return;
+    this._hpLive.warned = true;
+    const msg = `Live Hit Points channel unavailable (${topic}: ${reason}); using the regular cloud save path.`;
+    if (typeof reportError === 'function') {
+      try { reportError('supabase_auth:joinHpLive', new Error(msg + (err && err.message ? ` ${err.message}` : ''))); return; } catch (e) { /* fall through */ }
+    }
+    console.warn(msg, err || '');
+  },
+
+  /**
+   * Joins a live HP topic once (idempotent per topic) and calls onEvent(payload, topic) for every 'hp'
+   * broadcast from another tab. A later call with the same topic only replaces the handler.
+   * Resolves to true when subscribed, false when unavailable (no retry after a failure).
+   */
+  joinHpLive(topic, onEvent) {
+    if (!topic || this.isLocalMode()) return Promise.resolve(false);
+    const channels = this._hpLive.channels;
+    const existing = channels[topic];
+    if (existing) {
+      if (typeof onEvent === 'function') existing.handler = onEvent;
+      return existing.ready;
+    }
+    const client = this.getClient();
+    if (!client || typeof client.channel !== 'function') return Promise.resolve(false);
+
+    const entry = { handler: onEvent, channel: null, subscribed: false, failed: false, ready: null };
+    channels[topic] = entry;
+    entry.ready = (async () => {
+      try {
+        if (client.realtime && typeof client.realtime.setAuth === 'function') await client.realtime.setAuth();
+      } catch (authErr) { /* the join below reports the failure */ }
+      if (entry.failed || channels[topic] !== entry) return false;
+      return new Promise((resolve) => {
+        let settled = false;
+        const settle = (ok, reason, err) => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          if (!ok) {
+            entry.failed = true;
+            entry.subscribed = false;
+            this._warnHpLiveOnce(topic, reason, err);
+            try { client.removeChannel(entry.channel); } catch (e) { /* already closed */ }
+          }
+          resolve(ok);
+        };
+        const timer = setTimeout(() => settle(false, 'TIMED_OUT'), 10000);
+        try {
+          const channel = client.channel(topic, { config: { private: true, broadcast: { self: false } } });
+          entry.channel = channel;
+          channel
+            .on('broadcast', { event: 'hp' }, (msg) => {
+              const p = msg && msg.payload;
+              if (!p || typeof p !== 'object' || p.senderId === this.getHpLiveSenderId()) return;
+              if (typeof entry.handler !== 'function') return;
+              try { entry.handler(p, topic); } catch (hErr) { console.warn('Live Hit Points handler error:', hErr); }
+            })
+            .subscribe((status, err) => {
+              if (status === 'SUBSCRIBED') {
+                entry.subscribed = true;
+                settle(true);
+              } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                entry.subscribed = false;
+                settle(false, status, err);
+              }
+            });
+        } catch (subErr) {
+          settle(false, 'SUBSCRIBE_FAILED', subErr);
+        }
+      });
+    })();
+    return entry.ready;
+  },
+
+  leaveHpLive(topic) {
+    const entry = topic && this._hpLive.channels[topic];
+    if (!entry) return;
+    delete this._hpLive.channels[topic];
+    entry.failed = true;
+    entry.subscribed = false;
+    const client = this.getClient();
+    if (client && entry.channel) {
+      try { client.removeChannel(entry.channel); } catch (e) { /* already closed */ }
+    }
+  },
+
+  /** Sends an 'hp' broadcast on a joined topic. No-op (false) when the topic is not subscribed. */
+  sendHpLive(topic, payload) {
+    const entry = topic && this._hpLive.channels[topic];
+    if (!entry || entry.failed || !payload) return false;
+    const body = Object.assign({}, payload, { senderId: this.getHpLiveSenderId() });
+    const doSend = () => {
+      if (!entry.subscribed || !entry.channel) return false;
+      try {
+        const res = entry.channel.send({ type: 'broadcast', event: 'hp', payload: body });
+        if (res && typeof res.catch === 'function') res.catch(() => {});
+      } catch (e) {
+        return false;
+      }
+      return true;
+    };
+    if (entry.subscribed) return doSend();
+    // Still joining (first change right after load, or a campaign topic joined just now): send once it is up.
+    if (entry.ready && typeof entry.ready.then === 'function') {
+      entry.ready.then(ok => { if (ok) doSend(); }, () => {});
+      return true;
+    }
+    return false;
   }
 };
 

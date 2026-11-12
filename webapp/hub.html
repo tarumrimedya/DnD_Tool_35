@@ -11,11 +11,11 @@
   <script src="ui_shared.js?v=20261112_d2"></script>
   <script src="campaign_db.js?v=20261110_03"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase_auth.js?v=20261112_e1"></script>
+  <script src="supabase_auth.js?v=20261113_h1"></script>
   <!-- Prefetch Character Sheet & Domain Modules during Hub Idle Time -->
   <link rel="prefetch" href="index.html">
   <link rel="prefetch" href="char_modals.js?v=20261111_r21">
-  <link rel="prefetch" href="char_hud.js?v=20261112_d3">
+  <link rel="prefetch" href="char_hud.js?v=20261113_h1">
   <link rel="prefetch" href="char_combat.js?v=20261112_d3">
   <link rel="prefetch" href="char_spells.js?v=20261112_d3">
   <link rel="prefetch" href="char_progression.js?v=20261112_d4">
@@ -2408,6 +2408,9 @@
           });
         }
 
+        // 4. Live Hit Points broadcast (other devices, well under a second; the row write above persists it)
+        sendHubHpLive(c, delta);
+
         saveHubStorage(true, true);
         renderHub();
       }
@@ -4329,6 +4332,7 @@ CRITICAL RULES:
     }
 
     function syncActiveCloudCampaignRealtime() {
+      initHubHpLiveSync().catch(e => console.warn('Live Hit Points join notice:', e));
       const activeCamp = state.campaigns.find(c => c.id === state.activeCampaignId);
       if (activeCamp && activeCamp.cloudCampaignId && window.SupabaseAuth) {
         window.SupabaseAuth.subscribeCampaignRealtime(activeCamp.cloudCampaignId, {
@@ -4732,6 +4736,112 @@ CRITICAL RULES:
       }
     }
 
+    // Updates only this character's card / table row so search focus and open modals stay intact.
+    function refreshHubCharacterView(localChar) {
+      const cardEl = document.getElementById(`hub-char-card-${localChar.id}`);
+      const rowEl = document.getElementById(`hub-char-row-${localChar.id}`);
+      if (cardEl && state.viewMode === 'cards') {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = getCharacterCardHtml(localChar);
+        if (tempDiv.firstElementChild) {
+          cardEl.replaceWith(tempDiv.firstElementChild);
+        }
+      } else if (rowEl && state.viewMode === 'table') {
+        const tempTbody = document.createElement('tbody');
+        tempTbody.innerHTML = getDmTableRowHtml(localChar);
+        if (tempTbody.firstElementChild) {
+          rowEl.replaceWith(tempTbody.firstElementChild);
+        }
+      } else {
+        renderHub();
+      }
+    }
+
+    // ⚡ LIVE HIT POINTS FAST LANE (Realtime Broadcast, see SupabaseAuth.joinHpLive)
+    // Hub HP edits reach the player's sheet / the user's other devices in well under a second; sheet HP
+    // changes update the matching card. The database writes stay the persistent path.
+    const _hubHpLive = { userTopic: null };
+
+    function hubHpLiveCampaignIdFor(c) {
+      if (!c) return null;
+      if (c.fullData && c.fullData.cloudCampaignId) return c.fullData.cloudCampaignId;
+      const camp = state.campaigns.find(cp => cp.id === c.campaignId);
+      if (!camp) return null;
+      if (camp.cloudCampaignId) return camp.cloudCampaignId;
+      const parent = camp.parentId ? state.campaigns.find(cp => cp.id === camp.parentId) : null;
+      return (parent && parent.cloudCampaignId) || null;
+    }
+
+    async function initHubHpLiveSync() {
+      if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode() || typeof window.SupabaseAuth.joinHpLive !== 'function') return;
+      if (!_hubHpLive.userTopic) {
+        const topic = await window.SupabaseAuth.getHpLiveUserTopic();
+        if (!topic) return;
+        if (!_hubHpLive.userTopic) {
+          _hubHpLive.userTopic = topic;
+          window.SupabaseAuth.joinHpLive(topic, handleHubHpLiveEvent);
+        }
+      }
+      (state.campaigns || []).forEach(cp => {
+        if (cp && cp.cloudCampaignId) {
+          window.SupabaseAuth.joinHpLive(window.SupabaseAuth.getHpLiveCampaignTopic(cp.cloudCampaignId), handleHubHpLiveEvent);
+        }
+      });
+    }
+
+    function sendHubHpLive(c, delta) {
+      if (!c || !_hubHpLive.userTopic || !window.SupabaseAuth || typeof window.SupabaseAuth.sendHpLive !== 'function') return;
+      const payload = {
+        charId: c.id,
+        charName: c.name || '',
+        currentHp: Number(c.currentHp) || 0,
+        tempHp: Number(c.tempHp) || 0,
+        maxHp: Number(c.maxHp) || 0,
+        delta: Number(delta) || 0,
+        ts: Number(c.lastHpUpdateTs) || Date.now(),
+        source: 'hub'
+      };
+      c._hpLiveTs = payload.ts;
+      window.SupabaseAuth.sendHpLive(_hubHpLive.userTopic, payload);
+      const cloudCampId = hubHpLiveCampaignIdFor(c);
+      if (cloudCampId) {
+        const topic = window.SupabaseAuth.getHpLiveCampaignTopic(cloudCampId);
+        window.SupabaseAuth.joinHpLive(topic, handleHubHpLiveEvent);
+        window.SupabaseAuth.sendHpLive(topic, payload);
+      }
+    }
+
+    // Live HP from a sheet (or this user's other Hub). Older than the card's HP: dropped.
+    function handleHubHpLiveEvent(evt) {
+      if (!evt || (evt.source !== 'sheet' && evt.source !== 'hub')) return;
+      const c = state.characters.find(it => it.id === evt.charId || (it.fullData && (it.fullData.id === evt.charId || it.fullData._hubId === evt.charId)));
+      if (!c) return;
+      const ts = Number(evt.ts) || 0;
+      const newHp = Number(evt.currentHp);
+      if (!ts || !Number.isFinite(newHp)) return;
+      const fdHp = (c.fullData && c.fullData.hp) || {};
+      const localTs = Math.max(Number(c.lastHpUpdateTs) || 0, Number(c._hpLiveTs) || 0, Number(fdHp._lastPlayerChangeTs) || 0, Number(fdHp._lastDmUpdateTs) || 0);
+      if (ts <= localTs) return;
+      const newTemp = Math.max(0, Number(evt.tempHp) || 0);
+      c.currentHp = newHp;
+      c.tempHp = newTemp;
+      if (Number(evt.maxHp) > 0) c.maxHp = Number(evt.maxHp);
+      c._hpLiveTs = ts;
+      if (!c.fullData) c.fullData = {};
+      if (!c.fullData.hp) c.fullData.hp = {};
+      c.fullData.hp.current = newHp;
+      c.fullData.hp.temp = newTemp;
+      if (evt.source === 'hub') {
+        c.lastHpUpdateTs = ts;
+        c.fullData.hp._lastDmUpdateTs = ts;
+        c.fullData.hp._lastPlayerChangeTs = 0;
+      } else {
+        c.fullData.hp._lastPlayerChangeTs = ts;
+      }
+      saveHubStorage(false);
+      refreshHubCharacterView(c);
+    }
+
     // ⚡ CANLI KART REALTIME SENKRONİZASYONU (PostgreSQL WebSocket)
     function initHubRealtimeSync() {
       if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode()) return;
@@ -4763,11 +4873,20 @@ CRITICAL RULES:
         let localChar = state.characters.find(c => c.id === incoming.id || (c.fullData && (c.fullData.id === incoming.id || c.fullData._hubId === incoming.id)));
 
         if (localChar) {
+          // HP that already arrived over the live lane can be newer than this (slower) row: keep it.
+          const incHp = (incoming.full_data && incoming.full_data.hp) || {};
+          const incHpTs = Math.max(Number(incHp._lastPlayerChangeTs) || 0, Number(incHp._lastDmUpdateTs) || 0, Number(incoming.last_dm_hp_update_ts) || 0);
+          const keepLiveHp = (Number(localChar._hpLiveTs) || 0) > incHpTs;
           localChar.fullData = incoming.full_data || localChar.fullData;
           localChar.name = incoming.name || localChar.name;
           localChar.classes = incoming.full_data?.classes || localChar.classes;
           localChar.level = Number(incoming.full_data?.level) || localChar.level;
-          localChar.currentHp = incoming.current_hp !== undefined ? incoming.current_hp : localChar.currentHp;
+          if (!keepLiveHp) {
+            localChar.currentHp = incoming.current_hp !== undefined ? incoming.current_hp : localChar.currentHp;
+          } else if (localChar.fullData && localChar.fullData.hp) {
+            localChar.fullData.hp.current = localChar.currentHp;
+            localChar.fullData.hp.temp = localChar.tempHp || 0;
+          }
           localChar.maxHp = incoming.full_data?.hp?.max || localChar.maxHp;
           if (incoming.campaign_id !== undefined && incoming.campaign_id !== null) {
             localChar.campaignId = incoming.campaign_id;
@@ -4777,24 +4896,7 @@ CRITICAL RULES:
 
           saveHubStorage(false);
 
-          // Sayfayı baştan çizip arama/modal odağını bozmamak için yalnızca ilgili kartı/satırı güncelle
-          const cardEl = document.getElementById(`hub-char-card-${localChar.id}`);
-          const rowEl = document.getElementById(`hub-char-row-${localChar.id}`);
-          if (cardEl && state.viewMode === 'cards') {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = getCharacterCardHtml(localChar);
-            if (tempDiv.firstElementChild) {
-              cardEl.replaceWith(tempDiv.firstElementChild);
-            }
-          } else if (rowEl && state.viewMode === 'table') {
-            const tempTbody = document.createElement('tbody');
-            tempTbody.innerHTML = getDmTableRowHtml(localChar);
-            if (tempTbody.firstElementChild) {
-              rowEl.replaceWith(tempTbody.firstElementChild);
-            }
-          } else {
-            renderHub();
-          }
+          refreshHubCharacterView(localChar);
 
           showHubDiceToast({
             title: '⚡ Live Sync',
@@ -4975,6 +5077,7 @@ CRITICAL RULES:
       // Google Oturumu Varsa: Buluttaki Karakterleri & Kampanyaları Otomatik Çek & Senkronize Et
       if (authUser && window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
         window.SupabaseAuth.currentUser = authUser;
+        initHubHpLiveSync().catch(e => console.warn('Live Hit Points join notice:', e));
         syncCloudUserHub(authUser).then(() => {
           if (typeof syncActiveCloudCampaignRealtime === 'function') {
             syncActiveCloudCampaignRealtime();
