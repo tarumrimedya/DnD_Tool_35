@@ -1975,7 +1975,7 @@
   async function callGeminiForNotes({ systemPrompt, userPrompt, onProgress }) {
     let apiKey = localStorage.getItem('gemini_api_key') || (window.RuleMaster && typeof window.RuleMaster.getApiKey === 'function' ? window.RuleMaster.getApiKey() : '');
     if (!apiKey) {
-      apiKey = prompt('⚡ Enter your Google AI Studio Gemini API Key for the AI Note Synthesizer:\n(Stored locally in your browser only)');
+      apiKey = await DnDUI.prompt('⚡ Enter your Google AI Studio Gemini API Key for the AI Note Synthesizer:\n(Stored locally in your browser only)', '', { inputType: 'password' });
       if (!apiKey || !apiKey.trim()) throw new Error('No API key entered.');
       apiKey = apiKey.trim();
       localStorage.setItem('gemini_api_key', apiKey);

@@ -3157,13 +3157,13 @@
       }
     }
 
-    function promptPortraitUrl() {
+    async function promptPortraitUrl() {
       const current = character?.portrait && !character.portrait.startsWith('data:') ? character.portrait : '';
-      const url = prompt('Enter an image URL for the character portrait:\n(e.g., https://example.com/character.jpg)', current);
+      const url = await DnDUI.prompt('Enter an image URL for the character portrait:\n(e.g., https://example.com/character.jpg)', current, { inputType: 'url' });
       if (url === null) return;
       const clean = url.trim();
       if (!clean) {
-        removeCharacterPortrait();
+        await removeCharacterPortrait();
       } else {
         if (!character) character = {};
         character.portrait = clean;
@@ -3641,13 +3641,13 @@
       }
     }
 
-    function promptWallpaperUrl() {
+    async function promptWallpaperUrl() {
       const current = character?.wallpaper?.image && !character.wallpaper.image.startsWith('data:') ? character.wallpaper.image : '';
-      const url = prompt('Enter an image URL for the page background:\n(e.g., https://images.unsplash.com/photo-xxx.jpg)', current);
+      const url = await DnDUI.prompt('Enter an image URL for the page background:\n(e.g., https://images.unsplash.com/photo-xxx.jpg)', current, { inputType: 'url' });
       if (url === null) return;
       const clean = url.trim();
       if (!clean) {
-        clearWallpaper();
+        await clearWallpaper();
       } else {
         initWallpaperIfEmpty();
         character.wallpaper.image = clean;
@@ -4078,7 +4078,7 @@
         }
       }
       if (!q) {
-        const entered = prompt('Enter the name of the official D&D 3.5e race you want to search:\n(e.g., Warforged, Goliath, Drow, Catfolk, Thri-Kreen, Kenku)');
+        const entered = await DnDUI.prompt('Enter the name of the official D&D 3.5e race you want to search:\n(e.g., Warforged, Goliath, Drow, Catfolk, Thri-Kreen, Kenku)');
         if (entered && entered.trim()) {
           q = entered.trim();
         } else {
@@ -6141,7 +6141,7 @@
         }
       }
       if (!q) {
-        const entered = prompt('Enter the name of the official D&D 3.5e deity you want to search:\n(e.g., Kelemvor, Mystra, Tempus, Bane, Lolth, Asmodeus, Helm, Sune)');
+        const entered = await DnDUI.prompt('Enter the name of the official D&D 3.5e deity you want to search:\n(e.g., Kelemvor, Mystra, Tempus, Bane, Lolth, Asmodeus, Helm, Sune)');
         if (entered && entered.trim()) {
           q = entered.trim();
         } else {

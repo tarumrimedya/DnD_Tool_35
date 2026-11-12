@@ -10395,18 +10395,6 @@
       saveStateToStorage(true);
       renderLevelProgression();
       renderAll();
-
-      if (typeof showDiceTopToast === 'function') {
-        const formula = `1d${def.hd}`;
-        showDiceTopToast({
-          icon: '⚡',
-          title: `Level ${nextLvl} Planned (${targetClass})`,
-          breakdown: (nextLvl === 1)
-            ? `1st-Level RAW Rule: Maximum Hit Die (+${hpGain} HP)`
-            : `Hit Die Rolled: ${formula} ➔ ${rollHp} (+ CON ${conMod >= 0 ? '+' + conMod : conMod})`, 
-          total: `+${hpGain} HP`
-        }, { autoDismiss: true, dismissMs: 4000 });
-      }
     }
 
     // =========================================================================

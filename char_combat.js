@@ -5160,7 +5160,7 @@
     }
     window.resetSpecialAttackCooldown = resetSpecialAttackCooldown;
 
-    function triggerReactiveLegoModeFromCockpit(entryId, modeId) {
+    async function triggerReactiveLegoModeFromCockpit(entryId, modeId) {
       if (!character || typeof RuleEngine === 'undefined' || typeof RuleEngine.triggerLegoMode !== 'function') return;
       const evalModes = character.evaluatedModes || (typeof RuleEngine.evaluateLegoCharacter === 'function' ? RuleEngine.evaluateLegoCharacter(character)?.modes : []) || [];
       const mode = evalModes.find(m => m && (m.entryId === entryId || String(m.entryId || '').split(':').pop() === entryId) && m.id === modeId)
@@ -5171,7 +5171,7 @@
         for (let i = 0; i < mode.inputs.length; i++) {
           const inp = mode.inputs[i];
           const defVal = inp.default !== undefined ? inp.default : 1;
-          const raw = window.prompt(`${inp.label || inp.id}:`, String(defVal));
+          const raw = await DnDUI.prompt(`${inp.label || inp.id}:`, String(defVal), { inputType: 'number' });
           if (raw === null) return; // User cancelled prompt -> abort before snapshot or spending action
           const numVal = Number(raw);
           inputValues[inp.id] = Number.isFinite(numVal) ? numVal : defVal;
@@ -13918,7 +13918,7 @@
       }
     }
 
-    function saveCurrentFormulaTemplate() {
+    async function saveCurrentFormulaTemplate() {
       const input = document.getElementById('dice-custom-formula-input');
       const formula = (input?.value || '').trim();
       if (!formula) {
@@ -13927,7 +13927,7 @@
       }
 
       const defaultName = formula.length > 28 ? formula.slice(0, 25) + '...' : formula;
-      const name = prompt('Enter a name for this dice template:', defaultName);
+      const name = await DnDUI.prompt('Enter a name for this dice template:', defaultName);
       if (!name || !name.trim()) return;
 
       const templates = loadFormulaTemplates();

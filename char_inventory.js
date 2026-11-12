@@ -4175,9 +4175,9 @@
       reader.readAsDataURL(file);
     }
 
-    function promptSilhouetteUrl() {
+    async function promptSilhouetteUrl() {
       const current = (character && character.customSilhouetteImg) || '';
-      const url = prompt('Enter an image URL for the character silhouette:\n(e.g., https://...png or .jpg)', current);
+      const url = await DnDUI.prompt('Enter an image URL for the character silhouette:\n(e.g., https://...png or .jpg)', current, { inputType: 'url' });
       if (url === null) return;
       const cleanUrl = url.trim();
       if (!cleanUrl) {
@@ -4411,7 +4411,7 @@
       } catch(e) { reportError('char_inventory:stopDraggingSlotNode', e); }
     }
 
-    function copySilhouetteCoordinatesToClipboard() {
+    async function copySilhouetteCoordinatesToClipboard() {
       const nodes = getEffectiveBodySlotNodes(character);
       const exportData = {};
       const gridEl = document.getElementById('sil-slots-main-grid');
@@ -4446,11 +4446,11 @@
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(jsonText).then(() => {
           showToast('📋 All 12 slot coordinates copied to clipboard!', 'success', { wrap: true });
-        }).catch(() => {
-          prompt('Copy coordinates (Ctrl+C):', jsonText);
+        }).catch(async () => {
+          await DnDUI.prompt('Copy coordinates (Ctrl+C):', jsonText, { readOnly: true, multiline: true, confirmLabel: 'Close' });
         });
       } else {
-        prompt('Copy coordinates (Ctrl+C):', jsonText);
+        await DnDUI.prompt('Copy coordinates (Ctrl+C):', jsonText, { readOnly: true, multiline: true, confirmLabel: 'Close' });
       }
     }
 
