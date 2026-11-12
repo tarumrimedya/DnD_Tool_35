@@ -2310,7 +2310,7 @@
           await window.SrdCompendium.init();
           // Conditions, buffs and spells from every chunk that holds them (index-driven; matches the list below).
           await window.SrdCompendium.ensureTypesLoaded(['Condition', 'Buff', 'Spell']);
-        } catch (_) {}
+        } catch (e) { reportError('char_inventory:searchBuffSpotlightCandidates', e); }
       }
 
       const cl = getBuffModalCasterLevel();
@@ -3712,7 +3712,7 @@
 
     function setBodySlotsView(mode, rerender = true) {
       currentBodySlotsView = mode || 'silhouette';
-      try { localStorage.setItem('dnd35_body_slots_view', currentBodySlotsView); } catch(e){}
+      try { localStorage.setItem('dnd35_body_slots_view', currentBodySlotsView); } catch(e){ reportError('char_inventory:setBodySlotsView', e); }
 
       const listView = document.getElementById('body-slots-list-view');
       const silView = document.getElementById('body-slots-silhouette-view');
@@ -3756,7 +3756,7 @@
 
     function changeSilhouetteModel(modelKey) {
       selectedSilhouetteModel = modelKey || 'auto';
-      try { localStorage.setItem('dnd35_silhouette_model', selectedSilhouetteModel); } catch(e){}
+      try { localStorage.setItem('dnd35_silhouette_model', selectedSilhouetteModel); } catch(e){ reportError('char_inventory:changeSilhouetteModel', e); }
       renderBodySlotsSilhouette();
     }
 
@@ -3840,7 +3840,7 @@
       try {
         const raw = localStorage.getItem('dnd35_silhouette_transform');
         if (raw) localSaved = JSON.parse(raw);
-      } catch(e) {}
+      } catch(e) { reportError('char_inventory:getSilhouetteTransform', e); }
 
       const conf = saved || localSaved || {};
       const scale = (typeof conf.scale === 'number' && !isNaN(conf.scale)) ? Math.max(0.5, Math.min(2.5, conf.scale)) : 1.0;
@@ -3864,7 +3864,7 @@
           offsetX: Math.round(transform.offsetX),
           offsetY: Math.round(transform.offsetY)
         }));
-      } catch(e) {}
+      } catch(e) { reportError('char_inventory:saveSilhouetteTransform', e); }
     }
 
     function computeSilhouetteImageRect(transform) {
@@ -4094,7 +4094,7 @@
       try {
         const raw = localStorage.getItem('dnd35_silhouette_custom_coords');
         if (raw) localSaved = JSON.parse(raw);
-      } catch(e) {}
+      } catch(e) { reportError('char_inventory:getEffectiveBodySlotNodes', e); }
 
       const custom = saved || localSaved || {};
       const result = {};
@@ -4148,7 +4148,7 @@
       try {
         const localImg = localStorage.getItem('dnd35_silhouette_custom_img');
         if (localImg) return localImg;
-      } catch(e) {}
+      } catch(e) { reportError('char_inventory:getSilhouetteImageSrc', e); }
       if (!window.HERO_SILHOUETTE_DATA_URI) {
         ensureHeroSilhouetteLoaded();
       }
@@ -4168,7 +4168,7 @@
         const dataUrl = e.target.result;
         if (!character) character = {};
         character.customSilhouetteImg = dataUrl;
-        try { localStorage.setItem('dnd35_silhouette_custom_img', dataUrl); } catch(err){}
+        try { localStorage.setItem('dnd35_silhouette_custom_img', dataUrl); } catch(err){ reportError('char_inventory:reader.onload', err); }
         renderBodySlotsSilhouette();
         alert('🖼️ Custom silhouette image uploaded successfully!');
       };
@@ -4186,7 +4186,7 @@
       }
       if (!character) character = {};
       character.customSilhouetteImg = cleanUrl;
-      try { localStorage.setItem('dnd35_silhouette_custom_img', cleanUrl); } catch(err){}
+      try { localStorage.setItem('dnd35_silhouette_custom_img', cleanUrl); } catch(err){ reportError('char_inventory:promptSilhouetteUrl', err); }
       renderBodySlotsSilhouette();
       alert('🖼️ Custom silhouette URL applied!');
     }
@@ -4217,13 +4217,13 @@
       if (character && character.customSilhouetteImg) {
         delete character.customSilhouetteImg;
       }
-      try { localStorage.removeItem('dnd35_silhouette_custom_img'); } catch(err){}
+      try { localStorage.removeItem('dnd35_silhouette_custom_img'); } catch(err){ reportError('char_inventory:resetSilhouetteImage', err); }
 
       // Resim sıfırlanınca vücut noktaları ve konumu da sıfırlansın:
       if (character && character.customSilhouetteCoords) {
         delete character.customSilhouetteCoords;
       }
-      try { localStorage.removeItem('dnd35_silhouette_custom_coords'); } catch(err){}
+      try { localStorage.removeItem('dnd35_silhouette_custom_coords'); } catch(err){ reportError('char_inventory:resetSilhouetteImage', err); }
       currentSilhouetteNodes = JSON.parse(JSON.stringify(DEFAULT_BODY_SLOT_NODES));
 
       resetSilhouetteTransform();
@@ -4244,7 +4244,7 @@
         if (character && character.customSilhouetteCoords) {
           delete character.customSilhouetteCoords;
         }
-        try { localStorage.removeItem('dnd35_silhouette_custom_coords'); } catch(err){}
+        try { localStorage.removeItem('dnd35_silhouette_custom_coords'); } catch(err){ reportError('char_inventory:resetSilhouettePoints', err); }
         currentSilhouetteNodes = JSON.parse(JSON.stringify(DEFAULT_BODY_SLOT_NODES));
         renderBodySlotsSilhouette();
       }
@@ -4408,7 +4408,7 @@
       }
       try {
         localStorage.setItem('dnd35_silhouette_custom_coords', JSON.stringify(character.customSilhouetteCoords));
-      } catch(e) {}
+      } catch(e) { reportError('char_inventory:stopDraggingSlotNode', e); }
     }
 
     function copySilhouetteCoordinatesToClipboard() {
@@ -4670,7 +4670,7 @@
 
       // Clean up any legacy separate "↳ ... (Off-Hand Head)" entries via ensureWeaponSetsData
       if (typeof ensureWeaponSetsData === 'function') {
-        try { ensureWeaponSetsData(); } catch (e) {}
+        try { ensureWeaponSetsData(); } catch (e) { reportError('char_inventory:renderBodySlotsSilhouette', e); }
       }
 
       const leftContainer = document.getElementById('sil-left-slots');
@@ -5554,8 +5554,8 @@
           payload: { slotKey },
           meta: { label: `Unequip ${slotName}` }
         });
-        try { renderWeaponSetsUI(); } catch (e) {}
-        try { recalculateOffense(); } catch (e) {}
+        try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
+        try { recalculateOffense(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
         renderAll();
         if (!silent && typeof showDiceTopToast === 'function') {
           const slotDef = BODY_SLOT_DEFS.find(d => d.key === slotKey);
@@ -5638,8 +5638,8 @@
         }
         character.activeOffHand = 'None';
       }
-      try { renderWeaponSetsUI(); } catch (e) {}
-      try { recalculateOffense(); } catch (e) {}
+      try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
+      try { recalculateOffense(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
 
       saveStateToStorage(true);
       renderAll();
@@ -5735,7 +5735,7 @@
               fromAssembler = true;
             }
           }
-        } catch (_) {}
+        } catch (e) { reportError('char_inventory:hasValidStats', e); }
       }
 
       // 2. Try SrdCompendium direct ID or Name lookup
@@ -6441,8 +6441,8 @@
         if (out && out.twoHandWarningMsg && !twoHandWarningMsg) {
           twoHandWarningMsg = out.twoHandWarningMsg;
         }
-        try { renderWeaponSetsUI(); } catch (e) {}
-        try { recalculateOffense(); } catch (e) {}
+        try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
+        try { recalculateOffense(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
         renderAll();
         const slotDef = BODY_SLOT_DEFS.find(d => d.key === targetSlotKey);
         const slotLabel = slotDef?.trName || targetSlotKey;
@@ -6650,8 +6650,8 @@
           }
         }
       }
-      try { renderWeaponSetsUI(); } catch (e) {}
-      try { recalculateOffense(); } catch (e) {}
+      try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
+      try { recalculateOffense(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
 
       saveStateToStorage(true);
       renderAll();
@@ -7261,7 +7261,7 @@
             parsedLego._isSynthesizedLego = true;
             synthesizedLegoItem = parsedLego;
           }
-        } catch (_) {}
+        } catch (e) { reportError('char_inventory:executePoolMasterDbSearch', e); }
       }
 
       // Score and filter SRD + Custom DB items via unified SrdCompendium.fuzzyScore

@@ -24,7 +24,7 @@
   try {
     const _savedTargetKey = localStorage.getItem('hub_notes_active_target');
     if (_savedTargetKey) _overrideTargetKey = _savedTargetKey;
-  } catch (e) {}
+  } catch (e) { reportError('hub_notes:read saved notes target', e); }
   let _activeModalView = 'editor'; // 'editor', 'mindmap', 'ai'
   let _selectedMindmapTag = null;
   let _lastAiGeneratedText = '';
@@ -98,7 +98,7 @@
         const parsed = JSON.parse(raw);
         if (parsed && Array.isArray(parsed.campaigns)) return parsed;
       }
-    } catch (e) {}
+    } catch (e) { reportError('hub_notes:getHubState', e); }
     return null;
   }
 
@@ -149,7 +149,7 @@
     if (window.character && typeof window.character === 'object') return window.character;
     try {
       if (typeof character !== 'undefined' && character && typeof character === 'object') return character;
-    } catch (e) {}
+    } catch (e) { reportError('hub_notes:getStandaloneCharacterInstance', e); }
     return null;
   }
 
@@ -198,7 +198,7 @@
     let urlId = null;
     try {
       urlId = new URLSearchParams(window.location.search).get('id') || localStorage.getItem('dnd35_active_character_id');
-    } catch (e) {}
+    } catch (e) { reportError('hub_notes:resolveStandaloneHubChar', e); }
     const charHubId = standaloneChar._hubId || standaloneChar.id || urlId;
     const charNameLower = (standaloneChar.name || '').trim().toLowerCase();
     return state.characters.find(c =>
@@ -264,7 +264,7 @@
       let urlId = null;
       try {
         urlId = new URLSearchParams(window.location.search).get('id') || localStorage.getItem('dnd35_active_character_id');
-      } catch (e) {}
+      } catch (e) { reportError('hub_notes:getActiveNotesTarget', e); }
       const charId = hubMatch?.id || standaloneChar._hubId || standaloneChar.id || urlId || 'active_char';
       if (!standaloneChar._hubId && hubMatch?.id) standaloneChar._hubId = hubMatch.id;
       const charName = standaloneChar.name || hubMatch?.name || 'Character';
@@ -403,7 +403,7 @@
             (parsed && (c.id === parsed.id || c.id === parsed._hubId || (parsed.name && c.name === parsed.name)))
           );
           if (found) targetChar = found;
-        } catch (e) {}
+        } catch (e) { reportError('hub_notes:getActiveNotesTarget', e); }
 
         const list = ensureSmartNotesArray(targetChar);
         return {
@@ -587,7 +587,7 @@
             latestDmEvent: state.latestDmEvent || null,
             lastSaved: new Date().toISOString()
           }));
-        } catch (e) {}
+        } catch (e) { reportError('hub_notes:saveNotesChanges', e); }
       }
     }
 
@@ -598,7 +598,7 @@
       standaloneChar.notes = plainSummary;
       standaloneChar._notesUpdatedAt = nowTs;
       if (typeof window.saveStateToStorage === 'function') {
-        try { window.saveStateToStorage(true); } catch (e) {}
+        try { window.saveStateToStorage(true); } catch (e) { reportError('hub_notes:saveNotesChanges', e); }
       }
     }
 
@@ -692,7 +692,7 @@
       if (listView) listView.classList.remove('hidden');
     }
 
-    try { localStorage.setItem('hub_notes_panel_tab', tab); } catch (e) {}
+    try { localStorage.setItem('hub_notes_panel_tab', tab); } catch (e) { reportError('hub_notes:switchPanelTab', e); }
   }
 
   /**
@@ -1105,7 +1105,7 @@
       saveModalNote(false);
     }
     _overrideTargetKey = targetKey;
-    try { localStorage.setItem('hub_notes_active_target', targetKey); } catch (e) {}
+    try { localStorage.setItem('hub_notes_active_target', targetKey); } catch (e) { reportError('hub_notes:setTargetOverride', e); }
     const target = getActiveNotesTarget();
     if (target && target.notesList.length > 0) {
       _selectedModalNoteId = target.notesList[0].id;
@@ -1122,7 +1122,7 @@
 
   function clearTargetOverride() {
     _overrideTargetKey = null;
-    try { localStorage.removeItem('hub_notes_active_target'); } catch (e) {}
+    try { localStorage.removeItem('hub_notes_active_target'); } catch (e) { reportError('hub_notes:clearTargetOverride', e); }
   }
 
   function updateModalTargetSelector(activeTarget) {
@@ -2651,7 +2651,7 @@ RULES:
         const parsed = JSON.parse(raw);
         if (parsed && parsed.name) return parsed;
       }
-    } catch (e) {}
+    } catch (e) { reportError('hub_notes:resolveCharacterForNote', e); }
 
     return null;
   }
@@ -3093,7 +3093,7 @@ RULES:
           loadSelectedNoteIntoEditor();
           if (_activeModalView === 'mindmap') renderMindmap();
         }
-      } catch (err) {}
+      } catch (err) { reportError('hub_notes:mountCharacterNotesWidget', err); }
     }
   });
 
@@ -3102,7 +3102,7 @@ RULES:
       try {
         const savedTab = localStorage.getItem('hub_notes_panel_tab');
         if (savedTab) switchPanelTab(savedTab);
-      } catch (e) {}
+      } catch (e) { reportError('hub_notes:mountCharacterNotesWidget', e); }
       renderInlineNotes();
 
       // Attach scope change listener for AI Chronicler

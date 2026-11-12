@@ -8502,7 +8502,7 @@
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
         try {
           RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []));
-        } catch (e) {}
+        } catch (e) { reportError('char_spells:recalculateCharacterClassSummary', e); }
       }
       if (typeof autoSyncCharacterClassSkills === 'function') {
         autoSyncCharacterClassSkills(character);

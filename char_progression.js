@@ -137,7 +137,7 @@
       Promise.all(missing.map(n => comp.ensureChunkLoaded(n))).then(() => {
         _featChunkCatalogVer++;
         if (typeof _featListRefresher === 'function') {
-          try { _featListRefresher(); } catch (_) {}
+          try { _featListRefresher(); } catch (e) { reportError('char_progression:ensureFeatSplatChunks', e); }
         }
       }).catch(() => {});
     }
@@ -200,7 +200,7 @@
         const chgSel = document.getElementById('change-class-select');
         if (chgSel) populateChangeClassSelect(chgSel.value || null);
         filterChangeClassSearch();
-      } catch (_) {}
+      } catch (e) { reportError('char_progression:refreshOpenClassLists', e); }
     }
 
     // 3.0 / licensed classes stay out of the class pickers while the setting is off, unless the character already has levels in one.
@@ -9045,7 +9045,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       activeSkillFilter = filterMode;
       try {
         localStorage.setItem('dnd35_skill_filter', filterMode);
-      } catch (e) {}
+      } catch (e) { reportError('char_progression:setSkillFilter', e); }
       const btnAll = document.getElementById('btn-skill-filter-all');
       const btnClass = document.getElementById('btn-skill-filter-class');
       const btnTrained = document.getElementById('btn-skill-filter-trained');
@@ -9059,7 +9059,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       activeSkillStatFilter = (stat || 'all').toLowerCase();
       try {
         localStorage.setItem('dnd35_skill_stat_filter', activeSkillStatFilter);
-      } catch (e) {}
+      } catch (e) { reportError('char_progression:setSkillStatFilter', e); }
       renderSkills();
     }
 
@@ -9070,7 +9070,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         } else {
           localStorage.removeItem('dnd35_skill_search');
         }
-      } catch (e) {}
+      } catch (e) { reportError('char_progression:onSkillSearchInput', e); }
       renderSkills();
     }
 
@@ -9078,7 +9078,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const input = document.getElementById('skill-search-input');
       if (input) {
         input.value = '';
-        try { localStorage.removeItem('dnd35_skill_search'); } catch (e) {}
+        try { localStorage.removeItem('dnd35_skill_search'); } catch (e) { reportError('char_progression:clearSkillSearch', e); }
         renderSkills();
       }
     }
@@ -9104,7 +9104,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         if (searchInput && savedSearch !== null && savedSearch !== undefined) {
           searchInput.value = savedSearch;
         }
-      } catch (e) {}
+      } catch (e) { reportError('char_progression:initSkillFilters', e); }
     }
 
     function stripTurkishSkillParen(rawName) {
@@ -9959,7 +9959,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed)) customDomainsList.push(...parsed);
         }
-      } catch (e) {}
+      } catch (e) { reportError('char_progression:renderClericDomainPickerList', e); }
 
       const compendiumDomains = (window.SrdCompendium && typeof window.SrdCompendium.getAllDomains === 'function')
         ? window.SrdCompendium.getAllDomains()

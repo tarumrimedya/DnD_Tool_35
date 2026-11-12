@@ -6277,10 +6277,10 @@
       toggleSrdSpotlight(false);
 
       // Refresh UI components
-      try { populateWeaponSetsEditorDropdowns(); } catch (e) {}
-      try { renderWeaponSetsUI(); } catch (e) {}
-      try { renderInventory(); } catch (e) {}
-      try { recalculateOffense(); } catch (e) {}
+      try { populateWeaponSetsEditorDropdowns(); } catch (e) { reportError('char_combat:selectSrdSpotlightWeapon', e); }
+      try { renderWeaponSetsUI(); } catch (e) { reportError('char_combat:selectSrdSpotlightWeapon', e); }
+      try { renderInventory(); } catch (e) { reportError('char_combat:selectSrdSpotlightWeapon', e); }
+      try { recalculateOffense(); } catch (e) { reportError('char_combat:selectSrdSpotlightWeapon', e); }
       saveStateToStorage(true);
 
       if (typeof showDiceTopToast === 'function') {
@@ -6355,8 +6355,8 @@
       }
 
       updateWeaponEditorEnhancementBadges();
-      try { renderWeaponSetsUI(); } catch (e) {}
-      try { recalculateOffense(); } catch (e) {}
+      try { renderWeaponSetsUI(); } catch (e) { reportError('char_combat:stepWeaponEnhancement', e); }
+      try { recalculateOffense(); } catch (e) { reportError('char_combat:stepWeaponEnhancement', e); }
       saveStateToStorage(true);
     }
 
@@ -6406,8 +6406,8 @@
       }
 
       renderWeaponSetModifierChips(setNum);
-      try { renderWeaponSetsUI(); } catch (e) {}
-      try { recalculateOffense(); } catch (e) {}
+      try { renderWeaponSetsUI(); } catch (e) { reportError('char_combat:toggleWeaponElementalProperty', e); }
+      try { recalculateOffense(); } catch (e) { reportError('char_combat:toggleWeaponElementalProperty', e); }
       saveStateToStorage(true);
     }
 
@@ -7611,7 +7611,7 @@
       renderRangedModifiersGrid();
       recalculateOffense();
       if (typeof renderWeaponSetsUI === 'function') {
-        try { renderWeaponSetsUI(); } catch (e) {}
+        try { renderWeaponSetsUI(); } catch (e) { reportError('char_combat:onRangedModifierToggle', e); }
       }
       if (!usedStore) saveStateToStorage(false);
     }
@@ -9342,14 +9342,14 @@
       character.combatPins = targetBuckets;
 
       saveStateToStorage(true);
-      try { renderOffenseModifiersGrid(); } catch (e) {}
-      try { if (typeof renderRangedModifiersGrid === 'function') renderRangedModifiersGrid(); } catch (e) {}
-      try { if (typeof renderCombatSkillsCard === 'function') renderCombatSkillsCard(); } catch (e) {}
+      try { renderOffenseModifiersGrid(); } catch (e) { reportError('char_combat:changePinTargetDirect', e); }
+      try { if (typeof renderRangedModifiersGrid === 'function') renderRangedModifiersGrid(); } catch (e) { reportError('char_combat:changePinTargetDirect', e); }
+      try { if (typeof renderCombatSkillsCard === 'function') renderCombatSkillsCard(); } catch (e) { reportError('char_combat:changePinTargetDirect', e); }
       ['offense_spell', 'spell_control', 'spell_support', 'defense'].forEach(cat => {
-        try { renderCombatPins(cat); } catch (e) {}
+        try { renderCombatPins(cat); } catch (e) { reportError('char_combat:changePinTargetDirect', e); }
       });
-      try { if (typeof renderSpellTacticalModifiers === 'function') renderSpellTacticalModifiers(); } catch (e) {}
-      try { if (typeof recalculateCombatSpell === 'function') recalculateCombatSpell(); } catch (e) {}
+      try { if (typeof renderSpellTacticalModifiers === 'function') renderSpellTacticalModifiers(); } catch (e) { reportError('char_combat:changePinTargetDirect', e); }
+      try { if (typeof recalculateCombatSpell === 'function') recalculateCombatSpell(); } catch (e) { reportError('char_combat:changePinTargetDirect', e); }
 
       const labelMap = {
         auto: '🎯 Auto (Rule Engine)',
@@ -10622,7 +10622,7 @@
       try { renderCombatPins('offense_ranged'); } catch (e) { console.error("renderCombatPins('offense_ranged') error:", e); }
       try { renderCombatPins('defense'); } catch (e) { console.error("renderCombatPins('defense') error:", e); }
       try { renderDefenseModifiersGrid(); } catch (e) { console.error("renderDefenseModifiersGrid error:", e); }
-      try { if (typeof populateRangedWeaponAndAmmoUI === 'function') populateRangedWeaponAndAmmoUI(); } catch (e) {}
+      try { if (typeof populateRangedWeaponAndAmmoUI === 'function') populateRangedWeaponAndAmmoUI(); } catch (e) { reportError('char_combat:renderCombatCockpit', e); }
 
       // 6. Spellcasting Cockpit & Panels State
       try { initCockpitPanelsState(); } catch (e) { console.error('initCockpitPanelsState error:', e); }
@@ -13069,7 +13069,7 @@
         if (typeof localStorage !== 'undefined') {
           diceColor = localStorage.getItem('dnd_dice_color') || '#851316';
         }
-      } catch (e) {}
+      } catch (e) { reportError('char_combat:getDiceColorPalette', e); }
 
       let r = 133, g = 19, b = 22; // default Ruby Red
       if (diceColor.startsWith('#') && diceColor.length >= 7) {
@@ -13340,7 +13340,7 @@
         const dismissMs = options.dismissMs || (hasActions ? 30000 : 3500);
         toast._dismissTimer = setTimeout(() => {
           if (hasActions && typeof entry.onCancel === 'function') {
-            try { entry.onCancel(); } catch (err) {}
+            try { entry.onCancel(); } catch (err) { reportError('char_combat:showDiceTopToast', err); }
           }
           toast.classList.remove('translate-y-0', 'opacity-100');
           toast.classList.add('-translate-y-6', 'opacity-0');
@@ -13362,7 +13362,7 @@
           cleanupOutsideClick = null;
           if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
           if (typeof entry.onCancel === 'function') {
-            try { entry.onCancel(); } catch (err) {}
+            try { entry.onCancel(); } catch (err) { reportError('char_combat:onOutsideClick', err); }
           }
           toast.classList.remove('translate-y-0', 'opacity-100');
           toast.classList.add('-translate-y-6', 'opacity-0');
@@ -13426,7 +13426,7 @@
       }
       try {
         localStorage.setItem('dnd_dice_history', JSON.stringify(window.diceRollHistory));
-      } catch (e) {}
+      } catch (e) { reportError('char_combat:addDiceHistoryEntry', e); }
 
       updateLastResultCard(record);
       renderDiceHistory();
@@ -13438,7 +13438,7 @@
       window.diceRollHistory = [];
       try {
         localStorage.removeItem('dnd_dice_history');
-      } catch (e) {}
+      } catch (e) { reportError('char_combat:clearDiceHistory', e); }
       renderDiceHistory();
     }
 
@@ -13616,7 +13616,7 @@
 
       try {
         localStorage.setItem('dnd_dice_color', color);
-      } catch (e) {}
+      } catch (e) { reportError('char_combat:selectDiceColor', e); }
 
       if (window.Dice3D && typeof window.Dice3D.setDiceColor === 'function') {
         window.Dice3D.setDiceColor(color);
@@ -13695,7 +13695,7 @@
         if (typeof localStorage !== 'undefined') {
           savedColor = localStorage.getItem('dnd_dice_color') || '#851316';
         }
-      } catch (e) {}
+      } catch (e) { reportError('char_combat:initDiceColor', e); }
       if (window.Dice3D && typeof window.Dice3D.setDiceColor === 'function') {
         window.Dice3D.setDiceColor(savedColor);
       }
@@ -13856,18 +13856,18 @@
             return cleaned;
           }
         }
-      } catch (e) {}
+      } catch (e) { reportError('char_combat:loadFormulaTemplates', e); }
       const initial = [...DEFAULT_FORMULA_TEMPLATES];
       try {
         localStorage.setItem('dnd_custom_dice_templates', JSON.stringify(initial));
-      } catch (e) {}
+      } catch (e) { reportError('char_combat:loadFormulaTemplates', e); }
       return initial;
     }
 
     function saveFormulaTemplates(templates) {
       try {
         localStorage.setItem('dnd_custom_dice_templates', JSON.stringify(templates));
-      } catch (e) {}
+      } catch (e) { reportError('char_combat:saveFormulaTemplates', e); }
       renderCustomTemplates();
     }
 
@@ -14524,7 +14524,7 @@
         if (character && '_terminalUndoStack' in character) delete character._terminalUndoStack;
         const undoBtn = document.getElementById('btn-spotlight-terminal-undo');
         if (undoBtn) undoBtn.classList.remove('hidden');
-      } catch (_) {}
+      } catch (e) { reportError('char_combat:_pushTerminalUndoSnapshot', e); }
     }
 
     function undoLastTerminalAction() {

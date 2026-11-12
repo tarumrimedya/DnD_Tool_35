@@ -1,3 +1,12 @@
+/** Central sink for errors that a catch block deliberately survives. Logs; never throws. */
+function reportError(context, err) {
+  try {
+    const log = (reportError._log = reportError._log || []);
+    log.push({ context: String(context), message: err && err.message ? String(err.message) : String(err), at: Date.now() });
+    if (log.length > 50) log.shift();
+    if (typeof console !== 'undefined' && console.warn) console.warn('[reportError] ' + context, err);
+  } catch (_) { /* reporting must never throw */ }
+}
 /**
  * D&D 3.5e Rule Master & Master_DB Management Engine
  * Features:
@@ -2465,7 +2474,7 @@ const RuleMaster = {
   switchSubTab(subTabId) {
     try {
       localStorage.setItem('dnd35_active_mdb_subtab', subTabId);
-    } catch (e) {}
+    } catch (e) { reportError('rule_master:switchSubTab', e); }
     document.querySelectorAll('.mdb-subtab-content').forEach(el => el.classList.add('hidden'));
     const target = document.getElementById(subTabId);
     if (target) target.classList.remove('hidden');
@@ -2506,7 +2515,7 @@ const RuleMaster = {
     let savedSubTab = null;
     try {
       savedSubTab = localStorage.getItem('dnd35_active_mdb_subtab');
-    } catch (e) {}
+    } catch (e) { reportError('rule_master:init', e); }
     if (savedSubTab === 'subtab-mdb-tree') savedSubTab = 'subtab-mdb-list';
     if (savedSubTab && document.getElementById(savedSubTab)) {
       this.switchSubTab(savedSubTab);
@@ -2667,7 +2676,7 @@ const RuleMaster = {
           const parsed = JSON.parse(raw);
           if (Array.isArray(parsed) && parsed.length > 0) discovered = parsed;
         }
-      } catch (e) {}
+      } catch (e) { reportError('rule_master:_sanitizeModelList', e); }
     }
     const cleanDiscovered = Array.isArray(discovered)
       ? discovered.filter(m => m && !this._isDeprecatedGeminiModel(m))
@@ -2760,13 +2769,13 @@ const RuleMaster = {
           try {
             localStorage.removeItem('dnd35_gemini_routing_matrix');
             localStorage.removeItem('dnd35_gemini_discovered_models');
-          } catch (e) {}
+          } catch (e) { reportError('rule_master:getActiveTaskRouting', e); }
           this._discoveredApiModels = null;
         } else {
           return this.buildDynamicRoutingFromModels(discoveredRaw);
         }
       }
-    } catch (e) {}
+    } catch (e) { reportError('rule_master:getActiveTaskRouting', e); }
     return this.buildDynamicRoutingFromModels([]);
   },
 
@@ -2914,7 +2923,7 @@ Schema:
 
       try {
         localStorage.setItem('dnd35_gemini_routing_matrix', JSON.stringify(validatedMatrix));
-      } catch (e) {}
+      } catch (e) { reportError('rule_master:optimizeModelsWithAi', e); }
 
       this._cachedTaskModels = {};
       return { success: true, matrix: validatedMatrix, evaluatorModel };
@@ -2932,7 +2941,7 @@ Schema:
     if (forceRefresh) {
       this._cachedTaskModels = {};
       this._discoveredApiModels = null;
-      try { localStorage.removeItem('dnd35_gemini_discovered_models'); } catch (e) {}
+      try { localStorage.removeItem('dnd35_gemini_discovered_models'); } catch (e) { reportError('rule_master:getAvailableGeminiModels', e); }
     }
 
     const cacheKey = `${taskType}_${this.getAiModelMode()}`;
@@ -2973,7 +2982,7 @@ Schema:
             return customList;
           }
         }
-      } catch (e) {}
+      } catch (e) { reportError('rule_master:getAvailableGeminiModels', e); }
     }
 
     try {
@@ -2984,7 +2993,7 @@ Schema:
         try {
           localStorage.removeItem('dnd35_gemini_routing_matrix');
           localStorage.removeItem('dnd35_gemini_discovered_models');
-        } catch (e) {}
+        } catch (e) { reportError('rule_master:getAvailableGeminiModels', e); }
       }
       if (!apiModels && !forceRefresh) {
         try {
@@ -3002,7 +3011,7 @@ Schema:
               }
             }
           }
-        } catch (e) {}
+        } catch (e) { reportError('rule_master:getAvailableGeminiModels', e); }
       }
 
       if (!apiModels) {
@@ -3036,7 +3045,7 @@ Schema:
           this._discoveredApiModels = apiModels;
           try {
             localStorage.setItem('dnd35_gemini_discovered_models', JSON.stringify(apiModels));
-          } catch (e) {}
+          } catch (e) { reportError('rule_master:getAvailableGeminiModels', e); }
         }
       }
 
@@ -3045,7 +3054,7 @@ Schema:
         if (!localStorage.getItem('dnd35_gemini_routing_matrix')) {
           try {
             localStorage.setItem('dnd35_gemini_routing_matrix', JSON.stringify(dynamicRouting));
-          } catch (e) {}
+          } catch (e) { reportError('rule_master:getAvailableGeminiModels', e); }
           this.optimizeModelsWithAi(apiKey, apiModels).catch(() => {});
         }
         const userPref = this.getAiModelMode();
@@ -7713,7 +7722,7 @@ Return valid JSON only matching:
 
     if (window.SrdCompendium && typeof window.SrdCompendium.init === 'function') {
       if (typeof window.SrdCompendium.isReady !== 'function' || !window.SrdCompendium.isReady()) {
-        try { await window.SrdCompendium.init(); } catch (_) {}
+        try { await window.SrdCompendium.init(); } catch (e) { reportError('rule_master:populateInlineForgeControls', e); }
       }
     }
 
@@ -7728,7 +7737,7 @@ Return valid JSON only matching:
       try {
         const parsed = window.ItemAssembler.parseNaturalLanguageItem(nlVal);
         if (parsed) return parsed;
-      } catch (_) {}
+      } catch (e) { reportError('rule_master:getSelectedInlineForgeItem', e); }
     }
 
     const baseId = document.getElementById('mdb-forge-base-select')?.value || 'arm-chain-shirt';
