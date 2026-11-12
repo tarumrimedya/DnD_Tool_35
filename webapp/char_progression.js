@@ -673,7 +673,7 @@
       const source = (document.getElementById('custom-feat-source')?.value || 'D&D 3.5e').trim();
       const benefit = (document.getElementById('custom-feat-benefit')?.value || '').trim();
       if (!name) {
-        showToast('⚠️ Please enter a Feat or Ability name.', 'error', { wrap: true });
+        showToast('Please enter a Feat or Ability name.', 'error', { wrap: true });
         return;
       }
       const entry = { name, category, source, benefit, prereq: '-' };
@@ -2736,7 +2736,7 @@
           statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-amber-950/80 border border-amber-600/60 text-amber-200 block';
           statusEl.innerHTML = '⚠️ Please enter a feat or ability name to search.';
         } else {
-          showToast('⚠️ Please enter a feat or ability name to search.', 'error', { wrap: true });
+          showToast('Please enter a feat or ability name to search.', 'error', { wrap: true });
         }
         nameInput?.focus();
         return;
@@ -2945,7 +2945,7 @@
           statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-amber-950/80 border border-amber-600/60 text-amber-200 block';
           statusEl.innerHTML = '⚠️ Please enter a class name to search.';
         } else {
-          showToast('⚠️ Please enter a class name to search.', 'error', { wrap: true });
+          showToast('Please enter a class name to search.', 'error', { wrap: true });
         }
         input?.focus();
         return;
@@ -4777,7 +4777,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             statusEl.className = 'text-xs p-2 rounded-lg bg-amber-950/80 border border-amber-500/80 text-amber-200 block';
             statusEl.innerHTML = '⚠️ Please enter a feat or ability name to search.';
           } else {
-            showToast('⚠️ Please enter a feat or ability name to search.', 'error', { wrap: true });
+            showToast('Please enter a feat or ability name to search.', 'error', { wrap: true });
           }
           input?.focus();
           return;
@@ -5992,7 +5992,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        showToast('⚠️ 🔮 Please save a valid Google Gemini API key in Settings (⚙️) to search classes via Rule Master AI.', 'error', { wrap: true });
+        showToast('🔮 Please save a valid Google Gemini API key in Settings (⚙️) to search classes via Rule Master AI.', 'error', { wrap: true });
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -6070,7 +6070,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           fetchBtn.disabled = false;
           fetchBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
-        showToast('⚠️ Could not discover active Gemini models for your API key. Please check your internet connection and API key in Settings.', 'error', { wrap: true });
+        showToast('Could not discover active Gemini models for your API key. Please check your internet connection and API key in Settings.', 'error', { wrap: true });
         return;
       }
 
@@ -6298,7 +6298,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         // Enforce sequential progression: all previous levels must be active
         for (let i = 0; i < idx; i++) {
           if (prog[i].active === false) {
-            showToast(`⚠️ Sequential Progression Rule: Level ${i + 1} must be activated before Level ${idx + 1}.\nYou cannot skip levels!`, 'error', { wrap: true });
+            showToast(`Sequential Progression Rule: Level ${i + 1} must be activated before Level ${idx + 1}.\nYou cannot skip levels!`, 'error', { wrap: true });
             closePlannedLevelChoiceModal();
             return;
           }
@@ -6511,7 +6511,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       // Sequential progression rule: Cannot activate a level if any previous level is inactive
       const hasInactiveBefore = prog.some(p => p.active === false);
       if (isActive && hasInactiveBefore) {
-        showToast('⚠️ Sequential Progression Rule: Earlier planned levels are still inactive.\nLevels cannot be skipped; this level will be saved as a planned level.', 'info', { wrap: true });
+        showToast('Sequential Progression Rule: Earlier planned levels are still inactive.\nLevels cannot be skipped; this level will be saved as a planned level.', 'info', { wrap: true });
         isActive = false;
       }
 
@@ -6698,7 +6698,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
     function undoLastLevel() {
       const prog = character.levelProgression || [];
       if (prog.length <= 1) {
-        showToast('⚠️ Character level cannot be reduced below Level 1.', 'error', { wrap: true });
+        showToast('Character level cannot be reduced below Level 1.', 'error', { wrap: true });
         return;
       }
       const last = prog[prog.length - 1];
@@ -6744,7 +6744,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const prog = character.levelProgression || [];
       if (idx < 0 || idx >= prog.length) return;
       if (idx === 0 && prog[idx].active !== false) {
-        showToast('⚠️ Level 1 is the starting character level and cannot be deactivated.', 'error', { wrap: true });
+        showToast('Level 1 is the starting character level and cannot be deactivated.', 'error', { wrap: true });
         return;
       }
 
@@ -6752,7 +6752,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         // Enforce sequential progression: all previous levels must be active
         for (let i = 0; i < idx; i++) {
           if (prog[i].active === false) {
-            showToast(`⚠️ Sequential Progression Rule: Level ${i + 1} must be activated before Level ${idx + 1}.\nYou cannot skip levels!`, 'error', { wrap: true });
+            showToast(`Sequential Progression Rule: Level ${i + 1} must be activated before Level ${idx + 1}.\nYou cannot skip levels!`, 'error', { wrap: true });
             renderLevelProgression();
             return;
           }
@@ -6761,7 +6761,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         // Enforce sequential deactivation: all subsequent levels must be inactive
         for (let i = idx + 1; i < prog.length; i++) {
           if (prog[i].active !== false) {
-            showToast(`⚠️ Sequential Progression Rule: Later active levels (Level ${i + 1}, etc.) must be deactivated before Level ${idx + 1}.`, 'error', { wrap: true });
+            showToast(`Sequential Progression Rule: Later active levels (Level ${i + 1}, etc.) must be deactivated before Level ${idx + 1}.`, 'error', { wrap: true });
             renderLevelProgression();
             return;
           }
@@ -6809,7 +6809,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const prog = character.levelProgression || [];
       if (idx < 0 || idx >= prog.length) return;
       if (prog.length <= 1) {
-        showToast('⚠️ Character level cannot be reduced below Level 1.', 'error', { wrap: true });
+        showToast('Character level cannot be reduced below Level 1.', 'error', { wrap: true });
         return;
       }
       const row = prog[idx];
@@ -10890,7 +10890,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        showToast('⚠️ 🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.', 'error', { wrap: true });
+        showToast('🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.', 'error', { wrap: true });
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }

@@ -5074,7 +5074,7 @@
         });
       } else {
         if (readied.length >= maxReadied) {
-          showToast(`⚠️ Your maximum readied maneuver quota is full (${maxReadied}/${maxReadied}). Unready a maneuver first.`, 'error', { wrap: true });
+          showToast(`Your maximum readied maneuver quota is full (${maxReadied}/${maxReadied}). Unready a maneuver first.`, 'error', { wrap: true });
           return;
         }
         const knownItem = (character?.tomeOfBattle?.maneuversKnown || []).find(m => (m.name || '').toLowerCase().trim() === cleanName);
@@ -7218,7 +7218,7 @@
       const q = (document.getElementById('spell-picker-search')?.value || '').trim();
       const type = window._currentSpellPickerType || 'Spell';
       if (!q) {
-        showToast('⚠️ Please enter a spell or maneuver name to search.', 'error', { wrap: true });
+        showToast('Please enter a spell or maneuver name to search.', 'error', { wrap: true });
         return;
       }
 
@@ -7227,7 +7227,7 @@
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        showToast('⚠️ Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.', 'error', { wrap: true });
+        showToast('Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.', 'error', { wrap: true });
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -9384,7 +9384,7 @@
       }
 
       if (typeof showToast === 'function') {
-        showToast(`✅ Class "${name}" saved to Master DB & Class List!`, 'success');
+        showToast(`Class "${name}" saved to Master DB & Class List!`, 'success');
       } else {
         alert(`✅ Class "${name}" defined and added to Master DB & Class List!`);
       }

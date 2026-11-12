@@ -76,7 +76,7 @@
         const spentPts = calculateSpentSkillPoints(character, isMerged);
         const cost = initialRanks * (isClass ? 1 : 2);
         if (spentPts + cost > totalPts) {
-          showToast(`⚠️ Insufficient skill points! This rank requires ${cost} points, but only ${Math.max(0, totalPts - spentPts)} points remain. Starting rank set to 0.`, 'error', { wrap: true });
+          showToast(`Insufficient skill points! This rank requires ${cost} points, but only ${Math.max(0, totalPts - spentPts)} points remain. Starting rank set to 0.`, 'error', { wrap: true });
         }
       }
 
@@ -7387,7 +7387,7 @@
         .replace(/^(?:armor|shield|weapon|item|ring|wondrous|equipment|potion|crystal)\s*:\s*/i, '')
         .trim();
       if (!q) {
-        showToast('⚠️ Please enter an item name to search.', 'error', { wrap: true });
+        showToast('Please enter an item name to search.', 'error', { wrap: true });
         return;
       }
 
@@ -7396,7 +7396,7 @@
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        showToast('⚠️ 🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.', 'error', { wrap: true });
+        showToast('🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.', 'error', { wrap: true });
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -7698,9 +7698,9 @@
       } else {
         closeAddPoolItemModal();
         if (attachedChildCount > 0) {
-          showToast(`✅ "${item.name}" and ${attachedChildCount} linked sub-abilities added to your Inventory!`, 'success', { wrap: true });
+          showToast(`"${item.name}" and ${attachedChildCount} linked sub-abilities added to your Inventory!`, 'success', { wrap: true });
         } else {
-          showToast(`✅ "${item.name}" added to your Inventory!`, 'success', { wrap: true });
+          showToast(`"${item.name}" added to your Inventory!`, 'success', { wrap: true });
         }
       }
     }
@@ -7841,9 +7841,9 @@
       } else {
         closeAddPoolItemModal();
         if (attachedChildCount > 0) {
-          showToast(`✅ "${item.name}" and ${attachedChildCount} sub-powers saved to Master DB and added to your Inventory!`, 'success', { wrap: true });
+          showToast(`"${item.name}" and ${attachedChildCount} sub-powers saved to Master DB and added to your Inventory!`, 'success', { wrap: true });
         } else {
-          showToast(`✅ "${item.name}" saved to Master DB and added to your Inventory!`, 'success', { wrap: true });
+          showToast(`"${item.name}" saved to Master DB and added to your Inventory!`, 'success', { wrap: true });
         }
       }
     }
@@ -8371,7 +8371,7 @@
       saveStateToStorage(true);
       renderAll();
       closeAddPoolItemModal();
-      showToast(`✅ "${name}" added to your Inventory!`, 'success', { wrap: true });
+      showToast(`"${name}" added to your Inventory!`, 'success', { wrap: true });
     }
 
     // ====================================================
@@ -9331,7 +9331,7 @@
         });
       }
       if (exportList.length === 0) {
-        showToast('ℹ️ There are no custom entries to export in this character\'s Custom DB.', 'info', { wrap: true });
+        showToast('There are no custom entries to export in this character\'s Custom DB.', 'info', { wrap: true });
         return;
       }
       const charSlug = ((character && character.name) ? character.name : 'character')
@@ -9427,7 +9427,7 @@
           }
 
           if (entriesToMerge.length === 0) {
-            showToast('⚠️ No valid custom DB entries found in the selected JSON file.', 'error', { wrap: true });
+            showToast('No valid custom DB entries found in the selected JSON file.', 'error', { wrap: true });
             return;
           }
 
@@ -9439,7 +9439,7 @@
           renderAll();
           alert(`✅ Custom DB Import / Merge Complete!\n• Added: ${added} new entries\n• Updated: ${updated} existing entries\n• Total Character Custom DB: ${masterDb.length} entries`);
         } catch (err) {
-          showToast('❌ Failed to parse Custom DB JSON file: ' + err.message, 'error', { wrap: true });
+          showToast('Failed to parse Custom DB JSON file: ' + err.message, 'error', { wrap: true });
         } finally {
           event.target.value = '';
         }
@@ -9473,7 +9473,7 @@
               character.customDb = Array.isArray(parsed.masterDb) ? parsed.masterDb : [];
             }
             masterDb = character.customDb;
-            showToast(`✅ Full Bundle loaded successfully!\n• Character: ${character?.name || '-'}\n• Character Custom DB: ${masterDb.length} entries`, 'success', { wrap: true });
+            showToast(`Full Bundle loaded successfully!\n• Character: ${character?.name || '-'}\n• Character Custom DB: ${masterDb.length} entries`, 'success', { wrap: true });
           } else if (Array.isArray(parsed)) {
             const { added, updated } = mergeEntriesIntoCharacterCustomDb(parsed);
             alert(`✅ Custom DB entries merged into character!\n• Added: ${added}\n• Updated: ${updated}\n• Total Custom DB: ${masterDb.length} entries`);
@@ -9481,7 +9481,7 @@
             character = parsed;
             if (!Array.isArray(character.customDb)) character.customDb = [];
             masterDb = character.customDb;
-            showToast('✅ Character data loaded successfully!', 'success', { wrap: true });
+            showToast('Character data loaded successfully!', 'success', { wrap: true });
           }
           saveStateToStorage(true);
           if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
@@ -9489,7 +9489,7 @@
           }
           renderAll();
         } catch (err) {
-          showToast('❌ Failed to parse JSON file: ' + err.message, 'error', { wrap: true });
+          showToast('Failed to parse JSON file: ' + err.message, 'error', { wrap: true });
         } finally {
           event.target.value = '';
         }
@@ -9534,7 +9534,7 @@
         }
         saveStateToStorage();
         renderAll();
-        showToast('✅ Character reset. Your blank character is ready!', 'success', { wrap: true });
+        showToast('Character reset. Your blank character is ready!', 'success', { wrap: true });
       }
     }
 

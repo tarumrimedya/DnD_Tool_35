@@ -7254,7 +7254,7 @@
 
       if (!item) {
         if (typeof showToast === 'function') {
-          showToast('⚠️ Selected ammunition not found in inventory!', 'warning');
+          showToast('Selected ammunition not found in inventory!', 'warning');
         }
         return false;
       }
@@ -7262,7 +7262,7 @@
       const currentQty = Number(item.qty !== undefined ? item.qty : (item.count !== undefined ? item.count : 0));
       if (currentQty <= 0) {
         if (typeof showToast === 'function') {
-          showToast(`⚠️ Selected ammunition ("${item.name}") is depleted! Select another ammunition or restock in inventory.`, 'warning');
+          showToast(`Selected ammunition ("${item.name}") is depleted! Select another ammunition or restock in inventory.`, 'warning');
         }
         return false;
       }
@@ -7279,7 +7279,7 @@
 
       if (remaining === 0) {
         if (typeof showToast === 'function') {
-          showToast(`⚠️ "${item.name}" depleted! (0 remaining)`, 'warning');
+          showToast(`"${item.name}" depleted! (0 remaining)`, 'warning');
         }
       } else {
         if (typeof showToast === 'function') {

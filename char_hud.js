@@ -2226,9 +2226,9 @@
       }
       const ok = await verifySettingsGeminiApiKey(true);
       if (ok) {
-        showToast('✅ Your Google Gemini API Key has been saved and verified (🟢 Active)!', 'success', { wrap: true });
+        showToast('Your Google Gemini API Key has been saved and verified (🟢 Active)!', 'success', { wrap: true });
       } else {
-        showToast('⚠️ Key saved, but Google Gemini server could not verify it. Please check your key.', 'warning', { wrap: true });
+        showToast('Key saved, but Google Gemini server could not verify it. Please check your key.', 'warning', { wrap: true });
       }
     }
 
@@ -2253,7 +2253,7 @@
       if (window.RuleMaster && typeof RuleMaster.showDiagnosticsModal === 'function') {
         return RuleMaster.showDiagnosticsModal();
       }
-      showToast('⚠️ RuleMaster is not loaded yet. Please refresh the page.', 'error', { wrap: true });
+      showToast('RuleMaster is not loaded yet. Please refresh the page.', 'error', { wrap: true });
     }
 
     const TAB_INACTIVE_CLASSES = ['bg-slate-800', 'hover:bg-slate-700', 'text-slate-200', 'hover:text-white', 'border-slate-700', 'hover:border-slate-500', 'shadow-md'];
