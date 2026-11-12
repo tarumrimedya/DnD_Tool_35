@@ -311,6 +311,10 @@
         console.error('Initial renderAll error:', e);
       }
       try { restoreActiveTabAndScroll(); } catch (e) { reportError('char_hud:liveBc.onmessage', e); }
+      // Boot contract: the first derive ran with the SRD compendium loaded (race / template modifiers feed
+      // Hit Points). Anything that loads or derives a character outside this sequence (test harness,
+      // automation) must wait for this marker, or it derives HP from incomplete inputs.
+      document.documentElement.dataset.sheetBoot = 'ready';
 
       // 4. Verify Auth & Non-Blocking Background Services
       if (window.SupabaseAuth) {

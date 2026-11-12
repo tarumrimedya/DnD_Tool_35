@@ -84,8 +84,12 @@ async function newContext(opts = {}) {
   return context;
 }
 
+// Wait for the sheet's own boot (char_hud.js DOMContentLoaded: SRD compendium init -> loadInitialData -> renderAll),
+// marked by <html data-sheet-boot="ready">. Loading a fixture earlier derives it without race / template
+// modifiers (wrong Hit Points) and races the boot's own character load.
 async function waitSheetReady(page) {
-  await page.waitForFunction(() => typeof CharStore !== 'undefined' && typeof renderAll === 'function' && typeof switchTab === 'function', null, { timeout: 30000 });
+  await page.waitForFunction(() => document.documentElement.dataset.sheetBoot === 'ready'
+    && typeof CharStore !== 'undefined' && typeof renderAll === 'function' && typeof switchTab === 'function', null, { timeout: 30000 });
 }
 
 async function newSheetPage(contextOpts) {
@@ -577,9 +581,9 @@ async function main() {
       const detail = readings.map(fmt).join(' ; ');
       const unsettled = readings.filter(r => r.last.max !== r.own.max || r.last.cur !== r.own.current);
       assert(unsettled.length === 0, 'final HP differs from fixture: ' + unsettled.map(fmt).join(' ; '));
-      assert(!transient, detail);
+      assert(!transient, 'transient derived HP after load: ' + detail);
       return detail;
-    }, transient ? { known: 'transient derived HP after load' } : {});
+    });
   }
 
   // H. Hub
