@@ -438,9 +438,18 @@
   function crystalIdByName(name) { const c = CAT.crystals.find((x) => x.name.toLowerCase() === name.toLowerCase()); return c ? c.id : ''; }
 
   // ---- Effect blocks (shared by Scratch Lego + Classic views) ----
+  const META_COST_MODES = [['slot', '+Slot Level'], ['rod', 'Metamagic Rod (Uses/Day)'], ['sudden', 'Sudden (Uses/Day, +0 Slot)'], ['pool', 'Pool Cost (Divine Metamagic)']];
+  const META_TRANSFORMS = [
+    ['empower', 'Damage / Variable ×1.5 (Empower)'], ['maximize', 'Maximize Variable Dice'], ['quicken', 'Cast as Swift Action (Quicken)'],
+    ['extend', 'Duration ×2 (Extend)'], ['persistent', 'Duration → 24 Hours (Persistent)'], ['enlarge', 'Range ×2 (Enlarge)'], ['widen', 'Area ×2 (Widen)'],
+    ['twin', 'Cast Spell Twice (Twin)'], ['splitRay', '+1 Extra Ray (Split Ray)'], ['chain', 'Arc Secondary Targets (Chain)'],
+    ['heighten', '+Save DC / Effective Level'], ['energySub', 'Substitute Energy Type'], ['pierceRes', 'Ignore Energy Resist / ½ Immunity'],
+    ['silent', 'Remove Verbal (V) Component'], ['still', 'Remove Somatic (S) Component'], ['rider', 'Add Rider / Custom Transform']
+  ];
+  const META_TX_LABEL = {}; META_TRANSFORMS.forEach((x) => { META_TX_LABEL[x[0]] = x[1]; });
   const BLOCK_TYPES = {
     bonus: { icon: '📊', label: 'Bonus', color: 'b-blue' }, damage: { icon: '💥', label: 'Damage / Heal / Temp HP', color: 'b-red' }, defense: { icon: '🛡️', label: 'Immunity / DR / Resist / Sense', color: 'b-green' },
-    size: { icon: '📏', label: 'Size Change', color: 'b-purple' }, rule: { icon: '📜', label: 'Rule Effect', color: 'b-slate' },
+    size: { icon: '📏', label: 'Size Change', color: 'b-purple' }, metamagic: { icon: '✨', label: 'Metamagic', color: 'b-purple', metaOnly: true }, rule: { icon: '📜', label: 'Rule Effect', color: 'b-slate' },
     tier: { icon: '🔶', label: 'CL Tier C-Block', color: 'c-teal', container: 'branches' }, synergy: { icon: '🔶', label: 'Synergy C-Block', color: 'c-teal', container: 'kids' }, table: { icon: '🎯', label: 'Roll Table C-Block', color: 'c-amber', container: 'rows' }
   };
   function BLK(type, o) {
@@ -449,13 +458,28 @@
       bonus: { targets: ['atk.all'], value: 1, btype: 'Morale', scaling: 'flat', per: 3, min: 1, max: 3, condition: '' },
       damage: { kind: 'Damage', dice: '1d6', dmgType: 'Fire', perOn: false, amount: 1, per: 1, max: 10, save: '' },
       defense: { mode: 'Immunity', what: 'Fear', value: 0 },
-      size: { steps: 1 }, rule: { text: '' },
+      size: { steps: 1 },
+      metamagic: { costMode: 'slot', slotAdj: 1, uses: 3, maxSpellLvl: 3, pool: 'Turn Undead', poolCost: 2, transform: 'empower', dcBonus: 1, energy: 'Fire', rider: '', appliesTo: '' },
+      rule: { text: '' },
       tier: { branches: [{ id: uid('br'), cond: 'CL ≤ 11', kids: [] }] }, synergy: { cond: 'If 2+ active #Primal effects', kids: [] },
       table: { die: '1d8', rows: [{ id: uid('r'), roll: '1', kids: [] }] }
     }[type] || {};
     return Object.assign(base, clone(d), o || {});
   }
   const SIZE_STEPS = { '-2': 'Shrink 2 categories', '-1': 'Shrink 1 category', '1': '+1 Size Category (e.g. Medium → Large)', '2': '+2 Size Categories' };
+  function metamagicCostText(b) {
+    if (b.costMode === 'rod') return num(b.uses, 3) + '/day Rod (max Lvl ' + num(b.maxSpellLvl, 3) + ', +0 Slot)';
+    if (b.costMode === 'sudden') return num(b.uses, 1) + '/day Sudden (+0 Slot)';
+    if (b.costMode === 'pool') return num(b.poolCost, 1) + ' ' + (b.pool || 'Turn Undead') + ' (+0 Slot)';
+    return '+' + num(b.slotAdj) + ' Spell Slot';
+  }
+  function metamagicTxText(b) {
+    if (b.transform === 'heighten') return '+' + num(b.dcBonus, 1) + ' Save DC / Effective Level';
+    if (b.transform === 'energySub') return 'Substitute Energy → ' + b.energy;
+    if (b.transform === 'pierceRes') return 'Ignore ' + b.energy + ' Resistance (½ vs Immunity)';
+    if (b.transform === 'rider') return b.rider || 'Custom spell rider';
+    return META_TX_LABEL[b.transform] || b.transform;
+  }
   function blockText(b) {
     switch (b.type) {
       case 'bonus': {
@@ -470,6 +494,7 @@
       }
       case 'defense': return b.mode + ': ' + (['DR', 'Energy Resistance', 'Spell Resistance'].indexOf(b.mode) >= 0 ? num(b.value) + (b.mode === 'DR' ? '/' : ' ') : '') + (b.mode === 'Spell Resistance' ? '' : b.what);
       case 'size': return 'Size: ' + (SIZE_STEPS[String(b.steps)] || (sgn(num(b.steps)) + ' categories'));
+      case 'metamagic': return 'Metamagic (' + metamagicCostText(b) + ') → ' + metamagicTxText(b) + (b.appliesTo ? ' [' + b.appliesTo + ']' : '');
       case 'rule': return b.text || 'Rule effect (empty)';
       case 'tier': return 'CL Tier: ' + b.branches.map((br) => br.cond + ' → ' + (br.kids.map(blockText).join(' + ') || '—')).join(' | ');
       case 'synergy': return b.cond + ' → ' + (b.kids.map(blockText).join(' + ') || '—');
@@ -519,6 +544,17 @@
       e.tags = ['#Primal'];
       e.effects = [BLK('bonus', { targets: ['skill.listen', 'skill.spot'], value: 5, btype: 'Competence' }), BLK('defense', { mode: 'Sense', what: 'Low-Light Vision' }),
         BLK('synergy', { cond: 'If 2+ active #Primal effects', kids: [BLK('bonus', { targets: ['initiative'], value: 5, btype: 'Competence' }), BLK('defense', { mode: 'Sense', what: 'Uncanny Dodge' })] })];
+      return e; } },
+    { id: 'searing', icon: '✨', label: 'Searing Spell (Metamagic Feat: +1 Slot, Pierce Fire Resist/Immunity)', build() {
+      const e = blankEntry('feat');
+      Object.assign(e, { name: 'Searing Spell', source: 'Sandstorm p.53', tags: ['#Metamagic'], facets: ['identity', 'prereqs', 'modifiers', 'effects'], text: 'A searing spell is so hot that it ignores fire resistance and deals half damage even to creatures immune to fire.' });
+      e.effects = [BLK('metamagic', { costMode: 'slot', slotAdj: 1, transform: 'pierceRes', energy: 'Fire', appliesTo: '[Fire] spells' })];
+      return e; } },
+    { id: 'rod_quicken', icon: '⚡', label: 'Metamagic Rod of Quicken, Lesser (3/day Swift Cast up to 3rd Lvl)', build() {
+      const e = blankEntry('wondrous');
+      Object.assign(e, { name: 'Metamagic Rod of Quicken, Lesser', source: 'DMG p.236', tags: ['#Metamagic', '#Arcane'], facets: ['identity', 'modifiers', 'powers', 'effects'], text: 'The wielder can cast up to three spells per day of up to 3rd level that are quickened as though using the Quicken Spell feat.' });
+      Object.assign(e.item, { subtype: 'Rod', slot: 'Held', consumable: false, price: 35000, cl: 17 });
+      e.effects = [BLK('metamagic', { costMode: 'rod', uses: 3, maxSpellLvl: 3, transform: 'quicken', appliesTo: 'Spells up to 3rd level' })];
       return e; } }
   );
 
@@ -854,7 +890,7 @@
     }
     if (has('chassis')) { const v = chassisView(en.chassis); v.dr.forEach((x) => pills.push(['amber', '🛡️ DR ' + x.value + '/' + x.bypass])); v.energy.forEach((x) => pills.push(['amber', '🛡️ Resist ' + x.type + ' ' + x.value])); if (v.sr) pills.push(['purple', '🛡️ SR ' + v.sr]); }
     if (has('prereqs') && en.prereqs.length) pills.push(['indigo', '🏛️ Prerequisites: ' + prereqText(en.prereqs)]);
-    if (has('effects')) en.effects.forEach((b) => pills.push([{ bonus: 'indigo', damage: 'rose', defense: 'emerald', size: 'purple', rule: 'dim', tier: 'sky', synergy: 'sky', table: 'amber' }[b.type] || 'dim', BLOCK_TYPES[b.type].icon + ' ' + blockText(b)]));
+    if (has('effects')) en.effects.forEach((b) => pills.push([{ bonus: 'indigo', damage: 'rose', defense: 'emerald', size: 'purple', metamagic: 'purple', rule: 'dim', tier: 'sky', synergy: 'sky', table: 'amber' }[b.type] || 'dim', BLOCK_TYPES[b.type].icon + ' ' + blockText(b)]));
     if (has('powers')) en.powers.forEach((pw) => pills.push([pw.kind === 'attached' ? 'purple' : 'amber', powerSummary(pw)]));
     if (has('grants')) {
       const g = en.grants;
@@ -946,7 +982,22 @@
       const flags = Object.keys(en.locks).filter((k) => en.locks[k]); if (flags.length) out.ruleFlags = flags;
     }
     if (has('powers')) out.powers = en.powers.map(exportPower);
-    if (has('effects')) out.effects = en.effects.map(exportBlock);
+    if (has('effects')) {
+      out.effects = en.effects.map(exportBlock);
+      const mms = en.effects.filter((b) => b.type === 'metamagic');
+      if (mms.length) out.metamagic = mms.map((b) => ({
+        costMode: b.costMode,
+        slotAdjustment: b.costMode === 'slot' ? num(b.slotAdj) : 0,
+        usesPerDay: b.costMode === 'rod' || b.costMode === 'sudden' ? num(b.uses, 1) : null,
+        maxSpellLevel: b.costMode === 'rod' ? num(b.maxSpellLvl, 3) : null,
+        pool: b.costMode === 'pool' ? { name: b.pool, cost: num(b.poolCost, 1) } : null,
+        transform: b.transform,
+        dcBonus: b.transform === 'heighten' ? num(b.dcBonus, 1) : 0,
+        energyType: b.transform === 'energySub' || b.transform === 'pierceRes' ? b.energy : null,
+        rider: b.transform === 'rider' ? b.rider : null,
+        appliesTo: b.appliesTo || null
+      }));
+    }
     if (en.blueprint === 'buff') out.buffKind = en.buffKind;
     if (has('delivery')) {
       const d = en.delivery;
@@ -1796,14 +1847,25 @@
       case 'defense': return sel(p + '.mode', b.mode, DEF_MODES, { narrow: true }) + (['DR', 'Energy Resistance', 'Spell Resistance'].indexOf(b.mode) >= 0 ? inp(p + '.value', b.value, { num: true, style: 'width:56px' }) : '') +
         (b.mode === 'Spell Resistance' ? '' : inp(p + '.what', b.what, { list: 'fs-defense-list', style: 'width:150px', ph: 'Fear / evil or good / Low-Light Vision' }));
       case 'size': return sel(p + '.steps', b.steps, [[-2, SIZE_STEPS['-2']], [-1, SIZE_STEPS['-1']], [1, SIZE_STEPS['1']], [2, SIZE_STEPS['2']]], { narrow: true, num: true });
+      case 'metamagic': return sel(p + '.costMode', b.costMode, META_COST_MODES, { narrow: true }) +
+        (b.costMode === 'slot' ? sel(p + '.slotAdj', b.slotAdj, range(0, 6).map((n) => [n, '+' + n + ' Slot']), { narrow: true, num: true }) : '') +
+        (b.costMode === 'rod' ? inp(p + '.uses', b.uses, { num: true, style: 'width:48px' }) + '<span class="lego-lbl">/day • Max</span>' + sel(p + '.maxSpellLvl', b.maxSpellLvl, [[3, 'Lvl 3 (Lesser)'], [6, 'Lvl 6 (Normal)'], [9, 'Lvl 9 (Greater)']], { narrow: true, num: true }) : '') +
+        (b.costMode === 'sudden' ? inp(p + '.uses', b.uses, { num: true, style: 'width:48px' }) + '<span class="lego-lbl">/day</span>' : '') +
+        (b.costMode === 'pool' ? inp(p + '.poolCost', b.poolCost, { num: true, style: 'width:48px' }) + '<input class="fs-in" style="width:130px" data-bind="' + p + '.pool" list="fs-pool-list" value="' + esc(b.pool) + '"><datalist id="fs-pool-list">' + opts(['Turn Undead', 'Rebuke Undead', 'Ki', 'Bardic Music', 'Wild Shape', 'Psionic Power Points', 'Custom Pool'], '') + '</datalist>' : '') +
+        '<span class="lego-lbl">→</span>' + sel(p + '.transform', b.transform, META_TRANSFORMS, { narrow: true }) +
+        (b.transform === 'heighten' ? '<span class="lego-lbl">DC +</span>' + inp(p + '.dcBonus', b.dcBonus, { num: true, style: 'width:48px' }) : '') +
+        ((b.transform === 'energySub' || b.transform === 'pierceRes') ? sel(p + '.energy', b.energy, ['Fire', 'Cold', 'Acid', 'Electricity', 'Sonic', 'Any'], { narrow: true }) : '') +
+        (b.transform === 'rider' ? inp(p + '.rider', b.rider, { ph: '+1 Negative Level (Fell Drain)', style: 'width:185px' }) : '') +
+        inp(p + '.appliesTo', b.appliesTo, { ph: 'scope ([Fire] / ray / all)', style: 'width:145px' });
       case 'rule': return inp(p + '.text', b.text, { ph: 'Rule effect text…', style: 'flex:1;min-width:220px' });
       case 'synergy': return inp(p + '.cond', b.cond, { ph: 'If 2+ active #Primal effects', style: 'width:230px' });
       case 'table': return '<span class="lego-lbl">Roll</span>' + inp(p + '.die', b.die, { list: 'fs-dice-list', style: 'width:66px' });
       default: return '';
     }
   }
+  function canUseBlock(t) { return !BLOCK_TYPES[t].metaOnly || ['feat', 'wondrous', 'class'].indexOf(S.entry.blueprint) >= 0; }
   function blockPalette(listPath, containers, compact) {
-    const types = Object.keys(BLOCK_TYPES).filter((t) => containers || !BLOCK_TYPES[t].container);
+    const types = Object.keys(BLOCK_TYPES).filter((t) => (containers || !BLOCK_TYPES[t].container) && (!compact ? canUseBlock(t) : !BLOCK_TYPES[t].metaOnly));
     return '<div class="lego-palette' + (compact ? ' compact' : '') + '">' + (compact ? '' : '<span class="lego-lbl">+ Snap Block:</span>') + types.map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="' + listPath + '" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
   }
   const delBtn = (action, data) => '<button type="button" class="lego-del" data-action="' + action + '"' + Object.keys(data).map((k) => ' data-' + k + '="' + esc(data[k]) + '"').join('') + ' title="Remove">✕</button>';
@@ -1923,21 +1985,21 @@
     if (d.attackOn) h += stack('b-red', L('🎯 Attack Roll:') + sel('delivery.attack', d.attack, Object.keys(ATTACK_LABEL).map((k) => [k, ATTACK_LABEL[k]]), { narrow: true }) + delBtn('toggle-flag', { p: 'delivery.attackOn' }));
     h += scratchBlocks(en.effects, 'effects');
     h += '<div class="lego-palette"><span class="lego-lbl">+ Snap Effect Block:</span>' + (d.damage.on ? '' : '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="delivery.damage.on">+ 💥 Scaling Spell Damage</button>') + (d.attackOn ? '' : '<button type="button" class="lego-add b-red" data-action="toggle-flag" data-p="delivery.attackOn">+ 🎯 Attack Roll</button>') +
-      Object.keys(BLOCK_TYPES).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
+      Object.keys(BLOCK_TYPES).filter(canUseBlock).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
     return h;
   }
   function scratchFeat(en) {
     return hat('h-emerald', L('📜 Feat') + inp('name', en.name, { ph: 'Feat name', style: 'width:220px' }) + L('Repeatable') + sel('repeat.mode', en.repeat.mode, [['once', '1x Only'], ['upto', 'Up to N times'], ['per', 'Per Weapon / School']], { narrow: true }) + (en.repeat.mode === 'upto' ? sel('repeat.n', en.repeat.n, range(2, 20), { narrow: true, num: true }) : '') + '<div class="lego-row">' + tagSockets(en) + '</div>') +
       prereqCBlock(en, 'Prerequisites') + modStacks(en) + scratchBlocks(en.effects, 'effects') + en.powers.map(powerCBlock).join('') +
       '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Benefit Bonus</button><button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Granted Power (C-Block)</button>' +
-      Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus').map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '<div style="width:260px">' + spotHtml('power', 'powers', { ph: '🔍 + Granted Spell' }) + '</div></div>';
+      Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus' && canUseBlock(t)).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '<div style="width:260px">' + spotHtml('power', 'powers', { ph: '🔍 + Granted Spell' }) + '</div></div>';
   }
   function scratchBuff(en) {
     const l = en.lifecycle;
     return hat('h-rose', L('✨') + sel('buffKind', en.buffKind, ['Buff', 'Condition', 'Curse'], { narrow: true }) + inp('name', en.name, { ph: 'Name', style: 'width:210px' }) + L('Duration') + sel('lifecycle.duration', l.duration, DURATIONS, { narrow: true }) +
       (['rounds', 'roundsPerLevel', 'minPerLevel', 'hourPerLevel'].indexOf(l.duration) >= 0 ? inp('lifecycle.durValue', l.durValue, { num: true, style: 'width:46px' }) : '') + chk('lifecycle.stackable', l.stackable, 'Stackable ×N') + (l.stackable ? sel('lifecycle.maxStacks', l.maxStacks, range(1, 20), { narrow: true, num: true }) : '') + '<div class="lego-row">' + tagSockets(en) + '</div>') +
       modStacks(en) + stack('b-slate', L('🩸 State Locks:') + Object.keys(LOCK_LABEL).map((k) => chk('locks.' + k, en.locks[k], esc(LOCK_LABEL[k].split(' (')[0]))).join('')) + scratchBlocks(en.effects, 'effects') +
-      '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Bonus / Penalty</button>' + Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus').map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
+      '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Bonus / Penalty</button>' + Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus' && canUseBlock(t)).map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '</div>';
   }
   const SKILL_PACKAGES = { Martial: ['Climb', 'Intimidate', 'Jump', 'Ride', 'Swim'], Arcane: ['Concentration', 'Craft', 'Decipher Script', 'Knowledge', 'Spellcraft'], Divine: ['Concentration', 'Diplomacy', 'Heal', 'Knowledge', 'Spellcraft'], Skirmisher: ['Balance', 'Hide', 'Listen', 'Move Silently', 'Spot', 'Tumble'] };
   function scratchClass(en) {
@@ -2101,7 +2163,7 @@
     'new-entry': () => { loadEntry(scaffold(blankEntry(S.entry.blueprint))); renderAll(); },
     'toggle-live': () => { S.ui.liveOpenMobile = !S.ui.liveOpenMobile; renderLiveHeader(); },
     'set-view': (el) => { S.ui.viewMode = el.dataset.v; S.ui.cardOpen = {}; renderAll(); toast(el.dataset.v === 'scratch' ? '🧩 Scratch Lego view — same live entry' : '📋 Classic Facets view — same live entry'); },
-    'add-block': (el) => { const list = getPath(S.entry, el.dataset.p); const b = BLK(el.dataset.t); list.push(b); if (el.dataset.p === 'effects' && S.entry.facets.indexOf('effects') < 0) S.entry.facets.push('effects'); S.ui.cardOpen['blk:' + b.id] = true; renderAll(); },
+    'add-block': (el) => { const list = getPath(S.entry, el.dataset.p); const b = BLK(el.dataset.t, el.dataset.t === 'metamagic' && S.entry.blueprint === 'wondrous' ? { costMode: 'rod', transform: 'quicken' } : null); list.push(b); if (el.dataset.p === 'effects' && S.entry.facets.indexOf('effects') < 0) S.entry.facets.push('effects'); if (el.dataset.t === 'metamagic' && S.entry.blueprint === 'feat' && S.entry.tags.indexOf('#Metamagic') < 0) S.entry.tags.push('#Metamagic'); S.ui.cardOpen['blk:' + b.id] = true; renderAll(); },
     'remove-block': (el) => { getPath(S.entry, el.dataset.p).splice(num(el.dataset.i), 1); renderAll(); },
     'add-branch': (el) => { getPath(S.entry, el.dataset.p).push({ id: uid('br'), cond: 'CL ≥ 15', kids: [] }); renderAll(); },
     'remove-branch': (el) => { getPath(S.entry, el.dataset.p).splice(num(el.dataset.i), 1); renderAll(); },
