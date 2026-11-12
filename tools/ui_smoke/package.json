@@ -1,0 +1,8 @@
+{
+  "name": "ui-smoke",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Playwright UI smoke checks for the character sheet and Hub (run in Docker via run.ps1)",
+  "scripts": { "smoke": "node run_smoke.js" },
+  "devDependencies": { "playwright": "1.49.1" }
+}
