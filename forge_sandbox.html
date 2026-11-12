@@ -2,14 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Living Facet Studio — Rule Forge 3.0 Sandbox (D&amp;D 3.5e)</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="./tailwind_compiled.css">
 <link rel="stylesheet" href="./design_tokens.css">
 <style>
   /* ===== Living Facet Studio — sandbox-scoped custom CSS (no arbitrary Tailwind) ===== */
-  html, body { background: var(--bg-page-wallpaper, #050811); color: var(--text-secondary, #cbd5e1); }
+  html, body { background: var(--bg-page-wallpaper, #050811); color: var(--text-secondary, #cbd5e1); touch-action: manipulation; -webkit-text-size-adjust: 100%; }
+  button, input, select, textarea, label { touch-action: manipulation; }
   body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; }
   .z-30 { z-index: 30; }
 
