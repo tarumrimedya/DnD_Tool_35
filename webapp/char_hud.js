@@ -318,6 +318,7 @@
         if (!authUser) return;
       }
       try { initCharacterRealtimeSync(); } catch (e) { reportError('char_hud:liveBc.onmessage', e); }
+      initHpLiveSync().catch(e => console.warn('Live Hit Points join notice:', e));
       try { initTabVisibilitySync(); } catch (e) { reportError('char_hud:liveBc.onmessage', e); }
     });
 
@@ -1143,11 +1144,14 @@
               const hubChar = hubDb.characters[idx];
               const hubHpTs = Number(hubChar.lastHpUpdateTs) || 0;
               const playerHpTs = Number(character.hp?._lastPlayerChangeTs) || 0;
+              // A DM HP change received from another device (live broadcast / realtime) is newer than this
+              // device's Hub copy: write it through instead of reverting to the stale Hub value.
+              const localHpTs = Math.max(playerHpTs, Number(character.hp?._lastDmUpdateTs) || 0);
 
-              if (playerHpTs > hubHpTs) {
+              if (localHpTs > hubHpTs) {
                 hubChar.currentHp = character.hp?.current ?? hubChar.currentHp;
                 hubChar.tempHp = character.hp?.temp ?? 0;
-                hubChar.lastHpUpdateTs = playerHpTs;
+                hubChar.lastHpUpdateTs = localHpTs;
               } else if (hubHpTs > 0 && hubChar.currentHp !== undefined) {
                 character.hp.current = hubChar.currentHp;
                 character.hp.temp = hubChar.tempHp || 0;
@@ -1198,6 +1202,14 @@
       }
     }
 
+    // Cloud rows (and live HP events) are keyed by character id: give an id-less character its cloud id.
+    function ensureCloudCharacterId() {
+      if (character && !character.id) {
+        character.id = character._hubId || 'char_active_player';
+        character._hubId = character.id;
+      }
+    }
+
     function _commitCloudSave() {
       if (_cloudSaveTimer) {
         clearTimeout(_cloudSaveTimer);
@@ -1207,10 +1219,7 @@
       _pendingCloudSync = false;
 
       if (window.SupabaseAuth && !window.SupabaseAuth.isLocalMode()) {
-        if (!character.id) {
-          character.id = character._hubId || 'char_active_player';
-          character._hubId = character.id;
-        }
+        ensureCloudCharacterId();
         const curLvl = Number(character.level) || (Array.isArray(character.progression) ? character.progression.length : 0);
         const hasNotes = Array.isArray(character.smartNotes) && character.smartNotes.length > 0;
         if (curLvl === 0 && !character.classes && !character.race && !character.name && !hasNotes && (!character.feats || character.feats.length === 0)) {
@@ -1268,6 +1277,7 @@
       if (triggerCloudSync || !character.lastModified) {
         character.lastModified = new Date().toISOString();
       }
+      try { hpLiveAfterSave(triggerCloudSync); } catch (e) { console.warn('Live Hit Points send notice:', e); }
 
       if (immediate) {
         _commitLocalStorageSave();
@@ -1288,6 +1298,170 @@
     }
 
     // =========================================================================
+    // ⚡ LIVE HIT POINTS FAST LANE (Realtime Broadcast, see SupabaseAuth.joinHpLive)
+    // Sends the player's HP the moment it changes; the debounced cloud save still persists it.
+    // =========================================================================
+    const _hpLive = { userTopic: null, campaignTopic: null, base: null, lastTs: 0 };
+
+    function _hpLiveCharId() {
+      return character ? (character._hubId || character.id || null) : null;
+    }
+
+    // Remembers the HP last seen by a save, so a player save can tell whether HP changed.
+    function _hpLiveRebase() {
+      if (!character || !character.hp) { _hpLive.base = null; return; }
+      const hp = character.hp;
+      _hpLive.base = { ref: character, charId: _hpLiveCharId(), cur: Number(hp.current), tmp: Math.max(0, Number(hp.temp) || 0) };
+      _hpLive.lastTs = Math.max(_hpLive.lastTs, Number(hp._lastPlayerChangeTs) || 0, Number(hp._lastDmUpdateTs) || 0);
+    }
+
+    function _hpLiveSyncCampaignTopic() {
+      if (!_hpLive.userTopic || !window.SupabaseAuth || typeof window.SupabaseAuth.joinHpLive !== 'function') return;
+      const want = window.SupabaseAuth.getHpLiveCampaignTopic(character && character.cloudCampaignId) || null;
+      if (want === _hpLive.campaignTopic) return;
+      if (_hpLive.campaignTopic) window.SupabaseAuth.leaveHpLive(_hpLive.campaignTopic);
+      _hpLive.campaignTopic = want;
+      if (want) window.SupabaseAuth.joinHpLive(want, handleHpLiveEvent);
+    }
+
+    async function initHpLiveSync() {
+      if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode() || typeof window.SupabaseAuth.joinHpLive !== 'function') return;
+      if (!character) return;
+      if (!_hpLive.userTopic) {
+        const topic = await window.SupabaseAuth.getHpLiveUserTopic();
+        if (!topic || !character) return;
+        if (!_hpLive.userTopic) {
+          _hpLive.userTopic = topic;
+          window.SupabaseAuth.joinHpLive(topic, handleHpLiveEvent);
+        }
+      }
+      ensureCloudCharacterId();
+      if (!_hpLive.base || _hpLive.base.ref !== character || !_hpLive.base.charId) _hpLiveRebase();
+      _hpLiveSyncCampaignTopic();
+    }
+
+    // Called by every saveStateToStorage. Only a player save (cloud sync on) of the same character object
+    // broadcasts; saves after received events / cloud adoption pass false or a new object and only rebase.
+    function hpLiveAfterSave(isPlayerSave) {
+      const prev = _hpLive.base;
+      const prevTs = _hpLive.lastTs;
+      if (_hpLive.userTopic) ensureCloudCharacterId();
+      _hpLiveRebase();
+      const base = _hpLive.base;
+      if (!_hpLive.userTopic || !base) return;
+      _hpLiveSyncCampaignTopic();
+      // An id given to the same object since the last save (id-less character) is still the same character.
+      if (!isPlayerSave || !prev || prev.ref !== base.ref || !base.charId || (prev.charId && prev.charId !== base.charId)) return;
+      if (!Number.isFinite(base.cur) || (base.cur === prev.cur && base.tmp === prev.tmp)) return;
+      const hp = character.hp;
+      const dmTs = Number(hp._lastDmUpdateTs) || 0;
+      let ts = Number(hp._lastPlayerChangeTs) || 0;
+      if (ts <= prevTs || ts <= dmTs) {
+        // The change site did not stamp it: stamp now so the other devices see it as the newest HP.
+        ts = Math.max(Date.now(), dmTs + 100, prevTs + 1);
+        hp._lastPlayerChangeTs = ts;
+      }
+      _hpLive.lastTs = Math.max(_hpLive.lastTs, ts);
+      const payload = {
+        charId: base.charId,
+        charName: character.name || '',
+        currentHp: base.cur,
+        tempHp: base.tmp,
+        maxHp: Number(hp.max) || base.cur,
+        delta: Number.isFinite(prev.cur) ? base.cur - prev.cur : 0,
+        ts: ts,
+        source: 'sheet'
+      };
+      window.SupabaseAuth.sendHpLive(_hpLive.userTopic, payload);
+      if (_hpLive.campaignTopic) window.SupabaseAuth.sendHpLive(_hpLive.campaignTopic, payload);
+    }
+
+    function _hpLiveRenderHp() {
+      if (typeof renderCombatCockpit === 'function') {
+        try { renderCombatCockpit(); } catch (e) { reportError('char_hud:hpLiveRender', e); }
+      }
+      if (typeof renderAll === 'function') {
+        try { renderAll(); } catch (e) { reportError('char_hud:hpLiveRender', e); }
+      }
+    }
+
+    // Live HP event from another tab/device. Hub events reuse the DM HP flow (toast + vignette); sheet events
+    // from the same character on another device are applied quietly. Older events than the local HP are dropped.
+    function handleHpLiveEvent(evt) {
+      if (!evt || !character) return;
+      ensureCloudCharacterId();
+      const myId = _hpLiveCharId();
+      if (!myId || (evt.charId !== myId && evt.charId !== character.id)) return;
+      const ts = Number(evt.ts) || 0;
+      const newHp = Number(evt.currentHp);
+      if (!ts || !Number.isFinite(newHp)) return;
+      if (!character.hp) character.hp = {};
+      const hp = character.hp;
+      if (ts <= (Number(hp._lastPlayerChangeTs) || 0) || ts <= (Number(hp._lastDmUpdateTs) || 0)) return;
+      const newTemp = Math.max(0, Number(evt.tempHp) || 0);
+
+      if (evt.source === 'hub') {
+        if (typeof window.handleIncomingDmHpEvent === 'function') {
+          window.handleIncomingDmHpEvent({
+            type: 'DM_HP_UPDATE',
+            charId: evt.charId,
+            charName: evt.charName || character.name,
+            delta: Number(evt.delta) || 0,
+            currentHp: newHp,
+            maxHp: Number(evt.maxHp) || Number(hp.max) || newHp,
+            tempHp: newTemp,
+            timestamp: ts
+          });
+        }
+        return;
+      }
+      if (evt.source !== 'sheet') return;
+
+      const changed = newHp !== Number(hp.current) || newTemp !== (Number(hp.temp) || 0);
+      hp.current = newHp;
+      hp.temp = newTemp;
+      hp._lastPlayerChangeTs = ts;
+      saveStateToStorage(false);
+      if (changed) _hpLiveRenderHp();
+    }
+
+    // A Hub HP edit writes only current_hp / temp_hp / last_dm_hp_update_ts; the row's full_data keeps the old HP.
+    // Returns the row's DM HP when it is newer than the HP stamps in hpObj, else null.
+    function _rowDmHpNewerThan(row, hpObj) {
+      if (!row || row.current_hp === null || row.current_hp === undefined) return null;
+      const dmTs = Number(row.last_dm_hp_update_ts) || 0;
+      const cur = Number(row.current_hp);
+      if (!dmTs || !Number.isFinite(cur)) return null;
+      const h = hpObj || {};
+      if (dmTs <= (Number(h._lastDmUpdateTs) || 0) || dmTs <= (Number(h._lastPlayerChangeTs) || 0)) return null;
+      return { dmTs: dmTs, current: cur, temp: Math.max(0, Number(row.temp_hp) || 0) };
+    }
+
+    function _applyRowDmHp(row, dm) {
+      if (!dm || !character) return;
+      if (!character.hp) character.hp = {};
+      const hp = character.hp;
+      const curHp = Number(hp.current);
+      const delta = Number.isFinite(curHp) ? dm.current - curHp : 0;
+      if (delta === 0 && dm.temp === (Number(hp.temp) || 0)) {
+        hp._lastDmUpdateTs = dm.dmTs;
+        return;
+      }
+      if (typeof window.handleIncomingDmHpEvent === 'function') {
+        window.handleIncomingDmHpEvent({
+          type: 'DM_HP_UPDATE',
+          charId: row.id,
+          charName: character.name,
+          delta: delta,
+          currentHp: dm.current,
+          maxHp: Number(hp.max) || dm.current,
+          tempHp: dm.temp,
+          timestamp: dm.dmTs
+        });
+      }
+    }
+
+    // =========================================================================
     // ⚡ ÇOKLU CİHAZ CANLI SENKRONİZASYON VE SEKME ODAĞI MOTORU
     // =========================================================================
     function initCharacterRealtimeSync() {
@@ -1303,7 +1477,12 @@
         if (incoming.id !== myCharId && incoming.id !== character.id && incoming.id !== character._hubId) {
           return;
         }
-        if (_pendingCloudSync || _cloudSaveTimer) return;
+        // DM HP written to the row columns only (Hub), newer than this sheet's HP.
+        const rowDmHp = _rowDmHpNewerThan(incoming, character.hp);
+        if (_pendingCloudSync || _cloudSaveTimer) {
+          if (rowDmHp) _applyRowDmHp(incoming, rowDmHp);
+          return;
+        }
 
         if (incoming.full_data) {
           const remoteFd = incoming.full_data;
@@ -1322,6 +1501,7 @@
               character._cloudUpdatedAt = remoteUpdatedAt;
               _commitLocalStorageSave();
             }
+            if (rowDmHp) _applyRowDmHp(incoming, rowDmHp);
             return;
           }
 
@@ -1333,6 +1513,27 @@
           // Yalnızca uzaktaki kopya zaman damgası olarak kesin daha güncelse uygula:
           if (remoteTs > localTs + 500) {
             console.log(`[Realtime Sync] Updated character received from another device: Lvl ${remoteLvl}`);
+            // full_data may carry HP older than a later DM HP write to the row columns: take the columns then.
+            const fdDmHp = _rowDmHpNewerThan(incoming, remoteFd.hp);
+            if (fdDmHp) {
+              if (!remoteFd.hp || typeof remoteFd.hp !== 'object') remoteFd.hp = {};
+              remoteFd.hp.current = fdDmHp.current;
+              remoteFd.hp.temp = fdDmHp.temp;
+              remoteFd.hp._lastDmUpdateTs = fdDmHp.dmTs;
+              remoteFd.hp._lastPlayerChangeTs = 0;
+            }
+            // HP that already arrived over the live lane can be newer than this (slower) full save: keep it.
+            const locHp = character.hp || {};
+            const remHp = remoteFd.hp || {};
+            const locHpTs = Math.max(Number(locHp._lastPlayerChangeTs) || 0, Number(locHp._lastDmUpdateTs) || 0);
+            const remHpTs = Math.max(Number(remHp._lastPlayerChangeTs) || 0, Number(remHp._lastDmUpdateTs) || 0);
+            if (character.hp && locHpTs > remHpTs) {
+              if (!remoteFd.hp || typeof remoteFd.hp !== 'object') remoteFd.hp = {};
+              remoteFd.hp.current = locHp.current;
+              remoteFd.hp.temp = locHp.temp;
+              remoteFd.hp._lastPlayerChangeTs = locHp._lastPlayerChangeTs;
+              remoteFd.hp._lastDmUpdateTs = locHp._lastDmUpdateTs;
+            }
             remoteFd.id = myCharId;
             remoteFd._hubId = myCharId;
             if (remoteUpdatedAt) {
@@ -1358,7 +1559,11 @@
                 color: 'emerald'
               });
             }
+          } else if (rowDmHp) {
+            _applyRowDmHp(incoming, rowDmHp);
           }
+        } else if (rowDmHp) {
+          _applyRowDmHp(incoming, rowDmHp);
         }
       });
     }
