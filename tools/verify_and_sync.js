@@ -483,6 +483,24 @@ function main() {
     errors++;
   }
 
+  // 6e. Unescaped HTML Interpolation Ratchet (names/labels/descriptions written into markup unescaped)
+  try {
+    const { scan: scanUnescapedInterp } = require('./unescaped_interp_gate.js');
+    for (const r of scanUnescapedInterp(ROOT)) {
+      const cap = r.cap === undefined ? 0 : r.cap;
+      if (r.count > cap) {
+        const sample = r.hits.slice(0, 5).map(h => `${r.file}:${h.line} ${h.expr}`).join(', ');
+        console.error(`[FAIL] Unescaped HTML interpolation ratchet exceeded in ${r.file}: ${r.count} > cap=${cap}. Wrap the value in UI.escapeHtml()/UI.escapeAttr(). e.g. ${sample}`);
+        errors++;
+      } else if (r.count < cap) {
+        console.log(`📉 Ratchet can be tightened in ${r.file}: unescapedInterp=${r.count} < cap=${cap} (tools/unescaped_interp_caps.json)`);
+      }
+    }
+  } catch (uiErr) {
+    console.error(`[FAIL] Unescaped interpolation gate crashed: ${uiErr.message}`);
+    errors++;
+  }
+
   // 7. Execute D&D 3.5e RAW RuleEngine & Golden DeriveSheet Automated Regression Suites
   let ruleTestRes = { passed: 0, elapsedMs: 0 };
   let deriveTestRes = { passed: 0, elapsedMs: 0 };

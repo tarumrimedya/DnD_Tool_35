@@ -1368,7 +1368,7 @@
     _activeCandidates.forEach((item, idx) => {
       const isSelected = idx === _selectedIndex;
       const countBadge = item.count > 0 ? `<span class="text-[10px] text-slate-400 font-mono">(${item.count})</span>` : '';
-      const labelBadge = item.label ? `<span class="text-[10px] text-slate-400 truncate max-w-[90px]">${item.label}</span>` : '';
+      const labelBadge = item.label ? `<span class="text-[10px] text-slate-400 truncate max-w-[90px]">${escapeHtml(String(item.label))}</span>` : '';
 
       html += `
         <div onmousedown="HubNotes.selectAutocompleteTag(${idx}); event.preventDefault();" class="px-2 py-1.5 rounded-lg flex items-center justify-between gap-1.5 cursor-pointer transition ${isSelected ? 'bg-indigo-600 text-white font-bold shadow' : 'hover:bg-slate-800/80 text-slate-200'}">

@@ -968,19 +968,19 @@
               <div class="flex items-center gap-2 whitespace-nowrap">
                 ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>📖</span>
-                <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
+                <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${UI.escapeHtml(s.name)}</span>
                 ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
               </div>
             </td>
             <td class="py-2.5 px-3 text-slate-300">
-              <span class="badge bg-sky-950/60 text-sky-300 border border-sky-800/80 text-[10px] font-semibold">${s.school || 'Universal'}</span>
+              <span class="badge bg-sky-950/60 text-sky-300 border border-sky-800/80 text-[10px] font-semibold">${UI.escapeHtml(s.school || 'Universal')}</span>
             </td>
             <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${s.action || 'Standard Action'}">${formatActionShort(s.action)}</td>
-            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.range || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.range || '-')}</td>
             <td class="py-2.5 px-3 text-center">
               <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
             </td>
-            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.benefit || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.benefit || '-')}</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
                 ${dmgExpr ? `
@@ -2050,21 +2050,21 @@
               <div class="flex items-center gap-2 whitespace-nowrap flex-wrap">
                 ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard Action', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
                 <span>${isDom ? '⚜️' : '✨'}</span>
-                <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
+                <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${UI.escapeHtml(s.name)}</span>
                 ${domainBadgeHtml}
                 ${clBoostBadgeHtml}
                 ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
               </div>
             </td>
             <td class="py-2.5 px-3 text-slate-300">
-              <span class="badge bg-amber-950/60 text-amber-300 border border-amber-800/80 text-[10px] font-semibold">${s.school || 'Conjuration'}</span>
+              <span class="badge bg-amber-950/60 text-amber-300 border border-amber-800/80 text-[10px] font-semibold">${UI.escapeHtml(s.school || 'Conjuration')}</span>
             </td>
             <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${s.action || 'Standard Action'}">${formatActionShort(s.action)}</td>
-            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.range || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.range || '-')}</td>
             <td class="py-2.5 px-3 text-center">
               <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
             </td>
-            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.benefit || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.benefit || '-')}</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-1.5 w-full">
                 ${spontBtnHtml}
@@ -2149,7 +2149,9 @@
         const domUsed = slotObj ? (Number(slotObj.domainUsed) || 0) : 0;
         const hasActiveSlot = Math.max(0, domDaily - domUsed) > 0;
         const hasChosenDomains = chosenDomains.length > 0;
-        const domLabel = hasChosenDomains ? chosenDomains.join(' / ') : 'Select Domains in Progression';
+        // Domain names can come from custom entries: escape them once for the markup below.
+        const safeDomains = chosenDomains.map(d => UI.escapeHtml(d));
+        const domLabel = hasChosenDomains ? safeDomains.join(' / ') : 'Select Domains in Progression';
 
         return `
           <tr class="transition cursor-pointer group border-l-4 border-l-yellow-400 ${
@@ -2174,7 +2176,7 @@
             </td>
             <td class="py-2.5 px-3 text-yellow-200/80 text-[11px] italic">
               ${hasChosenDomains
-                ? `Dedicated Level ${lvl} Domain Slot. Choose from your <strong>${chosenDomains.join('</strong> or <strong>')}</strong> domain spells.`
+                ? `Dedicated Level ${lvl} Domain Slot. Choose from your <strong>${safeDomains.join('</strong> or <strong>')}</strong> domain spells.`
                 : `Dedicated Level ${lvl} Domain Slot. Click to select your <strong>2 Cleric Domains</strong> first (Level 1 Class Feature).`}
             </td>
             <td class="py-2.5 px-3 text-right align-middle">
@@ -2228,7 +2230,7 @@
                 : 'bg-slate-900 text-slate-500 border-slate-800 opacity-50 cursor-not-allowed'
             } h-8 px-2.5 rounded-lg border text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer" title="${ep.domain} Domain Elemental Turning: Check ${turnDomainInfo.turningCheckFormula}, Damage ${turnDomainInfo.turningDamageFormula} HD">
               <span>${ep.icon}</span>
-              <span>${ep.label}</span>
+              <span>${UI.escapeHtml(ep.label)}</span>
               <span class="font-mono text-[10px] px-1.5 rounded bg-slate-950/80 border border-slate-700">${rem}/${ep.maxUses}</span>
             </button>
           `;
@@ -2243,9 +2245,9 @@
               rem > 0
                 ? 'bg-amber-950/90 hover:bg-amber-800 text-amber-200 border-amber-500/80 shadow'
                 : 'bg-slate-900 text-slate-500 border-slate-800 opacity-50 cursor-not-allowed'
-            } h-8 px-2.5 rounded-lg border text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer" title="${pw.domain} Domain Granted Power (${pw.actionType}): ${pw.summary}">
+            } h-8 px-2.5 rounded-lg border text-xs font-bold transition inline-flex items-center gap-1.5 cursor-pointer" title="${pw.domain} Domain Granted Power (${pw.actionType}): ${UI.escapeAttr(pw.summary)}">
               <span>${pw.icon}</span>
-              <span>${pw.name}</span>
+              <span>${UI.escapeHtml(pw.name)}</span>
               <span class="font-mono text-[10px] px-1.5 rounded bg-slate-950/80 border border-slate-700">${rem}/${pw.maxUses}${unit === 'rds/day' ? ' rds' : ''}</span>
             </button>
           `;
@@ -2285,7 +2287,7 @@
                   ${hasDomainCap ? `
                     <button type="button" data-action="spells:open-domain-picker-modal" class="badge ${chosenDomains.length === 2 ? 'bg-yellow-950/90 text-yellow-200 border-yellow-500/80 hover:bg-yellow-900' : 'bg-yellow-950/90 text-yellow-300 border-dashed border-yellow-400 animate-pulse hover:bg-yellow-900'} text-[10px] font-bold px-2 py-0.5 cursor-pointer transition inline-flex items-center gap-1" title="Click to view or change your Cleric Domains (1st-Level Class Feature)">
                       <span>⚜️</span>
-                      <span>${chosenDomains.length > 0 ? `Domains: ${chosenDomains.join(' & ')} (${chosenDomains.length}/2)` : '+ Select Cleric Domains (0/2)'}</span>
+                      <span>${UI.escapeHtml(chosenDomains.length > 0 ? `Domains: ${chosenDomains.join(' & ')} (${chosenDomains.length}/2)` : '+ Select Cleric Domains (0/2)')}</span>
                     </button>
                   ` : ''}
                   ${!hasDivine ? `<span class="badge bg-slate-800 text-slate-300 border border-slate-700 text-[10px]">Preview / Inactive Class</span>` : ''}
@@ -2298,7 +2300,7 @@
                 spontMode === 'cure'
                   ? 'bg-emerald-950 hover:bg-emerald-900 text-emerald-300 border-emerald-500/80'
                   : 'bg-rose-950 hover:bg-rose-900 text-rose-300 border-rose-500/80'
-              } h-8 px-3 border text-xs font-bold rounded-lg shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer" title="${energyPolicy.reason}">
+              } h-8 px-3 border text-xs font-bold rounded-lg shadow transition inline-flex items-center justify-center gap-1.5 cursor-pointer" title="${UI.escapeAttr(energyPolicy.reason)}">
                 <span>${spontMode === 'cure' ? '💚' : '💀'}</span>
                 <span>Spontaneous: ${spontMode === 'cure' ? 'Cure Wounds' : 'Inflict Wounds'}${energyPolicy.locked ? ' 🔒' : ''}</span>
               </button>
@@ -3998,7 +4000,7 @@
       options.forEach((opt, idx) => {
         btnsHtml += `
           <button type="button" data-opt-idx="${idx}" class="${opt.className || 'px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-950 hover:bg-amber-800 text-amber-200 border border-amber-500/80 transition cursor-pointer shadow inline-flex items-center gap-1'}">
-            ${opt.label}
+            ${UI.escapeHtml(opt.label)}
           </button>
         `;
       });
@@ -4582,9 +4584,9 @@
                     ${m.expended ? '🔄 Expended' : '⚡ Ready'}
                   </span>
                 </div>
-                <h4 class="text-xs font-black ${m.expended ? 'line-through text-slate-400' : 'text-white'}">${m.name}</h4>
+                <h4 class="text-xs font-black ${m.expended ? 'line-through text-slate-400' : 'text-white'}">${UI.escapeHtml(m.name)}</h4>
                 <div class="text-[10px] text-amber-300 font-semibold">${m.action || 'Standard Action'}</div>
-                <p class="text-[11px] text-slate-300 line-clamp-2">${m.notes || m.benefit || '-'}</p>
+                <p class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(m.notes || m.benefit || '-')}</p>
               </div>
 
               <div class="pt-2 border-t border-slate-800/80 flex items-center justify-end gap-2">
@@ -4647,7 +4649,7 @@
         pillsEl.innerHTML = types.map(t => `
           <button type="button" data-action="spells:maneuver-type-filter" data-type-key="${t.key}" class="h-8 px-2.5 rounded-lg text-xs font-bold transition cursor-pointer border inline-flex items-center justify-center ${
             typeFilter === t.key ? 'bg-rose-800 text-white border-rose-500 shadow' : 'bg-slate-950 text-slate-400 hover:text-white border-slate-800'
-          }">${t.label}</button>
+          }">${UI.escapeHtml(t.label)}</button>
         `).join('');
       }
 
@@ -4682,7 +4684,7 @@
             <td class="py-2.5 px-3 font-bold text-white align-middle">
               <div class="flex items-center gap-2 whitespace-nowrap">
                 <span>⚔️</span>
-                <span class="${isOverLevel ? 'text-slate-400' : 'text-white'}">${m.name}</span>
+                <span class="${isOverLevel ? 'text-slate-400' : 'text-white'}">${UI.escapeHtml(m.name)}</span>
                 ${isOverLevel ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">IL Too Low (Max: ${initInfo.maxManeuverLvl})</span>` : ''}
               </div>
             </td>
@@ -4690,7 +4692,7 @@
               <span class="badge bg-rose-950/60 text-rose-300 border border-rose-800/80 text-[10px] font-semibold">${m.discipline || 'Iron Heart'}</span>
             </td>
             <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${m.action || 'Standard Action'}">${formatActionShort(m.action)}</td>
-            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${m.notes || m.benefit || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(m.notes || m.benefit || '-')}</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
                 ${dmgExpr ? `
@@ -4756,14 +4758,14 @@
             <td class="py-2.5 px-3 font-bold text-teal-300 align-middle">
               <div class="flex items-center gap-2 whitespace-nowrap">
                 <span>🥋</span>
-                <span>${st.name}</span>
+                <span>${UI.escapeHtml(st.name)}</span>
               </div>
             </td>
             <td class="py-2.5 px-3 text-slate-300">
               <span class="badge bg-teal-950/60 text-teal-300 border border-teal-800/80 text-[10px] font-semibold">${st.discipline || 'Iron Heart'}</span>
             </td>
             <td class="py-2.5 px-3 text-center text-teal-300 text-[11px] whitespace-nowrap font-medium" title="Stance • Swift Action">Stance • Swift</td>
-            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${st.benefit || '-'}</td>
+            <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(st.benefit || '-')}</td>
             <td class="py-2.5 px-3 text-right align-middle">
               <div class="flex items-center justify-end gap-2 w-full">
                 ${dmgExpr ? `
@@ -4943,12 +4945,12 @@
               <div class="min-w-0 flex-1 space-y-1">
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="badge bg-rose-950 text-rose-300 border border-rose-700 text-[10px] font-bold font-mono">Lvl ${mLvl}</span>
-                  <span class="text-xs font-extrabold text-white">${m.name}</span>
+                  <span class="text-xs font-extrabold text-white">${UI.escapeHtml(m.name)}</span>
                   <span class="badge bg-slate-950 text-rose-300 border text-[10px] font-semibold">${m.discipline || 'Iron Heart'}</span>
                   <span class="text-[10px] text-amber-300 font-semibold">${m.action || 'Standard Action'}</span>
                   ${dmgExpr ? `<span class="badge bg-amber-950/90 text-amber-300 border border-amber-700/70 text-[10px] font-mono font-bold">${dmgExpr}</span>` : ''}
                 </div>
-                <div class="text-[11px] text-slate-300 line-clamp-2">${m.notes || m.benefit || '-'}</div>
+                <div class="text-[11px] text-slate-300 line-clamp-2">${UI.escapeHtml(m.notes || m.benefit || '-')}</div>
               </div>
               <div class="shrink-0">
                 <button type="button" data-action="spells:ready-maneuver-from-modal" data-name="${escape(m.name)}" class="px-3 py-1.5 bg-rose-700 hover:bg-rose-600 text-white rounded-lg text-xs font-bold border border-rose-500 transition shadow flex items-center gap-1 cursor-pointer whitespace-nowrap">
@@ -5581,19 +5583,19 @@
             <div class="flex items-center gap-2 whitespace-nowrap">
               ${getUniversalPinButtonHtml({ name: s.name, type: 'Spell', action: s.action || 'Standard', desc: s.benefit || '', badge: dmgExpr || '', damageDice: dmgExpr || '' })}
               <span>🔮</span>
-              <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${s.name}</span>
+              <span class="${hasActiveSlot ? 'text-white' : 'text-slate-400'}">${UI.escapeHtml(s.name)}</span>
               ${!hasActiveSlot ? `<span class="text-[10px] font-mono px-1.5 rounded bg-rose-950/90 text-rose-300 border border-rose-800/80 font-bold shrink-0">0 Slot</span>` : ''}
             </div>
           </td>
           <td class="py-2.5 px-3 text-slate-300">
-            <span class="badge bg-purple-950/60 text-purple-300 border border-purple-800/80 text-[10px] font-semibold">${s.school || 'Universal'}</span>
+            <span class="badge bg-purple-950/60 text-purple-300 border border-purple-800/80 text-[10px] font-semibold">${UI.escapeHtml(s.school || 'Universal')}</span>
             </td>
           <td class="py-2.5 px-3 text-center text-amber-300 text-[11px] whitespace-nowrap font-medium" title="${s.action || 'Standard Action'}">${formatActionShort(s.action)}</td>
-          <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.range || '-'}</td>
+          <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.range || '-')}</td>
           <td class="py-2.5 px-3 text-center">
             <span class="badge bg-slate-900 text-emerald-300 border border-emerald-700/60 font-mono text-[11px] font-bold">DC ${dc}</span>
           </td>
-          <td class="py-2.5 px-3 text-slate-300 text-[11px]">${s.benefit || '-'}</td>
+          <td class="py-2.5 px-3 text-slate-300 text-[11px]">${UI.escapeHtml(s.benefit || '-')}</td>
           <td class="py-2.5 px-3 text-right align-middle">
             <div class="flex items-center justify-end gap-2 w-full">
               ${isTouchAttack ? `
@@ -6756,10 +6758,10 @@
           ? `<span class="badge bg-slate-800 text-cyan-300 border border-slate-700 text-[10px] font-bold">${item.subType}</span>`
           : '';
         const prereqBadge = (type !== 'Spell' && item.prereq && item.prereq !== 'None' && item.prereq !== '0')
-          ? `<span class="text-[10px] text-rose-300/90 font-semibold" title="Tome of Battle Prerequisite">Prereq: ${item.prereq}</span>`
+          ? `<span class="text-[10px] text-rose-300/90 font-semibold" title="Tome of Battle Prerequisite">Prereq: ${UI.escapeHtml(item.prereq)}</span>`
           : '';
         const sourceBadge = item.source
-          ? `<span class="text-[10px] text-slate-500 font-mono">${item.source}</span>`
+          ? `<span class="text-[10px] text-slate-500 font-mono">${UI.escapeHtml(item.source)}</span>`
           : '';
         const actionDisplay = type === 'Spell' ? formatSrdSpellAction(item) : (item.action || '');
         const summaryDisplay = item.benefit || item.shortDescription || stripSpellHtml(item.description || item.desc) || item.notes || '-';
@@ -6772,7 +6774,7 @@
               <span class="badge ${pickerPalette.lvlBadge} text-[10px] font-bold">
                 ${itemLvlDisplay !== null ? 'Level ' + itemLvlDisplay : 'Lvl ?'}
               </span>
-              <h4 class="font-extrabold text-white text-xs">${item.name}</h4>
+              <h4 class="font-extrabold text-white text-xs">${UI.escapeHtml(item.name)}</h4>
               <span class="text-[10px] text-slate-400">(${schoolDisplay})</span>
               ${classLvlBadge}
               ${subTypeBadge}
@@ -6782,7 +6784,7 @@
               ${(() => {
                 const ch = getSpellOrManeuverChildren(item);
                 return ch.length > 0
-                  ? `<span class="badge bg-amber-950/80 text-amber-300 border border-amber-700/70 text-[10px] font-bold" title="Sub-effects triggered on roll: ${ch.map(c => (c.name || '').replace(/^↳\s*/, '')).join(' &bull; ')}">&#x1F517; +${ch.length} Sub-Effects</span>`
+                  ? `<span class="badge bg-amber-950/80 text-amber-300 border border-amber-700/70 text-[10px] font-bold" title="Sub-effects triggered on roll: ${ch.map(c => UI.escapeAttr((c.name || '').replace(/^↳\s*/, ''))).join(' &bull; ')}">&#x1F517; +${ch.length} Sub-Effects</span>`
                   : '';
               })()}
             </div>
@@ -7563,7 +7565,7 @@
           if (sourceText) div.title = `Bonus Sources: ${sourceText}`;
           div.innerHTML = `
             <div class="flex items-center justify-between">
-              <span class="text-[10px] font-bold text-slate-400 uppercase">${s.label}</span>
+              <span class="text-[10px] font-bold text-slate-400 uppercase">${UI.escapeHtml(s.label)}</span>
               ${bonusDiff !== 0 ? `<span class="text-[10px] font-mono px-1 rounded ${bonusDiff > 0 ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-rose-950 text-rose-400 border border-rose-800'}">${bonusDiff > 0 ? '+' + bonusDiff : bonusDiff}</span>` : ''}
             </div>
             <div class="text-xl sm:text-2xl font-black text-amber-400 font-mono my-0.5">${score}</div>
@@ -7571,7 +7573,7 @@
               <span class="${mod >= 0 ? 'text-emerald-400' : 'text-rose-400'} font-bold">${mod >= 0 ? '+' : ''}${mod}</span>
               ${bonusDiff !== 0 ? `<span class="text-[10px] text-slate-500 font-sans">Taban: ${base}</span>` : ''}
             </div>
-            ${sourceText ? `<div class="text-[10px] text-emerald-400/90 truncate mt-1 pt-1 border-t border-slate-800" title="${sourceText}">✨ ${sourceText}</div>` : ''}
+            ${sourceText ? `<div class="text-[10px] text-emerald-400/90 truncate mt-1 pt-1 border-t border-slate-800" title="${UI.escapeAttr(sourceText)}">✨ ${UI.escapeHtml(sourceText)}</div>` : ''}
           `;
           container.appendChild(div);
         });
@@ -7879,10 +7881,10 @@
                 : `<span class="text-[10px] font-mono px-1.5 rounded bg-slate-900 text-slate-500 border border-slate-800">+ Add Boon</span>`));
 
           return `
-            <button type="button" data-action="spells:toggle-dm-boon" data-discipline="${d.key}" class="p-2 rounded-xl border text-left transition flex items-center justify-between gap-2 cursor-pointer active:scale-95 ${activeClass}" title="Click to toggle ${d.label} as a DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
+            <button type="button" data-action="spells:toggle-dm-boon" data-discipline="${d.key}" class="p-2 rounded-xl border text-left transition flex items-center justify-between gap-2 cursor-pointer active:scale-95 ${activeClass}" title="Click to toggle ${UI.escapeAttr(d.label)} as a DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
               <span class="flex items-center gap-1.5 text-[11px] font-bold truncate">
                 <span>${d.icon}</span>
-                <span class="truncate">${d.label}</span>
+                <span class="truncate">${UI.escapeHtml(d.label)}</span>
               </span>
               ${statusBadge}
             </button>
@@ -7906,7 +7908,7 @@
             ? `🌟 Boon (CL ${activeLevels})`
             : (hasClass ? `Class Lvl ${d.classLvl}` : `+ Boon`);
           return `
-            <button type="button" data-action="spells:toggle-dm-boon" data-discipline="${d.key}" class="px-2.5 py-1.5 rounded-lg border text-[10px] font-bold transition inline-flex items-center justify-between gap-1.5 cursor-pointer active:scale-95 ${chipCls}" title="Click to toggle ${d.label} DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
+            <button type="button" data-action="spells:toggle-dm-boon" data-discipline="${d.key}" class="px-2.5 py-1.5 rounded-lg border text-[10px] font-bold transition inline-flex items-center justify-between gap-1.5 cursor-pointer active:scale-95 ${chipCls}" title="Click to toggle ${UI.escapeAttr(d.label)} DM Boon (CL = Character Level ${activeLevels}) without overwriting your class disciplines">
               <span class="flex items-center gap-1 truncate">
                 <span>${d.icon}</span>
                 <span>${d.short}</span>
@@ -10230,7 +10232,7 @@
             mergedV2.action ||
             mergedV2.actionType ||
             'standard'
-          ).replace(/'/g, "\\'");
+          );
           if (hasDmg) {
             mergedV2.damageParts.forEach(dp => {
               if (!dp || !dp.dice) return;

@@ -1,0 +1,10 @@
+{
+  "char_hud.js": 0,
+  "char_combat.js": 2,
+  "char_spells.js": 6,
+  "char_progression.js": 0,
+  "char_inventory.js": 1,
+  "rule_master.js": 0,
+  "ui_shared.js": 0,
+  "hub_notes.js": 2
+}

@@ -257,7 +257,7 @@
         : '';
 
       const clickAttr = onSelectJsTemplate
-        ? `onclick="${onSelectJsTemplate.replace(/__MODE_ID__/g, String(mode.id).replace(/'/g, "\\'"))}"`
+        ? `onclick="${onSelectJsTemplate.replace(/__MODE_ID__/g, RuleMaster.escapeJsString(mode.id))}"`
         : '';
 
       const cls = isSelected
@@ -846,7 +846,7 @@
       return `
         <label class="${labelCls}" title="${escapeHtml(titleAttr)}">
           <input type="checkbox" value="${e.id}" ${isChecked ? 'checked' : ''} ${isLocked ? 'disabled' : ''} onchange="DnDUI.onForgeControlChange()" class="dnd-forge-enh-chk rounded text-amber-500 bg-slate-900 border-slate-700">
-          <span class="text-[11px] font-semibold ${isChecked ? 'text-amber-200' : 'text-slate-200'} truncate">${e.label || e.name}</span>
+          <span class="text-[11px] font-semibold ${isChecked ? 'text-amber-200' : 'text-slate-200'} truncate">${escapeHtml(e.label || e.name)}</span>
           <span class="text-[10px] font-mono ${isLocked ? 'text-slate-500' : 'text-amber-400'} ml-auto">${isLocked ? '🔒' + e.bonusEq : e.bonusEq}</span>
         </label>
       `;
@@ -1557,12 +1557,13 @@
 
     if (_drawerState.results.length === 0) {
       const safeQ = escapeHtml(query || '');
+      const safeQJs = RuleMaster.escapeJsString(query || '');
       const hasCustomTab = Boolean(document.getElementById('add-pool-custom-tab-content')) && _drawerState.activeTab !== 'Monster';
       listEl.innerHTML = `
         <div class="p-6 text-center space-y-3">
           <div class="text-slate-400 text-xs italic">No matching SRD V2 entries found${safeQ ? ` for "${safeQ}"` : ''}.</div>
           ${hasCustomTab ? `
-            <button type="button" onclick="DnDUI.jumpToCustomAiTabWithQuery('${safeQ.replace(/'/g, "\\'")}')" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5">
+            <button type="button" onclick="DnDUI.jumpToCustomAiTabWithQuery('${safeQJs}')" class="px-3 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs shadow transition cursor-pointer inline-flex items-center gap-1.5">
               <span>🔍</span>
               <span>Search in Spotlight / Rule Master AI ➔</span>
             </button>
