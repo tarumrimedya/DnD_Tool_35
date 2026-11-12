@@ -987,7 +987,7 @@
             resolvedEnhancements = parsed.enhancements.slice();
           }
         }
-      } catch (_) {}
+      } catch (e) { reportError('ui_shared:populateForgeFromItem', e); }
     }
 
     // Infer enhancement bonus from item.attBonus or modifiers if still missing
@@ -1055,7 +1055,7 @@
       try {
         const parsed = global.ItemAssembler.parseNaturalLanguageItem(nlVal);
         if (parsed) return parsed;
-      } catch (_) {}
+      } catch (e) { reportError('ui_shared:getSelectedForgeItem', e); }
     }
 
     const baseId = document.getElementById('dnd-forge-base-select')?.value || 'arm-chain-shirt';
@@ -1102,7 +1102,7 @@
           }
           syncForgeEnhancementsGrid(parsedEnhs);
         }
-      } catch (_) {}
+      } catch (e) { reportError('ui_shared:onForgeNaturalLanguageInput', e); }
     }
     updateForgePreview();
   }
@@ -1536,7 +1536,7 @@
               synthItem = top;
             }
           }
-        } catch (_) {}
+        } catch (e) { reportError('ui_shared:executeCompendiumDrawerSearch', e); }
       }
       if (!synthItem && global.ItemAssembler && typeof global.ItemAssembler.parseNaturalLanguageItem === 'function') {
         try {
@@ -1544,7 +1544,7 @@
           if (parsed && (parsed.enhancementBonus > 0 || parsed.material || (Array.isArray(parsed.enhancements) && parsed.enhancements.length > 0) || parsed.masterwork)) {
             synthItem = parsed;
           }
-        } catch (_) {}
+        } catch (e) { reportError('ui_shared:executeCompendiumDrawerSearch', e); }
       }
       if (synthItem && !results.some(r => r && String(r.name || '').toLowerCase() === String(synthItem.name || '').toLowerCase())) {
         const clonedSynth = Object.assign({}, synthItem, { _instantForgeSynthesis: true, _isAssembledLego: true });

@@ -130,9 +130,9 @@
         },
         configurable: true
       });
-    } catch (e) {}
+    } catch (e) { reportError('char_hud:defineCharacterGlobal', e); }
     let masterDb = [];
-    try { Object.defineProperty(window, 'masterDb', { get: () => masterDb, set: (v) => { masterDb = v; }, configurable: true }); } catch (e) {}
+    try { Object.defineProperty(window, 'masterDb', { get: () => masterDb, set: (v) => { masterDb = v; }, configurable: true }); } catch (e) { reportError('char_hud:defineMasterDbGlobal', e); }
 
     // =========================================================================
     // DM CANLI SENKRONİZASYON (VIGNETTE FLASH, TOAST & DİNAMİK HP GÜNCELLEMESİ)
@@ -194,10 +194,10 @@
 
       // DOM'u güncelle
       if (typeof renderCombatCockpit === 'function') {
-        try { renderCombatCockpit(); } catch (e) {}
+        try { renderCombatCockpit(); } catch (e) { reportError('char_hud:window.handleIncomingDmHpEvent', e); }
       }
       if (typeof renderAll === 'function') {
-        try { renderAll(); } catch (e) {}
+        try { renderAll(); } catch (e) { reportError('char_hud:window.handleIncomingDmHpEvent', e); }
       }
 
       // 1. Ekran Kırmızı / Yeşil Parlama Efekti
@@ -231,14 +231,14 @@
           window.handleIncomingDmHpEvent(e.data);
         }
       };
-    } catch (e) {}
+    } catch (e) { reportError('char_hud:liveBc.onmessage', e); }
 
     window.addEventListener('storage', (e) => {
       if (e.key === 'dnd35_latest_dm_event' && e.newValue) {
         try {
           const parsed = JSON.parse(e.newValue);
           window.handleIncomingDmHpEvent(parsed);
-        } catch (err) {}
+        } catch (err) { reportError('char_hud:liveBc.onmessage', err); }
       }
     });
 
@@ -310,15 +310,15 @@
       } catch (e) {
         console.error('Initial renderAll error:', e);
       }
-      try { restoreActiveTabAndScroll(); } catch (e) {}
+      try { restoreActiveTabAndScroll(); } catch (e) { reportError('char_hud:liveBc.onmessage', e); }
 
       // 4. Verify Auth & Non-Blocking Background Services
       if (window.SupabaseAuth) {
         const authUser = await authPromise;
         if (!authUser) return;
       }
-      try { initCharacterRealtimeSync(); } catch (e) {}
-      try { initTabVisibilitySync(); } catch (e) {}
+      try { initCharacterRealtimeSync(); } catch (e) { reportError('char_hud:liveBc.onmessage', e); }
+      try { initTabVisibilitySync(); } catch (e) { reportError('char_hud:liveBc.onmessage', e); }
     });
 
     let _geminiVerifiedState = null; // null | 'checking' | 'connected' | 'error' | 'empty'
@@ -610,7 +610,7 @@
         if (isSameSnapshot && !isLocalEmpty) {
           if (matchedCloud.updated_at && character && character._cloudUpdatedAt !== matchedCloud.updated_at) {
             character._cloudUpdatedAt = matchedCloud.updated_at;
-            try { localStorage.setItem('dnd35_character', JSON.stringify(character)); } catch (e) {}
+            try { localStorage.setItem('dnd35_character', JSON.stringify(character)); } catch (e) { reportError('char_hud:revalidateCharacterFromCloudInBackground', e); }
           }
           return false;
         }
@@ -685,7 +685,7 @@
               localStorage.setItem('dnd35_hub_db', JSON.stringify(hubDbPre));
             }
           }
-        } catch (nErr) {}
+        } catch (nErr) { reportError('char_hud:revalidateCharacterFromCloudInBackground', nErr); }
 
         character = cloudFd;
         if (!Array.isArray(character.customDb)) character.customDb = [];
@@ -719,7 +719,7 @@
       try {
         const savedChar = localStorage.getItem('dnd35_character');
         if (savedChar) parsedSaved = JSON.parse(savedChar);
-      } catch (e) {}
+      } catch (e) { reportError('char_hud:loadInitialData', e); }
 
       // 1. Fast Local Hydration from Hub DB or dnd35_character (<2ms, zero network wait)
       try {
@@ -1014,7 +1014,7 @@
             }
           }
           localStorage.removeItem('dnd35_master_db');
-        } catch (e) {}
+        } catch (e) { reportError('char_hud:loadInitialData', e); }
         try {
           let rawList = character.customDb.filter(m => m && typeof m === 'object' && m.name);
           rawList = rawList.map(item => {
@@ -1450,7 +1450,7 @@
 
     window.forceCloudSyncPull = async function() {
       if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode()) {
-        alert('You must be signed in with your Google account to perform this action.');
+        showToast('You must be signed in with your Google account to perform this action.', 'error', { wrap: true });
         return;
       }
       try {
@@ -1460,7 +1460,7 @@
 
         const cloudChars = await window.SupabaseAuth.fetchUserCharacters();
         if (!Array.isArray(cloudChars) || cloudChars.length === 0) {
-          alert('No saved character found in the cloud.');
+          showToast('No saved character found in the cloud.', 'error', { wrap: true });
           return;
         }
         const myId = character?._hubId || character?.id || localStorage.getItem('dnd35_active_character_id');
@@ -1494,13 +1494,13 @@
           }
         }
       } catch (err) {
-        alert('Error pulling data from cloud: ' + err.message);
+        showToast('Error pulling data from cloud: ' + err.message, 'error', { wrap: true });
       }
     };
 
     window.forceCloudSyncPush = async function() {
       if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode()) {
-        alert('You must be signed in with your Google account to perform this action.');
+        showToast('You must be signed in with your Google account to perform this action.', 'error', { wrap: true });
         return;
       }
       if (!character) return;
@@ -1538,7 +1538,7 @@
           }
         }
       } catch (err) {
-        alert('Error pushing data to cloud: ' + err.message);
+        showToast('Error pushing data to cloud: ' + err.message, 'error', { wrap: true });
       }
     };
 
@@ -1579,12 +1579,12 @@
     async function submitJoinCampaign() {
       const code = document.getElementById('join-campaign-input-code')?.value.trim();
       if (!code) {
-        alert('Please enter a valid invite code!');
+        showToast('Please enter a valid invite code!', 'error', { wrap: true });
         return;
       }
 
       if (window.SupabaseAuth?.isLocalMode()) {
-        alert('Please sign in with your Google account to join a cloud campaign.');
+        showToast('Please sign in with your Google account to join a cloud campaign.', 'error', { wrap: true });
         return;
       }
 
@@ -1620,7 +1620,7 @@
         }
       } catch (err) {
         console.error('joinCampaign error:', err);
-        alert('Error joining campaign: ' + (err.message || err));
+        showToast('Error joining campaign: ' + (err.message || err), 'error', { wrap: true });
       } finally {
         if (btn) {
           btn.textContent = 'Join Campaign';
@@ -1646,7 +1646,7 @@
       saveStateToStorage();
       updateCampaignNavButton();
       closeJoinCampaignModal();
-      alert('You have left the campaign. Your character remains safely stored independently.');
+      showToast('You have left the campaign. Your character remains safely stored independently.', 'info', { wrap: true });
     }
 
     function updateCampaignNavButton() {
@@ -1677,7 +1677,7 @@
       masterDb = character.customDb;
       saveStateToStorage(true);
       if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
-        try { RuleMaster.renderTable(); } catch (e) {}
+        try { RuleMaster.renderTable(); } catch (e) { reportError('char_hud:refreshAfterCampaignDbChange', e); }
       }
       if (typeof renderAll === 'function') renderAll();
     }
@@ -2214,7 +2214,7 @@
       const input = document.getElementById('settings-gemini-api-key');
       const val = input?.value?.trim() || '';
       if (!val) {
-        alert('Please enter a valid Gemini API key.');
+        showToast('Please enter a valid Gemini API key.', 'error', { wrap: true });
         return;
       }
       localStorage.setItem('gemini_api_key', val);
@@ -2226,9 +2226,9 @@
       }
       const ok = await verifySettingsGeminiApiKey(true);
       if (ok) {
-        alert('✅ Your Google Gemini API Key has been saved and verified (🟢 Active)!');
+        showToast('Your Google Gemini API Key has been saved and verified (🟢 Active)!', 'success', { wrap: true });
       } else {
-        alert('⚠️ Key saved, but Google Gemini server could not verify it. Please check your key.');
+        showToast('Key saved, but Google Gemini server could not verify it. Please check your key.', 'warning', { wrap: true });
       }
     }
 
@@ -2245,7 +2245,7 @@
           RuleMaster.updateApiKeyUi();
         }
         verifySettingsGeminiApiKey(true);
-        alert('🗑️ Your API Key has been removed.');
+        showToast('🗑️ Your API Key has been removed.', 'success', { wrap: true });
       }
     }
 
@@ -2253,7 +2253,7 @@
       if (window.RuleMaster && typeof RuleMaster.showDiagnosticsModal === 'function') {
         return RuleMaster.showDiagnosticsModal();
       }
-      alert('⚠️ RuleMaster is not loaded yet. Please refresh the page.');
+      showToast('RuleMaster is not loaded yet. Please refresh the page.', 'error', { wrap: true });
     }
 
     const TAB_INACTIVE_CLASSES = ['bg-slate-800', 'hover:bg-slate-700', 'text-slate-200', 'hover:text-white', 'border-slate-700', 'hover:border-slate-500', 'shadow-md'];
@@ -2287,7 +2287,7 @@
         const y = window.scrollY || document.documentElement.scrollTop || 0;
         localStorage.setItem('dnd35_scroll_' + curTab, y);
         localStorage.setItem('dnd35_last_scroll_y', y);
-      } catch (e) {}
+      } catch (e) { reportError('char_hud:persistScrollPosition', e); }
     }
 
     window.addEventListener('scroll', () => {
@@ -2365,9 +2365,9 @@
           break;
         case 'tab-dice':
           try { renderDiceHistory(); } catch (e) { console.error('renderDiceHistory error:', e); }
-          try { if (typeof updateDicePoolDisplay === 'function') updateDicePoolDisplay(); } catch (e) {}
-          try { if (typeof initDiceColor === 'function') initDiceColor(); } catch (e) {}
-          try { if (typeof renderCustomTemplates === 'function') renderCustomTemplates(); } catch (e) {}
+          try { if (typeof updateDicePoolDisplay === 'function') updateDicePoolDisplay(); } catch (e) { reportError('char_hud:renderTabIfNeeded', e); }
+          try { if (typeof initDiceColor === 'function') initDiceColor(); } catch (e) { reportError('char_hud:renderTabIfNeeded', e); }
+          try { if (typeof renderCustomTemplates === 'function') renderCustomTemplates(); } catch (e) { reportError('char_hud:renderTabIfNeeded', e); }
           break;
       }
     }
@@ -2391,7 +2391,7 @@
           localStorage.setItem('dnd35_last_scroll_y', curY);
         }
         localStorage.setItem('dnd35_active_tab', tabId);
-      } catch (e) {}
+      } catch (e) { reportError('char_hud:switchTab', e); }
 
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       const target = document.getElementById(tabId);
@@ -2664,7 +2664,7 @@
         try {
           const savedTab = localStorage.getItem('dnd35_active_tab');
           if (savedTab && ALL_SHEET_TABS.includes(savedTab)) activeTab = savedTab;
-        } catch (e) {}
+        } catch (e) { reportError('char_hud:renderAll', e); }
         renderTabIfNeeded(activeTab, true);
       }
     }
@@ -4183,7 +4183,7 @@
           statusEl.classList.remove('hidden');
           statusEl.innerHTML = `<span class="text-rose-400">❌ ${escapeRaceHtml(err.message || 'An error occurred')}</span>`;
         } else {
-          alert('Race lookup error: ' + err.message);
+          showToast('Race lookup error: ' + err.message, 'error', { wrap: true });
         }
       } finally {
         if (btn) btn.disabled = false;
@@ -5806,7 +5806,7 @@
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed)) domains.push(...parsed);
         }
-      } catch (e) {}
+      } catch (e) { reportError('char_hud:getAllDomainsWithCustom', e); }
 
       if (!domains.length) {
         domains = [
@@ -6091,7 +6091,7 @@
       // 3. Save to Master DB via RuleMaster & refresh Master DB Table
       if (typeof RuleMaster !== 'undefined') {
         if (typeof RuleMaster.saveEntryToMasterDb === 'function') {
-          try { RuleMaster.saveEntryToMasterDb(entry); } catch (e) {}
+          try { RuleMaster.saveEntryToMasterDb(entry); } catch (e) { reportError('char_hud:matchDeityRecord', e); }
         }
         if (typeof RuleMaster.renderTable === 'function') {
           RuleMaster.renderTable();
@@ -6544,7 +6544,7 @@
         try {
           const comb = getCombinedFeatCatalog(false);
           if (Array.isArray(comb) && comb.length) feats.push(...comb);
-        } catch (_) {}
+        } catch (e) { reportError('char_hud:getAllFeatsFromCompendiumAndCustom', e); }
       }
       if (Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
         feats.push(...window.BUNDLED_SRD_CORE_CATALOG.filter(e => e && e.type === 'Feat' && e.name));
@@ -7404,7 +7404,7 @@
       // 3. Save to Master DB via RuleMaster & refresh Master DB Table
       if (typeof RuleMaster !== 'undefined') {
         if (typeof RuleMaster.saveEntryToMasterDb === 'function') {
-          try { RuleMaster.saveEntryToMasterDb(entry); } catch (e) {}
+          try { RuleMaster.saveEntryToMasterDb(entry); } catch (e) { reportError('char_hud:matchDomainRecord', e); }
         }
         if (typeof RuleMaster.renderTable === 'function') {
           RuleMaster.renderTable();

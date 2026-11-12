@@ -54,7 +54,7 @@
       const nameInput = document.getElementById('csk-name');
       const name = (nameInput?.value || '').trim();
       if (!name) {
-        alert('Please enter a valid skill name.');
+        showToast('Please enter a valid skill name.', 'error', { wrap: true });
         return;
       }
 
@@ -76,7 +76,7 @@
         const spentPts = calculateSpentSkillPoints(character, isMerged);
         const cost = initialRanks * (isClass ? 1 : 2);
         if (spentPts + cost > totalPts) {
-          alert(`⚠️ Insufficient skill points! This rank requires ${cost} points, but only ${Math.max(0, totalPts - spentPts)} points remain. Starting rank set to 0.`);
+          showToast(`Insufficient skill points! This rank requires ${cost} points, but only ${Math.max(0, totalPts - spentPts)} points remain. Starting rank set to 0.`, 'error', { wrap: true });
         }
       }
 
@@ -2310,7 +2310,7 @@
           await window.SrdCompendium.init();
           // Conditions, buffs and spells from every chunk that holds them (index-driven; matches the list below).
           await window.SrdCompendium.ensureTypesLoaded(['Condition', 'Buff', 'Spell']);
-        } catch (_) {}
+        } catch (e) { reportError('char_inventory:searchBuffSpotlightCandidates', e); }
       }
 
       const cl = getBuffModalCasterLevel();
@@ -3280,7 +3280,7 @@
       }
 
       if (!name) {
-        alert(currentBuffModalMode === 'debuff' ? 'Please select a Condition/Debuff from Spotlight or enter a Name in the Manual V2 tab.' : 'Please select a Buff from Spotlight or enter a Name in the Manual V2 tab.');
+        showToast(currentBuffModalMode === 'debuff' ? 'Please select a Condition/Debuff from Spotlight or enter a Name in the Manual V2 tab.' : 'Please select a Buff from Spotlight or enter a Name in the Manual V2 tab.', 'error', { wrap: true });
         return;
       }
 
@@ -3712,7 +3712,7 @@
 
     function setBodySlotsView(mode, rerender = true) {
       currentBodySlotsView = mode || 'silhouette';
-      try { localStorage.setItem('dnd35_body_slots_view', currentBodySlotsView); } catch(e){}
+      try { localStorage.setItem('dnd35_body_slots_view', currentBodySlotsView); } catch(e){ reportError('char_inventory:setBodySlotsView', e); }
 
       const listView = document.getElementById('body-slots-list-view');
       const silView = document.getElementById('body-slots-silhouette-view');
@@ -3756,7 +3756,7 @@
 
     function changeSilhouetteModel(modelKey) {
       selectedSilhouetteModel = modelKey || 'auto';
-      try { localStorage.setItem('dnd35_silhouette_model', selectedSilhouetteModel); } catch(e){}
+      try { localStorage.setItem('dnd35_silhouette_model', selectedSilhouetteModel); } catch(e){ reportError('char_inventory:changeSilhouetteModel', e); }
       renderBodySlotsSilhouette();
     }
 
@@ -3840,7 +3840,7 @@
       try {
         const raw = localStorage.getItem('dnd35_silhouette_transform');
         if (raw) localSaved = JSON.parse(raw);
-      } catch(e) {}
+      } catch(e) { reportError('char_inventory:getSilhouetteTransform', e); }
 
       const conf = saved || localSaved || {};
       const scale = (typeof conf.scale === 'number' && !isNaN(conf.scale)) ? Math.max(0.5, Math.min(2.5, conf.scale)) : 1.0;
@@ -3864,7 +3864,7 @@
           offsetX: Math.round(transform.offsetX),
           offsetY: Math.round(transform.offsetY)
         }));
-      } catch(e) {}
+      } catch(e) { reportError('char_inventory:saveSilhouetteTransform', e); }
     }
 
     function computeSilhouetteImageRect(transform) {
@@ -4094,7 +4094,7 @@
       try {
         const raw = localStorage.getItem('dnd35_silhouette_custom_coords');
         if (raw) localSaved = JSON.parse(raw);
-      } catch(e) {}
+      } catch(e) { reportError('char_inventory:getEffectiveBodySlotNodes', e); }
 
       const custom = saved || localSaved || {};
       const result = {};
@@ -4148,7 +4148,7 @@
       try {
         const localImg = localStorage.getItem('dnd35_silhouette_custom_img');
         if (localImg) return localImg;
-      } catch(e) {}
+      } catch(e) { reportError('char_inventory:getSilhouetteImageSrc', e); }
       if (!window.HERO_SILHOUETTE_DATA_URI) {
         ensureHeroSilhouetteLoaded();
       }
@@ -4168,9 +4168,9 @@
         const dataUrl = e.target.result;
         if (!character) character = {};
         character.customSilhouetteImg = dataUrl;
-        try { localStorage.setItem('dnd35_silhouette_custom_img', dataUrl); } catch(err){}
+        try { localStorage.setItem('dnd35_silhouette_custom_img', dataUrl); } catch(err){ reportError('char_inventory:reader.onload', err); }
         renderBodySlotsSilhouette();
-        alert('🖼️ Custom silhouette image uploaded successfully!');
+        showToast('🖼️ Custom silhouette image uploaded successfully!', 'success', { wrap: true });
       };
       reader.readAsDataURL(file);
     }
@@ -4186,9 +4186,9 @@
       }
       if (!character) character = {};
       character.customSilhouetteImg = cleanUrl;
-      try { localStorage.setItem('dnd35_silhouette_custom_img', cleanUrl); } catch(err){}
+      try { localStorage.setItem('dnd35_silhouette_custom_img', cleanUrl); } catch(err){ reportError('char_inventory:promptSilhouetteUrl', err); }
       renderBodySlotsSilhouette();
-      alert('🖼️ Custom silhouette URL applied!');
+      showToast('🖼️ Custom silhouette URL applied!', 'success', { wrap: true });
     }
 
     function toggleSilhouetteMenu(evt) {
@@ -4217,19 +4217,19 @@
       if (character && character.customSilhouetteImg) {
         delete character.customSilhouetteImg;
       }
-      try { localStorage.removeItem('dnd35_silhouette_custom_img'); } catch(err){}
+      try { localStorage.removeItem('dnd35_silhouette_custom_img'); } catch(err){ reportError('char_inventory:resetSilhouetteImage', err); }
 
       // Resim sıfırlanınca vücut noktaları ve konumu da sıfırlansın:
       if (character && character.customSilhouetteCoords) {
         delete character.customSilhouetteCoords;
       }
-      try { localStorage.removeItem('dnd35_silhouette_custom_coords'); } catch(err){}
+      try { localStorage.removeItem('dnd35_silhouette_custom_coords'); } catch(err){ reportError('char_inventory:resetSilhouetteImage', err); }
       currentSilhouetteNodes = JSON.parse(JSON.stringify(DEFAULT_BODY_SLOT_NODES));
 
       resetSilhouetteTransform();
       renderBodySlotsSilhouette();
       if (!suppressAlert) {
-        alert('↺ Reset to default D&D warrior silhouette and original body slot nodes.');
+        showToast('↺ Reset to default D&D warrior silhouette and original body slot nodes.', 'success', { wrap: true });
       }
     }
 
@@ -4244,7 +4244,7 @@
         if (character && character.customSilhouetteCoords) {
           delete character.customSilhouetteCoords;
         }
-        try { localStorage.removeItem('dnd35_silhouette_custom_coords'); } catch(err){}
+        try { localStorage.removeItem('dnd35_silhouette_custom_coords'); } catch(err){ reportError('char_inventory:resetSilhouettePoints', err); }
         currentSilhouetteNodes = JSON.parse(JSON.stringify(DEFAULT_BODY_SLOT_NODES));
         renderBodySlotsSilhouette();
       }
@@ -4408,7 +4408,7 @@
       }
       try {
         localStorage.setItem('dnd35_silhouette_custom_coords', JSON.stringify(character.customSilhouetteCoords));
-      } catch(e) {}
+      } catch(e) { reportError('char_inventory:stopDraggingSlotNode', e); }
     }
 
     function copySilhouetteCoordinatesToClipboard() {
@@ -4445,7 +4445,7 @@
       const jsonText = JSON.stringify(exportData, null, 2);
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(jsonText).then(() => {
-          alert('📋 All 12 slot coordinates copied to clipboard!');
+          showToast('📋 All 12 slot coordinates copied to clipboard!', 'success', { wrap: true });
         }).catch(() => {
           prompt('Copy coordinates (Ctrl+C):', jsonText);
         });
@@ -4670,7 +4670,7 @@
 
       // Clean up any legacy separate "↳ ... (Off-Hand Head)" entries via ensureWeaponSetsData
       if (typeof ensureWeaponSetsData === 'function') {
-        try { ensureWeaponSetsData(); } catch (e) {}
+        try { ensureWeaponSetsData(); } catch (e) { reportError('char_inventory:renderBodySlotsSilhouette', e); }
       }
 
       const leftContainer = document.getElementById('sil-left-slots');
@@ -5413,7 +5413,7 @@
         });
         const out = window.CharStore.getLastOutcome();
         if (!out || out.status === 'not_found') {
-          alert('Item not found in Gear Pool.');
+          showToast('Item not found in Gear Pool.', 'error', { wrap: true });
           return;
         }
         closeCompanionEquipModal();
@@ -5430,7 +5430,7 @@
 
       const itemIdx = character.gearPool.findIndex(i => i && String(i.id) === String(itemId));
       if (itemIdx === -1) {
-        alert('Item not found in Gear Pool.');
+        showToast('Item not found in Gear Pool.', 'error', { wrap: true });
         return;
       }
 
@@ -5554,8 +5554,8 @@
           payload: { slotKey },
           meta: { label: `Unequip ${slotName}` }
         });
-        try { renderWeaponSetsUI(); } catch (e) {}
-        try { recalculateOffense(); } catch (e) {}
+        try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
+        try { recalculateOffense(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
         renderAll();
         if (!silent && typeof showDiceTopToast === 'function') {
           const slotDef = BODY_SLOT_DEFS.find(d => d.key === slotKey);
@@ -5638,8 +5638,8 @@
         }
         character.activeOffHand = 'None';
       }
-      try { renderWeaponSetsUI(); } catch (e) {}
-      try { recalculateOffense(); } catch (e) {}
+      try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
+      try { recalculateOffense(); } catch (e) { reportError('char_inventory:unequipSlot', e); }
 
       saveStateToStorage(true);
       renderAll();
@@ -5735,7 +5735,7 @@
               fromAssembler = true;
             }
           }
-        } catch (_) {}
+        } catch (e) { reportError('char_inventory:hasValidStats', e); }
       }
 
       // 2. Try SrdCompendium direct ID or Name lookup
@@ -6441,8 +6441,8 @@
         if (out && out.twoHandWarningMsg && !twoHandWarningMsg) {
           twoHandWarningMsg = out.twoHandWarningMsg;
         }
-        try { renderWeaponSetsUI(); } catch (e) {}
-        try { recalculateOffense(); } catch (e) {}
+        try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
+        try { recalculateOffense(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
         renderAll();
         const slotDef = BODY_SLOT_DEFS.find(d => d.key === targetSlotKey);
         const slotLabel = slotDef?.trName || targetSlotKey;
@@ -6650,8 +6650,8 @@
           }
         }
       }
-      try { renderWeaponSetsUI(); } catch (e) {}
-      try { recalculateOffense(); } catch (e) {}
+      try { renderWeaponSetsUI(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
+      try { recalculateOffense(); } catch (e) { reportError('char_inventory:equipPoolItem', e); }
 
       saveStateToStorage(true);
       renderAll();
@@ -7261,7 +7261,7 @@
             parsedLego._isSynthesizedLego = true;
             synthesizedLegoItem = parsedLego;
           }
-        } catch (_) {}
+        } catch (e) { reportError('char_inventory:executePoolMasterDbSearch', e); }
       }
 
       // Score and filter SRD + Custom DB items via unified SrdCompendium.fuzzyScore
@@ -7387,7 +7387,7 @@
         .replace(/^(?:armor|shield|weapon|item|ring|wondrous|equipment|potion|crystal)\s*:\s*/i, '')
         .trim();
       if (!q) {
-        alert('⚠️ Please enter an item name to search.');
+        showToast('Please enter an item name to search.', 'error', { wrap: true });
         return;
       }
 
@@ -7396,7 +7396,7 @@
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        alert('⚠️ 🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.');
+        showToast('🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.', 'error', { wrap: true });
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -7698,9 +7698,9 @@
       } else {
         closeAddPoolItemModal();
         if (attachedChildCount > 0) {
-          alert(`✅ "${item.name}" and ${attachedChildCount} linked sub-abilities added to your Inventory!`);
+          showToast(`"${item.name}" and ${attachedChildCount} linked sub-abilities added to your Inventory!`, 'success', { wrap: true });
         } else {
-          alert(`✅ "${item.name}" added to your Inventory!`);
+          showToast(`"${item.name}" added to your Inventory!`, 'success', { wrap: true });
         }
       }
     }
@@ -7841,9 +7841,9 @@
       } else {
         closeAddPoolItemModal();
         if (attachedChildCount > 0) {
-          alert(`✅ "${item.name}" and ${attachedChildCount} sub-powers saved to Master DB and added to your Inventory!`);
+          showToast(`"${item.name}" and ${attachedChildCount} sub-powers saved to Master DB and added to your Inventory!`, 'success', { wrap: true });
         } else {
-          alert(`✅ "${item.name}" saved to Master DB and added to your Inventory!`);
+          showToast(`"${item.name}" saved to Master DB and added to your Inventory!`, 'success', { wrap: true });
         }
       }
     }
@@ -8327,7 +8327,7 @@
       const nameInput = document.getElementById('api-name');
       const name = nameInput?.value?.trim();
       if (!name) {
-        alert('Please enter an item name.');
+        showToast('Please enter an item name.', 'error', { wrap: true });
         if (nameInput) nameInput.focus();
         return;
       }
@@ -8371,7 +8371,7 @@
       saveStateToStorage(true);
       renderAll();
       closeAddPoolItemModal();
-      alert(`✅ "${name}" added to your Inventory!`);
+      showToast(`"${name}" added to your Inventory!`, 'success', { wrap: true });
     }
 
     // ====================================================
@@ -9331,7 +9331,7 @@
         });
       }
       if (exportList.length === 0) {
-        alert('ℹ️ There are no custom entries to export in this character\'s Custom DB.');
+        showToast('There are no custom entries to export in this character\'s Custom DB.', 'info', { wrap: true });
         return;
       }
       const charSlug = ((character && character.name) ? character.name : 'character')
@@ -9427,7 +9427,7 @@
           }
 
           if (entriesToMerge.length === 0) {
-            alert('⚠️ No valid custom DB entries found in the selected JSON file.');
+            showToast('No valid custom DB entries found in the selected JSON file.', 'error', { wrap: true });
             return;
           }
 
@@ -9439,7 +9439,7 @@
           renderAll();
           alert(`✅ Custom DB Import / Merge Complete!\n• Added: ${added} new entries\n• Updated: ${updated} existing entries\n• Total Character Custom DB: ${masterDb.length} entries`);
         } catch (err) {
-          alert('❌ Failed to parse Custom DB JSON file: ' + err.message);
+          showToast('Failed to parse Custom DB JSON file: ' + err.message, 'error', { wrap: true });
         } finally {
           event.target.value = '';
         }
@@ -9473,7 +9473,7 @@
               character.customDb = Array.isArray(parsed.masterDb) ? parsed.masterDb : [];
             }
             masterDb = character.customDb;
-            alert(`✅ Full Bundle loaded successfully!\n• Character: ${character?.name || '-'}\n• Character Custom DB: ${masterDb.length} entries`);
+            showToast(`Full Bundle loaded successfully!\n• Character: ${character?.name || '-'}\n• Character Custom DB: ${masterDb.length} entries`, 'success', { wrap: true });
           } else if (Array.isArray(parsed)) {
             const { added, updated } = mergeEntriesIntoCharacterCustomDb(parsed);
             alert(`✅ Custom DB entries merged into character!\n• Added: ${added}\n• Updated: ${updated}\n• Total Custom DB: ${masterDb.length} entries`);
@@ -9481,7 +9481,7 @@
             character = parsed;
             if (!Array.isArray(character.customDb)) character.customDb = [];
             masterDb = character.customDb;
-            alert('✅ Character data loaded successfully!');
+            showToast('Character data loaded successfully!', 'success', { wrap: true });
           }
           saveStateToStorage(true);
           if (window.RuleMaster && typeof RuleMaster.renderTable === 'function') {
@@ -9489,7 +9489,7 @@
           }
           renderAll();
         } catch (err) {
-          alert('❌ Failed to parse JSON file: ' + err.message);
+          showToast('Failed to parse JSON file: ' + err.message, 'error', { wrap: true });
         } finally {
           event.target.value = '';
         }
@@ -9534,7 +9534,7 @@
         }
         saveStateToStorage();
         renderAll();
-        alert('✅ Character reset. Your blank character is ready!');
+        showToast('Character reset. Your blank character is ready!', 'success', { wrap: true });
       }
     }
 

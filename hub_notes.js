@@ -24,7 +24,7 @@
   try {
     const _savedTargetKey = localStorage.getItem('hub_notes_active_target');
     if (_savedTargetKey) _overrideTargetKey = _savedTargetKey;
-  } catch (e) {}
+  } catch (e) { reportError('hub_notes:read saved notes target', e); }
   let _activeModalView = 'editor'; // 'editor', 'mindmap', 'ai'
   let _selectedMindmapTag = null;
   let _lastAiGeneratedText = '';
@@ -98,7 +98,7 @@
         const parsed = JSON.parse(raw);
         if (parsed && Array.isArray(parsed.campaigns)) return parsed;
       }
-    } catch (e) {}
+    } catch (e) { reportError('hub_notes:getHubState', e); }
     return null;
   }
 
@@ -149,7 +149,7 @@
     if (window.character && typeof window.character === 'object') return window.character;
     try {
       if (typeof character !== 'undefined' && character && typeof character === 'object') return character;
-    } catch (e) {}
+    } catch (e) { reportError('hub_notes:getStandaloneCharacterInstance', e); }
     return null;
   }
 
@@ -198,7 +198,7 @@
     let urlId = null;
     try {
       urlId = new URLSearchParams(window.location.search).get('id') || localStorage.getItem('dnd35_active_character_id');
-    } catch (e) {}
+    } catch (e) { reportError('hub_notes:resolveStandaloneHubChar', e); }
     const charHubId = standaloneChar._hubId || standaloneChar.id || urlId;
     const charNameLower = (standaloneChar.name || '').trim().toLowerCase();
     return state.characters.find(c =>
@@ -264,7 +264,7 @@
       let urlId = null;
       try {
         urlId = new URLSearchParams(window.location.search).get('id') || localStorage.getItem('dnd35_active_character_id');
-      } catch (e) {}
+      } catch (e) { reportError('hub_notes:getActiveNotesTarget', e); }
       const charId = hubMatch?.id || standaloneChar._hubId || standaloneChar.id || urlId || 'active_char';
       if (!standaloneChar._hubId && hubMatch?.id) standaloneChar._hubId = hubMatch.id;
       const charName = standaloneChar.name || hubMatch?.name || 'Character';
@@ -403,7 +403,7 @@
             (parsed && (c.id === parsed.id || c.id === parsed._hubId || (parsed.name && c.name === parsed.name)))
           );
           if (found) targetChar = found;
-        } catch (e) {}
+        } catch (e) { reportError('hub_notes:getActiveNotesTarget', e); }
 
         const list = ensureSmartNotesArray(targetChar);
         return {
@@ -587,7 +587,7 @@
             latestDmEvent: state.latestDmEvent || null,
             lastSaved: new Date().toISOString()
           }));
-        } catch (e) {}
+        } catch (e) { reportError('hub_notes:saveNotesChanges', e); }
       }
     }
 
@@ -598,7 +598,7 @@
       standaloneChar.notes = plainSummary;
       standaloneChar._notesUpdatedAt = nowTs;
       if (typeof window.saveStateToStorage === 'function') {
-        try { window.saveStateToStorage(true); } catch (e) {}
+        try { window.saveStateToStorage(true); } catch (e) { reportError('hub_notes:saveNotesChanges', e); }
       }
     }
 
@@ -692,7 +692,7 @@
       if (listView) listView.classList.remove('hidden');
     }
 
-    try { localStorage.setItem('hub_notes_panel_tab', tab); } catch (e) {}
+    try { localStorage.setItem('hub_notes_panel_tab', tab); } catch (e) { reportError('hub_notes:switchPanelTab', e); }
   }
 
   /**
@@ -710,7 +710,7 @@
 
     const target = getActiveNotesTarget();
     if (!target) {
-      alert('Please create a campaign or character before adding notes.');
+      notify('Please create a campaign or character before adding notes.', 'error');
       return;
     }
 
@@ -1105,7 +1105,7 @@
       saveModalNote(false);
     }
     _overrideTargetKey = targetKey;
-    try { localStorage.setItem('hub_notes_active_target', targetKey); } catch (e) {}
+    try { localStorage.setItem('hub_notes_active_target', targetKey); } catch (e) { reportError('hub_notes:setTargetOverride', e); }
     const target = getActiveNotesTarget();
     if (target && target.notesList.length > 0) {
       _selectedModalNoteId = target.notesList[0].id;
@@ -1122,7 +1122,7 @@
 
   function clearTargetOverride() {
     _overrideTargetKey = null;
-    try { localStorage.removeItem('hub_notes_active_target'); } catch (e) {}
+    try { localStorage.removeItem('hub_notes_active_target'); } catch (e) { reportError('hub_notes:clearTargetOverride', e); }
   }
 
   function updateModalTargetSelector(activeTarget) {
@@ -2026,7 +2026,7 @@
   async function runAiChronicler() {
     const target = getActiveNotesTarget();
     if (!target || !Array.isArray(target.notesList) || target.notesList.length === 0) {
-      alert('No notes found to synthesize. Please add a few notes first.');
+      notify('No notes found to synthesize. Please add a few notes first.', 'error');
       return;
     }
 
@@ -2058,7 +2058,7 @@
     }
 
     if (sourceNotes.length === 0) {
-      alert('No notes match the selected scope.');
+      notify('No notes match the selected scope.', 'error');
       return;
     }
 
@@ -2213,7 +2213,7 @@ RULES:
     renderFullNotesModalList();
     renderInlineNotes();
 
-    alert('✅ AI Synthesis saved as a new pinned note!');
+    notify('✅ AI Synthesis saved as a new pinned note!', 'success');
     switchModalView('editor');
     _selectedModalNoteId = newNote.id;
     loadSelectedNoteIntoEditor();
@@ -2222,9 +2222,9 @@ RULES:
   function copyAiSynthesisToClipboard() {
     if (!_lastAiGeneratedText) return;
     navigator.clipboard.writeText(_lastAiGeneratedText).then(() => {
-      alert('📋 AI Synthesis copied to clipboard!');
+      notify('📋 AI Synthesis copied to clipboard!', 'success');
     }).catch(() => {
-      alert('Failed to copy text.');
+      notify('Failed to copy text.', 'error');
     });
   }
 
@@ -2651,7 +2651,7 @@ RULES:
         const parsed = JSON.parse(raw);
         if (parsed && parsed.name) return parsed;
       }
-    } catch (e) {}
+    } catch (e) { reportError('hub_notes:resolveCharacterForNote', e); }
 
     return null;
   }
@@ -2660,7 +2660,7 @@ RULES:
     saveModalNote(false);
     const target = getActiveNotesTarget();
     if (!target) {
-      alert('Please select a campaign or character first.');
+      notify('Please select a campaign or character first.', 'error');
       return;
     }
 
@@ -3093,7 +3093,7 @@ RULES:
           loadSelectedNoteIntoEditor();
           if (_activeModalView === 'mindmap') renderMindmap();
         }
-      } catch (err) {}
+      } catch (err) { reportError('hub_notes:mountCharacterNotesWidget', err); }
     }
   });
 
@@ -3102,7 +3102,7 @@ RULES:
       try {
         const savedTab = localStorage.getItem('hub_notes_panel_tab');
         if (savedTab) switchPanelTab(savedTab);
-      } catch (e) {}
+      } catch (e) { reportError('hub_notes:mountCharacterNotesWidget', e); }
       renderInlineNotes();
 
       // Attach scope change listener for AI Chronicler

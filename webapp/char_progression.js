@@ -137,7 +137,7 @@
       Promise.all(missing.map(n => comp.ensureChunkLoaded(n))).then(() => {
         _featChunkCatalogVer++;
         if (typeof _featListRefresher === 'function') {
-          try { _featListRefresher(); } catch (_) {}
+          try { _featListRefresher(); } catch (e) { reportError('char_progression:ensureFeatSplatChunks', e); }
         }
       }).catch(() => {});
     }
@@ -200,7 +200,7 @@
         const chgSel = document.getElementById('change-class-select');
         if (chgSel) populateChangeClassSelect(chgSel.value || null);
         filterChangeClassSearch();
-      } catch (_) {}
+      } catch (e) { reportError('char_progression:refreshOpenClassLists', e); }
     }
 
     // 3.0 / licensed classes stay out of the class pickers while the setting is off, unless the character already has levels in one.
@@ -578,7 +578,7 @@
       if (isFlaw) {
         alert(`⚠️ Flaw "${entry.name}" added to character!\n\n🎖️ Per D&D 3.5e Unearthed Arcana rules, taking this flaw grants you 1 EXTRA BONUS FEAT!\n\nPlease select your bonus feat from the list now.`);
       } else if (isRacial && (entry.grantsBonusFeat || entry.name.toLowerCase().includes('bonus feat'))) {
-        alert(`🧬 Racial trait "${entry.name}" added!\n\n🎖️ This trait grants 1 extra bonus feat. Please select your bonus feat from the list.`);
+        showToast(`🧬 Racial trait "${entry.name}" added!\n\n🎖️ This trait grants 1 extra bonus feat. Please select your bonus feat from the list.`, 'info', { wrap: true });
       }
     }
 
@@ -673,7 +673,7 @@
       const source = (document.getElementById('custom-feat-source')?.value || 'D&D 3.5e').trim();
       const benefit = (document.getElementById('custom-feat-benefit')?.value || '').trim();
       if (!name) {
-        alert('⚠️ Please enter a Feat or Ability name.');
+        showToast('Please enter a Feat or Ability name.', 'error', { wrap: true });
         return;
       }
       const entry = { name, category, source, benefit, prereq: '-' };
@@ -2736,7 +2736,7 @@
           statusEl.className = 'mt-1.5 text-[11px] p-2 rounded-lg bg-amber-950/80 border border-amber-600/60 text-amber-200 block';
           statusEl.innerHTML = '⚠️ Please enter a feat or ability name to search.';
         } else {
-          alert('⚠️ Please enter a feat or ability name to search.');
+          showToast('Please enter a feat or ability name to search.', 'error', { wrap: true });
         }
         nameInput?.focus();
         return;
@@ -2945,7 +2945,7 @@
           statusEl.className = 'text-[11px] p-2.5 rounded-lg bg-amber-950/80 border border-amber-600/60 text-amber-200 block';
           statusEl.innerHTML = '⚠️ Please enter a class name to search.';
         } else {
-          alert('⚠️ Please enter a class name to search.');
+          showToast('Please enter a class name to search.', 'error', { wrap: true });
         }
         input?.focus();
         return;
@@ -4777,7 +4777,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
             statusEl.className = 'text-xs p-2 rounded-lg bg-amber-950/80 border border-amber-500/80 text-amber-200 block';
             statusEl.innerHTML = '⚠️ Please enter a feat or ability name to search.';
           } else {
-            alert('⚠️ Please enter a feat or ability name to search.');
+            showToast('Please enter a feat or ability name to search.', 'error', { wrap: true });
           }
           input?.focus();
           return;
@@ -5992,7 +5992,7 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        alert('⚠️ 🔮 Please save a valid Google Gemini API key in Settings (⚙️) to search classes via Rule Master AI.');
+        showToast('🔮 Please save a valid Google Gemini API key in Settings (⚙️) to search classes via Rule Master AI.', 'error', { wrap: true });
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -6070,7 +6070,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           fetchBtn.disabled = false;
           fetchBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         }
-        alert('⚠️ Could not discover active Gemini models for your API key. Please check your internet connection and API key in Settings.');
+        showToast('Could not discover active Gemini models for your API key. Please check your internet connection and API key in Settings.', 'error', { wrap: true });
         return;
       }
 
@@ -6298,7 +6298,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         // Enforce sequential progression: all previous levels must be active
         for (let i = 0; i < idx; i++) {
           if (prog[i].active === false) {
-            alert(`⚠️ Sequential Progression Rule: Level ${i + 1} must be activated before Level ${idx + 1}.\nYou cannot skip levels!`);
+            showToast(`Sequential Progression Rule: Level ${i + 1} must be activated before Level ${idx + 1}.\nYou cannot skip levels!`, 'error', { wrap: true });
             closePlannedLevelChoiceModal();
             return;
           }
@@ -6511,7 +6511,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       // Sequential progression rule: Cannot activate a level if any previous level is inactive
       const hasInactiveBefore = prog.some(p => p.active === false);
       if (isActive && hasInactiveBefore) {
-        alert('⚠️ Sequential Progression Rule: Earlier planned levels are still inactive.\nLevels cannot be skipped; this level will be saved as a planned level.');
+        showToast('Sequential Progression Rule: Earlier planned levels are still inactive.\nLevels cannot be skipped; this level will be saved as a planned level.', 'info', { wrap: true });
         isActive = false;
       }
 
@@ -6698,7 +6698,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
     function undoLastLevel() {
       const prog = character.levelProgression || [];
       if (prog.length <= 1) {
-        alert('⚠️ Character level cannot be reduced below Level 1.');
+        showToast('Character level cannot be reduced below Level 1.', 'error', { wrap: true });
         return;
       }
       const last = prog[prog.length - 1];
@@ -6744,7 +6744,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const prog = character.levelProgression || [];
       if (idx < 0 || idx >= prog.length) return;
       if (idx === 0 && prog[idx].active !== false) {
-        alert('⚠️ Level 1 is the starting character level and cannot be deactivated.');
+        showToast('Level 1 is the starting character level and cannot be deactivated.', 'error', { wrap: true });
         return;
       }
 
@@ -6752,7 +6752,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         // Enforce sequential progression: all previous levels must be active
         for (let i = 0; i < idx; i++) {
           if (prog[i].active === false) {
-            alert(`⚠️ Sequential Progression Rule: Level ${i + 1} must be activated before Level ${idx + 1}.\nYou cannot skip levels!`);
+            showToast(`Sequential Progression Rule: Level ${i + 1} must be activated before Level ${idx + 1}.\nYou cannot skip levels!`, 'error', { wrap: true });
             renderLevelProgression();
             return;
           }
@@ -6761,7 +6761,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         // Enforce sequential deactivation: all subsequent levels must be inactive
         for (let i = idx + 1; i < prog.length; i++) {
           if (prog[i].active !== false) {
-            alert(`⚠️ Sequential Progression Rule: Later active levels (Level ${i + 1}, etc.) must be deactivated before Level ${idx + 1}.`);
+            showToast(`Sequential Progression Rule: Later active levels (Level ${i + 1}, etc.) must be deactivated before Level ${idx + 1}.`, 'error', { wrap: true });
             renderLevelProgression();
             return;
           }
@@ -6809,7 +6809,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const prog = character.levelProgression || [];
       if (idx < 0 || idx >= prog.length) return;
       if (prog.length <= 1) {
-        alert('⚠️ Character level cannot be reduced below Level 1.');
+        showToast('Character level cannot be reduced below Level 1.', 'error', { wrap: true });
         return;
       }
       const row = prog[idx];
@@ -9045,7 +9045,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       activeSkillFilter = filterMode;
       try {
         localStorage.setItem('dnd35_skill_filter', filterMode);
-      } catch (e) {}
+      } catch (e) { reportError('char_progression:setSkillFilter', e); }
       const btnAll = document.getElementById('btn-skill-filter-all');
       const btnClass = document.getElementById('btn-skill-filter-class');
       const btnTrained = document.getElementById('btn-skill-filter-trained');
@@ -9059,7 +9059,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       activeSkillStatFilter = (stat || 'all').toLowerCase();
       try {
         localStorage.setItem('dnd35_skill_stat_filter', activeSkillStatFilter);
-      } catch (e) {}
+      } catch (e) { reportError('char_progression:setSkillStatFilter', e); }
       renderSkills();
     }
 
@@ -9070,7 +9070,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         } else {
           localStorage.removeItem('dnd35_skill_search');
         }
-      } catch (e) {}
+      } catch (e) { reportError('char_progression:onSkillSearchInput', e); }
       renderSkills();
     }
 
@@ -9078,7 +9078,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const input = document.getElementById('skill-search-input');
       if (input) {
         input.value = '';
-        try { localStorage.removeItem('dnd35_skill_search'); } catch (e) {}
+        try { localStorage.removeItem('dnd35_skill_search'); } catch (e) { reportError('char_progression:clearSkillSearch', e); }
         renderSkills();
       }
     }
@@ -9104,7 +9104,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         if (searchInput && savedSearch !== null && savedSearch !== undefined) {
           searchInput.value = savedSearch;
         }
-      } catch (e) {}
+      } catch (e) { reportError('char_progression:initSkillFilters', e); }
     }
 
     function stripTurkishSkillParen(rawName) {
@@ -9959,7 +9959,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           const parsed = JSON.parse(stored);
           if (Array.isArray(parsed)) customDomainsList.push(...parsed);
         }
-      } catch (e) {}
+      } catch (e) { reportError('char_progression:renderClericDomainPickerList', e); }
 
       const compendiumDomains = (window.SrdCompendium && typeof window.SrdCompendium.getAllDomains === 'function')
         ? window.SrdCompendium.getAllDomains()
@@ -10667,7 +10667,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       const animalId = _activeCompanionModalAnimalId;
 
       if (!animalId) {
-        alert('Please select a valid creature or animal.');
+        showToast('Please select a valid creature or animal.', 'error', { wrap: true });
         return;
       }
 
@@ -10890,7 +10890,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        alert('⚠️ 🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.');
+        showToast('🔮 Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.', 'error', { wrap: true });
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -10948,7 +10948,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
           });
         }
       } catch (err) {
-        alert(`Rule Master AI Error: ${err.message || 'Could not fetch creature.'}`);
+        showToast(`Rule Master AI Error: ${err.message || 'Could not fetch creature.'}`, 'error', { wrap: true });
         renderCompanionSpotlightContent(q);
       }
     }

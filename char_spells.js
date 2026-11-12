@@ -4442,7 +4442,7 @@
 
       const match = clean.match(/^(\d+)d(\d+)(?:\s*([+-])\s*(\d+))?$/i);
       if (!match) {
-        alert(`Dice formula: ${expr}`);
+        showToast(`Dice formula: ${expr}`, 'info', { wrap: true });
         return;
       }
       const count = parseInt(match[1], 10);
@@ -5074,7 +5074,7 @@
         });
       } else {
         if (readied.length >= maxReadied) {
-          alert(`⚠️ Your maximum readied maneuver quota is full (${maxReadied}/${maxReadied}). Unready a maneuver first.`);
+          showToast(`Your maximum readied maneuver quota is full (${maxReadied}/${maxReadied}). Unready a maneuver first.`, 'error', { wrap: true });
           return;
         }
         const knownItem = (character?.tomeOfBattle?.maneuversKnown || []).find(m => (m.name || '').toLowerCase().trim() === cleanName);
@@ -7019,7 +7019,7 @@
 
         const exists = character.tomeOfBattle.maneuversKnown.some(m => (m.name || '').toLowerCase().trim() === name.toLowerCase().trim());
         if (exists) {
-          alert('This maneuver is already in your known maneuvers pool.');
+          showToast('This maneuver is already in your known maneuvers pool.', 'error', { wrap: true });
           return;
         }
 
@@ -7132,7 +7132,7 @@
 
         const exists = character.tomeOfBattle.stancesKnown.some(st => (st.name || '').toLowerCase().trim() === name.toLowerCase().trim());
         if (exists) {
-          alert('This stance is already in your known stances list.');
+          showToast('This stance is already in your known stances list.', 'error', { wrap: true });
           return;
         }
 
@@ -7218,7 +7218,7 @@
       const q = (document.getElementById('spell-picker-search')?.value || '').trim();
       const type = window._currentSpellPickerType || 'Spell';
       if (!q) {
-        alert('⚠️ Please enter a spell or maneuver name to search.');
+        showToast('Please enter a spell or maneuver name to search.', 'error', { wrap: true });
         return;
       }
 
@@ -7227,7 +7227,7 @@
 
       const apiKey = typeof RuleMaster !== 'undefined' ? RuleMaster.getApiKey() : (localStorage.getItem('gemini_api_key') || '');
       if (!apiKey) {
-        alert('⚠️ Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.');
+        showToast('Please configure a valid Google Gemini API key in Settings ⚙️ (top right) to search via Rule Master AI.', 'error', { wrap: true });
         if (typeof openSettingsModal === 'function') openSettingsModal();
         return;
       }
@@ -8502,7 +8502,7 @@
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
         try {
           RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []));
-        } catch (e) {}
+        } catch (e) { reportError('char_spells:recalculateCharacterClassSummary', e); }
       }
       if (typeof autoSyncCharacterClassSkills === 'function') {
         autoSyncCharacterClassSkills(character);
@@ -9226,7 +9226,7 @@
       const nameInput = document.getElementById('custom-class-name');
       const rawName = (nameInput?.value || '').trim();
       if (!rawName) {
-        alert('Please enter a valid class name.');
+        showToast('Please enter a valid class name.', 'error', { wrap: true });
         nameInput?.focus();
         return;
       }
@@ -9384,7 +9384,7 @@
       }
 
       if (typeof showToast === 'function') {
-        showToast(`✅ Class "${name}" saved to Master DB & Class List!`, 'success');
+        showToast(`Class "${name}" saved to Master DB & Class List!`, 'success');
       } else {
         alert(`✅ Class "${name}" defined and added to Master DB & Class List!`);
       }
