@@ -7936,8 +7936,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (!name || !name.trim()) return;
       const cleanName = name.trim();
       const typeChoice = await DnDUI.prompt('Ability Type: Ex (Extraordinary), Su (Supernatural), Sp (Spell-Like), or General:', 'Ex');
-      const cleanType = (typeChoice || '').trim();
+      if (typeChoice === null) return;
+      const cleanType = typeChoice.trim();
       const benefit = await DnDUI.prompt(`Rule description or effect for "${cleanName}":`, '');
+      if (benefit === null) return;
       
       if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
       const existing = character.specialAbilities.find(a => (typeof a === 'string' ? a : (a?.name || '')).toLowerCase() === cleanName.toLowerCase());
