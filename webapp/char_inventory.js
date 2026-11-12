@@ -1150,7 +1150,7 @@
       }
     }
 
-    function deleteBuff(buffId) {
+    async function deleteBuff(buffId) {
       const buff = (character.buffs || []).find(b => b.id === buffId);
       const isDebuff = buff && (buff.isDebuff || buff.category === 'Debuff');
       const childCount = (buff && buff.children) ? buff.children.length : 0;
@@ -1158,7 +1158,7 @@
       const confirmMsg = childCount > 0
         ? `Delete "${buff.name}" (including ${childCount} sub-effects)?`
         : `Are you sure you want to delete this ${typeLabel}?`;
-      if (confirm(confirmMsg)) {
+      if ((await DnDUI.confirm(confirmMsg, { tone: 'danger' }))) {
         if (buff && buff.active && character.hp) {
           const tempHp = getBuffGrantedTempHp(buff);
           if (tempHp > 0) {
@@ -4233,14 +4233,14 @@
       }
     }
 
-    function resetSilhouetteAll() {
-      if (confirm('Reset the silhouette image, zoom/pan settings, and all 12 body slot nodes to factory defaults?')) {
+    async function resetSilhouetteAll() {
+      if ((await DnDUI.confirm('Reset the silhouette image, zoom/pan settings, and all 12 body slot nodes to factory defaults?', { tone: 'danger' }))) {
         resetSilhouetteImage();
       }
     }
 
-    function resetSilhouettePoints() {
-      if (confirm('Reset all 12 body, card, and S-curve connector nodes to their default coordinates?')) {
+    async function resetSilhouettePoints() {
+      if ((await DnDUI.confirm('Reset all 12 body, card, and S-curve connector nodes to their default coordinates?', { tone: 'danger' }))) {
         if (character && character.customSilhouetteCoords) {
           delete character.customSilhouetteCoords;
         }
@@ -6256,8 +6256,8 @@
       }
     }
 
-    function deletePoolItem(itemId) {
-      if (confirm('Are you sure you want to delete this item from your inventory pool?')) {
+    async function deletePoolItem(itemId) {
+      if ((await DnDUI.confirm('Are you sure you want to delete this item from your inventory pool?', { tone: 'danger' }))) {
         if (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.dispatch === 'function' && window.CharStore.getDoc()) {
           window.CharStore.dispatch({
             type: 'inventory/deletePoolItem',
@@ -9498,8 +9498,8 @@
     }
 
     // User Requested Reset Feature
-    function resetToCleanCharacter() {
-      if (confirm('⚠️ Are you sure you want to reset the current character and start a fresh blank character?')) {
+    async function resetToCleanCharacter() {
+      if ((await DnDUI.confirm('⚠️ Are you sure you want to reset the current character and start a fresh blank character?', { tone: 'danger' }))) {
         character = {
           schemaVersion: "2.0",
           name: "New Character",
@@ -9538,8 +9538,8 @@
       }
     }
 
-    function resetAllLocalDataToFactoryDefaults() {
-      const confirmed = confirm("⚠️ WARNING!\nAll local characters, saved profiles, Master DB cache, and temporary settings in your browser will be wiped and restored to factory defaults.\n\nAre you sure?");
+    async function resetAllLocalDataToFactoryDefaults() {
+      const confirmed = (await DnDUI.confirm("⚠️ WARNING!\nAll local characters, saved profiles, Master DB cache, and temporary settings in your browser will be wiped and restored to factory defaults.\n\nAre you sure?", { tone: 'danger' }));
       if (!confirmed) return;
 
       try {

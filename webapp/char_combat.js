@@ -11833,7 +11833,7 @@
       });
     }
 
-    function triggerCockpitLongRest() {
+    async function triggerCockpitLongRest() {
       if (character?.tactical?.abilityCooldowns) {
         character.tactical.abilityCooldowns = {};
       }
@@ -11841,7 +11841,7 @@
         performLongRest();
         return;
       }
-      if (confirm('🌙 Take a Long Rest (8 Hours) and restore HP, all daily spell slots, and maneuvers?')) {
+      if ((await DnDUI.confirm('🌙 Take a Long Rest (8 Hours) and restore HP, all daily spell slots, and maneuvers?'))) {
         // Refill HP
         if (character.hp) character.hp.current = character.hp.max || 44;
         // Refill spell slots
@@ -13433,8 +13433,8 @@
       showDiceTopToast(record);
     }
 
-    function clearDiceHistory() {
-      if (!confirm('Are you sure you want to clear the entire roll history?')) return;
+    async function clearDiceHistory() {
+      if (!(await DnDUI.confirm('Are you sure you want to clear the entire roll history?', { tone: 'danger' }))) return;
       window.diceRollHistory = [];
       try {
         localStorage.removeItem('dnd_dice_history');

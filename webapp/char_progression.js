@@ -6695,14 +6695,14 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       }
     }
 
-    function undoLastLevel() {
+    async function undoLastLevel() {
       const prog = character.levelProgression || [];
       if (prog.length <= 1) {
         showToast('Character level cannot be reduced below Level 1.', 'error', { wrap: true });
         return;
       }
       const last = prog[prog.length - 1];
-      if (!confirm(`Are you sure you want to undo Level ${last.level} (${last.className})?`)) return;
+      if (!(await DnDUI.confirm(`Are you sure you want to undo Level ${last.level} (${last.className})?`, { tone: 'danger' }))) return;
 
       prog.pop();
 
@@ -6805,7 +6805,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       return toggleLevelActive(idx);
     }
 
-    function deleteLevelRow(idx) {
+    async function deleteLevelRow(idx) {
       const prog = character.levelProgression || [];
       if (idx < 0 || idx >= prog.length) return;
       if (prog.length <= 1) {
@@ -6813,7 +6813,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         return;
       }
       const row = prog[idx];
-      if (!confirm(`Are you sure you want to delete Level ${row.level} (${row.className})?`)) return;
+      if (!(await DnDUI.confirm(`Are you sure you want to delete Level ${row.level} (${row.className})?`, { tone: 'danger' }))) return;
 
       const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
       if (usedStore) {
@@ -10714,9 +10714,9 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
     }
 
-    function dismissCompanion() {
+    async function dismissCompanion() {
       if (!character || !character.companion) return;
-      if (!confirm(`Are you sure you want to dismiss ${character.companion.name || 'your companion'}?`)) return;
+      if (!(await DnDUI.confirm(`Are you sure you want to dismiss ${character.companion.name || 'your companion'}?`, { tone: 'danger' }))) return;
 
       character.companion = null;
       if (Array.isArray(character.specialAbilities)) {

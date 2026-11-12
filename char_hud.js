@@ -1631,7 +1631,7 @@
 
     async function leaveCurrentCampaign() {
       if (!character.cloudCampaignId) return;
-      if (!confirm('Are you sure you want to leave this campaign?')) return;
+      if (!(await DnDUI.confirm('Are you sure you want to leave this campaign?', { tone: 'danger' }))) return;
 
       try {
         await window.SupabaseAuth.leaveCampaign(character.cloudCampaignId, character.id);
@@ -2232,8 +2232,8 @@
       }
     }
 
-    function clearSettingsApiKey() {
-      if (confirm('Are you sure you want to delete your Gemini API key?')) {
+    async function clearSettingsApiKey() {
+      if ((await DnDUI.confirm('Are you sure you want to delete your Gemini API key?', { tone: 'danger' }))) {
         localStorage.removeItem('gemini_api_key');
         localStorage.removeItem('dnd35_gemini_discovered_models');
         const input = document.getElementById('settings-gemini-api-key');
@@ -3174,9 +3174,9 @@
       }
     }
 
-    function removeCharacterPortrait() {
+    async function removeCharacterPortrait() {
       if (character?.portrait) {
-        if (!confirm('Are you sure you want to remove the custom portrait and revert to the dynamic class icon?')) return;
+        if (!(await DnDUI.confirm('Are you sure you want to remove the custom portrait and revert to the dynamic class icon?', { tone: 'danger' }))) return;
         delete character.portrait;
         delete character.portraitPosition;
         delete character.portraitFit;
@@ -3656,9 +3656,9 @@
       }
     }
 
-    function clearWallpaper() {
+    async function clearWallpaper() {
       if (character?.wallpaper?.image) {
-        if (!confirm('Are you sure you want to remove the custom page background?')) return;
+        if (!(await DnDUI.confirm('Are you sure you want to remove the custom page background?', { tone: 'danger' }))) return;
       }
       if (character) {
         character.wallpaper = null;
@@ -9464,9 +9464,9 @@ function renderManualStatsPanel() {
       renderPeriodicModalActiveList();
     }
 
-    function clearAllPeriodicHpEffects() {
+    async function clearAllPeriodicHpEffects() {
       if (!character || !Array.isArray(character.periodicHpEffects) || character.periodicHpEffects.length === 0) return;
-      if (confirm('Are you sure you want to clear all active periodic HP effects (DoT / HoT)?')) {
+      if ((await DnDUI.confirm('Are you sure you want to clear all active periodic HP effects (DoT / HoT)?', { tone: 'danger' }))) {
         character.periodicHpEffects = [];
         saveStateToStorage(true);
         renderAll();

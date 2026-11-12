@@ -1796,7 +1796,190 @@
     });
   }
 
+  // ---- In-page confirm / prompt dialog -------------------------------------
+  let dialogQueue = Promise.resolve();
+
+  function dialogSupported() {
+    return !!(global.document && global.document.body &&
+      typeof global.HTMLDialogElement !== 'undefined' &&
+      typeof global.HTMLDialogElement.prototype.showModal === 'function');
+  }
+
+  function stripStatusIcons(message) {
+    return String(message == null ? '' : message).replace(/^(?:[⚠❌✅ℹ]️?\s*)+/, '');
+  }
+
+  function dialogEl(tag, className, style) {
+    const el = global.document.createElement(tag);
+    if (className) el.className = className;
+    if (style) el.setAttribute('style', style);
+    return el;
+  }
+
+  function runDialog(kind, message, defaultValue, opts) {
+    return new Promise(resolve => {
+      const doc = global.document;
+      const isPrompt = kind === 'prompt';
+      const danger = opts.tone === 'danger';
+      const previousFocus = doc.activeElement;
+      let dlg = doc.getElementById('dndui-dialog');
+      if (!dlg) {
+        dlg = dialogEl('dialog', '', 'width:100%;height:100%;max-width:none;max-height:none;border:0;padding:12px;background:rgba(2,6,23,0.85);box-sizing:border-box');
+        dlg.id = 'dndui-dialog';
+        doc.body.appendChild(dlg);
+      }
+      while (dlg.firstChild) dlg.removeChild(dlg.firstChild);
+
+      const card = dialogEl('div', 'bg-dndCard border ' + (danger ? 'border-rose-500/80' : 'border-purple-500/80') + ' rounded-2xl shadow-2xl w-full max-w-md', 'margin:15vh auto 0;max-height:85dvh;overflow:auto');
+      const head = dialogEl('div', 'bg-slate-950 px-4 py-3 border-b border-slate-800');
+      const title = dialogEl('h3', 'text-sm font-extrabold text-white');
+      title.id = 'dndui-dialog-title';
+      title.textContent = opts.title || (isPrompt ? 'Input Required' : 'Confirm');
+      head.appendChild(title);
+      const msg = dialogEl('p', 'p-4 text-xs text-slate-300 whitespace-pre-line');
+      msg.id = 'dndui-dialog-msg';
+      msg.textContent = stripStatusIcons(message);
+      card.appendChild(head);
+      card.appendChild(msg);
+      dlg.setAttribute('aria-labelledby', title.id);
+      dlg.setAttribute('aria-describedby', msg.id);
+
+      let input = null;
+      let errEl = null;
+      if (isPrompt) {
+        const wrap = dialogEl('div', '', 'padding:0 16px 4px');
+        const multiline = !!opts.multiline;
+        input = dialogEl(multiline ? 'textarea' : 'input',
+          'w-full bg-slate-900 border border-slate-800 rounded-lg text-white focus:outline-none focus:border-purple-500',
+          multiline
+            ? 'font-size:16px;height:140px;padding:8px 12px;box-sizing:border-box'
+            : 'font-size:16px;min-height:44px;padding:0 12px;box-sizing:border-box');
+        if (!multiline) input.type = opts.inputType || 'text';
+        input.value = defaultValue == null ? '' : String(defaultValue);
+        if (opts.placeholder) input.placeholder = opts.placeholder;
+        if (opts.readOnly) input.readOnly = true;
+        errEl = dialogEl('p', 'text-xs text-rose-400');
+        errEl.setAttribute('role', 'alert');
+        wrap.appendChild(input);
+        wrap.appendChild(errEl);
+        card.appendChild(wrap);
+      }
+
+      const row = dialogEl('div', 'flex justify-end gap-2 p-4');
+      const btnStyle = 'min-height:44px;min-width:6rem;padding:0 16px';
+      const cancelBtn = dialogEl('button', 'bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold', btnStyle);
+      cancelBtn.type = 'button';
+      cancelBtn.textContent = opts.cancelLabel || 'Cancel';
+      const okBtn = dialogEl('button', (danger ? 'bg-rose-600 hover:bg-rose-500' : 'bg-purple-600 hover:bg-purple-500') + ' text-white rounded-lg text-xs font-bold', btnStyle);
+      okBtn.type = 'button';
+      okBtn.textContent = opts.confirmLabel || (isPrompt ? 'OK' : 'Confirm');
+      row.appendChild(cancelBtn);
+      row.appendChild(okBtn);
+      card.appendChild(row);
+      dlg.appendChild(card);
+
+      const openedAt = Date.now();
+      let done = false;
+      const finish = value => {
+        if (done) return;
+        done = true;
+        dlg.removeEventListener('cancel', onCancel);
+        dlg.removeEventListener('keydown', onKeydown);
+        dlg.removeEventListener('click', onBackdrop);
+        try { dlg.close(); } catch (_) { /* already closed */ }
+        if (previousFocus && typeof previousFocus.focus === 'function' && doc.contains(previousFocus)) {
+          try { previousFocus.focus(); } catch (_) { /* not focusable */ }
+        }
+        resolve(value);
+      };
+      const cancelValue = isPrompt ? null : false;
+      const submit = () => {
+        if (!isPrompt) { finish(true); return; }
+        const value = input.value;
+        if (typeof opts.validate === 'function') {
+          const err = opts.validate(value);
+          if (err) { errEl.textContent = String(err); input.focus(); return; }
+        }
+        finish(value);
+      };
+      function onCancel(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        finish(cancelValue);
+      }
+      function onKeydown(e) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          e.stopPropagation();
+          finish(cancelValue);
+          return;
+        }
+        if (e.key === 'Enter' && input && e.target === input && !opts.multiline) {
+          e.preventDefault();
+          submit();
+          return;
+        }
+        if (e.key === 'Tab') {
+          const items = Array.prototype.filter.call(
+            dlg.querySelectorAll('input, textarea, button'), el => !el.disabled);
+          if (!items.length) return;
+          const first = items[0];
+          const last = items[items.length - 1];
+          const active = doc.activeElement;
+          if (e.shiftKey && (active === first || !dlg.contains(active))) {
+            e.preventDefault();
+            last.focus();
+          } else if (!e.shiftKey && (active === last || !dlg.contains(active))) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
+      }
+      function onBackdrop(e) {
+        if (e.target !== dlg) return;
+        if (Date.now() - openedAt < 300) return;
+        finish(cancelValue);
+      }
+      dlg.addEventListener('cancel', onCancel);
+      dlg.addEventListener('keydown', onKeydown);
+      dlg.addEventListener('click', onBackdrop);
+      cancelBtn.addEventListener('click', () => finish(cancelValue));
+      okBtn.addEventListener('click', submit);
+
+      dlg.showModal();
+      if (input) {
+        input.focus();
+        if (typeof input.select === 'function') input.select();
+      } else if (danger) {
+        cancelBtn.focus();
+      } else {
+        okBtn.focus();
+      }
+    });
+  }
+
+  function enqueueDialog(kind, message, defaultValue, opts) {
+    const next = dialogQueue.then(() => runDialog(kind, message, defaultValue, opts));
+    dialogQueue = next.catch(() => {});
+    return next;
+  }
+
+  function confirmDialog(message, opts) {
+    const o = opts || {};
+    if (!dialogSupported()) return Promise.resolve(global.confirm(message));
+    return enqueueDialog('confirm', message, '', o);
+  }
+
+  function promptDialog(message, defaultValue, opts) {
+    const o = opts || {};
+    const dv = defaultValue === undefined ? '' : defaultValue;
+    if (!dialogSupported()) return Promise.resolve(global.prompt(message, dv));
+    return enqueueDialog('prompt', message, dv, o);
+  }
+
   global.DnDUI = {
+    confirm: confirmDialog,
+    prompt: promptDialog,
     getDiceIconSvg,
     getFormulaDiceIconSvg,
     getDamageTypeStyle,
