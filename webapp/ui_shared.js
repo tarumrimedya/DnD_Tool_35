@@ -1711,7 +1711,7 @@
     return global.masterDb.find(e => e && e.id === snap.id) || snap;
   }
 
-  function equipSelectedCompendiumEntry() {
+  async function equipSelectedCompendiumEntry() {
     const entry = _drawerState.selectedEntry;
     if (!entry) return;
     const snapshot = snapshotLazyEntryIntoCustomDb(entry);
@@ -1721,11 +1721,12 @@
       return;
     }
     if (global.RuleMaster && typeof global.RuleMaster.equipItem === 'function') {
+      // equipItem may wait on an in-page flaw / racial trait confirmation; close the drawer after it settles.
       if (snapshot) {
-        global.RuleMaster.equipItem(snapshot);
+        await global.RuleMaster.equipItem(snapshot);
       } else {
         if (global.RuleMaster.saveEntry) global.RuleMaster.saveEntry(entry);
-        global.RuleMaster.equipItem(entry); // equipItem expects the entry object (an id string crashed in ensureV2/type checks)
+        await global.RuleMaster.equipItem(entry); // equipItem expects the entry object (an id string crashed in ensureV2/type checks)
       }
       closeCompendiumDrawer();
     }

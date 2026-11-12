@@ -15402,7 +15402,7 @@
       executeSpotlightTerminalItem(itemIdx);
     }
 
-    function executeSpotlightTerminalItem(idx = _spotlightTerminalActiveIndex) {
+    async function executeSpotlightTerminalItem(idx = _spotlightTerminalActiveIndex) {
       const item = _spotlightTerminalItems[idx];
       if (!item) return;
 
@@ -15418,7 +15418,8 @@
         const benEl = document.getElementById('quick-feat-benefit');
         if (benEl) benEl.value = item.feat.benefit || '';
         if (typeof confirmQuickLevelFeat === 'function') {
-          confirmQuickLevelFeat(item.feat.name);
+          // May wait on an in-page trait confirmation; save, render and close only after it settles.
+          await confirmQuickLevelFeat(item.feat.name);
         } else if (typeof learnFeatObject === 'function') {
           learnFeatObject(item.feat);
         }
@@ -15505,10 +15506,11 @@
           toggleSpotlightTerminal(false);
           return;
         }
+        // equipItem may wait on an in-page flaw / racial trait confirmation; close the terminal after it settles.
         if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.equipItemWithChildren === 'function') {
-          RuleMaster.equipItemWithChildren(item.entry);
+          await RuleMaster.equipItemWithChildren(item.entry);
         } else if (typeof RuleMaster !== 'undefined' && typeof RuleMaster.equipItem === 'function') {
-          RuleMaster.equipItem(item.entry);
+          await RuleMaster.equipItem(item.entry);
         }
         toggleSpotlightTerminal(false);
         return;

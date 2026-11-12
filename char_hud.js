@@ -8862,8 +8862,24 @@ function renderManualStatsPanel() {
       }
     }
 
-    function saveStatDistribution() {
+    async function saveStatDistribution() {
       if (!character) return;
+
+      // 2. Point Buy kontrolü (eğer stat modu pointbuy ise)
+      // Asked before any profile field is written, so a cancel leaves the character untouched
+      // and nothing below runs until the player answers.
+      if (statDistState.mode === 'pointbuy') {
+        const budget = statDistState.pointBuyBudget || 28;
+        let spent = 0;
+        STAT_KEYS.forEach(s => {
+          spent += getPointBuyCost(Number(statDistState.workingAbilities[s.key]) || 8);
+        });
+        if (spent > budget) {
+          const proceed = (await DnDUI.confirm(`⚠️ Point Buy budget exceeded! (${spent}/${budget} points spent)\n\nDo you still want to save these ability scores?`));
+          if (!proceed) return;
+          if (!character) return;
+        }
+      }
 
       // 1. Kimlik ve profil alanlarini kaydet
       const getVal = id => document.getElementById(id)?.value?.trim();
@@ -8966,19 +8982,6 @@ function renderManualStatsPanel() {
 
       const newSpeed = parseInt(document.getElementById('profile-edit-speed')?.value);
       if (!isNaN(newSpeed) && newSpeed > 0) character.baseSpeed = newSpeed;
-
-      // 2. Point Buy kontrolü (eğer stat modu pointbuy ise)
-      if (statDistState.mode === 'pointbuy') {
-        const budget = statDistState.pointBuyBudget || 28;
-        let spent = 0;
-        STAT_KEYS.forEach(s => {
-          spent += getPointBuyCost(Number(statDistState.workingAbilities[s.key]) || 8);
-        });
-        if (spent > budget) {
-          const proceed = confirm(`⚠️ Point Buy budget exceeded! (${spent}/${budget} points spent)\n\nDo you still want to save these ability scores?`);
-          if (!proceed) return;
-        }
-      }
 
       // 3. Taban statları uygula (via CharStore reducer for Undo/Redo support)
       const nextBaseAbilities = {};

@@ -485,7 +485,7 @@
       }
     }
 
-    function selectFeatFromPicker(featName) {
+    async function selectFeatFromPicker(featName) {
       const catalog = getCombinedFeatCatalog();
       const entry = catalog.find(c => c.name.toLowerCase() === featName.toLowerCase()) || {
         name: featName,
@@ -561,12 +561,12 @@
       }
 
       if (character.level > 1 && isFlaw) {
-        const proceed = confirm(`⚠️ Per D&D 3.5e Unearthed Arcana RAW, Flaws may only be selected at 1st level during character creation. Your current character level is ${character.level}.\n\nDo you still want to add the flaw "${entry.name}"?`);
+        const proceed = (await DnDUI.confirm(`⚠️ Per D&D 3.5e Unearthed Arcana RAW, Flaws may only be selected at 1st level during character creation. Your current character level is ${character.level}.\n\nDo you still want to add the flaw "${entry.name}"?`));
         if (!proceed) return;
       }
 
       if (character.level > 1 && isRacial) {
-        const proceed = confirm(`⚠️ Racial traits are normally determined at 1st level. Your current level is ${character.level}.\n\nDo you still want to add "${entry.name}"?`);
+        const proceed = (await DnDUI.confirm(`⚠️ Racial traits are normally determined at 1st level. Your current level is ${character.level}.\n\nDo you still want to add "${entry.name}"?`));
         if (!proceed) return;
       }
 
@@ -2061,11 +2061,16 @@
       modal.classList.remove('hidden');
     }
 
-    function confirmQuickLevelFeat(explicitFeatName = null) {
+    async function confirmQuickLevelFeat(explicitFeatName = null) {
       if (activeQuickLevelIndex === null || activeQuickLevelIndex === undefined) {
         console.warn("No valid level selected!");
         return;
       }
+      // The trait confirmation below awaits the player; closing the quick-feat modal resets this
+      // shared state, so everything after that await uses these values from the start of the call.
+      const quickLevelIndexAtStart = activeQuickLevelIndex;
+      const quickTargetLockedAtStart = isQuickFeatTargetLocked;
+      const quickTargetSlotAtStart = activeQuickFeatTargetSlot;
       if (!Array.isArray(character.levelProgression)) {
         character.levelProgression = [];
       }
@@ -2156,7 +2161,7 @@
             blockWith('Maximum 2 Character Traits (3.5e RAW)', 'Per Unearthed Arcana (p. 86), a character can have at most two traits.');
             return;
           }
-          if (rowLevel > 1 && !confirm(`⚠️ Per Unearthed Arcana (p. 86), traits are chosen at 1st level. Adding a trait after 1st level requires DM approval.\n\nAdd the trait "${featName}" at level ${rowLevel}?`)) {
+          if (rowLevel > 1 && !(await DnDUI.confirm(`⚠️ Per Unearthed Arcana (p. 86), traits are chosen at 1st level. Adding a trait after 1st level requires DM approval.\n\nAdd the trait "${featName}" at level ${rowLevel}?`))) {
             return;
           }
         } else {
@@ -2235,12 +2240,13 @@
         return;
       }
 
-      const targetLvlIdx = activeQuickLevelIndex;
-      const row = character.levelProgression[activeQuickLevelIndex];
+      const targetLvlIdx = quickLevelIndexAtStart;
+      const row = character.levelProgression[targetLvlIdx];
+      if (!row) return;
       if (!Array.isArray(row.feats)) row.feats = [];
       if (!Array.isArray(row.specialAbilities)) row.specialAbilities = [];
 
-      const isExtraAddition = !isQuickFeatTargetLocked || !activeQuickFeatTargetSlot;
+      const isExtraAddition = !quickTargetLockedAtStart || !quickTargetSlotAtStart;
       let prefix = '';
       if (category === 'Class Bonus Feat') prefix = isExtraAddition ? '⚔️ [Extra Bonus] ' : '⚔️ [Bonus] ';
       else if (category === 'DM Boon') prefix = '🌟 [DM Boon] ';

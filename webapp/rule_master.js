@@ -1435,12 +1435,13 @@ const RuleMaster = {
     this.renderTable();
   },
 
-  deleteSelectedEntries() {
+  async deleteSelectedEntries() {
     if (!Array.isArray(masterDb) || this.selectedIds.size === 0) return;
     const count = this.selectedIds.size;
-    if (!confirm(`⚠️ Are you sure you want to permanently delete ${count} selected custom entries from this character's Custom DB?`)) {
+    if (!(await DnDUI.confirm(`⚠️ Are you sure you want to permanently delete ${count} selected custom entries from this character's Custom DB?`, { tone: 'danger' }))) {
       return;
     }
+    if (!Array.isArray(masterDb)) return;
     for (let i = masterDb.length - 1; i >= 0; i--) {
       const item = this.ensureV2(masterDb[i]);
       const key = this.getEntrySelectionKey(item, i);
@@ -1508,13 +1509,17 @@ const RuleMaster = {
   },
 
   // Delete entry
-  deleteEntry(index) {
+  async deleteEntry(index) {
     if (index >= 0 && index < masterDb.length) {
-      const item = this.ensureV2(masterDb[index]);
-      if (confirm(`Are you sure you want to permanently delete "${item.name}" from this character's Custom DB?`)) {
-        const key = this.getEntrySelectionKey(item, index);
+      const rawEntry = masterDb[index];
+      const item = this.ensureV2(rawEntry);
+      if ((await DnDUI.confirm(`Are you sure you want to permanently delete "${item.name}" from this character's Custom DB?`, { tone: 'danger' }))) {
+        // The list may have changed while the dialog was open: delete the entry the player saw, not whatever now sits at that index.
+        const currentIndex = Array.isArray(masterDb) ? masterDb.indexOf(rawEntry) : -1;
+        if (currentIndex < 0) return;
+        const key = this.getEntrySelectionKey(item, currentIndex);
         this.selectedIds.delete(key);
-        masterDb.splice(index, 1);
+        masterDb.splice(currentIndex, 1);
         if (typeof character !== 'undefined' && character) {
           character.customDb = masterDb;
         }
@@ -2211,12 +2216,13 @@ const RuleMaster = {
     return `<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-950/80 text-sky-300 border border-sky-700/50" title="Copied from the SRD compendium; follows SRD fixes automatically while unedited">📥 SRD Copy</span>`;
   },
 
-  applySnapshotUpdate(id) {
+  async applySnapshotUpdate(id) {
     if (!id || typeof SrdCompendium === 'undefined' || typeof SrdCompendium.applySnapshotUpdate !== 'function') return;
     const db = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb : null;
     const entry = db ? db.find(e => e && e.id === id) : null;
     if (!entry) return;
-    if (!confirm(`Replace "${entry.name}" with the current SRD version? Your edits to this copy will be discarded.`)) return;
+    if (!(await DnDUI.confirm(`Replace "${entry.name}" with the current SRD version? Your edits to this copy will be discarded.`, { tone: 'danger' }))) return;
+    if (masterDb !== db) return;
     if (SrdCompendium.applySnapshotUpdate(db, id)) {
       if (typeof CharStore !== 'undefined' && typeof CharStore.recompute === 'function') CharStore.recompute();
       if (typeof saveStateToStorage === 'function') saveStateToStorage();
@@ -3265,8 +3271,8 @@ Schema:
     notify('✅ Gemini API key saved successfully!', 'success');
   },
 
-  clearApiKey() {
-    if (confirm('Are you sure you want to remove the Gemini API key from local storage?')) {
+  async clearApiKey() {
+    if ((await DnDUI.confirm('Are you sure you want to remove the Gemini API key from local storage?', { tone: 'danger' }))) {
       this.setApiKey('');
     }
   },
@@ -4730,7 +4736,7 @@ Return valid JSON only matching:
     if (!rawQueries.length) return;
 
     const items = [...new Set(rawQueries)];
-    if (!confirm(`A total of ${items.length} rule(s) will be parsed into Canonical V2 format and added to Master DB. Proceed?`)) {
+    if (!(await DnDUI.confirm(`A total of ${items.length} rule(s) will be parsed into Canonical V2 format and added to Master DB. Proceed?`))) {
       return;
     }
 
@@ -4986,7 +4992,7 @@ Return valid JSON only matching:
   },
 
   // Equip or learn Canonical V2 entry into active character
-  equipItem(rawItem) {
+  async equipItem(rawItem) {
     if (typeof character === 'undefined' || !character || !rawItem) return;
     const item = this.ensureV2(rawItem);
     const type = (item.type || '').toLowerCase();
@@ -5202,8 +5208,9 @@ Return valid JSON only matching:
       character.activeStance = item.name;
     } else if (type === 'flaw' || cat.toLowerCase() === 'flaw' || item.name.toLowerCase().startsWith('flaw:')) {
       if (character.level > 1) {
-        const proceed = confirm(`⚠️ Per D&D 3.5e Unearthed Arcana rules, Flaws can only be selected at 1st Level during character creation. Your current level is ${character.level}.\n\nDo you still want to add the "${item.name}" flaw?`);
+        const proceed = (await DnDUI.confirm(`⚠️ Per D&D 3.5e Unearthed Arcana rules, Flaws can only be selected at 1st Level during character creation. Your current level is ${character.level}.\n\nDo you still want to add the "${item.name}" flaw?`));
         if (!proceed) return;
+        if (typeof character === 'undefined' || !character) return;
       }
       if (!character.feats) character.feats = [];
       const cleanName = item.name.replace(/^flaw:\s*/i, '').trim();
@@ -5248,8 +5255,9 @@ Return valid JSON only matching:
       }
     } else if (type === 'racial trait' || cat.toLowerCase() === 'racial trait' || (item.category && item.category.toLowerCase().includes('racial'))) {
       if (character.level > 1) {
-        const proceed = confirm(`⚠️ Racial traits are normally determined at 1st Level. Do you still want to add "${item.name}"?`);
+        const proceed = (await DnDUI.confirm(`⚠️ Racial traits are normally determined at 1st Level. Do you still want to add "${item.name}"?`));
         if (!proceed) return;
+        if (typeof character === 'undefined' || !character) return;
       }
       if (!character.specialAbilities) character.specialAbilities = [];
       const cleanName = item.name.trim();
@@ -5455,7 +5463,7 @@ Return valid JSON only matching:
     if (typeof character === 'undefined' || !character || !parentItem) return;
     const v2 = this.ensureV2(parentItem);
     this.persistToMasterDb(v2);
-    this.equipItem(v2);
+    return this.equipItem(v2);
   },
 
   equipWeaponSlot(name, slot) {
@@ -5889,7 +5897,7 @@ Return valid JSON only matching:
   },
 
   async resetMasterDbToDefault() {
-    if (confirm('⚠️ Are you sure you want to clear all custom entries from this character\'s Custom DB?')) {
+    if ((await DnDUI.confirm('⚠️ Are you sure you want to clear all custom entries from this character\'s Custom DB?', { tone: 'danger' }))) {
       masterDb.length = 0;
       if (typeof character !== 'undefined' && character) {
         character.customDb = masterDb;
@@ -7502,7 +7510,7 @@ Return valid JSON only matching:
     previewBox.classList.remove('hidden');
   },
 
-  saveInlineManualEntry(alsoEquip = false) {
+  async saveInlineManualEntry(alsoEquip = false) {
     const editIdx = this.selectedEntryIndex;
     const v2Entry = this.buildInlineManualV2Entry();
     if (!v2Entry.name || !v2Entry.name.trim()) {
@@ -7523,7 +7531,7 @@ Return valid JSON only matching:
     }
     if (this.saveEntry(v2Entry, editIdx)) {
       if (alsoEquip) {
-        this.equipItem(v2Entry);
+        await this.equipItem(v2Entry);
       } else {
         notify(`✅ "${v2Entry.name}" ${editIdx >= 0 ? 'updated in' : 'saved to'} Character Custom DB!`, 'success');
       }
