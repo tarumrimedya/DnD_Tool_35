@@ -539,7 +539,7 @@
     customBonusTypes: Array.isArray(persisted.customBonusTypes) ? persisted.customBonusTypes : [],
     house: { critCap: 0 }, // engine-ready; Stage 2 feeds house rules from the Character Sheet
     spot: null,
-    ui: { viewMode: 'scratch', facetOpen: {}, cardOpen: {}, jsonOpen: false, attachOpen: false, tplSaveOpen: false, newTplName: '', houseOpen: false, customTypeOpen: false, customType: { name: '', stacks: false, lostFF: false },
+    ui: { viewMode: 'scratch', liveOpenMobile: false, facetOpen: {}, cardOpen: {}, jsonOpen: false, attachOpen: false, tplSaveOpen: false, newTplName: '', houseOpen: false, customTypeOpen: false, customType: { name: '', stacks: false, lostFF: false },
       dmgDraft: { count: 1, die: 'd6', type: 'Fire', crit: 'normal', cond: '' }, extraDraft: 'rays' }
   };
 
@@ -1397,9 +1397,10 @@
     dd.innerHTML = pills + (items.length ? items.map((it, i) => {
       const head = it.group !== last ? '<div class="fs-spot-group">' + esc(it.group) + '</div>' : '';
       last = it.group;
-      return head + '<div class="fs-spot-item' + (i === S.spot.idx ? ' active' : '') + '" data-spot-pick="' + i + '"><div class="fs-spot-row"><b>' + esc(it.label) + '</b>' + (it.badge ? '<span class="fs-pill dim">' + esc(it.badge) + '</span>' : '') + '</div>' + (it.desc ? '<div class="fs-spot-desc">' + esc(it.desc) + '</div>' : '') + '</div>';
+      return head + '<div class="fs-spot-item' + (i === S.spot.idx ? ' active' : '') + '" data-spot-pick="' + i + '"><div class="fs-spot-row"><b>' + esc(it.label) + '</b><span>' + (it.badge ? '<span class="fs-pill dim">' + esc(it.badge) + '</span>' : '') + (it.data && it.data.tpl ? '<span class="fs-spot-del" data-spot-del="' + esc(it.data.tpl) + '" title="Delete saved template">✕</span>' : '') + '</span></div>' + (it.desc ? '<div class="fs-spot-desc">' + esc(it.desc) + '</div>' : '') + '</div>';
     }).join('') : '<div class="fs-spot-empty">No matches' + (CAT.srdLoaded ? '' : ' in the offline seed catalog (serve over http:// to search the full SRD)') + '.</div>');
     dd.classList.add('open');
+    if (window.innerWidth > 640) { dd.style.left = ''; dd.style.right = ''; const rc = dd.getBoundingClientRect(); if (rc.right > window.innerWidth - 8) { dd.style.left = 'auto'; dd.style.right = '0'; } }
     const act = dd.querySelector('.fs-spot-item.active'); if (act && act.scrollIntoView) act.scrollIntoView({ block: 'nearest' });
   }
   function spotPick(i) {
@@ -1472,7 +1473,8 @@
     const pills = summaryPills(en);
     const l3 = pills.length ? pills.map((p) => '<span class="fs-pill ' + p[0] + '">' + esc(p[1]) + '</span>').join('') : '<span class="fs-hint">Passive modifiers, defenses, prerequisites and attached powers appear here.</span>';
     const warns = has('chassis') ? chassisView(en.chassis).warnings : [];
-    $('#fs-live').innerHTML = '<div class="fs-live-line">' + l1 + '</div><div class="fs-live-line fs-live-card">' + l2 + '</div><div class="fs-live-line">' + l3 + '</div>' + (warns.length ? '<div class="fs-live-line" style="font-size:11px">' + warns.slice(0, 2).map((w) => '<span class="fs-down">⛔ ' + esc(w) + '</span>').join(' ') + '</div>' : '');
+    l1 += '<button type="button" class="fs-btn fs-xs fs-live-toggle" data-action="toggle-live">' + (S.ui.liveOpenMobile ? '▴ Hide' : '▾ Preview') + '</button>';
+    $('#fs-live').innerHTML = '<div class="fs-live-line">' + l1 + '</div><div class="fs-live-more' + (S.ui.liveOpenMobile ? ' open' : '') + '"><div class="fs-live-line fs-live-card">' + l2 + '</div><div class="fs-live-line">' + l3 + '</div>' + (warns.length ? '<div class="fs-live-line" style="font-size:11px">' + warns.slice(0, 2).map((w) => '<span class="fs-down">⛔ ' + esc(w) + '</span>').join(' ') + '</div>' : '') + '</div>';
   }
 
   // --------------------------------------------------------------------------
@@ -1878,7 +1880,7 @@
   }
   function scratchWeaponArmor(en) {
     const ch = en.chassis, v = chassisView(ch), isW = ch.kind === 'weapon';
-    let h = hat('h-indigo', L(isW ? '⚔️ Weapon' : '🛡️ Armor / Shield') + inp('name', en.name, { ph: v.name, style: 'width:230px' }) + L('Base') + spotHtml('base', 'chassis', { style: 'width:210px', ph: '🔍 ' + baseName(v.base) }) +
+    let h = hat('h-amber', L(isW ? '⚔️ Weapon' : '🛡️ Armor / Shield') + inp('name', en.name, { ph: v.name, style: 'width:230px' }) + L('Base') + spotHtml('base', 'chassis', { style: 'width:210px', ph: '🔍 ' + baseName(v.base) }) +
       L('Material') + sel('chassis.material', ch.material, MATERIALS.map((m) => [m.id, m.name]), { narrow: true }) + L('Enh') + sel('chassis.enhancement', ch.enhancement, range(0, 5).map((n) => [n, sgn(n)]), { narrow: true, num: true }) + '<div class="lego-row">' + tagSockets(en) + '</div>');
     if (isW) {
       const w = ch.weapon;
@@ -1897,7 +1899,7 @@
   }
   function scratchWondrous(en) {
     const kinds = ['Wondrous Item', 'Ring', 'Rod', 'Staff', 'Wand', 'Potion / Oil', 'Scroll', 'Artifact / Relic'];
-    let h = hat('h-indigo', L('💎 Item') + inp('name', en.name, { ph: 'Item name', style: 'width:220px' }) + L('Kind') + sel('item.subtype', en.item.subtype, kinds, { narrow: true }) + L('Slot') + sel('item.slot', en.item.slot, BODY_SLOTS, { narrow: true }) +
+    let h = hat('h-amber', L('💎 Item') + inp('name', en.name, { ph: 'Item name', style: 'width:220px' }) + L('Kind') + sel('item.subtype', en.item.subtype, kinds, { narrow: true }) + L('Slot') + sel('item.slot', en.item.slot, BODY_SLOTS, { narrow: true }) +
       L('Price') + inp('item.price', en.item.price, { num: true, style: 'width:90px' }) + L('gp • CL') + inp('item.cl', en.item.cl, { num: true, style: 'width:50px' }) + '<div class="lego-row">' + tagSockets(en) + '</div>');
     h += modStacks(en) + scratchBlocks(en.effects, 'effects') + en.powers.map(powerCBlock).join('');
     h += '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Bonus</button><button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Activated Sub-Power (C-Block)</button>' +
@@ -1925,7 +1927,7 @@
     return h;
   }
   function scratchFeat(en) {
-    return hat('h-indigo', L('📜 Feat') + inp('name', en.name, { ph: 'Feat name', style: 'width:220px' }) + L('Repeatable') + sel('repeat.mode', en.repeat.mode, [['once', '1x Only'], ['upto', 'Up to N times'], ['per', 'Per Weapon / School']], { narrow: true }) + (en.repeat.mode === 'upto' ? sel('repeat.n', en.repeat.n, range(2, 20), { narrow: true, num: true }) : '') + '<div class="lego-row">' + tagSockets(en) + '</div>') +
+    return hat('h-emerald', L('📜 Feat') + inp('name', en.name, { ph: 'Feat name', style: 'width:220px' }) + L('Repeatable') + sel('repeat.mode', en.repeat.mode, [['once', '1x Only'], ['upto', 'Up to N times'], ['per', 'Per Weapon / School']], { narrow: true }) + (en.repeat.mode === 'upto' ? sel('repeat.n', en.repeat.n, range(2, 20), { narrow: true, num: true }) : '') + '<div class="lego-row">' + tagSockets(en) + '</div>') +
       prereqCBlock(en, 'Prerequisites') + modStacks(en) + scratchBlocks(en.effects, 'effects') + en.powers.map(powerCBlock).join('') +
       '<div class="lego-palette"><span class="lego-lbl">+ Snap Block:</span><button type="button" class="lego-add b-blue" data-action="add-mod" data-p="modifiers">+ 📊 Benefit Bonus</button><button type="button" class="lego-add c-amber" data-action="add-power-inline">+ ⚡ Granted Power (C-Block)</button>' +
       Object.keys(BLOCK_TYPES).filter((t) => t !== 'bonus').map((t) => '<button type="button" class="lego-add ' + BLOCK_TYPES[t].color + '" data-action="add-block" data-p="effects" data-t="' + t + '">+ ' + BLOCK_TYPES[t].icon + ' ' + esc(BLOCK_TYPES[t].label) + '</button>').join('') + '<div style="width:260px">' + spotHtml('power', 'powers', { ph: '🔍 + Granted Spell' }) + '</div></div>';
@@ -1971,7 +1973,7 @@
   }
   function scratchDomain(en) {
     const g = en.grants;
-    let h = hat('h-violet', L('✨ Domain') + inp('name', en.name, { ph: 'Domain name', style: 'width:220px' }) + '<div class="lego-row">' + tagSockets(en) + '</div>');
+    let h = hat('h-sky', L('✨ Domain') + inp('name', en.name, { ph: 'Domain name', style: 'width:220px' }) + '<div class="lego-row">' + tagSockets(en) + '</div>');
     h += stack('b-blue', L('🧩 Granted Power:') + inp('grants.grantedPowerName', g.grantedPowerName, { ph: 'Power name (e.g. Greater Turning)', style: 'width:200px' }) + L('Usage') + usageEditor('grants.gpUse', g.gpUse) + inp('grants.grantedPower', g.grantedPower, { ph: 'Rule summary…', style: 'flex:1;min-width:240px' }));
     h += scratchBlocks(en.effects, 'effects') + '<div class="lego-palette compact"><button type="button" class="lego-add b-blue" data-action="add-block" data-p="effects" data-t="bonus">+ 📊 Bonus (granted power)</button></div>';
     h += cBlock('c-teal', L('🦖 Domain Spell Ladder (1st–9th)'), g.ladder.map((s, i) => stack('b-slate', '<b class="lego-lvl">Lvl ' + (i + 1) + '</b>' + (s ? '<span class="fs-pill purple">🔮 ' + esc(s) + '<span class="fs-x" data-action="clear-ladder" data-i="' + i + '">×</span></span>' : '') + spotHtml('ladder', i, { style: 'width:240px', ph: '🔍 Pick Spell (Lvl ' + (i + 1) + ')' }))).join(''));
@@ -2097,6 +2099,7 @@
     },
     'load-preset': (el) => { const p = PRESETS.find((x) => x.id === el.dataset.id); if (!p) return; loadEntry(p.build(), p.id); toast('Preset loaded: ' + p.label); renderAll(); },
     'new-entry': () => { loadEntry(scaffold(blankEntry(S.entry.blueprint))); renderAll(); },
+    'toggle-live': () => { S.ui.liveOpenMobile = !S.ui.liveOpenMobile; renderLiveHeader(); },
     'set-view': (el) => { S.ui.viewMode = el.dataset.v; S.ui.cardOpen = {}; renderAll(); toast(el.dataset.v === 'scratch' ? '🧩 Scratch Lego view — same live entry' : '📋 Classic Facets view — same live entry'); },
     'add-block': (el) => { const list = getPath(S.entry, el.dataset.p); const b = BLK(el.dataset.t); list.push(b); if (el.dataset.p === 'effects' && S.entry.facets.indexOf('effects') < 0) S.entry.facets.push('effects'); S.ui.cardOpen['blk:' + b.id] = true; renderAll(); },
     'remove-block': (el) => { getPath(S.entry, el.dataset.p).splice(num(el.dataset.i), 1); renderAll(); },
@@ -2192,6 +2195,8 @@
       if (fn) fn(el, ev);
     });
     root.addEventListener('mousedown', (ev) => {
+      const del = ev.target.closest('[data-spot-del]');
+      if (del && S.spot) { ev.preventDefault(); ev.stopPropagation(); const t = S.templates.find((x) => x.id === del.dataset.spotDel); S.templates = S.templates.filter((x) => x.id !== del.dataset.spotDel); saveLS(); toast('Template deleted: ' + (t ? t.name : ''), 'warn'); renderSpotDD(); return; }
       const lay = ev.target.closest('[data-spot-layer]');
       if (lay && S.spot) { ev.preventDefault(); S.spot.layer = lay.dataset.spotLayer; S.spot.idx = 0; renderSpotDD(); return; }
       const it = ev.target.closest('[data-spot-pick]');
