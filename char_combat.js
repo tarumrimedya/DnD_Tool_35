@@ -13922,7 +13922,7 @@
       const input = document.getElementById('dice-custom-formula-input');
       const formula = (input?.value || '').trim();
       if (!formula) {
-        alert('Please enter a dice expression in the formula field first.\ne.g., Target:21 Bonus:4 Dice:1d6+3 19-20x2');
+        showToast('Please enter a dice expression in the formula field first.\ne.g., Target:21 Bonus:4 Dice:1d6+3 19-20x2', 'error', { wrap: true });
         return;
       }
 
@@ -14312,7 +14312,7 @@
       const input = document.getElementById('dice-custom-formula-input');
       const val = (input?.value || '').trim();
       if (!val) {
-        alert('Please enter a dice formula (e.g., Target:21 Bonus:4 Dice:1d6+3 19-20x2 or 3d6+5)');
+        showToast('Please enter a dice formula (e.g., Target:21 Bonus:4 Dice:1d6+3 19-20x2 or 3d6+5)', 'error', { wrap: true });
         return;
       }
 

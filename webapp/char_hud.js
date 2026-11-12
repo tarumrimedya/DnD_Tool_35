@@ -1450,7 +1450,7 @@
 
     window.forceCloudSyncPull = async function() {
       if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode()) {
-        alert('You must be signed in with your Google account to perform this action.');
+        showToast('You must be signed in with your Google account to perform this action.', 'error', { wrap: true });
         return;
       }
       try {
@@ -1460,7 +1460,7 @@
 
         const cloudChars = await window.SupabaseAuth.fetchUserCharacters();
         if (!Array.isArray(cloudChars) || cloudChars.length === 0) {
-          alert('No saved character found in the cloud.');
+          showToast('No saved character found in the cloud.', 'error', { wrap: true });
           return;
         }
         const myId = character?._hubId || character?.id || localStorage.getItem('dnd35_active_character_id');
@@ -1494,13 +1494,13 @@
           }
         }
       } catch (err) {
-        alert('Error pulling data from cloud: ' + err.message);
+        showToast('Error pulling data from cloud: ' + err.message, 'error', { wrap: true });
       }
     };
 
     window.forceCloudSyncPush = async function() {
       if (!window.SupabaseAuth || window.SupabaseAuth.isLocalMode()) {
-        alert('You must be signed in with your Google account to perform this action.');
+        showToast('You must be signed in with your Google account to perform this action.', 'error', { wrap: true });
         return;
       }
       if (!character) return;
@@ -1538,7 +1538,7 @@
           }
         }
       } catch (err) {
-        alert('Error pushing data to cloud: ' + err.message);
+        showToast('Error pushing data to cloud: ' + err.message, 'error', { wrap: true });
       }
     };
 
@@ -1579,12 +1579,12 @@
     async function submitJoinCampaign() {
       const code = document.getElementById('join-campaign-input-code')?.value.trim();
       if (!code) {
-        alert('Please enter a valid invite code!');
+        showToast('Please enter a valid invite code!', 'error', { wrap: true });
         return;
       }
 
       if (window.SupabaseAuth?.isLocalMode()) {
-        alert('Please sign in with your Google account to join a cloud campaign.');
+        showToast('Please sign in with your Google account to join a cloud campaign.', 'error', { wrap: true });
         return;
       }
 
@@ -1620,7 +1620,7 @@
         }
       } catch (err) {
         console.error('joinCampaign error:', err);
-        alert('Error joining campaign: ' + (err.message || err));
+        showToast('Error joining campaign: ' + (err.message || err), 'error', { wrap: true });
       } finally {
         if (btn) {
           btn.textContent = 'Join Campaign';
@@ -1646,7 +1646,7 @@
       saveStateToStorage();
       updateCampaignNavButton();
       closeJoinCampaignModal();
-      alert('You have left the campaign. Your character remains safely stored independently.');
+      showToast('You have left the campaign. Your character remains safely stored independently.', 'info', { wrap: true });
     }
 
     function updateCampaignNavButton() {
@@ -2214,7 +2214,7 @@
       const input = document.getElementById('settings-gemini-api-key');
       const val = input?.value?.trim() || '';
       if (!val) {
-        alert('Please enter a valid Gemini API key.');
+        showToast('Please enter a valid Gemini API key.', 'error', { wrap: true });
         return;
       }
       localStorage.setItem('gemini_api_key', val);
@@ -2226,9 +2226,9 @@
       }
       const ok = await verifySettingsGeminiApiKey(true);
       if (ok) {
-        alert('✅ Your Google Gemini API Key has been saved and verified (🟢 Active)!');
+        showToast('✅ Your Google Gemini API Key has been saved and verified (🟢 Active)!', 'success', { wrap: true });
       } else {
-        alert('⚠️ Key saved, but Google Gemini server could not verify it. Please check your key.');
+        showToast('⚠️ Key saved, but Google Gemini server could not verify it. Please check your key.', 'warning', { wrap: true });
       }
     }
 
@@ -2245,7 +2245,7 @@
           RuleMaster.updateApiKeyUi();
         }
         verifySettingsGeminiApiKey(true);
-        alert('🗑️ Your API Key has been removed.');
+        showToast('🗑️ Your API Key has been removed.', 'success', { wrap: true });
       }
     }
 
@@ -2253,7 +2253,7 @@
       if (window.RuleMaster && typeof RuleMaster.showDiagnosticsModal === 'function') {
         return RuleMaster.showDiagnosticsModal();
       }
-      alert('⚠️ RuleMaster is not loaded yet. Please refresh the page.');
+      showToast('⚠️ RuleMaster is not loaded yet. Please refresh the page.', 'error', { wrap: true });
     }
 
     const TAB_INACTIVE_CLASSES = ['bg-slate-800', 'hover:bg-slate-700', 'text-slate-200', 'hover:text-white', 'border-slate-700', 'hover:border-slate-500', 'shadow-md'];
@@ -4183,7 +4183,7 @@
           statusEl.classList.remove('hidden');
           statusEl.innerHTML = `<span class="text-rose-400">❌ ${escapeRaceHtml(err.message || 'An error occurred')}</span>`;
         } else {
-          alert('Race lookup error: ' + err.message);
+          showToast('Race lookup error: ' + err.message, 'error', { wrap: true });
         }
       } finally {
         if (btn) btn.disabled = false;
