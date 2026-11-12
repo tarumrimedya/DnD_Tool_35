@@ -323,6 +323,20 @@ const SupabaseAuth = {
     }
   },
 
+  /** The last cloud write error as an escaped HTML block, or '' when there was none. */
+  _lastSyncErrorHtml() {
+    const err = this._lastSyncError;
+    if (!err) return '';
+    const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    const time = new Date(err.at).toLocaleTimeString();
+    return `
+        <div role="alert" class="rounded-xl border border-rose-600 bg-rose-950/80 p-3 text-xs text-rose-300 flex flex-col gap-1">
+          <span class="font-bold">Last Sync Error: ${esc(err.where)} (${esc(time)})</span>
+          <span class="text-rose-200" style="word-break:break-word">${esc(err.message)}${err.code ? ' [' + esc(err.code) + ']' : ''}</span>
+          ${err.details ? `<span class="text-rose-300/80" style="word-break:break-word">${esc(err.details)}</span>` : ''}
+        </div>`;
+  },
+
   /**
    * Senkronizasyon hapına tıklandığında modern bulut yönetim modalını açar
    */
@@ -402,6 +416,7 @@ const SupabaseAuth = {
             ? 'Select an action to synchronize between this screen and your cloud records:' 
             : 'Select an action to synchronize all Hub characters with the cloud immediately:'}
         </p>
+${this._lastSyncErrorHtml()}
 
         <!-- Eylem Butonları -->
         <div class="flex flex-col gap-2.5 pt-1">
@@ -838,9 +853,22 @@ const SupabaseAuth = {
 
     if (error) {
       console.error('updateCharacterHpAsDm error:', error);
+      this._recordSyncError('Hit Points update', error);
       return false;
     }
     return true;
+  },
+
+  /** Keeps the last cloud write error so the sync status window can show it. */
+  _recordSyncError(where, error) {
+    const e = error || {};
+    this._lastSyncError = {
+      at: Date.now(),
+      where: String(where || 'Cloud sync'),
+      message: String(e.message || e.error_description || e || 'Unknown error'),
+      code: e.code ? String(e.code) : '',
+      details: e.details ? String(e.details) : (e.hint ? String(e.hint) : '')
+    };
   },
 
   /**
@@ -887,6 +915,7 @@ const SupabaseAuth = {
 
     if (error) {
       console.warn('upsertUserCharacter warning:', error);
+      this._recordSyncError('Character save', error);
       this.updateSyncStatusPill('error');
       return null;
     }
