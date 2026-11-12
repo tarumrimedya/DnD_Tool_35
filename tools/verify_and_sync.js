@@ -31,7 +31,7 @@ function syncCopy(src, dst) {
     try { if (fs.readFileSync(dst).equals(data)) return; } catch (_) {}
   }
   try {
-    syncCopy(src, dst);
+    fs.copyFileSync(src, dst);
   } catch (err) {
     fs.writeFileSync(dst, data);
   }
@@ -89,9 +89,108 @@ function sha256(filePath) {
   return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
 
+// ---------------------------------------------------------------------------
+// 0. Automatic cache-bust versions for local JS/CSS.
+// Every local .js/.css reference gets `?v=<first 10 hex of sha256(content)>`, so a changed file always
+// gets a new URL and vercel.json can serve `?v=` URLs as immutable. Line endings are normalised before
+// hashing so CRLF and LF checkouts produce the same version. Covers:
+//   a) string literals in root JS that load another local file at runtime ('file.js?v=...'),
+//   b) <script src> and <link href> (stylesheet, prefetch, preload) in root HTML pages.
+// character.html is skipped (it is a copy of index.html made in step 1). External URLs are left alone.
+// Idempotent: a second run computes the same hashes and writes nothing.
+// ---------------------------------------------------------------------------
+const ASSET_VERSION_JS_SKIP = new Set(['char_modals.js', 'hero_silhouette_data.js']);
+
+function assetVersion(absPath) {
+  const text = fs.readFileSync(absPath).toString('latin1').replace(/\r\n/g, '\n');
+  return crypto.createHash('sha256').update(text, 'latin1').digest('hex').slice(0, 10);
+}
+
+function resolveLocalAsset(url) {
+  if (/^([a-z][a-z0-9+.-]*:|\/\/|#)/i.test(url)) return null; // http:, https:, data:, protocol-relative
+  const clean = url.split('#')[0].split('?')[0];
+  if (!/\.(js|css)$/i.test(clean)) return null;
+  return { clean, abs: path.join(ROOT, clean.replace(/^\/+/, '')) };
+}
+
+function withVersion(url, clean, version) {
+  const qIdx = url.indexOf('?');
+  const query = qIdx >= 0 ? url.slice(qIdx + 1).split('#')[0] : '';
+  const params = query.split('&').filter(p => p && !/^v=/.test(p));
+  params.push('v=' + version);
+  return clean + '?' + params.join('&');
+}
+
+function autoVersionAssets() {
+  let checked = 0, updated = 0;
+  const changedFiles = new Set();
+  const missing = [];
+
+  // a) Runtime loaders in root JS (fixed point, so a chain a.js -> b.js -> c.js settles in one run).
+  const jsFiles = fs.readdirSync(ROOT).filter(f => f.endsWith('.js') && !ASSET_VERSION_JS_SKIP.has(f)).sort();
+  const literalRegex = /(['"`])([A-Za-z0-9_./-]+\.(?:js|css))\?v=([A-Za-z0-9_.-]*)\1/g;
+  for (let pass = 0; ; pass++) {
+    if (pass > 5) throw new Error('Asset version step did not settle (circular runtime references?)');
+    let passChanges = 0;
+    for (const rel of jsFiles) {
+      const full = path.join(ROOT, rel);
+      const text = fs.readFileSync(full, 'utf8');
+      const next = text.replace(literalRegex, (all, q, file, oldV) => {
+        const loc = resolveLocalAsset(file);
+        if (!loc) return all;
+        if (pass === 0) checked++;
+        if (!fs.existsSync(loc.abs)) { missing.push(`${rel} -> ${file}`); return all; }
+        const v = assetVersion(loc.abs);
+        if (v === oldV) return all;
+        passChanges++;
+        return `${q}${file}?v=${v}${q}`;
+      });
+      if (next !== text) { fs.writeFileSync(full, next); changedFiles.add(rel); }
+    }
+    updated += passChanges;
+    if (!passChanges) break;
+  }
+
+  // b) <script src> / <link href> in root HTML pages.
+  const htmlFiles = fs.readdirSync(ROOT).filter(f => f.endsWith('.html') && f !== 'character.html').sort();
+  for (const rel of htmlFiles) {
+    const full = path.join(ROOT, rel);
+    const text = fs.readFileSync(full, 'utf8');
+    const next = text.replace(/<(script|link)\b[^>]*>/gi, (tag, tagName) => {
+      const attr = tagName.toLowerCase() === 'script' ? 'src' : 'href';
+      return tag.replace(new RegExp(`(\\s${attr}\\s*=\\s*)(["'])([^"']+)\\2`, 'i'), (all, pre, q, url) => {
+        const loc = resolveLocalAsset(url);
+        if (!loc) return all;
+        checked++;
+        if (!fs.existsSync(loc.abs)) { missing.push(`${rel} -> ${url}`); return all; }
+        const nextUrl = withVersion(url, loc.clean, assetVersion(loc.abs));
+        if (nextUrl === url) return all;
+        updated++;
+        return `${pre}${q}${nextUrl}${q}`;
+      });
+    });
+    if (next !== text) { fs.writeFileSync(full, next); changedFiles.add(rel); }
+  }
+
+  if (missing.length) {
+    throw new Error(`Asset version step: referenced local file(s) not found: ${missing.join(', ')}`);
+  }
+  return { checked, updated, files: [...changedFiles] };
+}
+
 function main() {
   const startMs = Date.now();
   let errors = 0;
+
+  // 0. Content-hash cache-bust versions (before any copy, so character.html and webapp/ get the new tags)
+  try {
+    const av = autoVersionAssets();
+    console.log(`🔖 Asset versions: ${av.updated} reference(s) updated, ${av.checked} local JS/CSS reference(s) checked${av.files.length ? ' (' + av.files.join(', ') + ')' : ''}.`);
+  } catch (avErr) {
+    console.error(`[FAIL] ${avErr.message}`);
+    console.error('\n❌ VERIFICATION FAILED: fix the asset reference before syncing.');
+    process.exit(1);
+  }
 
   // 1. Sync index.html -> character.html
   const indexPath = path.join(ROOT, 'index.html');

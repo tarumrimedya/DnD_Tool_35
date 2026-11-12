@@ -2855,4 +2855,15 @@
   global.ItemAssembler = ItemAssembler;
   global.SchemaMigrator = SchemaMigrator;
 
+  // Early start: on a page whose <script> tag carries data-srd-autoinit (the character sheet), begin
+  // loading the SRD as soon as this file runs, so the fetch overlaps the remaining deferred scripts.
+  // init() is idempotent: later init() calls (the sheet boot, pickers) receive this same promise.
+  // Pages without the attribute (the Hub) keep calling init() themselves, as before.
+  try {
+    const selfTag = typeof document !== 'undefined' ? document.currentScript : null;
+    if (selfTag && selfTag.hasAttribute('data-srd-autoinit') && !isNodeSyncEnv()) {
+      SrdCompendium.init();
+    }
+  } catch (_) {}
+
 })(typeof window !== 'undefined' ? window : globalThis);

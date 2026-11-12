@@ -188,6 +188,34 @@ async function main() {
     await closeSheet(page);
   }
 
+  // J. three.js is loaded on demand. The smoke run blocks the CDN, so the first roll exercises the
+  // fallback: the script fails, the roll still records its result, and the script is injected once.
+  {
+    const page = await newSheetPage();
+    await check('J. no three.js at boot; 3D roll falls back when the CDN load fails (CDN blocked)', async () => {
+      const boot = await page.evaluate(() => ({
+        three: typeof THREE,
+        tags: document.querySelectorAll('script[src*="three.min.js"]').length,
+        fetched: performance.getEntriesByType('resource').some(r => /three\.min\.js/.test(r.name))
+      }));
+      assert(boot.three === 'undefined', 'THREE defined at boot');
+      assert(boot.tags === 0 && !boot.fetched, 'three.min.js requested at boot');
+      const before = await page.evaluate(() => (window.diceRollHistory || []).length);
+      await page.evaluate(() => rollSingleDie(20));
+      await page.waitForFunction(n => (window.diceRollHistory || []).length === n + 1, before, { timeout: 10000 });
+      await page.evaluate(() => rollSingleDie(6));
+      await page.waitForFunction(n => (window.diceRollHistory || []).length === n + 2, before, { timeout: 10000 });
+      const after = await page.evaluate(() => ({
+        tags: document.querySelectorAll('script[src*="three.min.js"]').length,
+        titles: window.diceRollHistory.slice(0, 2).map(e => e.title).join(' / ')
+      }));
+      assert(after.tags === 1, 'three.min.js injected ' + after.tags + ' times');
+      assertNoErrors(page);
+      return `${after.titles}; ${errSummary(page)}`;
+    });
+    await closeSheet(page);
+  }
+
   // B. Fixtures x tabs
   for (const f of FIXTURES) {
     await check('B. fixture ' + f + ' x all tabs', async () => {

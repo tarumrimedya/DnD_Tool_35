@@ -4125,7 +4125,7 @@
       if (window.HERO_SILHOUETTE_DATA_URI || _heroSilhouetteScriptLoading) return;
       _heroSilhouetteScriptLoading = true;
       const s = document.createElement('script');
-      s.src = 'hero_silhouette_data.js?v=20261023_16';
+      s.src = 'hero_silhouette_data.js?v=e99e24f6ec';
       s.async = true;
       s.onload = () => {
         if (window.HERO_SILHOUETTE_DATA_URI) {

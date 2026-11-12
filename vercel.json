@@ -10,5 +10,14 @@
     { "source": "/character", "destination": "/webapp/character.html" },
     { "source": "/index", "destination": "/webapp/index.html" },
     { "source": "/((?!api/).*)", "destination": "/webapp/$1" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)\\.(js|css)",
+      "has": [{ "type": "query", "key": "v" }],
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    }
   ]
 }

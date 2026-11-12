@@ -21,16 +21,15 @@
   </script>
   
   <!-- Static Compiled Tailwind CSS (Zero Runtime JIT Overhead) -->
-  <link rel="stylesheet" href="tailwind_compiled.css?v=20261104_2123">
-  <link rel="stylesheet" href="design_tokens.css?v=20261109_r8">
+  <link rel="stylesheet" href="tailwind_compiled.css?v=33eb6935b3">
+  <link rel="stylesheet" href="design_tokens.css?v=e83cdd2e81">
 
   <!-- Google Fonts: Cinzel for RPG Dice -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
 
-  <!-- Three.js CDN for 3D Animated Physics Dice (deferred so it never blocks first paint) -->
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Three.js (3D dice) is loaded on demand by dice3d.js on the first 3D roll. -->
 
   <style>
     body { font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #080e1e; color: #f8fafc; transition: background-color 0.3s ease; }
@@ -3885,29 +3884,30 @@
 
   <!-- Deferred Modals Root (Mounted on Demand / Idle via char_modals.js) -->
   <div id="deferred-modals-root"></div>
-  <script defer src="char_modals.js?v=20261111_r21"></script>
+  <script defer src="char_modals.js?v=14f7ebe5d7"></script>
 
   <!-- SCRIPT LOGIC (deferred: runs in document order after parsing, before DOMContentLoaded) -->
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="supabase_auth.js?v=20261113_h1"></script>
-  <script defer src="srd_compendium.js?v=20261110_r17"></script>
-  <script defer src="rule_engine.js?v=20261110_r12"></script>
-  <script defer src="char_store.js?v=20261110_r16"></script>
+  <script defer src="supabase_auth.js?v=4efb62661b"></script>
+  <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
+  <script defer src="srd_compendium.js?v=d00871bf02" data-srd-autoinit></script>
+  <script defer src="rule_engine.js?v=9adfd98a85"></script>
+  <script defer src="char_store.js?v=b210d3d0bc"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
-  <script src="ui_components.js?v=20261111_r30"></script>
-  <script defer src="rule_master.js?v=20261112_d2"></script>
-  <script defer src="ui_shared.js?v=20261112_d2"></script>
-  <script defer src="campaign_db.js?v=20261110_03"></script>
-  <script defer src="hub_notes.js?v=20261112_d3"></script>
-  <script defer src="dice3d.js?v=20261109_r11"></script>
+  <script src="ui_components.js?v=8d8e673a66"></script>
+  <script defer src="rule_master.js?v=0fc910b71d"></script>
+  <script defer src="ui_shared.js?v=ee46e5b6f1"></script>
+  <script defer src="campaign_db.js?v=c7d72607cc"></script>
+  <script defer src="hub_notes.js?v=893821e92c"></script>
+  <script defer src="dice3d.js?v=4ee9b04a52"></script>
 
-  <script defer src="char_hud.js?v=20261113_p1"></script>
-  <script defer src="char_combat.js?v=20261112_d3"></script>
-  <script defer src="char_spells.js?v=20261112_d3"></script>
-  <script defer src="char_progression.js?v=20261112_d4"></script>
-  <script defer src="char_inventory.js?v=20261112_d3"></script>
+  <script defer src="char_hud.js?v=e3a7f9dde8"></script>
+  <script defer src="char_combat.js?v=32ce8e5863"></script>
+  <script defer src="char_spells.js?v=d34c397f3c"></script>
+  <script defer src="char_progression.js?v=8d05703ae9"></script>
+  <script defer src="char_inventory.js?v=b70b16b6f8"></script>
   <!-- Floating Tooltip for Combat Spells Hover (Tap or click to dismiss) -->
   <div id="combat-spell-hover-tooltip" onclick="hideSpellHoverTooltip()" class="hidden fixed z-[200] pointer-events-auto bg-slate-950/95 border border-purple-500/80 rounded-xl p-3 shadow-2xl w-[340px] max-w-[92vw] text-xs space-y-2 backdrop-blur-md transition-opacity duration-150 text-slate-200 cursor-pointer select-none">
     

@@ -7,6 +7,10 @@
  * soft tabletop contact shadows, dynamic camera alignment, and rich acoustic clatter.
  */
 
+// Same CDN build the pages used to load at startup; now fetched on the first 3D roll (see loadThree).
+const DICE3D_THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+const DICE3D_THREE_WAIT_MS = 6000;
+
 class Dice3DController {
   constructor() {
     this.container = null;
@@ -17,6 +21,7 @@ class Dice3DController {
     this.isRolling = false;
     this.audioCtx = null;
     this.initialized = false;
+    this.threePromise = null;
     this.textureCache = new Map();
     this.onFinishCallback = null;
     this.animationFrameId = null;
@@ -1055,8 +1060,46 @@ class Dice3DController {
     ];
   }
 
-  // Roll dice list with realistic 3D tumbling physics, inter-dice collision, and camera alignment
+  // three.js is not part of page startup: the first 3D roll injects it once (one shared promise).
+  // Resolves true when THREE is usable, false when the script cannot be loaded.
+  loadThree() {
+    if (typeof THREE !== 'undefined') return Promise.resolve(true);
+    if (this.threePromise) return this.threePromise;
+    this.threePromise = new Promise((resolve) => {
+      const s = document.createElement('script');
+      s.src = DICE3D_THREE_URL;
+      s.async = true;
+      s.crossOrigin = 'anonymous';
+      s.addEventListener('load', () => resolve(typeof THREE !== 'undefined'));
+      s.addEventListener('error', () => {
+        console.warn('Three.js could not be loaded; dice results are shown without 3D animation.');
+        resolve(false);
+      });
+      (document.head || document.documentElement).appendChild(s);
+    });
+    return this.threePromise;
+  }
+
+  // Public entry point. Loads three.js on first use, then rolls. When three.js fails to load, or has
+  // not arrived within DICE3D_THREE_WAIT_MS, the roll completes without animation exactly as it did
+  // before when THREE was missing (init() returns early and onComplete runs with the same results).
   roll(diceList, onComplete) {
+    if (typeof THREE !== 'undefined') {
+      this.rollNow(diceList, onComplete);
+      return;
+    }
+    let started = false;
+    const proceed = () => {
+      if (started) return;
+      started = true;
+      this.rollNow(diceList, onComplete);
+    };
+    this.loadThree().then(proceed, proceed);
+    setTimeout(proceed, DICE3D_THREE_WAIT_MS);
+  }
+
+  // Roll dice list with realistic 3D tumbling physics, inter-dice collision, and camera alignment
+  rollNow(diceList, onComplete) {
     this.init();
     if (!this.initialized) {
       if (onComplete) onComplete(diceList);
