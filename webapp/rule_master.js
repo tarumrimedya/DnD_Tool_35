@@ -7,6 +7,16 @@ function reportError(context, err) {
     if (typeof console !== 'undefined' && console.warn) console.warn('[reportError] ' + context, err);
   } catch (_) { /* reporting must never throw */ }
 }
+/** Short user message: a toast where the page has one (the sheet), a plain alert elsewhere (the Hub). */
+function notify(message, type) {
+  if (typeof showToast === 'function') {
+    // The toast shows its own status icon, so drop a leading one from the text.
+    const text = String(message == null ? '' : message).replace(/^(?:[\u26A0\u274C\u2705\u2139]\uFE0F?\s*)+/, '');
+    showToast(text, type || 'info', { wrap: true });
+  } else {
+    alert(message);
+  }
+}
 /**
  * D&D 3.5e Rule Master & Master_DB Management Engine
  * Features:
@@ -1024,7 +1034,7 @@ const RuleMaster = {
   // Save new or updated entry (Canonical V2)
   saveEntry(entryData, editIndex = -1) {
     if (!entryData || !entryData.name || !entryData.name.trim()) {
-      alert('⚠️ Please enter a valid Rule / Item Name.');
+      notify('⚠️ Please enter a valid Rule / Item Name.', 'error');
       return false;
     }
 
@@ -1097,7 +1107,7 @@ const RuleMaster = {
     }
 
     if (oldName && syncCount > 0) {
-      alert(`✅ "${v2Entry.name}" updated in Master DB and synced across ${syncCount} character record(s)!`);
+      notify(`✅ "${v2Entry.name}" updated in Master DB and synced across ${syncCount} character record(s)!`, 'success');
     }
 
     return true;
@@ -1567,7 +1577,7 @@ const RuleMaster = {
 
     const inPool = character.gearPool.some(p => p.id === item.id || (p.name || '').toLowerCase() === item.name.toLowerCase());
     if (inPool) {
-      alert(`ℹ️ "${item.name}" is already in your inventory!`);
+      notify(`ℹ️ "${item.name}" is already in your inventory!`, 'info');
       return;
     }
 
@@ -1603,7 +1613,7 @@ const RuleMaster = {
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     if (typeof renderInventory === 'function') renderInventory();
     if (typeof renderConsumables === 'function') renderConsumables();
-    alert(`🎒 "${item.name}" added to your backpack / inventory pool!`);
+    notify(`🎒 "${item.name}" added to your backpack / inventory pool!`, 'success');
   },
 
   // Open Edit / Add in Type-Specific Editor Modal or Inline V2 Manual Rule Form
@@ -3129,7 +3139,7 @@ Schema:
   async showDiagnosticsModal(apiKey) {
     const key = (apiKey || this.getApiKey() || '').trim();
     if (!key) {
-      alert('⚠️ Please enter and save a Gemini API Key first.');
+      notify('⚠️ Please enter and save a Gemini API Key first.', 'error');
       return;
     }
 
@@ -3137,7 +3147,7 @@ Schema:
       if (typeof verifySettingsGeminiApiKey === 'function') {
         const ok = await verifySettingsGeminiApiKey(true);
         if (!ok) {
-          alert('❌ Could not connect to Gemini API. Please verify your API key.');
+          notify('❌ Could not connect to Gemini API. Please verify your API key.', 'error');
           return;
         }
       }
@@ -3171,7 +3181,7 @@ Schema:
 
       alert(report);
     } catch (err) {
-      alert(`❌ Diagnostics Error: ${err.message}`);
+      notify(`❌ Diagnostics Error: ${err.message}`, 'error');
     }
   },
 
@@ -3248,11 +3258,11 @@ Schema:
     const keyInput = document.getElementById('ai-api-key-input');
     const val = keyInput?.value?.trim() || '';
     if (!val) {
-      alert('⚠️ Please enter a valid Gemini API key.');
+      notify('⚠️ Please enter a valid Gemini API key.', 'error');
       return;
     }
     this.setApiKey(val);
-    alert('✅ Gemini API key saved successfully!');
+    notify('✅ Gemini API key saved successfully!', 'success');
   },
 
   clearApiKey() {
@@ -4481,7 +4491,7 @@ Return valid JSON only matching:
     let categoryHint = catSelect ? catSelect.value : 'ALL';
 
     if (!query) {
-      alert('Please enter the name of the rule, item, spell, feat, or ability you want to search.');
+      notify('Please enter the name of the rule, item, spell, feat, or ability you want to search.', 'error');
       if (queryInput) queryInput.focus();
       return;
     }
@@ -4560,7 +4570,7 @@ Return valid JSON only matching:
       if (resultsWrapper) resultsWrapper.classList.remove('hidden');
     } catch (err) {
       console.error(err);
-      alert(`Error: ${err.message}`);
+      notify(`Error: ${err.message}`, 'error');
     } finally {
       if (btn) btn.disabled = false;
       if (statusBox) statusBox.classList.add('hidden');
@@ -4699,7 +4709,7 @@ Return valid JSON only matching:
     const statusText = document.getElementById('ai-rule-status-text') || document.getElementById('ai-batch-status-text');
 
     if (!input || !input.value.trim()) {
-      alert('Please enter the rules you want to import, separated by commas or newlines.');
+      notify('Please enter the rules you want to import, separated by commas or newlines.', 'error');
       return;
     }
 
@@ -4712,7 +4722,7 @@ Return valid JSON only matching:
       else masterDb.push(v2);
       if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
       this.renderTable();
-      alert(`🎉 Structured Ability Parsed & Imported (0ms)!\n"${v2.name}" (${v2.benefit}) has been added to Master_DB in Canonical V2 format.`);
+      notify(`🎉 Structured Ability Parsed & Imported (0ms)!\n"${v2.name}" (${v2.benefit}) has been added to Master_DB in Canonical V2 format.`, 'success');
       return;
     }
 
@@ -4752,7 +4762,7 @@ Return valid JSON only matching:
     if (statusBox) statusBox.classList.add('hidden');
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`🎉 Batch Import Complete!\n${totalImported} Canonical V2 rule(s) successfully added to Master_DB.`);
+    notify(`🎉 Batch Import Complete!\n${totalImported} Canonical V2 rule(s) successfully added to Master_DB.`, 'success');
   },
 
   getChildrenForEntry(item) {
@@ -4923,7 +4933,7 @@ Return valid JSON only matching:
 
       if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
       this.renderTable();
-      alert(`✅ "${item.name}" successfully added to Master_DB!`);
+      notify(`✅ "${item.name}" successfully added to Master_DB!`, 'success');
     }
   },
 
@@ -4942,12 +4952,12 @@ Return valid JSON only matching:
       addedCount++;
     });
     if (addedCount === 0) {
-      alert('ℹ️ All listed entries already exist in the site database. Use "Change & Add" to customize an entry before adding it to Master DB.');
+      notify('ℹ️ All listed entries already exist in the site database. Use "Change & Add" to customize an entry before adding it to Master DB.', 'info');
       return;
     }
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ ${addedCount} Canonical V2 rule(s) successfully added to Master_DB!`);
+    notify(`✅ ${addedCount} Canonical V2 rule(s) successfully added to Master_DB!`, 'success');
   },
 
   changeAndAddAiResult(index) {
@@ -5160,7 +5170,7 @@ Return valid JSON only matching:
         modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
         ruleFlags: item.ruleFlags ? JSON.parse(JSON.stringify(item.ruleFlags)) : {}
       });
-      alert(`🔮 "${item.name}" added to Spells Known!`);
+      notify(`🔮 "${item.name}" added to Spells Known!`, 'success');
     } else if (type === 'maneuver') {
       if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
       if (!character.tomeOfBattle.readiedManeuvers) character.tomeOfBattle.readiedManeuvers = [];
@@ -5176,7 +5186,7 @@ Return valid JSON only matching:
         damageParts: Array.isArray(item.damageParts) ? JSON.parse(JSON.stringify(item.damageParts)) : [],
         modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : []
       });
-      alert(`⚔️ "${item.name}" added to Readied Maneuvers!`);
+      notify(`⚔️ "${item.name}" added to Readied Maneuvers!`, 'success');
     } else if (type === 'stance') {
       if (!character.tomeOfBattle) character.tomeOfBattle = { initiatorLevel: 1, readiedManeuvers: [], stancesKnown: [] };
       if (!character.tomeOfBattle.stancesKnown) character.tomeOfBattle.stancesKnown = [];
@@ -5260,12 +5270,12 @@ Return valid JSON only matching:
           setTimeout(() => openFeatPickerModal(false), 200);
         }
       } else {
-        alert(`🧬 Racial trait "${item.name}" added to character!`);
+        notify(`🧬 Racial trait "${item.name}" added to character!`, 'success');
       }
     } else if (type === 'feat') {
       if (!character.feats) character.feats = [];
       character.feats.push(item.name);
-      alert(`✨ Feat "${item.name}" added to character!`);
+      notify(`✨ Feat "${item.name}" added to character!`, 'success');
     } else if (['special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'synergy', 'trait', 'template'].includes(type) || ['special ability', 'dm grant', 'dm boon', 'boon', 'class feature', 'synergy', 'trait', 'template'].includes(catLower) || String(item.id || '').startsWith('ability_') || String(item.id || '').startsWith('boon_')) {
       if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
       const existingIdx = character.specialAbilities.findIndex(a => {
@@ -5281,7 +5291,7 @@ Return valid JSON only matching:
       if (typeof SchemaMigrator !== 'undefined' && typeof SchemaMigrator.sanitizeCharacterAbilitiesAndPool === 'function') {
         SchemaMigrator.sanitizeCharacterAbilitiesAndPool(character);
       }
-      alert(`✨ Special Ability / Boon "${item.name}" added to character!`);
+      notify(`✨ Special Ability / Boon "${item.name}" added to character!`, 'success');
     } else if (type === 'potion' || type === 'scroll' || type === 'wand' || type === 'consumable' || (item.category && item.category.toLowerCase() === 'consumable')) {
       if (!character.consumables) character.consumables = [];
       character.consumables.push({
@@ -5290,7 +5300,7 @@ Return valid JSON only matching:
         qty: 1,
         effect: item.benefit || item.description || `${item.type || 'Consumable'} effect`
       });
-      alert(`🧪 "${item.name}" (${item.type || 'Consumable'}) added to backpack!`);
+      notify(`🧪 "${item.name}" (${item.type || 'Consumable'}) added to backpack!`, 'success');
     } else {
       // Body Slot Equipment (Armor, Shield, Wondrous Item, Ring, etc. in Canonical V2)
       const rawSlot = (item.slot || '').toLowerCase().trim();
@@ -5888,7 +5898,7 @@ Return valid JSON only matching:
       if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
       this.renderTable();
       if (typeof renderAll === 'function') renderAll();
-      alert('✅ Character Custom DB has been cleared!');
+      notify('✅ Character Custom DB has been cleared!', 'success');
     }
   },
 
@@ -5947,7 +5957,7 @@ Return valid JSON only matching:
   parseRawText() {
     const raw = document.getElementById('raw-rule-input')?.value || '';
     if (!raw.trim()) {
-      alert('⚠️ Please paste rule text to parse.');
+      notify('⚠️ Please paste rule text to parse.', 'error');
       return;
     }
 
@@ -6074,7 +6084,7 @@ Return valid JSON only matching:
     const queryInput = document.getElementById('inline-ai-rule-query');
     let query = queryInput?.value?.trim() || '';
     if (!query) {
-      alert('⚠️ Please enter the name of the rule, feat, spell, or item to search.');
+      notify('⚠️ Please enter the name of the rule, feat, spell, or item to search.', 'error');
       queryInput?.focus();
       return;
     }
@@ -6134,7 +6144,7 @@ Return valid JSON only matching:
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('⚠️ Please enter a Google Gemini API Key first (free key from Google AI Studio).\nYou can save your key in the Settings dialog.');
+      notify('⚠️ Please enter a Google Gemini API Key first (free key from Google AI Studio).\nYou can save your key in the Settings dialog.', 'error');
       if (typeof openSettingsModal === 'function') openSettingsModal();
       return;
     }
@@ -6154,7 +6164,7 @@ Return valid JSON only matching:
       const entries = await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusText);
       this.renderInlineAiResults(entries);
     } catch (err) {
-      alert(`⚠️ Failed to fetch rule: ${err.message}\nPlease check your internet connection and API key.`);
+      notify(`⚠️ Failed to fetch rule: ${err.message}\nPlease check your internet connection and API key.`, 'error');
     } finally {
       if (btn) btn.disabled = false;
       if (loadingBox) loadingBox.classList.add('hidden');
@@ -6308,7 +6318,7 @@ Return valid JSON only matching:
 
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ "${item.name}" successfully added to Master_DB and library updated!`);
+    notify(`✅ "${item.name}" successfully added to Master_DB and library updated!`, 'success');
   },
 
   addAllInlineResultsToDb() {
@@ -6326,12 +6336,12 @@ Return valid JSON only matching:
       addedCount++;
     });
     if (addedCount === 0) {
-      alert('ℹ️ All listed entries already exist in the site database. Use "Change & Add" to customize an entry before adding it to Master DB.');
+      notify('ℹ️ All listed entries already exist in the site database. Use "Change & Add" to customize an entry before adding it to Master DB.', 'info');
       return;
     }
     if (typeof saveStateToStorage === 'function') saveStateToStorage(true);
     this.renderTable();
-    alert(`✅ A total of ${addedCount} Canonical V2 rule(s) successfully added to Master_DB!`);
+    notify(`✅ A total of ${addedCount} Canonical V2 rule(s) successfully added to Master_DB!`, 'success');
   },
 
   changeAndAddInlineResult(idx) {
@@ -7496,14 +7506,14 @@ Return valid JSON only matching:
     const editIdx = this.selectedEntryIndex;
     const v2Entry = this.buildInlineManualV2Entry();
     if (!v2Entry.name || !v2Entry.name.trim()) {
-      alert('⚠️ Please enter a Rule / Item Name first.');
+      notify('⚠️ Please enter a Rule / Item Name first.', 'error');
       document.getElementById('im-name')?.focus();
       return;
     }
     if (this._changeAndAddOriginalSnapshot) {
       const currentSig = this.getComparableEntrySignature(v2Entry);
       if (currentSig === this._changeAndAddOriginalSnapshot) {
-        alert(`⚠️ "${v2Entry.name}" already exists in the site database with identical values.\nPlease modify at least one field (e.g., Name, Stat Modifiers, Damage, Cost, or Description) before adding it to your Custom Master DB.`);
+        notify(`⚠️ "${v2Entry.name}" already exists in the site database with identical values.\nPlease modify at least one field (e.g., Name, Stat Modifiers, Damage, Cost, or Description) before adding it to your Custom Master DB.`, 'warning');
         return;
       }
       if (editIdx < 0) {
@@ -7515,7 +7525,7 @@ Return valid JSON only matching:
       if (alsoEquip) {
         this.equipItem(v2Entry);
       } else {
-        alert(`✅ "${v2Entry.name}" ${editIdx >= 0 ? 'updated in' : 'saved to'} Character Custom DB!`);
+        notify(`✅ "${v2Entry.name}" ${editIdx >= 0 ? 'updated in' : 'saved to'} Character Custom DB!`, 'success');
       }
       this.resetInlineManualForm();
     }
@@ -7855,7 +7865,7 @@ Return valid JSON only matching:
       this.closeMasterDbEditorModal();
     }
     if (!alsoEquip) {
-      alert(`✅ "${item.name}" saved to Character Custom DB!`);
+      notify(`✅ "${item.name}" saved to Character Custom DB!`, 'success');
     }
   },
 
@@ -7886,7 +7896,7 @@ Return valid JSON only matching:
     const ta = document.getElementById('inline-ai-freetext-input');
     const val = ta?.value || '';
     if (!val.trim()) {
-      alert('⚠️ Please paste rule text into the free-text box first.');
+      notify('⚠️ Please paste rule text into the free-text box first.', 'error');
       return;
     }
     const fullTa = document.getElementById('raw-rule-input');
@@ -8038,14 +8048,14 @@ Return valid JSON only matching:
     const ta = document.getElementById('inline-ai-freetext-input');
     const text = ta?.value?.trim() || '';
     if (!text) {
-      alert('⚠️ Please paste the free-form rule text to analyze.');
+      notify('⚠️ Please paste the free-form rule text to analyze.', 'error');
       ta?.focus();
       return;
     }
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('⚠️ Please enter a Google Gemini API Key first (free key from Google AI Studio).\nYou can save your key in the Settings dialog.');
+      notify('⚠️ Please enter a Google Gemini API Key first (free key from Google AI Studio).\nYou can save your key in the Settings dialog.', 'error');
       if (typeof openSettingsModal === 'function') openSettingsModal();
       return;
     }
@@ -8063,7 +8073,7 @@ Return valid JSON only matching:
       const entries = await this.queryAiFreeTextRows(text, apiKey, statusText);
       this.renderInlineAiResults(entries);
     } catch (err) {
-      alert(`⚠️ Failed to parse free text: ${err.message}\nPlease check your internet connection and API key.`);
+      notify(`⚠️ Failed to parse free text: ${err.message}\nPlease check your internet connection and API key.`, 'error');
     } finally {
       if (btn) btn.disabled = false;
       if (loadingBox) loadingBox.classList.add('hidden');
@@ -8074,14 +8084,14 @@ Return valid JSON only matching:
     const ta = document.getElementById('raw-rule-input');
     const text = ta?.value?.trim() || '';
     if (!text) {
-      alert('⚠️ Please paste the free-form rule text to analyze.');
+      notify('⚠️ Please paste the free-form rule text to analyze.', 'error');
       ta?.focus();
       return;
     }
 
     const apiKey = this.getApiKey();
     if (!apiKey) {
-      alert('⚠️ Please configure a Google Gemini API Key first.');
+      notify('⚠️ Please configure a Google Gemini API Key first.', 'error');
       this.promptChangeApiKey();
       return;
     }
@@ -8101,7 +8111,7 @@ Return valid JSON only matching:
         resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
     } catch (err) {
-      alert(`⚠️ Failed to parse free text: ${err.message}`);
+      notify(`⚠️ Failed to parse free text: ${err.message}`, 'error');
     } finally {
       if (btn) btn.disabled = false;
       if (loadingIndicator) loadingIndicator.classList.add('hidden');
@@ -8571,7 +8581,7 @@ ${customQuery ? `User Question: ${customQuery}` : 'Provide the optimal D&D 3.5e 
       .filter(i => i && i.name);
 
     if (items.length === 0) {
-      alert('ℹ️ Your local user database (master_db) has no custom entries yet.\n\nAll 3,522 entries in the Modular SRD V2 Compendium are already deterministically verified and frozen.');
+      notify('ℹ️ Your local user database (master_db) has no custom entries yet.\n\nAll 3,522 entries in the Modular SRD V2 Compendium are already deterministically verified and frozen.', 'info');
       return;
     }
 

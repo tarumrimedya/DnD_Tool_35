@@ -710,7 +710,7 @@
 
     const target = getActiveNotesTarget();
     if (!target) {
-      alert('Please create a campaign or character before adding notes.');
+      notify('Please create a campaign or character before adding notes.', 'error');
       return;
     }
 
@@ -2026,7 +2026,7 @@
   async function runAiChronicler() {
     const target = getActiveNotesTarget();
     if (!target || !Array.isArray(target.notesList) || target.notesList.length === 0) {
-      alert('No notes found to synthesize. Please add a few notes first.');
+      notify('No notes found to synthesize. Please add a few notes first.', 'error');
       return;
     }
 
@@ -2058,7 +2058,7 @@
     }
 
     if (sourceNotes.length === 0) {
-      alert('No notes match the selected scope.');
+      notify('No notes match the selected scope.', 'error');
       return;
     }
 
@@ -2213,7 +2213,7 @@ RULES:
     renderFullNotesModalList();
     renderInlineNotes();
 
-    alert('✅ AI Synthesis saved as a new pinned note!');
+    notify('✅ AI Synthesis saved as a new pinned note!', 'success');
     switchModalView('editor');
     _selectedModalNoteId = newNote.id;
     loadSelectedNoteIntoEditor();
@@ -2222,9 +2222,9 @@ RULES:
   function copyAiSynthesisToClipboard() {
     if (!_lastAiGeneratedText) return;
     navigator.clipboard.writeText(_lastAiGeneratedText).then(() => {
-      alert('📋 AI Synthesis copied to clipboard!');
+      notify('📋 AI Synthesis copied to clipboard!', 'success');
     }).catch(() => {
-      alert('Failed to copy text.');
+      notify('Failed to copy text.', 'error');
     });
   }
 
@@ -2660,7 +2660,7 @@ RULES:
     saveModalNote(false);
     const target = getActiveNotesTarget();
     if (!target) {
-      alert('Please select a campaign or character first.');
+      notify('Please select a campaign or character first.', 'error');
       return;
     }
 
