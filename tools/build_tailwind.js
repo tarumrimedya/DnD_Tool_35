@@ -195,6 +195,8 @@ async function buildTailwind() {
   // Apply project's custom D&D 3.5e Tailwind config
   sandbox.tailwind.config = {
     darkMode: 'class',
+    // Wrap every hover: variant in @media (hover: hover) and (pointer: fine) so touch devices get no sticky hover.
+    future: { hoverOnlyWhenSupported: true },
     theme: {
       extend: {
         colors: {
