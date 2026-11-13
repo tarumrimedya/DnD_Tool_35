@@ -1,0 +1,43 @@
+name: checks
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: verify_and_sync
+        run: node tools/verify_and_sync.js
+      - name: Synced (verify must not change files)
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git status --porcelain
+            git diff --stat
+            echo "::error::verify_and_sync.js changed files: run it locally and commit the result (stale ?v= tags would be cached by browsers for a year)"
+            exit 1
+          fi
+
+  ui-smoke:
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: mcr.microsoft.com/playwright:v1.49.1-noble
+      options: --ipc=host
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install smoke deps
+        run: cd tools/ui_smoke && npm install --no-audit --no-fund --loglevel=error
+      - name: UI smoke
+        run: node tools/ui_smoke/run_smoke.js

@@ -16,6 +16,7 @@
 - Run `node tools/verify_and_sync.js` from the repo root after every code or data change, and before reporting completion.
 - The script writes files: it syncs `character.html`, `webapp/`, and `database/srd_index.json` hashes. Include those changes in `git diff` review.
 - If `node` is unavailable, say the task is unverified. Do not hand-edit `character.html`, `webapp/*`, or index hashes as a substitute.
+- `powershell -ExecutionPolicy Bypass -File tools/check_all.ps1` runs verify + UI smoke (~1 min); run it before merging to main. GitHub Actions `checks.yml` runs the same on every push and fails if verify would change files.
 
 ## Session start
 
