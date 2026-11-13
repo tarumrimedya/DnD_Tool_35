@@ -2411,6 +2411,11 @@
     { key: 'speedBonus', target: 'speed.land' },
     { key: 'sr', target: 'sr' }
   ];
+  // V2 targets a legacy attack / damage column can mirror (same set the engine's attack / damage target matchers accept).
+  const LEGACY_MIRROR_FAMILIES = {
+    attBonus: ['attack', 'attack.all', 'attack.weapon', 'attack.melee', 'attack.ranged', 'meleeattack', 'rangedattack'],
+    dmgBonus: ['damage', 'damage.all', 'damage.weapon', 'damage.melee', 'damage.ranged', 'meleedamage', 'rangeddamage']
+  };
 
   const SchemaMigrator = {
     /**
@@ -2436,13 +2441,25 @@
 
       const defaultBonusType = String(entry.bonusType || 'untyped').toLowerCase();
       const modifiers = Array.isArray(entry.modifiers) ? entry.modifiers : [];
+      const isWeaponEntry = entry.type === 'Weapon' || entry.category === 'Weapon' || Boolean(entry.weaponMeta) ||
+        (Array.isArray(entry.damageParts) && entry.damageParts.length > 0) || entry.critMult !== undefined;
 
       // 1. Migrate legacy 16 flat bonus fields into universal `modifiers`
       for (let i = 0; i < LEGACY_BONUS_MAP.length; i++) {
         const { key, target } = LEGACY_BONUS_MAP[i];
         const val = Number(entry[key]);
         if (!Number.isNaN(val) && val !== 0) {
-          const exists = modifiers.some((m) => m.target === target && Number(m.value) === val);
+          // A flat column already expressed by V2 modifiers is a display mirror, not another bonus: the sheet writes
+          // weapon attBonus/dmgBonus from the enhancement modifier (attack.weapon / damage.weapon) and buff attBonus as
+          // the sum of its attack.* modifiers. Re-adding it as an untyped attack.all would stack with the real bonus.
+          // A weapon column equal to its enhancementBonus mirrors that field, which the engine already applies as an
+          // enhancement bonus on attack and damage.
+          const family = LEGACY_MIRROR_FAMILIES[key];
+          const familyMods = family ? modifiers.filter((m) => m && family.includes(String(m.target || '').toLowerCase())) : [];
+          const familySum = familyMods.reduce((s, m) => s + (Number(m.value) || 0), 0);
+          const exists = modifiers.some((m) => m.target === target && Number(m.value) === val) ||
+            (familyMods.length > 0 && (familySum === val || familyMods.some((m) => Number(m.value) === val))) ||
+            (Boolean(family) && isWeaponEntry && Number(entry.enhancementBonus) === val);
           if (!exists) {
             modifiers.push({
               target,

@@ -2630,6 +2630,27 @@ const RuleEngine = {
     return total;
   },
 
+  // Same stacking rule as resolveBonusStacking, per item: returns copies tagged `applied: true|false`.
+  // A typed bonus that is lower than (or equal to and after) another bonus of the same type does not stack
+  // (e.g. Masterwork +1 vs +2 weapon enhancement vs Greater Magic Weapon). The applied items sum to resolveBonusStacking.
+  tagAppliedBonuses(bonusList) {
+    const stackingTypes = ['dodge', 'untyped', 'circumstance', 'synergy', 'racial', 'template'];
+    const bestIdx = {};
+    const list = Array.isArray(bonusList) ? bonusList : [];
+    list.forEach((item, idx) => {
+      const type = (item.type || 'untyped').toLowerCase();
+      const val = Number(item.val) || 0;
+      if (val < 0 || stackingTypes.includes(type)) return;
+      if (bestIdx[type] === undefined || val > (Number(list[bestIdx[type]].val) || 0)) bestIdx[type] = idx;
+    });
+    return list.map((item, idx) => {
+      const type = (item.type || 'untyped').toLowerCase();
+      const val = Number(item.val) || 0;
+      const applied = val < 0 || stackingTypes.includes(type) || bestIdx[type] === idx;
+      return { ...item, applied };
+    });
+  },
+
   // Parse modifiers and stat bonuses from a Canonical V2 equipment item (zero heuristic regex guessing per Rule #10.3)
   parseItemModifiers(rawItem, masterDb = [], context = {}) {
     if (!rawItem || !rawItem.name || rawItem.name === '-') return null;
@@ -6819,8 +6840,9 @@ const RuleEngine = {
       ruleFlags,
       manyshotArrows: effectiveManyshotArrows,
       damageType: primaryPart.type || 'Slashing',
-      attackBonusItems,
-      damageBonusItems
+      // Every component considered, tagged `applied` per RAW stacking; the applied ones sum to netAttackBonus / netFlatDamage.
+      attackBonusItems: this.tagAppliedBonuses(attackBonusItems),
+      damageBonusItems: this.tagAppliedBonuses(damageBonusItems)
     };
   },
 

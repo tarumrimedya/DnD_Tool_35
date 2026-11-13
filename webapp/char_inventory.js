@@ -659,8 +659,9 @@
 
         if (atkBadge) atkBadge.textContent = `Total: ${netAtk >= 0 ? '+' : ''}${netAtk} (${iterativesText})`;
 
+        // Only the components the engine applied (a non-stacking same-type bonus is tagged applied:false), so the list sums to netAtk.
         const atkItems = (wepEval && Array.isArray(wepEval.attackBonusItems) && wepEval.attackBonusItems.length > 0)
-          ? wepEval.attackBonusItems
+          ? wepEval.attackBonusItems.filter(item => item.applied !== false)
           : [
               { source: 'BAB', val: babVal },
               { source: 'STR Modifier', val: strMod }

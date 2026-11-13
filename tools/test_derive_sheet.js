@@ -3633,6 +3633,81 @@ function runDeriveSheetTests() {
     );
   }
 
+  // Attack / damage breakdown = engine: evaluateWeaponAttack tags each component `applied` per RAW stacking, and the
+  // applied ones sum to netAttackBonus / netFlatDamage (the Defense tab breakdown lists only those).
+  {
+    const sumApplied = (items) => (items || []).filter(i => i.applied !== false).reduce((s, i) => s + (Number(i.val) || 0), 0);
+    const deriveFixture = (file) => {
+      const c = loadFixture(file);
+      if (SchemaMigrator && typeof SchemaMigrator.sanitizeCharacterAbilitiesAndPool === 'function') SchemaMigrator.sanitizeCharacterAbilitiesAndPool(c);
+      RuleEngine.recalculateCharacter(c, Array.isArray(c.customDb) ? c.customDb : []);
+      return c;
+    };
+    const mismatches = [];
+    fs.readdirSync(FIXTURES_DIR).filter(f => /^\d\d_.*\.json$/.test(f)).forEach(file => {
+      const c = deriveFixture(file);
+      (c.weapons || []).forEach(w => {
+        const r = RuleEngine.evaluateWeaponAttack(c, w, {});
+        if (sumApplied(r.attackBonusItems) !== r.netAttackBonus || sumApplied(r.damageBonusItems) !== r.netFlatDamage) {
+          mismatches.push(`${file} ${w.name}: atk ${sumApplied(r.attackBonusItems)}/${r.netAttackBonus} dmg ${sumApplied(r.damageBonusItems)}/${r.netFlatDamage}`);
+        }
+      });
+    });
+    check('Weapon breakdown: for every fixture weapon the applied attackBonusItems / damageBonusItems sum to netAttackBonus / netFlatDamage' + (mismatches.length ? ' — ' + mismatches.join('; ') : ''), mismatches.length === 0);
+
+    // Masterwork +1 and a +3 enhancement buff on the weapon do not stack: only the higher enhancement is applied.
+    const fighter = deriveFixture('01_fighter_lvl1.json');
+    const mwBase = RuleEngine.evaluateWeaponAttack(fighter, fighter.weapons[0], {});
+    fighter.buffs = [{ id: 'test-enh-buff', name: 'Test Weapon Enhancement Buff', active: true, modifiers: [{ target: 'attack.weapon', value: 3, type: 'Enhancement' }] }];
+    const mwBuffed = RuleEngine.evaluateWeaponAttack(fighter, fighter.weapons[0], {});
+    const enhApplied = mwBuffed.attackBonusItems.filter(i => String(i.type).toLowerCase() === 'enhancement' && i.applied);
+    check(
+      'Weapon breakdown: Masterwork +1 and a +3 enhancement buff do not stack (one enhancement applied, Masterwork tagged not applied, applied items sum to the total)',
+      mwBuffed.netAttackBonus === mwBase.netAttackBonus - 1 + 3 && enhApplied.length === 1 && enhApplied[0].val === 3 &&
+      mwBuffed.attackBonusItems.some(i => i.source === 'Masterwork Weapon' && i.applied === false) &&
+      sumApplied(mwBuffed.attackBonusItems) === mwBuffed.netAttackBonus
+    );
+
+    // Sheet hydration (char_inventory hydrateGearItemStats) mirrors a weapon's enhancement into flat attBonus / dmgBonus.
+    // SchemaMigrator must not re-import those mirrors as an untyped attack.all / damage.weapon bonus that stacks with
+    // the enhancement (was: +2 Keen Rapier +22 instead of +20, +1 Heavy Mace +13 instead of +12).
+    const mirrorRows = [['03_twf_rogue_swashbuckler_lvl12.json', 0, 20], ['03_twf_rogue_swashbuckler_lvl12.json', 1, 19], ['02_cleric_radiant_lvl9.json', 0, 12]].map(([file, idx, expected]) => {
+      const c = deriveFixture(file);
+      const w = JSON.parse(JSON.stringify(c.weapons[idx]));
+      const enh = Number(w.enhancementBonus) || 0;
+      // Shape after hydration: the assembler's attack.weapon enhancement modifier (damage lives in damageParts) + mirrors.
+      w.modifiers = [{ target: 'attack.weapon', value: enh, formula: String(enh), type: 'enhancement', condition: 'Weapon Enhancement' }];
+      w.attBonus = enh;
+      w.dmgBonus = enh;
+      w._statsHydrated = true;
+      const upgraded = SchemaMigrator.upgradeEntryToV2(w);
+      const plain = RuleEngine.evaluateWeaponAttack(c, c.weapons[idx], {});
+      const r = RuleEngine.evaluateWeaponAttack(c, upgraded, {});
+      const extra = upgraded.modifiers.filter(m => /^(attack|damage)/.test(String(m.target)) && String(m.type).toLowerCase() !== 'enhancement');
+      return { ok: r.netAttackBonus === expected && r.netFlatDamage === plain.netFlatDamage && extra.length === 0 && sumApplied(r.attackBonusItems) === r.netAttackBonus, desc: `${w.name} ${r.netAttackBonus}/${expected} dmg ${r.netFlatDamage}/${plain.netFlatDamage} extra ${extra.length}` };
+    });
+    const legacyBuff = SchemaMigrator.upgradeEntryToV2({ name: 'Legacy Attack Buff', attBonus: 2, dmgBonus: 1 });
+    const legacyWeapon = SchemaMigrator.upgradeEntryToV2({ name: 'Legacy Club', dice: '1d6', critMult: 2, attBonus: 1 });
+    check(
+      'SchemaMigrator: a weapon\'s attBonus / dmgBonus mirroring its enhancement or attack.* modifiers is not re-added as an untyped bonus; a real legacy attBonus / dmgBonus still migrates' +
+        mirrorRows.filter(x => !x.ok).map(x => ' — ' + x.desc).join(''),
+      mirrorRows.every(x => x.ok) &&
+      legacyBuff.modifiers.some(m => m.target === 'attack.all' && m.value === 2) && legacyBuff.modifiers.some(m => m.target === 'damage.weapon' && m.value === 1) &&
+      legacyWeapon.modifiers.some(m => m.target === 'attack.all' && m.value === 1)
+    );
+
+    // Divine Favor (fixture 02) is in the very first derive: luck +3 on attack (CL 9) with no later re-resolution needed.
+    const cleric = deriveFixture('02_cleric_radiant_lvl9.json');
+    const firstMace = RuleEngine.evaluateWeaponAttack(cleric, cleric.weapons[0], {});
+    const secondMace = RuleEngine.evaluateWeaponAttack(cleric, cleric.weapons[0], {});
+    check(
+      'Divine Favor: present on the first derive of fixture 02 (+3 luck on attack and damage, +1 Heavy Mace +12) and stable on re-derive',
+      firstMace.netAttackBonus === 12 && secondMace.netAttackBonus === 12 &&
+      firstMace.attackBonusItems.some(i => i.source === 'Divine Favor' && i.val === 3 && i.applied) &&
+      firstMace.damageBonusItems.some(i => i.source === 'Divine Favor' && i.val === 3 && i.applied)
+    );
+  }
+
   CharStore.clearHistory();
 
   return { passed, elapsedMs: Date.now() - startMs };
