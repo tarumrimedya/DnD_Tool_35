@@ -193,6 +193,8 @@ async function main() {
   {
     const page = await newSheetPage();
     await check('J. no three.js at boot; 3D roll falls back when the CDN load fails (CDN blocked)', async () => {
+      // newSheetPage already waited for sheetBoot === 'ready'; check right at that point, before the idle
+      // warm-up (>= 1.5 s after load) can start fetching three.js.
       const boot = await page.evaluate(() => ({
         three: typeof THREE,
         tags: document.querySelectorAll('script[src*="three.min.js"]').length,
@@ -210,6 +212,10 @@ async function main() {
         titles: window.diceRollHistory.slice(0, 2).map(e => e.title).join(' / ')
       }));
       assert(after.tags === 1, 'three.min.js injected ' + after.tags + ' times');
+      // The background warm-up shares the same load; when it fails it must resolve quietly.
+      await page.evaluate(() => window.Dice3D.warmUp());
+      const wlog = await reportLog(page);
+      assert(wlog.length === 0, 'reportError after warm-up: ' + JSON.stringify(wlog.map(l => l.context + ': ' + l.message)).slice(0, 300));
       assertNoErrors(page);
       return `${after.titles}; ${errSummary(page)}`;
     });

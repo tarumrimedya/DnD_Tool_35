@@ -7,7 +7,8 @@
  * soft tabletop contact shadows, dynamic camera alignment, and rich acoustic clatter.
  */
 
-// Same CDN build the pages used to load at startup; now fetched on the first 3D roll (see loadThree).
+// Same CDN build the pages used to load at startup; now fetched in the background after page load (idle,
+// see warmUp) or on the first 3D roll, whichever comes first (see loadThree).
 const DICE3D_THREE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
 const DICE3D_THREE_WAIT_MS = 6000;
 
@@ -22,6 +23,8 @@ class Dice3DController {
     this.audioCtx = null;
     this.initialized = false;
     this.threePromise = null;
+    this.warmPromise = null;
+    this.warmMeshes = [];
     this.textureCache = new Map();
     this.onFinishCallback = null;
     this.animationFrameId = null;
@@ -1080,6 +1083,57 @@ class Dice3DController {
     return this.threePromise;
   }
 
+  // Pre-pays the first-roll cost while the overlay is still invisible: loads three.js, builds the
+  // renderer, and compiles every shader program / uploads face textures with one throwaway mesh per
+  // die type. Programs depend on the point-light count (each die carries one), so the scene is
+  // compiled after each added die. Idempotent; never touches the visible state of the overlay.
+  warmUp() {
+    if (this.warmPromise) return this.warmPromise;
+    this.warmPromise = (async () => {
+      try {
+        if (!(await this.loadThree())) return;
+        if (this.isRolling) return;
+        this.init();
+        if (!this.initialized) return;
+        const yieldFrame = () => new Promise((r) => setTimeout(r, 0));
+        for (const type of ['d20', 'd6', 'd4', 'd8', 'd10', 'd12']) {
+          await yieldFrame();
+          if (this.isRolling) return;
+          const dieData = this.createDieMesh(type, 1);
+          dieData.mesh.position.set(0, 3, 0);
+          this.warmMeshes.push(dieData.mesh);
+          this.scene.add(dieData.mesh);
+          this.renderer.compile(this.scene, this.camera);
+        }
+        await yieldFrame();
+        if (this.isRolling) return;
+        this.renderer.render(this.scene, this.camera);
+      } catch (e) {
+        if (typeof reportError === 'function') reportError('dice3d:warmUp', e);
+        else console.warn('Dice3D warm-up failed', e);
+      } finally {
+        this.clearWarmMeshes();
+      }
+    })();
+    return this.warmPromise;
+  }
+
+  // Removes the warm-up meshes and frees only their own geometry buffers. Materials are left alone on
+  // purpose (disposing them would drop the compiled programs) and cached textures are shared.
+  clearWarmMeshes() {
+    if (!this.warmMeshes.length) return;
+    const meshes = this.warmMeshes;
+    this.warmMeshes = [];
+    meshes.forEach((m) => {
+      if (this.scene) this.scene.remove(m);
+      m.traverse((o) => {
+        if (o.geometry && o.geometry !== this.unitCylGeo && o.geometry !== this.unitSphereGeo) {
+          o.geometry.dispose();
+        }
+      });
+    });
+  }
+
   // Public entry point. Loads three.js on first use, then rolls. When three.js fails to load, or has
   // not arrived within DICE3D_THREE_WAIT_MS, the roll completes without animation exactly as it did
   // before when THREE was missing (init() returns early and onComplete runs with the same results).
@@ -1105,6 +1159,7 @@ class Dice3DController {
       if (onComplete) onComplete(diceList);
       return;
     }
+    this.clearWarmMeshes();
 
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
@@ -1176,12 +1231,20 @@ class Dice3DController {
       });
     });
 
-    const startTime = performance.now();
-    let lastTime = startTime;
+    // Programs are cached by the warm-up; this covers a roll before it finished or a colour change.
+    this.renderer.compile(this.scene, this.camera);
+
+    // The clock starts at the first frame so compile/upload time is not taken out of the tumble.
+    let startTime = null;
+    let lastTime = 0;
     const maxDuration = 1650; // ms
     const stepQuat = new THREE.Quaternion();
 
     const animate = (now) => {
+      if (startTime === null) {
+        startTime = now;
+        lastTime = now;
+      }
       const elapsed = now - startTime;
       const rawDt = Math.min(40, Math.max(4, now - lastTime));
       lastTime = now;
@@ -1420,3 +1483,19 @@ class Dice3DController {
 
 // Global Singleton Instance
 window.Dice3D = new Dice3DController();
+
+// Background warm-up after page load: never delays boot, skipped on data-saver connections.
+(function scheduleDice3DWarmUp() {
+  try {
+    if (navigator.connection && navigator.connection.saveData) return;
+    const run = () => {
+      const go = () => { window.Dice3D.warmUp(); };
+      setTimeout(() => {
+        if (typeof requestIdleCallback === 'function') requestIdleCallback(go, { timeout: 4000 });
+        else setTimeout(go, 200);
+      }, 1500);
+    };
+    if (document.readyState === 'complete') run();
+    else window.addEventListener('load', run, { once: true });
+  } catch (e) {}
+})();
