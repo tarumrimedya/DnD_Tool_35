@@ -2,7 +2,7 @@
  * UI smoke suite for the character sheet (index.html) and the campaign Hub (hub.html).
  *
  * Covers: A load, B fixtures x tabs, C escaping probe, D toast, E in-page dialog, F mobile (375px),
- *         G live HP broadcast with a fake Supabase client, H Hub (alert fallback + dialog).
+ *         G live HP broadcast with a fake Supabase client, H Hub (toast, dialogs, native dialog count).
  * Runs offline: a tiny static server serves the repo root, Chromium runs in local mode
  * (localStorage dnd35_local_mode=true). CDN / external network failures are ignored and counted.
  *
@@ -624,17 +624,29 @@ async function main() {
   {
     const context = await newContext();
     let page = null;
-    await check('H1. hub loads, no showToast, notify -> native dialog', async () => {
+    let nativeDialogs = 0;
+    await check('H1. hub loads; notify -> escaped in-page toast (role=status), no native dialog', async () => {
       page = await openPage(context, '/hub.html');
+      page.on('dialog', d => { nativeDialogs++; d.dismiss().catch(() => {}); });
       await page.waitForTimeout(800);
       assertNoErrors(page);
       const t = await page.evaluate(() => typeof showToast);
-      assert(t === 'undefined', 'typeof showToast = ' + t);
-      let fired = false;
-      page.once('dialog', d => { fired = true; d.accept(); });
-      await page.evaluate(() => { setTimeout(() => notify('x', 'error'), 0); });
-      await page.waitForTimeout(500);
-      assert(fired, 'native dialog did not fire');
+      assert(t === 'function', 'typeof showToast = ' + t);
+      await page.evaluate(() => { setTimeout(() => notify('<i class="xss-probe">x</i>', 'error'), 0); });
+      await page.waitForTimeout(400);
+      const r = await page.evaluate(() => {
+        const c = document.getElementById('dice-top-toast-container');
+        const item = c && c.querySelector('.dice-toast-item');
+        return {
+          probes: document.querySelectorAll('.xss-probe').length,
+          role: c && c.getAttribute('role'),
+          text: item ? item.innerText : ''
+        };
+      });
+      assert(nativeDialogs === 0, 'native dialog fired ' + nativeDialogs + 'x');
+      assert(r.probes === 0, `${r.probes} .xss-probe elements (unescaped toast HTML)`);
+      assert(r.role === 'status', 'container role=' + r.role);
+      assert(/<i class="xss-probe">x<\/i>/.test(r.text), 'toast text ' + JSON.stringify(r.text));
       return errSummary(page);
     });
     await check('H2. hub DnDUI.confirm opens #dndui-dialog', async () => {
@@ -645,6 +657,60 @@ async function main() {
       await page.waitForFunction(() => window.__r !== undefined, null, { timeout: 5000 });
       assert((await page.evaluate(() => window.__r.v)) === true, 'did not resolve true');
       return 'ok';
+    });
+    await check('H4. hub Delete Character: danger dialog, Cancel keeps the character, Delete removes it', async () => {
+      assert(page, 'hub page missing');
+      await page.evaluate(() => {
+        state.characters.push({ id: 'smoke_del_c', name: 'Smoke Hero', race: 'Human', classes: 'Fighter 1', level: 1, campaignId: null });
+        window.__d = deleteCharacter('smoke_del_c');
+      });
+      await waitDlg(page);
+      const look = await page.evaluate(() => ({
+        rose: /border-rose/.test(document.querySelector('#dndui-dialog > div').className),
+        title: document.getElementById('dndui-dialog-title').textContent
+      }));
+      assert(look.rose, 'delete dialog is not the danger tone');
+      await btn(page, 'Cancel').click();
+      await page.evaluate(() => window.__d);
+      assert(await page.evaluate(() => state.characters.some(c => c.id === 'smoke_del_c')), 'Cancel deleted the character');
+      await page.evaluate(() => { window.__d = deleteCharacter('smoke_del_c'); });
+      await waitDlg(page);
+      await btn(page, 'Delete').click();
+      await page.evaluate(() => window.__d);
+      assert(!(await page.evaluate(() => state.characters.some(c => c.id === 'smoke_del_c'))), 'Delete kept the character');
+      assert(nativeDialogs === 0, 'native dialog fired ' + nativeDialogs + 'x');
+      assertNoErrors(page);
+      return 'title=' + look.title;
+    });
+    await context.close();
+  }
+
+  // H3. Static guard: native alert / confirm / prompt left in hub.html. The 7 kept ones are the Campaign DB
+  // attach/remove functions that tools/test_derive_sheet.js runs in a vm with synchronous alert/confirm stubs.
+  await check('H3. hub.html native alert/confirm/prompt count', async () => {
+    const KEPT = 7;
+    const src = fs.readFileSync(path.join(ROOT, 'hub.html'), 'utf8');
+    const hits = src.match(/(?:\bwindow\.|(?<![\w.$]))(?:alert|confirm|prompt)\s*\(/g) || [];
+    assert(hits.length === KEPT, `expected ${KEPT}, found ${hits.length}`);
+    return `${hits.length} native dialog calls (expected ${KEPT})`;
+  });
+
+  // H5. Hub at 375 px: a long toast and a danger confirm card fit inside the viewport width.
+  {
+    const context = await newContext({ viewport: { width: 375, height: 812 } });
+    await check('H5. hub mobile 375px: toast and confirm card fit viewport', async () => {
+      const page = await openPage(context, '/hub.html');
+      await page.waitForTimeout(800);
+      await page.evaluate(() => notify('A fairly long Hub notification for a narrow phone screen that has to wrap across several lines without overflowing.', 'warning'));
+      await page.waitForTimeout(400);
+      const t = await page.evaluate(() => { const b = document.querySelector('#dice-top-toast-container .dice-toast-item').getBoundingClientRect(); return { l: b.left, r: b.right, iw: window.innerWidth }; });
+      assert(t.l >= 0 && t.r <= t.iw, `toast ${Math.round(t.l)}..${Math.round(t.r)} vs ${t.iw}`);
+      await page.evaluate(() => { DnDUI.confirm('Are you sure you want to delete campaign "Smoke"?\n\nThis will permanently delete the campaign.', { title: 'Delete Campaign', tone: 'danger' }); });
+      await waitDlg(page);
+      const c = await page.evaluate(() => { const b = document.querySelector('#dndui-dialog > div').getBoundingClientRect(); return { l: b.left, r: b.right, iw: window.innerWidth }; });
+      assert(c.l >= 0 && c.r <= c.iw, `card ${Math.round(c.l)}..${Math.round(c.r)} vs ${c.iw}`);
+      await btn(page, 'Cancel').click();
+      return `toast ${Math.round(t.l)}..${Math.round(t.r)}, card ${Math.round(c.l)}..${Math.round(c.r)} of ${t.iw}`;
     });
     await context.close();
   }

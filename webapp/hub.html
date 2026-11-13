@@ -2426,13 +2426,16 @@
       adjustHp(charId, delta);
     }
 
-    function duplicateCharacter(charId) {
-      const source = state.characters.find(it => it.id === charId);
-      if (!source) return;
+    async function duplicateCharacter(charId) {
+      const found = state.characters.find(it => it.id === charId);
+      if (!found) return;
 
-      if (!confirm(`Are you sure you want to duplicate "${source.name}"?`)) {
+      if (!(await DnDUI.confirm(`Are you sure you want to duplicate "${found.name}"?`, { title: 'Clone Character', confirmLabel: 'Clone' }))) {
         return;
       }
+      // Re-read after the dialog: a sync may have replaced or removed the character meanwhile.
+      const source = state.characters.find(it => it.id === charId);
+      if (!source) return;
 
       const copy = JSON.parse(JSON.stringify(source));
       copy.id = 'char_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
@@ -2450,7 +2453,7 @@
     async function deleteCharacter(charId) {
       const c = state.characters.find(it => it.id === charId);
       if (!c) return;
-      if (confirm(`Are you sure you want to delete "${c.name}"?\n\nThis will permanently delete the character from both this browser and your cloud account.`)) {
+      if (await DnDUI.confirm(`Are you sure you want to delete "${c.name}"?\n\nThis will permanently delete the character from both this browser and your cloud account.`, { title: 'Delete Character', confirmLabel: 'Delete', tone: 'danger' })) {
         // Mezar Taşı (Tombstone) kaydı oluştur (Başka cihazların silinen karakteri hortlatmasını önle)
         if (window.SupabaseAuth && typeof window.SupabaseAuth.recordTombstone === 'function') {
           window.SupabaseAuth.recordTombstone(charId).catch(() => {});
@@ -2681,6 +2684,78 @@
         isNat20,
         isNat1
       });
+    }
+
+    /**
+     * Plain-text notification (`info` | `success` | `warning` | `error`) at the top of the Hub, in the
+     * sheet's toast look (char_combat.js showToast). rule_master.js notify() uses it once it exists.
+     * The text is set with textContent and wraps; click dismisses, it also fades out on its own.
+     */
+    function showToast(message, type = 'info', options = {}) {
+      const kinds = {
+        info: { title: 'Notice', icon: 'ℹ️', accent: '#a5b4fc', border: 'rgba(99, 102, 241, 0.85)' },
+        success: { title: 'Done', icon: '✅', accent: '#6ee7b7', border: 'rgba(16, 185, 129, 0.85)' },
+        warning: { title: 'Warning', icon: '⚠️', accent: '#fcd34d', border: 'rgba(245, 158, 11, 0.85)' },
+        error: { title: 'Error', icon: '❌', accent: '#fda4af', border: 'rgba(244, 63, 94, 0.85)' }
+      };
+      const kind = kinds[type] || kinds.info;
+      const opts = options || {};
+      let container = document.getElementById('dice-top-toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'dice-top-toast-container';
+        container.setAttribute('role', 'status');
+        container.setAttribute('aria-live', 'polite');
+        container.style.cssText = 'position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:10000;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;width:max-content;max-width:min(94vw, 28rem);';
+        document.body.appendChild(container);
+      }
+      const items = container.querySelectorAll('.dice-toast-item');
+      if (items.length >= 4) {
+        if (items[0]._dismissTimer) clearTimeout(items[0]._dismissTimer);
+        items[0].remove();
+      }
+
+      const toast = document.createElement('div');
+      toast.className = 'dice-toast-item';
+      toast.title = 'Click to dismiss';
+      toast.style.cssText = `pointer-events:auto;cursor:pointer;box-sizing:border-box;width:100%;max-width:min(94vw, 28rem);display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;background:rgba(15, 23, 42, 0.95);border:2px solid ${kind.border};box-shadow:0 10px 28px -5px rgba(0, 0, 0, 0.85);color:#fff;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;transform:translateY(-8px);transition:opacity 0.3s ease-out, transform 0.3s ease-out;user-select:none;`;
+
+      const iconBox = document.createElement('div');
+      iconBox.style.cssText = `width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;background:rgba(30, 41, 59, 0.85);border:1px solid ${kind.border};`;
+      iconBox.textContent = kind.icon;
+      const body = document.createElement('div');
+      body.style.cssText = 'display:flex;flex-direction:column;min-width:0;flex:1 1 auto;padding-right:4px;';
+      const titleEl = document.createElement('div');
+      titleEl.style.cssText = `font-size:14px;font-weight:900;color:${kind.accent};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;`;
+      titleEl.textContent = opts.title || kind.title;
+      const textEl = document.createElement('div');
+      textEl.style.cssText = 'font-size:12px;color:#cbd5e1;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;white-space:pre-line;overflow-wrap:anywhere;';
+      textEl.textContent = String(message == null ? '' : message);
+      body.appendChild(titleEl);
+      body.appendChild(textEl);
+      toast.appendChild(iconBox);
+      toast.appendChild(body);
+
+      const dismiss = () => {
+        if (toast._dismissTimer) clearTimeout(toast._dismissTimer);
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-8px)';
+        setTimeout(() => toast.remove(), 300);
+      };
+      toast.addEventListener('click', dismiss);
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+      });
+      const urgent = type === 'warning' || type === 'error';
+      toast._dismissTimer = setTimeout(dismiss, opts.dismissMs || (urgent ? 6000 : 4000));
+      return toast;
+    }
+
+    /** A multi-line report or rule reference the user reads at leisure: an in-page dialog; both buttons close it. */
+    function showHubReport(title, text) {
+      return DnDUI.confirm(text, { title, confirmLabel: 'OK', cancelLabel: 'Close' });
     }
 
     function showHubDiceToast(data) {
@@ -3038,7 +3113,7 @@
     async function searchMonsterWithRuleMasterAi(explicitQuery = '') {
       let query = explicitQuery || document.getElementById('bestiary-search-input')?.value.trim();
       if (!query) {
-        query = prompt('Enter the creature or NPC name to look up in the D&D 3.5e Monster Manual and sourcebooks:\n(e.g. Marilith, Bebilith, Red Dragon, Lich, Drow Priestess)');
+        query = await DnDUI.prompt('Enter the creature or NPC name to look up in the D&D 3.5e Monster Manual and sourcebooks:\n(e.g. Marilith, Bebilith, Red Dragon, Lich, Drow Priestess)', '', { title: 'Rule Master AI Bestiary Search', confirmLabel: 'Search' });
         if (!query || !query.trim()) return;
         query = query.trim();
         const searchInput = document.getElementById('bestiary-search-input');
@@ -3047,7 +3122,7 @@
 
       let apiKey = localStorage.getItem('gemini_api_key') || (window.RuleMaster && typeof window.RuleMaster.getApiKey === 'function' ? window.RuleMaster.getApiKey() : '');
       if (!apiKey) {
-        apiKey = prompt('⚡ Enter your Google AI Studio Gemini API Key to use Rule Master AI:\n(Stored locally in your browser only)');
+        apiKey = await DnDUI.prompt('Enter your Google AI Studio Gemini API Key to use Rule Master AI:\n(Stored locally in your browser only)', '', { title: 'Gemini API Key', confirmLabel: 'Save' });
         if (!apiKey || !apiKey.trim()) return;
         apiKey = apiKey.trim();
         localStorage.setItem('gemini_api_key', apiKey);
@@ -3181,7 +3256,7 @@ CRITICAL RULES:
       }
 
       if (!monsterData || !monsterData.name) {
-        alert('Rule Master AI query failed: ' + (lastErr ? lastErr.message : 'Could not parse data. Please check your API key.'));
+        notify('Rule Master AI query failed: ' + (lastErr ? lastErr.message : 'Could not parse data. Please check your API key.'), 'error');
         renderBestiaryList();
         return;
       }
@@ -3898,7 +3973,7 @@ CRITICAL RULES:
     function saveBestiaryCharacter() {
       const monster = (window.DND35_SRD_MONSTERS || []).find(m => m.id === selectedBestiaryMonsterId);
       if (!monster) {
-        alert('Please select a monster from the Bestiary list!');
+        notify('Please select a monster from the Bestiary list!', 'warning');
         return;
       }
 
@@ -3915,7 +3990,7 @@ CRITICAL RULES:
     function saveNewCharacter() {
       const name = document.getElementById('new-char-name')?.value.trim();
       if (!name) {
-        alert('Please enter a character name!');
+        notify('Please enter a character name!', 'warning');
         return;
       }
       const isNpc = document.getElementById('new-char-type')?.value === 'npc';
@@ -4007,7 +4082,7 @@ CRITICAL RULES:
       const charId = document.getElementById('edit-char-id')?.value;
       const name = document.getElementById('edit-char-name')?.value.trim();
       if (!name) {
-        alert('Please enter a character name!');
+        notify('Please enter a character name!', 'warning');
         return;
       }
       const campId = document.getElementById('edit-char-campaign')?.value || null;
@@ -4091,7 +4166,7 @@ CRITICAL RULES:
     async function saveNewCampaign() {
       const name = document.getElementById('new-campaign-name')?.value.trim();
       if (!name) {
-        alert('Please enter a campaign name!');
+        notify('Please enter a campaign name!', 'warning');
         return;
       }
       const notes = document.getElementById('new-campaign-notes')?.value.trim() || '';
@@ -4267,7 +4342,7 @@ CRITICAL RULES:
     }
 
     async function kickMemberFromCampaign(campId, charId, charName) {
-      const confirmed = confirm(`Remove "${charName}" from this campaign? (The character will not be deleted, only unlinked from the table)`);
+      const confirmed = await DnDUI.confirm(`Remove "${charName}" from this campaign? (The character will not be deleted, only unlinked from the table)`, { title: 'Remove Character from Table', confirmLabel: 'Remove', tone: 'danger' });
       if (!confirmed) return;
 
       const camp = state.campaigns.find(c => c.id === campId);
@@ -4290,16 +4365,19 @@ CRITICAL RULES:
     }
 
     async function migrateCampaignToCloud(campId) {
-      const camp = state.campaigns.find(c => c.id === campId);
-      if (!camp) return;
+      const found = state.campaigns.find(c => c.id === campId);
+      if (!found) return;
 
       if (window.SupabaseAuth?.isLocalMode()) {
-        alert('Please sign in with your Google account to migrate this campaign to the cloud and generate an invite code.');
+        notify('Please sign in with your Google account to migrate this campaign to the cloud and generate an invite code.', 'warning');
         return;
       }
 
-      const confirmed = confirm(`Migrate "${camp.name}" to Supabase Cloud and generate an invite code for players?`);
+      const confirmed = await DnDUI.confirm(`Migrate "${found.name}" to Supabase Cloud and generate an invite code for players?`, { title: 'Migrate Campaign to Cloud', confirmLabel: 'Migrate' });
       if (!confirmed) return;
+      // Re-read after the dialog: a sync may have replaced the campaign object meanwhile.
+      const camp = state.campaigns.find(c => c.id === campId);
+      if (!camp) return;
 
       try {
         const charsInCamp = state.characters.filter(c => c.campaignId === camp.id);
@@ -4327,7 +4405,7 @@ CRITICAL RULES:
         }
       } catch (err) {
         console.error('migrateCampaignToCloud error:', err);
-        alert('An error occurred while migrating campaign to the cloud: ' + (err.message || err));
+        notify('An error occurred while migrating campaign to the cloud: ' + (err.message || err), 'error');
       }
     }
 
@@ -4405,7 +4483,7 @@ CRITICAL RULES:
       const campId = document.getElementById('edit-campaign-id')?.value;
       const name = document.getElementById('edit-campaign-name')?.value.trim();
       if (!name) {
-        alert('Please enter a campaign name!');
+        notify('Please enter a campaign name!', 'warning');
         return;
       }
       const notes = document.getElementById('edit-campaign-notes')?.value.trim() || '';
@@ -4431,17 +4509,23 @@ CRITICAL RULES:
 
       const subCamps = state.campaigns.filter(c => c.parentId === campId);
       if (subCamps.length > 0) {
-        alert(`⚠️ This campaign has ${subCamps.length} sub-campaign(s) attached!\n\nPlease delete or move those sub-campaigns first.`);
+        notify(`This campaign has ${subCamps.length} sub-campaign(s) attached!\n\nPlease delete or move those sub-campaigns first.`, 'warning');
         return;
       }
 
       const charsInCamp = state.characters.filter(c => c.campaignId === campId);
       if (charsInCamp.length > 0) {
-        alert(`⚠️ This campaign contains ${charsInCamp.length} character(s)!\n\nA campaign containing characters cannot be deleted. Please move or delete those characters first.`);
+        notify(`This campaign contains ${charsInCamp.length} character(s)!\n\nA campaign containing characters cannot be deleted. Please move or delete those characters first.`, 'warning');
         return;
       }
 
-      if (confirm(`Are you sure you want to delete campaign "${camp.name}"?\n\nThis will permanently delete the campaign from both this device and your cloud account.`)) {
+      if (await DnDUI.confirm(`Are you sure you want to delete campaign "${camp.name}"?\n\nThis will permanently delete the campaign from both this device and your cloud account.`, { title: 'Delete Campaign', confirmLabel: 'Delete', tone: 'danger' })) {
+        // Re-check after the dialog: a sync may have attached a sub-campaign or character meanwhile.
+        if (!state.campaigns.some(c => c.id === campId)) return;
+        if (state.campaigns.some(c => c.parentId === campId) || state.characters.some(c => c.campaignId === campId)) {
+          notify('This campaign gained a sub-campaign or character while the dialog was open. It was not deleted.', 'warning');
+          return;
+        }
         const cloudId = camp.cloudCampaignId || (camp.id && camp.id.includes('-') ? camp.id : null);
 
         // Remembered so the other devices drop it too (user_hub_state); a missing campaign alone is never a deletion.
@@ -4495,28 +4579,40 @@ CRITICAL RULES:
             state.characters = parsed.characters;
             saveHubStorage();
             renderHub();
-            alert('✅ Campaign and character data imported successfully!');
+            notify('Campaign and character data imported successfully!', 'success');
           } else {
-            alert('⚠️ Invalid backup file format.');
+            notify('Invalid backup file format.', 'warning');
           }
         } catch (err) {
-          alert('❌ Failed to parse JSON: ' + err.message);
+          notify('Failed to parse JSON: ' + err.message, 'error');
         }
       };
       reader.readAsText(file);
       event.target.value = '';
     }
 
-    function resetAllHubLocalData() {
-      const confirmed = confirm("⚠️ WARNING!\nAll local Hub data in your browser (campaigns, characters, Master DB, and cache) will be reset to factory defaults.\n\nAre you sure?");
+    const HUB_RESET_NOTICE_KEY = 'dnd35_hub_reset_notice';
+
+    async function resetAllHubLocalData() {
+      const confirmed = await DnDUI.confirm("WARNING!\nAll local Hub data in your browser (campaigns, characters, Master DB, and cache) will be reset to factory defaults.\n\nAre you sure?", { title: 'Reset Local Data', confirmLabel: 'Reset', tone: 'danger' });
       if (!confirmed) return;
       try {
         localStorage.clear();
       } catch (e) {
         console.warn('LocalStorage clear error:', e);
       }
-      alert("✅ All local data reset to factory defaults! Reloading Hub...");
+      // Reload at once (nothing may write the cleared storage back); the reloaded Hub shows the notice.
+      try { sessionStorage.setItem(HUB_RESET_NOTICE_KEY, '1'); } catch (e) { /* notice is optional */ }
       window.location.reload();
+    }
+
+    function showHubResetNotice() {
+      let pending = false;
+      try {
+        pending = sessionStorage.getItem(HUB_RESET_NOTICE_KEY) === '1';
+        sessionStorage.removeItem(HUB_RESET_NOTICE_KEY);
+      } catch (e) { /* storage unavailable */ }
+      if (pending) notify('All local data reset to factory defaults!', 'success');
     }
 
     async function syncCloudUserHub(authUser) {
@@ -5054,6 +5150,7 @@ CRITICAL RULES:
 
     // Sayfa Açılışı
     window.addEventListener('DOMContentLoaded', async () => {
+      showHubResetNotice();
       let authUser = null;
       if (window.SupabaseAuth) {
         authUser = await window.SupabaseAuth.requireAuth();
@@ -6159,7 +6256,7 @@ CRITICAL RULES:
       c.fullData.houseRules = Object.assign({}, g.houseRules);
       saveHubStorage();
       loadSettingsForCurrentScope();
-      alert(`✅ Rules and settings for "${c.name}" have been synced to Global Table Standards!`);
+      notify(`Rules and settings for "${c.name}" have been synced to Global Table Standards!`, 'success');
     }
 
     function onSettingFeatModeChange() { onSettingChange(); }
@@ -6174,7 +6271,7 @@ CRITICAL RULES:
     function onHouseRulePrecisionChange(val) { onSettingChange(); }
 
     function openSkillConsolidationModal() {
-      alert("ℹ️ Skill Consolidation Variant Rule:\n\n" +
+      showHubReport('Skill Consolidation Variant Rule',
         "1. Athletics: Climb, Jump, Swim\n" +
         "2. Stealth: Hide, Move Silently\n" +
         "3. Perception: Spot, Listen, Search\n" +
@@ -6493,7 +6590,7 @@ CRITICAL RULES:
     function exportCampaignBundle() {
       const rootCamp = getHubActiveRootCampaign();
       if (!rootCamp || !window.CampaignDb) {
-        alert('⚠️ Select a campaign first. The export holds one campaign: its sub-campaigns, Campaign DB rule packs, notes and characters.');
+        notify('Select a campaign first. The export holds one campaign: its sub-campaigns, Campaign DB rule packs, notes and characters.', 'warning');
         return;
       }
       const bundle = CampaignDb.buildCampaignBundle(state, rootCamp.id, new Date().toISOString());
@@ -6513,7 +6610,7 @@ CRITICAL RULES:
     async function importCampaignBundleFile(bundle) {
       const bc = bundle.campaign;
       const counts = `${(bundle.subCampaigns || []).length} sub-campaign(s), ${(bc.packs || []).length} rule pack(s), ${(bundle.characters || []).length} character(s)`;
-      if (!confirm(`Import campaign "${bc.name || bc.id}" (${counts})?\n\nA campaign with the same id is merged: missing notes, sub-campaigns, characters and packs are added, identical ones are skipped, and a different one with the same id is added as a new copy marked "(Imported <date>)". Nothing is overwritten; a changed rule pack becomes a new version.`)) return;
+      if (!(await DnDUI.confirm(`Import campaign "${bc.name || bc.id}" (${counts})?\n\nA campaign with the same id is merged: missing notes, sub-campaigns, characters and packs are added, identical ones are skipped, and a different one with the same id is added as a new copy marked "(Imported <date>)". Nothing is overwritten; a changed rule pack becomes a new version.`, { title: 'Import Campaign', confirmLabel: 'Import' }))) return;
       const plan = CampaignDb.importCampaignBundle(state, bundle, { nowIso: new Date().toISOString() });
       state.campaigns = plan.campaigns;
       state.characters = plan.characters;
@@ -6532,7 +6629,9 @@ CRITICAL RULES:
       saveHubStorage(true);
       renderHub();
       const r = plan.report;
-      alert(`✅ Campaign "${rootCamp ? rootCamp.name : bc.name}" ${r.campaignCreated ? 'created' : 'merged'}.${cloudNote}\n` +
+      // A multi-line report to read at leisure: an in-page dialog (both buttons just close it), not a timed toast.
+      showHubReport('Campaign Import Report',
+        `Campaign "${rootCamp ? rootCamp.name : bc.name}" ${r.campaignCreated ? 'created' : 'merged'}.${cloudNote}\n` +
         `• Sub-campaigns added: ${r.subCampaignsAdded}\n` +
         `• Notes added: ${r.notesAdded} • Copied (same id, different): ${r.notesCopied} • Skipped (identical): ${r.notesSkipped}\n` +
         `• Characters added: ${r.charactersAdded} • Copied: ${r.charactersCopied} • Skipped: ${r.charactersSkipped}\n` +
@@ -6735,7 +6834,7 @@ CRITICAL RULES:
             window.state = state;
             saveHubStorage();
             renderHub();
-            alert('✅ Full Hub backup bundle restored successfully!');
+            notify('Full Hub backup bundle restored successfully!', 'success');
           } else if (window.CampaignDb && CampaignDb.readPackFile(parsed)) {
             // A rule pack file (`{ pack, entries }`) is attached to the selected campaign's Campaign DB.
             attachPackToActiveCampaignDb(CampaignDb.readPackFile(parsed));
@@ -6755,7 +6854,7 @@ CRITICAL RULES:
             const packRes = mergeEntriesIntoHubCharacters(stamped);
             renderHub();
             renderHubDmPackManager();
-            alert(describeHubDbMergeResult(packRes, `Rule Pack${packId ? ' "' + packId + '"' : ''} (${stamped.length} entries)`));
+            notify(describeHubDbMergeResult(packRes, `Rule Pack${packId ? ' "' + packId + '"' : ''} (${stamped.length} entries)`), packRes && packRes.targets ? 'success' : 'warning');
           } else if (parsed.name && (parsed.stats || parsed.abilities || parsed.classes)) {
             const newChar = {
               id: parsed.id || ('char_' + Date.now()),
@@ -6771,13 +6870,13 @@ CRITICAL RULES:
             state.characters.push(newChar);
             saveHubStorage();
             renderHub();
-            alert(`✅ Character "${parsed.name}" imported successfully!`);
+            notify(`Character "${parsed.name}" imported successfully!`, 'success');
           } else if (Array.isArray(parsed)) {
             if (parsed.length > 0 && (parsed[0].benefit !== undefined || parsed[0].modifiers !== undefined || parsed[0].category !== undefined)) {
               const libRes = mergeEntriesIntoHubCharacters(parsed);
               renderHub();
               renderHubDmPackManager();
-              alert(describeHubDbMergeResult(libRes, `Custom DB library (${parsed.length} entries)`));
+              notify(describeHubDbMergeResult(libRes, `Custom DB library (${parsed.length} entries)`), libRes && libRes.targets ? 'success' : 'warning');
             } else {
               parsed.forEach(c => {
                 if (c && c.id && !state.characters.some(it => it.id === c.id)) {
@@ -6786,33 +6885,37 @@ CRITICAL RULES:
               });
               saveHubStorage();
               renderHub();
-              alert(`✅ ${parsed.length} character(s) imported!`);
+              notify(`${parsed.length} character(s) imported!`, 'success');
             }
           }
           closeSettingsModal();
         } catch (err) {
-          alert('❌ Error processing JSON file: ' + err.message);
+          notify('Error processing JSON file: ' + err.message, 'error');
         }
       };
       reader.readAsText(file);
     }
 
-    function resetToCleanCharacter() {
+    async function resetToCleanCharacter() {
       if (currentSettingsScope && currentSettingsScope !== 'global') {
-        const c = state.characters.find(it => it.id === currentSettingsScope);
-        if (!c) return;
-        if (confirm(`⚠️ Are you sure you want to reset "${c.name}" to a clean 1st-level template?`)) {
+        const charId = currentSettingsScope;
+        const found = state.characters.find(it => it.id === charId);
+        if (!found) return;
+        if (await DnDUI.confirm(`Are you sure you want to reset "${found.name}" to a clean 1st-level template?`, { title: 'Reset Character', confirmLabel: 'Reset', tone: 'danger' })) {
+          // Re-read after the dialog: a sync may have replaced the character object meanwhile.
+          const c = state.characters.find(it => it.id === charId);
+          if (!c) return;
           c.fullData = createCleanDnd35Character({ id: c.id, name: c.name, campaignId: c.campaignId, isNpc: c.isNpc });
           saveHubStorage();
           loadSettingsForCurrentScope();
           renderHub();
-          alert(`✅ "${c.name}" has been reset to a clean template.`);
+          notify(`"${c.name}" has been reset to a clean template.`, 'success');
         }
       } else {
-        if (confirm('⚠️ Are you sure you want to reset Global Table Standards to default factory values?')) {
+        if (await DnDUI.confirm('Are you sure you want to reset Global Table Standards to default factory values?', { title: 'Reset Global Table Standards', confirmLabel: 'Reset', tone: 'danger' })) {
           localStorage.removeItem(HUB_GLOBAL_SETTINGS_KEY);
           loadSettingsForCurrentScope();
-          alert('✅ Global Table Standards reset to defaults.');
+          notify('Global Table Standards reset to defaults.', 'success');
         }
       }
     }
@@ -6846,16 +6949,16 @@ CRITICAL RULES:
       const input = document.getElementById('settings-gemini-api-key');
       const val = (input?.value || '').trim();
       if (!val) {
-        alert('Please enter a valid Gemini API key.');
+        notify('Please enter a valid Gemini API key.', 'warning');
         return;
       }
       localStorage.setItem('gemini_api_key', val);
       verifySettingsGeminiApiKey(false);
-      alert('✅ Your Gemini API key has been saved securely in your browser!');
+      notify('Your Gemini API key has been saved securely in your browser!', 'success');
     }
 
-    function clearSettingsApiKey() {
-      if (!confirm('Are you sure you want to remove the saved Gemini API key?')) return;
+    async function clearSettingsApiKey() {
+      if (!(await DnDUI.confirm('Are you sure you want to remove the saved Gemini API key?', { title: 'Remove Gemini API Key', confirmLabel: 'Remove', tone: 'danger' }))) return;
       localStorage.removeItem('gemini_api_key');
       const input = document.getElementById('settings-gemini-api-key');
       if (input) input.value = '';
@@ -6865,7 +6968,7 @@ CRITICAL RULES:
     async function diagnoseSettingsApiKey() {
       const key = (localStorage.getItem('gemini_api_key') || '').trim();
       if (!key) {
-        alert('Please save a Gemini API key first.');
+        notify('Please save a Gemini API key first.', 'warning');
         return;
       }
       const statusEl = document.getElementById('settings-gemini-live-status');
@@ -6876,10 +6979,10 @@ CRITICAL RULES:
         const data = await res.json();
         const count = data.models ? data.models.length : 0;
         if (statusEl) statusEl.innerHTML = `<span class="text-emerald-400 font-bold">🟢 Connection Verified (${count} Models)</span>`;
-        alert(`✅ Connection Verified!\n\nYour Google Gemini API key is active and working (${count} models discovered).`);
+        notify(`Connection Verified!\n\nYour Google Gemini API key is active and working (${count} models discovered).`, 'success');
       } catch (e) {
         if (statusEl) statusEl.innerHTML = '<span class="text-rose-400 font-bold">⚠️ Connection Failed</span>';
-        alert('❌ Gemini API Test Error:\n' + e.message);
+        notify('Gemini API Test Error:\n' + e.message, 'error');
       }
     }
 
