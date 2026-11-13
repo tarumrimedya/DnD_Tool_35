@@ -5,6 +5,14 @@
  * Scans all .html and .js files in the project (including dynamic color
  * template patterns), runs the official Tailwind v3.4 PostCSS engine, and
  * outputs a minified `tailwind_compiled.css` synced to `webapp/`.
+ *
+ * WARNING: the committed `tailwind_compiled.css` is intentionally NOT a fresh build (last rebuilt
+ * 2026-11-06; the decision was to keep the look and only delete names without a rule). A rebuild
+ * ADDS rules (about 41 names used in the sources today) and DROPS others (about 24), which changes
+ * the look. Before committing a rebuild, diff the old and new rule sets and review the pages
+ * visually at 375 and 1440 px. `future.hoverOnlyWhenSupported` is set, and the committed CSS
+ * already wraps hover rules in `@media (hover:hover) and (pointer:fine)`; keep that.
+ * `tools/css_class_gate.js` (run by verify_and_sync) tracks the names that have no rule today.
  * ============================================================================
  */
 const fs = require('fs');

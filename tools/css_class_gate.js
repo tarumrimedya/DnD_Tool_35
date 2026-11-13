@@ -2,10 +2,16 @@
  * Undefined CSS class gate.
  *
  * The sheet ships a pre-compiled stylesheet, so a class name with no rule behind it silently does
- * nothing. This module lists every class used in `class="..."` attributes of the sheet files that
- * has no selector in the stylesheets and is not on the allowlist (`css_class_allowlist.json`).
+ * nothing. This module lists every class used in `class="..."` attributes that has no selector in
+ * the stylesheets and is not on the allowlist (`css_class_allowlist.json`).
  *
- * Allowlist buckets:
+ * Scope: every file `tools/build_tailwind.js` scans (its SOURCE_FILES list, parsed from that file so
+ * they cannot drift): index.html, hub.html, login.html, char_modals.js (JSON-escaped HTML is
+ * unescaped first, like the builder does), char_*.js, ui_shared.js, rule_*.js, hub_*.js and so on.
+ * `<style>` blocks are read from every scanned .html file, not only index.html.
+ *
+ * Allowlist buckets (reasons: `hooks` = JS selectors; `unresolved` = non-core plugin or typo names such as
+ * prose, animate-in, py-0.2; `pendingRebuild` = valid utilities missing from the committed CSS):
  *  - `hooks`: names used only as JS/DOM hooks or state markers; they are not meant to carry style.
  *  - `unresolved`: names with no rule anywhere whose intent is unclear; decide and clear them.
  *  - `pendingRebuild`: valid Tailwind utilities that were added after `tailwind_compiled.css` was
@@ -15,7 +21,18 @@
 const fs = require('fs');
 const path = require('path');
 
-const SHEET_FILES = ['index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js'];
+const FALLBACK_FILES = ['index.html', 'char_hud.js', 'char_combat.js', 'char_spells.js', 'char_progression.js', 'char_inventory.js'];
+
+/** The builder's SOURCE_FILES list, parsed from its source (requiring it would run a build). */
+function scannedFiles(root) {
+  try {
+    const src = fs.readFileSync(path.join(root, 'tools', 'build_tailwind.js'), 'utf8');
+    const m = src.match(/SOURCE_FILES\s*=\s*\[([\s\S]*?)\]/);
+    const list = m ? [...m[1].matchAll(/'([^']+)'/g)].map(x => x[1]) : [];
+    if (list.length) return list;
+  } catch (e) { /* fall through */ }
+  return FALLBACK_FILES;
+}
 const CSS_FILES = ['tailwind_compiled.css', 'design_tokens.css'];
 
 function readDefinedClasses(root) {
@@ -30,9 +47,10 @@ function readDefinedClasses(root) {
       if (name.endsWith('.css')) css += '\n' + fs.readFileSync(path.join(stylesDir, name), 'utf8');
     }
   }
-  const indexPath = path.join(root, 'index.html');
-  if (fs.existsSync(indexPath)) {
-    const html = fs.readFileSync(indexPath, 'utf8');
+  for (const rel of scannedFiles(root).filter(f => f.endsWith('.html'))) {
+    const htmlPath = path.join(root, rel);
+    if (!fs.existsSync(htmlPath)) continue;
+    const html = fs.readFileSync(htmlPath, 'utf8');
     for (const m of html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/gi)) css += '\n' + m[1];
   }
   css = css.replace(/\/\*[\s\S]*?\*\//g, '');
@@ -68,10 +86,12 @@ function findUndefinedClasses(root) {
   const allow = fs.existsSync(allowPath) ? JSON.parse(fs.readFileSync(allowPath, 'utf8')) : {};
   const allowed = new Set([...(allow.hooks || []), ...(allow.unresolved || []), ...(allow.pendingRebuild || [])]);
   const found = new Map();
-  for (const rel of SHEET_FILES) {
+  for (const rel of scannedFiles(root)) {
     const full = path.join(root, rel);
     if (!fs.existsSync(full)) continue;
-    const text = fs.readFileSync(full, 'utf8');
+    let text = fs.readFileSync(full, 'utf8');
+    // char_modals.js holds JSON-escaped HTML (class=\"...\"); unescape so attributes are visible.
+    if (rel === 'char_modals.js') text = text.replace(/\\"/g, '"').replace(/\\n/g, '\n');
     for (const m of text.matchAll(/\bclass\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) {
       // In a JS template the fragments on either side of `${...}` meet the expression directly.
       const value = (m[1] !== undefined ? m[1] : m[2]).replace(/(\S)\$\{/g, '$1\u0000${').replace(/\}(\S)/g, '}\u0000$1');

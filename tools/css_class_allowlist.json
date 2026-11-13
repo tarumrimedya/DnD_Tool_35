@@ -1,10 +1,21 @@
 {
   "hooks": [
     "tab-btn", "tab-content","round-counter-badge", "im-feat-tag-chk",
-    "mdb-subtab-btn", "mdb-subtab-content", "pin-card", "pin-tooltip", "slot-anchor-node", "is-editing"
+    "mdb-subtab-btn", "mdb-subtab-content", "pin-card", "pin-tooltip", "slot-anchor-node", "is-editing",
+    "dnd-forge-enh-chk", "mdb-forge-enh-chk", "im-mod-target", "im-mod-value", "im-mod-type", "im-mod-cond",
+    "bestiary-filter-pill", "hub-empty-create-card"
   ],
   "unresolved": [
-    "scrollbar-thin", "custom-scroll"
+    "scrollbar-thin",
+    "custom-scrollbar", "no-scrollbar", "py-0.2", "animate-fadeIn",
+    "prose", "prose-invert", "animate-in", "fade-in", "slide-in-from-bottom"
   ],
-  "pendingRebuild": []
+  "pendingRebuild": [
+    "z-[10050]", "z-[10060]", "z-[10080]", "max-w-[640px]", "max-w-[148px]", "sm:max-w-[168px]",
+    "max-h-[58vh]", "max-h-24", "pt-[10vh]", "pr-20", "pl-1.5", "outline-none",
+    "bg-black/60", "bg-pink-950/90", "text-pink-200", "text-pink-400",
+    "border-teal-800/60", "border-teal-700/50", "border-slate-600/60", "border-cyan-500/50",
+    "border-pink-500/50", "border-pink-500/40", "border-purple-400/50",
+    "from-purple-950/40", "from-purple-950/60", "to-indigo-950/40", "hover:bg-indigo-950/80"
+  ]
 }
