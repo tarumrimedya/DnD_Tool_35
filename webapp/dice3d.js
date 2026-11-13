@@ -71,7 +71,9 @@ class Dice3DController {
     // Fullscreen transparent overlay
     this.container = document.createElement('div');
     this.container.id = 'dice-3d-overlay';
-    this.container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;transition:opacity 0.25s ease-out;opacity:0;';
+    this.container.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999;transition:opacity 0.25s ease-out;opacity:0;will-change:opacity;transform:translateZ(0);';
+    // will-change keeps the overlay on its own compositor layer for its whole life. Without it iOS Safari
+    // re-layers the full-screen WebGL canvas when the 0.25 s fade-in ends, a ~130 ms freeze mid-fall.
     
     // Allow clicking anywhere to skip/dismiss immediately
     this.container.addEventListener('click', () => {
