@@ -1523,15 +1523,16 @@
       }
 
       if (idClean === 'shieldblock' || idClean === 'shield block') {
+        const sbInfo = RuleEngine.getShieldBlockAllyBonus(character);
         return {
           title: 'Shield Block',
           type: 'Counter (Maneuver)',
           color: 'indigo',
-          val1: '+4 Shield AC',
+          val1: `Ally +${sbInfo.total} Shield AC`,
           val2: 'Devoted Spirit 2',
           source: 'Tome of Battle',
           action: 'Immediate Action',
-          desc: 'As an Immediate Action when an enemy attacks you or an adjacent ally, interpose your shield to grant an additional +4 shield bonus to AC against that attack.'
+          desc: `As an Immediate Action, grant an adjacent ally a shield bonus to AC equal to your shield's AC bonus + 4 (currently +${sbInfo.total}${sbInfo.hasShield ? '' : ', no shield equipped'}) against one attack. Your own AC does not change.`
         };
       }
 
@@ -6991,7 +6992,7 @@
           id: 'shieldBlock',
           name: 'Shield Block',
           source: 'Counter',
-          bonusStr: '+4 Shield AC',
+          bonusStr: `Ally +${RuleEngine.getShieldBlockAllyBonus(character).total} AC`,
           active: sb,
           onclick: 'triggerShieldBlockReaction()'
         }
@@ -10526,7 +10527,6 @@
       const ce = character.tactical.combatExpertise || 0;
       const fd = character.tactical.fightingDefensively || false;
       const td = character.tactical.totalDefense || false;
-      const sb = character.tactical.shieldBlockActive || false;
 
       const skillList = Array.isArray(character.skills) ? character.skills : Object.values(character.skills || {});
       const tumbleSkill = skillList.find(s => s && s.name && s.name.toLowerCase() === 'tumble');
@@ -10534,12 +10534,8 @@
       const fdDodge = tumbleRanks >= 5 ? 3 : 2;
       const tdDodge = tumbleRanks >= 5 ? 6 : 4;
 
-      let extraDodge = 0;
-      if (ce > 0) extraDodge += ce;
-      if (fd) extraDodge += fdDodge;
-      if (td) extraDodge += tdDodge;
-      if (sb) extraDodge += 4;
-
+      // Stance dodge bonuses (Combat Expertise, Fighting Defensively, Total Defense) are applied by
+      // RuleEngine.recalculateCharacter from character.tactical; this view only displays acBreakdown.
       const bd = character.acBreakdown || {};
       if (acNormal) acNormal.textContent = bd.total || 21;
       if (acTouch) acTouch.textContent = bd.touch || 16;
@@ -10896,18 +10892,24 @@
         if (typeof consumeActionEconomy === 'function') {
           consumeActionEconomy('immediate', 'Shield Block');
         }
+        // ToB p.60: the bonus goes to an adjacent ally against one attack; the initiator's own AC is unchanged.
+        const sbInfo = RuleEngine.getShieldBlockAllyBonus(character);
+        const sbParts = sbInfo.hasShield
+          ? `shield +${sbInfo.shieldBonus}, +4`
+          : 'no shield equipped: shield +0, +4';
+        const sbBreakdown = `Adjacent ally gains a +${sbInfo.total} shield bonus to AC against one attack (${sbParts}).`;
         showDiceTopToast({
           icon: '🛡️',
-          title: 'Shield Block Triggered!',
-          breakdown: 'Devoted Spirit: Immediate +4 Shield AC active until next turn.',
-          total: '+4 Shield AC'
+          title: 'Shield Block',
+          breakdown: sbBreakdown,
+          total: `Ally +${sbInfo.total} AC`
         });
         addDiceHistoryEntry({
           icon: '🛡️',
-          title: 'Shield Block Reaction',
-          formula: '+4 Shield AC',
-          breakdown: 'Immediate Action counter defense triggered',
-          total: '+4 AC'
+          title: 'Shield Block',
+          formula: `Ally +${sbInfo.total} shield AC`,
+          breakdown: `Immediate Action (Devoted Spirit counter). ${sbBreakdown}`,
+          total: `Ally +${sbInfo.total} AC`
         });
       }
     }

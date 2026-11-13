@@ -5406,11 +5406,18 @@ const RuleEngine = {
     const effectiveDeflection = this.resolveBonusStacking(deflectionBonuses);
     let effectiveDodge = this.resolveBonusStacking(dodgeBonuses);
 
-    // Tactical stance / combat mode dodge bonuses
-    const combatExpertise = tacticalOptions.combatExpertise || 0;
-    const fightingDefensively = tacticalOptions.fightingDefensively || false;
-    const totalDefense = tacticalOptions.totalDefense || false;
-    const charge = tacticalOptions.charge || false;
+    // Tactical stance / combat mode dodge bonuses.
+    // `character.tactical` is the canonical combat state (written by the 'combat/toggleTacticalMod' and
+    // 'combat/adjustCombatExpertise' reducers); `tacticalOptions` only fills keys the document does not carry.
+    // Reading the options first let a stale options snapshot (e.g. CharStore's cached recompute options, or the
+    // option-less recalculation paths) silently drop Total Defense / Fighting Defensively / Combat Expertise.
+    const docTactical = (character.tactical && typeof character.tactical === 'object') ? character.tactical : {};
+    const optTactical = tacticalOptions || {};
+    const readTactical = (key) => (docTactical[key] !== undefined ? docTactical[key] : optTactical[key]);
+    const combatExpertise = Number(readTactical('combatExpertise')) || 0;
+    const fightingDefensively = Boolean(readTactical('fightingDefensively'));
+    const totalDefense = Boolean(readTactical('totalDefense'));
+    const charge = Boolean(readTactical('charge'));
 
     // D&D 3.5e RAW (PHB p. 84, Tumble): 5+ ranks in Tumble increases Fighting Defensively dodge bonus to +3 and Total Defense to +6
     const skillList = Array.isArray(character.skills) ? character.skills : Object.values(character.skills || {});
@@ -5905,6 +5912,22 @@ const RuleEngine = {
         penalty: bd.penalty ? -Math.abs(bd.penalty) : 0
       }
     };
+  },
+
+  /**
+   * Shield Block (ToB p.60, Devoted Spirit 2 counter): grants an ADJACENT ALLY a shield bonus to AC equal to
+   * your shield's AC bonus + 4 against one attack. It never changes the initiator's own AC.
+   * Reads the equipped off-hand shield's entry from the already-computed `acBreakdown.sources.shield`.
+   */
+  getShieldBlockAllyBonus(character) {
+    const oh = character && character.bodySlots ? character.bodySlots.offHand : null;
+    const hasShield = Boolean(oh && oh.active !== false && oh.name && oh.name !== '-' && this.isShieldItem(oh));
+    const shieldSources = (character && character.acBreakdown && character.acBreakdown.sources && Array.isArray(character.acBreakdown.sources.shield))
+      ? character.acBreakdown.sources.shield
+      : [];
+    const entry = hasShield ? shieldSources.find(s => s && s.type === 'Shield' && s.source === oh.name) : null;
+    const shieldBonus = entry ? (Number(entry.val) || 0) : 0;
+    return { hasShield, shieldName: hasShield ? oh.name : null, shieldBonus, total: shieldBonus + 4 };
   },
 
   // Calculate Saving Throws

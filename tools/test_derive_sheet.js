@@ -890,6 +890,80 @@ function runDeriveSheetTests() {
     CharStore.getSheet().combat.tactical.combatExpertise === 0
   );
 
+  // Defensive stances: doc.tactical is the canonical source; PHB p.142 Total Defense +4 dodge (+6 with 5+ Tumble ranks, PHB p.84),
+  // PHB p.140 Fighting Defensively +2 dodge, PHB p.92 Combat Expertise -X melee attack / +X dodge. Dodge applies to touch, not flat-footed.
+  const stanceDoc = (patch, tumbleRanks = 0) => {
+    const d = JSON.parse(JSON.stringify(f01Raw));
+    d.tactical = Object.assign({}, d.tactical || {}, {
+      combatExpertise: 0, fightingDefensively: false, totalDefense: false, charge: false, shieldBlockActive: false
+    }, patch);
+    const skills = Array.isArray(d.skills) ? d.skills : Object.values(d.skills || {});
+    const tumble = skills.find(s => s && s.name && s.name.toLowerCase() === 'tumble');
+    if (tumble) tumble.ranks = tumbleRanks; else skills.push({ name: 'Tumble', ranks: tumbleRanks, ability: 'dex' });
+    d.skills = skills;
+    return d;
+  };
+  const stanceAc = (patch, tumbleRanks, opts) => RuleEngine.deriveSheet(stanceDoc(patch, tumbleRanks), [], opts || {}).ac;
+  const acOff = stanceAc({}, 0);
+  const acTd = stanceAc({ totalDefense: true }, 0);
+  const acTd5 = stanceAc({ totalDefense: true }, 5);
+  const acOff5 = stanceAc({}, 5);
+  check(
+    'Defensive stances: Total Defense adds +4 dodge to normal and touch AC, none to flat-footed (01_fighter_lvl1)',
+    acTd.total === acOff.total + 4 && acTd.touch === acOff.touch + 4 && acTd.flat === acOff.flat,
+    `off=${JSON.stringify([acOff.total, acOff.touch, acOff.flat])} td=${JSON.stringify([acTd.total, acTd.touch, acTd.flat])}`
+  );
+  check(
+    'Defensive stances: Total Defense with 5 Tumble ranks adds +6 dodge AC',
+    acTd5.total === acOff5.total + 6 && acTd5.touch === acOff5.touch + 6 && acTd5.flat === acOff5.flat,
+    `off=${acOff5.total} td=${acTd5.total}`
+  );
+  const acFd = stanceAc({ fightingDefensively: true }, 0);
+  check('Defensive stances: Fighting Defensively adds +2 dodge AC', acFd.total === acOff.total + 2 && acFd.touch === acOff.touch + 2, `got ${acFd.total} vs ${acOff.total}`);
+  const acStale = stanceAc({ totalDefense: true }, 0, { totalDefense: false, fightingDefensively: false, combatExpertise: 0, charge: false });
+  check(
+    'Defensive stances: doc.tactical.totalDefense wins over a stale tacticalOptions snapshot',
+    acStale.total === acOff.total + 4,
+    `got ${acStale.total}`
+  );
+  const acSb = stanceAc({ shieldBlockActive: true }, 0);
+  check('Shield Block (ToB p.60): shieldBlockActive never changes the initiator\'s own AC', acSb.total === acOff.total && acSb.touch === acOff.touch && acSb.flat === acOff.flat, `got ${acSb.total} vs ${acOff.total}`);
+  const sbSnap = RuleEngine.deriveSheet(stanceDoc({}, 0), []);
+  const sbInfo = RuleEngine.getShieldBlockAllyBonus(sbSnap._workingSnapshot);
+  check('Shield Block (ToB p.60): ally bonus = equipped Heavy Shield +2 + 4 = +6', sbInfo.hasShield && sbInfo.shieldBonus === 2 && sbInfo.total === 6, JSON.stringify(sbInfo));
+
+  // Store path regression: CharStore caches the last recompute() options; a toggle dispatched without meta.tactical must still apply.
+  CharStore.replaceDoc(stanceDoc({}, 0), { skipHistory: true });
+  CharStore.recompute({ combatExpertise: 0, fightingDefensively: false, totalDefense: false, charge: false });
+  const storeAcOff = CharStore.getSheet().ac.total;
+  CharStore.dispatch({ type: 'combat/toggleTacticalMod', payload: { key: 'totalDefense' }, meta: { skipHistory: true } });
+  const storeAcTd = CharStore.getSheet().ac.total;
+  const storeDocAcTd = CharStore.getDoc().acBreakdown.total;
+  CharStore.dispatch({ type: 'combat/toggleTacticalMod', payload: { key: 'totalDefense' }, meta: { skipHistory: true } });
+  check(
+    'Defensive stances: combat/toggleTacticalMod totalDefense raises store sheet and written-back doc AC by +4 and toggling off restores it',
+    storeAcTd === storeAcOff + 4 && storeDocAcTd === storeAcOff + 4 && CharStore.getSheet().ac.total === storeAcOff,
+    `off=${storeAcOff} td=${storeAcTd} docTd=${storeDocAcTd} back=${CharStore.getSheet().ac.total}`
+  );
+
+  // Combat Expertise through the store (02_cleric_radiant_lvl9, BAB 6): -2 attack, +2 dodge AC
+  const ceDoc = JSON.parse(JSON.stringify(f02Raw));
+  ceDoc.tactical = Object.assign({}, ceDoc.tactical || {}, { combatExpertise: 0, fightingDefensively: false, totalDefense: false, charge: false });
+  CharStore.replaceDoc(ceDoc, { skipHistory: true });
+  CharStore.recompute({ combatExpertise: 0, fightingDefensively: false, totalDefense: false, charge: false });
+  const ceSheetOff = CharStore.getSheet();
+  const ceAtkOff = ceSheetOff.combat.weapons[0]?.evaluated?.iteratives?.[0];
+  CharStore.dispatch({ type: 'combat/adjustCombatExpertise', payload: { value: 2 }, meta: { skipHistory: true } });
+  const ceSheetOn = CharStore.getSheet();
+  const ceAtkOn = ceSheetOn.combat.weapons[0]?.evaluated?.iteratives?.[0];
+  check(
+    'Defensive stances: Combat Expertise 2 via the store gives +2 dodge AC and -2 attack (02_cleric_radiant_lvl9)',
+    CharStore.getDoc().tactical.combatExpertise === 2 &&
+    ceSheetOn.ac.total === ceSheetOff.ac.total + 2 && ceSheetOn.ac.touch === ceSheetOff.ac.touch + 2 && ceSheetOn.ac.flat === ceSheetOff.ac.flat &&
+    typeof ceAtkOff === 'number' && ceAtkOn === ceAtkOff - 2,
+    `ac ${ceSheetOff.ac.total}->${ceSheetOn.ac.total}, atk ${ceAtkOff}->${ceAtkOn}`
+  );
+
   // Verify Unified Buff Round Tick (b.rounds = 2 -> 1 -> 0 expired) & Formula Temp HP subtraction on toggleBuff
   const buffTestDoc = JSON.parse(JSON.stringify(f04Raw));
   buffTestDoc.buffs.push({
