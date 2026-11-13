@@ -671,7 +671,7 @@
       try {
         const slice = selectorFn(this.getState());
         initialSliceJson = JSON.stringify(slice);
-      } catch (_) {}
+      } catch (_) { if (typeof reportError === 'function') reportError('Region selector evaluation', _); }
       _regions.set(String(key), {
         key: String(key),
         selectorFn,

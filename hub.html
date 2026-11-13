@@ -11,7 +11,7 @@
   <script src="ui_shared.js?v=ee46e5b6f1"></script>
   <script src="campaign_db.js?v=c7d72607cc"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase_auth.js?v=4efb62661b"></script>
+  <script src="supabase_auth.js?v=4a099fc92b"></script>
   <!-- Prefetch Character Sheet & Domain Modules during Hub Idle Time -->
   <link rel="prefetch" href="index.html">
   <link rel="prefetch" href="char_modals.js?v=99a7a2608a">
@@ -26,7 +26,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
   <!-- Three.js (3D dice) is loaded on demand by dice3d.js on the first 3D roll. -->
   <script src="dice3d.js?v=aa07002406"></script>
-  <script src="hub_dice.js?v=8cb923f019"></script>
+  <script src="hub_dice.js?v=b48c0414f0"></script>
   <script src="hub_notes.js?v=336083e9c1"></script>
   <style>
     body {
@@ -4712,7 +4712,7 @@ CRITICAL RULES:
         } else {
           try {
             tombstones = JSON.parse(localStorage.getItem('dnd35_tombstones') || '[]');
-          } catch (e) {}
+          } catch (e) { if (typeof reportError === 'function') reportError('Hub tombstones read', e); }
         }
         const tombstoneSet = new Set(tombstones.map(t => String(t).trim()));
 
@@ -6120,7 +6120,7 @@ CRITICAL RULES:
           }
           if (parsed.houseRules) Object.assign(defaults.houseRules, parsed.houseRules);
         }
-      } catch (e) {}
+      } catch (e) { if (typeof reportError === 'function') reportError('Hub global default settings load', e); }
       return defaults;
     }
 
@@ -6448,7 +6448,7 @@ CRITICAL RULES:
           validEntries.forEach(rawEntry => upsertHubCustomDbEntry(activeChar.customDb, rawEntry));
           localStorage.setItem('dnd35_character', JSON.stringify(activeChar));
         }
-      } catch (e) {}
+      } catch (e) { if (typeof reportError === 'function') reportError('Hub custom DB sync to open sheet character', e); }
       saveHubStorage();
       return result;
     }
@@ -6513,7 +6513,7 @@ CRITICAL RULES:
       try {
         const raw = localStorage.getItem('dnd35_character');
         sheetChar = raw ? JSON.parse(raw) : null;
-      } catch (e) {}
+      } catch (e) { if (typeof reportError === 'function') reportError('Hub sheet character read', e); }
       const sheetId = sheetChar && typeof sheetChar === 'object' ? (sheetChar._hubId || sheetChar.id) : null;
       let sheetChanged = false;
       (Array.isArray(state.characters) ? state.characters : []).forEach(c => {

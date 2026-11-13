@@ -634,7 +634,7 @@ function loadFormulaTemplates() {
       const parsed = JSON.parse(saved);
       if (Array.isArray(parsed)) return parsed;
     }
-  } catch (e) {}
+  } catch (e) { if (typeof reportError === 'function') reportError('Dice formula templates load', e); }
   const initial = [...DEFAULT_FORMULA_TEMPLATES];
   try {
     localStorage.setItem('dnd_custom_dice_templates', JSON.stringify(initial));

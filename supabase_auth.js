@@ -1025,7 +1025,7 @@ ${this._lastSyncErrorHtml()}
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) return parsed;
       }
-    } catch (e) {}
+    } catch (e) { if (typeof reportError === 'function') reportError('Local tombstones read', e); }
     return [];
   },
 

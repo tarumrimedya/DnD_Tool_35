@@ -3888,11 +3888,11 @@
 
   <!-- SCRIPT LOGIC (deferred: runs in document order after parsing, before DOMContentLoaded) -->
   <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="supabase_auth.js?v=4efb62661b"></script>
+  <script defer src="supabase_auth.js?v=4a099fc92b"></script>
   <!-- data-srd-autoinit: srd_compendium.js starts SrdCompendium.init() as soon as it runs. -->
   <script defer src="srd_compendium.js?v=d00871bf02" data-srd-autoinit></script>
   <script defer src="rule_engine.js?v=9adfd98a85"></script>
-  <script defer src="char_store.js?v=b210d3d0bc"></script>
+  <script defer src="char_store.js?v=c04fad6f58"></script>
   <!-- ui_components.js stays blocking on purpose: it has no dependencies, and while the document is
        still loading it binds the data-action router on DOMContentLoaded, after the outside-click
        listeners the deferred scripts register. Deferring it would bind the router first. -->
