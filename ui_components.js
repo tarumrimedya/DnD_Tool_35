@@ -9,7 +9,8 @@
  *      `UI.SectionHeader`, `UI.EmptyState`).
  *   3. `Actions`: Document-level delegated event router (`data-action="..."`,
  *      `data-change-action="..."`, `data-input-action="..."`,
- *      `data-submit-action="..."`) replacing inline event attributes.
+ *      `data-submit-action="..."`, `data-keydown-action="..."`,
+ *      `data-keyup-action="..."`) replacing inline event attributes.
  * ============================================================================
  */
 (function (root) {
@@ -458,6 +459,22 @@
         : null;
       if (!target || target.disabled) return;
       dispatchElement(target, event, 'inputAction');
+    });
+
+    doc.addEventListener('keydown', (event) => {
+      const target = event.target && typeof event.target.closest === 'function'
+        ? event.target.closest('[data-keydown-action]')
+        : null;
+      if (!target || target.disabled) return;
+      dispatchElement(target, event, 'keydownAction');
+    });
+
+    doc.addEventListener('keyup', (event) => {
+      const target = event.target && typeof event.target.closest === 'function'
+        ? event.target.closest('[data-keyup-action]')
+        : null;
+      if (!target || target.disabled) return;
+      dispatchElement(target, event, 'keyupAction');
     });
 
     doc.addEventListener('submit', (event) => {

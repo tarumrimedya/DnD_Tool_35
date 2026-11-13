@@ -8893,4 +8893,124 @@ if (typeof window !== 'undefined' && window.Actions && typeof window.Actions.reg
       RuleMaster.closeInlineLegoPrimitiveBuilder();
     }
   });
+
+  // --- Static index.html Rule Master controls (inline modes, AI query, Forge, Master DB sub-tabs, editor modal) ---
+  window.Actions.register('mdb:switch-inline-mode', (el, data) => {
+    RuleMaster.switchInlineMode(data.mode);
+  });
+  window.Actions.register('mdb:inline-ai-rule-keydown', (el, data, event) => {
+    if (event && event.key === 'Enter') RuleMaster.queryInlineAiRule();
+  });
+  window.Actions.register('mdb:query-inline-ai-rule', () => {
+    RuleMaster.queryInlineAiRule();
+  });
+  window.Actions.register('mdb:set-inline-query-and-search', (el, data) => {
+    RuleMaster.setInlineQueryAndSearch(data.query, data.categoryHint);
+  });
+  window.Actions.register('mdb:fill-free-text-sample', (el, data) => {
+    RuleMaster.fillFreeTextSample(data.sampleType);
+  });
+  window.Actions.register('mdb:parse-raw-text-inline', () => {
+    RuleMaster.parseRawTextFromInline();
+  });
+  window.Actions.register('mdb:query-inline-ai-free-text', () => {
+    RuleMaster.queryInlineAiFreeText();
+  });
+  window.Actions.register('forge:update-preview', () => {
+    RuleMaster.updateInlineForgePreview();
+  });
+  window.Actions.register('forge:set-base-type-filter', (el, data) => {
+    RuleMaster.setForgeBaseTypeFilter(data.baseType);
+  });
+  window.Actions.register('forge:base-item-change', () => {
+    RuleMaster.onForgeBaseItemChange();
+  });
+  window.Actions.register('forge:filter-enhancements', (el) => {
+    RuleMaster.filterForgeEnhancements(el.value);
+  });
+  window.Actions.register('mdb:reset-inline-manual-form', () => {
+    RuleMaster.resetInlineManualForm();
+  });
+  window.Actions.register('mdb:apply-inline-manual-preset', (el, data) => {
+    RuleMaster.applyInlineManualPreset(data.preset);
+  });
+  window.Actions.register('mdb:inline-manual-type-change', () => {
+    RuleMaster.onInlineManualTypeChange();
+  });
+  window.Actions.register('mdb:save-inline-manual-entry', (el, data) => {
+    RuleMaster.saveInlineManualEntry(data.alsoEquip === 'true');
+  });
+  window.Actions.register('mdb:switch-sub-tab', (el, data) => {
+    RuleMaster.switchSubTab(data.subTab);
+  });
+  window.Actions.register('mdb:clear-selection', () => {
+    RuleMaster.clearSelection();
+  });
+  window.Actions.register('mdb:delete-selected-entries', () => {
+    RuleMaster.deleteSelectedEntries();
+  });
+  window.Actions.register('mdb:toggle-select-all-filtered', (el) => {
+    RuleMaster.toggleSelectAllFiltered(el.checked);
+  });
+  window.Actions.register('mdb:render-weapons-armors', () => {
+    RuleMaster.renderWeaponsArmors();
+  });
+  window.Actions.register('mdb:render-spells-maneuvers', () => {
+    RuleMaster.renderSpellsManeuvers();
+  });
+  window.Actions.register('mdb:render-feats', () => {
+    RuleMaster.renderFeats();
+  });
+  window.Actions.register('mdb:render-magic-items', () => {
+    RuleMaster.renderMagicItems();
+  });
+  window.Actions.register('mdb:new-entry', (el, data) => {
+    RuleMaster.openModalWithData(RuleMaster.createEmptyEntry(data.entryType), -1);
+  });
+  window.Actions.register('mdb:set-ai-model-mode', (el) => {
+    RuleMaster.setAiModelMode(el.value);
+  });
+  window.Actions.register('mdb:audit-library-pro', () => {
+    RuleMaster.auditLibraryWithProModal();
+  });
+  window.Actions.register('mdb:prompt-change-api-key', () => {
+    RuleMaster.promptChangeApiKey();
+  });
+  window.Actions.register('mdb:clear-api-key', () => {
+    RuleMaster.clearApiKey();
+  });
+  window.Actions.register('mdb:save-api-key-from-input', () => {
+    RuleMaster.saveApiKeyFromInput();
+  });
+  window.Actions.register('mdb:ai-rule-keydown', (el, data, event) => {
+    if (event && event.key === 'Enter') RuleMaster.queryAiRule();
+  });
+  window.Actions.register('mdb:query-ai-rule', () => {
+    RuleMaster.queryAiRule();
+  });
+  window.Actions.register('mdb:set-query-and-search', (el, data) => {
+    RuleMaster.setQueryAndSearch(data.query, data.categoryHint);
+  });
+  window.Actions.register('mdb:query-ai-batch', () => {
+    RuleMaster.queryAiBatch();
+  });
+  window.Actions.register('mdb:fill-free-text-sample-full', (el, data) => {
+    RuleMaster.fillFreeTextSampleFull(data.sampleType);
+  });
+  window.Actions.register('mdb:parse-raw-text', () => {
+    RuleMaster.parseRawText();
+  });
+  window.Actions.register('mdb:query-full-ai-free-text', () => {
+    RuleMaster.queryFullAiFreeText();
+  });
+  window.Actions.register('mdb:reset-master-db-to-default', () => {
+    RuleMaster.resetMasterDbToDefault();
+  });
+  // Backdrop click closes the editor only when the overlay itself (not its panel) was clicked.
+  window.Actions.register('mdb:editor-backdrop-click', (el, data, event) => {
+    if (event && event.target === el) RuleMaster.closeMasterDbEditorModal();
+  });
+  window.Actions.register('mdb:close-editor-modal', () => {
+    RuleMaster.closeMasterDbEditorModal();
+  });
 }

@@ -9861,4 +9861,77 @@
         });
       }
       initSilhouetteDelegatedEvents();
+
+      // --- Static index.html controls: Body Slots view, Silhouette menu/transform, Gear Pool, JSON I/O ---
+      const optionalBooleanArg = (raw) => (raw === 'true' ? true : (raw === 'false' ? false : undefined));
+      actionsApi.register('inventory:set-body-slots-view', (el, data, event) => {
+        setBodySlotsView(data.viewMode);
+      });
+      actionsApi.register('inventory:silhouette-file-upload', (el, data, event) => {
+        handleSilhouetteFileUpload(event);
+      });
+      actionsApi.register('inventory:toggle-silhouette-point-edit', (el, data, event) => {
+        toggleSilhouettePointEditMode(optionalBooleanArg(data.forceState));
+      });
+      actionsApi.register('inventory:toggle-silhouette-menu', (el, data, event) => {
+        toggleSilhouetteMenu(event);
+      });
+      actionsApi.register('inventory:silhouette-menu-command', (el, data, event) => {
+        const command = data.command;
+        if (command === 'upload') triggerSilhouetteUpload();
+        else if (command === 'url') promptSilhouetteUrl();
+        else if (command === 'transform') toggleSilhouetteTransformPanel();
+        else if (command === 'point-edit') toggleSilhouettePointEditMode();
+        else if (command === 'reset') resetSilhouetteAll();
+        else return;
+        closeSilhouetteMenu();
+      });
+      actionsApi.register('inventory:reset-silhouette-transform', (el, data, event) => {
+        resetSilhouetteTransform();
+      });
+      actionsApi.register('inventory:toggle-silhouette-transform-panel', (el, data, event) => {
+        toggleSilhouetteTransformPanel(optionalBooleanArg(data.forceState));
+      });
+      actionsApi.register('inventory:adjust-silhouette-zoom', (el, data, event) => {
+        adjustSilhouetteZoom(Number(data.delta));
+      });
+      actionsApi.register('inventory:silhouette-zoom-slider', (el, data, event) => {
+        onSilhouetteZoomSlider(el.value);
+      });
+      actionsApi.register('inventory:adjust-silhouette-pan', (el, data, event) => {
+        adjustSilhouettePan(Number(data.dx), Number(data.dy));
+      });
+      actionsApi.register('inventory:set-silhouette-transform-preset', (el, data, event) => {
+        setSilhouetteTransformPreset(data.preset);
+      });
+      actionsApi.register('inventory:copy-silhouette-coordinates', (el, data, event) => {
+        copySilhouetteCoordinatesToClipboard();
+      });
+      actionsApi.register('inventory:render-gear-pool-table', (el, data, event) => {
+        renderGearPoolTable();
+      });
+      actionsApi.register('inventory:open-compendium-drawer', (el, data, event) => {
+        openCharacterCompendiumDrawer();
+      });
+      actionsApi.register('inventory:export-master-db-json', (el, data, event) => {
+        exportMasterDbJson();
+      });
+      actionsApi.register('inventory:export-full-bundle-json', (el, data, event) => {
+        exportFullBundleJson();
+      });
+      actionsApi.register('inventory:export-character-json', (el, data, event) => {
+        exportCharacterJson();
+      });
+      actionsApi.register('inventory:open-file-picker', (el, data, event) => {
+        document.getElementById(data.inputId).click();
+      });
+      actionsApi.register('inventory:import-custom-db-file', (el, data, event) => {
+        handleCustomDbImportFile(event);
+      });
+      actionsApi.register('inventory:import-character-json-file', (el, data, event) => {
+        handleJsonFileUpload(event);
+      });
+      actionsApi.register('inventory:reset-to-clean-character', (el, data, event) => {
+        resetToCleanCharacter();
+      });
     })();

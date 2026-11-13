@@ -478,7 +478,7 @@ function main() {
     'lvl_up_gorunum.html'
   ]);
   const RATCHET_LIMITS = {
-    'index.html':         { inlineEvents: 183, windowAssigns: 0 },
+    'index.html':         { inlineEvents: 0,   windowAssigns: 0 },
     'char_hud.js':        { inlineEvents: 0,   windowAssigns: 48 },
     'char_combat.js':     { inlineEvents: 0,   windowAssigns: 82 },
     'char_spells.js':     { inlineEvents: 0,   windowAssigns: 67 },
@@ -549,7 +549,7 @@ function main() {
     const full = path.join(ROOT, rel);
     if (!fs.existsSync(full)) continue;
     const text = fs.readFileSync(full, 'utf8');
-    for (const m of text.matchAll(/data-(?:change-|input-|submit-)?action=['"]([^'"$\s]+)['"]/g)) {
+    for (const m of text.matchAll(/data-(?:change-|input-|submit-|keydown-|keyup-)?action=['"]([^'"$\s]+)['"]/g)) {
       const act = m[1];
       if (act === '...' || act.includes('${')) continue;
       if (!registeredActions.has(act)) {
@@ -557,7 +557,7 @@ function main() {
         errors++;
       }
     }
-    for (const m of text.matchAll(/\.dataset\.(?:action|changeAction|inputAction|submitAction)\s*=\s*['"]([^'"]+)['"]/g)) {
+    for (const m of text.matchAll(/\.dataset\.(?:action|changeAction|inputAction|submitAction|keydownAction|keyupAction)\s*=\s*['"]([^'"]+)['"]/g)) {
       const act = m[1];
       if (!registeredActions.has(act)) {
         console.error(`[FAIL] Unregistered dataset UI action assignment in ${rel}: "${act}"`);

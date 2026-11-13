@@ -16061,6 +16061,36 @@
       Actions.register('combat:close-spotlight-terminal', (el, data, event) => {
         if (typeof toggleSpotlightTerminal === 'function') toggleSpotlightTerminal(false);
       });
+      // Backdrop click closes the terminal only when the overlay itself (not its panel) was clicked.
+      Actions.register('combat:spotlight-terminal-backdrop', (el, data, event) => {
+        if (event && event.target === el) toggleSpotlightTerminal(false);
+      });
+      Actions.register('combat:spotlight-terminal-input', (el, data, event) => {
+        onSpotlightTerminalInput(el.value);
+      });
+      Actions.register('combat:spotlight-terminal-keydown', (el, data, event) => {
+        onSpotlightTerminalKeydown(event);
+      });
+      Actions.register('combat:undo-terminal-action', (el, data, event) => {
+        undoLastTerminalAction();
+      });
+      Actions.register('combat:custom-formula-keydown', (el, data, event) => {
+        if (event && event.key === 'Enter') rollCustomFormula();
+      });
+      Actions.register('combat:hide-spell-tooltip', (el, data, event) => {
+        hideSpellHoverTooltip();
+      });
+      Actions.register('combat:close-spell-tooltip', (el, data, event) => {
+        hideSpellHoverTooltip();
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      });
+      Actions.register('combat:hide-modifier-tooltip', (el, data, event) => {
+        hideCombatModifierHoverTooltip();
+      });
+      Actions.register('combat:close-modifier-tooltip', (el, data, event) => {
+        hideCombatModifierHoverTooltip();
+        if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      });
       Actions.register('combat:next-round', (el, data, event) => {
         if (typeof window.advanceNextRound === 'function') window.advanceNextRound();
       });
