@@ -2006,6 +2006,7 @@
       if (!modal) return;
       modal.classList.remove('hidden');
       updateCampaignNavButton();
+      if (typeof renderErrorLog === 'function') renderErrorLog();
 
       // Update & verify Gemini API key live status badge in settings
       verifySettingsGeminiApiKey(false);

@@ -5,7 +5,86 @@ function reportError(context, err) {
     log.push({ context: String(context), message: err && err.message ? String(err.message) : String(err), at: Date.now() });
     if (log.length > 50) log.shift();
     if (typeof console !== 'undefined' && console.warn) console.warn('[reportError] ' + context, err);
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const last = log[log.length - 1];
+        const stored = readStoredErrorLog();
+        stored.push({ context: last.context, message: last.message, at: last.at, page: (typeof location !== 'undefined' && location.pathname) || '' });
+        localStorage.setItem('dnd_error_log', JSON.stringify(stored.slice(-50)));
+      }
+    } catch (_) { /* storage may be full or blocked */ }
   } catch (_) { /* reporting must never throw */ }
+}
+/** Persisted error entries (survive reloads, shared by the sheet and the Hub). */
+function readStoredErrorLog() {
+  try {
+    const raw = (typeof window !== 'undefined' && window.localStorage) ? localStorage.getItem('dnd_error_log') : null;
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch (_) { return []; }
+}
+function errorLogAsText() {
+  return readStoredErrorLog().map(e => [new Date(e.at).toISOString(), e.page || '', e.context, e.message].join(' | ')).join('\n');
+}
+/** Renders the Settings "Error Log" list; all entry text goes through textContent. */
+function renderErrorLog() {
+  const section = document.getElementById('error-log-section');
+  if (!section) return;
+  const list = section.querySelector('[data-error-log-list]');
+  const entries = readStoredErrorLog().slice().reverse();
+  list.textContent = '';
+  if (!entries.length) {
+    const empty = document.createElement('div');
+    empty.className = 'text-[10px] text-slate-400';
+    empty.textContent = 'No errors recorded.';
+    list.appendChild(empty);
+  }
+  entries.forEach(e => {
+    const row = document.createElement('div');
+    row.className = 'text-[10px] text-slate-300 border-b border-slate-800 pb-1.5';
+    row.style.overflowWrap = 'anywhere';
+    const d = new Date(e.at);
+    const time = document.createElement('span');
+    time.className = 'text-slate-400 font-mono';
+    time.textContent = d.toLocaleTimeString([], { hour12: false }) + ' ' + d.toLocaleDateString() + ' ';
+    const ctx = document.createElement('b');
+    ctx.className = 'text-white';
+    ctx.textContent = String(e.context);
+    row.appendChild(time);
+    row.appendChild(ctx);
+    row.appendChild(document.createElement('br'));
+    row.appendChild(document.createTextNode(String(e.message)));
+    list.appendChild(row);
+  });
+  if (section.dataset.wired) return;
+  section.dataset.wired = '1';
+  section.querySelector('[data-error-log-copy]').addEventListener('click', () => {
+    const text = errorLogAsText();
+    const done = () => notify('Error log copied', 'success');
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, () => copyErrorLogFallback(text, done));
+    } else copyErrorLogFallback(text, done);
+  });
+  section.querySelector('[data-error-log-clear]').addEventListener('click', async () => {
+    const ok = typeof DnDUI !== 'undefined' && DnDUI.confirm ? await DnDUI.confirm('Clear the error log?') : confirm('Clear the error log?');
+    if (!ok) return;
+    try { localStorage.removeItem('dnd_error_log'); } catch (_) { /* storage blocked */ }
+    reportError._log = [];
+    renderErrorLog();
+  });
+}
+function copyErrorLogFallback(text, done) {
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    done();
+  } catch (_) { notify('Could not copy the error log', 'error'); }
 }
 /** Short user message: a toast where the page has one (the sheet), a plain alert elsewhere (the Hub). */
 function notify(message, type) {

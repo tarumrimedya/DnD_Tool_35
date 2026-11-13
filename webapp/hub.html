@@ -7,15 +7,15 @@
   <link rel="stylesheet" href="tailwind_compiled.css?v=101216d709">
   <script src="srd_compendium.js?v=d00871bf02"></script>
   <script src="rule_engine.js?v=9adfd98a85"></script>
-  <script src="rule_master.js?v=2dbd95bd57"></script>
+  <script src="rule_master.js?v=1e7320625f"></script>
   <script src="ui_shared.js?v=ee46e5b6f1"></script>
   <script src="campaign_db.js?v=c7d72607cc"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase_auth.js?v=4a099fc92b"></script>
   <!-- Prefetch Character Sheet & Domain Modules during Hub Idle Time -->
   <link rel="prefetch" href="index.html">
-  <link rel="prefetch" href="char_modals.js?v=99a7a2608a">
-  <link rel="prefetch" href="char_hud.js?v=e3a7f9dde8">
+  <link rel="prefetch" href="char_modals.js?v=1228ba5bc0">
+  <link rel="prefetch" href="char_hud.js?v=93333bed01">
   <link rel="prefetch" href="char_combat.js?v=32ce8e5863">
   <link rel="prefetch" href="char_spells.js?v=d34c397f3c">
   <link rel="prefetch" href="char_progression.js?v=8d05703ae9">
@@ -6074,6 +6074,21 @@ CRITICAL RULES:
           </div>
         </div>
 
+        <!-- SECTION: ERROR LOG -->
+        <div id="error-log-section" class="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 space-y-3 shadow">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2">
+            <div>
+              <h4 class="text-xs font-bold text-white">Error Log</h4>
+              <p class="text-[10px] text-slate-400">Errors caught in the background. Copy them when reporting a bug.</p>
+            </div>
+            <div class="flex gap-1.5 shrink-0">
+              <button type="button" data-error-log-copy class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition cursor-pointer" style="padding-left:12px;padding-right:12px;">Copy</button>
+              <button type="button" data-error-log-clear class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold py-1.5 rounded border border-slate-700 transition cursor-pointer" style="padding-left:12px;padding-right:12px;">Clear</button>
+            </div>
+          </div>
+          <div data-error-log-list class="space-y-1.5" style="max-height:40vh;overflow-y:auto;"></div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -6161,6 +6176,7 @@ CRITICAL RULES:
       }
 
       modal.classList.remove('hidden');
+      if (typeof renderErrorLog === 'function') renderErrorLog();
 
       // 1. Gemini API Key Durumu
       verifySettingsGeminiApiKey(false);

@@ -592,6 +592,38 @@ async function main() {
       await btn(page, 'Cancel').click();
       return `${Math.round(r.l)}..${Math.round(r.r)} of ${r.iw}`;
     });
+    await check('F3. Settings Error Log: last section, entry escaped, Clear empties it (375px)', async () => {
+      try {
+        await page.evaluate(() => { localStorage.removeItem('dnd_error_log'); reportError('Smoke diagnostics', new Error('<b>x</b>')); openSettingsModal(); });
+        const r = await page.evaluate(() => {
+          const sec = document.getElementById('error-log-section');
+          const body = sec.parentElement;
+          return {
+            last: body.lastElementChild === sec,
+            bold: sec.querySelectorAll('[data-error-log-list] b').length,
+            injected: !!sec.querySelector('[data-error-log-list] b b'),
+            text: sec.querySelector('[data-error-log-list]').textContent,
+            sw: document.documentElement.scrollWidth, iw: window.innerWidth
+          };
+        });
+        assert(r.last, 'Error Log is not the last Settings section');
+        assert(!r.injected && r.text.includes('<b>x</b>'), 'entry not escaped: ' + r.text.slice(0, 120));
+        assert(r.sw <= r.iw + 1, `horizontal scroll ${r.sw}>${r.iw}`);
+        await page.locator('#error-log-section [data-error-log-clear]').click();
+        await waitDlg(page);
+        await btn(page, 'Confirm').click();
+        await waitDlg(page, false);
+        const after = await page.evaluate(() => ({
+          text: document.querySelector('#error-log-section [data-error-log-list]').textContent.trim(),
+          stored: localStorage.getItem('dnd_error_log'), mem: reportError._log.length
+        }));
+        assert(after.text === 'No errors recorded.', 'empty state missing: ' + after.text);
+        assert(after.stored === null && after.mem === 0, 'log not cleared');
+        return 'ok';
+      } finally {
+        await page.evaluate(() => { reportError._log = []; try { localStorage.removeItem('dnd_error_log'); } catch (_) {} closeSettingsModal(); });
+      }
+    });
     await closeSheet(page);
   }
 
