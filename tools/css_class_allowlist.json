@@ -11,8 +11,7 @@
     "prose", "prose-invert", "animate-in", "fade-in", "slide-in-from-bottom"
   ],
   "pendingRebuild": [
-    "z-[10050]", "z-[10060]", "z-[10080]", "max-w-[640px]", "max-w-[148px]", "sm:max-w-[168px]",
-    "max-h-[58vh]", "max-h-24", "pt-[10vh]", "pr-20", "pl-1.5", "outline-none",
+    "z-[10060]", "z-[10080]", "pt-[10vh]", "pl-1.5",
     "bg-black/60", "bg-pink-950/90", "text-pink-200", "text-pink-400",
     "border-teal-800/60", "border-teal-700/50", "border-slate-600/60", "border-cyan-500/50",
     "border-pink-500/50", "border-pink-500/40", "border-purple-400/50",

@@ -926,7 +926,7 @@
     const currentKey = `${activeTarget.type === 'character' ? 'char' : 'campaign'}:${activeTarget.id}`;
     let selectHtml = `
       <div class="relative inline-flex items-center max-w-full">
-        <select onchange="HubNotes.setTargetOverride(this.value)" title="Select Character / Campaign Logbook" class="w-full max-w-[148px] sm:max-w-[168px] appearance-none bg-slate-900/90 hover:bg-indigo-950/80 text-white font-black text-[11px] uppercase tracking-wider rounded-md pl-1.5 pr-4 py-0.5 border border-indigo-500/40 hover:border-indigo-400 focus:outline-none focus:border-indigo-400 transition cursor-pointer truncate leading-tight shadow-sm">
+        <select onchange="HubNotes.setTargetOverride(this.value)" title="Select Character / Campaign Logbook" class="w-full appearance-none bg-slate-900/90 hover:bg-indigo-950/80 text-white font-black text-[11px] uppercase tracking-wider rounded-md pl-1.5 pr-4 py-0.5 border border-indigo-500/40 hover:border-indigo-400 focus:outline-none focus:border-indigo-400 transition cursor-pointer truncate leading-tight shadow-sm" style="max-width: 148px;">
     `;
 
     const buildCharOption = (c) => {

@@ -7172,7 +7172,7 @@ Return valid JSON only matching:
         <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
           <div>
             <label class="text-[10px] text-cyan-300 font-bold uppercase block mb-0.5">Defense Kind</label>
-            <select id="im-prim-def-kind" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+            <select id="im-prim-def-kind" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white" style="outline:none">
               <option value="resistance">Resistance</option>
               <option value="immunity">Immunity</option>
               <option value="dr">Damage Reduction (DR)</option>
@@ -7183,7 +7183,7 @@ Return valid JSON only matching:
           </div>
           <div>
             <label class="text-[10px] text-cyan-300 font-bold uppercase block mb-0.5">Target / Element</label>
-            <select id="im-prim-def-target" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+            <select id="im-prim-def-target" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white" style="outline:none">
               <option value="acid">Acid</option>
               <option value="cold">Cold</option>
               <option value="fire">Fire</option>
@@ -7195,11 +7195,11 @@ Return valid JSON only matching:
           </div>
           <div>
             <label class="text-[10px] text-cyan-300 font-bold uppercase block mb-0.5">Value / Ratio</label>
-            <input id="im-prim-def-val" type="number" step="0.5" value="10" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+            <input id="im-prim-def-val" type="number" step="0.5" value="10" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white font-mono" style="outline:none">
           </div>
           <div>
             <label class="text-[10px] text-cyan-300 font-bold uppercase block mb-0.5">DR Bypass (if DR)</label>
-            <input id="im-prim-def-bypass" type="text" value="-" placeholder="- | magic | adamantine" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+            <input id="im-prim-def-bypass" type="text" value="-" placeholder="- | magic | adamantine" class="w-full bg-slate-900 border border-cyan-500/40 rounded px-2 py-1 text-[11px] text-white font-mono" style="outline:none">
           </div>
         </div>`;
     } else if (kind === 'resource') {
@@ -7207,11 +7207,11 @@ Return valid JSON only matching:
         <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
           <div>
             <label class="text-[10px] text-amber-300 font-bold uppercase block mb-0.5">Resource / Cooldown Name</label>
-            <input id="im-prim-res-name" type="text" value="Breath Recharge" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+            <input id="im-prim-res-name" type="text" value="Breath Recharge" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white" style="outline:none">
           </div>
           <div>
             <label class="text-[10px] text-amber-300 font-bold uppercase block mb-0.5">Recharge Period</label>
-            <select id="im-prim-res-period" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+            <select id="im-prim-res-period" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white" style="outline:none">
               <option value="rounds">Rounds (Dice Cooldown)</option>
               <option value="encounter">Per Encounter</option>
               <option value="day">Per Day</option>
@@ -7219,11 +7219,11 @@ Return valid JSON only matching:
           </div>
           <div>
             <label class="text-[10px] text-amber-300 font-bold uppercase block mb-0.5">Cooldown Dice (if Rounds)</label>
-            <input id="im-prim-res-dice" type="text" value="1d4+1" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+            <input id="im-prim-res-dice" type="text" value="1d4+1" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white font-mono" style="outline:none">
           </div>
           <div>
             <label class="text-[10px] text-amber-300 font-bold uppercase block mb-0.5">Max Charges</label>
-            <input id="im-prim-res-max" type="number" value="3" min="1" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+            <input id="im-prim-res-max" type="number" value="3" min="1" class="w-full bg-slate-900 border border-amber-500/40 rounded px-2 py-1 text-[11px] text-white font-mono" style="outline:none">
           </div>
         </div>`;
     } else if (kind === 'mode') {
@@ -7231,11 +7231,11 @@ Return valid JSON only matching:
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div>
             <label class="text-[10px] text-purple-300 font-bold uppercase block mb-0.5">Mode / Reaction Name</label>
-            <input id="im-prim-mode-name" type="text" value="Reactive Shield" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+            <input id="im-prim-mode-name" type="text" value="Reactive Shield" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white" style="outline:none">
           </div>
           <div>
             <label class="text-[10px] text-purple-300 font-bold uppercase block mb-0.5">Action Economy</label>
-            <select id="im-prim-mode-action" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+            <select id="im-prim-mode-action" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white" style="outline:none">
               <option value="immediate">Immediate Action</option>
               <option value="swift">Swift Action</option>
               <option value="standard">Standard Action</option>
@@ -7246,7 +7246,7 @@ Return valid JSON only matching:
           </div>
           <div>
             <label class="text-[10px] text-purple-300 font-bold uppercase block mb-0.5">Reaction Trigger</label>
-            <select id="im-prim-mode-trigger" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+            <select id="im-prim-mode-trigger" class="w-full bg-slate-900 border border-purple-500/40 rounded px-2 py-1 text-[11px] text-white" style="outline:none">
               <option value="on_spell_targeted">On Spell Targeted</option>
               <option value="on_hit">On Hit</option>
               <option value="on_attacked">On Attacked</option>
@@ -7259,7 +7259,7 @@ Return valid JSON only matching:
         <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
           <div>
             <label class="text-[10px] text-emerald-300 font-bold uppercase block mb-0.5">Grant Type</label>
-            <select id="im-prim-grant-type" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+            <select id="im-prim-grant-type" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white" style="outline:none">
               <option value="sense">Sense (Darkvision / Blindsense)</option>
               <option value="aura">Aura</option>
               <option value="sla">Spell-Like Ability (SLA)</option>
@@ -7269,11 +7269,11 @@ Return valid JSON only matching:
           </div>
           <div>
             <label class="text-[10px] text-emerald-300 font-bold uppercase block mb-0.5">Capability ID / Name</label>
-            <input id="im-prim-grant-id" type="text" value="darkvision" placeholder="darkvision | blindsense" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+            <input id="im-prim-grant-id" type="text" value="darkvision" placeholder="darkvision | blindsense" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white font-mono" style="outline:none">
           </div>
           <div>
             <label class="text-[10px] text-emerald-300 font-bold uppercase block mb-0.5">Range / Value (ft.)</label>
-            <input id="im-prim-grant-val" type="number" value="60" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+            <input id="im-prim-grant-val" type="number" value="60" class="w-full bg-slate-900 border border-emerald-500/40 rounded px-2 py-1 text-[11px] text-white font-mono" style="outline:none">
           </div>
         </div>`;
     } else if (kind === 'choice') {
@@ -7281,11 +7281,11 @@ Return valid JSON only matching:
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
           <div>
             <label class="text-[10px] text-pink-300 font-bold uppercase block mb-0.5">Choice Label</label>
-            <input id="im-prim-choice-label" type="text" value="Choose Energy Type" class="w-full bg-slate-900 border border-pink-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+            <input id="im-prim-choice-label" type="text" value="Choose Energy Type" class="w-full bg-slate-900 border border-pink-500/40 rounded px-2 py-1 text-[11px] text-white" style="outline:none">
           </div>
           <div>
             <label class="text-[10px] text-pink-300 font-bold uppercase block mb-0.5">Comma-Separated Options</label>
-            <input id="im-prim-choice-opts" type="text" value="acid, cold, electricity, fire, sonic" class="w-full bg-slate-900 border border-pink-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+            <input id="im-prim-choice-opts" type="text" value="acid, cold, electricity, fire, sonic" class="w-full bg-slate-900 border border-pink-500/40 rounded px-2 py-1 text-[11px] text-white font-mono" style="outline:none">
           </div>
         </div>`;
     } else if (kind === 'substitution') {
@@ -7293,7 +7293,7 @@ Return valid JSON only matching:
         <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
           <div>
             <label class="text-[10px] text-sky-300 font-bold uppercase block mb-0.5">Target Stat Path</label>
-            <select id="im-prim-sub-target" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+            <select id="im-prim-sub-target" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white" style="outline:none">
               <option value="save.will.abilityMod">save.will.abilityMod (Will Ability)</option>
               <option value="save.ref.abilityMod">save.ref.abilityMod (Reflex Ability)</option>
               <option value="save.fort.abilityMod">save.fort.abilityMod (Fortitude Ability)</option>
@@ -7304,7 +7304,7 @@ Return valid JSON only matching:
           </div>
           <div>
             <label class="text-[10px] text-sky-300 font-bold uppercase block mb-0.5">Operation</label>
-            <select id="im-prim-sub-op" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white outline-none">
+            <select id="im-prim-sub-op" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white" style="outline:none">
               <option value="max">max (Use Higher)</option>
               <option value="replace">replace (Override)</option>
               <option value="add">add (Add Formula)</option>
@@ -7312,11 +7312,11 @@ Return valid JSON only matching:
           </div>
           <div>
             <label class="text-[10px] text-sky-300 font-bold uppercase block mb-0.5">Formula</label>
-            <input id="im-prim-sub-formula" type="text" value="@chaMod" placeholder="@chaMod | max(0, @intMod)" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+            <input id="im-prim-sub-formula" type="text" value="@chaMod" placeholder="@chaMod | max(0, @intMod)" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white font-mono" style="outline:none">
           </div>
           <div>
             <label class="text-[10px] text-sky-300 font-bold uppercase block mb-0.5">Optional Cap Formula</label>
-            <input id="im-prim-sub-cap" type="text" value="" placeholder="@level (optional)" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white font-mono outline-none">
+            <input id="im-prim-sub-cap" type="text" value="" placeholder="@level (optional)" class="w-full bg-slate-900 border border-sky-500/40 rounded px-2 py-1 text-[11px] text-white font-mono" style="outline:none">
           </div>
         </div>`;
     }
