@@ -206,14 +206,14 @@ function updateDicePoolDisplay() {
   if (summaryEl) {
     if (activeParts.length === 0) {
       summaryEl.textContent = 'No dice selected';
-      summaryEl.className = 'text-[11px] font-semibold text-slate-400 font-mono truncate h-4 flex items-center';
+      summaryEl.className = 'text-xs text-slate-500 font-mono truncate';
     } else {
       let formula = activeParts.join(' + ');
       if (mod !== 0) {
         formula += ` ${mod >= 0 ? '+' : '-'} ${Math.abs(mod)}`;
       }
       summaryEl.textContent = formula;
-      summaryEl.className = 'text-xs font-extrabold text-amber-300 font-mono truncate h-4 flex items-center';
+      summaryEl.className = 'text-sm font-extrabold text-amber-300 font-mono truncate';
     }
   }
 }
@@ -257,7 +257,7 @@ function rollSingleDie(sides) {
 
   const onDone = () => {
     addDiceHistoryEntry({
-      title: `Serbest 1d${sides}`,
+      title: `Custom 1d${sides}`,
       formula: `1d${sides}`,
       breakdown: `d${sides}: [${r}]`,
       total: r,
@@ -531,7 +531,8 @@ function updateLastResultCard(record) {
     else if (str.includes('d12')) dieType = '12';
     else if (str.includes('d20')) dieType = '20';
 
-    iconEl.innerHTML = getDiceIconSvg(dieType, 'w-7 h-7 inline-block text-amber-300');
+    const dieColor = { '4': 'text-emerald-300', '6': 'text-sky-300', '8': 'text-indigo-300', '10': 'text-purple-300', '12': 'text-rose-300', '20': 'text-amber-300', '100': 'text-teal-300' }[dieType];
+    iconEl.innerHTML = getDiceIconSvg(dieType, `w-7 h-7 inline-block ${dieColor}`);
   }
 
   if (critBadge) {
@@ -560,41 +561,42 @@ function renderDiceHistory() {
   if (list.length === 0) {
     listEl.innerHTML = `
       <div class="text-center py-8 text-slate-500 text-xs font-medium">
-        No dice rolls recorded yet. Roll dice using the controls above.
+        No dice rolls recorded yet. Use the roller above to roll custom dice.
       </div>
     `;
     return;
   }
 
+  // Same row layout as the character sheet's Dice tab; every stored string is escaped, the reroll button is
+  // handled by the delegated [data-hub-dice] click listener below (no inline handler).
   listEl.innerHTML = list.map(item => {
     const critClass = item.isCrit ? 'border-rose-500/70 bg-rose-950/20' : 'border-slate-800 bg-slate-900/60 hover:bg-slate-900';
     const critBadge = item.isCrit
-      ? `<span class="px-2 py-0.5 rounded bg-rose-600 text-white font-black text-[10px] animate-pulse">⚡ CRITICAL ${item.critDamage ? '(' + item.critDamage + ' Damage)' : ''}</span>`
+      ? `<span class="inline-flex items-center rounded px-1.5 py-0.5 bg-rose-600 text-white font-black text-[10px] uppercase leading-tight animate-pulse">⚡ CRITICAL ${item.critDamage ? '(' + escapeFormulaHtml(item.critDamage) + ' Dmg)' : ''}</span>`
       : '';
-    const safeFormula = (item.formula || '').replace(/'/g, "\\'");
 
     return `
-      <div class="p-2.5 rounded-xl border ${critClass} flex items-center justify-between gap-2.5 transition">
+      <div class="p-2.5 rounded-xl border ${critClass} flex flex-wrap items-center justify-between gap-2.5 transition">
         <div class="min-w-0 flex-1">
           <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-xs font-bold text-white">${item.title}</span>
-            <span class="text-[10px] text-slate-400 font-mono">${item.timestamp}</span>
+            <span class="text-xs font-bold text-white">${escapeFormulaHtml(item.title)}</span>
+            <span class="text-[10px] text-slate-400 font-mono">${escapeFormulaHtml(item.timestamp)}</span>
             ${critBadge}
           </div>
           <div class="text-[11px] text-slate-300 font-mono mt-0.5 break-words">
-            ${item.formula ? `<span class="text-amber-400 font-bold">${item.formula}</span> ➔ ` : ''}${item.breakdown}
+            ${item.formula ? `<span class="text-amber-400 font-bold">${escapeFormulaHtml(item.formula)}</span> ➔ ` : ''}${escapeFormulaHtml(item.breakdown)}
           </div>
         </div>
-        <div class="flex items-center gap-2 shrink-0">
+        <div class="flex items-center gap-2.5 shrink-0">
           <div class="text-right">
             <div class="text-lg font-black ${item.isCrit ? 'text-rose-400' : 'text-amber-400'} font-mono leading-none">
-              ${item.total}
+              ${escapeFormulaHtml(item.total)}
             </div>
           </div>
           ${item.formula ? `
-            <button onclick="applyFormulaTemplate('${safeFormula}'); rollCustomFormula();"
-                    title="Re-roll this formula"
-                    class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-xs transition active:scale-95 cursor-pointer">
+            <button type="button" data-hub-dice="reroll" data-formula="${escapeFormulaHtml(item.formula)}"
+                    title="Reroll this formula" aria-label="Reroll this formula"
+                    class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-500 text-xs transition active:scale-95 cursor-pointer">
               🔄
             </button>
           ` : ''}
@@ -616,7 +618,7 @@ const DEFAULT_FORMULA_TEMPLATES = [
 ];
 
 function escapeFormulaHtml(str) {
-  if (!str) return '';
+  if (str === null || str === undefined) return '';
   return String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -661,24 +663,25 @@ function renderCustomTemplates() {
     container.innerHTML = `
       <div class="text-xs text-slate-500 py-1 flex items-center gap-2">
         <span>No saved templates.</span>
-        <button type="button" onclick="resetFormulaTemplates()" class="text-indigo-400 hover:text-indigo-200 underline cursor-pointer text-xs font-medium">Restore Defaults</button>
+        <button type="button" data-hub-dice="reset-templates" class="text-indigo-400 hover:text-indigo-200 underline cursor-pointer text-xs font-medium">Restore Defaults</button>
       </div>
     `;
     return;
   }
 
   container.innerHTML = templates.map((t, idx) => {
-    const isTarget = (t.formula || '').toLowerCase().includes('hedef');
+    const lowerFormula = (t.formula || '').toLowerCase();
+    const isTarget = lowerFormula.includes('target') || lowerFormula.includes('hedef');
     const badgeColor = isTarget
       ? 'border-emerald-500/50 text-emerald-300 hover:bg-emerald-950/60'
       : 'border-indigo-500/50 text-indigo-300 hover:bg-indigo-950/60';
 
     return `
-      <div class="inline-flex items-center rounded-lg bg-slate-900 border ${badgeColor} text-xs font-mono transition group shadow-sm">
-        <button type="button" onclick="applyFormulaTemplate('${escapeFormulaHtml(t.formula)}')" class="px-2 py-1 text-left truncate hover:underline cursor-pointer" title="${escapeFormulaHtml(t.formula)}">
+      <div class="inline-flex items-center max-w-full rounded bg-slate-900 border ${badgeColor} text-xs font-mono transition group shadow-sm">
+        <button type="button" data-hub-dice="apply-template" data-formula="${escapeFormulaHtml(t.formula)}" class="min-w-0 px-2 py-1 text-left truncate hover:underline cursor-pointer" title="${escapeFormulaHtml(t.formula)}">
           ${escapeFormulaHtml(t.name || t.formula)}
         </button>
-        <button type="button" onclick="deleteFormulaTemplate(${idx})" class="pr-1.5 pl-0.5 text-slate-500 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition cursor-pointer text-xs font-bold" title="Delete Template">
+        <button type="button" data-hub-dice="delete-template" data-tpl-idx="${idx}" aria-label="Delete Template" class="shrink-0 px-1.5 py-1 text-slate-500 hover:text-rose-400 opacity-60 group-hover:opacity-100 transition cursor-pointer text-xs font-bold" title="Delete Template">
           &times;
         </button>
       </div>
@@ -942,7 +945,7 @@ function executeTargetAttackRoll(rawInput, hedefMatch) {
     if (!isHit) {
       addDiceHistoryEntry({
         title: `Targeted Attack: Miss (vs AC/DC ${hedef})`,
-        formula: `d20${bonusStr} vs Hedef ${hedef} (${rawDamageStr})`,
+        formula: `d20${bonusStr} vs Target ${hedef} (${rawDamageStr})`,
         breakdown: `Attack: d20 [${d20}] ${bonusStr} = ${attackTotal} vs AC/DC ${hedef} ❌ MISS${isNat1 ? ' (Natural 1!)' : ''}`,
         total: 0,
         isCrit: false,
@@ -951,7 +954,7 @@ function executeTargetAttackRoll(rawInput, hedefMatch) {
     } else if (isHit && !isCritConfirmed) {
       addDiceHistoryEntry({
         title: `Targeted Attack: Hit (${finalDamage} Damage)`,
-        formula: `d20${bonusStr} vs Hedef ${hedef} (${rawDamageStr})`,
+        formula: `d20${bonusStr} vs Target ${hedef} (${rawDamageStr})`,
         breakdown: `Attack: d20 [${d20}] ${bonusStr} = ${attackTotal} vs AC/DC ${hedef} (Hit)${confirmDetails} • Damage: ${baseDmgBreakdown} = ${finalDamage} Damage`,
         total: finalDamage,
         isCrit: false,
@@ -960,7 +963,7 @@ function executeTargetAttackRoll(rawInput, hedefMatch) {
     } else {
       addDiceHistoryEntry({
         title: `⚡ CRITICAL HIT! (${finalDamage} Damage)`,
-        formula: `d20${bonusStr} vs Hedef ${hedef} (${rawDamageStr})`,
+        formula: `d20${bonusStr} vs Target ${hedef} (${rawDamageStr})`,
         breakdown: `Attack: d20 [${d20}] ${bonusStr} = ${attackTotal} vs AC/DC ${hedef} (Threat: ${threatMin}-${threatMax})${confirmDetails} • Damage: (${baseDmgBreakdown}) x ${critMult} = ${finalDamage} Damage!`,
         total: finalDamage,
         isCrit: true,
@@ -1055,32 +1058,6 @@ function rollCustomFormula() {
 
   executeStandardCustomFormula(val);
 }
-function toggleDiceAdvancedDrawer(forceOpen = null) {
-  const content = document.getElementById('dice-advanced-content');
-  const icon = document.getElementById('dice-adv-icon');
-  const text = document.getElementById('dice-adv-status-text');
-  if (!content) return;
-
-  const isCurrentlyHidden = content.classList.contains('hidden');
-  const shouldOpen = forceOpen !== null ? forceOpen : isCurrentlyHidden;
-
-  if (shouldOpen) {
-    content.classList.remove('hidden');
-    if (icon) icon.style.transform = 'rotate(180deg)';
-    if (text) text.textContent = 'Hide';
-    try { localStorage.setItem('hub_dice_adv_open', '1'); } catch (e) {}
-  } else {
-    content.classList.add('hidden');
-    if (icon) icon.style.transform = 'rotate(0deg)';
-    if (text) text.textContent = 'Show';
-    try { localStorage.setItem('hub_dice_adv_open', '0'); } catch (e) {}
-  }
-  if (typeof window.syncHubEqualCardHeights === 'function') {
-    window.syncHubEqualCardHeights();
-  }
-}
-window.toggleDiceAdvancedDrawer = toggleDiceAdvancedDrawer;
-
 window.rollCustomFormula = rollCustomFormula;
 
 // Sayfa yüklendiğinde inline panel bileşenlerini ve renk seçiciyi ilklendir
@@ -1089,15 +1066,29 @@ window.addEventListener('DOMContentLoaded', () => {
   if (typeof updateDicePoolDisplay === 'function') updateDicePoolDisplay();
   if (typeof renderDiceHistory === 'function') renderDiceHistory();
   if (typeof renderCustomTemplates === 'function') renderCustomTemplates();
-  try {
-    const isAdvOpen = localStorage.getItem('hub_dice_adv_open') === '1';
-    if (typeof toggleDiceAdvancedDrawer === 'function') {
-      toggleDiceAdvancedDrawer(isAdvOpen);
-    }
-  } catch (e) {}
+  // The old collapsible 'Formula, Last Roll & History' drawer is gone; drop its stored open/closed flag.
+  try { localStorage.removeItem('hub_dice_adv_open'); } catch (e) {}
 });
 
-// Hub formula row "Save" button (wired here to stay within the inline-handler ratchet).
+// Delegated clicks for rendered template chips and history rows (data-hub-dice="..."): the formula travels in an
+// escaped data attribute, so quotes or apostrophes in a saved formula cannot break an inline handler.
+document.addEventListener('click', (e) => {
+  const el = e.target && e.target.closest ? e.target.closest('[data-hub-dice]') : null;
+  if (!el) return;
+  const action = el.dataset.hubDice;
+  if (action === 'apply-template') {
+    applyFormulaTemplate(el.dataset.formula || '');
+  } else if (action === 'delete-template') {
+    deleteFormulaTemplate(parseInt(el.dataset.tplIdx, 10));
+  } else if (action === 'reset-templates') {
+    resetFormulaTemplates();
+  } else if (action === 'reroll') {
+    applyFormulaTemplate(el.dataset.formula || '');
+    rollCustomFormula();
+  }
+});
+
+// "Save Template" button of the Custom Formula card (wired here to stay within the inline-handler ratchet).
 (function wireSaveTemplateButton() {
   const wire = () => {
     const b = document.getElementById('dice-save-template-btn');

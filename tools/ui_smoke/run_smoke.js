@@ -807,39 +807,47 @@ async function main() {
     await context.close();
   }
 
-  // H6. Hub dice tray: "Clear" history opens the in-page danger dialog; Cancel keeps the history.
+  // H6. Hub dice tray: the "Clear History" button opens the in-page danger dialog; Cancel keeps, Clear empties.
   {
     const context = await newContext();
     let nativeDialogs = 0;
-    await check('H6. real path: hub clearDiceHistory opens dialog, Cancel keeps history', async () => {
+    await check('H6. real path: hub Clear History button opens dialog, Cancel keeps history, Clear empties it', async () => {
       const page = await openPage(context, '/hub.html');
       page.on('dialog', d => { nativeDialogs++; d.dismiss().catch(() => {}); });
       await waitHubReady(page);
       await page.evaluate(() => {
         window.diceRollHistory = [{ title: 'Probe', formula: '1d20', breakdown: '[10]', total: 10, timestamp: '00:00', id: 'p1' }];
-        clearDiceHistory();
+        renderDiceHistory();
       });
+      const clear = page.locator('#hub-inline-dice-panel button[aria-label="Clear roll history"]');
+      const box = await clear.boundingBox();
+      assert(box && box.width >= 44 && box.height >= 32, 'Clear History hit area ' + JSON.stringify(box));
+      await clear.click();
       await waitDlg(page);
       await btn(page, 'Cancel').click();
       await waitDlg(page, false);
       const n = await page.evaluate(() => window.diceRollHistory.length);
-      assert(n === 1, 'history length ' + n);
+      assert(n === 1, 'history length after Cancel ' + n);
+      await clear.click();
+      await waitDlg(page);
+      await btn(page, 'Clear').click();
+      await page.waitForFunction(() => window.diceRollHistory.length === 0 && document.getElementById('dice-history-count').textContent === '0 Rolls', null, { timeout: 5000 });
       assert(nativeDialogs === 0, 'native dialog fired ' + nativeDialogs + 'x');
-      return 'ok';
+      assertNoErrors(page);
+      return `hit area ${Math.round(box.width)}x${Math.round(box.height)}`;
     });
     await context.close();
   }
 
-  // H7. Hub dice tray: the Save button saves a formula as a template chip; an empty formula saves nothing.
+  // H7. Hub dice tray: the Save Template button saves a formula as a template chip; an empty formula saves nothing.
   {
     const context = await newContext();
-    await check('H7. real path: hub Save template button saves chip; empty formula does not', async () => {
+    await check('H7. real path: hub Save Template button saves chip; empty formula does not', async () => {
       const page = await openPage(context, '/hub.html');
       await waitHubReady(page);
-      await page.evaluate(() => { toggleDiceAdvancedDrawer(true); });
       const before = await page.evaluate(() => loadFormulaTemplates().length);
-      const save = page.locator('#dice-advanced-content button[aria-label="Save current formula as a new template"]');
-      await page.waitForFunction(() => { const b = document.querySelector('#dice-advanced-content button[aria-label="Save current formula as a new template"]'); return b && b.getBoundingClientRect().width > 0; }, null, { timeout: 10000 });
+      const save = page.locator('#dice-save-template-btn');
+      await page.waitForFunction(() => { const b = document.getElementById('dice-save-template-btn'); return b && b.getBoundingClientRect().width > 0 && b.getAttribute('aria-label') === 'Save current formula as a new template'; }, null, { timeout: 10000 });
       await page.fill('#dice-custom-formula-input', '');
       await save.click();
       await page.waitForFunction(() => document.querySelector('#dice-top-toast-container .dice-toast-item'), null, { timeout: 10000 });
@@ -853,7 +861,15 @@ async function main() {
       await page.waitForFunction(() => Array.from(document.querySelectorAll('#dice-custom-templates-container button')).some(b => b.textContent.trim() === 'Smoke Tpl'), null, { timeout: 10000 });
       const after = await page.evaluate(() => loadFormulaTemplates().length);
       assert(after === before + 1, 'template count ' + before + ' -> ' + after);
-      return 'ok';
+      // chip click fills the formula input; its x deletes the template
+      await page.fill('#dice-custom-formula-input', '');
+      const chip = page.locator('#dice-custom-templates-container [data-hub-dice="apply-template"]', { hasText: /^\s*Smoke Tpl\s*$/ });
+      await chip.click();
+      await page.waitForFunction(() => document.getElementById('dice-custom-formula-input').value === '2d6+3', null, { timeout: 5000 });
+      await chip.locator('xpath=..').locator('[data-hub-dice="delete-template"]').click();
+      await page.waitForFunction(n => loadFormulaTemplates().length === n && !document.querySelector('#dice-custom-templates-container [title="2d6+3"]'), before, { timeout: 5000 });
+      assertNoErrors(page);
+      return 'save, fill, delete ok';
     });
     await context.close();
   }

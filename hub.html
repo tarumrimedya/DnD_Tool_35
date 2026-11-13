@@ -26,7 +26,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
   <!-- Three.js (3D dice) is loaded on demand by dice3d.js on the first 3D roll. -->
   <script src="dice3d.js?v=aa07002406"></script>
-  <script src="hub_dice.js?v=e4bf672576"></script>
+  <script src="hub_dice.js?v=8cb923f019"></script>
   <script src="hub_notes.js?v=893821e92c"></script>
   <style>
     body {
@@ -40,13 +40,13 @@
     .custom-scroll::-webkit-scrollbar-thumb:hover { background: #475569; }
     :root { --hub-card-h: 420px; }
     .min-h-\[420px\] { min-height: 420px; }
-    .min-h-\[124px\] { min-height: 124px; }
     .hub-equal-card { min-height: var(--hub-card-h, 420px); }
     @media (min-width: 1280px) {
       .xl\:h-\[420px\] { height: 420px; }
       .hub-equal-card { height: var(--hub-card-h, 420px); }
-      .hub-equal-card-expandable { min-height: var(--hub-card-h, 420px); height: var(--hub-card-h, 420px); }
-      .hub-equal-card-expandable.is-expanded { height: auto; }
+      /* Dice tray: back to 4 columns (d20 spans 2) in the narrow xl sidebar */
+      .xl\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .xl\:col-span-2 { grid-column: span 2 / span 2; }
     }
     /* Canonical 4-Tier UI Button & Control Design System */
     :where(.ui-btn-md, .ui-btn-sm, .ui-btn-xs, .ui-btn-icon) { display: inline-flex; }
@@ -370,83 +370,34 @@
         </div>
       </aside>
 
-      <!-- Sağ Bölüm: Açık Zar Masası Paneli (Not Defteri ve Karakter Kartları ile Birebir Eşit Genişlik ve Yükseklik) -->
-      <aside id="hub-inline-dice-panel" class="w-full xl:w-[320px] 2xl:w-[350px] shrink-0 flex flex-col">
-        <div id="hub-inline-dice-card" class="hub-equal-card-expandable bg-[#131d33] border border-slate-700/80 rounded-2xl p-3 sm:p-3.5 shadow-xl gap-2 relative overflow-hidden flex flex-col justify-between min-h-[420px] xl:h-[420px] transition-all duration-200">
+      <!-- Sağ Bölüm: Zar Masası. Karakter sayfasının Dice sekmesiyle aynı yapı (Tray, Formula, Last Roll, History); dar kenar çubuğu için tek sütun. -->
+      <aside id="hub-inline-dice-panel" class="w-full xl:w-[320px] 2xl:w-[350px] shrink-0 flex flex-col gap-4">
+        <!-- 1. CUSTOM DICE TRAY (karakter ve not kartlarıyla eşit yükseklik) -->
+        <div id="hub-inline-dice-card" class="hub-equal-card bg-[#131d33] border border-slate-700/80 rounded-2xl p-3 sm:p-3.5 shadow-xl gap-3 relative overflow-hidden flex flex-col justify-between min-h-[420px] xl:h-[420px]">
           <!-- Üst Işıltı -->
           <div class="absolute -top-10 -right-10 w-24 h-24 bg-red-600/10 rounded-full blur-2xl pointer-events-none"></div>
 
-          <!-- Başlık & Kontroller -->
-          <div class="h-10 flex items-center justify-between border-b border-slate-700/80 pb-2 shrink-0">
-            <div class="flex items-center gap-2 min-w-0">
-              <span class="w-6 h-6 rounded-lg bg-red-600/20 border border-red-500/50 flex items-center justify-center text-amber-400 shrink-0 shadow-inner">
-                <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
-                  <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
-                  <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/>
-                  <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/>
-                  <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/>
-                  <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/>
-                  <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/>
-                  <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/>
-                  <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/>
-                  <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/>
-                  <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/>
-                  <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text>
-                </svg>
+          <!-- Başlık & Anında At Toggle -->
+          <div class="shrink-0 space-y-2">
+            <div class="flex items-center justify-between gap-2 border-b border-slate-700/80 pb-2.5">
+              <span class="text-amber-400 font-extrabold text-sm flex items-center gap-1.5 min-w-0">
+                <span class="inline-flex items-center shrink-0"><svg class="w-5 h-5" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
+                <span class="truncate">CUSTOM DICE TRAY</span>
               </span>
-              <div class="min-w-0">
-                <h3 class="text-xs font-black text-white tracking-wider uppercase flex items-center gap-1.5 leading-tight">
-                  <span>DICE TRAY</span>
-                  <span class="px-1.5 py-0.2 rounded-full bg-red-950 text-red-300 border border-red-500/40 text-[9px] font-bold">3D Physics</span>
-                </h3>
-                <p class="text-[9px] text-slate-400 leading-tight">Custom & Pool Dice Roller</p>
-              </div>
+              <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase leading-tight bg-amber-950/80 text-amber-300 border border-amber-500/60 shrink-0">Quick &amp; Pool</span>
             </div>
-
-            <!-- Zar Rengi Seçici Buton -->
-            <div class="relative shrink-0">
-              <button id="dice-color-btn" type="button" onclick="toggleDiceColorPopover(event)" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-bold text-[10px] shadow inline-flex items-center gap-1.5 transition cursor-pointer" title="Select Dice Color">
-                <span id="dice-color-preview-dot" class="w-2 h-2 rounded-full bg-red-600 shadow-sm border border-white/40 shrink-0"></span>
-                <span>Color</span>
-              </button>
-
-              <!-- Renk Seçim Popover'ı -->
-              <div id="dice-color-popover" class="hidden absolute right-0 top-full mt-2 w-52 bg-slate-900 border border-slate-700 rounded-xl p-2.5 shadow-2xl z-50 space-y-2">
-                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Select Dice Palette</div>
-                <div class="grid grid-cols-4 gap-1.5">
-                  <button type="button" onclick="setDiceColor('#dc2626')" class="w-8 h-8 rounded-lg bg-red-600 hover:scale-105 transition border border-white/20" title="Ruby Red"></button>
-                  <button type="button" onclick="setDiceColor('#2563eb')" class="w-8 h-8 rounded-lg bg-blue-600 hover:scale-105 transition border border-white/20" title="Sapphire Blue"></button>
-                  <button type="button" onclick="setDiceColor('#059669')" class="w-8 h-8 rounded-lg bg-emerald-600 hover:scale-105 transition border border-white/20" title="Emerald Green"></button>
-                  <button type="button" onclick="setDiceColor('#7c3aed')" class="w-8 h-8 rounded-lg bg-purple-600 hover:scale-105 transition border border-white/20" title="Amethyst Purple"></button>
-                  <button type="button" onclick="setDiceColor('#d97706')" class="w-8 h-8 rounded-lg bg-amber-600 hover:scale-105 transition border border-white/20" title="Amber Gold"></button>
-                  <button type="button" onclick="setDiceColor('#0891b2')" class="w-8 h-8 rounded-lg bg-cyan-600 hover:scale-105 transition border border-white/20" title="Glacial Cyan"></button>
-                  <button type="button" onclick="setDiceColor('#1e293b')" class="w-8 h-8 rounded-lg bg-slate-800 hover:scale-105 transition border border-slate-600" title="Obsidian Black"></button>
-                  <button type="button" onclick="setDiceColor('#f8fafc')" class="w-8 h-8 rounded-lg bg-slate-100 hover:scale-105 transition border border-slate-300" title="Ivory White"></button>
-                </div>
-                <div class="pt-1.5 border-t border-slate-800 flex items-center justify-between text-[10px]">
-                  <span class="text-slate-400">Custom Color:</span>
-                  <input type="color" id="dice-custom-color-input" value="#dc2626" onchange="setDiceColor(this.value)" class="w-6 h-6 rounded cursor-pointer bg-transparent border-0">
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Mod Seçimi (Tıkla Hemen At vs Havuz - Quest Logs Sekme Çubuğu ile Birebir h-8 Hizalı) -->
-          <div class="h-8 flex items-center justify-between bg-slate-900/90 border border-slate-800 px-2.5 rounded-lg shrink-0">
-            <span class="text-[10px] font-medium text-slate-400">Roll Mode:</span>
-            <label class="flex items-center gap-1.5 cursor-pointer">
-              <input type="checkbox" id="dice-instant-mode" class="rounded border-slate-700 text-amber-500 focus:ring-0 cursor-pointer">
-              <span class="font-bold text-amber-400 select-none text-[10px]">⚡ Instant Roll on Click</span>
+            <label class="flex items-center justify-center gap-1.5 cursor-pointer bg-slate-900 border border-slate-700 px-2.5 py-1.5 rounded-lg text-xs hover:border-amber-500/50 transition">
+              <input type="checkbox" id="dice-instant-mode" class="rounded border-slate-700 text-amber-500 focus:ring-0">
+              <span class="font-bold text-slate-300 select-none text-[11px]">⚡ Instant Roll on Click</span>
             </label>
           </div>
 
-          <!-- 7 Standart D&D Zarı (d4, d6, d8, d10, d12, d20, d100 - Orta Alanı Esnek Doldurur) -->
-          <div class="grid grid-cols-4 gap-1.5 flex-1 min-h-[124px]">
+          <!-- Standart D&D Zarları (d4, d6, d8, d10, d12, d20, d100) -->
+          <div class="grid grid-cols-4 sm:grid-cols-7 xl:grid-cols-4 gap-2 flex-1">
             <!-- d4 -->
-            <button onclick="handleDieClick(4)" title="Add or roll d4" class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg bg-slate-900/90 hover:bg-emerald-600/30 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-              <span class="w-4 h-4 flex items-center justify-center group-hover:scale-110 transition text-emerald-300">
-                <svg class="w-3.5 h-3.5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <button onclick="handleDieClick(4)" title="Add or roll d4" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-emerald-600/30 border border-emerald-500/40 hover:border-emerald-400 text-emerald-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+              <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-emerald-300">
+                <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <polygon points="50,10 92,78 12,86" fill="currentColor" fill-opacity="0.14" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
                   <polygon points="50,10 54,54 12,86" fill="currentColor" fill-opacity="0.28" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
                   <polygon points="50,10 92,78 54,54" fill="currentColor" fill-opacity="0.18" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
@@ -454,180 +405,312 @@
                   <text x="53" y="49" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">4</text>
                 </svg>
               </span>
-              <span class="text-[10px] font-black font-mono">d4</span>
-              <span id="die-count-4" class="text-[9px] font-bold text-emerald-400 mt-0.5 h-2.5"></span>
+              <span class="text-xs font-black font-mono">d4</span>
+              <span id="die-count-4" class="text-[10px] font-bold text-emerald-400 mt-0.5 h-3.5"></span>
             </button>
             <!-- d6 -->
-            <button onclick="handleDieClick(6)" title="Add or roll d6" class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg bg-slate-900/90 hover:bg-sky-600/30 border border-sky-500/40 hover:border-sky-400 text-sky-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-              <span class="w-4 h-4 flex items-center justify-center group-hover:scale-110 transition text-sky-300">
-                <svg class="w-3.5 h-3.5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <button onclick="handleDieClick(6)" title="Add or roll d6" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-sky-600/30 border border-sky-500/40 hover:border-sky-400 text-sky-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+              <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-sky-300">
+                <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <polygon points="50,12 85,31 85,69 50,88 15,69 15,31" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
                   <polygon points="50,12 85,31 50,50 15,31" fill="currentColor" fill-opacity="0.25" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+                  <polygon points="15,31 50,50 50,88 15,69" fill="currentColor" fill-opacity="0.35" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
                   <line x1="50" y1="50" x2="85" y2="69" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <line x1="50" y1="50" x2="50" y2="88" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <line x1="50" y1="50" x2="15" y2="31" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <text x="32" y="66" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, sans-serif">6</text>
                 </svg>
               </span>
-              <span class="text-[10px] font-black font-mono">d6</span>
-              <span id="die-count-6" class="text-[9px] font-bold text-sky-400 mt-0.5 h-2.5"></span>
+              <span class="text-xs font-black font-mono">d6</span>
+              <span id="die-count-6" class="text-[10px] font-bold text-sky-400 mt-0.5 h-3.5"></span>
             </button>
             <!-- d8 -->
-            <button onclick="handleDieClick(8)" title="Add or roll d8" class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg bg-slate-900/90 hover:bg-indigo-600/30 border border-indigo-500/40 hover:border-indigo-400 text-indigo-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-              <span class="w-4 h-4 flex items-center justify-center group-hover:scale-110 transition text-indigo-300">
-                <svg class="w-3.5 h-3.5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <button onclick="handleDieClick(8)" title="Add or roll d8" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-indigo-600/30 border border-indigo-500/40 hover:border-indigo-400 text-indigo-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+              <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-indigo-300">
+                <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <polygon points="50,8 86,32 86,68 50,92 14,68 14,32" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
                   <polygon points="50,14 82,65 18,65" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
                   <line x1="50" y1="14" x2="50" y2="8" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <line x1="18" y1="65" x2="14" y2="68" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <line x1="82" y1="65" x2="86" y2="68" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="18" y1="65" x2="14" y2="32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="82" y1="65" x2="86" y2="32" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <line x1="18" y1="65" x2="50" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <line x1="82" y1="65" x2="50" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <text x="50" y="54" text-anchor="middle" fill="currentColor" font-size="24" font-weight="900" font-family="system-ui, sans-serif">8</text>
                 </svg>
               </span>
-              <span class="text-[10px] font-black font-mono">d8</span>
-              <span id="die-count-8" class="text-[9px] font-bold text-indigo-400 mt-0.5 h-2.5"></span>
+              <span class="text-xs font-black font-mono">d8</span>
+              <span id="die-count-8" class="text-[10px] font-bold text-indigo-400 mt-0.5 h-3.5"></span>
             </button>
             <!-- d10 -->
-            <button onclick="handleDieClick(10)" title="Add or roll d10" class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg bg-slate-900/90 hover:bg-purple-600/30 border border-purple-500/40 hover:border-purple-400 text-purple-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-              <span class="w-4 h-4 flex items-center justify-center group-hover:scale-110 transition text-purple-300">
-                <svg class="w-3.5 h-3.5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <button onclick="handleDieClick(10)" title="Add or roll d10" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-purple-600/30 border border-purple-500/40 hover:border-purple-400 text-purple-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+              <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-purple-300">
+                <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <polygon points="50,6 86,34 76,76 50,94 24,76 14,34" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
                   <polygon points="50,14 74,44 50,70 26,44" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                  <line x1="50" y1="14" x2="50" y2="6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="26" y1="44" x2="14" y2="34" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="74" y1="44" x2="86" y2="34" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="26" y1="44" x2="24" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="74" y1="44" x2="76" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="70" x2="50" y2="94" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="70" x2="24" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="70" x2="76" y2="76" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <text x="50" y="49" text-anchor="middle" fill="currentColor" font-size="20" font-weight="900" font-family="system-ui, sans-serif" letter-spacing="-0.5">10</text>
                 </svg>
               </span>
-              <span class="text-[10px] font-black font-mono">d10</span>
-              <span id="die-count-10" class="text-[9px] font-bold text-purple-400 mt-0.5 h-2.5"></span>
+              <span class="text-xs font-black font-mono">d10</span>
+              <span id="die-count-10" class="text-[10px] font-bold text-purple-400 mt-0.5 h-3.5"></span>
             </button>
             <!-- d12 -->
-            <button onclick="handleDieClick(12)" title="Add or roll d12" class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg bg-slate-900/90 hover:bg-rose-600/30 border border-rose-500/40 hover:border-rose-400 text-rose-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-              <span class="w-4 h-4 flex items-center justify-center group-hover:scale-110 transition text-rose-300">
-                <svg class="w-3.5 h-3.5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <button onclick="handleDieClick(12)" title="Add or roll d12" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-rose-600/30 border border-rose-500/40 hover:border-rose-400 text-rose-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+              <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-rose-300">
+                <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <polygon points="50,6 78,16 94,40 90,70 68,92 32,92 10,70 6,40 22,16" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
                   <polygon points="50,28 73,45 64,72 36,72 27,45" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                  <line x1="50" y1="28" x2="50" y2="6" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="73" y1="45" x2="94" y2="40" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="64" y1="72" x2="68" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="36" y1="72" x2="32" y2="92" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="27" y1="45" x2="6" y2="40" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
                   <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif" letter-spacing="-0.5">12</text>
                 </svg>
               </span>
-              <span class="text-[10px] font-black font-mono">d12</span>
-              <span id="die-count-12" class="text-[9px] font-bold text-rose-400 mt-0.5 h-2.5"></span>
+              <span class="text-xs font-black font-mono">d12</span>
+              <span id="die-count-12" class="text-[10px] font-bold text-rose-400 mt-0.5 h-3.5"></span>
             </button>
             <!-- d20 -->
-            <button id="die-btn-20" onclick="handleDieClick(20)" title="Add or roll d20" class="col-span-2 flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg bg-slate-900/90 hover:bg-amber-600/30 border border-amber-500/50 hover:border-amber-400 text-amber-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group ring-1 ring-amber-500/30">
-              <div class="flex items-center gap-1">
-                <span id="die-icon-20" class="w-4 h-4 flex items-center justify-center group-hover:scale-110 transition text-amber-400">
-                  <svg class="w-3.5 h-3.5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
-                    <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
-                    <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text>
-                  </svg>
-                </span>
-                <span id="die-label-20" class="text-[11px] font-black font-mono">d20</span>
-              </div>
-              <span id="die-count-20" class="text-[9px] font-bold text-amber-400 mt-0.5 h-2.5"></span>
+            <button id="die-btn-20" onclick="handleDieClick(20)" title="Add or roll d20" class="col-span-2 sm:col-span-1 xl:col-span-2 flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-amber-600/30 border border-amber-500/50 hover:border-amber-400 text-amber-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group ring-1 ring-amber-500/30">
+              <span id="die-icon-20" class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-amber-300">
+                <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/>
+                  <polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/>
+                  <line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>
+                  <text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif" letter-spacing="-0.5">20</text>
+                </svg>
+              </span>
+              <span id="die-label-20" class="text-xs font-black font-mono">d20</span>
+              <span id="die-count-20" class="text-[10px] font-bold text-amber-400 mt-0.5 h-3.5"></span>
             </button>
             <!-- d100 -->
-            <button onclick="handleDieClick(100)" title="Add or roll d100 percentile" class="flex flex-col items-center justify-center p-1 sm:p-1.5 rounded-lg bg-slate-900/90 hover:bg-teal-600/30 border border-teal-500/40 hover:border-teal-400 text-teal-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
-              <span class="w-4 h-4 flex items-center justify-center group-hover:scale-110 transition text-teal-300">
-                <svg class="w-3.5 h-3.5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <button onclick="handleDieClick(100)" title="Add or roll d100 percentile die" class="flex flex-col items-center justify-center p-2 rounded-xl bg-slate-900/90 hover:bg-teal-600/30 border border-teal-500/40 hover:border-teal-400 text-teal-300 hover:text-white transition transform active:scale-95 shadow cursor-pointer group">
+              <span class="w-6 h-6 flex items-center justify-center group-hover:scale-110 transition text-teal-300">
+                <svg class="w-5 h-5 inline-block" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <circle cx="50" cy="50" r="44" stroke="currentColor" stroke-width="4.5" fill="currentColor" fill-opacity="0.12"/>
+                  <circle cx="50" cy="50" r="33" stroke="currentColor" stroke-width="2.5" stroke-dasharray="5 2.5" fill="none" opacity="0.6"/>
+                  <circle cx="50" cy="50" r="21" stroke="currentColor" stroke-width="3.5" fill="currentColor" fill-opacity="0.3"/>
+                  <line x1="50" y1="29" x2="50" y2="6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="60.5" y1="31.8" x2="72" y2="11.9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="68.2" y1="39.5" x2="88.1" y2="28" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="71" y1="50" x2="94" y2="50" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="68.2" y1="60.5" x2="88.1" y2="72" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="60.5" y1="68.2" x2="72" y2="88.1" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="50" y1="71" x2="50" y2="94" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="39.5" y1="68.2" x2="28" y2="88.1" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="31.8" y1="60.5" x2="11.9" y2="72" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="29" y1="50" x2="6" y2="50" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="31.8" y1="39.5" x2="11.9" y2="28" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                  <line x1="39.5" y1="31.8" x2="28" y2="11.9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
                   <text x="50" y="56" text-anchor="middle" fill="currentColor" font-size="16" font-weight="900" font-family="system-ui, sans-serif" letter-spacing="-0.8">100</text>
                 </svg>
               </span>
-              <span class="text-[10px] font-black font-mono">d%</span>
-              <span id="die-count-100" class="text-[9px] font-bold text-teal-400 mt-0.5 h-2.5"></span>
+              <span class="text-xs font-black font-mono">d100</span>
+              <span id="die-count-100" class="text-[10px] font-bold text-teal-400 mt-0.5 h-3.5"></span>
             </button>
           </div>
 
-          <!-- Havuz Özeti, Gelişmiş Çekmece ve Havuz Atış Butonları (Diğer 3 Kartın Alt Çubuklarıyla Birebir Hizalı) -->
-          <div class="shrink-0 space-y-2">
-            <!-- Havuz Özeti ve Bonus Girişi -->
-            <div class="bg-slate-900/90 border border-slate-800 rounded-xl px-2 py-1 flex items-center justify-between gap-1.5 h-9">
-              <div class="min-w-0 flex-1">
-                <div class="text-[8px] text-slate-400 font-bold uppercase tracking-wider leading-none">Active Pool</div>
-                <div id="dice-pool-summary" class="text-[11px] font-semibold text-slate-400 font-mono truncate h-4 flex items-center">No dice selected</div>
-              </div>
-              <div class="flex items-center gap-1 shrink-0">
-                <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono">Bonus</span>
-                <div class="inline-flex items-center rounded-md bg-slate-950 border border-slate-700/80 p-0.5 shadow-inner focus-within:border-amber-400 focus-within:ring-1 focus-within:ring-amber-400/40 transition">
-                  <button type="button" onclick="adjustDicePoolMod(-1, event)" class="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-bold transition active:scale-90 cursor-pointer select-none" title="Decrease Bonus (-1, Shift for -5)">−</button>
-                  <input type="number" id="dice-pool-mod" value="0" oninput="updateDicePoolDisplay()" onwheel="handlePoolModWheel(event)" class="w-8 bg-transparent text-center font-mono font-black text-xs text-amber-300 focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" title="Enter a modifier directly or scroll the mouse wheel">
-                  <button type="button" onclick="adjustDicePoolMod(1, event)" class="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-bold transition active:scale-90 cursor-pointer select-none" title="Increase Bonus (+1, Shift for +5)">+</button>
-                </div>
+          <!-- Seçilen Zar Havuzu & Modifiyer -->
+          <div class="shrink-0 bg-slate-950/80 rounded-xl px-3 py-2 border border-slate-800 flex items-center justify-between gap-2">
+            <div class="min-w-0 flex-1">
+              <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Selected Dice Pool</div>
+              <div id="dice-pool-summary" class="text-xs text-slate-500 font-mono truncate">No dice selected</div>
+            </div>
+            <div class="flex items-center gap-1.5 shrink-0">
+              <span class="text-xs text-slate-300 font-bold">Mod:</span>
+              <div class="inline-flex items-center rounded-lg bg-slate-900 border border-slate-700 p-0.5 focus-within:border-amber-400 transition">
+                <button type="button" onclick="adjustDicePoolMod(-1, event)" class="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 text-sm font-bold transition active:scale-90 cursor-pointer select-none" title="Decrease Mod (-1, Shift for -5)" aria-label="Decrease Mod">−</button>
+                <input type="number" id="dice-pool-mod" value="0" oninput="updateDicePoolDisplay()" onwheel="handlePoolModWheel(event)" class="w-9 bg-transparent text-center font-mono text-xs text-white focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" title="Enter a modifier directly or scroll the mouse wheel" aria-label="Pool modifier">
+                <button type="button" onclick="adjustDicePoolMod(1, event)" class="w-6 h-6 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 text-sm font-bold transition active:scale-90 cursor-pointer select-none" title="Increase Mod (+1, Shift for +5)" aria-label="Increase Mod">+</button>
               </div>
             </div>
+          </div>
 
-            <!-- İsteğe Bağlı Açılır Gelişmiş Panel Tetikleyicisi (h-7: Trained Skills ve Tag Şeridi ile Birebir Hizalı) -->
-            <button type="button" onclick="toggleDiceAdvancedDrawer()" class="w-full h-7 px-2.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800/90 hover:border-slate-700 text-slate-300 hover:text-white transition flex items-center justify-between text-[11px] font-semibold cursor-pointer select-none shadow-sm" title="Show / Hide Formula Input, Last Roll Card & Roll History">
-              <div class="flex items-center gap-1.5 truncate">
-                <span class="text-xs">📜</span>
-                <span class="truncate">Formula, Last Roll &amp; History</span>
-              </div>
-              <div class="flex items-center gap-1 text-[9px] text-slate-400 font-mono shrink-0">
-                <span id="dice-adv-status-text">Show</span>
-                <span id="dice-adv-icon" class="text-[9px] transition-transform duration-200">▼</span>
-              </div>
+          <!-- Aksiyon Butonları (At, Zar Rengi & Sıfırla) -->
+          <div class="shrink-0 flex items-center gap-2 pt-2 border-t border-slate-800/80">
+            <button id="dice-roll-pool-btn" onclick="rollDicePool()" class="flex-1 min-w-0 py-2.5 px-3 rounded-xl text-white font-black text-sm shadow-lg flex items-center justify-center gap-2 transition transform active:scale-95 cursor-pointer border border-white/20">
+              <span class="inline-flex items-center"><svg class="w-5 h-5" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
+              <span>ROLL DICE</span>
             </button>
-
-            <!-- Havuz Atış Butonları (h-9: Open & Manage Character ve Save Log ile Birebir Hizalı) -->
-            <div class="pt-2 border-t border-slate-800/80 flex items-center gap-1.5">
-              <button id="dice-roll-pool-btn" onclick="rollDicePool()" class="flex-1 h-9 px-3 rounded-xl text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-red-950/60 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 flex items-center justify-center gap-1.5 transition transform active:scale-95 cursor-pointer border border-white/20">
-                <span>⚡</span>
-                <span>ROLL DICE</span>
+            <!-- Zar Rengi Seçici & Sıfırla (popover bu kutunun sağ kenarına hizalı açılır) -->
+            <div class="relative flex items-center gap-2 shrink-0">
+              <button id="dice-color-btn" type="button" onclick="toggleDiceColorPopover(event)" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-sm shadow flex items-center justify-center gap-1.5 transition cursor-pointer" title="Choose Dice Color" aria-label="Choose Dice Color">
+                <span id="dice-color-preview-dot" class="w-4 h-4 rounded-full border border-white/70 shadow-sm inline-block shrink-0 transition-colors" style="background-color: #851316;"></span>
+                <span class="text-[10px] text-slate-400">▼</span>
               </button>
-              <button onclick="resetDicePool()" class="w-9 h-9 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-rose-300 border border-slate-700 transition cursor-pointer text-xs inline-flex items-center justify-center shrink-0" title="Clear Pool">
-                🗑️
+              <button type="button" onclick="resetDicePool()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-600/60 font-bold text-sm shadow flex items-center justify-center transition cursor-pointer" title="Clear selected dice pool" aria-label="Reset dice pool">
+                <span>🔄</span>
               </button>
-            </div>
 
-            <!-- Gizlenebilir İçerik (Varsayılan Olarak Kapalı - Açıldığında Tüm Hücre Aşağı Genişler) -->
-            <div id="dice-advanced-content" class="hidden pt-1 space-y-2">
-              <!-- Hızlı / Özel Formül Girişi -->
-              <div class="space-y-1.5">
-                <div class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Roll by Formula</div>
-                <div class="flex items-center gap-1">
-                  <input type="text" id="dice-custom-formula-input" placeholder="e.g. 1d20+5, 8d6, 2d6+3" class="ui-input-sm h-7 flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 text-xs text-white placeholder-slate-500 font-mono focus:outline-none focus:border-amber-400" onkeydown="if(event.key==='Enter') rollCustomFormula()">
-                  <button onclick="rollCustomFormula()" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow transition active:scale-95 cursor-pointer">
-                    ⚡ Roll
-                  </button>
-                  <button type="button" id="dice-save-template-btn" class="ui-btn-sm h-7 px-2 rounded-lg bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 hover:text-indigo-100 border border-indigo-500/50 text-xs font-semibold flex items-center gap-1 transition cursor-pointer shadow-sm" title="Save current formula as a new template" aria-label="Save current formula as a new template">
-                    <span>💾</span>
-                    <span>Save</span>
-                  </button>
+              <!-- Zar Rengi Seçim Popover Menüsü -->
+              <div id="dice-color-popover" class="hidden absolute right-0 bottom-full mb-2 w-64 bg-slate-900 border border-slate-700 rounded-xl p-3 shadow-2xl z-50">
+                <div class="flex items-center justify-between border-b border-slate-700/80 pb-2 mb-2.5">
+                  <span class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+                    <span>🎨</span>
+                    <span>Choose Dice Color</span>
+                  </span>
+                  <span class="text-[10px] text-slate-400 font-medium">3D Dice &amp; Button</span>
                 </div>
-                <!-- Hızlı Şablon Çipleri -->
-                <div id="dice-custom-templates-container" class="flex flex-wrap items-center gap-1 pt-0.5">
-                  <!-- JS dinamik doldurur -->
-                </div>
-              </div>
 
-              <!-- Canlı Son Zar Sonucu Kartı -->
-              <div id="dice-last-result-card" class="bg-slate-900/90 border border-slate-800 rounded-lg p-2 flex items-center justify-between shadow-inner">
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-1">
-                    <span id="dice-last-icon" class="text-xs">⚡</span>
-                    <span id="dice-last-label" class="text-[10px] font-bold text-slate-300 truncate">No rolls yet</span>
+                  <!-- Hazır Zar Renkleri Grid -->
+                  <div class="grid grid-cols-4 gap-2 mb-3">
+                    <button type="button" onclick="selectDiceColor('#851316', 'Ruby Red')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Ruby Red">
+                      <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #851316;"></span>
+                      <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Ruby</span>
+                    </button>
+                    <button type="button" onclick="selectDiceColor('#1d4ed8', 'Sapphire Blue')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Sapphire Blue">
+                      <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #1d4ed8;"></span>
+                      <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Sapphire</span>
+                    </button>
+                    <button type="button" onclick="selectDiceColor('#047857', 'Emerald Green')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Emerald Green">
+                      <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #047857;"></span>
+                      <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Emerald</span>
+                    </button>
+                    <button type="button" onclick="selectDiceColor('#7e22ce', 'Amethyst Purple')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Amethyst Purple">
+                      <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #7e22ce;"></span>
+                      <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Amethyst</span>
+                    </button>
+                    <button type="button" onclick="selectDiceColor('#d97706', 'Amber Gold')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Amber Gold">
+                      <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #d97706;"></span>
+                      <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Amber</span>
+                    </button>
+                    <button type="button" onclick="selectDiceColor('#0891b2', 'Glacier Cyan')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Glacier Cyan">
+                      <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #0891b2;"></span>
+                      <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Glacier</span>
+                    </button>
+                    <button type="button" onclick="selectDiceColor('#18181b', 'Obsidian Black')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Obsidian Black">
+                      <span class="w-7 h-7 rounded-full shadow-md border border-white/40 block group-hover:scale-110 transition-transform" style="background-color: #18181b;"></span>
+                      <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Obsidian</span>
+                    </button>
+                    <button type="button" onclick="selectDiceColor('#f8fafc', 'Ivory White')" class="group flex flex-col items-center gap-1 p-1.5 rounded-lg hover:bg-slate-800/80 border border-transparent hover:border-slate-600 transition cursor-pointer" title="Ivory White">
+                      <span class="w-7 h-7 rounded-full shadow-md border border-slate-400 block group-hover:scale-110 transition-transform" style="background-color: #f8fafc;"></span>
+                      <span class="text-[10px] text-slate-400 group-hover:text-slate-200 font-medium truncate w-full text-center">Ivory</span>
+                    </button>
                   </div>
-                  <div id="dice-last-breakdown" class="text-[9px] text-slate-400 font-mono mt-0.5 truncate">-</div>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <span id="dice-last-crit-badge" class="hidden"></span>
-                  <div id="dice-last-total" class="text-lg font-black font-mono text-amber-400">-</div>
-                </div>
-              </div>
 
-              <!-- Zar Geçmişi (Açılır / Kaydırılabilir) -->
-              <div class="pt-1.5 border-t border-slate-800 space-y-1">
-                <div class="flex items-center justify-between text-[9px] text-slate-400">
-                  <span class="font-bold uppercase tracking-wider">Recent Rolls (<span id="dice-history-count">0</span>)</span>
-                  <button type="button" onclick="clearDiceHistory()" aria-label="Clear roll history" class="hover:text-rose-400 transition cursor-pointer" style="padding:12px 16px;margin:-12px -16px;">Clear</button>
-                </div>
-                <div id="dice-history-list" class="max-h-64 overflow-y-auto space-y-1.5 custom-scroll pr-1 text-xs">
-                  <div class="text-[9px] text-slate-400 italic py-1.5 text-center">Roll history is empty</div>
-                </div>
+                  <!-- Özel Renk Seçici -->
+                  <div class="flex items-center justify-between pt-2 border-t border-slate-800">
+                    <span class="text-xs text-slate-300 font-semibold flex items-center gap-1.5">
+                      <span>🌈</span>
+                      <span>Custom Color:</span>
+                    </span>
+                    <div class="flex items-center gap-2">
+                      <input type="color" id="dice-custom-color-input" onchange="selectDiceColor(this.value, 'Custom Color')" class="w-7 h-7 rounded-lg cursor-pointer bg-transparent border-0 p-0">
+                    </div>
+                  </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- 2. CUSTOM FORMULA & TARGETED ROLL -->
+        <div class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-3 sm:p-3.5 shadow-xl space-y-3">
+          <div class="flex items-center border-b border-slate-700/80 pb-2.5">
+            <span class="text-indigo-400 font-extrabold text-sm flex items-center gap-1.5">
+              <span>📝</span>
+              <span>CUSTOM FORMULA &amp; TARGETED ROLL</span>
+            </span>
+          </div>
+
+          <!-- Input & At Butonu -->
+          <div class="flex items-stretch gap-2">
+            <input type="text" id="dice-custom-formula-input"
+                   placeholder="e.g., Target:21 Bonus:4 Dice:1d6+3 19-20x2 or 8d6"
+                   onkeydown="if(event.key === 'Enter') rollCustomFormula();"
+                   class="flex-1 min-w-0 bg-slate-950 border border-indigo-500/50 rounded-xl px-3 py-2 text-sm font-mono text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            <button type="button" onclick="rollCustomFormula()"
+                    class="px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm shadow flex items-center gap-1.5 transition transform active:scale-95 cursor-pointer shrink-0">
+              <span>⚡</span>
+              <span>Roll</span>
+            </button>
+          </div>
+
+          <!-- Hızlı Şablonlar Başlık & Kaydet Butonu (Save Template: hub_dice.js addEventListener ile bağlı) -->
+          <div>
+            <div class="flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-slate-300 font-bold mb-1.5">
+              <span class="flex items-center gap-1.5">
+                <span>⚡</span>
+                <span>Quick Templates (Click to Fill):</span>
+              </span>
+              <button type="button" id="dice-save-template-btn" class="px-2.5 py-1 rounded bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 hover:text-indigo-100 border border-indigo-500/50 text-[10px] font-semibold flex items-center gap-1 transition cursor-pointer shadow-sm" style="min-height:28px;" title="Save current formula as a new template" aria-label="Save current formula as a new template">
+                <span>💾</span>
+                <span>Save Template</span>
+              </button>
+            </div>
+
+            <!-- Dinamik Şablon Butonları (renderCustomTemplates) -->
+            <div id="dice-custom-templates-container" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto custom-scroll pr-1"></div>
+          </div>
+
+          <div class="text-[11px] text-slate-300 bg-slate-950/70 p-2.5 rounded-lg border border-slate-800/80 space-y-1">
+            <div>
+              <span class="w-4 h-4 inline-flex items-center justify-center text-amber-400 align-middle"><svg class="w-3.5 h-3.5" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg></span>
+              <strong>Target:21 Bonus:4 Dice:1d6+3 19-20x2:</strong>
+              <span>Rolls d20+4 against AC/DC 21; on a 19-20 threat, rolls critical confirmation and multiplies damage by x2.</span>
+            </div>
+            <div class="text-[10px] text-slate-400">You can also enter freeform dice expressions like <code>8d6</code>, <code>3d6+5</code>, or <code>2d6+4 18-20x2</code>.</div>
+          </div>
+        </div>
+
+        <!-- 3. Canlı Son Zar Gösterim Kartı -->
+        <div id="dice-last-result-card" class="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-amber-500/40 rounded-2xl p-3 sm:p-3.5 shadow-lg space-y-2">
+          <div class="flex items-center gap-3">
+            <div id="dice-last-icon" class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400/60 flex items-center justify-center shrink-0 shadow-inner text-amber-300 font-black">
+              <svg class="w-7 h-7 inline-block text-amber-300" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="50,4 90,27 90,73 50,96 10,73 10,27" fill="currentColor" fill-opacity="0.15" stroke="currentColor" stroke-width="5" stroke-linejoin="round"/><polygon points="28,33 72,33 50,73" fill="currentColor" fill-opacity="0.3" stroke="currentColor" stroke-width="4.5" stroke-linejoin="round"/><line x1="28" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="50" y2="4" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="27" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="27" stroke="currentColor" stroke-width="4"/><line x1="28" y1="33" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="72" y1="33" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="10" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="90" y2="73" stroke="currentColor" stroke-width="4"/><line x1="50" y1="73" x2="50" y2="96" stroke="currentColor" stroke-width="4"/><text x="50" y="58" text-anchor="middle" fill="currentColor" font-size="22" font-weight="900" font-family="system-ui, sans-serif">20</text></svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Roll</span>
+                <span id="dice-last-crit-badge" class="hidden inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase leading-tight bg-rose-600 text-white font-black animate-pulse">⚡ CRITICAL THREAT!</span>
+              </div>
+              <div id="dice-last-label" class="mt-1 inline-block max-w-full break-words rounded px-1.5 py-0.5 bg-slate-800 text-amber-300 border border-slate-700 text-[11px] font-bold font-mono">No Rolls Yet</div>
+            </div>
+            <div class="text-center px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 shadow-inner shrink-0" style="min-width:4.5rem;">
+              <div class="text-[10px] text-slate-400 font-bold uppercase">Total Result</div>
+              <div id="dice-last-total" class="text-3xl font-black text-amber-400 font-mono">-</div>
+            </div>
+          </div>
+          <div id="dice-last-breakdown" class="text-xs text-slate-300 font-mono break-words">Select dice from the buttons above or enter a custom formula to roll.</div>
+        </div>
+
+        <!-- 4. Zar Geçmişi (Yeniden Eskiye Doğru) -->
+        <div class="bg-[#131d33] border border-slate-700/80 rounded-2xl p-3 sm:p-3.5 shadow-xl space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-700/80 pb-2.5">
+            <div class="flex items-center gap-2 flex-wrap min-w-0">
+              <span class="text-sm font-extrabold text-white flex items-center gap-1.5">
+                <span>📜</span>
+                <span>ROLL HISTORY</span>
+              </span>
+              <span id="dice-history-count" class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold uppercase leading-tight bg-slate-800 text-slate-300 border border-slate-700 font-mono">0 Rolls</span>
+              <span class="text-[11px] text-amber-400 font-semibold">(Newest First)</span>
+            </div>
+            <button type="button" onclick="clearDiceHistory()" aria-label="Clear roll history" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-rose-950 text-slate-300 hover:text-rose-300 border border-slate-700 hover:border-rose-600 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer" style="min-height:32px;min-width:44px;">
+              <span>🗑️</span>
+              <span>Clear History</span>
+            </button>
+          </div>
+
+          <!-- Geçmiş Listesi (renderDiceHistory) -->
+          <div id="dice-history-list" class="space-y-2 max-h-64 overflow-y-auto custom-scroll pr-1">
+            <div class="text-center py-8 text-slate-500 text-xs font-medium">No dice rolls recorded yet.</div>
           </div>
         </div>
       </aside>
@@ -1515,8 +1598,6 @@
       const charCard = document.querySelector('[id^="hub-char-card-"]');
       const notesCard = document.getElementById('hub-inline-notes-card') || document.querySelector('#hub-inline-notes-panel > div');
       const diceCard = document.getElementById('hub-inline-dice-card') || document.querySelector('#hub-inline-dice-panel > div');
-      const advContent = document.getElementById('dice-advanced-content');
-      const isDiceExpanded = Boolean(advContent && !advContent.classList.contains('hidden'));
 
       let targetH = 420;
       if (charCard) {
@@ -1545,14 +1626,10 @@
         notesCard.style.height = targetH + 'px';
       }
       if (diceCard) {
-        diceCard.style.minHeight = targetH + 'px';
-        if (isDiceExpanded) {
-          diceCard.classList.add('is-expanded');
-          diceCard.style.height = 'auto';
-        } else {
-          diceCard.classList.remove('is-expanded');
-          diceCard.style.height = targetH + 'px';
-        }
+        // .hub-equal-card sizes the dice tray from --hub-card-h: fixed height on xl (one row with the cards),
+        // min-height only below xl so the stacked tray never clips its content.
+        diceCard.style.minHeight = '';
+        diceCard.style.height = '';
       }
     }
     window.syncHubEqualCardHeights = syncHubEqualCardHeights;
