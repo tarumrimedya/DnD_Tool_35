@@ -421,27 +421,21 @@
       const intMod = RuleEngine.getAbilityMod(character.abilities?.int || 10);
 
       // Sync and retrieve tactical modifiers
-      const ceInput = document.getElementById('defense-combat-expertise-val');
-      const ceVal = character.tactical?.combatExpertise !== undefined 
-        ? character.tactical.combatExpertise 
-        : (parseInt(ceInput?.value || document.getElementById('combat-expertise-val')?.textContent) || 0);
-      if (ceInput && ceInput.value != ceVal) ceInput.value = ceVal;
+      const ceVal = character.tactical?.combatExpertise !== undefined
+        ? character.tactical.combatExpertise
+        : (parseInt(document.getElementById('combat-expertise-val')?.textContent) || 0);
 
-      const fdInput = document.getElementById('mod-defensive-fighting');
       const fdVal = character.tactical?.fightingDefensively !== undefined
         ? character.tactical.fightingDefensively
-        : (fdInput?.checked || false);
-      if (fdInput) fdInput.checked = fdVal;
+        : false;
 
-      const tdInput = document.getElementById('mod-total-defense');
       const tdVal = character.tactical?.totalDefense !== undefined
         ? character.tactical.totalDefense
-        : (tdInput?.checked || false);
-      if (tdInput) tdInput.checked = tdVal;
+        : false;
 
       const chargeVal = character.tactical?.charge !== undefined
         ? character.tactical.charge
-        : (document.getElementById('mod-charge')?.checked || false);
+        : false;
 
       const acCalc = RuleEngine.evaluateAC(character, {
         combatExpertise: ceVal,
@@ -732,34 +726,25 @@
     }
 
     function recalculateDefense() {
-      const ceInput = document.getElementById('defense-combat-expertise-val') || document.getElementById('combat-expertise-val');
+      const ceInput = document.getElementById('combat-expertise-val');
       const ceVal = character.tactical?.combatExpertise !== undefined
         ? character.tactical.combatExpertise
         : (parseInt(ceInput?.value || ceInput?.textContent) || 0);
       if (!character.tactical) character.tactical = {};
       character.tactical.combatExpertise = ceVal;
 
-      const modFd = document.getElementById('mod-defensive-fighting');
       const fdVal = character.tactical?.fightingDefensively !== undefined
         ? character.tactical.fightingDefensively
-        : (modFd?.checked || false);
+        : false;
       character.tactical.fightingDefensively = fdVal;
-      if (modFd) modFd.checked = fdVal;
 
-      const modTd = document.getElementById('mod-total-defense');
       const tdVal = character.tactical?.totalDefense !== undefined
         ? character.tactical.totalDefense
-        : (modTd?.checked || false);
+        : false;
       character.tactical.totalDefense = tdVal;
-      if (modTd) modTd.checked = tdVal;
 
-      // Keep Cockpit toggles and Defense toggles synced
-      const cpCe = document.getElementById('combat-expertise-val');
-      if (cpCe && cpCe.tagName === 'SPAN') cpCe.textContent = ceVal;
-      const cpFd = document.getElementById('toggle-fighting-defensively');
-      if (cpFd) cpFd.checked = character.tactical.fightingDefensively;
-      const cpTd = document.getElementById('toggle-total-defense');
-      if (cpTd) cpTd.checked = character.tactical.totalDefense;
+      // Keep the Cockpit Combat Expertise readout synced
+      if (ceInput && ceInput.tagName === 'SPAN') ceInput.textContent = ceVal;
 
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
         RuleEngine.recalculateCharacter(character, (typeof masterDb !== 'undefined' ? masterDb : []), {
@@ -4077,7 +4062,7 @@
       s.onload = () => {
         if (window.HERO_SILHOUETTE_DATA_URI) {
           const src = getSilhouetteImageSrc(character);
-          const imgEl = document.getElementById('sil-bg-image') || document.getElementById('sil-base-img');
+          const imgEl = document.getElementById('sil-bg-image');
           if (imgEl && src) {
             imgEl.setAttribute('href', src);
             imgEl.setAttribute('xlink:href', src);
@@ -4603,9 +4588,7 @@
       const rightContainer = document.getElementById('sil-right-slots');
       const figureContainer = document.getElementById('sil-figure-container');
       const bottomDock = document.getElementById('sil-bottom-dock');
-      const charTag = document.getElementById('sil-char-tag');
       const modelLabel = document.getElementById('sil-model-label');
-      const modelSelect = document.getElementById('silhouette-model-select');
       const activeCountEl = document.getElementById('sil-active-count');
 
       if (!leftContainer || !rightContainer || !figureContainer) return;
@@ -4721,8 +4704,6 @@
       figureContainer.innerHTML = getSilhouetteSvg(selectedSilhouetteModel, character);
 
       // Meta and controls
-      if (modelSelect) modelSelect.value = 'human';
-      if (charTag) charTag.textContent = `${character.race || 'Human'} • ${character.gender === 'Erkek' ? 'Male' : (character.gender === 'Kadın' ? 'Female' : (character.gender || 'Male'))} • ${character.classes || 'Adventurer'}`;
       if (activeCountEl) activeCountEl.textContent = `${activeOccupiedCount} / 12 Active`;
       if (modelLabel) modelLabel.textContent = 'D&D 3.5e Magic Item Record Sheet';
 
@@ -6888,18 +6869,6 @@
       if (clearBtn) clearBtn.classList.add('hidden');
       window._poolCurrentAiEntries = [];
 
-      if (document.getElementById('api-name')) document.getElementById('api-name').value = '';
-      if (document.getElementById('api-category')) document.getElementById('api-category').value = 'Weapon';
-      if (document.getElementById('api-slot')) document.getElementById('api-slot').value = '';
-      if (document.getElementById('api-qty')) document.getElementById('api-qty').value = '1';
-      if (document.getElementById('api-weight')) document.getElementById('api-weight').value = '1';
-      if (document.getElementById('api-cost')) document.getElementById('api-cost').value = '10';
-      if (document.getElementById('api-desc')) document.getElementById('api-desc').value = '';
-      if (document.getElementById('api-belt')) document.getElementById('api-belt').checked = false;
-
-      const formDetails = document.getElementById('pool-manual-form-details');
-      if (formDetails) formDetails.open = false;
-
       if (!skipRender) {
         renderUnaddedMasterDbItems('all');
       }
@@ -7377,9 +7346,6 @@
               <button type="button" data-action="inventory:search-ai-pool-item" data-query="${q.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" class="bg-rose-900 hover:bg-rose-800 text-white font-bold py-1.5 px-3 rounded-lg transition">
                 🔄 Retry
               </button>
-              <button type="button" data-action="inventory:fill-pool-form-query" data-query="${q.replace(/&/g, '&amp;').replace(/"/g, '&quot;')}" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-1.5 px-3 rounded-lg transition">
-                ✏️ Fill Manually
-              </button>
             </div>
           </div>
         `;
@@ -7763,10 +7729,6 @@
           showToast(`"${item.name}" saved to Master DB and added to your Inventory!`, 'success', { wrap: true });
         }
       }
-    }
-
-    function fillPoolFormWithQueryName(name) {
-      fillPoolItemForm({ name: name, category: 'Other', weight: 1, cost: 10, benefit: '' });
     }
 
     // ====================================================
@@ -8195,29 +8157,6 @@
       }
       saveStateToStorage(false);
       recalculateOffense();
-    }
-
-    function fillPoolItemForm(item) {
-      if (!item) return;
-      const cat = mapEntryToGearCategory(item);
-
-      if (document.getElementById('api-name')) document.getElementById('api-name').value = item.name || '';
-      if (document.getElementById('api-category')) document.getElementById('api-category').value = cat;
-      if (document.getElementById('api-slot')) document.getElementById('api-slot').value = item.slot || cat;
-      if (document.getElementById('api-qty')) document.getElementById('api-qty').value = (item.qty !== undefined && item.qty !== null) ? item.qty : 1;
-      if (document.getElementById('api-weight')) document.getElementById('api-weight').value = item.weightLb ?? item.weight ?? 0;
-      if (document.getElementById('api-cost')) document.getElementById('api-cost').value = item.priceGp ?? item.cost ?? 0;
-      if (document.getElementById('api-desc')) document.getElementById('api-desc').value = cleanPoolItemDescription(item.benefit || item.description || '');
-      if (document.getElementById('api-belt')) {
-        document.getElementById('api-belt').checked = (item.slot || '').toLowerCase().includes('belt') || cat === 'Consumable';
-      }
-
-      // Expand details
-      const formDetails = document.getElementById('pool-manual-form-details');
-      if (formDetails) {
-        formDetails.open = true;
-        formDetails.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }
     }
 
     // ====================================================
@@ -9505,11 +9444,6 @@
         if (typeof switchTab === 'function') switchTab('tab-database');
         if (window.RuleMaster && typeof window.RuleMaster.switchInlineMode === 'function') {
           window.RuleMaster.switchInlineMode('forge');
-        }
-      });
-      actionsApi.register('inventory:fill-pool-form-query', (el, data, event) => {
-        if (data && data.query !== undefined) {
-          fillPoolFormWithQueryName(data.query);
         }
       });
       actionsApi.register('inventory:add-ai-pool-item', (el, data, event) => {

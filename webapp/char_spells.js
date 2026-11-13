@@ -3582,7 +3582,7 @@
       renderSpellsCockpit();
       if (typeof renderSpellSlotsStrip === 'function') renderSpellSlotsStrip();
 
-      const container = document.getElementById('compact-spell-slots-grid') || document.getElementById('spell-slots-grid');
+      const container = document.getElementById('compact-spell-slots-grid');
       if (!container) return;
       container.innerHTML = '';
 
@@ -7478,9 +7478,7 @@
       if (document.getElementById('core-name')) document.getElementById('core-name').textContent = character.name || 'Unnamed Hero';
       if (document.getElementById('core-race')) document.getElementById('core-race').textContent = character.race || 'No Race Selected';
       if (document.getElementById('core-classes')) document.getElementById('core-classes').textContent = (character.classes || 'No Class Selected') + ` • Level ${character.level || 1}`;
-      if (document.getElementById('core-bab')) document.getElementById('core-bab').textContent = '+' + (character.bab || 0);
       if (document.getElementById('core-speed')) document.getElementById('core-speed').textContent = (character.effectiveSpeed || character.baseSpeed || 30) + ' ft';
-      if (document.getElementById('core-hd')) document.getElementById('core-hd').textContent = character.hitDie || '-';
 
       // Ability scores
       const container = document.getElementById('abilities-grid');
@@ -8869,7 +8867,6 @@
       if (customGroup.children.length > 0) {
         select.appendChild(customGroup);
       }
-      updateLevelUpClassTriggerUI(currentVal);
     }
 
     let _customClassClonedSkills = [];

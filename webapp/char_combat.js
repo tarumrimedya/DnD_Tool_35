@@ -2798,56 +2798,8 @@
         else sourceIcon.className = 'text-purple-400 text-xs';
       }
 
-      const schoolBadge = document.getElementById('combat-selected-spell-school-badge');
-      if (schoolBadge) schoolBadge.textContent = spell.school || 'Universal';
-
-      const lvlBadge = document.getElementById('combat-selected-spell-level-badge');
-      if (lvlBadge) lvlBadge.textContent = baseLvl === 0 ? 'Cantrip (0)' : `Level ${baseLvl}`;
-
-      const metaDescEl = document.getElementById('combat-selected-spell-meta-desc');
-      if (metaDescEl) {
-        let descStr = spell.benefit || spell.desc || spell.description || 'No description available.';
-        if (scaling && scaling.descDetail) {
-          descStr = `${descStr} [⚡ ${scaling.descDetail}]`;
-        }
-        metaDescEl.textContent = descStr;
-      }
-
-      // Update Action Display
-      const actionEl = document.getElementById('combat-spell-action-display');
-      if (actionEl) {
-        if (isQuicken) {
-          actionEl.textContent = 'Swift Action (Quicken)';
-          actionEl.className = 'text-[10px] font-mono font-bold text-rose-400';
-        } else if (isMetamagicActive) {
-          actionEl.textContent = 'Full-Round (Spontaneous)';
-          actionEl.className = 'text-[10px] font-mono font-bold text-amber-400';
-        } else {
-          actionEl.textContent = spell.action || 'Standard Action';
-          actionEl.className = 'text-[10px] font-mono font-bold text-amber-400';
-        }
-      }
-
-      // Check slot capacity according to spell's source (Spontaneous, Prepared, Divine)
+      // Spell's slot source (Spontaneous, Prepared, Divine)
       const slotSource = typeof getSpellSlotSource === 'function' ? getSpellSlotSource(spell) : 'spontaneous';
-      const slots = typeof getSpellSlotsArrayBySource === 'function' ? getSpellSlotsArrayBySource(slotSource) : (character?.spellcasting?.slots || []);
-      const targetSlot = slots.find(s => Number(s.level) === finalLvl);
-      const remaining = targetSlot ? Math.max(0, targetSlot.daily - targetSlot.used) : 0;
-      const totalDaily = targetSlot ? targetSlot.daily : 0;
-
-      const sourceLabels = { spontaneous: 'Spont.', prepared: 'Prep.', divine: 'Divine' };
-      const sourceTag = sourceLabels[slotSource] || 'Spell';
-
-      const slotReqEl = document.getElementById('combat-spell-slot-req-display');
-      if (slotReqEl) {
-        if (targetSlot) {
-          slotReqEl.textContent = `Level ${finalLvl} ${sourceTag} Slot (${remaining}/${totalDaily} Left)`;
-          slotReqEl.className = remaining > 0 ? 'text-xs font-mono font-bold text-purple-300' : 'text-xs font-mono font-bold text-rose-400';
-        } else {
-          slotReqEl.textContent = `Level ${finalLvl} ${sourceTag} Slot (Locked / Unavailable)`;
-          slotReqEl.className = 'text-xs font-mono font-bold text-rose-500';
-        }
-      }
 
       // Attack roll & DC calculation
       const bab = Number(character?.bab) || 0;
@@ -2926,17 +2878,6 @@
       const dmgPreviewEl = document.getElementById('combat-spell-damage-preview');
       if (dmgPreviewEl) dmgPreviewEl.textContent = previewText;
 
-      const metaBadgeEl = document.getElementById('combat-spell-metamagic-badge');
-      if (metaBadgeEl) {
-        if (isMetamagicActive) {
-          metaBadgeEl.textContent = `✨ ${metamagicTags.join(' • ')}`;
-          metaBadgeEl.className = 'text-[10px] text-purple-300 font-bold truncate';
-        } else {
-          metaBadgeEl.textContent = 'Metamagic: None';
-          metaBadgeEl.className = 'text-[10px] text-slate-500 truncate';
-        }
-      }
-
       // Top CL & Slot Badges and Collapsed Bar Summary
       const clBadge = document.getElementById('combat-spell-cl-slot-badge');
       const allSources = typeof getAvailableSpellSlotSources === 'function' ? getAvailableSpellSlotSources() : [];
@@ -2950,14 +2891,6 @@
       const spellSummary = document.getElementById('combat-spell-collapsed-summary');
       if (spellSummary) spellSummary.textContent = `CL: ${cl} • Slots Left: ${totalRemainingSlots}/${totalDailySlots}`;
 
-      // Spell Penetration feats calculation for SR check badge
-      const featsList = character?.feats || [];
-      const hasSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('spell penetration') && !(f.name || '').toLowerCase().includes('greater'));
-      const hasGrtSpellPen = featsList.some(f => (f.name || '').toLowerCase().includes('greater spell penetration'));
-      const srBonusFromFeats = hasGrtSpellPen ? 4 : (hasSpellPen ? 2 : 0);
-      const totalSrBonus = cl + srBonusFromFeats;
-      const srBadge = document.getElementById('sr-check-bonus-badge');
-      if (srBadge) srBadge.textContent = `+${totalSrBonus}`;
       const concDcHint = document.getElementById('defensive-casting-dc-hint');
       if (concDcHint) concDcHint.textContent = `DC ${15 + finalLvl} • No AoO`;
 
@@ -3892,27 +3825,9 @@
           if (gripSelect) gripSelect.value = '2-Hand';
         }
       }
-      syncCombatGripUI();
       renderWeaponSetsUI();
       recalculateOffense();
       saveStateToStorage();
-    }
-
-    function syncCombatGripUI() {
-      const gripSelect = document.getElementById('active-grip-select');
-      const grip = gripSelect?.value || '1-Hand';
-      const btn1h = document.getElementById('grip-btn-1h');
-      const btn2h = document.getElementById('grip-btn-2h');
-      
-      if (btn1h && btn2h) {
-        if (grip === '2-Hand') {
-          btn2h.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer bg-amber-500/30 text-amber-200 border border-amber-500/50 shadow-sm';
-          btn1h.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer text-slate-400 hover:text-white border border-transparent';
-        } else {
-          btn1h.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer bg-amber-500/30 text-amber-200 border border-amber-500/50 shadow-sm';
-          btn2h.className = 'px-2.5 py-0.5 rounded text-[10px] font-bold transition cursor-pointer text-slate-400 hover:text-white border border-transparent';
-        }
-      }
     }
 
     // --- WEAPON SETS SYSTEM (CARD 1 MAIN HAND, CARD 2 OFF-HAND) ---
@@ -4626,11 +4541,9 @@
         try {
           const paEl = document.getElementById('power-attack-val');
           const paVal = paEl ? (parseInt(paEl.value) || 0) : (Number(character.tactical?.powerAttack) || 0);
-          const flEl = document.getElementById('mod-flanking');
-          const flanking = flEl ? flEl.checked : !!(character.tactical?.flanking);
-          const chEl = document.getElementById('mod-charge');
-          const charge = chEl ? chEl.checked : !!(character.tactical?.charge);
-          const hg = document.getElementById('mod-higher-ground')?.checked ?? (character.tactical?.higherGround ?? false);
+          const flanking = !!(character.tactical?.flanking);
+          const charge = !!(character.tactical?.charge);
+          const hg = character.tactical?.higherGround ?? false;
           const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
           const nonChainMods = activeMods.filter(m => {
         if (!m || !m.name) return false;
@@ -5798,10 +5711,6 @@
           }
         }
       }
-
-      updateWeaponEditorEnhancementBadges();
-      renderWeaponSetModifierChips(1);
-      renderWeaponSetModifierChips(2);
     }
 
     function saveWeaponSetConfig(setNum) {
@@ -5884,40 +5793,11 @@
       if (typeof populateRangedWeaponAndAmmoUI === 'function') populateRangedWeaponAndAmmoUI();
       if (typeof renderBodySlotsSilhouette === 'function') renderBodySlotsSilhouette();
       if (typeof renderGearPoolTable === 'function') renderGearPoolTable();
-      updateWeaponEditorEnhancementBadges();
-      renderWeaponSetModifierChips(1);
-      renderWeaponSetModifierChips(2);
     }
 
     // =========================================================================
     // 📚 SPOTLIGHT TYPEAHEAD & PROGRESSIVE DISCLOSURE WEAPON SYSTEM (FAZ 4)
     // =========================================================================
-    const QUICK_WEAPON_BUFFS = [
-      { id: 'flaming', enhId: 'enh-flaming', icon: '🔥', activeClass: 'bg-rose-600/30 border-rose-500 text-rose-300 ring-1 ring-rose-500/50' },
-      { id: 'frost', enhId: 'enh-frost', icon: '❄️', activeClass: 'bg-sky-600/30 border-sky-500 text-sky-300 ring-1 ring-sky-500/50' },
-      { id: 'shock', enhId: 'enh-shock', icon: '⚡', activeClass: 'bg-amber-600/30 border-amber-500 text-amber-300 ring-1 ring-amber-500/50' },
-      { id: 'holy', enhId: 'enh-holy', icon: '✨', activeClass: 'bg-yellow-600/30 border-yellow-500 text-yellow-300 ring-1 ring-yellow-500/50' },
-      { id: 'unholy', enhId: 'enh-unholy', icon: '💀', activeClass: 'bg-purple-600/30 border-purple-500 text-purple-300 ring-1 ring-purple-500/50' },
-      { id: 'keen', enhId: 'enh-keen', icon: '🩸', activeClass: 'bg-red-600/40 border-red-500 text-red-200 ring-1 ring-red-500/60' }
-    ];
-
-    function getQuickBuffDef(propId) {
-      const buff = QUICK_WEAPON_BUFFS.find(b => b.id === propId || b.enhId === propId);
-      if (!buff) return null;
-      const compItem = (typeof SrdCompendium !== 'undefined' && SrdCompendium.getById)
-        ? SrdCompendium.getById(buff.enhId)
-        : null;
-      const firstDmg = compItem?.damageParts?.[0];
-      const fallbackName = buff.id.charAt(0).toUpperCase() + buff.id.slice(1);
-      return {
-        ...buff,
-        name: compItem?.name || fallbackName,
-        dice: firstDmg?.dice || (buff.id === 'holy' || buff.id === 'unholy' ? '2d6' : buff.id === 'keen' ? '' : '1d6'),
-        type: firstDmg?.type || (buff.id === 'flaming' ? 'Fire' : buff.id === 'frost' ? 'Cold' : buff.id === 'shock' ? 'Electricity' : buff.id === 'holy' ? 'Holy' : buff.id === 'unholy' ? 'Unholy' : 'Crit Range 2x'),
-        isKeen: buff.id === 'keen' || !!compItem?.ruleFlags?.keen
-      };
-    }
-
     function toggleSrdSpotlight(forceState = null) {
       const container = document.getElementById('srd-spotlight-container');
       const input = document.getElementById('srd-spotlight-input');
@@ -6187,173 +6067,6 @@
     window.onSrdSpotlightInput = onSrdSpotlightInput;
     window.selectSrdSpotlightWeapon = selectSrdSpotlightWeapon;
     window.addSrdCatalogItemToCharacter = selectSrdSpotlightWeapon;
-
-    function stepWeaponEnhancement(setNum, delta) {
-      ensureWeaponSetsData();
-      const sets = character?.tactical?.weaponSets;
-      if (!sets) return;
-      const setObj = setNum === 1 ? sets.set1 : sets.set2;
-      const wepName = setObj?.mainWeapon;
-      if (!wepName || wepName === 'None') return;
-
-      let wep = (character.weapons || []).find(w => w && w.name === wepName);
-      let poolItem = (character.gearPool || []).find(g => g && g.name === wepName);
-
-      if (!wep && poolItem && poolItem.category === 'Weapon') {
-        if (!character.weapons) character.weapons = [];
-        wep = {
-          name: poolItem.name,
-          grip: setObj?.grip || '1-Hand',
-          dice: poolItem.dice || '1d8',
-          critMin: poolItem.critMin || 20,
-          rawCritMin: poolItem.critMin || 20,
-          critMult: poolItem.critMult || 2,
-          attBonus: 0,
-          dmgBonus: 0,
-          bonusType: 'Enhancement',
-          elementalMods: [],
-          keen: false
-        };
-        character.weapons.push(wep);
-      }
-
-      if (wep) {
-        const cur = Number(wep.attBonus) || 0;
-        const next = Math.max(0, Math.min(5, cur + delta));
-        wep.attBonus = next;
-        wep.dmgBonus = next;
-        wep.bonusType = 'Enhancement';
-        if (poolItem) {
-          poolItem.attBonus = next;
-          poolItem.dmgBonus = next;
-        }
-      } else if (poolItem && (poolItem.category === 'Shield' || poolItem.category === 'Armor')) {
-        const cur = Number(poolItem.enhancementAc || poolItem.attBonus || 0);
-        const next = Math.max(0, Math.min(5, cur + delta));
-        poolItem.enhancementAc = next;
-        poolItem.acBonus = (poolItem.baseAc || poolItem.acBonus || 1) + next;
-      }
-
-      updateWeaponEditorEnhancementBadges();
-      try { renderWeaponSetsUI(); } catch (e) { reportError('char_combat:stepWeaponEnhancement', e); }
-      try { recalculateOffense(); } catch (e) { reportError('char_combat:stepWeaponEnhancement', e); }
-      saveStateToStorage(true);
-    }
-
-    function toggleWeaponElementalProperty(setNum, propId) {
-      ensureWeaponSetsData();
-      const sets = character?.tactical?.weaponSets;
-      if (!sets) return;
-      const setObj = setNum === 1 ? sets.set1 : sets.set2;
-      const wepName = setObj?.mainWeapon;
-      if (!wepName || wepName === 'None') return;
-
-      let wep = (character.weapons || []).find(w => w && w.name === wepName);
-      if (!wep) {
-        stepWeaponEnhancement(setNum, 0); // initialize weapon object
-        wep = (character.weapons || []).find(w => w && w.name === wepName);
-      }
-      if (!wep) return;
-
-      const propDef = getQuickBuffDef(propId);
-      if (!propDef) return;
-
-      if (propDef.isKeen) {
-        wep.keen = !wep.keen;
-        const rawMin = Number(wep.rawCritMin) || Number(wep.critMin) || 20;
-        wep.rawCritMin = rawMin;
-        if (wep.keen) {
-          // Double threat range per RAW: 20 -> 19-20 (range 2), 19-20 -> 17-20 (range 4), 18-20 -> 15-20 (range 6)
-          const range = 21 - rawMin;
-          wep.critMin = Math.max(12, 21 - (range * 2));
-        } else {
-          wep.critMin = rawMin;
-        }
-      } else {
-        if (!Array.isArray(wep.elementalMods)) wep.elementalMods = [];
-        const existingIdx = wep.elementalMods.findIndex(m => m.id === propId);
-        if (existingIdx >= 0) {
-          wep.elementalMods.splice(existingIdx, 1);
-        } else {
-          wep.elementalMods.push({
-            id: propDef.id,
-            name: propDef.name,
-            dice: propDef.dice,
-            type: propDef.type,
-            icon: propDef.icon
-          });
-        }
-      }
-
-      renderWeaponSetModifierChips(setNum);
-      try { renderWeaponSetsUI(); } catch (e) { reportError('char_combat:toggleWeaponElementalProperty', e); }
-      try { recalculateOffense(); } catch (e) { reportError('char_combat:toggleWeaponElementalProperty', e); }
-      saveStateToStorage(true);
-    }
-
-    function updateWeaponEditorEnhancementBadges() {
-      const sets = character?.tactical?.weaponSets;
-      if (!sets) return;
-
-      const s1Name = sets.set1?.mainWeapon;
-      const s2Name = sets.set2?.mainWeapon;
-
-      const s1Wep = (character.weapons || []).find(w => w && w.name === s1Name);
-      const s1Pool = (character.gearPool || []).find(g => g && g.name === s1Name);
-      const s1Bonus = s1Wep ? (s1Wep.attBonus || 0) : (s1Pool?.enhancementAc || s1Pool?.attBonus || 0);
-
-      const s2Wep = (character.weapons || []).find(w => w && w.name === s2Name);
-      const s2Pool = (character.gearPool || []).find(g => g && g.name === s2Name);
-      const s2Bonus = s2Wep ? (s2Wep.attBonus || 0) : (s2Pool?.enhancementAc || s2Pool?.attBonus || 0);
-
-      const b1 = document.getElementById('set1-enhancement-badge');
-      if (b1) b1.textContent = s1Bonus > 0 ? `+${s1Bonus}` : '+0';
-
-      const b2 = document.getElementById('set2-enhancement-badge');
-      if (b2) b2.textContent = s2Bonus > 0 ? `+${s2Bonus}` : '+0';
-    }
-
-    function renderWeaponSetModifierChips(setNum) {
-      const containerId = setNum === 1 ? 'set1-elemental-chips-container' : 'set2-elemental-chips-container';
-      const container = document.getElementById(containerId);
-      if (!container) return;
-
-      const sets = character?.tactical?.weaponSets;
-      const setObj = setNum === 1 ? sets?.set1 : sets?.set2;
-      const wepName = setObj?.mainWeapon;
-
-      if (!wepName || wepName === 'None') {
-        container.innerHTML = '<span class="text-[10px] text-slate-500 italic">No equipment selected.</span>';
-        return;
-      }
-
-      const wep = (character.weapons || []).find(w => w && w.name === wepName);
-      const activeMods = Array.isArray(wep?.elementalMods) ? wep.elementalMods : [];
-      const isKeen = !!wep?.keen;
-
-      container.innerHTML = QUICK_WEAPON_BUFFS.map(buff => {
-        const prop = getQuickBuffDef(buff.id);
-        if (!prop) return '';
-        let isActive = false;
-        if (prop.isKeen) {
-          isActive = isKeen;
-        } else {
-          isActive = activeMods.some(m => m.id === prop.id || m.enhId === prop.enhId);
-        }
-
-        const badgeClass = isActive
-          ? prop.activeClass
-          : 'bg-slate-950/80 border-slate-700/80 text-slate-400 hover:text-slate-200 hover:border-slate-600';
-
-        const label = prop.dice ? `${prop.icon} ${prop.name} (+${prop.dice})` : `${prop.icon} ${prop.name}`;
-
-        return `
-          <button type="button" data-action="combat:weapon-elemental-toggle" data-set-num="${setNum}" data-prop-id="${prop.id}" class="px-2 py-0.5 rounded text-[10px] font-bold border transition flex items-center gap-1 cursor-pointer select-none ${badgeClass}">
-            <span>${label}</span>
-          </button>
-        `;
-      }).join('');
-    }
 
     function hasFlurryAbility(char) {
       if (!char) return false;
@@ -7096,28 +6809,11 @@
       if (!character.tactical) character.tactical = {};
       ensureAmmunitionInventory();
 
-      const weaponSelect = document.getElementById('combat-active-ranged-weapon-select');
-      const weaponIcon = document.getElementById('combat-ranged-weapon-icon');
       const ammoSelect = document.getElementById('combat-ranged-arrow-select');
       const ammoIcon = document.getElementById('combat-ammo-icon');
       const ammoTitle = document.getElementById('combat-ammo-title');
 
-      const allRanged = findAvailableRangedWeapons(character);
       const activeWep = getActiveCombatRangedWeapon(character);
-
-      // Populate Ranged Weapon Dropdown
-      if (weaponSelect) {
-        weaponSelect.innerHTML = allRanged.map(w => {
-          const isSel = w.name === activeWep.name;
-          const badge = w.source.includes('Inventory') || w.source.includes('Equipped') ? '🎒 ' : '';
-          return `<option value="${UI.escapeAttr(w.name)}" ${isSel ? 'selected' : ''}>${badge}${UI.escapeHtml(w.name)} (${w.dice} • ${UI.escapeHtml(w.range)})</option>`;
-        }).join('');
-      }
-
-      if (weaponIcon) {
-        const at = activeWep.ammoType;
-        weaponIcon.textContent = at === 'thrown' ? '🗡️' : (at === 'bullet' ? '🪨' : '🏹');
-      }
 
       // Determine Ammunition Type
       const ammoType = activeWep.ammoType || 'arrow';
@@ -8033,11 +7729,9 @@
       const hasOversizedWeaponFeat = RuleEngine ? RuleEngine.hasOversizedWeaponFeat(character) : false;
       const paEl = document.getElementById('power-attack-val');
       const paVal = paEl ? (parseInt(paEl.value) || 0) : (Number(character.tactical?.powerAttack) || 0);
-      const flEl = document.getElementById('mod-flanking');
-      const flanking = flEl ? flEl.checked : !!(character.tactical?.flanking);
-      const chEl = document.getElementById('mod-charge');
-      const charge = chEl ? chEl.checked : !!(character.tactical?.charge);
-      const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
+      const flanking = !!(character.tactical?.flanking);
+      const charge = !!(character.tactical?.charge);
+      const hg = character.tactical?.higherGround ?? false;
 
       const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
       const sets = character.tactical?.weaponSets;
@@ -8288,82 +7982,8 @@
 
     function recalculateOffense() {
       if (window._combatOffenseMode === 'ranged') {
-        const t = character.tactical || {};
-        const selArrow = t.selectedArrow || 'standard';
-        const activeRangedWep = getActiveCombatRangedWeapon(character);
-        const at = activeRangedWep.ammoType || 'arrow';
-        const strMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.str || 10) : 0;
-        const dexMod = RuleEngine ? RuleEngine.getAbilityMod(character.abilities?.dex || 10) : 3;
-
-        const hasPBS = characterHasFeat(character, 'Point Blank');
-        const hasMany = characterHasFeat(character, 'Manyshot');
-        const hasSneak = characterHasSneakAttack(character);
-
-        let arrowDmgBonus = 0;
-        let arrowExtraDice = '';
-        let arrowType = activeRangedWep.dmgType || 'Piercing';
-
-        if (selArrow === 'plus1') arrowDmgBonus = 1;
-        else if (selArrow === 'plus2') arrowDmgBonus = 2;
-        else if (selArrow === 'silver') arrowDmgBonus = -1;
-        else if (selArrow === 'fire') arrowExtraDice = ' + 1d6 (Fire)';
-        else if (selArrow === 'acid') arrowExtraDice = ' + 1d6 (Acid)';
-        else if (selArrow === 'shock') arrowExtraDice = ' + 1d6 (Electricity)';
-        else if (selArrow === 'blunt') arrowType = 'Bludgeoning';
-
-        let flatDmg = arrowDmgBonus;
-        const qualifiedRanged = typeof getQualifiedRangedModifiersList === 'function' ? getQualifiedRangedModifiersList() : [];
-        qualifiedRanged.forEach(m => {
-          if (m && m.active) {
-            if (m.bonusDmg) flatDmg += Number(m.bonusDmg);
-            if (m.dice) arrowExtraDice = arrowExtraDice ? `${arrowExtraDice} + ${m.dice}` : ` + ${m.dice}`;
-          }
-        });
-        if (at === 'thrown' && strMod > 0) flatDmg += strMod;
-
-        let extraDice = arrowExtraDice;
-
-        let rawDice = activeRangedWep.dice || '1d8';
-        if (selArrow === 'stone' && at === 'bullet') rawDice = '1d3';
-
-        let baseDice = rawDice;
-        if (t.manyshot && hasMany) {
-          if (rawDice === '1d8') baseDice = '2d8';
-          else if (rawDice === '1d6') baseDice = '2d6';
-          else if (rawDice === '1d10') baseDice = '2d10';
-          else if (rawDice === '1d4') baseDice = '2d4';
-        }
-
-        const flatStr = flatDmg !== 0 ? (flatDmg > 0 ? `+${flatDmg}` : `${flatDmg}`) : '';
-        const dmgText = `${baseDice}${flatStr}${extraDice}`;
-
-        const dmgDisplayEl = document.getElementById('weapon-damage-formula-display');
-        if (dmgDisplayEl) dmgDisplayEl.textContent = dmgText;
-
-        const critDisplayEl = document.getElementById('weapon-crit-display');
-        const critText = activeRangedWep.crit || (activeRangedWep.critMin ? `${activeRangedWep.critMin}-20 / x${activeRangedWep.critMult || 2}` : '20 / x3');
-        if (critDisplayEl) {
-          critDisplayEl.textContent = critText;
-          critDisplayEl.title = `Critical Threat: ${critText} (${activeRangedWep.name || 'Ranged'})`;
-        }
-
-        const typeDisplayEl = document.getElementById('weapon-type-display');
-        if (typeDisplayEl) typeDisplayEl.textContent = arrowType;
-
-        const badge = document.getElementById('weapon-stat-override-badge');
-        if (badge) {
-          badge.textContent = `🏹 DEX (+${dexMod}) • ${activeRangedWep.name} (${activeRangedWep.range || 'Ranged'})`;
-          badge.className = 'text-[10px] font-semibold text-amber-400 text-right truncate max-w-[260px]';
-        }
-
         const attackChain = computeCombatAttackChain(character);
         window.currentCombatAttackChain = attackChain;
-
-        const iterDisplayEl = document.getElementById('iteratives-display');
-        if (iterDisplayEl) {
-          iterDisplayEl.textContent = attackChain.map(b => `${b.label}: ${b.bonus >= 0 ? '+' : ''}${b.bonus}`).join(' / ');
-        }
-
         const atkRowContainer = document.getElementById('attack-buttons-row-container');
         if (atkRowContainer) {
           const isLocked = !!character.tactical?.totalDefense;
@@ -8440,58 +8060,8 @@
       } else if (isTwoHand && !hasOversized && gripSelect && gripSelect.value !== '2-Hand') {
         gripSelect.value = '2-Hand';
       }
-      if (typeof syncCombatGripUI === 'function') syncCombatGripUI();
 
       const grip = (isDualSets && (!isTwoHand || isDoubleWep || hasOversized)) ? '1-Hand' : (gripSelect?.value || '1-Hand');
-      const paEl = document.getElementById('power-attack-val');
-      const paVal = paEl ? (parseInt(paEl.value) || 0) : (Number(character.tactical?.powerAttack) || 0);
-      const flEl = document.getElementById('mod-flanking');
-      const flanking = flEl ? flEl.checked : !!(character.tactical?.flanking);
-      const chEl = document.getElementById('mod-charge');
-      const charge = chEl ? chEl.checked : !!(character.tactical?.charge);
-      const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
-
-      const activeMods = (character.activeModifiers || []).filter(m => m && m.active);
-      const nonChainMods = activeMods.filter(m => {
-        if (!m || !m.name) return false;
-        if (m.name.includes('TWF') || m.name.includes('Flurry')) return false;
-        if (m.combatScope === 'ranged' || m.scope === 'Ranged Only') return false;
-        return true;
-      });
-
-      const evalResult = RuleEngine.evaluateWeaponAttack(character, wep, {
-        grip,
-        powerAttack: paVal,
-        flanking,
-        charge,
-        higherGround: hg,
-        activeStance: character.activeStance || 'None',
-        customModifiers: nonChainMods
-      });
-
-      // Update Weapon Base Stats (Base Damage + V2 damageParts + Stance/Maneuver extra dice)
-      const dmgDisplayEl = document.getElementById('weapon-damage-formula-display');
-      if (dmgDisplayEl) {
-        const activeDiceMods = (character.activeModifiers || []).filter(m => m.active && m.dice && m.combatScope !== 'ranged' && m.scope !== 'Ranged Only');
-        let extraDiceStr = '';
-        if (activeDiceMods.length > 0) {
-          extraDiceStr = ' + ' + activeDiceMods.map(m => `${m.dice} (${m.name})`).join(' + ');
-        }
-        const v2SecondaryParts = Array.isArray(evalResult.damageParts) && evalResult.damageParts.length > 1
-          ? evalResult.damageParts.slice(1).filter(p => p && p.dice && !p.onCritOnly)
-          : [];
-        if (v2SecondaryParts.length > 0) {
-          extraDiceStr += ' + ' + v2SecondaryParts.map(p => `${p.dice} (${p.source || p.type || 'Element'})`).join(' + ');
-        } else if (Array.isArray(wep.elementalMods) && wep.elementalMods.length > 0) {
-          extraDiceStr += ' + ' + wep.elementalMods.map(em => `${em.dice} (${em.name || em.type})`).join(' + ');
-        }
-        const baseDmgStr = evalResult.baseDice + (evalResult.netFlatDamage >= 0 ? '+' : '') + evalResult.netFlatDamage;
-        if (evalResult.chargeMultiplier > 1) {
-          dmgDisplayEl.textContent = `${evalResult.baseDice}+${evalResult.netFlatDamage} (Charge: x${evalResult.chargeMultiplier})${extraDiceStr}`;
-        } else {
-          dmgDisplayEl.textContent = baseDmgStr + extraDiceStr;
-        }
-      }
 
       // Render V2 Embedded Weapon Modes Strip if the active weapon has modes[]
       const modesStripEl = document.getElementById('combat-weapon-modes-strip');
@@ -8513,42 +8083,8 @@
         }
       }
 
-      const critDisplayEl = document.getElementById('weapon-crit-display');
-      if (critDisplayEl) {
-        let critText = (evalResult.critMin === 20 ? '20' : evalResult.critMin + '-20') + ' / x' + evalResult.critMult;
-        if (evalResult.critData?.capped) {
-          critText += ' (Cap)';
-        }
-        critDisplayEl.textContent = critText;
-        critDisplayEl.title = `Critical Threat: ${evalResult.critThreatRangeDisplay} / x${evalResult.critMult}`;
-      }
-
-      const typeDisplayEl = document.getElementById('weapon-type-display');
-      if (typeDisplayEl) typeDisplayEl.textContent = evalResult.damageType;
-
       const attackChain = computeCombatAttackChain(character);
       window.currentCombatAttackChain = attackChain;
-
-      const iterDisplayEl = document.getElementById('iteratives-display');
-      if (iterDisplayEl) {
-        iterDisplayEl.textContent = attackChain.map(b => `${b.label}: ${b.bonus >= 0 ? '+' : ''}${b.bonus}`).join(' / ');
-      }
-
-      // Weapon Stat & Size Override indicator
-      const badge = document.getElementById('weapon-stat-override-badge');
-      if (badge) {
-        if (evalResult.sizeSteps > 0) {
-          const sourcesText = evalResult.sizeBuffSources?.join(', ') || `+${evalResult.sizeSteps} Size`;
-          badge.textContent = `✨ Size Increase: ${evalResult.rawBaseDice} ➔ ${evalResult.baseDice} (${sourcesText})`;
-          badge.className = 'text-[10px] font-semibold text-purple-400 text-right';
-        } else if (evalResult.attackStatName.includes('Weapon Finesse')) {
-          badge.textContent = `✨ Weapon Finesse: DEX (+${evalResult.attackStatMod}) active`;
-          badge.className = 'text-[10px] font-semibold text-emerald-400 text-right';
-        } else {
-          badge.textContent = `⚔️ Using ${evalResult.attackStatName} (+${evalResult.attackStatMod})`;
-          badge.className = 'text-[10px] font-semibold text-slate-400 text-right';
-        }
-      }
 
       // PA explanation
       const paExplanation = document.getElementById('pa-explanation');
@@ -10286,24 +9822,12 @@
         console.warn('renderSpecialDefenses error:', err);
       }
 
-      // 1. Round Tracker
-      const roundEl = document.getElementById('combat-round-val');
-      if (roundEl) roundEl.textContent = character.tactical.round || 1;
-
-      // 2. Defense Column Live AC & Vitals
+      // Defense Column Live AC & Vitals
       const acNormal = document.getElementById('cockpit-ac-normal');
       const acTouch = document.getElementById('cockpit-ac-touch');
       const acFlat = document.getElementById('cockpit-ac-flat');
 
       const ce = character.tactical.combatExpertise || 0;
-      const fd = character.tactical.fightingDefensively || false;
-      const td = character.tactical.totalDefense || false;
-
-      const skillList = Array.isArray(character.skills) ? character.skills : Object.values(character.skills || {});
-      const tumbleSkill = skillList.find(s => s && s.name && s.name.toLowerCase() === 'tumble');
-      const tumbleRanks = tumbleSkill ? (Number(tumbleSkill.ranks) || 0) : 0;
-      const fdDodge = tumbleRanks >= 5 ? 3 : 2;
-      const tdDodge = tumbleRanks >= 5 ? 6 : 4;
 
       // Stance dodge bonuses (Combat Expertise, Fighting Defensively, Total Defense) are applied by
       // RuleEngine.recalculateCharacter from character.tactical; this view only displays acBreakdown.
@@ -10330,31 +9854,6 @@
       // Stepper & Toggles
       const ceValEl = document.getElementById('combat-expertise-val');
       if (ceValEl) ceValEl.textContent = ce;
-      const fdInput = document.getElementById('toggle-fighting-defensively');
-      if (fdInput) fdInput.checked = fd;
-      const tdInput = document.getElementById('toggle-total-defense');
-      if (tdInput) tdInput.checked = td;
-
-      // Update Tumble synergy label notes
-      const fdExp = document.getElementById('fd-explanation');
-      if (fdExp) fdExp.textContent = `-4 Atk / +${fdDodge} AC ${tumbleRanks >= 5 ? '(Tumble 5+)' : ''}`;
-      const tdExp = document.getElementById('td-explanation');
-      if (tdExp) tdExp.textContent = `+${tdDodge} AC ${tumbleRanks >= 5 ? '(Tumble 5+)' : ''} • No Attacks`;
-
-      // Attack Button Locked State if Total Defense
-      const atkBtn = document.getElementById('main-attack-roll-btn');
-      const atkBtnText = document.getElementById('main-attack-btn-text');
-      if (atkBtn && atkBtnText) {
-        if (td) {
-          atkBtn.disabled = true;
-          atkBtn.className = 'w-full py-3 bg-slate-800 text-slate-400 font-bold text-xs md:text-sm rounded-xl border border-slate-700 cursor-not-allowed opacity-75';
-          atkBtnText.textContent = '🛡️ ATTACK LOCKED (TOTAL DEFENSE ACTIVE)';
-        } else {
-          atkBtn.disabled = false;
-          atkBtn.className = 'w-full py-3 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-500 hover:to-rose-600 text-white font-black text-sm md:text-base rounded-xl shadow-lg border border-red-400/40 flex items-center justify-center gap-2 transition transform active:scale-[0.98]';
-          atkBtnText.textContent = 'ROLL ATTACK';
-        }
-      }
 
       // Combat Skills card (4 Core Defaults + User-Pinned Skills)
       try { renderCombatSkillsCard(); } catch (e) { console.error('renderCombatSkillsCard error:', e); }
@@ -10373,7 +9872,6 @@
       // 3. Offense Column: Weapon Sets, Off-Hand Selector & TWF
       try { renderWeaponSetsUI(); } catch (e) { console.error('renderWeaponSetsUI error:', e); }
       try { renderOffHandSelector(); } catch (e) { console.error('renderOffHandSelector error:', e); }
-      try { syncCombatGripUI(); } catch (e) { console.error('syncCombatGripUI error:', e); }
       try { renderSavedProfiles(); } catch (e) { console.error('renderSavedProfiles error:', e); }
       try { renderOffenseModifiersGrid(); } catch (e) { console.error('renderOffenseModifiersGrid error:', e); }
       try { recalculateOffense(); } catch (e) { console.error('recalculateOffense error:', e); }
@@ -10415,21 +9913,6 @@
         select.value = 'None';
         select.disabled = true;
         character.activeOffHand = 'None';
-
-        const modeBadge = document.getElementById('offhand-slot-mode-badge');
-        const statusMain = document.getElementById('offhand-status-main');
-        const statusDetail = document.getElementById('offhand-status-detail');
-        if (modeBadge) {
-          modeBadge.textContent = '🔒 Two-Handed Weapon';
-          modeBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-950/60 text-amber-400 border border-amber-800';
-        }
-        if (statusMain) statusMain.textContent = 'Off-Hand Locked';
-        if (statusDetail) {
-          statusDetail.textContent = `🔒 Main-hand "${currentMainWep}" is wielded two-handed`;
-          statusDetail.className = 'text-[10px] font-semibold text-slate-400';
-        }
-        const twfBadge = document.getElementById('twf-bonus-badge');
-        if (twfBadge) twfBadge.classList.add('hidden');
         return;
       }
 
@@ -10458,74 +9941,6 @@
           select.appendChild(opt);
         }
       });
-
-      // Update Slot 2 Status Cards (Dual Equip Slots)
-      const modeBadge = document.getElementById('offhand-slot-mode-badge');
-      const statusMain = document.getElementById('offhand-status-main');
-      const statusDetail = document.getElementById('offhand-status-detail');
-
-      if (currentVal === 'None' || !currentVal) {
-        if (modeBadge) {
-          modeBadge.textContent = 'Free Hand';
-          modeBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-950 text-slate-400 border border-slate-800';
-        }
-        if (statusMain) statusMain.textContent = 'None / Empty';
-        if (statusDetail) {
-          statusDetail.textContent = '🖐️ Free Hand (Spell & Maneuver Ready)';
-          statusDetail.className = 'text-[10px] font-semibold text-slate-400';
-        }
-      } else {
-        const offHandItem = character.bodySlots?.offHand;
-        const isShield = offHandItem && offHandItem.name === currentVal && (offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield')));
-        if (isShield) {
-          if (modeBadge) {
-            modeBadge.textContent = '🛡️ Shield Equipped';
-            modeBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-950/60 text-emerald-300 border border-emerald-700/50';
-          }
-          if (statusMain) statusMain.textContent = `Shield: ${offHandItem.name}`;
-          const acBonus = offHandItem.armorBonus || offHandItem.shieldBonus || (offHandItem.name.includes('+1') ? 2 : 1);
-          if (statusDetail) {
-            statusDetail.textContent = `🛡️ +${acBonus} AC Shield Bonus Active`;
-            statusDetail.className = 'text-[10px] font-semibold text-emerald-400';
-          }
-        } else {
-          // Off-hand weapon
-          const secondWep = (character.weapons || []).find(w => w.name === currentVal);
-          if (modeBadge) {
-            modeBadge.textContent = '⚔️ Off-Hand Weapon (TWF)';
-            modeBadge.className = 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-700/50';
-          }
-          if (statusMain) statusMain.textContent = `Weapon: ${currentVal}`;
-          const dmgDice = secondWep?.damage || '1d4';
-          const crit = secondWep?.crit || '19-20/x2';
-          if (statusDetail) {
-            statusDetail.textContent = `⚔️ Off-Hand: ${dmgDice} (${crit})`;
-            statusDetail.className = 'text-[10px] font-semibold text-cyan-300';
-          }
-        }
-      }
-
-      // TWF Summary Badge
-      const twfBadge = document.getElementById('twf-bonus-badge');
-      if (twfBadge) {
-        const isTWFActive = (character.activeModifiers || []).some(m => m.active && m.name.includes('TWF'));
-        if (isTWFActive) {
-          twfBadge.classList.remove('hidden');
-          const offHandItem = character.bodySlots?.offHand;
-          const isShield = offHandItem && offHandItem.name === currentVal && (offHandItem.category === 'Shield' || (offHandItem.desc && offHandItem.desc.toLowerCase().includes('shield')));
-          const hasImpShieldBash = (character.feats || []).some(f => (typeof f === 'string' ? f : f.name).toLowerCase().includes('improved shield bash'));
-          const hasAgileShield = Boolean(character.ruleFlags?.agileShieldFighter) || (character.feats || []).some(f => (typeof f === 'string' ? f : f.name).toLowerCase().includes('agile shield fighter'));
-          let shieldWarning = '';
-          if (isShield && !hasImpShieldBash) {
-            shieldWarning = ' • ⚠️ Shield AC temporarily suppressed this round when bashing (RAW PHB p.125)';
-          } else if (isShield && hasAgileShield) {
-            shieldWarning = ' • 🛡️ Agile Shield Fighter (-2 / -2 Shield Bash + Weapon)';
-          }
-          twfBadge.innerHTML = `⚔️ Two-Weapon Fighting Active: Main Hand (Gold) • Off-Hand (Cyan)${shieldWarning}`;
-        } else {
-          twfBadge.classList.add('hidden');
-        }
-      }
     }
 
     function onOffHandChange() {
@@ -11463,9 +10878,6 @@
             </div>
           `;
         }
-
-        const grandValEl = document.getElementById('result-grand-total-val');
-        if (grandValEl) grandValEl.textContent = `${totalDmg} Damage`;
       }
 
       showDiceTopToast({
@@ -11518,8 +10930,6 @@
           notes = outcome.notes;
         }
         nextRound = Number(outcome?.round || character?.tactical?.round || 1);
-        const cBox = document.getElementById('mod-charge');
-        if (cBox && !character?.tactical?.charge) cBox.checked = false;
         if (typeof updateActionEconomyUI === 'function') updateActionEconomyUI();
         renderAll();
       } else {
@@ -11535,8 +10945,6 @@
         }
         if (character.tactical.charge) {
           character.tactical.charge = false;
-          const cBox = document.getElementById('mod-charge');
-          if (cBox) cBox.checked = false;
           notes.push('Charge AC penalty cleared');
         }
         saveStateToStorage(false);
@@ -11627,9 +11035,9 @@
       if (previewEl) {
         if (!isRanged) {
           const pa = parseInt(document.getElementById('power-attack-val')?.value) || 0;
-          const fl = document.getElementById('mod-flanking')?.checked ?? false;
-          const ch = document.getElementById('mod-charge')?.checked ?? false;
-          const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
+          const fl = !!(character.tactical?.flanking);
+          const ch = !!(character.tactical?.charge);
+          const hg = character.tactical?.higherGround ?? false;
           const activeMods = (character.activeModifiers || []).filter(m => m.active);
 
           const summary = buildProfileSummary(pa, fl, ch, hg, activeMods);
@@ -11687,9 +11095,9 @@
 
       if (!isRanged) {
         const pa = parseInt(document.getElementById('power-attack-val')?.value) || 0;
-        const fl = document.getElementById('mod-flanking')?.checked ?? false;
-        const ch = document.getElementById('mod-charge')?.checked ?? false;
-        const hg = document.getElementById('mod-higher-ground') ? document.getElementById('mod-higher-ground').checked : (character.tactical?.higherGround ?? false);
+        const fl = !!(character.tactical?.flanking);
+        const ch = !!(character.tactical?.charge);
+        const hg = character.tactical?.higherGround ?? false;
         const activeMods = (character.activeModifiers || []).filter(m => m.active);
         newProf.powerAttack = pa;
         newProf.flanking = fl;
@@ -11747,15 +11155,6 @@
       if (!isRanged) {
         const paInput = document.getElementById('power-attack-val');
         if (paInput) paInput.value = prof.powerAttack || 0;
-
-        const flInput = document.getElementById('mod-flanking');
-        if (flInput) flInput.checked = !!prof.flanking;
-
-        const chInput = document.getElementById('mod-charge');
-        if (chInput) chInput.checked = !!prof.charge;
-
-        const hgInput = document.getElementById('mod-higher-ground');
-        if (hgInput) hgInput.checked = !!prof.higherGround;
 
         (character.activeModifiers || []).forEach(m => {
           m.active = (prof.activeModifiers || []).includes(m.name);
@@ -15273,12 +14672,6 @@
       Actions.register('combat:weapon-set-activate', (el, data, _event) => {
         const setNum = Number(data.setNum);
         if (setNum === 1 || setNum === 2) activateWeaponSet(setNum);
-      });
-      Actions.register('combat:weapon-elemental-toggle', (el, data, _event) => {
-        const setNum = Number(data.setNum);
-        if ((setNum === 1 || setNum === 2) && data.propId) {
-          toggleWeaponElementalProperty(setNum, data.propId);
-        }
       });
       Actions.register('combat:melee-fixed-toggle', (el, data, _event) => {
         if (data.modKey) toggleFixedMeleeModifier(data.modKey);

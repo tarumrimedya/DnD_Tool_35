@@ -4566,11 +4566,7 @@ Return valid JSON only matching:
   async queryAiRule() {
     const queryInput = document.getElementById('ai-rule-query');
     const catSelect = document.getElementById('ai-rule-category');
-    const statusBox = document.getElementById('ai-rule-status');
-    const statusText = document.getElementById('ai-rule-status-text');
     const resultsContainer = document.getElementById('ai-results-container');
-    const resultsWrapper = document.getElementById('ai-results-wrapper');
-    const btn = document.getElementById('ai-rule-btn');
 
     let query = queryInput ? queryInput.value.trim() : '';
     let categoryHint = catSelect ? catSelect.value : 'ALL';
@@ -4618,15 +4614,6 @@ Return valid JSON only matching:
     if (localFound.length > 0) {
       this.lastAiResults = localFound;
       this.renderAiResults();
-      if (resultsWrapper) resultsWrapper.classList.remove('hidden');
-      if (statusBox) statusBox.classList.remove('hidden');
-      const dbInfo = this.getExistingSiteDbInfo(localFound[0]);
-      if (statusText) {
-        statusText.innerHTML = dbInfo.exists
-          ? `✅ <b>"${RuleMaster.escapeHtml(localFound[0].name)}"</b> already exists in the site database (<b>${dbInfo.sourceLabel}</b>). Direct duplicate addition is locked — click <b>Change &amp; Add</b> to customize and save a modified version.`
-          : `⚡ <b>"${RuleMaster.escapeHtml(localFound[0].name)}"</b> assembled instantaneously via V2 Item Assembler (0 ms, Zero Tokens).`;
-      }
-      if (btn) btn.disabled = false;
       return;
     }
 
@@ -4637,14 +4624,10 @@ Return valid JSON only matching:
       return;
     }
 
-    if (btn) btn.disabled = true;
-    if (statusBox) statusBox.classList.remove('hidden');
-    if (statusText) statusText.textContent = `Searching "${query}" and verifying against D&D 3.5e RAW library...`;
     if (resultsContainer) resultsContainer.innerHTML = '';
-    if (resultsWrapper) resultsWrapper.classList.add('hidden');
 
     try {
-      const entries = await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, statusText);
+      const entries = await this.fetchSingleAiRuleObjects(query, categoryHint, apiKey, null);
 
       if (!entries || !entries.length) {
         throw new Error(`No official D&D 3.5e rule or item found for "${query}".`);
@@ -4652,13 +4635,9 @@ Return valid JSON only matching:
 
       this.lastAiResults = entries;
       this.renderAiResults();
-      if (resultsWrapper) resultsWrapper.classList.remove('hidden');
     } catch (err) {
       console.error(err);
       notify(`Error: ${err.message}`, 'error');
-    } finally {
-      if (btn) btn.disabled = false;
-      if (statusBox) statusBox.classList.add('hidden');
     }
   },
 
@@ -4788,10 +4767,10 @@ Return valid JSON only matching:
   },
 
   async importMultipleFromAi() {
-    const input = document.getElementById('ai-bulk-import-input') || document.getElementById('ai-batch-query');
-    const btn = document.getElementById('ai-bulk-import-btn') || document.getElementById('btn-ai-batch-search');
-    const statusBox = document.getElementById('ai-rule-status') || document.getElementById('ai-batch-status');
-    const statusText = document.getElementById('ai-rule-status-text') || document.getElementById('ai-batch-status-text');
+    const input = document.getElementById('ai-batch-query');
+    const btn = document.getElementById('btn-ai-batch-search');
+    const statusBox = document.getElementById('ai-batch-status');
+    const statusText = document.getElementById('ai-batch-status-text');
 
     if (!input || !input.value.trim()) {
       notify('Please enter the rules you want to import, separated by commas or newlines.', 'error');
@@ -8127,8 +8106,6 @@ Return valid JSON only matching:
     const entries = this.convertRowsToEntries(rowsOrEntries).map(e => this.ensureV2(e));
     this.lastAiResults = entries;
     this.renderAiResults();
-    const resultsWrapper = document.getElementById('ai-results-wrapper');
-    if (resultsWrapper) resultsWrapper.classList.remove('hidden');
   },
 
   async queryInlineAiFreeText() {
@@ -8807,16 +8784,6 @@ Allowed recommendedAction values: "KEEP" | "MODIFY" | "REMOVE".`;
 };
 
 if (typeof document !== 'undefined') {
-  document.addEventListener('click', (e) => {
-    const menu = document.getElementById('mdb-add-dropdown-menu');
-    const btn = document.getElementById('btn-add-rule-dropdown');
-    if (menu && !menu.classList.contains('hidden')) {
-      if (btn && !btn.contains(e.target) && !menu.contains(e.target)) {
-        menu.classList.add('hidden');
-      }
-    }
-  });
-
   // Preserve multi-line structure when pasting multi-line ability stat blocks into single-line Rule Master search inputs
   document.addEventListener('paste', (e) => {
     const target = e.target;

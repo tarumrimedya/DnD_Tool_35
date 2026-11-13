@@ -1858,13 +1858,10 @@
     }
 
     function updateCampaignNavButton() {
-      const btnText = document.getElementById('btn-join-campaign-text');
       const badge = window._modalsMounted !== false ? document.getElementById('settings-campaign-badge') : null;
       if (character?.campaignInviteCode) {
-        if (btnText) btnText.textContent = character.campaignInviteCode;
         if (badge) badge.textContent = character.campaignInviteCode;
       } else {
-        if (btnText) btnText.textContent = 'Campaign';
         if (badge) badge.textContent = 'Not Linked';
       }
     }
@@ -2055,11 +2052,6 @@
         babSaveSel.value = character?.settings?.babSaveSystem || 'standard';
       }
 
-      const pinLimitSel = document.getElementById('setting-pin-drawer-limit');
-      if (pinLimitSel) {
-        pinLimitSel.value = character?.settings?.pinDrawerLimit || 5;
-      }
-
       // Populate Rule Sources and Splatbooks Catalog
       if (window.RuleMaster && typeof RuleMaster.renderSourcesCatalog === 'function') {
         RuleMaster.renderSourcesCatalog();
@@ -2128,9 +2120,6 @@
     function updateActionEconomyUI() {
       if (!character.tactical) character.tactical = {};
       if (!character.tactical.spentActions) character.tactical.spentActions = {};
-
-      const roundEl = document.getElementById('action-economy-round');
-      if (roundEl) roundEl.textContent = character.tactical.round || 1;
 
       const spent = character.tactical.spentActions;
       
@@ -2824,9 +2813,9 @@
       if (typeof RuleEngine !== 'undefined' && RuleEngine.recalculateCharacter) {
         try {
           const ceVal = character.tactical?.combatExpertise !== undefined ? character.tactical.combatExpertise : (parseInt(document.getElementById('combat-expertise-val')?.textContent) || 0);
-          const fdVal = character.tactical?.fightingDefensively !== undefined ? character.tactical.fightingDefensively : (document.getElementById('toggle-fighting-defensively')?.checked || false);
-          const tdVal = character.tactical?.totalDefense !== undefined ? character.tactical.totalDefense : (document.getElementById('toggle-total-defense')?.checked || false);
-          const chargeVal = character.tactical?.charge !== undefined ? character.tactical.charge : (document.getElementById('mod-charge')?.checked || false);
+          const fdVal = character.tactical?.fightingDefensively !== undefined ? character.tactical.fightingDefensively : false;
+          const tdVal = character.tactical?.totalDefense !== undefined ? character.tactical.totalDefense : false;
+          const chargeVal = character.tactical?.charge !== undefined ? character.tactical.charge : false;
 
           const tacticalOpts = {
             combatExpertise: ceVal,
@@ -3066,16 +3055,16 @@
       try {
         const ceVal = character.tactical?.combatExpertise !== undefined 
           ? character.tactical.combatExpertise 
-          : (parseInt(document.getElementById('defense-combat-expertise-val')?.value || document.getElementById('combat-expertise-val')?.textContent) || 0);
+          : (parseInt(document.getElementById('combat-expertise-val')?.textContent) || 0);
         const fdVal = character.tactical?.fightingDefensively !== undefined
           ? character.tactical.fightingDefensively
-          : (document.getElementById('toggle-fighting-defensively')?.checked || document.getElementById('mod-defensive-fighting')?.checked || false);
+          : false;
         const tdVal = character.tactical?.totalDefense !== undefined
           ? character.tactical.totalDefense
-          : (document.getElementById('toggle-total-defense')?.checked || document.getElementById('mod-total-defense')?.checked || false);
+          : false;
         const chargeVal = character.tactical?.charge !== undefined
           ? character.tactical.charge
-          : (document.getElementById('mod-charge')?.checked || false);
+          : false;
 
         if (typeof RuleEngine !== 'undefined' && RuleEngine.evaluateAC) {
           acCalc = RuleEngine.evaluateAC(character, {
@@ -5011,10 +5000,6 @@
       const genderDropdown = document.getElementById('gender-custom-dropdown');
       if (_genderDropdownOpen && genderContainer && !genderContainer.contains(e.target) && (!genderDropdown || !genderDropdown.contains(e.target))) {
         closeGenderDropdown();
-      }
-      const lvlupClassContainer = document.getElementById('lvlup-class-custom-dropdown-container');
-      if (_lvlupClassSpotlightOpen && lvlupClassContainer && !lvlupClassContainer.contains(e.target)) {
-        closeLevelUpClassSpotlightDropdown();
       }
       const domainSpotlightModal = document.getElementById('modal-domain-field-spotlight');
       if (domainSpotlightModal && !domainSpotlightModal.classList.contains('hidden') && e.target === domainSpotlightModal) {

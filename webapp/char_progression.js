@@ -5106,31 +5106,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
     }
 
     // ====================================================
-    // GSHEET RULE MASTER LEVEL UP COPILOT CONTROLLER
-    // ====================================================
-
-
-    function initLevelUpCopilot() {
-      const badge = document.getElementById('lvlup-copilot-engine-badge');
-      const headerBadge = document.getElementById('lvlup-copilot-header-badge');
-      const hasKey = typeof RuleMaster !== 'undefined' && RuleMaster.getApiKey && !!RuleMaster.getApiKey();
-      if (badge) {
-        if (hasKey) {
-          badge.textContent = '✨ Gemini AI Active';
-          badge.className = 'text-[10px] font-semibold px-1.5 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-500/50';
-        } else {
-          badge.textContent = '📖 RAW Rule Engine';
-          badge.className = 'text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-700';
-        }
-      }
-      if (headerBadge) {
-        headerBadge.textContent = hasKey ? 'AI' : 'RAW';
-      }
-      const loadingBox = document.getElementById('lvlup-copilot-loading');
-      if (loadingBox) loadingBox.classList.add('hidden');
-    }
-
-    // ====================================================
     // 🔍 RULE MASTER: SINIF & PRESTİJ SINIFI ARAMA KONSOLU
     // ====================================================
     let currentClassFilterTab = 'all';
@@ -5150,71 +5125,12 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
       filterLevelUpClassSearch();
     }
 
-    let _lvlupClassSpotlightOpen = false;
-
-    function closeLevelUpClassSpotlightDropdown() {
-      const panel = document.getElementById('lvlup-class-spotlight-dropdown');
-      const chevron = document.getElementById('lvlup-class-trigger-chevron');
-      if (!panel) return;
-
-      panel.classList.add('hidden');
-      if (chevron) chevron.textContent = '▼';
-      _lvlupClassSpotlightOpen = false;
-    }
-
     function clearLevelUpClassSearch() {
       const input = document.getElementById('lvlup-class-search-input');
       if (input) {
         input.value = '';
         input.focus();
         filterLevelUpClassSearch();
-      }
-    }
-
-    function updateLevelUpClassTriggerUI(className) {
-      if (!className) return;
-      const allDefs = (typeof getAvailableClassDefs === 'function') ? getAvailableClassDefs() : {};
-      const def = allDefs[className] || (typeof DND35_CLASS_DEFS !== 'undefined' ? DND35_CLASS_DEFS[className] : null) || { hd: 8, bab: 0.75, fort: 'poor', ref: 'poor', will: 'poor', skillPoints: 2 };
-
-      const iconEl = document.getElementById('lvlup-class-trigger-icon');
-      const titleEl = document.getElementById('lvlup-class-trigger-title');
-      const badgeEl = document.getElementById('lvlup-class-trigger-badge');
-      const subEl = document.getElementById('lvlup-class-trigger-sub');
-
-      const isPrestige = def.type === 'Prestige Class';
-      const isCustom = def.isCustom === true;
-
-      if (iconEl) {
-        iconEl.textContent = isPrestige ? '👑' : (isCustom ? '⚙️' : '🛡️');
-      }
-      if (titleEl) {
-        titleEl.textContent = className;
-      }
-      if (badgeEl) {
-        if (isPrestige) {
-          badgeEl.className = 'text-[10px] font-bold px-1.5 rounded bg-amber-950 text-amber-300 border border-amber-600/50';
-          badgeEl.textContent = '👑 Prestige';
-        } else if (isCustom) {
-          badgeEl.className = 'text-[10px] font-bold px-1.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-600/50';
-          badgeEl.textContent = '⚙️ Custom Class';
-        } else {
-          badgeEl.className = 'text-[10px] font-bold px-1.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-600/50';
-          badgeEl.textContent = '🛡️ Base Class';
-        }
-      }
-
-      if (subEl) {
-        const hdText = `d${def.hd || 8} HD`;
-        const babRate = Number(def.bab) || 0.75;
-        const babText = babRate === 1.0 ? 'Full BAB (+1.0)' : (babRate === 0.75 ? '3/4 BAB (+0.75)' : '1/2 BAB (+0.5)');
-        const goodSaves = [];
-        if (def.fort === 'good') goodSaves.push('Fort');
-        if (def.ref === 'good') goodSaves.push('Ref');
-        if (def.will === 'good') goodSaves.push('Will');
-        const saveText = goodSaves.length === 3 ? 'All Good Saves' : (goodSaves.length > 0 ? `Good: ${goodSaves.join('/')}` : 'Poor Saves');
-        const skillsText = `${def.skills || def.skillPoints || 2}+INT Skills`;
-
-        subEl.textContent = `${hdText} • ${babText} • ${saveText} • ${skillsText}`;
       }
     }
 
@@ -6356,9 +6272,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         updateLevelUpCasterProgVisibility(lastClass);
       }
 
-      const notesInput = document.getElementById('lvlup-notes-input');
-      if (notesInput) notesInput.value = '';
-
       const activeChk = document.getElementById('lvlup-is-active');
       const submitBtn = document.getElementById('lvlup-submit-btn');
 
@@ -6394,12 +6307,10 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         renderLevelUpFeatSlots();
       }
 
-      initLevelUpCopilot();
       modal.classList.remove('hidden');
     }
 
     function closeLevelUpModal() {
-      closeLevelUpClassSpotlightDropdown();
       const modal = document.getElementById('level-up-modal');
       if (modal) modal.classList.add('hidden');
     }
@@ -6430,7 +6341,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       const casterProg = document.getElementById('lvlup-caster-prog')?.value || 'none';
       const ignoreAsfChecked = document.getElementById('lvlup-ignore-asf')?.checked || false;
-      const notes = (document.getElementById('lvlup-notes-input')?.value || '').trim();
 
       const rowFeats = [];
       let flawDetected = false;
@@ -6480,7 +6390,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
               name: fName,
               category: slot.category,
               source: `Level ${nextLvl}`,
-              benefit: slot.benefit || notes || 'Feat gained via level progression.'
+              benefit: slot.benefit || 'Feat gained via level progression.'
             };
             learnFeatObject(found);
           }
@@ -6592,7 +6502,7 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
         specialAbilities: autoFeatures,
         statIncreased: statChoice || null,
         casterProg,
-        notes: notes || (autoFeatures.length > 0 ? autoFeatures.join(', ') : `${className} level added`)
+        notes: (autoFeatures.length > 0 ? autoFeatures.join(', ') : `${className} level added`)
       });
 
       recalculateCharacterClassSummary();
