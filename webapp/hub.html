@@ -26,7 +26,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
   <!-- Three.js (3D dice) is loaded on demand by dice3d.js on the first 3D roll. -->
   <script src="dice3d.js?v=aa07002406"></script>
-  <script src="hub_dice.js?v=1fee2a2989"></script>
+  <script src="hub_dice.js?v=e4bf672576"></script>
   <script src="hub_notes.js?v=893821e92c"></script>
   <style>
     body {
@@ -591,6 +591,10 @@
                   <button onclick="rollCustomFormula()" class="ui-btn-sm h-7 px-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow transition active:scale-95 cursor-pointer">
                     ⚡ Roll
                   </button>
+                  <button type="button" id="dice-save-template-btn" class="ui-btn-sm h-7 px-2 rounded-lg bg-indigo-950/80 hover:bg-indigo-900 text-indigo-300 hover:text-indigo-100 border border-indigo-500/50 text-xs font-semibold flex items-center gap-1 transition cursor-pointer shadow-sm" title="Save current formula as a new template" aria-label="Save current formula as a new template">
+                    <span>💾</span>
+                    <span>Save</span>
+                  </button>
                 </div>
                 <!-- Hızlı Şablon Çipleri -->
                 <div id="dice-custom-templates-container" class="flex flex-wrap items-center gap-1 pt-0.5">
@@ -617,7 +621,7 @@
               <div class="pt-1.5 border-t border-slate-800 space-y-1">
                 <div class="flex items-center justify-between text-[9px] text-slate-400">
                   <span class="font-bold uppercase tracking-wider">Recent Rolls (<span id="dice-history-count">0</span>)</span>
-                  <button onclick="clearDiceHistory()" class="hover:text-rose-400 transition cursor-pointer">Clear</button>
+                  <button type="button" onclick="clearDiceHistory()" aria-label="Clear roll history" class="hover:text-rose-400 transition cursor-pointer" style="padding:12px 16px;margin:-12px -16px;">Clear</button>
                 </div>
                 <div id="dice-history-list" class="max-h-64 overflow-y-auto space-y-1.5 custom-scroll pr-1 text-xs">
                   <div class="text-[9px] text-slate-400 italic py-1.5 text-center">Roll history is empty</div>

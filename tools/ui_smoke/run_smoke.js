@@ -830,6 +830,34 @@ async function main() {
     await context.close();
   }
 
+  // H7. Hub dice tray: the Save button saves a formula as a template chip; an empty formula saves nothing.
+  {
+    const context = await newContext();
+    await check('H7. real path: hub Save template button saves chip; empty formula does not', async () => {
+      const page = await openPage(context, '/hub.html');
+      await waitHubReady(page);
+      await page.evaluate(() => { toggleDiceAdvancedDrawer(true); });
+      const before = await page.evaluate(() => loadFormulaTemplates().length);
+      const save = page.locator('#dice-advanced-content button[aria-label="Save current formula as a new template"]');
+      await page.waitForFunction(() => { const b = document.querySelector('#dice-advanced-content button[aria-label="Save current formula as a new template"]'); return b && b.getBoundingClientRect().width > 0; }, null, { timeout: 10000 });
+      await page.fill('#dice-custom-formula-input', '');
+      await save.click();
+      await page.waitForFunction(() => document.querySelector('#dice-top-toast-container .dice-toast-item'), null, { timeout: 10000 });
+      assert(await page.evaluate(() => loadFormulaTemplates().length) === before, 'empty formula saved a template');
+      await page.fill('#dice-custom-formula-input', '2d6+3');
+      await save.click();
+      await waitDlg(page);
+      await page.fill('#dndui-dialog input', 'Smoke Tpl');
+      await btn(page, 'Save').click();
+      await waitDlg(page, false);
+      await page.waitForFunction(() => Array.from(document.querySelectorAll('#dice-custom-templates-container button')).some(b => b.textContent.trim() === 'Smoke Tpl'), null, { timeout: 10000 });
+      const after = await page.evaluate(() => loadFormulaTemplates().length);
+      assert(after === before + 1, 'template count ' + before + ' -> ' + after);
+      return 'ok';
+    });
+    await context.close();
+  }
+
   await browser.close();
   server.close();
 

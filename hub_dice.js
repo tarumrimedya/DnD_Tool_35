@@ -1096,3 +1096,12 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   } catch (e) {}
 });
+
+// Hub formula row "Save" button (wired here to stay within the inline-handler ratchet).
+(function wireSaveTemplateButton() {
+  const wire = () => {
+    const b = document.getElementById('dice-save-template-btn');
+    if (b && !b.dataset.wired) { b.dataset.wired = '1'; b.addEventListener('click', () => saveCurrentFormulaTemplate()); }
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wire); else wire();
+})();
