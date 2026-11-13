@@ -1910,7 +1910,8 @@
             value: enhBonus,
             formula: String(enhBonus),
             type: 'enhancement',
-            condition: 'Weapon Enhancement'
+            condition: null,
+            source: 'Weapon Enhancement'
           });
           if (item.damageParts.length > 0) {
             item.damageParts[0].bonus = (Number(item.damageParts[0].bonus) || 0) + enhBonus;
@@ -1927,7 +1928,8 @@
             value: 1,
             formula: '1',
             type: 'enhancement',
-            condition: 'Masterwork'
+            condition: null,
+            source: 'Masterwork'
           });
         }
       } else if (isArmor || isShield) {

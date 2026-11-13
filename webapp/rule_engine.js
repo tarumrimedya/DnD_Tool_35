@@ -6360,7 +6360,7 @@ const RuleEngine = {
     if (!hasExplicitWepAtkMod && Number(weapon.enhancementBonus) > 0) {
       attackBonusItems.push({ type: 'enhancement', val: Number(weapon.enhancementBonus), source: 'Weapon Enhancement' });
     } else if (!hasExplicitWepAtkMod && weapon.isMasterwork) {
-      attackBonusItems.push({ type: 'enhancement', val: 1, source: 'Masterwork Weapon' });
+      attackBonusItems.push({ type: 'enhancement', val: 1, source: 'Masterwork' });
     }
 
     if (hasWeaponFocus) {

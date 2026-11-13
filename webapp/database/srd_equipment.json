@@ -11271,7 +11271,8 @@
         "value": 2,
         "formula": "2",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -11383,7 +11384,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -13380,7 +13382,8 @@
         "value": 5,
         "formula": "5",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -13814,7 +13817,8 @@
         "value": 2,
         "formula": "2",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -13926,7 +13930,8 @@
         "value": 2,
         "formula": "2",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -14871,7 +14876,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -14920,7 +14926,8 @@
         "value": 5,
         "formula": "5",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -16143,7 +16150,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -16352,7 +16360,8 @@
         "value": 2,
         "formula": "2",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -16408,7 +16417,8 @@
         "value": 6,
         "formula": "6",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -16534,7 +16544,8 @@
         "value": 3,
         "formula": "3",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -16702,7 +16713,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Masterwork"
+        "condition": null,
+        "source": "Masterwork"
       }
     ],
     "damageParts": [
@@ -16957,7 +16969,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Masterwork"
+        "condition": null,
+        "source": "Masterwork"
       }
     ],
     "damageParts": [
@@ -17676,7 +17689,8 @@
         "value": 2,
         "formula": "2",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -17865,7 +17879,8 @@
         "value": 3,
         "formula": "3",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -18350,7 +18365,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Masterwork"
+        "condition": null,
+        "source": "Masterwork"
       }
     ],
     "damageParts": [
@@ -19103,7 +19119,8 @@
         "value": 2,
         "formula": "2",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -19223,7 +19240,8 @@
         "value": 3,
         "formula": "3",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -19944,7 +19962,8 @@
         "value": 3,
         "formula": "3",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -20871,7 +20890,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -21959,7 +21979,8 @@
         "value": 3,
         "formula": "3",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -22735,7 +22756,8 @@
         "value": 7,
         "formula": "7",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -23165,7 +23187,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Masterwork"
+        "condition": null,
+        "source": "Masterwork"
       }
     ],
     "damageParts": [
@@ -24541,7 +24564,8 @@
         "value": 2,
         "formula": "2",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -25091,7 +25115,8 @@
         "value": 2,
         "formula": "2",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -25147,7 +25172,8 @@
         "value": 2,
         "formula": "2",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -25259,7 +25285,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -25427,7 +25454,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -25483,7 +25511,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -25873,7 +25902,8 @@
         "value": 3,
         "formula": "3",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -25978,7 +26008,8 @@
         "value": 2,
         "formula": "2",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -26141,7 +26172,8 @@
         "value": 5,
         "formula": "5",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -28728,7 +28760,8 @@
         "value": 1,
         "formula": "1",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -28936,7 +28969,8 @@
         "value": 4,
         "formula": "4",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [
@@ -29057,7 +29091,8 @@
         "value": 3,
         "formula": "3",
         "type": "enhancement",
-        "condition": "Weapon Enhancement"
+        "condition": null,
+        "source": "Weapon Enhancement"
       }
     ],
     "damageParts": [

@@ -3664,8 +3664,22 @@ function runDeriveSheetTests() {
     check(
       'Weapon breakdown: Masterwork +1 and a +3 enhancement buff do not stack (one enhancement applied, Masterwork tagged not applied, applied items sum to the total)',
       mwBuffed.netAttackBonus === mwBase.netAttackBonus - 1 + 3 && enhApplied.length === 1 && enhApplied[0].val === 3 &&
-      mwBuffed.attackBonusItems.some(i => i.source === 'Masterwork Weapon' && i.applied === false) &&
+      mwBuffed.attackBonusItems.some(i => i.source === 'Masterwork' && i.applied === false) &&
       sumApplied(mwBuffed.attackBonusItems) === mwBuffed.netAttackBonus
+    );
+
+    // Item Forge / ItemAssembler: the masterwork +1 and the +N enhancement modifiers carry their label in `source`
+    // (not in `condition`, which marks a conditional bonus), so the attack breakdown reads "Masterwork" / "Weapon Enhancement".
+    const mwAssembled = global.ItemAssembler.assemble({ baseItemId: 'wpn-longsword', masterwork: true });
+    const enhAssembled = global.ItemAssembler.assemble({ baseItemId: 'wpn-longsword', enhancementBonus: 2 });
+    const mwMod = mwAssembled.modifiers.find(m => m.target === 'attack.weapon');
+    const enhMod = enhAssembled.modifiers.find(m => m.target === 'attack.weapon');
+    const mwEval = RuleEngine.evaluateWeaponAttack(deriveFixture('01_fighter_lvl1.json'), { ...mwAssembled, name: 'Masterwork Longsword' }, {});
+    check(
+      'ItemAssembler: masterwork / enhancement attack modifiers are labelled by source with no condition; the breakdown shows "Masterwork"',
+      mwMod && mwMod.source === 'Masterwork' && mwMod.condition === null && enhMod && enhMod.source === 'Weapon Enhancement' && enhMod.condition === null &&
+      mwEval.attackBonusItems.some(i => i.source === 'Masterwork' && i.val === 1 && i.applied !== false) &&
+      sumApplied(mwEval.attackBonusItems) === mwEval.netAttackBonus
     );
 
     // A weapon's attack / damage bonus has one source: `enhancementBonus` + typed `modifiers`. The sheet no longer writes the
