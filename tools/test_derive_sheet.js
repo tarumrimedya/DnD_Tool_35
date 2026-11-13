@@ -2834,9 +2834,25 @@ function runDeriveSheetTests() {
 
   // Hub: a pack file attaches to the selected (root) campaign; sub-campaign characters get it, others do not.
   const cdbHubFnSrc = hubSrc.slice(hubSrc.indexOf('function getHubRootCampaign('), hubSrc.indexOf('function exportCampaignBundle('));
+  // The Hub functions are async (DnDUI.confirm / notify). The vm context uses microtaskMode 'afterEvaluate', so every
+  // promise created inside it settles before runInContext returns and this suite stays synchronous. notify and
+  // DnDUI are stubs defined INSIDE the context (a promise from this realm would not be drained there).
+  const cdbVmPrepare = (sandbox, confirmAnswer) => {
+    sandbox.__answer = confirmAnswer;
+    vm.createContext(sandbox, { microtaskMode: 'afterEvaluate' });
+    vm.runInContext(
+      'var __notes = [], __confirms = [];' +
+      'var notify = function (m, t) { __notes.push({ m: m, t: t }); };' +
+      'var DnDUI = { confirm: function (m, o) { __confirms.push({ m: m, o: o }); return Promise.resolve(__answer); } };',
+      sandbox
+    );
+  };
+  const cdbVmRun = (sandbox, code, extra) => {
+    Object.assign(sandbox, extra || {});
+    vm.runInContext(code, sandbox);
+  };
   const cdbHubRun = (activeCampaignId, sheetCharId) => {
     const store = { dnd35_character: JSON.stringify({ id: sheetCharId, customDb: [] }) };
-    const alerts = [];
     const sandbox = {
       JSON, Object, Array, Map, Set, Date, Number, String,
       CampaignDb, window: { CampaignDb },
@@ -2850,10 +2866,11 @@ function runDeriveSheetTests() {
         ]
       },
       localStorage: { getItem: k => store[k] || null, setItem: (k, v) => { store[k] = v; } },
-      saveHubStorage: () => {}, renderHub: () => {}, renderHubDmPackManager: () => {},
-      alert: (m) => alerts.push(m), confirm: () => true
+      saveHubStorage: () => {}, renderHub: () => {}, renderHubDmPackManager: () => {}
     };
-    vm.runInNewContext(cdbHubFnSrc + '\nattachPackToActiveCampaignDb(CampaignDb.readPackFile(packFile));', Object.assign(sandbox, { packFile: boonFile }));
+    cdbVmPrepare(sandbox, true);
+    cdbVmRun(sandbox, cdbHubFnSrc + '\nattachPackToActiveCampaignDb(CampaignDb.readPackFile(packFile));', { packFile: boonFile });
+    const alerts = sandbox.__notes.map(n => n.m);
     const tagged = id => sandbox.state.characters.find(c => c.id === id).fullData.customDb.filter(e => CampaignDb.getTag(e)).length;
     const sheetTagged = JSON.parse(store.dnd35_character).customDb.filter(e => CampaignDb.getTag(e)).length;
     return { sandbox, tagged, sheetTagged, alerts };
@@ -2861,7 +2878,7 @@ function runDeriveSheetTests() {
   const cdbHubSub = cdbHubRun('camp_sub', 'c_sub');
   const cdbHubAll = cdbHubRun('all', 'c_main');
   const cdbHubAttached = [cdbHubSub.sandbox.state.campaigns[0].packs.length, !cdbHubSub.sandbox.state.campaigns[1].packs, cdbHubSub.tagged('c_main'), cdbHubSub.tagged('c_sub'), cdbHubSub.tagged('c_other'), cdbHubSub.sheetTagged];
-  vm.runInNewContext(cdbHubFnSrc + '\nstate.activeCampaignId = "camp_main"; removePackFromActiveCampaignDb("pack_dm_draconic_boons");', cdbHubSub.sandbox);
+  cdbVmRun(cdbHubSub.sandbox, cdbHubFnSrc + '\nstate.activeCampaignId = "camp_main"; removePackFromActiveCampaignDb("pack_dm_draconic_boons");');
   check(
     'Campaign DB (Hub): a pack attaches to the root campaign of the selected sub-campaign and reaches its characters and the sheet character; nothing is attached with "All" selected; removing the pack removes the unused copies',
     JSON.stringify(cdbHubAttached) === JSON.stringify([1, true, 107, 107, 0, 107]) &&
@@ -2875,7 +2892,7 @@ function runDeriveSheetTests() {
   const syncFail = (e) => ({ then(f, r) { return r ? syncOk(r(e)) : syncFail(e); }, catch(r) { return syncOk(r(e)); } });
   const cdbCloudRun = (opts) => {
     const store = { dnd35_character: JSON.stringify({ id: 'c_none', customDb: [] }) };
-    const calls = [], alerts = [];
+    const calls = [];
     const fakeAuth = {
       isLocalMode: () => Boolean(opts.localMode),
       upsertCampaignPack: (cid, p) => { calls.push(['upsert', cid, p.packId, p.version]); return opts.failWrite ? syncFail(new Error('RLS denied')) : syncOk(true); },
@@ -2893,10 +2910,11 @@ function runDeriveSheetTests() {
         ]
       },
       localStorage: { getItem: k => store[k] || null, setItem: (k, v) => { store[k] = v; } },
-      saveHubStorage: () => {}, renderHub: () => {}, renderHubDmPackManager: () => {},
-      alert: (m) => alerts.push(m), confirm: () => true
+      saveHubStorage: () => {}, renderHub: () => {}, renderHubDmPackManager: () => {}
     };
-    vm.runInNewContext(cdbHubFnSrc + '\n' + opts.code, Object.assign(sandbox, { packFile: boonFile }));
+    cdbVmPrepare(sandbox, opts.confirm !== false);
+    cdbVmRun(sandbox, cdbHubFnSrc + '\n' + opts.code, { packFile: boonFile });
+    const alerts = sandbox.__notes.map(n => n.m);
     return { sandbox, calls, alerts, npcDb: sandbox.state.characters[0].fullData.customDb, playerDb: sandbox.state.characters[1].fullData.customDb };
   };
   const cdbCloudAttach = cdbCloudRun({ code: 'attachPackToActiveCampaignDb(CampaignDb.readPackFile(packFile));' });
@@ -2918,6 +2936,16 @@ function runDeriveSheetTests() {
     cdbCloudRemove.sandbox.state.campaigns[0].packs.length === 0 && cdbCloudRemove.npcDb.length === 0 &&
     cdbCloudRemove.playerDb.length === 1 && cdbCloudRemove.playerDb[0]._campaignPack.status === 'active' &&
     cdbOfflineRemove.calls.length === 0 && cdbOfflineRemove.sandbox.state.campaigns[0].packs.length === 1 && /Sign in to remove/.test(cdbOfflineRemove.alerts[0] || '')
+  );
+
+  // Removing a pack asks first: confirm = true removes it (the danger dialog is shown with the pack name), confirm = false changes nothing.
+  const cdbDeclineRemove = cdbCloudRun({ confirm: false, packs: [Object.assign({}, cdbPacksV1[0], { inCloud: true })], code: 'removePackFromActiveCampaignDb("pack_dm_draconic_boons");' });
+  const cdbDeclineCall = cdbDeclineRemove.sandbox.__confirms;
+  check(
+    'Campaign DB (Hub): declining the remove-pack confirmation changes nothing (no cloud delete, pack kept, no notification); accepting shows a danger confirm naming the pack and removes it',
+    cdbDeclineCall.length === 1 && cdbDeclineCall[0].o.tone === 'danger' && /Remove Rule Pack "/.test(cdbDeclineCall[0].m) &&
+    cdbDeclineRemove.calls.length === 0 && cdbDeclineRemove.sandbox.state.campaigns[0].packs.length === 1 && cdbDeclineRemove.alerts.length === 0 &&
+    cdbCloudRemove.sandbox.__confirms.length === 1 && cdbCloudRemove.sandbox.__confirms[0].o.tone === 'danger' && cdbCloudRemove.alerts.length === 1
   );
 
   const cdbMerged = CampaignDb.mergeCloudPacks(

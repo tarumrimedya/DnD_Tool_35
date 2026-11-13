@@ -685,14 +685,16 @@ async function main() {
     await context.close();
   }
 
-  // H3. Static guard: native alert / confirm / prompt left in hub.html. The 7 kept ones are the Campaign DB
-  // attach/remove functions that tools/test_derive_sheet.js runs in a vm with synchronous alert/confirm stubs.
-  await check('H3. hub.html native alert/confirm/prompt count', async () => {
-    const KEPT = 7;
-    const src = fs.readFileSync(path.join(ROOT, 'hub.html'), 'utf8');
-    const hits = src.match(/(?:\bwindow\.|(?<![\w.$]))(?:alert|confirm|prompt)\s*\(/g) || [];
-    assert(hits.length === KEPT, `expected ${KEPT}, found ${hits.length}`);
-    return `${hits.length} native dialog calls (expected ${KEPT})`;
+  // H3. Static guard: no native alert / confirm / prompt left in the Hub files.
+  await check('H3. hub.html, hub_dice.js, hub_notes.js: no native alert/confirm/prompt', async () => {
+    const out = [];
+    for (const f of ['hub.html', 'hub_dice.js', 'hub_notes.js']) {
+      const src = fs.readFileSync(path.join(ROOT, f), 'utf8');
+      const hits = src.match(/(?:\bwindow\.|(?<![\w.$]))(?:alert|confirm|prompt)\s*\(/g) || [];
+      assert(hits.length === 0, `${f}: expected 0 native dialog calls, found ${hits.length}`);
+      out.push(`${f}=0`);
+    }
+    return out.join(' ');
   });
 
   // H5. Hub at 375 px: a long toast and a danger confirm card fit inside the viewport width.
@@ -711,6 +713,29 @@ async function main() {
       assert(c.l >= 0 && c.r <= c.iw, `card ${Math.round(c.l)}..${Math.round(c.r)} vs ${c.iw}`);
       await btn(page, 'Cancel').click();
       return `toast ${Math.round(t.l)}..${Math.round(t.r)}, card ${Math.round(c.l)}..${Math.round(c.r)} of ${t.iw}`;
+    });
+    await context.close();
+  }
+
+  // H6. Hub dice tray: "Clear" history opens the in-page danger dialog; Cancel keeps the history.
+  {
+    const context = await newContext();
+    let nativeDialogs = 0;
+    await check('H6. real path: hub clearDiceHistory opens dialog, Cancel keeps history', async () => {
+      const page = await openPage(context, '/hub.html');
+      page.on('dialog', d => { nativeDialogs++; d.dismiss().catch(() => {}); });
+      await page.waitForTimeout(800);
+      await page.evaluate(() => {
+        window.diceRollHistory = [{ title: 'Probe', formula: '1d20', breakdown: '[10]', total: 10, timestamp: '00:00', id: 'p1' }];
+        clearDiceHistory();
+      });
+      await waitDlg(page);
+      await btn(page, 'Cancel').click();
+      await waitDlg(page, false);
+      const n = await page.evaluate(() => window.diceRollHistory.length);
+      assert(n === 1, 'history length ' + n);
+      assert(nativeDialogs === 0, 'native dialog fired ' + nativeDialogs + 'x');
+      return 'ok';
     });
     await context.close();
   }

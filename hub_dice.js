@@ -498,8 +498,9 @@ function addDiceHistoryEntry(entry, triggerToast = true) {
 }
 window.addDiceHistoryEntry = addDiceHistoryEntry;
 
-function clearDiceHistory() {
-  if (!confirm('Are you sure you want to clear the entire roll history?')) return;
+async function clearDiceHistory() {
+  const ok = await DnDUI.confirm('Are you sure you want to clear the entire roll history?', { title: 'Clear Roll History', confirmLabel: 'Clear', cancelLabel: 'Cancel', tone: 'danger' });
+  if (!ok) return;
   window.diceRollHistory = [];
   try {
     localStorage.removeItem('dnd_dice_history');
@@ -695,16 +696,16 @@ function applyFormulaTemplate(str) {
 }
 window.applyFormulaTemplate = applyFormulaTemplate;
 
-function saveCurrentFormulaTemplate() {
+async function saveCurrentFormulaTemplate() {
   const input = document.getElementById('dice-custom-formula-input');
   const formula = (input?.value || '').trim();
   if (!formula) {
-    alert('Please enter a dice expression in the formula field first.\ne.g. Target:21 Bonus:4 Dice:1d6+3 19-20x2');
+    notify('Please enter a dice expression in the formula field first.\ne.g. Target:21 Bonus:4 Dice:1d6+3 19-20x2', 'warning');
     return;
   }
 
   const defaultName = formula.length > 28 ? formula.slice(0, 25) + '...' : formula;
-  const name = prompt('Enter a name for this dice template:', defaultName);
+  const name = await DnDUI.prompt('Enter a name for this dice template:', defaultName, { title: 'Save Dice Template', confirmLabel: 'Save' });
   if (!name || !name.trim()) return;
 
   const templates = loadFormulaTemplates();
@@ -983,7 +984,7 @@ function executeTargetAttackRoll(rawInput, hedefMatch) {
 function executeStandardCustomFormula(val) {
   const parsed = parseAndRollDiceFormula(val);
   if (!parsed) {
-    alert('Invalid dice formula. Valid format examples:\n• Target:21 Bonus:4 Dice:1d6+3 19-20x2\n• 12d6+45 18-20x2\n• 3d6+5\n• 8d6');
+    notify('Invalid dice formula. Valid format examples:\n• Target:21 Bonus:4 Dice:1d6+3 19-20x2\n• 12d6+45 18-20x2\n• 3d6+5\n• 8d6', 'warning');
     return;
   }
 
@@ -1042,7 +1043,7 @@ function rollCustomFormula() {
   const input = document.getElementById('dice-custom-formula-input');
   const val = (input?.value || '').trim();
   if (!val) {
-    alert('Please enter a dice formula (e.g. Target:21 Bonus:4 Dice:1d6+3 19-20x2 or 3d6+5)');
+    notify('Please enter a dice formula (e.g. Target:21 Bonus:4 Dice:1d6+3 19-20x2 or 3d6+5)', 'warning');
     return;
   }
 

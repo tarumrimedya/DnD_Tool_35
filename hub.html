@@ -26,7 +26,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
   <!-- Three.js (3D dice) is loaded on demand by dice3d.js on the first 3D roll. -->
   <script src="dice3d.js?v=aa07002406"></script>
-  <script src="hub_dice.js?v=fbfa9904c3"></script>
+  <script src="hub_dice.js?v=1fee2a2989"></script>
   <script src="hub_notes.js?v=893821e92c"></script>
   <style>
     body {
@@ -6476,17 +6476,17 @@ CRITICAL RULES:
 
     // Cloud campaign: the pack is written to campaign_packs first and kept locally only when that succeeds.
     // Local campaign, or signed out: kept locally with inCloud = false and uploaded by the next cloud sync.
-    function attachPackToActiveCampaignDb(packFile) {
+    async function attachPackToActiveCampaignDb(packFile) {
       const rootCamp = getHubActiveRootCampaign();
       if (!rootCamp) {
-        alert(`⚠️ Rule Pack "${packFile.name}" not attached: select a campaign first. A rule pack belongs to one campaign's Campaign DB and reaches every character in it.`);
+        notify(`Rule Pack "${packFile.name}" not attached: select a campaign first. A rule pack belongs to one campaign's Campaign DB and reaches every character in it.`, 'warning');
         return;
       }
       const nextPacks = CampaignDb.attachPack(rootCamp.packs, packFile, new Date().toISOString());
       const pack = nextPacks.find(p => p.packId === packFile.packId);
       const finish = (cloudNote) => {
         const total = applyCampaignDbPacks(rootCamp, nextPacks);
-        alert(`✅ Rule Pack "${pack.name}" v${pack.version} (${pack.entries.length} entries) attached to the Campaign DB of "${rootCamp.name}".${cloudNote}\n${describeCampaignDbReconcile(total)}`);
+        notify(`Rule Pack "${pack.name}" v${pack.version} (${pack.entries.length} entries) attached to the Campaign DB of "${rootCamp.name}".${cloudNote}\n${describeCampaignDbReconcile(total)}`, 'success');
       };
       const cloudId = getCampaignDbCloudId(rootCamp);
       if (!cloudId) {
@@ -6496,28 +6496,29 @@ CRITICAL RULES:
       }
       return SupabaseAuth.upsertCampaignPack(cloudId, pack)
         .then(() => { pack.inCloud = true; finish('\n☁️ Saved to the cloud campaign.'); })
-        .catch(err => alert(`❌ Rule Pack "${pack.name}" not attached: ${err.message}`));
+        .catch(err => notify(`Rule Pack "${pack.name}" not attached: ${err.message}`, 'error'));
     }
 
-    function removePackFromActiveCampaignDb(packId) {
+    async function removePackFromActiveCampaignDb(packId) {
       const rootCamp = getHubActiveRootCampaign();
       if (!rootCamp || !Array.isArray(rootCamp.packs)) return;
       const pack = rootCamp.packs.find(p => p.packId === packId);
       if (!pack) return;
       const cloudId = getCampaignDbCloudId(rootCamp);
       if (pack.inCloud === true && !cloudId) {
-        alert(`⚠️ Rule Pack "${pack.name}" is stored in the cloud campaign. Sign in to remove it.`);
+        notify(`Rule Pack "${pack.name}" is stored in the cloud campaign. Sign in to remove it.`, 'warning');
         return;
       }
-      if (!confirm(`Remove Rule Pack "${pack.name}" from the Campaign DB of "${rootCamp.name}"?\n\nIts entries are removed from the campaign's characters. An entry a character uses (feat, special ability, buff, gear) is kept on that character.`)) return;
+      const confirmed = await DnDUI.confirm(`Remove Rule Pack "${pack.name}" from the Campaign DB of "${rootCamp.name}"?\n\nIts entries are removed from the campaign's characters. An entry a character uses (feat, special ability, buff, gear) is kept on that character.`, { title: 'Remove Rule Pack', confirmLabel: 'Remove', cancelLabel: 'Cancel', tone: 'danger' });
+      if (!confirmed) return;
       const finish = () => {
         const total = applyCampaignDbPacks(rootCamp, CampaignDb.removePack(rootCamp.packs, packId));
-        alert(`✅ Rule Pack "${pack.name}" removed from the Campaign DB of "${rootCamp.name}".\n${describeCampaignDbReconcile(total)}`);
+        notify(`Rule Pack "${pack.name}" removed from the Campaign DB of "${rootCamp.name}".\n${describeCampaignDbReconcile(total)}`, 'success');
       };
       if (!cloudId) { finish(); return; }
       return SupabaseAuth.deleteCampaignPack(cloudId, packId)
         .then(finish)
-        .catch(err => alert(`❌ Rule Pack "${pack.name}" not removed: ${err.message}`));
+        .catch(err => notify(`Rule Pack "${pack.name}" not removed: ${err.message}`, 'error'));
     }
 
     // Cloud -> Hub: the cloud campaign's packs replace the local list. Packs not confirmed in the cloud yet
