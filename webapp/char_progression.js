@@ -1387,17 +1387,6 @@
       renderQuickFeatSearchResults();
     };
 
-    function openQuickAbilityPickerForLevel(levelIdx) {
-      openQuickFeatPickerForLevel(levelIdx, 'Special Ability');
-      const lvlObj = character.levelProgression && character.levelProgression[Number(levelIdx)];
-      const lvlNum = lvlObj ? lvlObj.level : (Number(levelIdx) + 1);
-      const className = lvlObj ? lvlObj.className : 'Class';
-      const titleEl = document.getElementById('quick-feat-modal-title');
-      if (titleEl) titleEl.textContent = `Add Special Ability / Feature for Level ${lvlNum} (${className})`;
-      const subtitleEl = document.getElementById('quick-feat-modal-subtitle');
-      if (subtitleEl) subtitleEl.textContent = `Add a class feature, special maneuver, DM boon, or rule note`;
-    }
-
     function closeQuickLevelFeatModal() {
       const modal = document.getElementById('quick-level-feat-modal');
       if (modal) modal.classList.add('hidden');
@@ -2038,27 +2027,6 @@
           </div>
         `;
       }
-    }
-
-    function populateQuickFeatCatalogSelect() {
-      // Legacy compatibility stub
-    }
-
-    function onQuickFeatSelectChange() {
-      // Legacy compatibility stub
-    }
-
-    function openFeatPickerForQuickModal() {
-      isFeatPickerForQuickLevel = true;
-      isFeatPickerForLevelUp = false;
-      const modal = document.getElementById('feat-picker-modal');
-      if (!modal) return;
-      const titleEl = document.getElementById('feat-picker-modal-title');
-      if (titleEl) {
-        titleEl.textContent = 'Select Feat for Level Table';
-      }
-      renderFeatPickerList();
-      modal.classList.remove('hidden');
     }
 
     async function confirmQuickLevelFeat(explicitFeatName = null) {
@@ -2933,14 +2901,6 @@
     }
     // Official D&D 3.5e Base & Prestige Classes are hydrated from database/srd_classes_races.json via SrdCompendium
     const DND35_EXTRA_CLASSES = {};
-
-    function focusChangeClassRuleMasterSearch() {
-      const input = document.getElementById('change-class-search-input');
-      if (input) {
-        input.focus();
-        input.select();
-      }
-    }
 
     async function searchOrAddClassWithRuleMaster() {
       const input = document.getElementById('change-class-search-input');
@@ -4139,17 +4099,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         };
       }
 
-      function getFeatCategoryBadgeStyle(cat) {
-        if (!cat) return 'bg-slate-800 text-slate-300 border-slate-700';
-        const l = cat.toLowerCase();
-        if (l.includes('fighter') || l.includes('martial') || l.includes('bonus')) return 'bg-amber-950/80 text-amber-300 border-amber-600/60';
-        if (l.includes('boon') || l.includes('grant')) return 'bg-purple-950/80 text-purple-300 border-purple-600/60';
-        if (l.includes('flaw')) return 'bg-rose-950/80 text-rose-300 border-rose-600/60';
-        if (l.includes('racial')) return 'bg-sky-950/80 text-sky-300 border-sky-600/60';
-        if (l.includes('special')) return 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60';
-        return 'bg-indigo-950/80 text-indigo-300 border-indigo-600/60';
-      }
-
       function renderLevelUpFeatSlots() {
         const container = document.getElementById('lvlup-feat-slots-container');
         if (!container) return;
@@ -4918,16 +4867,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
         renderLevelUpFeatSlots();
       }
 
-      function onLevelUpSlotSelectChange(idx, featName) {
-        if (!featName) return;
-        selectFeatForLevelUpSlot(idx, featName);
-      }
-
-
-      function openFeatPickerForSlot(idx) {
-        activeFeatPickerSlotIndex = idx;
-        openLevelUpFeatSearchConsole(idx);
-      }
 
       function addLevelUpFeatSlot(initialData = {}) {
         levelUpModalFeatSlots.push({
@@ -5170,7 +5109,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
     // GSHEET RULE MASTER LEVEL UP COPILOT CONTROLLER
     // ====================================================
 
-    let lastCopilotAdviceData = null;
 
     function initLevelUpCopilot() {
       const badge = document.getElementById('lvlup-copilot-engine-badge');
@@ -5213,37 +5151,6 @@ Output raw JSON only. Do not wrap in markdown quotes.`;
     }
 
     let _lvlupClassSpotlightOpen = false;
-
-    function toggleLevelUpClassSpotlightDropdown() {
-      if (_lvlupClassSpotlightOpen) {
-        closeLevelUpClassSpotlightDropdown();
-      } else {
-        openLevelUpClassSpotlightDropdown();
-      }
-    }
-
-    // Geriye dönük uyumluluk için alias
-    function toggleLevelUpClassSearchConsole() {
-      toggleLevelUpClassSpotlightDropdown();
-    }
-
-    function openLevelUpClassSpotlightDropdown() {
-      const panel = document.getElementById('lvlup-class-spotlight-dropdown');
-      const chevron = document.getElementById('lvlup-class-trigger-chevron');
-      const input = document.getElementById('lvlup-class-search-input');
-      if (!panel) return;
-
-      panel.classList.remove('hidden');
-      if (chevron) chevron.textContent = '▲';
-      _lvlupClassSpotlightOpen = true;
-
-      filterLevelUpClassSearch();
-
-      if (input) {
-        input.value = '';
-        setTimeout(() => input.focus(), 50);
-      }
-    }
 
     function closeLevelUpClassSpotlightDropdown() {
       const panel = document.getElementById('lvlup-class-spotlight-dropdown');
@@ -6701,51 +6608,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       }
     }
 
-    async function undoLastLevel() {
-      const prog = character.levelProgression || [];
-      if (prog.length <= 1) {
-        showToast('Character level cannot be reduced below Level 1.', 'error', { wrap: true });
-        return;
-      }
-      const last = prog[prog.length - 1];
-      if (!(await DnDUI.confirm(`Are you sure you want to undo Level ${last.level} (${last.className})?`, { tone: 'danger' }))) return;
-
-      prog.pop();
-
-      // Revert HP
-      if (character.hp && last.hpGain && last.active !== false) {
-        const gain = Number(last.hpGain) || 0;
-        if (character.hp.baseMax === undefined) character.hp.baseMax = (Number(character.hp.max) || 44) - (Number(character.hp.conBonusHp) || 0);
-        character.hp.baseMax = Math.max(1, (Number(character.hp.baseMax) || 1) - gain);
-        character.hp.max = Math.max(1, (Number(character.hp.baseMax) || 1) + (Number(character.hp.conBonusHp) || 0));
-        character.hp.current = Math.min(character.hp.max, Math.max(1, (Number(character.hp.current) || 1) - gain));
-      }
-
-      // Revert Stat increase if recorded
-      const statToRevert = getLevelStatIncrease(last);
-      if (statToRevert && last.active !== false && character.baseAbilities && character.baseAbilities[statToRevert] !== undefined) {
-        character.baseAbilities[statToRevert] = Number(character.baseAbilities[statToRevert]) - 1;
-      }
-
-      // Revert Caster Level
-      if ((last.casterProg === 'primary' || last.casterProg === 'cl_boon') && last.active !== false && character.spellcasting) {
-        const sorcLvls = prog.filter(p => p.className === 'Sorcerer' && p.active !== false).length;
-        if (character.settings?.clMode === 'Character Level (DM Boon)') {
-          character.spellcasting.cl = prog.filter(p => p.active !== false).length;
-        } else {
-          character.spellcasting.cl = sorcLvls;
-        }
-        character.spellcasting.slots = calculateSorcererSlots(sorcLvls, character.abilities?.cha || 22, character.spellcasting.slots);
-      }
-
-      if (typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
-        window.pruneOrphanedLevelAbilitiesAndFeats(character, last);
-      }
-      recalculateCharacterClassSummary();
-      saveStateToStorage(true);
-      renderAll();
-    }
-
     function toggleLevelActive(idx) {
       const prog = character.levelProgression || [];
       if (idx < 0 || idx >= prog.length) return;
@@ -6807,10 +6669,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       renderAll();
     }
 
-    function toggleProgressionLevelActive(idx) {
-      return toggleLevelActive(idx);
-    }
-
     async function deleteLevelRow(idx) {
       const prog = character.levelProgression || [];
       if (idx < 0 || idx >= prog.length) return;
@@ -6839,50 +6697,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
 
       if (typeof window.pruneOrphanedLevelAbilitiesAndFeats === 'function') {
         window.pruneOrphanedLevelAbilitiesAndFeats(character, row);
-      }
-      recalculateCharacterClassSummary();
-      if (!usedStore) saveStateToStorage(true);
-      renderLevelProgression();
-      renderAll();
-    }
-
-    function removeProgressionLevel(idx) {
-      return deleteLevelRow(idx);
-    }
-
-    function updateProgressionHp(idx, newHp) {
-      const prog = character.levelProgression || [];
-      if (idx < 0 || idx >= prog.length) return;
-      const cleanHp = Math.max(1, Number(newHp) || 1);
-      const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
-      if (usedStore) {
-        CharStore.dispatch({
-          type: 'progression/updateLevelRow',
-          payload: { mode: 'setHp', levelIndex: idx, hpGain: cleanHp },
-          meta: { label: `Set Level ${idx + 1} HP (+${cleanHp})` }
-        });
-      } else {
-        prog[idx].hpGain = cleanHp;
-      }
-      recalculateCharacterClassSummary();
-      if (!usedStore) saveStateToStorage(true);
-      renderLevelProgression();
-      renderAll();
-    }
-
-    function removeFeatByName(featName, levelIdx = null, category = 'feat') {
-      if (!featName) return;
-      const usedStore = (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function');
-      if (usedStore) {
-        CharStore.dispatch({
-          type: 'progression/removeFeat',
-          payload: {
-            featName: featName,
-            levelIndex: levelIdx,
-            isAbility: category === 'ability' || category === 'Special Ability'
-          },
-          meta: { label: `Remove ${category === 'ability' ? 'Ability' : 'Feat'}: ${featName}` }
-        });
       }
       recalculateCharacterClassSummary();
       if (!usedStore) saveStateToStorage(true);
@@ -7929,40 +7743,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       window._showNpcLevelProgression = !window._showNpcLevelProgression;
       renderLevelProgression();
       renderCoreFeatsAndSpecialAbilities();
-    }
-
-    async function openAddSpecialAbilityPrompt() {
-      const name = await DnDUI.prompt('Special Ability or Racial Trait Name (e.g., Breath Weapon, Darkvision, Frightful Presence):');
-      if (!name || !name.trim()) return;
-      const cleanName = name.trim();
-      const typeChoice = await DnDUI.prompt('Ability Type: Ex (Extraordinary), Su (Supernatural), Sp (Spell-Like), or General:', 'Ex');
-      if (typeChoice === null) return;
-      const cleanType = typeChoice.trim();
-      const benefit = await DnDUI.prompt(`Rule description or effect for "${cleanName}":`, '');
-      if (benefit === null) return;
-      
-      if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
-      const existing = character.specialAbilities.find(a => (typeof a === 'string' ? a : (a?.name || '')).toLowerCase() === cleanName.toLowerCase());
-      if (existing) {
-        if (typeof existing === 'object') {
-          existing.type = cleanType || existing.type;
-          existing.benefit = benefit || existing.benefit;
-        }
-      } else {
-        character.specialAbilities.push({
-          name: cleanName,
-          type: cleanType || 'Ex',
-          benefit: benefit || ''
-        });
-      }
-      saveStateToStorage(true);
-      renderAll();
-      showDiceTopToast({
-        icon: '⚡',
-        title: 'Special Ability Added',
-        breakdown: `"${cleanName}" saved to character.`,
-        total: cleanType ? `[${cleanType}]` : 'Saved'
-      });
     }
 
     let _coreFeatsAccordionOpen = false; // Closed by default
@@ -9482,20 +9262,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       if (typeof renderAll === 'function') renderAll();
     }
 
-    // Toggle Skill Consolidation mode directly from Skills card
-    function toggleSkillConsolidation() {
-      if (!character.settings) character.settings = {};
-      character.settings.mergeSkills = character.settings.mergeSkills === false ? true : false;
-      saveStateToStorage(true);
-      renderSkills();
-      showDiceTopToast({
-        icon: '🔗',
-        title: 'Skill Mode Changed',
-        breakdown: character.settings.mergeSkills ? 'Consolidated Skills (7 Groups) enabled!' : 'Standard D&D 3.5e RAW (46 Skills) enabled!',
-        total: character.settings.mergeSkills ? 'Consolidated' : 'RAW'
-      });
-    }
-
     // Open/Close/Save Skill Consolidation Modal (Master DB linked)
     let _scmSelectedMode = true;
     let _scmWorkingGroups = [];
@@ -9787,7 +9553,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       window.closeSkillConsolidationModal = closeSkillConsolidationModal;
       window.saveSkillConsolidationSettings = saveSkillConsolidationSettings;
       window.setScmMode = setScmMode;
-      window.toggleSkillConsolidation = toggleSkillConsolidation;
     }
 
     // ====================================================
@@ -11188,18 +10953,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       Actions.register('progression:fetch-companion-ai', (el, data, event) => {
         if (data.query) fetchCompanionViaAi(data.query);
       });
-      Actions.register('progression:adjust-skill-rank', (el, data, event) => {
-        if (data.skillKey) adjustSkillRank(data.skillKey, Number(data.delta) || 0);
-      });
-      Actions.register('progression:toggle-skill-class', (el, data, event) => {
-        if (data.skillKey) toggleSkillClass(data.skillKey);
-      });
-      Actions.register('progression:remove-feat', (el, data, event) => {
-        if (data.featName) removeFeatByName(data.featName, data.levelIdx !== undefined ? Number(data.levelIdx) : null, data.category || 'feat');
-      });
-      Actions.register('progression:add-level-row', (el, data, event) => {
-        addNewLevelRowToProgression(data.className || null);
-      });
       Actions.register('prog:add-level-row', (el, data, event) => {
         addNewLevelRowToProgression((data && data.className) || null);
       });
@@ -11226,9 +10979,6 @@ Provide complete maxLevel (5 or 10 for prestige class, 20 for base class/variant
       });
       Actions.register('prog:clear-skill-search', (el, data, event) => {
         if (typeof clearSkillSearch === 'function') clearSkillSearch();
-      });
-      Actions.register('progression:update-level-hp', (el, data, event) => {
-        updateProgressionHp(Number(data.levelIdx) || 0, el ? el.value : data.hp);
       });
     }
 

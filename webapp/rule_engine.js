@@ -1096,7 +1096,6 @@ const RuleEngine = {
 
     // STAGE 2: Selector Modifiers (Entity-to-Entity & Category-Wide Mutations)
     const selectorMods = allModifiers.filter(item => item.mod.selector || String(item.mod.target || '').startsWith('entity.'));
-    const statMods = allModifiers.filter(item => !item.mod.selector && !String(item.mod.target || '').startsWith('entity.'));
 
     selectorMods.forEach(({ mod, selfCtx }) => {
       const val = mod.formula !== undefined && mod.formula !== null

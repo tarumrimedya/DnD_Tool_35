@@ -312,11 +312,6 @@
       return 'spontaneous';
     }
 
-    function setCombatSpellSlotsSourceFilter(filterKey) {
-      window.currentActiveCombatSpellSlotsSourceFilter = filterKey;
-      renderSpellSlotsStrip();
-    }
-
     function renderSpellSlotsStrip() {
       const container = document.getElementById('combat-spell-slots-strip');
       if (!container) return;
@@ -892,29 +887,6 @@
       renderSpellSlotsModalRows();
     }
 
-    function unlockSpellSlotLevel(lvl, sourceKey) {
-      if (!character) return;
-      const key = sourceKey || window.currentSpellSlotsModalSource || 'spontaneous';
-      const slots = getSpellSlotsArrayBySource(key);
-
-      let s = slots.find(item => Number(item.level) === Number(lvl));
-      if (!s) {
-        s = { level: lvl, daily: 1, used: 0 };
-        slots.push(s);
-      } else {
-        s.daily = Math.max(1, (Number(s.daily) || 0) + 1);
-      }
-
-      saveStateToStorage(false);
-      renderSpellSlotsStrip();
-      renderSpellSlotsModalRows();
-      renderCombatCategorySpells();
-      recalculateCombatSpell();
-      if (typeof renderSpellSlots === 'function') renderSpellSlots();
-      if (key === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
-      if (key === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
-    }
-
     function modifySpellSlotUsed(lvl, delta, sourceKey) {
       if (!character) return;
       const key = sourceKey || window.currentSpellSlotsModalSource || 'spontaneous';
@@ -965,57 +937,6 @@
           return;
         }
       }
-    }
-
-    function replenishSpellSlotLevel(lvl, sourceKey) {
-      const key = sourceKey || window.currentSpellSlotsModalSource || 'spontaneous';
-      const slots = getSpellSlotsArrayBySource(key);
-      const s = slots.find(item => Number(item.level) === Number(lvl));
-      if (!s) return;
-      s.used = 0;
-      if (key === 'divine') s.domainUsed = 0;
-
-      saveStateToStorage(false);
-      renderSpellSlotsStrip();
-      renderSpellSlotsModalRows();
-      renderCombatCategorySpells();
-      recalculateCombatSpell();
-      if (typeof renderSpellSlots === 'function') renderSpellSlots();
-      if (key === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
-      if (key === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
-    }
-
-    function replenishSourceSlots(sourceKey) {
-      if (sourceKey === 'martial') {
-        recoverAllManeuvers();
-        renderSpellSlotsModalRows();
-        return;
-      }
-      const slots = getSpellSlotsArrayBySource(sourceKey);
-      slots.forEach(s => {
-        s.used = 0;
-        if (sourceKey === 'divine') s.domainUsed = 0;
-      });
-      if (sourceKey === 'divine' && character?.spellcasting) {
-        character.spellcasting.turnUndeadUsed = 0;
-        character.spellcasting.domainPowerUses = {};
-      }
-      saveStateToStorage(false);
-      renderSpellSlotsStrip();
-      renderSpellSlotsModalRows();
-      renderCombatCategorySpells();
-      recalculateCombatSpell();
-      if (typeof renderSpellSlots === 'function') renderSpellSlots();
-      if (sourceKey === 'prepared' && typeof renderPreparedSpells === 'function') renderPreparedSpells();
-      if (sourceKey === 'divine' && typeof renderDivineSpells === 'function') renderDivineSpells();
-
-      const sourceLabels = { spontaneous: 'Spontaneous Spell', prepared: 'Prepared Spell', divine: 'Divine Spell' };
-      showDiceTopToast({
-        icon: '✨',
-        title: 'Slots Refreshed',
-        breakdown: `All ${sourceLabels[sourceKey] || sourceKey} slots refreshed.`,
-        total: 'Refreshed'
-      });
     }
 
     function replenishAllSpellSlots() {
@@ -1436,13 +1357,6 @@
     function hideSpellHoverTooltip() {
       const tooltip = document.getElementById('combat-spell-hover-tooltip');
       if (tooltip) tooltip.classList.add('hidden');
-    }
-
-    function showActiveSpellHoverTooltip(event) {
-      const activeSpell = typeof getSelectedCombatSpell === 'function' ? getSelectedCombatSpell() : null;
-      if (activeSpell && activeSpell.name && typeof showSpellHoverTooltip === 'function') {
-        showSpellHoverTooltip(event, activeSpell.name, activeSpell._spellSource);
-      }
     }
 
     // Dismiss floating hover tooltips on tap or click anywhere outside
@@ -2111,20 +2025,6 @@
       if (select) select.value = spellName;
       renderCombatCategorySpells();
       recalculateCombatSpell();
-    }
-
-    // Aliases for backward compatibility
-    function renderCombatQuickSpells() {
-      renderCombatCategorySpells();
-    }
-
-    function selectQuickCombatSpell(spellName) {
-      selectCombatSpellDirect(spellName);
-    }
-
-    function toggleCombatSpellLibraryDrawer() {
-      const drawer = document.getElementById('combat-spell-library-drawer');
-      if (drawer) drawer.classList.toggle('hidden');
     }
 
     function populateCombatSpells() {
@@ -3996,20 +3896,6 @@
       renderWeaponSetsUI();
       recalculateOffense();
       saveStateToStorage();
-    }
-
-    function setCombatGrip(grip) {
-      const gripSelect = document.getElementById('active-grip-select');
-      if (gripSelect) {
-        gripSelect.value = grip;
-      }
-      const wep = (character.weapons || []).find(w => w.name === character.activeWeapon);
-      if (wep) {
-        wep.grip = grip;
-      }
-      syncCombatGripUI();
-      recalculateOffense();
-      saveStateToStorage(false);
     }
 
     function syncCombatGripUI() {
@@ -6302,13 +6188,6 @@
     window.selectSrdSpotlightWeapon = selectSrdSpotlightWeapon;
     window.addSrdCatalogItemToCharacter = selectSrdSpotlightWeapon;
 
-    function getWeaponOrPoolItem(itemName) {
-      if (!character || !itemName || itemName === 'None') return null;
-      let wep = (character.weapons || []).find(w => w && w.name === itemName);
-      let poolItem = (character.gearPool || []).find(g => g && g.name === itemName);
-      return { wep, poolItem };
-    }
-
     function stepWeaponEnhancement(setNum, delta) {
       ensureWeaponSetsData();
       const sets = character?.tactical?.weaponSets;
@@ -6773,42 +6652,6 @@
       });
     }
 
-    function onTWFModifierToggle() {
-      const isChecked = document.getElementById('mod-twf')?.checked ?? false;
-      const mainWep = character.activeWeapon || character.tactical?.weaponSets?.set1?.mainWeapon;
-      const mainIsTwoHand = typeof RuleEngine !== 'undefined' ? RuleEngine.isTwoHandedWeapon(mainWep) : false;
-      const hasOversized = typeof RuleEngine !== 'undefined' ? RuleEngine.hasOversizedWeaponFeat(character) : false;
-
-      // Rule 2: TWF unavailable if main hand is two-handed without oversized weapon feat
-      if (isChecked && mainIsTwoHand && !hasOversized) {
-        if (typeof showToast === 'function') {
-          showToast(`Your main-hand weapon "${mainWep}" is two-handed! Two-Weapon Fighting (TWF) requires Monkey Grip.`, 'warning');
-        }
-        const twfCb = document.getElementById('mod-twf');
-        if (twfCb) twfCb.checked = false;
-        return;
-      }
-
-      let mod = (character.activeModifiers || []).find(m => m && m.name && (m.name.includes('TWF') || m.name.includes('Two-Weapon')));
-      if (mod) {
-        mod.active = isChecked;
-      } else {
-        if (!character.activeModifiers) character.activeModifiers = [];
-        character.activeModifiers.push({
-          name: 'Two-Weapon Fighting (TWF)',
-          source: 'Combat',
-          bonusAtk: 0,
-          dice: '',
-          type: 'TWF',
-          active: isChecked,
-          notes: 'Extra Off-Hand Attack (RAW TWF)'
-        });
-      }
-      recalculateOffense();
-      renderOffenseModifiersGrid();
-      saveStateToStorage(false);
-    }
-
     function renderOffenseModifiersGrid() {
       const grid = document.getElementById('combat-modifiers-3x3-grid');
       if (!grid) return;
@@ -7018,49 +6861,6 @@
       if (badgeEl) badgeEl.classList.add('hidden');
       const expandBar = document.getElementById('combat-defense-expand-bar');
       if (expandBar) expandBar.classList.add('hidden');
-    }
-
-    function toggleDefenseCardActive(name) {
-      if (!character) return;
-      const clean = (name || '').toLowerCase().trim();
-
-      const allPins = getAllCombatPins();
-      const pin = allPins.find(p => (p.name || '').toLowerCase().trim() === clean);
-      if (pin) {
-        pin.active = !pin.active;
-      }
-
-      if (Array.isArray(character.activeModifiers)) {
-        const mod = character.activeModifiers.find(m => (m.name || '').toLowerCase().trim() === clean);
-        if (mod) {
-          mod.active = pin ? pin.active : !mod.active;
-        }
-      }
-
-      if (clean.includes('punishing stance') && character.tomeOfBattle?.stances) {
-        const stance = character.tomeOfBattle.stances.find(s => (s.name || '').toLowerCase().trim() === clean);
-        if (stance) {
-          stance.active = pin ? pin.active : true;
-        }
-      }
-
-      if (typeof recalculateDefense === 'function') recalculateDefense();
-      if (typeof recalculateOffense === 'function') recalculateOffense();
-      renderDefenseModifiersGrid();
-      saveStateToStorage(false);
-    }
-
-    function moveDefenseCardOrder(idx, delta, event) {
-      if (event) event.stopPropagation();
-      if (!character || !character.combatPins) return;
-      const pins = character.combatPins.defense || [];
-      const targetIdx = idx + delta;
-      if (targetIdx < 0 || targetIdx >= pins.length) return;
-      const temp = pins[idx];
-      pins[idx] = pins[targetIdx];
-      pins[targetIdx] = temp;
-      renderDefenseModifiersGrid();
-      saveStateToStorage(false);
     }
 
     function toggleExpandDefenseGrid() {
@@ -7463,17 +7263,6 @@
       return name;
     }
 
-    function onCombatRangedWeaponChange() {
-      const weaponSelect = document.getElementById('combat-active-ranged-weapon-select');
-      if (!weaponSelect) return;
-      if (!character.tactical) character.tactical = {};
-      character.tactical.selectedRangedWeapon = weaponSelect.value;
-      character.tactical.selectedArrow = 'Standard Arrow';
-      populateRangedWeaponAndAmmoUI();
-      recalculateOffense();
-      saveStateToStorage(false);
-    }
-
     // --- RANGED COMBAT & TACTICAL MODIFIERS ENGINE (AREA 2) ---
     function renderRangedModifiersGrid() {
       const grid = document.getElementById('combat-modifiers-ranged-3x3-grid');
@@ -7651,14 +7440,6 @@
       saveStateToStorage(false);
       renderSpellTacticalModifiers();
       if (typeof recalculateCombatSpell === 'function') recalculateCombatSpell();
-    }
-
-    function onFixedModifierToggle() {
-      recalculateOffense();
-      renderOffenseModifiersGrid();
-      renderHUD();
-      if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
-      saveStateToStorage(false);
     }
 
     function getMeleeDynamicModifiers() {
@@ -7998,10 +7779,6 @@
       renderRangedModifiersGrid();
     }
 
-    function moveModifierOrder(idx, delta, event) {
-      moveMeleeModifierOrder(idx, delta, event);
-    }
-
     function getResolvedOffHandWeapon(character) {
       const sets = character.tactical?.weaponSets;
       const isDualSets = sets && Array.isArray(sets.activeSets) && sets.activeSets.includes(2) && sets.set2?.mainWeapon && sets.set2.mainWeapon !== 'None';
@@ -8075,7 +7852,6 @@
         const hasRapid = characterHasFeat(character, 'Rapid Shot');
         const hasMany = characterHasFeat(character, 'Manyshot');
         const hasPrecise = characterHasFeat(character, 'Precise Shot');
-        const hasTrue = characterHasSpell(character, 'True Strike');
         const hasHaste = characterHasItem(character, 'Boots of Speed') || characterHasBuff(character, 'Haste');
         const hasSneak = characterHasSneakAttack(character);
 
@@ -8996,11 +8772,6 @@
           }
         }, 1200);
       }
-    }
-
-    // Single Iterative legacy bridge (aliases targetIdx to rollAttackChainItemByIndex)
-    function rollSingleAttackWith3D(targetIdx) {
-      rollAttackChainItemByIndex(targetIdx);
     }
 
     // [d20] 3D TACTICAL ROLL ATTACK (Full Attack Sequence)
@@ -11421,56 +11192,6 @@
       renderAll();
     }
 
-    // --- MINI SLOTS & MANEUVERS ---
-    function renderCockpitMiniSpellSlots() {
-      const container = document.getElementById('cockpit-mini-spell-slots');
-      if (!container) return;
-      const slots = character.spellcasting?.slots || [];
-      if (slots.length === 0) {
-        container.innerHTML = '<div class="text-[10px] text-slate-500 italic">No spell slots.</div>';
-        return;
-      }
-      container.innerHTML = slots.map((s, idx) => {
-        const remaining = Math.max(0, (s.daily || 0) - (s.used || 0));
-        return `
-          <div class="flex items-center justify-between bg-slate-900/60 border border-slate-800 rounded px-2 py-1 text-xs">
-            <span class="font-bold text-purple-300 text-[11px]">${UI.escapeHtml(s.name)}: <strong class="font-mono text-white">${remaining}/${s.daily}</strong></span>
-            <button type="button" data-action="combat:spend-mini-spell-slot" data-slot-idx="${idx}" class="text-[10px] font-bold text-purple-300 hover:text-white bg-purple-950/60 hover:bg-purple-900 border border-purple-800/80 px-2 py-0.5 rounded transition" ${remaining <= 0 ? 'disabled' : ''}>
-              ✨ Expend (-1)
-            </button>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function spendMiniSpellSlot(idx) {
-      const s = character.spellcasting?.slots?.[idx];
-      if (!s) return;
-      s.used = Math.min(s.daily || 0, (s.used || 0) + 1);
-      saveStateToStorage(true);
-      renderAll();
-      showDiceTopToast({ icon: '🔮', title: `${s.name} Slot Expended`, breakdown: `Remaining: ${(s.daily || 0) - s.used}/${s.daily}`, total: '-1 Slot' });
-    }
-
-    function renderCockpitMiniManeuvers() {
-      const container = document.getElementById('cockpit-mini-maneuvers');
-      if (!container) return;
-      const readied = character.tomeOfBattle?.readiedManeuvers || [];
-      if (readied.length === 0) {
-        container.innerHTML = '<div class="text-[10px] text-slate-500 italic">No readied maneuvers.</div>';
-        return;
-      }
-      container.innerHTML = readied.map(m => {
-        const isExpended = m.expended;
-        return `
-          <div class="px-2 py-1 rounded text-[11px] font-bold border flex items-center gap-1 ${isExpended ? 'bg-slate-900/40 border-slate-800 text-slate-500 line-through' : 'bg-indigo-950/50 border-indigo-500/60 text-indigo-300'}">
-            <span>${isExpended ? '🔄' : '⚡'}</span>
-            <span>${UI.escapeHtml(m.name)}</span>
-          </div>
-        `;
-      }).join('');
-    }
-
     // ====================================================
     // 🐾 COMPANION & MOUNT COMBAT (Madde D)
     // ====================================================
@@ -11829,79 +11550,6 @@
       });
     }
 
-    function triggerCockpitShortRest() {
-      if (character?.tactical?.abilityCooldowns) {
-        character.tactical.abilityCooldowns = {};
-      }
-      if (typeof executeShortRest === 'function') {
-        executeShortRest(5);
-        return;
-      }
-      if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
-        character.tomeOfBattle.readiedManeuvers.forEach(m => m.expended = false);
-      }
-      saveStateToStorage(true);
-      renderAll();
-      showDiceTopToast({
-        icon: '⚡',
-        title: 'Short Rest Complete',
-        breakdown: 'Martial Adept: All readied maneuvers recovered!',
-        total: 'Maneuvers Ready'
-      });
-    }
-
-    async function triggerCockpitLongRest() {
-      if (character?.tactical?.abilityCooldowns) {
-        character.tactical.abilityCooldowns = {};
-      }
-      if (typeof performLongRest === 'function') {
-        performLongRest();
-        return;
-      }
-      if ((await DnDUI.confirm('🌙 Take a Long Rest (8 Hours) and restore HP, all daily spell slots, and maneuvers?'))) {
-        // Refill HP
-        if (character.hp) character.hp.current = character.hp.max || 44;
-        // Refill spell slots
-        if (character.spellcasting) {
-          if (Array.isArray(character.spellcasting.slots)) {
-            character.spellcasting.slots.forEach(s => s.used = 0);
-          }
-          if (Array.isArray(character.spellcasting.preparedSlots)) {
-            character.spellcasting.preparedSlots.forEach(s => s.used = 0);
-          }
-          if (Array.isArray(character.spellcasting.divineSlots)) {
-            character.spellcasting.divineSlots.forEach(s => {
-              s.used = 0;
-              s.domainUsed = 0;
-            });
-          }
-          character.spellcasting.turnUndeadUsed = 0;
-          character.spellcasting.domainPowerUses = {};
-        }
-        // Refill maneuvers
-        if (character.tomeOfBattle && Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
-          character.tomeOfBattle.readiedManeuvers.forEach(m => m.expended = false);
-        }
-        // Reset tactical
-        if (character.tactical) {
-          character.tactical.combatExpertise = 0;
-          character.tactical.fightingDefensively = false;
-          character.tactical.totalDefense = false;
-          character.tactical.shieldBlockActive = false;
-          character.tactical.abilityCooldowns = {};
-          character.tactical.round = 1;
-        }
-        saveStateToStorage(true);
-        renderAll();
-        showDiceTopToast({
-          icon: '🌙',
-          title: 'Long Rest Complete!',
-          breakdown: 'HP, daily spell slots, and maneuvers restored.',
-          total: 'All Resources Restored'
-        });
-      }
-    }
-
     // --- ACTIVE PROFILE PREVIEW PILLS ---
     // --- SAVED COMBAT PROFILES ENGINE ---
     function renderSavedProfiles() {
@@ -11955,10 +11603,6 @@
           <button type="button" data-action="combat:delete-saved-profile" data-profile-id="${prof.id}" class="w-4 h-4 rounded-full bg-slate-800 hover:bg-rose-600 text-slate-400 hover:text-white flex items-center justify-center text-[11px] font-bold transition ml-0.5 cursor-pointer" title="Delete Profile">×</button>
         </div>
       `).join('');
-    }
-
-    function renderActiveProfilePills() {
-      renderSavedProfiles();
     }
 
     function openSaveProfileModal() {
@@ -12023,10 +11667,6 @@
     function closeSaveProfileModal() {
       const modal = document.getElementById('modal-weapon-profile-settings');
       if (modal) modal.classList.add('hidden');
-    }
-
-    function closeWeaponProfileModal() {
-      closeSaveProfileModal();
     }
 
     function confirmSaveProfile() {
@@ -12178,40 +11818,6 @@
     }
 
     // --- ATTACK DECISION TOAST & STRIKE AUTO-EXPEND ---
-    function initiateCombatAttack() {
-      if (character.tactical?.totalDefense) {
-        showDiceTopToast({
-          icon: '🛡️',
-          title: 'Total Defense Active!',
-          breakdown: 'You spent your standard action on Total Defense and cannot attack this turn.',
-          total: 'Attack Locked'
-        });
-        return;
-      }
-
-      const toast = document.getElementById('attack-decision-toast');
-      if (!toast) return;
-
-      const subWep = document.getElementById('decision-toast-weapon-sub');
-      if (subWep) subWep.textContent = `${character.activeWeapon || 'Weapon'} • BAB: +${character.bab || 3}`;
-
-      const summaryEl = document.getElementById('decision-toast-active-summary');
-      const activeMods = (character.activeModifiers || []).filter(m => m.active);
-      if (summaryEl) {
-        if (activeMods.length > 0) {
-          summaryEl.textContent = activeMods.map(m => `${m.name} (${m.dice || '+0'})`).join(' • ');
-        } else {
-          summaryEl.textContent = 'Base weapon damage only (No active modifiers)';
-        }
-      }
-
-      // Hide custom drawer by default
-      const customDrawer = document.getElementById('decision-toast-custom-drawer');
-      if (customDrawer) customDrawer.classList.add('hidden');
-
-      toast.classList.remove('hidden');
-    }
-
     function dismissAttackDecisionToast() {
       const toast = document.getElementById('attack-decision-toast');
       if (toast) toast.classList.add('hidden');
@@ -12305,15 +11911,6 @@
     }
 
     // --- PIN DRAWERS (5 SLOTS EXPANDABLE) & GESTURES ---
-    function togglePinDrawer(category) {
-      window.combatDrawerExpanded[category] = !window.combatDrawerExpanded[category];
-      const btn = document.getElementById(`toggle-${category}-pins-btn`);
-      if (btn) {
-        btn.textContent = window.combatDrawerExpanded[category] ? 'Collapse' : 'Show All';
-      }
-      renderCombatPins(category);
-    }
-
     function renderCombatPins(category) {
       if (category === 'offense_ranged') return;
       if (category === 'defense') {
@@ -12440,16 +12037,6 @@
           actionBtns.push(`<button type="button" data-action="combat:pin-toggle" data-category="${category}" data-idx="${idx}" class="py-1 px-2.5 rounded font-bold text-[10px] transition shrink-0 flex items-center gap-1 cursor-pointer ${isActive ? 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-slate-800 hover:bg-slate-700 text-slate-400 border border-slate-700'}">${isActive ? '✓ Active' : '⚪ Passive'}</button>`);
         }
 
-        const autoResolved = resolvePinTarget({ ...pin, pinTarget: 'auto' });
-        const autoShortMap = {
-          offense_spell: 'Spell: Offense',
-          spell_control: 'Spell: Control',
-          spell_support: 'Spell: Support',
-          offense_melee: 'Martial: Melee',
-          offense_ranged: 'Physical: Ranged',
-          defense: 'Physical: Defense'
-        };
-        const autoShort = autoShortMap[autoResolved] || 'Auto';
 
         const quickDrawerSelect = `
           <select data-change-action="combat:pin-drawer-change" data-pin-name="${safePinNameAttr}" class="text-[10px] font-mono bg-slate-950 text-slate-300 border border-slate-700/80 rounded px-1.5 py-0.5 cursor-pointer hover:border-amber-500 transition shrink-0" title="Change Combat Drawer">
@@ -13156,7 +12743,6 @@
       }, { stack: true, dismissMs: options.dismissMs || (urgent ? 6000 : 4000) });
     }
 
-    let _diceToastTimer = null;
     function showDiceTopToast(entry, options = {}) {
       if (!entry) return null;
       if (typeof entry === 'string') {
@@ -15919,9 +15505,6 @@
       Actions.register('combat:consume-cockpit-item', (el, data, event) => {
         if (data.encodedName) consumeCockpitItem(data.encodedName);
       });
-      Actions.register('combat:spend-mini-spell-slot', (el, data, event) => {
-        if (data.slotIdx !== undefined) spendMiniSpellSlot(Number(data.slotIdx));
-      });
       Actions.register('combat:open-companion-modal', (el, data, event) => {
         if (typeof openCompanionModal === 'function') openCompanionModal();
       });
@@ -15985,20 +15568,6 @@
           switchCombatOffenseMode(data.mode);
         }
       });
-      Actions.register('combat:toggle-section', (el, data, event) => {
-        if (data.section && typeof toggleCockpitPanel === 'function') {
-          toggleCockpitPanel(data.section);
-        }
-      });
-      Actions.register('combat:toggle-spell-slots-strip', (el, data, event) => {
-        if (typeof toggleSpellSlotsAccordion === 'function') toggleSpellSlotsAccordion();
-      });
-      Actions.register('combat:open-spell-slots-modal', (el, data, event) => {
-        if (typeof openSpellSlotsModal === 'function') openSpellSlotsModal();
-      });
-      Actions.register('combat:close-spell-slots-modal', (el, data, event) => {
-        if (typeof closeSpellSlotsModal === 'function') closeSpellSlotsModal();
-      });
       Actions.register('combat:switch-spell-cat', (el, data, event) => {
         if (data.cat && typeof switchCombatSpellCategory === 'function') {
           switchCombatSpellCategory(data.cat);
@@ -16007,37 +15576,8 @@
       Actions.register('combat:toggle-spell-reorder', (el, data, event) => {
         if (typeof toggleSpellReorderMode === 'function') toggleSpellReorderMode();
       });
-      Actions.register('combat:open-add-weapon-modal', (el, data, event) => {
-        if (typeof toggleSrdSpotlight === 'function') toggleSrdSpotlight(true);
-      });
       Actions.register('combat:open-save-profile-modal', (el, data, event) => {
         if (typeof openSaveProfileModal === 'function') openSaveProfileModal();
-      });
-      Actions.register('combat:toggle-melee-mod-reorder', (el, data, event) => {
-        if (typeof toggleMeleeReorderMode === 'function') toggleMeleeReorderMode();
-      });
-      Actions.register('combat:toggle-ranged-mod-reorder', (el, data, event) => {
-        if (typeof toggleRangedReorderMode === 'function') toggleRangedReorderMode();
-      });
-      Actions.register('combat:roll-attack-only', (el, data, event) => {
-        if (typeof rollMainAttackOnly3D === 'function') rollMainAttackOnly3D();
-      });
-      Actions.register('combat:roll-damage-only', (el, data, event) => {
-        if (typeof rollMainDamageOnly3D === 'function') rollMainDamageOnly3D();
-      });
-      Actions.register('combat:roll-attack-and-damage', (el, data, event) => {
-        if (typeof rollFullAttackSequence3D === 'function') rollFullAttackSequence3D();
-      });
-      Actions.register('combat:roll-spell-attack', (el, data, event) => {
-        if (typeof initiateCombatSpellCast === 'function') initiateCombatSpellCast();
-      });
-      Actions.register('combat:cast-selected-spell', (el, data, event) => {
-        if (typeof initiateCombatSpellCast === 'function') initiateCombatSpellCast();
-      });
-      Actions.register('combat:roll-maneuver-check', (el, data, event) => {
-        if (data.type && typeof rollCombatManeuver3D === 'function') {
-          rollCombatManeuver3D(data.type);
-        }
       });
       Actions.register('combat:die-click', (el, data, event) => {
         if (data.sides && typeof handleDieClick === 'function') {
@@ -16215,9 +15755,6 @@
       });
       Actions.register('combat:dismiss-attack-result', (el, data, event) => {
         if (typeof dismissAttackResult === 'function') dismissAttackResult();
-      });
-      Actions.register('combat:recalc-defense', (el, data, event) => {
-        if (typeof recalculateDefense === 'function') recalculateDefense();
       });
       Actions.register('combat:set-buffs-view', (el, data, event) => {
         if (data && data.mode && typeof window.setBuffsViewMode === 'function') {

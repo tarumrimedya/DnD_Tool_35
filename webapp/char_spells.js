@@ -415,13 +415,6 @@
       }
     }
 
-    // Backwards-compatible alias for any legacy callers
-    function switchSpellsSubtab(tab) {
-      if (tab === 'spells') switchMagicDisciplineTab('spontaneous');
-      else if (tab === 'maneuvers') switchMagicDisciplineTab('martial');
-      else switchMagicDisciplineTab(tab);
-    }
-
     function calculateWizardSlots(wizardLvl, intScore, existingSlots = []) {
       const prevSlots = Array.isArray(existingSlots) ? existingSlots : [];
       if (Number(wizardLvl) <= 0) return prevSlots.filter(s => (Number(s.daily) || 0) > 0);
@@ -3700,41 +3693,6 @@
         container.appendChild(div);
       }
     }
-    function useSpellSlot(idx) {
-      const slot = character?.spellcasting?.slots?.[idx];
-      if (!slot) return;
-      if (slot.used < slot.daily) {
-        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
-          CharStore.dispatch({
-            type: 'spells/adjustSlot',
-            payload: { discipline: 'spontaneous', level: Number(slot.level) || 0, deltaUsed: 1 },
-            meta: { label: `Use Level ${slot.level} Spell Slot` }
-          });
-        } else {
-          slot.used++;
-          saveStateToStorage();
-        }
-        renderSpellSlots();
-      }
-    }
-
-    function restoreSpellSlot(idx) {
-      const slot = character?.spellcasting?.slots?.[idx];
-      if (!slot) return;
-      if (slot.used > 0) {
-        if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
-          CharStore.dispatch({
-            type: 'spells/adjustSlot',
-            payload: { discipline: 'spontaneous', level: Number(slot.level) || 0, deltaUsed: -1 },
-            meta: { label: `Restore Level ${slot.level} Spell Slot` }
-          });
-        } else {
-          slot.used--;
-          saveStateToStorage();
-        }
-        renderSpellSlots();
-      }
-    }
 
     function restoreAllSpellSlots() {
       if (typeof CharStore !== 'undefined' && typeof CharStore.dispatch === 'function') {
@@ -5042,10 +5000,6 @@
           });
         }
       }
-    }
-
-    function toggleManeuverExpended(idx) {
-      useOrRecoverManeuver(idx);
     }
 
     function toggleManeuverReadied(escapedName) {
@@ -7399,7 +7353,6 @@
         const cleanName = (item.masterDbName || item.name || '').toLowerCase().trim();
         const m = masterDb.find(e => (e.name || '').toLowerCase().trim() === cleanName);
         if (m) {
-          const mSlot = (m.slot || '').toLowerCase().trim();
           const mType = (m.type || '').toLowerCase().trim();
           if (['weapon', 'armor', 'shield', 'ring'].includes(mType)) return false;
           if (mType.includes('potion') || mType.includes('scroll') || mType.includes('wand') || mType.includes('consumable')) return true;

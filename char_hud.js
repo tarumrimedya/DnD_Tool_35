@@ -592,7 +592,6 @@
           cloudFd.name = localSaved.name;
         }
 
-        const cloudLvl = Number(cloudFd.level) || (Array.isArray(cloudFd.progression) ? cloudFd.progression.length : 0);
         const localLvl = localSaved ? (Number(localSaved.level) || (Array.isArray(localSaved.progression) ? localSaved.progression.length : 0)) : 0;
         const cloudRowTs = new Date(matchedCloud.updated_at || 0).getTime();
         const cloudFdTs = cloudFd.lastModified ? new Date(cloudFd.lastModified).getTime() : 0;
@@ -2067,23 +2066,6 @@
       }
     }
 
-    function onSettingPinDrawerLimitChange() {
-      const sel = document.getElementById('setting-pin-drawer-limit');
-      if (!sel || !character) return;
-      if (!character.settings) character.settings = {};
-      const val = Math.max(1, Math.min(9, parseInt(sel.value) || 5));
-      character.settings.pinDrawerLimit = val;
-      sel.value = val;
-      saveStateToStorage(false);
-      renderCombatCockpit();
-      showDiceTopToast({
-        icon: '📌',
-        title: 'Drawer Capacity Updated',
-        breakdown: `Combat cockpit drawers will show ${val} slots by default (Maximum: 9).`,
-        total: `${val} Slot`
-      });
-    }
-
     function closeSettingsModal() {
       const modal = document.getElementById('settings-modal');
       if (modal) modal.classList.add('hidden');
@@ -2354,24 +2336,6 @@
       return !alreadySpent;
     }
     window.consumeActionEconomy = consumeActionEconomy;
-
-    function advanceCombatTurn() {
-      if (typeof advanceCombatRound === 'function') {
-        advanceCombatRound();
-        return;
-      }
-      if (!character.tactical) character.tactical = {};
-      character.tactical.round = (Number(character.tactical.round) || 1) + 1;
-      character.encounterRound = character.tactical.round;
-      resetActionEconomy();
-      saveStateToStorage(false);
-      showDiceTopToast({
-        icon: '⚔️',
-        title: 'New Turn Started',
-        breakdown: `Round ${character.tactical.round}: Full action budget (Standard, Move, Swift, Immediate) refreshed.`,
-        total: `Rd ${character.tactical.round}`
-      });
-    }
 
     function setHouseRuleSkillConsolidation(isMerged) {
       if (!character.settings) character.settings = {};
@@ -3424,16 +3388,6 @@
       saveStateToStorage(true);
     }
 
-    function scrollToPortraitPanel() {
-      setStatDistMode('portrait');
-      const panel = document.getElementById('profile-portrait-panel');
-      if (panel) {
-        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        panel.classList.add('ring-2', 'ring-indigo-400');
-        setTimeout(() => panel.classList.remove('ring-2', 'ring-indigo-400'), 1200);
-      }
-    }
-
     // 👤 KARAKTER RESMİ ODAKLAMA & BOYUTLANDIRMA SİSTEMİ
     let isDraggingPortrait = false;
     let portraitDragStartX = 0;
@@ -3905,13 +3859,6 @@
       saveStateToStorage(true);
     }
 
-    function setWallpaperPosition(pos) {
-      initWallpaperIfEmpty();
-      character.wallpaper.position = pos;
-      applyWallpaperSettings();
-      saveStateToStorage(true);
-    }
-
     function onWallpaperFitChange() {
       initWallpaperIfEmpty();
       const sel = document.getElementById('wallpaper-fit-select');
@@ -3952,16 +3899,6 @@
       }
       applyWallpaperSettings();
       saveStateToStorage(true);
-    }
-
-    function scrollToWallpaperPanel() {
-      setStatDistMode('portrait');
-      const panel = document.getElementById('profile-wallpaper-panel');
-      if (panel) {
-        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        panel.classList.add('ring-2', 'ring-purple-400');
-        setTimeout(() => panel.classList.remove('ring-2', 'ring-purple-400'), 1200);
-      }
     }
 
     function updateProfileModalAvatar() {
@@ -4199,14 +4136,6 @@
           }
         }, 60);
       }
-    }
-
-    function closeProfileEditModal() {
-      closeStatDistributionModal();
-    }
-
-    function saveCharacterProfile() {
-      saveStatDistribution();
     }
 
     // =========================================================================
@@ -5348,14 +5277,6 @@
       dropdown.style.display = 'none';
       if (chevron) chevron.classList.remove('rotate-180');
       _alignmentDropdownOpen = false;
-    }
-
-    function onAlignmentFilter(val) {
-      renderAlignmentItems(val);
-    }
-
-    function clearAlignmentFilter() {
-      renderAlignmentItems('');
     }
 
     function renderAlignmentItems(filterText = '') {
@@ -7828,72 +7749,6 @@
       card.classList.remove('hidden');
     }
 
-    function applyRacialTraitsToCharacter(raceName) {
-      if (!character) return;
-      const catalog = (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG))
-        ? window.BUNDLED_SRD_CORE_CATALOG
-        : [];
-
-      const raceObj = catalog.find(item => item && item.type === 'Race' && item.name.toLowerCase() === raceName.toLowerCase());
-      if (!raceObj) return;
-
-      // Auto racial stats enabled
-
-      // 1. Update basic profile fields
-      character.race = raceObj.name;
-      if (raceObj.size) character.size = raceObj.size;
-      if (raceObj.baseSpeed) character.baseSpeed = raceObj.baseSpeed;
-
-      const raceInput = document.getElementById('profile-edit-race');
-      if (raceInput) raceInput.value = raceObj.name;
-      const sizeInput = document.getElementById('profile-edit-size');
-      if (sizeInput && raceObj.size) {
-        sizeInput.value = raceObj.size;
-        updateSizeDropdownTrigger(raceObj.size);
-      }
-      const speedInput = document.getElementById('profile-edit-speed');
-      if (speedInput && raceObj.baseSpeed) speedInput.value = raceObj.baseSpeed;
-
-      // 2. Racial ability modifiers are handled automatically by RuleEngine.recalculateCharacter()
-
-      // 3. Inject Racial Traits into character.specialAbilities (duplicate-safe)
-      if (!Array.isArray(character.specialAbilities)) character.specialAbilities = [];
-      let addedTraitCount = 0;
-
-      if (Array.isArray(raceObj.traits)) {
-        raceObj.traits.forEach(t => {
-          const traitFullName = `${t.name} (${raceObj.name})`;
-          const alreadyExists = character.specialAbilities.some(a => {
-            const aName = (typeof a === 'string' ? a : (a.name || '')).toLowerCase();
-            return aName === traitFullName.toLowerCase() || aName === t.name.toLowerCase();
-          });
-
-          if (!alreadyExists) {
-            character.specialAbilities.push({
-              name: traitFullName,
-              source: `${raceObj.name} Race`,
-              benefit: t.desc || '',
-              action: 'Passive',
-              duration: 'Continuous',
-              active: true
-            });
-            addedTraitCount++;
-          }
-        });
-      }
-
-      saveStateToStorage(true);
-      renderAll();
-
-      if (typeof showDiceTopToast === 'function') {
-        showDiceTopToast({
-          title: `Applied Race: ${raceObj.name}!`,
-          breakdown: `${addedTraitCount} racial traits added to special abilities. Size: ${raceObj.size}, Base Speed: ${raceObj.baseSpeed} ft.${includeStats ? ' Ability modifiers applied.' : ''}`,
-          icon: '🧬'
-        });
-      }
-    }
-
     // ====================================================
     // CONTROLLER: DM STATBLOCK & ABILITY STUDIO MODAL
     // Canavar / NPC statblock düzenleme, vitals, serbest hüner,
@@ -9270,10 +9125,6 @@ function renderManualStatsPanel() {
       } else {
         alert('✅ Character profile and base ability scores updated successfully!');
       }
-    }
-
-    function saveAbilityEditorChanges() {
-      return saveStatDistribution();
     }
 
     function setSheetViewMode(mode) {

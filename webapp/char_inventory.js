@@ -1903,39 +1903,6 @@
     window.executeShortRest = executeShortRest;
     window.executeLongRest = executeLongRest;
 
-    function performEncounterReset() {
-      if (!character) return;
-      character.encounterRound = 1;
-
-      if (!character.tomeOfBattle) character.tomeOfBattle = {};
-      if (Array.isArray(character.tomeOfBattle.readiedManeuvers)) {
-        character.tomeOfBattle.readiedManeuvers.forEach(m => m.expended = false);
-      }
-      if (Array.isArray(character.activeModifiers)) {
-        character.activeModifiers.forEach(mod => {
-          if (mod.source === 'Maneuver' && mod.active) mod.active = false;
-        });
-      }
-
-      if (Array.isArray(character.buffs)) {
-        character.buffs.forEach(b => {
-          if (b.rounds !== null && b.rounds <= 10) {
-            b.active = false;
-          }
-        });
-      }
-
-      // Reset temporary periodic HP effects
-      if (Array.isArray(character.periodicHpEffects)) {
-        character.periodicHpEffects = [];
-      }
-
-      updateRoundDisplays();
-      saveStateToStorage(true);
-      renderAll();
-      alert('🔄 ENCOUNTER RESET!\n\n• Encounter round counter reset to Round 1.\n• All readied maneuvers recovered.\n• Short encounter buffs (<= 10 rounds) deactivated.\n• Periodic HP effects (DoT/HoT) cleared.');
-    }
-
     let currentBuffModalMode = 'buff'; // 'buff' | 'debuff'
     let currentBuffModalTab = 'spotlight'; // 'spotlight' | 'manual'
     let currentBuffModalChildren = [];
@@ -3746,12 +3713,6 @@
       }
     }
 
-    function changeSilhouetteModel(modelKey) {
-      selectedSilhouetteModel = modelKey || 'auto';
-      try { localStorage.setItem('dnd35_silhouette_model', selectedSilhouetteModel); } catch(e){ reportError('char_inventory:changeSilhouetteModel', e); }
-      renderBodySlotsSilhouette();
-    }
-
     function highlightSlotNode(slotKey, isHighlighted) {
       const nodeEl = document.getElementById(`sil-node-${slotKey}`);
       const haloEl = document.getElementById(`sil-halo-${slotKey}`);
@@ -3819,12 +3780,6 @@
     let panStartY = 0;
     let panStartOffsetX = 0;
     let panStartOffsetY = 0;
-
-    const DEFAULT_SILHOUETTE_TRANSFORM = {
-      scale: 1.0,
-      offsetX: 0,
-      offsetY: 0
-    };
 
     function getSilhouetteTransform(charObj) {
       const saved = charObj?.customSilhouetteTransform || null;
@@ -4231,17 +4186,6 @@
       }
     }
 
-    async function resetSilhouettePoints() {
-      if ((await DnDUI.confirm('Reset all 12 body, card, and S-curve connector nodes to their default coordinates?', { tone: 'danger' }))) {
-        if (character && character.customSilhouetteCoords) {
-          delete character.customSilhouetteCoords;
-        }
-        try { localStorage.removeItem('dnd35_silhouette_custom_coords'); } catch(err){ reportError('char_inventory:resetSilhouettePoints', err); }
-        currentSilhouetteNodes = JSON.parse(JSON.stringify(DEFAULT_BODY_SLOT_NODES));
-        renderBodySlotsSilhouette();
-      }
-    }
-
     function toggleSilhouettePointEditMode(forceState) {
       if (typeof forceState === 'boolean') {
         isSilhouettePointEditMode = forceState;
@@ -4253,16 +4197,6 @@
       }
       renderBodySlotsSilhouette();
       setTimeout(updateSilhouetteConnectorLines, 50);
-    }
-
-    function startDraggingSlotNode(evt, slotKey) {
-      if (!isSilhouettePointEditMode) return;
-      evt.preventDefault();
-      evt.stopPropagation();
-      activeDraggedSlot = slotKey;
-      activeDraggedEnd = 'body';
-      const groupEl = document.getElementById(`sil-node-group-${slotKey}`);
-      if (groupEl) groupEl.classList.add('is-dragging');
     }
 
     function startDraggingSlotNode(evt, slotKey) {
@@ -7000,15 +6934,6 @@
       }
     }
 
-    function setPoolSearchAndFilter(term) {
-      const inp = document.getElementById('pool-modal-search');
-      if (inp) {
-        inp.value = term;
-        onPoolModalSearchInput(term);
-        inp.focus();
-      }
-    }
-
     function clearPoolModalSearch() {
       const inp = document.getElementById('pool-modal-search');
       if (inp) inp.value = '';
@@ -7840,16 +7765,6 @@
       }
     }
 
-    function fillPoolItemFormFromDb(idx) {
-      const item = window._poolCurrentMatches?.[idx];
-      if (item) fillPoolItemForm(item);
-    }
-
-    function fillPoolItemFormFromAi(idx) {
-      const item = window._poolCurrentAiEntries?.[idx];
-      if (item) fillPoolItemForm(item);
-    }
-
     function fillPoolFormWithQueryName(name) {
       fillPoolItemForm({ name: name, category: 'Other', weight: 1, cost: 10, benefit: '' });
     }
@@ -8241,16 +8156,6 @@
     }
     window.openForgeForSpotlightItem = openForgeForSpotlightItem;
 
-    function openCharacterForgeDrawer() {
-      resetAddPoolCustomTabForm();
-      if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
-        window.DnDUI.openCompendiumDrawer({
-          defaultTab: 'forge',
-          onSelect: (assembledItem) => addV2ItemToCharacterGearPool(assembledItem)
-        });
-      }
-    }
-
     function openCharacterCompendiumDrawer(defaultCategory = 'all_gear') {
       resetAddPoolCustomTabForm();
       if (window.DnDUI && typeof window.DnDUI.openCompendiumDrawer === 'function') {
@@ -8313,57 +8218,6 @@
         formDetails.open = true;
         formDetails.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }
-    }
-
-    function saveNewPoolItem() {
-      const nameInput = document.getElementById('api-name');
-      const name = nameInput?.value?.trim();
-      if (!name) {
-        showToast('Please enter an item name.', 'error', { wrap: true });
-        if (nameInput) nameInput.focus();
-        return;
-      }
-      const category = document.getElementById('api-category')?.value || 'Other';
-      const slot = document.getElementById('api-slot')?.value || category;
-      const rawQty = document.getElementById('api-qty')?.value;
-      const qty = (rawQty !== undefined && rawQty !== '' && !isNaN(parseInt(rawQty))) ? Math.max(0, parseInt(rawQty)) : 1;
-      const weight = parseFloat(document.getElementById('api-weight')?.value) || 0;
-      const cost = parseFloat(document.getElementById('api-cost')?.value) || 0;
-      const desc = document.getElementById('api-desc')?.value?.trim() || '';
-      const isBelt = document.getElementById('api-belt')?.checked || false;
-
-      if (!character.gearPool) character.gearPool = [];
-      const newId = Date.now();
-      character.gearPool.push({
-        id: newId,
-        name,
-        category,
-        slot,
-        qty,
-        weight,
-        cost,
-        desc,
-        isBelt,
-        isEquipped: false
-      });
-
-      if ((category === 'Consumable' || isBelt) && !isWeaponWithoutMagicOrHealing({ name, category, desc })) {
-        if (!character.consumables) character.consumables = [];
-        const cleanName = name.toLowerCase().trim();
-        const hasCons = character.consumables.some(c => (c.name || '').toLowerCase().trim() === cleanName);
-        if (!hasCons) {
-          character.consumables.push({
-            name: name,
-            qty: qty,
-            effect: desc || 'Sarf malzemesi etkisi'
-          });
-        }
-      }
-
-      saveStateToStorage(true);
-      renderAll();
-      closeAddPoolItemModal();
-      showToast(`"${name}" added to your Inventory!`, 'success', { wrap: true });
     }
 
     // ====================================================
@@ -8959,29 +8813,6 @@
 
       saveStateToStorage(true);
       renderAll();
-    }
-
-    // Canonical Damage / Healing / Consumable Plan Wrapper (delegates to RuleEngine.parseConsumablePlan)
-    function parseDamageFromItem(name, effectDesc) {
-      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.parseConsumablePlan === 'function') {
-        const plan = RuleEngine.parseConsumablePlan(name, effectDesc);
-        return plan && plan.isDamage ? plan : null;
-      }
-      return null;
-    }
-
-    function getConsumableCategory(item) {
-      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.parseConsumablePlan === 'function') {
-        const plan = RuleEngine.parseConsumablePlan(item, item?.effect || item?.desc);
-        if (plan.isHealing) return 'healing';
-        if (plan.isDamage) return 'wand_damage';
-        const combined = `${item?.name || ''} ${item?.desc || ''} ${item?.effect || ''}`;
-        if (item?.dailyCharges || /(?:\d+\s*\/\s*day|\d+\s*\/\s*gün|günde\s*\d+)/i.test(combined)) {
-          return 'daily_charge';
-        }
-        if (plan.isCure || plan.isPotion || plan.kind === 'buff') return 'buff';
-      }
-      return 'other';
     }
 
     function renderConsumables(containerOverride, sheetOverride) {
@@ -9759,21 +9590,8 @@
           selectBuffModalEnergy(data.energy);
         }
       });
-      actionsApi.register('inventory:close-slot-equip', (el, data, event) => {
-        closeSlotEquipModal();
-      });
       actionsApi.register('inventory:noop-stop', (el, data, event) => {
         if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
-      });
-      actionsApi.register('inventory:switch-view', (el, data, event) => {
-        if (data && data.view && typeof setBodySlotsView === 'function') {
-          setBodySlotsView(data.view);
-        }
-      });
-      actionsApi.register('inventory:open-buff-modal', (el, data, event) => {
-        if (typeof openBuffModal === 'function') {
-          openBuffModal((data && data.mode) || 'buff');
-        }
       });
 
       function initSilhouetteDelegatedEvents() {
