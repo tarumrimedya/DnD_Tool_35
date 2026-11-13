@@ -964,6 +964,123 @@ function runDeriveSheetTests() {
     `ac ${ceSheetOff.ac.total}->${ceSheetOn.ac.total}, atk ${ceAtkOff}->${ceAtkOn}`
   );
 
+  // Charge (PHB p.154): +2 on the attack roll, -2 untyped penalty to AC (normal, touch and flat-footed) until your next turn.
+  // Store path: the toggle reducer must reach the AC even when CharStore's cached recompute options say charge: false.
+  CharStore.replaceDoc(stanceDoc({}, 0), { skipHistory: true });
+  CharStore.recompute({ combatExpertise: 0, fightingDefensively: false, totalDefense: false, charge: false });
+  const chSheetOff = CharStore.getSheet();
+  const chAtkOff = chSheetOff.combat.weapons[0]?.evaluated?.iteratives?.[0];
+  CharStore.dispatch({ type: 'combat/toggleTacticalMod', payload: { key: 'charge' }, meta: { skipHistory: true } });
+  const chSheetOn = CharStore.getSheet();
+  const chDocOn = CharStore.getDoc().acBreakdown;
+  const chWeapon = CharStore.getDoc().weapons?.[0];
+  const chAtkEval = chWeapon ? RuleEngine.evaluateWeaponAttack(CharStore.getDoc(), chWeapon, { charge: true }) : null;
+  const chAtkEvalOff = chWeapon ? RuleEngine.evaluateWeaponAttack(CharStore.getDoc(), chWeapon, { charge: false }) : null;
+  check(
+    'Charge (PHB p.154): combat/toggleTacticalMod charge gives -2 to normal, touch and flat-footed AC in the store sheet and written-back doc (01_fighter_lvl1)',
+    CharStore.getDoc().tactical.charge === true &&
+    chSheetOn.ac.total === chSheetOff.ac.total - 2 && chSheetOn.ac.touch === chSheetOff.ac.touch - 2 && chSheetOn.ac.flat === chSheetOff.ac.flat - 2 &&
+    chDocOn.total === chSheetOff.ac.total - 2 && chSheetOn.ac.penalty === 2,
+    `off=${JSON.stringify([chSheetOff.ac.total, chSheetOff.ac.touch, chSheetOff.ac.flat])} on=${JSON.stringify([chSheetOn.ac.total, chSheetOn.ac.touch, chSheetOn.ac.flat])}`
+  );
+  check(
+    'Charge (PHB p.154): +2 on the melee attack roll',
+    chAtkEval && chAtkEvalOff && chAtkEval.iteratives[0] === chAtkEvalOff.iteratives[0] + 2 && typeof chAtkOff === 'number',
+    `atk ${chAtkEvalOff?.iteratives?.[0]} -> ${chAtkEval?.iteratives?.[0]}`
+  );
+  CharStore.dispatch({ type: 'combat/advanceRound', meta: { skipHistory: true } });
+  check(
+    'Charge (PHB p.154): Next Round clears the charge and restores AC',
+    CharStore.getDoc().tactical.charge === false && CharStore.getSheet().ac.total === chSheetOff.ac.total,
+    `charge=${CharStore.getDoc().tactical.charge} ac=${CharStore.getSheet().ac.total}`
+  );
+
+  // AC input audit (01_fighter_lvl1: Dex 14 / +2, Chainmail +5, Heavy Shield +2 => 19 / touch 12 / flat-footed 17)
+  const combatRulesDb = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'database', 'srd_combat_rules.json'), 'utf8'));
+  const srdCondition = (id) => Object.assign(JSON.parse(JSON.stringify(combatRulesDb.find(e => e && e.id === id))), { active: true });
+  const acAudit = (mutate) => {
+    const d = stanceDoc({}, 0);
+    d.buffs = Array.isArray(d.buffs) ? d.buffs : [];
+    if (mutate) mutate(d);
+    const s = RuleEngine.deriveSheet(d, [], {});
+    return { tri: [s.ac.total, s.ac.touch, s.ac.flat], ac: s.ac };
+  };
+  const addAcBuff = (d, name, modifiers) => d.buffs.push({ schemaVersion: 2, name, active: true, modifiers });
+  const acBase = acAudit().tri;
+  const triDelta = (t, dt, dTouch, dFlat) => t[0] === acBase[0] + dt && t[1] === acBase[1] + dTouch && t[2] === acBase[2] + dFlat;
+  const stunnedAc = acAudit(d => d.buffs.push(srdCondition('cnd-stunned'))).tri;
+  check(
+    'AC conditions: Stunned (additive ac.total -2 penalty + lose Dex) = -4 normal/touch, -2 flat-footed',
+    triDelta(stunnedAc, -4, -4, -2),
+    `base=${JSON.stringify(acBase)} stunned=${JSON.stringify(stunnedAc)}`
+  );
+  const blindedAc = acAudit(d => d.buffs.push(srdCondition('cnd-blinded'))).tri;
+  check('AC conditions: Blinded applies -2 AC and loses Dex', triDelta(blindedAc, -4, -4, -2), JSON.stringify(blindedAc));
+  const slowAc = acAudit(d => addAcBuff(d, 'Slow', [{ target: 'ac.total', value: -1, type: 'untyped' }])).tri;
+  check('AC buffs: Slow ac.total -1 reaches normal, touch and flat-footed AC', triDelta(slowAc, -1, -1, -1), JSON.stringify(slowAc));
+  const ffAc = acAudit(d => d.buffs.push(srdCondition('cnd-flat-footed'))).tri;
+  check('AC conditions: Flat-Footed loses Dex (normal AC = flat-footed AC)', triDelta(ffAc, -2, -2, 0), JSON.stringify(ffAc));
+  const ffUdAc = acAudit(d => {
+    d.buffs.push(srdCondition('cnd-flat-footed'));
+    d.specialAbilities = (d.specialAbilities || []).concat([{ name: 'Uncanny Dodge' }]);
+  }).tri;
+  check('AC conditions: Uncanny Dodge keeps Dex when Flat-Footed (PHB p.26)', ffUdAc[0] === acBase[0] && ffUdAc[1] === acBase[1] && ffUdAc[2] === acBase[0], JSON.stringify(ffUdAc));
+  const blindUdAc = acAudit(d => {
+    d.buffs.push(srdCondition('cnd-blinded'));
+    d.specialAbilities = (d.specialAbilities || []).concat([{ name: 'Uncanny Dodge' }]);
+  }).tri;
+  check('AC conditions: Uncanny Dodge does not keep Dex when Blinded', triDelta(blindUdAc, -4, -4, -2), JSON.stringify(blindUdAc));
+  const proneAc = acAudit(d => d.buffs.push(srdCondition('cnd-prone')));
+  check(
+    'AC conditions: Prone -4 vs melee / +4 vs ranged stay situational (base AC unchanged)',
+    triDelta(proneAc.tri, 0, 0, 0) && proneAc.ac.conditionalBonuses.filter(c => /prone/i.test(c.source || '')).length === 2,
+    JSON.stringify(proneAc.ac.conditionalBonuses)
+  );
+  const foresightAc = acAudit(d => addAcBuff(d, 'Foresight', [{ target: 'ac.dodge', value: 2, type: 'insight' }]));
+  check('AC buffs: Foresight +2 insight applies to normal, touch and flat-footed AC (not a dodge bonus)', triDelta(foresightAc.tri, 2, 2, 2) && foresightAc.ac.misc === 2 && foresightAc.ac.dodge === 0, JSON.stringify(foresightAc.tri));
+  const foresightFfAc = acAudit(d => {
+    addAcBuff(d, 'Foresight', [{ target: 'ac.dodge', value: 2, type: 'insight' }]);
+    d.buffs.push(srdCondition('cnd-flat-footed'));
+  }).tri;
+  check('AC buffs: insight AC bonus survives Flat-Footed', triDelta(foresightFfAc, 0, 0, 2), JSON.stringify(foresightFfAc));
+  const hasteStunAc = acAudit(d => {
+    addAcBuff(d, 'Haste', [{ target: 'ac.dodge', value: 1, type: 'dodge' }]);
+    d.buffs.push(srdCondition('cnd-stunned'));
+  }).tri;
+  check('AC buffs: Haste +1 dodge is lost with Dex (Stunned)', triDelta(hasteStunAc, -4, -4, -2), JSON.stringify(hasteStunAc));
+  const untypedAc = acAudit(d => addAcBuff(d, 'Untyped Ward', [{ target: 'ac', value: 1, type: 'untyped' }])).tri;
+  check('AC buffs: untyped +1 AC is not an armor bonus (counts on touch AC)', triDelta(untypedAc, 1, 1, 1), JSON.stringify(untypedAc));
+  const luckStackAc = acAudit(d => {
+    addAcBuff(d, 'Luck A', [{ target: 'ac.luck', value: 2, type: 'luck' }]);
+    addAcBuff(d, 'Luck B', [{ target: 'ac.luck', value: 1, type: 'luck' }]);
+  }).tri;
+  check('AC buffs: two luck bonuses do not stack (highest +2 applies)', triDelta(luckStackAc, 2, 2, 2), JSON.stringify(luckStackAc));
+  const smallAc = acAudit(d => { d.size = 'Small'; }).tri;
+  check('AC size: Small creature gets +1 size modifier on normal, touch and flat-footed AC (PHB Table 8-1)', triDelta(smallAc, 1, 1, 1), JSON.stringify(smallAc));
+  const enlargeAc = acAudit(d => addAcBuff(d, 'Enlarge Person', [{ target: 'ac.total', value: -1, type: 'size' }]));
+  check('AC size: Enlarge Person -1 size modifier reaches AC and the size column', triDelta(enlargeAc.tri, -1, -1, -1) && enlargeAc.ac.size === -1 && enlargeAc.ac.penalty === 0, JSON.stringify(enlargeAc.tri));
+  const itemCondAc = acAudit(d => {
+    d.bodySlots = d.bodySlots || {};
+    d.bodySlots.neck = { name: 'Amulet of Warding', active: true, modifiers: [{ target: 'ac.deflection', value: 2, type: 'deflection', condition: 'vs. Evil' }] };
+  });
+  check(
+    'AC items: a conditional item deflection bonus (vs. Evil) is situational, not added to base AC',
+    triDelta(itemCondAc.tri, 0, 0, 0) && itemCondAc.ac.conditionalBonuses.some(c => c.source === 'Amulet of Warding' && c.val === 2),
+    JSON.stringify(itemCondAc.tri)
+  );
+  const itemPenAc = acAudit(d => {
+    d.bodySlots = d.bodySlots || {};
+    d.bodySlots.wrists = { name: 'Bracers of Defenselessness', active: true, modifiers: [{ target: 'ac.armor', value: -5, type: 'penalty' }] };
+  }).tri;
+  check('AC items: a negative item AC modifier is applied as a penalty', triDelta(itemPenAc, -5, -5, -5), JSON.stringify(itemPenAc));
+  const itemLuckAc = acAudit(d => {
+    d.bodySlots = d.bodySlots || {};
+    d.bodySlots.neck = { name: 'Luckstone Pendant', active: true, modifiers: [{ target: 'ac.luck', value: 1, type: 'luck' }] };
+  }).tri;
+  check('AC items: an item luck bonus to AC is applied to normal, touch and flat-footed AC', triDelta(itemLuckAc, 1, 1, 1), JSON.stringify(itemLuckAc));
+  const vulnAc = acAudit(d => { d.feats = (d.feats || []).concat([{ name: 'Vulnerable', category: 'Flaw' }]); }).tri;
+  check('AC flaws: Vulnerable is -1 AC, applied once', triDelta(vulnAc, -1, -1, -1), JSON.stringify(vulnAc));
+
   // Verify Unified Buff Round Tick (b.rounds = 2 -> 1 -> 0 expired) & Formula Temp HP subtraction on toggleBuff
   const buffTestDoc = JSON.parse(JSON.stringify(f04Raw));
   buffTestDoc.buffs.push({

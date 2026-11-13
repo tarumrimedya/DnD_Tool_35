@@ -455,7 +455,16 @@
       if (totalBadge) totalBadge.textContent = `Total: ${bd.total ?? acCalc.total} • Touch: ${bd.touch ?? acCalc.touch} • Flat: ${bd.flat ?? acCalc.flat}`;
 
       const maxDexInfo = bd.maxDex !== null && bd.maxDex !== undefined ? ` <span class="text-[10px] text-slate-400 font-normal">(Max Dex: +${bd.maxDex})</span>` : '';
-      const penaltyInfo = bd.penalty > 0 ? `<div class="flex justify-between py-1 border-b border-slate-800 text-rose-400 font-bold"><span class="text-rose-300">Defense Penalties (Charge/Stance):</span><span>-${bd.penalty}</span></div>` : '';
+      // Size modifier (PHB Table 8-1) and insight / luck / sacred / profane / untyped bonuses are shown only when non-zero,
+      // so the listed rows always add up to the engine's FINAL ARMOR CLASS.
+      const fmtSigned = (n) => (Number(n) || 0) >= 0 ? `+${Number(n) || 0}` : `${Number(n)}`;
+      const sizeInfo = (Number(bd.size) || 0) !== 0 ? `<div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Size Modifier:</span><span class="text-white font-bold">${fmtSigned(bd.size)}</span></div>` : '';
+      const miscSources = Array.isArray(bd.sources?.misc) ? bd.sources.misc.filter(s => s && s.source) : [];
+      const miscSourceStr = miscSources.length > 0
+        ? ` <span class="text-[10px] text-slate-500 font-normal">(${miscSources.map(s => `${UI.escapeHtml(s.source)} +${s.val} ${UI.escapeHtml(s.type || '')}`.trim()).join(', ')})</span>`
+        : '';
+      const miscInfo = (Number(bd.misc) || 0) !== 0 ? `<div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Other Bonuses:${miscSourceStr}</span><span class="text-amber-400 font-bold">${fmtSigned(bd.misc)}</span></div>` : '';
+      const penaltyInfo = bd.penalty > 0 ?`<div class="flex justify-between py-1 border-b border-slate-800 text-rose-400 font-bold"><span class="text-rose-300">Defense Penalties (Charge/Stance):</span><span>-${bd.penalty}</span></div>` : '';
       
       const armorSourceStr = (Array.isArray(bd.sources?.armor) && bd.sources.armor.length > 0 && bd.sources.armor[0].source) 
         ? ` <span class="text-[10px] text-sky-400 font-normal">(${UI.escapeHtml(bd.sources.armor[0].source)})</span>`
@@ -507,10 +516,12 @@
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Base 10:</span><span class="text-white font-bold">10</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Armor Bonus:${armorSourceStr}</span><span class="text-sky-400 font-bold">+${bd.armor || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Shield Bonus:${shieldSourceStr}</span><span class="text-sky-400 font-bold">+${bd.shield || 0}</span></div>
-        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">DEX Modifier${maxDexInfo}:</span><span class="text-emerald-400 font-bold">+${bd.effectiveDex ?? dexMod}</span></div>
+        <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">DEX Modifier${maxDexInfo}:</span><span class="text-emerald-400 font-bold">${fmtSigned(bd.effectiveDex ?? dexMod)}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Deflection Bonus:${deflSourceStr}</span><span class="text-indigo-400 font-bold">+${bd.deflection || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Natural Armor:${naturalDetail}</span><span class="text-teal-400 font-bold">+${bd.natural || 0}</span></div>
         <div class="flex justify-between py-1 border-b border-slate-800"><span class="text-slate-400">Dodge Bonus (Stacks):</span><span class="text-amber-400 font-bold">+${bd.dodge || 0}</span></div>
+        ${sizeInfo}
+        ${miscInfo}
         ${penaltyInfo}
         <div class="flex justify-between py-1.5 text-slate-300 font-bold border-t border-slate-700 mt-1"><span class="text-amber-300 text-xs">FINAL ARMOR CLASS:</span><span class="text-amber-400 text-sm font-black">${bd.total || acCalc.total} AC</span></div>
         <div class="flex justify-between text-[11px] text-slate-400 pt-0.5">

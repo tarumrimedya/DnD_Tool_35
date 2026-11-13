@@ -2583,6 +2583,30 @@
     }
     window.renderTabIfNeeded = renderTabIfNeeded;
 
+    // The Defense tab's AC / saves breakdown is only rebuilt when its dirty flag is set, and only renderAll() set it.
+    // A store dispatch that changes the engine's AC or saves without a renderAll() (Charge, stances and conditions
+    // toggled on the Combat tab) left that breakdown showing the previous numbers. Invalidate it from the store instead.
+    if (window.CharStore && typeof window.CharStore.mountRegion === 'function') {
+      window.CharStore.mountRegion(
+        'defense-tab-ac-saves',
+        (st) => {
+          const sh = st && st.sheet;
+          if (!sh || !sh.ac) return null;
+          return {
+            ac: [sh.ac.total, sh.ac.touch, sh.ac.flat, sh.ac.penalty, sh.ac.dodge, sh.ac.misc, sh.ac.size, sh.ac.effectiveDex],
+            saves: sh.saves ? [sh.saves.fort, sh.saves.ref, sh.saves.will] : null
+          };
+        },
+        () => {
+          if (!character) return;
+          let activeTab = 'tab-combat';
+          try { activeTab = localStorage.getItem('dnd35_active_tab') || 'tab-combat'; } catch (e) { reportError('char_hud:defenseRegion', e); }
+          if (activeTab === 'tab-defense') renderTabIfNeeded('tab-defense', true);
+          else _dirtyTabs.add('tab-defense');
+        }
+      );
+    }
+
     function scrollMobileTabIntoView(tabId) {
       const target = document.getElementById(tabId);
       if (!target || !window.matchMedia('(max-width: 767px)').matches) return;
@@ -3130,6 +3154,8 @@
           if (bd.natural) detailedParts.push(`Nat +${bd.natural}`);
           if (bd.deflection) detailedParts.push(`Defl +${bd.deflection}`);
           if (bd.dodge) detailedParts.push(`Dodge +${bd.dodge}`);
+          if (bd.size) detailedParts.push(`Size ${bd.size >= 0 ? '+' + bd.size : bd.size}`);
+          if (bd.misc) detailedParts.push(`Other ${bd.misc >= 0 ? '+' + bd.misc : bd.misc}`);
           if (bd.penalty) detailedParts.push(`Penalty ${bd.penalty}`);
 
           const condAcList = Array.isArray(character.conditionalAcBonuses)

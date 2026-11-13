@@ -2648,6 +2648,9 @@ const RuleEngine = {
       naturalBonusType: 'natural',
       deflection: 0,
       dodge: 0,
+      miscAc: [],
+      acPenalty: 0,
+      conditionalAc: [],
       maxDex: item.maxDex !== undefined && item.maxDex !== null && item.maxDex !== ''
         ? Number(item.maxDex)
         : (dbEntry?.maxDex !== undefined && dbEntry?.maxDex !== null && dbEntry?.maxDex !== '' ? Number(dbEntry.maxDex) : null),
@@ -2699,9 +2702,42 @@ const RuleEngine = {
         source: item.name
       });
 
+      // AC modifiers that are situational (`vs. Evil`), penalties (Bracers of Defenselessness) or of a type with no
+      // dedicated column (luck / insight / sacred / profane / untyped) are reported separately so recalculateCharacter
+      // can list, subtract or stack them by type instead of folding them into a base column.
+      const tLower = target.toLowerCase();
+      const acSubItem = tLower.startsWith('ac.') ? tLower.slice(3) : tLower;
+      const isAcItemTarget = tLower === 'ac' || tLower.startsWith('ac.') || ['armor', 'shield', 'natural', 'deflection', 'dodge'].includes(tLower);
+      const isAcSubComponent = acSubItem === 'abilitymod' || acSubItem === 'base' || (acSubItem === 'total' && String(m.op || 'add').toLowerCase() !== 'add');
+      if (isAcItemTarget && !isAcSubComponent) {
+        const condStr = (typeof m.condition === 'string' && m.condition.trim()) ? m.condition.trim() : null;
+        if (condStr) {
+          const label = acSubItem === 'deflection' || bType === 'deflection' ? 'Deflection'
+            : (acSubItem === 'dodge' || bType === 'dodge' ? 'Dodge'
+              : (acSubItem === 'natural' || bType.includes('natural') ? 'Natural'
+                : (acSubItem === 'shield' || bType === 'shield' ? 'Shield'
+                  : (acSubItem === 'armor' || bType === 'armor' ? 'Armor' : (bType.charAt(0).toUpperCase() + bType.slice(1))))));
+          res.conditionalAc.push({ target: 'AC', val, type: label, condition: condStr, source: item.name });
+          continue;
+        }
+        if (val < 0) {
+          res.acPenalty += Math.abs(val);
+          continue;
+        }
+        const isStandardColumn = ['armor', 'shield', 'natural', 'deflection'].includes(acSubItem)
+          || ['armor', 'shield', 'deflection'].includes(bType)
+          || bType.includes('natural')
+          || bType === 'dodge'
+          || (acSubItem === 'dodge' && (bType === 'untyped' || bType === 'haste'));
+        if (!isStandardColumn) {
+          res.miscAc.push({ val, source: item.name, type: bType.charAt(0).toUpperCase() + bType.slice(1) });
+          continue;
+        }
+      }
+
       if (target === 'ac.armor' || target === 'armor') res.armor = Math.max(res.armor, val);
       else if (target === 'ac.shield' || target === 'shield') res.shield = Math.max(res.shield, val);
-      else if (target === 'ac.natural' || target === 'natural') {
+      else if (target === 'ac.natural' || target === 'natural' || ((target === 'ac.total' || target === 'ac') && bType.includes('natural'))) {
         res.natural = Math.max(res.natural, val);
         res.naturalBonusType = bType.includes('enh') ? 'Natural_Armor_Ench' : 'Natural';
       }
@@ -4555,6 +4591,9 @@ const RuleEngine = {
     const naturalBonuses = [];
     const deflectionBonuses = [];
     const dodgeBonuses = [];
+    const miscAcBonuses = [];
+    const sizeAcAdjustments = [];
+    const acPenaltySources = [];
     const saveBonusBuckets = {
       fort: [],
       ref: [],
@@ -4591,6 +4630,7 @@ const RuleEngine = {
     let debuffHpPenalty = 0;
     let draconicToughnessHp = 0;
     let conditionLoseDexToAC = false;
+    let conditionFlatFooted = false;
     let conditionEffectiveDexZero = false;
     let conditionHalfSpeed = false;
     let activePrimalCount = 0;
@@ -4636,7 +4676,11 @@ const RuleEngine = {
 
         // Armor Class (both `ac.*` and `ac` / `armor` / `shield` / `natural` / `deflection` / `dodge`)
         const acSub = target.startsWith('ac.') ? target.slice(3) : target;
-        if (acSub === 'abilitymod' || acSub === 'base' || acSub === 'total') {
+        // `ac.abilityMod` / `ac.base` and non-additive `ac.total` ops (replace/set/max) are resolved by the V2.5 Lego
+        // pipeline (legoEval.ac). An additive `ac.total` modifier (Blinded / Stunned / Cowering -2, Slow -1,
+        // Enlarge Person size -1, Inspire Heroics dodge, Eyes of the Oracle insight) is an ordinary AC bonus or penalty.
+        const acOp = String(mod.op || 'add').toLowerCase();
+        if (acSub === 'abilitymod' || acSub === 'base' || (acSub === 'total' && acOp !== 'add')) {
           return;
         }
         if (target === 'ac' || target.startsWith('ac.') || ['armor', 'shield', 'natural', 'deflection', 'dodge'].includes(acSub)) {
@@ -4683,8 +4727,12 @@ const RuleEngine = {
             });
             return;
           }
-          if (val < 0 || mTypeLower === 'penalty') {
+          if (mTypeLower === 'size' || acSub === 'size') {
+            // PHB Table 8-1: a size change (Enlarge / Reduce Person, Expansion) moves the size modifier, which applies to normal, touch and flat-footed AC.
+            sizeAcAdjustments.push({ val, source: sourceName, type: 'Size' });
+          } else if (val < 0 || mTypeLower === 'penalty') {
             buffAcPenalty += Math.abs(val);
+            acPenaltySources.push(String(sourceName || '').toLowerCase());
           } else if (acSub === 'shield' || mTypeLower === 'shield') {
             shieldBonuses.push({ val, source: sourceName, type: 'Shield' });
           } else if (acSub === 'deflection' || mTypeLower === 'deflection') {
@@ -4696,10 +4744,15 @@ const RuleEngine = {
                 ? 'Natural_Armor_Ench'
                 : 'Natural');
             naturalBonuses.push({ val, source: sourceName, type: natType });
-          } else if (acSub === 'dodge' || mTypeLower === 'dodge' || mTypeLower === 'haste' || mTypeLower === 'insight' || mTypeLower === 'luck' || mTypeLower === 'sacred' || mTypeLower === 'profane' || mTypeLower === 'divine') {
-            dodgeBonuses.push({ val, source: sourceName, type: mTypeLower === 'dodge' ? 'Dodge' : mType });
-          } else {
+          } else if (acSub === 'armor' || mTypeLower === 'armor') {
             armorBonuses.push({ val, source: sourceName, type: 'Armor' });
+          } else if (mTypeLower === 'dodge' || mTypeLower === 'haste' || (acSub === 'dodge' && mTypeLower === 'untyped')) {
+            dodgeBonuses.push({ val, source: sourceName, type: mTypeLower === 'haste' ? mType : 'Dodge' });
+          } else {
+            // Insight, luck, sacred, profane, divine, inherent, cover, circumstance and untyped AC bonuses (Foresight,
+            // Recitation, Staff of Power, Monk AC Bonus) apply to normal, touch and flat-footed AC and are not lost with Dex
+            // (PHB p.136: flat-footed loses only the Dex bonus; dodge bonuses go with it, PHB p.177).
+            miscAcBonuses.push({ val, source: sourceName, type: mType.charAt(0).toUpperCase() + mType.slice(1) });
           }
           return;
         }
@@ -4831,6 +4884,12 @@ const RuleEngine = {
         if (mods.natural > 0) naturalBonuses.push({ val: mods.natural, source: slotData.name, type: mods.naturalBonusType || mods.bonusType || 'Natural' });
         if (mods.deflection > 0) deflectionBonuses.push({ val: mods.deflection, source: slotData.name, type: 'Deflection' });
         if (mods.dodge > 0) dodgeBonuses.push({ val: mods.dodge, source: slotData.name, type: 'Dodge' });
+        (mods.miscAc || []).forEach(b => miscAcBonuses.push(b));
+        (mods.conditionalAc || []).forEach(c => conditionalAcBonuses.push(c));
+        if (mods.acPenalty > 0) {
+          buffAcPenalty += mods.acPenalty;
+          acPenaltySources.push(String(slotData.name || '').toLowerCase());
+        }
 
         if (mods.maxDex !== null && mods.maxDex !== undefined) {
           if (minMaxDex === null || mods.maxDex < minMaxDex) minMaxDex = mods.maxDex;
@@ -4934,7 +4993,11 @@ const RuleEngine = {
       if (rf.heartSpell || /^heart of (air|water|earth|fire)$/i.test(bNameLower)) {
         activeHeartCount++;
       }
-      if (rf.loseDexToAC) conditionLoseDexToAC = true;
+      // The Flat-Footed condition is kept apart: Uncanny Dodge keeps the Dex bonus when flat-footed (PHB p.26, p.50),
+      // but not against the other Dex-losing conditions (Blinded, Stunned, Cowering, Pinned).
+      const isFlatFootedCondition = String(buff.id || '').toLowerCase().split(':').pop() === 'cnd-flat-footed';
+      if (rf.loseDexToAC && isFlatFootedCondition && !rf.effectiveDexZero) conditionFlatFooted = true;
+      else if (rf.loseDexToAC) conditionLoseDexToAC = true;
       if (rf.effectiveDexZero) {
         conditionEffectiveDexZero = true;
         conditionLoseDexToAC = true;
@@ -5405,6 +5468,7 @@ const RuleEngine = {
     const effectiveNatural = this.resolveBonusStacking(naturalBonuses);
     const effectiveDeflection = this.resolveBonusStacking(deflectionBonuses);
     let effectiveDodge = this.resolveBonusStacking(dodgeBonuses);
+    const effectiveMiscAc = this.resolveBonusStacking(miscAcBonuses);
 
     // Tactical stance / combat mode dodge bonuses.
     // `character.tactical` is the canonical combat state (written by the 'combat/toggleTacticalMod' and
@@ -5432,6 +5496,14 @@ const RuleEngine = {
     if (fightingDefensively) effectiveDodge += fightingDefDodge;
     if (totalDefense) effectiveDodge += totalDefDodge;
 
+    // Uncanny Dodge keeps the Dex bonus when flat-footed, never when immobilized / helpless (effective Dex 0)
+    const hasUncannyDodge = !conditionEffectiveDexZero && (
+      activePrimalCount >= 2 ||
+      (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : a.name).toLowerCase().includes('uncanny dodge')) ||
+      (character.buffs || []).some(b => b && b.active && b.ruleFlags?.uncannyDodge)
+    );
+    if (conditionFlatFooted && !hasUncannyDodge) conditionLoseDexToAC = true;
+
     // Dex to AC capped by Max Dex & Condition Flags (Helpless / Paralyzed / Blinded / Stunned / Grappled)
     const fullDexMod = conditionEffectiveDexZero ? -5 : this.getAbilityMod(character.abilities.dex || 10);
     let effectiveDex = minMaxDex !== null ? Math.min(fullDexMod, minMaxDex) : fullDexMod;
@@ -5440,15 +5512,28 @@ const RuleEngine = {
       effectiveDodge = 0; // RAW D&D 3.5e: Any condition that makes you lose Dex bonus to AC also makes you lose Dodge bonuses
     }
 
-    // AC Penalties
+    // AC Penalties (untyped; they apply to normal, touch and flat-footed AC alike).
+    // Charge (PHB p.154): -2 AC until the start of your next turn.
     let totalPenalty = buffAcPenalty;
     if (charge) totalPenalty += 2;
-    if (charFeatNames.some(f => f.includes('flaw: vulnerable') || f === 'vulnerable')) {
+    // Vulnerable flaw (UA p.92, -1 AC): the compendium entry carries the penalty as a modifier; the name check only
+    // covers legacy feat strings that resolve to no compendium entry, so the -1 is never applied twice.
+    if (charFeatNames.some(f => f.includes('flaw: vulnerable') || f === 'vulnerable') && !acPenaltySources.some(s => s.includes('vulnerable'))) {
       totalPenalty += 1;
     }
 
     const baseAC = 10;
-    const sizeBonus = character.acBreakdown?.size || 0;
+    // Size modifier (PHB Table 8-1) from the creature's size category, shifted by size-change effects (Enlarge / Reduce Person).
+    // A character without a size falls back to the size modifier stored on its last breakdown.
+    const SIZE_AC_MODIFIERS = { fine: 8, diminutive: 4, tiny: 2, small: 1, medium: 0, large: -1, huge: -2, gargantuan: -4, colossal: -8 };
+    const sizeKey = String(character.size || '').trim().toLowerCase().split(/[\s(]/)[0];
+    const baseSizeMod = Object.prototype.hasOwnProperty.call(SIZE_AC_MODIFIERS, sizeKey)
+      ? SIZE_AC_MODIFIERS[sizeKey]
+      : (Number(character.acBreakdown?.baseSize ?? character.acBreakdown?.size) || 0);
+    // Size-change effects do not stack with each other: the largest growth and the largest shrink each apply once.
+    const sizeVals = sizeAcAdjustments.map(b => Number(b.val) || 0);
+    const sizeShift = Math.min(0, ...sizeVals) + Math.max(0, ...sizeVals);
+    const sizeBonus = baseSizeMod + sizeShift;
 
     // Reconcile V2.5 `ac.abilityMod` sub-component bonus / substitution (e.g. Canny Defense, Monk/Swordsage AC Bonus)
     let legoAcAbilityDelta = 0;
@@ -5460,18 +5545,13 @@ const RuleEngine = {
       legoAcAbilityDelta = Math.max(0, legoEval.ac.abilityMod - fullDexMod);
     }
 
-    let totalAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + effectiveDex + legoAcAbilityDelta + effectiveDodge;
-    let touchAC = baseAC + (hasShieldWard ? effectiveShield : 0) + effectiveDeflection + sizeBonus + effectiveDex + legoAcAbilityDelta + effectiveDodge;
+    let totalAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + effectiveDex + legoAcAbilityDelta + effectiveDodge + effectiveMiscAc;
+    let touchAC = baseAC + (hasShieldWard ? effectiveShield : 0) + effectiveDeflection + sizeBonus + effectiveDex + legoAcAbilityDelta + effectiveDodge + effectiveMiscAc;
 
     // Flat-footed AC (RAW: retain negative Dex penalty even when flat-footed; retain Dex & Dodge if Uncanny Dodge unless immobilized/helpless)
-    const hasUncannyDodge = !conditionEffectiveDexZero && (
-      activePrimalCount >= 2 ||
-      (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : a.name).toLowerCase().includes('uncanny dodge')) ||
-      (character.buffs || []).some(b => b && b.active && b.ruleFlags?.uncannyDodge)
-    );
     const flatDex = hasUncannyDodge ? (effectiveDex + legoAcAbilityDelta) : Math.min(0, fullDexMod);
     const flatDodge = hasUncannyDodge ? effectiveDodge : 0;
-    let flatAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + flatDex + flatDodge;
+    let flatAC = baseAC + effectiveArmor + effectiveShield + effectiveNatural + effectiveDeflection + sizeBonus + flatDex + flatDodge + effectiveMiscAc;
 
     // BL1: Reconcile V2.5 `ac.base` / `ac.total` replacements BEFORE subtracting totalPenalty, respecting `rep.affects`
     if (legoEval.ac && Array.isArray(legoEval.ac.replacements) && legoEval.ac.replacements.length > 0) {
@@ -5500,7 +5580,9 @@ const RuleEngine = {
       natural: effectiveNatural,
       deflection: effectiveDeflection,
       size: sizeBonus,
+      baseSize: baseSizeMod,
       dodge: effectiveDodge,
+      misc: effectiveMiscAc,
       effectiveDex: effectiveDex,
       maxDex: minMaxDex,
       acp: totalAcp,
@@ -5517,7 +5599,9 @@ const RuleEngine = {
         shield: shieldBonuses,
         natural: naturalBonuses,
         deflection: deflectionBonuses,
-        dodge: dodgeBonuses
+        dodge: dodgeBonuses,
+        misc: miscAcBonuses,
+        size: sizeAcAdjustments
       },
       conditionalBonuses: conditionalAcBonuses
     };
@@ -5568,7 +5652,7 @@ const RuleEngine = {
     const isWarblade = charClassNames.includes('warblade') || (Array.isArray(character.levelProgression) && character.levelProgression.some(l => (l.className || '').toLowerCase().includes('warblade')));
     const hasBattleClarity = (character.specialAbilities || []).some(a => (typeof a === 'string' ? a : (a.name || '')).toLowerCase().includes('battle clarity')) || isWarblade;
     const warbladeLvl = (Array.isArray(character.levelProgression) ? character.levelProgression.filter(l => (l.className || '').toLowerCase().includes('warblade')).length : 0) || (isWarblade ? 1 : 0);
-    const battleClarityBonus = (hasBattleClarity && !conditionLoseDexToAC) ? Math.min(warbladeLvl, Math.max(0, intMod)) : 0;
+    const battleClarityBonus = (hasBattleClarity && !conditionLoseDexToAC && !conditionFlatFooted) ? Math.min(warbladeLvl, Math.max(0, intMod)) : 0;
 
     const netBonusFort = this.resolveBonusStacking(saveBonusBuckets.fort);
     const netBonusRef = this.resolveBonusStacking(saveBonusBuckets.ref) + battleClarityBonus;
@@ -5909,6 +5993,8 @@ const RuleEngine = {
         natural: bd.natural || 0,
         deflection: bd.deflection || 0,
         dodge: bd.dodge || 0,
+        size: bd.size || 0,
+        misc: bd.misc || 0,
         penalty: bd.penalty ? -Math.abs(bd.penalty) : 0
       }
     };
