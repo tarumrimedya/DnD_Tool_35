@@ -3612,10 +3612,12 @@
           source: 'Spell',
           targetType: 'creature',
           sizeSteps: calculatedSteps,
-          strBonus: spell.strBonus || 2,
-          dexBonus: spell.dexBonus || -2,
-          acBonus: spell.acBonus || -1,
-          attBonus: spell.attBonus || -1,
+          // Size-typed ability / AC / attack modifiers come from the spell's own V2 record (SRD entry by id as fallback)
+          modifiers: JSON.parse(JSON.stringify(
+            (Array.isArray(spell.modifiers) && spell.modifiers.length > 0)
+              ? spell.modifiers
+              : ((typeof SrdCompendium !== 'undefined' && SrdCompendium.getById && spell.id ? SrdCompendium.getById(spell.id)?.modifiers : null) || [])
+          )),
           cl: cl,
           duration: `${cl} min`,
           description: `Creature and its weapons increase by ${calculatedSteps} size category.`
@@ -3831,84 +3833,8 @@
     }
 
     // --- WEAPON SETS SYSTEM (CARD 1 MAIN HAND, CARD 2 OFF-HAND) ---
-    function enrichWeaponStats(item, wepName) {
-      if (!item) item = {};
-      const targetName = wepName || item.name || '';
-      item.name = targetName;
-      const lower = targetName.toLowerCase();
-
-      // Ensure dice
-      if (!item.dice) {
-        if (lower.includes('unarmed')) {
-          const monkLvl = (character?.levelProgression || []).filter(l => (l.className || '').toLowerCase().includes('monk')).length;
-          const isSmall = (character?.size || '').toLowerCase() === 'small';
-          if (monkLvl >= 1) item.dice = isSmall ? '1d4' : '1d6';
-          else item.dice = isSmall ? '1d2' : '1d3';
-        }
-        else if (lower.includes('dagger')) item.dice = '1d4';
-        else if (lower.includes('rapier')) item.dice = '1d6';
-        else if (lower.includes('spiked chain')) item.dice = '2d4';
-        else if (lower.includes('shortsword')) item.dice = '1d6';
-        else if (lower.includes('longsword')) item.dice = '1d8';
-        else if (lower.includes('greatsword')) item.dice = '2d6';
-        else if (lower.includes('heavy shield')) item.dice = '1d4';
-        else if (lower.includes('light shield') || lower.includes('buckler')) item.dice = '1d3';
-        else item.dice = '1d4';
-      }
-
-      // Ensure critMin
-      if (!item.critMin) {
-        if (lower.includes('rapier')) item.critMin = 18;
-        else if (lower.includes('dagger') || lower.includes('shortsword') || lower.includes('kukri') || lower.includes('scimitar')) item.critMin = 19;
-        else item.critMin = 20;
-      }
-
-      // Ensure critMult
-      if (!item.critMult) {
-        if (lower.includes('scythe') || lower.includes('pick')) item.critMult = 4;
-        else if (lower.includes('axe') || lower.includes('spear') || lower.includes('bow')) item.critMult = 3;
-        else item.critMult = 2;
-      }
-
-      // Ensure dmgType
-      if (!item.dmgType) {
-        if (lower.includes('unarmed') || lower.includes('mace') || lower.includes('flail') || lower.includes('club') || lower.includes('hammer') || lower.includes('shield')) {
-          item.dmgType = 'Bludgeoning';
-        } else if (lower.includes('rapier') || lower.includes('dagger') || lower.includes('chain') || lower.includes('spear') || lower.includes('bow')) {
-          item.dmgType = 'Piercing';
-        } else {
-          item.dmgType = 'Slashing';
-        }
-      }
-
-      // Ensure attBonus
-      if (item.attBonus === undefined) {
-        if (lower.includes('+5')) item.attBonus = 5;
-        else if (lower.includes('+4')) item.attBonus = 4;
-        else if (lower.includes('+3')) item.attBonus = 3;
-        else if (lower.includes('+2')) item.attBonus = 2;
-        else if (lower.includes('+1')) item.attBonus = 1;
-        else if (lower.includes('masterwork') || lower.includes('mwk')) item.attBonus = 1;
-        else item.attBonus = 0;
-      }
-
-      // Ensure dmgBonus
-      if (item.dmgBonus === undefined) {
-        if (lower.includes('+5')) item.dmgBonus = 5;
-        else if (lower.includes('+4')) item.dmgBonus = 4;
-        else if (lower.includes('+3')) item.dmgBonus = 3;
-        else if (lower.includes('+2')) item.dmgBonus = 2;
-        else if (lower.includes('+1')) item.dmgBonus = 1;
-        else item.dmgBonus = 0;
-      }
-
-      if (item.isLight === undefined) {
-        item.isLight = lower.includes('dagger') || lower.includes('shortsword') || lower.includes('kukri') || lower.includes('light') || lower.includes('unarmed');
-      }
-
-      return item;
-    }
-
+    // Weapon data comes only from item records (character weapons, body slots, gear pool, Master DB, SRD catalog);
+    // a field a record does not carry stays empty: nothing is inferred from the weapon name.
     function findWeaponEverywhere(wepName) {
       if (!wepName || wepName === 'None' || wepName === '-') return null;
 
@@ -3919,43 +3845,43 @@
       }
       if (found) {
         if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(found);
-        return enrichWeaponStats({ ...found }, wepName);
+        return ({ ...found, name: wepName });
       }
 
       // 2. Check bodySlots.mainHand / offHand
       if (character.bodySlots?.mainHand?.name === wepName) {
         if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(character.bodySlots.mainHand);
-        return enrichWeaponStats({ ...character.bodySlots.mainHand }, wepName);
+        return ({ ...character.bodySlots.mainHand, name: wepName });
       }
       if (character.bodySlots?.offHand?.name === wepName) {
         if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(character.bodySlots.offHand);
-        return enrichWeaponStats({ ...character.bodySlots.offHand }, wepName);
+        return ({ ...character.bodySlots.offHand, name: wepName });
       }
 
       // 3. Check gearPool
       found = (character.gearPool || []).find(g => g && g.name === wepName);
       if (found) {
         if (typeof hydrateGearItemStats === 'function') hydrateGearItemStats(found);
-        return enrichWeaponStats({ ...found }, wepName);
+        return ({ ...found, name: wepName });
       }
 
       // 4. Check masterDb if available
       if (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) {
         found = masterDb.find(item => item && (item.name === wepName || item.masterDbName === wepName));
-        if (found) return enrichWeaponStats({ ...found }, wepName);
+        if (found) return ({ ...found, name: wepName });
       }
 
       // 4.5 Check SrdCompendium O(1) first, then BUNDLED_SRD_CORE_CATALOG fallback
       if (window.SrdCompendium && typeof window.SrdCompendium.getByName === 'function') {
         found = window.SrdCompendium.getByName(wepName, 'Weapon') || window.SrdCompendium.getByName(wepName);
-        if (found) return enrichWeaponStats({ ...found }, wepName);
+        if (found) return ({ ...found, name: wepName });
       } else if (typeof window.BUNDLED_SRD_CORE_CATALOG !== 'undefined' && Array.isArray(window.BUNDLED_SRD_CORE_CATALOG)) {
         found = window.BUNDLED_SRD_CORE_CATALOG.find(item => item && item.name && item.name.toLowerCase().trim() === wepName.toLowerCase().trim());
-        if (found) return enrichWeaponStats({ ...found }, wepName);
+        if (found) return ({ ...found, name: wepName });
       }
 
-      // 5. Parametric D&D 3.5e standard weapon fallback
-      return enrichWeaponStats({}, wepName);
+      // 5. No record found: name only (stats stay empty)
+      return { name: wepName };
     }
 
     // Helper to determine if a weapon is strictly a ranged-only projectile weapon (e.g. Longbow, Crossbow, Sling)
@@ -4169,73 +4095,6 @@
     function ensureWeaponSetsData() {
       if (!character) return;
       if (!character.tactical) character.tactical = {};
-
-      // Clean up any legacy separate "↳ ... (Off-Hand Head)" entries and consolidate into the parent Double Weapon
-      if (typeof RuleEngine !== 'undefined' && typeof RuleEngine.isOffHandWeaponHead === 'function') {
-        const mhSlot = character.bodySlots?.mainHand;
-        const ohSlot = character.bodySlots?.offHand;
-        const s1Name = character.tactical?.weaponSets?.set1?.mainWeapon;
-        const offHeadCandidate = (mhSlot && mhSlot.name && mhSlot.name !== '-' && RuleEngine.isOffHandWeaponHead(mhSlot))
-          ? mhSlot
-          : ((ohSlot && ohSlot.name && ohSlot.name !== '-' && RuleEngine.isOffHandWeaponHead(ohSlot))
-            ? ohSlot
-            : ((s1Name && RuleEngine.isOffHandWeaponHead(s1Name)) ? { name: s1Name } : null));
-
-        // Remove any separate "↳ ... (Off-Hand Head)" items from gearPool and weapons
-        if (Array.isArray(character.gearPool)) {
-          character.gearPool = character.gearPool.filter(p => !(p && RuleEngine.isOffHandWeaponHead(p)));
-        }
-        if (Array.isArray(character.weapons)) {
-          character.weapons = character.weapons.filter(w => !(w && RuleEngine.isOffHandWeaponHead(w)));
-        }
-
-        if (offHeadCandidate) {
-          const baseParentName = String(offHeadCandidate.parent || offHeadCandidate.name || '')
-            .replace(/^↳\s*/, '')
-            .replace(/\s*\(.*?\)\s*$/, '')
-            .trim();
-          const baseLower = baseParentName.toLowerCase();
-          let parentPoolItem = (character.gearPool || []).find(p => p && String(p.name || '').trim().toLowerCase() === baseLower);
-          let parentWepItem = (character.weapons || []).find(w => w && String(w.name || '').trim().toLowerCase() === baseLower);
-          const dbEntry = RuleEngine.getMasterDbEntry ? RuleEngine.getMasterDbEntry(baseParentName) : null;
-          const resolvedName = parentPoolItem?.name || parentWepItem?.name || dbEntry?.name || baseParentName || 'Dire Flail';
-
-          if (!parentWepItem && resolvedName) {
-            if (!Array.isArray(character.weapons)) character.weapons = [];
-            parentWepItem = {
-              name: resolvedName,
-              grip: '2-Hand',
-              dice: dbEntry?.dice || offHeadCandidate.dice || '1d8',
-              critMin: Number(dbEntry?.critMin || dbEntry?.critRange || offHeadCandidate.critMin) || 20,
-              critMult: Number(dbEntry?.critMult || offHeadCandidate.critMult) || 2,
-              attBonus: Number(offHeadCandidate.attBonus) || 0,
-              dmgBonus: Number(offHeadCandidate.dmgBonus) || 0,
-              dmgType: dbEntry?.dmgType || offHeadCandidate.dmgType || 'Bludgeoning',
-              tags: ['two-handed', 'double']
-            };
-            character.weapons.push(parentWepItem);
-          }
-
-          if (!character.bodySlots) character.bodySlots = {};
-          if (parentPoolItem) parentPoolItem.isEquipped = true;
-          character.bodySlots.mainHand = {
-            ...(dbEntry || parentPoolItem || parentWepItem || {}),
-            name: resolvedName,
-            masterDbName: resolvedName,
-            category: 'Weapon',
-            active: true
-          };
-          character.bodySlots.offHand = { name: '-', active: false, weight: 0, cost: 0, desc: '' };
-          character.activeWeapon = resolvedName;
-          if (character.tactical?.weaponSets?.set1) {
-            character.tactical.weaponSets.set1.mainWeapon = resolvedName;
-          }
-          if (character.tactical?.weaponSets?.set2) {
-            character.tactical.weaponSets.set2.mainWeapon = resolvedName;
-            character.tactical.weaponSets.set2.grip = 'Off-Hand';
-          }
-        }
-      }
 
       const isRangedMode = window._combatOffenseMode === 'ranged';
 
@@ -4594,7 +4453,7 @@
             hasExtraMods,
             elementalMods: wep.elementalMods || [],
             keen: !!wep.keen,
-            enhancementBonus: wep.attBonus || 0
+            enhancementBonus: Number(wep.enhancementBonus) || 0
           };
         } catch (e) {
           console.warn('getWeaponCombatDisplayStats error:', e);
@@ -5476,22 +5335,40 @@
         poolItem.isEquipped = true;
       }
 
-      // Check masterDb or character.weapons or enrich
+      // The slot is built from the character's own item record (gear pool, then weapons list, then Master DB entry).
+      // Fields the record does not carry stay empty: nothing is inferred from the item name.
       let fromDb = (typeof masterDb !== 'undefined' && Array.isArray(masterDb)) ? masterDb.find(m => m && (m.name === itemName || m.masterDbName === itemName)) : null;
       let fromWep = (character.weapons || []).find(w => w && w.name === itemName);
-      const isShieldItem = (fromDb && fromDb.category === 'Shield') || itemName.toLowerCase().includes('shield') || itemName.toLowerCase().includes('buckler');
-      const enriched = enrichWeaponStats({ ...(fromDb || fromWep || {}) }, itemName);
+      const source = poolItem || fromWep || fromDb || {};
+      const isShieldItem = source.category === 'Shield' || source.type === 'Shield';
+      const clone = (v) => (v === undefined ? undefined : JSON.parse(JSON.stringify(v)));
+      const v2Fields = {
+        baseItemId: source.baseItemId,
+        material: source.material,
+        enhancementBonus: source.enhancementBonus,
+        enhancements: clone(source.enhancements),
+        isMasterwork: source.isMasterwork,
+        dice: source.dice,
+        critMin: source.critMin,
+        critMult: source.critMult,
+        dmgType: source.dmgType,
+        weaponMeta: clone(source.weaponMeta),
+        damageParts: clone(source.damageParts),
+        modifiers: clone(source.modifiers),
+        ruleFlags: clone(source.ruleFlags)
+      };
 
       character.bodySlots[slotKey] = {
+        ...v2Fields,
         name: itemName,
-        masterDbName: fromDb?.name || itemName,
+        masterDbName: source.masterDbName || fromDb?.name || itemName,
         category: isShieldItem ? 'Shield' : 'Weapon',
         active: true,
-        weight: fromDb?.weight || fromWep?.weight || (isShieldItem ? 1.5 : 2),
-        cost: fromDb?.cost || fromWep?.cost || 1000,
-        desc: fromDb?.desc || `${enriched.dice} ${enriched.critMin}-20/x${enriched.critMult} ${enriched.dmgType}`,
-        acBonus: fromDb?.acBonus || (itemName.toLowerCase().includes('buckler') ? 1 : (itemName.toLowerCase().includes('heavy') ? 2 : 0)),
-        bonusType: fromDb?.bonusType || (isShieldItem ? 'Shield' : 'Enhancement')
+        weight: source.weight,
+        cost: source.cost,
+        desc: source.desc || '',
+        acBonus: source.acBonus,
+        bonusType: source.bonusType
       };
 
       if (!isShieldItem) {
@@ -5499,16 +5376,10 @@
         let wExists = character.weapons.find(w => w && w.name === itemName);
         if (!wExists) {
           character.weapons.push({
+            ...v2Fields,
             name: itemName,
             grip: slotKey === 'offHand' ? 'Off-Hand' : '1-Hand',
-            dice: enriched.dice,
-            critMin: enriched.critMin,
-            critMult: enriched.critMult,
-            attBonus: enriched.attBonus,
-            dmgBonus: enriched.dmgBonus,
-            dmgType: enriched.dmgType,
-            isLight: enriched.isLight,
-            tags: enriched.isLight ? ['light', 'finessable'] : []
+            isLight: source.isLight
           });
         }
       }
@@ -5998,15 +5869,13 @@
         weight: Number(item.weight) || 0,
         damageParts: Array.isArray(item.damageParts) && item.damageParts.length > 0
           ? JSON.parse(JSON.stringify(item.damageParts))
-          : [{ dice: item.dice || item.damage || '1d8', bonus: Number(item.dmgBonus || item.enhancementBonus) || 0, type: item.dmgType || (primaryPart && primaryPart.type) || 'Slashing', multiplyOnCrit: true }],
+          : [{ dice: item.dice || item.damage || '1d8', bonus: 0, type: item.dmgType || (primaryPart && primaryPart.type) || 'Slashing', multiplyOnCrit: true }],
         modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
         modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
         crit: item.crit || `${wMeta.critMin || item.critMin || 20}/x${wMeta.critMult || item.critMult || 2}`,
         critMin: Number(wMeta.critMin || item.critMin) || 20,
         rawCritMin: Number(wMeta.critMin || item.critMin) || 20,
         critMult: Number(wMeta.critMult || item.critMult) || 2,
-        attBonus: Number(item.enhancementBonus || item.attBonus) || 0,
-        dmgBonus: Number(item.enhancementBonus || item.dmgBonus) || 0,
         dmgType: (primaryPart && primaryPart.type) || item.dmgType || 'Slashing',
         bonusType: 'enhancement',
         tags: item.tags || [],
@@ -7491,8 +7360,7 @@
         return RuleEngine.getDoubleWeaponOffHandHeadStats(fromWeps || currentOffHandName);
       }
       if (fromWeps) {
-        const enriched = enrichWeaponStats({ ...fromWeps, grip: 'Off-Hand' }, currentOffHandName);
-        enriched.grip = 'Off-Hand';
+        const enriched = { ...fromWeps, name: currentOffHandName, grip: 'Off-Hand' };
         if (RuleEngine && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(enriched)) enriched.isLight = true;
         return enriched;
       }
@@ -7510,16 +7378,13 @@
             dice: isHeavy ? '1d4' : '1d3',
             critMin: 20,
             critMult: 2,
-            attBonus: offHandItem.attBonus || 0,
-            dmgBonus: offHandItem.dmgBonus || 0,
             dmgType: 'Bludgeoning',
             isLight: !isHeavy,
             isBuckler,
             tags: ['off-hand', 'shield-bash']
           };
         }
-        const enrichedOff = enrichWeaponStats({ ...offHandItem, grip: 'Off-Hand' }, currentOffHandName);
-        enrichedOff.grip = 'Off-Hand';
+        const enrichedOff = { ...offHandItem, name: currentOffHandName, grip: 'Off-Hand' };
         if (RuleEngine && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(enrichedOff)) enrichedOff.isLight = true;
         return enrichedOff;
       }

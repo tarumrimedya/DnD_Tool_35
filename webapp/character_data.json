@@ -85,8 +85,6 @@
       "dice": "1d3",
       "critMin": 20,
       "critMult": 2,
-      "attBonus": 0,
-      "dmgBonus": 0,
       "dmgType": "Bludgeoning (Nonlethal)",
       "bonusType": "Untyped",
       "tags": [

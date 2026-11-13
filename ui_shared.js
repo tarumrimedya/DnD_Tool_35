@@ -990,7 +990,7 @@
       } catch (e) { reportError('ui_shared:populateForgeFromItem', e); }
     }
 
-    // Infer enhancement bonus from item.attBonus or modifiers if still missing
+    // Infer enhancement bonus from the item's typed enhancement modifier if still missing
     if (isNaN(resolvedEnhBonus)) {
       if (Array.isArray(item.modifiers)) {
         const enhMod = item.modifiers.find(m => m && String(m.type || '').toLowerCase() === 'enhancement' && Number(m.value) > 0);

@@ -1697,8 +1697,6 @@
         critRange: slot.critRange,
         critMult: slot.critMult,
         handedness: slot.handedness,
-        attBonus: slot.attBonus,
-        dmgBonus: slot.dmgBonus,
         dmgType: slot.dmgType,
         isLight: slot.isLight,
         acBonus: slot.acBonus,
@@ -1915,8 +1913,6 @@
       critRange: item.critRange || item.critMin || item.weaponMeta?.critMin,
       critMult: item.critMult || item.weaponMeta?.critMult,
       handedness: item.handedness || item.weaponMeta?.handedness,
-      attBonus: item.attBonus || item.enhancementBonus || 0,
-      dmgBonus: item.dmgBonus || item.enhancementBonus || 0,
       dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : undefined),
       isLight: item.isLight || Boolean(engine && typeof engine.isLightWeapon === 'function' && engine.isLightWeapon(item)),
       parent: item.parent,
@@ -1958,8 +1954,6 @@
         if (item.dmgType) existingWep.dmgType = item.dmgType;
         if (item.handedness) existingWep.handedness = item.handedness;
         if (item.enhancementBonus !== undefined) existingWep.enhancementBonus = item.enhancementBonus;
-        if (item.attBonus !== undefined) existingWep.attBonus = item.attBonus;
-        if (item.dmgBonus !== undefined) existingWep.dmgBonus = item.dmgBonus;
         if (item.isLight !== undefined) existingWep.isLight = item.isLight;
         if (Array.isArray(item.damageParts) && item.damageParts.length > 0) existingWep.damageParts = JSON.parse(JSON.stringify(item.damageParts));
         if (Array.isArray(item.modifiers) && item.modifiers.length > 0) existingWep.modifiers = JSON.parse(JSON.stringify(item.modifiers));
@@ -1973,8 +1967,6 @@
           critMin: item.critMin || item.critRange || item.weaponMeta?.critMin || 20,
           critMult: item.critMult || item.weaponMeta?.critMult || 2,
           enhancementBonus: item.enhancementBonus || 0,
-          attBonus: item.attBonus || item.enhancementBonus || 0,
-          dmgBonus: item.dmgBonus || item.enhancementBonus || 0,
           dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : 'Slashing'),
           bonusType: item.bonusType || 'Enhancement',
           isLight: item.isLight || Boolean(engine && typeof engine.isLightWeapon === 'function' && engine.isLightWeapon(item)),
@@ -2185,8 +2177,6 @@
       critRange: Number(v2Item.critRange || v2Item.critMin || v2Item.weaponMeta?.critMin) || undefined,
       critMult: Number(v2Item.critMult || v2Item.weaponMeta?.critMult) || undefined,
       handedness: v2Item.handedness || v2Item.weaponMeta?.handedness,
-      attBonus: Number(v2Item.enhancementBonus || v2Item.attBonus) || 0,
-      dmgBonus: Number(v2Item.enhancementBonus || v2Item.dmgBonus) || 0,
       acBonus: v2Item.acBonus !== undefined ? v2Item.acBonus : (armorAcMod ? Number(armorAcMod.value) : undefined),
       maxDex: v2Item.maxDex !== undefined ? v2Item.maxDex : v2Item.armorMeta?.maxDex,
       checkPenalty: v2Item.checkPenalty !== undefined ? v2Item.checkPenalty : v2Item.armorMeta?.acp,
@@ -2213,7 +2203,7 @@
           dice: (primaryPart && primaryPart.dice) || v2Item.dice || '1d8',
           damageParts: newEntry.damageParts.length > 0
             ? JSON.parse(JSON.stringify(newEntry.damageParts))
-            : [{ dice: v2Item.dice || '1d8', bonus: Number(v2Item.dmgBonus) || 0, type: v2Item.dmgType || 'Slashing', multiplyOnCrit: true }],
+            : [{ dice: v2Item.dice || '1d8', bonus: 0, type: v2Item.dmgType || 'Slashing', multiplyOnCrit: true }],
           modifiers: JSON.parse(JSON.stringify(newEntry.modifiers)),
           modes: JSON.parse(JSON.stringify(newEntry.modes)),
           weaponMeta: newEntry.weaponMeta ? JSON.parse(JSON.stringify(newEntry.weaponMeta)) : null,
@@ -2223,8 +2213,6 @@
           rawCritMin: Number(v2Item.weaponMeta?.critMin || v2Item.critMin) || 20,
           critMult: Number(v2Item.weaponMeta?.critMult || v2Item.critMult) || 2,
           enhancementBonus: Number(v2Item.enhancementBonus) || 0,
-          attBonus: Number(v2Item.enhancementBonus || v2Item.attBonus) || 0,
-          dmgBonus: Number(v2Item.enhancementBonus || v2Item.dmgBonus) || 0,
           dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType || 'Slashing',
           bonusType: 'enhancement',
           tags: v2Item.tags || [],
@@ -2361,8 +2349,6 @@
       poolItem.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || poolItem.dice;
       poolItem.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || poolItem.critMin;
       poolItem.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || poolItem.critMult;
-      poolItem.attBonus = Number(forgedV2Item.enhancementBonus) || 0;
-      poolItem.dmgBonus = Number(forgedV2Item.enhancementBonus) || 0;
       poolItem.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || poolItem.dmgType;
       if (computedAcBonus !== undefined) poolItem.acBonus = computedAcBonus;
       if (clonedArmorMeta) {
@@ -2407,8 +2393,6 @@
       sd.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || sd.dice;
       sd.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || sd.critMin;
       sd.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || sd.critMult;
-      sd.attBonus = Number(forgedV2Item.enhancementBonus) || 0;
-      sd.dmgBonus = Number(forgedV2Item.enhancementBonus) || 0;
       sd.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || sd.dmgType;
       if (computedAcBonus !== undefined) sd.acBonus = computedAcBonus;
       if (clonedArmorMeta) {
@@ -2438,8 +2422,7 @@
         critMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
         rawCritMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
         critMult: Number(clonedWeaponMeta?.critMult || forgedV2Item.critMult) || 2,
-        attBonus: Number(forgedV2Item.enhancementBonus) || 0,
-        dmgBonus: Number(forgedV2Item.enhancementBonus) || 0,
+        enhancementBonus: Number(forgedV2Item.enhancementBonus) || 0,
         dmgType: (primaryPart && primaryPart.type) || forgedV2Item.dmgType || 'Slashing',
         bonusType: 'enhancement',
         tags: forgedV2Item.tags || [],

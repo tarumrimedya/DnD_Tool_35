@@ -3668,17 +3668,15 @@ function runDeriveSheetTests() {
       sumApplied(mwBuffed.attackBonusItems) === mwBuffed.netAttackBonus
     );
 
-    // Sheet hydration (char_inventory hydrateGearItemStats) mirrors a weapon's enhancement into flat attBonus / dmgBonus.
-    // SchemaMigrator must not re-import those mirrors as an untyped attack.all / damage.weapon bonus that stacks with
-    // the enhancement (was: +2 Keen Rapier +22 instead of +20, +1 Heavy Mace +13 instead of +12).
+    // A weapon's attack / damage bonus has one source: `enhancementBonus` + typed `modifiers`. The sheet no longer writes the
+    // legacy flat attBonus / dmgBonus copies (hydrateGearItemStats, equip, reforge, off-hand builders), and SchemaMigrator no
+    // longer maps those columns, so no copy can stack with the enhancement (was: +2 Keen Rapier +22 instead of +20).
     const mirrorRows = [['03_twf_rogue_swashbuckler_lvl12.json', 0, 20], ['03_twf_rogue_swashbuckler_lvl12.json', 1, 19], ['02_cleric_radiant_lvl9.json', 0, 12]].map(([file, idx, expected]) => {
       const c = deriveFixture(file);
       const w = JSON.parse(JSON.stringify(c.weapons[idx]));
       const enh = Number(w.enhancementBonus) || 0;
-      // Shape after hydration: the assembler's attack.weapon enhancement modifier (damage lives in damageParts) + mirrors.
-      w.modifiers = [{ target: 'attack.weapon', value: enh, formula: String(enh), type: 'enhancement', condition: 'Weapon Enhancement' }];
-      w.attBonus = enh;
-      w.dmgBonus = enh;
+      // Shape after hydration: the assembler's attack.weapon enhancement modifier (damage lives in damageParts).
+      w.modifiers = [{ target: 'attack.weapon', value: enh, formula: String(enh), type: 'enhancement', condition: null, source: 'Weapon Enhancement' }];
       w._statsHydrated = true;
       const upgraded = SchemaMigrator.upgradeEntryToV2(w);
       const plain = RuleEngine.evaluateWeaponAttack(c, c.weapons[idx], {});
@@ -3686,14 +3684,17 @@ function runDeriveSheetTests() {
       const extra = upgraded.modifiers.filter(m => /^(attack|damage)/.test(String(m.target)) && String(m.type).toLowerCase() !== 'enhancement');
       return { ok: r.netAttackBonus === expected && r.netFlatDamage === plain.netFlatDamage && extra.length === 0 && sumApplied(r.attackBonusItems) === r.netAttackBonus, desc: `${w.name} ${r.netAttackBonus}/${expected} dmg ${r.netFlatDamage}/${plain.netFlatDamage} extra ${extra.length}` };
     });
-    const legacyBuff = SchemaMigrator.upgradeEntryToV2({ name: 'Legacy Attack Buff', attBonus: 2, dmgBonus: 1 });
-    const legacyWeapon = SchemaMigrator.upgradeEntryToV2({ name: 'Legacy Club', dice: '1d6', critMult: 2, attBonus: 1 });
+    const flatColumnWeapon = SchemaMigrator.upgradeEntryToV2({ name: 'Flat Column Club', dice: '1d6', critMult: 2, attBonus: 1, dmgBonus: 1 });
+    const offHead = RuleEngine.getDoubleWeaponOffHandHeadStats({ name: 'Two-Bladed Sword', enhancementBonus: 2 });
+    const flatWriterRe = /\.(?:attBonus|dmgBonus)\s*=(?!=)|\b(?:attBonus|dmgBonus)\s*:\s*(?:Number\(|item\.|slot\.|v2Item\.|enriched\.|offHandItem\.|offHeadCandidate\.|forgedV2Item\.|spell\.|enh\b)/;
+    const flatWriters = ['char_inventory.js', 'char_store.js', 'char_combat.js', 'rule_engine.js'].flatMap(f =>
+      fs.readFileSync(path.join(__dirname, '..', f), 'utf8').split('\n').map((l, i) => ({ at: `${f}:${i + 1}`, l })).filter(x => flatWriterRe.test(x.l)));
     check(
-      'SchemaMigrator: a weapon\'s attBonus / dmgBonus mirroring its enhancement or attack.* modifiers is not re-added as an untyped bonus; a real legacy attBonus / dmgBonus still migrates' +
-        mirrorRows.filter(x => !x.ok).map(x => ' — ' + x.desc).join(''),
-      mirrorRows.every(x => x.ok) &&
-      legacyBuff.modifiers.some(m => m.target === 'attack.all' && m.value === 2) && legacyBuff.modifiers.some(m => m.target === 'damage.weapon' && m.value === 1) &&
-      legacyWeapon.modifiers.some(m => m.target === 'attack.all' && m.value === 1)
+      'Weapon bonus single source: no flat attBonus / dmgBonus writer in the sheet modules, SchemaMigrator adds no attack / damage modifier for those columns, the double-weapon off-hand head carries enhancementBonus, fixture weapons keep their totals' +
+        mirrorRows.filter(x => !x.ok).map(x => ' — ' + x.desc).join('') + flatWriters.map(x => ' — writer ' + x.at).join(''),
+      mirrorRows.every(x => x.ok) && flatWriters.length === 0 &&
+      !flatColumnWeapon.modifiers.some(m => /^(attack|damage)/.test(String(m.target))) &&
+      offHead.enhancementBonus === 2 && offHead.attBonus === undefined && offHead.dmgBonus === undefined
     );
 
     // Divine Favor (fixture 02) is in the very first derive: luck +3 on attack (CL 9) with no later re-resolution needed.

@@ -4579,7 +4579,7 @@
       if (!character) return;
       if (!character.bodySlots) character.bodySlots = {};
 
-      // Clean up any legacy separate "↳ ... (Off-Hand Head)" entries via ensureWeaponSetsData
+      // Make sure the weapon sets exist before the slots render
       if (typeof ensureWeaponSetsData === 'function') {
         try { ensureWeaponSetsData(); } catch (e) { reportError('char_inventory:renderBodySlotsSilhouette', e); }
       }
@@ -5520,8 +5520,6 @@
           critRange: slot.critRange,
           critMult: slot.critMult,
           handedness: slot.handedness,
-          attBonus: slot.attBonus,
-          dmgBonus: slot.dmgBonus,
           dmgType: slot.dmgType,
           damageParts: Array.isArray(slot.damageParts) ? JSON.parse(JSON.stringify(slot.damageParts)) : undefined,
           modifiers: Array.isArray(slot.modifiers) ? JSON.parse(JSON.stringify(slot.modifiers)) : undefined,
@@ -5717,12 +5715,6 @@
           item.enhancementBonus = ref.enhancementBonus;
         }
         if ((fromAssembler || isStubWeaponFallback) && isWeapon) {
-          const atkMod = (item.modifiers || []).find(m => m && (m.target === 'attack.weapon' || m.target === 'attack'));
-          const dmgMod = (item.modifiers || []).find(m => m && (m.target === 'damage.weapon' || m.target === 'damage'));
-          if (atkMod && atkMod.value !== undefined) item.attBonus = Number(atkMod.value) || 0;
-          else if (item.enhancementBonus) item.attBonus = Number(item.enhancementBonus) || 0;
-          if (dmgMod && dmgMod.value !== undefined) item.dmgBonus = Number(dmgMod.value) || 0;
-          else if (item.enhancementBonus) item.dmgBonus = Number(item.enhancementBonus) || 0;
           if (item.handedness && String(item.handedness).toLowerCase().includes('light')) {
             item.isLight = true;
           }
@@ -5854,7 +5846,7 @@
         if (!dmgParts && item.dice) {
           dmgParts = [{
             dice: item.dice,
-            bonus: Number(item.dmgBonus ?? item.enhancementBonus) || 0,
+            bonus: Number(item.enhancementBonus) || 0,
             type: item.dmgType || 'Physical',
             multiplyOnCrit: true
           }];
@@ -5866,7 +5858,7 @@
 
         // 2. Attack Bonus Badge (+X Atk)
         const atkMod = (item.modifiers || []).find(m => m && (m.target === 'attack.weapon' || m.target === 'attack' || m.target === 'attack.all'));
-        const atkVal = atkMod ? (Number(atkMod.value) || 0) : (Number(item.attBonus || item.enhancementBonus) || 0);
+        const atkVal = atkMod ? (Number(atkMod.value) || 0) : (Number(item.enhancementBonus) || 0);
         if (atkVal !== 0) {
           const atkCls = atkVal > 0
             ? 'bg-emerald-950/80 text-emerald-300 border-emerald-600/60'
@@ -6409,8 +6401,6 @@
         critRange: item.critRange || item.critMin || item.weaponMeta?.critMin,
         critMult: item.critMult || item.weaponMeta?.critMult,
         handedness: item.handedness || item.weaponMeta?.handedness,
-        attBonus: item.attBonus || item.enhancementBonus || 0,
-        dmgBonus: item.dmgBonus || item.enhancementBonus || 0,
         dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : undefined),
         isLight: item.isLight || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item)),
         parent: item.parent,
@@ -6456,8 +6446,6 @@
           if (item.dmgType) existingWep.dmgType = item.dmgType;
           if (item.handedness) existingWep.handedness = item.handedness;
           if (item.enhancementBonus !== undefined) existingWep.enhancementBonus = item.enhancementBonus;
-          if (item.attBonus !== undefined) existingWep.attBonus = item.attBonus;
-          if (item.dmgBonus !== undefined) existingWep.dmgBonus = item.dmgBonus;
           if (item.isLight !== undefined) existingWep.isLight = item.isLight;
           if (Array.isArray(item.damageParts) && item.damageParts.length > 0) existingWep.damageParts = JSON.parse(JSON.stringify(item.damageParts));
           if (Array.isArray(item.modifiers) && item.modifiers.length > 0) existingWep.modifiers = JSON.parse(JSON.stringify(item.modifiers));
@@ -6471,8 +6459,6 @@
             critMin: item.critMin || item.critRange || item.weaponMeta?.critMin || (item.name.toLowerCase().includes('jovar') || item.name.toLowerCase().includes('rapier') ? 18 : 20),
             critMult: item.critMult || item.weaponMeta?.critMult || 2,
             enhancementBonus: item.enhancementBonus || 0,
-            attBonus: item.attBonus || item.enhancementBonus || 0,
-            dmgBonus: item.dmgBonus || item.enhancementBonus || 0,
             dmgType: item.dmgType || (Array.isArray(item.damageParts) && item.damageParts[0] ? item.damageParts[0].type : 'Slashing'),
             bonusType: item.bonusType || 'Enhancement',
             isLight: item.isLight || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item)),
@@ -7453,8 +7439,6 @@
         critRange: Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || undefined,
         critMult: Number(item.critMult || item.weaponMeta?.critMult) || undefined,
         handedness: item.handedness || item.weaponMeta?.handedness,
-        attBonus: Number(item.enhancementBonus || item.attBonus) || 0,
-        dmgBonus: Number(item.enhancementBonus || item.dmgBonus) || 0,
         acBonus: item.acBonus !== undefined ? item.acBonus : (armorAcMod ? Number(armorAcMod.value) : undefined),
         maxDex: item.maxDex !== undefined ? item.maxDex : item.armorMeta?.maxDex,
         checkPenalty: item.checkPenalty !== undefined ? item.checkPenalty : item.armorMeta?.acp,
@@ -7479,7 +7463,7 @@
             dice: (primaryPart && primaryPart.dice) || item.dice || '1d8',
             damageParts: Array.isArray(item.damageParts) && item.damageParts.length > 0
               ? JSON.parse(JSON.stringify(item.damageParts))
-              : [{ dice: item.dice || '1d8', bonus: Number(item.dmgBonus) || 0, type: item.dmgType || 'Slashing', multiplyOnCrit: true }],
+              : [{ dice: item.dice || '1d8', bonus: 0, type: item.dmgType || 'Slashing', multiplyOnCrit: true }],
             modifiers: Array.isArray(item.modifiers) ? JSON.parse(JSON.stringify(item.modifiers)) : [],
             modes: Array.isArray(item.modes) ? JSON.parse(JSON.stringify(item.modes)) : [],
             weaponMeta: item.weaponMeta ? JSON.parse(JSON.stringify(item.weaponMeta)) : null,
@@ -7489,8 +7473,6 @@
             rawCritMin: Number(item.critRange || item.critMin || item.weaponMeta?.critMin) || 20,
             critMult: Number(item.critMult || item.weaponMeta?.critMult) || 2,
             enhancementBonus: Number(item.enhancementBonus) || 0,
-            attBonus: Number(item.enhancementBonus || item.attBonus) || 0,
-            dmgBonus: Number(item.enhancementBonus || item.dmgBonus) || 0,
             dmgType: (primaryPart && primaryPart.type) || item.dmgType || 'Slashing',
             isLight: Boolean(item.isLight || (item.handedness && String(item.handedness).toLowerCase().includes('light')) || (typeof RuleEngine !== 'undefined' && RuleEngine.isLightWeapon && RuleEngine.isLightWeapon(item))),
             bonusType: 'enhancement',
@@ -7650,8 +7632,7 @@
             modes: Array.isArray(v2Item.modes) ? JSON.parse(JSON.stringify(v2Item.modes)) : [],
             critMin: v2Item.weaponMeta?.critMin || v2Item.critMin || 20,
             critMult: v2Item.weaponMeta?.critMult || v2Item.critMult || 2,
-            attBonus: Number(v2Item.enhancementBonus || v2Item.attBonus) || 0,
-            dmgBonus: Number(v2Item.enhancementBonus || v2Item.dmgBonus) || 0,
+            enhancementBonus: Number(v2Item.enhancementBonus) || 0,
             dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType || 'Slashing',
             bonusType: 'enhancement',
             tags: v2Item.tags || []
@@ -7781,8 +7762,6 @@
         critRange: Number(v2Item.critRange || v2Item.critMin || v2Item.weaponMeta?.critMin) || undefined,
         critMult: Number(v2Item.critMult || v2Item.weaponMeta?.critMult) || undefined,
         handedness: v2Item.handedness || v2Item.weaponMeta?.handedness,
-        attBonus: Number(v2Item.enhancementBonus || v2Item.attBonus) || 0,
-        dmgBonus: Number(v2Item.enhancementBonus || v2Item.dmgBonus) || 0,
         acBonus: v2Item.acBonus !== undefined ? v2Item.acBonus : (armorAcMod ? Number(armorAcMod.value) : undefined),
         maxDex: v2Item.maxDex !== undefined ? v2Item.maxDex : v2Item.armorMeta?.maxDex,
         checkPenalty: v2Item.checkPenalty !== undefined ? v2Item.checkPenalty : v2Item.armorMeta?.acp,
@@ -7813,8 +7792,7 @@
             critMin: Number(v2Item.weaponMeta?.critMin || v2Item.critMin) || 20,
             rawCritMin: Number(v2Item.weaponMeta?.critMin || v2Item.critMin) || 20,
             critMult: Number(v2Item.weaponMeta?.critMult || v2Item.critMult) || 2,
-            attBonus: Number(v2Item.enhancementBonus || v2Item.attBonus) || 0,
-            dmgBonus: Number(v2Item.enhancementBonus || v2Item.dmgBonus) || 0,
+            enhancementBonus: Number(v2Item.enhancementBonus) || 0,
             dmgType: (primaryPart && primaryPart.type) || v2Item.dmgType || 'Slashing',
             bonusType: 'enhancement',
             tags: v2Item.tags || [],
@@ -7925,8 +7903,6 @@
         poolItem.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || poolItem.dice;
         poolItem.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || poolItem.critMin;
         poolItem.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || poolItem.critMult;
-        poolItem.attBonus = Number(forgedV2Item.enhancementBonus) || 0;
-        poolItem.dmgBonus = Number(forgedV2Item.enhancementBonus) || 0;
         poolItem.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || poolItem.dmgType;
         if (computedAcBonus !== undefined) poolItem.acBonus = computedAcBonus;
         if (clonedArmorMeta) {
@@ -7974,8 +7950,6 @@
           sd.dice = (primaryPart && primaryPart.dice) || forgedV2Item.dice || sd.dice;
           sd.critMin = Number(forgedV2Item.weaponMeta?.critMin || forgedV2Item.critMin) || sd.critMin;
           sd.critMult = Number(forgedV2Item.weaponMeta?.critMult || forgedV2Item.critMult) || sd.critMult;
-          sd.attBonus = Number(forgedV2Item.enhancementBonus) || 0;
-          sd.dmgBonus = Number(forgedV2Item.enhancementBonus) || 0;
           sd.dmgType = (primaryPart && primaryPart.type) || forgedV2Item.dmgType || sd.dmgType;
           if (computedAcBonus !== undefined) sd.acBonus = computedAcBonus;
           if (clonedArmorMeta) {
@@ -8009,8 +7983,7 @@
           critMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
           rawCritMin: Number(clonedWeaponMeta?.critMin || forgedV2Item.critMin) || 20,
           critMult: Number(clonedWeaponMeta?.critMult || forgedV2Item.critMult) || 2,
-          attBonus: Number(forgedV2Item.enhancementBonus) || 0,
-          dmgBonus: Number(forgedV2Item.enhancementBonus) || 0,
+          enhancementBonus: Number(forgedV2Item.enhancementBonus) || 0,
           dmgType: (primaryPart && primaryPart.type) || forgedV2Item.dmgType || 'Slashing',
           bonusType: 'enhancement',
           tags: forgedV2Item.tags || [],
@@ -8355,6 +8328,15 @@
       ));
     }
 
+    // Boots of Speed (DMG p.248) grant the haste spell: its V2 effect (typed modifiers + ruleFlags) comes from the SRD record.
+    function getSrdHasteEffect() {
+      const haste = (typeof SrdCompendium !== 'undefined' && SrdCompendium.getById) ? SrdCompendium.getById('spl-haste') : null;
+      return {
+        modifiers: JSON.parse(JSON.stringify(haste?.modifiers || [])),
+        ruleFlags: JSON.parse(JSON.stringify(haste?.ruleFlags || {}))
+      };
+    }
+
     function castDailyRoundItem(encodedName, slotKey) {
       const name = decodeURIComponent(encodedName);
       let item = null;
@@ -8401,10 +8383,7 @@
             name: 'Haste (Boots of Speed)',
             active: true,
             rounds: 1,
-            attBonus: 1,
-            acBonus: 1,
-            bonusType: 'Dodge',
-            speedBonus: 30,
+            ...getSrdHasteEffect(),
             durationText: '1 Round',
             source: 'Boots of Speed'
           });
@@ -8707,10 +8686,7 @@
             id: 'buff_boots_haste',
             name: 'Haste (Boots of Speed)',
             active: true,
-            attBonus: 1,
-            acBonus: 1,
-            bonusType: 'Dodge',
-            speedBonus: 30,
+            ...getSrdHasteEffect(),
             duration: 1,
             durationText: '1 Round',
             source: 'Boots of Speed'
@@ -8728,8 +8704,10 @@
           id: 'buff_' + Date.now(),
           name: opt.buffName,
           active: true,
-          attBonus: opt.bonusAtk || 0,
-          dmgBonus: opt.bonusDmg || 0,
+          modifiers: [
+            ...(Number(opt.bonusAtk) ? [{ target: 'attack.all', value: Number(opt.bonusAtk), formula: String(Number(opt.bonusAtk)), type: 'untyped', condition: null }] : []),
+            ...(Number(opt.bonusDmg) ? [{ target: 'damage.weapon', value: Number(opt.bonusDmg), formula: String(Number(opt.bonusDmg)), type: 'untyped', condition: null }] : [])
+          ],
           speedBonus: opt.speedBonus || 0,
           duration: 1,
           durationText: '1 Round',
@@ -9279,7 +9257,7 @@
           activeWeapon: "Longsword",
           activeGrip: "1-Hand",
           tactical: { powerAttack: 0, flanking: false, charge: false, higherGround: false },
-          weapons: [{ name: "Longsword", grip: "1-Hand", dice: "1d8", critMin: 19, critMult: 2, attBonus: 0, dmgBonus: 0, dmgType: "Slashing" }],
+          weapons: [{ name: "Longsword", grip: "1-Hand", dice: "1d8", critMin: 19, critMult: 2, dmgType: "Slashing" }],
           activeModifiers: [],
           spellcasting: { slots: [], knownSpells: [] },
           tomeOfBattle: { readiedManeuvers: [], stancesKnown: [] },

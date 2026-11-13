@@ -2002,7 +2002,7 @@ const RuleEngine = {
       offDice = '1d6'; offDmgType = 'Bludgeoning'; offCritMin = 20; offCritMult = 2;
     }
 
-    const enh = Number(baseObj.enhancementBonus || baseObj.attBonus || db.enhancementBonus || db.attBonus) || 0;
+    const enh = Number(baseObj.enhancementBonus || db.enhancementBonus) || 0;
     return {
       name: `${rawName} (Off-Hand)`,
       parent: rawName,
@@ -2010,8 +2010,7 @@ const RuleEngine = {
       dice: offDice,
       critMin: offCritMin,
       critMult: offCritMult,
-      attBonus: enh,
-      dmgBonus: Number(baseObj.dmgBonus ?? enh) || 0,
+      enhancementBonus: enh,
       dmgType: offDmgType,
       isLight: true,
       isDoubleOffHandVirtual: true,
