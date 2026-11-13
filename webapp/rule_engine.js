@@ -2285,6 +2285,24 @@ const RuleEngine = {
     return Object.keys(this.SRD_SHIELDS).some(k => name.includes(k)) || name.includes('shield') || name.includes('kalkan') || name.includes('buckler');
   },
 
+  // Two-Weapon Defense wield test (PHB p.102): a double weapon in the main hand, or a manufactured weapon in each hand.
+  // Natural weapons, unarmed strikes and shields do not count. Reads the equipped mainHand / offHand body slots;
+  // `offHandSuppressed` is true when a two-handed main-hand weapon leaves the off-hand item unusable.
+  isWieldingTwoWeaponsOrDouble(character, offHandSuppressed = false) {
+    const slots = (character && character.bodySlots) || {};
+    const isManufacturedWeapon = (it) => {
+      if (!it || typeof it !== 'object' || it.active === false || !it.name || it.name === '-') return false;
+      if (this.isShieldItem(it)) return false;
+      const name = String(it.name).toLowerCase();
+      if (name.includes('unarmed strike') || name.includes('silahsız')) return false;
+      if (it.isNaturalWeapon || it.ruleFlags?.naturalWeapon || String(it.category || '').toLowerCase() === 'natural') return false;
+      return this.isDoubleWeapon(it) || this.isOffHandWeaponHead(it) || this.isSimpleWeapon(it) || this.isMartialWeapon(it) || this.isExoticWeapon(it);
+    };
+    const mh = slots.mainHand;
+    if (isManufacturedWeapon(mh) && this.isDoubleWeapon(mh)) return true;
+    return !offHandSuppressed && isManufacturedWeapon(mh) && isManufacturedWeapon(slots.offHand);
+  },
+
   // Check if item is a Tower Shield according to D&D 3.5e RAW rules
   isTowerShield(item) {
     if (!item) return false;
@@ -4611,6 +4629,7 @@ const RuleEngine = {
 
     let hasSteadfastDetermination = false;
     let hasShieldWard = false;
+    let hasTwoWeaponDefense = false;
     let minMaxDex = null;
     let totalAcp = 0;
     let resistBonus = 0;
@@ -5186,6 +5205,9 @@ const RuleEngine = {
       if (rf.shieldToTouchAc || cleanName.startsWith('shield ward')) {
         hasShieldWard = true;
       }
+      if (rf.twoWeaponDefense) {
+        hasTwoWeaponDefense = true;
+      }
 
       // Dynamic scaling natural armor boons (e.g. "Nat AC 2+1/4lvl") if not already in V2 modifiers
       if (featMods.length === 0 && (cleanName.includes('nat ac') || cleanName.includes('natural armor') || cleanName.includes('doğal zırh'))) {
@@ -5464,7 +5486,6 @@ const RuleEngine = {
 
     // 5. Resolve AC Stacking
     const effectiveArmor = this.resolveBonusStacking(armorBonuses);
-    const effectiveShield = this.resolveBonusStacking(shieldBonuses);
     const effectiveNatural = this.resolveBonusStacking(naturalBonuses);
     const effectiveDeflection = this.resolveBonusStacking(deflectionBonuses);
     let effectiveDodge = this.resolveBonusStacking(dodgeBonuses);
@@ -5482,6 +5503,13 @@ const RuleEngine = {
     const fightingDefensively = Boolean(readTactical('fightingDefensively'));
     const totalDefense = Boolean(readTactical('totalDefense'));
     const charge = Boolean(readTactical('charge'));
+
+    // Two-Weapon Defense (PHB p.102, ruleFlags.twoWeaponDefense): +1 shield bonus while wielding a double weapon or two
+    // weapons, +2 when fighting defensively or using total defense. A shield bonus: it does not stack with a shield's.
+    if (hasTwoWeaponDefense && this.isWieldingTwoWeaponsOrDouble(character, offHandSuppressed)) {
+      shieldBonuses.push({ val: (fightingDefensively || totalDefense) ? 2 : 1, source: 'Two-Weapon Defense', type: 'Shield' });
+    }
+    const effectiveShield = this.resolveBonusStacking(shieldBonuses);
 
     // D&D 3.5e RAW (PHB p. 84, Tumble): 5+ ranks in Tumble increases Fighting Defensively dodge bonus to +3 and Total Defense to +6
     const skillList = Array.isArray(character.skills) ? character.skills : Object.values(character.skills || {});
@@ -5506,7 +5534,11 @@ const RuleEngine = {
 
     // Dex to AC capped by Max Dex & Condition Flags (Helpless / Paralyzed / Blinded / Stunned / Grappled)
     const fullDexMod = conditionEffectiveDexZero ? -5 : this.getAbilityMod(character.abilities.dex || 10);
-    let effectiveDex = minMaxDex !== null ? Math.min(fullDexMod, minMaxDex) : fullDexMod;
+    // Load Max Dex (PHB Table 9-2: medium load +3, heavy load +1, light load no limit): the lower of the armor and load caps applies.
+    const encumbrance = this.computeEncumbrance(character);
+    const loadMaxDex = (encumbrance.loadStatus.maxDex === null || encumbrance.loadStatus.maxDex === undefined) ? null : Number(encumbrance.loadStatus.maxDex);
+    const effectiveMaxDex = loadMaxDex === null ? minMaxDex : (minMaxDex === null ? loadMaxDex : Math.min(minMaxDex, loadMaxDex));
+    let effectiveDex = effectiveMaxDex !== null ? Math.min(fullDexMod, effectiveMaxDex) : fullDexMod;
     if (conditionLoseDexToAC) {
       effectiveDex = Math.min(0, effectiveDex);
       effectiveDodge = 0; // RAW D&D 3.5e: Any condition that makes you lose Dex bonus to AC also makes you lose Dodge bonuses
@@ -5525,11 +5557,7 @@ const RuleEngine = {
     const baseAC = 10;
     // Size modifier (PHB Table 8-1) from the creature's size category, shifted by size-change effects (Enlarge / Reduce Person).
     // A character without a size falls back to the size modifier stored on its last breakdown.
-    const SIZE_AC_MODIFIERS = { fine: 8, diminutive: 4, tiny: 2, small: 1, medium: 0, large: -1, huge: -2, gargantuan: -4, colossal: -8 };
-    const sizeKey = String(character.size || '').trim().toLowerCase().split(/[\s(]/)[0];
-    const baseSizeMod = Object.prototype.hasOwnProperty.call(SIZE_AC_MODIFIERS, sizeKey)
-      ? SIZE_AC_MODIFIERS[sizeKey]
-      : (Number(character.acBreakdown?.baseSize ?? character.acBreakdown?.size) || 0);
+    const baseSizeMod = this.getBaseSizeModifier(character);
     // Size-change effects do not stack with each other: the largest growth and the largest shrink each apply once.
     const sizeVals = sizeAcAdjustments.map(b => Number(b.val) || 0);
     const sizeShift = Math.min(0, ...sizeVals) + Math.max(0, ...sizeVals);
@@ -5584,7 +5612,10 @@ const RuleEngine = {
       dodge: effectiveDodge,
       misc: effectiveMiscAc,
       effectiveDex: effectiveDex,
-      maxDex: minMaxDex,
+      maxDex: effectiveMaxDex,
+      armorMaxDex: minMaxDex,
+      loadMaxDex,
+      load: encumbrance.loadStatus.status,
       acp: totalAcp,
       penalty: totalPenalty,
       total: totalAC,
@@ -5734,7 +5765,11 @@ const RuleEngine = {
       if (!character.ruleFlags.opposedCheckBonus) character.ruleFlags.opposedCheckBonus = {};
       character.ruleFlags.opposedCheckBonus.grapple = grappleModBonus;
     }
-    character.grappleBonus = (Number(character.bab) || 0) + this.getAbilityMod(character.abilities?.str || 10) + (character.ruleFlags?.opposedCheckBonus?.grapple || 0);
+    // Grapple check (PHB p.155-156): BAB + Str modifier + special size modifier of the current size category
+    // (the size category whose Table 8-1 modifier equals the AC size modifier after size-change effects).
+    const grappleSizeKey = Object.keys(this.SIZE_MODIFIERS).find(k => this.SIZE_MODIFIERS[k] === sizeBonus) || this.getSizeCategoryKey(character);
+    const grappleSizeMod = grappleSizeKey ? this.GRAPPLE_SIZE_MODIFIERS[grappleSizeKey] : 0;
+    character.grappleBonus = (Number(character.bab) || 0) + this.getAbilityMod(character.abilities?.str || 10) + grappleSizeMod + (character.ruleFlags?.opposedCheckBonus?.grapple || 0);
     character.actionEconomy = this.evaluateActionEconomy(character, options);
 
     return {
@@ -6175,9 +6210,17 @@ const RuleEngine = {
       { type: 'untyped', val: -effectivePA, source: 'Power Attack Penalty' }
     ];
 
-    // Combat Expertise penalty (cannot exceed BAB and cannot exceed 5 per RAW D&D 3.5e)
+    // Size modifier on attack rolls (PHB p.134, Table 8-1) from the size category. Size-change effects (Enlarge / Reduce Person)
+    // carry their own size-typed attack modifier, so this base value is untyped and stacks with them.
+    const baseSizeAtkMod = this.getBaseSizeModifier(character);
+    if (baseSizeAtkMod !== 0) {
+      attackBonusItems.push({ type: 'untyped', val: baseSizeAtkMod, source: 'Size Modifier' });
+    }
+
+    // Combat Expertise penalty (cannot exceed BAB and cannot exceed 5 per RAW D&D 3.5e).
+    // PHB p.92: it applies only to melee attacks (attack or full attack action in melee).
     const maxAllowedCE = Math.min(5, bab);
-    const combatExpertise = Math.min(maxAllowedCE, Math.max(0, Number(options.combatExpertise !== undefined ? options.combatExpertise : (character.tactical?.combatExpertise || 0))));
+    const combatExpertise = isRangedWep ? 0 : Math.min(maxAllowedCE, Math.max(0, Number(options.combatExpertise !== undefined ? options.combatExpertise : (character.tactical?.combatExpertise || 0))));
     if (combatExpertise > 0) {
       attackBonusItems.push({ type: 'untyped', val: -combatExpertise, source: 'Combat Expertise Penalty' });
     }
@@ -6335,10 +6378,11 @@ const RuleEngine = {
         }
       });
     });
-    if (flanking) {
+    // Flanking (PHB p.153) and Charge (PHB p.154) grant +2 on melee attack rolls only.
+    if (flanking && !isRangedWep) {
       attackBonusItems.push({ type: 'untyped', val: 2, source: 'Flanking' });
     }
-    if (charge) {
+    if (charge && !isRangedWep) {
       attackBonusItems.push({ type: 'untyped', val: 2, source: 'Charge' });
     }
     if (higherGround) {
@@ -6837,14 +6881,74 @@ const RuleEngine = {
     };
   },
 
-  // Calculate load status given current weight and STR
-  getLoadStatus(currentWeight, strScore) {
-    const caps = this.getCarryingCapacity(strScore);
+  // Calculate load status given current weight and STR (PHB Table 9-2)
+  getLoadStatus(currentWeight, strScore, charObj = null) {
+    const caps = this.getCarryingCapacity(strScore, charObj);
     const wt = Number(currentWeight) || 0;
     if (wt <= caps.light) return { status: 'Light Load', color: 'emerald', maxDex: null, checkPenalty: 0, speed30: 30, speed20: 20 };
     if (wt <= caps.medium) return { status: 'Medium Load', color: 'amber', maxDex: 3, checkPenalty: -3, speed30: 20, speed20: 15 };
     if (wt <= caps.heavy) return { status: 'Heavy Load', color: 'orange', maxDex: 1, checkPenalty: -6, speed30: 20, speed20: 15 };
     return { status: 'Overloaded (Max Load Exceeded)', color: 'rose', maxDex: 0, checkPenalty: -10, speed30: 5, speed20: 5 };
+  },
+
+  /**
+   * Pure encumbrance derivation (PHB p.161-162, Tables 9-1 / 9-2): the single source of truth for the
+   * carried weight, carrying capacity and load used by both the AC (load Max Dex) and the inventory view.
+   * Worn / held body-slot items count when active; gear-pool items count unless they are the equipped copy.
+   */
+  computeEncumbrance(w) {
+    const src = (w && typeof w === 'object') ? w : {};
+    const charObj = (w && typeof w === 'object') ? w : null;
+    const strScore = Number(src.abilities?.str) || 10;
+    const capacities = this.getCarryingCapacity(strScore, charObj);
+    const rawSlots = src.bodySlots || {};
+    const equippedNames = new Set();
+    let equippedWeight = 0;
+    this.INVENTORY_SLOT_DEFS.forEach((def) => {
+      const slot = rawSlots[def.key] || (def.alias ? rawSlots[def.alias] : null) || null;
+      if (!slot || !slot.name || slot.name === '-') return;
+      if (slot.active !== false) {
+        equippedWeight += Number(slot.weight ?? slot.weightLb) || 0;
+      }
+      const cleanSlotName = String(slot.name).toLowerCase().trim();
+      if (cleanSlotName) equippedNames.add(cleanSlotName);
+    });
+    let poolWeight = 0;
+    (Array.isArray(src.gearPool) ? src.gearPool : []).forEach((item) => {
+      if (!item) return;
+      const isEquipped = Boolean(item.isEquipped || equippedNames.has(String(item.name || '').toLowerCase().trim()));
+      if (isEquipped) return;
+      const qty = (item.qty !== undefined && item.qty !== null) ? Math.max(0, Number(item.qty)) : 1;
+      poolWeight += (Number(item.weight ?? item.weightLb) || 0) * qty;
+    });
+    const totalWeight = Math.round((equippedWeight + poolWeight) * 10) / 10;
+    return {
+      equippedWeight: Math.round(equippedWeight * 10) / 10,
+      poolWeight: Math.round(poolWeight * 10) / 10,
+      totalWeight,
+      strScore,
+      capacities,
+      loadStatus: this.getLoadStatus(totalWeight, strScore, charObj),
+      barPct: Math.min(100, Math.round((totalWeight / Math.max(1, capacities.heavy)) * 100))
+    };
+  },
+
+  // PHB Table 8-1 size modifier (attack rolls and AC) and PHB p.156 special size modifier (grapple checks)
+  SIZE_MODIFIERS: { fine: 8, diminutive: 4, tiny: 2, small: 1, medium: 0, large: -1, huge: -2, gargantuan: -4, colossal: -8 },
+  GRAPPLE_SIZE_MODIFIERS: { fine: -16, diminutive: -12, tiny: -8, small: -4, medium: 0, large: 4, huge: 8, gargantuan: 12, colossal: 16 },
+
+  // Size category key ('small', 'large', ...) from character.size, or null when it names no PHB size
+  getSizeCategoryKey(character) {
+    const key = String(character?.size || '').trim().toLowerCase().split(/[\s(]/)[0];
+    return Object.prototype.hasOwnProperty.call(this.SIZE_MODIFIERS, key) ? key : null;
+  },
+
+  // Base size modifier from the creature's size category (before size-change effects such as Enlarge Person).
+  // A character without a size falls back to the size modifier stored on its last AC breakdown.
+  getBaseSizeModifier(character) {
+    const key = this.getSizeCategoryKey(character);
+    if (key) return this.SIZE_MODIFIERS[key];
+    return Number(character?.acBreakdown?.baseSize ?? character?.acBreakdown?.size) || 0;
   },
 
   // Canonical Consolidated Skill Mappings (Bridge between RAW 3.5e skills and Consolidated groups)
@@ -8660,15 +8764,14 @@ const RuleEngine = {
       };
     }
 
-    const strScore = Number(w.abilities?.str) || 10;
-    const capacities = this.getCarryingCapacity(strScore);
+    // Weights, carrying capacity and load come from the engine's single encumbrance derivation (also used by the AC).
+    const encumbranceView = this.computeEncumbrance(w);
     const rawSlots = w.bodySlots || {};
     const rawPool = Array.isArray(w.gearPool) ? w.gearPool : [];
 
     // 1. Body Slots View (14 canonical slots + aliases)
     const slotsByKey = {};
     const slotList = [];
-    let equippedWeight = 0;
     let equippedGearGpValue = 0;
     const equippedNameToSlotKey = new Map();
 
@@ -8687,9 +8790,6 @@ const RuleEngine = {
       }
       const weightVal = isOccupied ? (Number(cloned.weight ?? cloned.weightLb) || 0) : 0;
       const costVal = isOccupied ? (Number(cloned.cost ?? cloned.priceGp) || 0) : 0;
-      if (isActive) {
-        equippedWeight += weightVal;
-      }
       if (isOccupied) {
         equippedGearGpValue += costVal;
         const cleanSlotName = String(cloned.name || '').toLowerCase().trim();
@@ -8720,7 +8820,6 @@ const RuleEngine = {
       'Weapon', 'Armor', 'Shield', 'Ring', 'Head', 'Eyes', 'Neck', 'Shoulders',
       'Torso', 'Belt', 'Bracers', 'Gloves', 'Boots', 'Wondrous', 'Crystal'
     ]);
-    let poolWeight = 0;
     let poolGearGpValue = 0;
     const poolRows = rawPool.filter(Boolean).map((rawItem, idx) => {
       const cloned = JSON.parse(JSON.stringify(rawItem));
@@ -8737,9 +8836,6 @@ const RuleEngine = {
       const cleanName = String(cloned.name || '').toLowerCase().trim();
       const equippedSlotKey = equippedNameToSlotKey.get(cleanName) || (cloned.isEquipped ? (cloned.equippedSlotKey || null) : null);
       const isEquipped = Boolean(cloned.isEquipped || equippedSlotKey);
-      if (!isEquipped) {
-        poolWeight += unitWeight * qty;
-      }
       poolGearGpValue += unitCost * Math.max(1, qty);
       const totalItemWeight = Math.round(unitWeight * qty * 10) / 10;
       const normDc = this.normalizeItemDailyCharges(cloned);
@@ -8768,10 +8864,6 @@ const RuleEngine = {
         equippedSlotKey
       });
     });
-
-    const totalWeight = Math.round((equippedWeight + poolWeight) * 10) / 10;
-    const loadStatus = this.getLoadStatus(totalWeight, strScore);
-    const barPct = Math.min(100, Math.round((totalWeight / Math.max(1, capacities.heavy)) * 100));
 
     // 3. Wealth View
     const rawWealth = w.wealth || w.currency || {};
@@ -8822,15 +8914,7 @@ const RuleEngine = {
     });
 
     return {
-      encumbranceView: {
-        equippedWeight: Math.round(equippedWeight * 10) / 10,
-        poolWeight: Math.round(poolWeight * 10) / 10,
-        totalWeight,
-        strScore,
-        capacities,
-        loadStatus,
-        barPct
-      },
+      encumbranceView,
       wealthView: {
         pp,
         gp,

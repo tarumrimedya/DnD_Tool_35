@@ -10798,6 +10798,7 @@
       const maxCap = Math.min(5, Math.max(0, Number(character.bab) || 0));
       const cur = character.tactical.combatExpertise || 0;
       character.tactical.combatExpertise = Math.max(0, Math.min(maxCap, cur + delta));
+      if (character.tactical.combatExpertise > 0) character.tactical.totalDefense = false;
       saveStateToStorage(false);
       renderAll();
     }
@@ -10838,9 +10839,14 @@
         character.tactical.totalDefense = !character.tactical.totalDefense;
         if (character.tactical.totalDefense) {
           character.tactical.fightingDefensively = false;
+          character.tactical.combatExpertise = 0;
+          character.tactical.powerAttack = 0;
         }
         saveStateToStorage(false);
       }
+      // Total Defense clears Power Attack in the document; the Power Attack input is the offense view's source, so mirror it.
+      const paInput = document.getElementById('power-attack-val');
+      if (paInput && character.tactical?.totalDefense) paInput.value = Number(character.tactical.powerAttack) || 0;
       renderDefenseModifiersGrid();
       if (typeof recalculateDefense === 'function') recalculateDefense();
       if (typeof recalculateOffense === 'function') recalculateOffense();
@@ -10855,6 +10861,7 @@
       const cur = parseInt(input.value) || 0;
       const nextVal = Math.max(0, Math.min(bab, cur + delta));
       input.value = nextVal;
+      const wasTotalDefense = Boolean(character.tactical?.totalDefense);
       if (typeof CharStore !== 'undefined' && CharStore.dispatch) {
         CharStore.dispatch({
           type: 'combat/adjustPowerAttack',
@@ -10864,6 +10871,14 @@
         });
       } else if (character.tactical) {
         character.tactical.powerAttack = nextVal;
+        if (nextVal > 0) character.tactical.totalDefense = false;
+      }
+      // Raising Power Attack ends Total Defense (PHB p.142: no attacks); refresh the defense views when it did.
+      if (wasTotalDefense && !character.tactical?.totalDefense) {
+        renderDefenseModifiersGrid();
+        if (typeof recalculateDefense === 'function') recalculateDefense();
+        renderHUD();
+        if (typeof renderCombatCockpit === 'function') renderCombatCockpit();
       }
       recalculateOffense();
     }

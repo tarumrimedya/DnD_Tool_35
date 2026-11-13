@@ -1539,7 +1539,11 @@
     if (resolvedKey === 'fightingDefensively' && nextVal) {
       doc.tactical.totalDefense = false;
     } else if (resolvedKey === 'totalDefense' && nextVal) {
+      // PHB p.142: Total Defense is a standard action and you can't attack, so the attack-only options
+      // (Fighting Defensively, Combat Expertise PHB p.92, Power Attack PHB p.98) cannot apply alongside it.
       doc.tactical.fightingDefensively = false;
+      doc.tactical.combatExpertise = 0;
+      doc.tactical.powerAttack = 0;
     }
     setStoreOutcome(stateObj, { status: 'tactical_toggled', key: resolvedKey, value: doc.tactical[resolvedKey] });
     return doc;
@@ -1554,6 +1558,8 @@
       ? Number(payload.value)
       : (cur + (Number(payload.delta) || 0));
     doc.tactical.powerAttack = Math.max(0, Math.min(bab, next));
+    // Power Attack is declared when attacking (PHB p.98); Total Defense forbids attacking (PHB p.142).
+    if (doc.tactical.powerAttack > 0) doc.tactical.totalDefense = false;
     setStoreOutcome(stateObj, { status: 'power_attack_adjusted', value: doc.tactical.powerAttack });
     return doc;
   });
@@ -1567,6 +1573,8 @@
       ? Number(payload.value)
       : (cur + (Number(payload.delta) || 0));
     doc.tactical.combatExpertise = Math.max(0, Math.min(maxCap, next));
+    // Combat Expertise applies only when attacking in melee (PHB p.92); Total Defense forbids attacking (PHB p.142).
+    if (doc.tactical.combatExpertise > 0) doc.tactical.totalDefense = false;
     setStoreOutcome(stateObj, { status: 'combat_expertise_adjusted', value: doc.tactical.combatExpertise });
     return doc;
   });

@@ -1081,6 +1081,172 @@ function runDeriveSheetTests() {
   const vulnAc = acAudit(d => { d.feats = (d.feats || []).concat([{ name: 'Vulnerable', category: 'Flaw' }]); }).tri;
   check('AC flaws: Vulnerable is -1 AC, applied once', triDelta(vulnAc, -1, -1, -1), JSON.stringify(vulnAc));
 
+  // Melee-only attack options (02_cleric_radiant_lvl9, BAB 6): Combat Expertise (PHB p.92), Charge (PHB p.154) and
+  // Flanking (PHB p.153) change melee attack rolls only; a ranged attack is unaffected.
+  const meleeOnlyWs = RuleEngine.deriveSheet(JSON.parse(JSON.stringify(f02Raw)), [], {})._workingSnapshot;
+  meleeOnlyWs.tactical = Object.assign({}, meleeOnlyWs.tactical || {}, { combatExpertise: 0, charge: false, flanking: false });
+  const meleeOnlyMace = meleeOnlyWs.weapons[0];
+  const meleeOnlyBow = {
+    id: 'wpn-longbow', baseItemId: 'wpn-longbow', name: 'Longbow', category: 'Martial', grip: 'Ranged',
+    tags: ['martial', 'piercing', 'ranged', 'twoHanded'],
+    damageParts: [{ dice: '1d8', bonus: 0, type: 'Piercing', multiplyOnCrit: true, onCritOnly: false, source: 'Base' }]
+  };
+  const firstAtk = (wep, opts) => RuleEngine.evaluateWeaponAttack(meleeOnlyWs, wep, opts).iteratives[0];
+  const maceBase = firstAtk(meleeOnlyMace, {});
+  const bowBase = firstAtk(meleeOnlyBow, {});
+  check(
+    'Combat Expertise (PHB p.92): -2 on a melee attack, no penalty on a ranged attack',
+    firstAtk(meleeOnlyMace, { combatExpertise: 2 }) === maceBase - 2 && firstAtk(meleeOnlyBow, { combatExpertise: 2 }) === bowBase,
+    `mace ${maceBase}->${firstAtk(meleeOnlyMace, { combatExpertise: 2 })}, bow ${bowBase}->${firstAtk(meleeOnlyBow, { combatExpertise: 2 })}`
+  );
+  check(
+    'Charge (PHB p.154): +2 on a melee attack, none on a ranged attack',
+    firstAtk(meleeOnlyMace, { charge: true }) === maceBase + 2 && firstAtk(meleeOnlyBow, { charge: true }) === bowBase,
+    `mace ${firstAtk(meleeOnlyMace, { charge: true })}, bow ${firstAtk(meleeOnlyBow, { charge: true })}`
+  );
+  check(
+    'Flanking (PHB p.153): +2 on a melee attack, none on a ranged attack',
+    firstAtk(meleeOnlyMace, { flanking: true }) === maceBase + 2 && firstAtk(meleeOnlyBow, { flanking: true }) === bowBase,
+    `mace ${firstAtk(meleeOnlyMace, { flanking: true })}, bow ${firstAtk(meleeOnlyBow, { flanking: true })}`
+  );
+  meleeOnlyWs.tactical.combatExpertise = 3;
+  check(
+    'Combat Expertise from doc.tactical does not reach a ranged attack',
+    firstAtk(meleeOnlyBow, {}) === bowBase && firstAtk(meleeOnlyMace, {}) === maceBase - 3,
+    `bow ${firstAtk(meleeOnlyBow, {})}, mace ${firstAtk(meleeOnlyMace, {})}`
+  );
+
+  // Total Defense (PHB p.142) is a standard action with no attacks: it clears Combat Expertise and Power Attack,
+  // and raising either one ends Total Defense (02_cleric_radiant_lvl9).
+  const tdDoc = JSON.parse(JSON.stringify(f02Raw));
+  tdDoc.tactical = Object.assign({}, tdDoc.tactical || {}, { combatExpertise: 0, powerAttack: 0, fightingDefensively: false, totalDefense: false, charge: false });
+  CharStore.replaceDoc(tdDoc, { skipHistory: true });
+  CharStore.recompute({ combatExpertise: 0, fightingDefensively: false, totalDefense: false, charge: false });
+  const tdAcOff = CharStore.getSheet().ac.total;
+  CharStore.dispatch({ type: 'combat/adjustCombatExpertise', payload: { value: 2 }, meta: { skipHistory: true } });
+  CharStore.dispatch({ type: 'combat/adjustPowerAttack', payload: { value: 3 }, meta: { skipHistory: true } });
+  CharStore.dispatch({ type: 'combat/toggleTacticalMod', payload: { key: 'totalDefense' }, meta: { skipHistory: true } });
+  const tdT = CharStore.getDoc().tactical;
+  check(
+    'Total Defense (PHB p.142): turning it on sets Combat Expertise and Power Attack to 0; AC gets only the +4 dodge',
+    tdT.totalDefense === true && tdT.combatExpertise === 0 && tdT.powerAttack === 0 &&
+    CharStore.getSheet().combat.tactical.combatExpertise === 0 && CharStore.getSheet().ac.total === tdAcOff + 4,
+    `td=${tdT.totalDefense} ce=${tdT.combatExpertise} pa=${tdT.powerAttack} ac=${CharStore.getSheet().ac.total} off=${tdAcOff}`
+  );
+  CharStore.dispatch({ type: 'combat/adjustCombatExpertise', payload: { delta: 1 }, meta: { skipHistory: true } });
+  check(
+    'Total Defense (PHB p.142): raising Combat Expertise above 0 turns Total Defense off',
+    CharStore.getDoc().tactical.totalDefense === false && CharStore.getDoc().tactical.combatExpertise === 1 &&
+    CharStore.getSheet().ac.total === tdAcOff + 1,
+    `td=${CharStore.getDoc().tactical.totalDefense} ce=${CharStore.getDoc().tactical.combatExpertise} ac=${CharStore.getSheet().ac.total}`
+  );
+  CharStore.dispatch({ type: 'combat/toggleTacticalMod', payload: { key: 'totalDefense' }, meta: { skipHistory: true } });
+  CharStore.dispatch({ type: 'combat/adjustPowerAttack', payload: { value: 1 }, meta: { skipHistory: true } });
+  check(
+    'Total Defense (PHB p.142): raising Power Attack above 0 turns Total Defense off',
+    CharStore.getDoc().tactical.totalDefense === false && CharStore.getDoc().tactical.powerAttack === 1 && CharStore.getSheet().ac.total === tdAcOff,
+    `td=${CharStore.getDoc().tactical.totalDefense} pa=${CharStore.getDoc().tactical.powerAttack} ac=${CharStore.getSheet().ac.total}`
+  );
+
+  // Two-Weapon Defense (PHB p.102, ruleFlags.twoWeaponDefense): +1 shield bonus with two weapons or a double weapon,
+  // +2 when fighting defensively or using total defense (03_twf_rogue_swashbuckler_lvl12: rapier + short sword).
+  const srdFeatsDb = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'database', 'srd_feats.json'), 'utf8'));
+  const twdFeat = () => JSON.parse(JSON.stringify(srdFeatsDb.find(e => e && e.id === 'feat-two-weapon-defense')));
+  const twdAc = (withFeat, tactical, mutate) => {
+    const d = JSON.parse(JSON.stringify(f03Raw));
+    d.tactical = Object.assign({}, d.tactical || {}, { combatExpertise: 0, fightingDefensively: false, totalDefense: false, charge: false }, tactical || {});
+    if (withFeat) d.feats = (d.feats || []).concat([twdFeat()]);
+    if (mutate) mutate(d);
+    return RuleEngine.deriveSheet(d, [], {}).ac;
+  };
+  const twdOff = twdAc(false);
+  const twdOn = twdAc(true);
+  check(
+    'Two-Weapon Defense (PHB p.102): two weapons give +1 shield bonus to normal and flat-footed AC, not touch',
+    twdOn.total === twdOff.total + 1 && twdOn.flat === twdOff.flat + 1 && twdOn.touch === twdOff.touch && twdOn.shield === twdOff.shield + 1,
+    `off=${JSON.stringify([twdOff.total, twdOff.touch, twdOff.flat])} on=${JSON.stringify([twdOn.total, twdOn.touch, twdOn.flat])}`
+  );
+  const twdFdOff = twdAc(false, { fightingDefensively: true });
+  const twdFdOn = twdAc(true, { fightingDefensively: true });
+  const twdTdOff = twdAc(false, { totalDefense: true });
+  const twdTdOn = twdAc(true, { totalDefense: true });
+  check(
+    'Two-Weapon Defense (PHB p.102): +2 shield bonus when fighting defensively or using total defense',
+    twdFdOn.total === twdFdOff.total + 2 && twdTdOn.total === twdTdOff.total + 2,
+    `fd ${twdFdOff.total}->${twdFdOn.total}, td ${twdTdOff.total}->${twdTdOn.total}`
+  );
+  const oneWeapon = (d) => { d.bodySlots.offHand = { name: '-', active: false }; };
+  const twdOneOff = twdAc(false, null, oneWeapon);
+  const twdOneOn = twdAc(true, null, oneWeapon);
+  check('Two-Weapon Defense (PHB p.102): no bonus with a single one-handed weapon', twdOneOn.total === twdOneOff.total, `${twdOneOff.total} vs ${twdOneOn.total}`);
+  const doubleWeapon = (d) => {
+    d.bodySlots.mainHand = { id: 'wpn-quarterstaff', name: 'Quarterstaff', category: 'Simple', active: true, weight: 4, tags: ['2h', 'bludgeoning', 'doubleWeapon', 'simple', 'twoHanded'] };
+    d.bodySlots.offHand = { name: '-', active: false };
+  };
+  const twdDblOff = twdAc(false, null, doubleWeapon);
+  const twdDblOn = twdAc(true, null, doubleWeapon);
+  check('Two-Weapon Defense (PHB p.102): a double weapon gives +1 shield bonus', twdDblOn.total === twdDblOff.total + 1, `${twdDblOff.total} vs ${twdDblOn.total}`);
+
+  // Load Max Dex (PHB Table 9-2): medium load caps Dex to AC at +3, heavy load at +1 (01_fighter_lvl1 without armor, Dex 18 / +4).
+  const loadSheet = (extraWeight) => {
+    const d = stanceDoc({}, 0);
+    d.baseAbilities = Object.assign({}, d.baseAbilities, { dex: 18 });
+    d.bodySlots.armor = { name: '-', active: false };
+    d.gearPool = (Array.isArray(d.gearPool) ? d.gearPool : []).concat(extraWeight > 0 ? [{ id: 'test-lead-ingots', name: 'Lead Ingots', category: 'Other', weight: extraWeight, qty: 1 }] : []);
+    return RuleEngine.deriveSheet(d, [], {});
+  };
+  const loadLight = loadSheet(0);
+  const encLight = loadLight.inventory.encumbranceView;
+  const loadMedium = loadSheet(encLight.capacities.light - encLight.totalWeight + 10);
+  const loadHeavy = loadSheet(encLight.capacities.medium - encLight.totalWeight + 10);
+  check(
+    'Load Max Dex (PHB Table 9-2): light load leaves Dex +4 uncapped',
+    encLight.loadStatus.status === 'Light Load' && loadLight.ac.effectiveDex === 4 && loadLight.ac.maxDex === null,
+    `${encLight.loadStatus.status} dex=${loadLight.ac.effectiveDex}`
+  );
+  check(
+    'Load Max Dex (PHB Table 9-2): medium load caps Dex to AC at +3 (normal and touch AC -1), same load in the inventory view',
+    loadMedium.inventory.encumbranceView.loadStatus.status === 'Medium Load' && loadMedium.ac.load === 'Medium Load' &&
+    loadMedium.ac.effectiveDex === 3 && loadMedium.ac.maxDex === 3 && loadMedium.ac.loadMaxDex === 3 &&
+    loadMedium.ac.total === loadLight.ac.total - 1 && loadMedium.ac.touch === loadLight.ac.touch - 1,
+    `dex=${loadMedium.ac.effectiveDex} ac=${loadMedium.ac.total}/${loadMedium.ac.touch} vs ${loadLight.ac.total}/${loadLight.ac.touch}`
+  );
+  check(
+    'Load Max Dex (PHB Table 9-2): heavy load caps Dex to AC at +1 (normal and touch AC -3)',
+    loadHeavy.inventory.encumbranceView.loadStatus.status === 'Heavy Load' &&
+    loadHeavy.ac.effectiveDex === 1 && loadHeavy.ac.total === loadLight.ac.total - 3 && loadHeavy.ac.touch === loadLight.ac.touch - 3,
+    `dex=${loadHeavy.ac.effectiveDex} ac=${loadHeavy.ac.total}/${loadHeavy.ac.touch}`
+  );
+  const loadArmorDoc = stanceDoc({}, 0);
+  const loadArmorSheet = RuleEngine.deriveSheet(loadArmorDoc, [], {});
+  check(
+    'Load Max Dex: the lower of the armor and load caps applies (Chainmail +2 under a light load stays +2)',
+    loadArmorSheet.ac.maxDex === 2 && loadArmorSheet.ac.armorMaxDex === 2 && loadArmorSheet.ac.loadMaxDex === null,
+    JSON.stringify([loadArmorSheet.ac.maxDex, loadArmorSheet.ac.armorMaxDex, loadArmorSheet.ac.loadMaxDex])
+  );
+  check(
+    'Encumbrance single source: deriveInventoryView.encumbranceView equals RuleEngine.computeEncumbrance',
+    JSON.stringify(RuleEngine.computeEncumbrance(loadMedium._workingSnapshot)) === JSON.stringify(loadMedium.inventory.encumbranceView)
+  );
+
+  // Size modifier on attack rolls (PHB p.134, Table 8-1) and special size modifier on grapple checks (PHB p.156).
+  const sizeSheet = (mutate) => {
+    const d = stanceDoc({}, 0);
+    d.buffs = Array.isArray(d.buffs) ? d.buffs : [];
+    if (mutate) mutate(d);
+    const s = RuleEngine.deriveSheet(d, [], {});
+    return { atk: s.combat.weapons[0].evaluated.iteratives[0], grapple: s.combat.grapple };
+  };
+  const sizeMedium = sizeSheet();
+  const sizeSmall = sizeSheet(d => { d.size = 'Small'; });
+  const sizeLarge = sizeSheet(d => { d.size = 'Large'; });
+  check('Attack size modifier (PHB Table 8-1): Small +1, Large -1 on the attack roll', sizeSmall.atk === sizeMedium.atk + 1 && sizeLarge.atk === sizeMedium.atk - 1, `M=${sizeMedium.atk} S=${sizeSmall.atk} L=${sizeLarge.atk}`);
+  check('Grapple special size modifier (PHB p.156): Small -4, Large +4', sizeSmall.grapple === sizeMedium.grapple - 4 && sizeLarge.grapple === sizeMedium.grapple + 4, `M=${sizeMedium.grapple} S=${sizeSmall.grapple} L=${sizeLarge.grapple}`);
+  const sizeEnlarged = sizeSheet(d => addAcBuff(d, 'Enlarge Person', [
+    { target: 'ac.total', value: -1, type: 'size' }, { target: 'attack.all', value: -1, type: 'size' }
+  ]));
+  check('Attack size modifier: Enlarge Person on a Medium creature gives -1 attack once and the Large grapple modifier', sizeEnlarged.atk === sizeMedium.atk - 1 && sizeEnlarged.grapple === sizeMedium.grapple + 4, `atk=${sizeEnlarged.atk} grapple=${sizeEnlarged.grapple}`);
+
   // Verify Unified Buff Round Tick (b.rounds = 2 -> 1 -> 0 expired) & Formula Temp HP subtraction on toggleBuff
   const buffTestDoc = JSON.parse(JSON.stringify(f04Raw));
   buffTestDoc.buffs.push({

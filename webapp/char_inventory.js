@@ -3601,31 +3601,11 @@
       // 1. Calculate Carrying Capacity & Weights (via SheetView when available)
       const sheetInv = (typeof window !== 'undefined' && window.CharStore && typeof window.CharStore.getSheet === 'function' && window.CharStore.getSheet()?.inventory)
         || (typeof RuleEngine !== 'undefined' && typeof RuleEngine.deriveInventoryView === 'function' ? RuleEngine.deriveInventoryView(character) : null);
-      const encView = sheetInv?.encumbranceView || null;
-      const strScore = encView ? encView.strScore : (character.abilities?.str || 10);
-      const caps = encView ? encView.capacities : RuleEngine.getCarryingCapacity(strScore);
-
-      let equippedWeight = 0;
-      let poolWeight = 0;
-      if (encView) {
-        equippedWeight = encView.equippedWeight;
-        poolWeight = encView.poolWeight;
-      } else {
-        Object.values(character.bodySlots).forEach(slot => {
-          if (slot && slot.active && slot.name && slot.name !== '-') {
-            equippedWeight += Number(slot.weight) || 0;
-          }
-        });
-        character.gearPool.forEach(item => {
-          if (!item.isEquipped) {
-            const q = (item.qty !== undefined && item.qty !== null) ? Math.max(0, Number(item.qty)) : 1;
-            poolWeight += (Number(item.weight) || 0) * q;
-          }
-        });
-      }
-
-      const totalWeight = encView ? encView.totalWeight : (Math.round((equippedWeight + poolWeight) * 10) / 10);
-      const load = encView ? encView.loadStatus : RuleEngine.getLoadStatus(totalWeight, strScore);
+      // Encumbrance is derived only by the engine (RuleEngine.computeEncumbrance), the same source the AC load Max Dex uses.
+      const encView = sheetInv?.encumbranceView || RuleEngine.computeEncumbrance(character);
+      const caps = encView.capacities;
+      const totalWeight = encView.totalWeight;
+      const load = encView.loadStatus;
 
       const wDisplay = document.getElementById('inv-total-weight');
       if (wDisplay) wDisplay.textContent = totalWeight + ' lbs';
@@ -3638,7 +3618,7 @@
 
       const bar = document.getElementById('inv-weight-bar');
       if (bar) {
-        const pct = encView ? encView.barPct : Math.min(100, Math.round((totalWeight / caps.heavy) * 100));
+        const pct = encView.barPct;
         bar.style.width = pct + '%';
         if (totalWeight <= caps.light) bar.className = 'bg-emerald-500 h-full rounded-full transition-all duration-300';
         else if (totalWeight <= caps.medium) bar.className = 'bg-amber-500 h-full rounded-full transition-all duration-300';
