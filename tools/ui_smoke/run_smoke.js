@@ -71,6 +71,21 @@ async function openPage(context, url, { local = true } = {}) {
     page.__errs.console.push(text + (loc.url ? ' @ ' + loc.url : ''));
   });
   page.on('requestfailed', req => { if (!isLocalUrl(req.url())) ignoredNet++; });
+  page.__navs = [];
+  const t0 = Date.now();
+  const ev = s => page.__navs.push(`${s}@${Date.now() - t0}ms`);
+  page.on('crash', () => ev('CRASH'));
+  page.on('close', () => ev('close'));
+  page.on('domcontentloaded', () => ev('dcl'));
+  page.on('load', () => ev('load'));
+  page.on('framenavigated', f => ev((f === page.mainFrame() ? 'nav:' : 'subnav:') + f.url().replace(BASE, '')));
+  page.on('framedetached', () => ev('framedetached'));
+  if (process.env.SMOKE_DIAG === '1') {
+    const cdp = await context.newCDPSession(page);
+    for (const m of ['Runtime', 'Page', 'Inspector', 'Log']) await cdp.send(m + '.enable').catch(() => {});
+    for (const n of ['Runtime.executionContextDestroyed', 'Runtime.executionContextsCleared', 'Inspector.targetCrashed', 'Inspector.detached', 'Page.frameStartedLoading', 'Page.frameNavigated', 'Page.frameDetached', 'Page.navigatedWithinDocument', 'Page.frameRequestedNavigation', 'Log.entryAdded'])
+      cdp.on(n, p => ev('cdp:' + n.replace(/^[A-Za-z]+\./, '') + (n === 'Log.entryAdded' ? ':' + String(p.entry.text).slice(0, 60) : n === 'Runtime.executionContextDestroyed' ? ':' + p.executionContextId : n === 'Page.frameRequestedNavigation' ? ':' + p.reason + ':' + p.url : '')));
+  }
   openPages.push(page);
   await page.goto(BASE + url, { waitUntil: 'load' });
   return page;
@@ -92,8 +107,17 @@ async function waitSheetReady(page) {
     && typeof CharStore !== 'undefined' && typeof renderAll === 'function' && typeof switchTab === 'function', null, { timeout: 30000 });
 }
 
-async function newSheetPage(contextOpts) {
+// The Hub has no boot marker: wait until its helpers exist and the document is complete, then a short quiet
+// period so boot-time console / page errors are collected before the first assertNoErrors.
+async function waitHubReady(page) {
+  await page.waitForFunction(() => document.readyState === 'complete' && typeof showToast === 'function'
+    && typeof notify === 'function' && !!window.DnDUI, null, { timeout: 30000 });
+  await page.waitForTimeout(800);
+}
+
+async function newSheetPage(contextOpts, initScript) {
   const context = await newContext(contextOpts);
+  if (initScript) await context.addInitScript(initScript);
   const page = await openPage(context, '/index.html');
   await waitSheetReady(page);
   page.__context = context;
@@ -128,6 +152,9 @@ async function reportLog(page) {
   return page.evaluate(() => (typeof reportError !== 'undefined' && reportError._log) || []);
 }
 
+// Diagnostic: main-frame navigations seen by a page (a sheet should navigate exactly once).
+function navNote(page) { return page && page.__navs ? ` [page events: ${page.__navs.join(', ')}]` : ''; }
+
 function errSummary(page) {
   const e = page.__errs;
   return `pageErrors=${e.page.length} consoleErrors=${e.console.length}`;
@@ -138,18 +165,48 @@ function assertNoErrors(page) {
   assert(e.console.length === 0, 'console errors: ' + e.console.slice(0, 3).join(' | '));
 }
 
+// GitHub Actions annotations: make failures visible without the job log.
+const ghEsc = v => String(v).replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+const ghProp = v => ghEsc(v).replace(/:/g, '%3A').replace(/,/g, '%2C');
+function annotate(title, detail) {
+  if (process.env.GITHUB_ACTIONS !== 'true') return;
+  const one = String(detail).replace(/\s+/g, ' ').trim().slice(0, 300);
+  console.log(`::error title=${ghProp(title)}::${ghEsc(one)}`);
+}
+
+// Harness flake: in CI-like conditions (1-2 vCPU) Playwright occasionally loses the main-world execution context
+// of a freshly booted sheet page (page.evaluate: "Execution context was destroyed"). Evidence gathered with
+// SMOKE_DIAG=1 (CDP trace): exactly one main-frame navigation, no second DOMContentLoaded, no
+// Runtime.executionContextDestroyed, no renderer crash - and the page stays unusable for repeated evaluates, so
+// retrying the call on the same page does not help. A fresh page does. The body of a check that builds its own
+// page is therefore re-run (max 2 extra attempts), and every occurrence is logged and counted.
+let ctxRetries = 0;
+const CTX_LOST = /Execution context was destroyed/;
+async function retryOnContextLoss(name, fn) {
+  for (let attempt = 0; ; attempt++) {
+    try { return await fn(); }
+    catch (e) {
+      if (attempt >= 2 || !CTX_LOST.test(String(e && e.message))) throw e;
+      ctxRetries++;
+      console.log(`NOTE  ${name}: page execution context lost, retrying with a fresh page (${attempt + 1}/2)${navNote(openPages[openPages.length - 1])}`);
+    }
+  }
+}
+
 async function check(name, fn, opts = {}) {
   const t0 = Date.now();
   let status = 'PASS';
   let detail = '';
   try {
-    detail = (await fn()) || '';
+    detail = (await retryOnContextLoss(name, fn)) || '';
   } catch (e) {
     status = opts.known ? 'KNOWN_FAIL' : 'FAIL';
     detail = opts.known ? `${opts.known} [${String(e && e.message || e).split('\n')[0]}]` : String(e && e.message || e).split('\n')[0];
+    if (/context was destroyed|Target (page|closed)|crash/i.test(detail)) detail += navNote(openPages[openPages.length - 1]);
   }
   results.push({ name, status });
   console.log(`${status}  ${name}  ${String(detail).slice(0, 300)}`);
+  if (status === 'FAIL') annotate(`UI smoke: ${name}`, detail);
   return status;
 }
 
@@ -191,10 +248,15 @@ async function main() {
   // J. three.js is loaded on demand. The smoke run blocks the CDN, so the first roll exercises the
   // fallback: the script fails, the roll still records its result, and the script is injected once.
   {
-    const page = await newSheetPage();
+    // The idle warm-up starts >= 1.5 s after the window load event, while the boot marker can arrive later than
+    // that on a slow CPU. To keep "boot itself never loads three.js" deterministic, this page reports data-saver
+    // (the warm-up is skipped by design); the warm-up path is exercised explicitly below via Dice3D.warmUp().
+    const page = await newSheetPage(undefined, () => {
+      try { Object.defineProperty(navigator, 'connection', { value: { saveData: true }, configurable: true }); } catch (e) { /* ignore */ }
+    });
     await check('J. no three.js at boot; 3D roll falls back when the CDN load fails (CDN blocked)', async () => {
-      // newSheetPage already waited for sheetBoot === 'ready'; check right at that point, before the idle
-      // warm-up (>= 1.5 s after load) can start fetching three.js.
+      // newSheetPage already waited for sheetBoot === 'ready'; with the warm-up skipped, nothing may have
+      // requested three.js yet.
       const boot = await page.evaluate(() => ({
         three: typeof THREE,
         tags: document.querySelectorAll('script[src*="three.min.js"]').length,
@@ -352,7 +414,7 @@ async function main() {
     const page = await newSheetPage();
     await check('D1. showToast escapes HTML, role=status', async () => {
       await page.evaluate(() => showToast('<i class="xss-probe">x</i>', 'error', { wrap: true }));
-      await page.waitForTimeout(100);
+      await page.waitForFunction(() => document.querySelector('.dice-toast-item'), null, { timeout: 5000 });
       const r = await page.evaluate(() => ({
         probes: document.querySelectorAll('.xss-probe').length,
         items: document.querySelectorAll('.dice-toast-item').length,
@@ -367,7 +429,7 @@ async function main() {
       const text = await page.evaluate(async () => {
         document.querySelectorAll('.dice-toast-item').forEach(e => e.remove());
         notify('⚠️ Saved', 'success');
-        await new Promise(r => setTimeout(r, 100));
+        for (let i = 0; i < 100 && !document.querySelector('.dice-toast-item'); i++) await new Promise(r => setTimeout(r, 50));
         return document.querySelector('.dice-toast-item').innerText;
       });
       const count = (text.match(/⚠/g) || []).length;
@@ -422,11 +484,26 @@ async function main() {
     });
 
     await check('E4. backdrop click ignored <300ms, cancels after 350ms', async () => {
-      await open("DnDUI.confirm('Backdrop?')");
-      await page.mouse.click(4, 4);
-      assert(await dlgOpen(page), 'early backdrop click closed the dialog');
-      assert((await page.evaluate(() => window.__r)) === undefined, 'early click resolved');
-      await page.waitForTimeout(350);
+      // The 300 ms guard is wall-clock; on a slow CPU the mouse click can arrive after it. Timestamp the open in
+      // the page and only judge an "early" click if it provably landed inside the window (retry otherwise).
+      let early = false;
+      for (let attempt = 0; attempt < 5 && !early; attempt++) {
+        await page.evaluate(() => { window.__r = undefined; window.__t0 = Date.now(); DnDUI.confirm('Backdrop?').then(v => { window.__r = { v }; }); });
+        await page.mouse.click(4, 4);
+        const elapsed = await page.evaluate(() => Date.now() - window.__t0);
+        if (elapsed < 250) {
+          early = true;
+          assert(await dlgOpen(page), 'early backdrop click closed the dialog');
+          assert((await page.evaluate(() => window.__r)) === undefined, 'early click resolved');
+        } else {
+          // Too slow to prove anything: dismiss (may already be cancelled by the click) and try again.
+          await page.waitForFunction(() => window.__r !== undefined || (document.getElementById('dndui-dialog') || {}).open, null, { timeout: 5000 });
+          if (await dlgOpen(page)) { await page.keyboard.press('Escape'); }
+          await waitDlg(page, false);
+        }
+      }
+      assert(early, 'could not land a click inside the 300 ms window in 5 attempts (CPU too slow)');
+      await page.waitForFunction(() => Date.now() - window.__t0 >= 350, null, { timeout: 5000 });
       await page.mouse.click(4, 4);
       assert((await result()) === false, 'late backdrop click did not cancel');
       return 'ok';
@@ -460,7 +537,7 @@ async function main() {
       assert(m.h >= 44, 'height ' + m.h);
       await page.fill('#dndui-dialog input', 'x');
       await page.keyboard.press('Enter');
-      await page.waitForTimeout(100);
+      await page.waitForFunction(() => { const a = document.querySelector('#dndui-dialog [role=alert]'); return !!(a && a.textContent); }, null, { timeout: 5000 });
       const err = await page.evaluate(() => (document.querySelector('#dndui-dialog [role=alert]') || {}).textContent);
       assert(err === 'Bad value', 'inline error: ' + err);
       assert(await dlgOpen(page), 'closed despite validation error');
@@ -499,8 +576,8 @@ async function main() {
       const ids = await tabIds(page);
       const bad = [];
       for (const id of ids) {
-        await page.evaluate(i => switchTab(i), id);
-        await page.waitForTimeout(120);
+        // switch, then let layout settle for two animation frames (condition, not a fixed sleep)
+        await page.evaluate(async i => { switchTab(i); await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); }, id);
         const m = await page.evaluate(() => ({ sw: document.documentElement.scrollWidth, iw: window.innerWidth }));
         if (m.sw > m.iw + 1) bad.push(`${id}:${m.sw}>${m.iw}`);
       }
@@ -545,15 +622,19 @@ async function main() {
       });
       // Settle: HP is re-derived shortly after a fixture load (max 104 -> 92 for fixture 03), then a quiet save
       // (no player broadcast) records the settled HP as the baseline.
-      await page.waitForTimeout(1500);
+      const ownHp = JSON.parse(fs.readFileSync(path.join(FIXTURE_DIR, FIXTURE_03), 'utf8')).hp || {};
+      await page.waitForFunction(h => character.hp.max === h.max && character.hp.current === h.current, ownHp, { timeout: 20000 });
+      await page.waitForTimeout(300); // quiet period after the settled value (no further re-derive expected)
       await page.evaluate(() => saveStateToStorage(false));
       await page.evaluate(() => initHpLiveSync());
-      await page.waitForTimeout(100);
-      const j = await page.evaluate(() => window.__joined.map(x => ({ topic: x.topic, priv: x.opts && x.opts.config && x.opts.config.private })));
+      await page.waitForFunction(() => window.__joined.length >= 1 && window.__handlers['hp:user:u1'], null, { timeout: 10000 });
+      await page.waitForTimeout(100); // let the fake SUBSCRIBED callback (setTimeout 10) run
+      const j =await page.evaluate(() => window.__joined.map(x => ({ topic: x.topic, priv: x.opts && x.opts.config && x.opts.config.private })));
       assert(j.length === 1 && j[0].topic === 'hp:user:u1' && j[0].priv === true, 'join ' + JSON.stringify(j));
 
       await page.evaluate(() => { character.hp.current -= 5; saveStateToStorage(true); });
-      await page.waitForTimeout(150);
+      await page.waitForFunction(() => window.__sent.length >= 1, null, { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(150); // window for an unexpected duplicate send
       let sent = await page.evaluate(() => window.__sent);
       assert(sent.length === 1, 'sent ' + sent.length + ' after HP change');
       assert(sent[0].payload.source === 'sheet' && sent[0].payload.delta === -5, 'payload ' + JSON.stringify(sent[0].payload));
@@ -571,7 +652,8 @@ async function main() {
         window.__handlers['hp:user:u1']({ payload: { source: 'hub', charId: window.__id, charName: character.name, currentHp: 7, tempHp: 3, maxHp: character.hp.max, delta: -4, ts, senderId: 'other_tab' } });
         return ts;
       });
-      await page.waitForTimeout(300);
+      await page.waitForFunction(() => character.hp.current === 7 && document.querySelectorAll('.dice-toast-item').length >= 1, null, { timeout: 10000 }).catch(() => {});
+      await page.waitForTimeout(150); // window for an unexpected re-send
       let st = await page.evaluate(() => ({ cur: character.hp.current, tmp: character.hp.temp, toasts: document.querySelectorAll('.dice-toast-item').length, sent: window.__sent.length }));
       assert(st.cur === 7 && st.tmp === 3, `hub event not applied: cur=${st.cur} temp=${st.tmp}`);
       assert(st.toasts >= 1, 'no toast after hub event');
@@ -594,6 +676,7 @@ async function main() {
     const readings = [];
     for (const f of FIXTURES) {
       const own = JSON.parse(fs.readFileSync(path.join(FIXTURE_DIR, f), 'utf8')).hp || {};
+      await retryOnContextLoss('I. ' + f, async () => {
       const page = await newSheetPage();
       try {
         const first = await page.evaluate(async fx => {
@@ -604,10 +687,15 @@ async function main() {
           renderAll();
           return { max: character.hp.max, cur: character.hp.current };
         }, f);
+        // Settle: wait until HP equals the fixture's own value (up to 20 s on a slow CPU), then a short quiet
+        // period so a late re-derive that moves it away again is still caught. A timeout falls through and the
+        // check below reports the unsettled value.
+        await page.waitForFunction(h => character.hp.max === h.max && character.hp.current === h.current, own, { timeout: 20000 }).catch(() => {});
         await page.waitForTimeout(1500);
         const last = await page.evaluate(() => ({ max: character.hp.max, cur: character.hp.current }));
         readings.push({ f: f.slice(0, 2), own, first, last });
       } finally { await closeSheet(page); }
+      });
     }
     const fmt = r => `${r.f}: own ${r.own.max}/${r.own.current}, first ${r.first.max}/${r.first.cur}, after 1.5s ${r.last.max}/${r.last.cur}`;
     const transient = readings.some(r => r.first.max !== r.own.max || r.first.cur !== r.own.current);
@@ -628,12 +716,12 @@ async function main() {
     await check('H1. hub loads; notify -> escaped in-page toast (role=status), no native dialog', async () => {
       page = await openPage(context, '/hub.html');
       page.on('dialog', d => { nativeDialogs++; d.dismiss().catch(() => {}); });
-      await page.waitForTimeout(800);
+      await waitHubReady(page);
       assertNoErrors(page);
       const t = await page.evaluate(() => typeof showToast);
       assert(t === 'function', 'typeof showToast = ' + t);
       await page.evaluate(() => { setTimeout(() => notify('<i class="xss-probe">x</i>', 'error'), 0); });
-      await page.waitForTimeout(400);
+      await page.waitForFunction(() => document.querySelector('#dice-top-toast-container .dice-toast-item'), null, { timeout: 10000 });
       const r = await page.evaluate(() => {
         const c = document.getElementById('dice-top-toast-container');
         const item = c && c.querySelector('.dice-toast-item');
@@ -702,9 +790,11 @@ async function main() {
     const context = await newContext({ viewport: { width: 375, height: 812 } });
     await check('H5. hub mobile 375px: toast and confirm card fit viewport', async () => {
       const page = await openPage(context, '/hub.html');
-      await page.waitForTimeout(800);
+      await waitHubReady(page);
       await page.evaluate(() => notify('A fairly long Hub notification for a narrow phone screen that has to wrap across several lines without overflowing.', 'warning'));
-      await page.waitForTimeout(400);
+      await page.waitForFunction(() => document.querySelector('#dice-top-toast-container .dice-toast-item'), null, { timeout: 10000 });
+      // let the toast's entrance animation settle (two frames) before measuring its box
+      await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
       const t = await page.evaluate(() => { const b = document.querySelector('#dice-top-toast-container .dice-toast-item').getBoundingClientRect(); return { l: b.left, r: b.right, iw: window.innerWidth }; });
       assert(t.l >= 0 && t.r <= t.iw, `toast ${Math.round(t.l)}..${Math.round(t.r)} vs ${t.iw}`);
       await page.evaluate(() => { DnDUI.confirm('Are you sure you want to delete campaign "Smoke"?\n\nThis will permanently delete the campaign.', { title: 'Delete Campaign', tone: 'danger' }); });
@@ -724,7 +814,7 @@ async function main() {
     await check('H6. real path: hub clearDiceHistory opens dialog, Cancel keeps history', async () => {
       const page = await openPage(context, '/hub.html');
       page.on('dialog', d => { nativeDialogs++; d.dismiss().catch(() => {}); });
-      await page.waitForTimeout(800);
+      await waitHubReady(page);
       await page.evaluate(() => {
         window.diceRollHistory = [{ title: 'Probe', formula: '1d20', breakdown: '[10]', total: 10, timestamp: '00:00', id: 'p1' }];
         clearDiceHistory();
@@ -746,9 +836,10 @@ async function main() {
   const pass = results.filter(r => r.status === 'PASS').length;
   const known = results.filter(r => r.status === 'KNOWN_FAIL').length;
   const fail = results.filter(r => r.status === 'FAIL').length;
-  console.log(`(ignored external network failures: ${ignoredNet})`);
+  console.log(`(ignored external network failures: ${ignoredNet}; execution-context retries: ${ctxRetries})`);
   console.log(`UI SMOKE: ${pass}/${results.length} passed, ${known} known failures`);
+  if (fail > 0) annotate('UI smoke', `${fail} check(s) failed: ` + results.filter(r => r.status === 'FAIL').map(r => r.name).join(' | '));
   process.exit(fail > 0 ? 1 : 0);
 }
 
-main().catch(e => { console.error('UI SMOKE crashed:', e); process.exit(1); });
+main().catch(e => { console.error('UI SMOKE crashed:', e); const note = navNote(openPages[openPages.length - 1]); console.error('last page' + note); annotate('UI smoke crashed', String((e && e.message) || e) + note); process.exit(1); });
